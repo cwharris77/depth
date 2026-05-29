@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0e1a;
+  --foreground: #f0f4ff;
+  --seahawks-navy: #002244;
+  --seahawks-green: #69BE28;
+  --seahawks-wolf-grey: #A5ACAF;
+  --card-bg: #0f1623;
+  --field-green: #2d5a1b;
+  --field-line: rgba(255,255,255,0.15);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  overscroll-behavior: none;
+}
+
+body.card-open {
+  overflow: hidden;
+}
