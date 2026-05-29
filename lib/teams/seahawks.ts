@@ -1,36 +1,6 @@
-export type Position =
-  | "QB" | "RB" | "WR" | "TE"
-  | "LT" | "LG" | "C" | "RG" | "RT"
-  | "DE" | "DT" | "LB" | "CB" | "S"
-  | "K" | "P" | "LS" | "KR" | "PR";
+import type { Player, FieldSlot, TeamRoster } from "../types";
 
-export type PlayerStatus = "starter" | "backup" | "rookie" | "injured";
-
-export interface Player {
-  id: string;
-  name: string;
-  number: number;
-  position: Position;
-  depthRank: 1 | 2 | 3;
-  status: PlayerStatus;
-  age: number;
-  college: string;
-  experience: number;
-  height: string;
-  weight: number;
-  bio: string;
-  stats?: Record<string, string | number>;
-}
-
-export interface FieldSlot {
-  id: string;
-  playerId: string;
-  x: number;
-  y: number;
-  label: string;
-}
-
-export const SEAHAWKS_PLAYERS: Player[] = [
+const PLAYERS: Player[] = [
   // ───────── OFFENSE ─────────
   // QB
   {
@@ -46,7 +16,7 @@ export const SEAHAWKS_PLAYERS: Player[] = [
     height: "6'3\"",
     weight: 221,
     bio: "The comeback story of the league. After years as a backup, Geno led Seattle to back-to-back playoff appearances and won NFL Comeback Player of the Year in 2022.",
-    stats: { "2024 Rating": "97.3", Yards: "3891", TDs: 20, INTs: 9 },
+    stats: { Rating: "97.3", Yards: "3891", TDs: 20, INTs: 9 },
   },
   {
     id: "sam-howell",
@@ -91,7 +61,7 @@ export const SEAHAWKS_PLAYERS: Player[] = [
     height: "5'9\"",
     weight: 211,
     bio: "KWIII is an explosive, elusive back who burst onto the scene with 1,050 rushing yards as a rookie. A key piece of Seattle's ground game identity.",
-    stats: { "2024 Yards": 1040, YPC: 4.4, TDs: 9 },
+    stats: { Yards: 1040, YPC: 4.4, TDs: 9 },
   },
   {
     id: "zach-charbonnet",
@@ -653,7 +623,7 @@ export const SEAHAWKS_PLAYERS: Player[] = [
     bio: "Depth corner and core special teams contributor.",
   },
 
-  // Safety (S — unified SS/FS)
+  // Safety
   {
     id: "quandre-diggs",
     name: "Quandre Diggs",
@@ -760,40 +730,38 @@ export const SEAHAWKS_PLAYERS: Player[] = [
   },
 ];
 
-// ───────── FIELD LAYOUTS ─────────
-// x/y as % of field. y=0 top (defense end zone), y=100 bottom (offense end zone).
-// Offense lines up around y: 35–55, defense y: 22–45, line of scrimmage at y=50.
+// Field layout coords: x = 0–100 (% across), y = 0–100 (% down).
+// y=50 is the line of scrimmage. Defense y < 50, offense y > 50.
 
-export const OFFENSE_FIELD_SLOTS: FieldSlot[] = [
-  { id: "off-qb", playerId: "geno-smith", x: 50, y: 58, label: "QB" },
-  { id: "off-rb", playerId: "kenneth-walker", x: 50, y: 64, label: "RB" },
-  { id: "off-wr-l", playerId: "jaxon-smith-njigba", x: 10, y: 52, label: "WR" },
-  { id: "off-wr-r", playerId: "dk-metcalf", x: 90, y: 52, label: "WR" },
-  { id: "off-wr-slot", playerId: "tyler-lockett", x: 25, y: 52, label: "WR" },
-  { id: "off-te", playerId: "noah-fant", x: 72, y: 52, label: "TE" },
-  { id: "off-lt", playerId: "charles-cross", x: 32, y: 56, label: "LT" },
-  { id: "off-lg", playerId: "laken-tomlinson", x: 40, y: 56, label: "LG" },
-  { id: "off-c", playerId: "connor-williams", x: 50, y: 56, label: "C" },
-  { id: "off-rg", playerId: "anthony-bradford", x: 60, y: 56, label: "RG" },
-  { id: "off-rt", playerId: "abe-lucas", x: 68, y: 56, label: "RT" },
+const OFFENSE_SLOTS: FieldSlot[] = [
+  { id: "off-wr-l", playerId: "jaxon-smith-njigba", x: 8, y: 54, label: "WR" },
+  { id: "off-wr-slot", playerId: "tyler-lockett", x: 22, y: 54, label: "WR" },
+  { id: "off-te", playerId: "noah-fant", x: 78, y: 54, label: "TE" },
+  { id: "off-wr-r", playerId: "dk-metcalf", x: 92, y: 54, label: "WR" },
+  { id: "off-lt", playerId: "charles-cross", x: 25, y: 66, label: "LT" },
+  { id: "off-lg", playerId: "laken-tomlinson", x: 37, y: 66, label: "LG" },
+  { id: "off-c", playerId: "connor-williams", x: 50, y: 66, label: "C" },
+  { id: "off-rg", playerId: "anthony-bradford", x: 63, y: 66, label: "RG" },
+  { id: "off-rt", playerId: "abe-lucas", x: 75, y: 66, label: "RT" },
+  { id: "off-qb", playerId: "geno-smith", x: 50, y: 78, label: "QB" },
+  { id: "off-rb", playerId: "kenneth-walker", x: 50, y: 90, label: "RB" },
 ];
 
-export const DEFENSE_FIELD_SLOTS: FieldSlot[] = [
-  { id: "def-de-l", playerId: "uchenna-nwosu", x: 30, y: 42, label: "DE" },
-  { id: "def-dt-l", playerId: "leonard-williams", x: 42, y: 42, label: "DT" },
-  { id: "def-dt-r", playerId: "jarran-reed", x: 58, y: 42, label: "DT" },
-  { id: "def-de-r", playerId: "boye-mafe", x: 70, y: 42, label: "DE" },
-  { id: "def-lb-w", playerId: "dre-greenlaw", x: 35, y: 35, label: "WLB" },
-  { id: "def-lb-m", playerId: "tyrel-dodson", x: 50, y: 35, label: "MLB" },
-  { id: "def-lb-s", playerId: "jerome-baker", x: 65, y: 35, label: "SLB" },
-  { id: "def-cb-l", playerId: "devon-witherspoon", x: 10, y: 28, label: "CB" },
-  { id: "def-cb-r", playerId: "riq-woolen", x: 90, y: 28, label: "CB" },
-  { id: "def-ss", playerId: "quandre-diggs", x: 35, y: 24, label: "SS" },
-  { id: "def-fs", playerId: "julian-love", x: 65, y: 24, label: "FS" },
+const DEFENSE_SLOTS: FieldSlot[] = [
+  { id: "def-ss", playerId: "quandre-diggs", x: 34, y: 8, label: "SS" },
+  { id: "def-fs", playerId: "julian-love", x: 66, y: 8, label: "FS" },
+  { id: "def-cb-l", playerId: "devon-witherspoon", x: 8, y: 20, label: "CB" },
+  { id: "def-cb-r", playerId: "riq-woolen", x: 92, y: 20, label: "CB" },
+  { id: "def-lb-w", playerId: "dre-greenlaw", x: 24, y: 32, label: "WLB" },
+  { id: "def-lb-m", playerId: "tyrel-dodson", x: 50, y: 32, label: "MLB" },
+  { id: "def-lb-s", playerId: "jerome-baker", x: 76, y: 32, label: "SLB" },
+  { id: "def-de-l", playerId: "uchenna-nwosu", x: 22, y: 44, label: "DE" },
+  { id: "def-dt-l", playerId: "leonard-williams", x: 42, y: 44, label: "DT" },
+  { id: "def-dt-r", playerId: "jarran-reed", x: 58, y: 44, label: "DT" },
+  { id: "def-de-r", playerId: "boye-mafe", x: 78, y: 44, label: "DE" },
 ];
 
-// Special teams uses a simplified field — returners deep, kicking unit at scrimmage.
-export const SPECIAL_TEAMS_FIELD_SLOTS: FieldSlot[] = [
+const SPECIAL_SLOTS: FieldSlot[] = [
   { id: "st-kr", playerId: "laviska-shenault", x: 30, y: 18, label: "KR" },
   { id: "st-pr", playerId: "jaxon-smith-njigba", x: 70, y: 18, label: "PR" },
   { id: "st-ls", playerId: "chris-stoll", x: 50, y: 68, label: "LS" },
@@ -801,13 +769,24 @@ export const SPECIAL_TEAMS_FIELD_SLOTS: FieldSlot[] = [
   { id: "st-p", playerId: "michael-dickson", x: 62, y: 80, label: "P" },
 ];
 
-// ───────── LOOKUPS ─────────
-export function getPlayerById(id: string): Player | undefined {
-  return SEAHAWKS_PLAYERS.find((p) => p.id === id);
-}
-
-export function getPlayersByPosition(position: Position): Player[] {
-  return SEAHAWKS_PLAYERS.filter((p) => p.position === position).sort(
-    (a, b) => a.depthRank - b.depthRank,
-  );
-}
+export const SEAHAWKS: TeamRoster = {
+  team: {
+    id: "seahawks",
+    city: "Seattle",
+    name: "Seahawks",
+    abbrev: "SEA",
+    conference: "NFC",
+    division: "West",
+    colors: {
+      primary: "#002244",
+      secondary: "#69BE28",
+      accent: "#A5ACAF",
+    },
+  },
+  players: PLAYERS,
+  formations: {
+    offense: OFFENSE_SLOTS,
+    defense: DEFENSE_SLOTS,
+    special: SPECIAL_SLOTS,
+  },
+};

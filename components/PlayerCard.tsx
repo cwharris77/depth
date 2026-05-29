@@ -2,12 +2,15 @@
 
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
-import { Player } from "@/lib/seahawks-depth-chart";
+import { X, Check } from "lucide-react";
+import type { Player, TeamRoster } from "@/lib/types";
+import { getPlayersByPosition } from "@/lib/teams";
 
 interface PlayerCardProps {
   player: Player | null;
+  roster: TeamRoster;
   onClose: () => void;
+  onSelectPlayer?: (player: Player) => void;
 }
 
 const statusLabel: Record<string, string> = {
@@ -24,8 +27,18 @@ const statusColor: Record<string, string> = {
   injured: "#ef5350",
 };
 
-export default function PlayerCard({ player, onClose }: PlayerCardProps) {
-  // Lock scroll when open
+const depthRankLabel: Record<number, string> = {
+  1: "STARTER",
+  2: "BACKUP",
+  3: "3RD STRING",
+};
+
+export default function PlayerCard({
+  player,
+  roster,
+  onClose,
+  onSelectPlayer,
+}: PlayerCardProps) {
   useEffect(() => {
     if (player) {
       document.body.classList.add("card-open");
@@ -35,25 +48,29 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
     return () => document.body.classList.remove("card-open");
   }, [player]);
 
+  const depthChart = player ? getPlayersByPosition(roster, player.position) : [];
+
   return (
     <AnimatePresence>
       {player && (
         <>
-          {/* Backdrop */}
           <motion.div
             className="fixed inset-0 z-40"
-            style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
+            style={{
+              background: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(4px)",
+            }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
           />
 
-          {/* Card — slides up from bottom */}
           <motion.div
             className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl overflow-hidden"
             style={{
-              background: "linear-gradient(180deg, #0f1a2e 0%, #0a0e1a 100%)",
+              background:
+                "linear-gradient(180deg, #0f1a2e 0%, #0a0e1a 100%)",
               borderTop: "1px solid rgba(105,190,40,0.3)",
               maxHeight: "82vh",
             }}
@@ -62,28 +79,38 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 350, damping: 38 }}
           >
-            {/* Handle */}
             <div className="flex justify-center pt-3 pb-1">
               <div
                 className="rounded-full"
-                style={{ width: 36, height: 4, background: "rgba(255,255,255,0.2)" }}
+                style={{
+                  width: 36,
+                  height: 4,
+                  background: "rgba(255,255,255,0.2)",
+                }}
               />
             </div>
 
-            <div className="overflow-y-auto" style={{ maxHeight: "calc(82vh - 32px)" }}>
-              {/* Header */}
+            <div
+              className="overflow-y-auto"
+              style={{ maxHeight: "calc(82vh - 32px)" }}
+            >
               <div className="flex items-start justify-between px-6 pt-4 pb-2">
                 <div>
-                  {/* Jersey number */}
                   <div
                     className="text-6xl font-black leading-none"
-                    style={{ color: "rgba(105,190,40,0.15)", letterSpacing: "-0.03em" }}
+                    style={{
+                      color: "rgba(105,190,40,0.15)",
+                      letterSpacing: "-0.03em",
+                    }}
                   >
                     #{player.number}
                   </div>
                   <div
                     className="text-2xl font-black leading-tight -mt-4"
-                    style={{ color: "#f0f4ff", letterSpacing: "-0.01em" }}
+                    style={{
+                      color: "#f0f4ff",
+                      letterSpacing: "-0.01em",
+                    }}
                   >
                     {player.name}
                   </div>
@@ -110,13 +137,15 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                 <button
                   onClick={onClose}
                   className="rounded-full p-2 mt-1"
-                  style={{ background: "rgba(255,255,255,0.08)" }}
+                  style={{
+                    background: "rgba(255,255,255,0.08)",
+                    touchAction: "manipulation",
+                  }}
                 >
                   <X size={18} color="#A5ACAF" />
                 </button>
               </div>
 
-              {/* Quick stats row */}
               <div
                 className="mx-6 my-4 rounded-2xl grid grid-cols-4 divide-x"
                 style={{
@@ -130,7 +159,10 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                   { label: "HT", value: player.height },
                   { label: "WT", value: `${player.weight}` },
                 ].map((stat) => (
-                  <div key={stat.label} className="flex flex-col items-center py-3">
+                  <div
+                    key={stat.label}
+                    className="flex flex-col items-center py-3"
+                  >
                     <div
                       className="text-[10px] font-semibold"
                       style={{ color: "#A5ACAF", letterSpacing: "0.08em" }}
@@ -147,7 +179,6 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                 ))}
               </div>
 
-              {/* College */}
               <div className="px-6 mb-3">
                 <span
                   className="text-xs font-semibold"
@@ -163,7 +194,6 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                 </span>
               </div>
 
-              {/* Bio */}
               <div className="px-6 mb-4">
                 <p
                   className="text-sm leading-relaxed"
@@ -173,9 +203,8 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                 </p>
               </div>
 
-              {/* Season Stats */}
               {player.stats && Object.keys(player.stats).length > 0 && (
-                <div className="px-6 mb-8">
+                <div className="px-6 mb-6">
                   <div
                     className="text-[10px] font-semibold mb-3"
                     style={{ color: "#A5ACAF", letterSpacing: "0.1em" }}
@@ -207,6 +236,80 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {depthChart.length > 1 && (
+                <div className="px-6 pb-8">
+                  <div
+                    className="text-[10px] font-semibold mb-3"
+                    style={{ color: "#A5ACAF", letterSpacing: "0.1em" }}
+                  >
+                    POSITION DEPTH · {player.position}
+                  </div>
+                  <div
+                    className="rounded-2xl overflow-hidden"
+                    style={{
+                      background: "rgba(255,255,255,0.03)",
+                      border: "1px solid rgba(255,255,255,0.06)",
+                    }}
+                  >
+                    {depthChart.map((p, i) => {
+                      const isCurrent = p.id === player.id;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() =>
+                            !isCurrent && onSelectPlayer?.(p)
+                          }
+                          className="w-full flex items-center gap-3 px-4 py-3 text-left"
+                          style={{
+                            background: isCurrent
+                              ? "rgba(105,190,40,0.10)"
+                              : "transparent",
+                            borderTop:
+                              i === 0
+                                ? "none"
+                                : "1px solid rgba(255,255,255,0.05)",
+                            touchAction: "manipulation",
+                            cursor: isCurrent ? "default" : "pointer",
+                          }}
+                        >
+                          <div
+                            className="text-[10px] font-bold"
+                            style={{
+                              color: statusColor[p.status],
+                              letterSpacing: "0.08em",
+                              minWidth: 64,
+                            }}
+                          >
+                            {depthRankLabel[p.depthRank]}
+                          </div>
+                          <div
+                            className="text-xs font-bold"
+                            style={{
+                              color: "rgba(165,172,175,0.7)",
+                              minWidth: 28,
+                            }}
+                          >
+                            #{p.number}
+                          </div>
+                          <div
+                            className="flex-1 text-sm font-bold truncate"
+                            style={{
+                              color: isCurrent ? "#69BE28" : "#f0f4ff",
+                            }}
+                          >
+                            {p.name}
+                          </div>
+                          {isCurrent && (
+                            <Check size={14} color="#69BE28" strokeWidth={3} />
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
