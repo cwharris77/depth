@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Check } from "lucide-react";
 import type { Player, TeamRoster } from "@/lib/types";
 import { getPlayersByPosition } from "@/lib/teams";
+import { statusColor } from "@/lib/colors";
 
 interface PlayerCardProps {
   player: Player | null;
@@ -20,13 +21,6 @@ const statusLabel: Record<string, string> = {
   injured: "INJURED",
 };
 
-const statusColor: Record<string, string> = {
-  starter: "#69BE28",
-  backup: "#A5ACAF",
-  rookie: "#4fc3f7",
-  injured: "#ef5350",
-};
-
 const depthRankLabel: Record<number, string> = {
   1: "STARTER",
   2: "BACKUP",
@@ -39,6 +33,10 @@ export default function PlayerCard({
   onClose,
   onSelectPlayer,
 }: PlayerCardProps) {
+  // uiAccent is curated to read on the dark card; the alpha suffixes tint it for
+  // borders/watermarks. onAccent isn't needed here (card surfaces are dark).
+  const colors = roster.team.colors;
+  const accent = colors.uiAccent;
   useEffect(() => {
     if (player) {
       document.body.classList.add("card-open");
@@ -71,7 +69,7 @@ export default function PlayerCard({
             style={{
               background:
                 "linear-gradient(180deg, #0f1a2e 0%, #0a0e1a 100%)",
-              borderTop: "1px solid rgba(105,190,40,0.3)",
+              borderTop: `1px solid ${accent}4d`,
               maxHeight: "82vh",
             }}
             initial={{ y: "100%" }}
@@ -99,7 +97,7 @@ export default function PlayerCard({
                   <div
                     className="text-6xl font-black leading-none"
                     style={{
-                      color: "rgba(105,190,40,0.15)",
+                      color: `${accent}26`,
                       letterSpacing: "-0.03em",
                     }}
                   >
@@ -119,15 +117,15 @@ export default function PlayerCard({
                       className="text-xs font-bold px-2 py-0.5 rounded-full"
                       style={{
                         background: "rgba(0,34,68,0.8)",
-                        color: "#69BE28",
-                        border: "1px solid rgba(105,190,40,0.4)",
+                        color: accent,
+                        border: `1px solid ${accent}66`,
                       }}
                     >
                       {player.position}
                     </span>
                     <span
                       className="text-xs font-bold"
-                      style={{ color: statusColor[player.status] }}
+                      style={{ color: statusColor(player.status, colors) }}
                     >
                       {statusLabel[player.status]}
                     </span>
@@ -218,13 +216,13 @@ export default function PlayerCard({
                         className="flex flex-col items-center rounded-xl px-4 py-2"
                         style={{
                           background: "rgba(0,34,68,0.5)",
-                          border: "1px solid rgba(105,190,40,0.2)",
+                          border: `1px solid ${accent}33`,
                           minWidth: 64,
                         }}
                       >
                         <div
                           className="text-xl font-black"
-                          style={{ color: "#69BE28" }}
+                          style={{ color: accent }}
                         >
                           {val}
                         </div>
@@ -266,9 +264,7 @@ export default function PlayerCard({
                           }
                           className="w-full flex items-center gap-3 px-4 py-3 text-left"
                           style={{
-                            background: isCurrent
-                              ? "rgba(105,190,40,0.10)"
-                              : "transparent",
+                            background: isCurrent ? `${accent}1a` : "transparent",
                             borderTop:
                               i === 0
                                 ? "none"
@@ -280,7 +276,7 @@ export default function PlayerCard({
                           <div
                             className="text-[10px] font-bold"
                             style={{
-                              color: statusColor[p.status],
+                              color: statusColor(p.status, colors),
                               letterSpacing: "0.08em",
                               minWidth: 64,
                             }}
@@ -299,13 +295,13 @@ export default function PlayerCard({
                           <div
                             className="flex-1 text-sm font-bold truncate"
                             style={{
-                              color: isCurrent ? "#69BE28" : "#f0f4ff",
+                              color: isCurrent ? accent : "#f0f4ff",
                             }}
                           >
                             {p.name}
                           </div>
                           {isCurrent && (
-                            <Check size={14} color="#69BE28" strokeWidth={3} />
+                            <Check size={14} color={accent} strokeWidth={3} />
                           )}
                         </button>
                       );
