@@ -27,20 +27,50 @@ export interface Player {
   stats?: Record<string, string | number>;
 }
 
-// FieldSlot = where on the field a player lines up.
-// x/y are percentages (0–100). y=0 top, y=100 bottom. Scrimmage line at y=50.
-export interface FieldSlot {
+// Field coords are percentages (0–100). y=0 top, y=100 bottom. Scrimmage line at y=50.
+
+// FormationSlot = a spot in the SHARED offense/defense layout. It resolves to a
+// player by position group + depth index, so any roster fills the same formation
+// with zero per-team layout work. index 0 = first at that position, 1 = second, ...
+export interface FormationSlot {
   id: string;
-  playerId: string;
+  position: Position;
+  index: number;
   x: number;
   y: number;
   label: string;
 }
 
+// SpecialSlot = a special-teams spot. Returners (KR/PR) are editorial cross-position
+// picks that can't be derived from a Position, so special teams carries explicit
+// player references in the roster data (source-provided). playerId null → empty slot.
+export interface SpecialSlot {
+  id: string;
+  playerId: string | null;
+  x: number;
+  y: number;
+  label: string;
+}
+
+// What the field renderer needs for one dot, after resolution.
+export interface RenderSlot {
+  key: string;
+  x: number;
+  y: number;
+  label: string;
+  player?: Player;
+}
+
 export interface TeamColors {
+  // Brand-true colors. Safe for large, controlled-contrast areas (field tint, header).
   primary: string;
   secondary: string;
   accent: string;
+  // uiAccent is curated to read on the dark app background (#0a0e1a). It drives text,
+  // player dots, selection rings, and stat accents. onAccent is the text color used on
+  // top of uiAccent. These guarantee legibility across all 32 teams.
+  uiAccent: string;
+  onAccent: string;
 }
 
 export interface Team {
@@ -56,5 +86,7 @@ export interface Team {
 export interface TeamRoster {
   team: Team;
   players: Player[];
-  formations: Record<Unit, FieldSlot[]>;
+  // Offense/defense come from the shared formation (lib/formations). Special teams is
+  // per-team and editorial, so it lives here.
+  specialTeams: SpecialSlot[];
 }

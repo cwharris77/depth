@@ -1,4 +1,4 @@
-import type { Player, FieldSlot, TeamRoster } from "../types";
+import type { Player, SpecialSlot, TeamRoster } from "../types";
 
 const PLAYERS: Player[] = [
   // ───────── OFFENSE ─────────
@@ -730,38 +730,10 @@ const PLAYERS: Player[] = [
   },
 ];
 
-// Field layout coords: x = 0–100 (% across), y = 0–100 (% down).
-// y=50 is the line of scrimmage. Defense y < 50, offense y > 50.
-
-const OFFENSE_SLOTS: FieldSlot[] = [
-  { id: "off-wr-l", playerId: "jaxon-smith-njigba", x: 8, y: 54, label: "WR" },
-  { id: "off-wr-slot", playerId: "tyler-lockett", x: 22, y: 54, label: "WR" },
-  { id: "off-te", playerId: "noah-fant", x: 78, y: 54, label: "TE" },
-  { id: "off-wr-r", playerId: "dk-metcalf", x: 92, y: 54, label: "WR" },
-  { id: "off-lt", playerId: "charles-cross", x: 25, y: 66, label: "LT" },
-  { id: "off-lg", playerId: "laken-tomlinson", x: 37, y: 66, label: "LG" },
-  { id: "off-c", playerId: "connor-williams", x: 50, y: 66, label: "C" },
-  { id: "off-rg", playerId: "anthony-bradford", x: 63, y: 66, label: "RG" },
-  { id: "off-rt", playerId: "abe-lucas", x: 75, y: 66, label: "RT" },
-  { id: "off-qb", playerId: "geno-smith", x: 50, y: 78, label: "QB" },
-  { id: "off-rb", playerId: "kenneth-walker", x: 50, y: 90, label: "RB" },
-];
-
-const DEFENSE_SLOTS: FieldSlot[] = [
-  { id: "def-ss", playerId: "quandre-diggs", x: 34, y: 8, label: "SS" },
-  { id: "def-fs", playerId: "julian-love", x: 66, y: 8, label: "FS" },
-  { id: "def-cb-l", playerId: "devon-witherspoon", x: 8, y: 20, label: "CB" },
-  { id: "def-cb-r", playerId: "riq-woolen", x: 92, y: 20, label: "CB" },
-  { id: "def-lb-w", playerId: "dre-greenlaw", x: 24, y: 32, label: "WLB" },
-  { id: "def-lb-m", playerId: "tyrel-dodson", x: 50, y: 32, label: "MLB" },
-  { id: "def-lb-s", playerId: "jerome-baker", x: 76, y: 32, label: "SLB" },
-  { id: "def-de-l", playerId: "uchenna-nwosu", x: 22, y: 44, label: "DE" },
-  { id: "def-dt-l", playerId: "leonard-williams", x: 42, y: 44, label: "DT" },
-  { id: "def-dt-r", playerId: "jarran-reed", x: 58, y: 44, label: "DT" },
-  { id: "def-de-r", playerId: "boye-mafe", x: 78, y: 44, label: "DE" },
-];
-
-const SPECIAL_SLOTS: FieldSlot[] = [
+// Special teams is editorial (returners are cross-position picks), so it's explicit
+// per-team. Offense/defense use the shared formation in lib/formations.ts.
+// Coords: x = 0–100 (% across), y = 0–100 (% down). playerId null → empty slot.
+const SPECIAL_TEAMS: SpecialSlot[] = [
   { id: "st-kr", playerId: "laviska-shenault", x: 30, y: 18, label: "KR" },
   { id: "st-pr", playerId: "jaxon-smith-njigba", x: 70, y: 18, label: "PR" },
   { id: "st-ls", playerId: "chris-stoll", x: 50, y: 68, label: "LS" },
@@ -781,12 +753,10 @@ export const SEAHAWKS: TeamRoster = {
       primary: "#002244",
       secondary: "#69BE28",
       accent: "#A5ACAF",
+      uiAccent: "#69BE28",
+      onAccent: "#0a0e1a",
     },
   },
   players: PLAYERS,
-  formations: {
-    offense: OFFENSE_SLOTS,
-    defense: DEFENSE_SLOTS,
-    special: SPECIAL_SLOTS,
-  },
+  specialTeams: SPECIAL_TEAMS,
 };

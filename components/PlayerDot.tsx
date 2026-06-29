@@ -1,25 +1,21 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { Player, FieldSlot, Unit } from "@/lib/types";
+import type { Player, RenderSlot, TeamColors, Unit } from "@/lib/types";
+import { statusColor } from "@/lib/colors";
 
 interface PlayerDotProps {
   player: Player;
-  slot: FieldSlot;
+  slot: RenderSlot;
   isSelected: boolean;
   onClick: (player: Player) => void;
   side: Unit;
   teamPrimary: string;
-  teamSecondary: string;
+  teamColors: TeamColors;
 }
 
-const statusColors: Record<string, string> = {
-  starter: "#69BE28",
-  backup: "#A5ACAF",
-  rookie: "#4fc3f7",
-  injured: "#ef5350",
-};
-
+// Defense/special dot backgrounds stay fixed dark tones; offense uses the team's
+// (controlled-contrast) primary. The dot number is always white on these dark fills.
 const bgBySide: Record<Unit, string> = {
   offense: "#002244",
   defense: "#1a0a2e",
@@ -43,17 +39,18 @@ export default function PlayerDot({
   onClick,
   side,
   teamPrimary,
-  teamSecondary,
+  teamColors,
 }: PlayerDotProps) {
-  const borderColor = isSelected
-    ? "#fff"
-    : statusColors[player.status] ?? teamSecondary;
+  const borderColor = isSelected ? "#fff" : statusColor(player.status, teamColors);
 
   const bg = isSelected
-    ? teamSecondary
+    ? teamColors.uiAccent
     : side === "offense"
     ? teamPrimary
     : bgBySide[side];
+
+  // When selected the fill is uiAccent, so the number needs the on-accent text color.
+  const numberColor = isSelected ? teamColors.onAccent : "#fff";
 
   return (
     <button
@@ -74,15 +71,16 @@ export default function PlayerDot({
       onClick={() => onClick(player)}
     >
       <motion.div
-        className="rounded-full flex items-center justify-center text-white font-bold leading-none select-none"
+        className="rounded-full flex items-center justify-center font-bold leading-none select-none"
         style={{
           width: 30,
           height: 30,
           fontSize: 11,
+          color: numberColor,
           background: bg,
           border: `2px solid ${borderColor}`,
           boxShadow: isSelected
-            ? "0 0 0 3px rgba(105,190,40,0.4)"
+            ? `0 0 0 3px ${teamColors.uiAccent}66`
             : "0 2px 8px rgba(0,0,0,0.5)",
         }}
         animate={{ scale: isSelected ? 1.18 : 1 }}
@@ -100,7 +98,7 @@ export default function PlayerDot({
         </div>
         <div
           className="text-[9px] font-bold truncate leading-tight"
-          style={{ color: isSelected ? teamSecondary : "#f0f4ff" }}
+          style={{ color: isSelected ? teamColors.uiAccent : "#f0f4ff" }}
         >
           {lastName(player.name)}
         </div>

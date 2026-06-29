@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import type { Player, Unit } from "@/lib/types";
-import { getActiveTeam, getPlayerById } from "@/lib/teams";
+import { getActiveTeam } from "@/lib/teams";
+import { resolveUnit } from "@/lib/formations";
 import PlayerDot from "./PlayerDot";
 import PlayerCard from "./PlayerCard";
 
@@ -18,7 +19,7 @@ export default function DepthChartField() {
 
   const roster = getActiveTeam();
   const { team } = roster;
-  const slots = roster.formations[activeUnit];
+  const slots = resolveUnit(roster, activeUnit);
 
   const handlePlayerClick = (player: Player) => {
     setSelectedPlayer((prev) => (prev?.id === player.id ? null : player));
@@ -45,7 +46,7 @@ export default function DepthChartField() {
         <div>
           <div
             className="text-[10px] font-semibold tracking-widest"
-            style={{ color: team.colors.secondary }}
+            style={{ color: team.colors.uiAccent }}
           >
             {team.city.toUpperCase()} {team.name.toUpperCase()}
           </div>
@@ -72,10 +73,10 @@ export default function DepthChartField() {
                 background:
                   activeUnit === unit ? team.colors.primary : "transparent",
                 color:
-                  activeUnit === unit ? team.colors.secondary : "#A5ACAF",
+                  activeUnit === unit ? team.colors.uiAccent : "#A5ACAF",
                 border:
                   activeUnit === unit
-                    ? `1px solid ${team.colors.secondary}66`
+                    ? `1px solid ${team.colors.uiAccent}66`
                     : "1px solid transparent",
                 touchAction: "manipulation",
               }}
@@ -105,18 +106,18 @@ export default function DepthChartField() {
           <FieldMarkings />
 
           {slots.map((slot) => {
-            const player = getPlayerById(roster, slot.playerId);
+            const player = slot.player;
             if (!player) return null;
             return (
               <PlayerDot
-                key={slot.id}
+                key={slot.key}
                 player={player}
                 slot={slot}
                 isSelected={selectedPlayer?.id === player.id}
                 onClick={handlePlayerClick}
                 side={activeUnit}
                 teamPrimary={team.colors.primary}
-                teamSecondary={team.colors.secondary}
+                teamColors={team.colors}
               />
             );
           })}
@@ -143,7 +144,7 @@ export default function DepthChartField() {
           style={{ flex: "0 0 auto" }}
         >
           {[
-            { label: "Starter", color: team.colors.secondary },
+            { label: "Starter", color: team.colors.uiAccent },
             { label: "Rookie", color: "#4fc3f7" },
             { label: "Injured", color: "#ef5350" },
           ].map(({ label, color }) => (
