@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import DepthChartField from "@/components/DepthChartField";
+import RememberTeam from "@/components/RememberTeam";
 import { staticRosterSource } from "@/lib/roster-source";
 
 type Params = { params: Promise<{ id: string }> };
@@ -32,5 +33,11 @@ export default async function TeamPage({ params }: Params) {
   if (!roster) {
     notFound();
   }
-  return <DepthChartField roster={roster} />;
+  // RememberTeam records this team in localStorage (5a) so the home route reopens it.
+  return (
+    <>
+      <RememberTeam id={id} />
+      <DepthChartField roster={roster} />
+    </>
+  );
 }
