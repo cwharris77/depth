@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { Player, RenderSlot, TeamColors } from "@/lib/types";
-import { readableTextOn, statusColor } from "@/lib/colors";
+import { readableTextOn } from "@/lib/colors";
 
 interface PlayerDotProps {
   player: Player;
@@ -31,10 +31,10 @@ export default function PlayerDot({
   teamPrimary,
   teamColors,
 }: PlayerDotProps) {
-  const borderColor = isSelected ? "#fff" : statusColor(player.status, teamColors);
-
-  // Every dot uses the team's real primary color (not a per-unit invented tone) so
-  // the icon never shows a color the team doesn't have. Selection swaps to uiAccent.
+  // Team-identity dot: real primary fill, real accent (secondary) ring — e.g. the
+  // Chargers read as electric-blue center, gold ring. Selection swaps to a white
+  // ring + uiAccent fill so it stays distinct from the resting team colors.
+  const borderColor = isSelected ? "#fff" : teamColors.secondary;
   const bg = isSelected ? teamColors.uiAccent : teamPrimary;
 
   // Contrast handled on the text, not the icon: white or near-black on the fill.

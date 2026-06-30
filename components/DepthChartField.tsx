@@ -171,28 +171,6 @@ export default function DepthChartField({ roster }: { roster: TeamRoster }) {
             LINE OF SCRIMMAGE
           </div>
         </div>
-
-        {/* Legend */}
-        <div
-          className="flex gap-4 justify-center mt-2 flex-wrap"
-          style={{ flex: "0 0 auto" }}
-        >
-          {[
-            { label: "Starter", color: team.colors.uiAccent },
-            { label: "Rookie", color: "#4fc3f7" },
-            { label: "Injured", color: "#ef5350" },
-          ].map(({ label, color }) => (
-            <div key={label} className="flex items-center gap-1.5">
-              <div
-                className="rounded-full"
-                style={{ width: 7, height: 7, background: color }}
-              />
-              <span className="text-[10px]" style={{ color: "#A5ACAF" }}>
-                {label}
-              </span>
-            </div>
-          ))}
-        </div>
       </div>
 
       <AnimatePresence>
