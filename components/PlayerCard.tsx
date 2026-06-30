@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Check } from "lucide-react";
 import type { Player, TeamRoster } from "@/lib/types";
-import { getPlayersByPosition } from "@/lib/teams";
+import { getPlayersByPosition } from "@/lib/roster";
 import { statusColor } from "@/lib/colors";
 
 interface PlayerCardProps {

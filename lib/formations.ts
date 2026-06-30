@@ -1,5 +1,5 @@
 import type { FormationSlot, RenderSlot, TeamRoster, Unit } from "./types";
-import { getPlayerById, getPlayersByPosition } from "./teams";
+import { getPlayerById, getPlayersByPosition } from "./roster";
 
 // Shared, generic formations. Every team's offense/defense renders on these — slots
 // resolve to players by position group + depth index, so adding a team is data-only.
