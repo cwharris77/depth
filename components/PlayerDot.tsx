@@ -79,16 +79,22 @@ export default function PlayerDot({
         {player.number}
       </motion.div>
 
-      <div className="mt-1 text-center" style={{ width: 44 }}>
+      {/* Position + name. Hidden on a narrow field (number-only); shown when the field
+          is wide enough (.dot-label container query in globals.css). Wraps instead of
+          truncating so long names like "Smith-Njigba" stay readable. */}
+      <div className="dot-label mt-1 text-center" style={{ maxWidth: 72 }}>
         <div
-          className="text-[8px] font-semibold truncate"
+          className="text-[8px] font-semibold"
           style={{ color: "#A5ACAF", letterSpacing: "0.05em" }}
         >
           {slot.label}
         </div>
         <div
-          className="text-[9px] font-bold truncate leading-tight"
-          style={{ color: isSelected ? teamColors.uiAccent : "#f0f4ff" }}
+          className="text-[9px] font-bold leading-tight"
+          style={{
+            color: isSelected ? teamColors.uiAccent : "#f0f4ff",
+            overflowWrap: "anywhere",
+          }}
         >
           {lastName(player.name)}
         </div>

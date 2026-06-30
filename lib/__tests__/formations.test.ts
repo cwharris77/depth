@@ -147,4 +147,15 @@ describe("formations are well-formed", () => {
     expect(new Set(offIds).size).toBe(offIds.length);
     expect(new Set(defIds).size).toBe(defIds.length);
   });
+
+  it("offense has exactly 7 players on the line of scrimmage", () => {
+    expect(OFFENSE_FORMATION.filter((s) => s.onLine).length).toBe(7);
+  });
+
+  it("the 5 interior offensive linemen are always on the line", () => {
+    const ol = new Set(["LT", "LG", "C", "RG", "RT"]);
+    const olSlots = OFFENSE_FORMATION.filter((s) => ol.has(s.position));
+    expect(olSlots).toHaveLength(5);
+    expect(olSlots.every((s) => s.onLine)).toBe(true);
+  });
 });
