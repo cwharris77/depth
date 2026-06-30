@@ -36,3 +36,12 @@ export function contrastRatio(a: string, b: string): number {
   const [hi, lo] = la > lb ? [la, lb] : [lb, la];
   return (hi + 0.05) / (lo + 0.05);
 }
+
+// Pick readable text (white or near-black) for an arbitrary background. Lets the OG
+// card put text on a team's brand primary safely, whatever that primary is.
+const LIGHT_TEXT = "#ffffff";
+export function readableTextOn(bg: string): string {
+  return contrastRatio(LIGHT_TEXT, bg) >= contrastRatio(DARK_BG, bg)
+    ? LIGHT_TEXT
+    : DARK_BG;
+}

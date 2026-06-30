@@ -12,7 +12,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Absolute base for generated OG/Twitter image URLs. Set NEXT_PUBLIC_SITE_URL in
+// production; falls back to localhost for dev/build so the URLs still resolve.
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Depth · NFL Depth Charts",
   description:
     "Interactive, mobile-first NFL depth charts. Pick a team and explore the roster on the field.",
