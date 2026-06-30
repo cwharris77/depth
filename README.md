@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# depth
 
-## Getting Started
+Interactive NFL depth chart viewer — pick any of the 32 teams, tap any player for bio and stats.
 
-First, run the development server:
+**Stack:** Next.js 16.2.6 · React 19 · TypeScript · Tailwind · Framer Motion · Vitest
+
+## Routes
+
+| Route | What |
+|-------|------|
+| `/` | Redirects to the default team (Seahawks until 5a lands) |
+| `/team/[id]` | Depth chart for one team — fully static, one roster per page |
+
+## Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev    # dev server
+npm run build  # production build
+npm test       # vitest run
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Where we are
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Phases 0–4 and cherry-picks 5b/5c are shipped. What's left:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Item | What | Status |
+|------|------|--------|
+| **5a** | "My team" — remember last team in `localStorage`; home opens it | **next up** |
+| **5d** | Two-team compare — side-by-side depth at a position across two teams | not started |
+| **5e** | Real player photos — ESPN headshots on dots/cards | needs Phase 6 |
+| **6** | ESPN `ApiRosterSource` — build-time fetch, drop-in for `StaticRosterSource` | not started |
+| **7** | Multiple uniforms per team (home/away/color rush) | not started |
 
-## Learn More
+See [`Projects/depth/Roadmap.md`](../obsidian/Projects/depth/Roadmap.md) in the Obsidian vault for full phase specs, design decisions, and ESPN API research.
 
-To learn more about Next.js, take a look at the following resources:
+## Data
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Static rosters live in `lib/teams/`. They're a point-in-time snapshot — accurate at build time, not live. The `RosterSource` interface (`lib/roster-source.ts`) is the seam: swapping in `ApiRosterSource` for Phase 6 requires no UI changes.
