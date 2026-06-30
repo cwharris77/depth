@@ -39,6 +39,10 @@ export interface FormationSlot {
   x: number;
   y: number;
   label: string;
+  // True if this slot lines up on the line of scrimmage. Offense must have exactly 7
+  // on the line (5 OL + 2 eligible). A quick-fix base look for now; real per-team
+  // formations come later (see Future Ideas in the vault).
+  onLine: boolean;
 }
 
 // SpecialSlot = a special-teams spot. Returners (KR/PR) are editorial cross-position
