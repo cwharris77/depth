@@ -26,14 +26,3 @@ body.card-open {
   overflow: hidden;
 }
 
-/* Player labels under each dot: number-only on narrow screens (mobile-first, so long
-   names never clip); the position + name appear once the screen has room. */
-.dot-label {
-  display: none;
-}
-
-@media (min-width: 720px) {
-  .dot-label {
-    display: block;
-  }
-}

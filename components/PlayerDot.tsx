@@ -42,6 +42,11 @@ export default function PlayerDot({
     ? teamColors.onAccent
     : readableTextOn(teamPrimary);
 
+  // Dots are positioned by their center. On-line players would straddle the line of
+  // scrimmage, so push them a circle-radius (+a hair) onto their own side: offense
+  // (y past 50) down, defense (y before 50) up. Keeps the whole circle behind the line.
+  const lineOffset = slot.onLine ? (slot.y >= 50 ? 18 : -18) : 0;
+
   return (
     <button
       type="button"
@@ -49,7 +54,7 @@ export default function PlayerDot({
       style={{
         left: `${slot.x}%`,
         top: `${slot.y}%`,
-        transform: "translate(-50%, -50%)",
+        transform: `translate(-50%, calc(-50% + ${lineOffset}px))`,
         zIndex: isSelected ? 20 : 10,
         touchAction: "manipulation",
         WebkitTapHighlightColor: "transparent",
@@ -82,7 +87,7 @@ export default function PlayerDot({
       {/* Position + name. Hidden on a narrow field (number-only); shown when the field
           is wide enough (.dot-label container query in globals.css). Wraps instead of
           truncating so long names like "Smith-Njigba" stay readable. */}
-      <div className="dot-label mt-1 text-center" style={{ maxWidth: 72 }}>
+      <div className="hidden min-[720px]:block mt-1 text-center" style={{ maxWidth: 72 }}>
         <div
           className="text-[8px] font-semibold"
           style={{ color: "#A5ACAF", letterSpacing: "0.05em" }}
