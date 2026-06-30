@@ -63,6 +63,9 @@ export interface RenderSlot {
   y: number;
   label: string;
   player?: Player;
+  // On the line of scrimmage. The renderer nudges these dots fully onto their own
+  // side so the circle sits behind the line instead of straddling it.
+  onLine?: boolean;
 }
 
 export interface TeamColors {
