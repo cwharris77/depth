@@ -1,26 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { Player, RenderSlot, TeamColors, Unit } from "@/lib/types";
-import { statusColor } from "@/lib/colors";
+import type { Player, RenderSlot, TeamColors } from "@/lib/types";
+import { readableTextOn, statusColor } from "@/lib/colors";
 
 interface PlayerDotProps {
   player: Player;
   slot: RenderSlot;
   isSelected: boolean;
   onClick: (player: Player) => void;
-  side: Unit;
   teamPrimary: string;
   teamColors: TeamColors;
 }
-
-// Defense/special dot backgrounds stay fixed dark tones; offense uses the team's
-// (controlled-contrast) primary. The dot number is always white on these dark fills.
-const bgBySide: Record<Unit, string> = {
-  offense: "#002244",
-  defense: "#1a0a2e",
-  special: "#3a2a05",
-};
 
 const NAME_SUFFIXES = new Set(["jr", "jr.", "sr", "sr.", "ii", "iii", "iv", "v"]);
 
@@ -37,20 +28,19 @@ export default function PlayerDot({
   slot,
   isSelected,
   onClick,
-  side,
   teamPrimary,
   teamColors,
 }: PlayerDotProps) {
   const borderColor = isSelected ? "#fff" : statusColor(player.status, teamColors);
 
-  const bg = isSelected
-    ? teamColors.uiAccent
-    : side === "offense"
-    ? teamPrimary
-    : bgBySide[side];
+  // Every dot uses the team's real primary color (not a per-unit invented tone) so
+  // the icon never shows a color the team doesn't have. Selection swaps to uiAccent.
+  const bg = isSelected ? teamColors.uiAccent : teamPrimary;
 
-  // When selected the fill is uiAccent, so the number needs the on-accent text color.
-  const numberColor = isSelected ? teamColors.onAccent : "#fff";
+  // Contrast handled on the text, not the icon: white or near-black on the fill.
+  const numberColor = isSelected
+    ? teamColors.onAccent
+    : readableTextOn(teamPrimary);
 
   return (
     <button
