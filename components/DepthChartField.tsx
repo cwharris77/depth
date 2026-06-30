@@ -150,7 +150,6 @@ export default function DepthChartField({ roster }: { roster: TeamRoster }) {
                 slot={slot}
                 isSelected={selectedPlayer?.id === player.id}
                 onClick={handlePlayerClick}
-                side={activeUnit}
                 teamPrimary={team.colors.primary}
                 teamColors={team.colors}
               />
