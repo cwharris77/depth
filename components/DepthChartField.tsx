@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Player, Unit } from "@/lib/types";
-import { getActiveTeam } from "@/lib/teams";
+import type { Player, TeamRoster, Unit } from "@/lib/types";
 import { resolveUnit } from "@/lib/formations";
 import PlayerDot from "./PlayerDot";
 import PlayerCard from "./PlayerCard";
@@ -13,11 +12,12 @@ const UNIT_LABELS: Record<Unit, string> = {
   special: "Special",
 };
 
-export default function DepthChartField() {
+// Pure client component: it receives one resolved roster as a prop and never
+// imports the team registry, so a page ships only its own team's data — not all 32.
+export default function DepthChartField({ roster }: { roster: TeamRoster }) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeUnit, setActiveUnit] = useState<Unit>("offense");
 
-  const roster = getActiveTeam();
   const { team } = roster;
   const slots = resolveUnit(roster, activeUnit);
 
