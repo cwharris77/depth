@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { staticRosterSource } from "@/lib/roster-source";
+import { dbRosterSource } from "@/lib/roster-source.db";
 import { readableTextOn } from "@/lib/colors";
 import { featuredStarters } from "@/lib/og";
 
@@ -8,8 +8,9 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 // Prerender one card per team alongside the page (statically optimized + cached).
-export function generateStaticParams() {
-  return staticRosterSource.listTeams().map((team) => ({ id: team.id }));
+export async function generateStaticParams() {
+  const teams = await dbRosterSource.listTeams();
+  return teams.map((team) => ({ id: team.id }));
 }
 
 export default async function Image({
@@ -18,7 +19,7 @@ export default async function Image({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const roster = staticRosterSource.getTeam(id);
+  const roster = await dbRosterSource.getTeam(id);
 
   // Unknown id: a clean generic card rather than a broken/blank image.
   if (!roster) {

@@ -2,18 +2,19 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import DepthChartField from "@/components/DepthChartField";
 import RememberTeam from "@/components/RememberTeam";
-import { staticRosterSource } from "@/lib/roster-source";
+import { dbRosterSource } from "@/lib/roster-source.db";
 
 type Params = { params: Promise<{ id: string }> };
 
 // Prerender one static page per team. Unknown ids fall through to notFound() below.
-export function generateStaticParams() {
-  return staticRosterSource.listTeams().map((team) => ({ id: team.id }));
+export async function generateStaticParams() {
+  const teams = await dbRosterSource.listTeams();
+  return teams.map((team) => ({ id: team.id }));
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
-  const roster = staticRosterSource.getTeam(id);
+  const roster = await dbRosterSource.getTeam(id);
   if (!roster) {
     return { title: "Team not found · Depth" };
   }
@@ -29,7 +30,7 @@ export default async function TeamPage({ params }: Params) {
   const { id } = await params;
   // The route resolves exactly one roster here (server-side) and passes it down,
   // so the client only ever receives the team it's viewing.
-  const roster = staticRosterSource.getTeam(id);
+  const roster = await dbRosterSource.getTeam(id);
   if (!roster) {
     notFound();
   }
