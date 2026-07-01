@@ -8,7 +8,7 @@ import type {
   TeamRoster,
 } from "../types";
 import type { EspnAthlete, EspnDepthcharts, EspnRoster, EspnTeamInfo } from "./types";
-import { classifyItem, mapDepthchartPosition, mapSpecialPosition } from "./positions";
+import { classifyItem, mapBioPosition, mapDepthchartPosition, mapSpecialPosition } from "./positions";
 
 export function parseAthleteId(ref: string): string | null {
   const m = ref.match(/athletes\/(\d+)/);
@@ -65,6 +65,33 @@ function toPlayer(
     bio: `${position} for the ${teamLabel}.`,
     photoUrl: a.headshot?.href,
   };
+}
+
+// depth_chart_entries has a unique (team_id, position, depth_rank) constraint, but
+// multiple ESPN depthchart keys can collapse into one Position (e.g. lde+rde -> DE),
+// each independently ranked 1..3 -- so two DE1s can exist on `players`. Re-rank within
+// each position group (stable: existing depthRank, then jersey number) and cap at 3,
+// dropping the rest, so every (team, position, rank) triple is unique for DB writes.
+// The in-memory Player.depthRank is untouched -- lib/roster.ts's getPlayersByPosition
+// already tolerates (and relies on) multiple players sharing one raw depthRank.
+export function toDepthChartRows(
+  players: Player[],
+): { position: Position; depthRank: 1 | 2 | 3; playerId: string }[] {
+  const byPosition = new Map<Position, Player[]>();
+  for (const p of players) {
+    const list = byPosition.get(p.position) ?? [];
+    list.push(p);
+    byPosition.set(p.position, list);
+  }
+
+  const rows: { position: Position; depthRank: 1 | 2 | 3; playerId: string }[] = [];
+  for (const [position, group] of byPosition) {
+    const ranked = [...group].sort((a, b) => a.depthRank - b.depthRank || a.number - b.number);
+    ranked.slice(0, 3).forEach((p, i) => {
+      rows.push({ position, depthRank: (i + 1) as 1 | 2 | 3, playerId: p.id });
+    });
+  }
+  return rows;
 }
 
 const SPECIAL_LAYOUT = [
@@ -147,6 +174,22 @@ export function toTeamRoster(args: {
         players.push(toPlayer(bio, position, rank as 1 | 2 | 3, teamLabel));
       }
     }
+  }
+
+  // A KR/PR can be a WR/RB ranked well outside our top-3-per-position cap (e.g. a
+  // WR7 who is still the primary punt returner) -- so they can be missing from
+  // `players` even though they're a valid special-teams reference. Add them anyway,
+  // using their own bio position, so specialTeams never points at a dropped player
+  // (this also protects the DB's special_teams_slots.player_id FK). depthRank 3 here
+  // is a storage placeholder (bench/reserve), not their real offensive rank.
+  for (const id of Object.values(special)) {
+    if (!id || seen.has(id)) continue;
+    const bio = bios.get(id);
+    if (!bio) continue;
+    const fallbackPosition = mapBioPosition(bio.position?.abbreviation ?? "");
+    if (!fallbackPosition) continue;
+    seen.add(id);
+    players.push(toPlayer(bio, fallbackPosition, 3, teamLabel));
   }
 
   const specialTeams: SpecialSlot[] = SPECIAL_LAYOUT.map(({ slot, id, x, y, label }) => ({
