@@ -48,9 +48,10 @@ describe("featuredStarters", () => {
     expect(featuredStarters(r)).toEqual([{ label: "QB", name: "qb1" }]);
   });
 
-  it("produces 1–3 valid starters for every shipped team", () => {
-    for (const meta of staticRosterSource.listTeams()) {
-      const roster = staticRosterSource.getTeam(meta.id)!;
+  it("produces 1–3 valid starters for every shipped team", async () => {
+    const teams = await staticRosterSource.listTeams();
+    for (const meta of teams) {
+      const roster = (await staticRosterSource.getTeam(meta.id))!;
       const picks = featuredStarters(roster);
       expect(picks.length).toBeGreaterThan(0);
       expect(picks.length).toBeLessThanOrEqual(3);
@@ -65,12 +66,13 @@ describe("readableTextOn", () => {
     expect(readableTextOn("#002244")).toBe("#ffffff");
   });
 
-  it("the chosen text clears large-text AA on every team's brand primary", () => {
+  it("the chosen text clears large-text AA on every team's brand primary", async () => {
     // OG card text is large (132px name / 44px city), so WCAG AA is 3:1, not 4.5.
     // A few brand primaries are mid-tone (teal/blue) where neither pure white nor
     // near-black hits 4.5 — they comfortably clear the large-text bar.
     const LARGE_AA = 3;
-    for (const meta of staticRosterSource.listTeams()) {
+    const teams = await staticRosterSource.listTeams();
+    for (const meta of teams) {
       const bg = meta.colors.primary;
       expect(
         contrastRatio(readableTextOn(bg), bg),

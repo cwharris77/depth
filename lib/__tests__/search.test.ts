@@ -1,10 +1,13 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import { searchPlayers, unitForPosition } from "../search";
 import { staticRosterSource } from "../roster-source";
 import { DEFAULT_TEAM_ID } from "../teams";
 import type { Player, Position, TeamRoster } from "../types";
 
-const roster = staticRosterSource.getTeam(DEFAULT_TEAM_ID)!;
+let roster: TeamRoster;
+beforeAll(async () => {
+  roster = (await staticRosterSource.getTeam(DEFAULT_TEAM_ID))!;
+});
 
 function p(id: string, name: string, position: Position, number: number): Player {
   return {
