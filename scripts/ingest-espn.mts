@@ -56,7 +56,6 @@ async function main() {
 
   for (const roster of Object.values(TEAMS)) {
     const meta = roster.team;
-    if (meta.id === "seahawks") continue; // stays hand-authored, per repo convention
 
     const abbrev = ABBREV_ALIAS[meta.abbrev.toUpperCase()] ?? meta.abbrev.toUpperCase();
     const info = espnIndex.get(abbrev);

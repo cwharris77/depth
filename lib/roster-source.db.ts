@@ -1,14 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Player, PlayerStatus, Position, SpecialSlot, Team, TeamRoster } from "./types";
 import type { RosterSource, TeamMeta } from "./roster-source";
-import { SEAHAWKS } from "./teams/seahawks";
 
 // Postgres-backed RosterSource (roadmap: ESPN ingestion -> DB -> app). Reads
 // teams/players/depth_chart_entries/special_teams_slots and assembles the same
-// TeamRoster shape the app already renders. Falls back to the hand-authored Seahawks
-// data (lib/teams/seahawks.ts) if a team isn't present in the DB yet — same
-// graceful-fallback spirit as the original static-registry plan, so a partial or
-// not-yet-run ingestion never breaks the app.
+// TeamRoster shape the app already renders.
 
 function supabase() {
   const url = process.env.SUPABASE_URL;
@@ -206,28 +202,17 @@ async function fetchAllTeamMeta(): Promise<TeamRow[]> {
 export const dbRosterSource: RosterSource = {
   async listTeams(): Promise<TeamMeta[]> {
     const rows = await fetchAllTeamMeta();
-    const dbIds = new Set(rows.map((r) => r.id));
     const metas = rows.map(toTeam);
-    // Seahawks stays hand-authored and may not be in the DB yet — include it if missing.
-    if (!dbIds.has(SEAHAWKS.team.id)) metas.push(SEAHAWKS.team);
     return metas.sort((a, b) => a.id.localeCompare(b.id));
   },
   async getTeam(id: string): Promise<TeamRoster | undefined> {
-    if (id === SEAHAWKS.team.id) {
-      // Seahawks is intentionally kept hand-authored (richer bios/stats showcase),
-      // matching the repo's existing convention (lib/teams/seahawks.ts).
-      const dbTeam = await fetchTeamRoster(id).catch(() => undefined);
-      return dbTeam ?? SEAHAWKS;
-    }
     try {
       const roster = await fetchTeamRoster(id);
       if (roster) return roster;
     } catch {
-      // DB unavailable/misconfigured → fall through to the static fallback below.
+      // DB unavailable/misconfigured → fall through to undefined below.
     }
-    // Not in the DB (not yet ingested, or ingestion hasn't run) → no fallback data
-    // exists for non-Seahawks teams in the DB-first world; undefined -> 404, same as
-    // an unknown id.
+    // Not in the DB (not yet ingested, or unknown id) → undefined -> 404.
     return undefined;
   },
 };

@@ -45,11 +45,11 @@ maybeDescribe("dbRosterSource (live Supabase project)", () => {
     expect(await dbRosterSource.getTeam("not-a-real-team")).toBeUndefined();
   });
 
-  it("falls back to the hand-authored Seahawks roster (not yet ingested)", async () => {
+  it("assembles a full roster for an ingested team (seahawks)", async () => {
     const roster = await dbRosterSource.getTeam("seahawks");
     expect(roster).toBeDefined();
     expect(roster!.team.id).toBe("seahawks");
-    expect(roster!.players.length).toBeGreaterThan(0);
+    expect(roster!.players.length).toBeGreaterThan(15);
   });
 });
 

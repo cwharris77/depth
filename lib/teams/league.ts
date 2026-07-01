@@ -1,8 +1,8 @@
 import type { TeamRoster } from "../types";
 import { buildTeam, pl } from "./_build";
 
-// Best-effort static rosters for the 31 non-Seahawks teams (Seahawks keeps its
-// richer hand-authored file). Player data is a point-in-time placeholder; team
+// Best-effort static rosters for all 32 teams, used only as a pre-ingestion
+// fallback/registry seed. Player data is a point-in-time placeholder; team
 // metadata and colors are accurate. uiAccent is curated to read on the dark UI
 // (asserted by lib/__tests__/contrast.test.ts); onAccent is near-black on it.
 //
@@ -555,7 +555,26 @@ export const LEAGUE: TeamRoster[] = [
     special: { k: 4, p: 5, ls: 48, kr: 18, pr: 14 },
   }),
 
-  // ───────────── NFC West (Seahawks elsewhere) ─────────────
+  // ───────────── NFC West ─────────────
+  buildTeam({
+    id: "seahawks", city: "Seattle", name: "Seahawks", abbrev: "SEA",
+    conference: "NFC", division: "West",
+    colors: { primary: "#002244", secondary: "#69BE28", accent: "#A5ACAF", uiAccent: "#69BE28", onAccent: "#0a0e1a" },
+    players: [
+      pl("Geno Smith", 7, "QB", 1, { age: 34, exp: 12, college: "West Virginia" }),
+      pl("Kenneth Walker III", 9, "RB", 1, { age: 24, exp: 3, college: "Michigan State" }),
+      pl("Jaxon Smith-Njigba", 11, "WR"), pl("DK Metcalf", 14, "WR"), pl("Tyler Lockett", 16, "WR"),
+      pl("Noah Fant", 87, "TE"),
+      pl("Charles Cross", 67, "LT"), pl("Laken Tomlinson", 77, "LG"), pl("Connor Williams", 52, "C"), pl("Anthony Bradford", 66, "RG"), pl("Abe Lucas", 72, "RT"),
+      pl("Uchenna Nwosu", 10, "DE"), pl("Boye Mafe", 53, "DE"),
+      pl("Leonard Williams", 99, "DT"), pl("Jarran Reed", 90, "DT"),
+      pl("Jerome Baker", 17, "LB"), pl("Tyrel Dodson", 51, "LB"), pl("Dre Greenlaw", 57, "LB"),
+      pl("Devon Witherspoon", 21, "CB"), pl("Riq Woolen", 27, "CB"),
+      pl("Quandre Diggs", 6, "S"), pl("Julian Love", 37, "S"),
+      pl("Jason Myers", 3, "K"), pl("Michael Dickson", 4, "P"), pl("Chris Stoll", 49, "LS"),
+    ],
+    special: { k: 3, p: 4, ls: 49, kr: 16, pr: 11 },
+  }),
   buildTeam({
     id: "cardinals", city: "Arizona", name: "Cardinals", abbrev: "ARI",
     conference: "NFC", division: "West",
