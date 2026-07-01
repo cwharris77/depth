@@ -11,6 +11,7 @@ import { toDepthChartRows, toTeamRoster } from "../lib/espn/transform";
 import { TEAMS } from "../lib/teams/index";
 import type { EspnDepthcharts, EspnRoster, EspnTeamInfo } from "../lib/espn/types";
 import type { TeamRoster } from "../lib/types";
+import type { Database } from "../lib/database.types";
 
 const SITE = "https://site.api.espn.com/apis/site/v2/sports/football/nfl";
 const CORE = "https://sports.core.api.espn.com/v2/sports/football/leagues/nfl";
@@ -44,10 +45,7 @@ function requireEnv(name: string): string {
 async function main() {
   const supabaseUrl = requireEnv("SUPABASE_URL");
   const serviceRoleKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
-  // No generated Database types for this project yet (see docs/espn.md); `any` here
-  // keeps writes flexible against the hand-verified schema instead of a stale/missing
-  // generic. Runtime shape is verified by the real ingestion run + list_tables checks.
-  const supabase: SupabaseClient<any, any, any> = createClient(supabaseUrl, serviceRoleKey);
+  const supabase: SupabaseClient<Database> = createClient(supabaseUrl, serviceRoleKey);
 
   const startedAt = new Date().toISOString();
   const espnIndex = await espnTeamIndex();
@@ -119,7 +117,7 @@ async function main() {
 }
 
 async function writeTeam(
-  supabase: SupabaseClient<any, any, any>,
+  supabase: SupabaseClient<Database>,
   roster: TeamRoster,
 ): Promise<void> {
   const { team, players, specialTeams } = roster;

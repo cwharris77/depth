@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
-    "ingest:espn": "tsx scripts/ingest-espn.mts"
+    "ingest:espn": "tsx scripts/ingest-espn.mts",
+    "db:types": "supabase gen types typescript --local > lib/database.types.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.0",

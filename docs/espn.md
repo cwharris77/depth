@@ -22,6 +22,25 @@ plan; this repo now ingests into a real database instead).
   full run (`started_at`/`finished_at`/`status`/`teams_written`/`errors`).
 - `lib/roster-source.db.ts` — `dbRosterSource`, a `RosterSource` implementation that
   queries the DB and assembles the same `TeamRoster` shape the app already renders.
+- `lib/database.types.ts` — generated `Database` type (see "Generated types" below).
+  Both the ingestion script and `dbRosterSource` are typed against it instead of `any`
+  or hand-maintained row interfaces.
+
+## Generated types
+
+`lib/database.types.ts` is generated, not hand-written — **regenerate it after any
+migration change** (a new/changed column, table, or type won't show up otherwise, and
+row-shape mismatches only surface as a runtime error, not a type error, until you do):
+
+```bash
+npm run db:types
+```
+
+This runs `supabase gen types typescript --local`, so it reads from your **local**
+Postgres (the one `supabase/migrations/` builds), not the hosted project — local
+migrations are the schema's source of truth, and generating from local means anyone
+can regenerate without hosted project access. Commit the regenerated file in the same
+PR as the migration that changed the schema.
 
 ## Regenerate
 

@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Player, PlayerStatus, Position, SpecialSlot, Team, TeamRoster } from "./types";
 import type { RosterSource, TeamMeta } from "./roster-source";
+import type { Database } from "./database.types";
 
 // Postgres-backed RosterSource (roadmap: ESPN ingestion -> DB -> app). Reads
 // teams/players/depth_chart_entries/special_teams_slots and assembles the same
@@ -14,55 +15,50 @@ function supabase() {
       "Missing SUPABASE_URL / SUPABASE_ANON_KEY env vars (see .env.local.example)",
     );
   }
-  return createClient(url, key);
+  return createClient<Database>(url, key);
 }
 
-interface TeamRow {
-  id: string;
-  abbrev: string;
-  city: string;
-  name: string;
-  conference: string;
-  division: string;
-  color_primary: string | null;
-  color_secondary: string | null;
-  color_accent: string | null;
-  ui_accent: string | null;
-  on_accent: string | null;
-  logo_url: string | null;
-  logo_dark_url: string | null;
-}
-
-interface PlayerRow {
-  id: string;
-  team_id: string;
-  name: string;
-  number: number | null;
-  position: string;
-  status: string | null;
-  age: number | null;
-  college: string | null;
-  experience: number | null;
-  height: string | null;
-  weight: number | null;
-  bio: string | null;
-  photo_url: string | null;
-}
-
-interface DepthChartRow {
-  team_id: string;
-  position: string;
-  depth_rank: number;
-  player_id: string;
-}
-
-interface SpecialSlotRow {
-  team_id: string;
-  label: string;
-  player_id: string | null;
-  x: number | string | null;
-  y: number | string | null;
-}
+type Tables = Database["public"]["Tables"];
+type TeamRow = Pick<
+  Tables["teams"]["Row"],
+  | "id"
+  | "abbrev"
+  | "city"
+  | "name"
+  | "conference"
+  | "division"
+  | "color_primary"
+  | "color_secondary"
+  | "color_accent"
+  | "ui_accent"
+  | "on_accent"
+  | "logo_url"
+  | "logo_dark_url"
+>;
+type PlayerRow = Pick<
+  Tables["players"]["Row"],
+  | "id"
+  | "team_id"
+  | "name"
+  | "number"
+  | "position"
+  | "status"
+  | "age"
+  | "college"
+  | "experience"
+  | "height"
+  | "weight"
+  | "bio"
+  | "photo_url"
+>;
+type DepthChartRow = Pick<
+  Tables["depth_chart_entries"]["Row"],
+  "team_id" | "position" | "depth_rank" | "player_id"
+>;
+type SpecialSlotRow = Pick<
+  Tables["special_teams_slots"]["Row"],
+  "team_id" | "label" | "player_id" | "x" | "y"
+>;
 
 function toTeam(row: TeamRow): Team {
   return {
