@@ -16,8 +16,8 @@ plan; this repo now ingests into a real database instead).
   Also exports `toDepthChartRows`, which re-ranks a position group 1..3 after ESPN's
   key-collapse (e.g. `lde`+`rde` both map to `DE`, each independently ranked) so the
   DB's `(team_id, position, depth_rank)` unique constraint never collides.
-- `scripts/ingest-espn.mts` — fetches all 32 teams (skips Seahawks, see below), runs
-  each through the transform, and upserts into `teams`, `players`,
+- `scripts/ingest-espn.mts` — fetches all 32 teams, runs each through the transform,
+  and upserts into `teams`, `players`,
   `depth_chart_entries`, and `special_teams_slots`. Writes one `ingestion_runs` row per
   full run (`started_at`/`finished_at`/`status`/`teams_written`/`errors`).
 - `lib/roster-source.db.ts` — `dbRosterSource`, a `RosterSource` implementation that
@@ -52,22 +52,15 @@ leave the DB one run stale.
 - `uiAccent`/`onAccent` stay hand-curated per team (not sourced from ESPN) for
   dark-UI contrast; `toTeamColors` merges them with ESPN's `primary`/`secondary`.
 
-## Seahawks stays hand-authored
-
-`lib/teams/seahawks.ts` is the showcase team with richer bios/stats and is
-intentionally excluded from ingestion. `dbRosterSource.getTeam("seahawks")` checks the
-DB first (in case it's ever ingested later) and falls back to the hand-authored data.
-
 ## Fallback behavior
 
 `dbRosterSource.getTeam(id)`:
 
 - Known team in the DB → assembled from Postgres.
-- `"seahawks"`, not yet in the DB → hand-authored `SEAHAWKS` roster.
-- Any other id not in the DB (not yet ingested) → `undefined` (404), same as an
-  unknown id. There is no static-file fallback for the other 31 teams in this
-  DB-first architecture — run `npm run ingest:espn` before `next build`/`next dev` if
-  the DB is empty.
+- Any team not in the DB (not yet ingested, or unknown id) → `undefined` (404). There
+  is no hand-authored fallback for any team, including Seahawks — `lib/teams/seahawks.ts`
+  was deleted once Seahawks joined the same live-ingestion path as the other 31 teams.
+  Run `npm run ingest:espn` before `next build`/`next dev` if the DB is empty.
 
 ## Environment variables
 
