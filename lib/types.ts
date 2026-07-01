@@ -24,6 +24,7 @@ export interface Player {
   height: string;
   weight: number;
   bio: string;
+  photoUrl?: string;
   stats?: Record<string, string | number>;
 }
 
@@ -88,6 +89,8 @@ export interface Team {
   conference: Conference;
   division: Division;
   colors: TeamColors;
+  logo?: string;
+  logoDark?: string;
 }
 
 export interface TeamRoster {
