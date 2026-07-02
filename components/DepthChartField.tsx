@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, X } from "lucide-react";
+import { Search, ChevronDown, X } from "lucide-react";
 import type { Player, TeamRoster, Unit } from "@/lib/types";
 import type { TeamMeta } from "@/lib/roster-source";
 import { resolveUnit } from "@/lib/formations";
@@ -84,21 +84,24 @@ export default function DepthChartField({
           type="button"
           onClick={openSwitcher}
           aria-label="Switch team"
-          className="text-left"
+          className="flex items-center gap-1 text-left min-w-0"
           style={{ touchAction: "manipulation" }}
         >
-          <div
-            className="text-[10px] font-semibold tracking-widest"
-            style={{ color: team.colors.uiAccent }}
-          >
-            {team.city.toUpperCase()} {team.name.toUpperCase()}
+          <div className="min-w-0">
+            <div
+              className="text-[10px] font-semibold tracking-widest"
+              style={{ color: team.colors.uiAccent }}
+            >
+              {team.city.toUpperCase()} {team.name.toUpperCase()}
+            </div>
+            <h1
+              className="text-xl font-black leading-tight"
+              style={{ color: "#f0f4ff", letterSpacing: "-0.02em" }}
+            >
+              Depth Chart
+            </h1>
           </div>
-          <h1
-            className="text-xl font-black leading-tight"
-            style={{ color: "#f0f4ff", letterSpacing: "-0.02em" }}
-          >
-            Depth Chart
-          </h1>
+          <ChevronDown size={16} color="#A5ACAF" className="shrink-0" />
         </button>
         <div className="flex items-start gap-2">
         <button
