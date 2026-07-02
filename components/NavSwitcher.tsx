@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Search, X, Check } from "lucide-react";
 import type { Conference, Player, TeamRoster } from "@/lib/types";
 import type { TeamMeta } from "@/lib/roster-source";
 import { readableTextOn } from "@/lib/colors";
-import { searchPlayers, unitForPosition } from "@/lib/search";
+import { unitForPosition, type PlayerHit } from "@/lib/search";
 
 type Mode = "teams" | "players";
 
@@ -56,11 +57,20 @@ function TeamRow({
   );
 }
 
-function PlayerRow({ player, onSelect }: { player: Player; onSelect: (p: Player) => void }) {
+function PlayerRow({
+  hit,
+  currentTeamId,
+  onSelect,
+}: {
+  hit: PlayerHit;
+  currentTeamId: string;
+  onSelect: (hit: PlayerHit) => void;
+}) {
+  const otherTeam = hit.team.id !== currentTeamId;
   return (
     <button
       type="button"
-      onClick={() => onSelect(player)}
+      onClick={() => onSelect(hit)}
       className="w-full flex items-center gap-3 px-3 py-2.5 text-left"
       style={{ touchAction: "manipulation" }}
     >
@@ -68,16 +78,25 @@ function PlayerRow({ player, onSelect }: { player: Player; onSelect: (p: Player)
         className="flex items-center justify-center rounded-lg text-xs font-bold shrink-0"
         style={{ width: 34, height: 34, background: "rgba(255,255,255,0.06)", color: "#f0f4ff" }}
       >
-        {player.number}
+        {hit.number}
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-bold truncate" style={{ color: "#f0f4ff" }}>
-          {player.name}
+          {hit.name}
         </div>
         <div className="text-[11px]" style={{ color: "#A5ACAF" }}>
-          {player.position} · {UNIT_LABELS[unitForPosition(player.position)]}
+          {hit.position} · {UNIT_LABELS[unitForPosition(hit.position)]}
+          {otherTeam ? ` · ${hit.team.city} ${hit.team.name}` : ""}
         </div>
       </div>
+      {otherTeam && (
+        <div
+          className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold"
+          style={{ background: "rgba(255,255,255,0.08)", color: "#A5ACAF" }}
+        >
+          {hit.team.abbrev}
+        </div>
+      )}
     </button>
   );
 }
@@ -90,20 +109,24 @@ interface NavSwitcherProps {
 }
 
 // The app's full-screen nav: jump to another of the 32 teams, or find a player on
-// the team you're viewing. Teams mode groups by conference/division per the
-// roadmap's switcher spec (opens on the visitor's own conference; search overrides
-// the conference filter and matches all 32 by city/name/abbrev). Players mode
-// reuses the roadmap 5c search, scoped to the current roster.
+// any of them. Teams mode groups by conference/division per the roadmap's switcher
+// spec (opens on the visitor's own conference; search overrides the conference
+// filter and matches all 32 by city/name/abbrev). Players mode searches every
+// ingested team (app/api/players/search), not just the roster already loaded here.
 export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: NavSwitcherProps) {
   const { team } = roster;
   const accentColor = team.colors.uiAccent;
+  const router = useRouter();
   const [mode, setMode] = useState<Mode>("teams");
   const [query, setQuery] = useState("");
   const [conference, setConference] = useState<Conference>(team.conference);
+  const [playerResults, setPlayerResults] = useState<PlayerHit[]>([]);
+  const [playersLoading, setPlayersLoading] = useState(false);
 
   const setModeAndReset = (next: Mode) => {
     setMode(next);
     setQuery("");
+    setPlayerResults([]);
   };
 
   const q = query.trim().toLowerCase();
@@ -123,10 +146,48 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
     ? [{ division: "Results", teams: teamResults }]
     : groupByDivision(teams, conference);
 
-  const playerResults = mode === "players" ? searchPlayers(roster, query) : [];
+  // Debounced so every keystroke doesn't fire a request; aborted on the next
+  // keystroke/mode change so a slow earlier response can't clobber a newer one.
+  useEffect(() => {
+    if (mode !== "players" || !searching) {
+      setPlayerResults([]);
+      return;
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setPlayersLoading(true);
+      try {
+        const res = await fetch(`/api/players/search?q=${encodeURIComponent(query.trim())}`, {
+          signal: controller.signal,
+        });
+        const data = await res.json();
+        setPlayerResults(data.results ?? []);
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") setPlayerResults([]);
+      } finally {
+        setPlayersLoading(false);
+      }
+    }, 200);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [mode, query, searching]);
 
-  const handleSelectPlayer = (p: Player) => {
-    onSelectPlayer(p);
+  const handleSelectPlayer = (hit: PlayerHit) => {
+    if (hit.team.id === team.id) {
+      // Already have the full Player (depthRank/status/bio/...) for the current
+      // roster — use that instead of the lighter search-result shape.
+      const localPlayer = roster.players.find((p) => p.id === hit.id);
+      if (localPlayer) {
+        onSelectPlayer(localPlayer);
+        onClose();
+        return;
+      }
+    }
+    // Different team: navigate there and open the player once its roster loads
+    // (OpenPlayerFromQuery on the destination page reads `?player=`).
+    router.push(`/team/${hit.team.id}?player=${hit.id}`);
     onClose();
   };
 
@@ -234,7 +295,11 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
           )
         ) : query.trim() === "" ? (
           <div className="px-5 py-6 text-center text-sm" style={{ color: "#A5ACAF" }}>
-            Search any player on the {team.city} {team.name} by name, number, or position
+            Search any player across all 32 teams by name, number, or position
+          </div>
+        ) : playersLoading && playerResults.length === 0 ? (
+          <div className="px-5 py-6 text-center text-sm" style={{ color: "#A5ACAF" }}>
+            Searching…
           </div>
         ) : playerResults.length === 0 ? (
           <div className="px-5 py-6 text-center text-sm" style={{ color: "#A5ACAF" }}>
@@ -242,8 +307,8 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
           </div>
         ) : (
           <div className="px-3">
-            {playerResults.map((p) => (
-              <PlayerRow key={p.id} player={p} onSelect={handleSelectPlayer} />
+            {playerResults.map((hit) => (
+              <PlayerRow key={hit.id} hit={hit} currentTeamId={team.id} onSelect={handleSelectPlayer} />
             ))}
           </div>
         )}
