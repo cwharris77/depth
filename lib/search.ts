@@ -23,6 +23,7 @@ export interface PlayerHit {
   name: string;
   number: number;
   position: Position;
+  photoUrl?: string;
   team: Pick<Team, "id" | "city" | "name" | "abbrev">;
 }
 

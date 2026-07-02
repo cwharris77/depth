@@ -1,21 +1,22 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, X, Check } from "lucide-react";
+import { Search, X, Check, CornerDownLeft } from "lucide-react";
 import type { Conference, Player, TeamRoster } from "@/lib/types";
 import type { TeamMeta } from "@/lib/roster-source";
 import { readableTextOn } from "@/lib/colors";
-import { unitForPosition, type PlayerHit } from "@/lib/search";
+import type { PlayerHit } from "@/lib/search";
 
-type Mode = "teams" | "players";
+type ResultItem = { type: "player"; hit: PlayerHit } | { type: "team"; team: TeamMeta };
 
 const DIVISION_ORDER = ["East", "North", "South", "West"] as const;
-const UNIT_LABELS = { offense: "Offense", defense: "Defense", special: "Special" } as const;
 
 function groupByDivision(teams: TeamMeta[], conference: Conference) {
   return DIVISION_ORDER.map((division) => ({
+    conference,
     division,
     teams: teams
       .filter((t) => t.conference === conference && t.division === division)
@@ -23,24 +24,78 @@ function groupByDivision(teams: TeamMeta[], conference: Conference) {
   })).filter((g) => g.teams.length > 0);
 }
 
+function SectionLabel({ children }: { children: string }) {
+  return (
+    <div className="text-[10px] font-semibold tracking-widest px-5 py-2" style={{ color: "#A5ACAF" }}>
+      {children}
+    </div>
+  );
+}
+
+function PlayerAvatar({ hit }: { hit: PlayerHit }) {
+  const [errored, setErrored] = useState(false);
+  const showPhoto = Boolean(hit.photoUrl) && !errored;
+  return (
+    <div
+      className="shrink-0 rounded-full overflow-hidden flex items-center justify-center"
+      style={{
+        width: 36,
+        height: 36,
+        background: "rgba(255,255,255,0.06)",
+        border: "1px solid rgba(255,255,255,0.12)",
+      }}
+    >
+      {showPhoto ? (
+        <Image
+          src={hit.photoUrl!}
+          alt={hit.name}
+          width={36}
+          height={36}
+          className="w-full h-full object-cover"
+          onError={() => setErrored(true)}
+        />
+      ) : (
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          aria-hidden="true"
+          style={{ width: "60%", height: "60%", opacity: 0.5, color: "#A5ACAF" }}
+        >
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4z" />
+        </svg>
+      )}
+    </div>
+  );
+}
+
 function TeamRow({
   team,
   isCurrent,
+  highlighted,
   onSelect,
+  onHover,
 }: {
   team: TeamMeta;
   isCurrent: boolean;
+  highlighted: boolean;
   onSelect: () => void;
+  onHover: () => void;
 }) {
   const badgeText = readableTextOn(team.colors.primary);
   return (
     <Link
       href={`/team/${team.id}`}
       onClick={onSelect}
+      onMouseEnter={onHover}
       className="flex items-center gap-3 px-3 py-2.5"
       style={{
         touchAction: "manipulation",
-        background: isCurrent ? `${team.colors.primary}1a` : "transparent",
+        background: highlighted
+          ? "rgba(255,255,255,0.06)"
+          : isCurrent
+            ? `${team.colors.primary}1a`
+            : "transparent",
       }}
     >
       <div
@@ -49,54 +104,52 @@ function TeamRow({
       >
         {team.abbrev}
       </div>
-      <span className="flex-1 min-w-0 text-sm font-bold" style={{ color: "#f0f4ff" }}>
-        {team.city} {team.name}
-      </span>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-bold truncate" style={{ color: "#f0f4ff" }}>
+          {team.city} {team.name}
+        </div>
+        <div className="text-[11px]" style={{ color: "#A5ACAF" }}>
+          {team.conference} {team.division}
+        </div>
+      </div>
       {isCurrent && <Check size={16} color={team.colors.uiAccent} strokeWidth={3} />}
+      {highlighted && <CornerDownLeft size={14} color="#A5ACAF" />}
     </Link>
   );
 }
 
 function PlayerRow({
   hit,
-  currentTeamId,
+  highlighted,
   onSelect,
+  onHover,
 }: {
   hit: PlayerHit;
-  currentTeamId: string;
+  highlighted: boolean;
   onSelect: (hit: PlayerHit) => void;
+  onHover: () => void;
 }) {
-  const otherTeam = hit.team.id !== currentTeamId;
   return (
     <button
       type="button"
       onClick={() => onSelect(hit)}
+      onMouseEnter={onHover}
       className="w-full flex items-center gap-3 px-3 py-2.5 text-left"
-      style={{ touchAction: "manipulation" }}
+      style={{
+        touchAction: "manipulation",
+        background: highlighted ? "rgba(255,255,255,0.06)" : "transparent",
+      }}
     >
-      <div
-        className="flex items-center justify-center rounded-lg text-xs font-bold shrink-0"
-        style={{ width: 34, height: 34, background: "rgba(255,255,255,0.06)", color: "#f0f4ff" }}
-      >
-        {hit.number}
-      </div>
+      <PlayerAvatar hit={hit} />
       <div className="flex-1 min-w-0">
         <div className="text-sm font-bold truncate" style={{ color: "#f0f4ff" }}>
           {hit.name}
         </div>
         <div className="text-[11px]" style={{ color: "#A5ACAF" }}>
-          {hit.position} · {UNIT_LABELS[unitForPosition(hit.position)]}
-          {otherTeam ? ` · ${hit.team.city} ${hit.team.name}` : ""}
+          {hit.position} · {hit.team.name} · #{hit.number}
         </div>
       </div>
-      {otherTeam && (
-        <div
-          className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold"
-          style={{ background: "rgba(255,255,255,0.08)", color: "#A5ACAF" }}
-        >
-          {hit.team.abbrev}
-        </div>
-      )}
+      {highlighted && <CornerDownLeft size={14} color="#A5ACAF" />}
     </button>
   );
 }
@@ -108,26 +161,21 @@ interface NavSwitcherProps {
   onClose: () => void;
 }
 
-// The app's full-screen nav: jump to another of the 32 teams, or find a player on
-// any of them. Teams mode groups by conference/division per the roadmap's switcher
-// spec (opens on the visitor's own conference; search overrides the conference
-// filter and matches all 32 by city/name/abbrev). Players mode searches every
-// ingested team (app/api/players/search), not just the roster already loaded here.
+// The app's full-screen nav. Idle (no query): browse teams by conference/division,
+// the AFC/NFC picker choosing which. Typing searches both teams and players at once
+// — no mode switch needed. Players search hits every ingested team
+// (app/api/players/search), not just the roster already loaded here. Arrow keys move
+// the result highlight, Enter activates it, Escape closes — a lightweight
+// command-palette pattern.
 export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: NavSwitcherProps) {
   const { team } = roster;
   const accentColor = team.colors.uiAccent;
   const router = useRouter();
-  const [mode, setMode] = useState<Mode>("teams");
-  const [query, setQuery] = useState("");
   const [conference, setConference] = useState<Conference>(team.conference);
+  const [query, setQuery] = useState("");
   const [playerResults, setPlayerResults] = useState<PlayerHit[]>([]);
   const [playersLoading, setPlayersLoading] = useState(false);
-
-  const setModeAndReset = (next: Mode) => {
-    setMode(next);
-    setQuery("");
-    setPlayerResults([]);
-  };
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
 
   const q = query.trim().toLowerCase();
   const searching = q.length > 0;
@@ -142,14 +190,10 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
     );
   }, [teams, q, searching]);
 
-  const teamGroups = searching
-    ? [{ division: "Results", teams: teamResults }]
-    : groupByDivision(teams, conference);
-
   // Debounced so every keystroke doesn't fire a request; aborted on the next
-  // keystroke/mode change so a slow earlier response can't clobber a newer one.
+  // keystroke so a slow earlier response can't clobber a newer one.
   useEffect(() => {
-    if (mode !== "players" || !searching) {
+    if (!searching) {
       setPlayerResults([]);
       return;
     }
@@ -172,7 +216,22 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
       clearTimeout(timer);
       controller.abort();
     };
-  }, [mode, query, searching]);
+  }, [query, searching]);
+
+  // Players first, then teams — matches the section order below. Only populated
+  // while searching; idle "Teams" browsing isn't keyboard-navigable (it's a list to
+  // scroll, not a single ranked result set).
+  const flatResults: ResultItem[] = useMemo(() => {
+    if (!searching) return [];
+    return [
+      ...playerResults.map((hit): ResultItem => ({ type: "player", hit })),
+      ...teamResults.map((t): ResultItem => ({ type: "team", team: t })),
+    ];
+  }, [searching, playerResults, teamResults]);
+
+  useEffect(() => {
+    setHighlightedIndex(0);
+  }, [flatResults]);
 
   const handleSelectPlayer = (hit: PlayerHit) => {
     if (hit.team.id === team.id) {
@@ -190,6 +249,40 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
     router.push(`/team/${hit.team.id}?player=${hit.id}`);
     onClose();
   };
+
+  const selectTeam = (t: TeamMeta) => {
+    router.push(`/team/${t.id}`);
+    onClose();
+  };
+
+  const activate = (item: ResultItem) => {
+    if (item.type === "player") handleSelectPlayer(item.hit);
+    else selectTeam(item.team);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      onClose();
+      return;
+    }
+    if (!flatResults.length) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightedIndex((i) => Math.min(i + 1, flatResults.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      activate(flatResults[highlightedIndex]);
+    }
+  };
+
+  const teamGroups = searching ? [] : groupByDivision(teams, conference);
+
+  const showPlayers = searching && playerResults.length > 0;
+  const showTeams = searching && teamResults.length > 0;
+  const nothingFound = searching && !playersLoading && !showPlayers && !showTeams;
 
   return (
     <>
@@ -209,26 +302,6 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
       </div>
 
       <div className="px-5 pb-3">
-        <div className="flex rounded-xl p-1 gap-1" style={{ background: "rgba(255,255,255,0.07)" }}>
-          {(["teams", "players"] as const).map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setModeAndReset(m)}
-              className="flex-1 py-1.5 rounded-lg text-xs font-bold capitalize transition-all"
-              style={{
-                background: mode === m ? team.colors.primary : "transparent",
-                color: mode === m ? accentColor : "#A5ACAF",
-                touchAction: "manipulation",
-              }}
-            >
-              {m}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="px-5 pb-3">
         <div
           className="flex items-center gap-2 rounded-xl px-3"
           style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${accentColor}55` }}
@@ -238,14 +311,22 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={mode === "teams" ? "Search teams" : "Search players"}
+            onKeyDown={handleKeyDown}
+            placeholder="Search teams or players"
             className="flex-1 bg-transparent outline-none py-2.5 text-base"
             style={{ color: "#f0f4ff" }}
           />
+          <span
+            className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold"
+            style={{ background: "rgba(255,255,255,0.08)", color: "#A5ACAF" }}
+          >
+            ESC
+          </span>
         </div>
       </div>
 
-      {mode === "teams" && !searching && (
+      {/* Only meaningful for idle browsing — hidden once you're searching. */}
+      {!searching && (
         <div className="px-5 pb-3">
           <div className="flex rounded-xl p-1 gap-1" style={{ background: "rgba(255,255,255,0.07)" }}>
             {(["AFC", "NFC"] as const).map((c) => (
@@ -267,51 +348,76 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
         </div>
       )}
 
-      <div className="overflow-y-auto pb-4 flex-1">
-        {mode === "teams" ? (
-          teamGroups.every((g) => g.teams.length === 0) ? (
-            <div className="px-5 py-6 text-center text-sm" style={{ color: "#A5ACAF" }}>
-              No teams match &ldquo;{query.trim()}&rdquo;
+      <div className="overflow-y-auto pb-2 flex-1">
+        {!searching ? (
+          teamGroups.map((g) => (
+            <div key={`${g.conference}-${g.division}`} className="mb-2">
+              <SectionLabel>{`${g.conference} ${g.division.toUpperCase()}`}</SectionLabel>
+              <div
+                className="mx-5 rounded-2xl overflow-hidden divide-y divide-white/5"
+                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+              >
+                {g.teams.map((t) => (
+                  <TeamRow
+                    key={t.id}
+                    team={t}
+                    isCurrent={t.id === team.id}
+                    highlighted={false}
+                    onSelect={onClose}
+                    onHover={() => {}}
+                  />
+                ))}
+              </div>
             </div>
-          ) : (
-            teamGroups.map((g) => (
-              <div key={g.division} className="mb-2">
-                <div
-                  className="text-[10px] font-semibold tracking-widest px-5 py-2"
-                  style={{ color: "#A5ACAF" }}
-                >
-                  {searching ? "RESULTS" : `${conference} ${g.division.toUpperCase()}`}
+          ))
+        ) : nothingFound ? (
+          <div className="px-5 py-6 text-center text-sm" style={{ color: "#A5ACAF" }}>
+            No matches for &ldquo;{query.trim()}&rdquo;
+          </div>
+        ) : (
+          <>
+            {showPlayers && (
+              <div className="mb-2">
+                <SectionLabel>PLAYERS</SectionLabel>
+                <div className="px-3">
+                  {playerResults.map((hit, i) => (
+                    <PlayerRow
+                      key={hit.id}
+                      hit={hit}
+                      highlighted={i === highlightedIndex}
+                      onSelect={handleSelectPlayer}
+                      onHover={() => setHighlightedIndex(i)}
+                    />
+                  ))}
                 </div>
+              </div>
+            )}
+            {showTeams && (
+              <div className="mb-2">
+                <SectionLabel>TEAMS</SectionLabel>
                 <div
                   className="mx-5 rounded-2xl overflow-hidden divide-y divide-white/5"
                   style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
                 >
-                  {g.teams.map((t) => (
-                    <TeamRow key={t.id} team={t} isCurrent={t.id === team.id} onSelect={onClose} />
+                  {teamResults.map((t, i) => (
+                    <TeamRow
+                      key={t.id}
+                      team={t}
+                      isCurrent={t.id === team.id}
+                      highlighted={playerResults.length + i === highlightedIndex}
+                      onSelect={onClose}
+                      onHover={() => setHighlightedIndex(playerResults.length + i)}
+                    />
                   ))}
                 </div>
               </div>
-            ))
-          )
-        ) : query.trim() === "" ? (
-          <div className="px-5 py-6 text-center text-sm" style={{ color: "#A5ACAF" }}>
-            Search any player across all 32 teams by name, number, or position
-          </div>
-        ) : playersLoading && playerResults.length === 0 ? (
-          <div className="px-5 py-6 text-center text-sm" style={{ color: "#A5ACAF" }}>
-            Searching…
-          </div>
-        ) : playerResults.length === 0 ? (
-          <div className="px-5 py-6 text-center text-sm" style={{ color: "#A5ACAF" }}>
-            No players match &ldquo;{query.trim()}&rdquo;
-          </div>
-        ) : (
-          <div className="px-3">
-            {playerResults.map((hit) => (
-              <PlayerRow key={hit.id} hit={hit} currentTeamId={team.id} onSelect={handleSelectPlayer} />
-            ))}
-          </div>
+            )}
+          </>
         )}
+      </div>
+
+      <div className="px-5 py-3 text-center text-[11px]" style={{ color: "#5b6472" }}>
+        Type a name, number, or team — no mode switch needed
       </div>
     </>
   );
