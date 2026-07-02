@@ -47,11 +47,13 @@ export default function DepthChartField({
 
   return (
     <div
-      className="flex flex-col"
+      className="flex flex-col mx-auto w-full"
       style={{
         height: "100dvh",
+        maxWidth: 480,
         overflow: "hidden",
         background: "#0a0e1a",
+        position: "relative",
       }}
     >
       {/* Header */}
