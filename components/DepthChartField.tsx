@@ -50,7 +50,7 @@ export default function DepthChartField({
       className="flex flex-col mx-auto w-full"
       style={{
         height: "100dvh",
-        maxWidth: 480,
+        maxWidth: 720,
         overflow: "hidden",
         background: "#0a0e1a",
         position: "relative",
