@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { X, Check } from "lucide-react";
-import type { Player, TeamRoster } from "@/lib/types";
+import type { Player, TeamColors, TeamRoster } from "@/lib/types";
 import { getPlayersByPosition } from "@/lib/roster";
-import { statusColor } from "@/lib/colors";
+import { statusColor, readableTextOn } from "@/lib/colors";
 
 interface PlayerCardProps {
   player: Player | null;
@@ -26,6 +27,52 @@ const depthRankLabel: Record<number, string> = {
   2: "BACKUP",
   3: "3RD STRING",
 };
+
+// Real ESPN headshot when available; falls back to a generic player silhouette
+// (Madden-style default card art) via onError, since a stale/missing ESPN id
+// 404s rather than failing to resolve. Keyed by player.id in the parent so the
+// fallback state resets when a different player is selected. next/image
+// (remote pattern configured in next.config.ts) fetches each headshot once and
+// serves a cached/resized copy from Vercel's edge afterward, instead of
+// hitting ESPN's CDN on every card open.
+function PlayerAvatar({ player, colors }: { player: Player; colors: TeamColors }) {
+  const [errored, setErrored] = useState(false);
+  const showPhoto = Boolean(player.photoUrl) && !errored;
+
+  return (
+    <div
+      className="shrink-0 rounded-full overflow-hidden flex items-center justify-center"
+      style={{
+        width: 72,
+        height: 72,
+        border: `2px solid ${colors.secondary}`,
+        background: colors.primary,
+        color: readableTextOn(colors.primary),
+      }}
+    >
+      {showPhoto ? (
+        <Image
+          src={player.photoUrl!}
+          alt={player.name}
+          width={72}
+          height={72}
+          className="w-full h-full object-cover"
+          onError={() => setErrored(true)}
+        />
+      ) : (
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          aria-hidden="true"
+          style={{ width: "60%", height: "60%", opacity: 0.7 }}
+        >
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4z" />
+        </svg>
+      )}
+    </div>
+  );
+}
 
 export default function PlayerCard({
   player,
@@ -93,42 +140,45 @@ export default function PlayerCard({
               style={{ maxHeight: "calc(82vh - 32px)" }}
             >
               <div className="flex items-start justify-between px-6 pt-4 pb-2">
-                <div>
-                  <div
-                    className="text-6xl font-black leading-none"
-                    style={{
-                      color: `${accent}26`,
-                      letterSpacing: "-0.03em",
-                    }}
-                  >
-                    #{player.number}
-                  </div>
-                  <div
-                    className="text-2xl font-black leading-tight -mt-4"
-                    style={{
-                      color: "#f0f4ff",
-                      letterSpacing: "-0.01em",
-                    }}
-                  >
-                    {player.name}
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span
-                      className="text-xs font-bold px-2 py-0.5 rounded-full"
+                <div className="flex items-start gap-4">
+                  <PlayerAvatar key={player.id} player={player} colors={colors} />
+                  <div>
+                    <div
+                      className="text-6xl font-black leading-none"
                       style={{
-                        background: "rgba(0,34,68,0.8)",
-                        color: accent,
-                        border: `1px solid ${accent}66`,
+                        color: `${accent}26`,
+                        letterSpacing: "-0.03em",
                       }}
                     >
-                      {player.position}
-                    </span>
-                    <span
-                      className="text-xs font-bold"
-                      style={{ color: statusColor(player.status, colors) }}
+                      #{player.number}
+                    </div>
+                    <div
+                      className="text-2xl font-black leading-tight -mt-4"
+                      style={{
+                        color: "#f0f4ff",
+                        letterSpacing: "-0.01em",
+                      }}
                     >
-                      {statusLabel[player.status]}
-                    </span>
+                      {player.name}
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span
+                        className="text-xs font-bold px-2 py-0.5 rounded-full"
+                        style={{
+                          background: "rgba(0,34,68,0.8)",
+                          color: accent,
+                          border: `1px solid ${accent}66`,
+                        }}
+                      >
+                        {player.position}
+                      </span>
+                      <span
+                        className="text-xs font-bold"
+                        style={{ color: statusColor(player.status, colors) }}
+                      >
+                        {statusLabel[player.status]}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
