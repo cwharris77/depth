@@ -155,21 +155,6 @@ export default function DepthChartField({ roster }: { roster: TeamRoster }) {
               />
             );
           })}
-
-          <div
-            className="absolute text-[9px] font-bold tracking-widest"
-            style={{
-              left: 8,
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "rgba(255,255,255,0.25)",
-              writingMode: "vertical-rl",
-              textOrientation: "mixed",
-              letterSpacing: "0.2em",
-            }}
-          >
-            LINE OF SCRIMMAGE
-          </div>
         </div>
       </div>
 
@@ -305,16 +290,8 @@ function FieldMarkings() {
       {/* end zones */}
       <rect x="0" y="0" width="100" height="6" fill="rgba(0,34,68,0.3)" />
       <rect x="0" y="94" width="100" height="6" fill="rgba(0,34,68,0.3)" />
-      {/* line of scrimmage */}
-      <line
-        x1="0"
-        y1="50"
-        x2="100"
-        y2="50"
-        stroke="rgba(255,255,255,0.30)"
-        strokeWidth="0.6"
-        strokeDasharray="1.6,1.6"
-      />
+      {/* line of scrimmage — solid blue, matching TV broadcast overlays */}
+      <line x1="0" y1="50" x2="100" y2="50" stroke="#2d6fe0" strokeWidth="0.6" />
       {/* hash marks */}
       {[15, 25, 35, 45, 55, 65, 75, 85].map((y) => (
         <g key={`hash-${y}`}>
