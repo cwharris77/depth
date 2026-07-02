@@ -184,10 +184,14 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
   };
 }
 
-type PlayerSearchRow = Pick<Tables["players"]["Row"], "id" | "name" | "number" | "position"> & {
+type PlayerSearchRow = Pick<
+  Tables["players"]["Row"],
+  "id" | "name" | "number" | "position" | "photo_url"
+> & {
   teams: Pick<Tables["teams"]["Row"], "id" | "city" | "name" | "abbrev"> | null;
 };
-const PLAYER_SEARCH_SELECT = "id, name, number, position, teams(id, city, name, abbrev)";
+const PLAYER_SEARCH_SELECT =
+  "id, name, number, position, photo_url, teams(id, city, name, abbrev)";
 
 function toPlayerHit(row: PlayerSearchRow): PlayerHit | null {
   // A dangling team_id (shouldn't happen, FK-enforced) would leave the embedded
@@ -198,6 +202,7 @@ function toPlayerHit(row: PlayerSearchRow): PlayerHit | null {
     name: row.name,
     number: row.number ?? 0,
     position: row.position as Position,
+    photoUrl: row.photo_url ?? undefined,
     team: row.teams,
   };
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Rows3 } from "lucide-react";
 import type { Player, TeamRoster, Unit } from "@/lib/types";
 import type { TeamMeta } from "@/lib/roster-source";
 import { resolveUnit } from "@/lib/formations";
@@ -56,33 +56,41 @@ export default function DepthChartField({
     >
       {/* Header */}
       <div
-        className="flex items-start justify-between px-5 pb-3"
+        className="px-5 pb-3"
         style={{
           background: "#0a0e1a",
           flex: "0 0 auto",
           paddingTop: "max(env(safe-area-inset-top), 12px)",
         }}
       >
-        <button
-          type="button"
-          onClick={() => setNavOpen(true)}
-          aria-label="Switch team or search players"
-          className="flex items-center gap-1 text-left min-w-0"
-          style={{ touchAction: "manipulation" }}
-        >
-          <h1
-            className="text-[10px] font-semibold tracking-widest"
-            style={{ color: team.colors.uiAccent }}
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setNavOpen(true)}
+            aria-label="Switch team or search players"
+            className="flex items-center gap-1 text-left min-w-0"
+            style={{ touchAction: "manipulation" }}
           >
-            {team.city.toUpperCase()} {team.name.toUpperCase()}
-          </h1>
-          <ChevronDown size={16} color="#A5ACAF" className="shrink-0" />
-        </button>
-        {/* Stacks vertically on phones so it never fights the team name for
-            horizontal room; a horizontal pill row only from tablet width up. */}
+            <h1
+              className="text-[10px] font-semibold tracking-widest"
+              style={{ color: team.colors.uiAccent }}
+            >
+              {team.city.toUpperCase()} {team.name.toUpperCase()}
+            </h1>
+            <ChevronDown size={16} color="#A5ACAF" className="shrink-0" />
+          </button>
+          {/* Wordmark — a fixed, non-interactive brand element, so it stays clear
+              of the team switcher and unit toggle's tap targets. */}
+          <div className="flex items-center gap-1 shrink-0" style={{ color: team.colors.uiAccent }}>
+            <Rows3 size={13} />
+            <span className="text-[10px] font-bold tracking-widest">depth</span>
+          </div>
+        </div>
+        {/* On its own row, 24px below the header line, so it never crowds the
+            team-switcher tap target the way sharing a row used to. */}
         <div
-          className="flex flex-col sm:flex-row rounded-xl p-1 gap-1"
-          style={{ background: "rgba(255,255,255,0.07)" }}
+          className="flex rounded-xl p-1 gap-1 mt-6"
+          style={{ background: "rgba(255,255,255,0.07)", width: "fit-content" }}
         >
           {(["offense", "defense", "special"] as const).map((unit) => (
             <button
