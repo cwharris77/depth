@@ -415,10 +415,6 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
           </>
         )}
       </div>
-
-      <div className="px-5 py-3 text-center text-[11px]" style={{ color: "#5b6472" }}>
-        Type a name, number, or team — no mode switch needed
-      </div>
     </>
   );
 }
