@@ -17,7 +17,7 @@ export default function FullScreenSheet({ isOpen, children }: FullScreenSheetPro
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex flex-col"
+          className="absolute inset-0 z-50 flex flex-col"
           style={{
             background: "linear-gradient(180deg, #0f1a2e 0%, #0a0e1a 100%)",
             paddingTop: "max(env(safe-area-inset-top), 12px)",

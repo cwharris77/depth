@@ -114,7 +114,7 @@ export default function PlayerCard({
       {player && (
         <>
           <motion.div
-            className="fixed inset-0 z-40"
+            className="absolute inset-0 z-40"
             style={{
               background: "rgba(0,0,0,0.6)",
               backdropFilter: "blur(4px)",
@@ -126,7 +126,7 @@ export default function PlayerCard({
           />
 
           <motion.div
-            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl overflow-hidden"
+            className="absolute bottom-0 left-0 right-0 z-50 rounded-t-3xl overflow-hidden"
             style={{
               background:
                 "linear-gradient(180deg, #0f1a2e 0%, #0a0e1a 100%)",
