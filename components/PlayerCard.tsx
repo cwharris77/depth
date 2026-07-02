@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useDragControls, type PanInfo } from "framer-motion";
 import Image from "next/image";
 import { X, Check } from "lucide-react";
 import type { Player, TeamColors, TeamRoster } from "@/lib/types";
@@ -84,6 +84,20 @@ export default function PlayerCard({
   // borders/watermarks. onAccent isn't needed here (card surfaces are dark).
   const colors = roster.team.colors;
   const accent = colors.uiAccent;
+  const dragControls = useDragControls();
+
+  // The card's content scrolls internally (overflow-y-auto below), so drag can
+  // only be initiated from the pull-handle — dragging anywhere else would fight
+  // vertical scroll/taps. dragControls + dragListener=false scopes it there.
+  const handleDragEnd = (
+    _event: PointerEvent | MouseEvent | TouchEvent,
+    info: PanInfo
+  ) => {
+    if (info.offset.y > 100 || info.velocity.y > 500) {
+      onClose();
+    }
+  };
+
   useEffect(() => {
     if (player) {
       document.body.classList.add("card-open");
@@ -123,8 +137,18 @@ export default function PlayerCard({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 350, damping: 38 }}
+            drag="y"
+            dragControls={dragControls}
+            dragListener={false}
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.5 }}
+            onDragEnd={handleDragEnd}
           >
-            <div className="flex justify-center pt-3 pb-1">
+            <div
+              className="flex justify-center pt-3 pb-1"
+              style={{ touchAction: "none" }}
+              onPointerDown={(e) => dragControls.start(e)}
+            >
               <div
                 className="rounded-full"
                 style={{
