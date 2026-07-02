@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Player, PlayerStatus, Position, SpecialSlot, Team, TeamRoster } from "./types";
 import type { RosterSource, TeamMeta } from "./roster-source";
 import type { Database } from "./database.types";
+import { type PlayerHit, rankByNameMatch } from "./search";
 
 // Postgres-backed RosterSource (roadmap: ESPN ingestion -> DB -> app). Reads
 // teams/players/depth_chart_entries/special_teams_slots and assembles the same
@@ -181,6 +182,64 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
     players,
     specialTeams,
   };
+}
+
+type PlayerSearchRow = Pick<Tables["players"]["Row"], "id" | "name" | "number" | "position"> & {
+  teams: Pick<Tables["teams"]["Row"], "id" | "city" | "name" | "abbrev"> | null;
+};
+const PLAYER_SEARCH_SELECT = "id, name, number, position, teams(id, city, name, abbrev)";
+
+function toPlayerHit(row: PlayerSearchRow): PlayerHit | null {
+  // A dangling team_id (shouldn't happen, FK-enforced) would leave the embedded
+  // relation null — skip rather than surface a hit with no team to jump to.
+  if (!row.teams) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    number: row.number ?? 0,
+    position: row.position as Position,
+    team: row.teams,
+  };
+}
+
+// Searches every ingested team's players, not just one roster — backs the nav's
+// player-search mode so it can surface a hit on any of the 32 teams. Runs the three
+// match kinds (name substring, exact position, exact number) as separate queries
+// rather than building one OR'd filter string, so user input never gets interpolated
+// into PostgREST filter syntax. `players_name_trgm_idx` (pg_trgm GIN) keeps the name
+// ILIKE fast as the table grows past the current ~2,000 rows.
+export async function searchAllPlayers(query: string, limit = 8): Promise<PlayerHit[]> {
+  const q = query.trim();
+  if (!q) return [];
+  const client = supabase();
+
+  const asNumber = Number(q);
+  const isNumberQuery = Number.isInteger(asNumber);
+
+  const queries = [
+    client.from("players").select(PLAYER_SEARCH_SELECT).ilike("name", `%${q}%`).limit(limit).returns<PlayerSearchRow[]>(),
+    client.from("players").select(PLAYER_SEARCH_SELECT).ilike("position", q).limit(limit).returns<PlayerSearchRow[]>(),
+  ];
+  if (isNumberQuery) {
+    queries.push(
+      client.from("players").select(PLAYER_SEARCH_SELECT).eq("number", asNumber).limit(limit).returns<PlayerSearchRow[]>(),
+    );
+  }
+
+  const results = await Promise.all(queries);
+  for (const { error } of results) {
+    if (error) throw new Error(`players search failed: ${error.message}`);
+  }
+
+  const byId = new Map<string, PlayerHit>();
+  for (const { data } of results) {
+    for (const row of data ?? []) {
+      const hit = toPlayerHit(row);
+      if (hit) byId.set(hit.id, hit);
+    }
+  }
+
+  return rankByNameMatch([...byId.values()], q).slice(0, limit);
 }
 
 async function fetchAllTeamMeta(): Promise<TeamRow[]> {

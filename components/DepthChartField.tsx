@@ -10,6 +10,7 @@ import PlayerDot from "./PlayerDot";
 import PlayerCard from "./PlayerCard";
 import FullScreenSheet from "./FullScreenSheet";
 import NavSwitcher from "./NavSwitcher";
+import OpenPlayerFromQuery from "./OpenPlayerFromQuery";
 
 const UNIT_LABELS: Record<Unit, string> = {
   offense: "Offense",
@@ -161,6 +162,8 @@ export default function DepthChartField({
         onClose={() => setSelectedPlayer(null)}
         onSelectPlayer={setSelectedPlayer}
       />
+
+      <OpenPlayerFromQuery players={roster.players} onOpen={handleNavSelectPlayer} />
     </div>
   );
 }
