@@ -139,6 +139,7 @@ export default function DepthChartField({
                 onClick={handlePlayerClick}
                 teamPrimary={team.colors.primary}
                 teamColors={team.colors}
+                unit={activeUnit}
               />
             );
           })}
