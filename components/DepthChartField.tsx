@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { Search, X } from "lucide-react";
 import type { Player, TeamRoster, Unit } from "@/lib/types";
+import type { TeamMeta } from "@/lib/roster-source";
 import { resolveUnit } from "@/lib/formations";
 import { searchPlayers, unitForPosition } from "@/lib/search";
 import PlayerDot from "./PlayerDot";
 import PlayerCard from "./PlayerCard";
+import SlideDownSheet from "./SlideDownSheet";
+import TeamSwitcher from "./TeamSwitcher";
 
 const UNIT_LABELS: Record<Unit, string> = {
   offense: "Offense",
@@ -17,10 +19,17 @@ const UNIT_LABELS: Record<Unit, string> = {
 
 // Pure client component: it receives one resolved roster as a prop and never
 // imports the team registry, so a page ships only its own team's data — not all 32.
-export default function DepthChartField({ roster }: { roster: TeamRoster }) {
+export default function DepthChartField({
+  roster,
+  teams,
+}: {
+  roster: TeamRoster;
+  teams: TeamMeta[];
+}) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeUnit, setActiveUnit] = useState<Unit>("offense");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
   const [query, setQuery] = useState("");
 
   const { team } = roster;
@@ -34,6 +43,16 @@ export default function DepthChartField({ roster }: { roster: TeamRoster }) {
   const closeSearch = () => {
     setSearchOpen(false);
     setQuery("");
+  };
+
+  const openSearch = () => {
+    setSwitcherOpen(false);
+    setSearchOpen(true);
+  };
+
+  const openSwitcher = () => {
+    closeSearch();
+    setSwitcherOpen(true);
   };
 
   // Selecting a search hit jumps the field to that player's unit, then opens them.
@@ -54,14 +73,20 @@ export default function DepthChartField({ roster }: { roster: TeamRoster }) {
     >
       {/* Header */}
       <div
-        className="flex items-center justify-between px-5 pb-3"
+        className="flex items-start justify-between px-5 pb-3"
         style={{
           background: "#0a0e1a",
           flex: "0 0 auto",
           paddingTop: "max(env(safe-area-inset-top), 12px)",
         }}
       >
-        <div>
+        <button
+          type="button"
+          onClick={openSwitcher}
+          aria-label="Switch team"
+          className="text-left"
+          style={{ touchAction: "manipulation" }}
+        >
           <div
             className="text-[10px] font-semibold tracking-widest"
             style={{ color: team.colors.uiAccent }}
@@ -74,13 +99,13 @@ export default function DepthChartField({ roster }: { roster: TeamRoster }) {
           >
             Depth Chart
           </h1>
-        </div>
-        <div className="flex items-center gap-2">
+        </button>
+        <div className="flex items-start gap-2">
         <button
           type="button"
-          onClick={() => setSearchOpen(true)}
+          onClick={openSearch}
           aria-label="Search players"
-          className="flex items-center justify-center rounded-xl"
+          className="flex items-center justify-center rounded-xl shrink-0"
           style={{
             width: 34,
             height: 34,
@@ -91,8 +116,10 @@ export default function DepthChartField({ roster }: { roster: TeamRoster }) {
         >
           <Search size={16} />
         </button>
+        {/* Stacks vertically below 360px so it never fights the team name for
+            horizontal room; a normal horizontal pill row from 360px up. */}
         <div
-          className="flex rounded-xl p-1 gap-1"
+          className="flex flex-col min-[360px]:flex-row rounded-xl p-1 gap-1"
           style={{ background: "rgba(255,255,255,0.07)" }}
         >
           {(["offense", "defense", "special"] as const).map((unit) => (
@@ -158,104 +185,96 @@ export default function DepthChartField({ roster }: { roster: TeamRoster }) {
         </div>
       </div>
 
-      <AnimatePresence>
-        {searchOpen && (
-          <>
-            <motion.div
-              className="fixed inset-0 z-40"
-              style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeSearch}
+      <SlideDownSheet
+        isOpen={searchOpen}
+        onClose={closeSearch}
+        accentColor={team.colors.uiAccent}
+      >
+        <div className="flex items-center gap-2 px-4 pt-3 pb-3">
+          <div
+            className="flex items-center gap-2 flex-1 rounded-xl px-3"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              border: `1px solid ${team.colors.uiAccent}55`,
+            }}
+          >
+            <Search size={16} color={team.colors.uiAccent} />
+            <input
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search players"
+              className="flex-1 bg-transparent outline-none py-2.5 text-base"
+              style={{ color: "#f0f4ff" }}
             />
-            <motion.div
-              className="fixed left-0 right-0 top-0 z-50 rounded-b-3xl overflow-hidden"
-              style={{
-                background: "linear-gradient(180deg, #0f1a2e 0%, #0a0e1a 100%)",
-                borderBottom: `1px solid ${team.colors.uiAccent}40`,
-                paddingTop: "max(env(safe-area-inset-top), 12px)",
-                maxHeight: "85dvh",
-              }}
-              initial={{ y: "-100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "-100%" }}
-              transition={{ type: "spring", stiffness: 360, damping: 38 }}
-            >
-              <div className="flex items-center gap-2 px-4 pt-3 pb-3">
+          </div>
+          <button
+            type="button"
+            onClick={closeSearch}
+            aria-label="Close search"
+            className="rounded-full p-2"
+            style={{ background: "rgba(255,255,255,0.08)", touchAction: "manipulation" }}
+          >
+            <X size={18} color="#A5ACAF" />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto px-3 pb-4" style={{ maxHeight: "calc(85dvh - 64px)" }}>
+          {query.trim() === "" ? (
+            <div className="px-3 py-6 text-center text-sm" style={{ color: "#A5ACAF" }}>
+              Search any player by name, number, or position
+            </div>
+          ) : results.length === 0 ? (
+            <div className="px-3 py-6 text-center text-sm" style={{ color: "#A5ACAF" }}>
+              No players match “{query.trim()}”
+            </div>
+          ) : (
+            results.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => handleSearchSelect(p)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left"
+                style={{ touchAction: "manipulation" }}
+              >
                 <div
-                  className="flex items-center gap-2 flex-1 rounded-xl px-3"
+                  className="flex items-center justify-center rounded-lg text-xs font-bold"
                   style={{
+                    width: 34,
+                    height: 34,
                     background: "rgba(255,255,255,0.06)",
-                    border: `1px solid ${team.colors.uiAccent}55`,
+                    color: "#f0f4ff",
                   }}
                 >
-                  <Search size={16} color={team.colors.uiAccent} />
-                  <input
-                    autoFocus
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search players"
-                    className="flex-1 bg-transparent outline-none py-2.5 text-base"
-                    style={{ color: "#f0f4ff" }}
-                  />
+                  {p.number}
                 </div>
-                <button
-                  type="button"
-                  onClick={closeSearch}
-                  aria-label="Close search"
-                  className="rounded-full p-2"
-                  style={{ background: "rgba(255,255,255,0.08)", touchAction: "manipulation" }}
-                >
-                  <X size={18} color="#A5ACAF" />
-                </button>
-              </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold truncate" style={{ color: "#f0f4ff" }}>
+                    {p.name}
+                  </div>
+                  <div className="text-[11px]" style={{ color: "#A5ACAF" }}>
+                    {p.position} · {UNIT_LABELS[unitForPosition(p.position)]}
+                  </div>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      </SlideDownSheet>
 
-              <div className="overflow-y-auto px-3 pb-4" style={{ maxHeight: "calc(85dvh - 64px)" }}>
-                {query.trim() === "" ? (
-                  <div className="px-3 py-6 text-center text-sm" style={{ color: "#A5ACAF" }}>
-                    Search any player by name, number, or position
-                  </div>
-                ) : results.length === 0 ? (
-                  <div className="px-3 py-6 text-center text-sm" style={{ color: "#A5ACAF" }}>
-                    No players match “{query.trim()}”
-                  </div>
-                ) : (
-                  results.map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => handleSearchSelect(p)}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left"
-                      style={{ touchAction: "manipulation" }}
-                    >
-                      <div
-                        className="flex items-center justify-center rounded-lg text-xs font-bold"
-                        style={{
-                          width: 34,
-                          height: 34,
-                          background: "rgba(255,255,255,0.06)",
-                          color: "#f0f4ff",
-                        }}
-                      >
-                        {p.number}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-bold truncate" style={{ color: "#f0f4ff" }}>
-                          {p.name}
-                        </div>
-                        <div className="text-[11px]" style={{ color: "#A5ACAF" }}>
-                          {p.position} · {UNIT_LABELS[unitForPosition(p.position)]}
-                        </div>
-                      </div>
-                    </button>
-                  ))
-                )}
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <SlideDownSheet
+        isOpen={switcherOpen}
+        onClose={() => setSwitcherOpen(false)}
+        accentColor={team.colors.uiAccent}
+      >
+        <TeamSwitcher
+          teams={teams}
+          currentTeamId={team.id}
+          currentConference={team.conference}
+          accentColor={team.colors.uiAccent}
+          onClose={() => setSwitcherOpen(false)}
+        />
+      </SlideDownSheet>
 
       <PlayerCard
         player={selectedPlayer}
