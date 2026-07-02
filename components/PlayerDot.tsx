@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { Player, RenderSlot, TeamColors } from "@/lib/types";
+import type { Player, RenderSlot, TeamColors, Unit } from "@/lib/types";
 import { readableTextOn } from "@/lib/colors";
 
 interface PlayerDotProps {
@@ -11,7 +11,19 @@ interface PlayerDotProps {
   onClick: (player: Player) => void;
   teamPrimary: string;
   teamColors: TeamColors;
+  unit: Unit;
 }
+
+// How tightly each unit's dots pack together determines when names start
+// colliding, so the label breakpoint is per-unit rather than one shared width.
+// Offense (OL shoulder-to-shoulder) needs the most room; special teams (~5
+// players spread across the whole field) never collide, so its names are
+// always visible.
+const LABEL_VISIBILITY: Record<Unit, string> = {
+  offense: "hidden min-[720px]:block",
+  defense: "hidden min-[520px]:block",
+  special: "block",
+};
 
 const NAME_SUFFIXES = new Set(["jr", "jr.", "sr", "sr.", "ii", "iii", "iv", "v"]);
 
@@ -30,6 +42,7 @@ export default function PlayerDot({
   onClick,
   teamPrimary,
   teamColors,
+  unit,
 }: PlayerDotProps) {
   // Team-identity dot: real primary fill, real accent (secondary) ring — e.g. the
   // Chargers read as electric-blue center, gold ring. Selection swaps to a white
@@ -84,10 +97,11 @@ export default function PlayerDot({
         {player.number}
       </motion.div>
 
-      {/* Position + name. Hidden on a narrow field (number-only); shown when the field
-          is wide enough (.dot-label container query in globals.css). Wraps instead of
-          truncating so long names like "Smith-Njigba" stay readable. */}
-      <div className="hidden min-[720px]:block mt-1 text-center" style={{ maxWidth: 72 }}>
+      {/* Position + name. Breakpoint varies per unit (LABEL_VISIBILITY) since name
+          collisions depend on how tightly that unit's dots are packed, not screen
+          width alone. Wraps instead of truncating so long names like
+          "Smith-Njigba" stay readable. */}
+      <div className={`${LABEL_VISIBILITY[unit]} mt-1 text-center`} style={{ maxWidth: 72 }}>
         <div
           className="text-[8px] font-semibold"
           style={{ color: "#A5ACAF", letterSpacing: "0.05em" }}
