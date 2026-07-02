@@ -81,10 +81,10 @@ export default function DepthChartField({
           </button>
           {/* Wordmark — a fixed, non-interactive brand element, so it stays clear
               of the team switcher and unit toggle's tap targets. */}
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-0.5 shrink-0">
             <svg
-              width="14"
-              height="14"
+              width="20"
+              height="20"
               viewBox="0 0 16 16"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -94,7 +94,7 @@ export default function DepthChartField({
               <rect x="1" y="7" width="8" height="2" rx="1" fill="currentColor" />
               <rect x="1" y="11.5" width="5" height="2" rx="1" fill="currentColor" />
             </svg>
-            <span className="text-[10px] font-bold tracking-widest" style={{ color: "#A5ACAF" }}>
+            <span className="text-sm font-bold tracking-widest" style={{ color: "#A5ACAF" }}>
               depth
             </span>
           </div>
