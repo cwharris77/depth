@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BarChart3, ChevronDown } from "lucide-react";
+import { ChevronDown, Layers } from "lucide-react";
 import type { Player, TeamRoster, Unit } from "@/lib/types";
 import type { TeamMeta } from "@/lib/roster-source";
 import { resolveUnit } from "@/lib/formations";
@@ -82,7 +82,7 @@ export default function DepthChartField({
           {/* Wordmark — a fixed, non-interactive brand element, so it stays clear
               of the team switcher and unit toggle's tap targets. */}
           <div className="flex items-center gap-1 shrink-0">
-            <BarChart3 size={13} style={{ color: team.colors.uiAccent }} />
+            <Layers size={13} style={{ color: team.colors.uiAccent }} />
             <span className="text-[10px] font-bold tracking-widest" style={{ color: "#A5ACAF" }}>
               depth
             </span>
