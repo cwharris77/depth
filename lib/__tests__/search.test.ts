@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { searchPlayers, unitForPosition } from "../search";
+import { rankByNameMatch, searchPlayers, unitForPosition } from "../search";
 import { staticRosterSource } from "../roster-source";
 import { DEFAULT_TEAM_ID } from "../teams";
 import type { Player, Position, TeamRoster } from "../types";
@@ -78,5 +78,25 @@ describe("searchPlayers", () => {
   it("finds a real Seahawks player by name", () => {
     const hits = searchPlayers(roster, "geno");
     expect(hits.some((x) => x.name.includes("Geno"))).toBe(true);
+  });
+});
+
+describe("rankByNameMatch", () => {
+  // Shared by searchPlayers above and searchAllPlayers (lib/roster-source.db.ts),
+  // which merges several separately-filtered DB queries and needs this same
+  // prefix-first-then-alphabetical ordering applied after the merge.
+  it("ranks prefix matches ahead of mid-string matches, then alphabetically", () => {
+    const hits = [{ name: "Jaxon Smith-Njigba" }, { name: "Smith Jones" }, { name: "Adam Smith" }];
+    expect(rankByNameMatch(hits, "smith").map((h) => h.name)).toEqual([
+      "Smith Jones",
+      "Adam Smith",
+      "Jaxon Smith-Njigba",
+    ]);
+  });
+
+  it("does not mutate the input array", () => {
+    const hits = [{ name: "B" }, { name: "A" }];
+    rankByNameMatch(hits, "");
+    expect(hits.map((h) => h.name)).toEqual(["B", "A"]);
   });
 });

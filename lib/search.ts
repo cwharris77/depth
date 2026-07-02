@@ -1,4 +1,4 @@
-import type { Player, Position, TeamRoster, Unit } from "./types";
+import type { Player, Position, Team, TeamRoster, Unit } from "./types";
 
 const OFFENSE_POSITIONS = new Set<Position>([
   "QB", "RB", "WR", "TE", "LT", "LG", "C", "RG", "RT",
@@ -15,8 +15,30 @@ export function unitForPosition(position: Position): Unit {
   return "special";
 }
 
+// A player-search hit that can come from any of the 32 teams (searchAllPlayers,
+// lib/roster-source.db.ts), not just the roster already loaded on the client — so it
+// carries its own team, unlike a plain roster Player.
+export interface PlayerHit {
+  id: string;
+  name: string;
+  number: number;
+  position: Position;
+  team: Pick<Team, "id" | "city" | "name" | "abbrev">;
+}
+
+// Name-prefix hits rank first, then alphabetical — stable and predictable. Shared by
+// the single-roster search below and the cross-team DB search, which merges a few
+// separately-filtered queries and needs the same final ordering.
+export function rankByNameMatch<T extends { name: string }>(hits: T[], query: string): T[] {
+  const q = query.trim().toLowerCase();
+  return [...hits].sort((a, b) => {
+    const aStarts = a.name.toLowerCase().startsWith(q) ? 0 : 1;
+    const bStarts = b.name.toLowerCase().startsWith(q) ? 0 : 1;
+    return aStarts - bStarts || a.name.localeCompare(b.name);
+  });
+}
+
 // Match players by name (substring), exact jersey number, or exact position.
-// Name-prefix hits rank first, then alphabetical — stable and predictable.
 export function searchPlayers(
   roster: TeamRoster,
   query: string,
@@ -25,17 +47,11 @@ export function searchPlayers(
   const q = query.trim().toLowerCase();
   if (!q) return [];
 
-  return roster.players
-    .filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.position.toLowerCase() === q ||
-        String(p.number) === q,
-    )
-    .sort((a, b) => {
-      const aStarts = a.name.toLowerCase().startsWith(q) ? 0 : 1;
-      const bStarts = b.name.toLowerCase().startsWith(q) ? 0 : 1;
-      return aStarts - bStarts || a.name.localeCompare(b.name);
-    })
-    .slice(0, limit);
+  const matches = roster.players.filter(
+    (p) =>
+      p.name.toLowerCase().includes(q) ||
+      p.position.toLowerCase() === q ||
+      String(p.number) === q,
+  );
+  return rankByNameMatch(matches, q).slice(0, limit);
 }
