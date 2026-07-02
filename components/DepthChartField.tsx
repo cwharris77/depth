@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Search, ChevronDown, X } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import type { Player, TeamRoster, Unit } from "@/lib/types";
 import type { TeamMeta } from "@/lib/roster-source";
 import { resolveUnit } from "@/lib/formations";
-import { searchPlayers, unitForPosition } from "@/lib/search";
+import { unitForPosition } from "@/lib/search";
 import PlayerDot from "./PlayerDot";
 import PlayerCard from "./PlayerCard";
-import SlideDownSheet from "./SlideDownSheet";
-import TeamSwitcher from "./TeamSwitcher";
+import FullScreenSheet from "./FullScreenSheet";
+import NavSwitcher from "./NavSwitcher";
 
 const UNIT_LABELS: Record<Unit, string> = {
   offense: "Offense",
@@ -28,38 +28,20 @@ export default function DepthChartField({
 }) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeUnit, setActiveUnit] = useState<Unit>("offense");
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [switcherOpen, setSwitcherOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  const [navOpen, setNavOpen] = useState(false);
 
   const { team } = roster;
   const slots = resolveUnit(roster, activeUnit);
-  const results = searchPlayers(roster, query);
 
   const handlePlayerClick = (player: Player) => {
     setSelectedPlayer((prev) => (prev?.id === player.id ? null : player));
   };
 
-  const closeSearch = () => {
-    setSearchOpen(false);
-    setQuery("");
-  };
-
-  const openSearch = () => {
-    setSwitcherOpen(false);
-    setSearchOpen(true);
-  };
-
-  const openSwitcher = () => {
-    closeSearch();
-    setSwitcherOpen(true);
-  };
-
-  // Selecting a search hit jumps the field to that player's unit, then opens them.
-  const handleSearchSelect = (player: Player) => {
+  // A player picked from the nav's player search jumps the field to their unit,
+  // then opens them — same behavior the old header search had.
+  const handleNavSelectPlayer = (player: Player) => {
     setActiveUnit(unitForPosition(player.position));
     setSelectedPlayer(player);
-    closeSearch();
   };
 
   return (
@@ -82,47 +64,23 @@ export default function DepthChartField({
       >
         <button
           type="button"
-          onClick={openSwitcher}
-          aria-label="Switch team"
+          onClick={() => setNavOpen(true)}
+          aria-label="Switch team or search players"
           className="flex items-center gap-1 text-left min-w-0"
           style={{ touchAction: "manipulation" }}
         >
-          <div className="min-w-0">
-            <div
-              className="text-[10px] font-semibold tracking-widest"
-              style={{ color: team.colors.uiAccent }}
-            >
-              {team.city.toUpperCase()} {team.name.toUpperCase()}
-            </div>
-            <h1
-              className="text-xl font-black leading-tight"
-              style={{ color: "#f0f4ff", letterSpacing: "-0.02em" }}
-            >
-              Depth Chart
-            </h1>
-          </div>
+          <h1
+            className="text-[10px] font-semibold tracking-widest"
+            style={{ color: team.colors.uiAccent }}
+          >
+            {team.city.toUpperCase()} {team.name.toUpperCase()}
+          </h1>
           <ChevronDown size={16} color="#A5ACAF" className="shrink-0" />
         </button>
-        <div className="flex items-start gap-2">
-        <button
-          type="button"
-          onClick={openSearch}
-          aria-label="Search players"
-          className="flex items-center justify-center rounded-xl shrink-0"
-          style={{
-            width: 34,
-            height: 34,
-            background: "rgba(255,255,255,0.07)",
-            color: "#A5ACAF",
-            touchAction: "manipulation",
-          }}
-        >
-          <Search size={16} />
-        </button>
-        {/* Stacks vertically below 360px so it never fights the team name for
-            horizontal room; a normal horizontal pill row from 360px up. */}
+        {/* Stacks vertically on phones so it never fights the team name for
+            horizontal room; a horizontal pill row only from tablet width up. */}
         <div
-          className="flex flex-col min-[360px]:flex-row rounded-xl p-1 gap-1"
+          className="flex flex-col sm:flex-row rounded-xl p-1 gap-1"
           style={{ background: "rgba(255,255,255,0.07)" }}
         >
           {(["offense", "defense", "special"] as const).map((unit) => (
@@ -148,7 +106,6 @@ export default function DepthChartField({
               {UNIT_LABELS[unit]}
             </button>
           ))}
-        </div>
         </div>
       </div>
 
@@ -188,96 +145,14 @@ export default function DepthChartField({
         </div>
       </div>
 
-      <SlideDownSheet
-        isOpen={searchOpen}
-        onClose={closeSearch}
-        accentColor={team.colors.uiAccent}
-      >
-        <div className="flex items-center gap-2 px-4 pt-3 pb-3">
-          <div
-            className="flex items-center gap-2 flex-1 rounded-xl px-3"
-            style={{
-              background: "rgba(255,255,255,0.06)",
-              border: `1px solid ${team.colors.uiAccent}55`,
-            }}
-          >
-            <Search size={16} color={team.colors.uiAccent} />
-            <input
-              autoFocus
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search players"
-              className="flex-1 bg-transparent outline-none py-2.5 text-base"
-              style={{ color: "#f0f4ff" }}
-            />
-          </div>
-          <button
-            type="button"
-            onClick={closeSearch}
-            aria-label="Close search"
-            className="rounded-full p-2"
-            style={{ background: "rgba(255,255,255,0.08)", touchAction: "manipulation" }}
-          >
-            <X size={18} color="#A5ACAF" />
-          </button>
-        </div>
-
-        <div className="overflow-y-auto px-3 pb-4" style={{ maxHeight: "calc(85dvh - 64px)" }}>
-          {query.trim() === "" ? (
-            <div className="px-3 py-6 text-center text-sm" style={{ color: "#A5ACAF" }}>
-              Search any player by name, number, or position
-            </div>
-          ) : results.length === 0 ? (
-            <div className="px-3 py-6 text-center text-sm" style={{ color: "#A5ACAF" }}>
-              No players match “{query.trim()}”
-            </div>
-          ) : (
-            results.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => handleSearchSelect(p)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left"
-                style={{ touchAction: "manipulation" }}
-              >
-                <div
-                  className="flex items-center justify-center rounded-lg text-xs font-bold"
-                  style={{
-                    width: 34,
-                    height: 34,
-                    background: "rgba(255,255,255,0.06)",
-                    color: "#f0f4ff",
-                  }}
-                >
-                  {p.number}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold truncate" style={{ color: "#f0f4ff" }}>
-                    {p.name}
-                  </div>
-                  <div className="text-[11px]" style={{ color: "#A5ACAF" }}>
-                    {p.position} · {UNIT_LABELS[unitForPosition(p.position)]}
-                  </div>
-                </div>
-              </button>
-            ))
-          )}
-        </div>
-      </SlideDownSheet>
-
-      <SlideDownSheet
-        isOpen={switcherOpen}
-        onClose={() => setSwitcherOpen(false)}
-        accentColor={team.colors.uiAccent}
-      >
-        <TeamSwitcher
+      <FullScreenSheet isOpen={navOpen}>
+        <NavSwitcher
+          roster={roster}
           teams={teams}
-          currentTeamId={team.id}
-          currentConference={team.conference}
-          accentColor={team.colors.uiAccent}
-          onClose={() => setSwitcherOpen(false)}
+          onSelectPlayer={handleNavSelectPlayer}
+          onClose={() => setNavOpen(false)}
         />
-      </SlideDownSheet>
+      </FullScreenSheet>
 
       <PlayerCard
         player={selectedPlayer}
