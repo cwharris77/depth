@@ -29,8 +29,13 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function TeamPage({ params }: Params) {
   const { id } = await params;
   // The route resolves exactly one roster here (server-side) and passes it down,
-  // so the client only ever receives the team it's viewing.
-  const roster = await dbRosterSource.getTeam(id);
+  // so the client only ever receives the team it's viewing. Team metadata for all 32
+  // (for the switcher) is lightweight — no player data — so it's safe to ship on
+  // every page alongside the one full roster.
+  const [roster, teams] = await Promise.all([
+    dbRosterSource.getTeam(id),
+    dbRosterSource.listTeams(),
+  ]);
   if (!roster) {
     notFound();
   }
@@ -38,7 +43,7 @@ export default async function TeamPage({ params }: Params) {
   return (
     <>
       <RememberTeam id={id} />
-      <DepthChartField roster={roster} />
+      <DepthChartField roster={roster} teams={teams} />
     </>
   );
 }
