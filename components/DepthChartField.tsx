@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Layers } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import type { Player, TeamRoster, Unit } from "@/lib/types";
 import type { TeamMeta } from "@/lib/roster-source";
 import { resolveUnit } from "@/lib/formations";
@@ -82,7 +82,18 @@ export default function DepthChartField({
           {/* Wordmark — a fixed, non-interactive brand element, so it stays clear
               of the team switcher and unit toggle's tap targets. */}
           <div className="flex items-center gap-1 shrink-0">
-            <Layers size={13} style={{ color: team.colors.uiAccent }} />
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{ color: team.colors.uiAccent }}
+            >
+              <rect x="1" y="2.5" width="11" height="2" rx="1" fill="currentColor" />
+              <rect x="1" y="7" width="8" height="2" rx="1" fill="currentColor" />
+              <rect x="1" y="11.5" width="5" height="2" rx="1" fill="currentColor" />
+            </svg>
             <span className="text-[10px] font-bold tracking-widest" style={{ color: "#A5ACAF" }}>
               depth
             </span>
