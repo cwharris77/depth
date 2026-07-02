@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -176,6 +176,17 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
   const [playerResults, setPlayerResults] = useState<PlayerHit[]>([]);
   const [playersLoading, setPlayersLoading] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Autofocus only for pointer/keyboard devices (the command-palette feel this
+  // was designed for). On touch devices it would pop the virtual keyboard the
+  // instant the switcher opens, covering half the sheet before the user's asked
+  // for it.
+  useEffect(() => {
+    if (window.matchMedia("(pointer: fine)").matches) {
+      searchInputRef.current?.focus();
+    }
+  }, []);
 
   const q = query.trim().toLowerCase();
   const searching = q.length > 0;
@@ -308,7 +319,7 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
         >
           <Search size={16} color={accentColor} />
           <input
-            autoFocus
+            ref={searchInputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
