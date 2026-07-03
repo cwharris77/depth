@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -21,6 +21,13 @@ export const metadata: Metadata = {
   title: "Depth · NFL Depth Charts",
   description:
     "Interactive, mobile-first NFL depth charts. Pick a team and explore the roster on the field.",
+};
+
+// The UI is dark everywhere (bg #0a0e1a), so pin the mobile browser chrome and native
+// controls to match instead of flashing default white.
+export const viewport: Viewport = {
+  themeColor: "#0a0e1a",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
