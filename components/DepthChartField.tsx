@@ -67,23 +67,7 @@ export default function DepthChartField({
         }}
       >
         <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => setNavOpen(true)}
-            aria-label="Switch team or search players"
-            className="flex items-center gap-1 text-left min-w-0"
-            style={{ touchAction: "manipulation" }}
-          >
-            <h1
-              className="text-[10px] font-semibold tracking-widest"
-              style={{ color: team.colors.uiAccent }}
-            >
-              {team.city.toUpperCase()} {team.name.toUpperCase()}
-            </h1>
-            <ChevronDown size={16} color="#A5ACAF" className="shrink-0" />
-          </button>
-          {/* Wordmark — a fixed, non-interactive brand element, so it stays clear
-              of the team switcher and unit toggle's tap targets. */}
+          {/* Wordmark — fixed, non-interactive brand element, on the left. */}
           <div className="flex items-center gap-0.5 shrink-0">
             <svg
               width="20"
@@ -101,6 +85,28 @@ export default function DepthChartField({
               depth
             </span>
           </div>
+          {/* Team/unit switcher trigger — on the right, where users (Mia, Caleb)
+              instinctively tapped expecting a menu. Styled as a visible pill, not
+              plain text, so it reads as tappable. */}
+          <button
+            type="button"
+            onClick={() => setNavOpen(true)}
+            aria-label="Switch team or search players"
+            className="flex items-center gap-1.5 text-left min-w-0 rounded-full pl-3 pr-2 py-1.5"
+            style={{
+              touchAction: "manipulation",
+              background: "rgba(255,255,255,0.07)",
+              border: `1px solid ${team.colors.uiAccent}40`,
+            }}
+          >
+            <h1
+              className="text-[10px] font-semibold tracking-widest truncate"
+              style={{ color: team.colors.uiAccent }}
+            >
+              {team.city.toUpperCase()} {team.name.toUpperCase()}
+            </h1>
+            <ChevronDown size={14} color="#A5ACAF" className="shrink-0" />
+          </button>
         </div>
         {/* On its own row, 24px below the header line, so it never crowds the
             team-switcher tap target the way sharing a row used to. */}
