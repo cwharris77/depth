@@ -6,6 +6,7 @@ import type { Player, TeamRoster, Unit } from "@/lib/types";
 import type { TeamMeta } from "@/lib/roster-source";
 import { resolveUnit } from "@/lib/formations";
 import { unitForPosition } from "@/lib/search";
+import { readableTextOn } from "@/lib/colors";
 import PlayerDot from "./PlayerDot";
 import PlayerCard from "./PlayerCard";
 import FullScreenSheet from "./FullScreenSheet";
@@ -107,29 +108,36 @@ export default function DepthChartField({
           className="flex rounded-xl p-1 gap-1 mt-6"
           style={{ background: "rgba(255,255,255,0.07)", width: "fit-content" }}
         >
-          {(["offense", "defense", "special"] as const).map((unit) => (
-            <button
-              key={unit}
-              onClick={() => {
-                setActiveUnit(unit);
-                setSelectedPlayer(null);
-              }}
-              className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all"
-              style={{
-                background:
-                  activeUnit === unit ? team.colors.primary : "transparent",
-                color:
-                  activeUnit === unit ? team.colors.uiAccent : "#A5ACAF",
-                border:
-                  activeUnit === unit
-                    ? `1px solid ${team.colors.uiAccent}66`
-                    : "1px solid transparent",
-                touchAction: "manipulation",
-              }}
-            >
-              {UNIT_LABELS[unit]}
-            </button>
-          ))}
+          {(["offense", "defense", "special"] as const).map((unit) => {
+            // The pill fills with the team's brand primary, which can be any
+            // hue — uiAccent is only guaranteed to read on the dark app
+            // background, not on primary (e.g. Chiefs' #FF4D5E uiAccent on
+            // its #E31837 primary is ~1.45:1, illegible red-on-red). Derive
+            // the label color from primary itself instead.
+            const activeText = readableTextOn(team.colors.primary);
+            return (
+              <button
+                key={unit}
+                onClick={() => {
+                  setActiveUnit(unit);
+                  setSelectedPlayer(null);
+                }}
+                className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all"
+                style={{
+                  background:
+                    activeUnit === unit ? team.colors.primary : "transparent",
+                  color: activeUnit === unit ? activeText : "#A5ACAF",
+                  border:
+                    activeUnit === unit
+                      ? `1px solid ${activeText}66`
+                      : "1px solid transparent",
+                  touchAction: "manipulation",
+                }}
+              >
+                {UNIT_LABELS[unit]}
+              </button>
+            );
+          })}
         </div>
       </div>
 
