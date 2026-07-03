@@ -8,8 +8,8 @@ Interactive NFL depth chart viewer — pick any of the 32 teams, tap any player 
 
 | Route | What |
 |-------|------|
-| `/` | Redirects to the default team (Seahawks until 5a lands) |
-| `/team/[id]` | Depth chart for one team — fully static, one roster per page |
+| `/` | Redirects to your saved "my team" (5a), or the Seahawks by default |
+| `/team/[id]` | Depth chart for one team — prerendered per team, one roster per page |
 
 ## Development
 
@@ -21,18 +21,17 @@ npm test       # vitest run
 
 ## Where we are
 
-Phases 0–4 and cherry-picks 5b/5c are shipped. What's left:
+Phases 0–4, 5a/5b/5c, and most of Phase 6 (ESPN → Postgres ingestion) are shipped.
+What's left:
 
 | Item | What | Status |
 |------|------|--------|
-| **5a** | "My team" — remember last team in `localStorage`; home opens it | **next up** |
 | **5d** | Two-team compare — side-by-side depth at a position across two teams | not started |
-| **5e** | Real player photos — ESPN headshots on dots/cards | needs Phase 6 |
-| **6** | ESPN `ApiRosterSource` — build-time fetch, drop-in for `StaticRosterSource` | not started |
+| **5e** | Player photos on the field dots (cards + search already show ESPN headshots) | partial |
 | **7** | Multiple uniforms per team (home/away/color rush) | not started |
 
 See [`Projects/depth/Roadmap.md`](../obsidian/Projects/depth/Roadmap.md) in the Obsidian vault for full phase specs, design decisions, and ESPN API research.
 
 ## Data
 
-Static rosters live in `lib/teams/`. They're a point-in-time snapshot — accurate at build time, not live. The `RosterSource` interface (`lib/roster-source.ts`) is the seam: swapping in `ApiRosterSource` for Phase 6 requires no UI changes.
+Roster data lives in Supabase Postgres and is read at build/request time through the `RosterSource` seam (`lib/roster-source.ts`). The app uses the Postgres-backed `dbRosterSource` (`lib/roster-source.db.ts`); a weekly GitHub Action ingests fresh ESPN data — see [`docs/espn.md`](docs/espn.md). The bundled static registry in `lib/teams/` remains as the `staticRosterSource` used in tests and as a point-in-time fixture.
