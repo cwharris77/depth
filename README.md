@@ -27,8 +27,10 @@ What's left:
 | Item | What | Status |
 |------|------|--------|
 | **5d** | Two-team compare — side-by-side depth at a position across two teams | not started |
-| **5e** | Player photos on the field dots (cards + search already show ESPN headshots) | partial |
 | **7** | Multiple uniforms per team (home/away/color rush) | not started |
+
+Player photos (5e) are shipped on the player card and search; putting them on the
+field dots was intentionally dropped — the dots stay jersey-number circles.
 
 See [`Projects/depth/Roadmap.md`](../obsidian/Projects/depth/Roadmap.md) in the Obsidian vault for full phase specs, design decisions, and ESPN API research.
 
