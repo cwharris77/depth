@@ -207,7 +207,9 @@ export default function PlayerCard({
                 </div>
 
                 <button
+                  type="button"
                   onClick={onClose}
+                  aria-label="Close player card"
                   className="rounded-full p-2 mt-1"
                   style={{
                     background: "rgba(255,255,255,0.08)",
