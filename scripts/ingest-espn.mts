@@ -114,6 +114,12 @@ async function main() {
     for (const e of errors) console.log(`  ${e.team}: ${e.message}`);
   }
   if (status === "failure") process.exit(1);
+  // In scheduled runs (STRICT set) a partial run is a half-stale DB, so fail loud
+  // enough to turn the workflow red. Hand-runs stay lenient and exit 0 on partial.
+  if (status === "partial" && process.env.STRICT) {
+    console.error("STRICT: partial run treated as failure (some teams did not write)");
+    process.exit(1);
+  }
 }
 
 async function writeTeam(
