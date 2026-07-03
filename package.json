@@ -8,6 +8,7 @@
     "start": "next start",
     "test": "vitest run",
     "ingest:espn": "tsx scripts/ingest-espn.mts",
+    "gen:icons": "tsx scripts/gen-icons.mts",
     "db:types": "supabase gen types typescript --local > lib/database.types.ts"
   },
   "dependencies": {
@@ -26,6 +27,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
     "typescript": "^5",
