@@ -63,6 +63,11 @@ export default function PlayerDot({
   return (
     <button
       type="button"
+      // The visible name/position label is display:none at mobile widths
+      // (LABEL_VISIBILITY), so without this a screen reader announces the dot as
+      // just its jersey number. Name it explicitly so it's identifiable everywhere.
+      aria-label={`${player.name}, ${slot.label} #${player.number}`}
+      aria-pressed={isSelected}
       className="absolute flex flex-col items-center"
       style={{
         left: `${slot.x}%`,
