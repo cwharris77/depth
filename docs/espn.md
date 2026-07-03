@@ -91,25 +91,41 @@ See `.env.local.example`:
 - `SUPABASE_SERVICE_ROLE_KEY` — used only by `scripts/ingest-espn.mts` for writes.
   Secret. Never commit; put the real value in your local `.env.local` (gitignored).
 
-## Deferred: scheduling
+## Scheduling (GitHub Actions)
 
-This task does **not** implement automatic/nightly ingestion. `scripts/ingest-espn.mts`
-is run by hand today. Follow-up options for scheduling it:
+Ingestion runs on a schedule via `.github/workflows/ingest-espn.yml`, which just runs
+`npm run ingest:espn` verbatim — no separate copy of the logic. It's still not part of
+`next build`; a failed ingestion leaves the DB one run stale, never blocks a deploy.
 
-- **Supabase Edge Function + `pg_cron`**: deploy `ingest-espn.mts`'s logic as an Edge
-  Function (Deno-compatible fetch/upsert calls), then schedule it with
-  `pg_cron`/`pg_net` inside the Supabase project itself. Keeps the schedule
-  co-located with the data; needs the transform logic ported to Deno-friendly imports
-  (or bundled) since Edge Functions don't share this repo's Node toolchain directly.
-- **External scheduler** (e.g. GitHub Actions cron, a small VM cron job, or a
-  serverless cron trigger) calling `npm run ingest:espn` in this repo on a schedule
-  (e.g. weekly during the season). Simpler to wire up since it reuses the existing
-  script verbatim, but requires a place to run Node with the service role key as a
-  secret.
+- **Cadence:** weekly, `cron: '0 12 * * 3'` (Wednesday 12:00 UTC / 07:00 ET, after the
+  Tue/Wed waiver + practice-squad churn settles). Adjust the cron to change it.
+- **Manual runs:** the workflow also has `workflow_dispatch`, so you can trigger it
+  on demand from the repo's Actions tab (or `gh workflow run ingest-espn.yml`).
+- **Failure = red run:** the workflow sets `STRICT=1`, which makes the script exit
+  non-zero on a **partial** run (some teams failed to write), not just a total failure.
+  So a half-stale ingestion turns the run red and fires GitHub's built-in failure
+  email, instead of silently going green. Hand-runs (no `STRICT`) stay lenient and
+  exit 0 on partial. Every run still records one `ingestion_runs` row either way.
+- **Overlap guard:** a `concurrency` group prevents two ingestions running at once.
 
-Either approach needs: a secret store for `SUPABASE_SERVICE_ROLE_KEY`, alerting on a
-`status: 'failure'` `ingestion_runs` row, and a decision on cadence (weekly is likely
-sufficient outside of injury-report-heavy weeks).
+### Required repo secrets
+
+The workflow needs these under **Settings → Secrets and variables → Actions**:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+Without them the run fails loudly on the `requireEnv` check — the intended behavior,
+not a silent no-op.
+
+### Other options considered
+
+- **Supabase Edge Function + `pg_cron`** — co-locates the schedule with the data but
+  requires porting the transform to Deno (a second copy of the logic to keep in sync).
+- **Vercel Cron** — would put the service-role key in the web runtime and fight
+  serverless timeouts for a 30–60s, 32-team job.
+
+GitHub Actions was chosen because it reuses the existing script with zero logic changes.
 
 ## Deferred: RLS policies
 
