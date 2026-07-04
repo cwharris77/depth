@@ -11,6 +11,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 dotenv.config({ path: ".env.local" });
 import { toDepthChartRows, toTeamRoster } from "../lib/espn/transform";
+import { parseStandings, type EspnStandings } from "../lib/espn/standings";
 import { TEAMS } from "../lib/teams/index";
 import type { EspnDepthcharts, EspnRoster, EspnTeamInfo } from "../lib/espn/types";
 import type { TeamRoster } from "../lib/types";
@@ -18,14 +19,28 @@ import type { Database } from "../lib/database.types";
 
 const SITE = "https://site.api.espn.com/apis/site/v2/sports/football/nfl";
 const CORE = "https://sports.core.api.espn.com/v2/sports/football/leagues/nfl";
+// Conference/division for every team, in one call — sourced from ESPN, not hand-curated.
+const STANDINGS = "https://site.api.espn.com/apis/v2/sports/football/nfl/standings?level=3";
 
 // Our registry uses a couple of abbreviations that differ from ESPN's.
 const ABBREV_ALIAS: Record<string, string> = { WAS: "WSH" };
 
-async function getJson<T>(url: string): Promise<T> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`${res.status} ${url}`);
-  return (await res.json()) as T;
+// ESPN's unofficial API blips intermittently (a team's roster can 404 on one call and
+// return 200 the next), which would otherwise skip that team for the whole run. Retry a
+// few times with backoff so a single flaky response doesn't drop a team.
+async function getJson<T>(url: string, attempts = 3): Promise<T> {
+  let lastError: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`${res.status} ${url}`);
+      return (await res.json()) as T;
+    } catch (e) {
+      lastError = e;
+      if (i < attempts - 1) await new Promise((r) => setTimeout(r, 500 * (i + 1)));
+    }
+  }
+  throw lastError;
 }
 
 async function espnTeamIndex(): Promise<Map<string, EspnTeamInfo>> {
@@ -52,18 +67,26 @@ async function main() {
 
   const startedAt = new Date().toISOString();
   const espnIndex = await espnTeamIndex();
+  const divisions = parseStandings(await getJson<EspnStandings>(STANDINGS));
   const built: Record<string, TeamRoster> = {};
   const errors: { team: string; message: string }[] = [];
 
   for (const roster of Object.values(TEAMS)) {
-    const meta = roster.team;
+    const seed = roster.team;
 
-    const abbrev = ABBREV_ALIAS[meta.abbrev.toUpperCase()] ?? meta.abbrev.toUpperCase();
+    const abbrev = ABBREV_ALIAS[seed.abbrev.toUpperCase()] ?? seed.abbrev.toUpperCase();
     const info = espnIndex.get(abbrev);
     if (!info) {
-      errors.push({ team: meta.id, message: `no ESPN team for abbrev ${meta.abbrev}` });
+      errors.push({ team: seed.id, message: `no ESPN team for abbrev ${seed.abbrev}` });
       continue;
     }
+    // Conference/division come from ESPN's standings (by team id), not the registry.
+    const espnDivision = divisions.get(info.id);
+    if (!espnDivision) {
+      errors.push({ team: seed.id, message: `no ESPN standings entry for id ${info.id}` });
+      continue;
+    }
+    const meta = { ...seed, ...espnDivision };
     try {
       const abbr = info.abbreviation.toLowerCase();
       const espnRoster = await getJson<EspnRoster>(`${SITE}/teams/${abbr}/roster`);

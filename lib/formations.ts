@@ -1,4 +1,4 @@
-import type { FormationSlot, RenderSlot, TeamRoster, Unit } from "./types";
+import type { FormationSlot, RenderSlot, TeamRosterSeed, Unit } from "./types";
 import { getPlayerById, getPlayersByPosition } from "./roster";
 
 // Shared, generic formations. Every team's offense/defense renders on these — slots
@@ -45,7 +45,7 @@ export const DEFENSE_FORMATION: FormationSlot[] = [
 // Resolve a unit to render-ready slots for a given roster.
 // - offense/defense: fill the shared formation by position group + index
 // - special: explicit per-team assignments; an unmarked (null) or missing player → empty slot
-export function resolveUnit(roster: TeamRoster, unit: Unit): RenderSlot[] {
+export function resolveUnit(roster: TeamRosterSeed, unit: Unit): RenderSlot[] {
   if (unit === "special") {
     return roster.specialTeams.map((slot) => ({
       key: slot.id,

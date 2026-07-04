@@ -1,12 +1,10 @@
 import type {
-  Conference,
-  Division,
   Player,
   PlayerStatus,
   Position,
   SpecialSlot,
   TeamColors,
-  TeamRoster,
+  TeamRosterSeed,
 } from "../types";
 
 // Builder for the best-effort static rosters (Phase 3). Player detail here is a
@@ -52,8 +50,6 @@ export interface TeamInput {
   city: string;
   name: string;
   abbrev: string;
-  conference: Conference;
-  division: Division;
   colors: TeamColors;
   players: RawPlayer[];
   // Special teams referenced by jersey number (returners are cross-position picks).
@@ -89,7 +85,7 @@ function buildPlayer(raw: RawPlayer, teamLabel: string): Player {
   };
 }
 
-export function buildTeam(input: TeamInput): TeamRoster {
+export function buildTeam(input: TeamInput): TeamRosterSeed {
   const teamLabel = `${input.city} ${input.name}`;
   const players = input.players.map((r) => buildPlayer(r, teamLabel));
 
@@ -113,8 +109,6 @@ export function buildTeam(input: TeamInput): TeamRoster {
       city: input.city,
       name: input.name,
       abbrev: input.abbrev,
-      conference: input.conference,
-      division: input.division,
       colors: input.colors,
     },
     players,

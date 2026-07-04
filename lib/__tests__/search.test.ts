@@ -1,13 +1,9 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect } from "vitest";
 import { rankByNameMatch, searchPlayers, unitForPosition } from "../search";
-import { staticRosterSource } from "../roster-source";
-import { DEFAULT_TEAM_ID } from "../teams";
-import type { Player, Position, TeamRoster } from "../types";
+import { TEAMS, DEFAULT_TEAM_ID } from "../teams";
+import type { Player, Position, TeamRosterSeed } from "../types";
 
-let roster: TeamRoster;
-beforeAll(async () => {
-  roster = (await staticRosterSource.getTeam(DEFAULT_TEAM_ID))!;
-});
+const roster: TeamRosterSeed = TEAMS[DEFAULT_TEAM_ID];
 
 function p(id: string, name: string, position: Position, number: number): Player {
   return {
@@ -15,7 +11,7 @@ function p(id: string, name: string, position: Position, number: number): Player
     age: 25, college: "", experience: 1, height: "6'0\"", weight: 200, bio: "",
   };
 }
-function rosterWith(players: Player[]): TeamRoster {
+function rosterWith(players: Player[]): TeamRosterSeed {
   return { ...roster, players };
 }
 

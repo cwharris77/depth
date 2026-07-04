@@ -105,3 +105,13 @@ export interface TeamRoster {
   // per-team and editorial, so it lives here.
   specialTeams: SpecialSlot[];
 }
+
+// The bundled registry (lib/teams) is a build-time seed for the ESPN ingestion, not the
+// app's source of truth. It omits conference/division because those come from ESPN's
+// standings at ingest time (see lib/espn/standings.ts), not hand-curated.
+export type TeamSeed = Omit<Team, "conference" | "division">;
+export interface TeamRosterSeed {
+  team: TeamSeed;
+  players: Player[];
+  specialTeams: SpecialSlot[];
+}
