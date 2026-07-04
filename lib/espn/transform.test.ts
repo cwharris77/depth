@@ -55,9 +55,9 @@ describe("toTeamColors", () => {
     expect(c.onAccent.toLowerCase()).toBe("#0a0e1a");
   });
 
-  it("uses the primary as the accent for teams whose secondary is black", () => {
-    // Falcons: red primary + black secondary. Black is an invisible accent on the
-    // dark UI, so these teams use their real (visible) primary instead.
+  it("uses the primary as the accent for teams whose secondary is black or white", () => {
+    // Falcons: red primary + black secondary. Cardinals: red primary + white secondary.
+    // Black/white are neutral, not distinguishing accents, so use the real primary.
     const falcons: EspnTeamInfo = {
       id: "1",
       abbreviation: "ATL",
@@ -65,8 +65,26 @@ describe("toTeamColors", () => {
       alternateColor: "000000",
       logos: [],
     };
-    const c = toTeamColors(falcons);
-    expect(c.uiAccent.toLowerCase()).toBe("#a71930");
+    const cardinals: EspnTeamInfo = {
+      id: "22",
+      abbreviation: "ARI",
+      color: "a40227",
+      alternateColor: "ffffff",
+      logos: [],
+    };
+    expect(toTeamColors(falcons).uiAccent.toLowerCase()).toBe("#a71930");
+    expect(toTeamColors(cardinals).uiAccent.toLowerCase()).toBe("#a40227");
+  });
+
+  it("overrides the Ravens accent to official gold (purple + black both fail on the dark UI)", () => {
+    const ravens: EspnTeamInfo = {
+      id: "33",
+      abbreviation: "BAL",
+      color: "29126f",
+      alternateColor: "000000",
+      logos: [],
+    };
+    expect(toTeamColors(ravens).uiAccent.toLowerCase()).toBe("#9e7c0c");
   });
 });
 

@@ -21,20 +21,30 @@ function hex(value: string | undefined, fallback: string): string {
   return value.startsWith("#") ? value : `#${value}`;
 }
 
-// These teams' ESPN secondary is black — an invisible accent on the dark UI — so they
-// use their real (visible) primary as the accent instead. Hand-picked exceptions, by
-// ESPN abbreviation: Falcons, Ravens, Panthers, Bengals, Saints.
-const ACCENT_FROM_PRIMARY = new Set(["ATL", "BAL", "CAR", "CIN", "NO"]);
+// A few teams need a hand-picked accent because neither ESPN color works on the dark
+// UI. Keyed by ESPN abbreviation → an official team color ESPN's two-color feed omits.
+// Ravens: purple primary and black secondary both fail contrast, so use official gold.
+const ACCENT_OVERRIDE: Record<string, string> = {
+  BAL: "#9e7c0c",
+};
+
+// Black and white aren't distinguishing team accents — teams whose ESPN secondary is
+// one of them (5 black, 3 white) use their real primary instead.
+function isNeutral(hexColor: string): boolean {
+  const v = hexColor.toLowerCase();
+  return v === "#000000" || v === "#ffffff";
+}
 
 export function toTeamColors(espn: EspnTeamInfo): TeamColors {
   const primary = hex(espn.color, "#000000");
   const secondary = hex(espn.alternateColor, "#ffffff");
-  // The UI accent is the team's real secondary — the pop color (Seahawks green),
-  // which is already what the dot ring uses, so dots and the team picker match. The
-  // five black-secondary teams use their primary instead, so the accent isn't black.
-  const uiAccent = ACCENT_FROM_PRIMARY.has(espn.abbreviation.toUpperCase())
-    ? primary
-    : secondary;
+  // The UI accent is the team's real secondary — the pop color (Seahawks green), which
+  // is already what the dot ring uses, so dots and the team picker match. Fall back to
+  // the primary when the secondary is a neutral black/white, or to a hand-picked
+  // official color for the rare team where neither ESPN color reads (Ravens gold).
+  const uiAccent =
+    ACCENT_OVERRIDE[espn.abbreviation.toUpperCase()] ??
+    (isNeutral(secondary) ? primary : secondary);
   return {
     primary,
     secondary,
