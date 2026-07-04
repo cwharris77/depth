@@ -25,10 +25,22 @@ const STANDINGS = "https://site.api.espn.com/apis/v2/sports/football/nfl/standin
 // Our registry uses a couple of abbreviations that differ from ESPN's.
 const ABBREV_ALIAS: Record<string, string> = { WAS: "WSH" };
 
-async function getJson<T>(url: string): Promise<T> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`${res.status} ${url}`);
-  return (await res.json()) as T;
+// ESPN's unofficial API blips intermittently (a team's roster can 404 on one call and
+// return 200 the next), which would otherwise skip that team for the whole run. Retry a
+// few times with backoff so a single flaky response doesn't drop a team.
+async function getJson<T>(url: string, attempts = 3): Promise<T> {
+  let lastError: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`${res.status} ${url}`);
+      return (await res.json()) as T;
+    } catch (e) {
+      lastError = e;
+      if (i < attempts - 1) await new Promise((r) => setTimeout(r, 500 * (i + 1)));
+    }
+  }
+  throw lastError;
 }
 
 async function espnTeamIndex(): Promise<Map<string, EspnTeamInfo>> {
