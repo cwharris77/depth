@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence, useDragControls, type PanInfo } from "framer-motion";
+import { motion, AnimatePresence, Reorder, useDragControls, type PanInfo } from "framer-motion";
 import Image from "next/image";
-import { X, Check } from "lucide-react";
-import type { Player, TeamColors, TeamRoster } from "@/lib/types";
+import { X, Check, GripVertical, RotateCcw } from "lucide-react";
+import type { Player, Position, TeamColors, TeamRoster } from "@/lib/types";
 import { getPlayersByPosition } from "@/lib/roster";
+import { markReorderHintSeen, seenReorderHint } from "@/lib/depth-overrides";
 import { statusColor, readableTextOn } from "@/lib/colors";
 
 interface PlayerCardProps {
@@ -13,6 +14,11 @@ interface PlayerCardProps {
   roster: TeamRoster;
   onClose: () => void;
   onSelectPlayer?: (player: Player) => void;
+  // Custom depth reordering (roadmap C). When onReorder is provided, the position-depth
+  // list gets a Reorder toggle that drag-sorts the players and reports the new id order.
+  onReorder?: (position: Position, orderedIds: string[]) => void;
+  onResetPosition?: (position: Position) => void;
+  isPositionCustom?: boolean;
 }
 
 const statusLabel: Record<string, string> = {
@@ -79,7 +85,12 @@ export default function PlayerCard({
   roster,
   onClose,
   onSelectPlayer,
+  onReorder,
+  onResetPosition,
+  isPositionCustom = false,
 }: PlayerCardProps) {
+  const [editing, setEditing] = useState(false);
+  const [showHint, setShowHint] = useState(false);
   // uiAccent is curated to read on the dark card; the alpha suffixes tint it for
   // borders/watermarks. onAccent isn't needed here (card surfaces are dark).
   const colors = roster.team.colors;
@@ -101,11 +112,20 @@ export default function PlayerCard({
   useEffect(() => {
     if (player) {
       document.body.classList.add("card-open");
+      // Fresh card: leave edit mode, and surface the one-time reorder hint.
+      setEditing(false);
+      setShowHint(!seenReorderHint());
     } else {
       document.body.classList.remove("card-open");
     }
     return () => document.body.classList.remove("card-open");
   }, [player]);
+
+  const toggleEditing = () => {
+    markReorderHintSeen();
+    setShowHint(false);
+    setEditing((e) => !e);
+  };
 
   const depthChart = player ? getPlayersByPosition(roster, player.position) : [];
 
@@ -316,12 +336,69 @@ export default function PlayerCard({
 
               {depthChart.length > 1 && (
                 <div className="px-6 pb-8">
-                  <div
-                    className="text-[10px] font-semibold mb-3"
-                    style={{ color: "#A5ACAF", letterSpacing: "0.1em" }}
-                  >
-                    POSITION DEPTH · {player.position}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="text-[10px] font-semibold"
+                        style={{ color: "#A5ACAF", letterSpacing: "0.1em" }}
+                      >
+                        POSITION DEPTH · {player.position}
+                      </span>
+                      {isPositionCustom && (
+                        <span
+                          className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                          style={{
+                            color: accent,
+                            background: `${accent}1a`,
+                            border: `1px solid ${accent}55`,
+                          }}
+                        >
+                          CUSTOM
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {isPositionCustom && onResetPosition && (
+                        <button
+                          type="button"
+                          onClick={() => onResetPosition(player.position)}
+                          className="flex items-center gap-1 text-[10px] font-bold"
+                          style={{ color: "#A5ACAF", touchAction: "manipulation" }}
+                        >
+                          <RotateCcw size={12} /> Reset
+                        </button>
+                      )}
+                      {onReorder && (
+                        <button
+                          type="button"
+                          onClick={toggleEditing}
+                          className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full"
+                          style={{
+                            color: editing ? colors.onAccent : accent,
+                            background: editing ? accent : `${accent}1a`,
+                            border: `1px solid ${accent}55`,
+                            touchAction: "manipulation",
+                          }}
+                        >
+                          {editing ? (
+                            "Done"
+                          ) : (
+                            <>
+                              <GripVertical size={12} /> Reorder
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
                   </div>
+
+                  {showHint && !editing && onReorder && (
+                    <div className="mb-2 text-[11px]" style={{ color: accent }}>
+                      Tip: tap Reorder to build your own depth chart — your order is saved
+                      on this device.
+                    </div>
+                  )}
+
                   <div
                     className="rounded-2xl overflow-hidden"
                     style={{
@@ -329,59 +406,103 @@ export default function PlayerCard({
                       border: "1px solid rgba(255,255,255,0.06)",
                     }}
                   >
-                    {depthChart.map((p, i) => {
-                      const isCurrent = p.id === player.id;
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() =>
-                            !isCurrent && onSelectPlayer?.(p)
-                          }
-                          className="w-full flex items-center gap-3 px-4 py-3 text-left"
-                          style={{
-                            background: isCurrent ? `${accent}1a` : "transparent",
-                            borderTop:
-                              i === 0
-                                ? "none"
-                                : "1px solid rgba(255,255,255,0.05)",
-                            touchAction: "manipulation",
-                            cursor: isCurrent ? "default" : "pointer",
-                          }}
-                        >
-                          <div
-                            className="text-[10px] font-bold"
+                    {editing && onReorder ? (
+                      <Reorder.Group
+                        axis="y"
+                        values={depthChart.map((p) => p.id)}
+                        onReorder={(ids) => onReorder(player.position, ids as string[])}
+                        style={{ listStyle: "none", margin: 0, padding: 0 }}
+                      >
+                        {depthChart.map((p, i) => (
+                          <Reorder.Item
+                            key={p.id}
+                            value={p.id}
+                            className="flex items-center gap-3 px-4 py-3"
                             style={{
-                              color: statusColor(p.status, colors),
-                              letterSpacing: "0.08em",
-                              minWidth: 64,
+                              background:
+                                p.id === player.id ? `${accent}1a` : "transparent",
+                              borderTop:
+                                i === 0 ? "none" : "1px solid rgba(255,255,255,0.05)",
+                              cursor: "grab",
+                              touchAction: "none",
                             }}
                           >
-                            {depthRankLabel[p.depthRank]}
-                          </div>
-                          <div
-                            className="text-xs font-bold"
+                            <GripVertical
+                              size={16}
+                              color="#A5ACAF"
+                              style={{ flexShrink: 0 }}
+                            />
+                            <div
+                              className="text-[10px] font-bold"
+                              style={{
+                                color: statusColor(p.status, colors),
+                                letterSpacing: "0.08em",
+                                minWidth: 64,
+                              }}
+                            >
+                              {depthRankLabel[p.depthRank]}
+                            </div>
+                            <div
+                              className="text-xs font-bold"
+                              style={{ color: "rgba(165,172,175,0.7)", minWidth: 28 }}
+                            >
+                              #{p.number}
+                            </div>
+                            <div
+                              className="flex-1 text-sm font-bold truncate"
+                              style={{ color: p.id === player.id ? accent : "#f0f4ff" }}
+                            >
+                              {p.name}
+                            </div>
+                          </Reorder.Item>
+                        ))}
+                      </Reorder.Group>
+                    ) : (
+                      depthChart.map((p, i) => {
+                        const isCurrent = p.id === player.id;
+                        return (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => !isCurrent && onSelectPlayer?.(p)}
+                            className="w-full flex items-center gap-3 px-4 py-3 text-left"
                             style={{
-                              color: "rgba(165,172,175,0.7)",
-                              minWidth: 28,
+                              background: isCurrent ? `${accent}1a` : "transparent",
+                              borderTop:
+                                i === 0 ? "none" : "1px solid rgba(255,255,255,0.05)",
+                              touchAction: "manipulation",
+                              cursor: isCurrent ? "default" : "pointer",
                             }}
                           >
-                            #{p.number}
-                          </div>
-                          <div
-                            className="flex-1 text-sm font-bold truncate"
-                            style={{
-                              color: isCurrent ? accent : "#f0f4ff",
-                            }}
-                          >
-                            {p.name}
-                          </div>
-                          {isCurrent && (
-                            <Check size={14} color={accent} strokeWidth={3} />
-                          )}
-                        </button>
-                      );
-                    })}
+                            <div
+                              className="text-[10px] font-bold"
+                              style={{
+                                color: statusColor(p.status, colors),
+                                letterSpacing: "0.08em",
+                                minWidth: 64,
+                              }}
+                            >
+                              {depthRankLabel[p.depthRank]}
+                            </div>
+                            <div
+                              className="text-xs font-bold"
+                              style={{ color: "rgba(165,172,175,0.7)", minWidth: 28 }}
+                            >
+                              #{p.number}
+                            </div>
+                            <div
+                              className="flex-1 text-sm font-bold truncate"
+                              style={{ color: isCurrent ? accent : "#f0f4ff" }}
+                            >
+                              {p.name}
+                            </div>
+                            {isCurrent && (
+                              <Check size={14} color={accent} strokeWidth={3} />
+                            )}
+                          </button>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
               )}
