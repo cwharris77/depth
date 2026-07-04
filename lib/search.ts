@@ -1,4 +1,4 @@
-import type { Player, Position, Team, TeamRoster, Unit } from "./types";
+import type { Player, Position, Team, TeamRosterSeed, Unit } from "./types";
 
 const OFFENSE_POSITIONS = new Set<Position>([
   "QB", "RB", "WR", "TE", "LT", "LG", "C", "RG", "RT",
@@ -41,7 +41,7 @@ export function rankByNameMatch<T extends { name: string }>(hits: T[], query: st
 
 // Match players by name (substring), exact jersey number, or exact position.
 export function searchPlayers(
-  roster: TeamRoster,
+  roster: TeamRosterSeed,
   query: string,
   limit = 8,
 ): Player[] {
