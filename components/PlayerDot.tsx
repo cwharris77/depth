@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import type { Player, RenderSlot, TeamColors, Unit } from "@/lib/types";
 import { readableTextOn } from "@/lib/colors";
+import { positionFullName } from "@/lib/positions";
 
 interface PlayerDotProps {
   player: Player;
@@ -66,7 +67,7 @@ export default function PlayerDot({
       // The visible name/position label is display:none at mobile widths
       // (LABEL_VISIBILITY), so without this a screen reader announces the dot as
       // just its jersey number. Name it explicitly so it's identifiable everywhere.
-      aria-label={`${player.name}, ${slot.label} #${player.number}`}
+      aria-label={`${player.name}, ${positionFullName(player.position)} #${player.number}`}
       aria-pressed={isSelected}
       className="absolute flex flex-col items-center"
       style={{
