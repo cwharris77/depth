@@ -105,7 +105,7 @@ function TeamRow({
           height: 32,
           background: team.colors.primary,
           color: badgeText,
-          border: `2px solid ${team.colors.secondary}`,
+          border: `1px solid ${team.colors.secondary}`,
         }}
       >
         {team.abbrev}
