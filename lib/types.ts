@@ -18,6 +18,11 @@ export interface Player {
   position: Position;
   depthRank: 1 | 2 | 3;
   status: PlayerStatus;
+  // Set only on players reordered by a user depth override (lib/depth-overrides.ts):
+  // a full-precision within-position rank that getPlayersByPosition prefers over the
+  // jersey-number tiebreak, so a custom order is honored past the top 3. Undefined for
+  // source data, which keeps the default jersey-number tiebreak.
+  order?: number;
   age: number;
   college: string;
   experience: number;

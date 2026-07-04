@@ -1,12 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown } from "lucide-react";
-import type { Player, TeamRoster, Unit } from "@/lib/types";
+import { useEffect, useMemo, useState } from "react";
+import { ChevronDown, RotateCcw } from "lucide-react";
+import type { Player, Position, TeamRoster, Unit } from "@/lib/types";
 import type { TeamMeta } from "@/lib/roster-source";
 import { resolveUnit } from "@/lib/formations";
 import { unitForPosition } from "@/lib/search";
 import { readableTextOn } from "@/lib/colors";
+import {
+  applyTeamOverride,
+  clearPositionOrder,
+  clearTeamOverride,
+  getTeamOverride,
+  hasOverride,
+  setPositionOrder,
+  type TeamDepthOverride,
+} from "@/lib/depth-overrides";
 import PlayerDot from "./PlayerDot";
 import PlayerCard from "./PlayerCard";
 import FullScreenSheet from "./FullScreenSheet";
@@ -33,7 +42,39 @@ export default function DepthChartField({
   const [navOpen, setNavOpen] = useState(false);
 
   const { team } = roster;
-  const slots = resolveUnit(roster, activeUnit);
+
+  // The user's custom depth ordering for this team (localStorage). Applied to the roster
+  // everything below renders from, so a reorder flows to the field dots and the card.
+  const [override, setOverride] = useState<TeamDepthOverride>({});
+  useEffect(() => {
+    setOverride(getTeamOverride(team.id));
+  }, [team.id]);
+
+  const displayRoster = useMemo(
+    () => applyTeamOverride(roster, override),
+    [roster, override],
+  );
+  const slots = resolveUnit(displayRoster, activeUnit);
+
+  // Keep the open card's player in sync with the reordered roster (fresh depthRank/status).
+  const displaySelected = selectedPlayer
+    ? (displayRoster.players.find((p) => p.id === selectedPlayer.id) ?? selectedPlayer)
+    : null;
+
+  const handleReorder = (position: Position, orderedIds: string[]) => {
+    setPositionOrder(team.id, position, orderedIds);
+    setOverride(getTeamOverride(team.id));
+  };
+
+  const handleResetPosition = (position: Position) => {
+    clearPositionOrder(team.id, position);
+    setOverride(getTeamOverride(team.id));
+  };
+
+  const handleResetTeam = () => {
+    clearTeamOverride(team.id);
+    setOverride({});
+  };
 
   const handlePlayerClick = (player: Player) => {
     setSelectedPlayer((prev) => (prev?.id === player.id ? null : player));
@@ -145,6 +186,23 @@ export default function DepthChartField({
             );
           })}
         </div>
+        {/* Tells the user this team's depth is their custom order, with one-tap revert. */}
+        {hasOverride(override) && (
+          <button
+            type="button"
+            onClick={handleResetTeam}
+            className="flex items-center gap-1 mt-3 text-[10px] font-bold px-2 py-1 rounded-full"
+            style={{
+              color: team.colors.uiAccent,
+              background: `${team.colors.uiAccent}1a`,
+              border: `1px solid ${team.colors.uiAccent}55`,
+              width: "fit-content",
+              touchAction: "manipulation",
+            }}
+          >
+            <RotateCcw size={11} /> Custom order · Reset all
+          </button>
+        )}
       </div>
 
       {/* Field — fills remaining viewport space */}
@@ -186,7 +244,7 @@ export default function DepthChartField({
 
       <FullScreenSheet isOpen={navOpen}>
         <NavSwitcher
-          roster={roster}
+          roster={displayRoster}
           teams={teams}
           onSelectPlayer={handleNavSelectPlayer}
           onClose={() => setNavOpen(false)}
@@ -194,13 +252,16 @@ export default function DepthChartField({
       </FullScreenSheet>
 
       <PlayerCard
-        player={selectedPlayer}
-        roster={roster}
+        player={displaySelected}
+        roster={displayRoster}
         onClose={() => setSelectedPlayer(null)}
         onSelectPlayer={setSelectedPlayer}
+        onReorder={handleReorder}
+        onResetPosition={handleResetPosition}
+        isPositionCustom={displaySelected ? !!override[displaySelected.position] : false}
       />
 
-      <OpenPlayerFromQuery players={roster.players} onOpen={handleNavSelectPlayer} />
+      <OpenPlayerFromQuery players={displayRoster.players} onOpen={handleNavSelectPlayer} />
     </div>
   );
 }
