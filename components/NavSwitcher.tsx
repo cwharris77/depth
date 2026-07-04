@@ -151,8 +151,9 @@ function PlayerRow({
         <div className="text-sm font-bold truncate" style={{ color: "#f0f4ff" }}>
           {hit.name}
         </div>
-        <div className="text-[11px]" style={{ color: "#A5ACAF" }}>
+        <div className="text-[11px] truncate" style={{ color: "#A5ACAF" }}>
           {hit.position} · {hit.team.name} · #{hit.number}
+          {hit.college ? ` · ${hit.college}` : ""}
         </div>
       </div>
       {highlighted && <CornerDownLeft size={14} color="#A5ACAF" />}

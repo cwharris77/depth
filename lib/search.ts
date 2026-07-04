@@ -24,6 +24,7 @@ export interface PlayerHit {
   number: number;
   position: Position;
   photoUrl?: string;
+  college?: string;
   team: Pick<Team, "id" | "city" | "name" | "abbrev">;
 }
 
@@ -39,7 +40,8 @@ export function rankByNameMatch<T extends { name: string }>(hits: T[], query: st
   });
 }
 
-// Match players by name (substring), exact jersey number, or exact position.
+// Match players by name (substring), college (substring), exact jersey number, or
+// exact position. College matching lets a fan pull up, say, every Georgia product.
 export function searchPlayers(
   roster: TeamRosterSeed,
   query: string,
@@ -51,6 +53,7 @@ export function searchPlayers(
   const matches = roster.players.filter(
     (p) =>
       p.name.toLowerCase().includes(q) ||
+      p.college.toLowerCase().includes(q) ||
       p.position.toLowerCase() === q ||
       String(p.number) === q,
   );
