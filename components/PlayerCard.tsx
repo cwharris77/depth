@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence, Reorder, useDragControls, type PanInfo } from "framer-motion";
 import Image from "next/image";
-import { X, Check, GripVertical, RotateCcw } from "lucide-react";
+import { X, Check, GripVertical, RotateCcw, Share2 } from "lucide-react";
 import type { Player, Position, TeamColors, TeamRoster } from "@/lib/types";
 import { getPlayersByPosition } from "@/lib/roster";
 import { markReorderHintSeen, seenReorderHint } from "@/lib/depth-overrides";
 import { statusColor, readableTextOn } from "@/lib/colors";
 import { positionFullName } from "@/lib/positions";
 import { experienceLabel } from "@/lib/format";
+import { playerDeepLinkPath } from "@/lib/share";
 
 interface PlayerCardProps {
   player: Player | null;
@@ -93,6 +94,7 @@ export default function PlayerCard({
 }: PlayerCardProps) {
   const [editing, setEditing] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const [copied, setCopied] = useState(false);
   // uiAccent is curated to read on the dark card; the alpha suffixes tint it for
   // borders/watermarks. onAccent isn't needed here (card surfaces are dark).
   const colors = roster.team.colors;
@@ -114,14 +116,39 @@ export default function PlayerCard({
   useEffect(() => {
     if (player) {
       document.body.classList.add("card-open");
-      // Fresh card: leave edit mode, and surface the one-time reorder hint.
+      // Fresh card: leave edit mode, reset the copied badge, and surface the
+      // one-time reorder hint.
       setEditing(false);
+      setCopied(false);
       setShowHint(!seenReorderHint());
     } else {
       document.body.classList.remove("card-open");
     }
     return () => document.body.classList.remove("card-open");
   }, [player]);
+
+  // Share the player's deep link. Prefers the native share sheet (mobile/PWA);
+  // otherwise copies the absolute URL and flips the button to a "copied" state.
+  const handleShare = async () => {
+    if (!player) return;
+    const url =
+      window.location.origin + playerDeepLinkPath(roster.team.id, player.id);
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title: `${player.name} · Depth`, url });
+      } catch {
+        // user dismissed the share sheet, or it's unavailable — nothing to do
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // clipboard blocked (insecure context / permission) — no-op
+    }
+  };
 
   const toggleEditing = () => {
     markReorderHintSeen();
@@ -234,18 +261,36 @@ export default function PlayerCard({
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={onClose}
-                  aria-label="Close player card"
-                  className="rounded-full p-2 mt-1"
-                  style={{
-                    background: "rgba(255,255,255,0.08)",
-                    touchAction: "manipulation",
-                  }}
-                >
-                  <X size={18} color="#A5ACAF" />
-                </button>
+                <div className="flex items-center gap-2 mt-1">
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    aria-label={copied ? "Link copied" : "Share player"}
+                    className="rounded-full p-2"
+                    style={{
+                      background: copied ? `${accent}26` : "rgba(255,255,255,0.08)",
+                      touchAction: "manipulation",
+                    }}
+                  >
+                    {copied ? (
+                      <Check size={18} color={accent} strokeWidth={3} />
+                    ) : (
+                      <Share2 size={18} color="#A5ACAF" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    aria-label="Close player card"
+                    className="rounded-full p-2"
+                    style={{
+                      background: "rgba(255,255,255,0.08)",
+                      touchAction: "manipulation",
+                    }}
+                  >
+                    <X size={18} color="#A5ACAF" />
+                  </button>
+                </div>
               </div>
 
               <div
