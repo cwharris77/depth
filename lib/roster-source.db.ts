@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Player, PlayerStatus, Position, SpecialSlot, Team, TeamRoster } from "./types";
 import type { RosterSource, TeamMeta } from "./roster-source";
 import type { Database } from "./database.types";
-import { type PlayerHit, rankByNameMatch } from "./search";
+import { type PlayerHit, positionGroupPositions, rankByNameMatch } from "./search";
 
 // Postgres-backed RosterSource (roadmap: ESPN ingestion -> DB -> app). Reads
 // teams/players/depth_chart_entries/special_teams_slots and assembles the same
@@ -230,6 +230,14 @@ export async function searchAllPlayers(query: string, limit = 8): Promise<Player
   if (isNumberQuery) {
     queries.push(
       client.from("players").select(PLAYER_SEARCH_SELECT).eq("number", asNumber).limit(limit).returns<PlayerSearchRow[]>(),
+    );
+  }
+  // Colloquial group queries ("OL", "secondary", "defense") fan out to the group's
+  // member positions so a fan doesn't have to know each two-letter code.
+  const group = positionGroupPositions(q);
+  if (group) {
+    queries.push(
+      client.from("players").select(PLAYER_SEARCH_SELECT).in("position", group).limit(limit).returns<PlayerSearchRow[]>(),
     );
   }
 

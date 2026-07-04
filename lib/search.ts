@@ -15,6 +15,38 @@ export function unitForPosition(position: Position): Unit {
   return "special";
 }
 
+// Colloquial position-group aliases -> the member positions. Lets a fan search
+// "OL" for the whole offensive line, "secondary" for corners + safeties, etc.,
+// which the two-letter position codes alone don't express. Keys are normalized
+// (lowercased, spaces/hyphens stripped) by positionGroupPositions below.
+const POSITION_GROUPS: Record<string, Position[]> = {
+  ol: ["LT", "LG", "C", "RG", "RT"],
+  oline: ["LT", "LG", "C", "RG", "RT"],
+  offensiveline: ["LT", "LG", "C", "RG", "RT"],
+  dl: ["DE", "DT"],
+  dline: ["DE", "DT"],
+  defensiveline: ["DE", "DT"],
+  edge: ["DE"],
+  db: ["CB", "S"],
+  dbs: ["CB", "S"],
+  secondary: ["CB", "S"],
+  lbs: ["LB"],
+  linebackers: ["LB"],
+  off: [...OFFENSE_POSITIONS],
+  offense: [...OFFENSE_POSITIONS],
+  def: [...DEFENSE_POSITIONS],
+  defense: [...DEFENSE_POSITIONS],
+  st: ["K", "P", "LS"],
+  specialteams: ["K", "P", "LS"],
+};
+
+// Resolve a position-group query (e.g. "OL", "d-line", "secondary") to its member
+// positions, or null when the query isn't a known group.
+export function positionGroupPositions(query: string): Position[] | null {
+  const key = query.trim().toLowerCase().replace(/[\s-]+/g, "");
+  return POSITION_GROUPS[key] ?? null;
+}
+
 // A player-search hit that can come from any of the 32 teams (searchAllPlayers,
 // lib/roster-source.db.ts), not just the roster already loaded on the client — so it
 // carries its own team, unlike a plain roster Player.
@@ -50,12 +82,16 @@ export function searchPlayers(
   const q = query.trim().toLowerCase();
   if (!q) return [];
 
+  const group = positionGroupPositions(query);
+  const groupSet = group ? new Set<Position>(group) : null;
+
   const matches = roster.players.filter(
     (p) =>
       p.name.toLowerCase().includes(q) ||
       p.college.toLowerCase().includes(q) ||
       p.position.toLowerCase() === q ||
-      String(p.number) === q,
+      String(p.number) === q ||
+      (groupSet?.has(p.position) ?? false),
   );
   return rankByNameMatch(matches, q).slice(0, limit);
 }
