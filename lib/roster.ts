@@ -19,5 +19,8 @@ export function getPlayersByPosition(
 ): Player[] {
   return roster.players
     .filter((p) => p.position === position)
-    .sort((a, b) => a.depthRank - b.depthRank || a.number - b.number);
+    .sort(
+      (a, b) =>
+        a.depthRank - b.depthRank || (a.order ?? a.number) - (b.order ?? b.number),
+    );
 }
