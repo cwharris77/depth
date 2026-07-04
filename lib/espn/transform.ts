@@ -9,6 +9,7 @@ import type {
 } from "../types";
 import type { EspnAthlete, EspnDepthcharts, EspnRoster, EspnTeamInfo } from "./types";
 import { classifyItem, mapBioPosition, mapDepthchartPosition, mapSpecialPosition } from "./positions";
+import { readableTextOn } from "../colors";
 
 export function parseAthleteId(ref: string): string | null {
   const m = ref.match(/athletes\/(\d+)/);
@@ -20,15 +21,36 @@ function hex(value: string | undefined, fallback: string): string {
   return value.startsWith("#") ? value : `#${value}`;
 }
 
-export function toTeamColors(espn: EspnTeamInfo, curated: TeamColors): TeamColors {
-  const primary = hex(espn.color, curated.primary);
-  const secondary = hex(espn.alternateColor, curated.secondary);
+// A few teams need a hand-picked accent because neither ESPN color works on the dark
+// UI. Keyed by ESPN abbreviation → an official team color ESPN's two-color feed omits.
+// Ravens: purple primary and black secondary both fail contrast, so use official gold.
+const ACCENT_OVERRIDE: Record<string, string> = {
+  BAL: "#9e7c0c",
+};
+
+// Black and white aren't distinguishing team accents — teams whose ESPN secondary is
+// one of them (5 black, 3 white) use their real primary instead.
+function isNeutral(hexColor: string): boolean {
+  const v = hexColor.toLowerCase();
+  return v === "#000000" || v === "#ffffff";
+}
+
+export function toTeamColors(espn: EspnTeamInfo): TeamColors {
+  const primary = hex(espn.color, "#000000");
+  const secondary = hex(espn.alternateColor, "#ffffff");
+  // The UI accent is the team's real secondary — the pop color (Seahawks green), which
+  // is already what the dot ring uses, so dots and the team picker match. Fall back to
+  // the primary when the secondary is a neutral black/white, or to a hand-picked
+  // official color for the rare team where neither ESPN color reads (Ravens gold).
+  const uiAccent =
+    ACCENT_OVERRIDE[espn.abbreviation.toUpperCase()] ??
+    (isNeutral(secondary) ? primary : secondary);
   return {
     primary,
     secondary,
     accent: secondary,
-    uiAccent: curated.uiAccent, // curated for dark-UI contrast — ESPN can't supply
-    onAccent: curated.onAccent,
+    uiAccent,
+    onAccent: readableTextOn(uiAccent), // just legible text to paint on the accent
   };
 }
 
@@ -204,7 +226,7 @@ export function toTeamRoster(args: {
   return {
     team: {
       ...meta,
-      colors: toTeamColors(teamInfo, meta.colors),
+      colors: toTeamColors(teamInfo),
       logo: logos[0]?.href,
       logoDark: logos.find((l) => l.rel?.includes("dark"))?.href ?? logos[1]?.href,
     },

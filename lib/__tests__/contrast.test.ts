@@ -1,25 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { TEAMS } from "../teams";
-import { contrastRatio, DARK_BG, readableTextOn } from "../colors";
+import { contrastRatio, readableTextOn } from "../colors";
 
-// The contrast guarantee: every team's curated uiAccent must read on the dark UI,
-// and on-accent text must read on top of uiAccent. WCAG AA for normal text is 4.5:1.
-// This is the test that stops "every 5th team looks broken" when 32 teams are added.
-const AA = 4.5;
-
-describe("team uiAccent contrast safety", () => {
-  for (const [id, roster] of Object.entries(TEAMS)) {
-    const { uiAccent, onAccent } = roster.team.colors;
-
-    it(`${id}: uiAccent reads on the dark background`, () => {
-      expect(contrastRatio(uiAccent, DARK_BG)).toBeGreaterThanOrEqual(AA);
-    });
-
-    it(`${id}: onAccent reads on top of uiAccent`, () => {
-      expect(contrastRatio(onAccent, uiAccent)).toBeGreaterThanOrEqual(AA);
-    });
-  }
-});
+// uiAccent is now the team's real brand primary (no curated/derived contrast color),
+// so we no longer assert every team's accent clears the dark UI — a dark primary that's
+// hard to read is a field-background call, not a reason to fake the team's color. What
+// still matters: text painted ON a team color must stay legible, so readableTextOn has
+// to pick a readable black/white for any brand color.
 
 describe("readableTextOn(primary) contrast safety", () => {
   // uiAccent is only curated to read on DARK_BG, not on a team's own primary —

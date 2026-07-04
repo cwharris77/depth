@@ -44,12 +44,47 @@ describe("parseAthleteId", () => {
 });
 
 describe("toTeamColors", () => {
-  it("uses ESPN brand colors but keeps curated UI contrast colors", () => {
-    const c = toTeamColors(TEAM_INFO, CURATED);
+  it("uses the real ESPN brand colors, with the secondary as the UI accent", () => {
+    const c = toTeamColors(TEAM_INFO);
     expect(c.primary.toLowerCase()).toBe("#002a5c");
     expect(c.secondary.toLowerCase()).toBe("#69be28");
-    expect(c.uiAccent).toBe("#4CC3FF");
-    expect(c.onAccent).toBe("#0a0e1a");
+    // The accent is the team's real secondary (the pop color) — Seahawks green,
+    // matching the dot ring — never invented or lightened.
+    expect(c.uiAccent.toLowerCase()).toBe("#69be28");
+    // onAccent is just legible text painted on that accent (light green → dark).
+    expect(c.onAccent.toLowerCase()).toBe("#0a0e1a");
+  });
+
+  it("uses the primary as the accent for teams whose secondary is black or white", () => {
+    // Falcons: red primary + black secondary. Cardinals: red primary + white secondary.
+    // Black/white are neutral, not distinguishing accents, so use the real primary.
+    const falcons: EspnTeamInfo = {
+      id: "1",
+      abbreviation: "ATL",
+      color: "a71930",
+      alternateColor: "000000",
+      logos: [],
+    };
+    const cardinals: EspnTeamInfo = {
+      id: "22",
+      abbreviation: "ARI",
+      color: "a40227",
+      alternateColor: "ffffff",
+      logos: [],
+    };
+    expect(toTeamColors(falcons).uiAccent.toLowerCase()).toBe("#a71930");
+    expect(toTeamColors(cardinals).uiAccent.toLowerCase()).toBe("#a40227");
+  });
+
+  it("overrides the Ravens accent to official gold (purple + black both fail on the dark UI)", () => {
+    const ravens: EspnTeamInfo = {
+      id: "33",
+      abbreviation: "BAL",
+      color: "29126f",
+      alternateColor: "000000",
+      logos: [],
+    };
+    expect(toTeamColors(ravens).uiAccent.toLowerCase()).toBe("#9e7c0c");
   });
 });
 
