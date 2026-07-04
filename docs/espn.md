@@ -11,6 +11,11 @@ plan; this repo now ingests into a real database instead).
 - `lib/espn/types.ts` — minimal types for the ESPN JSON we read.
 - `lib/espn/positions.ts` — maps ESPN depthchart keys (`lde`, `rde`, `wr`, ...) and
   site-roster bio position abbreviations (`WR`, `OT`, ...) to our `Position` enum.
+- `lib/espn/standings.ts` — `parseStandings`: one standings fetch → every ESPN team id
+  mapped to its `{conference, division}`, so conf/div is ESPN-sourced.
+- `lib/teams/league.ts` — a build-time identity seed (id/city/name/abbrev + placeholder
+  rosters used only as test fixtures) the ingest loops over. Everything live (colors,
+  conf/div, rosters) comes from ESPN, not here.
 - `lib/espn/transform.ts` — pure functions joining the two ESPN endpoints (site roster
   for bios/photos, core depthcharts for position + rank) into our `TeamRoster` shape.
   Also exports `toDepthChartRows`, which re-ranks a position group 1..3 after ESPN's
@@ -63,13 +68,23 @@ leave the DB one run stale.
   the `$ref`).
 - Team list API (`site.api.espn.com/.../teams`) → brand colors + logos + numeric ESPN
   team ids, resolved by abbreviation (with one alias: our `WAS` == ESPN's `WSH`).
+- Standings API (`site.api.espn.com/apis/v2/.../standings?level=3`) → conference +
+  division for every team in one call. `parseStandings` (`lib/espn/standings.ts`) maps
+  each ESPN team id → `{conference, division}`; the ingest writes these, so conf/div is
+  ESPN-sourced, not hand-curated. `lib/teams/league.ts` is now just an identity seed
+  (id/city/name/abbrev) the ingest loops over.
 - A KR/PR/K/P/LS can be a player ranked outside the normal top-3-per-position cap
   (e.g. a low-depth-chart WR who's still the primary punt returner) — `toTeamRoster`
   adds them to `players` anyway via a bio-position fallback, so `specialTeams` never
   references a player missing from the roster (and the DB's
   `special_teams_slots.player_id` foreign key never breaks).
-- `uiAccent`/`onAccent` stay hand-curated per team (not sourced from ESPN) for
-  dark-UI contrast; `toTeamColors` merges them with ESPN's `primary`/`secondary`.
+- `uiAccent`/`onAccent` are derived from ESPN's own colors, not hand-curated:
+  `toTeamColors` uses the real `secondary` as the accent, falls back to `primary` when
+  the secondary is a neutral black/white (8 teams), with one override (Ravens → official
+  gold, since both ESPN colors are too dark). `onAccent = readableTextOn(uiAccent)`.
+- The ingest retries each fetch a few times with backoff — ESPN's unofficial API blips
+  intermittently (a roster can 404 on one call, 200 the next), which would otherwise skip
+  a team for the whole run.
 
 ## Fallback behavior
 
