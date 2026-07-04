@@ -1,0 +1,31 @@
+name: CI
+
+# Runs the unit suite and a typecheck on every PR and on pushes to main. Build is
+# intentionally not run here: `next build` calls generateStaticParams -> the Supabase
+# RosterSource, which needs project secrets this workflow doesn't carry. The live DB
+# tests (lib/__tests__/roster-source.db.test.ts) skip gracefully without those env vars,
+# so the suite stays green on secretless PRs while still guarding the pure logic.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# A newer push to the same ref cancels an in-flight run for it.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm test
