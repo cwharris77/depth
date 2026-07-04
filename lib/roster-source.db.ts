@@ -186,12 +186,12 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
 
 type PlayerSearchRow = Pick<
   Tables["players"]["Row"],
-  "id" | "name" | "number" | "position" | "photo_url"
+  "id" | "name" | "number" | "position" | "photo_url" | "college"
 > & {
   teams: Pick<Tables["teams"]["Row"], "id" | "city" | "name" | "abbrev"> | null;
 };
 const PLAYER_SEARCH_SELECT =
-  "id, name, number, position, photo_url, teams(id, city, name, abbrev)";
+  "id, name, number, position, photo_url, college, teams(id, city, name, abbrev)";
 
 function toPlayerHit(row: PlayerSearchRow): PlayerHit | null {
   // A dangling team_id (shouldn't happen, FK-enforced) would leave the embedded
@@ -203,16 +203,17 @@ function toPlayerHit(row: PlayerSearchRow): PlayerHit | null {
     number: row.number ?? 0,
     position: row.position as Position,
     photoUrl: row.photo_url ?? undefined,
+    college: row.college ?? undefined,
     team: row.teams,
   };
 }
 
 // Searches every ingested team's players, not just one roster — backs the nav's
-// player-search mode so it can surface a hit on any of the 32 teams. Runs the three
-// match kinds (name substring, exact position, exact number) as separate queries
-// rather than building one OR'd filter string, so user input never gets interpolated
-// into PostgREST filter syntax. `players_name_trgm_idx` (pg_trgm GIN) keeps the name
-// ILIKE fast as the table grows past the current ~2,000 rows.
+// player-search mode so it can surface a hit on any of the 32 teams. Runs each
+// match kind (name substring, college substring, exact position, exact number) as a
+// separate query rather than building one OR'd filter string, so user input never
+// gets interpolated into PostgREST filter syntax. `players_name_trgm_idx` (pg_trgm
+// GIN) keeps the name ILIKE fast as the table grows past the current ~2,000 rows.
 export async function searchAllPlayers(query: string, limit = 8): Promise<PlayerHit[]> {
   const q = query.trim();
   if (!q) return [];
@@ -223,6 +224,7 @@ export async function searchAllPlayers(query: string, limit = 8): Promise<Player
 
   const queries = [
     client.from("players").select(PLAYER_SEARCH_SELECT).ilike("name", `%${q}%`).limit(limit).returns<PlayerSearchRow[]>(),
+    client.from("players").select(PLAYER_SEARCH_SELECT).ilike("college", `%${q}%`).limit(limit).returns<PlayerSearchRow[]>(),
     client.from("players").select(PLAYER_SEARCH_SELECT).ilike("position", q).limit(limit).returns<PlayerSearchRow[]>(),
   ];
   if (isNumberQuery) {
