@@ -9,6 +9,7 @@ import { getPlayersByPosition } from "@/lib/roster";
 import { markReorderHintSeen, seenReorderHint } from "@/lib/depth-overrides";
 import { statusColor, readableTextOn } from "@/lib/colors";
 import { positionFullName } from "@/lib/positions";
+import { experienceLabel } from "@/lib/format";
 
 interface PlayerCardProps {
   player: Player | null;
@@ -256,7 +257,7 @@ export default function PlayerCard({
               >
                 {[
                   { label: "AGE", value: player.age },
-                  { label: "EXP", value: `${player.experience}Y` },
+                  { label: "EXP", value: experienceLabel(player.experience) },
                   { label: "HT", value: player.height },
                   { label: "WT", value: `${player.weight}` },
                 ].map((stat) => (
