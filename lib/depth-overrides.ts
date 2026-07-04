@@ -132,6 +132,19 @@ export function clearTeamOverride(teamId: string): void {
   }
 }
 
+// Replace a team's whole override at once (used when applying a shared roster link,
+// components/ApplySharedOrder). An empty override clears the team's entry entirely so
+// hasOverride reads false afterwards.
+export function setTeamOverride(teamId: string, override: TeamDepthOverride): void {
+  const store = readStore();
+  if (Object.keys(override).length === 0) {
+    delete store[teamId];
+  } else {
+    store[teamId] = override;
+  }
+  writeStore(store);
+}
+
 export function hasOverride(override: TeamDepthOverride): boolean {
   return Object.keys(override).length > 0;
 }

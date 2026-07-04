@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, RotateCcw, Search } from "lucide-react";
+import { Check, ChevronDown, RotateCcw, Search, Share2 } from "lucide-react";
 import type { Player, Position, TeamRoster, Unit } from "@/lib/types";
 import type { TeamMeta } from "@/lib/roster-source";
 import { resolveUnit } from "@/lib/formations";
 import { unitForPosition } from "@/lib/search";
+import { rosterShareUrlPath } from "@/lib/share";
 import { readableTextOn } from "@/lib/colors";
 import {
   applyTeamOverride,
@@ -14,6 +15,7 @@ import {
   getTeamOverride,
   hasOverride,
   setPositionOrder,
+  setTeamOverride,
   type TeamDepthOverride,
 } from "@/lib/depth-overrides";
 import PlayerDot from "./PlayerDot";
@@ -21,6 +23,7 @@ import PlayerCard from "./PlayerCard";
 import FullScreenSheet from "./FullScreenSheet";
 import NavSwitcher from "./NavSwitcher";
 import OpenPlayerFromQuery from "./OpenPlayerFromQuery";
+import ApplySharedOrder from "./ApplySharedOrder";
 
 const UNIT_LABELS: Record<Unit, string> = {
   offense: "Offense",
@@ -40,6 +43,7 @@ export default function DepthChartField({
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeUnit, setActiveUnit] = useState<Unit>("offense");
   const [navOpen, setNavOpen] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   const { team } = roster;
 
@@ -74,6 +78,35 @@ export default function DepthChartField({
   const handleResetTeam = () => {
     clearTeamOverride(team.id);
     setOverride({});
+  };
+
+  // Applying a shared roster link: persist the sender's order as this device's custom
+  // order for the team, so the board matches "exactly as edited" and Reset still works.
+  const handleApplySharedOrder = (shared: TeamDepthOverride) => {
+    setTeamOverride(team.id, shared);
+    setOverride(getTeamOverride(team.id));
+  };
+
+  // Share the roster as it currently stands — the team link, carrying the custom order
+  // when there is one. Prefers the native share sheet, else copies with a brief check.
+  const handleShareRoster = async () => {
+    const url = window.location.origin + rosterShareUrlPath(team.id, override);
+    const title = `${team.city} ${team.name} depth chart · Depth`;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title, url });
+      } catch {
+        // share sheet dismissed / unavailable — nothing to do
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 1500);
+    } catch {
+      // clipboard blocked (insecure context / permission) — no-op
+    }
   };
 
   const handlePlayerClick = (player: Player) => {
@@ -162,6 +195,25 @@ export default function DepthChartField({
               }}
             >
               <Search size={14} color={team.colors.uiAccent} />
+            </button>
+            <button
+              type="button"
+              onClick={handleShareRoster}
+              aria-label={shareCopied ? "Roster link copied" : "Share this roster"}
+              className="shrink-0 flex items-center justify-center rounded-full p-2"
+              style={{
+                touchAction: "manipulation",
+                background: shareCopied
+                  ? `${team.colors.uiAccent}26`
+                  : "rgba(255,255,255,0.07)",
+                border: `1px solid ${team.colors.uiAccent}40`,
+              }}
+            >
+              {shareCopied ? (
+                <Check size={14} color={team.colors.uiAccent} strokeWidth={3} />
+              ) : (
+                <Share2 size={14} color={team.colors.uiAccent} />
+              )}
             </button>
           </div>
         </div>
@@ -278,6 +330,8 @@ export default function DepthChartField({
       />
 
       <OpenPlayerFromQuery players={displayRoster.players} onOpen={handleNavSelectPlayer} />
+
+      <ApplySharedOrder onApply={handleApplySharedOrder} />
     </div>
   );
 }
