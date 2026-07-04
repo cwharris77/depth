@@ -6,7 +6,10 @@
 // Requires SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in the environment (service role
 // bypasses RLS-equivalent restrictions for writes; never expose it client-side).
 
+import dotenv from "dotenv";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
+dotenv.config({ path: ".env.local" });
 import { toDepthChartRows, toTeamRoster } from "../lib/espn/transform";
 import { TEAMS } from "../lib/teams/index";
 import type { EspnDepthcharts, EspnRoster, EspnTeamInfo } from "../lib/espn/types";
