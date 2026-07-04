@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { rankByNameMatch, searchPlayers, unitForPosition } from "../search";
+import {
+  positionGroupPositions,
+  rankByNameMatch,
+  searchPlayers,
+  unitForPosition,
+} from "../search";
 import { TEAMS, DEFAULT_TEAM_ID } from "../teams";
 import type { Player, Position, TeamRosterSeed } from "../types";
 
@@ -31,6 +36,24 @@ describe("unitForPosition", () => {
     expect(unitForPosition("DE")).toBe("defense");
     expect(unitForPosition("K")).toBe("special");
     expect(unitForPosition("P")).toBe("special");
+  });
+});
+
+describe("positionGroupPositions", () => {
+  it("resolves the offensive and defensive line groups", () => {
+    expect(positionGroupPositions("OL")).toEqual(["LT", "LG", "C", "RG", "RT"]);
+    expect(positionGroupPositions("dl")).toEqual(["DE", "DT"]);
+  });
+
+  it("resolves the secondary and accepts spacing/hyphen variants", () => {
+    expect(positionGroupPositions("secondary")).toEqual(["CB", "S"]);
+    expect(positionGroupPositions("D-Line")).toEqual(["DE", "DT"]);
+    expect(positionGroupPositions("  o line  ")).toEqual(["LT", "LG", "C", "RG", "RT"]);
+  });
+
+  it("returns null for a non-group query", () => {
+    expect(positionGroupPositions("geno")).toBeNull();
+    expect(positionGroupPositions("QB")).toBeNull();
   });
 });
 
@@ -72,6 +95,18 @@ describe("searchPlayers", () => {
     ]);
     expect(searchPlayers(r, "georgia").map((x) => x.id).sort()).toEqual(["c", "d"]);
     expect(searchPlayers(r, "OHIO").map((x) => x.id)).toEqual(["b"]);
+  });
+
+  it("expands a position-group query to every member position", () => {
+    const r = rosterWith([
+      p("lt", "Charles Cross", "LT", 67),
+      p("c", "Jalen Sundell", "C", 61),
+      p("rt", "Abraham Lucas", "RT", 72),
+      p("qb", "Sam Howell", "QB", 14),
+      p("wr", "Cooper Kupp", "WR", 10),
+    ]);
+    // "OL" isn't an exact position code, but the group expands to the linemen.
+    expect(searchPlayers(r, "OL").map((x) => x.id).sort()).toEqual(["c", "lt", "rt"]);
   });
 
   it("matches an exact position code", () => {
