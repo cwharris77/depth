@@ -100,7 +100,13 @@ function TeamRow({
     >
       <div
         className="shrink-0 rounded-lg flex items-center justify-center font-black text-[11px]"
-        style={{ width: 32, height: 32, background: team.colors.primary, color: badgeText }}
+        style={{
+          width: 32,
+          height: 32,
+          background: team.colors.primary,
+          color: badgeText,
+          border: `2px solid ${team.colors.secondary}`,
+        }}
       >
         {team.abbrev}
       </div>
