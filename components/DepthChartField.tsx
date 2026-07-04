@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { ChevronDown, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
+import { ChevronDown, RotateCcw, Search } from "lucide-react";
 import type { Player, Position, TeamRoster, Unit } from "@/lib/types";
 import type { TeamMeta } from "@/lib/roster-source";
 import { resolveUnit } from "@/lib/formations";
 import { unitForPosition } from "@/lib/search";
-import { adjacentTeamId } from "@/lib/team-nav";
 import { readableTextOn } from "@/lib/colors";
 import {
   applyTeamOverride,
@@ -44,12 +42,6 @@ export default function DepthChartField({
   const [navOpen, setNavOpen] = useState(false);
 
   const { team } = roster;
-
-  // Prev/next arrows cycle through the league in the switcher's order, wrapping at
-  // the ends. Plain <Link>s so they prefetch and work without JS.
-  const orderedIds = useMemo(() => teams.map((t) => t.id), [teams]);
-  const prevId = adjacentTeamId(orderedIds, team.id, "prev");
-  const nextId = adjacentTeamId(orderedIds, team.id, "next");
 
   // The user's custom depth ordering for this team (localStorage). Applied to the roster
   // everything below renders from, so a reorder flows to the field dots and the card.
@@ -136,23 +128,9 @@ export default function DepthChartField({
           </div>
           {/* Team/unit switcher trigger — on the right, where users (Mia, Caleb)
               instinctively tapped expecting a menu. Styled as a visible pill, not
-              plain text, so it reads as tappable. Flanked by prev/next arrows that
-              step through the league without opening the switcher. */}
-          <div className="flex items-center gap-1 min-w-0">
-            {prevId && (
-              <Link
-                href={`/team/${prevId}`}
-                aria-label="Previous team"
-                className="shrink-0 rounded-full p-1.5"
-                style={{
-                  touchAction: "manipulation",
-                  background: "rgba(255,255,255,0.07)",
-                  border: `1px solid ${team.colors.uiAccent}40`,
-                }}
-              >
-                <ChevronLeft size={14} color="#A5ACAF" />
-              </Link>
-            )}
+              plain text, so it reads as tappable. A search-icon circle sits beside
+              it as a direct jump into the switcher's search bar. */}
+          <div className="flex items-center gap-1.5 min-w-0">
             <button
               type="button"
               onClick={() => setNavOpen(true)}
@@ -172,20 +150,19 @@ export default function DepthChartField({
               </h1>
               <ChevronDown size={14} color="#A5ACAF" className="shrink-0" />
             </button>
-            {nextId && (
-              <Link
-                href={`/team/${nextId}`}
-                aria-label="Next team"
-                className="shrink-0 rounded-full p-1.5"
-                style={{
-                  touchAction: "manipulation",
-                  background: "rgba(255,255,255,0.07)",
-                  border: `1px solid ${team.colors.uiAccent}40`,
-                }}
-              >
-                <ChevronRight size={14} color="#A5ACAF" />
-              </Link>
-            )}
+            <button
+              type="button"
+              onClick={() => setNavOpen(true)}
+              aria-label="Search teams or players"
+              className="shrink-0 flex items-center justify-center rounded-full p-2"
+              style={{
+                touchAction: "manipulation",
+                background: "rgba(255,255,255,0.07)",
+                border: `1px solid ${team.colors.uiAccent}40`,
+              }}
+            >
+              <Search size={14} color={team.colors.uiAccent} />
+            </button>
           </div>
         </div>
         {/* On its own row, 24px below the header line, so it never crowds the
