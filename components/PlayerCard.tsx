@@ -8,6 +8,7 @@ import type { Player, Position, TeamColors, TeamRoster } from "@/lib/types";
 import { getPlayersByPosition } from "@/lib/roster";
 import { markReorderHintSeen, seenReorderHint } from "@/lib/depth-overrides";
 import { statusColor, readableTextOn } from "@/lib/colors";
+import { positionFullName } from "@/lib/positions";
 
 interface PlayerCardProps {
   player: Player | null;
@@ -215,6 +216,12 @@ export default function PlayerCard({
                         }}
                       >
                         {player.position}
+                      </span>
+                      <span
+                        className="text-xs font-medium"
+                        style={{ color: "#A5ACAF" }}
+                      >
+                        {positionFullName(player.position)}
                       </span>
                       <span
                         className="text-xs font-bold"
