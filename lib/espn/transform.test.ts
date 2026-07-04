@@ -54,6 +54,20 @@ describe("toTeamColors", () => {
     // onAccent is just legible text painted on that accent (light green → dark).
     expect(c.onAccent.toLowerCase()).toBe("#0a0e1a");
   });
+
+  it("uses the primary as the accent for teams whose secondary is black", () => {
+    // Falcons: red primary + black secondary. Black is an invisible accent on the
+    // dark UI, so these teams use their real (visible) primary instead.
+    const falcons: EspnTeamInfo = {
+      id: "1",
+      abbreviation: "ATL",
+      color: "a71930",
+      alternateColor: "000000",
+      logos: [],
+    };
+    const c = toTeamColors(falcons);
+    expect(c.uiAccent.toLowerCase()).toBe("#a71930");
+  });
 });
 
 describe("toTeamRoster", () => {

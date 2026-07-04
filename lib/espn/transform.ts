@@ -21,18 +21,26 @@ function hex(value: string | undefined, fallback: string): string {
   return value.startsWith("#") ? value : `#${value}`;
 }
 
+// These teams' ESPN secondary is black — an invisible accent on the dark UI — so they
+// use their real (visible) primary as the accent instead. Hand-picked exceptions, by
+// ESPN abbreviation: Falcons, Ravens, Panthers, Bengals, Saints.
+const ACCENT_FROM_PRIMARY = new Set(["ATL", "BAL", "CAR", "CIN", "NO"]);
+
 export function toTeamColors(espn: EspnTeamInfo): TeamColors {
   const primary = hex(espn.color, "#000000");
   const secondary = hex(espn.alternateColor, "#ffffff");
+  // The UI accent is the team's real secondary — the pop color (Seahawks green),
+  // which is already what the dot ring uses, so dots and the team picker match. The
+  // five black-secondary teams use their primary instead, so the accent isn't black.
+  const uiAccent = ACCENT_FROM_PRIMARY.has(espn.abbreviation.toUpperCase())
+    ? primary
+    : secondary;
   return {
     primary,
     secondary,
     accent: secondary,
-    // The UI accent is the team's real secondary — the pop color (Seahawks green),
-    // which is already what the dot ring uses, so dots and the team picker match.
-    // Used as-is: no invented or lightened colors.
-    uiAccent: secondary,
-    onAccent: readableTextOn(secondary), // just legible text to paint on the accent
+    uiAccent,
+    onAccent: readableTextOn(uiAccent), // just legible text to paint on the accent
   };
 }
 
