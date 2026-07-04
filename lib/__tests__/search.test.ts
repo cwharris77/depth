@@ -5,10 +5,16 @@ import type { Player, Position, TeamRosterSeed } from "../types";
 
 const roster: TeamRosterSeed = TEAMS[DEFAULT_TEAM_ID];
 
-function p(id: string, name: string, position: Position, number: number): Player {
+function p(
+  id: string,
+  name: string,
+  position: Position,
+  number: number,
+  college = "",
+): Player {
   return {
     id, name, number, position, depthRank: 1, status: "starter",
-    age: 25, college: "", experience: 1, height: "6'0\"", weight: 200, bio: "",
+    age: 25, college, experience: 1, height: "6'0\"", weight: 200, bio: "",
   };
 }
 function rosterWith(players: Player[]): TeamRosterSeed {
@@ -55,6 +61,17 @@ describe("searchPlayers", () => {
   it("matches an exact jersey number", () => {
     const r = rosterWith([p("a", "Geno Smith", "QB", 7), p("b", "DK Metcalf", "WR", 14)]);
     expect(searchPlayers(r, "7").map((x) => x.id)).toEqual(["a"]);
+  });
+
+  it("matches a college substring, case-insensitively", () => {
+    const r = rosterWith([
+      p("a", "Geno Smith", "QB", 7, "West Virginia"),
+      p("b", "Jaxon Smith-Njigba", "WR", 11, "Ohio State"),
+      p("c", "Nick Chubb", "RB", 24, "Georgia"),
+      p("d", "Roquan Smith", "LB", 0, "Georgia"),
+    ]);
+    expect(searchPlayers(r, "georgia").map((x) => x.id).sort()).toEqual(["c", "d"]);
+    expect(searchPlayers(r, "OHIO").map((x) => x.id)).toEqual(["b"]);
   });
 
   it("matches an exact position code", () => {
