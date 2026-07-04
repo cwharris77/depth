@@ -44,14 +44,15 @@ describe("parseAthleteId", () => {
 });
 
 describe("toTeamColors", () => {
-  it("uses the real ESPN brand colors, with the primary as the UI accent", () => {
+  it("uses the real ESPN brand colors, with the secondary as the UI accent", () => {
     const c = toTeamColors(TEAM_INFO);
     expect(c.primary.toLowerCase()).toBe("#002a5c");
     expect(c.secondary.toLowerCase()).toBe("#69be28");
-    // The accent is the team's real primary color — never invented or lightened.
-    expect(c.uiAccent.toLowerCase()).toBe("#002a5c");
-    // onAccent is just legible text painted on that accent (dark navy → white).
-    expect(c.onAccent.toLowerCase()).toBe("#ffffff");
+    // The accent is the team's real secondary (the pop color) — Seahawks green,
+    // matching the dot ring — never invented or lightened.
+    expect(c.uiAccent.toLowerCase()).toBe("#69be28");
+    // onAccent is just legible text painted on that accent (light green → dark).
+    expect(c.onAccent.toLowerCase()).toBe("#0a0e1a");
   });
 });
 

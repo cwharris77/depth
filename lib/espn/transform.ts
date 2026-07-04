@@ -28,11 +28,11 @@ export function toTeamColors(espn: EspnTeamInfo): TeamColors {
     primary,
     secondary,
     accent: secondary,
-    // Every team's accent is its real brand primary — no invented/lightened colors.
-    // The dots/rings/text use it as-is; if a dark primary is hard to read on the dark
-    // field, that's a field-background call, not a reason to fake the team's color.
-    uiAccent: primary,
-    onAccent: readableTextOn(primary), // just legible text to paint on the accent
+    // The UI accent is the team's real secondary — the pop color (Seahawks green),
+    // which is already what the dot ring uses, so dots and the team picker match.
+    // Used as-is: no invented or lightened colors.
+    uiAccent: secondary,
+    onAccent: readableTextOn(secondary), // just legible text to paint on the accent
   };
 }
 
