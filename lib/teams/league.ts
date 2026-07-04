@@ -1,25 +1,21 @@
-import type { TeamRoster } from "../types";
+import type { TeamRosterSeed } from "../types";
 import { buildTeam, pl } from "./_build";
 
-// Hand-curated seed of team metadata (id/city/name/abbrev/conference/division)
-// and brand colors for all 32 teams. This is where the two things ESPN can't
-// supply live: the contrast-curated uiAccent/onAccent (picked to read on the
-// dark UI — asserted by lib/__tests__/contrast.test.ts; onAccent is near-black)
-// and our curated conference/division. scripts/ingest-espn.mts reads these off
-// the TEAMS registry and writes them into Postgres alongside the live ESPN data,
-// so this file stays load-bearing even though rosters are now DB-backed.
+// Minimal build-time seed for the ESPN ingestion: id/city/name/abbrev only. Everything
+// that describes a team live — colors, conference/division, rosters — is sourced from
+// ESPN at ingest time (scripts/ingest-espn.mts), NOT from here. This file just supplies
+// the 32 team identities (our slug id ↔ ESPN abbrev) the ingestion loops over.
 //
-// The per-player entries below are stale point-in-time placeholders, NOT a live
-// fallback. The app renders live rosters from the DB (dbRosterSource); there is
-// no hand-authored roster fallback (see docs/espn.md). They persist only because
-// TEAMS is typed as a full TeamRoster and tests use them as fixtures — don't
-// trust or maintain them as real roster data.
+// The per-player entries below are stale point-in-time placeholders, NOT a live fallback.
+// The app renders live rosters from the DB (dbRosterSource); there is no hand-authored
+// roster fallback (see docs/espn.md). They persist only because the seed shape carries a
+// players array and tests use them as fixtures — don't trust or maintain them as real
+// roster data.
 
-export const LEAGUE: TeamRoster[] = [
+export const LEAGUE: TeamRosterSeed[] = [
   // ───────────── AFC East ─────────────
   buildTeam({
     id: "bills", city: "Buffalo", name: "Bills", abbrev: "BUF",
-    conference: "AFC", division: "East",
     colors: { primary: "#00338D", secondary: "#C60C30", accent: "#C60C30", uiAccent: "#5B9BFF", onAccent: "#0a0e1a" },
     players: [
       pl("Josh Allen", 17, "QB", 1, { age: 28, exp: 7, college: "Wyoming" }),
@@ -38,7 +34,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "dolphins", city: "Miami", name: "Dolphins", abbrev: "MIA",
-    conference: "AFC", division: "East",
     colors: { primary: "#008E97", secondary: "#FC4C02", accent: "#FC4C02", uiAccent: "#2DD4D4", onAccent: "#0a0e1a" },
     players: [
       pl("Tua Tagovailoa", 1, "QB", 1, { age: 26, exp: 5, college: "Alabama" }),
@@ -57,7 +52,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "patriots", city: "New England", name: "Patriots", abbrev: "NE",
-    conference: "AFC", division: "East",
     colors: { primary: "#002244", secondary: "#C60C30", accent: "#B0B7BC", uiAccent: "#C8CDD6", onAccent: "#0a0e1a" },
     players: [
       pl("Drake Maye", 10, "QB", 1, { age: 22, exp: 1, college: "North Carolina", status: "rookie" }),
@@ -76,7 +70,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "jets", city: "New York", name: "Jets", abbrev: "NYJ",
-    conference: "AFC", division: "East",
     colors: { primary: "#125740", secondary: "#FFFFFF", accent: "#FFFFFF", uiAccent: "#4CC38A", onAccent: "#0a0e1a" },
     players: [
       pl("Aaron Rodgers", 8, "QB", 1, { age: 41, exp: 20, college: "California" }),
@@ -97,7 +90,6 @@ export const LEAGUE: TeamRoster[] = [
   // ───────────── AFC North ─────────────
   buildTeam({
     id: "ravens", city: "Baltimore", name: "Ravens", abbrev: "BAL",
-    conference: "AFC", division: "North",
     colors: { primary: "#241773", secondary: "#000000", accent: "#9E7C0C", uiAccent: "#9F8CFF", onAccent: "#0a0e1a" },
     players: [
       pl("Lamar Jackson", 8, "QB", 1, { age: 27, exp: 7, college: "Louisville" }),
@@ -116,7 +108,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "bengals", city: "Cincinnati", name: "Bengals", abbrev: "CIN",
-    conference: "AFC", division: "North",
     colors: { primary: "#FB4F14", secondary: "#000000", accent: "#000000", uiAccent: "#FF6A33", onAccent: "#0a0e1a" },
     players: [
       pl("Joe Burrow", 9, "QB", 1, { age: 27, exp: 5, college: "LSU" }),
@@ -135,7 +126,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "browns", city: "Cleveland", name: "Browns", abbrev: "CLE",
-    conference: "AFC", division: "North",
     colors: { primary: "#311D00", secondary: "#FF3C00", accent: "#FF3C00", uiAccent: "#FF6A33", onAccent: "#0a0e1a" },
     players: [
       pl("Deshaun Watson", 4, "QB", 1, { age: 29, exp: 8, college: "Clemson" }),
@@ -154,7 +144,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "steelers", city: "Pittsburgh", name: "Steelers", abbrev: "PIT",
-    conference: "AFC", division: "North",
     colors: { primary: "#FFB612", secondary: "#101820", accent: "#101820", uiAccent: "#FFB612", onAccent: "#0a0e1a" },
     players: [
       pl("Russell Wilson", 3, "QB", 1, { age: 36, exp: 13, college: "Wisconsin" }),
@@ -175,7 +164,6 @@ export const LEAGUE: TeamRoster[] = [
   // ───────────── AFC South ─────────────
   buildTeam({
     id: "texans", city: "Houston", name: "Texans", abbrev: "HOU",
-    conference: "AFC", division: "South",
     colors: { primary: "#03202F", secondary: "#A71930", accent: "#A71930", uiAccent: "#5B9BFF", onAccent: "#0a0e1a" },
     players: [
       pl("C.J. Stroud", 7, "QB", 1, { age: 23, exp: 2, college: "Ohio State" }),
@@ -194,7 +182,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "colts", city: "Indianapolis", name: "Colts", abbrev: "IND",
-    conference: "AFC", division: "South",
     colors: { primary: "#002C5F", secondary: "#A2AAAD", accent: "#A2AAAD", uiAccent: "#5B9BFF", onAccent: "#0a0e1a" },
     players: [
       pl("Anthony Richardson", 5, "QB", 1, { age: 22, exp: 2, college: "Florida" }),
@@ -213,7 +200,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "jaguars", city: "Jacksonville", name: "Jaguars", abbrev: "JAX",
-    conference: "AFC", division: "South",
     colors: { primary: "#006778", secondary: "#D7A22A", accent: "#D7A22A", uiAccent: "#2DD4D4", onAccent: "#0a0e1a" },
     players: [
       pl("Trevor Lawrence", 16, "QB", 1, { age: 25, exp: 4, college: "Clemson" }),
@@ -232,7 +218,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "titans", city: "Tennessee", name: "Titans", abbrev: "TEN",
-    conference: "AFC", division: "South",
     colors: { primary: "#0C2340", secondary: "#4B92DB", accent: "#4B92DB", uiAccent: "#5BA8E8", onAccent: "#0a0e1a" },
     players: [
       pl("Will Levis", 8, "QB", 1, { age: 25, exp: 2, college: "Kentucky" }),
@@ -253,7 +238,6 @@ export const LEAGUE: TeamRoster[] = [
   // ───────────── AFC West ─────────────
   buildTeam({
     id: "broncos", city: "Denver", name: "Broncos", abbrev: "DEN",
-    conference: "AFC", division: "West",
     colors: { primary: "#FB4F14", secondary: "#002244", accent: "#002244", uiAccent: "#FF6A33", onAccent: "#0a0e1a" },
     players: [
       pl("Bo Nix", 10, "QB", 1, { age: 24, exp: 1, college: "Oregon", status: "rookie" }),
@@ -272,7 +256,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "chiefs", city: "Kansas City", name: "Chiefs", abbrev: "KC",
-    conference: "AFC", division: "West",
     colors: { primary: "#E31837", secondary: "#FFB81C", accent: "#FFB81C", uiAccent: "#FF4D5E", onAccent: "#0a0e1a" },
     players: [
       pl("Patrick Mahomes", 15, "QB", 1, { age: 29, exp: 8, college: "Texas Tech" }),
@@ -291,7 +274,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "raiders", city: "Las Vegas", name: "Raiders", abbrev: "LV",
-    conference: "AFC", division: "West",
     colors: { primary: "#000000", secondary: "#A5ACAF", accent: "#A5ACAF", uiAccent: "#C8CDD6", onAccent: "#0a0e1a" },
     players: [
       pl("Gardner Minshew", 15, "QB", 1, { age: 28, exp: 6, college: "Washington State" }),
@@ -310,7 +292,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "chargers", city: "Los Angeles", name: "Chargers", abbrev: "LAC",
-    conference: "AFC", division: "West",
     colors: { primary: "#0080C6", secondary: "#FFC20E", accent: "#FFC20E", uiAccent: "#36A7E0", onAccent: "#0a0e1a" },
     players: [
       pl("Justin Herbert", 10, "QB", 1, { age: 26, exp: 5, college: "Oregon" }),
@@ -331,7 +312,6 @@ export const LEAGUE: TeamRoster[] = [
   // ───────────── NFC East ─────────────
   buildTeam({
     id: "cowboys", city: "Dallas", name: "Cowboys", abbrev: "DAL",
-    conference: "NFC", division: "East",
     colors: { primary: "#003594", secondary: "#869397", accent: "#869397", uiAccent: "#5B9BFF", onAccent: "#0a0e1a" },
     players: [
       pl("Dak Prescott", 4, "QB", 1, { age: 31, exp: 9, college: "Mississippi State" }),
@@ -350,7 +330,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "giants", city: "New York", name: "Giants", abbrev: "NYG",
-    conference: "NFC", division: "East",
     colors: { primary: "#0B2265", secondary: "#A71930", accent: "#A71930", uiAccent: "#5B9BFF", onAccent: "#0a0e1a" },
     players: [
       pl("Daniel Jones", 8, "QB", 1, { age: 27, exp: 6, college: "Duke" }),
@@ -369,7 +348,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "eagles", city: "Philadelphia", name: "Eagles", abbrev: "PHI",
-    conference: "NFC", division: "East",
     colors: { primary: "#004C54", secondary: "#A5ACAF", accent: "#A5ACAF", uiAccent: "#2FA3A3", onAccent: "#0a0e1a" },
     players: [
       pl("Jalen Hurts", 1, "QB", 1, { age: 26, exp: 5, college: "Oklahoma" }),
@@ -388,7 +366,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "commanders", city: "Washington", name: "Commanders", abbrev: "WAS",
-    conference: "NFC", division: "East",
     colors: { primary: "#5A1414", secondary: "#FFB612", accent: "#FFB612", uiAccent: "#FFB612", onAccent: "#0a0e1a" },
     players: [
       pl("Jayden Daniels", 5, "QB", 1, { age: 24, exp: 1, college: "LSU", status: "rookie" }),
@@ -409,7 +386,6 @@ export const LEAGUE: TeamRoster[] = [
   // ───────────── NFC North ─────────────
   buildTeam({
     id: "bears", city: "Chicago", name: "Bears", abbrev: "CHI",
-    conference: "NFC", division: "North",
     colors: { primary: "#0B162A", secondary: "#C83803", accent: "#C83803", uiAccent: "#FF6A33", onAccent: "#0a0e1a" },
     players: [
       pl("Caleb Williams", 18, "QB", 1, { age: 23, exp: 1, college: "USC", status: "rookie" }),
@@ -428,7 +404,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "lions", city: "Detroit", name: "Lions", abbrev: "DET",
-    conference: "NFC", division: "North",
     colors: { primary: "#0076B6", secondary: "#B0B7BC", accent: "#B0B7BC", uiAccent: "#36A7E0", onAccent: "#0a0e1a" },
     players: [
       pl("Jared Goff", 16, "QB", 1, { age: 30, exp: 9, college: "California" }),
@@ -447,7 +422,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "packers", city: "Green Bay", name: "Packers", abbrev: "GB",
-    conference: "NFC", division: "North",
     colors: { primary: "#203731", secondary: "#FFB612", accent: "#FFB612", uiAccent: "#FFB612", onAccent: "#0a0e1a" },
     players: [
       pl("Jordan Love", 10, "QB", 1, { age: 26, exp: 5, college: "Utah State" }),
@@ -466,7 +440,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "vikings", city: "Minnesota", name: "Vikings", abbrev: "MIN",
-    conference: "NFC", division: "North",
     colors: { primary: "#4F2683", secondary: "#FFC62F", accent: "#FFC62F", uiAccent: "#FFC62F", onAccent: "#0a0e1a" },
     players: [
       pl("Sam Darnold", 14, "QB", 1, { age: 27, exp: 7, college: "USC" }),
@@ -487,7 +460,6 @@ export const LEAGUE: TeamRoster[] = [
   // ───────────── NFC South ─────────────
   buildTeam({
     id: "falcons", city: "Atlanta", name: "Falcons", abbrev: "ATL",
-    conference: "NFC", division: "South",
     colors: { primary: "#A71930", secondary: "#000000", accent: "#000000", uiAccent: "#FF4D5E", onAccent: "#0a0e1a" },
     players: [
       pl("Kirk Cousins", 18, "QB", 1, { age: 36, exp: 13, college: "Michigan State" }),
@@ -506,7 +478,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "panthers", city: "Carolina", name: "Panthers", abbrev: "CAR",
-    conference: "NFC", division: "South",
     colors: { primary: "#0085CA", secondary: "#101820", accent: "#101820", uiAccent: "#36A7E0", onAccent: "#0a0e1a" },
     players: [
       pl("Bryce Young", 9, "QB", 1, { age: 23, exp: 2, college: "Alabama" }),
@@ -525,7 +496,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "saints", city: "New Orleans", name: "Saints", abbrev: "NO",
-    conference: "NFC", division: "South",
     colors: { primary: "#D3BC8D", secondary: "#101820", accent: "#101820", uiAccent: "#E2CC9A", onAccent: "#0a0e1a" },
     players: [
       pl("Derek Carr", 4, "QB", 1, { age: 33, exp: 11, college: "Fresno State" }),
@@ -544,7 +514,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "buccaneers", city: "Tampa Bay", name: "Buccaneers", abbrev: "TB",
-    conference: "NFC", division: "South",
     colors: { primary: "#D50A0A", secondary: "#34302B", accent: "#FF7900", uiAccent: "#FF4D4D", onAccent: "#0a0e1a" },
     players: [
       pl("Baker Mayfield", 6, "QB", 1, { age: 29, exp: 7, college: "Oklahoma" }),
@@ -565,7 +534,6 @@ export const LEAGUE: TeamRoster[] = [
   // ───────────── NFC West ─────────────
   buildTeam({
     id: "seahawks", city: "Seattle", name: "Seahawks", abbrev: "SEA",
-    conference: "NFC", division: "West",
     colors: { primary: "#002244", secondary: "#69BE28", accent: "#A5ACAF", uiAccent: "#69BE28", onAccent: "#0a0e1a" },
     players: [
       pl("Geno Smith", 7, "QB", 1, { age: 34, exp: 12, college: "West Virginia" }),
@@ -584,7 +552,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "cardinals", city: "Arizona", name: "Cardinals", abbrev: "ARI",
-    conference: "NFC", division: "West",
     colors: { primary: "#97233F", secondary: "#000000", accent: "#FFB612", uiAccent: "#FF4D6A", onAccent: "#0a0e1a" },
     players: [
       pl("Kyler Murray", 1, "QB", 1, { age: 27, exp: 6, college: "Oklahoma" }),
@@ -603,7 +570,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "rams", city: "Los Angeles", name: "Rams", abbrev: "LAR",
-    conference: "NFC", division: "West",
     colors: { primary: "#003594", secondary: "#FFA300", accent: "#FFA300", uiAccent: "#FFC20E", onAccent: "#0a0e1a" },
     players: [
       pl("Matthew Stafford", 9, "QB", 1, { age: 36, exp: 16, college: "Georgia" }),
@@ -622,7 +588,6 @@ export const LEAGUE: TeamRoster[] = [
   }),
   buildTeam({
     id: "49ers", city: "San Francisco", name: "49ers", abbrev: "SF",
-    conference: "NFC", division: "West",
     colors: { primary: "#AA0000", secondary: "#B3995D", accent: "#B3995D", uiAccent: "#FF4D4D", onAccent: "#0a0e1a" },
     players: [
       pl("Brock Purdy", 13, "QB", 1, { age: 25, exp: 3, college: "Iowa State" }),

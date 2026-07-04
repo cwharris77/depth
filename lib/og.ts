@@ -1,4 +1,4 @@
-import type { TeamRoster } from "./types";
+import type { TeamRosterSeed } from "./types";
 import { getPlayersByPosition } from "./roster";
 
 export interface FeaturedStarter {
@@ -9,7 +9,7 @@ export interface FeaturedStarter {
 // A few marquee starters to feature on a team's share card: QB, RB, then top WR.
 // Uses the same deterministic depth order as the field, and silently skips any
 // position the roster lacks (so an incomplete team still produces a valid card).
-export function featuredStarters(roster: TeamRoster): FeaturedStarter[] {
+export function featuredStarters(roster: TeamRosterSeed): FeaturedStarter[] {
   const wanted: Array<[FeaturedStarter["label"], Parameters<typeof getPlayersByPosition>[1]]> = [
     ["QB", "QB"],
     ["RB", "RB"],
