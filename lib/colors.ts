@@ -45,3 +45,4 @@ export function readableTextOn(bg: string): string {
     ? LIGHT_TEXT
     : DARK_BG;
 }
+
