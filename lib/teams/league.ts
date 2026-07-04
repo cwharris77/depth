@@ -1,12 +1,19 @@
 import type { TeamRoster } from "../types";
 import { buildTeam, pl } from "./_build";
 
-// Best-effort static rosters for all 32 teams, used only as a pre-ingestion
-// fallback/registry seed. Player data is a point-in-time placeholder; team
-// metadata and colors are accurate. uiAccent is curated to read on the dark UI
-// (asserted by lib/__tests__/contrast.test.ts); onAccent is near-black on it.
+// Hand-curated seed of team metadata (id/city/name/abbrev/conference/division)
+// and brand colors for all 32 teams. This is where the two things ESPN can't
+// supply live: the contrast-curated uiAccent/onAccent (picked to read on the
+// dark UI — asserted by lib/__tests__/contrast.test.ts; onAccent is near-black)
+// and our curated conference/division. scripts/ingest-espn.mts reads these off
+// the TEAMS registry and writes them into Postgres alongside the live ESPN data,
+// so this file stays load-bearing even though rosters are now DB-backed.
 //
-// Replace this whole module with a live ApiRosterSource (ESPN) later.
+// The per-player entries below are stale point-in-time placeholders, NOT a live
+// fallback. The app renders live rosters from the DB (dbRosterSource); there is
+// no hand-authored roster fallback (see docs/espn.md). They persist only because
+// TEAMS is typed as a full TeamRoster and tests use them as fixtures — don't
+// trust or maintain them as real roster data.
 
 export const LEAGUE: TeamRoster[] = [
   // ───────────── AFC East ─────────────
