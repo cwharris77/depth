@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown, RotateCcw, Search, Share2 } from "lucide-react";
+import { Check, ChevronDown, RotateCcw, Search, Share2, Shirt } from "lucide-react";
 import type { Player, Position, TeamRoster, Unit } from "@/lib/types";
 import type { TeamMeta } from "@/lib/roster-source";
 import { resolveUnit } from "@/lib/formations";
@@ -21,8 +21,11 @@ import {
 import PlayerDot from "./PlayerDot";
 import PlayerCard from "./PlayerCard";
 import FullScreenSheet from "./FullScreenSheet";
+import BottomSheet from "./BottomSheet";
+import UniformSheet from "./UniformSheet";
 import NavSwitcher from "./NavSwitcher";
 import OpenPlayerFromQuery from "./OpenPlayerFromQuery";
+import ApplyKitFromQuery from "./ApplyKitFromQuery";
 import ApplySharedOrder from "./ApplySharedOrder";
 
 const UNIT_LABELS: Record<Unit, string> = {
@@ -43,9 +46,22 @@ export default function DepthChartField({
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeUnit, setActiveUnit] = useState<Unit>("offense");
   const [navOpen, setNavOpen] = useState(false);
+  const [kitOpen, setKitOpen] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
 
   const { team } = roster;
+
+  // Selected uniform (roadmap Phase 7). Defaults to uniforms[0] — the synthesized Home
+  // kit, i.e. the team's real colors — so the page opens exactly as before. Picking a
+  // kit swaps the colors the whole view renders with (dots, card, header), so the field
+  // "wears" the uniform. Reset to Home whenever the team changes.
+  const [kitId, setKitId] = useState(roster.uniforms[0]?.id);
+  useEffect(() => {
+    setKitId(roster.uniforms[0]?.id);
+  }, [roster.uniforms]);
+  const activeUniform =
+    roster.uniforms.find((u) => u.id === kitId) ?? roster.uniforms[0];
+  const activeColors = activeUniform?.colors ?? team.colors;
 
   // The user's custom depth ordering for this team (localStorage). Applied to the roster
   // everything below renders from, so a reorder flows to the field dots and the card.
@@ -58,7 +74,14 @@ export default function DepthChartField({
     () => applyTeamOverride(roster, override),
     [roster, override],
   );
-  const slots = resolveUnit(displayRoster, activeUnit);
+  // Same roster (players/override), re-skinned in the selected kit's colors. One lever:
+  // every child that reads team colors (dots via props, PlayerCard/NavSwitcher via
+  // roster.team.colors) follows the kit through this.
+  const themedRoster = useMemo(
+    () => ({ ...displayRoster, team: { ...displayRoster.team, colors: activeColors } }),
+    [displayRoster, activeColors],
+  );
+  const slots = resolveUnit(themedRoster, activeUnit);
 
   // Keep the open card's player in sync with the reordered roster (fresh depthRank/status).
   const displaySelected = selectedPlayer
@@ -149,7 +172,7 @@ export default function DepthChartField({
               viewBox="0 0 16 16"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              style={{ color: team.colors.uiAccent }}
+              style={{ color: activeColors.uiAccent }}
             >
               <rect x="1" y="2.5" width="11" height="2" rx="1" fill="currentColor" />
               <rect x="1" y="7" width="8" height="2" rx="1" fill="currentColor" />
@@ -172,12 +195,12 @@ export default function DepthChartField({
               style={{
                 touchAction: "manipulation",
                 background: "rgba(255,255,255,0.07)",
-                border: `1px solid ${team.colors.uiAccent}40`,
+                border: `1px solid ${activeColors.uiAccent}40`,
               }}
             >
               <h1
                 className="text-[10px] font-semibold tracking-widest truncate"
-                style={{ color: team.colors.uiAccent }}
+                style={{ color: activeColors.uiAccent }}
               >
                 {team.city.toUpperCase()} {team.name.toUpperCase()}
               </h1>
@@ -191,10 +214,23 @@ export default function DepthChartField({
               style={{
                 touchAction: "manipulation",
                 background: "rgba(255,255,255,0.07)",
-                border: `1px solid ${team.colors.uiAccent}40`,
+                border: `1px solid ${activeColors.uiAccent}40`,
               }}
             >
-              <Search size={14} color={team.colors.uiAccent} />
+              <Search size={14} color={activeColors.uiAccent} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setKitOpen(true)}
+              aria-label="Choose uniform"
+              className="shrink-0 flex items-center justify-center rounded-full p-2"
+              style={{
+                touchAction: "manipulation",
+                background: "rgba(255,255,255,0.07)",
+                border: `1px solid ${activeColors.uiAccent}40`,
+              }}
+            >
+              <Shirt size={14} color={activeColors.uiAccent} />
             </button>
             <button
               type="button"
@@ -204,15 +240,15 @@ export default function DepthChartField({
               style={{
                 touchAction: "manipulation",
                 background: shareCopied
-                  ? `${team.colors.uiAccent}26`
+                  ? `${activeColors.uiAccent}26`
                   : "rgba(255,255,255,0.07)",
-                border: `1px solid ${team.colors.uiAccent}40`,
+                border: `1px solid ${activeColors.uiAccent}40`,
               }}
             >
               {shareCopied ? (
-                <Check size={14} color={team.colors.uiAccent} strokeWidth={3} />
+                <Check size={14} color={activeColors.uiAccent} strokeWidth={3} />
               ) : (
-                <Share2 size={14} color={team.colors.uiAccent} />
+                <Share2 size={14} color={activeColors.uiAccent} />
               )}
             </button>
           </div>
@@ -229,7 +265,7 @@ export default function DepthChartField({
             // background, not on primary (e.g. Chiefs' #FF4D5E uiAccent on
             // its #E31837 primary is ~1.45:1, illegible red-on-red). Derive
             // the label color from primary itself instead.
-            const activeText = readableTextOn(team.colors.primary);
+            const activeText = readableTextOn(activeColors.primary);
             return (
               <button
                 key={unit}
@@ -240,7 +276,7 @@ export default function DepthChartField({
                 className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all"
                 style={{
                   background:
-                    activeUnit === unit ? team.colors.primary : "transparent",
+                    activeUnit === unit ? activeColors.primary : "transparent",
                   color: activeUnit === unit ? activeText : "#A5ACAF",
                   border:
                     activeUnit === unit
@@ -261,9 +297,9 @@ export default function DepthChartField({
             onClick={handleResetTeam}
             className="flex items-center gap-1 mt-3 text-[10px] font-bold px-2 py-1 rounded-full"
             style={{
-              color: team.colors.uiAccent,
-              background: `${team.colors.uiAccent}1a`,
-              border: `1px solid ${team.colors.uiAccent}55`,
+              color: activeColors.uiAccent,
+              background: `${activeColors.uiAccent}1a`,
+              border: `1px solid ${activeColors.uiAccent}55`,
               width: "fit-content",
               touchAction: "manipulation",
             }}
@@ -301,8 +337,8 @@ export default function DepthChartField({
                 slot={slot}
                 isSelected={selectedPlayer?.id === player.id}
                 onClick={handlePlayerClick}
-                teamPrimary={team.colors.primary}
-                teamColors={team.colors}
+                teamPrimary={activeColors.primary}
+                teamColors={activeColors}
                 unit={activeUnit}
               />
             );
@@ -312,16 +348,26 @@ export default function DepthChartField({
 
       <FullScreenSheet isOpen={navOpen}>
         <NavSwitcher
-          roster={displayRoster}
+          roster={themedRoster}
           teams={teams}
           onSelectPlayer={handleNavSelectPlayer}
           onClose={() => setNavOpen(false)}
         />
       </FullScreenSheet>
 
+      <BottomSheet isOpen={kitOpen} onClose={() => setKitOpen(false)}>
+        <UniformSheet
+          uniforms={roster.uniforms}
+          activeId={activeUniform?.id ?? ""}
+          accent={activeColors.uiAccent}
+          onSelect={setKitId}
+          onClose={() => setKitOpen(false)}
+        />
+      </BottomSheet>
+
       <PlayerCard
         player={displaySelected}
-        roster={displayRoster}
+        roster={themedRoster}
         onClose={() => setSelectedPlayer(null)}
         onSelectPlayer={setSelectedPlayer}
         onReorder={handleReorder}
@@ -330,6 +376,11 @@ export default function DepthChartField({
       />
 
       <OpenPlayerFromQuery players={displayRoster.players} onOpen={handleNavSelectPlayer} />
+
+      <ApplyKitFromQuery
+        validIds={roster.uniforms.map((u) => u.id)}
+        onApply={setKitId}
+      />
 
       <ApplySharedOrder onApply={handleApplySharedOrder} />
     </div>
