@@ -34,6 +34,15 @@ const UNIT_LABELS: Record<Unit, string> = {
   special: "Special",
 };
 
+// The uniform picker (Phase 7) is code-complete but its entry point stays hidden until:
+//   1. real teams are ingested (`npm run ingest:espn`) so every team has data, and
+//      the hand-curated kits are ingested (`npm run ingest:uniforms`), and
+//   2. the seed carries jersey pictures (Uniform.imagePath) rather than only the
+//      generated-silhouette fallback.
+// Flip to true to expose the header jersey button. With it false the view renders in
+// the Home kit (= team.colors), i.e. exactly as before Phase 7.
+const SHOW_UNIFORM_PICKER = false;
+
 // Pure client component: it receives one resolved roster as a prop and never
 // imports the team registry, so a page ships only its own team's data — not all 32.
 export default function DepthChartField({
@@ -219,19 +228,21 @@ export default function DepthChartField({
             >
               <Search size={14} color={activeColors.uiAccent} />
             </button>
-            <button
-              type="button"
-              onClick={() => setKitOpen(true)}
-              aria-label="Choose uniform"
-              className="shrink-0 flex items-center justify-center rounded-full p-2"
-              style={{
-                touchAction: "manipulation",
-                background: "rgba(255,255,255,0.07)",
-                border: `1px solid ${activeColors.uiAccent}40`,
-              }}
-            >
-              <Shirt size={14} color={activeColors.uiAccent} />
-            </button>
+            {SHOW_UNIFORM_PICKER && (
+              <button
+                type="button"
+                onClick={() => setKitOpen(true)}
+                aria-label="Choose uniform"
+                className="shrink-0 flex items-center justify-center rounded-full p-2"
+                style={{
+                  touchAction: "manipulation",
+                  background: "rgba(255,255,255,0.07)",
+                  border: `1px solid ${activeColors.uiAccent}40`,
+                }}
+              >
+                <Shirt size={14} color={activeColors.uiAccent} />
+              </button>
+            )}
             <button
               type="button"
               onClick={handleShareRoster}
