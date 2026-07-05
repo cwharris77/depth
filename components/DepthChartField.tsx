@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronDown, RotateCcw, Search, Share2, Shirt } from "lucide-react";
 import type { Player, Position, TeamRoster, Unit } from "@/lib/types";
 import type { TeamMeta } from "@/lib/roster-source";
-import { LINE_OF_SCRIMMAGE, resolveUnit } from "@/lib/formations";
+import { LINE_OF_SCRIMMAGE, resolveUnit, yardLineYs } from "@/lib/formations";
 import { unitForPosition } from "@/lib/search";
 import { rosterShareUrlPath } from "@/lib/share";
 import { readableTextOn } from "@/lib/colors";
@@ -94,8 +94,8 @@ export default function DepthChartField({
 
   // Short-viewport safeguard. Measure the field's actual height; when it's too short for
   // labels to sit under the dots without colliding, drop to number-only dots (dense). The
-  // formations already span the full height, so the circles alone never overlap — this
-  // just sheds the labels that would. ResizeObserver so it tracks rotation/resize live.
+  // circles themselves stay legible at the real formation scale; this just sheds the
+  // labels that would collide. ResizeObserver so it tracks rotation/resize live.
   const fieldRef = useRef<HTMLDivElement>(null);
   const [dense, setDense] = useState(false);
   useEffect(() => {
@@ -418,6 +418,9 @@ export default function DepthChartField({
 }
 
 function FieldMarkings({ losY }: { losY: number }) {
+  // Yard lines at the real player scale (every 5 yards off the LOS), so the spacing a
+  // viewer reads between lines is the same yardage that separates the players.
+  const lines = yardLineYs(losY);
   return (
     <svg
       className="absolute inset-0 w-full h-full"
@@ -425,8 +428,8 @@ function FieldMarkings({ losY }: { losY: number }) {
       preserveAspectRatio="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* yard lines spaced every 10% */}
-      {[10, 20, 30, 40, 60, 70, 80, 90].map((y) => (
+      {/* yard lines — every 5 real yards from the LOS, matching the formation's scale */}
+      {lines.map((y) => (
         <line
           key={y}
           x1="0"
@@ -441,10 +444,10 @@ function FieldMarkings({ losY }: { losY: number }) {
       <rect x="0" y="0" width="100" height="6" fill="rgba(0,34,68,0.3)" />
       <rect x="0" y="94" width="100" height="6" fill="rgba(0,34,68,0.3)" />
       {/* line of scrimmage — solid blue, matching TV broadcast overlays. Positioned per
-          unit (offense high, defense low) so each formation fills the full field. */}
+          unit (offense high, defense low); the formation stacks away from it. */}
       <line x1="0" y1={losY} x2="100" y2={losY} stroke="#2d6fe0" strokeWidth="0.6" />
-      {/* hash marks */}
-      {[15, 25, 35, 45, 55, 65, 75, 85].map((y) => (
+      {/* hash marks — the 5-yard ticks that sit on the yard lines, for field texture */}
+      {lines.map((y) => (
         <g key={`hash-${y}`}>
           <line
             x1="32"

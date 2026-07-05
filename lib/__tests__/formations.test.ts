@@ -3,6 +3,9 @@ import {
   OFFENSE_FORMATION,
   DEFENSE_FORMATION,
   LINE_OF_SCRIMMAGE,
+  FIELD_SCALE,
+  YARDS_PER_LINE,
+  yardLineYs,
   resolveUnit,
 } from "../formations";
 import { getPlayersByPosition, TEAMS } from "../teams";
@@ -161,14 +164,45 @@ describe("formations are well-formed", () => {
     expect(olSlots.every((s) => s.onLine)).toBe(true);
   });
 
-  // Each unit is shown alone, so it must fill the whole field height (not one half) —
-  // this both uses the space and keeps dots from crowding on short screens. Guard the
-  // spread so a future edit can't quietly re-cram a formation into a narrow band.
-  it("each formation spreads across most of the field height", () => {
+  // The formation is drawn to real scale: its total vertical span, converted back to
+  // yards via FIELD_SCALE, must be a realistic pre-snap depth — not the stretched
+  // ~20-yard look that reads as nonsense against yard lines. Offense ~7 yds, defense ~12.
+  it("each formation's depth is a realistic number of yards, not stretched", () => {
     for (const formation of [OFFENSE_FORMATION, DEFENSE_FORMATION]) {
       const ys = formation.map((s) => s.y);
-      expect(Math.min(...ys)).toBeLessThanOrEqual(25);
-      expect(Math.max(...ys)).toBeGreaterThanOrEqual(75);
+      const depthYards = (Math.max(...ys) - Math.min(...ys)) / FIELD_SCALE;
+      expect(depthYards).toBeGreaterThan(4);
+      expect(depthYards).toBeLessThanOrEqual(13);
+    }
+  });
+
+  // The whole point of the fix: yard lines are drawn at the same scale the players use,
+  // so the distance between two lines equals YARDS_PER_LINE of real player spacing.
+  it("yard lines are spaced one real yard-interval apart at the player scale", () => {
+    const ys = yardLineYs(LINE_OF_SCRIMMAGE.offense);
+    expect(ys.length).toBeGreaterThanOrEqual(2);
+    for (let i = 1; i < ys.length; i++) {
+      expect((ys[i] - ys[i - 1]) / FIELD_SCALE).toBeCloseTo(YARDS_PER_LINE);
+    }
+  });
+
+  // The midfield line the old fixed [10..90] array dropped once the LOS moved off y=50.
+  it("draws a yard line near midfield for both units", () => {
+    for (const unit of ["offense", "defense"] as const) {
+      const ys = yardLineYs(LINE_OF_SCRIMMAGE[unit]);
+      expect(ys.some((y) => y >= 40 && y <= 60)).toBe(true);
+    }
+  });
+
+  // Yard lines stay inside the playing area and never land on the LOS (drawn separately).
+  it("keeps yard lines inside the field and off the LOS", () => {
+    for (const unit of ["offense", "defense"] as const) {
+      const losY = LINE_OF_SCRIMMAGE[unit];
+      for (const y of yardLineYs(losY)) {
+        expect(y).toBeGreaterThanOrEqual(6);
+        expect(y).toBeLessThanOrEqual(94);
+        expect(Math.abs(y - losY)).toBeGreaterThan(0.01);
+      }
     }
   });
 
