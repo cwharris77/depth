@@ -13,6 +13,10 @@ interface PlayerDotProps {
   teamPrimary: string;
   teamColors: TeamColors;
   unit: Unit;
+  // Short-viewport safeguard: when the field is too short for labels to sit under the
+  // dots without colliding, the parent measures it and sets this so only the numbered
+  // circles show (they never overlap once the formation is spread over the full height).
+  dense: boolean;
 }
 
 // How tightly each unit's dots pack together determines when names start
@@ -44,6 +48,7 @@ export default function PlayerDot({
   teamPrimary,
   teamColors,
   unit,
+  dense,
 }: PlayerDotProps) {
   // Team-identity dot: real primary fill, real accent (secondary) ring — e.g. the
   // Chargers read as electric-blue center, gold ring. Selection swaps to a white
@@ -57,9 +62,10 @@ export default function PlayerDot({
     : readableTextOn(teamPrimary);
 
   // Dots are positioned by their center. On-line players would straddle the line of
-  // scrimmage, so push them a circle-radius (+a hair) onto their own side: offense
-  // (y past 50) down, defense (y before 50) up. Keeps the whole circle behind the line.
-  const lineOffset = slot.onLine ? (slot.y >= 50 ? 18 : -18) : 0;
+  // scrimmage, so push them a circle-radius (+a hair) onto their own side. Which side is
+  // per-unit now that the LOS isn't centered: offense fills below its line (push down),
+  // defense fills above its line (push up). Keeps the whole circle behind the line.
+  const lineOffset = slot.onLine ? (unit === "offense" ? 18 : -18) : 0;
 
   return (
     <button
@@ -107,7 +113,10 @@ export default function PlayerDot({
           collisions depend on how tightly that unit's dots are packed, not screen
           width alone. Wraps instead of truncating so long names like
           "Smith-Njigba" stay readable. */}
-      <div className={`${LABEL_VISIBILITY[unit]} mt-1 text-center`} style={{ maxWidth: 72 }}>
+      <div
+        className={`${dense ? "hidden" : LABEL_VISIBILITY[unit]} mt-1 text-center`}
+        style={{ maxWidth: 72 }}
+      >
         <div
           className="text-[8px] font-semibold"
           style={{ color: "#A5ACAF", letterSpacing: "0.05em" }}

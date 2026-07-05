@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   OFFENSE_FORMATION,
   DEFENSE_FORMATION,
+  LINE_OF_SCRIMMAGE,
   resolveUnit,
 } from "../formations";
 import { getPlayersByPosition, TEAMS } from "../teams";
@@ -158,5 +159,29 @@ describe("formations are well-formed", () => {
     const olSlots = OFFENSE_FORMATION.filter((s) => ol.has(s.position));
     expect(olSlots).toHaveLength(5);
     expect(olSlots.every((s) => s.onLine)).toBe(true);
+  });
+
+  // Each unit is shown alone, so it must fill the whole field height (not one half) —
+  // this both uses the space and keeps dots from crowding on short screens. Guard the
+  // spread so a future edit can't quietly re-cram a formation into a narrow band.
+  it("each formation spreads across most of the field height", () => {
+    for (const formation of [OFFENSE_FORMATION, DEFENSE_FORMATION]) {
+      const ys = formation.map((s) => s.y);
+      expect(Math.min(...ys)).toBeLessThanOrEqual(25);
+      expect(Math.max(...ys)).toBeGreaterThanOrEqual(75);
+    }
+  });
+
+  // The on-line rows sit at each unit's line of scrimmage; the rest of the unit fills
+  // away from it. Keep LINE_OF_SCRIMMAGE in sync with where the onLine slots actually are.
+  it("each unit's onLine slots sit at its line of scrimmage", () => {
+    for (const [unit, formation] of [
+      ["offense", OFFENSE_FORMATION],
+      ["defense", DEFENSE_FORMATION],
+    ] as const) {
+      const onLineYs = formation.filter((s) => s.onLine).map((s) => s.y);
+      expect(new Set(onLineYs).size).toBe(1);
+      expect(onLineYs[0]).toBe(LINE_OF_SCRIMMAGE[unit]);
+    }
   });
 });

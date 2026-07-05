@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronDown, RotateCcw, Search, Share2, Shirt } from "lucide-react";
 import type { Player, Position, TeamRoster, Unit } from "@/lib/types";
 import type { TeamMeta } from "@/lib/roster-source";
-import { resolveUnit } from "@/lib/formations";
+import { LINE_OF_SCRIMMAGE, resolveUnit } from "@/lib/formations";
 import { unitForPosition } from "@/lib/search";
 import { rosterShareUrlPath } from "@/lib/share";
 import { readableTextOn } from "@/lib/colors";
@@ -91,6 +91,23 @@ export default function DepthChartField({
     [displayRoster, activeColors],
   );
   const slots = resolveUnit(themedRoster, activeUnit);
+
+  // Short-viewport safeguard. Measure the field's actual height; when it's too short for
+  // labels to sit under the dots without colliding, drop to number-only dots (dense). The
+  // formations already span the full height, so the circles alone never overlap — this
+  // just sheds the labels that would. ResizeObserver so it tracks rotation/resize live.
+  const fieldRef = useRef<HTMLDivElement>(null);
+  const [dense, setDense] = useState(false);
+  useEffect(() => {
+    const el = fieldRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver((entries) => {
+      const h = entries[0]?.contentRect.height ?? 0;
+      setDense(h > 0 && h < 420);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // Keep the open card's player in sync with the reordered roster (fresh depthRank/status).
   const displaySelected = selectedPlayer
@@ -326,6 +343,7 @@ export default function DepthChartField({
         style={{ flex: "1 1 0", minHeight: 0 }}
       >
         <div
+          ref={fieldRef}
           className="relative w-full rounded-2xl overflow-hidden"
           style={{
             flex: "1 1 0",
@@ -336,7 +354,7 @@ export default function DepthChartField({
               "inset 0 0 60px rgba(0,0,0,0.4), 0 4px 32px rgba(0,0,0,0.6)",
           }}
         >
-          <FieldMarkings />
+          <FieldMarkings losY={LINE_OF_SCRIMMAGE[activeUnit]} />
 
           {slots.map((slot) => {
             const player = slot.player;
@@ -351,6 +369,7 @@ export default function DepthChartField({
                 teamPrimary={activeColors.primary}
                 teamColors={activeColors}
                 unit={activeUnit}
+                dense={dense}
               />
             );
           })}
@@ -398,7 +417,7 @@ export default function DepthChartField({
   );
 }
 
-function FieldMarkings() {
+function FieldMarkings({ losY }: { losY: number }) {
   return (
     <svg
       className="absolute inset-0 w-full h-full"
@@ -421,8 +440,9 @@ function FieldMarkings() {
       {/* end zones */}
       <rect x="0" y="0" width="100" height="6" fill="rgba(0,34,68,0.3)" />
       <rect x="0" y="94" width="100" height="6" fill="rgba(0,34,68,0.3)" />
-      {/* line of scrimmage — solid blue, matching TV broadcast overlays */}
-      <line x1="0" y1="50" x2="100" y2="50" stroke="#2d6fe0" strokeWidth="0.6" />
+      {/* line of scrimmage — solid blue, matching TV broadcast overlays. Positioned per
+          unit (offense high, defense low) so each formation fills the full field. */}
+      <line x1="0" y1={losY} x2="100" y2={losY} stroke="#2d6fe0" strokeWidth="0.6" />
       {/* hash marks */}
       {[15, 25, 35, 45, 55, 65, 75, 85].map((y) => (
         <g key={`hash-${y}`}>
