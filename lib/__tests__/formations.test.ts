@@ -35,6 +35,7 @@ function roster(players: Player[], specialTeams: TeamRoster["specialTeams"] = []
     },
     players,
     specialTeams,
+    uniforms: [],
   };
 }
 

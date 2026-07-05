@@ -232,5 +232,8 @@ export function toTeamRoster(args: {
     },
     players,
     specialTeams,
+    // Uniforms are a separate hand-curated domain (lib/uniforms), ingested on their own.
+    // The ESPN ingest doesn't own them, so it emits none here.
+    uniforms: [],
   };
 }

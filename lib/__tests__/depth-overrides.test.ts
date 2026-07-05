@@ -38,6 +38,7 @@ function roster(players: Player[]): TeamRoster {
     },
     players,
     specialTeams: [],
+    uniforms: [],
   };
 }
 

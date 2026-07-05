@@ -1,5 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Player, PlayerStatus, Position, SpecialSlot, Team, TeamRoster } from "./types";
+import type {
+  Player,
+  PlayerStatus,
+  Position,
+  SpecialSlot,
+  Team,
+  TeamRoster,
+  Uniform,
+} from "./types";
 import type { RosterSource, TeamMeta } from "./roster-source";
 import type { Database } from "./database.types";
 import { type PlayerHit, positionGroupPositions, rankByNameMatch } from "./search";
@@ -60,6 +68,23 @@ type SpecialSlotRow = Pick<
   Tables["special_teams_slots"]["Row"],
   "team_id" | "label" | "player_id" | "x" | "y"
 >;
+type UniformRow = Pick<
+  Tables["uniforms"]["Row"],
+  | "id"
+  | "team_id"
+  | "name"
+  | "year_start"
+  | "year_end"
+  | "is_current"
+  | "color_primary"
+  | "color_secondary"
+  | "color_accent"
+  | "ui_accent"
+  | "on_accent"
+  | "image_path"
+>;
+const UNIFORM_SELECT =
+  "id, team_id, name, year_start, year_end, is_current, color_primary, color_secondary, color_accent, ui_accent, on_accent, image_path";
 
 function toTeam(row: TeamRow): Team {
   return {
@@ -99,6 +124,51 @@ function toPlayer(row: PlayerRow, depthRank: 1 | 2 | 3): Player {
   };
 }
 
+function toUniform(row: UniformRow): Uniform {
+  return {
+    id: row.id,
+    teamId: row.team_id,
+    name: row.name,
+    yearStart: row.year_start,
+    yearEnd: row.year_end,
+    isCurrent: row.is_current,
+    colors: {
+      primary: row.color_primary,
+      secondary: row.color_secondary,
+      accent: row.color_accent,
+      uiAccent: row.ui_accent,
+      onAccent: row.on_accent,
+    },
+    imagePath: row.image_path ?? undefined,
+  };
+}
+
+// The team's home/primary kit isn't a stored row — it IS team.colors (ESPN-derived).
+// Synthesize it so the archive always has a first-class "Home" default with zero DB
+// rows and no ESPN-ingest change.
+function homeUniform(team: Team): Uniform {
+  return {
+    id: `${team.id}-home`,
+    teamId: team.id,
+    name: "Home",
+    yearStart: null,
+    yearEnd: null,
+    isCurrent: true,
+    colors: team.colors,
+  };
+}
+
+// Order the hand-curated rows behind Home: other active kits first (by name), then
+// retired throwbacks newest-first (a null year_end sorts as "still current" = newest).
+function orderUniforms(rows: UniformRow[]): Uniform[] {
+  const uniforms = rows.map(toUniform);
+  return uniforms.sort((a, b) => {
+    if (a.isCurrent !== b.isCurrent) return a.isCurrent ? -1 : 1;
+    if (a.isCurrent) return a.name.localeCompare(b.name);
+    return (b.yearEnd ?? Infinity) - (a.yearEnd ?? Infinity);
+  });
+}
+
 async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> {
   const client = supabase();
 
@@ -112,21 +182,30 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
   if (teamError) throw new Error(`teams query failed: ${teamError.message}`);
   if (!teamRow) return undefined;
 
-  const [{ data: depthRows, error: depthError }, { data: stRows, error: stError }] =
-    await Promise.all([
-      client
-        .from("depth_chart_entries")
-        .select("team_id, position, depth_rank, player_id")
-        .eq("team_id", teamId)
-        .returns<DepthChartRow[]>(),
-      client
-        .from("special_teams_slots")
-        .select("team_id, label, player_id, x, y")
-        .eq("team_id", teamId)
-        .returns<SpecialSlotRow[]>(),
-    ]);
+  const [
+    { data: depthRows, error: depthError },
+    { data: stRows, error: stError },
+    { data: uniformRows, error: uniformError },
+  ] = await Promise.all([
+    client
+      .from("depth_chart_entries")
+      .select("team_id, position, depth_rank, player_id")
+      .eq("team_id", teamId)
+      .returns<DepthChartRow[]>(),
+    client
+      .from("special_teams_slots")
+      .select("team_id, label, player_id, x, y")
+      .eq("team_id", teamId)
+      .returns<SpecialSlotRow[]>(),
+    client
+      .from("uniforms")
+      .select(UNIFORM_SELECT)
+      .eq("team_id", teamId)
+      .returns<UniformRow[]>(),
+  ]);
   if (depthError) throw new Error(`depth_chart_entries query failed: ${depthError.message}`);
   if (stError) throw new Error(`special_teams_slots query failed: ${stError.message}`);
+  if (uniformError) throw new Error(`uniforms query failed: ${uniformError.message}`);
 
   // Special-teams player ids can reference a player who has no depth_chart_entries
   // row -- e.g. a returner who's a low-rank WR outside the top-3-per-position cap
@@ -177,10 +256,12 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
     label: row.label,
   }));
 
+  const team = toTeam(teamRow);
   return {
-    team: toTeam(teamRow),
+    team,
     players,
     specialTeams,
+    uniforms: [homeUniform(team), ...orderUniforms(uniformRows ?? [])],
   };
 }
 

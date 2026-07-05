@@ -98,12 +98,32 @@ export interface Team {
   logoDark?: string;
 }
 
+// A named kit in a team's uniform archive (roadmap Phase 7). Hand-curated in
+// lib/uniforms/data.ts, except the synthesized "Home" entry the read layer builds from
+// team.colors (no DB row). yearEnd null → still in the active rotation. isCurrent marks
+// active kits (home/away/alternate/color-rush) apart from retired throwbacks.
+export interface Uniform {
+  id: string;
+  teamId: string;
+  name: string;
+  yearStart: number | null;
+  yearEnd: number | null;
+  isCurrent: boolean;
+  colors: TeamColors;
+  // Path to a committed jersey image (public/uniforms/…). Undefined → the UI draws a
+  // jersey silhouette from `colors` instead (PR2).
+  imagePath?: string;
+}
+
 export interface TeamRoster {
   team: Team;
   players: Player[];
   // Offense/defense come from the shared formation (lib/formations). Special teams is
   // per-team and editorial, so it lives here.
   specialTeams: SpecialSlot[];
+  // The team's kits: synthesized Home first (from team.colors), then hand-curated
+  // alternates/throwbacks. Default rendered kit is uniforms[0].
+  uniforms: Uniform[];
 }
 
 // The bundled registry (lib/teams) is a build-time seed for the ESPN ingestion, not the
