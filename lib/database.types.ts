@@ -312,6 +312,62 @@ export type Database = {
         }
         Relationships: []
       }
+      uniforms: {
+        Row: {
+          color_accent: string
+          color_primary: string
+          color_secondary: string
+          id: string
+          image_path: string | null
+          is_current: boolean
+          name: string
+          on_accent: string
+          team_id: string
+          ui_accent: string
+          updated_at: string
+          year_end: number | null
+          year_start: number | null
+        }
+        Insert: {
+          color_accent: string
+          color_primary: string
+          color_secondary: string
+          id: string
+          image_path?: string | null
+          is_current?: boolean
+          name: string
+          on_accent: string
+          team_id: string
+          ui_accent: string
+          updated_at?: string
+          year_end?: number | null
+          year_start?: number | null
+        }
+        Update: {
+          color_accent?: string
+          color_primary?: string
+          color_secondary?: string
+          id?: string
+          image_path?: string | null
+          is_current?: boolean
+          name?: string
+          on_accent?: string
+          team_id?: string
+          ui_accent?: string
+          updated_at?: string
+          year_end?: number | null
+          year_start?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uniforms_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

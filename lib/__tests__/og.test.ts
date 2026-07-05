@@ -17,6 +17,7 @@ function rosterWith(players: TeamRoster["players"]): TeamRoster {
     },
     players,
     specialTeams: [],
+    uniforms: [],
   };
 }
 

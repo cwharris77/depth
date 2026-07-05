@@ -8,6 +8,7 @@
     "start": "next start",
     "test": "vitest run",
     "ingest:espn": "tsx scripts/ingest-espn.mts",
+    "ingest:uniforms": "tsx scripts/ingest-uniforms.mts",
     "gen:icons": "tsx scripts/gen-icons.mts",
     "db:types": "supabase gen types typescript --local > lib/database.types.ts"
   },
