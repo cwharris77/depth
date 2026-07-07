@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import DepthChartField from '@/components/DepthChartField';
 import RememberTeam from '@/components/RememberTeam';
 import { dbRosterSource } from '@/lib/roster-source.db';
+import { showUniformPicker } from '@/lib/flags';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -36,9 +37,12 @@ export default async function TeamPage({ params }: Params) {
   // so the client only ever receives the team it's viewing. Team metadata for all 32
   // (for the switcher) is lightweight — no player data — so it's safe to ship on
   // every page alongside the one full roster.
-  const [roster, teams] = await Promise.all([
+  const [roster, teams, uniformPicker] = await Promise.all([
     dbRosterSource.getTeam(id),
     dbRosterSource.listTeams(),
+    // Launch gate, evaluated here (server) and passed down — the client component
+    // never reads flags itself (lib/flags.ts).
+    showUniformPicker(),
   ]);
   if (!roster) {
     notFound();
@@ -47,7 +51,7 @@ export default async function TeamPage({ params }: Params) {
   return (
     <>
       <RememberTeam id={id} />
-      <DepthChartField roster={roster} teams={teams} />
+      <DepthChartField roster={roster} teams={teams} showUniformPicker={uniformPicker} />
     </>
   );
 }
