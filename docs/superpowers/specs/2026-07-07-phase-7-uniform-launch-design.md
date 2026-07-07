@@ -7,6 +7,12 @@ live recolor, depth#57) are merged; the feature is **code-complete but hidden** 
 `SHOW_UNIFORM_PICKER = false` in `components/DepthChartField.tsx`. This spec is the
 launch: seed coverage, the image question, the flag, and prod data.
 
+> Update 2026-07-07 (post-approval drift): the gate is no longer a const — it is now
+> the `show-uniform-picker` Vercel flag (`lib/flags.ts`), evaluated in
+> `app/team/[id]/page.tsx` and passed to `DepthChartField` as a prop. The locked
+> "Flag removal" decision below still applies unchanged: at launch, delete the flag
+> and render the button on `roster.uniforms.length > 1`.
+
 ## The gate, re-decided
 
 PR2's comment gates launch on (1) prod ingest of teams + uniforms and (2) the seed
