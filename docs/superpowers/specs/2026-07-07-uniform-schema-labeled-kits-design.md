@@ -134,11 +134,12 @@ ESPN's transform falls back to `#000000` when its feed omits a color
 1. The new value is **not** a fallback sentinel (`#000000` / `#ffffff`), and
 2. The **same** new value appears in **two consecutive** weekly pulls before it is enshrined.
 
-Costs one week of lag on a real rebrand; buys immunity to single-pull ESPN noise. This
-needs a small piece of pending state — a `pending_home` staging record per team (candidate
-hexes + first-seen marker) that the reconciler advances or clears each run. Exact storage
-(a `team_color_candidates` row vs a column on `teams`) is an implementation-plan detail;
-the guard behavior is the contract.
+Costs one week of lag on a real rebrand; buys immunity to single-pull ESPN noise. The
+pending state lives in a **column on `teams`** — e.g. `pending_home_colors jsonb` holding
+the candidate hexes (its presence/equality across runs is the "seen twice" marker). The
+reconciler advances or clears it each run: fresh candidate written on the first qualifying
+diff, promoted and cleared when the next pull matches, overwritten/cleared when it changes
+or reverts.
 
 ### Alert delivery
 
