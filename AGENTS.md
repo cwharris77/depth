@@ -86,9 +86,13 @@ refactor (see §6).
   into a pure function first.
 - **Data-integrity tests loop over the data**: one generated `it` per row/team (see
   `uniforms.test.ts`), so a failure names the offending row.
-- **Feature gates are named consts with a comment stating the unlock conditions**
-  (see `SHOW_UNIFORM_PICKER` in `components/DepthChartField.tsx`). No env-var flags
-  for launch gates.
+- **Launch gates are Vercel Flags SDK flags in `lib/flags.ts`** — never bool/string
+  consts in components, never raw `process.env` reads outside a flag's `decide()`.
+  A flag is evaluated server-side in the page and threaded down as a prop; client
+  components never call a flag. `decide()` stays request-free (no cookies/headers)
+  so prerendered team pages stay static. Every flag carries a comment stating its
+  unlock conditions. Toolbar overrides work in previews via the discovery endpoint
+  (`app/.well-known/vercel/flags`, authed by `FLAGS_SECRET`).
 - **Imports use the `@/*` alias.** Package manager is **npm** (package-lock.json).
 - **No new dependencies without asking.** The runtime dep list is 9 packages and that
   is a feature. Hand-roll small utilities (see base64url in `lib/share.ts`).
@@ -213,7 +217,8 @@ above. Locked decisions in a spec are settled — implement them; do not relitig
 - a schema change not written in an approved spec,
 - enabling RLS, touching auth, or anything that writes to the hosted DB outside a
   migration or the existing ingest script,
-- flipping a launch gate (e.g. `SHOW_UNIFORM_PICKER`),
+- flipping a launch gate in a deployed environment (a `lib/flags.ts` flag, e.g.
+  `show-uniform-picker` — changing its env var in Vercel or its `decide()` default),
 - changing CI, the ingest cadence, or repo secrets,
 - removing user-visible behavior (even "obviously dead" — #54 removed arrows shipped
   in #53 *by decision*, not by cleanup).
