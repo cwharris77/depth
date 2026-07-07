@@ -1,0 +1,227 @@
+# Uniform schema — labeled kits, home in-table, ESPN drift auto-promote
+
+Date: 2026-07-07
+Status: approved (design)
+Roadmap: Phase 7 — Uniform archive. Follows PR1 (data layer, depth#56) and PR2
+(selector + live recolor, depth#57). This reworks the schema so every kit — including
+home and away — is a first-class, labeled row, and so an ESPN color change is *captured*
+rather than silently overwritten.
+
+## Problem
+
+Today the `uniforms` table holds only *extra* kits (throwbacks/alternates). A team's home
+look is never stored — it is synthesized at read time from `teams.colors`, and that same
+`teams.colors` is overwritten wholesale by the weekly ESPN ingest
+(`scripts/ingest-espn.mts`). Two consequences:
+
+1. **No away (or any labeled) kit.** There is nowhere to put "white base / navy accent."
+2. **Silent data loss on rebrand.** When ESPN changes a team's hexes, the old home colors
+   are gone and the synthesized home kit shifts with no record that it changed.
+
+Goal: store unlimited, labeled kits per team (home, away, throwback, color rush,
+alternate); never lose an old look; keep ESPN as the trusted, automated source for home
+colors while a human curates everything ESPN can't give us.
+
+## Core architecture — flip the source of truth
+
+- **The `uniforms` table becomes the source of truth for theming.** Home is a real row
+  (`kind = 'home'`), and the app themes off the team's current home row, not
+  `teams.colors`. Every team gets a home row backfilled in the migration.
+- **`teams.colors` demotes to an ESPN drift sensor.** The ESPN ingest keeps writing it
+  weekly, exactly as today (no ingest change), but nothing themes off it anymore. Its only
+  job is: *is what ESPN returns today still what our current home row says?*
+- **The DB is no longer fully reproducible from source files, and that's accepted.** This
+  is public data being pulled in, not authored content. Home rows are machine-owned;
+  curated rows are seeded from migrations (below).
+
+## Two provenances, one table, disjoint writers
+
+The apparent complexity is two *provenances*, not two *sources* — and they map cleanly
+onto update cadence:
+
+| Rows | Source | Cadence | Writer | `source` |
+|---|---|---|---|---|
+| home (current + retired homes) | ESPN | weekly, automated | reconciler | `espn` |
+| away, throwback, color rush, alternate | GUD / teamcolorcodes / TruColor, by hand | a few times a year | seed migration | `curated` |
+
+A single `source text` column (`'espn' | 'curated'`) makes provenance explicit. The
+reconciler only ever touches `source='espn'` rows; the curated seed only ever touches
+`source='curated'` rows. Two writers, disjoint by that column, one table for all reads —
+so the selector/archive/theming read one ordered list. Separate tables were rejected: they
+would force a permanent UNION in every read and fracture uniform *history* across tables
+(retired homes pile up as history too).
+
+## Schema
+
+Reshape the `uniforms` table:
+
+```
+id           text primary key      -- readable slug, `${team_id}-${slug}` (see below)
+team_id      text not null references teams(id) on delete cascade
+kind         text not null         -- 'home' | 'away' | 'throwback' | 'color-rush' | 'alternate'
+name         text not null         -- display label: "Home", "Away", "Creamsicle", "Home '26"
+source       text not null         -- 'espn' | 'curated'
+year_start   int
+year_end     int                   -- null = still in the active rotation
+is_current   boolean not null default false
+color_primary   text not null
+color_secondary text not null
+color_accent    text not null
+ui_accent       text not null      -- curated/derived to read on the dark app bg (#0a0e1a)
+on_accent       text not null      -- text color painted on ui_accent
+image_path      text               -- null -> generated jersey-SVG fallback
+updated_at   timestamptz not null default now()
+
+index uniforms(team_id, kind)      -- "list a team's kits, grouped/filtered by type"
+```
+
+### Column decisions (locked)
+
+- **`id` stays a text slug, not numeric.** `${team_id}-${slug}` — e.g. `seahawks-home`,
+  `seahawks-away`, `buccaneers-creamsicle`. Rationale: the id is the share-link `kit`
+  param ([lib/share.ts]) and a stable upsert key; a numeric surrogate would break readable
+  share URLs and force a second slug column anyway. Uniqueness for retired homes is handled
+  by year-suffixed slugs (below), which is the concern the "numeric id" instinct was really
+  after.
+- **`kind` and `name` are separate columns.** `kind` is the machine label (indexed,
+  filterable, drives the reconciler's WHERE clause); `name` is the human label shown in the
+  selector. They often differ ("color-rush" vs "Color Rush"; "home" vs "Home '26").
+- **`ui_accent` / `on_accent` stay.** The app needs a dark-UI-legible accent (#0a0e1a
+  background) for text, player dots, and selection rings, enforced by the contrast test.
+  Primary/secondary alone are not enough. For `espn` home rows these are *derived* by the
+  existing ESPN transform (the pop-color logic in `lib/espn/transform.ts`); for `curated`
+  rows they are hand-tuned and contrast-tested.
+
+### `kind` is a sparse label, not a required set
+
+`kind` labels whatever rows exist — it is **not** a fixed set every team must fill. Only
+`home` is guaranteed (backfilled for all 32). Away/color-rush/throwback exist only when
+that team actually has one, so:
+
+- `(team_id, kind)` is **not unique** — a team can have two throwbacks, and most teams have
+  no color rush.
+- Consumers never assume a kind exists ("get the Bucs color rush" can return nothing).
+- Exactly one row per team has `kind='home' AND is_current=true` (the theming default).
+
+## ESPN drift → auto-promote flow
+
+ESPN is trusted, so a genuine change is *taken as truth automatically*; the only human step
+is naming the retired kit.
+
+A **reconcile step** (part of the weekly ESPN job) runs after `teams.colors` is written:
+
+1. Read the team's current home row (`kind='home' AND is_current`).
+2. Compare its `color_primary/secondary` to the fresh `teams.color_primary/secondary`.
+3. On a qualifying diff (see stability guard):
+   - **Insert a new home row** — ESPN's hexes, `source='espn'`, `kind='home'`,
+     `is_current=true`, `year_start=<current year>`, `id = ${team}-home-<year>`, derived
+     `ui_accent/on_accent`.
+   - **Demote the old row** — `is_current=false`, `year_end=<current year>`, auto-name
+     `"Home '<yy>"` (e.g. `"Home '26"`). It keeps `kind='home'` and `source='espn'`.
+   - **Fire an alert** (below) so a human renames the retired kit to the real thing
+     ("Wolf Grey era", etc.). The rename edits that row's `name` only; because curated
+     seeding never touches `source='espn'` rows, nothing clobbers the rename.
+
+Result: a team accumulates multiple `kind='home'` rows over time — one current, the rest
+retired history. Nothing is ever lost.
+
+### Stability guard (required)
+
+ESPN's transform falls back to `#000000` when its feed omits a color
+([lib/espn/transform.ts:39]), and feeds occasionally flap for a week. So a diff promotes
+**only when**:
+
+1. The new value is **not** a fallback sentinel (`#000000` / `#ffffff`), and
+2. The **same** new value appears in **two consecutive** weekly pulls before it is enshrined.
+
+Costs one week of lag on a real rebrand; buys immunity to single-pull ESPN noise. This
+needs a small piece of pending state — a `pending_home` staging record per team (candidate
+hexes + first-seen marker) that the reconciler advances or clears each run. Exact storage
+(a `team_color_candidates` row vs a column on `teams`) is an implementation-plan detail;
+the guard behavior is the contract.
+
+### Alert delivery
+
+The reconciler emits a machine-readable line on promote (`team, old→new hexes, retired
+row id`). Delivery mechanism reuses the existing monitoring pattern from the Phase 7 launch
+spec (append a capture item to the vault `System/Inbox.md`, via the same scheduled-task
+mechanism as `daily-inbox-triage`). Console/log output is the fallback if the job runs
+outside that context. Wiring the specific channel is an implementation detail, not a schema
+concern.
+
+## Curated seed = migration, not manual table edits
+
+Curated kits are versioned as **append-only SQL seed migrations**, so prod applies them
+automatically via the Supabase migration pipeline (which runs on merge) — no manual
+`npm run ingest:uniforms` step, and no hand-editing of production tables.
+
+Authoring stays in `lib/uniforms/data.ts` (typed `UniformSeed[]`, guarded by the existing
+dark-UI contrast test — that safety net is kept). A generator script turns `data.ts` into
+an idempotent seed migration (`INSERT … ON CONFLICT (id) DO UPDATE`) scoped to
+`source='curated'` rows. Each new batch of kits = edit `data.ts`, regenerate, commit the
+new migration. This gives all three: edit-in-typed-code, contrast-enforced at author time,
+and auto-applied-in-prod.
+
+> The `ingest:uniforms` script is superseded by generated migrations for curated rows and
+> is removed. `ingest:espn` is unchanged (still writes `teams.colors`), plus the new
+> reconcile step.
+
+## Read-layer changes
+
+- `lib/roster-source.db.ts` — stop synthesizing home from `teams.colors`
+  (`homeUniform()` is deleted). Read all kits from the table, ordered: current home first,
+  then other current kits by name, then retired kits newest-first. `orderUniforms` adjusts
+  to sort `kind='home' && is_current` to the top.
+- `lib/types.ts` — `Uniform` gains `kind` and drops the "synthesized Home / no DB row"
+  comments (home is a row now).
+- `lib/uniforms/data.ts` — `UniformSeed` gains `kind`; comments updated (home no longer
+  synthesized; this file seeds only `source='curated'` kits).
+- `components/DepthChartField.tsx` — theming already reads the selected uniform's colors;
+  default kit stays `uniforms[0]` (now the current home row). The `SHOW_UNIFORM_PICKER`
+  launch gate is handled by the separate Phase 7 launch spec, not here.
+- `lib/espn/transform.ts` / `scripts/ingest-espn.mts` — unchanged for `teams.colors`; the
+  reconcile step is new and runs after.
+
+## Migration steps
+
+1. Alter `uniforms`: add `kind`, `source`; keep the rest. Add `(team_id, kind)` index.
+2. Backfill: for each team, insert a `kind='home'`, `source='espn'`, `is_current=true` row
+   from current `teams.colors` (`id = ${team}-home`). Set the four existing curated rows'
+   `kind`/`source` (`throwback`/`alternate` as appropriate, `source='curated'`).
+3. Add candidate/pending-home state for the stability guard.
+4. Curated-seed migration generated from `data.ts` (initially the four kits + any new
+   away/labeled kits authored in this batch).
+
+## Curated data sourcing (reference, for the human step)
+
+- **Gridiron Uniform Database (gridiron-uniforms.com)** — most useful single source; every
+  team's home/away/alternate/throwback with color breakdowns. Best for *which kits exist*
+  and the home/away distinction.
+- **teamcolorcodes.com** — cleanest official hex values (already in use). **TruColor** —
+  the other precise-hex reference.
+- **No programmatic API** on any of them, and scraping is out of scope; hexes are typed by
+  hand into `data.ts`. Cadence is low (new alternates are rare), so this is a few-times-a-
+  year task. Jersey *images* are copyrighted and remain out of scope (silhouette fallback).
+
+## Tests
+
+- Contrast/integrity suite (`lib/__tests__/uniforms.test.ts`) continues to guard every
+  `curated` row in `data.ts`; extended for the `kind` field's presence/validity.
+- Reconciler unit tests: no diff → no-op; fallback sentinel → no promote; one-pull diff →
+  staged, not promoted; two-pull stable diff → new home inserted + old demoted/renamed
+  `"Home 'yy"`; existing curated rows untouched by the reconciler.
+- Seed-generator test: `data.ts` → migration is idempotent (`ON CONFLICT` upsert), only
+  emits `source='curated'` rows.
+- Read-layer: `orderUniforms` puts current home first; a team with retired homes lists them
+  newest-first after current kits.
+
+## Out of scope
+
+- Real jersey artwork (supported via `image_path`, not produced here).
+- The `SHOW_UNIFORM_PICKER` launch gate + the ~20-row content seed — owned by the separate
+  Phase 7 launch spec (`2026-07-07-phase-7-uniform-launch-design.md`); this spec is the
+  schema + drift plumbing it sits on.
+- Away colors for all 32 teams — this spec makes away *storable and labeled*; filling in
+  every team's away is curation work under the launch spec's cadence.
+- Any scraping of uniform sites.
+```
