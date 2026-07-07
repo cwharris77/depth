@@ -1,94 +1,94 @@
-import { describe, it, expect } from "vitest";
-import roster from "./fixtures/roster-sea.json";
-import depthcharts from "./fixtures/depthchart-sea.json";
-import { parseAthleteId, toDepthChartRows, toTeamColors, toTeamRoster } from "./transform";
-import type { Player } from "../types";
-import type { EspnRoster, EspnDepthcharts, EspnTeamInfo } from "./types";
-import type { Team, TeamColors } from "../types";
+import { describe, it, expect } from 'vitest';
+import roster from './fixtures/roster-sea.json';
+import depthcharts from './fixtures/depthchart-sea.json';
+import { parseAthleteId, toDepthChartRows, toTeamColors, toTeamRoster } from './transform';
+import type { Player } from '../types';
+import type { EspnRoster, EspnDepthcharts, EspnTeamInfo } from './types';
+import type { Team, TeamColors } from '../types';
 
 const CURATED: TeamColors = {
-  primary: "#001",
-  secondary: "#002",
-  accent: "#003",
-  uiAccent: "#4CC3FF",
-  onAccent: "#0a0e1a",
+  primary: '#001',
+  secondary: '#002',
+  accent: '#003',
+  uiAccent: '#4CC3FF',
+  onAccent: '#0a0e1a',
 };
 const META: Team = {
-  id: "seahawks",
-  city: "Seattle",
-  name: "Seahawks",
-  abbrev: "SEA",
-  conference: "NFC",
-  division: "West",
+  id: 'seahawks',
+  city: 'Seattle',
+  name: 'Seahawks',
+  abbrev: 'SEA',
+  conference: 'NFC',
+  division: 'West',
   colors: CURATED,
 };
 const TEAM_INFO: EspnTeamInfo = {
-  id: "26",
-  abbreviation: "SEA",
-  color: "002a5c",
-  alternateColor: "69be28",
-  logos: [{ href: "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png" }],
+  id: '26',
+  abbreviation: 'SEA',
+  color: '002a5c',
+  alternateColor: '69be28',
+  logos: [{ href: 'https://a.espncdn.com/i/teamlogos/nfl/500/sea.png' }],
 };
 
-describe("parseAthleteId", () => {
-  it("extracts the id from a $ref", () => {
+describe('parseAthleteId', () => {
+  it('extracts the id from a $ref', () => {
     expect(
       parseAthleteId(
-        "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2025/athletes/2473037?lang=en",
-      ),
-    ).toBe("2473037");
+        'http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2025/athletes/2473037?lang=en'
+      )
+    ).toBe('2473037');
   });
-  it("returns null for a junk ref", () => {
-    expect(parseAthleteId("not-a-url")).toBeNull();
+  it('returns null for a junk ref', () => {
+    expect(parseAthleteId('not-a-url')).toBeNull();
   });
 });
 
-describe("toTeamColors", () => {
-  it("uses the real ESPN brand colors, with the secondary as the UI accent", () => {
+describe('toTeamColors', () => {
+  it('uses the real ESPN brand colors, with the secondary as the UI accent', () => {
     const c = toTeamColors(TEAM_INFO);
-    expect(c.primary.toLowerCase()).toBe("#002a5c");
-    expect(c.secondary.toLowerCase()).toBe("#69be28");
+    expect(c.primary.toLowerCase()).toBe('#002a5c');
+    expect(c.secondary.toLowerCase()).toBe('#69be28');
     // The accent is the team's real secondary (the pop color) — Seahawks green,
     // matching the dot ring — never invented or lightened.
-    expect(c.uiAccent.toLowerCase()).toBe("#69be28");
+    expect(c.uiAccent.toLowerCase()).toBe('#69be28');
     // onAccent is just legible text painted on that accent (light green → dark).
-    expect(c.onAccent.toLowerCase()).toBe("#0a0e1a");
+    expect(c.onAccent.toLowerCase()).toBe('#0a0e1a');
   });
 
-  it("uses the primary as the accent for teams whose secondary is black or white", () => {
+  it('uses the primary as the accent for teams whose secondary is black or white', () => {
     // Falcons: red primary + black secondary. Cardinals: red primary + white secondary.
     // Black/white are neutral, not distinguishing accents, so use the real primary.
     const falcons: EspnTeamInfo = {
-      id: "1",
-      abbreviation: "ATL",
-      color: "a71930",
-      alternateColor: "000000",
+      id: '1',
+      abbreviation: 'ATL',
+      color: 'a71930',
+      alternateColor: '000000',
       logos: [],
     };
     const cardinals: EspnTeamInfo = {
-      id: "22",
-      abbreviation: "ARI",
-      color: "a40227",
-      alternateColor: "ffffff",
+      id: '22',
+      abbreviation: 'ARI',
+      color: 'a40227',
+      alternateColor: 'ffffff',
       logos: [],
     };
-    expect(toTeamColors(falcons).uiAccent.toLowerCase()).toBe("#a71930");
-    expect(toTeamColors(cardinals).uiAccent.toLowerCase()).toBe("#a40227");
+    expect(toTeamColors(falcons).uiAccent.toLowerCase()).toBe('#a71930');
+    expect(toTeamColors(cardinals).uiAccent.toLowerCase()).toBe('#a40227');
   });
 
-  it("overrides the Ravens accent to official gold (purple + black both fail on the dark UI)", () => {
+  it('overrides the Ravens accent to official gold (purple + black both fail on the dark UI)', () => {
     const ravens: EspnTeamInfo = {
-      id: "33",
-      abbreviation: "BAL",
-      color: "29126f",
-      alternateColor: "000000",
+      id: '33',
+      abbreviation: 'BAL',
+      color: '29126f',
+      alternateColor: '000000',
       logos: [],
     };
-    expect(toTeamColors(ravens).uiAccent.toLowerCase()).toBe("#9e7c0c");
+    expect(toTeamColors(ravens).uiAccent.toLowerCase()).toBe('#9e7c0c');
   });
 });
 
-describe("toTeamRoster", () => {
+describe('toTeamRoster', () => {
   const result = toTeamRoster({
     meta: META,
     roster: roster as unknown as EspnRoster,
@@ -96,24 +96,24 @@ describe("toTeamRoster", () => {
     teamInfo: TEAM_INFO,
   });
 
-  it("carries team metadata + merged logo", () => {
-    expect(result.team.id).toBe("seahawks");
-    expect(result.team.logo).toContain("espncdn.com");
+  it('carries team metadata + merged logo', () => {
+    expect(result.team.id).toBe('seahawks');
+    expect(result.team.logo).toContain('espncdn.com');
   });
-  it("produces players with valid positions and depthRank 1-3", () => {
+  it('produces players with valid positions and depthRank 1-3', () => {
     expect(result.players.length).toBeGreaterThan(20);
     for (const p of result.players) {
       expect([1, 2, 3]).toContain(p.depthRank);
       expect(p.name).toBeTruthy();
-      expect(p.photoUrl).toContain("espncdn.com");
+      expect(p.photoUrl).toContain('espncdn.com');
     }
   });
-  it("has a QB1 and at least two WRs", () => {
-    expect(result.players.some((p) => p.position === "QB" && p.depthRank === 1)).toBe(true);
-    expect(result.players.filter((p) => p.position === "WR").length).toBeGreaterThanOrEqual(2);
+  it('has a QB1 and at least two WRs', () => {
+    expect(result.players.some((p) => p.position === 'QB' && p.depthRank === 1)).toBe(true);
+    expect(result.players.filter((p) => p.position === 'WR').length).toBeGreaterThanOrEqual(2);
   });
-  it("fills special-teams returners from the ST depthchart", () => {
-    const kr = result.specialTeams.find((s) => s.label === "KR");
+  it('fills special-teams returners from the ST depthchart', () => {
+    const kr = result.specialTeams.find((s) => s.label === 'KR');
     expect(kr).toBeDefined();
     expect(kr!.playerId).toBeTruthy();
   });
@@ -129,7 +129,7 @@ describe("toTeamRoster", () => {
     // depth_rank) constraint, but two raw ESPN keys (lde, rde) both map to Position DE
     // and each independently ranks 1..3, so `players` can hold two DE-rank-1s.
     const rows = toDepthChartRows(result.players);
-    const de1 = result.players.filter((p) => p.position === "DE" && p.depthRank === 1);
+    const de1 = result.players.filter((p) => p.position === 'DE' && p.depthRank === 1);
     expect(de1.length).toBeGreaterThanOrEqual(2); // the actual collision this guards against
     const seen = new Set<string>();
     for (const row of rows) {
@@ -140,7 +140,7 @@ describe("toTeamRoster", () => {
   });
 });
 
-describe("toTeamRoster: returner ranked outside the top-3 cap", () => {
+describe('toTeamRoster: returner ranked outside the top-3 cap', () => {
   // Regression test: a KR/PR can be a WR/RB ranked well below our top-3-per-position
   // cap (e.g. WR7), so they're dropped from `players` by the normal offense loop but
   // still a valid special-teams reference. Without the fallback, specialTeams would
@@ -150,21 +150,21 @@ describe("toTeamRoster: returner ranked outside the top-3 cap", () => {
   const ref = (id: string) => ({
     $ref: `http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2025/athletes/${id}?lang=en`,
   });
-  const WR7_ID = "9990001";
+  const WR7_ID = '9990001';
 
   const roster: EspnRoster = {
     season: { year: 2025 },
     athletes: [
       {
-        position: "offense",
+        position: 'offense',
         items: [
           {
             id: WR7_ID,
-            fullName: "Deep Bench Wideout",
-            jersey: "19",
-            position: { abbreviation: "WR" },
-            headshot: { href: "https://a.espncdn.com/i/headshots/nfl/players/full/wr7.png" },
-          } as EspnRoster["athletes"][number]["items"][number],
+            fullName: 'Deep Bench Wideout',
+            jersey: '19',
+            position: { abbreviation: 'WR' },
+            headshot: { href: 'https://a.espncdn.com/i/headshots/nfl/players/full/wr7.png' },
+          } as EspnRoster['athletes'][number]['items'][number],
         ],
       },
     ],
@@ -173,7 +173,7 @@ describe("toTeamRoster: returner ranked outside the top-3 cap", () => {
   const depthcharts: EspnDepthcharts = {
     items: [
       {
-        name: "3WR 1TE",
+        name: '3WR 1TE',
         positions: {
           wr: {
             athletes: Array.from({ length: 7 }, (_, i) => ({
@@ -184,7 +184,7 @@ describe("toTeamRoster: returner ranked outside the top-3 cap", () => {
         },
       },
       {
-        name: "Special Teams",
+        name: 'Special Teams',
         positions: {
           kr: { athletes: [{ rank: 1, athlete: ref(WR7_ID) }] },
         },
@@ -192,52 +192,52 @@ describe("toTeamRoster: returner ranked outside the top-3 cap", () => {
     ],
   };
 
-  it("adds the returner to players even when ranked outside the top-3 cap", () => {
+  it('adds the returner to players even when ranked outside the top-3 cap', () => {
     const result = toTeamRoster({ meta: META, roster, depthcharts, teamInfo: TEAM_INFO });
-    const kr = result.specialTeams.find((s) => s.label === "KR");
+    const kr = result.specialTeams.find((s) => s.label === 'KR');
     expect(kr?.playerId).toBe(WR7_ID);
     const player = result.players.find((p) => p.id === WR7_ID);
     expect(player).toBeDefined();
-    expect(player!.position).toBe("WR");
+    expect(player!.position).toBe('WR');
   });
 });
 
-describe("toDepthChartRows", () => {
+describe('toDepthChartRows', () => {
   const player = (over: Partial<Player>): Player => ({
-    id: over.id ?? "p",
-    name: "Name",
+    id: over.id ?? 'p',
+    name: 'Name',
     number: over.number ?? 0,
-    position: over.position ?? "DE",
+    position: over.position ?? 'DE',
     depthRank: over.depthRank ?? 1,
-    status: "starter",
+    status: 'starter',
     age: 25,
-    college: "—",
+    college: '—',
     experience: 3,
-    height: "6'0\"",
+    height: '6\'0"',
     weight: 200,
-    bio: "bio",
+    bio: 'bio',
   });
 
-  it("re-ranks a collapsed position group 1..3 by (depthRank, number), unique per position", () => {
+  it('re-ranks a collapsed position group 1..3 by (depthRank, number), unique per position', () => {
     const players = [
-      player({ id: "lde1", position: "DE", depthRank: 1, number: 90 }),
-      player({ id: "rde1", position: "DE", depthRank: 1, number: 91 }),
-      player({ id: "lde2", position: "DE", depthRank: 2, number: 92 }),
-      player({ id: "rde2", position: "DE", depthRank: 2, number: 93 }),
+      player({ id: 'lde1', position: 'DE', depthRank: 1, number: 90 }),
+      player({ id: 'rde1', position: 'DE', depthRank: 1, number: 91 }),
+      player({ id: 'lde2', position: 'DE', depthRank: 2, number: 92 }),
+      player({ id: 'rde2', position: 'DE', depthRank: 2, number: 93 }),
     ];
     const rows = toDepthChartRows(players);
     expect(rows).toHaveLength(3); // capped at 3, one extra dropped
     const keys = rows.map((r) => `${r.position}:${r.depthRank}`);
     expect(new Set(keys).size).toBe(keys.length); // no duplicates
-    expect(rows[0]).toEqual({ position: "DE", depthRank: 1, playerId: "lde1" });
-    expect(rows[1]).toEqual({ position: "DE", depthRank: 2, playerId: "rde1" });
-    expect(rows[2]).toEqual({ position: "DE", depthRank: 3, playerId: "lde2" });
+    expect(rows[0]).toEqual({ position: 'DE', depthRank: 1, playerId: 'lde1' });
+    expect(rows[1]).toEqual({ position: 'DE', depthRank: 2, playerId: 'rde1' });
+    expect(rows[2]).toEqual({ position: 'DE', depthRank: 3, playerId: 'lde2' });
   });
 
-  it("keeps independent positions separate", () => {
+  it('keeps independent positions separate', () => {
     const players = [
-      player({ id: "qb1", position: "QB", depthRank: 1 }),
-      player({ id: "wr1", position: "WR", depthRank: 1 }),
+      player({ id: 'qb1', position: 'QB', depthRank: 1 }),
+      player({ id: 'wr1', position: 'WR', depthRank: 1 }),
     ];
     const rows = toDepthChartRows(players);
     expect(rows).toHaveLength(2);

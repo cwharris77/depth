@@ -1,4 +1,4 @@
-import type { TeamDepthOverride } from "./depth-overrides";
+import type { TeamDepthOverride } from './depth-overrides';
 
 // A shareable deep link to one player. The team page reads `?player=<id>` and opens
 // that player once its roster loads (see components/OpenPlayerFromQuery), so this is
@@ -17,15 +17,13 @@ export function playerDeepLinkPath(teamId: string, playerId: string): string {
 // once there's auth.
 
 function base64UrlEncode(s: string): string {
-  const b64 = typeof btoa !== "undefined" ? btoa(s) : Buffer.from(s).toString("base64");
-  return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const b64 = typeof btoa !== 'undefined' ? btoa(s) : Buffer.from(s).toString('base64');
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 function base64UrlDecode(s: string): string {
-  const b64 = s.replace(/-/g, "+").replace(/_/g, "/");
-  return typeof atob !== "undefined"
-    ? atob(b64)
-    : Buffer.from(b64, "base64").toString();
+  const b64 = s.replace(/-/g, '+').replace(/_/g, '/');
+  return typeof atob !== 'undefined' ? atob(b64) : Buffer.from(b64, 'base64').toString();
 }
 
 export function encodeDepthOrder(override: TeamDepthOverride): string {
@@ -38,9 +36,9 @@ export function encodeDepthOrder(override: TeamDepthOverride): string {
 export function decodeDepthOrder(param: string): TeamDepthOverride | null {
   try {
     const parsed = JSON.parse(base64UrlDecode(param));
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
     for (const value of Object.values(parsed)) {
-      if (!Array.isArray(value) || !value.every((id) => typeof id === "string")) {
+      if (!Array.isArray(value) || !value.every((id) => typeof id === 'string')) {
         return null;
       }
     }
@@ -53,10 +51,7 @@ export function decodeDepthOrder(param: string): TeamDepthOverride | null {
 // The share URL for a team's roster as it currently stands. With no edits it's the
 // clean team path; with edits it carries the packed order. Root-relative; callers
 // prepend the origin.
-export function rosterShareUrlPath(
-  teamId: string,
-  override: TeamDepthOverride,
-): string {
+export function rosterShareUrlPath(teamId: string, override: TeamDepthOverride): string {
   const base = `/team/${encodeURIComponent(teamId)}`;
   if (!override || Object.keys(override).length === 0) return base;
   // encodeDepthOrder is base64url — already URL-safe, no further escaping needed.

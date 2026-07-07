@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   images: {
@@ -10,9 +10,9 @@ const nextConfig: NextConfig = {
         // scoped to /headshots/nfl/ alone without crashing next/image on those
         // hits (all-players search, unlike the single-roster PlayerCard, surfaces
         // them often enough to matter).
-        protocol: "https",
-        hostname: "a.espncdn.com",
-        pathname: "/i/headshots/**",
+        protocol: 'https',
+        hostname: 'a.espncdn.com',
+        pathname: '/i/headshots/**',
       },
     ],
   },

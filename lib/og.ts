@@ -1,5 +1,5 @@
-import type { TeamRosterSeed } from "./types";
-import { getPlayersByPosition } from "./roster";
+import type { TeamRosterSeed } from './types';
+import { getPlayersByPosition } from './roster';
 
 export interface FeaturedStarter {
   label: string;
@@ -10,10 +10,10 @@ export interface FeaturedStarter {
 // Uses the same deterministic depth order as the field, and silently skips any
 // position the roster lacks (so an incomplete team still produces a valid card).
 export function featuredStarters(roster: TeamRosterSeed): FeaturedStarter[] {
-  const wanted: Array<[FeaturedStarter["label"], Parameters<typeof getPlayersByPosition>[1]]> = [
-    ["QB", "QB"],
-    ["RB", "RB"],
-    ["WR", "WR"],
+  const wanted: Array<[FeaturedStarter['label'], Parameters<typeof getPlayersByPosition>[1]]> = [
+    ['QB', 'QB'],
+    ['RB', 'RB'],
+    ['WR', 'WR'],
   ];
   const picks: FeaturedStarter[] = [];
   for (const [label, position] of wanted) {

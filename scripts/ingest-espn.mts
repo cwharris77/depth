@@ -6,24 +6,24 @@
 // Requires SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in the environment (service role
 // bypasses RLS-equivalent restrictions for writes; never expose it client-side).
 
-import dotenv from "dotenv";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import dotenv from 'dotenv';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-dotenv.config({ path: ".env.local" });
-import { toDepthChartRows, toTeamRoster } from "../lib/espn/transform";
-import { parseStandings, type EspnStandings } from "../lib/espn/standings";
-import { TEAMS } from "../lib/teams/index";
-import type { EspnDepthcharts, EspnRoster, EspnTeamInfo } from "../lib/espn/types";
-import type { TeamRoster } from "../lib/types";
-import type { Database } from "../lib/database.types";
+dotenv.config({ path: '.env.local' });
+import { toDepthChartRows, toTeamRoster } from '../lib/espn/transform';
+import { parseStandings, type EspnStandings } from '../lib/espn/standings';
+import { TEAMS } from '../lib/teams/index';
+import type { EspnDepthcharts, EspnRoster, EspnTeamInfo } from '../lib/espn/types';
+import type { TeamRoster } from '../lib/types';
+import type { Database } from '../lib/database.types';
 
-const SITE = "https://site.api.espn.com/apis/site/v2/sports/football/nfl";
-const CORE = "https://sports.core.api.espn.com/v2/sports/football/leagues/nfl";
+const SITE = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl';
+const CORE = 'https://sports.core.api.espn.com/v2/sports/football/leagues/nfl';
 // Conference/division for every team, in one call — sourced from ESPN, not hand-curated.
-const STANDINGS = "https://site.api.espn.com/apis/v2/sports/football/nfl/standings?level=3";
+const STANDINGS = 'https://site.api.espn.com/apis/v2/sports/football/nfl/standings?level=3';
 
 // Our registry uses a couple of abbreviations that differ from ESPN's.
-const ABBREV_ALIAS: Record<string, string> = { WAS: "WSH" };
+const ABBREV_ALIAS: Record<string, string> = { WAS: 'WSH' };
 
 // ESPN's unofficial API blips intermittently (a team's roster can 404 on one call and
 // return 200 the next), which would otherwise skip that team for the whole run. Retry a
@@ -45,7 +45,7 @@ async function getJson<T>(url: string, attempts = 3): Promise<T> {
 
 async function espnTeamIndex(): Promise<Map<string, EspnTeamInfo>> {
   const data = await getJson<{ sports: [{ leagues: [{ teams: { team: EspnTeamInfo }[] }] }] }>(
-    `${SITE}/teams`,
+    `${SITE}/teams`
   );
   const map = new Map<string, EspnTeamInfo>();
   for (const { team } of data.sports[0].leagues[0].teams) {
@@ -61,8 +61,8 @@ function requireEnv(name: string): string {
 }
 
 async function main() {
-  const supabaseUrl = requireEnv("SUPABASE_URL");
-  const serviceRoleKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+  const supabaseUrl = requireEnv('SUPABASE_URL');
+  const serviceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
   const supabase: SupabaseClient<Database> = createClient(supabaseUrl, serviceRoleKey);
 
   const startedAt = new Date().toISOString();
@@ -92,7 +92,7 @@ async function main() {
       const espnRoster = await getJson<EspnRoster>(`${SITE}/teams/${abbr}/roster`);
       const season = espnRoster.season.year;
       const depthcharts = await getJson<EspnDepthcharts>(
-        `${CORE}/seasons/${season}/teams/${info.id}/depthcharts`,
+        `${CORE}/seasons/${season}/teams/${info.id}/depthcharts`
       );
       const roster2 = toTeamRoster({ meta, roster: espnRoster, depthcharts, teamInfo: info });
       if (roster2.players.length < 15) {
@@ -122,10 +122,10 @@ async function main() {
   }
 
   const finishedAt = new Date().toISOString();
-  const status = errors.length === 0 ? "success" : teamsWritten > 0 ? "partial" : "failure";
+  const status = errors.length === 0 ? 'success' : teamsWritten > 0 ? 'partial' : 'failure';
 
-  const { error: runError } = await supabase.from("ingestion_runs").insert({
-    source: "espn",
+  const { error: runError } = await supabase.from('ingestion_runs').insert({
+    source: 'espn',
     started_at: startedAt,
     finished_at: finishedAt,
     status,
@@ -139,22 +139,19 @@ async function main() {
     console.log(`Errors/skips:`);
     for (const e of errors) console.log(`  ${e.team}: ${e.message}`);
   }
-  if (status === "failure") process.exit(1);
+  if (status === 'failure') process.exit(1);
   // In scheduled runs (STRICT set) a partial run is a half-stale DB, so fail loud
   // enough to turn the workflow red. Hand-runs stay lenient and exit 0 on partial.
-  if (status === "partial" && process.env.STRICT) {
-    console.error("STRICT: partial run treated as failure (some teams did not write)");
+  if (status === 'partial' && process.env.STRICT) {
+    console.error('STRICT: partial run treated as failure (some teams did not write)');
     process.exit(1);
   }
 }
 
-async function writeTeam(
-  supabase: SupabaseClient<Database>,
-  roster: TeamRoster,
-): Promise<void> {
+async function writeTeam(supabase: SupabaseClient<Database>, roster: TeamRoster): Promise<void> {
   const { team, players, specialTeams } = roster;
 
-  const { error: teamError } = await supabase.from("teams").upsert(
+  const { error: teamError } = await supabase.from('teams').upsert(
     {
       id: team.id,
       espn_id: null,
@@ -172,11 +169,11 @@ async function writeTeam(
       logo_dark_url: team.logoDark ?? null,
       updated_at: new Date().toISOString(),
     },
-    { onConflict: "id" },
+    { onConflict: 'id' }
   );
   if (teamError) throw new Error(`teams upsert: ${teamError.message}`);
 
-  const { error: playersError } = await supabase.from("players").upsert(
+  const { error: playersError } = await supabase.from('players').upsert(
     players.map((p) => ({
       id: p.id,
       team_id: team.id,
@@ -193,16 +190,16 @@ async function writeTeam(
       photo_url: p.photoUrl ?? null,
       updated_at: new Date().toISOString(),
     })),
-    { onConflict: "id" },
+    { onConflict: 'id' }
   );
   if (playersError) throw new Error(`players upsert: ${playersError.message}`);
 
   // depth_chart_entries: one row per (team, position, depthRank). Clear this
   // team's existing entries first so a player who lost their slot doesn't linger.
   const { error: deleteDepthError } = await supabase
-    .from("depth_chart_entries")
+    .from('depth_chart_entries')
     .delete()
-    .eq("team_id", team.id);
+    .eq('team_id', team.id);
   if (deleteDepthError) throw new Error(`depth_chart_entries delete: ${deleteDepthError.message}`);
 
   const depthRows = toDepthChartRows(players).map((row) => ({
@@ -214,12 +211,12 @@ async function writeTeam(
   }));
   if (depthRows.length) {
     const { error: depthError } = await supabase
-      .from("depth_chart_entries")
-      .upsert(depthRows, { onConflict: "team_id,position,depth_rank" });
+      .from('depth_chart_entries')
+      .upsert(depthRows, { onConflict: 'team_id,position,depth_rank' });
     if (depthError) throw new Error(`depth_chart_entries upsert: ${depthError.message}`);
   }
 
-  const { error: stError } = await supabase.from("special_teams_slots").upsert(
+  const { error: stError } = await supabase.from('special_teams_slots').upsert(
     specialTeams.map((s) => ({
       id: `${team.id}-${s.id}`,
       team_id: team.id,
@@ -229,7 +226,7 @@ async function writeTeam(
       y: s.y,
       updated_at: new Date().toISOString(),
     })),
-    { onConflict: "id" },
+    { onConflict: 'id' }
   );
   if (stError) throw new Error(`special_teams_slots upsert: ${stError.message}`);
 }

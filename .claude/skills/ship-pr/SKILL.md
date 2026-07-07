@@ -31,6 +31,7 @@ not shippable until the "Any code PR" checklist there passes.
 Run all of these; capture output for the body:
 
 ```bash
+npm run format          # Prettier — CI rejects format drift
 npx tsc --noEmit        # must exit 0
 npm test                # must be green; note the test count
 ```
@@ -97,6 +98,7 @@ gh pr merge <N> --squash --delete-branch
 
 | Step | Command / rule |
 |---|---|
+| Format | `npm run format` |
 | Typecheck | `npx tsc --noEmit` |
 | Tests | `npm test` (note the count) |
 | Live check | dev server via launch.json; write the "Verified live" sentence |

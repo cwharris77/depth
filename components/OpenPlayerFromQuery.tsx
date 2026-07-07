@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Suspense, useEffect } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { Player } from "@/lib/types";
+import { Suspense, useEffect } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import type { Player } from '@/lib/types';
 
 // Selecting a search hit on a *different* team (NavSwitcher) navigates here via
 // `?player=<id>` since the destination page hasn't loaded that player's roster yet.
@@ -14,7 +14,7 @@ function Inner({ players, onOpen }: { players: Player[]; onOpen: (player: Player
   const pathname = usePathname();
 
   useEffect(() => {
-    const id = searchParams.get("player");
+    const id = searchParams.get('player');
     if (!id) return;
     const player = players.find((p) => p.id === id);
     if (player) onOpen(player);

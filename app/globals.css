@@ -1,11 +1,11 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #0a0e1a;
   --foreground: #f0f4ff;
   --card-bg: #0f1623;
   --field-green: #2d5a1b;
-  --field-line: rgba(255,255,255,0.15);
+  --field-line: rgba(255, 255, 255, 0.15);
 }
 
 @theme inline {
@@ -25,4 +25,3 @@ body {
 body.card-open {
   overflow: hidden;
 }
-

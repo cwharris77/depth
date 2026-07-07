@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import DepthChartField from "@/components/DepthChartField";
-import RememberTeam from "@/components/RememberTeam";
-import { dbRosterSource } from "@/lib/roster-source.db";
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import DepthChartField from '@/components/DepthChartField';
+import RememberTeam from '@/components/RememberTeam';
+import { dbRosterSource } from '@/lib/roster-source.db';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
   const roster = await dbRosterSource.getTeam(id);
   if (!roster) {
-    return { title: "Team not found · Depth" };
+    return { title: 'Team not found · Depth' };
   }
   const { team } = roster;
   const fullName = `${team.city} ${team.name}`;
