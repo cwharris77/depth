@@ -9,14 +9,14 @@
 //
 // The mark is a 16-unit grid: dark rounded square (#0a0e1a) + three descending white
 // bars, identical geometry to app/icon.svg and the in-app wordmark.
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
-import sharp from "sharp";
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import sharp from 'sharp';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-const BG = "#0a0e1a";
-const FG = "#f0f4ff";
+const BG = '#0a0e1a';
+const FG = '#f0f4ff';
 
 // The three bars on the shared 16-unit grid (top bar is horizontally centered; the
 // cluster is vertically centered on the grid, so it scales about the center cleanly).
@@ -55,7 +55,7 @@ async function write(svg: string, size: number, outPath: string) {
   console.log(`wrote ${outPath} (${size}x${size})`);
 }
 
-await write(anyIcon(192), 192, join(root, "public/icon-192.png"));
-await write(anyIcon(512), 512, join(root, "public/icon-512.png"));
-await write(maskableIcon(512), 512, join(root, "public/icon-maskable-512.png"));
-await write(appleIcon(180), 180, join(root, "app/apple-icon.png"));
+await write(anyIcon(192), 192, join(root, 'public/icon-192.png'));
+await write(anyIcon(512), 512, join(root, 'public/icon-512.png'));
+await write(maskableIcon(512), 512, join(root, 'public/icon-maskable-512.png'));
+await write(appleIcon(180), 180, join(root, 'app/apple-icon.png'));

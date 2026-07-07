@@ -1,4 +1,4 @@
-import type { Team, TeamRoster } from "./types";
+import type { Team, TeamRoster } from './types';
 
 // The single seam between the app and where roster data comes from. Routes and
 // components depend on this interface, never on a registry directly. The only

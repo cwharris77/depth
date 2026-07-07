@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { TEAMS } from "../teams";
-import { contrastRatio, readableTextOn } from "../colors";
+import { describe, it, expect } from 'vitest';
+import { TEAMS } from '../teams';
+import { contrastRatio, readableTextOn } from '../colors';
 
 // uiAccent is now the team's real brand primary (no curated/derived contrast color),
 // so we no longer assert every team's accent clears the dark UI — a dark primary that's
@@ -8,7 +8,7 @@ import { contrastRatio, readableTextOn } from "../colors";
 // still matters: text painted ON a team color must stay legible, so readableTextOn has
 // to pick a readable black/white for any brand color.
 
-describe("readableTextOn(primary) contrast safety", () => {
+describe('readableTextOn(primary) contrast safety', () => {
   // uiAccent is only curated to read on DARK_BG, not on a team's own primary —
   // components that paint text directly onto a primary-filled surface (e.g. the
   // active offense/defense/special toggle) must use readableTextOn(primary)
@@ -23,17 +23,17 @@ describe("readableTextOn(primary) contrast safety", () => {
 
     it(`${id}: readableTextOn(primary) reads on top of primary`, () => {
       expect(contrastRatio(readableTextOn(primary), primary)).toBeGreaterThanOrEqual(
-        MIN_ACCEPTABLE,
+        MIN_ACCEPTABLE
       );
     });
   }
 });
 
-describe("contrastRatio sanity", () => {
-  it("black on white is maximal (21:1)", () => {
-    expect(contrastRatio("#000000", "#ffffff")).toBeCloseTo(21, 0);
+describe('contrastRatio sanity', () => {
+  it('black on white is maximal (21:1)', () => {
+    expect(contrastRatio('#000000', '#ffffff')).toBeCloseTo(21, 0);
   });
-  it("same color is minimal (1:1)", () => {
-    expect(contrastRatio("#69BE28", "#69BE28")).toBeCloseTo(1, 5);
+  it('same color is minimal (1:1)', () => {
+    expect(contrastRatio('#69BE28', '#69BE28')).toBeCloseTo(1, 5);
   });
 });

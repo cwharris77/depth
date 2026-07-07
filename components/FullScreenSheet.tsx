@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import type { ReactNode } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import type { ReactNode } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface FullScreenSheetProps {
   isOpen: boolean;
@@ -19,14 +19,13 @@ export default function FullScreenSheet({ isOpen, children }: FullScreenSheetPro
         <motion.div
           className="absolute inset-0 z-50 flex flex-col"
           style={{
-            background: "linear-gradient(180deg, #0f1a2e 0%, #0a0e1a 100%)",
-            paddingTop: "max(env(safe-area-inset-top), 12px)",
+            background: 'linear-gradient(180deg, #0f1a2e 0%, #0a0e1a 100%)',
+            paddingTop: 'max(env(safe-area-inset-top), 12px)',
           }}
-          initial={{ y: "-100%" }}
+          initial={{ y: '-100%' }}
           animate={{ y: 0 }}
-          exit={{ y: "-100%" }}
-          transition={{ type: "spring", stiffness: 360, damping: 38 }}
-        >
+          exit={{ y: '-100%' }}
+          transition={{ type: 'spring', stiffness: 360, damping: 38 }}>
           {children}
         </motion.div>
       )}

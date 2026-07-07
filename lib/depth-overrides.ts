@@ -3,12 +3,12 @@
 // position, per team — not a full roster copy. localStorage only for now (single device,
 // no accounts); a real backend comes with auth later. See [[Decisions]] (base+overlay).
 
-import type { Player, PlayerStatus, Position, TeamRoster } from "./types";
+import type { Player, PlayerStatus, Position, TeamRoster } from './types';
 
 // A team's overlay: position -> the user's ordering of player ids at that position.
 export type TeamDepthOverride = Partial<Record<Position, string[]>>;
 
-const STORAGE_KEY = "depth:overrides";
+const STORAGE_KEY = 'depth:overrides';
 type Store = Record<string, TeamDepthOverride>; // teamId -> override
 
 // --- pure application -------------------------------------------------------------
@@ -16,8 +16,8 @@ type Store = Record<string, TeamDepthOverride>; // teamId -> override
 // Depth drives the label (STARTER/BACKUP), but rookie/injured are player attributes, so
 // preserve those and only flip starter<->backup by the new rank.
 function statusForRank(prev: PlayerStatus, rank: number): PlayerStatus {
-  if (prev === "injured" || prev === "rookie") return prev;
-  return rank === 1 ? "starter" : "backup";
+  if (prev === 'injured' || prev === 'rookie') return prev;
+  return rank === 1 ? 'starter' : 'backup';
 }
 
 // Apply a team's overlay to its roster: within each overridden position, list the players
@@ -27,7 +27,7 @@ function statusForRank(prev: PlayerStatus, rank: number): PlayerStatus {
 // through unchanged. Returns a new roster; the input is not mutated.
 export function applyTeamOverride(
   roster: TeamRoster,
-  override: TeamDepthOverride | undefined,
+  override: TeamDepthOverride | undefined
 ): TeamRoster {
   if (!override || Object.keys(override).length === 0) return roster;
 
@@ -56,7 +56,7 @@ export function applyTeamOverride(
     }
     // Players the overlay didn't mention keep their default relative order.
     const leftovers = [...byId.values()].sort(
-      (a, b) => a.depthRank - b.depthRank || a.number - b.number,
+      (a, b) => a.depthRank - b.depthRank || a.number - b.number
     );
     [...ordered, ...leftovers].forEach((p, i) => {
       players.push({
@@ -73,10 +73,10 @@ export function applyTeamOverride(
 
 // Swap a player one slot up or down within an ordered id list. Returns the same list
 // reference (no change) when the move would run off either end.
-export function moveInOrder(ids: string[], id: string, dir: "up" | "down"): string[] {
+export function moveInOrder(ids: string[], id: string, dir: 'up' | 'down'): string[] {
   const from = ids.indexOf(id);
   if (from === -1) return ids;
-  const to = dir === "up" ? from - 1 : from + 1;
+  const to = dir === 'up' ? from - 1 : from + 1;
   if (to < 0 || to >= ids.length) return ids;
   const next = [...ids];
   [next[from], next[to]] = [next[to], next[from]];
@@ -86,7 +86,7 @@ export function moveInOrder(ids: string[], id: string, dir: "up" | "down"): stri
 // --- persistence (localStorage, guarded like lib/my-team.ts) ----------------------
 
 function readStore(): Store {
-  if (typeof window === "undefined") return {};
+  if (typeof window === 'undefined') return {};
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     return raw ? (JSON.parse(raw) as Store) : {};
@@ -96,7 +96,7 @@ function readStore(): Store {
 }
 
 function writeStore(store: Store): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
   } catch {
@@ -151,21 +151,21 @@ export function hasOverride(override: TeamDepthOverride): boolean {
 
 // One-time discoverability hint for the reorder feature. Defaults to "seen" on the
 // server / when storage is blocked so we never flash the hint where we can't dismiss it.
-const HINT_KEY = "depth:seen-reorder-hint";
+const HINT_KEY = 'depth:seen-reorder-hint';
 
 export function seenReorderHint(): boolean {
-  if (typeof window === "undefined") return true;
+  if (typeof window === 'undefined') return true;
   try {
-    return window.localStorage.getItem(HINT_KEY) === "1";
+    return window.localStorage.getItem(HINT_KEY) === '1';
   } catch {
     return true;
   }
 }
 
 export function markReorderHintSeen(): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   try {
-    window.localStorage.setItem(HINT_KEY, "1");
+    window.localStorage.setItem(HINT_KEY, '1');
   } catch {
     // ignore
   }

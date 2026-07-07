@@ -70,9 +70,11 @@ refactor (see §6).
 
 ### Code
 
-- **Match this repo, not global defaults: double quotes.** There is no Prettier
-  config here and the codebase uses double quotes throughout. Cooper's global
-  single-quote preference does not apply — match the surrounding file.
+- **Formatting is Prettier's job, enforced by CI.** `.prettierrc` (single quotes,
+  100 width, es5 trailing commas, bracket-same-line) is the only authority — never
+  hand-align or argue style. `npm run format` before committing;
+  `npm run format:check` is a CI gate. `.prettierignore` exempts generated files
+  (`lib/database.types.ts`), fixtures, markdown, and `supabase/` — keep it that way.
 - **Comment density is deliberately high, and it's "why"-comments.** Every `lib/`
   module opens with a header comment stating its role and the design constraint it
   satisfies. Inline comments state contracts and cross-file couplings ("see
@@ -155,15 +157,17 @@ Each is named for what it looks like in a diff. The rule prevents it.
     concern per PR; out-of-scope findings go in the PR body or a spec, not the diff.*
 13. **Claiming done without evidence.** "Should work now." *Rule: the quality bar in
     §5 is a checklist; a claim of done cites `tsc`/`vitest` output and a live check.*
-14. **Single-quote reformats.** Your editor/habits rewrite whole files to single
-    quotes, bloating the diff. *Rule: double quotes; never reformat lines you didn't
-    change.*
+14. **Format drift.** You hand-format, or commit without running Prettier, and CI
+    goes red (or the next PR carries your format noise). *Rule: `npm run format`
+    before every commit — the repo is already fully formatted, so any format diff
+    you create is yours.*
 
 ## 5. Quality bar per deliverable
 
 Adjectives don't count; these boxes do.
 
 **Any code PR**
+- [ ] `npm run format:check` clean
 - [ ] `npx tsc --noEmit` exits 0
 - [ ] `npm test` green; new pure logic has new tests (malformed/empty input included)
 - [ ] UI-visible change verified in a running browser; PR body says what was seen

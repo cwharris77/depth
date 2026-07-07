@@ -1,6 +1,7 @@
 name: CI
 
-# Runs the unit suite and a typecheck on every PR and on pushes to main. Build is
+# Runs the format check, unit suite, and a typecheck on every PR and on pushes to
+# main. Build is
 # intentionally not run here: `next build` calls generateStaticParams -> the Supabase
 # RosterSource, which needs project secrets this workflow doesn't carry. The live DB
 # tests (lib/__tests__/roster-source.db.test.ts) skip gracefully without those env vars,
@@ -27,5 +28,6 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - run: npm run format:check
       - run: npx tsc --noEmit
       - run: npm test

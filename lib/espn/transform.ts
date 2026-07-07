@@ -6,10 +6,15 @@ import type {
   Team,
   TeamColors,
   TeamRoster,
-} from "../types";
-import type { EspnAthlete, EspnDepthcharts, EspnRoster, EspnTeamInfo } from "./types";
-import { classifyItem, mapBioPosition, mapDepthchartPosition, mapSpecialPosition } from "./positions";
-import { readableTextOn } from "../colors";
+} from '../types';
+import type { EspnAthlete, EspnDepthcharts, EspnRoster, EspnTeamInfo } from './types';
+import {
+  classifyItem,
+  mapBioPosition,
+  mapDepthchartPosition,
+  mapSpecialPosition,
+} from './positions';
+import { readableTextOn } from '../colors';
 
 export function parseAthleteId(ref: string): string | null {
   const m = ref.match(/athletes\/(\d+)/);
@@ -18,26 +23,26 @@ export function parseAthleteId(ref: string): string | null {
 
 function hex(value: string | undefined, fallback: string): string {
   if (!value) return fallback;
-  return value.startsWith("#") ? value : `#${value}`;
+  return value.startsWith('#') ? value : `#${value}`;
 }
 
 // A few teams need a hand-picked accent because neither ESPN color works on the dark
 // UI. Keyed by ESPN abbreviation → an official team color ESPN's two-color feed omits.
 // Ravens: purple primary and black secondary both fail contrast, so use official gold.
 const ACCENT_OVERRIDE: Record<string, string> = {
-  BAL: "#9e7c0c",
+  BAL: '#9e7c0c',
 };
 
 // Black and white aren't distinguishing team accents — teams whose ESPN secondary is
 // one of them (5 black, 3 white) use their real primary instead.
 function isNeutral(hexColor: string): boolean {
   const v = hexColor.toLowerCase();
-  return v === "#000000" || v === "#ffffff";
+  return v === '#000000' || v === '#ffffff';
 }
 
 export function toTeamColors(espn: EspnTeamInfo): TeamColors {
-  const primary = hex(espn.color, "#000000");
-  const secondary = hex(espn.alternateColor, "#ffffff");
+  const primary = hex(espn.color, '#000000');
+  const secondary = hex(espn.alternateColor, '#ffffff');
   // The UI accent is the team's real secondary — the pop color (Seahawks green), which
   // is already what the dot ring uses, so dots and the team picker match. Fall back to
   // the primary when the secondary is a neutral black/white, or to a hand-picked
@@ -54,23 +59,23 @@ export function toTeamColors(espn: EspnTeamInfo): TeamColors {
   };
 }
 
-function collegeName(c: EspnAthlete["college"]): string {
-  if (!c) return "—";
-  return typeof c === "string" ? c : (c.name ?? "—");
+function collegeName(c: EspnAthlete['college']): string {
+  if (!c) return '—';
+  return typeof c === 'string' ? c : (c.name ?? '—');
 }
 
 function statusOf(a: EspnAthlete, depthRank: number): PlayerStatus {
   const t = a.status?.type;
-  if (t && t !== "active") return "injured";
-  if ((a.experience?.years ?? 0) === 0) return "rookie";
-  return depthRank > 1 ? "backup" : "starter";
+  if (t && t !== 'active') return 'injured';
+  if ((a.experience?.years ?? 0) === 0) return 'rookie';
+  return depthRank > 1 ? 'backup' : 'starter';
 }
 
 function toPlayer(
   a: EspnAthlete,
   position: Position,
   depthRank: 1 | 2 | 3,
-  teamLabel: string,
+  teamLabel: string
 ): Player {
   return {
     id: a.id,
@@ -82,8 +87,8 @@ function toPlayer(
     age: a.age ?? 0,
     college: collegeName(a.college),
     experience: a.experience?.years ?? 0,
-    height: a.displayHeight ?? a.height ?? "—",
-    weight: parseInt(String(a.displayWeight ?? a.weight ?? "0"), 10) || 0,
+    height: a.displayHeight ?? a.height ?? '—',
+    weight: parseInt(String(a.displayWeight ?? a.weight ?? '0'), 10) || 0,
     bio: `${position} for the ${teamLabel}.`,
     photoUrl: a.headshot?.href,
   };
@@ -97,7 +102,7 @@ function toPlayer(
 // The in-memory Player.depthRank is untouched -- lib/roster.ts's getPlayersByPosition
 // already tolerates (and relies on) multiple players sharing one raw depthRank.
 export function toDepthChartRows(
-  players: Player[],
+  players: Player[]
 ): { position: Position; depthRank: 1 | 2 | 3; playerId: string }[] {
   const byPosition = new Map<Position, Player[]>();
   for (const p of players) {
@@ -117,11 +122,11 @@ export function toDepthChartRows(
 }
 
 const SPECIAL_LAYOUT = [
-  { slot: "kr", id: "st-kr", x: 30, y: 18, label: "KR" },
-  { slot: "pr", id: "st-pr", x: 70, y: 18, label: "PR" },
-  { slot: "ls", id: "st-ls", x: 50, y: 68, label: "LS" },
-  { slot: "k", id: "st-k", x: 38, y: 80, label: "K" },
-  { slot: "p", id: "st-p", x: 62, y: 80, label: "P" },
+  { slot: 'kr', id: 'st-kr', x: 30, y: 18, label: 'KR' },
+  { slot: 'pr', id: 'st-pr', x: 70, y: 18, label: 'PR' },
+  { slot: 'ls', id: 'st-ls', x: 50, y: 68, label: 'LS' },
+  { slot: 'k', id: 'st-k', x: 38, y: 80, label: 'K' },
+  { slot: 'p', id: 'st-p', x: 62, y: 80, label: 'P' },
 ] as const;
 
 export function toTeamRoster(args: {
@@ -153,11 +158,11 @@ export function toTeamRoster(args: {
     const kind = classifyItem(Object.keys(item.positions ?? {}));
 
     for (const [key, posData] of Object.entries(item.positions ?? {})) {
-      if (kind === "special") {
+      if (kind === 'special') {
         const slot = mapSpecialPosition(key);
         if (!slot) continue;
         const ranked = [...(posData.athletes ?? [])].sort(
-          (a, b) => (a.rank ?? 99) - (b.rank ?? 99),
+          (a, b) => (a.rank ?? 99) - (b.rank ?? 99)
         );
         const first = ranked[0];
         const id = first ? parseAthleteId(first.athlete.$ref) : null;
@@ -208,7 +213,7 @@ export function toTeamRoster(args: {
     if (!id || seen.has(id)) continue;
     const bio = bios.get(id);
     if (!bio) continue;
-    const fallbackPosition = mapBioPosition(bio.position?.abbreviation ?? "");
+    const fallbackPosition = mapBioPosition(bio.position?.abbreviation ?? '');
     if (!fallbackPosition) continue;
     seen.add(id);
     players.push(toPlayer(bio, fallbackPosition, 3, teamLabel));
@@ -228,7 +233,7 @@ export function toTeamRoster(args: {
       ...meta,
       colors: toTeamColors(teamInfo),
       logo: logos[0]?.href,
-      logoDark: logos.find((l) => l.rel?.includes("dark"))?.href ?? logos[1]?.href,
+      logoDark: logos.find((l) => l.rel?.includes('dark'))?.href ?? logos[1]?.href,
     },
     players,
     specialTeams,

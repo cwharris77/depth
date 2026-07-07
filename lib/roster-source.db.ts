@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from '@supabase/supabase-js';
 import type {
   Player,
   PlayerStatus,
@@ -7,10 +7,10 @@ import type {
   Team,
   TeamRoster,
   Uniform,
-} from "./types";
-import type { RosterSource, TeamMeta } from "./roster-source";
-import type { Database } from "./database.types";
-import { type PlayerHit, positionGroupPositions, rankByNameMatch } from "./search";
+} from './types';
+import type { RosterSource, TeamMeta } from './roster-source';
+import type { Database } from './database.types';
+import { type PlayerHit, positionGroupPositions, rankByNameMatch } from './search';
 
 // Postgres-backed RosterSource (roadmap: ESPN ingestion -> DB -> app). Reads
 // teams/players/depth_chart_entries/special_teams_slots and assembles the same
@@ -20,71 +20,69 @@ function supabase() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_ANON_KEY;
   if (!url || !key) {
-    throw new Error(
-      "Missing SUPABASE_URL / SUPABASE_ANON_KEY env vars (see .env.local.example)",
-    );
+    throw new Error('Missing SUPABASE_URL / SUPABASE_ANON_KEY env vars (see .env.local.example)');
   }
   return createClient<Database>(url, key);
 }
 
-type Tables = Database["public"]["Tables"];
+type Tables = Database['public']['Tables'];
 type TeamRow = Pick<
-  Tables["teams"]["Row"],
-  | "id"
-  | "abbrev"
-  | "city"
-  | "name"
-  | "conference"
-  | "division"
-  | "color_primary"
-  | "color_secondary"
-  | "color_accent"
-  | "ui_accent"
-  | "on_accent"
-  | "logo_url"
-  | "logo_dark_url"
+  Tables['teams']['Row'],
+  | 'id'
+  | 'abbrev'
+  | 'city'
+  | 'name'
+  | 'conference'
+  | 'division'
+  | 'color_primary'
+  | 'color_secondary'
+  | 'color_accent'
+  | 'ui_accent'
+  | 'on_accent'
+  | 'logo_url'
+  | 'logo_dark_url'
 >;
 type PlayerRow = Pick<
-  Tables["players"]["Row"],
-  | "id"
-  | "team_id"
-  | "name"
-  | "number"
-  | "position"
-  | "status"
-  | "age"
-  | "college"
-  | "experience"
-  | "height"
-  | "weight"
-  | "bio"
-  | "photo_url"
+  Tables['players']['Row'],
+  | 'id'
+  | 'team_id'
+  | 'name'
+  | 'number'
+  | 'position'
+  | 'status'
+  | 'age'
+  | 'college'
+  | 'experience'
+  | 'height'
+  | 'weight'
+  | 'bio'
+  | 'photo_url'
 >;
 type DepthChartRow = Pick<
-  Tables["depth_chart_entries"]["Row"],
-  "team_id" | "position" | "depth_rank" | "player_id"
+  Tables['depth_chart_entries']['Row'],
+  'team_id' | 'position' | 'depth_rank' | 'player_id'
 >;
 type SpecialSlotRow = Pick<
-  Tables["special_teams_slots"]["Row"],
-  "team_id" | "label" | "player_id" | "x" | "y"
+  Tables['special_teams_slots']['Row'],
+  'team_id' | 'label' | 'player_id' | 'x' | 'y'
 >;
 type UniformRow = Pick<
-  Tables["uniforms"]["Row"],
-  | "id"
-  | "team_id"
-  | "name"
-  | "year_start"
-  | "year_end"
-  | "is_current"
-  | "color_primary"
-  | "color_secondary"
-  | "color_accent"
-  | "ui_accent"
-  | "on_accent"
-  | "image_path"
+  Tables['uniforms']['Row'],
+  | 'id'
+  | 'team_id'
+  | 'name'
+  | 'year_start'
+  | 'year_end'
+  | 'is_current'
+  | 'color_primary'
+  | 'color_secondary'
+  | 'color_accent'
+  | 'ui_accent'
+  | 'on_accent'
+  | 'image_path'
 >;
 const UNIFORM_SELECT =
-  "id, team_id, name, year_start, year_end, is_current, color_primary, color_secondary, color_accent, ui_accent, on_accent, image_path";
+  'id, team_id, name, year_start, year_end, is_current, color_primary, color_secondary, color_accent, ui_accent, on_accent, image_path';
 
 function toTeam(row: TeamRow): Team {
   return {
@@ -92,14 +90,14 @@ function toTeam(row: TeamRow): Team {
     city: row.city,
     name: row.name,
     abbrev: row.abbrev,
-    conference: row.conference as Team["conference"],
-    division: row.division as Team["division"],
+    conference: row.conference as Team['conference'],
+    division: row.division as Team['division'],
     colors: {
-      primary: row.color_primary ?? "#333333",
-      secondary: row.color_secondary ?? "#666666",
-      accent: row.color_accent ?? row.color_secondary ?? "#666666",
-      uiAccent: row.ui_accent ?? "#4CC3FF",
-      onAccent: row.on_accent ?? "#0a0e1a",
+      primary: row.color_primary ?? '#333333',
+      secondary: row.color_secondary ?? '#666666',
+      accent: row.color_accent ?? row.color_secondary ?? '#666666',
+      uiAccent: row.ui_accent ?? '#4CC3FF',
+      onAccent: row.on_accent ?? '#0a0e1a',
     },
     logo: row.logo_url ?? undefined,
     logoDark: row.logo_dark_url ?? undefined,
@@ -113,13 +111,13 @@ function toPlayer(row: PlayerRow, depthRank: 1 | 2 | 3): Player {
     number: row.number ?? 0,
     position: row.position as Position,
     depthRank,
-    status: (row.status ?? "backup") as PlayerStatus,
+    status: (row.status ?? 'backup') as PlayerStatus,
     age: row.age ?? 0,
-    college: row.college ?? "—",
+    college: row.college ?? '—',
     experience: row.experience ?? 0,
-    height: row.height ?? "—",
+    height: row.height ?? '—',
     weight: row.weight ?? 0,
-    bio: row.bio ?? "",
+    bio: row.bio ?? '',
     photoUrl: row.photo_url ?? undefined,
   };
 }
@@ -150,7 +148,7 @@ function homeUniform(team: Team): Uniform {
   return {
     id: `${team.id}-home`,
     teamId: team.id,
-    name: "Home",
+    name: 'Home',
     yearStart: null,
     yearEnd: null,
     isCurrent: true,
@@ -173,11 +171,11 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
   const client = supabase();
 
   const { data: teamRow, error: teamError } = await client
-    .from("teams")
+    .from('teams')
     .select(
-      "id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url",
+      'id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url'
     )
-    .eq("id", teamId)
+    .eq('id', teamId)
     .maybeSingle<TeamRow>();
   if (teamError) throw new Error(`teams query failed: ${teamError.message}`);
   if (!teamRow) return undefined;
@@ -188,20 +186,16 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
     { data: uniformRows, error: uniformError },
   ] = await Promise.all([
     client
-      .from("depth_chart_entries")
-      .select("team_id, position, depth_rank, player_id")
-      .eq("team_id", teamId)
+      .from('depth_chart_entries')
+      .select('team_id, position, depth_rank, player_id')
+      .eq('team_id', teamId)
       .returns<DepthChartRow[]>(),
     client
-      .from("special_teams_slots")
-      .select("team_id, label, player_id, x, y")
-      .eq("team_id", teamId)
+      .from('special_teams_slots')
+      .select('team_id, label, player_id, x, y')
+      .eq('team_id', teamId)
       .returns<SpecialSlotRow[]>(),
-    client
-      .from("uniforms")
-      .select(UNIFORM_SELECT)
-      .eq("team_id", teamId)
-      .returns<UniformRow[]>(),
+    client.from('uniforms').select(UNIFORM_SELECT).eq('team_id', teamId).returns<UniformRow[]>(),
   ]);
   if (depthError) throw new Error(`depth_chart_entries query failed: ${depthError.message}`);
   if (stError) throw new Error(`special_teams_slots query failed: ${stError.message}`);
@@ -213,16 +207,16 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
   // specialTeams would point at a playerId absent from the assembled `players`.
   const stPlayerIds = (stRows ?? []).map((r) => r.player_id).filter((id): id is string => !!id);
   const playerIds = Array.from(
-    new Set([...(depthRows ?? []).map((r) => r.player_id), ...stPlayerIds]),
+    new Set([...(depthRows ?? []).map((r) => r.player_id), ...stPlayerIds])
   );
   let playerRows: PlayerRow[] = [];
   if (playerIds.length) {
     const { data, error } = await client
-      .from("players")
+      .from('players')
       .select(
-        "id, team_id, name, number, position, status, age, college, experience, height, weight, bio, photo_url",
+        'id, team_id, name, number, position, status, age, college, experience, height, weight, bio, photo_url'
       )
-      .in("id", playerIds)
+      .in('id', playerIds)
       .returns<PlayerRow[]>();
     if (error) throw new Error(`players query failed: ${error.message}`);
     playerRows = data ?? [];
@@ -266,13 +260,13 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
 }
 
 type PlayerSearchRow = Pick<
-  Tables["players"]["Row"],
-  "id" | "name" | "number" | "position" | "photo_url" | "college"
+  Tables['players']['Row'],
+  'id' | 'name' | 'number' | 'position' | 'photo_url' | 'college'
 > & {
-  teams: Pick<Tables["teams"]["Row"], "id" | "city" | "name" | "abbrev"> | null;
+  teams: Pick<Tables['teams']['Row'], 'id' | 'city' | 'name' | 'abbrev'> | null;
 };
 const PLAYER_SEARCH_SELECT =
-  "id, name, number, position, photo_url, college, teams(id, city, name, abbrev)";
+  'id, name, number, position, photo_url, college, teams(id, city, name, abbrev)';
 
 function toPlayerHit(row: PlayerSearchRow): PlayerHit | null {
   // A dangling team_id (shouldn't happen, FK-enforced) would leave the embedded
@@ -304,13 +298,33 @@ export async function searchAllPlayers(query: string, limit = 8): Promise<Player
   const isNumberQuery = Number.isInteger(asNumber);
 
   const queries = [
-    client.from("players").select(PLAYER_SEARCH_SELECT).ilike("name", `%${q}%`).limit(limit).returns<PlayerSearchRow[]>(),
-    client.from("players").select(PLAYER_SEARCH_SELECT).ilike("college", `%${q}%`).limit(limit).returns<PlayerSearchRow[]>(),
-    client.from("players").select(PLAYER_SEARCH_SELECT).ilike("position", q).limit(limit).returns<PlayerSearchRow[]>(),
+    client
+      .from('players')
+      .select(PLAYER_SEARCH_SELECT)
+      .ilike('name', `%${q}%`)
+      .limit(limit)
+      .returns<PlayerSearchRow[]>(),
+    client
+      .from('players')
+      .select(PLAYER_SEARCH_SELECT)
+      .ilike('college', `%${q}%`)
+      .limit(limit)
+      .returns<PlayerSearchRow[]>(),
+    client
+      .from('players')
+      .select(PLAYER_SEARCH_SELECT)
+      .ilike('position', q)
+      .limit(limit)
+      .returns<PlayerSearchRow[]>(),
   ];
   if (isNumberQuery) {
     queries.push(
-      client.from("players").select(PLAYER_SEARCH_SELECT).eq("number", asNumber).limit(limit).returns<PlayerSearchRow[]>(),
+      client
+        .from('players')
+        .select(PLAYER_SEARCH_SELECT)
+        .eq('number', asNumber)
+        .limit(limit)
+        .returns<PlayerSearchRow[]>()
     );
   }
   // Colloquial group queries ("OL", "secondary", "defense") fan out to the group's
@@ -318,7 +332,12 @@ export async function searchAllPlayers(query: string, limit = 8): Promise<Player
   const group = positionGroupPositions(q);
   if (group) {
     queries.push(
-      client.from("players").select(PLAYER_SEARCH_SELECT).in("position", group).limit(limit).returns<PlayerSearchRow[]>(),
+      client
+        .from('players')
+        .select(PLAYER_SEARCH_SELECT)
+        .in('position', group)
+        .limit(limit)
+        .returns<PlayerSearchRow[]>()
     );
   }
 
@@ -341,9 +360,9 @@ export async function searchAllPlayers(query: string, limit = 8): Promise<Player
 async function fetchAllTeamMeta(): Promise<TeamRow[]> {
   const client = supabase();
   const { data, error } = await client
-    .from("teams")
+    .from('teams')
     .select(
-      "id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url",
+      'id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url'
     )
     .returns<TeamRow[]>();
   if (error) throw new Error(`teams query failed: ${error.message}`);

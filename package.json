@@ -10,7 +10,9 @@
     "ingest:espn": "tsx scripts/ingest-espn.mts",
     "ingest:uniforms": "tsx scripts/ingest-uniforms.mts",
     "gen:icons": "tsx scripts/gen-icons.mts",
-    "db:types": "supabase gen types typescript --local > lib/database.types.ts"
+    "db:types": "supabase gen types typescript --local > lib/database.types.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.0",
@@ -29,6 +31,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv": "^17.4.2",
+    "prettier": "3.9.4",
     "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",

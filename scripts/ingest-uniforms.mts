@@ -12,12 +12,12 @@
 // ingest:espn first). A row whose team isn't present yet is reported as an error and
 // skipped, not fatal — rerun after the team lands.
 
-import dotenv from "dotenv";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import dotenv from 'dotenv';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-dotenv.config({ path: ".env.local" });
-import { UNIFORMS } from "../lib/uniforms/data";
-import type { Database } from "../lib/database.types";
+dotenv.config({ path: '.env.local' });
+import { UNIFORMS } from '../lib/uniforms/data';
+import type { Database } from '../lib/database.types';
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -26,8 +26,8 @@ function requireEnv(name: string): string {
 }
 
 async function main() {
-  const supabaseUrl = requireEnv("SUPABASE_URL");
-  const serviceRoleKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+  const supabaseUrl = requireEnv('SUPABASE_URL');
+  const serviceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
   const supabase: SupabaseClient<Database> = createClient(supabaseUrl, serviceRoleKey);
 
   const startedAt = new Date().toISOString();
@@ -38,7 +38,7 @@ async function main() {
   // isolated and reported instead of failing the whole batch.
   for (const u of UNIFORMS) {
     const id = `${u.teamId}-${u.slug}`;
-    const { error } = await supabase.from("uniforms").upsert(
+    const { error } = await supabase.from('uniforms').upsert(
       {
         id,
         team_id: u.teamId,
@@ -54,7 +54,7 @@ async function main() {
         image_path: u.imagePath ?? null,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: "id" },
+      { onConflict: 'id' }
     );
     if (error) {
       errors.push({ uniform: id, message: error.message });
@@ -66,10 +66,10 @@ async function main() {
   }
 
   const finishedAt = new Date().toISOString();
-  const status = errors.length === 0 ? "success" : written > 0 ? "partial" : "failure";
+  const status = errors.length === 0 ? 'success' : written > 0 ? 'partial' : 'failure';
 
-  const { error: runError } = await supabase.from("ingestion_runs").insert({
-    source: "uniforms",
+  const { error: runError } = await supabase.from('ingestion_runs').insert({
+    source: 'uniforms',
     started_at: startedAt,
     finished_at: finishedAt,
     status,
@@ -80,10 +80,10 @@ async function main() {
 
   console.log(`\nWrote ${written} uniforms. Status: ${status}`);
   if (errors.length) {
-    console.log("Errors/skips:");
+    console.log('Errors/skips:');
     for (const e of errors) console.log(`  ${e.uniform}: ${e.message}`);
   }
-  if (status === "failure") process.exit(1);
+  if (status === 'failure') process.exit(1);
 }
 
 main().catch((e) => {

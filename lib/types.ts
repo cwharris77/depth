@@ -1,15 +1,30 @@
 export type Position =
-  | "QB" | "RB" | "WR" | "TE"
-  | "LT" | "LG" | "C" | "RG" | "RT"
-  | "DE" | "DT" | "LB" | "CB" | "S"
-  | "K" | "P" | "LS" | "KR" | "PR";
+  | 'QB'
+  | 'RB'
+  | 'WR'
+  | 'TE'
+  | 'LT'
+  | 'LG'
+  | 'C'
+  | 'RG'
+  | 'RT'
+  | 'DE'
+  | 'DT'
+  | 'LB'
+  | 'CB'
+  | 'S'
+  | 'K'
+  | 'P'
+  | 'LS'
+  | 'KR'
+  | 'PR';
 
-export type PlayerStatus = "starter" | "backup" | "rookie" | "injured";
+export type PlayerStatus = 'starter' | 'backup' | 'rookie' | 'injured';
 
-export type Unit = "offense" | "defense" | "special";
+export type Unit = 'offense' | 'defense' | 'special';
 
-export type Conference = "AFC" | "NFC";
-export type Division = "North" | "South" | "East" | "West";
+export type Conference = 'AFC' | 'NFC';
+export type Division = 'North' | 'South' | 'East' | 'West';
 
 export interface Player {
   id: string;
@@ -129,7 +144,7 @@ export interface TeamRoster {
 // The bundled registry (lib/teams) is a build-time seed for the ESPN ingestion, not the
 // app's source of truth. It omits conference/division because those come from ESPN's
 // standings at ingest time (see lib/espn/standings.ts), not hand-curated.
-export type TeamSeed = Omit<Team, "conference" | "division">;
+export type TeamSeed = Omit<Team, 'conference' | 'division'>;
 export interface TeamRosterSeed {
   team: TeamSeed;
   players: Player[];
