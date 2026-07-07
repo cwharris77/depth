@@ -5,6 +5,6 @@
 // singular/plural years. Guards against negative/NaN source data by treating
 // anything <= 0 as a rookie.
 export function experienceLabel(experience: number): string {
-  if (!Number.isFinite(experience) || experience <= 0) return "Rookie";
-  return experience === 1 ? "1 yr" : `${experience} yrs`;
+  if (!Number.isFinite(experience) || experience <= 0) return 'Rookie';
+  return experience === 1 ? '1 yr' : `${experience} yrs`;
 }

@@ -1,37 +1,41 @@
-import { describe, it, expect } from "vitest";
-import {
-  OFFENSE_FORMATION,
-  DEFENSE_FORMATION,
-  resolveUnit,
-} from "../formations";
-import { getPlayersByPosition, TEAMS } from "../teams";
-import type { Player, TeamRoster } from "../types";
+import { describe, it, expect } from 'vitest';
+import { OFFENSE_FORMATION, DEFENSE_FORMATION, resolveUnit } from '../formations';
+import { getPlayersByPosition, TEAMS } from '../teams';
+import type { Player, TeamRoster } from '../types';
 
 // Minimal roster factory — only the fields the resolver touches.
-function player(p: Partial<Player> & Pick<Player, "id" | "position" | "depthRank" | "number">): Player {
+function player(
+  p: Partial<Player> & Pick<Player, 'id' | 'position' | 'depthRank' | 'number'>
+): Player {
   return {
     name: p.id,
-    status: "starter",
+    status: 'starter',
     age: 25,
-    college: "",
+    college: '',
     experience: 1,
-    height: "6'0\"",
+    height: '6\'0"',
     weight: 200,
-    bio: "",
+    bio: '',
     ...p,
   } as Player;
 }
 
-function roster(players: Player[], specialTeams: TeamRoster["specialTeams"] = []): TeamRoster {
+function roster(players: Player[], specialTeams: TeamRoster['specialTeams'] = []): TeamRoster {
   return {
     team: {
-      id: "t",
-      city: "Test",
-      name: "Team",
-      abbrev: "TST",
-      conference: "NFC",
-      division: "West",
-      colors: { primary: "#000", secondary: "#fff", accent: "#888", uiAccent: "#fff", onAccent: "#000" },
+      id: 't',
+      city: 'Test',
+      name: 'Team',
+      abbrev: 'TST',
+      conference: 'NFC',
+      division: 'West',
+      colors: {
+        primary: '#000',
+        secondary: '#fff',
+        accent: '#888',
+        uiAccent: '#fff',
+        onAccent: '#000',
+      },
     },
     players,
     specialTeams,
@@ -39,86 +43,86 @@ function roster(players: Player[], specialTeams: TeamRoster["specialTeams"] = []
   };
 }
 
-describe("getPlayersByPosition — deterministic order", () => {
-  it("sorts by depthRank, then jersey number as a stable tiebreak", () => {
+describe('getPlayersByPosition — deterministic order', () => {
+  it('sorts by depthRank, then jersey number as a stable tiebreak', () => {
     // Three WR1s in scrambled input order and number order.
     const r = roster([
-      player({ id: "c", position: "WR", depthRank: 1, number: 16 }),
-      player({ id: "a", position: "WR", depthRank: 1, number: 11 }),
-      player({ id: "b", position: "WR", depthRank: 1, number: 14 }),
-      player({ id: "d", position: "WR", depthRank: 2, number: 80 }),
+      player({ id: 'c', position: 'WR', depthRank: 1, number: 16 }),
+      player({ id: 'a', position: 'WR', depthRank: 1, number: 11 }),
+      player({ id: 'b', position: 'WR', depthRank: 1, number: 14 }),
+      player({ id: 'd', position: 'WR', depthRank: 2, number: 80 }),
     ]);
-    expect(getPlayersByPosition(r, "WR").map((p) => p.id)).toEqual(["a", "b", "c", "d"]);
+    expect(getPlayersByPosition(r, 'WR').map((p) => p.id)).toEqual(['a', 'b', 'c', 'd']);
   });
 
-  it("is stable regardless of input array order", () => {
-    const a = player({ id: "a", position: "QB", depthRank: 1, number: 7 });
-    const b = player({ id: "b", position: "QB", depthRank: 2, number: 19 });
-    expect(getPlayersByPosition(roster([a, b]), "QB").map((p) => p.id)).toEqual(["a", "b"]);
-    expect(getPlayersByPosition(roster([b, a]), "QB").map((p) => p.id)).toEqual(["a", "b"]);
+  it('is stable regardless of input array order', () => {
+    const a = player({ id: 'a', position: 'QB', depthRank: 1, number: 7 });
+    const b = player({ id: 'b', position: 'QB', depthRank: 2, number: 19 });
+    expect(getPlayersByPosition(roster([a, b]), 'QB').map((p) => p.id)).toEqual(['a', 'b']);
+    expect(getPlayersByPosition(roster([b, a]), 'QB').map((p) => p.id)).toEqual(['a', 'b']);
   });
 });
 
-describe("resolveUnit — offense/defense via shared formation", () => {
-  it("fills each formation slot with the player at that position+index", () => {
+describe('resolveUnit — offense/defense via shared formation', () => {
+  it('fills each formation slot with the player at that position+index', () => {
     const r = roster([
-      player({ id: "wr1", position: "WR", depthRank: 1, number: 11 }),
-      player({ id: "wr2", position: "WR", depthRank: 1, number: 14 }),
-      player({ id: "wr3", position: "WR", depthRank: 1, number: 16 }),
-      player({ id: "qb1", position: "QB", depthRank: 1, number: 7 }),
+      player({ id: 'wr1', position: 'WR', depthRank: 1, number: 11 }),
+      player({ id: 'wr2', position: 'WR', depthRank: 1, number: 14 }),
+      player({ id: 'wr3', position: 'WR', depthRank: 1, number: 16 }),
+      player({ id: 'qb1', position: 'QB', depthRank: 1, number: 7 }),
     ]);
-    const resolved = resolveUnit(r, "offense");
-    const wrSlots = resolved.filter((s) => s.label === "WR");
-    expect(wrSlots.map((s) => s.player?.id)).toEqual(["wr1", "wr2", "wr3"]);
-    expect(resolved.find((s) => s.key === "off-qb-0")?.player?.id).toBe("qb1");
+    const resolved = resolveUnit(r, 'offense');
+    const wrSlots = resolved.filter((s) => s.label === 'WR');
+    expect(wrSlots.map((s) => s.player?.id)).toEqual(['wr1', 'wr2', 'wr3']);
+    expect(resolved.find((s) => s.key === 'off-qb-0')?.player?.id).toBe('qb1');
   });
 
-  it("leaves a slot empty (no crash) when the roster has no player at that index", () => {
+  it('leaves a slot empty (no crash) when the roster has no player at that index', () => {
     // Only one WR, but the formation has three WR slots.
-    const r = roster([player({ id: "wr1", position: "WR", depthRank: 1, number: 11 })]);
-    const resolved = resolveUnit(r, "offense");
-    const wrSlots = resolved.filter((s) => s.label === "WR");
-    expect(wrSlots[0].player?.id).toBe("wr1");
+    const r = roster([player({ id: 'wr1', position: 'WR', depthRank: 1, number: 11 })]);
+    const resolved = resolveUnit(r, 'offense');
+    const wrSlots = resolved.filter((s) => s.label === 'WR');
+    expect(wrSlots[0].player?.id).toBe('wr1');
     expect(wrSlots[1].player).toBeUndefined();
     expect(wrSlots[2].player).toBeUndefined();
   });
 
-  it("leaves every slot empty for an empty roster, without throwing", () => {
-    const resolved = resolveUnit(roster([]), "defense");
+  it('leaves every slot empty for an empty roster, without throwing', () => {
+    const resolved = resolveUnit(roster([]), 'defense');
     expect(resolved).toHaveLength(DEFENSE_FORMATION.length);
     expect(resolved.every((s) => s.player === undefined)).toBe(true);
   });
 });
 
-describe("resolveUnit — special teams via explicit assignments", () => {
-  it("resolves explicit playerId references", () => {
+describe('resolveUnit — special teams via explicit assignments', () => {
+  it('resolves explicit playerId references', () => {
     const r = roster(
-      [player({ id: "kicker", position: "K", depthRank: 1, number: 3 })],
-      [{ id: "st-k", playerId: "kicker", x: 50, y: 80, label: "K" }],
+      [player({ id: 'kicker', position: 'K', depthRank: 1, number: 3 })],
+      [{ id: 'st-k', playerId: 'kicker', x: 50, y: 80, label: 'K' }]
     );
-    const resolved = resolveUnit(r, "special");
-    expect(resolved[0].player?.id).toBe("kicker");
+    const resolved = resolveUnit(r, 'special');
+    expect(resolved[0].player?.id).toBe('kicker');
   });
 
-  it("renders an empty slot for an unmarked (null) returner — no guess, no crash", () => {
-    const r = roster([], [{ id: "st-pr", playerId: null, x: 70, y: 18, label: "PR" }]);
-    const resolved = resolveUnit(r, "special");
-    expect(resolved[0].label).toBe("PR");
+  it('renders an empty slot for an unmarked (null) returner — no guess, no crash', () => {
+    const r = roster([], [{ id: 'st-pr', playerId: null, x: 70, y: 18, label: 'PR' }]);
+    const resolved = resolveUnit(r, 'special');
+    expect(resolved[0].label).toBe('PR');
     expect(resolved[0].player).toBeUndefined();
   });
 
-  it("renders an empty slot when the referenced player is missing from the roster", () => {
-    const r = roster([], [{ id: "st-k", playerId: "ghost", x: 50, y: 80, label: "K" }]);
-    expect(resolveUnit(r, "special")[0].player).toBeUndefined();
+  it('renders an empty slot when the referenced player is missing from the roster', () => {
+    const r = roster([], [{ id: 'st-k', playerId: 'ghost', x: 50, y: 80, label: 'K' }]);
+    expect(resolveUnit(r, 'special')[0].player).toBeUndefined();
   });
 });
 
-describe("shipped rosters resolve fully against the formation", () => {
+describe('shipped rosters resolve fully against the formation', () => {
   // Guards real data: a team missing a starter at a formation position would leave a
   // visible empty slot on the field. Every shipped roster should fill all 11 + ST.
   for (const [id, roster] of Object.entries(TEAMS)) {
     it(`${id}: every offense and defense slot has a player`, () => {
-      for (const unit of ["offense", "defense"] as const) {
+      for (const unit of ['offense', 'defense'] as const) {
         const empties = resolveUnit(roster, unit)
           .filter((s) => !s.player)
           .map((s) => s.key);
@@ -127,7 +131,7 @@ describe("shipped rosters resolve fully against the formation", () => {
     });
 
     it(`${id}: every special-teams slot resolves to a real player`, () => {
-      const empties = resolveUnit(roster, "special")
+      const empties = resolveUnit(roster, 'special')
         .filter((s) => !s.player)
         .map((s) => s.key);
       expect(empties).toEqual([]);
@@ -135,26 +139,26 @@ describe("shipped rosters resolve fully against the formation", () => {
   }
 });
 
-describe("formations are well-formed", () => {
-  it("every formation slot index is non-negative", () => {
+describe('formations are well-formed', () => {
+  it('every formation slot index is non-negative', () => {
     for (const slot of [...OFFENSE_FORMATION, ...DEFENSE_FORMATION]) {
       expect(slot.index).toBeGreaterThanOrEqual(0);
     }
   });
 
-  it("slot ids are unique within each unit", () => {
+  it('slot ids are unique within each unit', () => {
     const offIds = OFFENSE_FORMATION.map((s) => s.id);
     const defIds = DEFENSE_FORMATION.map((s) => s.id);
     expect(new Set(offIds).size).toBe(offIds.length);
     expect(new Set(defIds).size).toBe(defIds.length);
   });
 
-  it("offense has exactly 7 players on the line of scrimmage", () => {
+  it('offense has exactly 7 players on the line of scrimmage', () => {
     expect(OFFENSE_FORMATION.filter((s) => s.onLine).length).toBe(7);
   });
 
-  it("the 5 interior offensive linemen are always on the line", () => {
-    const ol = new Set(["LT", "LG", "C", "RG", "RT"]);
+  it('the 5 interior offensive linemen are always on the line', () => {
+    const ol = new Set(['LT', 'LG', 'C', 'RG', 'RT']);
     const olSlots = OFFENSE_FORMATION.filter((s) => ol.has(s.position));
     expect(olSlots).toHaveLength(5);
     expect(olSlots.every((s) => s.onLine)).toBe(true);

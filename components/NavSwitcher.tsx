@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Search, X, Check, CornerDownLeft } from "lucide-react";
-import type { Conference, Player, TeamRoster } from "@/lib/types";
-import type { TeamMeta } from "@/lib/roster-source";
-import { readableTextOn } from "@/lib/colors";
-import type { PlayerHit } from "@/lib/search";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Search, X, Check, CornerDownLeft } from 'lucide-react';
+import type { Conference, Player, TeamRoster } from '@/lib/types';
+import type { TeamMeta } from '@/lib/roster-source';
+import { readableTextOn } from '@/lib/colors';
+import type { PlayerHit } from '@/lib/search';
 
-type ResultItem = { type: "player"; hit: PlayerHit } | { type: "team"; team: TeamMeta };
+type ResultItem = { type: 'player'; hit: PlayerHit } | { type: 'team'; team: TeamMeta };
 
-const DIVISION_ORDER = ["East", "North", "South", "West"] as const;
+const DIVISION_ORDER = ['East', 'North', 'South', 'West'] as const;
 
 function groupByDivision(teams: TeamMeta[], conference: Conference) {
   return DIVISION_ORDER.map((division) => ({
@@ -26,7 +26,9 @@ function groupByDivision(teams: TeamMeta[], conference: Conference) {
 
 function SectionLabel({ children }: { children: string }) {
   return (
-    <div className="text-[10px] font-semibold tracking-widest px-5 py-2" style={{ color: "#A5ACAF" }}>
+    <div
+      className="text-[10px] font-semibold tracking-widest px-5 py-2"
+      style={{ color: '#A5ACAF' }}>
       {children}
     </div>
   );
@@ -41,10 +43,9 @@ function PlayerAvatar({ hit }: { hit: PlayerHit }) {
       style={{
         width: 36,
         height: 36,
-        background: "rgba(255,255,255,0.06)",
-        border: "1px solid rgba(255,255,255,0.12)",
-      }}
-    >
+        background: 'rgba(255,255,255,0.06)',
+        border: '1px solid rgba(255,255,255,0.12)',
+      }}>
       {showPhoto ? (
         <Image
           src={hit.photoUrl!}
@@ -59,8 +60,7 @@ function PlayerAvatar({ hit }: { hit: PlayerHit }) {
           viewBox="0 0 24 24"
           fill="currentColor"
           aria-hidden="true"
-          style={{ width: "60%", height: "60%", opacity: 0.5, color: "#A5ACAF" }}
-        >
+          style={{ width: '60%', height: '60%', opacity: 0.5, color: '#A5ACAF' }}>
           <circle cx="12" cy="8" r="4" />
           <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4z" />
         </svg>
@@ -90,14 +90,13 @@ function TeamRow({
       onMouseEnter={onHover}
       className="flex items-center gap-3 px-3 py-2.5"
       style={{
-        touchAction: "manipulation",
+        touchAction: 'manipulation',
         background: highlighted
-          ? "rgba(255,255,255,0.06)"
+          ? 'rgba(255,255,255,0.06)'
           : isCurrent
             ? `${team.colors.primary}1a`
-            : "transparent",
-      }}
-    >
+            : 'transparent',
+      }}>
       <div
         className="shrink-0 rounded-lg flex items-center justify-center font-black text-[11px]"
         style={{
@@ -106,15 +105,14 @@ function TeamRow({
           background: team.colors.primary,
           color: badgeText,
           border: `1px solid ${team.colors.secondary}`,
-        }}
-      >
+        }}>
         {team.abbrev}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-bold truncate" style={{ color: "#f0f4ff" }}>
+        <div className="text-sm font-bold truncate" style={{ color: '#f0f4ff' }}>
           {team.city} {team.name}
         </div>
-        <div className="text-[11px]" style={{ color: "#A5ACAF" }}>
+        <div className="text-[11px]" style={{ color: '#A5ACAF' }}>
           {team.conference} {team.division}
         </div>
       </div>
@@ -142,18 +140,17 @@ function PlayerRow({
       onMouseEnter={onHover}
       className="w-full flex items-center gap-3 px-3 py-2.5 text-left"
       style={{
-        touchAction: "manipulation",
-        background: highlighted ? "rgba(255,255,255,0.06)" : "transparent",
-      }}
-    >
+        touchAction: 'manipulation',
+        background: highlighted ? 'rgba(255,255,255,0.06)' : 'transparent',
+      }}>
       <PlayerAvatar hit={hit} />
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-bold truncate" style={{ color: "#f0f4ff" }}>
+        <div className="text-sm font-bold truncate" style={{ color: '#f0f4ff' }}>
           {hit.name}
         </div>
-        <div className="text-[11px] truncate" style={{ color: "#A5ACAF" }}>
+        <div className="text-[11px] truncate" style={{ color: '#A5ACAF' }}>
           {hit.position} · {hit.team.name} · #{hit.number}
-          {hit.college ? ` · ${hit.college}` : ""}
+          {hit.college ? ` · ${hit.college}` : ''}
         </div>
       </div>
       {highlighted && <CornerDownLeft size={14} color="#A5ACAF" />}
@@ -179,7 +176,7 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
   const accentColor = team.colors.uiAccent;
   const router = useRouter();
   const [conference, setConference] = useState<Conference>(team.conference);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [playerResults, setPlayerResults] = useState<PlayerHit[]>([]);
   const [playersLoading, setPlayersLoading] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
@@ -190,7 +187,7 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
   // instant the switcher opens, covering half the sheet before the user's asked
   // for it.
   useEffect(() => {
-    if (window.matchMedia("(pointer: fine)").matches) {
+    if (window.matchMedia('(pointer: fine)').matches) {
       searchInputRef.current?.focus();
     }
   }, []);
@@ -204,7 +201,7 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
       (t) =>
         t.city.toLowerCase().includes(q) ||
         t.name.toLowerCase().includes(q) ||
-        t.abbrev.toLowerCase().includes(q),
+        t.abbrev.toLowerCase().includes(q)
     );
   }, [teams, q, searching]);
 
@@ -225,7 +222,7 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
         const data = await res.json();
         setPlayerResults(data.results ?? []);
       } catch (err) {
-        if ((err as Error).name !== "AbortError") setPlayerResults([]);
+        if ((err as Error).name !== 'AbortError') setPlayerResults([]);
       } finally {
         setPlayersLoading(false);
       }
@@ -242,8 +239,8 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
   const flatResults: ResultItem[] = useMemo(() => {
     if (!searching) return [];
     return [
-      ...playerResults.map((hit): ResultItem => ({ type: "player", hit })),
-      ...teamResults.map((t): ResultItem => ({ type: "team", team: t })),
+      ...playerResults.map((hit): ResultItem => ({ type: 'player', hit })),
+      ...teamResults.map((t): ResultItem => ({ type: 'team', team: t })),
     ];
   }, [searching, playerResults, teamResults]);
 
@@ -274,23 +271,23 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
   };
 
   const activate = (item: ResultItem) => {
-    if (item.type === "player") handleSelectPlayer(item.hit);
+    if (item.type === 'player') handleSelectPlayer(item.hit);
     else selectTeam(item.team);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Escape") {
+    if (e.key === 'Escape') {
       onClose();
       return;
     }
     if (!flatResults.length) return;
-    if (e.key === "ArrowDown") {
+    if (e.key === 'ArrowDown') {
       e.preventDefault();
       setHighlightedIndex((i) => Math.min(i + 1, flatResults.length - 1));
-    } else if (e.key === "ArrowUp") {
+    } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setHighlightedIndex((i) => Math.max(i - 1, 0));
-    } else if (e.key === "Enter") {
+    } else if (e.key === 'Enter') {
       e.preventDefault();
       activate(flatResults[highlightedIndex]);
     }
@@ -305,7 +302,7 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
   return (
     <>
       <div className="flex items-center justify-between px-5 pt-3 pb-3">
-        <h2 className="text-lg font-black" style={{ color: "#f0f4ff" }}>
+        <h2 className="text-lg font-black" style={{ color: '#f0f4ff' }}>
           Jump to
         </h2>
         <button
@@ -313,8 +310,7 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
           onClick={onClose}
           aria-label="Close"
           className="rounded-full p-2"
-          style={{ background: "rgba(255,255,255,0.08)", touchAction: "manipulation" }}
-        >
+          style={{ background: 'rgba(255,255,255,0.08)', touchAction: 'manipulation' }}>
           <X size={18} color="#A5ACAF" />
         </button>
       </div>
@@ -322,8 +318,7 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
       <div className="px-5 pb-3">
         <div
           className="flex items-center gap-2 rounded-xl px-3"
-          style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${accentColor}55` }}
-        >
+          style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid ${accentColor}55` }}>
           <Search size={16} color={accentColor} />
           <input
             ref={searchInputRef}
@@ -332,12 +327,11 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
             onKeyDown={handleKeyDown}
             placeholder="Search teams or players"
             className="flex-1 bg-transparent outline-none py-2.5 text-base"
-            style={{ color: "#f0f4ff" }}
+            style={{ color: '#f0f4ff' }}
           />
           <span
             className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold"
-            style={{ background: "rgba(255,255,255,0.08)", color: "#A5ACAF" }}
-          >
+            style={{ background: 'rgba(255,255,255,0.08)', color: '#A5ACAF' }}>
             ESC
           </span>
         </div>
@@ -346,19 +340,20 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
       {/* Only meaningful for idle browsing — hidden once you're searching. */}
       {!searching && (
         <div className="px-5 pb-3">
-          <div className="flex rounded-xl p-1 gap-1" style={{ background: "rgba(255,255,255,0.07)" }}>
-            {(["AFC", "NFC"] as const).map((c) => (
+          <div
+            className="flex rounded-xl p-1 gap-1"
+            style={{ background: 'rgba(255,255,255,0.07)' }}>
+            {(['AFC', 'NFC'] as const).map((c) => (
               <button
                 key={c}
                 type="button"
                 onClick={() => setConference(c)}
                 className="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all"
                 style={{
-                  background: conference === c ? "rgba(255,255,255,0.12)" : "transparent",
-                  color: conference === c ? "#f0f4ff" : "#A5ACAF",
-                  touchAction: "manipulation",
-                }}
-              >
+                  background: conference === c ? 'rgba(255,255,255,0.12)' : 'transparent',
+                  color: conference === c ? '#f0f4ff' : '#A5ACAF',
+                  touchAction: 'manipulation',
+                }}>
                 {c}
               </button>
             ))}
@@ -373,8 +368,10 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
               <SectionLabel>{`${g.conference} ${g.division.toUpperCase()}`}</SectionLabel>
               <div
                 className="mx-5 rounded-2xl overflow-hidden divide-y divide-white/5"
-                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
-              >
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                }}>
                 {g.teams.map((t) => (
                   <TeamRow
                     key={t.id}
@@ -389,7 +386,7 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
             </div>
           ))
         ) : nothingFound ? (
-          <div className="px-5 py-6 text-center text-sm" style={{ color: "#A5ACAF" }}>
+          <div className="px-5 py-6 text-center text-sm" style={{ color: '#A5ACAF' }}>
             No matches for &ldquo;{query.trim()}&rdquo;
           </div>
         ) : (
@@ -415,8 +412,10 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
                 <SectionLabel>TEAMS</SectionLabel>
                 <div
                   className="mx-5 rounded-2xl overflow-hidden divide-y divide-white/5"
-                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
-                >
+                  style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                  }}>
                   {teamResults.map((t, i) => (
                     <TeamRow
                       key={t.id}

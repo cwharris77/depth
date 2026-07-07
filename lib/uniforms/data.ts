@@ -1,4 +1,4 @@
-import type { TeamColors } from "../types";
+import type { TeamColors } from '../types';
 
 // Hand-curated uniform archive (roadmap Phase 7). No structured uniform source exists
 // (see Data Sources.md in the vault), so this file IS the source of truth: a human reads
@@ -34,18 +34,18 @@ export const UNIFORMS: UniformSeed[] = [
   // current rotation). Hexes: teamcolorcodes historical Seahawks. uiAccent brightens the
   // era's green so it reads on the dark UI (the royal #003087 is far too dark).
   {
-    teamId: "seahawks",
-    slug: "1976-throwback",
-    name: "1976 Throwback",
+    teamId: 'seahawks',
+    slug: '1976-throwback',
+    name: '1976 Throwback',
     yearStart: 1976,
     yearEnd: 2001,
     isCurrent: false,
     colors: {
-      primary: "#003087",
-      secondary: "#046A38",
-      accent: "#8A8D8F",
-      uiAccent: "#3DB06A",
-      onAccent: "#0a0e1a",
+      primary: '#003087',
+      secondary: '#046A38',
+      accent: '#8A8D8F',
+      uiAccent: '#3DB06A',
+      onAccent: '#0a0e1a',
     },
   },
 
@@ -53,18 +53,18 @@ export const UNIFORMS: UniformSeed[] = [
   // is_current: true despite the historical era. Orange already reads on dark, so
   // uiAccent is the brand orange itself. Hexes: teamcolorcodes original/creamsicle.
   {
-    teamId: "buccaneers",
-    slug: "creamsicle",
-    name: "Creamsicle",
+    teamId: 'buccaneers',
+    slug: 'creamsicle',
+    name: 'Creamsicle',
     yearStart: 1976,
     yearEnd: 1996,
     isCurrent: true,
     colors: {
-      primary: "#FF8200",
-      secondary: "#C8102E",
-      accent: "#FFFFFF",
-      uiAccent: "#FF8200",
-      onAccent: "#0a0e1a",
+      primary: '#FF8200',
+      secondary: '#C8102E',
+      accent: '#FFFFFF',
+      uiAccent: '#FF8200',
+      onAccent: '#0a0e1a',
     },
   },
 
@@ -72,18 +72,18 @@ export const UNIFORMS: UniformSeed[] = [
   // is_current: true. uiAccent brightens the era's deep kelly (#046A38) to clear the dark
   // UI. Hexes: teamcolorcodes historical Eagles green + jersey silver.
   {
-    teamId: "eagles",
-    slug: "kelly-green",
-    name: "Kelly Green",
+    teamId: 'eagles',
+    slug: 'kelly-green',
+    name: 'Kelly Green',
     yearStart: 1987,
     yearEnd: 1995,
     isCurrent: true,
     colors: {
-      primary: "#046A38",
-      secondary: "#A5ACAF",
-      accent: "#FFFFFF",
-      uiAccent: "#2BB673",
-      onAccent: "#0a0e1a",
+      primary: '#046A38',
+      secondary: '#A5ACAF',
+      accent: '#FFFFFF',
+      uiAccent: '#2BB673',
+      onAccent: '#0a0e1a',
     },
   },
 
@@ -91,18 +91,18 @@ export const UNIFORMS: UniformSeed[] = [
   // navy/orange). The royal #001489 is too dark for the UI, so uiAccent is the era's
   // orange, which reads well. Hexes: teamcolorcodes historical Broncos.
   {
-    teamId: "broncos",
-    slug: "orange-crush",
-    name: "Orange Crush",
+    teamId: 'broncos',
+    slug: 'orange-crush',
+    name: 'Orange Crush',
     yearStart: 1968,
     yearEnd: 1996,
     isCurrent: false,
     colors: {
-      primary: "#001489",
-      secondary: "#FA4616",
-      accent: "#FFFFFF",
-      uiAccent: "#FA4616",
-      onAccent: "#0a0e1a",
+      primary: '#001489',
+      secondary: '#FA4616',
+      accent: '#FFFFFF',
+      uiAccent: '#FA4616',
+      onAccent: '#0a0e1a',
     },
   },
 ];

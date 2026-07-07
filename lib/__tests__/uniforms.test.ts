@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { UNIFORMS } from "../uniforms/data";
-import { contrastRatio, DARK_BG } from "../colors";
+import { describe, it, expect } from 'vitest';
+import { UNIFORMS } from '../uniforms/data';
+import { contrastRatio, DARK_BG } from '../colors';
 
 // The uniform archive is hand-curated (no structured source exists), so unlike the
 // ESPN-derived team colors, we CAN and DO enforce strict dark-UI legibility on every
@@ -10,7 +10,7 @@ import { contrastRatio, DARK_BG } from "../colors";
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const AA = 4.5;
 
-describe("uniform seed — dark-UI contrast", () => {
+describe('uniform seed — dark-UI contrast', () => {
   for (const u of UNIFORMS) {
     const id = `${u.teamId}-${u.slug}`;
 
@@ -24,8 +24,8 @@ describe("uniform seed — dark-UI contrast", () => {
   }
 });
 
-describe("uniform seed — integrity", () => {
-  it("ids (`${teamId}-${slug}`) are unique", () => {
+describe('uniform seed — integrity', () => {
+  it('ids (`${teamId}-${slug}`) are unique', () => {
     const ids = UNIFORMS.map((u) => `${u.teamId}-${u.slug}`);
     expect(new Set(ids).size).toBe(ids.length);
   });
