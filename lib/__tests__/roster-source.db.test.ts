@@ -51,6 +51,21 @@ maybeDescribe('dbRosterSource (live Supabase project)', () => {
     expect(roster!.team.id).toBe('seahawks');
     expect(roster!.players.length).toBeGreaterThan(15);
   });
+
+  it('lists every kit flattened with team identity', async () => {
+    const kits = await dbRosterSource.listUniforms();
+    expect(kits.length).toBeGreaterThan(72); // 72 curated + 32 home
+    const creamsicle = kits.find((k) => k.id === 'buccaneers-creamsicle');
+    expect(creamsicle).toBeDefined();
+    expect(creamsicle).toMatchObject({
+      teamId: 'buccaneers',
+      teamName: 'Tampa Bay Buccaneers',
+      conference: 'NFC',
+      division: 'South',
+      kind: 'throwback',
+    });
+    expect(kits.some((k) => k.kind === 'home')).toBe(true);
+  });
 });
 
 maybeDescribe('searchAllPlayers (live Supabase project)', () => {
