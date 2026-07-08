@@ -736,4 +736,39 @@ export const UNIFORMS: UniformSeed[] = [
       onAccent: '#0a0e1a',
     },
   },
+  // Throwbacks (Wave 2b): Vikings 1960s purple classic + Packers 1923 throwback (eyedropped).
+  // Vikings 1960s purple classic (gold-trim numbers, per Wikipedia; retired era). Hexes: teamcolorcodes (purple #4F2683, gold #FFC62F). uiAccent reuses the team's gold.
+  {
+    teamId: 'vikings',
+    slug: 'purple-classic',
+    kind: 'throwback',
+    name: 'Purple Classic',
+    yearStart: 1961,
+    yearEnd: 1969,
+    isCurrent: false,
+    colors: {
+      primary: '#4F2683',
+      secondary: '#FFC62F',
+      accent: '#FFFFFF',
+      uiAccent: '#FFC62F',
+      onAccent: '#0a0e1a',
+    },
+  },
+  // Packers 1923 throwback (navy body, old-gold/tan numbers, leather helmets; unveiled 2025). Colors EYEDROPPED from the reveal flat-lay: secondary/uiAccent #CC8835 sampled off the number (passes 6.55:1 on #0a0e1a); primary #1B2C4E is a brightened estimate of the underexposed navy. No published hex exists.
+  {
+    teamId: 'packers',
+    slug: '1923-throwback',
+    kind: 'throwback',
+    name: '1923 Throwback',
+    yearStart: 1923,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#1B2C4E',
+      secondary: '#CC8835',
+      accent: '#FFFFFF',
+      uiAccent: '#CC8835',
+      onAccent: '#0a0e1a',
+    },
+  },
 ];
