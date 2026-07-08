@@ -273,6 +273,7 @@ export type Database = {
           logo_url: string | null
           name: string
           on_accent: string | null
+          pending_home_colors: Json | null
           ui_accent: string | null
           updated_at: string
         }
@@ -290,6 +291,7 @@ export type Database = {
           logo_url?: string | null
           name: string
           on_accent?: string | null
+          pending_home_colors?: Json | null
           ui_accent?: string | null
           updated_at?: string
         }
@@ -307,6 +309,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           on_accent?: string | null
+          pending_home_colors?: Json | null
           ui_accent?: string | null
           updated_at?: string
         }
