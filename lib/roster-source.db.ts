@@ -8,6 +8,7 @@ import type {
   Position,
   SpecialSlot,
   Team,
+  TeamColors,
   TeamRoster,
   Uniform,
   UniformKind,
@@ -124,6 +125,16 @@ function toPlayer(row: PlayerRow, depthRank: 1 | 2 | 3): Player {
   };
 }
 
+function uniformColors(row: UniformRow): TeamColors {
+  return {
+    primary: row.color_primary,
+    secondary: row.color_secondary,
+    accent: row.color_accent,
+    uiAccent: row.ui_accent,
+    onAccent: row.on_accent,
+  };
+}
+
 function toUniform(row: UniformRow): Uniform {
   return {
     id: row.id,
@@ -133,15 +144,17 @@ function toUniform(row: UniformRow): Uniform {
     yearStart: row.year_start,
     yearEnd: row.year_end,
     isCurrent: row.is_current,
-    colors: {
-      primary: row.color_primary,
-      secondary: row.color_secondary,
-      accent: row.color_accent,
-      uiAccent: row.ui_accent,
-      onAccent: row.on_accent,
-    },
+    colors: uniformColors(row),
     imagePath: row.image_path ?? undefined,
   };
+}
+
+// The current home row is the source of truth for a team's default look (PR-B pins it, and
+// teams.colors can lag it by a pull or diverge during a hold). Overlay it onto team.colors
+// so the OG image, team grid, and field all agree.
+function withHomeColors(team: Team, rows: UniformRow[]): Team {
+  const home = rows.find((u) => u.kind === 'home' && u.is_current);
+  return home ? { ...team, colors: uniformColors(home) } : team;
 }
 
 // Order a team's kits for the selector: the current home first, then the other active kits
@@ -244,12 +257,13 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
     label: row.label,
   }));
 
-  const team = toTeam(teamRow);
+  const rows = uniformRows ?? [];
+  const team = withHomeColors(toTeam(teamRow), rows);
   return {
     team,
     players,
     specialTeams,
-    uniforms: orderUniforms(uniformRows ?? []),
+    uniforms: orderUniforms(rows),
   };
 }
 
@@ -363,10 +377,26 @@ async function fetchAllTeamMeta(): Promise<TeamRow[]> {
   return data ?? [];
 }
 
+async function fetchCurrentHomeRows(): Promise<UniformRow[]> {
+  const client = supabase();
+  const { data, error } = await client
+    .from('uniforms')
+    .select(UNIFORM_SELECT)
+    .eq('kind', 'home')
+    .eq('is_current', true)
+    .returns<UniformRow[]>();
+  if (error) throw new Error(`home uniforms query failed: ${error.message}`);
+  return data ?? [];
+}
+
 export const dbRosterSource: RosterSource = {
   async listTeams(): Promise<TeamMeta[]> {
-    const rows = await fetchAllTeamMeta();
-    const metas = rows.map(toTeam);
+    const [rows, homeRows] = await Promise.all([fetchAllTeamMeta(), fetchCurrentHomeRows()]);
+    const homeByTeam = new Map(homeRows.map((r) => [r.team_id, r]));
+    const metas = rows.map((r) => {
+      const home = homeByTeam.get(r.id);
+      return withHomeColors(toTeam(r), home ? [home] : []);
+    });
     return metas.sort((a, b) => a.id.localeCompare(b.id));
   },
   async getTeam(id: string): Promise<TeamRoster | undefined> {
