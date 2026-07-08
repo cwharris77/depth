@@ -771,4 +771,142 @@ export const UNIFORMS: UniformSeed[] = [
       onAccent: '#0a0e1a',
     },
   },
+  // 2025 Nike 'Rivalries' kits (AFC East + NFC West). Designs from the official Nike/NFL
+  // product shots; identity hexes from published heritage. Derived approximations noted per row.
+  // Bills 2025 Rivalries: white base, royal/red. Heritage hexes (royal #00338D, red #C60C30).
+  {
+    teamId: 'bills',
+    slug: 'rivalries-2025',
+    kind: 'alternate',
+    name: 'Rivalries',
+    yearStart: 2025,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#FFFFFF',
+      secondary: '#00338D',
+      accent: '#C60C30',
+      uiAccent: '#5B9BFF',
+      onAccent: '#0a0e1a',
+    },
+  },
+  // Dolphins 2025 Rivalries: black base, aqua/orange. Heritage accents (aqua #008E97, orange #FC4C02).
+  {
+    teamId: 'dolphins',
+    slug: 'rivalries-2025',
+    kind: 'alternate',
+    name: 'Rivalries',
+    yearStart: 2025,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#101820',
+      secondary: '#008E97',
+      accent: '#FC4C02',
+      uiAccent: '#2DD4D4',
+      onAccent: '#0a0e1a',
+    },
+  },
+  // Patriots 2025 Rivalries: Pat-Patriot-style royal fauxback. primary #002F6C is a derived royal (brighter than current navy); red/white heritage.
+  {
+    teamId: 'patriots',
+    slug: 'rivalries-2025',
+    kind: 'alternate',
+    name: 'Rivalries',
+    yearStart: 2025,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#002F6C',
+      secondary: '#C60C30',
+      accent: '#FFFFFF',
+      uiAccent: '#5B9BFF',
+      onAccent: '#0a0e1a',
+    },
+  },
+  // Jets 2025 Rivalries 'Gotham': dark green base, black/white. Heritage green #115740.
+  {
+    teamId: 'jets',
+    slug: 'rivalries-2025',
+    kind: 'alternate',
+    name: 'Rivalries',
+    yearStart: 2025,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#115740',
+      secondary: '#000000',
+      accent: '#FFFFFF',
+      uiAccent: '#4CC38A',
+      onAccent: '#0a0e1a',
+    },
+  },
+  // Cardinals 2025 Rivalries: white base (stage lighting is red in the reveal), cardinal/black. Heritage cardinal #97233F.
+  {
+    teamId: 'cardinals',
+    slug: 'rivalries-2025',
+    kind: 'alternate',
+    name: 'Rivalries',
+    yearStart: 2025,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#FFFFFF',
+      secondary: '#97233F',
+      accent: '#000000',
+      uiAccent: '#FF4D6A',
+      onAccent: '#0a0e1a',
+    },
+  },
+  // Rams 2025 'Midnight Mode': navy body, gold horns/numbers. primary #0D1B3E derived (reveal underexposed near-black); gold #FFD100 (Rams sol).
+  {
+    teamId: 'rams',
+    slug: 'rivalries-2025',
+    kind: 'alternate',
+    name: 'Rivalries',
+    yearStart: 2025,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#0D1B3E',
+      secondary: '#FFD100',
+      accent: '#FFFFFF',
+      uiAccent: '#FFC20E',
+      onAccent: '#0a0e1a',
+    },
+  },
+  // 49ers 2025 Rivalries: black base, gold numbers, scarlet accent. Heritage gold #B3995D (uiAccent, 7.0:1) + scarlet #AA0000.
+  {
+    teamId: '49ers',
+    slug: 'rivalries-2025',
+    kind: 'alternate',
+    name: 'Rivalries',
+    yearStart: 2025,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#101820',
+      secondary: '#B3995D',
+      accent: '#AA0000',
+      uiAccent: '#B3995D',
+      onAccent: '#0a0e1a',
+    },
+  },
+  // Seahawks 2025 Rivalries 'soundwave': wolf-grey base, navy/action-green. Heritage navy #002244 + green #69BE28.
+  {
+    teamId: 'seahawks',
+    slug: 'rivalries-2025',
+    kind: 'alternate',
+    name: 'Rivalries',
+    yearStart: 2025,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#A5ACAF',
+      secondary: '#002244',
+      accent: '#69BE28',
+      uiAccent: '#69BE28',
+      onAccent: '#0a0e1a',
+    },
+  },
 ];
