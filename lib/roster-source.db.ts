@@ -1,4 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
+import type { Database } from './database.types';
+import type { RosterSource, TeamMeta } from './roster-source';
+import { type PlayerHit, positionGroupPositions, rankByNameMatch } from './search';
 import type {
   Player,
   PlayerStatus,
@@ -7,10 +10,8 @@ import type {
   Team,
   TeamRoster,
   Uniform,
+  UniformKind,
 } from './types';
-import type { RosterSource, TeamMeta } from './roster-source';
-import type { Database } from './database.types';
-import { type PlayerHit, positionGroupPositions, rankByNameMatch } from './search';
 
 // Postgres-backed RosterSource (roadmap: ESPN ingestion -> DB -> app). Reads
 // teams/players/depth_chart_entries/special_teams_slots and assembles the same
@@ -70,6 +71,7 @@ type UniformRow = Pick<
   Tables['uniforms']['Row'],
   | 'id'
   | 'team_id'
+  | 'kind'
   | 'name'
   | 'year_start'
   | 'year_end'
@@ -82,7 +84,7 @@ type UniformRow = Pick<
   | 'image_path'
 >;
 const UNIFORM_SELECT =
-  'id, team_id, name, year_start, year_end, is_current, color_primary, color_secondary, color_accent, ui_accent, on_accent, image_path';
+  'id, team_id, kind, name, year_start, year_end, is_current, color_primary, color_secondary, color_accent, ui_accent, on_accent, image_path';
 
 function toTeam(row: TeamRow): Team {
   return {
@@ -126,6 +128,7 @@ function toUniform(row: UniformRow): Uniform {
   return {
     id: row.id,
     teamId: row.team_id,
+    kind: row.kind as UniformKind,
     name: row.name,
     yearStart: row.year_start,
     yearEnd: row.year_end,
@@ -141,29 +144,20 @@ function toUniform(row: UniformRow): Uniform {
   };
 }
 
-// The team's home/primary kit isn't a stored row — it IS team.colors (ESPN-derived).
-// Synthesize it so the archive always has a first-class "Home" default with zero DB
-// rows and no ESPN-ingest change.
-function homeUniform(team: Team): Uniform {
-  return {
-    id: `${team.id}-home`,
-    teamId: team.id,
-    name: 'Home',
-    yearStart: null,
-    yearEnd: null,
-    isCurrent: true,
-    colors: team.colors,
-  };
-}
-
-// Order the hand-curated rows behind Home: other active kits first (by name), then
-// retired throwbacks newest-first (a null year_end sorts as "still current" = newest).
-function orderUniforms(rows: UniformRow[]): Uniform[] {
+// Order a team's kits for the selector: the current home first, then the other active kits
+// (away/color-rush/active throwbacks) by name, then retired kits newest-first (year_end
+// desc), with id as a stable tie-break so multiple retired homes never reorder run to run.
+// Exported for unit tests (the ordering is the read layer's one piece of real logic).
+export function orderUniforms(rows: UniformRow[]): Uniform[] {
   const uniforms = rows.map(toUniform);
   return uniforms.sort((a, b) => {
+    const aHome = a.kind === 'home' && a.isCurrent;
+    const bHome = b.kind === 'home' && b.isCurrent;
+    if (aHome !== bHome) return aHome ? -1 : 1;
     if (a.isCurrent !== b.isCurrent) return a.isCurrent ? -1 : 1;
     if (a.isCurrent) return a.name.localeCompare(b.name);
-    return (b.yearEnd ?? Infinity) - (a.yearEnd ?? Infinity);
+    const byYear = (b.yearEnd ?? Infinity) - (a.yearEnd ?? Infinity);
+    return byYear !== 0 ? byYear : a.id.localeCompare(b.id);
   });
 }
 
@@ -255,7 +249,7 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
     team,
     players,
     specialTeams,
-    uniforms: [homeUniform(team), ...orderUniforms(uniformRows ?? [])],
+    uniforms: orderUniforms(uniformRows ?? []),
   };
 }
 

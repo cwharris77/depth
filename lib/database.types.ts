@@ -320,8 +320,10 @@ export type Database = {
           id: string
           image_path: string | null
           is_current: boolean
+          kind: string
           name: string
           on_accent: string
+          source: string
           team_id: string
           ui_accent: string
           updated_at: string
@@ -335,8 +337,10 @@ export type Database = {
           id: string
           image_path?: string | null
           is_current?: boolean
+          kind: string
           name: string
           on_accent: string
+          source: string
           team_id: string
           ui_accent: string
           updated_at?: string
@@ -350,8 +354,10 @@ export type Database = {
           id?: string
           image_path?: string | null
           is_current?: boolean
+          kind?: string
           name?: string
           on_accent?: string
+          source?: string
           team_id?: string
           ui_accent?: string
           updated_at?: string

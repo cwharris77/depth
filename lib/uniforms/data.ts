@@ -1,14 +1,15 @@
-import type { TeamColors } from '../types';
+import type { TeamColors, UniformKind } from '../types';
 
 // Hand-curated uniform archive (roadmap Phase 7). No structured uniform source exists
-// (see Data Sources.md in the vault), so this file IS the source of truth: a human reads
-// a reference/press release, records the brand hexes, curates a dark-UI-legible
-// uiAccent/onAccent, and appends a row here. `scripts/ingest-uniforms.mts` upserts these
-// into Postgres. APPEND-ONLY — never delete a kit; the archive keeps every past uniform.
+// (see Data Sources.md in the vault), so this file IS the source of truth for every
+// `source='curated'` kit: a human reads a reference/press release, records the brand hexes,
+// curates a dark-UI-legible uiAccent/onAccent, and appends a row here. The seed generator
+// turns these into an append-only SQL migration. APPEND-ONLY — never delete a kit.
 //
-// What lives here: every kit EXCEPT each team's home/primary look. The home kit is the
-// team's ESPN-derived `team.colors` and is synthesized as "Home" at read time
-// (lib/roster-source.db.ts), so it is never a row.
+// What lives here: every kit EXCEPT each team's current home. The `kind='home'` rows are
+// ESPN-owned (machine-managed) and are NOT authored here — they are backfilled from
+// team.colors and maintained by the drift reconciler (PR-B). Away, throwbacks, color rush,
+// and alternates all live here.
 //
 // colors.primary/secondary/accent are brand-true (the real kit). uiAccent/onAccent are
 // curated to read on the dark app background (#0a0e1a) — enforced by
@@ -21,6 +22,7 @@ import type { TeamColors } from '../types';
 export interface UniformSeed {
   teamId: string;
   slug: string;
+  kind: UniformKind;
   name: string;
   yearStart: number | null;
   yearEnd: number | null;
@@ -36,6 +38,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'seahawks',
     slug: '1976-throwback',
+    kind: 'throwback',
     name: '1976 Throwback',
     yearStart: 1976,
     yearEnd: 2001,
@@ -55,6 +58,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'buccaneers',
     slug: 'creamsicle',
+    kind: 'throwback',
     name: 'Creamsicle',
     yearStart: 1976,
     yearEnd: 1996,
@@ -74,6 +78,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'eagles',
     slug: 'kelly-green',
+    kind: 'throwback',
     name: 'Kelly Green',
     yearStart: 1987,
     yearEnd: 1995,
@@ -93,6 +98,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'broncos',
     slug: 'orange-crush',
+    kind: 'throwback',
     name: 'Orange Crush',
     yearStart: 1968,
     yearEnd: 1996,
@@ -102,6 +108,139 @@ export const UNIFORMS: UniformSeed[] = [
       secondary: '#FA4616',
       accent: '#FFFFFF',
       uiAccent: '#FA4616',
+      onAccent: '#0a0e1a',
+    },
+  },
+
+  // Away kits — the standard white-base road look. secondary/accent are each team's real
+  // identity hexes (the trim/number color on the white jersey); uiAccent/onAccent reuse the
+  // team's live dark-UI pair, so they already clear the AA contrast gate on #0a0e1a. First
+  // tranche (PR-A); the rest follow the curation cadence. primary #FFFFFF = white base.
+  {
+    teamId: 'seahawks',
+    slug: 'away',
+    kind: 'away',
+    name: 'Away',
+    yearStart: null,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#FFFFFF',
+      secondary: '#002244',
+      accent: '#69BE28',
+      uiAccent: '#69BE28',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'bills',
+    slug: 'away',
+    kind: 'away',
+    name: 'Away',
+    yearStart: null,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#FFFFFF',
+      secondary: '#00338D',
+      accent: '#C60C30',
+      uiAccent: '#5B9BFF',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'dolphins',
+    slug: 'away',
+    kind: 'away',
+    name: 'Away',
+    yearStart: null,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#FFFFFF',
+      secondary: '#008E97',
+      accent: '#FC4C02',
+      uiAccent: '#2DD4D4',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'patriots',
+    slug: 'away',
+    kind: 'away',
+    name: 'Away',
+    yearStart: null,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#FFFFFF',
+      secondary: '#002244',
+      accent: '#C60C30',
+      uiAccent: '#C8CDD6',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'jets',
+    slug: 'away',
+    kind: 'away',
+    name: 'Away',
+    yearStart: null,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#FFFFFF',
+      secondary: '#125740',
+      accent: '#125740',
+      uiAccent: '#4CC38A',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'cardinals',
+    slug: 'away',
+    kind: 'away',
+    name: 'Away',
+    yearStart: null,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#FFFFFF',
+      secondary: '#97233F',
+      accent: '#FFB612',
+      uiAccent: '#FF4D6A',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'rams',
+    slug: 'away',
+    kind: 'away',
+    name: 'Away',
+    yearStart: null,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#FFFFFF',
+      secondary: '#003594',
+      accent: '#FFA300',
+      uiAccent: '#FFC20E',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: '49ers',
+    slug: 'away',
+    kind: 'away',
+    name: 'Away',
+    yearStart: null,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#FFFFFF',
+      secondary: '#AA0000',
+      accent: '#B3995D',
+      uiAccent: '#FF4D4D',
       onAccent: '#0a0e1a',
     },
   },
