@@ -10,9 +10,9 @@
 //
 // Re-run after editing data.ts; commit the new migration.
 
-import { writeFileSync } from "node:fs";
-import { generateCuratedSeedSql } from "../lib/uniforms/seed-sql";
-import { UNIFORMS } from "../lib/uniforms/data";
+import { writeFileSync } from 'node:fs';
+import { generateCuratedSeedSql } from '../lib/uniforms/seed-sql';
+import { UNIFORMS } from '../lib/uniforms/data';
 
 const outPath = process.argv[2];
 const sql = generateCuratedSeedSql();

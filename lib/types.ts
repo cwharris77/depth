@@ -116,7 +116,7 @@ export interface Team {
 // A kit's category. `home` rows are ESPN-owned (machine-managed); every other kind is
 // hand-curated in lib/uniforms/data.ts. Not a required set per team — only `home` is
 // guaranteed; a team has whatever kits it actually wears.
-export type UniformKind = "home" | "away" | "throwback" | "color-rush" | "alternate";
+export type UniformKind = 'home' | 'away' | 'throwback' | 'color-rush' | 'alternate';
 
 // A named kit in a team's uniform archive (roadmap Phase 7). Every kit is a stored row now,
 // including the current home (kind='home', backfilled from team.colors). yearEnd null →

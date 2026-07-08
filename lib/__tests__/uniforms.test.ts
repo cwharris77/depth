@@ -11,7 +11,7 @@ const HEX = /^#[0-9a-fA-F]{6}$/;
 const AA = 4.5;
 // Curated rows may be any kind EXCEPT home — home rows are ESPN-owned and never authored
 // in data.ts (they are backfilled + maintained by the reconciler).
-const CURATED_KINDS = ["away", "throwback", "color-rush", "alternate"];
+const CURATED_KINDS = ['away', 'throwback', 'color-rush', 'alternate'];
 
 describe('uniform seed — dark-UI contrast', () => {
   for (const u of UNIFORMS) {
