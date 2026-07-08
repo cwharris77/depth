@@ -1,3 +1,4 @@
+import createWithVercelToolbar from '@vercel/toolbar/plugins/next';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
@@ -18,4 +19,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const withVercelToolbar = createWithVercelToolbar();
+// Use the withVercelToolbar plugin to inject the Vercel Toolbar
+export default withVercelToolbar(nextConfig);
