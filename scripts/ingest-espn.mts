@@ -7,11 +7,13 @@
 // bypasses RLS-equivalent restrictions for writes; never expose it client-side).
 
 import dotenv from 'dotenv';
+import { appendFileSync } from 'node:fs';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 dotenv.config({ path: '.env.local' });
 import { toDepthChartRows, toTeamRoster } from '../lib/espn/transform';
 import { parseStandings, type EspnStandings } from '../lib/espn/standings';
+import { reconcileHomeUniforms } from '../lib/uniforms/reconcile-db';
 import { TEAMS } from '../lib/teams/index';
 import type { EspnDepthcharts, EspnRoster, EspnTeamInfo } from '../lib/espn/types';
 import type { TeamRoster } from '../lib/types';
@@ -60,6 +62,17 @@ function requireEnv(name: string): string {
   return v;
 }
 
+// ISO week number. The home-drift guard keys "distinct pull" on season+week, so a manual
+// re-run in the same week reuses the same runId and can't count as a second confirmation.
+function isoWeek(d: Date): number {
+  const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const dayNum = (date.getUTCDay() + 6) % 7; // Mon=0..Sun=6
+  date.setUTCDate(date.getUTCDate() - dayNum + 3); // nearest Thursday
+  const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+  const diffDays = (date.getTime() - firstThursday.getTime()) / 86400000;
+  return 1 + Math.round((diffDays - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
+}
+
 async function main() {
   const supabaseUrl = requireEnv('SUPABASE_URL');
   const serviceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
@@ -70,6 +83,7 @@ async function main() {
   const divisions = parseStandings(await getJson<EspnStandings>(STANDINGS));
   const built: Record<string, TeamRoster> = {};
   const errors: { team: string; message: string }[] = [];
+  let seasonYear: number | null = null;
 
   for (const roster of Object.values(TEAMS)) {
     const seed = roster.team;
@@ -91,6 +105,7 @@ async function main() {
       const abbr = info.abbreviation.toLowerCase();
       const espnRoster = await getJson<EspnRoster>(`${SITE}/teams/${abbr}/roster`);
       const season = espnRoster.season.year;
+      seasonYear = season;
       const depthcharts = await getJson<EspnDepthcharts>(
         `${CORE}/seasons/${season}/teams/${info.id}/depthcharts`
       );
@@ -118,6 +133,29 @@ async function main() {
       teamsWritten++;
     } catch (e) {
       errors.push({ team: roster.team.id, message: `write failed: ${(e as Error).message}` });
+    }
+  }
+
+  // Home-drift reconcile: ESPN just wrote teams.colors; pin/retire home rows on a stable
+  // change. Non-fatal — a reconcile failure must not fail the roster ingest.
+  if (seasonYear !== null && teamsWritten > 0) {
+    const runId = `${seasonYear}-W${isoWeek(new Date())}`;
+    try {
+      const s = await reconcileHomeUniforms(supabase, { seasonYear, runId });
+      console.log(
+        `\nHome reconcile (${runId}): ${s.promoted.length} promoted, ${s.staged.length} staged, ` +
+          `${s.cleared.length} cleared, ${s.held.length} held, ${s.bootstrapped.length} bootstrapped.`
+      );
+      for (const a of s.alerts) console.log(`  ALERT: ${a}`);
+      if (s.alerts.length && process.env.UNIFORM_ALERT_FILE) {
+        const stamp = new Date().toISOString();
+        appendFileSync(
+          process.env.UNIFORM_ALERT_FILE,
+          s.alerts.map((a) => `- ${stamp} ${a}`).join('\n') + '\n'
+        );
+      }
+    } catch (e) {
+      console.error(`home reconcile failed (non-fatal): ${(e as Error).message}`);
     }
   }
 
