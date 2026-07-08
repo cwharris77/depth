@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { formatUniformYears } from '../uniforms';
+import { describe, expect, it } from 'vitest';
 import type { TeamColors, Uniform } from '../types';
+import { formatUniformYears } from '../uniforms';
 
 const COLORS: TeamColors = {
   primary: '#000000',
@@ -14,6 +14,7 @@ function u(partial: Partial<Uniform>): Uniform {
   return {
     id: 't-x',
     teamId: 't',
+    kind: 'home',
     name: 'X',
     yearStart: null,
     yearEnd: null,
