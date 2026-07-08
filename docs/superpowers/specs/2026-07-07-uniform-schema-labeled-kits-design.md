@@ -2,7 +2,7 @@
 # Uniform schema — labeled kits, home in-table, ESPN drift auto-promote
 
 Date: 2026-07-07
-Status: approved (design), revised after /autoplan review
+Status: APPROVED (design), revised + approved via /autoplan
 Roadmap: Phase 7 — Uniform archive. Follows PR1 (data layer, depth#56) and PR2
 (selector + live recolor, depth#57). Reworks the schema so every kit — including home and
 away — is a first-class, labeled row, and captures ESPN color changes instead of silently
@@ -127,8 +127,9 @@ the user's example:
 
 - **Seahawks away** — white base, navy accent: `primary #FFFFFF`, `secondary #002244`,
   `accent #69BE28`, curated `ui_accent`/`on_accent` that pass AA on `#0a0e1a`.
-- Plus a starter tranche of well-known aways (see the launch spec's team list). Exact team
-  count is the one open taste decision at the gate (Seahawks-only proof vs ~8-team tranche).
+- **Batch size (decided): a ~8-team first tranche** — Seahawks plus the well-known aways
+  from the launch spec's team set (Bills, Dolphins, Patriots, Jets, Cardinals, Rams, 49ers).
+  Enough that the selector feels real on day one; hexes hand-typed from GUD/teamcolorcodes.
 
 Remaining aways follow the launch spec's curation cadence — but PR-A does not ship with
 zero aways.
@@ -285,11 +286,11 @@ task payload; it ignored it and reviewed from source. Flagged to the user.
 
 ### Surfaced at the gate (not auto-decided)
 
-- **User challenge (strategy):** the strategy voice argued to skip the home-as-row flip
-  entirely and ship away as pure curated rows (keep `homeUniform()` synthesis), calling the
-  flip + drift gold-plating for a hobby app. User's stated direction (home in-table so ESPN
-  changes preserve history) is the default and stands unless changed.
-- **Taste:** PR-A away batch size — Seahawks-only proof vs a ~8-team first tranche.
+- **User challenge (strategy) — RESOLVED, held:** the strategy voice argued to skip the
+  home-as-row flip and ship away as pure curated rows (keep `homeUniform()`). User held the
+  original direction: home in-table, to preserve old colors when ESPN rebrands a team.
+- **Taste — RESOLVED:** PR-A away batch = **~8-team first tranche** (Seahawks + Bills,
+  Dolphins, Patriots, Jets, Cardinals, Rams, 49ers).
 
 ### Consensus (subagent-only; Codex N/A)
 
