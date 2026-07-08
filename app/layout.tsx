@@ -1,7 +1,8 @@
+import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
+import { VercelToolbar } from '@vercel/toolbar/next';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -31,6 +32,8 @@ export const viewport: Viewport = {
   colorScheme: 'dark',
 };
 
+const shouldInjectToolbar = process.env.NODE_ENV === 'development';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -40,6 +43,7 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         {children}
+        {shouldInjectToolbar && <VercelToolbar />}
         <ServiceWorkerRegistrar />
       </body>
     </html>

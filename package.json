@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.0",
+    "@vercel/toolbar": "^0.2.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "flags": "^4.2.0",
