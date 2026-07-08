@@ -632,4 +632,108 @@ export const UNIFORMS: UniformSeed[] = [
       onAccent: '#0a0e1a',
     },
   },
+  // Throwbacks & alternates (Wave 2a) — published heritage hexes (teamcolorcodes),
+  // eras verified where set. uiAccent reuses each team's live dark-UI pair.
+  // Chargers AFL powder blue, worn as a current alternate. Hexes: teamcolorcodes (powder blue #0080C6, sunshine gold #FFC20E). uiAccent reuses the team's dark-UI blue.
+  {
+    teamId: 'chargers',
+    slug: 'powder-blue',
+    kind: 'alternate',
+    name: 'Powder Blue',
+    yearStart: 1960,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#0080C6',
+      secondary: '#FFC20E',
+      accent: '#FFFFFF',
+      uiAccent: '#36A7E0',
+      onAccent: '#0a0e1a',
+    },
+  },
+  // Houston Oilers Columbia blue (1960-1996, per Wikipedia). Hexes: teamcolorcodes Titans page (Columbia blue #4B92DB = the Oilers heritage blue, red #C8102E). isCurrent: Titans' designated throwback alternate (not worn every season).
+  {
+    teamId: 'titans',
+    slug: 'oilers-throwback',
+    kind: 'throwback',
+    name: 'Oilers Throwback',
+    yearStart: 1960,
+    yearEnd: 1996,
+    isCurrent: true,
+    colors: {
+      primary: '#4B92DB',
+      secondary: '#C8102E',
+      accent: '#FFFFFF',
+      uiAccent: '#5BA8E8',
+      onAccent: '#0a0e1a',
+    },
+  },
+  // Bears orange alternate (modern alt, no throwback era). Hexes: teamcolorcodes (orange #C83803, navy #0B162A). uiAccent reuses the team's brightened orange.
+  {
+    teamId: 'bears',
+    slug: 'orange-alternate',
+    kind: 'alternate',
+    name: 'Orange Alternate',
+    yearStart: null,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#C83803',
+      secondary: '#0B162A',
+      accent: '#FFFFFF',
+      uiAccent: '#FF6A33',
+      onAccent: '#0a0e1a',
+    },
+  },
+  // Saints all-black Color Rush (2016+). Hexes: teamcolorcodes (black #101820, old gold #D3BC8D). uiAccent reuses the team's bright gold.
+  {
+    teamId: 'saints',
+    slug: 'color-rush',
+    kind: 'color-rush',
+    name: 'Color Rush',
+    yearStart: null,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#101820',
+      secondary: '#D3BC8D',
+      accent: '#D3BC8D',
+      uiAccent: '#E2CC9A',
+      onAccent: '#0a0e1a',
+    },
+  },
+  // Jaguars original teal (1995-2012 design era, reintroduced 2023). Hexes: teamcolorcodes (teal #006778, gold #D7A22A, black #101820). uiAccent reuses the team's bright teal.
+  {
+    teamId: 'jaguars',
+    slug: 'teal-throwback',
+    kind: 'throwback',
+    name: 'Teal Throwback',
+    yearStart: 1995,
+    yearEnd: 2012,
+    isCurrent: true,
+    colors: {
+      primary: '#006778',
+      secondary: '#D7A22A',
+      accent: '#101820',
+      uiAccent: '#2DD4D4',
+      onAccent: '#0a0e1a',
+    },
+  },
+  // Washington 1970s burgundy & gold (George Allen gold-helmet era). Hexes: teamcolorcodes Commanders (burgundy #5A1414, gold #FFB612). uiAccent reuses the team's gold.
+  {
+    teamId: 'commanders',
+    slug: '70s-burgundy',
+    kind: 'throwback',
+    name: '70s Burgundy',
+    yearStart: 1972,
+    yearEnd: 1977,
+    isCurrent: true,
+    colors: {
+      primary: '#5A1414',
+      secondary: '#FFB612',
+      accent: '#FFFFFF',
+      uiAccent: '#FFB612',
+      onAccent: '#0a0e1a',
+    },
+  },
 ];
