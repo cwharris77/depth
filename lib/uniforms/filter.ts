@@ -3,8 +3,8 @@
 // Era and current-only are independent axes: a reintroduced throwback (yearStart 1976,
 // isCurrent true) sits in the '1970s' bucket AND passes current-only.
 
-import type { Conference, Division, UniformKind } from './../types';
-import type { UniformListing } from './../roster-source';
+import type { Conference, Division, UniformKind } from '../types';
+import type { UniformListing } from '../roster-source';
 
 export interface UniformFilters {
   kind: UniformKind | 'all';
