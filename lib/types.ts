@@ -113,13 +113,18 @@ export interface Team {
   logoDark?: string;
 }
 
-// A named kit in a team's uniform archive (roadmap Phase 7). Hand-curated in
-// lib/uniforms/data.ts, except the synthesized "Home" entry the read layer builds from
-// team.colors (no DB row). yearEnd null → still in the active rotation. isCurrent marks
-// active kits (home/away/alternate/color-rush) apart from retired throwbacks.
+// A kit's category. `home` rows are ESPN-owned (machine-managed); every other kind is
+// hand-curated in lib/uniforms/data.ts. Not a required set per team — only `home` is
+// guaranteed; a team has whatever kits it actually wears.
+export type UniformKind = "home" | "away" | "throwback" | "color-rush" | "alternate";
+
+// A named kit in a team's uniform archive (roadmap Phase 7). Every kit is a stored row now,
+// including the current home (kind='home', backfilled from team.colors). yearEnd null →
+// still in the active rotation. isCurrent marks active kits apart from retired throwbacks.
 export interface Uniform {
   id: string;
   teamId: string;
+  kind: UniformKind;
   name: string;
   yearStart: number | null;
   yearEnd: number | null;
