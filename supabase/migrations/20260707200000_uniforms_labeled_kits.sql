@@ -19,14 +19,22 @@ update uniforms set kind = 'throwback', source = 'curated';
 -- 3. Backfill one current home row per team from teams.colors. Null years so
 --    formatUniformYears renders "Current" (not "2026-present"). id = `${team}-home`, the
 --    permanent slug for a team's current home (PR-B gives RETIRED snapshots the year suffix).
+--    teams.colors are nullable but uniforms colors are not, so coalesce to the same
+--    fallbacks toTeam() uses. Runs after the team seed (an earlier migration), so locally
+--    reset has teams to select from; DO NOTHING keeps it safe if a home row already exists.
 insert into uniforms (
   id, team_id, kind, name, source, year_start, year_end, is_current,
   color_primary, color_secondary, color_accent, ui_accent, on_accent
 )
 select
   id || '-home', id, 'home', 'Home', 'espn', null, null, true,
-  color_primary, color_secondary, color_accent, ui_accent, on_accent
-from teams;
+  coalesce(color_primary, '#333333'),
+  coalesce(color_secondary, '#666666'),
+  coalesce(color_accent, color_secondary, '#666666'),
+  coalesce(ui_accent, '#4CC3FF'),
+  coalesce(on_accent, '#0a0e1a')
+from teams
+on conflict (id) do nothing;
 
 -- 4. Now every row has both; enforce not null.
 alter table uniforms
