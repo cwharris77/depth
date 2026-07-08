@@ -12,10 +12,13 @@ export interface VariantSpec {
   viewBox: string;
 }
 
+// Shared 100-wide coordinate space; each part is authored from its own y=0 and stacked
+// for 'full' (see PART_SHIFT in components/UniformFigure.tsx). Heights: helmet 0-74,
+// jersey 0-122, pants 0-120; 'full' stacks them into a 332-tall column.
 const VARIANTS: Record<UniformVariant, VariantSpec> = {
-  jersey: { parts: ['jersey'], viewBox: '0 0 48 48' },
-  full: { parts: ['helmet', 'jersey', 'pants'], viewBox: '0 0 48 96' },
-  helmet: { parts: ['helmet'], viewBox: '0 0 48 40' },
+  jersey: { parts: ['jersey'], viewBox: '0 0 100 122' },
+  full: { parts: ['helmet', 'jersey', 'pants'], viewBox: '0 0 100 332' },
+  helmet: { parts: ['helmet'], viewBox: '0 0 100 74' },
 };
 
 export function variantSpec(variant: UniformVariant): VariantSpec {

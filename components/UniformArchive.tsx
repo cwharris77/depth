@@ -119,6 +119,20 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
           </section>
         ))
       )}
+
+      <footer className="mt-10 text-[11px]" style={{ color: '#6b7280' }}>
+        Uniform figures are original artwork, no team logos. Proportions modeled on the{' '}
+        <a
+          href="https://commons.wikimedia.org/wiki/File:NFL-Uniform-template-V3.png"
+          className="underline">
+          NFL uniform template
+        </a>{' '}
+        by JohnnySeoul, used under{' '}
+        <a href="https://creativecommons.org/licenses/by/3.0/" className="underline">
+          CC BY 3.0
+        </a>{' '}
+        (modified).
+      </footer>
     </main>
   );
 }
