@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { Check, ChevronDown, Grid, RotateCcw, Search, Share2, Shirt } from 'lucide-react';
+import { Check, ChevronDown, Menu, RotateCcw, Search, Share2, Shirt } from 'lucide-react';
 import type { Player, Position, TeamRoster, Unit } from '@/lib/types';
 import type { TeamMeta } from '@/lib/roster-source';
 import { resolveUnit } from '@/lib/formations';
@@ -25,6 +24,7 @@ import FullScreenSheet from './FullScreenSheet';
 import BottomSheet from './BottomSheet';
 import UniformSheet from './UniformSheet';
 import NavSwitcher from './NavSwitcher';
+import NavDrawer from './NavDrawer';
 import OpenPlayerFromQuery from './OpenPlayerFromQuery';
 import ApplyKitFromQuery from './ApplyKitFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
@@ -56,6 +56,7 @@ export default function DepthChartField({
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeUnit, setActiveUnit] = useState<Unit>('offense');
   const [navOpen, setNavOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [kitOpen, setKitOpen] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
 
@@ -168,23 +169,20 @@ export default function DepthChartField({
           paddingTop: 'max(env(safe-area-inset-top), 12px)',
         }}>
         <div className="flex items-center justify-between">
-          {/* Wordmark — fixed, non-interactive brand element, on the left. */}
-          <div className="flex items-center gap-0.5 shrink-0">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 16 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              style={{ color: activeColors.uiAccent }}>
-              <rect x="1" y="2.5" width="11" height="2" rx="1" fill="currentColor" />
-              <rect x="1" y="7" width="8" height="2" rx="1" fill="currentColor" />
-              <rect x="1" y="11.5" width="5" height="2" rx="1" fill="currentColor" />
-            </svg>
+          {/* Wordmark doubles as the navigation-drawer trigger (left), where a menu
+              conventionally lives. Global/growing nav (uniform archive, future views) opens
+              here so the header stays uncrowded — see components/NavDrawer.tsx. */}
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Open navigation"
+            className="flex items-center gap-1 shrink-0"
+            style={{ touchAction: 'manipulation' }}>
+            <Menu size={18} color={activeColors.uiAccent} />
             <span className="text-sm font-bold tracking-widest" style={{ color: '#A5ACAF' }}>
               depth
             </span>
-          </div>
+          </button>
           {/* Team/unit switcher trigger — on the right, where users (Mia, Caleb)
               instinctively tapped expecting a menu. Styled as a visible pill, not
               plain text, so it reads as tappable. A search-icon circle sits beside
@@ -232,19 +230,6 @@ export default function DepthChartField({
                 }}>
                 <Shirt size={14} color={activeColors.uiAccent} />
               </button>
-            )}
-            {showUniformArchive && (
-              <Link
-                href="/uniforms"
-                aria-label="Browse the uniform archive"
-                className="shrink-0 flex items-center justify-center rounded-full p-2"
-                style={{
-                  touchAction: 'manipulation',
-                  background: 'rgba(255,255,255,0.07)',
-                  border: `1px solid ${activeColors.uiAccent}40`,
-                }}>
-                <Grid size={14} color={activeColors.uiAccent} />
-              </Link>
             )}
             <button
               type="button"
@@ -345,6 +330,13 @@ export default function DepthChartField({
           })}
         </div>
       </div>
+
+      <NavDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        showUniformArchive={showUniformArchive}
+        accent={activeColors.uiAccent}
+      />
 
       <FullScreenSheet isOpen={navOpen}>
         <NavSwitcher
