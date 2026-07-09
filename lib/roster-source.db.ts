@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
-import type { RosterSource, TeamMeta } from './roster-source';
+import type { RosterSource, TeamMeta, UniformListing } from './roster-source';
 import { type PlayerHit, positionGroupPositions, rankByNameMatch } from './search';
 import type {
   Player,
@@ -377,6 +377,18 @@ async function fetchAllTeamMeta(): Promise<TeamRow[]> {
   return data ?? [];
 }
 
+async function fetchAllUniformRows(): Promise<UniformRow[]> {
+  const client = supabase();
+  const { data, error } = await client
+    .from('uniforms')
+    .select(UNIFORM_SELECT)
+    .order('team_id', { ascending: true })
+    .order('is_current', { ascending: false })
+    .returns<UniformRow[]>();
+  if (error) throw new Error(`uniforms query failed: ${error.message}`);
+  return data ?? [];
+}
+
 async function fetchCurrentHomeRows(): Promise<UniformRow[]> {
   const client = supabase();
   const { data, error } = await client
@@ -408,5 +420,30 @@ export const dbRosterSource: RosterSource = {
     }
     // Not in the DB (not yet ingested, or unknown id) → undefined -> 404.
     return undefined;
+  },
+  async listUniforms(): Promise<UniformListing[]> {
+    const [teamRows, uniformRows] = await Promise.all([fetchAllTeamMeta(), fetchAllUniformRows()]);
+    const teamsById = new Map(teamRows.map((r) => [r.id, toTeam(r)]));
+    // flatMap + [] skips a kit whose team row is missing (dangling ref, invariant 6).
+    return uniformRows.flatMap((row) => {
+      const team = teamsById.get(row.team_id);
+      if (!team) return [];
+      return [
+        {
+          teamId: team.id,
+          teamName: `${team.city} ${team.name}`,
+          conference: team.conference,
+          division: team.division,
+          id: row.id,
+          kind: row.kind as UniformKind,
+          name: row.name,
+          colors: uniformColors(row),
+          yearStart: row.year_start,
+          yearEnd: row.year_end,
+          isCurrent: row.is_current,
+          imagePath: row.image_path ?? undefined,
+        },
+      ];
+    });
   },
 };
