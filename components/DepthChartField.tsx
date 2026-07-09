@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Check, ChevronDown, RotateCcw, Search, Share2, Shirt } from 'lucide-react';
+import Link from 'next/link';
+import { Check, ChevronDown, Grid, RotateCcw, Search, Share2, Shirt } from 'lucide-react';
 import type { Player, Position, TeamRoster, Unit } from '@/lib/types';
 import type { TeamMeta } from '@/lib/roster-source';
 import { resolveUnit } from '@/lib/formations';
@@ -45,10 +46,12 @@ export default function DepthChartField({
   roster,
   teams,
   showUniformPicker,
+  showUniformArchive,
 }: {
   roster: TeamRoster;
   teams: TeamMeta[];
   showUniformPicker: boolean;
+  showUniformArchive: boolean;
 }) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeUnit, setActiveUnit] = useState<Unit>('offense');
@@ -229,6 +232,19 @@ export default function DepthChartField({
                 }}>
                 <Shirt size={14} color={activeColors.uiAccent} />
               </button>
+            )}
+            {showUniformArchive && (
+              <Link
+                href="/uniforms"
+                aria-label="Browse the uniform archive"
+                className="shrink-0 flex items-center justify-center rounded-full p-2"
+                style={{
+                  touchAction: 'manipulation',
+                  background: 'rgba(255,255,255,0.07)',
+                  border: `1px solid ${activeColors.uiAccent}40`,
+                }}>
+                <Grid size={14} color={activeColors.uiAccent} />
+              </Link>
             )}
             <button
               type="button"
