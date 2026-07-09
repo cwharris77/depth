@@ -1,12 +1,5 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { Check, ChevronDown, Menu, RotateCcw, Search, Share2, Shirt } from 'lucide-react';
-import type { Player, Position, TeamRoster, Unit } from '@/lib/types';
-import type { TeamMeta } from '@/lib/roster-source';
-import { resolveUnit } from '@/lib/formations';
-import { unitForPosition } from '@/lib/search';
-import { rosterShareUrlPath } from '@/lib/share';
 import { readableTextOn } from '@/lib/colors';
 import {
   applyTeamOverride,
@@ -18,16 +11,23 @@ import {
   setTeamOverride,
   type TeamDepthOverride,
 } from '@/lib/depth-overrides';
-import PlayerDot from './PlayerDot';
-import PlayerCard from './PlayerCard';
-import FullScreenSheet from './FullScreenSheet';
-import BottomSheet from './BottomSheet';
-import UniformSheet from './UniformSheet';
-import NavSwitcher from './NavSwitcher';
-import NavDrawer from './NavDrawer';
-import OpenPlayerFromQuery from './OpenPlayerFromQuery';
+import { resolveUnit } from '@/lib/formations';
+import type { TeamMeta } from '@/lib/roster-source';
+import { unitForPosition } from '@/lib/search';
+import { rosterShareUrlPath } from '@/lib/share';
+import type { Player, Position, TeamRoster, Unit } from '@/lib/types';
+import { Check, ChevronDown, RotateCcw, Search, Share2, Shirt } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import ApplyKitFromQuery from './ApplyKitFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
+import BottomSheet from './BottomSheet';
+import FullScreenSheet from './FullScreenSheet';
+import NavDrawer from './NavDrawer';
+import NavSwitcher from './NavSwitcher';
+import OpenPlayerFromQuery from './OpenPlayerFromQuery';
+import PlayerCard from './PlayerCard';
+import PlayerDot from './PlayerDot';
+import UniformSheet from './UniformSheet';
 
 const UNIT_LABELS: Record<Unit, string> = {
   offense: 'Offense',
@@ -172,17 +172,31 @@ export default function DepthChartField({
           {/* Wordmark doubles as the navigation-drawer trigger (left), where a menu
               conventionally lives. Global/growing nav (uniform archive, future views) opens
               here so the header stays uncrowded — see components/NavDrawer.tsx. */}
-          <button
-            type="button"
-            onClick={() => setDrawerOpen(true)}
-            aria-label="Open navigation"
-            className="flex items-center gap-1 shrink-0"
-            style={{ touchAction: 'manipulation' }}>
-            <Menu size={18} color={activeColors.uiAccent} />
+
+          <div className="flex items-center gap-0.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(true)}
+              aria-label="Open navigation"
+              className="shrink-0"
+              style={{ touchAction: 'manipulation' }}>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{ color: activeColors.uiAccent }}>
+                <rect x="1" y="2.5" width="11" height="2" rx="1" fill="currentColor" />
+                <rect x="1" y="7" width="8" height="2" rx="1" fill="currentColor" />
+                <rect x="1" y="11.5" width="5" height="2" rx="1" fill="currentColor" />
+              </svg>
+            </button>
+
             <span className="text-sm font-bold tracking-widest" style={{ color: '#A5ACAF' }}>
               depth
             </span>
-          </button>
+          </div>
           {/* Team/unit switcher trigger — on the right, where users (Mia, Caleb)
               instinctively tapped expecting a menu. Styled as a visible pill, not
               plain text, so it reads as tappable. A search-icon circle sits beside
