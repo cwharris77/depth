@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { X, ClipboardList, Grid } from 'lucide-react';
 
 // Left navigation drawer (nav IA — 2026-07-08-nav-drawer-design.md). Global, growing
@@ -56,6 +57,10 @@ export default function NavDrawer({
   const panelRef = useRef<HTMLDivElement>(null);
   const scrimRef = useRef<HTMLDivElement>(null);
   const restoreFocus = useRef<HTMLElement | null>(null);
+  // Which destination is current: the archive when on /uniforms, otherwise the depth charts
+  // (home + team pages). Drives the active highlight consistently across routes.
+  const pathname = usePathname();
+  const activeHref = pathname?.startsWith('/uniforms') ? '/uniforms' : '/';
 
   useEffect(() => {
     if (!open) return;
@@ -145,7 +150,7 @@ export default function NavDrawer({
             label="Depth charts"
             onNavigate={onClose}
             accent={accent}
-            active
+            active={activeHref === '/'}
           />
           {showUniformArchive && (
             <NavItem
@@ -154,6 +159,7 @@ export default function NavDrawer({
               label="Uniform archive"
               onNavigate={onClose}
               accent={accent}
+              active={activeHref === '/uniforms'}
             />
           )}
         </nav>
