@@ -1,6 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import type { UniformListing } from '@/lib/roster-source';
 import type { UniformKind } from '@/lib/types';
 import {
@@ -39,7 +41,14 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
     <main
       style={{ minHeight: '100dvh', background: '#0a0e1a', color: '#f0f4ff' }}
       className="px-4 py-6">
-      <h1 className="text-xl font-bold">Uniform Archive</h1>
+      <Link
+        href="/"
+        aria-label="Back to depth charts"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-widest"
+        style={{ color: '#A5ACAF' }}>
+        <ArrowLeft size={14} /> DEPTH
+      </Link>
+      <h1 className="mt-3 text-xl font-bold">Uniform Archive</h1>
       <p className="mt-1 text-sm" style={{ color: '#A5ACAF' }}>
         Every kit for all 32 teams.
       </p>
