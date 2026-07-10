@@ -1,13 +1,17 @@
 'use client';
 
 import { useEffect } from 'react';
-import { setMyTeam } from '@/lib/my-team';
+import { useUser } from '@/lib/use-user';
+import { putSettings } from '@/lib/settings-client';
 
-// Persists the team currently being viewed (roadmap 5a). Renders nothing; it just
-// records the team id on mount so the home route can reopen it on the next visit.
+// Records the team currently being viewed as the signed-in user's last-viewed team
+// (Phase C, auth pass 1), so the home route can reopen it. Persistence is account-gated:
+// signed out, this is a no-op — we store nothing about anonymous visitors, by design.
+// Renders nothing.
 export default function RememberTeam({ id }: { id: string }) {
+  const { user } = useUser();
   useEffect(() => {
-    setMyTeam(id);
-  }, [id]);
+    if (user) putSettings({ lastTeamId: id });
+  }, [user, id]);
   return null;
 }

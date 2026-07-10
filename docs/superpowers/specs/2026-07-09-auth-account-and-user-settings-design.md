@@ -20,6 +20,33 @@ favorite (else last-viewed) on startup — synced across devices. **Signed out, 
 nothing about them**: no account, no data. The existing localStorage `depth:my-team`
 key is retired.
 
+## Revisions made during build (2026-07-09, Cooper)
+
+The design was refined while implementing. These override the corresponding decisions below:
+
+- **Sign-in lives in the nav drawer + a dedicated page**, not inline in `NavSwitcher`.
+  The `NavDrawer` (hamburger, off the logo) gets an account item at the bottom labeled
+  "Sign in" / "Account" that links to a new **`/signin` page** (`app/signin/page.tsx` +
+  `components/AccountView.tsx`). The sign-in form and the favorite control both live on
+  that page — no inline form or contextual toggle in the switcher.
+- **The logo is a shared component.** The header's inline mark moved to `components/Logo.tsx`
+  (identical geometry — it is the brand mark, do not alter). `/signin` shows it large and
+  centered above the heading; the header renders it small as before.
+- **Favorite is a dropdown + a startup toggle.** The account view has a native `<select>`
+  of all 32 teams (default "No favorite") and a **`start_on_favorite`** switch — "Open this
+  team when I start the app" — that appears once a favorite is set and defaults on. This
+  adds a column: migration `20260709130000_user_settings_start_on_favorite.sql`
+  (`start_on_favorite boolean not null default true`). `resolveStartupTeam` opens the
+  favorite only when the toggle is on. (Favorite-at-startup as an onboarding step is later.)
+- **Auth = magic link only.** Password login was considered and dropped (Cooper: "just do a
+  magic link, doesn't need to be super robust").
+- **`/auth/confirm` handles both link styles.** It exchanges a PKCE `code`
+  (`exchangeCodeForSession`, the default Supabase email template) and falls back to
+  `token_hash` + `type` (`verifyOtp`). Errors redirect to `/signin?auth_error=1`.
+- **Local redirect allow-list.** `supabase/config.toml` `site_url` +
+  `additional_redirect_urls` now permit `http://localhost:3000/**` and `127.0.0.1` so the
+  magic link lands on `/auth/confirm`. Prod mirrors this in the dashboard.
+
 ## The product change vs. the Phase C spec (read this)
 
 The Phase C spec keeps **localStorage always-on** as an offline cache; auth merely syncs.

@@ -83,7 +83,7 @@ export function moveInOrder(ids: string[], id: string, dir: 'up' | 'down'): stri
   return next;
 }
 
-// --- persistence (localStorage, guarded like lib/my-team.ts) ----------------------
+// --- persistence (localStorage, SSR- and private-mode-guarded) --------------------
 
 function readStore(): Store {
   if (typeof window === 'undefined') return {};
