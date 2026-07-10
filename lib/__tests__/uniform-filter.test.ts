@@ -100,6 +100,16 @@ describe('groupByDivision', () => {
     ]);
     expect(groups[0].teams[0].kits.map((k) => k.id)).toEqual(['rams-a', 'rams-b']);
   });
+  it('orders each team home, away, then the rest by name', () => {
+    const kits = [
+      kit({ id: 'x-throw', kind: 'throwback', name: 'Zebra' }),
+      kit({ id: 'x-away', kind: 'away', name: 'Away' }),
+      kit({ id: 'x-alt', kind: 'alternate', name: 'Alpha' }),
+      kit({ id: 'x-home', kind: 'home', name: 'Home' }),
+    ];
+    const [group] = groupByDivision(kits);
+    expect(group.teams[0].kits.map((k) => k.id)).toEqual(['x-home', 'x-away', 'x-alt', 'x-throw']);
+  });
   it('returns an empty array for no kits', () => {
     expect(groupByDivision([])).toEqual([]);
   });
