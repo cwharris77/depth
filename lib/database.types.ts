@@ -377,6 +377,42 @@ export type Database = {
           },
         ]
       }
+      user_settings: {
+        Row: {
+          favorite_team_id: string | null
+          last_team_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          favorite_team_id?: string | null
+          last_team_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          favorite_team_id?: string | null
+          last_team_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_favorite_team_id_fkey"
+            columns: ["favorite_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_settings_last_team_id_fkey"
+            columns: ["last_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
