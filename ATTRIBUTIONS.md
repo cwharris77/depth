@@ -10,7 +10,9 @@ used under the **Creative Commons Attribution 3.0 Unported (CC BY 3.0)** license
 (https://creativecommons.org/licenses/by/3.0/).
 
 - Source: https://commons.wikimedia.org/wiki/File:NFL-Uniform-template-V3.png
-- Changes made: redrawn from scratch as a color-driven SVG; back views, manufacturer/team
-  logos, patches, and lettering removed; recolored per kit from `TeamColors`.
+- Changes made: the template was vectorized into region-separated SVG geometry (front helmet +
+  jersey + pants + legs) and adapted into a parametric, color-driven renderer
+  (`components/UniformFigure.tsx`); each region is recolored per kit from `TeamColors`.
+  Manufacturer/team logos, patches, wordmarks, and back views are omitted.
 
 No NFL team or manufacturer logos are reproduced anywhere in this project.
