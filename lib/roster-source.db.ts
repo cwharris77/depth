@@ -177,21 +177,22 @@ export function orderUniforms(rows: UniformRow[]): Uniform[] {
 async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> {
   const client = supabase();
 
-  const { data: teamRow, error: teamError } = await client
-    .from('teams')
-    .select(
-      'id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url'
-    )
-    .eq('id', teamId)
-    .maybeSingle<TeamRow>();
-  if (teamError) throw new Error(`teams query failed: ${teamError.message}`);
-  if (!teamRow) return undefined;
-
+  // All four reads key off teamId, so fire them together — the teams row is not a
+  // prerequisite for the others (an unknown id just yields empty batches, handled below).
+  // Avoids the extra build-time round-trip the old sequential teams-then-batch shape cost.
   const [
+    { data: teamRow, error: teamError },
     { data: depthRows, error: depthError },
     { data: stRows, error: stError },
     { data: uniformRows, error: uniformError },
   ] = await Promise.all([
+    client
+      .from('teams')
+      .select(
+        'id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url'
+      )
+      .eq('id', teamId)
+      .maybeSingle<TeamRow>(),
     client
       .from('depth_chart_entries')
       .select('team_id, position, depth_rank, player_id')
@@ -204,9 +205,11 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
       .returns<SpecialSlotRow[]>(),
     client.from('uniforms').select(UNIFORM_SELECT).eq('team_id', teamId).returns<UniformRow[]>(),
   ]);
+  if (teamError) throw new Error(`teams query failed: ${teamError.message}`);
   if (depthError) throw new Error(`depth_chart_entries query failed: ${depthError.message}`);
   if (stError) throw new Error(`special_teams_slots query failed: ${stError.message}`);
   if (uniformError) throw new Error(`uniforms query failed: ${uniformError.message}`);
+  if (!teamRow) return undefined;
 
   // Special-teams player ids can reference a player who has no depth_chart_entries
   // row -- e.g. a returner who's a low-rank WR outside the top-3-per-position cap
