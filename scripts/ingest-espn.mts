@@ -5,13 +5,19 @@
 // Usage: npm run ingest:espn
 // Requires SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in the environment (service role
 // bypasses RLS-equivalent restrictions for writes; never expose it client-side).
+//
+// Seed mode: `npm run gen:espn-seed` sets SEED_OUT=supabase/seed.sql, which fetches +
+// transforms exactly the same way but writes a committed seed script instead of touching
+// the DB (no Supabase creds needed). `supabase db reset` then restores the roster data
+// offline, so contributors don't have to run the live ingest after every reset.
 
 import dotenv from 'dotenv';
-import { appendFileSync } from 'node:fs';
+import { appendFileSync, writeFileSync } from 'node:fs';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 dotenv.config({ path: '.env.local' });
 import { toDepthChartRows, toTeamRoster } from '../lib/espn/transform';
+import { buildSeedSql } from '../lib/espn/seed-sql';
 import { parseStandings, type EspnStandings } from '../lib/espn/standings';
 import { reconcileHomeUniforms } from '../lib/uniforms/reconcile-db';
 import { TEAMS } from '../lib/teams/index';
@@ -74,9 +80,11 @@ function isoWeek(d: Date): number {
 }
 
 async function main() {
-  const supabaseUrl = requireEnv('SUPABASE_URL');
-  const serviceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
-  const supabase: SupabaseClient<Database> = createClient(supabaseUrl, serviceRoleKey);
+  // Seed mode writes a SQL file and never touches the DB, so it needs no Supabase creds.
+  const seedOut = process.env.SEED_OUT;
+  const supabase: SupabaseClient<Database> | null = seedOut
+    ? null
+    : createClient(requireEnv('SUPABASE_URL'), requireEnv('SUPABASE_SERVICE_ROLE_KEY'));
 
   const startedAt = new Date().toISOString();
   const espnIndex = await espnTeamIndex();
@@ -125,6 +133,19 @@ async function main() {
     }
     await new Promise((r) => setTimeout(r, 200)); // be polite to the unofficial API
   }
+
+  // Seed mode: dump the freshly-built rosters to SQL and stop — no DB writes, no
+  // reconcile, no ingestion_runs row. Same fetch/transform as the live path above.
+  if (seedOut) {
+    writeFileSync(seedOut, buildSeedSql(Object.values(built)));
+    console.log(`\nWrote seed for ${Object.keys(built).length} teams -> ${seedOut}`);
+    if (errors.length) {
+      console.log('Skips:');
+      for (const e of errors) console.log(`  ${e.team}: ${e.message}`);
+    }
+    return;
+  }
+  if (!supabase) return; // unreachable (seedOut handled above); narrows the type below
 
   let teamsWritten = 0;
   for (const roster of Object.values(built)) {

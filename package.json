@@ -8,6 +8,7 @@
     "start": "next start",
     "test": "vitest run",
     "ingest:espn": "tsx scripts/ingest-espn.mts",
+    "gen:espn-seed": "SEED_OUT=supabase/seed.sql tsx scripts/ingest-espn.mts",
     "gen:uniform-seed": "tsx scripts/gen-uniform-seed.mts",
     "gen:team-seed": "tsx scripts/gen-team-seed.mts",
     "gen:icons": "tsx scripts/gen-icons.mts",
