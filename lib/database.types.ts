@@ -381,18 +381,21 @@ export type Database = {
         Row: {
           favorite_team_id: string | null
           last_team_id: string | null
+          start_on_favorite: boolean
           updated_at: string
           user_id: string
         }
         Insert: {
           favorite_team_id?: string | null
           last_team_id?: string | null
+          start_on_favorite?: boolean
           updated_at?: string
           user_id: string
         }
         Update: {
           favorite_team_id?: string | null
           last_team_id?: string | null
+          start_on_favorite?: boolean
           updated_at?: string
           user_id?: string
         }

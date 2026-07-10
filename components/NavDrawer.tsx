@@ -3,7 +3,8 @@
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { X, ClipboardList, Grid } from 'lucide-react';
+import { X, ClipboardList, Grid, User } from 'lucide-react';
+import { useUser } from '@/lib/use-user';
 
 // Left navigation drawer (nav IA — 2026-07-08-nav-drawer-design.md). Global, growing
 // navigation lives here, opened from the header logo, so the team header isn't crowded and new
@@ -58,7 +59,12 @@ export default function NavDrawer({
   // Which destination is current: the archive when on /uniforms, otherwise the depth charts
   // (home + team pages). Drives the active highlight consistently across routes.
   const pathname = usePathname();
-  const activeHref = pathname?.startsWith('/uniforms') ? '/uniforms' : '/';
+  const { user } = useUser();
+  const activeHref = pathname?.startsWith('/uniforms')
+    ? '/uniforms'
+    : pathname?.startsWith('/signin')
+      ? '/signin'
+      : '/';
 
   useEffect(() => {
     if (!open) return;
@@ -132,6 +138,8 @@ export default function NavDrawer({
           background: '#0d1320',
           borderRight: '1px solid #222b3d',
           paddingTop: 'max(env(safe-area-inset-top), 16px)',
+          display: 'flex',
+          flexDirection: 'column',
         }}>
         <div className="flex items-center justify-between px-4 pb-3">
           <span className="text-base font-bold tracking-widest" style={{ color: '#f0f4ff' }}>
@@ -141,7 +149,7 @@ export default function NavDrawer({
             <X size={18} color="#A5ACAF" />
           </button>
         </div>
-        <nav className="flex flex-col">
+        <nav className="flex flex-col flex-1">
           <NavItem
             href="/"
             icon={<ClipboardList size={19} />}
@@ -159,6 +167,18 @@ export default function NavDrawer({
             active={activeHref === '/uniforms'}
           />
         </nav>
+        {/* Account lives at the bottom — a link to the sign-in / settings page, not an
+            inline form. Signing in is opt-in (Phase C, auth pass 1). */}
+        <div style={{ borderTop: '1px solid #222b3d' }}>
+          <NavItem
+            href="/signin"
+            icon={<User size={19} />}
+            label={user ? 'Account' : 'Sign in'}
+            onNavigate={onClose}
+            accent={accent}
+            active={activeHref === '/signin'}
+          />
+        </div>
       </div>
     </div>
   );
