@@ -46,8 +46,23 @@ export interface DivisionGroup {
 const CONFERENCES: Conference[] = ['AFC', 'NFC'];
 const DIVISIONS: Division[] = ['East', 'North', 'South', 'West'];
 
-// Stable conference→division→team order (matches the switcher convention). Preserves
-// each team's incoming kit order (the DB returns them in a deterministic order).
+// Per-team kit order: home first, away second, then everything else (Cooper's call). The rest
+// share rank 2 and break ties by name, so the order is stable and identical across teams.
+const KIND_RANK: Record<UniformKind, number> = {
+  home: 0,
+  away: 1,
+  throwback: 2,
+  alternate: 2,
+  'color-rush': 2,
+};
+export function compareKits(a: UniformListing, b: UniformListing): number {
+  const ra = KIND_RANK[a.kind] ?? 2;
+  const rb = KIND_RANK[b.kind] ?? 2;
+  return ra !== rb ? ra - rb : a.name.localeCompare(b.name);
+}
+
+// Stable conference→division→team order (matches the switcher convention); each team's kits
+// are ordered home → away → rest via compareKits.
 export function groupByDivision(kits: UniformListing[]): DivisionGroup[] {
   const groups: DivisionGroup[] = [];
   for (const conference of CONFERENCES) {
@@ -63,9 +78,9 @@ export function groupByDivision(kits: UniformListing[]): DivisionGroup[] {
         }
         g.kits.push(k);
       }
-      const teams = Array.from(byTeam.values()).sort((a, b) =>
-        a.teamName.localeCompare(b.teamName)
-      );
+      const teams = Array.from(byTeam.values())
+        .map((t) => ({ ...t, kits: [...t.kits].sort(compareKits) }))
+        .sort((a, b) => a.teamName.localeCompare(b.teamName));
       groups.push({ conference, division, teams });
     }
   }
