@@ -46,12 +46,10 @@ function NavItem({
 export default function NavDrawer({
   open,
   onClose,
-  showUniformArchive,
   accent,
 }: {
   open: boolean;
   onClose: () => void;
-  showUniformArchive: boolean;
   accent: string;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -152,16 +150,14 @@ export default function NavDrawer({
             accent={accent}
             active={activeHref === '/'}
           />
-          {showUniformArchive && (
-            <NavItem
-              href="/uniforms"
-              icon={<Grid size={19} />}
-              label="Uniform archive"
-              onNavigate={onClose}
-              accent={accent}
-              active={activeHref === '/uniforms'}
-            />
-          )}
+          <NavItem
+            href="/uniforms"
+            icon={<Grid size={19} />}
+            label="Uniform archive"
+            onNavigate={onClose}
+            accent={accent}
+            active={activeHref === '/uniforms'}
+          />
         </nav>
       </div>
     </div>

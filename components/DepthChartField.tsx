@@ -46,12 +46,10 @@ export default function DepthChartField({
   roster,
   teams,
   showUniformPicker,
-  showUniformArchive,
 }: {
   roster: TeamRoster;
   teams: TeamMeta[];
   showUniformPicker: boolean;
-  showUniformArchive: boolean;
 }) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeUnit, setActiveUnit] = useState<Unit>('offense');
@@ -348,7 +346,6 @@ export default function DepthChartField({
       <NavDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        showUniformArchive={showUniformArchive}
         accent={activeColors.uiAccent}
       />
 

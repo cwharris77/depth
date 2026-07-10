@@ -194,12 +194,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
         (modified).
       </footer>
 
-      <NavDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        showUniformArchive
-        accent={ACCENT}
-      />
+      <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} accent={ACCENT} />
     </main>
   );
 }

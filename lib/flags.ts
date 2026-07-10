@@ -1,5 +1,5 @@
 import { flag } from 'flags/next';
-import { decideShowUniformPicker, decideShowUniformArchive } from '@/lib/flag-decisions';
+import { decideShowUniformPicker } from '@/lib/flag-decisions';
 
 // Launch gates, as Vercel Flags SDK flags (AGENTS.md §3). Flags are evaluated
 // server-side (in the page) and threaded down as props — client components never read
@@ -22,18 +22,4 @@ export const showUniformPicker = flag<boolean>({
     { value: true, label: 'Visible' },
   ],
   decide: () => decideShowUniformPicker(process.env as { SHOW_UNIFORM_PICKER?: string }),
-});
-
-// Phase 7 uniform archive page (/uniforms). Off until the archive page is ready to
-// launch; flip via the SHOW_UNIFORM_ARCHIVE env var + redeploy (or Vercel Toolbar in a
-// preview). Gates the route (404 when off) and any nav link.
-export const showUniformArchive = flag<boolean>({
-  key: 'show-uniform-archive',
-  description: 'Expose the /uniforms archive gallery (Phase 7)',
-  defaultValue: false,
-  options: [
-    { value: false, label: 'Hidden' },
-    { value: true, label: 'Visible' },
-  ],
-  decide: () => decideShowUniformArchive(process.env as { SHOW_UNIFORM_ARCHIVE?: string }),
 });

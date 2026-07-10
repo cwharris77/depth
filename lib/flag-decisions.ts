@@ -5,7 +5,3 @@
 export function decideShowUniformPicker(env: { SHOW_UNIFORM_PICKER?: string }): boolean {
   return env.SHOW_UNIFORM_PICKER === '1';
 }
-
-export function decideShowUniformArchive(env: { SHOW_UNIFORM_ARCHIVE?: string }): boolean {
-  return env.SHOW_UNIFORM_ARCHIVE === '1';
-}
