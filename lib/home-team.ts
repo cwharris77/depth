@@ -7,6 +7,9 @@
 export type UserSettings = {
   favoriteTeamId: string | null;
   lastTeamId: string | null;
+  // Whether to open the favorite at startup. Only consulted when favoriteTeamId is set;
+  // off means startup falls back to last-viewed like a user with no favorite.
+  startOnFavorite: boolean;
 };
 
 export function resolveStartupTeam(
@@ -15,7 +18,7 @@ export function resolveStartupTeam(
   defaultId: string
 ): string {
   const favorite = settings?.favoriteTeamId;
-  if (favorite && validIds.includes(favorite)) return favorite;
+  if (settings?.startOnFavorite && favorite && validIds.includes(favorite)) return favorite;
   const last = settings?.lastTeamId;
   if (last && validIds.includes(last)) return last;
   return defaultId;

@@ -7,7 +7,7 @@ import { getServerClient } from '@/lib/supabase/server';
 import type { Database } from '@/lib/database.types';
 import type { UserSettings } from '@/lib/home-team';
 
-const EMPTY: UserSettings = { favoriteTeamId: null, lastTeamId: null };
+const EMPTY: UserSettings = { favoriteTeamId: null, lastTeamId: null, startOnFavorite: true };
 
 export async function GET() {
   const supabase = await getServerClient();
@@ -18,12 +18,16 @@ export async function GET() {
 
   const { data } = await supabase
     .from('user_settings')
-    .select('favorite_team_id, last_team_id')
+    .select('favorite_team_id, last_team_id, start_on_favorite')
     .eq('user_id', user.id)
     .maybeSingle();
 
   const settings: UserSettings = data
-    ? { favoriteTeamId: data.favorite_team_id, lastTeamId: data.last_team_id }
+    ? {
+        favoriteTeamId: data.favorite_team_id,
+        lastTeamId: data.last_team_id,
+        startOnFavorite: data.start_on_favorite,
+      }
     : EMPTY;
   return NextResponse.json(settings);
 }
@@ -37,7 +41,11 @@ export async function PUT(request: NextRequest) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
-  let body: { favoriteTeamId?: string | null; lastTeamId?: string | null };
+  let body: {
+    favoriteTeamId?: string | null;
+    lastTeamId?: string | null;
+    startOnFavorite?: boolean;
+  };
   try {
     body = await request.json();
   } catch {
@@ -50,6 +58,7 @@ export async function PUT(request: NextRequest) {
   };
   if ('favoriteTeamId' in body) patch.favorite_team_id = body.favoriteTeamId ?? null;
   if ('lastTeamId' in body) patch.last_team_id = body.lastTeamId ?? null;
+  if ('startOnFavorite' in body) patch.start_on_favorite = body.startOnFavorite;
 
   const { error } = await supabase.from('user_settings').upsert(patch, { onConflict: 'user_id' });
   if (error) return NextResponse.json({ error: 'write failed' }, { status: 500 });

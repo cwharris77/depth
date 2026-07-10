@@ -17,6 +17,7 @@ export async function getSettings(): Promise<UserSettings | null> {
 export async function putSettings(patch: {
   favoriteTeamId?: string | null;
   lastTeamId?: string | null;
+  startOnFavorite?: boolean;
 }): Promise<void> {
   try {
     await fetch('/api/settings', {

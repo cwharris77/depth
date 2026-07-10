@@ -22,6 +22,7 @@ import ApplyKitFromQuery from './ApplyKitFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
 import BottomSheet from './BottomSheet';
 import FullScreenSheet from './FullScreenSheet';
+import Logo from './Logo';
 import NavDrawer from './NavDrawer';
 import NavSwitcher from './NavSwitcher';
 import OpenPlayerFromQuery from './OpenPlayerFromQuery';
@@ -178,17 +179,7 @@ export default function DepthChartField({
               aria-label="Open navigation"
               className="shrink-0"
               style={{ touchAction: 'manipulation' }}>
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                style={{ color: activeColors.uiAccent }}>
-                <rect x="1" y="2.5" width="11" height="2" rx="1" fill="currentColor" />
-                <rect x="1" y="7" width="8" height="2" rx="1" fill="currentColor" />
-                <rect x="1" y="11.5" width="5" height="2" rx="1" fill="currentColor" />
-              </svg>
+              <Logo size={20} color={activeColors.uiAccent} />
             </button>
 
             <span className="text-sm font-bold tracking-widest" style={{ color: '#A5ACAF' }}>

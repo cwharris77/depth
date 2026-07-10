@@ -22,14 +22,18 @@ export default async function Home() {
     const [{ data: settings }, teams] = await Promise.all([
       supabase
         .from('user_settings')
-        .select('favorite_team_id, last_team_id')
+        .select('favorite_team_id, last_team_id, start_on_favorite')
         .eq('user_id', user.id)
         .maybeSingle(),
       dbRosterSource.listTeams(),
     ]);
     const target = resolveStartupTeam(
       settings
-        ? { favoriteTeamId: settings.favorite_team_id, lastTeamId: settings.last_team_id }
+        ? {
+            favoriteTeamId: settings.favorite_team_id,
+            lastTeamId: settings.last_team_id,
+            startOnFavorite: settings.start_on_favorite,
+          }
         : null,
       teams.map((t) => t.id),
       DEFAULT_TEAM_ID
