@@ -27,7 +27,7 @@ What's left:
 | Item | What | Status |
 |------|------|--------|
 | **5d** | Two-team compare — side-by-side depth at a position across two teams | not started |
-| **7** | Multiple uniforms per team (home/away/color rush) | not started |
+| **7** | Multiple uniforms per team | archive shipped — `/uniforms` gallery of all 32 teams' kits (vectorized figures) is live; in-page kit picker still flag-gated (`show-uniform-picker`) |
 
 Player photos (5e) are shipped on the player card and search; putting them on the
 field dots was intentionally dropped — the dots stay jersey-number circles.
