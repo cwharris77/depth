@@ -9,6 +9,7 @@ import type { Conference, Player, TeamRoster } from '@/lib/types';
 import type { TeamMeta } from '@/lib/roster-source';
 import { readableTextOn } from '@/lib/colors';
 import type { PlayerHit } from '@/lib/search';
+import AccountPanel from './AccountPanel';
 
 type ResultItem = { type: 'player'; hit: PlayerHit } | { type: 'team'; team: TeamMeta };
 
@@ -363,28 +364,31 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
 
       <div className="overflow-y-auto pb-2 flex-1">
         {!searching ? (
-          teamGroups.map((g) => (
-            <div key={`${g.conference}-${g.division}`} className="mb-2">
-              <SectionLabel>{`${g.conference} ${g.division.toUpperCase()}`}</SectionLabel>
-              <div
-                className="mx-5 rounded-2xl overflow-hidden divide-y divide-white/5"
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                }}>
-                {g.teams.map((t) => (
-                  <TeamRow
-                    key={t.id}
-                    team={t}
-                    isCurrent={t.id === team.id}
-                    highlighted={false}
-                    onSelect={onClose}
-                    onHover={() => {}}
-                  />
-                ))}
+          <>
+            {teamGroups.map((g) => (
+              <div key={`${g.conference}-${g.division}`} className="mb-2">
+                <SectionLabel>{`${g.conference} ${g.division.toUpperCase()}`}</SectionLabel>
+                <div
+                  className="mx-5 rounded-2xl overflow-hidden divide-y divide-white/5"
+                  style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                  }}>
+                  {g.teams.map((t) => (
+                    <TeamRow
+                      key={t.id}
+                      team={t}
+                      isCurrent={t.id === team.id}
+                      highlighted={false}
+                      onSelect={onClose}
+                      onHover={() => {}}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))
+            ))}
+            <AccountPanel teamId={team.id} teamName={team.name} accentColor={accentColor} />
+          </>
         ) : nothingFound ? (
           <div className="px-5 py-6 text-center text-sm" style={{ color: '#A5ACAF' }}>
             No matches for &ldquo;{query.trim()}&rdquo;

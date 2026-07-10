@@ -1,16 +1,42 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import DepthChartField from '@/components/DepthChartField';
-import HomeTeamSwap from '@/components/HomeTeamSwap';
 import { dbRosterSource } from '@/lib/roster-source.db';
 import { DEFAULT_TEAM_ID } from '@/lib/teams';
 import { showUniformPicker } from '@/lib/flags';
+import { getServerClient } from '@/lib/supabase/server';
+import { resolveStartupTeam } from '@/lib/home-team';
 
-// The home route server-renders the DEFAULT team's depth chart directly, statically
-// prerendered like every /team/[id] page — so the common visitor sees a real chart with
-// no download-hydrate-redirect-refetch hop (backlog: "Home-load feels slow", 2026-07-08).
-// A visitor with a saved "my team" (roadmap 5a) that differs from the default is swapped
-// client-side to /team/<saved> after hydration; default-team visitors never navigate.
+// The home route. Signed-in visitors resolve to their startup team (favorite ->
+// last-viewed -> default) server-side and are redirected to /team/<id>, so the app opens
+// where they left off across devices (Phase C, auth pass 1). Signed-out visitors — the
+// common case, and the only ones we store nothing about — get the DEFAULT team's chart
+// rendered directly here, statically-shaped like every /team/[id] page, with no
+// download-hydrate-redirect hop (backlog: "Home-load feels slow", 2026-07-08).
 export default async function Home() {
+  const supabase = await getServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    const [{ data: settings }, teams] = await Promise.all([
+      supabase
+        .from('user_settings')
+        .select('favorite_team_id, last_team_id')
+        .eq('user_id', user.id)
+        .maybeSingle(),
+      dbRosterSource.listTeams(),
+    ]);
+    const target = resolveStartupTeam(
+      settings
+        ? { favoriteTeamId: settings.favorite_team_id, lastTeamId: settings.last_team_id }
+        : null,
+      teams.map((t) => t.id),
+      DEFAULT_TEAM_ID
+    );
+    if (target !== DEFAULT_TEAM_ID) redirect(`/team/${target}`);
+  }
+
   const [roster, teams, uniformPicker] = await Promise.all([
     dbRosterSource.getTeam(DEFAULT_TEAM_ID),
     dbRosterSource.listTeams(),
@@ -21,14 +47,5 @@ export default async function Home() {
   if (!roster) {
     notFound();
   }
-  const teamIds = teams.map((team) => team.id);
-  return (
-    <>
-      {/* No RememberTeam here on purpose: the home route defaulting to Seattle is not a
-          team the visitor chose, and persisting it would clobber their saved team (5a)
-          before HomeTeamSwap can navigate. Only /team/[id] records "my team". */}
-      <HomeTeamSwap teamIds={teamIds} defaultId={DEFAULT_TEAM_ID} />
-      <DepthChartField roster={roster} teams={teams} showUniformPicker={uniformPicker} />
-    </>
-  );
+  return <DepthChartField roster={roster} teams={teams} showUniformPicker={uniformPicker} />;
 }
