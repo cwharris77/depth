@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Menu } from 'lucide-react';
 import type { UniformListing } from '@/lib/roster-source';
 import type { UniformKind } from '@/lib/types';
 import {
@@ -11,6 +10,7 @@ import {
   type UniformFilters,
 } from '@/lib/uniforms/filter';
 import UniformFigure from './UniformFigure';
+import Logo from './Logo';
 import NavDrawer from './NavDrawer';
 
 // The uniform archive (roadmap Phase 7). Receives every kit from the server route and
@@ -77,7 +77,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
         aria-label="Open navigation"
         className="flex items-center gap-1"
         style={{ touchAction: 'manipulation' }}>
-        <Menu size={18} color={ACCENT} />
+        <Logo size={18} color={ACCENT} />
         <span className="text-xs font-bold tracking-widest" style={{ color: '#A5ACAF' }}>
           depth
         </span>
@@ -88,11 +88,14 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
         {kits.length} kits · 32 teams
       </p>
 
+      {/* One horizontally-scrollable filter bar (mobile-first): kind chips, then the
+          Current-only toggle and era select. `-mx-4 px-4` bleeds it to the screen edges so
+          items scroll under the padding instead of being clipped mid-chip. */}
       <div
-        className="mt-4 flex gap-2 overflow-x-auto pb-1"
+        className="mt-4 -mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1"
         style={{ scrollbarWidth: 'none' }}
         role="group"
-        aria-label="Filter by kind">
+        aria-label="Filter kits">
         {KIND_OPTIONS.map((k) => (
           <Pill
             key={k.value}
@@ -101,8 +104,11 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
             {k.label}
           </Pill>
         ))}
-      </div>
-      <div className="mt-2 flex items-center gap-2">
+        <span
+          aria-hidden="true"
+          className="shrink-0"
+          style={{ width: 1, alignSelf: 'stretch', background: 'rgba(255,255,255,0.1)' }}
+        />
         <Pill
           active={filters.currentOnly}
           onClick={() => setFilters((f) => ({ ...f, currentOnly: !f.currentOnly }))}>
@@ -112,7 +118,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
           aria-label="Filter by era"
           value={filters.era}
           onChange={(e) => setFilters((f) => ({ ...f, era: e.target.value }))}
-          className="rounded-full px-3 py-1.5 text-xs"
+          className="shrink-0 rounded-full px-3 py-1.5 text-xs"
           style={{ background: 'rgba(255,255,255,0.06)', color: '#c8cdd6', border: 'none' }}>
           <option value="all">All eras</option>
           {eras.map((e) => (

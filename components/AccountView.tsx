@@ -193,15 +193,9 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-black" style={{ color: '#f0f4ff' }}>
-          Sign in
-        </h1>
-        <p className="mt-1 text-sm" style={{ color: '#A5ACAF' }}>
-          Sync your favorite team, last-viewed team, and settings across devices. Signing in is
-          optional — no account, no data saved.
-        </p>
-      </div>
+      <h1 className="text-2xl font-black" style={{ color: '#f0f4ff' }}>
+        Sign in
+      </h1>
 
       <div className="flex flex-col gap-2">
         <input

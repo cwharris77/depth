@@ -21,13 +21,13 @@ export default async function SignInPage() {
   return (
     <main className="flex-1 flex flex-col">
       <div className="mx-auto w-full max-w-md px-5 py-12">
-        {/* Large centered logo — links home so it doubles as a way back. */}
+        {/* Logo + wordmark on one line — links home so it doubles as a way back. */}
         <Link
           href="/"
           aria-label="Back to depth charts"
-          className="mx-auto mb-8 flex w-fit flex-col items-center gap-2">
-          <Logo size={44} color="#69BE28" />
-          <span className="text-sm font-bold tracking-widest" style={{ color: '#A5ACAF' }}>
+          className="mx-auto mb-8 flex w-fit items-center gap-2.5">
+          <Logo size={36} color="#69BE28" />
+          <span className="text-xl font-bold tracking-widest" style={{ color: '#A5ACAF' }}>
             depth
           </span>
         </Link>
