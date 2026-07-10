@@ -12,13 +12,14 @@ export interface VariantSpec {
   viewBox: string;
 }
 
-// Shared 100-wide coordinate space; each part is authored from its own y=0 and stacked
-// for 'full' (see PART_SHIFT in components/UniformFigure.tsx). Heights: helmet 0-74,
-// jersey 0-122, pants 0-120; 'full' stacks them into a 332-tall column.
+// One shared full-body mannequin is drawn (components/UniformFigure.tsx); a variant is just
+// the viewBox that crops it to a region. Coordinates are the vectorized template's own space
+// (viewBox origin 20,45; full body 560×1535). 'jersey' crops to the torso for the picker
+// swatch; 'helmet' crops to the (0.5-scaled) helmet.
 const VARIANTS: Record<UniformVariant, VariantSpec> = {
-  jersey: { parts: ['jersey'], viewBox: '0 0 100 122' },
-  full: { parts: ['helmet', 'jersey', 'pants'], viewBox: '0 0 100 332' },
-  helmet: { parts: ['helmet'], viewBox: '0 0 100 74' },
+  jersey: { parts: ['jersey'], viewBox: '20 372 560 452' },
+  full: { parts: ['helmet', 'jersey', 'pants'], viewBox: '20 45 560 1535' },
+  helmet: { parts: ['helmet'], viewBox: '145 40 330 315' },
 };
 
 export function variantSpec(variant: UniformVariant): VariantSpec {
