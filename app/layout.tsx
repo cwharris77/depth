@@ -38,6 +38,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: '#0a0e1a',
   colorScheme: 'dark',
+  // Extend the layout under the notch/home-indicator so env(safe-area-inset-*) resolves to
+  // real values in the standalone PWA — the header (safe-area-inset-top) and field bottom
+  // padding (safe-area-inset-bottom) rely on it, otherwise the insets are 0 and content clips.
+  viewportFit: 'cover',
 };
 
 const shouldInjectToolbar = process.env.NODE_ENV === 'development';

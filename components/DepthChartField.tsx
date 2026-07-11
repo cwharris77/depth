@@ -373,7 +373,13 @@ export default function DepthChartField({
       </div>
 
       {/* Field — fills remaining viewport space */}
-      <div className="px-3 pb-2 flex flex-col" style={{ flex: '1 1 0', minHeight: 0 }}>
+      <div
+        className="px-3 flex flex-col"
+        style={{
+          flex: '1 1 0',
+          minHeight: 0,
+          paddingBottom: 'max(env(safe-area-inset-bottom), 8px)',
+        }}>
         <div
           className="relative w-full rounded-2xl overflow-hidden"
           style={{
