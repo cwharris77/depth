@@ -69,8 +69,14 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
 
   return (
     <main
-      style={{ minHeight: '100dvh', background: '#0a0e1a', color: '#f0f4ff' }}
-      className="px-4 py-5">
+      style={{
+        minHeight: '100dvh',
+        background: '#0a0e1a',
+        color: '#f0f4ff',
+        paddingTop: 'max(env(safe-area-inset-top), 20px)',
+        paddingBottom: 'max(env(safe-area-inset-bottom), 20px)',
+      }}
+      className="px-4">
       <button
         type="button"
         onClick={() => setDrawerOpen(true)}
