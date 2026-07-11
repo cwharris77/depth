@@ -14,7 +14,7 @@ import { getSettings, putSettings } from '@/lib/settings-client';
 type SendState = 'idle' | 'sending' | 'sent' | 'error';
 type TeamOption = { id: string; label: string };
 
-export default function AccountView({ teams }: { teams: TeamOption[] }) {
+export default function AccountView({ teams, next }: { teams: TeamOption[]; next: string }) {
   const { user, loading } = useUser();
   const [email, setEmail] = useState('');
   const [sendState, setSendState] = useState<SendState>('idle');
@@ -52,7 +52,10 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
     setLinkExpired(false);
     const { error } = await getBrowserClient().auth.signInWithOtp({
       email: trimmed,
-      options: { emailRedirectTo: `${window.location.origin}/auth/confirm?next=/signin` },
+      options: {
+        // Land back on the page the user came from (threaded via ?next=), not the sign-in page.
+        emailRedirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(next)}`,
+      },
     });
     setSendState(error ? 'error' : 'sent');
   };
