@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Star } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronRight, Star } from 'lucide-react';
 import { getBrowserClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/use-user';
 import { getSettings, putSettings } from '@/lib/settings-client';
@@ -23,6 +24,8 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
   const [linkExpired, setLinkExpired] = useState(false);
   const [favoriteTeamId, setFavoriteTeamId] = useState<string | null>(null);
   const [startOnFavorite, setStartOnFavorite] = useState(true);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [deleteState, setDeleteState] = useState<'idle' | 'deleting' | 'error'>('idle');
 
   // Surface an expired/invalid magic link (auth/confirm -> /signin?auth_error=1), then
   // strip the param so a reload is clean.
@@ -101,6 +104,21 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
     putSettings({ startOnFavorite: next });
   };
 
+  // Permanently deletes the account (App Store submission requirement). The server cascades
+  // user_settings/depth_overrides/shared_boards via FK, so this is the only call needed. On
+  // success the account no longer exists — sign out locally to clear the now-invalid session
+  // and land back on the sign-in state.
+  const deleteAccount = async () => {
+    setDeleteState('deleting');
+    const res = await fetch('/api/account/delete', { method: 'POST' });
+    if (!res.ok) {
+      setDeleteState('error');
+      return;
+    }
+    await getBrowserClient().auth.signOut();
+    window.location.assign('/');
+  };
+
   if (loading) {
     return (
       <div className="text-sm" style={{ color: '#A5ACAF' }}>
@@ -110,82 +128,122 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
   }
 
   if (user) {
+    const initial = (user.email ?? '?').charAt(0).toUpperCase();
     return (
       <div className="flex flex-col gap-6">
-        <div>
-          <div className="text-[11px] uppercase tracking-widest" style={{ color: '#A5ACAF' }}>
-            Signed in as
-          </div>
-          <div className="text-lg font-bold" style={{ color: '#f0f4ff' }}>
-            {user.email}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <label
-            htmlFor="favorite-team"
-            className="flex items-center gap-2 text-sm font-semibold"
-            style={{ color: '#f0f4ff' }}>
-            <Star size={15} color="#69BE28" /> Favorite team
-          </label>
-          <p className="text-[12px]" style={{ color: '#A5ACAF' }}>
-            Opens automatically when you start the app.
-          </p>
-          <select
-            id="favorite-team"
-            value={favoriteTeamId ?? ''}
-            onChange={(e) => changeFavorite(e.target.value)}
-            className="rounded-xl px-3 py-2.5 text-base outline-none"
+        {/* Identity */}
+        <div className="flex items-center gap-3.5">
+          <div
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
             style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.14)',
-              color: '#f0f4ff',
+              background: 'rgba(105,190,40,0.14)',
+              border: '1px solid rgba(105,190,40,0.3)',
             }}>
-            <option value="">No favorite</option>
-            {teams.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-
-          {favoriteTeamId && (
-            <button
-              type="button"
-              role="switch"
-              aria-checked={startOnFavorite}
-              onClick={toggleStartOnFavorite}
-              className="mt-1 flex items-center justify-between gap-3 rounded-xl px-3 py-2.5"
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.1)',
-              }}>
-              <span className="text-sm" style={{ color: '#dfe5f0' }}>
-                Open this team when I start the app
-              </span>
-              <span
-                aria-hidden="true"
-                className="relative inline-flex shrink-0 rounded-full transition-colors"
-                style={{
-                  width: 40,
-                  height: 24,
-                  background: startOnFavorite ? '#69BE28' : 'rgba(255,255,255,0.18)',
-                }}>
-                <span
-                  className="absolute rounded-full transition-transform"
-                  style={{
-                    top: 2,
-                    left: 2,
-                    width: 20,
-                    height: 20,
-                    background: '#f0f4ff',
-                    transform: startOnFavorite ? 'translateX(16px)' : 'translateX(0)',
-                  }}
-                />
-              </span>
-            </button>
-          )}
+            <span className="text-lg font-bold" style={{ color: '#69BE28' }}>
+              {initial}
+            </span>
+          </div>
+          <div className="min-w-0">
+            <div
+              className="text-[11px] font-semibold uppercase tracking-widest"
+              style={{ color: '#5b6478' }}>
+              Signed in as
+            </div>
+            <div className="truncate text-base font-bold" style={{ color: '#f0f4ff' }}>
+              {user.email}
+            </div>
+          </div>
         </div>
+
+        {/* Settings section */}
+        <div>
+          <div
+            className="mb-2.5 text-xs font-bold uppercase tracking-widest"
+            style={{ color: '#69BE28' }}>
+            Settings
+          </div>
+          <div
+            className="flex flex-col gap-4 rounded-2xl p-4"
+            style={{ background: '#0f1623', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="favorite-team"
+                className="flex items-center gap-2 text-sm font-semibold"
+                style={{ color: '#f0f4ff' }}>
+                <Star size={15} color="#69BE28" /> Favorite team
+              </label>
+              <p className="mb-0.5 text-[12px]" style={{ color: '#8891a3' }}>
+                Opens automatically when you start the app.
+              </p>
+              <select
+                id="favorite-team"
+                value={favoriteTeamId ?? ''}
+                onChange={(e) => changeFavorite(e.target.value)}
+                className="rounded-xl px-3 py-2.5 text-base outline-none"
+                style={{
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.14)',
+                  color: '#f0f4ff',
+                }}>
+                <option value="">No favorite</option>
+                {teams.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {favoriteTeamId && (
+              <>
+                <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }} />
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={startOnFavorite}
+                  onClick={toggleStartOnFavorite}
+                  className="flex items-center justify-between gap-3 bg-transparent p-0 text-left">
+                  <span className="text-sm" style={{ color: '#dfe5f0' }}>
+                    Open this team when I start the app
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="relative inline-flex shrink-0 rounded-full transition-colors"
+                    style={{
+                      width: 40,
+                      height: 24,
+                      background: startOnFavorite ? '#69BE28' : 'rgba(255,255,255,0.18)',
+                    }}>
+                    <span
+                      className="absolute rounded-full transition-transform"
+                      style={{
+                        top: 2,
+                        left: 2,
+                        width: 20,
+                        height: 20,
+                        background: '#f0f4ff',
+                        transform: startOnFavorite ? 'translateX(16px)' : 'translateX(0)',
+                      }}
+                    />
+                  </span>
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Privacy link */}
+        <Link
+          href="/privacy"
+          className="flex items-center justify-between rounded-2xl px-4 py-3.5 text-sm font-semibold no-underline"
+          style={{
+            background: '#0f1623',
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: '#dfe5f0',
+          }}>
+          Privacy policy
+          <ChevronRight size={16} color="#5b6478" />
+        </Link>
 
         <button
           type="button"
@@ -198,6 +256,74 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
           }}>
           Sign out
         </button>
+
+        {/* Danger zone */}
+        <div>
+          <div
+            className="mb-2.5 text-xs font-bold uppercase tracking-widest"
+            style={{ color: '#8891a3' }}>
+            Danger zone
+          </div>
+          <div
+            className="flex flex-col gap-3 rounded-2xl p-4"
+            style={{
+              background: 'rgba(255,107,107,0.05)',
+              border: '1px solid rgba(255,107,107,0.22)',
+            }}>
+            {isConfirmingDelete ? (
+              <>
+                <div>
+                  <div className="mb-1 text-sm font-bold" style={{ color: '#f0f4ff' }}>
+                    Delete your account?
+                  </div>
+                  <p className="m-0 text-[12px] leading-relaxed" style={{ color: '#A5ACAF' }}>
+                    This permanently removes your account, favorite team, and settings. This
+                    can&apos;t be undone.
+                  </p>
+                </div>
+                {deleteState === 'error' && (
+                  <div className="text-[12px]" style={{ color: '#ff6b6b' }}>
+                    Couldn&apos;t delete your account — try again.
+                  </div>
+                )}
+                <div className="flex gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsConfirmingDelete(false)}
+                    disabled={deleteState === 'deleting'}
+                    className="flex-1 rounded-xl px-3 py-2.5 text-[13px] font-semibold"
+                    style={{
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(255,255,255,0.14)',
+                      color: '#dfe5f0',
+                    }}>
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={deleteAccount}
+                    disabled={deleteState === 'deleting'}
+                    className="flex-1 rounded-xl px-3 py-2.5 text-[13px] font-bold"
+                    style={{ background: '#ff6b6b', border: 'none', color: '#2a0e0e' }}>
+                    {deleteState === 'deleting' ? 'Deleting…' : 'Yes, delete my account'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsConfirmingDelete(true)}
+                className="self-start rounded-xl px-3.5 py-2 text-[13px] font-semibold"
+                style={{
+                  background: 'transparent',
+                  border: '1px solid rgba(255,107,107,0.4)',
+                  color: '#ff6b6b',
+                }}>
+                Delete account
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     );
   }
@@ -320,6 +446,14 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
           </div>
         )}
       </div>
+
+      <p className="text-[11px] leading-relaxed" style={{ color: '#5b6478' }}>
+        By continuing you agree to our{' '}
+        <Link href="/privacy" style={{ color: '#69BE28' }} className="underline">
+          privacy policy
+        </Link>
+        .
+      </p>
     </div>
   );
 }
