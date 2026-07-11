@@ -253,6 +253,13 @@ otp_expiry = 3600
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"
 
+# Sign-in email carries the 6-digit code ({{ .Token }}) + the link, so users can type the code
+# (robust against email prefetch/scanners and cross-browser) or click the link. The PROD "Magic
+# Link" template must mirror this — add {{ .Token }} in the dashboard (see docs/espn.md).
+[auth.email.template.magic_link]
+subject = "Your depth sign-in code"
+content_path = "./supabase/templates/magic_link.html"
+
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
 # enabled = true
