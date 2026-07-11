@@ -63,8 +63,11 @@ refactor (see §6).
 9. **Curated data is append-only and provenance-scoped.** The uniforms archive never
    deletes a kit. Where machine-written and hand-curated rows share a table, each
    writer touches only its own `source` rows.
-10. **RLS is intentionally off** on all tables. Do not enable it without adding read
-    policies for the anon role, or the app breaks (see `docs/espn.md`).
+10. **RLS is on for every table** (Phase C). The base tables carry a permissive
+    `"public read"` policy so `dbRosterSource` reads them with the anon key; per-user
+    tables are owner-only. Writes rely on the service-role ingest bypassing RLS. Never
+    enable RLS on a *new* table without a read policy for whoever reads it (anon for
+    public data, `auth.uid()` for private), or that reader breaks (see `docs/espn.md`).
 
 ## 3. Conventions
 
@@ -150,9 +153,10 @@ Each is named for what it looks like in a diff. The rule prevents it.
 9. **Deleting curated history.** You remove a retired kit "because it's unused".
    *Rule: archives are append-only; retirement is a flag (`isCurrent`/`yearEnd`),
    never a delete.*
-10. **Flipping RLS on.** The Supabase advisor flags it; you enable it to clear the
-    warning and take the site down. *Rule: RLS stays off until the auth phase ships
-    read policies with it (invariant 10).*
+10. **Enabling RLS on a new table without a read policy.** You add a table, turn RLS on
+    to satisfy the advisor, and its reader silently gets zero rows. *Rule: ship the read
+    policy in the same migration as `enable row level security` — anon for public data,
+    `auth.uid()` for per-user (invariant 10).*
 11. **Comment-stripping and terse modules.** Generic "clean code" instincts delete
     the rationale comments that are this repo's documentation. *Rule: preserve
     existing comments through refactors and write a role-and-constraint header on
