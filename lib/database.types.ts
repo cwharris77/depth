@@ -200,6 +200,38 @@ export type Database = {
           },
         ]
       }
+      shared_boards: {
+        Row: {
+          created_at: string
+          owner_name: string
+          slug: string
+          team_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          owner_name: string
+          slug: string
+          team_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          owner_name?: string
+          slug?: string
+          team_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_boards_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       special_teams_slots: {
         Row: {
           id: string

@@ -30,6 +30,7 @@ import NavSwitcher from './NavSwitcher';
 import OpenPlayerFromQuery from './OpenPlayerFromQuery';
 import PlayerCard from './PlayerCard';
 import PlayerDot from './PlayerDot';
+import SharedBoardBanner from './SharedBoardBanner';
 import UniformSheet from './UniformSheet';
 
 const UNIT_LABELS: Record<Unit, string> = {
@@ -93,7 +94,20 @@ export default function DepthChartField({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  const displayRoster = useMemo(() => applyTeamOverride(roster, override), [roster, override]);
+  // Previewing a shared board (?board=<slug>, see SharedBoardBanner): the field renders the
+  // owner's order WITHOUT persisting it, and reorder is disabled until the viewer taps Apply.
+  // A non-null preview takes precedence over the viewer's own override. Reset on team change.
+  const [previewOverride, setPreviewOverride] = useState<TeamDepthOverride | null>(null);
+  useEffect(() => {
+    setPreviewOverride(null);
+  }, [team.id]);
+  const previewing = previewOverride !== null;
+  const effectiveOverride = previewOverride ?? override;
+
+  const displayRoster = useMemo(
+    () => applyTeamOverride(roster, effectiveOverride),
+    [roster, effectiveOverride]
+  );
   // Same roster (players/override), re-skinned in the selected kit's colors. One lever:
   // every child that reads team colors (dots via props, PlayerCard/NavSwitcher via
   // roster.team.colors) follows the kit through this.
@@ -143,10 +157,30 @@ export default function DepthChartField({
     syncTeam(next);
   };
 
-  // Share the roster as it currently stands — the team link, carrying the custom order
-  // when there is one. Prefers the native share sheet, else copies with a brief check.
+  // Share the roster as it currently stands. Signed in: a durable `?board=<slug>` reference
+  // link that tracks future edits (POST /api/share); signed out: the self-contained `?order=`
+  // snapshot as before. Prefers the native share sheet, else copies with a brief check.
+  const buildShareUrl = async (): Promise<string> => {
+    if (user) {
+      try {
+        const res = await fetch('/api/share', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ teamId: team.id }),
+        });
+        if (res.ok) {
+          const { slug } = (await res.json()) as { slug: string };
+          return `${window.location.origin}/team/${encodeURIComponent(team.id)}?board=${slug}`;
+        }
+      } catch {
+        // fall through to the offline-safe ?order= link
+      }
+    }
+    return window.location.origin + rosterShareUrlPath(team.id, override);
+  };
+
   const handleShareRoster = async () => {
-    const url = window.location.origin + rosterShareUrlPath(team.id, override);
+    const url = await buildShareUrl();
     const title = `${team.city} ${team.name} depth chart · Depth`;
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
@@ -311,8 +345,9 @@ export default function DepthChartField({
             );
           })}
         </div>
-        {/* Tells the user this team's depth is their custom order, with one-tap revert. */}
-        {hasOverride(override) && (
+        {/* Tells the user this team's depth is their custom order, with one-tap revert.
+            Hidden while previewing a shared board — that order isn't theirs to reset. */}
+        {hasOverride(override) && !previewing && (
           <button
             type="button"
             onClick={handleResetTeam}
@@ -327,6 +362,14 @@ export default function DepthChartField({
             <RotateCcw size={11} /> Custom order · Reset all
           </button>
         )}
+        {/* Shared-board preview banner (Apply / Dismiss), pinned just above the field. */}
+        <SharedBoardBanner
+          currentTeam={team}
+          teams={teams}
+          accent={activeColors.uiAccent}
+          onPreview={setPreviewOverride}
+          onApply={handleApplySharedOrder}
+        />
       </div>
 
       {/* Field — fills remaining viewport space */}
@@ -391,9 +434,13 @@ export default function DepthChartField({
         roster={themedRoster}
         onClose={() => setSelectedPlayer(null)}
         onSelectPlayer={setSelectedPlayer}
-        onReorder={handleReorder}
-        onResetPosition={handleResetPosition}
-        isPositionCustom={displaySelected ? !!override[displaySelected.position] : false}
+        {...(previewing
+          ? {}
+          : {
+              onReorder: handleReorder,
+              onResetPosition: handleResetPosition,
+              isPositionCustom: displaySelected ? !!override[displaySelected.position] : false,
+            })}
       />
 
       <OpenPlayerFromQuery players={displayRoster.players} onOpen={handleNavSelectPlayer} />
