@@ -14,9 +14,11 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code');
   const token_hash = searchParams.get('token_hash');
   const type = searchParams.get('type') as EmailOtpType | null;
-  // Only allow same-origin relative redirects — never bounce to an attacker-supplied host.
+  // Only allow same-origin relative redirects — never a protocol-relative (`//host`) or absolute
+  // URL — so `next` can't be turned into an open redirect to an attacker-supplied host.
   const nextParam = searchParams.get('next');
-  const next = nextParam && nextParam.startsWith('/') ? nextParam : '/';
+  const next =
+    nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : '/';
 
   const supabase = await getServerClient();
   if (code) {
@@ -27,5 +29,6 @@ export async function GET(request: NextRequest) {
     if (!error) return NextResponse.redirect(`${origin}${next}`);
   }
 
-  return NextResponse.redirect(`${origin}/signin?auth_error=1`);
+  // Preserve the return path across an expired/invalid link so retrying still lands home-of-origin.
+  return NextResponse.redirect(`${origin}/signin?auth_error=1&next=${encodeURIComponent(next)}`);
 }

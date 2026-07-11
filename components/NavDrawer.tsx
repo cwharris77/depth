@@ -65,6 +65,10 @@ export default function NavDrawer({
     : pathname?.startsWith('/signin')
       ? '/signin'
       : '/';
+  // Carry the current page as ?next= so signing in (magic link) returns the user here, not to
+  // the sign-in page. The confirm route threads it into the post-login redirect.
+  const signInHref =
+    pathname && pathname !== '/signin' ? `/signin?next=${encodeURIComponent(pathname)}` : '/signin';
 
   useEffect(() => {
     if (!open) return;
@@ -171,7 +175,7 @@ export default function NavDrawer({
             inline form. Signing in is opt-in (Phase C, auth pass 1). */}
         <div style={{ borderTop: '1px solid #222b3d' }}>
           <NavItem
-            href="/signin"
+            href={signInHref}
             icon={<User size={19} />}
             label={user ? 'Account' : 'Sign in'}
             onNavigate={onClose}
