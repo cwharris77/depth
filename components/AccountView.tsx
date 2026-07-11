@@ -135,18 +135,21 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
         <div className="flex items-center gap-3.5">
           <div
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
-            style={{ background: 'rgba(105,190,40,0.14)', border: '1px solid rgba(105,190,40,0.3)' }}>
+            style={{
+              background: 'rgba(105,190,40,0.14)',
+              border: '1px solid rgba(105,190,40,0.3)',
+            }}>
             <span className="text-lg font-bold" style={{ color: '#69BE28' }}>
               {initial}
             </span>
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#5b6478' }}>
+            <div
+              className="text-[11px] font-semibold uppercase tracking-widest"
+              style={{ color: '#5b6478' }}>
               Signed in as
             </div>
-            <div
-              className="truncate text-base font-bold"
-              style={{ color: '#f0f4ff' }}>
+            <div className="truncate text-base font-bold" style={{ color: '#f0f4ff' }}>
               {user.email}
             </div>
           </div>
@@ -233,7 +236,11 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
         <Link
           href="/privacy"
           className="flex items-center justify-between rounded-2xl px-4 py-3.5 text-sm font-semibold no-underline"
-          style={{ background: '#0f1623', border: '1px solid rgba(255,255,255,0.08)', color: '#dfe5f0' }}>
+          style={{
+            background: '#0f1623',
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: '#dfe5f0',
+          }}>
           Privacy policy
           <ChevronRight size={16} color="#5b6478" />
         </Link>
@@ -259,7 +266,10 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
           </div>
           <div
             className="flex flex-col gap-3 rounded-2xl p-4"
-            style={{ background: 'rgba(255,107,107,0.05)', border: '1px solid rgba(255,107,107,0.22)' }}>
+            style={{
+              background: 'rgba(255,107,107,0.05)',
+              border: '1px solid rgba(255,107,107,0.22)',
+            }}>
             {isConfirmingDelete ? (
               <>
                 <div>
@@ -304,7 +314,11 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
                 type="button"
                 onClick={() => setIsConfirmingDelete(true)}
                 className="self-start rounded-xl px-3.5 py-2 text-[13px] font-semibold"
-                style={{ background: 'transparent', border: '1px solid rgba(255,107,107,0.4)', color: '#ff6b6b' }}>
+                style={{
+                  background: 'transparent',
+                  border: '1px solid rgba(255,107,107,0.4)',
+                  color: '#ff6b6b',
+                }}>
                 Delete account
               </button>
             )}

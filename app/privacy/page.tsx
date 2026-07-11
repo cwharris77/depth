@@ -30,16 +30,18 @@ export default function PrivacyPage() {
           Last updated July 2026
         </p>
 
-        <div className="flex flex-col gap-4 text-[13px] leading-relaxed" style={{ color: '#c5cbd8' }}>
+        <div
+          className="flex flex-col gap-4 text-[13px] leading-relaxed"
+          style={{ color: '#c5cbd8' }}>
           <div>
             <div className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
               What we collect
             </div>
             <p className="m-0">
-              Your email address, used only to sign you in via a one-time code or link. If you
-              sign in, we also store your favorite team, app preferences, and depth-chart edits
-              so they sync across your devices. We don&apos;t collect names, payment details, or
-              device identifiers.
+              Your email address, used only to sign you in via a one-time code or link. If you sign
+              in, we also store your favorite team, app preferences, and depth-chart edits so they
+              sync across your devices. We don&apos;t collect names, payment details, or device
+              identifiers.
             </p>
           </div>
           <div>
@@ -57,10 +59,10 @@ export default function PrivacyPage() {
               Sharing a depth chart
             </div>
             <p className="m-0">
-              If you share a custom depth chart, anyone with the link can view it, and the part
-              of your email before the <span style={{ color: '#f0f4ff' }}>@</span>{' '}
-              (not your full address) is shown publicly as the chart&apos;s owner name. Deleting
-              your account removes all your shared links.
+              If you share a custom depth chart, anyone with the link can view it, and the part of
+              your email before the <span style={{ color: '#f0f4ff' }}>@</span> (not your full
+              address) is shown publicly as the chart&apos;s owner name. Deleting your account
+              removes all your shared links.
             </p>
           </div>
           <div>
@@ -68,8 +70,8 @@ export default function PrivacyPage() {
               What we don&apos;t do
             </div>
             <p className="m-0">
-              No ads, no analytics or tracking scripts, no data sold or shared with third
-              parties. We use Supabase to host our database and handle sign-in.
+              No ads, no analytics or tracking scripts, no data sold or shared with third parties.
+              We use Supabase to host our database and handle sign-in.
             </p>
           </div>
           <div>
@@ -77,8 +79,8 @@ export default function PrivacyPage() {
               Children&apos;s privacy
             </div>
             <p className="m-0">
-              Depth isn&apos;t directed at children under 13, and we don&apos;t knowingly
-              collect data from them.
+              Depth isn&apos;t directed at children under 13, and we don&apos;t knowingly collect
+              data from them.
             </p>
           </div>
           <div>
@@ -86,9 +88,8 @@ export default function PrivacyPage() {
               Deleting your data
             </div>
             <p className="m-0">
-              You can permanently delete your account — including your settings, saved
-              depth-chart edits, and shared links — at any time from the account page&apos;s
-              Danger Zone.
+              You can permanently delete your account — including your settings, saved depth-chart
+              edits, and shared links — at any time from the account page&apos;s Danger Zone.
             </p>
           </div>
           <div>
