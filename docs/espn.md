@@ -142,9 +142,14 @@ not a silent no-op.
 
 GitHub Actions was chosen because it reuses the existing script with zero logic changes.
 
-## Deferred: RLS policies
+## RLS policies
 
-All tables currently have RLS disabled (flagged by Supabase's advisor). This is
-deliberate for now — auth/policy design is a separate phase. Do not enable RLS without
-also adding read policies for the anon role used by `dbRosterSource`, or the app will
-break.
+The public **base tables** (`teams`, `players`, `depth_chart_entries`,
+`special_teams_slots`, `uniforms`, `ingestion_runs`) have RLS **disabled**:
+`dbRosterSource` reads them with the anon key, so enabling RLS without anon read policies
+breaks every page. Do not enable it on these without adding those read policies — that
+ships with the deferred full-RLS/share pass (see the Phase C spec).
+
+The **per-user private tables** added in the auth phase — `user_settings` and
+`depth_overrides` — have RLS **enabled** with owner-only policies (`auth.uid() = user_id`),
+and their grants exclude `anon` entirely, so a user can only read/write their own rows.
