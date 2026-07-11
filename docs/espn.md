@@ -144,12 +144,16 @@ GitHub Actions was chosen because it reuses the existing script with zero logic 
 
 ## RLS policies
 
-The public **base tables** (`teams`, `players`, `depth_chart_entries`,
-`special_teams_slots`, `uniforms`, `ingestion_runs`) have RLS **disabled**:
-`dbRosterSource` reads them with the anon key, so enabling RLS without anon read policies
-breaks every page. Do not enable it on these without adding those read policies — that
-ships with the deferred full-RLS/share pass (see the Phase C spec).
+**RLS is enabled on every table** (Phase C complete). Writes are unaffected throughout: the
+ESPN ingest writes with the service-role key, which bypasses RLS.
 
-The **per-user private tables** added in the auth phase — `user_settings` and
-`depth_overrides` — have RLS **enabled** with owner-only policies (`auth.uid() = user_id`),
-and their grants exclude `anon` entirely, so a user can only read/write their own rows.
+- **Public base tables** — `teams`, `players`, `depth_chart_entries`, `special_teams_slots`,
+  `uniforms` have a permissive `"public read"` policy (`select to anon, authenticated`), so
+  `dbRosterSource` keeps reading them with the anon key. Enabling RLS **closed** the prior gap
+  where the anon key could also write/delete them — there are no write policies, so anon writes
+  are now denied. `ingestion_runs` is operational-only: RLS on, **no read policy**, so anon sees
+  zero rows (nothing client-side reads it).
+- **Per-user private tables** — `user_settings` and `depth_overrides` have owner-only policies
+  (`auth.uid() = user_id`); `depth_overrides` additionally allows public read of a row **only
+  when a `shared_boards` row references it** (share-by-reference). `shared_boards` is public-read
+  with owner-only insert/delete.
