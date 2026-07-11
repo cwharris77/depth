@@ -76,6 +76,38 @@ export type Database = {
           },
         ]
       }
+      depth_overrides: {
+        Row: {
+          player_ids: string[]
+          position: string
+          team_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          player_ids: string[]
+          position: string
+          team_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          player_ids?: string[]
+          position?: string
+          team_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "depth_overrides_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ingestion_runs: {
         Row: {
           created_at: string
@@ -161,51 +193,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "players_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      roster_overlays: {
-        Row: {
-          created_at: string
-          depth_rank: number
-          id: string
-          player_id: string
-          team_id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          depth_rank: number
-          id?: string
-          player_id: string
-          team_id: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          depth_rank?: number
-          id?: string
-          player_id?: string
-          team_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "roster_overlays_player_id_fkey"
-            columns: ["player_id"]
-            isOneToOne: false
-            referencedRelation: "players"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "roster_overlays_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"

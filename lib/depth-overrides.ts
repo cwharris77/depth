@@ -108,6 +108,12 @@ export function getTeamOverride(teamId: string): TeamDepthOverride {
   return readStore()[teamId] ?? {};
 }
 
+// The whole local override store (teamId -> override). Used by the sign-in merge
+// (lib/overrides-sync) to reconcile every locally-edited team against the server at once.
+export function getAllOverrides(): Record<string, TeamDepthOverride> {
+  return readStore();
+}
+
 export function setPositionOrder(teamId: string, position: Position, ids: string[]): void {
   const store = readStore();
   store[teamId] = { ...store[teamId], [position]: ids };

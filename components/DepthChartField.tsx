@@ -12,9 +12,11 @@ import {
   type TeamDepthOverride,
 } from '@/lib/depth-overrides';
 import { resolveUnit } from '@/lib/formations';
+import { mergeOnSignIn, pushTeamOverride } from '@/lib/overrides-sync';
 import type { TeamMeta } from '@/lib/roster-source';
 import { unitForPosition } from '@/lib/search';
 import { rosterShareUrlPath } from '@/lib/share';
+import { useUser } from '@/lib/use-user';
 import type { Player, Position, TeamRoster, Unit } from '@/lib/types';
 import { Check, ChevronDown, RotateCcw, Search, Share2, Shirt } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -72,12 +74,24 @@ export default function DepthChartField({
   const activeUniform = roster.uniforms.find((u) => u.id === kitId) ?? roster.uniforms[0];
   const activeColors = activeUniform?.colors ?? team.colors;
 
-  // The user's custom depth ordering for this team (localStorage). Applied to the roster
-  // everything below renders from, so a reorder flows to the field dots and the card.
+  // The user's custom depth ordering for this team (localStorage cache). Applied to the
+  // roster everything below renders from, so a reorder flows to the field dots and the card.
+  // Signed in, every write is mirrored to the server and reconciled on sign-in below.
+  const { user } = useUser();
   const [override, setOverride] = useState<TeamDepthOverride>({});
   useEffect(() => {
     setOverride(getTeamOverride(team.id));
   }, [team.id]);
+
+  // On sign-in, pull the durable server overrides (server wins) and push up any team edited
+  // only on this device, then re-read the current team's order. mergeOnSignIn is idempotent
+  // and self-guarded, so re-running on user change is safe; the [team.id] effect above keeps
+  // the visible order fresh when switching teams.
+  useEffect(() => {
+    if (!user) return;
+    mergeOnSignIn().then(() => setOverride(getTeamOverride(team.id)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const displayRoster = useMemo(() => applyTeamOverride(roster, override), [roster, override]);
   // Same roster (players/override), re-skinned in the selected kit's colors. One lever:
@@ -94,26 +108,39 @@ export default function DepthChartField({
     ? (displayRoster.players.find((p) => p.id === selectedPlayer.id) ?? selectedPlayer)
     : null;
 
+  // Every override mutation writes localStorage first (the always-on cache), then mirrors the
+  // team's new override to the server when signed in (fire-and-forget, last-write-wins).
+  const syncTeam = (next: TeamDepthOverride) => {
+    if (user) pushTeamOverride(team.id, next);
+  };
+
   const handleReorder = (position: Position, orderedIds: string[]) => {
     setPositionOrder(team.id, position, orderedIds);
-    setOverride(getTeamOverride(team.id));
+    const next = getTeamOverride(team.id);
+    setOverride(next);
+    syncTeam(next);
   };
 
   const handleResetPosition = (position: Position) => {
     clearPositionOrder(team.id, position);
-    setOverride(getTeamOverride(team.id));
+    const next = getTeamOverride(team.id);
+    setOverride(next);
+    syncTeam(next);
   };
 
   const handleResetTeam = () => {
     clearTeamOverride(team.id);
     setOverride({});
+    syncTeam({});
   };
 
   // Applying a shared roster link: persist the sender's order as this device's custom
   // order for the team, so the board matches "exactly as edited" and Reset still works.
   const handleApplySharedOrder = (shared: TeamDepthOverride) => {
     setTeamOverride(team.id, shared);
-    setOverride(getTeamOverride(team.id));
+    const next = getTeamOverride(team.id);
+    setOverride(next);
+    syncTeam(next);
   };
 
   // Share the roster as it currently stands — the team link, carrying the custom order
