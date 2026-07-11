@@ -1,0 +1,17 @@
+<!--
+  Magic-link / email sign-in template (Phase C). Includes BOTH the 6-digit code ({{ .Token }})
+  and the link ({{ .ConfirmationURL }}). The code is the reliable path: unlike the link, it can't
+  be consumed by an email prefetch/scanner and doesn't require the same browser (no PKCE
+  code_verifier). The link stays as a zero-friction fallback. The PROD "Magic Link" email
+  template must mirror this (include {{ .Token }}) — see docs/espn.md.
+-->
+<h2>Sign in to depth</h2>
+<p>Enter this code to finish signing in:</p>
+<p style="font-size: 28px; font-weight: 700; letter-spacing: 6px; margin: 12px 0">
+  {{ .Token }}
+</p>
+<p>Or, on this device, you can use the link instead:</p>
+<p><a href="{{ .ConfirmationURL }}">Sign in to depth</a></p>
+<p style="color: #888; font-size: 12px">
+  This code expires in 1 hour. If you didn't request it, you can ignore this email.
+</p>
