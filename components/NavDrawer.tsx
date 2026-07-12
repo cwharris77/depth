@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useTransition } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { X, ClipboardList, Grid, User } from 'lucide-react';
 import { useUser } from '@/lib/use-user';
 
@@ -16,6 +16,7 @@ function NavItem({
   href,
   icon,
   label,
+  disabled,
   onNavigate,
   accent,
   active,
@@ -23,21 +24,33 @@ function NavItem({
   href: string;
   icon: React.ReactNode;
   label: string;
-  onNavigate: () => void;
+  disabled: boolean;
+  onNavigate: (href: string) => void;
   accent: string;
   active?: boolean;
 }) {
   return (
     <Link
       href={href}
-      onClick={onNavigate}
+      aria-disabled={disabled}
+      onClick={(e) => {
+        // Navigate through the parent's useTransition guard instead of Link's own
+        // navigation, so the drawer stays open until the transition commits — see
+        // the same pattern in NavSwitcher.
+        e.preventDefault();
+        if (disabled) return;
+        onNavigate(href);
+      }}
       aria-current={active ? 'page' : undefined}
       className="flex items-center gap-3 px-4 py-3"
-      style={
-        active
+      style={{
+        touchAction: 'manipulation',
+        pointerEvents: disabled ? 'none' : undefined,
+        opacity: disabled ? 0.5 : 1,
+        ...(active
           ? { background: `${accent}1F`, borderLeft: `3px solid ${accent}`, color: '#f0f4ff' }
-          : { color: '#dfe5f0', borderLeft: '3px solid transparent' }
-      }>
+          : { color: '#dfe5f0', borderLeft: '3px solid transparent' }),
+      }}>
       <span style={{ color: active ? accent : '#A5ACAF', display: 'inline-flex' }}>{icon}</span>
       <span className="text-sm font-semibold">{label}</span>
     </Link>
@@ -56,6 +69,23 @@ export default function NavDrawer({
   const panelRef = useRef<HTMLDivElement>(null);
   const scrimRef = useRef<HTMLDivElement>(null);
   const restoreFocus = useRef<HTMLElement | null>(null);
+  const router = useRouter();
+  // Navigation is wrapped in a transition so the drawer stays open — and its links
+  // disabled — until the destination is ready, instead of closing immediately and
+  // flashing the still-mounted old page. See the same pattern in NavSwitcher.
+  const [isPending, startTransition] = useTransition();
+  const wasPending = useRef(false);
+  useEffect(() => {
+    if (wasPending.current && !isPending) {
+      onClose();
+    }
+    wasPending.current = isPending;
+  }, [isPending, onClose]);
+  const navigate = (href: string) => {
+    startTransition(() => {
+      router.push(href);
+    });
+  };
   // Which destination is current: the archive when on /uniforms, otherwise the depth charts
   // (home + team pages). Drives the active highlight consistently across routes.
   const pathname = usePathname();
@@ -158,7 +188,8 @@ export default function NavDrawer({
             href="/"
             icon={<ClipboardList size={19} />}
             label="Depth charts"
-            onNavigate={onClose}
+            disabled={isPending}
+            onNavigate={navigate}
             accent={accent}
             active={activeHref === '/'}
           />
@@ -166,7 +197,8 @@ export default function NavDrawer({
             href="/uniforms"
             icon={<Grid size={19} />}
             label="Uniform archive"
-            onNavigate={onClose}
+            disabled={isPending}
+            onNavigate={navigate}
             accent={accent}
             active={activeHref === '/uniforms'}
           />
@@ -178,7 +210,8 @@ export default function NavDrawer({
             href={signInHref}
             icon={<User size={19} />}
             label={user ? 'Account' : 'Sign in'}
-            onNavigate={onClose}
+            disabled={isPending}
+            onNavigate={navigate}
             accent={accent}
             active={activeHref === '/signin'}
           />
