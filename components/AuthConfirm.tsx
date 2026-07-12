@@ -38,13 +38,15 @@ export default function AuthConfirm({ next }: { next: string }) {
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
       }),
-    }).then((res) => {
-      if (res.ok) {
-        window.location.assign(next);
-      } else {
-        toSignInError();
-      }
-    });
+    })
+      .then((res) => {
+        if (res.ok) {
+          window.location.assign(next);
+        } else {
+          toSignInError();
+        }
+      })
+      .catch(toSignInError);
   }, [next]);
 
   return (
