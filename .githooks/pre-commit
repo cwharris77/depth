@@ -1,0 +1,11 @@
+#!/bin/sh
+# Auto-formats staged files with Prettier before commit, so CI's format:check
+# gate (see .github/workflows/ci.yml) never fails on formatting alone.
+staged=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx|js|jsx|json|css)$')
+
+if [ -z "$staged" ]; then
+  exit 0
+fi
+
+echo "$staged" | xargs npx prettier --write --ignore-unknown
+echo "$staged" | xargs git add
