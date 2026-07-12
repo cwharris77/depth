@@ -111,10 +111,32 @@ export interface Team {
   colors: TeamColors;
   logo?: string;
   logoDark?: string;
-  // Head coach only -- ESPN doesn't expose the rest of the staff cheaply (Phase E,
-  // docs/superpowers/specs/2026-07-07-phase-e-coaches-design.md). Undefined when the
-  // ingest's coach array was missing/empty for this team.
-  coach?: { name: string; experience: number };
+}
+
+// Season record + standings detail (Phase E stats page,
+// docs/superpowers/specs/2026-07-12-team-stats-page-design.md). Sourced from the same
+// ESPN standings fetch already used for conference/division (lib/espn/standings.ts
+// parseTeamStats) -- one call, more of the payload read. A team missing from the
+// standings response (bye-week gap, mid-season expansion) has no TeamStats rather than
+// a partially-filled one (invariant 6).
+export interface TeamStats {
+  overallWins: number;
+  overallLosses: number;
+  overallTies: number;
+  winPercent: number;
+  homeWins: number;
+  homeLosses: number;
+  roadWins: number;
+  roadLosses: number;
+  divisionWins: number;
+  divisionLosses: number;
+  conferenceWins: number;
+  conferenceLosses: number;
+  pointsFor: number;
+  pointsAgainst: number;
+  pointDifferential: number;
+  streak: string;
+  playoffSeed: number;
 }
 
 // A kit's category. `home` rows are ESPN-owned (machine-managed); every other kind is
