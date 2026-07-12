@@ -16,12 +16,19 @@ import {
 } from './positions';
 import { readableTextOn } from '../colors';
 
+export interface Coach {
+  name: string;
+  espnId: string;
+  experience: number;
+}
+
 // The site roster payload's top-level coach array has at most one entry (the head
 // coach — ESPN doesn't expose the rest of the staff cheaply). Missing/empty array
-// (expansion team, offseason gap) -> null, never a crash (invariant 6).
-export function toCoach(
-  roster: EspnRoster
-): { name: string; espnId: string; experience: number } | null {
+// (expansion team, offseason gap) -> null, never a crash (invariant 6). Consumed
+// directly by scripts/ingest-espn.mts for the teams.coach_* columns and by the team
+// stats page (docs/superpowers/specs/2026-07-12-team-stats-page-design.md) — no
+// longer threaded through Team/TeamRoster.
+export function toCoach(roster: EspnRoster): Coach | null {
   const coach = roster.coach?.[0];
   if (!coach) return null;
   return {
@@ -243,14 +250,12 @@ export function toTeamRoster(args: {
   }));
 
   const logos = teamInfo.logos ?? [];
-  const coach = toCoach(roster);
   return {
     team: {
       ...meta,
       colors: toTeamColors(teamInfo),
       logo: logos[0]?.href,
       logoDark: logos.find((l) => l.rel?.includes('dark'))?.href ?? logos[1]?.href,
-      coach: coach ? { name: coach.name, experience: coach.experience } : undefined,
     },
     players,
     specialTeams,
