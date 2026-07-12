@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight, Star } from 'lucide-react';
-import { getBrowserClient } from '@/lib/supabase/client';
+import { getBrowserClient, signInWithOtpImplicit } from '@/lib/supabase/client';
 import { useUser } from '@/lib/use-user';
 import { getSettings, putSettings } from '@/lib/settings-client';
 
@@ -53,13 +53,9 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
     if (!trimmed) return;
     setSendState('sending');
     setLinkExpired(false);
-    const { error } = await getBrowserClient().auth.signInWithOtp({
-      email: trimmed,
-      options: {
-        // Land back on the page the user came from (threaded via ?next=), not the sign-in page.
-        emailRedirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(next)}`,
-      },
-    });
+    // Land back on the page the user came from (threaded via ?next=), not the sign-in page.
+    const emailRedirectTo = `${window.location.origin}/auth/confirm?next=${encodeURIComponent(next)}`;
+    const { error } = await signInWithOtpImplicit(trimmed, emailRedirectTo);
     setSendState(error ? 'error' : 'sent');
   };
 
@@ -314,7 +310,7 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
         </div>
         <p className="text-sm" style={{ color: '#A5ACAF' }}>
           We sent a sign-in link to <span style={{ color: '#f0f4ff' }}>{email.trim()}</span>. Open
-          it on this device to finish signing in.
+          it to finish signing in.
         </p>
       </div>
     );
