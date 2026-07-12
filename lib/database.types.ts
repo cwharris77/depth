@@ -277,6 +277,80 @@ export type Database = {
           },
         ]
       }
+      team_stats: {
+        Row: {
+          conference_losses: number | null
+          conference_wins: number | null
+          division_losses: number | null
+          division_wins: number | null
+          home_losses: number | null
+          home_wins: number | null
+          overall_losses: number | null
+          overall_ties: number | null
+          overall_wins: number | null
+          playoff_seed: number | null
+          point_differential: number | null
+          points_against: number | null
+          points_for: number | null
+          road_losses: number | null
+          road_wins: number | null
+          streak: string | null
+          team_id: string
+          updated_at: string
+          win_percent: number | null
+        }
+        Insert: {
+          conference_losses?: number | null
+          conference_wins?: number | null
+          division_losses?: number | null
+          division_wins?: number | null
+          home_losses?: number | null
+          home_wins?: number | null
+          overall_losses?: number | null
+          overall_ties?: number | null
+          overall_wins?: number | null
+          playoff_seed?: number | null
+          point_differential?: number | null
+          points_against?: number | null
+          points_for?: number | null
+          road_losses?: number | null
+          road_wins?: number | null
+          streak?: string | null
+          team_id: string
+          updated_at?: string
+          win_percent?: number | null
+        }
+        Update: {
+          conference_losses?: number | null
+          conference_wins?: number | null
+          division_losses?: number | null
+          division_wins?: number | null
+          home_losses?: number | null
+          home_wins?: number | null
+          overall_losses?: number | null
+          overall_ties?: number | null
+          overall_wins?: number | null
+          playoff_seed?: number | null
+          point_differential?: number | null
+          points_against?: number | null
+          points_for?: number | null
+          road_losses?: number | null
+          road_wins?: number | null
+          streak?: string | null
+          team_id?: string
+          updated_at?: string
+          win_percent?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_stats_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teams: {
         Row: {
           abbrev: string
