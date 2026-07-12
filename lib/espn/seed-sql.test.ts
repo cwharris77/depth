@@ -165,4 +165,31 @@ describe('buildSeedSql', () => {
     ]);
     expect(sql).not.toContain('insert into special_teams_slots');
   });
+
+  it('gates team_stats per-entry: one with stats, one without, both teams emitted', () => {
+    const seaRoster = roster();
+    const sfRoster = roster({
+      team: { ...roster().team, id: 'sf', abbrev: 'SF' },
+    });
+    const sql = buildSeedSql([
+      { roster: seaRoster, coach: coach(), stats: stats() },
+      { roster: sfRoster, coach: null, stats: undefined },
+    ]);
+
+    // team_stats insert block is present
+    expect(sql).toContain('insert into team_stats');
+
+    // Both teams appear in the teams insert block
+    const teamsBlock = sql.slice(
+      sql.indexOf('insert into teams'),
+      sql.indexOf('insert into players')
+    );
+    expect(teamsBlock).toContain("'sea'");
+    expect(teamsBlock).toContain("'sf'");
+
+    // team_stats block contains only the sea team (which has stats), not sf
+    const teamStatsBlock = sql.slice(sql.indexOf('insert into team_stats'));
+    expect(teamStatsBlock).toContain("'sea'");
+    expect(teamStatsBlock).not.toContain("'sf'");
+  });
 });
