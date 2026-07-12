@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -73,24 +73,36 @@ function TeamRow({
   team,
   isCurrent,
   highlighted,
+  disabled,
   onSelect,
   onHover,
 }: {
   team: TeamMeta;
   isCurrent: boolean;
   highlighted: boolean;
-  onSelect: () => void;
+  disabled: boolean;
+  onSelect: (team: TeamMeta) => void;
   onHover: () => void;
 }) {
   const badgeText = readableTextOn(team.colors.primary);
   return (
     <Link
       href={`/team/${team.id}`}
-      onClick={onSelect}
+      aria-disabled={disabled}
+      onClick={(e) => {
+        // Navigate through selectTeam (useTransition) instead of Link's own
+        // navigation, so the parent can hold the sheet open until the transition
+        // commits — see the useTransition guard in NavSwitcher.
+        e.preventDefault();
+        if (disabled) return;
+        onSelect(team);
+      }}
       onMouseEnter={onHover}
       className="flex items-center gap-3 px-3 py-2.5"
       style={{
         touchAction: 'manipulation',
+        pointerEvents: disabled ? 'none' : undefined,
+        opacity: disabled ? 0.5 : 1,
         background: highlighted
           ? 'rgba(255,255,255,0.06)'
           : isCurrent
@@ -125,22 +137,26 @@ function TeamRow({
 function PlayerRow({
   hit,
   highlighted,
+  disabled,
   onSelect,
   onHover,
 }: {
   hit: PlayerHit;
   highlighted: boolean;
+  disabled: boolean;
   onSelect: (hit: PlayerHit) => void;
   onHover: () => void;
 }) {
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={() => onSelect(hit)}
       onMouseEnter={onHover}
       className="w-full flex items-center gap-3 px-3 py-2.5 text-left"
       style={{
         touchAction: 'manipulation',
+        opacity: disabled ? 0.5 : 1,
         background: highlighted ? 'rgba(255,255,255,0.06)' : 'transparent',
       }}>
       <PlayerAvatar hit={hit} />
@@ -181,6 +197,19 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
   const [playersLoading, setPlayersLoading] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  // Navigating (team/player selection) is wrapped in a transition so the sheet
+  // stays open — and its rows disabled — until the destination is ready, instead
+  // of closing immediately and flashing the still-mounted old team's field
+  // (components/DepthChartField.tsx persists across the transition; only its
+  // props change once navigation commits). See the "Janky page navigation" ticket.
+  const [isPending, startTransition] = useTransition();
+  const wasPending = useRef(false);
+  useEffect(() => {
+    if (wasPending.current && !isPending) {
+      onClose();
+    }
+    wasPending.current = isPending;
+  }, [isPending, onClose]);
 
   // Autofocus only for pointer/keyboard devices (the command-palette feel this
   // was designed for). On touch devices it would pop the virtual keyboard the
@@ -261,13 +290,15 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
     }
     // Different team: navigate there and open the player once its roster loads
     // (OpenPlayerFromQuery on the destination page reads `?player=`).
-    router.push(`/team/${hit.team.id}?player=${hit.id}`);
-    onClose();
+    startTransition(() => {
+      router.push(`/team/${hit.team.id}?player=${hit.id}`);
+    });
   };
 
   const selectTeam = (t: TeamMeta) => {
-    router.push(`/team/${t.id}`);
-    onClose();
+    startTransition(() => {
+      router.push(`/team/${t.id}`);
+    });
   };
 
   const activate = (item: ResultItem) => {
@@ -378,7 +409,8 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
                     team={t}
                     isCurrent={t.id === team.id}
                     highlighted={false}
-                    onSelect={onClose}
+                    disabled={isPending}
+                    onSelect={selectTeam}
                     onHover={() => {}}
                   />
                 ))}
@@ -400,6 +432,7 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
                       key={hit.id}
                       hit={hit}
                       highlighted={i === highlightedIndex}
+                      disabled={isPending}
                       onSelect={handleSelectPlayer}
                       onHover={() => setHighlightedIndex(i)}
                     />
@@ -422,7 +455,8 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
                       team={t}
                       isCurrent={t.id === team.id}
                       highlighted={playerResults.length + i === highlightedIndex}
-                      onSelect={onClose}
+                      disabled={isPending}
+                      onSelect={selectTeam}
                       onHover={() => setHighlightedIndex(playerResults.length + i)}
                     />
                   ))}

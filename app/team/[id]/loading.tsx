@@ -1,0 +1,58 @@
+import Logo from '@/components/Logo';
+
+// Route-level fallback for /team/[id] (loading.md): Next.js prefetches and shows this
+// immediately on navigation, wrapping page.tsx in a Suspense boundary. Mirrors
+// DepthChartField's header/field structure at low fidelity (no team colors known yet)
+// so the swap-in doesn't jump the layout — see the "Janky page navigation" ticket.
+export default function Loading() {
+  return (
+    <div
+      className="flex flex-col mx-auto w-full animate-pulse"
+      style={{
+        height: '100dvh',
+        maxWidth: 720,
+        overflow: 'hidden',
+        background: '#0a0e1a',
+      }}>
+      <div
+        className="px-5 pb-3"
+        style={{ flex: '0 0 auto', paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-0.5 shrink-0">
+            <Logo size={20} color="#A5ACAF" />
+            <span className="text-sm font-bold tracking-widest" style={{ color: '#A5ACAF' }}>
+              depth
+            </span>
+          </div>
+          <div
+            className="rounded-full"
+            style={{ width: 140, height: 30, background: 'rgba(255,255,255,0.07)' }}
+          />
+        </div>
+        <div
+          className="rounded-xl mt-6"
+          style={{ width: 180, height: 34, background: 'rgba(255,255,255,0.07)' }}
+        />
+      </div>
+
+      <div
+        className="px-3 flex flex-col"
+        style={{
+          flex: '1 1 0',
+          minHeight: 0,
+          paddingBottom: 'max(env(safe-area-inset-bottom), 8px)',
+        }}>
+        <div
+          className="relative w-full rounded-2xl overflow-hidden"
+          style={{
+            flex: '1 1 0',
+            minHeight: 0,
+            background:
+              'linear-gradient(180deg, #1e3d10 0%, #2d5a1b 40%, #2d5a1b 60%, #1e3d10 100%)',
+            boxShadow: 'inset 0 0 60px rgba(0,0,0,0.4), 0 4px 32px rgba(0,0,0,0.6)',
+          }}
+        />
+      </div>
+    </div>
+  );
+}
