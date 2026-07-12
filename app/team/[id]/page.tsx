@@ -4,6 +4,7 @@ import DepthChartField from '@/components/DepthChartField';
 import RememberTeam from '@/components/RememberTeam';
 import { dbRosterSource } from '@/lib/roster-source.db';
 import { showUniformPicker } from '@/lib/flags';
+import { ordinal } from '@/lib/format';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -21,9 +22,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   }
   const { team } = roster;
   const fullName = `${team.city} ${team.name}`;
+  const coachLine = team.coach
+    ? ` HC ${team.coach.name} · ${ordinal(team.coach.experience)} season.`
+    : '';
   return {
     title: `${fullName} Depth Chart · Depth`,
-    description: `Interactive depth chart for the ${fullName} — tap any player for their bio and stats.`,
+    description: `Interactive depth chart for the ${fullName} — tap any player for their bio and stats.${coachLine}`,
     // Cross-team player picks deep-link here as /team/[id]?player=<id> (see
     // NavSwitcher). Those are the same page, so point the canonical at the clean
     // path (resolved against the layout's metadataBase) to consolidate them.

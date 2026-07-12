@@ -12,6 +12,7 @@ import {
   type TeamDepthOverride,
 } from '@/lib/depth-overrides';
 import { resolveUnit } from '@/lib/formations';
+import { ordinal } from '@/lib/format';
 import { mergeOnSignIn, pushTeamOverride } from '@/lib/overrides-sync';
 import type { TeamMeta } from '@/lib/roster-source';
 import { unitForPosition } from '@/lib/search';
@@ -313,6 +314,14 @@ export default function DepthChartField({
             </button>
           </div>
         </div>
+        {/* Head coach line, muted so it doesn't compete with the team-name pill above.
+            Absent entirely when the team has no ingested coach (spec: docs/superpowers/
+            specs/2026-07-07-phase-e-coaches-design.md). */}
+        {team.coach && (
+          <p className="text-[10px] mt-1 truncate" style={{ color: '#A5ACAF' }}>
+            HC {team.coach.name} · {ordinal(team.coach.experience)} season
+          </p>
+        )}
         {/* On its own row, 24px below the header line, so it never crowds the
             team-switcher tap target the way sharing a row used to. */}
         <div

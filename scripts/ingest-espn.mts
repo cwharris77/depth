@@ -226,6 +226,9 @@ async function writeTeam(supabase: SupabaseClient<Database>, roster: TeamRoster)
       on_accent: team.colors.onAccent,
       logo_url: team.logo ?? null,
       logo_dark_url: team.logoDark ?? null,
+      coach_name: team.coach?.name ?? null,
+      coach_espn_id: null,
+      coach_experience: team.coach?.experience ?? null,
       updated_at: new Date().toISOString(),
     },
     { onConflict: 'id' }

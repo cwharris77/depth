@@ -281,6 +281,9 @@ export type Database = {
         Row: {
           abbrev: string
           city: string
+          coach_espn_id: string | null
+          coach_experience: number | null
+          coach_name: string | null
           color_accent: string | null
           color_primary: string | null
           color_secondary: string | null
@@ -299,6 +302,9 @@ export type Database = {
         Insert: {
           abbrev: string
           city: string
+          coach_espn_id?: string | null
+          coach_experience?: number | null
+          coach_name?: string | null
           color_accent?: string | null
           color_primary?: string | null
           color_secondary?: string | null
@@ -317,6 +323,9 @@ export type Database = {
         Update: {
           abbrev?: string
           city?: string
+          coach_espn_id?: string | null
+          coach_experience?: number | null
+          coach_name?: string | null
           color_accent?: string | null
           color_primary?: string | null
           color_secondary?: string | null

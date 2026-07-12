@@ -111,6 +111,10 @@ export interface Team {
   colors: TeamColors;
   logo?: string;
   logoDark?: string;
+  // Head coach only -- ESPN doesn't expose the rest of the staff cheaply (Phase E,
+  // docs/superpowers/specs/2026-07-07-phase-e-coaches-design.md). Undefined when the
+  // ingest's coach array was missing/empty for this team.
+  coach?: { name: string; experience: number };
 }
 
 // A kit's category. `home` rows are ESPN-owned (machine-managed); every other kind is

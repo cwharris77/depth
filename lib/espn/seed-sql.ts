@@ -57,6 +57,8 @@ export function buildSeedSql(rosters: TeamRoster[]): string {
       on_accent: team.colors.onAccent,
       logo_url: team.logo ?? null,
       logo_dark_url: team.logoDark ?? null,
+      coach_name: team.coach?.name ?? null,
+      coach_experience: team.coach?.experience ?? null,
     });
 
     for (const p of roster) {
@@ -119,6 +121,8 @@ export function buildSeedSql(rosters: TeamRoster[]): string {
         'on_accent',
         'logo_url',
         'logo_dark_url',
+        'coach_name',
+        'coach_experience',
       ],
       teams,
       'id'

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import roster from './fixtures/roster-sea.json';
 import depthcharts from './fixtures/depthchart-sea.json';
-import { parseAthleteId, toDepthChartRows, toTeamColors, toTeamRoster } from './transform';
+import { parseAthleteId, toCoach, toDepthChartRows, toTeamColors, toTeamRoster } from './transform';
 import type { Player } from '../types';
 import type { EspnRoster, EspnDepthcharts, EspnTeamInfo } from './types';
 import type { Team, TeamColors } from '../types';
@@ -40,6 +40,27 @@ describe('parseAthleteId', () => {
   });
   it('returns null for a junk ref', () => {
     expect(parseAthleteId('not-a-url')).toBeNull();
+  });
+});
+
+describe('toCoach', () => {
+  const typedRoster = roster as unknown as EspnRoster;
+
+  it('extracts the head coach from the roster payload', () => {
+    expect(toCoach(typedRoster)).toEqual({
+      name: 'Mike Macdonald',
+      espnId: '5044374',
+      experience: 2,
+    });
+  });
+
+  it('returns null when the coach array is missing', () => {
+    const { coach: _coach, ...withoutCoach } = typedRoster;
+    expect(toCoach(withoutCoach as EspnRoster)).toBeNull();
+  });
+
+  it('returns null when the coach array is empty', () => {
+    expect(toCoach({ ...typedRoster, coach: [] })).toBeNull();
   });
 });
 

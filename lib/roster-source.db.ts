@@ -43,6 +43,8 @@ type TeamRow = Pick<
   | 'on_accent'
   | 'logo_url'
   | 'logo_dark_url'
+  | 'coach_name'
+  | 'coach_experience'
 >;
 type PlayerRow = Pick<
   Tables['players']['Row'],
@@ -104,6 +106,9 @@ function toTeam(row: TeamRow): Team {
     },
     logo: row.logo_url ?? undefined,
     logoDark: row.logo_dark_url ?? undefined,
+    coach: row.coach_name
+      ? { name: row.coach_name, experience: row.coach_experience ?? 0 }
+      : undefined,
   };
 }
 
@@ -189,7 +194,7 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
     client
       .from('teams')
       .select(
-        'id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url'
+        'id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url, coach_name, coach_experience'
       )
       .eq('id', teamId)
       .maybeSingle<TeamRow>(),
