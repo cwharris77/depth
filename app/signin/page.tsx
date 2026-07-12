@@ -4,17 +4,12 @@ import { ArrowLeft } from 'lucide-react';
 import AccountView from '@/components/AccountView';
 import Logo from '@/components/Logo';
 import { dbRosterSource } from '@/lib/roster-source.db';
+import { safeNext } from '@/lib/auth-redirect';
 
 export const metadata: Metadata = {
   title: 'Sign in · Depth',
   description: 'Optionally sign in to sync your favorite team and settings across devices.',
 };
-
-// Only same-origin relative paths are honored — never a protocol-relative (`//host`) or absolute
-// URL — so the ?next= return target can't be turned into an open redirect. Falls back to home.
-function safeNext(raw: string | string[] | undefined): string {
-  return typeof raw === 'string' && raw.startsWith('/') && !raw.startsWith('//') ? raw : '/';
-}
 
 // Dedicated sign-in / account page (Phase C, auth pass 1), reached from the nav drawer's
 // account item. Server component: resolves the team list here (for the favorite picker) and
