@@ -19,8 +19,6 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
   const { user, loading } = useUser();
   const [email, setEmail] = useState('');
   const [sendState, setSendState] = useState<SendState>('idle');
-  const [code, setCode] = useState('');
-  const [verifyState, setVerifyState] = useState<'idle' | 'verifying' | 'error'>('idle');
   const [linkExpired, setLinkExpired] = useState(false);
   const [favoriteTeamId, setFavoriteTeamId] = useState<string | null>(null);
   const [startOnFavorite, setStartOnFavorite] = useState(true);
@@ -63,26 +61,6 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
       },
     });
     setSendState(error ? 'error' : 'sent');
-  };
-
-  // Verify the 6-digit code the user types from the email. This is the robust path: a typed code
-  // can't be consumed by an email prefetch/scanner (the magic link's failure mode) and doesn't
-  // depend on the link opening in the same browser (no PKCE code_verifier needed). On success the
-  // browser client holds the session, so a full navigation to `next` lands them signed in there.
-  const verifyCode = async () => {
-    const token = code.replace(/\D/g, '');
-    if (token.length !== 6) return;
-    setVerifyState('verifying');
-    const { error } = await getBrowserClient().auth.verifyOtp({
-      email: email.trim(),
-      token,
-      type: 'email',
-    });
-    if (error) {
-      setVerifyState('error');
-      return;
-    }
-    window.location.assign(next);
   };
 
   const changeFavorite = (id: string) => {
@@ -330,75 +308,14 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
 
   if (sendState === 'sent') {
     return (
-      <div className="flex flex-col gap-4">
-        <div>
-          <div className="text-lg font-bold" style={{ color: '#f0f4ff' }}>
-            Check your email
-          </div>
-          <p className="mt-1 text-sm" style={{ color: '#A5ACAF' }}>
-            We sent a 6-digit code to <span style={{ color: '#f0f4ff' }}>{email.trim()}</span>.
-            Enter it below to finish signing in.
-          </p>
+      <div className="flex flex-col gap-2">
+        <div className="text-lg font-bold" style={{ color: '#f0f4ff' }}>
+          Check your email
         </div>
-
-        <div className="flex flex-col gap-2">
-          <input
-            type="text"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={6}
-            value={code}
-            onChange={(e) => {
-              setCode(e.target.value.replace(/\D/g, ''));
-              setVerifyState('idle');
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') verifyCode();
-            }}
-            placeholder="123456"
-            aria-label="6-digit sign-in code"
-            className="rounded-xl px-4 py-3 text-lg tracking-[0.4em] outline-none"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.14)',
-              color: '#f0f4ff',
-            }}
-          />
-          <button
-            type="button"
-            onClick={verifyCode}
-            disabled={verifyState === 'verifying' || code.length !== 6}
-            className="rounded-xl px-4 py-3 text-sm font-bold"
-            style={{
-              background: '#69BE28',
-              color: '#0a0e1a',
-              opacity: code.length === 6 ? 1 : 0.6,
-            }}>
-            {verifyState === 'verifying' ? 'Verifying…' : 'Verify & sign in'}
-          </button>
-          {verifyState === 'error' && (
-            <div className="text-[12px]" style={{ color: '#ff6b6b' }}>
-              That code is invalid or expired — use the newest email, or resend below.
-            </div>
-          )}
-        </div>
-
-        {/* The same email also has a sign-in link as a fallback. Kept because it's zero-friction
-            when it works; the code is the reliable path when a scanner eats the link. */}
-        <p className="text-[12px]" style={{ color: '#A5ACAF' }}>
-          The email also has a sign-in link if you prefer — open it on this device.
+        <p className="text-sm" style={{ color: '#A5ACAF' }}>
+          We sent a sign-in link to <span style={{ color: '#f0f4ff' }}>{email.trim()}</span>. Open
+          it on this device to finish signing in.
         </p>
-        <button
-          type="button"
-          onClick={() => {
-            setSendState('idle');
-            setCode('');
-            setVerifyState('idle');
-          }}
-          className="self-start text-[12px] underline"
-          style={{ color: '#A5ACAF' }}>
-          Use a different email
-        </button>
       </div>
     );
   }
@@ -433,7 +350,7 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
           disabled={sendState === 'sending'}
           className="rounded-xl px-4 py-3 text-sm font-bold"
           style={{ background: '#69BE28', color: '#0a0e1a' }}>
-          {sendState === 'sending' ? 'Sending…' : 'Email me a sign-in code'}
+          {sendState === 'sending' ? 'Sending…' : 'Email me a sign-in link'}
         </button>
         {sendState === 'error' && (
           <div className="text-[12px]" style={{ color: '#ff6b6b' }}>
