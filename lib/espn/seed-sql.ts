@@ -1,11 +1,12 @@
 // Serializes resolved TeamRosters into a Postgres seed script (supabase/seed.sql) so a
 // local `supabase db reset` restores the ESPN-ingested data without re-running the live
 // ingest (scripts/ingest-espn.mts SEED_OUT mode calls this). Column lists mirror
-// writeTeam() in that script — keep them in sync; this is the offline twin of those
-// upserts. Every statement is `on conflict … do nothing`, so it composes with the
-// migration-seeded teams/uniforms and is safe to re-run.
+// writeTeam()/writeTeamStats() in that script — keep them in sync; this is the offline
+// twin of those upserts. Every statement is `on conflict … do nothing`, so it composes
+// with the migration-seeded teams/uniforms and is safe to re-run.
 import { toDepthChartRows } from './transform';
-import type { TeamRoster } from '../types';
+import type { Coach } from './transform';
+import type { TeamRoster, TeamStats } from '../types';
 
 type Val = string | number | boolean | null | undefined;
 
@@ -32,16 +33,25 @@ export function insertStatement(
   return `insert into ${table} (${columns.join(', ')}) values\n${values}\non conflict (${conflict}) do nothing;\n`;
 }
 
+export interface SeedEntry {
+  roster: TeamRoster;
+  coach: Coach | null;
+  stats: TeamStats | undefined;
+}
+
 // Build the full seed script from resolved rosters. FK order: teams -> players ->
-// depth_chart_entries + special_teams_slots. updated_at is omitted so the column default
-// (now()) fills it and regenerated seeds don't churn the diff with timestamps.
-export function buildSeedSql(rosters: TeamRoster[]): string {
+// depth_chart_entries + special_teams_slots -> team_stats. updated_at is omitted so the
+// column default (now()) fills it and regenerated seeds don't churn the diff with
+// timestamps.
+export function buildSeedSql(entries: SeedEntry[]): string {
   const teams: Record<string, Val>[] = [];
   const players: Record<string, Val>[] = [];
   const depth: Record<string, Val>[] = [];
   const special: Record<string, Val>[] = [];
+  const teamStats: Record<string, Val>[] = [];
 
-  for (const { team, players: roster, specialTeams } of rosters) {
+  for (const { roster, coach, stats } of entries) {
+    const { team, players: roosterPlayers, specialTeams } = roster;
     teams.push({
       id: team.id,
       espn_id: null,
@@ -57,11 +67,12 @@ export function buildSeedSql(rosters: TeamRoster[]): string {
       on_accent: team.colors.onAccent,
       logo_url: team.logo ?? null,
       logo_dark_url: team.logoDark ?? null,
-      coach_name: team.coach?.name ?? null,
-      coach_experience: team.coach?.experience ?? null,
+      coach_name: coach?.name ?? null,
+      coach_espn_id: coach?.espnId ?? null,
+      coach_experience: coach?.experience ?? null,
     });
 
-    for (const p of roster) {
+    for (const p of roosterPlayers) {
       players.push({
         id: p.id,
         team_id: team.id,
@@ -79,7 +90,7 @@ export function buildSeedSql(rosters: TeamRoster[]): string {
       });
     }
 
-    for (const row of toDepthChartRows(roster)) {
+    for (const row of toDepthChartRows(roosterPlayers)) {
       depth.push({
         team_id: team.id,
         position: row.position,
@@ -96,6 +107,29 @@ export function buildSeedSql(rosters: TeamRoster[]): string {
         player_id: s.playerId,
         x: s.x,
         y: s.y,
+      });
+    }
+
+    if (stats) {
+      teamStats.push({
+        team_id: team.id,
+        overall_wins: stats.overallWins,
+        overall_losses: stats.overallLosses,
+        overall_ties: stats.overallTies,
+        win_percent: stats.winPercent,
+        home_wins: stats.homeWins,
+        home_losses: stats.homeLosses,
+        road_wins: stats.roadWins,
+        road_losses: stats.roadLosses,
+        division_wins: stats.divisionWins,
+        division_losses: stats.divisionLosses,
+        conference_wins: stats.conferenceWins,
+        conference_losses: stats.conferenceLosses,
+        points_for: stats.pointsFor,
+        points_against: stats.pointsAgainst,
+        point_differential: stats.pointDifferential,
+        streak: stats.streak,
+        playoff_seed: stats.playoffSeed,
       });
     }
   }
@@ -122,6 +156,7 @@ export function buildSeedSql(rosters: TeamRoster[]): string {
         'logo_url',
         'logo_dark_url',
         'coach_name',
+        'coach_espn_id',
         'coach_experience',
       ],
       teams,
@@ -158,6 +193,31 @@ export function buildSeedSql(rosters: TeamRoster[]): string {
       ['id', 'team_id', 'label', 'player_id', 'x', 'y'],
       special,
       'id'
+    ),
+    insertStatement(
+      'team_stats',
+      [
+        'team_id',
+        'overall_wins',
+        'overall_losses',
+        'overall_ties',
+        'win_percent',
+        'home_wins',
+        'home_losses',
+        'road_wins',
+        'road_losses',
+        'division_wins',
+        'division_losses',
+        'conference_wins',
+        'conference_losses',
+        'points_for',
+        'points_against',
+        'point_differential',
+        'streak',
+        'playoff_seed',
+      ],
+      teamStats,
+      'team_id'
     ),
   ];
 

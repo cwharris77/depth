@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { sqlValue, insertStatement, buildSeedSql } from './seed-sql';
-import type { TeamRoster, Player, SpecialSlot } from '../types';
+import type { Coach } from './transform';
+import type { TeamRoster, TeamStats, Player, SpecialSlot } from '../types';
 
 describe('sqlValue', () => {
   it("escapes single quotes in strings (O'Brien)", () => {
@@ -85,29 +86,83 @@ function roster(over: Partial<TeamRoster> = {}): TeamRoster {
   } as TeamRoster;
 }
 
+function coach(over: Partial<Coach> = {}): Coach {
+  return { name: 'Mike Macdonald', espnId: '5044374', experience: 2, ...over };
+}
+
+function stats(over: Partial<TeamStats> = {}): TeamStats {
+  return {
+    overallWins: 14,
+    overallLosses: 3,
+    overallTies: 0,
+    winPercent: 0.824,
+    homeWins: 6,
+    homeLosses: 3,
+    roadWins: 8,
+    roadLosses: 0,
+    divisionWins: 5,
+    divisionLosses: 1,
+    conferenceWins: 9,
+    conferenceLosses: 3,
+    pointsFor: 490,
+    pointsAgainst: 320,
+    pointDifferential: 170,
+    streak: 'W3',
+    playoffSeed: 2,
+    ...over,
+  };
+}
+
 describe('buildSeedSql', () => {
-  it('emits teams, players, depth, and special-teams inserts in FK order', () => {
-    const sql = buildSeedSql([roster()]);
+  it('emits teams, players, depth, special-teams, and team_stats inserts in FK order', () => {
+    const sql = buildSeedSql([{ roster: roster(), coach: coach(), stats: stats() }]);
     const iTeams = sql.indexOf('insert into teams');
     const iPlayers = sql.indexOf('insert into players');
     const iDepth = sql.indexOf('insert into depth_chart_entries');
     const iSpecial = sql.indexOf('insert into special_teams_slots');
+    const iStats = sql.indexOf('insert into team_stats');
     expect(iTeams).toBeGreaterThanOrEqual(0);
     expect(iTeams).toBeLessThan(iPlayers);
     expect(iPlayers).toBeLessThan(iDepth);
     expect(iDepth).toBeLessThan(iSpecial);
+    expect(iSpecial).toBeLessThan(iStats);
+  });
+
+  it('writes coach_name/coach_experience onto the teams row', () => {
+    const sql = buildSeedSql([{ roster: roster(), coach: coach(), stats: stats() }]);
+    expect(sql).toContain("'Mike Macdonald'");
+  });
+
+  it('omits coach columns as null when coach is null', () => {
+    const sql = buildSeedSql([{ roster: roster(), coach: null, stats: stats() }]);
+    const teamsBlock = sql.slice(
+      sql.indexOf('insert into teams'),
+      sql.indexOf('insert into players')
+    );
+    expect(teamsBlock).toContain('null');
+  });
+
+  it('skips the team_stats insert when stats is undefined', () => {
+    const sql = buildSeedSql([{ roster: roster(), coach: coach(), stats: undefined }]);
+    expect(sql).not.toContain('insert into team_stats');
   });
 
   it('prefixes special-teams slot ids with the team id', () => {
-    expect(buildSeedSql([roster()])).toContain("('sea-kr', 'sea'");
+    expect(buildSeedSql([{ roster: roster(), coach: null, stats: undefined }])).toContain(
+      "('sea-kr', 'sea'"
+    );
   });
 
   it('does not emit updated_at (column default fills it, no diff churn)', () => {
-    expect(buildSeedSql([roster()])).not.toContain('updated_at');
+    expect(buildSeedSql([{ roster: roster(), coach: null, stats: undefined }])).not.toContain(
+      'updated_at'
+    );
   });
 
   it('skips a table with no rows', () => {
-    const sql = buildSeedSql([roster({ specialTeams: [] })]);
+    const sql = buildSeedSql([
+      { roster: roster({ specialTeams: [] }), coach: null, stats: undefined },
+    ]);
     expect(sql).not.toContain('insert into special_teams_slots');
   });
 });
