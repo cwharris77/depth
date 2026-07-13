@@ -16,13 +16,13 @@ import { appendFileSync, writeFileSync } from 'node:fs';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 dotenv.config({ path: '.env.local' });
-import { toDepthChartRows, toTeamRoster } from '../lib/espn/transform';
-import { buildSeedSql } from '../lib/espn/seed-sql';
-import { parseStandings, type EspnStandings } from '../lib/espn/standings';
+import { toCoach, toDepthChartRows, toTeamRoster, type Coach } from '../lib/espn/transform';
+import { buildSeedSql, type SeedEntry } from '../lib/espn/seed-sql';
+import { parseStandings, parseTeamStats, type EspnStandings } from '../lib/espn/standings';
 import { reconcileHomeUniforms } from '../lib/uniforms/reconcile-db';
 import { TEAMS } from '../lib/teams/index';
 import type { EspnDepthcharts, EspnRoster, EspnTeamInfo } from '../lib/espn/types';
-import type { TeamRoster } from '../lib/types';
+import type { TeamRoster, TeamStats } from '../lib/types';
 import type { Database } from '../lib/database.types';
 
 const SITE = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl';
@@ -88,8 +88,12 @@ async function main() {
 
   const startedAt = new Date().toISOString();
   const espnIndex = await espnTeamIndex();
-  const divisions = parseStandings(await getJson<EspnStandings>(STANDINGS));
+  const standingsJson = await getJson<EspnStandings>(STANDINGS);
+  const divisions = parseStandings(standingsJson);
+  const teamStatsByEspnId = parseTeamStats(standingsJson);
   const built: Record<string, TeamRoster> = {};
+  const coachByTeamId: Record<string, Coach | null> = {};
+  const statsByTeamId: Record<string, TeamStats | undefined> = {};
   const errors: { team: string; message: string }[] = [];
   let seasonYear: number | null = null;
 
@@ -126,6 +130,8 @@ async function main() {
         continue;
       }
       built[meta.id] = roster2;
+      coachByTeamId[meta.id] = toCoach(espnRoster);
+      statsByTeamId[meta.id] = teamStatsByEspnId.get(info.id);
       // eslint-disable-next-line no-console
       console.log(`fetched ${meta.id} (${roster2.players.length} players)`);
     } catch (e) {
@@ -137,7 +143,12 @@ async function main() {
   // Seed mode: dump the freshly-built rosters to SQL and stop — no DB writes, no
   // reconcile, no ingestion_runs row. Same fetch/transform as the live path above.
   if (seedOut) {
-    writeFileSync(seedOut, buildSeedSql(Object.values(built)));
+    const entries: SeedEntry[] = Object.values(built).map((roster) => ({
+      roster,
+      coach: coachByTeamId[roster.team.id] ?? null,
+      stats: statsByTeamId[roster.team.id],
+    }));
+    writeFileSync(seedOut, buildSeedSql(entries));
     console.log(`\nWrote seed for ${Object.keys(built).length} teams -> ${seedOut}`);
     if (errors.length) {
       console.log('Skips:');
@@ -150,7 +161,8 @@ async function main() {
   let teamsWritten = 0;
   for (const roster of Object.values(built)) {
     try {
-      await writeTeam(supabase, roster);
+      await writeTeam(supabase, roster, coachByTeamId[roster.team.id] ?? null);
+      await writeTeamStats(supabase, roster.team.id, statsByTeamId[roster.team.id]);
       teamsWritten++;
     } catch (e) {
       errors.push({ team: roster.team.id, message: `write failed: ${(e as Error).message}` });
@@ -207,7 +219,11 @@ async function main() {
   }
 }
 
-async function writeTeam(supabase: SupabaseClient<Database>, roster: TeamRoster): Promise<void> {
+async function writeTeam(
+  supabase: SupabaseClient<Database>,
+  roster: TeamRoster,
+  coach: Coach | null
+): Promise<void> {
   const { team, players, specialTeams } = roster;
 
   const { error: teamError } = await supabase.from('teams').upsert(
@@ -226,6 +242,9 @@ async function writeTeam(supabase: SupabaseClient<Database>, roster: TeamRoster)
       on_accent: team.colors.onAccent,
       logo_url: team.logo ?? null,
       logo_dark_url: team.logoDark ?? null,
+      coach_name: coach?.name ?? null,
+      coach_espn_id: coach?.espnId ?? null,
+      coach_experience: coach?.experience ?? null,
       updated_at: new Date().toISOString(),
     },
     { onConflict: 'id' }
@@ -288,6 +307,44 @@ async function writeTeam(supabase: SupabaseClient<Database>, roster: TeamRoster)
     { onConflict: 'id' }
   );
   if (stError) throw new Error(`special_teams_slots upsert: ${stError.message}`);
+}
+
+// team_stats is 1:1 with teams (Phase E stats page,
+// docs/superpowers/specs/2026-07-12-team-stats-page-design.md). `stats` is undefined
+// when this team had no complete entry in this run's standings fetch (bye-week gap,
+// mid-season expansion) -- skip the upsert entirely rather than write a partial row;
+// whatever row already exists from a prior run is left untouched.
+async function writeTeamStats(
+  supabase: SupabaseClient<Database>,
+  teamId: string,
+  stats: TeamStats | undefined
+): Promise<void> {
+  if (!stats) return;
+  const { error } = await supabase.from('team_stats').upsert(
+    {
+      team_id: teamId,
+      overall_wins: stats.overallWins,
+      overall_losses: stats.overallLosses,
+      overall_ties: stats.overallTies,
+      win_percent: stats.winPercent,
+      home_wins: stats.homeWins,
+      home_losses: stats.homeLosses,
+      road_wins: stats.roadWins,
+      road_losses: stats.roadLosses,
+      division_wins: stats.divisionWins,
+      division_losses: stats.divisionLosses,
+      conference_wins: stats.conferenceWins,
+      conference_losses: stats.conferenceLosses,
+      points_for: stats.pointsFor,
+      points_against: stats.pointsAgainst,
+      point_differential: stats.pointDifferential,
+      streak: stats.streak,
+      playoff_seed: stats.playoffSeed,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'team_id' }
+  );
+  if (error) throw new Error(`team_stats upsert: ${error.message}`);
 }
 
 main().catch((e) => {

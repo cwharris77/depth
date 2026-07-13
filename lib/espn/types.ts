@@ -1,6 +1,13 @@
 export interface EspnRoster {
   season: { year: number };
   athletes: { position: string; items: EspnAthlete[] }[];
+  coach?: EspnCoach[];
+}
+export interface EspnCoach {
+  id: string;
+  firstName: string;
+  lastName: string;
+  experience: number;
 }
 export interface EspnAthlete {
   id: string;

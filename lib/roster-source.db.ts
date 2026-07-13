@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
-import type { RosterSource, TeamMeta, UniformListing } from './roster-source';
+import type { RosterSource, TeamMeta, TeamStatsPage, UniformListing } from './roster-source';
 import { type PlayerHit, positionGroupPositions, rankByNameMatch } from './search';
 import type {
   Player,
@@ -10,6 +10,7 @@ import type {
   Team,
   TeamColors,
   TeamRoster,
+  TeamStats,
   Uniform,
   UniformKind,
 } from './types';
@@ -28,6 +29,9 @@ function supabase() {
 }
 
 type Tables = Database['public']['Tables'];
+const TEAM_SELECT =
+  'id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url';
+
 type TeamRow = Pick<
   Tables['teams']['Row'],
   | 'id'
@@ -86,6 +90,55 @@ type UniformRow = Pick<
 >;
 const UNIFORM_SELECT =
   'id, team_id, kind, name, year_start, year_end, is_current, color_primary, color_secondary, color_accent, ui_accent, on_accent, image_path';
+
+type TeamStatsRow = Pick<
+  Tables['team_stats']['Row'],
+  | 'overall_wins'
+  | 'overall_losses'
+  | 'overall_ties'
+  | 'win_percent'
+  | 'home_wins'
+  | 'home_losses'
+  | 'road_wins'
+  | 'road_losses'
+  | 'division_wins'
+  | 'division_losses'
+  | 'conference_wins'
+  | 'conference_losses'
+  | 'points_for'
+  | 'points_against'
+  | 'point_differential'
+  | 'streak'
+  | 'playoff_seed'
+>;
+const TEAM_STATS_SELECT =
+  'overall_wins, overall_losses, overall_ties, win_percent, home_wins, home_losses, road_wins, road_losses, division_wins, division_losses, conference_wins, conference_losses, points_for, points_against, point_differential, streak, playoff_seed';
+
+// A present team_stats row always came from a complete parseTeamStats result (invariant
+// 6 — writeTeamStats skips the upsert on a partial entry), so every column should be
+// non-null in practice; the `?? 0`/`?? ''` fallbacks only guard the nullable-by-schema
+// type, not a real expected case.
+function toTeamStats(row: TeamStatsRow): TeamStats {
+  return {
+    overallWins: row.overall_wins ?? 0,
+    overallLosses: row.overall_losses ?? 0,
+    overallTies: row.overall_ties ?? 0,
+    winPercent: row.win_percent ?? 0,
+    homeWins: row.home_wins ?? 0,
+    homeLosses: row.home_losses ?? 0,
+    roadWins: row.road_wins ?? 0,
+    roadLosses: row.road_losses ?? 0,
+    divisionWins: row.division_wins ?? 0,
+    divisionLosses: row.division_losses ?? 0,
+    conferenceWins: row.conference_wins ?? 0,
+    conferenceLosses: row.conference_losses ?? 0,
+    pointsFor: row.points_for ?? 0,
+    pointsAgainst: row.points_against ?? 0,
+    pointDifferential: row.point_differential ?? 0,
+    streak: row.streak ?? '',
+    playoffSeed: row.playoff_seed ?? 0,
+  };
+}
 
 function toTeam(row: TeamRow): Team {
   return {
@@ -186,13 +239,7 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
     { data: stRows, error: stError },
     { data: uniformRows, error: uniformError },
   ] = await Promise.all([
-    client
-      .from('teams')
-      .select(
-        'id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url'
-      )
-      .eq('id', teamId)
-      .maybeSingle<TeamRow>(),
+    client.from('teams').select(TEAM_SELECT).eq('id', teamId).maybeSingle<TeamRow>(),
     client
       .from('depth_chart_entries')
       .select('team_id, position, depth_rank, player_id')
@@ -267,6 +314,41 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
     players,
     specialTeams,
     uniforms: orderUniforms(rows),
+  };
+}
+
+type TeamStatsPageTeamRow = TeamRow & {
+  coach_name: string | null;
+  coach_experience: number | null;
+};
+const TEAM_STATS_PAGE_TEAM_SELECT = `${TEAM_SELECT}, coach_name, coach_experience`;
+
+async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undefined> {
+  const client = supabase();
+
+  const [{ data: teamRow, error: teamError }, { data: statsRow, error: statsError }] =
+    await Promise.all([
+      client
+        .from('teams')
+        .select(TEAM_STATS_PAGE_TEAM_SELECT)
+        .eq('id', teamId)
+        .maybeSingle<TeamStatsPageTeamRow>(),
+      client
+        .from('team_stats')
+        .select(TEAM_STATS_SELECT)
+        .eq('team_id', teamId)
+        .maybeSingle<TeamStatsRow>(),
+    ]);
+  if (teamError) throw new Error(`teams query failed: ${teamError.message}`);
+  if (statsError) throw new Error(`team_stats query failed: ${statsError.message}`);
+  if (!teamRow) return undefined;
+
+  return {
+    team: toTeam(teamRow),
+    coach: teamRow.coach_name
+      ? { name: teamRow.coach_name, experience: teamRow.coach_experience ?? 0 }
+      : undefined,
+    stats: statsRow ? toTeamStats(statsRow) : undefined,
   };
 }
 
@@ -370,12 +452,7 @@ export async function searchAllPlayers(query: string, limit = 8): Promise<Player
 
 async function fetchAllTeamMeta(): Promise<TeamRow[]> {
   const client = supabase();
-  const { data, error } = await client
-    .from('teams')
-    .select(
-      'id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url'
-    )
-    .returns<TeamRow[]>();
+  const { data, error } = await client.from('teams').select(TEAM_SELECT).returns<TeamRow[]>();
   if (error) throw new Error(`teams query failed: ${error.message}`);
   return data ?? [];
 }
@@ -423,6 +500,13 @@ export const dbRosterSource: RosterSource = {
     }
     // Not in the DB (not yet ingested, or unknown id) → undefined -> 404.
     return undefined;
+  },
+  async getTeamStats(id: string): Promise<TeamStatsPage | undefined> {
+    try {
+      return await fetchTeamStatsPage(id);
+    } catch {
+      return undefined;
+    }
   },
   async listUniforms(): Promise<UniformListing[]> {
     const [teamRows, uniformRows] = await Promise.all([fetchAllTeamMeta(), fetchAllUniformRows()]);
