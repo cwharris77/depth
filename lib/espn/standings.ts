@@ -66,8 +66,9 @@ function statStr(stats: EspnStatEntry[], type: string): string | undefined {
 }
 
 // ESPN's W-L record fields ("6-3") aren't split into wins/losses server-side.
+// Ties are optional ("5-1-1") but only captured if present; split-record ties aren't stored.
 function splitRecord(display: string | undefined): { wins: number; losses: number } | undefined {
-  const m = display?.match(/^(\d+)-(\d+)$/);
+  const m = display?.match(/^(\d+)-(\d+)(?:-\d+)?$/);
   return m ? { wins: Number(m[1]), losses: Number(m[2]) } : undefined;
 }
 

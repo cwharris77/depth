@@ -103,6 +103,27 @@ const STATS_FIXTURE = {
                   statEntry('vsconf', undefined, '4-8'),
                 ],
               },
+              {
+                team: { id: '20' },
+                // Complete stats, but division record has a tie ("5-1-1").
+                // splitRecord must tolerate the three-part format and extract wins/losses.
+                stats: [
+                  statEntry('wins', 10, '10'),
+                  statEntry('losses', 7, '7'),
+                  statEntry('ties', 0, '0'),
+                  statEntry('winpercent', 0.588, '.588'),
+                  statEntry('streak', 2, 'W2'),
+                  statEntry('playoffseed', 8, '8'),
+                  statEntry('pointsfor', 400, '400'),
+                  statEntry('pointsagainst', 350, '350'),
+                  statEntry('pointdifferential', 50, '+50'),
+                  statEntry('total', undefined, '10-7'),
+                  statEntry('home', undefined, '5-3'),
+                  statEntry('road', undefined, '5-4'),
+                  statEntry('vsdiv', undefined, '5-1-1'),
+                  statEntry('vsconf', undefined, '7-5'),
+                ],
+              },
             ],
           },
         },
@@ -147,6 +168,29 @@ describe('parseTeamStats', () => {
 
   it('covers exactly the teams with a complete stats block', () => {
     const map = parseTeamStats(STATS_FIXTURE);
-    expect(map.size).toBe(1);
+    expect(map.size).toBe(2);
+  });
+
+  it('handles a tied split record (e.g. "5-1-1") without skipping the team', () => {
+    const map = parseTeamStats(STATS_FIXTURE);
+    expect(map.get('20')).toEqual({
+      overallWins: 10,
+      overallLosses: 7,
+      overallTies: 0,
+      winPercent: 0.588,
+      homeWins: 5,
+      homeLosses: 3,
+      roadWins: 5,
+      roadLosses: 4,
+      divisionWins: 5,
+      divisionLosses: 1,
+      conferenceWins: 7,
+      conferenceLosses: 5,
+      pointsFor: 400,
+      pointsAgainst: 350,
+      pointDifferential: 50,
+      streak: 'W2',
+      playoffSeed: 8,
+    });
   });
 });
