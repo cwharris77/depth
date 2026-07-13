@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { readableTextOn } from '@/lib/colors';
 import {
   applyTeamOverride,
@@ -18,7 +19,7 @@ import { unitForPosition } from '@/lib/search';
 import { rosterShareUrlPath } from '@/lib/share';
 import { useUser } from '@/lib/use-user';
 import type { Player, Position, TeamRoster, Unit } from '@/lib/types';
-import { Check, ChevronDown, RotateCcw, Search, Share2, Shirt } from 'lucide-react';
+import { BarChart2, Check, ChevronDown, RotateCcw, Search, Share2, Shirt } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import ApplyKitFromQuery from './ApplyKitFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
@@ -281,6 +282,17 @@ export default function DepthChartField({
               }}>
               <Search size={14} color={activeColors.uiAccent} />
             </button>
+            <Link
+              href={`/team/${team.id}/stats`}
+              aria-label="Team stats"
+              className="shrink-0 flex items-center justify-center rounded-full p-2"
+              style={{
+                touchAction: 'manipulation',
+                background: 'rgba(255,255,255,0.07)',
+                border: `1px solid ${activeColors.uiAccent}40`,
+              }}>
+              <BarChart2 size={14} color={activeColors.uiAccent} />
+            </Link>
             {showUniformPicker && (
               <button
                 type="button"
