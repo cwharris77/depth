@@ -47,7 +47,7 @@ export function insertStatement(
 export interface SeedEntry {
   roster: TeamRoster;
   coach: Coach | null;
-  stats: TeamStats | undefined;
+  stats: TeamStats[];
 }
 
 // Build the full seed script from resolved rosters. FK order: teams -> players ->
@@ -121,26 +121,27 @@ export function buildSeedSql(entries: SeedEntry[]): string {
       });
     }
 
-    if (stats) {
+    for (const s of stats) {
       teamStats.push({
         team_id: team.id,
-        overall_wins: stats.overallWins,
-        overall_losses: stats.overallLosses,
-        overall_ties: stats.overallTies,
-        win_percent: stats.winPercent,
-        home_wins: stats.homeWins,
-        home_losses: stats.homeLosses,
-        road_wins: stats.roadWins,
-        road_losses: stats.roadLosses,
-        division_wins: stats.divisionWins,
-        division_losses: stats.divisionLosses,
-        conference_wins: stats.conferenceWins,
-        conference_losses: stats.conferenceLosses,
-        points_for: stats.pointsFor,
-        points_against: stats.pointsAgainst,
-        point_differential: stats.pointDifferential,
-        streak: stats.streak,
-        playoff_seed: stats.playoffSeed,
+        season: s.season,
+        overall_wins: s.overallWins,
+        overall_losses: s.overallLosses,
+        overall_ties: s.overallTies,
+        win_percent: s.winPercent,
+        home_wins: s.homeWins,
+        home_losses: s.homeLosses,
+        road_wins: s.roadWins,
+        road_losses: s.roadLosses,
+        division_wins: s.divisionWins,
+        division_losses: s.divisionLosses,
+        conference_wins: s.conferenceWins,
+        conference_losses: s.conferenceLosses,
+        points_for: s.pointsFor,
+        points_against: s.pointsAgainst,
+        point_differential: s.pointDifferential,
+        streak: s.streak,
+        playoff_seed: s.playoffSeed,
       });
     }
   }
@@ -227,6 +228,7 @@ export function buildSeedSql(entries: SeedEntry[]): string {
       'team_stats',
       [
         'team_id',
+        'season',
         'overall_wins',
         'overall_losses',
         'overall_ties',
@@ -246,7 +248,7 @@ export function buildSeedSql(entries: SeedEntry[]): string {
         'playoff_seed',
       ],
       teamStats,
-      'team_id'
+      'team_id,season'
     ),
   ];
 
