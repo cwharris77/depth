@@ -294,6 +294,7 @@ export type Database = {
           points_for: number | null
           road_losses: number | null
           road_wins: number | null
+          season: number
           streak: string | null
           team_id: string
           updated_at: string
@@ -315,6 +316,7 @@ export type Database = {
           points_for?: number | null
           road_losses?: number | null
           road_wins?: number | null
+          season: number
           streak?: string | null
           team_id: string
           updated_at?: string
@@ -336,6 +338,7 @@ export type Database = {
           points_for?: number | null
           road_losses?: number | null
           road_wins?: number | null
+          season?: number
           streak?: string | null
           team_id?: string
           updated_at?: string
@@ -345,7 +348,7 @@ export type Database = {
           {
             foreignKeyName: "team_stats_team_id_fkey"
             columns: ["team_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["id"]
           },

@@ -58,6 +58,7 @@ const STATS_FIXTURE = {
         {
           name: 'AFC East',
           standings: {
+            season: 2025,
             entries: [
               {
                 team: { id: '12' },
@@ -136,6 +137,7 @@ describe('parseTeamStats', () => {
   it('parses a full standings entry into a TeamStats record', () => {
     const map = parseTeamStats(STATS_FIXTURE);
     expect(map.get('12')).toEqual({
+      season: 2025,
       overallWins: 14,
       overallLosses: 3,
       overallTies: 0,
@@ -171,9 +173,51 @@ describe('parseTeamStats', () => {
     expect(map.size).toBe(2);
   });
 
+  it('skips every entry in a division whose standings.season is missing', () => {
+    const fixture = {
+      children: [
+        {
+          name: 'American Football Conference',
+          children: [
+            {
+              name: 'AFC East',
+              standings: {
+                // No `season` field at all -- season is part of the composite key, so
+                // a division with an unknown season contributes nothing.
+                entries: [
+                  {
+                    team: { id: '99' },
+                    stats: [
+                      statEntry('wins', 1, '1'),
+                      statEntry('losses', 1, '1'),
+                      statEntry('ties', 0, '0'),
+                      statEntry('winpercent', 0.5, '.500'),
+                      statEntry('streak', 1, 'W1'),
+                      statEntry('playoffseed', 1, '1'),
+                      statEntry('pointsfor', 10, '10'),
+                      statEntry('pointsagainst', 10, '10'),
+                      statEntry('pointdifferential', 0, '0'),
+                      statEntry('total', undefined, '1-1'),
+                      statEntry('home', undefined, '1-0'),
+                      statEntry('road', undefined, '0-1'),
+                      statEntry('vsdiv', undefined, '1-0'),
+                      statEntry('vsconf', undefined, '0-1'),
+                    ],
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    };
+    expect(parseTeamStats(fixture).size).toBe(0);
+  });
+
   it('handles a tied split record (e.g. "5-1-1") without skipping the team', () => {
     const map = parseTeamStats(STATS_FIXTURE);
     expect(map.get('20')).toEqual({
+      season: 2025,
       overallWins: 10,
       overallLosses: 7,
       overallTies: 0,
