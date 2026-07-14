@@ -1,3 +1,4 @@
+import AuthHandoffListener from '@/components/AuthHandoffListener';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
 import { VercelToolbar } from '@vercel/toolbar/next';
 import type { Metadata, Viewport } from 'next';
@@ -59,6 +60,7 @@ export default function RootLayout({
         {children}
         {shouldInjectToolbar && <VercelToolbar />}
         <ServiceWorkerRegistrar />
+        <AuthHandoffListener />
       </body>
     </html>
   );

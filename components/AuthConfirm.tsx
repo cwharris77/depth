@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { parseAuthHash } from '@/lib/auth-hash';
+import { writeAuthHandoff } from '@/lib/auth-handoff';
 
 // Client-side landing for the implicit-flow magic link (Phase C, auth pass 2). GoTrue completes
 // verification at its own /verify endpoint and redirects here with session tokens in the URL
@@ -11,6 +12,9 @@ import { parseAuthHash } from '@/lib/auth-hash';
 // full navigation to `next` so server components see the fresh session. Untrusted input degrades,
 // never throws (AGENTS.md invariant 6): a missing/expired/malformed fragment redirects to
 // /signin?auth_error=1, same external behavior as the old PKCE-code route handler had.
+// Also relays the tokens via lib/auth-handoff.ts: this page always runs in Safari (Mail never
+// opens an installed home-screen icon directly), so if the user signed in from the home-screen
+// app, components/AuthHandoffListener.tsx picks the session up there on next launch.
 export default function AuthConfirm({ next }: { next: string }) {
   const [failed, setFailed] = useState(false);
   const hasRun = useRef(false);
@@ -30,6 +34,8 @@ export default function AuthConfirm({ next }: { next: string }) {
       toSignInError();
       return;
     }
+
+    writeAuthHandoff({ accessToken: result.accessToken, refreshToken: result.refreshToken });
 
     fetch('/api/auth/set-session', {
       method: 'POST',
