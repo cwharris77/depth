@@ -14,7 +14,11 @@
     "gen:icons": "tsx scripts/gen-icons.mts",
     "db:types": "supabase gen types typescript --local > lib/database.types.ts",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "typecheck": "tsc --noEmit",
+    "fix": "npm run format && npm run lint:fix && npm run typecheck"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",
@@ -22,6 +26,7 @@
     "@vercel/toolbar": "^0.2.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "eslint": "^10.7.0",
     "flags": "^4.2.0",
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.17.0",
@@ -31,16 +36,19 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv": "^17.4.2",
+    "husky": "^9.1.7",
     "prettier": "3.9.4",
     "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
     "typescript": "^5",
+    "typescript-eslint": "^8.64.0",
     "vitest": "^4.1.9"
   }
 }

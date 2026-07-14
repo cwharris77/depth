@@ -15,7 +15,7 @@ const outPath = process.argv[2];
 const sql = generateTeamSeedSql();
 if (outPath) {
   writeFileSync(outPath, sql);
-  // eslint-disable-next-line no-console
+
   console.log(`wrote team seed -> ${outPath}`);
 } else {
   process.stdout.write(sql);

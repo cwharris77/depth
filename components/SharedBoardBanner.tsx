@@ -61,7 +61,6 @@ function Inner({ currentTeam, teams, accent, onPreview, onApply }: Props) {
       cancelled = true;
     };
     // onPreview/onApply/strip are stable enough; re-run only when the slug or team changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, currentTeam.id]);
 
   if (resolution === 'preview' && board) {

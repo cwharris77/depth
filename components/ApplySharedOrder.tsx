@@ -21,7 +21,6 @@ function Inner({ onApply }: { onApply: (override: TeamDepthOverride) => void }) 
     if (override) onApply(override);
     router.replace(pathname, { scroll: false });
     // Runs once per navigation carrying an `?order=` param; onApply is stable.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   return null;

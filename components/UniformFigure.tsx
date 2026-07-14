@@ -61,7 +61,6 @@ export default function UniformFigure({
   const height = (size * vbH) / vbW;
 
   if (imagePath) {
-    // eslint-disable-next-line @next/next/no-img-element
     return <img src={imagePath} alt={title ?? ''} width={size} height={height} />;
   }
 
