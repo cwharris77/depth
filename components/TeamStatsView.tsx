@@ -14,7 +14,6 @@ import { ordinal } from '@/lib/format';
 
 interface Props {
   team: TeamMeta;
-  coach?: { name: string; experience: number };
   seasons: TeamStats[];
 }
 
@@ -35,7 +34,7 @@ function StatCell({ label, value, color }: { label: string; value: string; color
   );
 }
 
-export default function TeamStatsView({ team, coach, seasons }: Props) {
+export default function TeamStatsView({ team, seasons }: Props) {
   const [index, setIndex] = useState(0);
   const { uiAccent, primary } = team.colors;
   const tickerText = readableTextOn(primary);
@@ -137,14 +136,16 @@ export default function TeamStatsView({ team, coach, seasons }: Props) {
         </button>
       </div>
 
-      {/* Team + coach — coach is not season-scoped (no cheap historical source). */}
+      {/* Team + coach — coach is season-scoped, keyed off the active season row
+          (docs/superpowers/specs/2026-07-14-season-scoped-head-coach-design.md). */}
       <div className="px-5 pt-[18px]">
         <div className="text-[11px] font-bold tracking-[0.1em]" style={{ color: '#7d848c' }}>
           {team.city.toUpperCase()} {team.name.toUpperCase()}
         </div>
-        {coach && (
+        {active.coach && (
           <div className="mt-0.5 text-[11px]" style={{ color: '#A5ACAF' }}>
-            HC {coach.name.toUpperCase()} · {ordinal(coach.experience).toUpperCase()} SEASON
+            HC {active.coach.name.toUpperCase()} · {ordinal(active.coach.experience).toUpperCase()}{' '}
+            SEASON
           </div>
         )}
       </div>

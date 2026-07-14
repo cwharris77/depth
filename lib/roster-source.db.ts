@@ -115,13 +115,26 @@ type TeamStatsRow = Pick<
 const TEAM_STATS_SELECT =
   'season, overall_wins, overall_losses, overall_ties, win_percent, home_wins, home_losses, road_wins, road_losses, division_wins, division_losses, conference_wins, conference_losses, points_for, points_against, point_differential, streak, playoff_seed';
 
+type TeamCoachSeasonRow = Pick<
+  Tables['team_coach_seasons']['Row'],
+  'season' | 'coach_name' | 'coach_experience'
+>;
+const TEAM_COACH_SEASONS_SELECT = 'season, coach_name, coach_experience';
+
 // A present team_stats row always came from a complete parseTeamStats result (invariant
 // 6 — writeTeamStats skips the upsert on a partial entry), so every column should be
 // non-null in practice; the `?? 0`/`?? ''` fallbacks only guard the nullable-by-schema
-// type, not a real expected case.
-function toTeamStats(row: TeamStatsRow): TeamStats {
+// type, not a real expected case. `coachBySeason` is a separate hand-curated table
+// (docs/superpowers/specs/2026-07-14-season-scoped-head-coach-design.md) — a season with
+// no curated row (not yet backfilled) simply has no coach, same "degrade, don't fake"
+// rule as every other optional field here.
+function toTeamStats(row: TeamStatsRow, coachBySeason: Map<number, TeamCoachSeasonRow>): TeamStats {
+  const coachRow = coachBySeason.get(row.season);
   return {
     season: row.season,
+    coach: coachRow
+      ? { name: coachRow.coach_name, experience: coachRow.coach_experience }
+      : undefined,
     overallWins: row.overall_wins ?? 0,
     overallLosses: row.overall_losses ?? 0,
     overallTies: row.overall_ties ?? 0,
@@ -319,39 +332,36 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
   };
 }
 
-type TeamStatsPageTeamRow = TeamRow & {
-  coach_name: string | null;
-  coach_experience: number | null;
-};
-const TEAM_STATS_PAGE_TEAM_SELECT = `${TEAM_SELECT}, coach_name, coach_experience`;
-
 async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undefined> {
   const client = supabase();
 
-  const [{ data: teamRow, error: teamError }, { data: statsRows, error: statsError }] =
-    await Promise.all([
-      client
-        .from('teams')
-        .select(TEAM_STATS_PAGE_TEAM_SELECT)
-        .eq('id', teamId)
-        .maybeSingle<TeamStatsPageTeamRow>(),
-      client
-        .from('team_stats')
-        .select(TEAM_STATS_SELECT)
-        .eq('team_id', teamId)
-        .order('season', { ascending: false })
-        .returns<TeamStatsRow[]>(),
-    ]);
+  const [
+    { data: teamRow, error: teamError },
+    { data: statsRows, error: statsError },
+    { data: coachRows, error: coachError },
+  ] = await Promise.all([
+    client.from('teams').select(TEAM_SELECT).eq('id', teamId).maybeSingle<TeamRow>(),
+    client
+      .from('team_stats')
+      .select(TEAM_STATS_SELECT)
+      .eq('team_id', teamId)
+      .order('season', { ascending: false })
+      .returns<TeamStatsRow[]>(),
+    client
+      .from('team_coach_seasons')
+      .select(TEAM_COACH_SEASONS_SELECT)
+      .eq('team_id', teamId)
+      .returns<TeamCoachSeasonRow[]>(),
+  ]);
   if (teamError) throw new Error(`teams query failed: ${teamError.message}`);
   if (statsError) throw new Error(`team_stats query failed: ${statsError.message}`);
+  if (coachError) throw new Error(`team_coach_seasons query failed: ${coachError.message}`);
   if (!teamRow) return undefined;
 
+  const coachBySeason = new Map((coachRows ?? []).map((row) => [row.season, row]));
   return {
     team: toTeam(teamRow),
-    coach: teamRow.coach_name
-      ? { name: teamRow.coach_name, experience: teamRow.coach_experience ?? 0 }
-      : undefined,
-    seasons: (statsRows ?? []).map(toTeamStats),
+    seasons: (statsRows ?? []).map((row) => toTeamStats(row, coachBySeason)),
   };
 }
 

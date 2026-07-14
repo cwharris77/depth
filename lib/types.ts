@@ -118,9 +118,13 @@ export interface Team {
 // ESPN standings fetch already used for conference/division (lib/espn/standings.ts
 // parseTeamStats) -- one call, more of the payload read. A team missing from the
 // standings response (bye-week gap, mid-season expansion) has no TeamStats rather than
-// a partially-filled one (invariant 6).
+// a partially-filled one (invariant 6). `coach` is independently optional and
+// hand-curated (docs/superpowers/specs/2026-07-14-season-scoped-head-coach-design.md,
+// `team_coach_seasons` table) -- unlike every other field here it did not come from
+// ESPN, since ESPN's roster endpoint doesn't vary `coach` by season.
 export interface TeamStats {
   season: number;
+  coach?: { name: string; experience: number };
   overallWins: number;
   overallLosses: number;
   overallTies: number;

@@ -277,6 +277,41 @@ export type Database = {
           },
         ]
       }
+      team_coach_seasons: {
+        Row: {
+          coach_experience: number
+          coach_name: string
+          season: number
+          source: string
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          coach_experience: number
+          coach_name: string
+          season: number
+          source?: string
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          coach_experience?: number
+          coach_name?: string
+          season?: number
+          source?: string
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_coach_seasons_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_stats: {
         Row: {
           conference_losses: number | null
