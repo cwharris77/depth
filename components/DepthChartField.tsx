@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { readableTextOn } from '@/lib/colors';
 import {
   applyTeamOverride,
@@ -17,9 +16,10 @@ import { mergeOnSignIn, pushTeamOverride } from '@/lib/overrides-sync';
 import type { TeamMeta } from '@/lib/roster-source';
 import { unitForPosition } from '@/lib/search';
 import { rosterShareUrlPath } from '@/lib/share';
-import { useUser } from '@/lib/use-user';
 import type { Player, Position, TeamRoster, Unit } from '@/lib/types';
+import { useUser } from '@/lib/use-user';
 import { BarChart2, Check, ChevronDown, RotateCcw, Search, Share2, Shirt } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import ApplyKitFromQuery from './ApplyKitFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
@@ -51,10 +51,12 @@ export default function DepthChartField({
   roster,
   teams,
   showUniformPicker,
+  showIsolatedSearchBarIcon,
 }: {
   roster: TeamRoster;
   teams: TeamMeta[];
   showUniformPicker: boolean;
+  showIsolatedSearchBarIcon: boolean;
 }) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeUnit, setActiveUnit] = useState<Unit>('offense');
@@ -270,18 +272,20 @@ export default function DepthChartField({
               </h1>
               <ChevronDown size={14} color="#A5ACAF" className="shrink-0" />
             </button>
-            <button
-              type="button"
-              onClick={() => setNavOpen(true)}
-              aria-label="Search teams or players"
-              className="shrink-0 flex items-center justify-center rounded-full p-2"
-              style={{
-                touchAction: 'manipulation',
-                background: 'rgba(255,255,255,0.07)',
-                border: `1px solid ${activeColors.uiAccent}40`,
-              }}>
-              <Search size={14} color={activeColors.uiAccent} />
-            </button>
+            {showIsolatedSearchBarIcon && (
+              <button
+                type="button"
+                onClick={() => setNavOpen(true)}
+                aria-label="Search teams or players"
+                className="shrink-0 flex items-center justify-center rounded-full p-2"
+                style={{
+                  touchAction: 'manipulation',
+                  background: 'rgba(255,255,255,0.07)',
+                  border: `1px solid ${activeColors.uiAccent}40`,
+                }}>
+                <Search size={14} color={activeColors.uiAccent} />
+              </button>
+            )}
             <Link
               href={`/team/${team.id}/stats`}
               aria-label="Team stats"
