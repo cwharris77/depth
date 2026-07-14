@@ -36,20 +36,23 @@ export interface UniformListing {
 }
 
 // Everything the team stats page needs, composed in one read: team identity (for the
-// header/theming), the current head coach if ingested, and one TeamStats row per
-// ingested season (current + up to two prior — docs/superpowers/specs/2026-07-14-
-// multi-season-team-stats-design.md), newest first. `coach` is independently optional
-// (a team can have stats with no coach or vice versa) and is *not* season-scoped — ESPN
-// gives no cheap historical coach signal, so the same current coach shows regardless of
-// which season is selected. `seasons` is always an array, empty rather than undefined
-// when no season has a complete entry, so callers don't need an extra undefined check
-// before rendering the "no stats" fallback. `coach` is an inline shape, not a named
-// export — lib/espn/transform.ts's `Coach` (ingest-side, has `espnId`) is a different
-// type; naming this one the same would collide in a reader's head.
+// header/theming) and one TeamStats row per ingested season (current + up to two prior
+// — docs/superpowers/specs/2026-07-14-multi-season-team-stats-design.md), newest first.
+// Each season's coach lives on that `TeamStats` entry (docs/superpowers/specs/2026-07-14-
+// season-scoped-head-coach-design.md) rather than here, since the coach who led a team
+// in 2023 is not the coach who leads it in 2025. `seasons` is always an array, empty
+// rather than undefined when no season has a complete entry, so callers don't need an
+// extra undefined check before rendering the "no stats" fallback. `incomingCoach` is a
+// distinct, separately-sourced signal: ESPN's live `teams.coach_name` reporting
+// `coach_experience: 0` for a team that just hired a new HC before that person has
+// coached a single game for them — the team_coach_seasons curated table has no row for
+// this person yet (there's no season for it to belong to), so without this field
+// they'd either be silently missing or wrongly attached to the latest played season.
+// Independent of `seasons` being empty or not.
 export interface TeamStatsPage {
   team: TeamMeta;
-  coach?: { name: string; experience: number };
   seasons: TeamStats[];
+  incomingCoach?: { name: string };
 }
 
 export interface RosterSource {
