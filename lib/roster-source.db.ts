@@ -332,6 +332,12 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
   };
 }
 
+type TeamStatsPageTeamRow = TeamRow & {
+  coach_name: string | null;
+  coach_experience: number | null;
+};
+const TEAM_STATS_PAGE_TEAM_SELECT = `${TEAM_SELECT}, coach_name, coach_experience`;
+
 async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undefined> {
   const client = supabase();
 
@@ -340,7 +346,11 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
     { data: statsRows, error: statsError },
     { data: coachRows, error: coachError },
   ] = await Promise.all([
-    client.from('teams').select(TEAM_SELECT).eq('id', teamId).maybeSingle<TeamRow>(),
+    client
+      .from('teams')
+      .select(TEAM_STATS_PAGE_TEAM_SELECT)
+      .eq('id', teamId)
+      .maybeSingle<TeamStatsPageTeamRow>(),
     client
       .from('team_stats')
       .select(TEAM_STATS_SELECT)
@@ -361,6 +371,12 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
   const coachBySeason = new Map((coachRows ?? []).map((row) => [row.season, row]));
   return {
     team: toTeam(teamRow),
+    // `coach_experience === 0` is ESPN's live signal for "hired, but hasn't coached a
+    // season for this team yet" — see TeamStatsPage.incomingCoach doc comment.
+    incomingCoach:
+      teamRow.coach_name && teamRow.coach_experience === 0
+        ? { name: teamRow.coach_name }
+        : undefined,
     seasons: (statsRows ?? []).map((row) => toTeamStats(row, coachBySeason)),
   };
 }

@@ -32,5 +32,7 @@ export default async function TeamStatsPage({ params }: Params) {
     notFound();
   }
 
-  return <TeamStatsView team={page.team} seasons={page.seasons} />;
+  return (
+    <TeamStatsView team={page.team} seasons={page.seasons} incomingCoach={page.incomingCoach} />
+  );
 }

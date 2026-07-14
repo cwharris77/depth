@@ -42,10 +42,17 @@ export interface UniformListing {
 // season-scoped-head-coach-design.md) rather than here, since the coach who led a team
 // in 2023 is not the coach who leads it in 2025. `seasons` is always an array, empty
 // rather than undefined when no season has a complete entry, so callers don't need an
-// extra undefined check before rendering the "no stats" fallback.
+// extra undefined check before rendering the "no stats" fallback. `incomingCoach` is a
+// distinct, separately-sourced signal: ESPN's live `teams.coach_name` reporting
+// `coach_experience: 0` for a team that just hired a new HC before that person has
+// coached a single game for them — the team_coach_seasons curated table has no row for
+// this person yet (there's no season for it to belong to), so without this field
+// they'd either be silently missing or wrongly attached to the latest played season.
+// Independent of `seasons` being empty or not.
 export interface TeamStatsPage {
   team: TeamMeta;
   seasons: TeamStats[];
+  incomingCoach?: { name: string };
 }
 
 export interface RosterSource {

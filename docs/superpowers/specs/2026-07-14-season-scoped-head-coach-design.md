@@ -76,9 +76,41 @@ existing `toTeamStats`/`fetchTeamStatsPage` coverage, since the lookup is a plai
 2023/2024 → Pete Carroll 2025) in the running dev server — see PR body for the browser
 check.
 
+## Addendum: incoming coach with no season yet
+
+Found in review (Cooper, 2026-07-14): a team that just hired a new HC before that
+person has coached a game shows up in ESPN's live data as `teams.coach_experience: 0`
+(e.g. Bills → Joe Brady, hired for 2026). The initial version of this fix simply had no
+row for that person in `team_coach_seasons` (correctly not attached to 2023–2025), but
+gave no positive signal either — worth naming explicitly rather than leaving silent.
+
+| Decision | Choice | Why |
+|---|---|---|
+| Detection | `coach_experience === 0` on the live `teams` row (no separate curation — this is exactly what invariant 6's "degrade, don't fake" is for, but inverted: the live ESPN signal itself already distinguishes "hired, zero seasons coached" from every other value). | Generalizes to any team a coaching change hits, not just the Bills; zero curation lag. |
+| Storage/read path | `TeamStatsPage.incomingCoach?: { name }` — a new field alongside `seasons`, computed in `fetchTeamStatsPage` from the same `teams` row already queried (re-adds `coach_name`/`coach_experience` to that query's `select`, which the original version of this fix had dropped). No new table. | It's live ESPN data, not hand-curated, so it doesn't belong in `team_coach_seasons`. |
+| Display | A dashed-border chip is prepended to the season switcher, labeled the next season (`seasons[0].season + 1`, or "NEW" if `seasons` is empty). Selecting it (index `-1` in `TeamStatsView`'s season index scheme) swaps the hero record + breakdown table for a plain "New head coach / No games played yet this season" message — never a fabricated 0-0 record. Not selected by default; the page still opens on the latest played season. | Visually distinct from a real season (dashed vs. solid border) since it isn't one; message-only body since there's nothing real to show yet. |
+
+### Files (addendum)
+
+- `lib/roster-source.ts` — `TeamStatsPage.incomingCoach?`.
+- `lib/roster-source.db.ts` — `fetchTeamStatsPage` re-select `coach_name`/`coach_experience`
+  from `teams`, derive `incomingCoach`.
+- `components/TeamStatsView.tsx`, `app/team/[id]/stats/page.tsx` — the incoming chip and
+  its message-only render branch.
+
+### Tests (addendum)
+
+`npx tsc --noEmit`, `npm run format:check`, `npm test` all clean (no new pure-logic
+branch worth a dedicated unit test — the derivation is a single equality check already
+covered by the manual verification below). Verified live: Bills opens on 2025 (Sean
+McDermott · 9th season) with a dashed "2026" chip present; selecting it shows "HC Joe
+Brady · Incoming" / "New head coach" / "No games played yet this season." Bears (no
+incoming-coach signal) shows no fourth chip, confirming the addition doesn't affect
+teams without a pending coaching change.
+
 ## Out of scope
 
 Coordinators/full staff (still no cheap source — unchanged from the original coaches
 spec). Seasons before 2023 or after the current 3-season window. Making
 `teams.coach_name` (the ESPN-ingested current coach) season-aware or removing it — it's
-unused today but out of scope to touch here.
+still read (now for the incoming-coach signal) but out of scope to restructure further.
