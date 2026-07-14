@@ -33,7 +33,7 @@ insert into teams (id, espn_id, abbrev, city, name, conference, division, color_
   ('cardinals', null, 'ARI', 'Arizona', 'Cardinals', 'NFC', 'West', '#a40227', '#ffffff', '#ffffff', '#a40227', '#ffffff', 'https://a.espncdn.com/i/teamlogos/nfl/500/ari.png', 'https://a.espncdn.com/i/teamlogos/nfl/500-dark/ari.png', 'Mike LaFleur', '4872749', 0),
   ('rams', null, 'LAR', 'Los Angeles', 'Rams', 'NFC', 'West', '#003594', '#ffd100', '#ffd100', '#ffd100', '#0a0e1a', 'https://a.espncdn.com/i/teamlogos/nfl/500/lar.png', 'https://a.espncdn.com/i/teamlogos/nfl/500-dark/lar.png', 'Sean McVay', '2499338', 9),
   ('49ers', null, 'SF', 'San Francisco', '49ers', 'NFC', 'West', '#aa0000', '#b3995d', '#b3995d', '#b3995d', '#0a0e1a', 'https://a.espncdn.com/i/teamlogos/nfl/500/sf.png', 'https://a.espncdn.com/i/teamlogos/nfl/500-dark/sf.png', 'Kyle Shanahan', '17533', 9)
-on conflict (id) do nothing;
+on conflict (id) do update set espn_id = excluded.espn_id, abbrev = excluded.abbrev, city = excluded.city, name = excluded.name, conference = excluded.conference, division = excluded.division, color_primary = excluded.color_primary, color_secondary = excluded.color_secondary, color_accent = excluded.color_accent, ui_accent = excluded.ui_accent, on_accent = excluded.on_accent, logo_url = excluded.logo_url, logo_dark_url = excluded.logo_dark_url, coach_name = excluded.coach_name, coach_espn_id = excluded.coach_espn_id, coach_experience = excluded.coach_experience;
 
 insert into players (id, team_id, name, number, position, status, age, college, experience, height, weight, bio, photo_url) values
   ('4684527', 'bills', 'T.J. Sanders', 98, 'DE', 'starter', 22, 'South Carolina', 2, '6'' 4"', 297, 'DE for the Buffalo Bills.', 'https://a.espncdn.com/i/headshots/nfl/players/full/4684527.png'),
@@ -158,7 +158,7 @@ insert into players (id, team_id, name, number, position, status, age, college, 
   ('4682745', 'dolphins', 'Jaylen Wright', 5, 'RB', 'backup', 23, 'Tennessee', 3, '5'' 10"', 208, 'RB for the Miami Dolphins.', 'https://a.espncdn.com/i/headshots/nfl/players/full/4682745.png'),
   ('4711533', 'dolphins', 'Ollie Gordon II', 0, 'RB', 'backup', 22, 'Oklahoma State', 2, '6'' 2"', 225, 'RB for the Miami Dolphins.', 'https://a.espncdn.com/i/headshots/nfl/players/full/4711533.png'),
   ('4372030', 'patriots', 'Christian Barmore', 90, 'DE', 'starter', 26, 'Alabama', 6, '6'' 5"', 315, 'DE for the New England Patriots.', 'https://a.espncdn.com/i/headshots/nfl/players/full/4372030.png'),
-  ('5081728', 'patriots', 'Jeremiah Pharms Jr.', 98, 'DE', 'backup', 29, 'Friends University', 3, '6'' 2"', 300, 'DE for the New England Patriots.', 'https://a.espncdn.com/i/headshots/nfl/players/full/5081728.png'),
+  ('5081728', 'patriots', 'Jeremiah Pharms Jr.', 98, 'DE', 'backup', 29, 'Friends', 3, '6'' 2"', 300, 'DE for the New England Patriots.', 'https://a.espncdn.com/i/headshots/nfl/players/full/5081728.png'),
   ('4240042', 'patriots', 'Cory Durden', 94, 'DT', 'starter', 27, 'NC State', 2, '6'' 4"', 305, 'DT for the New England Patriots.', 'https://a.espncdn.com/i/headshots/nfl/players/full/4240042.png'),
   ('4567171', 'patriots', 'Eric Gregory', 95, 'DT', 'backup', 25, 'Arkansas', 2, '6'' 3"', 319, 'DT for the New England Patriots.', 'https://a.espncdn.com/i/headshots/nfl/players/full/4567171.png'),
   ('5150999', 'patriots', 'David Blay Jr.', 96, 'DT', 'rookie', 0, 'Miami', 0, '6'' 4"', 303, 'DT for the New England Patriots.', 'https://a.espncdn.com/i/headshots/college-football/players/full/5150999.png'),
