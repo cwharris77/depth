@@ -1,6 +1,7 @@
-// Fetches ESPN rosters/depthcharts for all 32 teams, transforms them through the
-// pure lib/espn/transform pipeline, and upserts into Postgres (Supabase). Run by
-// hand (or later, on a schedule -- see docs/espn.md). Never part of `next build`.
+// Fetches ESPN rosters/depthcharts, coaches, and multi-season team stats for all 32
+// teams, transforms them through the pure lib/espn/transform (+ standings) pipeline,
+// and upserts into Postgres (Supabase). Run by hand (or on a schedule -- see
+// docs/espn.md). Never part of `next build`.
 //
 // Usage: npm run ingest:espn
 // Requires SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in the environment (service role
