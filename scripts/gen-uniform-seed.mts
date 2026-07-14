@@ -18,7 +18,7 @@ const outPath = process.argv[2];
 const sql = generateCuratedSeedSql();
 if (outPath) {
   writeFileSync(outPath, sql);
-  // eslint-disable-next-line no-console
+
   console.log(`wrote ${UNIFORMS.length} curated rows -> ${outPath}`);
 } else {
   process.stdout.write(sql);

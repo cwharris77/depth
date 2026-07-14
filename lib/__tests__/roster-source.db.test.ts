@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { dbRosterSource, searchAllPlayers } from '../roster-source.db';
 
 // Tests against the real Supabase project (not mocked). Rationale: this repo's test
@@ -102,7 +102,6 @@ maybeDescribe('searchAllPlayers (live Supabase project)', () => {
 describe('dbRosterSource (env not configured)', () => {
   it('documents the skip condition so a missing env var is visible, not silent', () => {
     if (!hasEnv) {
-      // eslint-disable-next-line no-console
       console.warn('SUPABASE_URL/SUPABASE_ANON_KEY not set — dbRosterSource live tests skipped.');
     }
     expect(true).toBe(true);

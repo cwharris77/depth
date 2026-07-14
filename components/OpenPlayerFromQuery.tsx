@@ -21,7 +21,6 @@ function Inner({ players, onOpen }: { players: Player[]; onOpen: (player: Player
     router.replace(pathname, { scroll: false });
     // Runs once per navigation that carries a `?player=` param; `players`/`onOpen` are
     // stable for the page's lifetime.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   return null;

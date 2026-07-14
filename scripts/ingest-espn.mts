@@ -157,7 +157,7 @@ async function main() {
       built[meta.id] = roster2;
       coachByTeamId[meta.id] = toCoach(espnRoster);
       statsByTeamId[meta.id] = teamStatsByEspnId.get(info.id) ?? [];
-      // eslint-disable-next-line no-console
+
       console.log(`fetched ${meta.id} (${roster2.players.length} players)`);
     } catch (e) {
       errors.push({ team: meta.id, message: (e as Error).message });
