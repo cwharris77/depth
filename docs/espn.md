@@ -1,7 +1,8 @@
-# ESPN roster data (Postgres-backed)
+# ESPN data ingestion (Postgres-backed)
 
-Rosters, depth order, photos, and team colors/logos are ingested from ESPN's
-unofficial API into Postgres (Supabase project `jiqoaqmzmvtovimnmbzl`). The app reads
+Rosters, depth order, photos, team colors/logos, coaches, and multi-season team stats
+are ingested from ESPN's unofficial API into Postgres (Supabase project
+`jiqoaqmzmvtovimnmbzl`). The app reads
 from the DB at request/build time via `dbRosterSource` (`lib/roster-source.db.ts`) —
 there is no committed generated-data file anymore (that was the prior static-file
 plan; this repo now ingests into a real database instead).
@@ -12,7 +13,10 @@ plan; this repo now ingests into a real database instead).
 - `lib/espn/positions.ts` — maps ESPN depthchart keys (`lde`, `rde`, `wr`, ...) and
   site-roster bio position abbreviations (`WR`, `OT`, ...) to our `Position` enum.
 - `lib/espn/standings.ts` — `parseStandings`: one standings fetch → every ESPN team id
-  mapped to its `{conference, division}`, so conf/div is ESPN-sourced.
+  mapped to its `{conference, division}`, so conf/div is ESPN-sourced. `parseTeamStats`:
+  the same fetch (current season, plus two explicit `?season=` fetches for prior years)
+  also carries each team's win/loss/points record, parsed into `TeamStats[]` per ESPN
+  team id.
 - `lib/teams/league.ts` — a build-time identity seed (id/city/name/abbrev + placeholder
   rosters used only as test fixtures) the ingest loops over. Everything live (colors,
   conf/div, rosters) comes from ESPN, not here.
@@ -22,9 +26,10 @@ plan; this repo now ingests into a real database instead).
   key-collapse (e.g. `lde`+`rde` both map to `DE`, each independently ranked) so the
   DB's `(team_id, position, depth_rank)` unique constraint never collides.
 - `scripts/ingest-espn.mts` — fetches all 32 teams, runs each through the transform,
-  and upserts into `teams`, `players`,
-  `depth_chart_entries`, and `special_teams_slots`. Writes one `ingestion_runs` row per
-  full run (`started_at`/`finished_at`/`status`/`teams_written`/`errors`).
+  and upserts into `teams` (including coach fields), `players`, `depth_chart_entries`,
+  `special_teams_slots`, and `team_stats` (one row per team per season). Writes one
+  `ingestion_runs` row per full run (`started_at`/`finished_at`/`status`/
+  `teams_written`/`errors`).
 - `lib/roster-source.db.ts` — `dbRosterSource`, a `RosterSource` implementation that
   queries the DB and assembles the same `TeamRoster` shape the app already renders.
 - `lib/database.types.ts` — generated `Database` type (see "Generated types" below).
@@ -62,7 +67,8 @@ leave the DB one run stale.
 ## How it works
 
 - Site roster API (`site.api.espn.com/.../teams/{abbr}/roster`) → bios, jersey, age,
-  college, experience, height, weight, status, headshot. Flat list, no depth order.
+  college, experience, height, weight, status, headshot, and head coach (`toCoach`).
+  Flat list, no depth order.
 - Core depthcharts API (`sports.core.api.espn.com/.../depthcharts`) → position + rank
   order, players as `$ref` URLs. Joined to the site roster by athlete id (parsed from
   the `$ref`).
@@ -72,7 +78,9 @@ leave the DB one run stale.
   division for every team in one call. `parseStandings` (`lib/espn/standings.ts`) maps
   each ESPN team id → `{conference, division}`; the ingest writes these, so conf/div is
   ESPN-sourced, not hand-curated. `lib/teams/league.ts` is now just an identity seed
-  (id/city/name/abbrev) the ingest loops over.
+  (id/city/name/abbrev) the ingest loops over. The same fetch (plus two explicit
+  `?season=` calls for the two prior years) also carries each team's win/loss/points
+  record; `parseTeamStats` turns that into the `team_stats` rows the ingest writes.
 - A KR/PR/K/P/LS can be a player ranked outside the normal top-3-per-position cap
   (e.g. a low-depth-chart WR who's still the primary punt returner) — `toTeamRoster`
   adds them to `players` anyway via a bio-position fallback, so `specialTeams` never
