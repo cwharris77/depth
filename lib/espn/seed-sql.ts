@@ -2,8 +2,10 @@
 // local `supabase db reset` restores the ESPN-ingested data without re-running the live
 // ingest (scripts/ingest-espn.mts SEED_OUT mode calls this). Column lists mirror
 // writeTeam()/writeTeamStats() in that script — keep them in sync; this is the offline
-// twin of those upserts. Every statement is `on conflict … do nothing`, so it composes
-// with the migration-seeded teams/uniforms and is safe to re-run.
+// twin of those upserts. Every statement is `on conflict … do nothing` and safe to
+// re-run, except `teams`: 20260707190000_seed_teams.sql pre-seeds a bare identity row
+// per team for FK purposes, so teams uses `do update set` to overwrite that stub with
+// the real ESPN data instead of silently no-oping.
 import { toDepthChartRows } from './transform';
 import type { Coach } from './transform';
 import type { TeamRoster, TeamStats } from '../types';
@@ -19,18 +21,27 @@ export function sqlValue(v: Val): string {
   return `'${v.replace(/'/g, "''")}'`;
 }
 
-// One multi-row INSERT ... ON CONFLICT DO NOTHING for a table. Empty rows -> ''.
+// One multi-row INSERT for a table. By default ON CONFLICT DO NOTHING. Pass
+// `updateColumns` when a bare identity row may already exist at the conflict target
+// (e.g. teams, pre-seeded by 20260707190000_seed_teams.sql for FK purposes) so this
+// seed's richer ESPN data overwrites the stub instead of silently no-oping. Empty
+// rows -> ''.
 export function insertStatement(
   table: string,
   columns: string[],
   rows: Record<string, Val>[],
-  conflict: string
+  conflict: string,
+  updateColumns?: string[]
 ): string {
   if (rows.length === 0) return '';
   const values = rows
     .map((r) => `  (${columns.map((c) => sqlValue(r[c])).join(', ')})`)
     .join(',\n');
-  return `insert into ${table} (${columns.join(', ')}) values\n${values}\non conflict (${conflict}) do nothing;\n`;
+  const action =
+    updateColumns && updateColumns.length > 0
+      ? `do update set ${updateColumns.map((c) => `${c} = excluded.${c}`).join(', ')}`
+      : 'do nothing';
+  return `insert into ${table} (${columns.join(', ')}) values\n${values}\non conflict (${conflict}) ${action};\n`;
 }
 
 export interface SeedEntry {
@@ -160,7 +171,25 @@ export function buildSeedSql(entries: SeedEntry[]): string {
         'coach_experience',
       ],
       teams,
-      'id'
+      'id',
+      [
+        'espn_id',
+        'abbrev',
+        'city',
+        'name',
+        'conference',
+        'division',
+        'color_primary',
+        'color_secondary',
+        'color_accent',
+        'ui_accent',
+        'on_accent',
+        'logo_url',
+        'logo_dark_url',
+        'coach_name',
+        'coach_espn_id',
+        'coach_experience',
+      ]
     ),
     insertStatement(
       'players',
