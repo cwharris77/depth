@@ -1,8 +1,9 @@
-name: Ingest ESPN rosters
+name: Ingest ESPN data
 
-# Recurring ESPN roster ingestion. Wraps `npm run ingest:espn` (see docs/espn.md)
-# on a weekly schedule, plus a manual trigger. STRICT=1 so a partial run turns the
-# workflow red instead of silently going green with half-stale data.
+# Recurring ESPN ingestion (rosters, depth charts, coaches, and multi-season team
+# stats). Wraps `npm run ingest:espn` (see docs/espn.md) on a weekly schedule, plus a
+# manual trigger. STRICT=1 so a partial run turns the workflow red instead of
+# silently going green with half-stale data.
 
 on:
   schedule:
