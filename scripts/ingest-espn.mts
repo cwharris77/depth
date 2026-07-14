@@ -90,10 +90,34 @@ async function main() {
   const espnIndex = await espnTeamIndex();
   const standingsJson = await getJson<EspnStandings>(STANDINGS);
   const divisions = parseStandings(standingsJson);
-  const teamStatsByEspnId = parseTeamStats(standingsJson);
+
+  // Multi-season team stats (docs/superpowers/specs/2026-07-14-multi-season-team-stats-
+  // design.md): the unparameterized fetch's own entries tell us the latest season `Y`
+  // (embedded per-division, not the top-level document field -- see standings.ts), then
+  // two more explicit `?season=` fetches cover the prior two years. All three merge into
+  // one ESPN-team-id -> TeamStats[] map.
+  const currentSeasonStats = parseTeamStats(standingsJson);
+  const latestSeason = [...currentSeasonStats.values()][0]?.season ?? null;
+  const priorSeasonsJson =
+    latestSeason === null
+      ? []
+      : await Promise.all(
+          [latestSeason - 1, latestSeason - 2].map((y) =>
+            getJson<EspnStandings>(`${STANDINGS}&season=${y}`)
+          )
+        );
+  const teamStatsByEspnId = new Map<string, TeamStats[]>();
+  for (const seasonMap of [currentSeasonStats, ...priorSeasonsJson.map(parseTeamStats)]) {
+    for (const [id, stats] of seasonMap) {
+      const existing = teamStatsByEspnId.get(id) ?? [];
+      existing.push(stats);
+      teamStatsByEspnId.set(id, existing);
+    }
+  }
+
   const built: Record<string, TeamRoster> = {};
   const coachByTeamId: Record<string, Coach | null> = {};
-  const statsByTeamId: Record<string, TeamStats | undefined> = {};
+  const statsByTeamId: Record<string, TeamStats[]> = {};
   const errors: { team: string; message: string }[] = [];
   let seasonYear: number | null = null;
 
@@ -131,7 +155,7 @@ async function main() {
       }
       built[meta.id] = roster2;
       coachByTeamId[meta.id] = toCoach(espnRoster);
-      statsByTeamId[meta.id] = teamStatsByEspnId.get(info.id);
+      statsByTeamId[meta.id] = teamStatsByEspnId.get(info.id) ?? [];
       // eslint-disable-next-line no-console
       console.log(`fetched ${meta.id} (${roster2.players.length} players)`);
     } catch (e) {
@@ -146,7 +170,7 @@ async function main() {
     const entries: SeedEntry[] = Object.values(built).map((roster) => ({
       roster,
       coach: coachByTeamId[roster.team.id] ?? null,
-      stats: statsByTeamId[roster.team.id],
+      stats: statsByTeamId[roster.team.id] ?? [],
     }));
     writeFileSync(seedOut, buildSeedSql(entries));
     console.log(`\nWrote seed for ${Object.keys(built).length} teams -> ${seedOut}`);
@@ -309,40 +333,43 @@ async function writeTeam(
   if (stError) throw new Error(`special_teams_slots upsert: ${stError.message}`);
 }
 
-// team_stats is 1:1 with teams (Phase E stats page,
-// docs/superpowers/specs/2026-07-12-team-stats-page-design.md). `stats` is undefined
-// when this team had no complete entry in this run's standings fetch (bye-week gap,
-// mid-season expansion) -- skip the upsert entirely rather than write a partial row;
-// whatever row already exists from a prior run is left untouched.
+// team_stats is one row per (team, season) -- multi-season stats page,
+// docs/superpowers/specs/2026-07-14-multi-season-team-stats-design.md. An empty array
+// means this team had no complete entry for any of the three fetched seasons this run
+// (bye-week gap, mid-season expansion) -- skip entirely rather than write a partial row;
+// whatever rows already exist from a prior run are left untouched. A single season
+// missing from `stats` (but others present) simply isn't in the array -- same partial
+// skip, now per-row instead of per-team.
 async function writeTeamStats(
   supabase: SupabaseClient<Database>,
   teamId: string,
-  stats: TeamStats | undefined
+  stats: TeamStats[]
 ): Promise<void> {
-  if (!stats) return;
+  if (stats.length === 0) return;
   const { error } = await supabase.from('team_stats').upsert(
-    {
+    stats.map((s) => ({
       team_id: teamId,
-      overall_wins: stats.overallWins,
-      overall_losses: stats.overallLosses,
-      overall_ties: stats.overallTies,
-      win_percent: stats.winPercent,
-      home_wins: stats.homeWins,
-      home_losses: stats.homeLosses,
-      road_wins: stats.roadWins,
-      road_losses: stats.roadLosses,
-      division_wins: stats.divisionWins,
-      division_losses: stats.divisionLosses,
-      conference_wins: stats.conferenceWins,
-      conference_losses: stats.conferenceLosses,
-      points_for: stats.pointsFor,
-      points_against: stats.pointsAgainst,
-      point_differential: stats.pointDifferential,
-      streak: stats.streak,
-      playoff_seed: stats.playoffSeed,
+      season: s.season,
+      overall_wins: s.overallWins,
+      overall_losses: s.overallLosses,
+      overall_ties: s.overallTies,
+      win_percent: s.winPercent,
+      home_wins: s.homeWins,
+      home_losses: s.homeLosses,
+      road_wins: s.roadWins,
+      road_losses: s.roadLosses,
+      division_wins: s.divisionWins,
+      division_losses: s.divisionLosses,
+      conference_wins: s.conferenceWins,
+      conference_losses: s.conferenceLosses,
+      points_for: s.pointsFor,
+      points_against: s.pointsAgainst,
+      point_differential: s.pointDifferential,
+      streak: s.streak,
+      playoff_seed: s.playoffSeed,
       updated_at: new Date().toISOString(),
-    },
-    { onConflict: 'team_id' }
+    })),
+    { onConflict: 'team_id,season' }
   );
   if (error) throw new Error(`team_stats upsert: ${error.message}`);
 }
