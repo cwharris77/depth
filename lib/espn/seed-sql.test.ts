@@ -92,6 +92,7 @@ function coach(over: Partial<Coach> = {}): Coach {
 
 function stats(over: Partial<TeamStats> = {}): TeamStats {
   return {
+    season: 2025,
     overallWins: 14,
     overallLosses: 3,
     overallTies: 0,
@@ -115,7 +116,7 @@ function stats(over: Partial<TeamStats> = {}): TeamStats {
 
 describe('buildSeedSql', () => {
   it('emits teams, players, depth, special-teams, and team_stats inserts in FK order', () => {
-    const sql = buildSeedSql([{ roster: roster(), coach: coach(), stats: stats() }]);
+    const sql = buildSeedSql([{ roster: roster(), coach: coach(), stats: [stats()] }]);
     const iTeams = sql.indexOf('insert into teams');
     const iPlayers = sql.indexOf('insert into players');
     const iDepth = sql.indexOf('insert into depth_chart_entries');
@@ -129,12 +130,12 @@ describe('buildSeedSql', () => {
   });
 
   it('writes coach_name/coach_experience onto the teams row', () => {
-    const sql = buildSeedSql([{ roster: roster(), coach: coach(), stats: stats() }]);
+    const sql = buildSeedSql([{ roster: roster(), coach: coach(), stats: [stats()] }]);
     expect(sql).toContain("'Mike Macdonald'");
   });
 
   it('omits coach columns as null when coach is null', () => {
-    const sql = buildSeedSql([{ roster: roster(), coach: null, stats: stats() }]);
+    const sql = buildSeedSql([{ roster: roster(), coach: null, stats: [stats()] }]);
     const teamsBlock = sql.slice(
       sql.indexOf('insert into teams'),
       sql.indexOf('insert into players')
@@ -142,27 +143,25 @@ describe('buildSeedSql', () => {
     expect(teamsBlock).toContain('null');
   });
 
-  it('skips the team_stats insert when stats is undefined', () => {
-    const sql = buildSeedSql([{ roster: roster(), coach: coach(), stats: undefined }]);
+  it('skips the team_stats insert when stats is empty', () => {
+    const sql = buildSeedSql([{ roster: roster(), coach: coach(), stats: [] }]);
     expect(sql).not.toContain('insert into team_stats');
   });
 
   it('prefixes special-teams slot ids with the team id', () => {
-    expect(buildSeedSql([{ roster: roster(), coach: null, stats: undefined }])).toContain(
+    expect(buildSeedSql([{ roster: roster(), coach: null, stats: [] }])).toContain(
       "('sea-kr', 'sea'"
     );
   });
 
   it('does not emit updated_at (column default fills it, no diff churn)', () => {
-    expect(buildSeedSql([{ roster: roster(), coach: null, stats: undefined }])).not.toContain(
+    expect(buildSeedSql([{ roster: roster(), coach: null, stats: [] }])).not.toContain(
       'updated_at'
     );
   });
 
   it('skips a table with no rows', () => {
-    const sql = buildSeedSql([
-      { roster: roster({ specialTeams: [] }), coach: null, stats: undefined },
-    ]);
+    const sql = buildSeedSql([{ roster: roster({ specialTeams: [] }), coach: null, stats: [] }]);
     expect(sql).not.toContain('insert into special_teams_slots');
   });
 
@@ -172,8 +171,8 @@ describe('buildSeedSql', () => {
       team: { ...roster().team, id: 'sf', abbrev: 'SF' },
     });
     const sql = buildSeedSql([
-      { roster: seaRoster, coach: coach(), stats: stats() },
-      { roster: sfRoster, coach: null, stats: undefined },
+      { roster: seaRoster, coach: coach(), stats: [stats()] },
+      { roster: sfRoster, coach: null, stats: [] },
     ]);
 
     // team_stats insert block is present

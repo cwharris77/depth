@@ -120,6 +120,7 @@ export interface Team {
 // standings response (bye-week gap, mid-season expansion) has no TeamStats rather than
 // a partially-filled one (invariant 6).
 export interface TeamStats {
+  season: number;
   overallWins: number;
   overallLosses: number;
   overallTies: number;

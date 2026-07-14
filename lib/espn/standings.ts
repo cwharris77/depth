@@ -12,7 +12,7 @@ interface StandingsEntry {
 }
 interface DivisionNode {
   name: string;
-  standings?: { entries?: StandingsEntry[] };
+  standings?: { season?: number; entries?: StandingsEntry[] };
 }
 interface ConferenceNode {
   name: string;
@@ -76,11 +76,19 @@ function splitRecord(display: string | undefined): { wins: number; losses: numbe
 // just conference/division. A team whose stats array is missing or partial (bye-week
 // ingest gap, mid-season expansion) is left out of the map entirely -- never a
 // half-filled TeamStats (invariant 6) -- so the caller's "no entry -> skip the upsert"
-// logic (scripts/ingest-espn.mts) has a clean signal.
+// logic (scripts/ingest-espn.mts) has a clean signal. `season` is read per-division from
+// `standings.season` (not the document's top-level season, which flips to the *next*
+// season once the current one ends -- verified live 2026-07-14) so this same parser
+// handles both the unparameterized "current" fetch and an explicit `?season=YYYY` fetch
+// for prior years (docs/superpowers/specs/2026-07-14-multi-season-team-stats-design.md).
+// A division missing `standings.season` skips all its entries -- season is part of the
+// composite key, so a half-known season is as unusable as a half-known stat.
 export function parseTeamStats(json: EspnStandings): Map<string, TeamStats> {
   const out = new Map<string, TeamStats>();
   for (const conf of kids(json.children)) {
     for (const div of kids(conf.children)) {
+      const season = div.standings?.season;
+      if (season === undefined) continue;
       for (const entry of div.standings?.entries ?? []) {
         const id = entry.team?.id;
         if (!id) continue;
@@ -119,6 +127,7 @@ export function parseTeamStats(json: EspnStandings): Map<string, TeamStats> {
         }
 
         out.set(String(id), {
+          season,
           overallWins: wins,
           overallLosses: losses,
           overallTies: ties,

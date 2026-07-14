@@ -93,6 +93,7 @@ const UNIFORM_SELECT =
 
 type TeamStatsRow = Pick<
   Tables['team_stats']['Row'],
+  | 'season'
   | 'overall_wins'
   | 'overall_losses'
   | 'overall_ties'
@@ -112,7 +113,7 @@ type TeamStatsRow = Pick<
   | 'playoff_seed'
 >;
 const TEAM_STATS_SELECT =
-  'overall_wins, overall_losses, overall_ties, win_percent, home_wins, home_losses, road_wins, road_losses, division_wins, division_losses, conference_wins, conference_losses, points_for, points_against, point_differential, streak, playoff_seed';
+  'season, overall_wins, overall_losses, overall_ties, win_percent, home_wins, home_losses, road_wins, road_losses, division_wins, division_losses, conference_wins, conference_losses, points_for, points_against, point_differential, streak, playoff_seed';
 
 // A present team_stats row always came from a complete parseTeamStats result (invariant
 // 6 — writeTeamStats skips the upsert on a partial entry), so every column should be
@@ -120,6 +121,7 @@ const TEAM_STATS_SELECT =
 // type, not a real expected case.
 function toTeamStats(row: TeamStatsRow): TeamStats {
   return {
+    season: row.season,
     overallWins: row.overall_wins ?? 0,
     overallLosses: row.overall_losses ?? 0,
     overallTies: row.overall_ties ?? 0,
@@ -326,7 +328,7 @@ const TEAM_STATS_PAGE_TEAM_SELECT = `${TEAM_SELECT}, coach_name, coach_experienc
 async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undefined> {
   const client = supabase();
 
-  const [{ data: teamRow, error: teamError }, { data: statsRow, error: statsError }] =
+  const [{ data: teamRow, error: teamError }, { data: statsRows, error: statsError }] =
     await Promise.all([
       client
         .from('teams')
@@ -337,7 +339,8 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
         .from('team_stats')
         .select(TEAM_STATS_SELECT)
         .eq('team_id', teamId)
-        .maybeSingle<TeamStatsRow>(),
+        .order('season', { ascending: false })
+        .returns<TeamStatsRow[]>(),
     ]);
   if (teamError) throw new Error(`teams query failed: ${teamError.message}`);
   if (statsError) throw new Error(`team_stats query failed: ${statsError.message}`);
@@ -348,7 +351,7 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
     coach: teamRow.coach_name
       ? { name: teamRow.coach_name, experience: teamRow.coach_experience ?? 0 }
       : undefined,
-    stats: statsRow ? toTeamStats(statsRow) : undefined,
+    seasons: (statsRows ?? []).map(toTeamStats),
   };
 }
 
