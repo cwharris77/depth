@@ -94,7 +94,6 @@ export default function DepthChartField({
   useEffect(() => {
     if (!user) return;
     mergeOnSignIn().then(() => setOverride(getTeamOverride(team.id)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   // Previewing a shared board (?board=<slug>, see SharedBoardBanner): the field renders the

@@ -1,10 +1,10 @@
-import { notFound, redirect } from 'next/navigation';
 import DepthChartField from '@/components/DepthChartField';
-import { dbRosterSource } from '@/lib/roster-source.db';
-import { DEFAULT_TEAM_ID } from '@/lib/teams';
-import { showUniformPicker } from '@/lib/flags';
-import { getServerClient } from '@/lib/supabase/server';
+import { showIsolatedSearchBarIcon, showUniformPicker } from '@/lib/flags';
 import { resolveStartupTeam } from '@/lib/home-team';
+import { dbRosterSource } from '@/lib/roster-source.db';
+import { getServerClient } from '@/lib/supabase/server';
+import { DEFAULT_TEAM_ID } from '@/lib/teams';
+import { notFound, redirect } from 'next/navigation';
 
 // The home route. Signed-in visitors resolve to their startup team (favorite ->
 // last-viewed -> default) server-side and are redirected to /team/<id>, so the app opens
@@ -41,15 +41,23 @@ export default async function Home() {
     if (target !== DEFAULT_TEAM_ID) redirect(`/team/${target}`);
   }
 
-  const [roster, teams, uniformPicker] = await Promise.all([
+  const [roster, teams, uniformPicker, isolatedSearchBarIcon] = await Promise.all([
     dbRosterSource.getTeam(DEFAULT_TEAM_ID),
     dbRosterSource.listTeams(),
     // Launch gate, evaluated here (server) and passed down — the client component never
     // reads flags itself (lib/flags.ts).
     showUniformPicker(),
+    showIsolatedSearchBarIcon(),
   ]);
   if (!roster) {
     notFound();
   }
-  return <DepthChartField roster={roster} teams={teams} showUniformPicker={uniformPicker} />;
+  return (
+    <DepthChartField
+      roster={roster}
+      teams={teams}
+      showUniformPicker={uniformPicker}
+      showIsolatedSearchBarIcon={isolatedSearchBarIcon}
+    />
+  );
 }

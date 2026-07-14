@@ -18,7 +18,6 @@ function Inner({ validIds, onApply }: { validIds: string[]; onApply: (id: string
     if (validIds.includes(kit)) onApply(kit);
     router.replace(pathname, { scroll: false });
     // Runs per navigation carrying `?kit=`; validIds/onApply are stable for the page.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   return null;
