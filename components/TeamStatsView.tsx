@@ -6,7 +6,7 @@
 // `seasons` is small (current + up to two prior years), never a fan-out of all-32 data.
 import { useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { TeamStats } from '@/lib/types';
 import { readableTextOn } from '@/lib/colors';
@@ -49,7 +49,7 @@ export default function TeamStatsView({ team, coach, seasons }: Props) {
           href={`/team/${team.id}`}
           className="inline-flex items-center gap-1.5 mb-6"
           style={{ color: uiAccent }}>
-          <ChevronLeft size={16} />
+          <ArrowLeft size={18} />
           <span className="text-sm font-semibold">
             {team.city} {team.name}
           </span>
@@ -75,33 +75,35 @@ export default function TeamStatsView({ team, coach, seasons }: Props) {
       {/* Brand ticker strip — a large controlled surface (invariant 4), so it uses the
           brand-true primary with a computed contrast text rather than uiAccent. */}
       <div
-        className="flex items-center justify-between px-4 pb-1.5 text-[11px] font-bold tracking-[0.12em]"
+        className="flex items-center justify-between px-4 py-3 text-sm font-bold tracking-[0.08em]"
         style={{
           background: primary,
           color: tickerText,
-          paddingTop: 'max(env(safe-area-inset-top), 6px)',
+          paddingTop: 'max(env(safe-area-inset-top), 12px)',
         }}>
-        <Link href={`/team/${team.id}`} className="no-underline" style={{ color: tickerText }}>
-          ◂ {team.abbrev}
+        <Link
+          href={`/team/${team.id}`}
+          className="inline-flex items-center gap-1.5 no-underline"
+          style={{ color: tickerText }}>
+          <ArrowLeft size={18} />
+          {team.abbrev}
         </Link>
         <span>SEASON STATS</span>
       </div>
 
-      {/* Season switcher */}
+      {/* Season switcher — no prev/next arrows: desktop is wide enough to show every
+          season at once, and mobile relies on the horizontal swipe affordance. */}
       <div
-        className="flex items-center gap-0.5 px-2.5 py-2.5"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', background: '#0d1220' }}>
-        <button
-          type="button"
-          onClick={() => setIndex((i) => Math.max(0, i - 1))}
-          disabled={index >= seasons.length - 1}
-          aria-label="Older season"
-          className="shrink-0 p-1.5 disabled:opacity-30"
-          style={{ background: 'none', border: 'none', color: '#7d848c' }}>
-          <ChevronLeft size={16} />
-        </button>
-        <div className="flex flex-1 gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-          {seasons.map((s, i) => {
+        className="flex items-center gap-1.5 px-2.5 py-2.5 overflow-x-auto"
+        style={{
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          background: '#0d1220',
+          scrollbarWidth: 'none',
+        }}>
+        {[...seasons]
+          .map((s, i) => ({ s, i }))
+          .reverse()
+          .map(({ s, i }) => {
             const isSelected = i === index;
             const isLatest = i === 0;
             return (
@@ -118,23 +120,13 @@ export default function TeamStatsView({ team, coach, seasons }: Props) {
                 {isLatest && (
                   <span
                     className="inline-block h-1.5 w-1.5 rounded-full"
-                    style={{ background: uiAccent }}
+                    style={{ background: isSelected ? '#0a0e1a' : uiAccent }}
                   />
                 )}
                 {s.season}
               </button>
             );
           })}
-        </div>
-        <button
-          type="button"
-          onClick={() => setIndex((i) => Math.min(seasons.length - 1, i + 1))}
-          disabled={index <= 0}
-          aria-label="Newer season"
-          className="shrink-0 p-1.5 disabled:opacity-30"
-          style={{ background: 'none', border: 'none', color: '#7d848c' }}>
-          <ChevronRight size={16} />
-        </button>
       </div>
 
       {/* Team + coach — coach is not season-scoped (no cheap historical source). */}
