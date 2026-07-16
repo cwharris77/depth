@@ -4,8 +4,9 @@
 // multi-season-team-stats-design.md). A client component so the season switcher can hold
 // local state; it receives one team's already-resolved data as a prop (invariant 5) —
 // `seasons` is small (current + up to two prior years), never a fan-out of all-32 data.
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { TeamStats } from '@/lib/types';
@@ -40,15 +41,41 @@ export default function TeamStatsView({ team, seasons, incomingCoach }: Props) {
   const { uiAccent, primary } = team.colors;
   const tickerText = readableTextOn(primary);
 
+  // /team/[id] is server-rendered dynamically (Vercel Flags SDK's flag() reads
+  // headers()/cookies() even though decide() itself doesn't, which opts the route out
+  // of static generation — see lib/flags.ts). Team-to-team nav hides that latency
+  // because DepthChartField persists across the transition (only its props change);
+  // this stats page is a disjoint route tree, so a plain <Link> back unmounts this
+  // view into app/team/[id]/loading.tsx's skeleton for the round trip. Wrapping the
+  // navigation in useTransition instead keeps this page on screen (dimmed, disabled)
+  // until the field is ready, matching the NavSwitcher/NavDrawer pattern from the
+  // "Janky page navigation" ticket (see components/NavSwitcher.tsx).
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const backHref = `/team/${team.id}`;
+  const goBack = (e: React.MouseEvent) => {
+    // Real modifier clicks (middle-click, cmd/ctrl-click) still get native anchor
+    // behavior (open in new tab) — only the plain-click path is hijacked into the
+    // transition, same as NavDrawer's NavItem.
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    if (isPending) return;
+    startTransition(() => {
+      router.push(backHref);
+    });
+  };
+
   if (seasons.length === 0 && !incomingCoach) {
     return (
       <div
         className="px-5 py-6"
         style={{ minHeight: '100dvh', background: '#0a0e1a', color: '#fff' }}>
         <Link
-          href={`/team/${team.id}`}
+          href={backHref}
+          onClick={goBack}
+          aria-disabled={isPending}
           className="inline-flex items-center gap-1.5 mb-6"
-          style={{ color: uiAccent }}>
+          style={{ color: uiAccent, opacity: isPending ? 0.5 : 1, touchAction: 'manipulation' }}>
           <ArrowLeft size={18} />
           <span className="text-sm font-semibold">
             {team.city} {team.name}
@@ -92,9 +119,15 @@ export default function TeamStatsView({ team, seasons, incomingCoach }: Props) {
           paddingTop: 'max(env(safe-area-inset-top), 12px)',
         }}>
         <Link
-          href={`/team/${team.id}`}
+          href={backHref}
+          onClick={goBack}
+          aria-disabled={isPending}
           className="inline-flex items-center gap-1.5 no-underline"
-          style={{ color: tickerText }}>
+          style={{
+            color: tickerText,
+            opacity: isPending ? 0.5 : 1,
+            touchAction: 'manipulation',
+          }}>
           <ArrowLeft size={18} />
           {team.abbrev}
         </Link>
