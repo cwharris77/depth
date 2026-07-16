@@ -21,8 +21,15 @@
 //   - /api/* (dynamic data — a cached search result would be misleading)
 //
 // Bump VERSION to invalidate both caches on the next SW update.
+//
+// Update flow: a fresh install (no prior active worker) activates immediately — there's
+// no existing controller to disrupt. An *update* (an active worker already controls the
+// page) instead stays in the "waiting" state; ServiceWorkerRegistrar detects
+// registration.waiting / the updatefound event and shows a reload prompt. Only the
+// SKIP_WAITING message (sent after the user confirms) advances it to activate, so an open
+// tab never has its caches swapped out from under it without notice.
 
-const VERSION = 'v3';
+const VERSION = 'v4';
 const PRECACHE = `depth-precache-${VERSION}`;
 const RUNTIME = `depth-runtime-${VERSION}`;
 const IMAGES = `depth-images-${VERSION}`;
@@ -66,7 +73,15 @@ async function precacheTeamPages() {
 }
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(precacheTeamPages().then(() => self.skipWaiting()));
+  event.waitUntil(
+    precacheTeamPages().then(() => {
+      // No active worker yet means this is the very first install for this client —
+      // nothing is controlling the page, so there's nothing to disrupt by activating
+      // right away. If one *is* active, this install is an update: stay waiting until
+      // the client confirms (see the message listener below).
+      if (!self.registration.active) self.skipWaiting();
+    })
+  );
 });
 
 self.addEventListener('activate', (event) => {
@@ -79,6 +94,14 @@ self.addEventListener('activate', (event) => {
       await self.clients.claim();
     })()
   );
+});
+
+// Lets the client hand control to a waiting worker on demand (the "Reload to update"
+// prompt), rather than it sitting in "waiting" until every tab in scope closes.
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING' || event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', (event) => {
