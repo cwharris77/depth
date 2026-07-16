@@ -5,6 +5,11 @@ import TeamStatsView from '@/components/TeamStatsView';
 
 type Params = { params: Promise<{ id: string }> };
 
+// ISR: same rationale as app/team/[id]/page.tsx — the weekly ESPN ingest is decoupled
+// from deploys (AGENTS.md invariant 7), so this bounds staleness to 6 hours after an
+// ingest instead of requiring a redeploy for team_stats/coach data to reach users.
+export const revalidate = 21600; // 6 hours, in seconds
+
 // Prerender one static page per team, same shape as app/team/[id]/page.tsx.
 export async function generateStaticParams() {
   const teams = await dbRosterSource.listTeams();

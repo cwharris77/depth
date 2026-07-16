@@ -7,6 +7,14 @@ import { notFound } from 'next/navigation';
 
 type Params = { params: Promise<{ id: string }> };
 
+// ISR: the weekly ESPN ingest (scripts/ingest-espn.mts, Wed 12:00 UTC) writes straight
+// to Postgres and is intentionally decoupled from deploys (AGENTS.md invariant 7), so
+// without a revalidate window this page would only pick up a fresh ingest on the next
+// redeploy. 6 hours bounds worst-case staleness well under the weekly cadence while
+// still serving the prerendered page from cache for the overwhelming majority of
+// requests between ingests.
+export const revalidate = 21600; // 6 hours, in seconds
+
 // Prerender one static page per team. Unknown ids fall through to notFound() below.
 export async function generateStaticParams() {
   const teams = await dbRosterSource.listTeams();
