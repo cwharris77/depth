@@ -27,9 +27,9 @@ ESPN unofficial APIs
 ```
 
 Design docs live in `docs/superpowers/specs/` (dated `*-design.md` + an index). The
-product roadmap is in the Obsidian vault (`../obsidian/Projects/depth/Roadmap.md`) —
-if you can't read the vault, the specs index + README status table are the fallback;
-do not guess at roadmap intent.
+Obsidian vault (`../obsidian/Projects/depth/Roadmap.md`) is the single source of
+truth for the roadmap — if you can't read the vault, the specs index is the
+fallback; do not guess at roadmap intent.
 
 ## 2. Architecture invariants
 
@@ -116,8 +116,8 @@ refactor (see §6).
   verification section carries *evidence*, not claims — test counts, and a "Verified
   live: …" line describing what was actually seen in the browser.
 - **Docs move with behavior.** A PR that changes data flow updates `docs/espn.md`; a
-  PR that ships/kills a roadmap item updates README's status table and, when relevant,
-  the specs index.
+  PR that ships/kills a roadmap item updates the Obsidian vault roadmap and, when
+  relevant, the specs index.
 
 ## 4. Mistakes you will make here unless you follow these rules
 

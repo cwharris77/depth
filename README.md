@@ -19,20 +19,9 @@ npm run build  # production build
 npm test       # vitest run
 ```
 
-## Where we are
+## Roadmap
 
-Phases 0–4, 5a/5b/5c, and most of Phase 6 (ESPN → Postgres ingestion) are shipped.
-What's left:
-
-| Item | What | Status |
-|------|------|--------|
-| **5d** | Two-team compare — side-by-side depth at a position across two teams | not started |
-| **7** | Multiple uniforms per team | archive shipped — `/uniforms` gallery of all 32 teams' kits (vectorized figures) is live; in-page kit picker still flag-gated (`show-uniform-picker`) |
-
-Player photos (5e) are shipped on the player card and search; putting them on the
-field dots was intentionally dropped — the dots stay jersey-number circles.
-
-See [`Projects/depth/Roadmap.md`](../obsidian/Projects/depth/Roadmap.md) in the Obsidian vault for full phase specs, design decisions, and ESPN API research.
+The product roadmap lives in the Obsidian vault — [`Projects/depth/Roadmap.md`](../obsidian/Projects/depth/Roadmap.md) — which is the single source of truth for phase status, design decisions, and ESPN API research.
 
 ## Data
 
