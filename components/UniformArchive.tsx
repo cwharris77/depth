@@ -183,17 +183,31 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
       )}
 
       <footer className="mt-10 text-[11px]" style={{ color: '#4b5568' }}>
-        Uniform figures are original artwork, no team logos. Proportions modeled on the{' '}
-        <a
-          href="https://commons.wikimedia.org/wiki/File:NFL-Uniform-template-V3.png"
-          className="underline">
-          NFL uniform template
-        </a>{' '}
-        by JohnnySeoul, used under{' '}
-        <a href="https://creativecommons.org/licenses/by/3.0/" className="underline">
-          CC BY 3.0
-        </a>{' '}
-        (modified).
+        <p>
+          Uniform figures are original artwork, no team logos. Proportions modeled on the{' '}
+          <a
+            href="https://commons.wikimedia.org/wiki/File:NFL-Uniform-template-V3.png"
+            className="underline">
+            NFL uniform template
+          </a>{' '}
+          by JohnnySeoul, used under{' '}
+          <a href="https://creativecommons.org/licenses/by/3.0/" className="underline">
+            CC BY 3.0
+          </a>{' '}
+          (modified).
+        </p>
+        <p className="mt-2">
+          All kits shown here are drawn SVG references, not official NFL-owned images. For a more
+          detailed uniform archive, see{' '}
+          <a
+            href="https://www.gridiron-uniforms.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline">
+            Gridiron Uniforms
+          </a>
+          .
+        </p>
       </footer>
 
       <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} accent={ACCENT} />
