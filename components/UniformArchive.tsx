@@ -10,7 +10,7 @@ import {
   type UniformFilters,
 } from '@/lib/uniforms/filter';
 import UniformFigure from './UniformFigure';
-import Logo from './Logo';
+import DepthMark from './DepthMark';
 import NavDrawer from './NavDrawer';
 
 // The uniform archive (roadmap Phase 7). Receives every kit from the server route and
@@ -77,17 +77,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
         paddingBottom: 'max(env(safe-area-inset-bottom), 20px)',
       }}
       className="px-4">
-      <button
-        type="button"
-        onClick={() => setDrawerOpen(true)}
-        aria-label="Open navigation"
-        className="flex items-center gap-1"
-        style={{ touchAction: 'manipulation' }}>
-        <Logo size={18} color={ACCENT} />
-        <span className="text-xs font-bold tracking-widest" style={{ color: '#A5ACAF' }}>
-          depth
-        </span>
-      </button>
+      <DepthMark color={ACCENT} onClick={() => setDrawerOpen(true)} />
 
       <h1 className="mt-4 text-2xl font-bold">Uniform archive</h1>
       <p className="mt-0.5 text-xs" style={{ color: '#6b7686' }}>
