@@ -168,10 +168,15 @@ export default function NavDrawer({
           top: 0,
           left: 0,
           bottom: 0,
-          width: 'min(82vw, 320px)',
+          // Widen by the left inset (not just cap at 82vw/320px) so the notch/rounded-corner
+          // safe area doesn't eat into the usable content width — same env() pattern as the
+          // bottom safe-area fix (#87), applied to the drawer's edge instead of a page bottom.
+          width:
+            'min(calc(82vw + env(safe-area-inset-left)), calc(320px + env(safe-area-inset-left)))',
           background: '#0d1320',
           borderRight: '1px solid #222b3d',
           paddingTop: 'max(env(safe-area-inset-top), 16px)',
+          paddingLeft: 'env(safe-area-inset-left)',
           display: 'flex',
           flexDirection: 'column',
         }}>
@@ -204,8 +209,14 @@ export default function NavDrawer({
           />
         </nav>
         {/* Account lives at the bottom — a link to the sign-in / settings page, not an
-            inline form. Signing in is opt-in (Phase C, auth pass 1). */}
-        <div style={{ borderTop: '1px solid #222b3d' }}>
+            inline form. Signing in is opt-in (Phase C, auth pass 1). Bottom safe-area inset
+            keeps the sign-in button clear of the home indicator in standalone PWA mode, same
+            max(env(...), fallback) pattern as the bottom safe-area fix (#87). */}
+        <div
+          style={{
+            borderTop: '1px solid #222b3d',
+            paddingBottom: 'max(env(safe-area-inset-bottom), 0px)',
+          }}>
           <NavItem
             href={signInHref}
             icon={<User size={19} />}
