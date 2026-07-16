@@ -1,9 +1,10 @@
-import Logo from '@/components/Logo';
+import DepthMark from '@/components/DepthMark';
 
 // Route-level fallback for /team/[id] (loading.md): Next.js prefetches and shows this
 // immediately on navigation, wrapping page.tsx in a Suspense boundary. Mirrors
 // DepthChartField's header/field structure at low fidelity (no team colors known yet)
-// so the swap-in doesn't jump the layout — see the "Janky page navigation" ticket.
+// so the swap-in doesn't jump the layout — see the "Janky page navigation" ticket. Uses
+// DepthMark (non-interactive, no onClick) so its size always matches the real header's.
 export default function Loading() {
   return (
     <div
@@ -18,12 +19,7 @@ export default function Loading() {
         className="px-5 pb-3"
         style={{ flex: '0 0 auto', paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-0.5 shrink-0">
-            <Logo size={20} color="#A5ACAF" />
-            <span className="text-sm font-bold tracking-widest" style={{ color: '#A5ACAF' }}>
-              depth
-            </span>
-          </div>
+          <DepthMark color="#A5ACAF" />
           <div
             className="rounded-full"
             style={{ width: 140, height: 30, background: 'rgba(255,255,255,0.07)' }}
