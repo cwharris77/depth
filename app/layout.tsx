@@ -1,4 +1,5 @@
 import AuthHandoffListener from '@/components/AuthHandoffListener';
+import IOSInstallHint from '@/components/IOSInstallHint';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
 import { VercelToolbar } from '@vercel/toolbar/next';
 import type { Metadata, Viewport } from 'next';
@@ -61,6 +62,7 @@ export default function RootLayout({
         {shouldInjectToolbar && <VercelToolbar />}
         <ServiceWorkerRegistrar />
         <AuthHandoffListener />
+        <IOSInstallHint />
       </body>
     </html>
   );
