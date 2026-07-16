@@ -10,7 +10,7 @@ import {
   type UniformFilters,
 } from '@/lib/uniforms/filter';
 import UniformFigure from './UniformFigure';
-import Logo from './Logo';
+import DepthMark from './DepthMark';
 import NavDrawer from './NavDrawer';
 
 // The uniform archive (roadmap Phase 7). Receives every kit from the server route and
@@ -77,17 +77,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
         paddingBottom: 'max(env(safe-area-inset-bottom), 20px)',
       }}
       className="px-4">
-      <button
-        type="button"
-        onClick={() => setDrawerOpen(true)}
-        aria-label="Open navigation"
-        className="flex items-center gap-1"
-        style={{ touchAction: 'manipulation' }}>
-        <Logo size={18} color={ACCENT} />
-        <span className="text-xs font-bold tracking-widest" style={{ color: '#A5ACAF' }}>
-          depth
-        </span>
-      </button>
+      <DepthMark color={ACCENT} onClick={() => setDrawerOpen(true)} />
 
       <h1 className="mt-4 text-2xl font-bold">Uniform archive</h1>
       <p className="mt-0.5 text-xs" style={{ color: '#6b7686' }}>
@@ -193,17 +183,31 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
       )}
 
       <footer className="mt-10 text-[11px]" style={{ color: '#4b5568' }}>
-        Uniform figures are original artwork, no team logos. Proportions modeled on the{' '}
-        <a
-          href="https://commons.wikimedia.org/wiki/File:NFL-Uniform-template-V3.png"
-          className="underline">
-          NFL uniform template
-        </a>{' '}
-        by JohnnySeoul, used under{' '}
-        <a href="https://creativecommons.org/licenses/by/3.0/" className="underline">
-          CC BY 3.0
-        </a>{' '}
-        (modified).
+        <p>
+          Uniform figures are original artwork, no team logos. Proportions modeled on the{' '}
+          <a
+            href="https://commons.wikimedia.org/wiki/File:NFL-Uniform-template-V3.png"
+            className="underline">
+            NFL uniform template
+          </a>{' '}
+          by JohnnySeoul, used under{' '}
+          <a href="https://creativecommons.org/licenses/by/3.0/" className="underline">
+            CC BY 3.0
+          </a>{' '}
+          (modified).
+        </p>
+        <p className="mt-2">
+          All kits shown here are drawn SVG references, not official NFL-owned images. For a more
+          detailed uniform archive, see{' '}
+          <a
+            href="https://www.gridiron-uniforms.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline">
+            Gridiron Uniforms
+          </a>
+          .
+        </p>
       </footer>
 
       <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} accent={ACCENT} />

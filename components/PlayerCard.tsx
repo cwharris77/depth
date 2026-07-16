@@ -112,7 +112,11 @@ export default function PlayerCard({
     if (player) {
       document.body.classList.add('card-open');
       // Fresh card: leave edit mode, reset the copied badge, and surface the
-      // one-time reorder hint.
+      // one-time reorder hint. Keyed on player.id (not the player object) so
+      // reordering — which re-applies the override and gives `player` a new
+      // object identity for the same person — doesn't kick us out of edit mode.
+      // Edit mode should only end when the user taps Done or a different
+      // player is selected.
       setEditing(false);
       setCopied(false);
       setShowHint(!seenReorderHint());
@@ -120,7 +124,7 @@ export default function PlayerCard({
       document.body.classList.remove('card-open');
     }
     return () => document.body.classList.remove('card-open');
-  }, [player]);
+  }, [player?.id]);
 
   // Share the player's deep link. Prefers the native share sheet (mobile/PWA);
   // otherwise copies the absolute URL and flips the button to a "copied" state.

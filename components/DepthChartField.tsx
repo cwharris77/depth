@@ -24,8 +24,8 @@ import { useEffect, useMemo, useState } from 'react';
 import ApplyKitFromQuery from './ApplyKitFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
 import BottomSheet from './BottomSheet';
+import DepthMark from './DepthMark';
 import FullScreenSheet from './FullScreenSheet';
-import Logo from './Logo';
 import NavDrawer from './NavDrawer';
 import NavSwitcher from './NavSwitcher';
 import OpenPlayerFromQuery from './OpenPlayerFromQuery';
@@ -235,20 +235,7 @@ export default function DepthChartField({
               conventionally lives. Global/growing nav (uniform archive, future views) opens
               here so the header stays uncrowded — see components/NavDrawer.tsx. */}
 
-          <div className="flex items-center gap-0.5 shrink-0">
-            <button
-              type="button"
-              onClick={() => setDrawerOpen(true)}
-              aria-label="Open navigation"
-              className="shrink-0"
-              style={{ touchAction: 'manipulation' }}>
-              <Logo size={20} color={activeColors.uiAccent} />
-            </button>
-
-            <span className="text-sm font-bold tracking-widest" style={{ color: '#A5ACAF' }}>
-              depth
-            </span>
-          </div>
+          <DepthMark color={activeColors.uiAccent} onClick={() => setDrawerOpen(true)} />
           {/* Team/unit switcher trigger — on the right, where users (Mia, Caleb)
               instinctively tapped expecting a menu. Styled as a visible pill, not
               plain text, so it reads as tappable. A search-icon circle sits beside
