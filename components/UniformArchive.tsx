@@ -9,7 +9,7 @@ import {
   groupByDivision,
   type UniformFilters,
 } from '@/lib/uniforms/filter';
-import UniformFigure from './UniformFigure';
+import UniformFigure, { UniformFigureDefs } from './UniformFigure';
 import DepthMark from './DepthMark';
 import NavDrawer from './NavDrawer';
 
@@ -77,6 +77,10 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
         paddingBottom: 'max(env(safe-area-inset-bottom), 20px)',
       }}
       className="px-4">
+      {/* Mounted once for the whole page: every UniformFigure below passes sharedDefs so its
+          mannequin geometry (helmet/facemask/jersey/pants/…) references this sprite via <use>
+          instead of re-embedding the path data per kit — see components/UniformFigure.tsx. */}
+      <UniformFigureDefs />
       <DepthMark color={ACCENT} onClick={() => setDrawerOpen(true)} />
 
       <h1 className="mt-4 text-2xl font-bold">Uniform archive</h1>
@@ -159,6 +163,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
                             size={54}
                             imagePath={k.imagePath}
                             title={`${t.teamName} ${k.name}`}
+                            sharedDefs
                           />
                           <figcaption
                             className="mt-1 text-[10px] leading-tight"

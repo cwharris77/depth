@@ -41,24 +41,84 @@ const GEO = {
     'M396,1460 470,1460 482,1508 498,1533 498,1563 488,1568 391,1568 387,1563 387,1542 395,1527 395,1521 390,1511 390,1476 396,1461Z',
 };
 
+type GeoKey = keyof typeof GEO;
+
+// One shared mannequin path, rendered either inline (`<path d=…>`, the default — every figure
+// is self-contained) or as a `<use>` reference into the sprite <UniformFigureDefs> mounts once
+// (`sharedDefs`, opt-in) — a caller that renders many figures on one page (the archive, ×104)
+// passes sharedDefs so the ~5kb of path data (esp. the ~2.5kb facemask) transmits once instead
+// of once per figure. Both forms paint identical pixels; <use> is a live reference, not a copy.
+function Geo({
+  part,
+  shared,
+  fill,
+  stroke,
+  strokeWidth,
+  fillRule,
+}: {
+  part: GeoKey;
+  shared: boolean;
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  fillRule?: 'nonzero' | 'evenodd';
+}) {
+  return shared ? (
+    <use
+      href={`#ufig-${part}`}
+      fill={fill}
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      fillRule={fillRule}
+    />
+  ) : (
+    <path d={GEO[part]} fill={fill} stroke={stroke} strokeWidth={strokeWidth} fillRule={fillRule} />
+  );
+}
+
+// The sprite `<use>`-referencing figures draw from when passed `sharedDefs`. Mount this ONCE
+// per page — its ids are fixed (not per-instance), so a second mount would emit duplicate DOM
+// ids. Zero-size and absolutely positioned so it never affects layout.
+export function UniformFigureDefs() {
+  return (
+    <svg width={0} height={0} style={{ position: 'absolute' }} aria-hidden="true" focusable="false">
+      <defs>
+        {(Object.keys(GEO) as GeoKey[]).map((part) => (
+          <path key={part} id={`ufig-${part}`} d={GEO[part]} />
+        ))}
+      </defs>
+    </svg>
+  );
+}
+
 export default function UniformFigure({
   colors,
   variant = 'jersey',
   size = 34,
   imagePath,
   title,
+  sharedDefs = false,
 }: {
   colors: TeamColors;
   variant?: UniformVariant;
   size?: number;
   imagePath?: string;
   title?: string;
+  // Reference <UniformFigureDefs>'s sprite via <use> instead of inlining path data — see Geo
+  // above. Only pass this when the caller has mounted <UniformFigureDefs/> once on the page.
+  sharedDefs?: boolean;
 }) {
   const rawId = useId();
   const uid = rawId.replace(/:/g, '');
   const spec = variantSpec(variant);
   const [, , vbW, vbH] = spec.viewBox.split(' ').map(Number);
   const height = (size * vbH) / vbW;
+  // Which mannequin groups this variant needs — e.g. 'jersey' never draws the helmet/facemask
+  // (confirmed off-viewBox: transformed helmet+facemask bottom out at y≈348, the crop starts at
+  // y=372) so skipping them is a pure byte-savings, not a visual change.
+  const hasHelmet = spec.parts.includes('helmet');
+  const hasJersey = spec.parts.includes('jersey');
+  const hasPants = spec.parts.includes('pants');
 
   if (imagePath) {
     return <img src={imagePath} alt={title ?? ''} width={size} height={height} />;
@@ -87,107 +147,132 @@ export default function UniformFigure({
       aria-label={title}
       aria-hidden={title ? undefined : true}>
       <defs>
-        <clipPath id={`${uid}-jersey`}>
-          <path d={GEO.jersey} />
-        </clipPath>
-        <clipPath id={`${uid}-helmet`}>
-          <path d={GEO.helmet} />
-        </clipPath>
-        <clipPath id={`${uid}-legL`}>
-          <path d={GEO.pants} />
-          <path d={GEO.shinL} />
-        </clipPath>
-        <clipPath id={`${uid}-legR`}>
-          <path d={GEO.pants} />
-          <path d={GEO.shinR} />
-        </clipPath>
+        {hasJersey && (
+          <clipPath id={`${uid}-jersey`}>
+            <Geo part="jersey" shared={sharedDefs} />
+          </clipPath>
+        )}
+        {hasHelmet && (
+          <clipPath id={`${uid}-helmet`}>
+            <Geo part="helmet" shared={sharedDefs} />
+          </clipPath>
+        )}
+        {hasPants && (
+          <>
+            <clipPath id={`${uid}-legL`}>
+              <Geo part="pants" shared={sharedDefs} />
+              <Geo part="shinL" shared={sharedDefs} />
+            </clipPath>
+            <clipPath id={`${uid}-legR`}>
+              <Geo part="pants" shared={sharedDefs} />
+              <Geo part="shinR" shared={sharedDefs} />
+            </clipPath>
+          </>
+        )}
       </defs>
       <g stroke={OUTLINE} strokeWidth={4} strokeLinejoin="round" strokeLinecap="round">
-        <path fill={primary} d={GEO.pants} />
-        <path fill={primary} d={GEO.shinL} />
-        <path fill={primary} d={GEO.shinR} />
-        <g stroke="none">
-          <rect
-            clipPath={`url(#${uid}-legL)`}
-            x={118}
-            y={807}
-            width={16}
-            height={655}
-            fill={secondary}
-          />
-          <rect
-            clipPath={`url(#${uid}-legR)`}
-            x={454}
-            y={807}
-            width={16}
-            height={655}
-            fill={secondary}
-          />
-        </g>
-        <path fill="#ffffff" d={GEO.shoeL} />
-        <path fill="#ffffff" d={GEO.shoeR} />
-        <path fill={primary} d={GEO.jersey} />
-        <g stroke="none">
-          <path
-            clipPath={`url(#${uid}-jersey)`}
-            fill={accent}
-            d="M30,466 L78,417 L136,401 L168,470 L156,556 L34,556 Z"
-          />
-          <path
-            clipPath={`url(#${uid}-jersey)`}
-            fill={accent}
-            d="M558,466 L510,417 L452,401 L420,470 L432,556 L554,556 Z"
-          />
-          <path
-            clipPath={`url(#${uid}-jersey)`}
-            fill={secondary}
-            d="M34,558 L156,558 L152,578 L34,578 Z"
-          />
-          <path
-            clipPath={`url(#${uid}-jersey)`}
-            fill={secondary}
-            d="M554,558 L432,558 L436,578 L554,578 Z"
-          />
-        </g>
-        <path
-          clipPath={`url(#${uid}-jersey)`}
-          fill="none"
-          stroke={secondary}
-          strokeWidth={13}
-          d="M206,388 L294,455 L386,388"
-        />
-        <g stroke="none">
-          <text
-            {...numAttrs}
-            fill="none"
-            stroke={secondary}
-            strokeWidth={26}
-            strokeLinejoin="round">
-            1
-          </text>
-          <text {...numAttrs} fill={numberFill}>
-            1
-          </text>
-        </g>
-        <g transform="translate(80.25 11) scale(0.5)">
-          <path fill={primary} stroke={OUTLINE} strokeWidth={8} d={GEO.helmet} />
-          <rect
-            clipPath={`url(#${uid}-helmet)`}
-            x={150}
-            y={286}
-            width={430}
-            height={44}
-            fill={accent}
-            stroke="none"
-          />
-          <path
-            fill={FACEMASK}
-            fillRule="evenodd"
-            stroke={OUTLINE}
-            strokeWidth={7}
-            d={GEO.facemask}
-          />
-        </g>
+        {hasPants && (
+          <>
+            <Geo part="pants" shared={sharedDefs} fill={primary} />
+            <Geo part="shinL" shared={sharedDefs} fill={primary} />
+            <Geo part="shinR" shared={sharedDefs} fill={primary} />
+            <g stroke="none">
+              <rect
+                clipPath={`url(#${uid}-legL)`}
+                x={118}
+                y={807}
+                width={16}
+                height={655}
+                fill={secondary}
+              />
+              <rect
+                clipPath={`url(#${uid}-legR)`}
+                x={454}
+                y={807}
+                width={16}
+                height={655}
+                fill={secondary}
+              />
+            </g>
+            <Geo part="shoeL" shared={sharedDefs} fill="#ffffff" />
+            <Geo part="shoeR" shared={sharedDefs} fill="#ffffff" />
+          </>
+        )}
+        {hasJersey && (
+          <>
+            <Geo part="jersey" shared={sharedDefs} fill={primary} />
+            <g stroke="none">
+              <path
+                clipPath={`url(#${uid}-jersey)`}
+                fill={accent}
+                d="M30,466 L78,417 L136,401 L168,470 L156,556 L34,556 Z"
+              />
+              <path
+                clipPath={`url(#${uid}-jersey)`}
+                fill={accent}
+                d="M558,466 L510,417 L452,401 L420,470 L432,556 L554,556 Z"
+              />
+              <path
+                clipPath={`url(#${uid}-jersey)`}
+                fill={secondary}
+                d="M34,558 L156,558 L152,578 L34,578 Z"
+              />
+              <path
+                clipPath={`url(#${uid}-jersey)`}
+                fill={secondary}
+                d="M554,558 L432,558 L436,578 L554,578 Z"
+              />
+            </g>
+            <path
+              clipPath={`url(#${uid}-jersey)`}
+              fill="none"
+              stroke={secondary}
+              strokeWidth={13}
+              d="M206,388 L294,455 L386,388"
+            />
+            <g stroke="none">
+              <text
+                {...numAttrs}
+                fill="none"
+                stroke={secondary}
+                strokeWidth={26}
+                strokeLinejoin="round">
+                1
+              </text>
+              <text {...numAttrs} fill={numberFill}>
+                1
+              </text>
+            </g>
+          </>
+        )}
+        {hasHelmet && (
+          <g transform="translate(80.25 11) scale(0.5)">
+            <Geo
+              part="helmet"
+              shared={sharedDefs}
+              fill={primary}
+              stroke={OUTLINE}
+              strokeWidth={8}
+            />
+            <rect
+              clipPath={`url(#${uid}-helmet)`}
+              x={150}
+              y={286}
+              width={430}
+              height={44}
+              fill={accent}
+              stroke="none"
+            />
+            <Geo
+              part="facemask"
+              shared={sharedDefs}
+              fill={FACEMASK}
+              fillRule="evenodd"
+              stroke={OUTLINE}
+              strokeWidth={7}
+            />
+          </g>
+        )}
       </g>
     </svg>
   );
