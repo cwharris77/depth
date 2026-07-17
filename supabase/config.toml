@@ -160,15 +160,18 @@ site_url = "http://localhost:3000"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-# Wildcards let the magic-link land on /auth/confirm?next=… (Phase C auth). Prod mirrors
-# these in the Supabase dashboard (Auth → URL Configuration) — this file has no effect on
-# prod. Prod Site URL and Redirect URLs must be https://depth-ashen.vercel.app (and
-# https://depth-ashen.vercel.app/**) — the canonical production alias the home-screen PWA
-# is bookmarked at. Vercel also serves the same deployment on depth-cwharris77s-projects.vercel.app
-# and depth-git-main-cwharris77s-projects.vercel.app; if the dashboard Site URL ever points at
-# one of those instead, GoTrue silently redirects magic links there, setting the session
-# cookie on a domain the bookmarked app never sees (diagnosed 2026-07-14 via auth logs —
-# login succeeded, just on the wrong origin).
+# Sign-in (components/AccountView.tsx) is a 6-digit code verified in-page via verifyOtp() — no
+# redirect, so this list has no effect on sign-in itself. Left at localhost for other auth flows
+# (e.g. password recovery) that do redirect; prod mirrors this in the Supabase dashboard (Auth →
+# URL Configuration) if/when those are added — this file has no effect on prod.
+#
+# Prod sign-in email is sent via custom SMTP (Resend, depth backend project → Auth → SMTP
+# Settings) — required to unlock editing the "Magic Link" template in the dashboard (Auth →
+# Emails → Templates), which must include {{ .Token }} for the code to appear in the email.
+# The old redirect-URL-based magic-link flow (implicit flow + Cache Storage handoff, PRs #92/
+# #98/#103) was retired 2026-07-15: it broke across Safari-vs-other-default-browser and
+# Safari-vs-standalone-PWA storage boundaries in ways no client-side code could fully close.
+# A typed code verifies wherever it's typed, sidestepping both.
 additional_redirect_urls = [
   "http://localhost:3000/**",
   "http://127.0.0.1:3000/**",

@@ -12,6 +12,14 @@ spec and land in a later pass (see "Deferred" below).
 > Implement task-by-task. Do not re-open decisions; if one is unimplementable as
 > written, stop and report.
 
+> **Superseded (sign-in mechanism only, 2026-07-15):** this spec's PKCE magic-link
+> `/auth/confirm` flow shipped, then went through an implicit-flow rewrite (PRs #92, #98,
+> #103) chasing cross-browser/cross-app storage bugs that a link-based flow can't fully
+> close on iOS. Sign-in is now a 6-digit code verified synchronously in `AccountView.tsx`
+> via `verifyOtp()` — no redirect, no `/auth/confirm` route. See
+> `supabase/config.toml`'s `[auth]` comment for the current mechanism. Everything else in
+> this spec (favorites, per-user settings, account deletion) is unaffected.
+
 ## Goal
 
 A visitor can **opt in** by creating an account (email magic link). Signed in, the app

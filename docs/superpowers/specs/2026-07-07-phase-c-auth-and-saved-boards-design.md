@@ -11,6 +11,11 @@ Roadmap: Phase C — Custom rosters, the pending "cross-device (Postgres + auth)
 > decisions; if a decision turns out to be unimplementable as written, stop and report
 > rather than substituting your own design.
 
+> **Superseded (sign-in mechanism only, 2026-07-15):** see the same note in
+> [`2026-07-09-auth-account-and-user-settings-design.md`](2026-07-09-auth-account-and-user-settings-design.md)
+> — magic-link `/auth/confirm` was replaced by a 6-digit code verified in-page. The
+> override-sync/share-by-reference/RLS scope this doc covers is unaffected.
+
 ## Goal
 
 A user can sign in, and their custom depth-chart edits sync across devices. A user can
