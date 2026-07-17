@@ -196,6 +196,7 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
   const [playerResults, setPlayerResults] = useState<PlayerHit[]>([]);
   const [playersLoading, setPlayersLoading] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const [searchFocused, setSearchFocused] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   // Navigating (team/player selection) is wrapped in a transition so the sheet
   // stays open — and its rows disabled — until the destination is ready, instead
@@ -348,14 +349,20 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
 
       <div className="px-5 pb-3">
         <div
-          className="flex items-center gap-2 rounded-xl px-3"
-          style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid ${accentColor}55` }}>
+          className="flex items-center gap-2 rounded-xl px-3 transition-shadow duration-150"
+          style={{
+            background: 'rgba(255,255,255,0.06)',
+            border: `1px solid ${accentColor}55`,
+            boxShadow: searchFocused ? `0 0 0 3px ${accentColor}4d` : 'none',
+          }}>
           <Search size={16} color={accentColor} />
           <input
             ref={searchInputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setSearchFocused(false)}
             placeholder="Search teams or players"
             className="flex-1 bg-transparent outline-none py-2.5 text-base"
             style={{ color: '#f0f4ff' }}
