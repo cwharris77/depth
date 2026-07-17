@@ -1,0 +1,36 @@
+name: Ingest nflverse data
+
+# Recurring nflverse ingestion (player season stats). Wraps `npm run ingest:nflverse`
+# (see docs/nflverse.md) on a weekly schedule, plus a manual trigger. STRICT=1 so a
+# partial run (a season failed to write) turns the workflow red instead of silently
+# going green with half-stale data.
+
+on:
+  schedule:
+    # Wednesday 13:00 UTC — an hour after the ESPN ingest (ingest-espn.yml, 12:00 UTC)
+    # so the two runs don't interleave in ingestion_runs.
+    - cron: '0 13 * * 3'
+  workflow_dispatch: {}
+
+# Never let two ingestions overlap (a slow run + the next schedule, or a manual
+# dispatch during a scheduled one).
+concurrency:
+  group: ingest-nflverse
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run ingest:nflverse
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          STRICT: '1'

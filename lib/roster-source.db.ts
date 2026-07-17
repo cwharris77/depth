@@ -4,6 +4,7 @@ import type { RosterSource, TeamMeta, TeamStatsPage, UniformListing } from './ro
 import { type PlayerHit, positionGroupPositions, rankByNameMatch } from './search';
 import type {
   Player,
+  PlayerSeasonStats,
   PlayerStatus,
   Position,
   SpecialSlot,
@@ -477,6 +478,74 @@ export async function searchAllPlayers(query: string, limit = 8): Promise<Player
   }
 
   return rankByNameMatch([...byId.values()], q).slice(0, limit);
+}
+
+type PlayerStatsRow = Pick<
+  Tables['player_stats']['Row'],
+  | 'season'
+  | 'season_type'
+  | 'games'
+  | 'completions'
+  | 'attempts'
+  | 'passing_yards'
+  | 'passing_tds'
+  | 'passing_interceptions'
+  | 'carries'
+  | 'rushing_yards'
+  | 'rushing_tds'
+  | 'receptions'
+  | 'targets'
+  | 'receiving_yards'
+  | 'receiving_tds'
+  | 'def_tackles_solo'
+  | 'def_sacks'
+  | 'def_interceptions'
+  | 'fg_made'
+  | 'fg_att'
+>;
+const PLAYER_STATS_SELECT =
+  'season, season_type, games, completions, attempts, passing_yards, passing_tds, passing_interceptions, carries, rushing_yards, rushing_tds, receptions, targets, receiving_yards, receiving_tds, def_tackles_solo, def_sacks, def_interceptions, fg_made, fg_att';
+
+function toPlayerSeasonStats(row: PlayerStatsRow): PlayerSeasonStats {
+  return {
+    season: row.season,
+    seasonType: row.season_type as PlayerSeasonStats['seasonType'],
+    games: row.games,
+    completions: row.completions,
+    attempts: row.attempts,
+    passingYards: row.passing_yards,
+    passingTds: row.passing_tds,
+    passingInterceptions: row.passing_interceptions,
+    carries: row.carries,
+    rushingYards: row.rushing_yards,
+    rushingTds: row.rushing_tds,
+    receptions: row.receptions,
+    targets: row.targets,
+    receivingYards: row.receiving_yards,
+    receivingTds: row.receiving_tds,
+    defTacklesSolo: row.def_tackles_solo,
+    defSacks: row.def_sacks,
+    defInterceptions: row.def_interceptions,
+    fgMade: row.fg_made,
+    fgAtt: row.fg_att,
+  };
+}
+
+// Lazy per-player read (locked decision: the field view never needs stats, so this
+// isn't part of fetchTeamRoster's batch) -- backs app/api/players/[id]/stats/route.ts,
+// fetched client-side only when a PlayerCard opens. REG only in v1 (season_type filter
+// mirrors the ingest, which only ever writes REG rows today).
+export async function getPlayerStats(playerId: string): Promise<PlayerSeasonStats[]> {
+  const client = supabase();
+  const { data, error } = await client
+    .from('player_stats')
+    .select(PLAYER_STATS_SELECT)
+    .eq('player_id', playerId)
+    .eq('season_type', 'REG')
+    .order('season', { ascending: false })
+    .returns<PlayerStatsRow[]>();
+  if (error) throw new Error(`player_stats query failed: ${error.message}`);
+  return (data ?? []).map(toPlayerSeasonStats);
 }
 
 async function fetchAllTeamMeta(): Promise<TeamRow[]> {

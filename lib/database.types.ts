@@ -141,6 +141,89 @@ export type Database = {
         }
         Relationships: []
       }
+      player_stats: {
+        Row: {
+          attempts: number | null
+          carries: number | null
+          completions: number | null
+          def_interceptions: number | null
+          def_sacks: number | null
+          def_tackles_solo: number | null
+          fg_att: number | null
+          fg_made: number | null
+          games: number | null
+          passing_interceptions: number | null
+          passing_tds: number | null
+          passing_yards: number | null
+          player_id: string
+          receiving_tds: number | null
+          receiving_yards: number | null
+          receptions: number | null
+          rushing_tds: number | null
+          rushing_yards: number | null
+          season: number
+          season_type: string
+          targets: number | null
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number | null
+          carries?: number | null
+          completions?: number | null
+          def_interceptions?: number | null
+          def_sacks?: number | null
+          def_tackles_solo?: number | null
+          fg_att?: number | null
+          fg_made?: number | null
+          games?: number | null
+          passing_interceptions?: number | null
+          passing_tds?: number | null
+          passing_yards?: number | null
+          player_id: string
+          receiving_tds?: number | null
+          receiving_yards?: number | null
+          receptions?: number | null
+          rushing_tds?: number | null
+          rushing_yards?: number | null
+          season: number
+          season_type?: string
+          targets?: number | null
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number | null
+          carries?: number | null
+          completions?: number | null
+          def_interceptions?: number | null
+          def_sacks?: number | null
+          def_tackles_solo?: number | null
+          fg_att?: number | null
+          fg_made?: number | null
+          games?: number | null
+          passing_interceptions?: number | null
+          passing_tds?: number | null
+          passing_yards?: number | null
+          player_id?: string
+          receiving_tds?: number | null
+          receiving_yards?: number | null
+          receptions?: number | null
+          rushing_tds?: number | null
+          rushing_yards?: number | null
+          season?: number
+          season_type?: string
+          targets?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_stats_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       players: {
         Row: {
           age: number | null

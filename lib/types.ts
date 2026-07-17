@@ -186,3 +186,31 @@ export interface TeamRosterSeed {
   players: Player[];
   specialTeams: SpecialSlot[];
 }
+
+// One player's season stat line (nflverse ingestion, docs/superpowers/specs/2026-07-07-
+// nflverse-ingestion-and-player-stats-design.md). All stat columns nullable: the
+// display set is a subset of nflverse's full frame, and most columns don't apply to
+// every position (a WR row's passing_* fields are null). def_sacks is a fraction
+// (half-sacks are real), everything else is a whole count.
+export interface PlayerSeasonStats {
+  season: number;
+  seasonType: 'REG' | 'POST';
+  games: number | null;
+  completions: number | null;
+  attempts: number | null;
+  passingYards: number | null;
+  passingTds: number | null;
+  passingInterceptions: number | null;
+  carries: number | null;
+  rushingYards: number | null;
+  rushingTds: number | null;
+  receptions: number | null;
+  targets: number | null;
+  receivingYards: number | null;
+  receivingTds: number | null;
+  defTacklesSolo: number | null;
+  defSacks: number | null;
+  defInterceptions: number | null;
+  fgMade: number | null;
+  fgAtt: number | null;
+}
