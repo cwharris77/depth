@@ -28,15 +28,15 @@ maybeDescribe('dbRosterSource (live Supabase project)', () => {
 
   it('assembles a full roster for an ingested team (eagles)', async () => {
     const roster = await dbRosterSource.getTeam('eagles');
-    expect(roster).toBeDefined();
-    expect(roster!.team.id).toBe('eagles');
-    expect(roster!.players.length).toBeGreaterThan(15);
-    for (const p of roster!.players) {
+    if (!roster) throw new Error('expected a roster for eagles');
+    expect(roster.team.id).toBe('eagles');
+    expect(roster.players.length).toBeGreaterThan(15);
+    for (const p of roster.players) {
       expect([1, 2, 3]).toContain(p.depthRank);
     }
     // Special teams slots are present, and any assigned player exists on the roster.
-    const ids = new Set(roster!.players.map((p) => p.id));
-    for (const slot of roster!.specialTeams) {
+    const ids = new Set(roster.players.map((p) => p.id));
+    for (const slot of roster.specialTeams) {
       if (slot.playerId) expect(ids.has(slot.playerId)).toBe(true);
     }
   });
@@ -47,9 +47,9 @@ maybeDescribe('dbRosterSource (live Supabase project)', () => {
 
   it('assembles a full roster for an ingested team (seahawks)', async () => {
     const roster = await dbRosterSource.getTeam('seahawks');
-    expect(roster).toBeDefined();
-    expect(roster!.team.id).toBe('seahawks');
-    expect(roster!.players.length).toBeGreaterThan(15);
+    if (!roster) throw new Error('expected a roster for seahawks');
+    expect(roster.team.id).toBe('seahawks');
+    expect(roster.players.length).toBeGreaterThan(15);
   });
 
   it('lists every kit flattened with team identity', async () => {
@@ -73,8 +73,8 @@ maybeDescribe('searchAllPlayers (live Supabase project)', () => {
     const hits = await searchAllPlayers('darnold');
     expect(hits.length).toBeGreaterThan(0);
     const darnold = hits.find((h) => h.name === 'Sam Darnold');
-    expect(darnold).toBeDefined();
-    expect(darnold!.team.id).toBe('seahawks');
+    if (!darnold) throw new Error('expected to find Sam Darnold');
+    expect(darnold.team.id).toBe('seahawks');
   });
 
   it('matches by exact jersey number, not just name', async () => {

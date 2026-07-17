@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence, Reorder, useDragControls, type PanInfo } from 'framer-motion';
 import Image from 'next/image';
-import { X, Check, GripVertical, RotateCcw, Share2 } from 'lucide-react';
+import { X, Check, GripVertical, RotateCcw, Share2, GraduationCap } from 'lucide-react';
 import type { Player, Position, TeamColors, TeamRoster } from '@/lib/types';
 import { getPlayersByPosition } from '@/lib/roster';
 import { markReorderHintSeen, seenReorderHint } from '@/lib/depth-overrides';
@@ -11,6 +11,8 @@ import { statusColor, readableTextOn } from '@/lib/colors';
 import { positionFullName } from '@/lib/positions';
 import { experienceLabel } from '@/lib/format';
 import { playerDeepLinkPath } from '@/lib/share';
+import { statLine } from '@/lib/stat-lines';
+import type { PlayerSeasonStats } from '@/lib/types';
 
 interface PlayerCardProps {
   player: Player | null;
@@ -46,7 +48,8 @@ const depthRankLabel: Record<number, string> = {
 // hitting ESPN's CDN on every card open.
 function PlayerAvatar({ player, colors }: { player: Player; colors: TeamColors }) {
   const [errored, setErrored] = useState(false);
-  const showPhoto = Boolean(player.photoUrl) && !errored;
+  const photoUrl = player.photoUrl;
+  const showPhoto = Boolean(photoUrl) && !errored;
 
   return (
     <div
@@ -58,9 +61,9 @@ function PlayerAvatar({ player, colors }: { player: Player; colors: TeamColors }
         background: colors.primary,
         color: readableTextOn(colors.primary),
       }}>
-      {showPhoto ? (
+      {showPhoto && photoUrl ? (
         <Image
-          src={player.photoUrl!}
+          src={photoUrl}
           alt={player.name}
           width={72}
           height={72}
@@ -93,6 +96,7 @@ export default function PlayerCard({
   const [editing, setEditing] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [seasonStats, setSeasonStats] = useState<PlayerSeasonStats[]>([]);
   // uiAccent is curated to read on the dark card; the alpha suffixes tint it for
   // borders/watermarks. onAccent isn't needed here (card surfaces are dark).
   const colors = roster.team.colors;
@@ -126,6 +130,24 @@ export default function PlayerCard({
     return () => document.body.classList.remove('card-open');
   }, [player?.id]);
 
+  // Lazy per-player fetch (locked decision: the field view never needs stats, so this
+  // isn't part of the roster payload). Aborted on close/player-change so a slow
+  // response for a since-dismissed card can't clobber the next card's stats. Loading
+  // and error both render nothing -- setSeasonStats([]) is also the reset when a new
+  // player opens, so a stale season line never flashes before the fresh fetch lands.
+  useEffect(() => {
+    setSeasonStats([]);
+    if (!player) return;
+    const controller = new AbortController();
+    fetch(`/api/players/${player.id}/stats`, { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : { stats: [] }))
+      .then((data: { stats: PlayerSeasonStats[] }) => setSeasonStats(data.stats))
+      .catch(() => {
+        // aborted, or the fetch failed -- render nothing (no error state)
+      });
+    return () => controller.abort();
+  }, [player?.id]);
+
   // Share the player's deep link. Prefers the native share sheet (mobile/PWA);
   // otherwise copies the absolute URL and flips the button to a "copied" state.
   const handleShare = async () => {
@@ -155,6 +177,13 @@ export default function PlayerCard({
   };
 
   const depthChart = player ? getPlayersByPosition(roster, player.position) : [];
+  // statLine returns null for a season with no games (locked decision: show nothing,
+  // not zeros) -- filter those out rather than rendering an empty row.
+  const seasonLines = player
+    ? seasonStats
+        .map((s) => ({ season: s.season, line: statLine(player.position, s) }))
+        .filter((s): s is { season: number; line: string } => s.line !== null)
+    : [];
 
   return (
     <AnimatePresence>
@@ -301,13 +330,9 @@ export default function PlayerCard({
                 ))}
               </div>
 
-              <div className="px-6 mb-3">
-                <span
-                  className="text-xs font-semibold"
-                  style={{ color: '#A5ACAF', letterSpacing: '0.06em' }}>
-                  COLLEGE
-                </span>
-                <span className="ml-2 text-sm font-bold" style={{ color: '#f0f4ff' }}>
+              <div className="px-6 mb-3 flex items-center gap-1.5">
+                <GraduationCap size={14} style={{ color: accent, opacity: 0.85 }} />
+                <span className="text-sm font-bold" style={{ color: '#f0f4ff' }}>
                   {player.college}
                 </span>
               </div>
@@ -342,6 +367,38 @@ export default function PlayerCard({
                           className="text-[9px] font-semibold mt-0.5"
                           style={{ color: '#A5ACAF', letterSpacing: '0.06em' }}>
                           {key.toUpperCase()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {seasonLines.length > 0 && (
+                <div className="px-6 mb-6">
+                  <div
+                    className="text-[10px] font-semibold mb-3"
+                    style={{ color: '#A5ACAF', letterSpacing: '0.1em' }}>
+                    LAST SEASONS
+                  </div>
+                  <div
+                    className="rounded-2xl overflow-hidden"
+                    style={{
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                    }}>
+                    {seasonLines.map((s, i) => (
+                      <div
+                        key={s.season}
+                        className="flex items-center gap-3 px-4 py-3"
+                        style={{
+                          borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)',
+                        }}>
+                        <div className="text-xs font-bold" style={{ color: accent, minWidth: 40 }}>
+                          {s.season}
+                        </div>
+                        <div className="flex-1 text-sm font-bold" style={{ color: '#f0f4ff' }}>
+                          {s.line}
                         </div>
                       </div>
                     ))}

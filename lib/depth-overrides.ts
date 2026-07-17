@@ -124,17 +124,21 @@ export function clearPositionOrder(teamId: string, position: Position): void {
   const store = readStore();
   const team = store[teamId];
   if (team && team[position]) {
-    delete team[position];
-    if (Object.keys(team).length === 0) delete store[teamId];
-    writeStore(store);
+    const { [position]: _removed, ...rest } = team;
+    if (Object.keys(rest).length === 0) {
+      const { [teamId]: _removedTeam, ...restStore } = store;
+      writeStore(restStore);
+    } else {
+      writeStore({ ...store, [teamId]: rest });
+    }
   }
 }
 
 export function clearTeamOverride(teamId: string): void {
   const store = readStore();
   if (store[teamId]) {
-    delete store[teamId];
-    writeStore(store);
+    const { [teamId]: _removed, ...rest } = store;
+    writeStore(rest);
   }
 }
 
@@ -144,11 +148,11 @@ export function clearTeamOverride(teamId: string): void {
 export function setTeamOverride(teamId: string, override: TeamDepthOverride): void {
   const store = readStore();
   if (Object.keys(override).length === 0) {
-    delete store[teamId];
+    const { [teamId]: _removed, ...rest } = store;
+    writeStore(rest);
   } else {
-    store[teamId] = override;
+    writeStore({ ...store, [teamId]: override });
   }
-  writeStore(store);
 }
 
 export function hasOverride(override: TeamDepthOverride): boolean {

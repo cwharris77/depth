@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import AccountView from '@/components/AccountView';
 import Logo from '@/components/Logo';
+import { MARK_WORDMARK_GAP } from '@/components/DepthMark';
 import { dbRosterSource } from '@/lib/roster-source.db';
 import { safeNext } from '@/lib/auth-redirect';
 
@@ -43,7 +44,7 @@ export default async function SignInPage({
         <Link
           href="/"
           aria-label="Depth home"
-          className="mx-auto mb-8 flex w-fit items-center gap-2.5">
+          className={`mx-auto mb-8 flex w-fit items-center ${MARK_WORDMARK_GAP}`}>
           <Logo size={36} color="#69BE28" />
           <span className="text-xl font-bold tracking-widest" style={{ color: '#A5ACAF' }}>
             depth

@@ -1,0 +1,11 @@
+player_id,player_display_name,position,season,season_type,recent_team,games,completions,attempts,passing_yards,passing_tds,passing_interceptions,carries,rushing_yards,rushing_tds,receptions,targets,receiving_yards,receiving_tds,def_tackles_solo,def_sacks,def_interceptions,fg_made,fg_att,fg_pct,fantasy_points
+00-0033873,Patrick Mahomes,QB,2024,REG,KC,16,392,597,4183,26,11,25,105,0,0,0,0,0,,,,,,301.5
+00-0034796,A.J. Brown,WR,2024,REG,PHI,15,,,,,,2,18,0,67,106,1079,7,,,,,,187.7
+00-0035228,Breece Hall,RB,2024,REG,NYJ,17,,,,,,206,876,5,49,63,483,2,,,,,,207.9
+00-0036355,De'Von Achane,RB,2024,REG,MIA,16,,,,,,131,592,6,41,49,315,2,,,,,,163.7
+00-0034348,Micah Parsons,LB,2024,REG,DAL,13,,,,,,,,,,,,,41,12,0,,,,78.0
+00-0036972,Nick Bosa,DE,2024,REG,SF,5,,,,,,,,,,,,,10,2.5,0,,,,16.0
+00-0031280,Tremaine Edmunds,LB,2024,REG,CHI,17,,,,,,,,,,,,,85,1.5,2,,,,102.0
+00-0030506,Justin Tucker,K,2024,REG,BAL,16,,,,,,,,,,,,,,,,30,35,85.7,131.0
+00-0037012,Puka Nacua,WR,2024,REG,LAR,13,,,,,,3,21,0,79,110,990,3,,,,,,155.1
+00-0032156,Aaron Jones,RB,2024,REG,GB,15,,,,,,171,708,4,33,41,244,1,,,,,,116.2
