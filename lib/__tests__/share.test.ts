@@ -57,4 +57,22 @@ describe('rosterShareUrlPath', () => {
     const token = path.split('order=')[1];
     expect(decodeDepthOrder(token)).toEqual(override);
   });
+
+  it('omits the kit param when no kitId is given', () => {
+    expect(rosterShareUrlPath('seahawks', {})).toBe('/team/seahawks');
+  });
+
+  it('carries the kit param when a kitId is given', () => {
+    expect(rosterShareUrlPath('seahawks', {}, 'seahawks-1976-throwback')).toBe(
+      '/team/seahawks?kit=seahawks-1976-throwback'
+    );
+  });
+
+  it('composes the kit param after the order param', () => {
+    const override: TeamDepthOverride = { QB: ['p2', 'p1'] };
+    const path = rosterShareUrlPath('seahawks', override, 'seahawks-1976-throwback');
+    expect(path).toBe(
+      `/team/seahawks?order=${encodeDepthOrder(override)}&kit=seahawks-1976-throwback`
+    );
+  });
 });
