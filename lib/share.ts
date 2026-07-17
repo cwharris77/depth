@@ -49,11 +49,24 @@ export function decodeDepthOrder(param: string): TeamDepthOverride | null {
 }
 
 // The share URL for a team's roster as it currently stands. With no edits it's the
-// clean team path; with edits it carries the packed order. Root-relative; callers
-// prepend the origin.
-export function rosterShareUrlPath(teamId: string, override: TeamDepthOverride): string {
+// clean team path; with edits it carries the packed order. `kitId` is the picked
+// uniform (Phase 7 launch spec's "Share integration" decision) — omit it (or pass the
+// Home kit's id) to leave the link kit-less; ApplyKitFromQuery applies it on arrival.
+// Root-relative; callers prepend the origin.
+export function rosterShareUrlPath(
+  teamId: string,
+  override: TeamDepthOverride,
+  kitId?: string
+): string {
   const base = `/team/${encodeURIComponent(teamId)}`;
-  if (!override || Object.keys(override).length === 0) return base;
-  // encodeDepthOrder is base64url — already URL-safe, no further escaping needed.
-  return `${base}?order=${encodeDepthOrder(override)}`;
+  const params: string[] = [];
+  if (override && Object.keys(override).length > 0) {
+    // encodeDepthOrder is base64url — already URL-safe, no further escaping needed.
+    params.push(`order=${encodeDepthOrder(override)}`);
+  }
+  if (kitId) {
+    params.push(`kit=${encodeURIComponent(kitId)}`);
+  }
+  if (params.length === 0) return base;
+  return `${base}?${params.join('&')}`;
 }
