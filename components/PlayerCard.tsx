@@ -1,18 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence, Reorder, useDragControls, type PanInfo } from 'framer-motion';
-import Image from 'next/image';
-import { X, Check, GripVertical, RotateCcw, Share2, GraduationCap } from 'lucide-react';
-import type { Player, Position, TeamColors, TeamRoster } from '@/lib/types';
-import { getPlayersByPosition } from '@/lib/roster';
+import { readableTextOn, statusColor } from '@/lib/colors';
 import { markReorderHintSeen, seenReorderHint } from '@/lib/depth-overrides';
-import { statusColor, readableTextOn } from '@/lib/colors';
-import { positionFullName } from '@/lib/positions';
 import { experienceLabel } from '@/lib/format';
+import { positionFullName } from '@/lib/positions';
+import { getPlayersByPosition } from '@/lib/roster';
 import { playerDeepLinkPath } from '@/lib/share';
 import { statLine } from '@/lib/stat-lines';
-import type { PlayerSeasonStats } from '@/lib/types';
+import type { Player, PlayerSeasonStats, Position, TeamColors, TeamRoster } from '@/lib/types';
+import { AnimatePresence, motion, Reorder, useDragControls, type PanInfo } from 'framer-motion';
+import { Check, GraduationCap, GripVertical, RotateCcw, Share2, X } from 'lucide-react';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 interface PlayerCardProps {
   player: Player | null;
@@ -337,11 +336,12 @@ export default function PlayerCard({
                 </span>
               </div>
 
-              <div className="px-6 mb-4">
+              {/* Do not show bio for now. All it has is their position which is already shown above. When we get more info we can add it */}
+              {/* <div className="px-6 mb-4">
                 <p className="text-sm leading-relaxed" style={{ color: 'rgba(240,244,255,0.75)' }}>
                   {player.bio}
                 </p>
-              </div>
+              </div> */}
 
               {player.stats && Object.keys(player.stats).length > 0 && (
                 <div className="px-6 mb-6">
@@ -379,7 +379,7 @@ export default function PlayerCard({
                   <div
                     className="text-[10px] font-semibold mb-3"
                     style={{ color: '#A5ACAF', letterSpacing: '0.1em' }}>
-                    LAST SEASONS
+                    SEASON STATS
                   </div>
                   <div
                     className="rounded-2xl overflow-hidden"
@@ -410,11 +410,12 @@ export default function PlayerCard({
                 <div className="px-6 pb-8">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <span
+                      {/* Do not show position depth for now. When we design for custom rosters and positions we can add it back in */}
+                      {/* <span
                         className="text-[10px] font-semibold"
                         style={{ color: '#A5ACAF', letterSpacing: '0.1em' }}>
                         POSITION DEPTH · {player.position}
-                      </span>
+                      </span> */}
                       {isPositionCustom && (
                         <span
                           className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"

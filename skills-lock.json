@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "a11y-audit": {
+      "source": "alirezarezvani/claude-skills",
+      "sourceType": "github",
+      "skillPath": "engineering-team/a11y-audit/skills/a11y-audit/SKILL.md",
+      "computedHash": "2e7cb3414714d755126afccc0b3e6d05074826aca42dd0d52ff9b6b48d1c7c21"
+    },
+    "framer-motion-animator": {
+      "source": "patricio0312rev/skills",
+      "sourceType": "github",
+      "skillPath": "frontend/framer-motion-animator/SKILL.md",
+      "computedHash": "d0137ba04049bf8926bc80f6a5e2b82d94b5633b6445a85dbfb26ab4f1b104c6"
+    },
+    "vitest-testing": {
+      "source": "secondsky/claude-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/vitest-testing/skills/vitest-testing/SKILL.md",
+      "computedHash": "1c24e993c451a720db0c66b444b2623aee3597699c6054858fb8251b38a5eb3b"
+    }
+  }
+}
