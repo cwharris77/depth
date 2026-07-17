@@ -3,39 +3,32 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight, Star } from 'lucide-react';
-import { getBrowserClient, signInWithOtpImplicit } from '@/lib/supabase/client';
+import { getBrowserClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/use-user';
 import { getSettings, putSettings } from '@/lib/settings-client';
 
-// The sign-in / account page body (Phase C, auth pass 1). Reached from the nav drawer's
-// account item at /signin. Signed out: email magic-link sign-in ("opt in — no account,
-// no data"). Signed in: the account (email + sign out) plus the favorite-team picker —
-// the team the home route opens to on startup. Favorite lives here (not a contextual
-// per-team toggle) because this is the settings surface.
+// The sign-in / account page body (Phase C, auth pass 1; OTP-code sign-in, auth pass 3).
+// Reached from the nav drawer's account item at /signin. Signed out: email + 6-digit code
+// sign-in ("opt in — no account, no data") — verified synchronously in this page via
+// verifyOtp(), no link/redirect/cross-app handoff involved (see supabase/config.toml's
+// [auth] comment for why the magic-link approach was retired). Signed in: the account
+// (email + sign out) plus the favorite-team picker — the team the home route opens to on
+// startup. Favorite lives here (not a contextual per-team toggle) because this is the
+// settings surface.
 type SendState = 'idle' | 'sending' | 'sent' | 'error';
+type VerifyState = 'idle' | 'verifying' | 'error';
 type TeamOption = { id: string; label: string };
 
 export default function AccountView({ teams, next }: { teams: TeamOption[]; next: string }) {
   const { user, loading } = useUser();
   const [email, setEmail] = useState('');
   const [sendState, setSendState] = useState<SendState>('idle');
-  const [linkExpired, setLinkExpired] = useState(false);
+  const [code, setCode] = useState('');
+  const [verifyState, setVerifyState] = useState<VerifyState>('idle');
   const [favoriteTeamId, setFavoriteTeamId] = useState<string | null>(null);
   const [startOnFavorite, setStartOnFavorite] = useState(true);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [deleteState, setDeleteState] = useState<'idle' | 'deleting' | 'error'>('idle');
-
-  // Surface an expired/invalid magic link (auth/confirm -> /signin?auth_error=1), then
-  // strip the param so a reload is clean.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('auth_error')) {
-      setLinkExpired(true);
-      params.delete('auth_error');
-      const qs = params.toString();
-      window.history.replaceState(null, '', `${window.location.pathname}${qs ? `?${qs}` : ''}`);
-    }
-  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -48,15 +41,30 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
     });
   }, [user]);
 
-  const sendLink = async () => {
+  const sendCode = async () => {
     const trimmed = email.trim();
     if (!trimmed) return;
     setSendState('sending');
-    setLinkExpired(false);
-    // Land back on the page the user came from (threaded via ?next=), not the sign-in page.
-    const emailRedirectTo = `${window.location.origin}/auth/confirm?next=${encodeURIComponent(next)}`;
-    const { error } = await signInWithOtpImplicit(trimmed, emailRedirectTo);
+    const { error } = await getBrowserClient().auth.signInWithOtp({ email: trimmed });
     setSendState(error ? 'error' : 'sent');
+  };
+
+  // Verify the 6-digit code the user types from the email. Synchronous, in-page — the browser
+  // client holds the session directly on success, no redirect/link/cross-app handoff involved.
+  const verifyCode = async () => {
+    const token = code.replace(/\D/g, '');
+    if (token.length !== 6) return;
+    setVerifyState('verifying');
+    const { error } = await getBrowserClient().auth.verifyOtp({
+      email: email.trim(),
+      token,
+      type: 'email',
+    });
+    if (error) {
+      setVerifyState('error');
+      return;
+    }
+    window.location.assign(next);
   };
 
   const changeFavorite = (id: string) => {
@@ -304,14 +312,70 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
 
   if (sendState === 'sent') {
     return (
-      <div className="flex flex-col gap-2">
-        <div className="text-lg font-bold" style={{ color: '#f0f4ff' }}>
-          Check your email
+      <div className="flex flex-col gap-4">
+        <div>
+          <div className="text-lg font-bold" style={{ color: '#f0f4ff' }}>
+            Check your email
+          </div>
+          <p className="mt-1 text-sm" style={{ color: '#A5ACAF' }}>
+            We sent a 6-digit code to <span style={{ color: '#f0f4ff' }}>{email.trim()}</span>.
+            Enter it below to finish signing in.
+          </p>
         </div>
-        <p className="text-sm" style={{ color: '#A5ACAF' }}>
-          We sent a sign-in link to <span style={{ color: '#f0f4ff' }}>{email.trim()}</span>. Open
-          it to finish signing in.
-        </p>
+
+        <div className="flex flex-col gap-2">
+          <input
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            value={code}
+            onChange={(e) => {
+              setCode(e.target.value.replace(/\D/g, ''));
+              setVerifyState('idle');
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') verifyCode();
+            }}
+            placeholder="123456"
+            aria-label="6-digit sign-in code"
+            className="rounded-xl px-4 py-3 text-lg tracking-[0.4em] outline-none"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.14)',
+              color: '#f0f4ff',
+            }}
+          />
+          <button
+            type="button"
+            onClick={verifyCode}
+            disabled={verifyState === 'verifying' || code.length !== 6}
+            className="rounded-xl px-4 py-3 text-sm font-bold"
+            style={{
+              background: '#69BE28',
+              color: '#0a0e1a',
+              opacity: code.length === 6 ? 1 : 0.6,
+            }}>
+            {verifyState === 'verifying' ? 'Verifying…' : 'Verify & sign in'}
+          </button>
+          {verifyState === 'error' && (
+            <div className="text-[12px]" style={{ color: '#ff6b6b' }}>
+              That code is invalid or expired — use the newest email, or resend below.
+            </div>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setSendState('idle');
+            setCode('');
+            setVerifyState('idle');
+          }}
+          className="self-start text-[12px] underline"
+          style={{ color: '#A5ACAF' }}>
+          Use a different email
+        </button>
       </div>
     );
   }
@@ -330,7 +394,7 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') sendLink();
+            if (e.key === 'Enter') sendCode();
           }}
           placeholder="you@email.com"
           className="rounded-xl px-4 py-3 text-base outline-none"
@@ -342,20 +406,15 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
         />
         <button
           type="button"
-          onClick={sendLink}
+          onClick={sendCode}
           disabled={sendState === 'sending'}
           className="rounded-xl px-4 py-3 text-sm font-bold"
           style={{ background: '#69BE28', color: '#0a0e1a' }}>
-          {sendState === 'sending' ? 'Sending…' : 'Email me a sign-in link'}
+          {sendState === 'sending' ? 'Sending…' : 'Email me a sign-in code'}
         </button>
         {sendState === 'error' && (
           <div className="text-[12px]" style={{ color: '#ff6b6b' }}>
             Couldn&apos;t send — try again.
-          </div>
-        )}
-        {linkExpired && (
-          <div className="text-[12px]" style={{ color: '#ff6b6b' }}>
-            That sign-in link expired — request a new one.
           </div>
         )}
       </div>
