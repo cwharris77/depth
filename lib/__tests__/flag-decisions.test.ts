@@ -1,17 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { decideShowUniformPicker } from '../flag-decisions';
+import { decideShowIsolatedSearchBarIcon } from '../flag-decisions';
 
-describe('decideShowUniformPicker', () => {
-  it('returns false when SHOW_UNIFORM_PICKER is unset', () => {
-    expect(decideShowUniformPicker({})).toBe(false);
+describe('decideShowIsolatedSearchBarIcon', () => {
+  it('returns false when SHOW_ISOLATED_SEARCH_BAR_ICON is unset', () => {
+    expect(decideShowIsolatedSearchBarIcon({})).toBe(false);
   });
 
-  it('returns false when SHOW_UNIFORM_PICKER is not exactly "1"', () => {
-    expect(decideShowUniformPicker({ SHOW_UNIFORM_PICKER: 'true' })).toBe(false);
-    expect(decideShowUniformPicker({ SHOW_UNIFORM_PICKER: '' })).toBe(false);
-  });
-
-  it('returns true when SHOW_UNIFORM_PICKER=1', () => {
-    expect(decideShowUniformPicker({ SHOW_UNIFORM_PICKER: '1' })).toBe(true);
+  it('returns true when SHOW_ISOLATED_SEARCH_BAR_ICON=1', () => {
+    expect(decideShowIsolatedSearchBarIcon({ SHOW_ISOLATED_SEARCH_BAR_ICON: '1' })).toBe(true);
   });
 });
