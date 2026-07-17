@@ -178,7 +178,9 @@ export default function DepthChartField({
         // fall through to the offline-safe ?order= link
       }
     }
-    return window.location.origin + rosterShareUrlPath(team.id, override);
+    const homeKitId = roster.uniforms[0]?.id;
+    const sharedKitId = kitId && kitId !== homeKitId ? kitId : undefined;
+    return window.location.origin + rosterShareUrlPath(team.id, override, sharedKitId);
   };
 
   const handleShareRoster = async () => {
