@@ -26,7 +26,7 @@ export default function PrivacyPage() {
         <h1 className="text-2xl font-black" style={{ color: '#f0f4ff' }}>
           Privacy policy
         </h1>
-        <p className="mt-1.5 mb-6 text-[12px]" style={{ color: '#5b6478' }}>
+        <p className="mt-1.5 mb-6 text-[12px]" style={{ color: '#7d848c' }}>
           Last updated July 2026
         </p>
 
@@ -34,20 +34,20 @@ export default function PrivacyPage() {
           className="flex flex-col gap-4 text-[13px] leading-relaxed"
           style={{ color: '#c5cbd8' }}>
           <div>
-            <div className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
+            <h2 className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
               What we collect
-            </div>
+            </h2>
             <p className="m-0">
-              Your email address, used only to sign you in via a one-time code or link. If you sign
-              in, we also store your favorite team, app preferences, and depth-chart edits so they
-              sync across your devices. We don&apos;t collect names, payment details, or device
+              Your email address, used only to sign you in via a one-time code. If you sign in, we
+              also store your favorite team, app preferences, and depth-chart edits so they sync
+              across your devices. We don&apos;t collect names, payment details, or device
               identifiers.
             </p>
           </div>
           <div>
-            <div className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
+            <h2 className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
               Without signing in
-            </div>
+            </h2>
             <p className="m-0">
               Your depth-chart edits and last-viewed team are saved in your browser&apos;s local
               storage on your device only — we don&apos;t receive or store them on our servers
@@ -55,9 +55,9 @@ export default function PrivacyPage() {
             </p>
           </div>
           <div>
-            <div className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
+            <h2 className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
               Sharing a depth chart
-            </div>
+            </h2>
             <p className="m-0">
               If you share a custom depth chart, anyone with the link can view it, and the part of
               your email before the <span style={{ color: '#f0f4ff' }}>@</span> (not your full
@@ -66,36 +66,36 @@ export default function PrivacyPage() {
             </p>
           </div>
           <div>
-            <div className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
+            <h2 className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
               What we don&apos;t do
-            </div>
+            </h2>
             <p className="m-0">
               No ads, no analytics or tracking scripts, no data sold or shared with third parties.
               We use Supabase to host our database and handle sign-in.
             </p>
           </div>
           <div>
-            <div className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
+            <h2 className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
               Children&apos;s privacy
-            </div>
+            </h2>
             <p className="m-0">
               Depth isn&apos;t directed at children under 13, and we don&apos;t knowingly collect
               data from them.
             </p>
           </div>
           <div>
-            <div className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
+            <h2 className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
               Deleting your data
-            </div>
+            </h2>
             <p className="m-0">
               You can permanently delete your account — including your settings, saved depth-chart
               edits, and shared links — at any time from the account page&apos;s Danger Zone.
             </p>
           </div>
           <div>
-            <div className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
+            <h2 className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
               Contact
-            </div>
+            </h2>
             <p className="m-0">
               Questions — reach us at <span style={{ color: '#69BE28' }}>privacy@[domain]</span>.
             </p>
