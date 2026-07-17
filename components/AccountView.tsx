@@ -6,6 +6,7 @@ import { ChevronRight, Star } from 'lucide-react';
 import { getBrowserClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/use-user';
 import { getSettings, putSettings } from '@/lib/settings-client';
+import OtpInput from '@/components/ui/OtpInput';
 
 // The sign-in / account page body (Phase C, auth pass 1; OTP-code sign-in, auth pass 3).
 // Reached from the nav drawer's account item at /signin. Signed out: email + 6-digit code
@@ -321,30 +322,19 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
             We sent a 6-digit code to <span style={{ color: '#f0f4ff' }}>{email.trim()}</span>.
             Enter it below to finish signing in.
           </p>
+          <p className="mt-1 text-[12px]" style={{ color: '#5b6478' }}>
+            Don&apos;t see it? Check your spam folder.
+          </p>
         </div>
 
         <div className="flex flex-col gap-2">
-          <input
-            type="text"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={6}
-            value={code}
-            onChange={(e) => {
-              setCode(e.target.value.replace(/\D/g, ''));
+          <OtpInput
+            onChange={(value) => {
+              setCode(value);
               setVerifyState('idle');
             }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') verifyCode();
-            }}
-            placeholder="123456"
-            aria-label="6-digit sign-in code"
-            className="rounded-xl px-4 py-3 text-lg tracking-[0.4em] outline-none"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.14)',
-              color: '#f0f4ff',
-            }}
+            onEnter={verifyCode}
+            disabled={verifyState === 'verifying'}
           />
           <button
             type="button"
