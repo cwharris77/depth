@@ -28,17 +28,24 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
   const [verifyState, setVerifyState] = useState<VerifyState>('idle');
   const [favoriteTeamId, setFavoriteTeamId] = useState<string | null>(null);
   const [startOnFavorite, setStartOnFavorite] = useState(true);
+  // Settings load via a second async call (getSettings) after `loading` flips false, so gate the
+  // settings-derived controls on this to avoid rendering the default "No favorite" before the
+  // real value arrives (flash-then-jump).
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [deleteState, setDeleteState] = useState<'idle' | 'deleting' | 'error'>('idle');
 
   useEffect(() => {
     if (!user) {
       setFavoriteTeamId(null);
+      setSettingsLoaded(false);
       return;
     }
+    setSettingsLoaded(false);
     getSettings().then((s) => {
       setFavoriteTeamId(s?.favoriteTeamId ?? null);
       setStartOnFavorite(s?.startOnFavorite ?? true);
+      setSettingsLoaded(true);
     });
   }, [user]);
 
@@ -158,23 +165,37 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
               <p className="mb-0.5 text-[12px]" style={{ color: '#8891a3' }}>
                 Opens automatically when you start the app.
               </p>
-              <select
-                id="favorite-team"
-                value={favoriteTeamId ?? ''}
-                onChange={(e) => changeFavorite(e.target.value)}
-                className="rounded-xl px-3 py-2.5 text-base outline-none"
-                style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.14)',
-                  color: '#f0f4ff',
-                }}>
-                <option value="">No favorite</option>
-                {teams.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
+              {settingsLoaded ? (
+                <select
+                  id="favorite-team"
+                  value={favoriteTeamId ?? ''}
+                  onChange={(e) => changeFavorite(e.target.value)}
+                  className="rounded-xl px-3 py-2.5 text-base outline-none"
+                  style={{
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.14)',
+                    color: '#f0f4ff',
+                  }}>
+                  <option value="">No favorite</option>
+                  {teams.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                // Skeleton until getSettings resolves — avoids flashing the default "No favorite"
+                // before the real favorite arrives.
+                <div
+                  aria-hidden="true"
+                  className="animate-pulse rounded-xl"
+                  style={{
+                    height: 46,
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.14)',
+                  }}
+                />
+              )}
             </div>
 
             {favoriteTeamId && (
