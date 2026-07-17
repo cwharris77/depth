@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, Star } from 'lucide-react';
+import { Check, ChevronRight, Star } from 'lucide-react';
 import { getBrowserClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/use-user';
 import { getSettings, putSettings } from '@/lib/settings-client';
@@ -20,12 +20,16 @@ type SendState = 'idle' | 'sending' | 'sent' | 'error';
 type VerifyState = 'idle' | 'verifying' | 'error';
 type TeamOption = { id: string; label: string };
 
-export default function AccountView({ teams, next }: { teams: TeamOption[]; next: string }) {
+export default function AccountView({ teams }: { teams: TeamOption[] }) {
   const { user, loading } = useUser();
   const [email, setEmail] = useState('');
   const [sendState, setSendState] = useState<SendState>('idle');
   const [code, setCode] = useState('');
   const [verifyState, setVerifyState] = useState<VerifyState>('idle');
+  // Set on a successful in-page sign-in so we show a success confirmation instead of
+  // auto-navigating or dropping the user straight into the settings form. Cleared when they
+  // choose to manage settings.
+  const [justSignedIn, setJustSignedIn] = useState(false);
   const [favoriteTeamId, setFavoriteTeamId] = useState<string | null>(null);
   const [startOnFavorite, setStartOnFavorite] = useState(true);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
@@ -52,6 +56,8 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
 
   // Verify the 6-digit code the user types from the email. Synchronous, in-page — the browser
   // client holds the session directly on success, no redirect/link/cross-app handoff involved.
+  // On success we don't navigate: onAuthStateChange flips the user to signed-in, and we show a
+  // success confirmation (justSignedIn) that points to the settings rather than auto-opening them.
   const verifyCode = async () => {
     const token = code.replace(/\D/g, '');
     if (token.length !== 6) return;
@@ -65,7 +71,7 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
       setVerifyState('error');
       return;
     }
-    window.location.assign(next);
+    setJustSignedIn(true);
   };
 
   const changeFavorite = (id: string) => {
@@ -106,6 +112,41 @@ export default function AccountView({ teams, next }: { teams: TeamOption[]; next
     return (
       <div className="text-sm" style={{ color: '#A5ACAF' }}>
         Loading…
+      </div>
+    );
+  }
+
+  // Just signed in: confirm success in place and point to the settings, rather than
+  // auto-navigating away or dropping straight into the settings form. The page's Back arrow
+  // (rendered by signin/page.tsx) still returns the user to where they came from.
+  if (user && justSignedIn) {
+    return (
+      <div className="flex flex-col items-center gap-5 py-6 text-center">
+        <div
+          className="flex h-16 w-16 items-center justify-center rounded-full"
+          style={{
+            background: 'rgba(105,190,40,0.14)',
+            border: '1px solid rgba(105,190,40,0.3)',
+          }}>
+          <Check size={30} color="#69BE28" strokeWidth={3} />
+        </div>
+        <div>
+          <div className="text-xl font-black" style={{ color: '#f0f4ff' }}>
+            You&apos;re signed in
+          </div>
+          <p className="mt-1 text-sm" style={{ color: '#A5ACAF' }}>
+            {user.email ? `Signed in as ${user.email}. ` : ''}
+            Your favorite team and settings now sync across devices.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setJustSignedIn(false)}
+          className="flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold"
+          style={{ background: '#69BE28', color: '#0a0e1a' }}>
+          Manage account settings
+          <ChevronRight size={16} color="#0a0e1a" />
+        </button>
       </div>
     );
   }
