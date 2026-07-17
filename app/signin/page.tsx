@@ -13,8 +13,9 @@ export const metadata: Metadata = {
 
 // Dedicated sign-in / account page (Phase C, auth pass 1), reached from the nav drawer's
 // account item. Server component: resolves the team list here (for the favorite picker) and
-// hands it, plus the ?next= return path, to the client AccountView. `next` is where the user
-// came from — the back arrow returns there, and the magic link lands there after sign-in.
+// hands it to the client AccountView. `next` is the ?next= return path — where the user came
+// from — used by the Back arrow below. Sign-in itself no longer navigates (it shows an in-page
+// success confirmation), so `next` is only the manual way back out.
 export default async function SignInPage({
   searchParams,
 }: {
@@ -48,7 +49,7 @@ export default async function SignInPage({
             depth
           </span>
         </Link>
-        <AccountView teams={options} next={next} />
+        <AccountView teams={options} />
       </div>
     </main>
   );
