@@ -9,7 +9,8 @@ Interactive NFL depth chart viewer — pick any of the 32 teams, tap any player 
 | Route | What |
 |-------|------|
 | `/` | Redirects to your saved "my team" (5a), or the Seahawks by default |
-| `/team/[id]` | Depth chart for one team — prerendered per team, one roster per page |
+| `/team/[id]` | Depth chart for one team - one roster per page |
+| `/uniforms`  | Uniform archive for all teams - one row per team. Not fully accurate yet |
 
 ## Development
 
