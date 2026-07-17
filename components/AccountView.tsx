@@ -7,6 +7,7 @@ import { getBrowserClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/use-user';
 import { getSettings, putSettings } from '@/lib/settings-client';
 import OtpInput from '@/components/ui/OtpInput';
+import { colors } from '@/components/ui/tokens';
 
 // The sign-in / account page body (Phase C, auth pass 1; OTP-code sign-in, auth pass 3).
 // Reached from the nav drawer's account item at /signin. Signed out: email + 6-digit code
@@ -177,7 +178,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
           <div className="min-w-0">
             <div
               className="text-[11px] font-semibold uppercase tracking-widest"
-              style={{ color: '#5b6478' }}>
+              style={{ color: '#7d848c' }}>
               Signed in as
             </div>
             <div className="truncate text-base font-bold" style={{ color: '#f0f4ff' }}>
@@ -211,11 +212,17 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
                   id="favorite-team"
                   value={favoriteTeamId ?? ''}
                   onChange={(e) => changeFavorite(e.target.value)}
-                  className="rounded-xl px-3 py-2.5 text-base outline-none"
+                  className="rounded-xl px-3 py-2.5 text-base outline-none transition-shadow duration-150"
                   style={{
                     background: 'rgba(255,255,255,0.06)',
                     border: '1px solid rgba(255,255,255,0.14)',
                     color: '#f0f4ff',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.boxShadow = `0 0 0 3px ${colors.focusRing}`;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.boxShadow = 'none';
                   }}>
                   <option value="">No favorite</option>
                   {teams.map((t) => (
@@ -384,7 +391,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
             We sent a 6-digit code to <span style={{ color: '#f0f4ff' }}>{email.trim()}</span>.
             Enter it below to finish signing in.
           </p>
-          <p className="mt-1 text-[12px]" style={{ color: '#5b6478' }}>
+          <p className="mt-1 text-[12px]" style={{ color: '#7d848c' }}>
             Don&apos;t see it? Check your spam folder.
           </p>
         </div>
@@ -443,17 +450,24 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
           type="email"
           inputMode="email"
           autoComplete="email"
+          aria-label="Email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') sendCode();
           }}
           placeholder="you@email.com"
-          className="rounded-xl px-4 py-3 text-base outline-none"
+          className="rounded-xl px-4 py-3 text-base outline-none transition-shadow duration-150"
           style={{
             background: 'rgba(255,255,255,0.06)',
             border: '1px solid rgba(255,255,255,0.14)',
             color: '#f0f4ff',
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.boxShadow = `0 0 0 3px ${colors.focusRing}`;
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.boxShadow = 'none';
           }}
         />
         <button
@@ -471,7 +485,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
         )}
       </div>
 
-      <p className="text-[11px] leading-relaxed" style={{ color: '#5b6478' }}>
+      <p className="text-[11px] leading-relaxed" style={{ color: '#7d848c' }}>
         By continuing you agree to our{' '}
         <Link href="/privacy" style={{ color: '#69BE28' }} className="underline">
           privacy policy

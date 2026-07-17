@@ -138,7 +138,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
           <section key={`${g.conference}-${g.division}`} className="mt-7">
             <h2
               className="mb-4 pb-1.5 text-[10px] font-semibold tracking-[0.2em]"
-              style={{ color: '#5f6b7a', borderBottom: '1px solid #1a2233' }}>
+              style={{ color: '#7d848c', borderBottom: '1px solid #1a2233' }}>
               {g.conference} {g.division.toUpperCase()}
             </h2>
             {g.teams.map((t) => {
@@ -170,7 +170,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
                             style={{ color: '#9aa4b2' }}>
                             {k.name}
                             {k.yearStart ? (
-                              <span className="block" style={{ color: '#5f6b7a' }}>
+                              <span className="block" style={{ color: '#7d848c' }}>
                                 {k.yearStart}
                                 {k.yearEnd ? `–${k.yearEnd}` : '–'}
                               </span>

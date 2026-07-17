@@ -77,7 +77,9 @@ export default function PlayerDot({
         WebkitTapHighlightColor: 'transparent',
         background: 'transparent',
         border: 'none',
-        padding: 0,
+        // Invisible hit-slop: the visual dot is 30px, below the 44px touch-target
+        // guideline, so pad the tappable area without enlarging what's drawn.
+        padding: 7,
         cursor: 'pointer',
       }}
       onClick={() => onClick(player)}>

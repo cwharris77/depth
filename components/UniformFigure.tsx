@@ -121,7 +121,7 @@ export default function UniformFigure({
   const hasPants = spec.parts.includes('pants');
 
   if (imagePath) {
-    return <img src={imagePath} alt={title ?? ''} width={size} height={height} />;
+    return <img src={imagePath} alt={title ?? ''} width={size} height={height} loading="lazy" />;
   }
 
   // Default trim config, colored from the kit's palette.
