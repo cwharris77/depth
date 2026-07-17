@@ -135,8 +135,8 @@ describe('toTeamRoster', () => {
   });
   it('fills special-teams returners from the ST depthchart', () => {
     const kr = result.specialTeams.find((s) => s.label === 'KR');
-    expect(kr).toBeDefined();
-    expect(kr!.playerId).toBeTruthy();
+    if (!kr) throw new Error('expected a KR special-teams slot');
+    expect(kr.playerId).toBeTruthy();
   });
   it("never references a special player id that isn't in the roster", () => {
     const ids = new Set(result.players.map((p) => p.id));
@@ -218,8 +218,8 @@ describe('toTeamRoster: returner ranked outside the top-3 cap', () => {
     const kr = result.specialTeams.find((s) => s.label === 'KR');
     expect(kr?.playerId).toBe(WR7_ID);
     const player = result.players.find((p) => p.id === WR7_ID);
-    expect(player).toBeDefined();
-    expect(player!.position).toBe('WR');
+    if (!player) throw new Error('expected the returner to be present in players');
+    expect(player.position).toBe('WR');
   });
 });
 
