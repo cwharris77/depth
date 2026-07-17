@@ -46,7 +46,8 @@ const depthRankLabel: Record<number, string> = {
 // hitting ESPN's CDN on every card open.
 function PlayerAvatar({ player, colors }: { player: Player; colors: TeamColors }) {
   const [errored, setErrored] = useState(false);
-  const showPhoto = Boolean(player.photoUrl) && !errored;
+  const photoUrl = player.photoUrl;
+  const showPhoto = Boolean(photoUrl) && !errored;
 
   return (
     <div
@@ -58,9 +59,9 @@ function PlayerAvatar({ player, colors }: { player: Player; colors: TeamColors }
         background: colors.primary,
         color: readableTextOn(colors.primary),
       }}>
-      {showPhoto ? (
+      {showPhoto && photoUrl ? (
         <Image
-          src={player.photoUrl!}
+          src={photoUrl}
           alt={player.name}
           width={72}
           height={72}

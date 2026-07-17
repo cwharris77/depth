@@ -36,7 +36,8 @@ function SectionLabel({ children }: { children: string }) {
 
 function PlayerAvatar({ hit }: { hit: PlayerHit }) {
   const [errored, setErrored] = useState(false);
-  const showPhoto = Boolean(hit.photoUrl) && !errored;
+  const photoUrl = hit.photoUrl;
+  const showPhoto = Boolean(photoUrl) && !errored;
   return (
     <div
       className="shrink-0 rounded-full overflow-hidden flex items-center justify-center"
@@ -46,9 +47,9 @@ function PlayerAvatar({ hit }: { hit: PlayerHit }) {
         background: 'rgba(255,255,255,0.06)',
         border: '1px solid rgba(255,255,255,0.12)',
       }}>
-      {showPhoto ? (
+      {showPhoto && photoUrl ? (
         <Image
-          src={hit.photoUrl!}
+          src={photoUrl}
           alt={hit.name}
           width={36}
           height={36}
