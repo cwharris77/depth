@@ -1,3 +1,4 @@
+<<<<<<< agent/remove-roadmap-from-repo-readme
 <!-- BEGIN:nextjs-agent-rules -->
 # This is NOT the Next.js you know
 
@@ -242,3 +243,6 @@ say which rule you're overriding).
 (`SUPABASE_SERVICE_ROLE_KEY` lives only in `.env.local` and GitHub Actions secrets —
 the anon key is public-safe by design); merge-commit; hand-edit generated files;
 delete archive rows.
+=======
+@CLAUDE.md
+>>>>>>> main
