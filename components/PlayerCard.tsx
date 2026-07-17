@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence, Reorder, useDragControls, type PanInfo } from 'framer-motion';
 import Image from 'next/image';
-import { X, Check, GripVertical, RotateCcw, Share2 } from 'lucide-react';
+import { X, Check, GripVertical, RotateCcw, Share2, GraduationCap } from 'lucide-react';
 import type { Player, Position, TeamColors, TeamRoster } from '@/lib/types';
 import { getPlayersByPosition } from '@/lib/roster';
 import { markReorderHintSeen, seenReorderHint } from '@/lib/depth-overrides';
@@ -302,13 +302,9 @@ export default function PlayerCard({
                 ))}
               </div>
 
-              <div className="px-6 mb-3">
-                <span
-                  className="text-xs font-semibold"
-                  style={{ color: '#A5ACAF', letterSpacing: '0.06em' }}>
-                  COLLEGE
-                </span>
-                <span className="ml-2 text-sm font-bold" style={{ color: '#f0f4ff' }}>
+              <div className="px-6 mb-3 flex items-center gap-1.5">
+                <GraduationCap size={14} style={{ color: accent, opacity: 0.85 }} />
+                <span className="text-sm font-bold" style={{ color: '#f0f4ff' }}>
                   {player.college}
                 </span>
               </div>
