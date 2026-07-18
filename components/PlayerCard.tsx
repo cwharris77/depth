@@ -374,40 +374,8 @@ export default function PlayerCard({
                 </div>
               )}
 
-              {seasonLines.length > 0 && (
-                <div className="px-6 mb-6">
-                  <div
-                    className="text-[10px] font-semibold mb-3"
-                    style={{ color: '#A5ACAF', letterSpacing: '0.1em' }}>
-                    SEASON STATS
-                  </div>
-                  <div
-                    className="rounded-2xl overflow-hidden"
-                    style={{
-                      background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(255,255,255,0.06)',
-                    }}>
-                    {seasonLines.map((s, i) => (
-                      <div
-                        key={s.season}
-                        className="flex items-center gap-3 px-4 py-3"
-                        style={{
-                          borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)',
-                        }}>
-                        <div className="text-xs font-bold" style={{ color: accent, minWidth: 40 }}>
-                          {s.season}
-                        </div>
-                        <div className="flex-1 text-sm font-bold" style={{ color: '#f0f4ff' }}>
-                          {s.line}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {depthChart.length > 1 && (
-                <div className="px-6 pb-8">
+                <div className="px-6 mb-6">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       {/* Do not show position depth for now. When we design for custom rosters and positions we can add it back in */}
@@ -553,6 +521,38 @@ export default function PlayerCard({
                         );
                       })
                     )}
+                  </div>
+                </div>
+              )}
+
+              {seasonLines.length > 0 && (
+                <div className="px-6 pb-8">
+                  <div
+                    className="text-[10px] font-semibold mb-3"
+                    style={{ color: '#A5ACAF', letterSpacing: '0.1em' }}>
+                    SEASON STATS
+                  </div>
+                  <div
+                    className="rounded-2xl overflow-hidden"
+                    style={{
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                    }}>
+                    {seasonLines.map((s, i) => (
+                      <div
+                        key={s.season}
+                        className="flex items-center gap-3 px-4 py-3"
+                        style={{
+                          borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)',
+                        }}>
+                        <div className="text-xs font-bold" style={{ color: accent, minWidth: 40 }}>
+                          {s.season}
+                        </div>
+                        <div className="flex-1 text-sm font-bold" style={{ color: '#f0f4ff' }}>
+                          {s.line}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
