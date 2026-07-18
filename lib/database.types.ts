@@ -108,6 +108,63 @@ export type Database = {
           },
         ]
       }
+      games: {
+        Row: {
+          away_score: number | null
+          away_team_id: string
+          game_id: string
+          game_type: string
+          gameday: string | null
+          gametime: string | null
+          home_score: number | null
+          home_team_id: string
+          season: number
+          updated_at: string
+          week: number | null
+        }
+        Insert: {
+          away_score?: number | null
+          away_team_id: string
+          game_id: string
+          game_type: string
+          gameday?: string | null
+          gametime?: string | null
+          home_score?: number | null
+          home_team_id: string
+          season: number
+          updated_at?: string
+          week?: number | null
+        }
+        Update: {
+          away_score?: number | null
+          away_team_id?: string
+          game_id?: string
+          game_type?: string
+          gameday?: string | null
+          gametime?: string | null
+          home_score?: number | null
+          home_team_id?: string
+          season?: number
+          updated_at?: string
+          week?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "games_away_team_id_season_fkey"
+            columns: ["away_team_id", "season"]
+            isOneToOne: false
+            referencedRelation: "schedules"
+            referencedColumns: ["team_id", "season"]
+          },
+          {
+            foreignKeyName: "games_home_team_id_season_fkey"
+            columns: ["home_team_id", "season"]
+            isOneToOne: false
+            referencedRelation: "schedules"
+            referencedColumns: ["team_id", "season"]
+          },
+        ]
+      }
       ingestion_runs: {
         Row: {
           created_at: string
@@ -276,6 +333,32 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "players_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedules: {
+        Row: {
+          season: number
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          season: number
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          season?: number
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedules_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
