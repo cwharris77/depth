@@ -7,17 +7,16 @@
 // tab change, not navigating away and back. Owns its own nav-drawer/switcher sheet
 // state so callers don't have to wire it up per page. All three tabs are live routes:
 // ROSTER (/team/[id]), SCHEDULE (/team/[id]/schedule), STATS (/team/[id]/stats).
+import SegmentedControl from '@/components/ui/SegmentedControl';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { Player, TeamColors } from '@/lib/types';
 import { ChevronDown } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import DepthMark from './DepthMark';
 import FullScreenSheet from './FullScreenSheet';
 import NavDrawer from './NavDrawer';
 import NavSwitcher from './NavSwitcher';
-import { colors as uiTokens } from '@/components/ui/tokens';
 
 const PAGE_TABS = [
   { key: 'roster', label: 'ROSTER' },
@@ -51,11 +50,17 @@ export default function TeamPageHeader({
   // useTransition-guarded pattern TeamStatsView's old back-arrow used.
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const navigate = (href: string) => (e: React.MouseEvent) => {
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+  const hrefFor = (key: PageKey) =>
+    key === 'roster' ? `/team/${team.id}` : `/team/${team.id}/${key}`;
+  // Let modifier/middle clicks fall through to the <Link>'s native open-in-new-tab;
+  // for a plain left click, take over so the transition holds the old page mounted
+  // (no loading-skeleton flash) instead of hard-navigating.
+  const navigate = (key: string, e: React.MouseEvent) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || (e as React.MouseEvent).button !== 0)
+      return;
     e.preventDefault();
     if (isPending) return;
-    startTransition(() => router.push(href));
+    startTransition(() => router.push(hrefFor(key as PageKey)));
   };
 
   return (
@@ -84,43 +89,21 @@ export default function TeamPageHeader({
             </h1>
             <ChevronDown size={14} color="#A5ACAF" className="shrink-0" />
           </button>
-          {/* Page switcher — sized to its own labels plus a little padding, not
-              stretched to fill the row. */}
-          <div
-            className="flex items-center gap-0.5 rounded-lg p-0.5 shrink-0"
-            style={{ background: 'rgba(255,255,255,0.07)' }}>
-            {PAGE_TABS.map((tab) => {
-              const labelClass = 'px-2 py-1 rounded-md text-[9px] font-bold tracking-wide';
-              const href =
-                tab.key === 'roster' ? `/team/${team.id}` : `/team/${team.id}/${tab.key}`;
-              if (tab.key === activePage) {
-                return (
-                  <span
-                    key={tab.key}
-                    aria-current="page"
-                    className={labelClass}
-                    style={{ background: colors.uiAccent, color: colors.onAccent }}>
-                    {tab.label}
-                  </span>
-                );
-              }
-              return (
-                <Link
-                  key={tab.key}
-                  href={href}
-                  onClick={navigate(href)}
-                  aria-disabled={isPending}
-                  className={labelClass}
-                  style={{
-                    color: uiTokens.textMuted,
-                    opacity: isPending ? 0.5 : 1,
-                    touchAction: 'manipulation',
-                  }}>
-                  {tab.label}
-                </Link>
-              );
-            })}
-          </div>
+          {/* Page switcher — hugs its own labels, not stretched to fill the row. */}
+          <SegmentedControl
+            size="sm"
+            className="shrink-0"
+            options={PAGE_TABS.map((tab) => ({
+              value: tab.key,
+              label: tab.label,
+              href: hrefFor(tab.key),
+            }))}
+            value={activePage}
+            onChange={navigate}
+            activeColor={colors.uiAccent}
+            activeTextColor={colors.onAccent}
+            disabled={isPending}
+          />
         </div>
       </div>
 

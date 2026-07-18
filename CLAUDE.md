@@ -87,6 +87,18 @@ refactor (see §6).
 - **Pure logic lives in `lib/` with colocated tests** (`lib/__tests__/` or next to the
   file in `lib/espn/`). Components stay thin; anything worth testing gets extracted
   into a pure function first.
+- **Every page is composed from `components/ui/` primitives — no bespoke one-offs.**
+  Before hand-rolling a styled `<div>`/`<button>`/pill/input, `ls components/ui/` and
+  use the primitive that fits (`Button`, `IconButton`, `Badge`, `Card`, `Input`,
+  `Toggle`, `SegmentedControl`, `StatGrid`, `FilterPill`, `Avatar`, …). This holds even
+  when you're sure the control is a one-off nobody else will reuse — "one-off" is how
+  the same control gets rebuilt five different ways across pages (the ROSTER/SCHEDULE/
+  STATS switcher shipped as a bespoke div group and had to be migrated back onto
+  `SegmentedControl`). **Extend an existing primitive with a prop before forking a new
+  component** (see `SegmentedControl`'s `size`/`fullWidth`/`href` — added rather than
+  cloned); only add a *new* primitive to `components/ui/` (props-driven, token-styled,
+  with a role-and-constraint header) when none fits. Bespoke inline UI in a page/feature
+  component is a review-blocking regression, not a shortcut.
 - **Data-integrity tests loop over the data**: one generated `it` per row/team (see
   `uniforms.test.ts`), so a failure names the offending row.
 - **Launch gates are Vercel Flags SDK flags in `lib/flags.ts`** — never bool/string
@@ -169,6 +181,11 @@ Each is named for what it looks like in a diff. The rule prevents it.
     goes red (or the next PR carries your format noise). *Rule: `npm run format`
     before every commit — the repo is already fully formatted, so any format diff
     you create is yours.*
+15. **Bespoke one-off UI.** You hand-roll a styled `<button>`/`<div>` group in a page
+    or feature component instead of reaching for a `components/ui/` primitive, and the
+    same control gets rebuilt (differently) elsewhere. *Rule: `ls components/ui/` first;
+    reuse the primitive that fits, extend one with a prop before forking, add a new
+    primitive only when none fits — even for a control you're sure is a one-off (§3).*
 
 ## 5. Quality bar per deliverable
 
@@ -179,6 +196,8 @@ Adjectives don't count; these boxes do.
 - [ ] `npx tsc --noEmit` exits 0
 - [ ] `npm test` green; new pure logic has new tests (malformed/empty input included)
 - [ ] UI-visible change verified in a running browser; PR body says what was seen
+- [ ] New UI composed from `components/ui/` primitives — no bespoke re-implementation
+      of an existing primitive; new primitives (if any) live in `components/ui/`
 - [ ] Diff contains only the stated concern; no unrelated reformatting
 - [ ] New/changed modules carry a role-and-constraint header comment
 - [ ] Conventional-commit title with a scope from the list in §3
