@@ -28,6 +28,7 @@ import PlayerDot from './PlayerDot';
 import SharedBoardBanner from './SharedBoardBanner';
 import TeamPageHeader from './TeamPageHeader';
 import UniformSheet from './UniformSheet';
+import { colors as uiTokens } from '@/components/ui/tokens';
 
 const UNIT_LABELS: Record<Unit, string> = {
   offense: 'Offense',
@@ -217,14 +218,14 @@ export default function DepthChartField({
         height: '100dvh',
         maxWidth: 720,
         overflow: 'hidden',
-        background: '#0a0e1a',
+        background: uiTokens.bg,
         position: 'relative',
       }}>
       {/* Header */}
       <div
         className="px-5 pb-3"
         style={{
-          background: '#0a0e1a',
+          background: uiTokens.bg,
           flex: '0 0 auto',
           paddingTop: 'max(env(safe-area-inset-top), 12px)',
         }}>
@@ -254,7 +255,7 @@ export default function DepthChartField({
                 className="pb-2.5 text-[11px] font-bold"
                 style={{
                   borderBottom: `2px solid ${activeUnit === unit ? activeColors.uiAccent : 'transparent'}`,
-                  color: activeUnit === unit ? '#f0f4ff' : '#7d848c',
+                  color: activeUnit === unit ? uiTokens.textPrimary : uiTokens.textFaint,
                   touchAction: 'manipulation',
                 }}>
                 {UNIT_LABELS[unit].toUpperCase()}
@@ -268,7 +269,7 @@ export default function DepthChartField({
               aria-label="More options"
               aria-expanded={moreMenuOpen}
               className="flex items-center justify-center px-1"
-              style={{ touchAction: 'manipulation', color: '#A5ACAF' }}>
+              style={{ touchAction: 'manipulation', color: uiTokens.textMuted }}>
               <MoreHorizontal size={16} />
             </button>
             {moreMenuOpen && (
@@ -287,7 +288,7 @@ export default function DepthChartField({
                     setKitOpen(true);
                   }}
                   className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-[12px] font-semibold whitespace-nowrap"
-                  style={{ color: '#f0f4ff', touchAction: 'manipulation' }}>
+                  style={{ color: uiTokens.textPrimary, touchAction: 'manipulation' }}>
                   <Shirt size={14} color={activeColors.uiAccent} />
                   Choose uniform
                 </button>
@@ -299,7 +300,7 @@ export default function DepthChartField({
                   }}
                   className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-[12px] font-semibold whitespace-nowrap"
                   style={{
-                    color: '#f0f4ff',
+                    color: uiTokens.textPrimary,
                     borderTop: '1px solid rgba(255,255,255,0.08)',
                     touchAction: 'manipulation',
                   }}>

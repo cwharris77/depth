@@ -6,6 +6,7 @@ import Logo from '@/components/Logo';
 import { MARK_WORDMARK_GAP } from '@/components/DepthMark';
 import { dbRosterSource } from '@/lib/roster-source.db';
 import { safeNext } from '@/lib/auth-redirect';
+import { colors as uiTokens } from '@/components/ui/tokens';
 
 export const metadata: Metadata = {
   title: 'Sign in · Depth',
@@ -37,7 +38,7 @@ export default async function SignInPage({
           href={next}
           aria-label="Go back"
           className="mb-6 flex w-fit items-center gap-1.5 text-sm font-semibold"
-          style={{ color: '#A5ACAF' }}>
+          style={{ color: uiTokens.textMuted }}>
           <ArrowLeft size={18} /> Back
         </Link>
         {/* Logo + wordmark, centered branding. */}
@@ -45,8 +46,8 @@ export default async function SignInPage({
           href="/"
           aria-label="Depth home"
           className={`mx-auto mb-8 flex w-fit items-center ${MARK_WORDMARK_GAP}`}>
-          <Logo size={36} color="#69BE28" />
-          <span className="text-xl font-bold tracking-widest" style={{ color: '#A5ACAF' }}>
+          <Logo size={36} color={uiTokens.accent} />
+          <span className="text-xl font-bold tracking-widest" style={{ color: uiTokens.textMuted }}>
             depth
           </span>
         </Link>

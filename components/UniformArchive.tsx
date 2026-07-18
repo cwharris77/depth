@@ -12,6 +12,8 @@ import {
 import UniformFigure, { UniformFigureDefs } from './UniformFigure';
 import DepthMark from './DepthMark';
 import NavDrawer from './NavDrawer';
+import FilterPill from './ui/FilterPill';
+import { colors as uiTokens } from '@/components/ui/tokens';
 
 // The uniform archive (roadmap Phase 7). Receives every kit from the server route and
 // filters/groups client-side with the pure helpers in lib/uniforms/filter. State-only — no
@@ -27,32 +29,6 @@ const KIND_OPTIONS: { value: UniformKind | 'all'; label: string }[] = [
   { value: 'alternate', label: 'Alternate' },
   { value: 'color-rush', label: 'Color rush' },
 ];
-
-const ACCENT = '#69BE28';
-
-function Pill({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="shrink-0 rounded-full px-3 py-1.5 text-xs"
-      style={
-        active
-          ? { background: ACCENT, color: '#0a0e1a', fontWeight: 600 }
-          : { background: 'rgba(255,255,255,0.06)', color: '#c8cdd6' }
-      }>
-      {children}
-    </button>
-  );
-}
 
 export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
   const [filters, setFilters] = useState<UniformFilters>({
@@ -71,8 +47,8 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
     <main
       style={{
         minHeight: '100dvh',
-        background: '#0a0e1a',
-        color: '#f0f4ff',
+        background: uiTokens.bg,
+        color: uiTokens.textPrimary,
         paddingTop: 'max(env(safe-area-inset-top), 20px)',
         paddingBottom: 'max(env(safe-area-inset-bottom), 20px)',
       }}
@@ -81,7 +57,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
           mannequin geometry (helmet/facemask/jersey/pants/…) references this sprite via <use>
           instead of re-embedding the path data per kit — see components/UniformFigure.tsx. */}
       <UniformFigureDefs />
-      <DepthMark color={ACCENT} onClick={() => setDrawerOpen(true)} />
+      <DepthMark color={uiTokens.accent} onClick={() => setDrawerOpen(true)} />
 
       <h1 className="mt-4 text-2xl font-bold">Uniform archive</h1>
       <p className="mt-0.5 text-xs" style={{ color: '#6b7686' }}>
@@ -97,23 +73,23 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
         role="group"
         aria-label="Filter kits">
         {KIND_OPTIONS.map((k) => (
-          <Pill
+          <FilterPill
             key={k.value}
             active={filters.kind === k.value}
             onClick={() => setFilters((f) => ({ ...f, kind: k.value }))}>
             {k.label}
-          </Pill>
+          </FilterPill>
         ))}
         <span
           aria-hidden="true"
           className="shrink-0"
           style={{ width: 1, alignSelf: 'stretch', background: 'rgba(255,255,255,0.1)' }}
         />
-        <Pill
+        <FilterPill
           active={filters.currentOnly}
           onClick={() => setFilters((f) => ({ ...f, currentOnly: !f.currentOnly }))}>
           Current only
-        </Pill>
+        </FilterPill>
         <select
           aria-label="Filter by era"
           value={filters.era}
@@ -130,7 +106,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
       </div>
 
       {groups.length === 0 ? (
-        <p className="mt-10 text-sm" style={{ color: '#A5ACAF' }}>
+        <p className="mt-10 text-sm" style={{ color: uiTokens.textMuted }}>
           No kits match these filters.
         </p>
       ) : (
@@ -138,7 +114,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
           <section key={`${g.conference}-${g.division}`} className="mt-7">
             <h2
               className="mb-4 pb-1.5 text-[10px] font-semibold tracking-[0.2em]"
-              style={{ color: '#7d848c', borderBottom: '1px solid #1a2233' }}>
+              style={{ color: uiTokens.textFaint, borderBottom: '1px solid #1a2233' }}>
               {g.conference} {g.division.toUpperCase()}
             </h2>
             {g.teams.map((t) => {
@@ -170,7 +146,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
                             style={{ color: '#9aa4b2' }}>
                             {k.name}
                             {k.yearStart ? (
-                              <span className="block" style={{ color: '#7d848c' }}>
+                              <span className="block" style={{ color: uiTokens.textFaint }}>
                                 {k.yearStart}
                                 {k.yearEnd ? `–${k.yearEnd}` : '–'}
                               </span>
@@ -215,7 +191,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
         </p>
       </footer>
 
-      <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} accent={ACCENT} />
+      <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} accent={uiTokens.accent} />
     </main>
   );
 }
