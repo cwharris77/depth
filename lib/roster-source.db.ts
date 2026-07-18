@@ -1,8 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
 import type { RosterSource, TeamMeta, TeamStatsPage, UniformListing } from './roster-source';
+import { resolveSchedule } from './schedule';
 import { type PlayerHit, positionGroupPositions, rankByNameMatch } from './search';
 import type {
+  Game,
   Player,
   PlayerSeasonStats,
   PlayerStatus,
@@ -11,6 +13,8 @@ import type {
   Team,
   TeamColors,
   TeamRoster,
+  TeamSchedule,
+  TeamScheduleGame,
   TeamStats,
   Uniform,
   UniformKind,
@@ -546,6 +550,154 @@ export async function getPlayerStats(playerId: string): Promise<PlayerSeasonStat
     .returns<PlayerStatsRow[]>();
   if (error) throw new Error(`player_stats query failed: ${error.message}`);
   return (data ?? []).map(toPlayerSeasonStats);
+}
+
+type GameRow = Pick<
+  Tables['games']['Row'],
+  | 'game_id'
+  | 'season'
+  | 'game_type'
+  | 'week'
+  | 'gameday'
+  | 'gametime'
+  | 'home_team_id'
+  | 'away_team_id'
+  | 'home_score'
+  | 'away_score'
+>;
+const GAME_SELECT =
+  'game_id, season, game_type, week, gameday, gametime, home_team_id, away_team_id, home_score, away_score';
+
+function toGame(row: GameRow): Game {
+  return {
+    gameId: row.game_id,
+    season: row.season,
+    gameType: row.game_type,
+    week: row.week,
+    gameday: row.gameday,
+    gametime: row.gametime,
+    homeTeamId: row.home_team_id,
+    awayTeamId: row.away_team_id,
+    homeScore: row.home_score,
+    awayScore: row.away_score,
+  };
+}
+
+// All 32 teams' metadata (home-kit colors overlaid, like listTeams) keyed by id — for
+// resolving a schedule's opponent ids into the colored chip the UI renders. One query for
+// the small team table, not a per-opponent fetch.
+async function fetchTeamMetaMap(): Promise<Map<string, Team>> {
+  const [rows, homeRows] = await Promise.all([fetchAllTeamMeta(), fetchCurrentHomeRows()]);
+  const homeByTeam = new Map(homeRows.map((r) => [r.team_id, r]));
+  return new Map(
+    rows.map((r) => {
+      const home = homeByTeam.get(r.id);
+      return [r.id, withHomeColors(toTeam(r), home ? [home] : [])];
+    })
+  );
+}
+
+// A game names two teams, so "this team's games" is two eq queries (home, away) merged —
+// never an `.or()` string with the id interpolated in (invariant 8). Home/away sets are
+// disjoint, so no dedup is needed.
+async function fetchTeamGames(teamId: string, season: number): Promise<Game[]> {
+  const client = supabase();
+  const [home, away] = await Promise.all([
+    client
+      .from('games')
+      .select(GAME_SELECT)
+      .eq('home_team_id', teamId)
+      .eq('season', season)
+      .returns<GameRow[]>(),
+    client
+      .from('games')
+      .select(GAME_SELECT)
+      .eq('away_team_id', teamId)
+      .eq('season', season)
+      .returns<GameRow[]>(),
+  ]);
+  if (home.error) throw new Error(`games query failed: ${home.error.message}`);
+  if (away.error) throw new Error(`games query failed: ${away.error.message}`);
+  return [...(home.data ?? []), ...(away.data ?? [])].map(toGame);
+}
+
+// The newest season with a game for this team; drives the default schedule view. Two eq
+// queries (home, away), each ordered desc limit 1, max of the two.
+async function latestSeasonForTeam(teamId: string): Promise<number | null> {
+  const client = supabase();
+  const [home, away] = await Promise.all([
+    client
+      .from('games')
+      .select('season')
+      .eq('home_team_id', teamId)
+      .order('season', { ascending: false })
+      .limit(1)
+      .returns<Pick<GameRow, 'season'>[]>(),
+    client
+      .from('games')
+      .select('season')
+      .eq('away_team_id', teamId)
+      .order('season', { ascending: false })
+      .limit(1)
+      .returns<Pick<GameRow, 'season'>[]>(),
+  ]);
+  if (home.error) throw new Error(`games query failed: ${home.error.message}`);
+  if (away.error) throw new Error(`games query failed: ${away.error.message}`);
+  const seasons = [...(home.data ?? []), ...(away.data ?? [])].map((r) => r.season);
+  return seasons.length ? Math.max(...seasons) : null;
+}
+
+function toScheduleGame(
+  resolved: ReturnType<typeof resolveSchedule>[number],
+  teamsById: Map<string, Team>
+): TeamScheduleGame {
+  const opp = resolved.opponentTeamId ? teamsById.get(resolved.opponentTeamId) : undefined;
+  return {
+    week: resolved.week,
+    gameType: resolved.gameType,
+    isBye: resolved.isBye,
+    date: resolved.date,
+    isHome: resolved.isHome,
+    // A dangling opponent id (shouldn't happen, FK-enforced) resolves to null rather than
+    // surfacing a half-built chip — same skip-don't-throw posture as everywhere else here.
+    opponent: opp ? { id: opp.id, abbrev: opp.abbrev, colors: opp.colors } : null,
+    teamScore: resolved.teamScore,
+    oppScore: resolved.oppScore,
+    result: resolved.result,
+  };
+}
+
+// A team's regular-season schedule for one season (default: its latest), resolved from
+// this team's perspective with opponents enriched for the UI. Standalone read (not on
+// RosterSource, like getPlayerStats) — the field view never needs it. Degrades to null on
+// an unknown team, a season with no games, or any query error
+// (docs/superpowers/specs/2026-07-17-team-schedule-design.md).
+export async function getTeamSchedule(
+  teamId: string,
+  season?: number
+): Promise<TeamSchedule | null> {
+  try {
+    const resolvedSeason = season ?? (await latestSeasonForTeam(teamId));
+    if (resolvedSeason === null) return null;
+    const [games, teamsById] = await Promise.all([
+      fetchTeamGames(teamId, resolvedSeason),
+      fetchTeamMetaMap(),
+    ]);
+    const resolved = resolveSchedule(games, teamId);
+    if (resolved.length === 0) return null;
+    return { season: resolvedSeason, games: resolved.map((r) => toScheduleGame(r, teamsById)) };
+  } catch {
+    return null;
+  }
+}
+
+// The team's next unplayed game (the stats page's NEXT GAME card) — the earliest non-bye
+// game with no result yet in its latest season, or null once the season is complete.
+// Reuses getTeamSchedule so the two pages share one resolution path.
+export async function getNextGame(teamId: string): Promise<TeamScheduleGame | null> {
+  const schedule = await getTeamSchedule(teamId);
+  if (!schedule) return null;
+  return schedule.games.find((g) => !g.isBye && g.result === null) ?? null;
 }
 
 async function fetchAllTeamMeta(): Promise<TeamRow[]> {
