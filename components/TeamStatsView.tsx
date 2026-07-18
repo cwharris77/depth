@@ -6,7 +6,8 @@
 // `seasons` is small (current + up to two prior years), never a fan-out of all-32 data.
 import { useState } from 'react';
 import type { TeamMeta } from '@/lib/roster-source';
-import type { Leader, RosterLeaders, TeamStats } from '@/lib/types';
+import type { Leader, RosterLeaders, TeamScheduleGame, TeamStats } from '@/lib/types';
+import { readableTextOn } from '@/lib/colors';
 import { ordinal } from '@/lib/format';
 import TeamPageHeader from './TeamPageHeader';
 
@@ -18,6 +19,20 @@ interface Props {
   // Current-roster passing/rushing/receiving leaders (design spec 5a). Null when no
   // player stats are ingested for the team yet; the block is then omitted entirely.
   leaders?: RosterLeaders | null;
+  // The team's next unplayed game (design spec 5a's NEXT GAME card). Null in the
+  // offseason / once the season is complete, in which case the card is omitted.
+  nextGame?: TeamScheduleGame | null;
+}
+
+const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+// Parse yyyy-mm-dd parts directly, not `new Date(iso)` (which is UTC and shifts a day in
+// western timezones). Returns e.g. "SEP 9".
+function formatGameDate(iso: string | null): string {
+  if (!iso) return '';
+  const [, month, day] = iso.split('-').map(Number);
+  if (!month || !day) return '';
+  return `${MONTHS[month - 1]} ${day}`;
 }
 
 function wl(wins: number, losses: number): string {
@@ -37,7 +52,14 @@ function StatCell({ label, value, color }: { label: string; value: string; color
   );
 }
 
-export default function TeamStatsView({ team, teams, seasons, incomingCoach, leaders }: Props) {
+export default function TeamStatsView({
+  team,
+  teams,
+  seasons,
+  incomingCoach,
+  leaders,
+  nextGame,
+}: Props) {
   const [index, setIndex] = useState(seasons.length > 0 ? 0 : -1);
   const { uiAccent } = team.colors;
 
@@ -246,6 +268,35 @@ export default function TeamStatsView({ team, teams, seasons, incomingCoach, lea
             {nextSeasonLabel} SEASON · NOT YET STARTED ▸▸▸
           </div>
         </>
+      )}
+
+      {/* NEXT GAME card (design spec 5a). Only when there's an upcoming game with a
+          resolved opponent; omitted in the offseason / once the season is complete. */}
+      {nextGame && nextGame.opponent && (
+        <div className="px-[18px] pt-3.5">
+          <div
+            className="flex items-center justify-between rounded-2xl px-3.5 py-3"
+            style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${uiAccent}33` }}>
+            <div>
+              <div className="text-[9px] font-bold tracking-[0.08em]" style={{ color: '#A5ACAF' }}>
+                NEXT GAME · WEEK {nextGame.week}
+              </div>
+              <div className="mt-[3px] text-[13px] font-extrabold" style={{ color: '#f0f4ff' }}>
+                {nextGame.isHome ? 'vs' : '@'} {nextGame.opponent.abbrev}
+                {nextGame.date ? ` · ${formatGameDate(nextGame.date)}` : ''}
+              </div>
+            </div>
+            <div
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-[9px] font-black"
+              style={{
+                background: nextGame.opponent.colors.primary,
+                border: `1px solid ${nextGame.opponent.colors.secondary}`,
+                color: readableTextOn(nextGame.opponent.colors.primary),
+              }}>
+              {nextGame.opponent.abbrev}
+            </div>
+          </div>
+        </div>
       )}
 
       {leaderRows.length > 0 && leaders && (
