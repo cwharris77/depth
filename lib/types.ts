@@ -214,3 +214,21 @@ export interface PlayerSeasonStats {
   fgMade: number | null;
   fgAtt: number | null;
 }
+
+// Team production leaders for one season, shown on the stats page (design spec 5a).
+// A single leader per category (passing/rushing/receiving); `line` is the preformatted
+// summary the UI renders verbatim (see lib/roster-leaders.ts). Any category can be null
+// — a team with no positive yardage in it (e.g. a defense-heavy sample) shows nothing,
+// not a zero-filled row (the repo's "show nothing, not zeros" posture).
+export interface Leader {
+  playerId: string;
+  name: string;
+  line: string;
+}
+
+export interface RosterLeaders {
+  season: number;
+  passing: Leader | null;
+  rushing: Leader | null;
+  receiving: Leader | null;
+}

@@ -1,10 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
 import type { RosterSource, TeamMeta, TeamStatsPage, UniformListing } from './roster-source';
+import { type LeaderEntry, rosterLeaders } from './roster-leaders';
 import { type PlayerHit, positionGroupPositions, rankByNameMatch } from './search';
 import type {
   Player,
   PlayerSeasonStats,
+  RosterLeaders,
   PlayerStatus,
   Position,
   SpecialSlot,
@@ -546,6 +548,53 @@ export async function getPlayerStats(playerId: string): Promise<PlayerSeasonStat
     .returns<PlayerStatsRow[]>();
   if (error) throw new Error(`player_stats query failed: ${error.message}`);
   return (data ?? []).map(toPlayerSeasonStats);
+}
+
+// player_stats keyed by player only, so we need the player_id to attribute each row to a
+// name; PLAYER_STATS_SELECT (single-player read above) omits it.
+type RosterLeaderStatsRow = PlayerStatsRow & Pick<Tables['player_stats']['Row'], 'player_id'>;
+const ROSTER_LEADER_STATS_SELECT = `player_id, ${PLAYER_STATS_SELECT}`;
+
+// Team passing/rushing/receiving leaders for the stats page (design spec 5a). Two typed
+// queries — the team's players (for id -> name) and their REG season rows — merged in
+// memory, so no user input touches PostgREST filter syntax (invariant 8). rosterLeaders
+// scopes to the latest season and picks the leaders; the field view never needs this, so
+// like getPlayerStats it's a standalone read, not part of RosterSource. Returns null for
+// an unknown team, a roster with no ingested stats yet, or on any query error (degrade,
+// don't throw — the page renders without the block, same as getTeamStats' try/catch).
+export async function getRosterLeaders(teamId: string): Promise<RosterLeaders | null> {
+  try {
+    const client = supabase();
+    const { data: playerRows, error: playerError } = await client
+      .from('players')
+      .select('id, name')
+      .eq('team_id', teamId)
+      .returns<Pick<Tables['players']['Row'], 'id' | 'name'>[]>();
+    if (playerError) throw new Error(`players query failed: ${playerError.message}`);
+    const players = playerRows ?? [];
+    if (players.length === 0) return null;
+
+    const { data: statRows, error: statsError } = await client
+      .from('player_stats')
+      .select(ROSTER_LEADER_STATS_SELECT)
+      .in(
+        'player_id',
+        players.map((p) => p.id)
+      )
+      .eq('season_type', 'REG')
+      .returns<RosterLeaderStatsRow[]>();
+    if (statsError) throw new Error(`player_stats query failed: ${statsError.message}`);
+
+    const nameById = new Map(players.map((p) => [p.id, p.name]));
+    const entries: LeaderEntry[] = (statRows ?? []).map((row) => ({
+      playerId: row.player_id,
+      name: nameById.get(row.player_id) ?? '',
+      stats: toPlayerSeasonStats(row),
+    }));
+    return rosterLeaders(entries);
+  } catch {
+    return null;
+  }
 }
 
 async function fetchAllTeamMeta(): Promise<TeamRow[]> {

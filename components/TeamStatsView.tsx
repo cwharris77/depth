@@ -6,7 +6,7 @@
 // `seasons` is small (current + up to two prior years), never a fan-out of all-32 data.
 import { useState } from 'react';
 import type { TeamMeta } from '@/lib/roster-source';
-import type { TeamStats } from '@/lib/types';
+import type { Leader, RosterLeaders, TeamStats } from '@/lib/types';
 import { ordinal } from '@/lib/format';
 import TeamPageHeader from './TeamPageHeader';
 
@@ -15,6 +15,9 @@ interface Props {
   teams: TeamMeta[];
   seasons: TeamStats[];
   incomingCoach?: { name: string };
+  // Current-roster passing/rushing/receiving leaders (design spec 5a). Null when no
+  // player stats are ingested for the team yet; the block is then omitted entirely.
+  leaders?: RosterLeaders | null;
 }
 
 function wl(wins: number, losses: number): string {
@@ -34,9 +37,22 @@ function StatCell({ label, value, color }: { label: string; value: string; color
   );
 }
 
-export default function TeamStatsView({ team, teams, seasons, incomingCoach }: Props) {
+export default function TeamStatsView({ team, teams, seasons, incomingCoach, leaders }: Props) {
   const [index, setIndex] = useState(seasons.length > 0 ? 0 : -1);
   const { uiAccent } = team.colors;
+
+  // Passing/rushing/receiving leaders in a fixed order, dropping any category with no
+  // leader (invariant 6 — show nothing, not a zeroed row). Leaders reflect the current
+  // roster's latest season, independent of the season switcher above.
+  const leaderRows: { label: string; leader: Leader }[] = leaders
+    ? (
+        [
+          ['PASSING', leaders.passing],
+          ['RUSHING', leaders.rushing],
+          ['RECEIVING', leaders.receiving],
+        ] as const
+      ).flatMap(([label, leader]) => (leader ? [{ label, leader }] : []))
+    : [];
 
   const header = (
     <div
@@ -230,6 +246,45 @@ export default function TeamStatsView({ team, teams, seasons, incomingCoach }: P
             {nextSeasonLabel} SEASON · NOT YET STARTED ▸▸▸
           </div>
         </>
+      )}
+
+      {leaderRows.length > 0 && leaders && (
+        <div className="px-5 pb-7 pt-1">
+          <div className="mb-2 text-[10px] font-bold tracking-[0.1em]" style={{ color: '#A5ACAF' }}>
+            ROSTER LEADERS · {leaders.season}
+          </div>
+          <div
+            className="overflow-hidden rounded-2xl"
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}>
+            {leaderRows.map(({ label, leader }, i) => (
+              <div
+                key={label}
+                className="flex items-center justify-between gap-3 px-3.5 py-2.5"
+                style={{ borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="min-w-0">
+                  <div
+                    className="text-[9px] font-bold tracking-[0.06em]"
+                    style={{ color: uiAccent }}>
+                    {label}
+                  </div>
+                  <div
+                    className="mt-0.5 truncate text-xs font-extrabold"
+                    style={{ color: '#f0f4ff' }}>
+                    {leader.name}
+                  </div>
+                </div>
+                <div
+                  className="shrink-0 text-right text-[10px]"
+                  style={{ color: '#A5ACAF', maxWidth: 170 }}>
+                  {leader.line}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
