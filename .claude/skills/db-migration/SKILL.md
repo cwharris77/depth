@@ -32,8 +32,12 @@ supabase migration new <snake_case_name>   # new file under supabase/migrations/
 - New tables need grants — follow the precedent in
   `20260701171029_grant_default_table_privileges.sql` (default privileges may already
   cover you; check before duplicating).
-- **Do not enable RLS.** It is off on purpose until the auth phase ships read
-  policies with it. Enabling it breaks `dbRosterSource` for every visitor.
+- **New public tables ship with RLS on.** The auth phase (Phase C) has shipped —
+  `AGENTS.md` invariant 10 now requires `enable row level security` plus a
+  `"public read"` policy in the *same* migration as the table (precedent:
+  `20260710140000_base_table_rls.sql`, `20260717081108_add_player_stats.sql`). The
+  only remaining red flag is enabling RLS **without** a matching read policy — that's
+  what breaks `dbRosterSource` for every visitor, not RLS itself.
 
 ### 2. Apply locally, regenerate types
 
@@ -103,7 +107,8 @@ prod; the hosted DB must stay reproducible from `supabase/migrations/`.
 
 - Editing `lib/database.types.ts` by hand, for any reason.
 - Editing a migration file that already has siblings after it.
-- `ALTER ... ENABLE ROW LEVEL SECURITY` anywhere in the diff (pre-auth-phase).
+- `ALTER ... ENABLE ROW LEVEL SECURITY` with no accompanying `"public read"` (or
+  `auth.uid()`-scoped) policy in the same migration.
 - SQL run against the hosted project outside a migration.
 - A `Pick<>` changed without its SELECT string (or vice versa).
 - "CI is green so the DB layer works" — the DB tests skip without env vars.
