@@ -19,7 +19,6 @@ const EXEMPT = new Set(['components/ui/tokens.ts']);
 const MIGRATED_ALLOWLIST = new Set<string>([
   'components/PlayerCard.tsx',
   'components/TeamStatsView.tsx',
-  'components/AccountView.tsx',
   'components/NavSwitcher.tsx',
   'components/DepthChartField.tsx',
   'components/TeamScheduleView.tsx',
