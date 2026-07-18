@@ -4,17 +4,15 @@
 // multi-season-team-stats-design.md). A client component so the season switcher can hold
 // local state; it receives one team's already-resolved data as a prop (invariant 5) —
 // `seasons` is small (current + up to two prior years), never a fan-out of all-32 data.
-import { useState, useTransition } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { TeamStats } from '@/lib/types';
-import { readableTextOn } from '@/lib/colors';
 import { ordinal } from '@/lib/format';
+import TeamPageHeader from './TeamPageHeader';
 
 interface Props {
   team: TeamMeta;
+  teams: TeamMeta[];
   seasons: TeamStats[];
   incomingCoach?: { name: string };
 }
@@ -36,52 +34,23 @@ function StatCell({ label, value, color }: { label: string; value: string; color
   );
 }
 
-export default function TeamStatsView({ team, seasons, incomingCoach }: Props) {
+export default function TeamStatsView({ team, teams, seasons, incomingCoach }: Props) {
   const [index, setIndex] = useState(seasons.length > 0 ? 0 : -1);
-  const { uiAccent, primary } = team.colors;
-  const tickerText = readableTextOn(primary);
+  const { uiAccent } = team.colors;
 
-  // /team/[id] is server-rendered dynamically (Vercel Flags SDK's flag() reads
-  // headers()/cookies() even though decide() itself doesn't, which opts the route out
-  // of static generation — see lib/flags.ts). Team-to-team nav hides that latency
-  // because DepthChartField persists across the transition (only its props change);
-  // this stats page is a disjoint route tree, so a plain <Link> back unmounts this
-  // view into app/team/[id]/loading.tsx's skeleton for the round trip. Wrapping the
-  // navigation in useTransition instead keeps this page on screen (dimmed, disabled)
-  // until the field is ready, matching the NavSwitcher/NavDrawer pattern from the
-  // "Janky page navigation" ticket (see components/NavSwitcher.tsx).
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const backHref = `/team/${team.id}`;
-  const goBack = (e: React.MouseEvent) => {
-    // Real modifier clicks (middle-click, cmd/ctrl-click) still get native anchor
-    // behavior (open in new tab) — only the plain-click path is hijacked into the
-    // transition, same as NavDrawer's NavItem.
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-    e.preventDefault();
-    if (isPending) return;
-    startTransition(() => {
-      router.push(backHref);
-    });
-  };
+  const header = (
+    <div
+      className="px-5 pb-3"
+      style={{ background: '#0a0e1a', paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
+      <TeamPageHeader team={team} teams={teams} colors={team.colors} activePage="stats" />
+    </div>
+  );
 
   if (seasons.length === 0 && !incomingCoach) {
     return (
-      <div
-        className="px-5 py-6"
-        style={{ minHeight: '100dvh', background: '#0a0e1a', color: '#fff' }}>
-        <Link
-          href={backHref}
-          onClick={goBack}
-          aria-disabled={isPending}
-          className="inline-flex items-center gap-1.5 mb-6"
-          style={{ color: uiAccent, opacity: isPending ? 0.5 : 1, touchAction: 'manipulation' }}>
-          <ArrowLeft size={18} />
-          <span className="text-sm font-semibold">
-            {team.city} {team.name}
-          </span>
-        </Link>
-        <p className="text-sm" style={{ color: '#A5ACAF' }}>
+      <div style={{ minHeight: '100dvh', background: '#0a0e1a', color: '#fff' }}>
+        {header}
+        <p className="px-5 text-sm" style={{ color: '#A5ACAF' }}>
           No stats available for this team yet.
         </p>
       </div>
@@ -109,30 +78,7 @@ export default function TeamStatsView({ team, seasons, incomingCoach }: Props) {
 
   return (
     <div style={{ minHeight: '100dvh', background: '#0a0e1a', color: '#f0f4ff' }}>
-      {/* Brand ticker strip — a large controlled surface (invariant 4), so it uses the
-          brand-true primary with a computed contrast text rather than uiAccent. */}
-      <div
-        className="flex items-center justify-between px-4 py-3 text-sm font-bold tracking-[0.08em]"
-        style={{
-          background: primary,
-          color: tickerText,
-          paddingTop: 'max(env(safe-area-inset-top), 12px)',
-        }}>
-        <Link
-          href={backHref}
-          onClick={goBack}
-          aria-disabled={isPending}
-          className="inline-flex items-center gap-1.5 no-underline"
-          style={{
-            color: tickerText,
-            opacity: isPending ? 0.5 : 1,
-            touchAction: 'manipulation',
-          }}>
-          <ArrowLeft size={18} />
-          {team.abbrev}
-        </Link>
-        <span>SEASON STATS</span>
-      </div>
+      {header}
 
       {/* Season switcher — no prev/next arrows: desktop is wide enough to show every
           season at once, and mobile relies on the horizontal swipe affordance. */}

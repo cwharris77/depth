@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search, X, Check, CornerDownLeft } from 'lucide-react';
-import type { Conference, Player, TeamRoster } from '@/lib/types';
+import type { Conference, Player } from '@/lib/types';
 import type { TeamMeta } from '@/lib/roster-source';
 import { readableTextOn } from '@/lib/colors';
 import type { PlayerHit } from '@/lib/search';
@@ -176,8 +176,14 @@ function PlayerRow({
 }
 
 interface NavSwitcherProps {
-  roster: TeamRoster;
+  team: TeamMeta;
   teams: TeamMeta[];
+  // Full player list for the currently-viewed team, when the caller has it loaded
+  // (the roster page does; the stats page doesn't — see components/TeamStatsView.tsx).
+  // Selecting a player already on this team opens them in place via onSelectPlayer;
+  // without this, or for any other team, selection navigates to that team's roster
+  // page instead (?player=<id>, opened there by OpenPlayerFromQuery).
+  currentTeamPlayers?: Player[];
   onSelectPlayer: (player: Player) => void;
   onClose: () => void;
 }
@@ -188,8 +194,13 @@ interface NavSwitcherProps {
 // (app/api/players/search), not just the roster already loaded here. Arrow keys move
 // the result highlight, Enter activates it, Escape closes — a lightweight
 // command-palette pattern.
-export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: NavSwitcherProps) {
-  const { team } = roster;
+export default function NavSwitcher({
+  team,
+  teams,
+  currentTeamPlayers = [],
+  onSelectPlayer,
+  onClose,
+}: NavSwitcherProps) {
   const accentColor = team.colors.uiAccent;
   const router = useRouter();
   const [conference, setConference] = useState<Conference>(team.conference);
@@ -283,7 +294,7 @@ export default function NavSwitcher({ roster, teams, onSelectPlayer, onClose }: 
     if (hit.team.id === team.id) {
       // Already have the full Player (depthRank/status/bio/...) for the current
       // roster — use that instead of the lighter search-result shape.
-      const localPlayer = roster.players.find((p) => p.id === hit.id);
+      const localPlayer = currentTeamPlayers.find((p) => p.id === hit.id);
       if (localPlayer) {
         onSelectPlayer(localPlayer);
         onClose();

@@ -32,12 +32,22 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function TeamStatsPage({ params }: Params) {
   const { id } = await params;
-  const page = await dbRosterSource.getTeamStats(id);
+  // Team metadata for all 32 (for the header's switcher) is lightweight — no player
+  // data — same rationale as app/team/[id]/page.tsx's `teams` fetch.
+  const [page, teams] = await Promise.all([
+    dbRosterSource.getTeamStats(id),
+    dbRosterSource.listTeams(),
+  ]);
   if (!page) {
     notFound();
   }
 
   return (
-    <TeamStatsView team={page.team} seasons={page.seasons} incomingCoach={page.incomingCoach} />
+    <TeamStatsView
+      team={page.team}
+      teams={teams}
+      seasons={page.seasons}
+      incomingCoach={page.incomingCoach}
+    />
   );
 }

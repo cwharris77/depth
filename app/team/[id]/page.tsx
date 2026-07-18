@@ -1,6 +1,5 @@
 import DepthChartField from '@/components/DepthChartField';
 import RememberTeam from '@/components/RememberTeam';
-import { showIsolatedSearchBarIcon } from '@/lib/flags';
 import { dbRosterSource } from '@/lib/roster-source.db';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -45,12 +44,9 @@ export default async function TeamPage({ params }: Params) {
   // so the client only ever receives the team it's viewing. Team metadata for all 32
   // (for the switcher) is lightweight — no player data — so it's safe to ship on
   // every page alongside the one full roster.
-  const [roster, teams, isolatedSearchBarIcon] = await Promise.all([
+  const [roster, teams] = await Promise.all([
     dbRosterSource.getTeam(id),
     dbRosterSource.listTeams(),
-    // Launch gate, evaluated here (server) and passed down — the client component
-    // never reads flags itself (lib/flags.ts).
-    showIsolatedSearchBarIcon(),
   ]);
   if (!roster) {
     notFound();
@@ -59,11 +55,7 @@ export default async function TeamPage({ params }: Params) {
   return (
     <>
       <RememberTeam id={id} />
-      <DepthChartField
-        roster={roster}
-        teams={teams}
-        showIsolatedSearchBarIcon={isolatedSearchBarIcon}
-      />
+      <DepthChartField roster={roster} teams={teams} />
     </>
   );
 }
