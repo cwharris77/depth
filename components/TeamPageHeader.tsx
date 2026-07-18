@@ -5,8 +5,8 @@
 // both the field (components/DepthChartField.tsx) and the stats page
 // (components/TeamStatsView.tsx) so moving between roster/schedule/stats reads as a
 // tab change, not navigating away and back. Owns its own nav-drawer/switcher sheet
-// state so callers don't have to wire it up per page. SCHEDULE has no route/data yet
-// (see "Add team schedules page" in the vault), so it always renders disabled.
+// state so callers don't have to wire it up per page. All three tabs are live routes:
+// ROSTER (/team/[id]), SCHEDULE (/team/[id]/schedule), STATS (/team/[id]/stats).
 import type { TeamMeta } from '@/lib/roster-source';
 import type { Player, TeamColors } from '@/lib/types';
 import { ChevronDown } from 'lucide-react';
@@ -90,18 +90,8 @@ export default function TeamPageHeader({
             style={{ background: 'rgba(255,255,255,0.07)' }}>
             {PAGE_TABS.map((tab) => {
               const labelClass = 'px-2 py-1 rounded-md text-[9px] font-bold tracking-wide';
-              if (tab.key === 'schedule') {
-                return (
-                  <span
-                    key={tab.key}
-                    aria-disabled="true"
-                    className={`${labelClass} opacity-40 select-none`}
-                    style={{ color: '#7d848c' }}>
-                    {tab.label}
-                  </span>
-                );
-              }
-              const href = tab.key === 'roster' ? `/team/${team.id}` : `/team/${team.id}/stats`;
+              const href =
+                tab.key === 'roster' ? `/team/${team.id}` : `/team/${team.id}/${tab.key}`;
               if (tab.key === activePage) {
                 return (
                   <span

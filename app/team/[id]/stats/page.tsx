@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { dbRosterSource, getRosterLeaders } from '@/lib/roster-source.db';
+import { dbRosterSource, getNextGame, getRosterLeaders } from '@/lib/roster-source.db';
 import TeamStatsView from '@/components/TeamStatsView';
 
 type Params = { params: Promise<{ id: string }> };
@@ -34,10 +34,11 @@ export default async function TeamStatsPage({ params }: Params) {
   const { id } = await params;
   // Team metadata for all 32 (for the header's switcher) is lightweight — no player
   // data — same rationale as app/team/[id]/page.tsx's `teams` fetch.
-  const [page, teams, leaders] = await Promise.all([
+  const [page, teams, leaders, nextGame] = await Promise.all([
     dbRosterSource.getTeamStats(id),
     dbRosterSource.listTeams(),
     getRosterLeaders(id),
+    getNextGame(id),
   ]);
   if (!page) {
     notFound();
@@ -50,6 +51,7 @@ export default async function TeamStatsPage({ params }: Params) {
       seasons={page.seasons}
       incomingCoach={page.incomingCoach}
       leaders={leaders}
+      nextGame={nextGame}
     />
   );
 }
