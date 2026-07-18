@@ -215,6 +215,52 @@ export interface PlayerSeasonStats {
   fgAtt: number | null;
 }
 
+// One game as stored/read from the `games` table (nflverse schedule ingestion,
+// docs/superpowers/specs/2026-07-17-team-schedule-design.md). A game is shared between
+// two teams — one row, both ids. Scores are null until the game is played (which is how
+// the read layer detects an upcoming game). Camel-cased mirror of the DB row.
+export interface Game {
+  gameId: string;
+  season: number;
+  gameType: string;
+  week: number | null;
+  gameday: string | null;
+  gametime: string | null;
+  homeTeamId: string;
+  awayTeamId: string;
+  homeScore: number | null;
+  awayScore: number | null;
+}
+
+// The opponent identity a schedule/next-game card renders (colored code chip). Resolved
+// server-side from the opposing team's metadata; the client never imports all-32 data.
+export interface ScheduleOpponent {
+  id: string;
+  abbrev: string;
+  colors: TeamColors;
+}
+
+// One week on a team's schedule, from that team's perspective (design spec 5a's weekly
+// card grid). A bye week is `isBye: true` with a null opponent — the absence of a game
+// that week, derived, since nflverse has no bye row. `result` is null for an upcoming
+// (unplayed) game or a bye.
+export interface TeamScheduleGame {
+  week: number;
+  gameType: string;
+  isBye: boolean;
+  date: string | null;
+  isHome: boolean;
+  opponent: ScheduleOpponent | null;
+  teamScore: number | null;
+  oppScore: number | null;
+  result: 'W' | 'L' | 'T' | null;
+}
+
+export interface TeamSchedule {
+  season: number;
+  games: TeamScheduleGame[];
+}
+
 // Team production leaders for one season, shown on the stats page (design spec 5a).
 // A single leader per category (passing/rushing/receiving); `line` is the preformatted
 // summary the UI renders verbatim (see lib/roster-leaders.ts). Any category can be null

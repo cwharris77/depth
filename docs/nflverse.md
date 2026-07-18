@@ -33,19 +33,36 @@ rosters, draft picks, formations) reuse this same scaffolding with their own spe
   WR/TE receptions/yards/TD, OL/P/LS/KR/PR games-only, defense tackles/sacks/INT, K
   FG made/attempted). Returns `null` (render nothing) when `games` is null or 0 — the
   repo's "show nothing, not zeros" posture (Decisions 2026-07-02).
+- `lib/nflverse/team-codes.ts` — `resolveTeamCode(code)`: nflverse's team codes ->
+  our `team.id`. NOT our ESPN `abbrev` (the Rams are nflverse `LA`, our abbrev `LAR`),
+  and historic relocations (`OAK`/`SD`/`STL`) fold into the current franchise. A
+  hand-reviewed static map; an unknown code -> `null` (its game is skipped-and-counted).
+- `lib/nflverse/games.ts` — `toScheduleAndGameRows(rows, resolveCode)`: pure transform of
+  `nfldata/games.csv` into `games` rows (one per shared game) + `schedules` rows (the
+  distinct `(team_id, season)` set the games imply). A row with an unresolvable team code
+  or a non-numeric season is **skipped and counted**. `'' -> null` for blank scores/dates.
+- `lib/schedule.ts` — `resolveSchedule(games, teamId)` (regular-season, this-team's
+  perspective: home/away, opponent id, W/L/T or null-when-upcoming, ordered by week, BYE
+  weeks derived from missing weeks) and `nextGame(schedule)` (earliest unplayed). Pure;
+  the read layer enriches opponent ids into team metadata for the UI.
 - `scripts/ingest-nflverse.mts` — fetches `players.csv` once, the latest two available
   `stats_player_reg_<season>.csv` files, transforms, and upserts `player_stats`
-  (`onConflict: player_id,season,season_type`). Writes one `ingestion_runs` row
-  (`source: 'nflverse'`) with `{ seasons, rows_written, skipped, failures }` in the
-  `errors` jsonb column, `teams_written` repurposed as the total row count (there's no
-  `rows_written` column on `ingestion_runs`).
+  (`onConflict: player_id,season,season_type`). Then `ingestGames` fetches
+  `nfldata/data/games.csv` (one file, all seasons 1999+) and upserts **schedules first,
+  then games** (chunked) — the games' composite FKs require the schedule rows to exist.
+  Writes one `ingestion_runs` row (`source: 'nflverse'`) whose `errors` jsonb carries
+  `{ seasons, player_stats_rows, games_written, schedules_written, skipped, failures }`;
+  `teams_written` is repurposed as the total row count across both datasets.
 - `lib/roster-source.db.ts` — `getPlayerStats(playerId)`, a standalone export (same
   shape as `searchAllPlayers`) — lazy per-player, not part of `RosterSource`, since the
   field view never needs stats. `getRosterLeaders(teamId)` — a second standalone read
   for the stats page's ROSTER LEADERS block (design spec 5a): the team's players joined
   to their `player_stats` rows in memory (two typed queries, no filter-string building),
-  fed to `lib/roster-leaders.ts`. Degrades to `null` (no block) on an unknown team, a
-  roster with no stats yet, or any query error.
+  fed to `lib/roster-leaders.ts`. `getTeamSchedule(teamId, season?)` and
+  `getNextGame(teamId)` — standalone reads for the SCHEDULE tab + the stats page's NEXT
+  GAME card: a game names two teams, so "this team's games" is two `.eq` queries (home,
+  away) merged, never an `.or()` string (invariant 8); opponents are enriched from team
+  metadata. All three degrade to `null` on an unknown team / no data / query error.
 - `lib/roster-leaders.ts` — `rosterLeaders(entries)`: pure pick of the passing/rushing/
   receiving leader for the newest season present, with each category's line preformatted
   for the UI. A category with no positive yardage degrades to `null` (show nothing, not a
