@@ -41,7 +41,15 @@ rosters, draft picks, formations) reuse this same scaffolding with their own spe
   `rows_written` column on `ingestion_runs`).
 - `lib/roster-source.db.ts` — `getPlayerStats(playerId)`, a standalone export (same
   shape as `searchAllPlayers`) — lazy per-player, not part of `RosterSource`, since the
-  field view never needs stats.
+  field view never needs stats. `getRosterLeaders(teamId)` — a second standalone read
+  for the stats page's ROSTER LEADERS block (design spec 5a): the team's players joined
+  to their `player_stats` rows in memory (two typed queries, no filter-string building),
+  fed to `lib/roster-leaders.ts`. Degrades to `null` (no block) on an unknown team, a
+  roster with no stats yet, or any query error.
+- `lib/roster-leaders.ts` — `rosterLeaders(entries)`: pure pick of the passing/rushing/
+  receiving leader for the newest season present, with each category's line preformatted
+  for the UI. A category with no positive yardage degrades to `null` (show nothing, not a
+  zeroed row). Colocated tests in `lib/__tests__/roster-leaders.test.ts`.
 - `app/api/players/[id]/stats/route.ts` — `GET`, returns `{ stats: PlayerSeasonStats[] }`
   (200 with `{ stats: [] }` when none, never a bare array — contracts/draft-boards add
   sibling keys to this same payload later without a breaking change).
