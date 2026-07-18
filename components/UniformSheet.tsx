@@ -5,6 +5,7 @@ import { Check, X } from 'lucide-react';
 import type { Uniform } from '@/lib/types';
 import { formatUniformYears } from '@/lib/uniforms';
 import JerseySwatch from './JerseySwatch';
+import { colors as uiTokens } from '@/components/ui/tokens';
 
 // The uniform picker's contents (rendered inside BottomSheet). One tappable row per
 // kit — jersey thumbnail, name, year range, and a check on the active one. Selecting a
@@ -26,7 +27,7 @@ export default function UniformSheet({
   return (
     <div className="flex flex-col" style={{ maxHeight: '100%' }}>
       <div className="flex items-center justify-between px-5 pt-4 pb-2">
-        <h2 className="text-base font-black" style={{ color: '#f0f4ff' }}>
+        <h2 className="text-base font-black" style={{ color: uiTokens.textPrimary }}>
           Uniforms
         </h2>
         <button
@@ -35,7 +36,7 @@ export default function UniformSheet({
           aria-label="Close"
           className="rounded-full p-2"
           style={{ background: 'rgba(255,255,255,0.08)', touchAction: 'manipulation' }}>
-          <X size={16} color="#A5ACAF" />
+          <X size={16} color={uiTokens.textMuted} />
         </button>
       </div>
 
@@ -74,10 +75,10 @@ export default function UniformSheet({
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold truncate" style={{ color: '#f0f4ff' }}>
+                <div className="text-sm font-bold truncate" style={{ color: uiTokens.textPrimary }}>
                   {u.name}
                 </div>
-                <div className="text-[11px]" style={{ color: '#A5ACAF' }}>
+                <div className="text-[11px]" style={{ color: uiTokens.textMuted }}>
                   {formatUniformYears(u)}
                 </div>
               </div>

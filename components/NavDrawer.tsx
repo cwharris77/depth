@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { X, ClipboardList, Grid, User } from 'lucide-react';
 import { useUser } from '@/lib/use-user';
+import { colors as uiTokens } from '@/components/ui/tokens';
 
 // Left navigation drawer (nav IA — 2026-07-08-nav-drawer-design.md). Global, growing
 // navigation lives here, opened from the header logo, so the team header isn't crowded and new
@@ -48,10 +49,16 @@ function NavItem({
         pointerEvents: disabled ? 'none' : undefined,
         opacity: disabled ? 0.5 : 1,
         ...(active
-          ? { background: `${accent}1F`, borderLeft: `3px solid ${accent}`, color: '#f0f4ff' }
-          : { color: '#dfe5f0', borderLeft: '3px solid transparent' }),
+          ? {
+              background: `${accent}1F`,
+              borderLeft: `3px solid ${accent}`,
+              color: uiTokens.textPrimary,
+            }
+          : { color: uiTokens.textSecondary, borderLeft: '3px solid transparent' }),
       }}>
-      <span style={{ color: active ? accent : '#A5ACAF', display: 'inline-flex' }}>{icon}</span>
+      <span style={{ color: active ? accent : uiTokens.textMuted, display: 'inline-flex' }}>
+        {icon}
+      </span>
       <span className="text-sm font-semibold">{label}</span>
     </Link>
   );
@@ -173,19 +180,21 @@ export default function NavDrawer({
           // bottom safe-area fix (#87), applied to the drawer's edge instead of a page bottom.
           width:
             'min(calc(82vw + env(safe-area-inset-left)), calc(320px + env(safe-area-inset-left)))',
-          background: '#0d1320',
-          borderRight: '1px solid #222b3d',
+          background: uiTokens.bgDrawer,
+          borderRight: `1px solid ${uiTokens.borderDrawer}`,
           paddingTop: 'max(env(safe-area-inset-top), 16px)',
           paddingLeft: 'env(safe-area-inset-left)',
           display: 'flex',
           flexDirection: 'column',
         }}>
         <div className="flex items-center justify-between px-4 pb-3">
-          <span className="text-base font-bold tracking-widest" style={{ color: '#f0f4ff' }}>
+          <span
+            className="text-base font-bold tracking-widest"
+            style={{ color: uiTokens.textPrimary }}>
             depth
           </span>
           <button type="button" onClick={onClose} aria-label="Close navigation" className="p-1">
-            <X size={18} color="#A5ACAF" />
+            <X size={18} color={uiTokens.textMuted} />
           </button>
         </div>
         <nav className="flex flex-col flex-1">
@@ -214,7 +223,7 @@ export default function NavDrawer({
             max(env(...), fallback) pattern as the bottom safe-area fix (#87). */}
         <div
           style={{
-            borderTop: '1px solid #222b3d',
+            borderTop: `1px solid ${uiTokens.borderDrawer}`,
             paddingBottom: 'max(env(safe-area-inset-bottom), 0px)',
           }}>
           <NavItem

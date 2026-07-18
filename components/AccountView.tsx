@@ -7,6 +7,10 @@ import { getBrowserClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/use-user';
 import { getSettings, putSettings } from '@/lib/settings-client';
 import OtpInput from '@/components/ui/OtpInput';
+import Button from '@/components/ui/Button';
+import Toggle from '@/components/ui/Toggle';
+import Card from '@/components/ui/Card';
+import Input from '@/components/ui/Input';
 import { colors } from '@/components/ui/tokens';
 
 // The sign-in / account page body (Phase C, auth pass 1; OTP-code sign-in, auth pass 3).
@@ -118,7 +122,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
 
   if (loading) {
     return (
-      <div className="text-sm" style={{ color: '#A5ACAF' }}>
+      <div className="text-sm" style={{ color: colors.textMuted }}>
         Loading…
       </div>
     );
@@ -136,25 +140,21 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
             background: 'rgba(105,190,40,0.14)',
             border: '1px solid rgba(105,190,40,0.3)',
           }}>
-          <Check size={30} color="#69BE28" strokeWidth={3} />
+          <Check size={30} color={colors.accent} strokeWidth={3} />
         </div>
         <div>
-          <div className="text-xl font-black" style={{ color: '#f0f4ff' }}>
+          <div className="text-xl font-black" style={{ color: colors.textPrimary }}>
             You&apos;re signed in
           </div>
-          <p className="mt-1 text-sm" style={{ color: '#A5ACAF' }}>
+          <p className="mt-1 text-sm" style={{ color: colors.textMuted }}>
             {user.email ? `Signed in as ${user.email}. ` : ''}
             Your favorite team and settings now sync across devices.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setJustSignedIn(false)}
-          className="flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold"
-          style={{ background: '#69BE28', color: '#0a0e1a' }}>
+        <Button onClick={() => setJustSignedIn(false)}>
           Manage account settings
-          <ChevronRight size={16} color="#0a0e1a" />
-        </button>
+          <ChevronRight size={16} color={colors.onAccent} />
+        </Button>
       </div>
     );
   }
@@ -171,17 +171,17 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
               background: 'rgba(105,190,40,0.14)',
               border: '1px solid rgba(105,190,40,0.3)',
             }}>
-            <span className="text-lg font-bold" style={{ color: '#69BE28' }}>
+            <span className="text-lg font-bold" style={{ color: colors.accent }}>
               {initial}
             </span>
           </div>
           <div className="min-w-0">
             <div
               className="text-[11px] font-semibold uppercase tracking-widest"
-              style={{ color: '#7d848c' }}>
+              style={{ color: colors.textFaint }}>
               Signed in as
             </div>
-            <div className="truncate text-base font-bold" style={{ color: '#f0f4ff' }}>
+            <div className="truncate text-base font-bold" style={{ color: colors.textPrimary }}>
               {user.email}
             </div>
           </div>
@@ -191,18 +191,16 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
         <div>
           <div
             className="mb-2.5 text-xs font-bold uppercase tracking-widest"
-            style={{ color: '#69BE28' }}>
+            style={{ color: colors.accent }}>
             Settings
           </div>
-          <div
-            className="flex flex-col gap-4 rounded-2xl p-4"
-            style={{ background: '#0f1623', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <Card padding={16} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label
                 htmlFor="favorite-team"
                 className="flex items-center gap-2 text-sm font-semibold"
-                style={{ color: '#f0f4ff' }}>
-                <Star size={15} color="#69BE28" /> Favorite team
+                style={{ color: colors.textPrimary }}>
+                <Star size={15} color={colors.accent} /> Favorite team
               </label>
               <p className="mb-0.5 text-[12px]" style={{ color: '#8891a3' }}>
                 Opens automatically when you start the app.
@@ -214,9 +212,9 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
                   onChange={(e) => changeFavorite(e.target.value)}
                   className="rounded-xl px-3 py-2.5 text-base outline-none transition-shadow duration-150"
                   style={{
-                    background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid rgba(255,255,255,0.14)',
-                    color: '#f0f4ff',
+                    background: colors.surfaceInput,
+                    border: `1px solid ${colors.borderInput}`,
+                    color: colors.textPrimary,
                   }}
                   onFocus={(e) => {
                     e.currentTarget.style.boxShadow = `0 0 0 3px ${colors.focusRing}`;
@@ -239,8 +237,8 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
                   className="animate-pulse rounded-xl"
                   style={{
                     height: 46,
-                    background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid rgba(255,255,255,0.14)',
+                    background: colors.surfaceInput,
+                    border: `1px solid ${colors.borderInput}`,
                   }}
                 />
               )}
@@ -248,40 +246,16 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
 
             {favoriteTeamId && (
               <>
-                <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }} />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={startOnFavorite}
-                  onClick={toggleStartOnFavorite}
-                  className="flex items-center justify-between gap-3 bg-transparent p-0 text-left">
-                  <span className="text-sm" style={{ color: '#dfe5f0' }}>
+                <div style={{ height: 1, background: colors.borderSubtle }} />
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm" style={{ color: colors.textSecondary }}>
                     Open this team when I start the app
                   </span>
-                  <span
-                    aria-hidden="true"
-                    className="relative inline-flex shrink-0 rounded-full transition-colors"
-                    style={{
-                      width: 40,
-                      height: 24,
-                      background: startOnFavorite ? '#69BE28' : 'rgba(255,255,255,0.18)',
-                    }}>
-                    <span
-                      className="absolute rounded-full transition-transform"
-                      style={{
-                        top: 2,
-                        left: 2,
-                        width: 20,
-                        height: 20,
-                        background: '#f0f4ff',
-                        transform: startOnFavorite ? 'translateX(16px)' : 'translateX(0)',
-                      }}
-                    />
-                  </span>
-                </button>
+                  <Toggle checked={startOnFavorite} onChange={toggleStartOnFavorite} />
+                </div>
               </>
             )}
-          </div>
+          </Card>
         </div>
 
         {/* Privacy link */}
@@ -289,25 +263,17 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
           href="/privacy"
           className="flex items-center justify-between rounded-2xl px-4 py-3.5 text-sm font-semibold no-underline"
           style={{
-            background: '#0f1623',
-            border: '1px solid rgba(255,255,255,0.08)',
-            color: '#dfe5f0',
+            background: colors.surfaceCard,
+            border: `1px solid ${colors.borderDefault}`,
+            color: colors.textSecondary,
           }}>
           Privacy policy
           <ChevronRight size={16} color="#5b6478" />
         </Link>
 
-        <button
-          type="button"
-          onClick={() => getBrowserClient().auth.signOut()}
-          className="self-start rounded-xl px-4 py-2 text-sm font-semibold"
-          style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.14)',
-            color: '#dfe5f0',
-          }}>
+        <Button variant="secondary" size="sm" onClick={() => getBrowserClient().auth.signOut()}>
           Sign out
-        </button>
+        </Button>
 
         {/* Danger zone */}
         <div>
@@ -325,54 +291,47 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
             {isConfirmingDelete ? (
               <>
                 <div>
-                  <div className="mb-1 text-sm font-bold" style={{ color: '#f0f4ff' }}>
+                  <div className="mb-1 text-sm font-bold" style={{ color: colors.textPrimary }}>
                     Delete your account?
                   </div>
-                  <p className="m-0 text-[12px] leading-relaxed" style={{ color: '#A5ACAF' }}>
+                  <p
+                    className="m-0 text-[12px] leading-relaxed"
+                    style={{ color: colors.textMuted }}>
                     This permanently removes your account, favorite team, and settings. This
                     can&apos;t be undone.
                   </p>
                 </div>
                 {deleteState === 'error' && (
-                  <div className="text-[12px]" style={{ color: '#ff6b6b' }}>
+                  <div className="text-[12px]" style={{ color: colors.danger }}>
                     Couldn&apos;t delete your account — try again.
                   </div>
                 )}
                 <div className="flex gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setIsConfirmingDelete(false)}
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    fullWidth
                     disabled={deleteState === 'deleting'}
-                    className="flex-1 rounded-xl px-3 py-2.5 text-[13px] font-semibold"
-                    style={{
-                      background: 'rgba(255,255,255,0.06)',
-                      border: '1px solid rgba(255,255,255,0.14)',
-                      color: '#dfe5f0',
-                    }}>
+                    onClick={() => setIsConfirmingDelete(false)}>
                     Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={deleteAccount}
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    fullWidth
                     disabled={deleteState === 'deleting'}
-                    className="flex-1 rounded-xl px-3 py-2.5 text-[13px] font-bold"
-                    style={{ background: '#ff6b6b', border: 'none', color: '#2a0e0e' }}>
+                    onClick={deleteAccount}>
                     {deleteState === 'deleting' ? 'Deleting…' : 'Yes, delete my account'}
-                  </button>
+                  </Button>
                 </div>
               </>
             ) : (
-              <button
-                type="button"
-                onClick={() => setIsConfirmingDelete(true)}
-                className="self-start rounded-xl px-3.5 py-2 text-[13px] font-semibold"
-                style={{
-                  background: 'transparent',
-                  border: '1px solid rgba(255,107,107,0.4)',
-                  color: '#ff6b6b',
-                }}>
+              <Button
+                variant="danger-outline"
+                size="sm"
+                onClick={() => setIsConfirmingDelete(true)}>
                 Delete account
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -384,14 +343,15 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
     return (
       <div className="flex flex-col gap-4">
         <div>
-          <div className="text-lg font-bold" style={{ color: '#f0f4ff' }}>
+          <div className="text-lg font-bold" style={{ color: colors.textPrimary }}>
             Check your email
           </div>
-          <p className="mt-1 text-sm" style={{ color: '#A5ACAF' }}>
-            We sent a 6-digit code to <span style={{ color: '#f0f4ff' }}>{email.trim()}</span>.
-            Enter it below to finish signing in.
+          <p className="mt-1 text-sm" style={{ color: colors.textMuted }}>
+            We sent a 6-digit code to{' '}
+            <span style={{ color: colors.textPrimary }}>{email.trim()}</span>. Enter it below to
+            finish signing in.
           </p>
-          <p className="mt-1 text-[12px]" style={{ color: '#7d848c' }}>
+          <p className="mt-1 text-[12px]" style={{ color: colors.textFaint }}>
             Don&apos;t see it? Check your spam folder.
           </p>
         </div>
@@ -405,20 +365,11 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
             onEnter={verifyCode}
             disabled={verifyState === 'verifying'}
           />
-          <button
-            type="button"
-            onClick={verifyCode}
-            disabled={verifyState === 'verifying' || code.length !== 6}
-            className="rounded-xl px-4 py-3 text-sm font-bold"
-            style={{
-              background: '#69BE28',
-              color: '#0a0e1a',
-              opacity: code.length === 6 ? 1 : 0.6,
-            }}>
+          <Button onClick={verifyCode} disabled={verifyState === 'verifying' || code.length !== 6}>
             {verifyState === 'verifying' ? 'Verifying…' : 'Verify & sign in'}
-          </button>
+          </Button>
           {verifyState === 'error' && (
-            <div className="text-[12px]" style={{ color: '#ff6b6b' }}>
+            <div className="text-[12px]" style={{ color: colors.danger }}>
               That code is invalid or expired — use the newest email, or resend below.
             </div>
           )}
@@ -432,7 +383,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
             setVerifyState('idle');
           }}
           className="self-start text-[12px] underline"
-          style={{ color: '#A5ACAF' }}>
+          style={{ color: colors.textMuted }}>
           Use a different email
         </button>
       </div>
@@ -441,53 +392,36 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-black" style={{ color: '#f0f4ff' }}>
+      <h1 className="text-2xl font-black" style={{ color: colors.textPrimary }}>
         Sign in
       </h1>
 
       <div className="flex flex-col gap-2">
-        <input
+        <Input
           type="email"
           inputMode="email"
           autoComplete="email"
-          aria-label="Email address"
+          ariaLabel="Email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') sendCode();
           }}
           placeholder="you@email.com"
-          className="rounded-xl px-4 py-3 text-base outline-none transition-shadow duration-150"
-          style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.14)',
-            color: '#f0f4ff',
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.boxShadow = `0 0 0 3px ${colors.focusRing}`;
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.boxShadow = 'none';
-          }}
         />
-        <button
-          type="button"
-          onClick={sendCode}
-          disabled={sendState === 'sending'}
-          className="rounded-xl px-4 py-3 text-sm font-bold"
-          style={{ background: '#69BE28', color: '#0a0e1a' }}>
+        <Button onClick={sendCode} disabled={sendState === 'sending'}>
           {sendState === 'sending' ? 'Sending…' : 'Email me a sign-in code'}
-        </button>
+        </Button>
         {sendState === 'error' && (
-          <div className="text-[12px]" style={{ color: '#ff6b6b' }}>
+          <div className="text-[12px]" style={{ color: colors.danger }}>
             Couldn&apos;t send — try again.
           </div>
         )}
       </div>
 
-      <p className="text-[11px] leading-relaxed" style={{ color: '#7d848c' }}>
+      <p className="text-[11px] leading-relaxed" style={{ color: colors.textFaint }}>
         By continuing you agree to our{' '}
-        <Link href="/privacy" style={{ color: '#69BE28' }} className="underline">
+        <Link href="/privacy" style={{ color: colors.accent }} className="underline">
           privacy policy
         </Link>
         .

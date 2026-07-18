@@ -9,6 +9,7 @@ import type { TeamMeta } from '@/lib/roster-source';
 import type { TeamSchedule, TeamScheduleGame } from '@/lib/types';
 import { readableTextOn } from '@/lib/colors';
 import TeamPageHeader from './TeamPageHeader';
+import { colors as uiTokens } from '@/components/ui/tokens';
 
 interface Props {
   team: TeamMeta;
@@ -29,8 +30,8 @@ function formatGameDate(iso: string | null): string {
 
 const RESULT_COLOR: Record<'W' | 'L' | 'T', string> = {
   W: '#3fb950',
-  L: '#ef5350',
-  T: '#A5ACAF',
+  L: uiTokens.statusInjured,
+  T: uiTokens.textMuted,
 };
 
 function GameCard({
@@ -47,10 +48,12 @@ function GameCard({
       <div
         className="flex min-h-[104px] flex-col items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-center"
         style={{ border: '1px dashed rgba(255,255,255,0.25)' }}>
-        <div className="text-[9px] font-bold tracking-[0.06em]" style={{ color: '#7d848c' }}>
+        <div
+          className="text-[9px] font-bold tracking-[0.06em]"
+          style={{ color: uiTokens.textFaint }}>
           WEEK {game.week}
         </div>
-        <div className="text-xs font-black" style={{ color: '#A5ACAF' }}>
+        <div className="text-xs font-black" style={{ color: uiTokens.textMuted }}>
           BYE
         </div>
       </div>
@@ -67,7 +70,7 @@ function GameCard({
         background: 'rgba(255,255,255,0.03)',
         border: '1px solid rgba(255,255,255,0.08)',
       }}>
-      <div className="text-[9px] font-bold tracking-[0.06em]" style={{ color: '#7d848c' }}>
+      <div className="text-[9px] font-bold tracking-[0.06em]" style={{ color: uiTokens.textFaint }}>
         WEEK {game.week}
       </div>
       <div
@@ -79,11 +82,11 @@ function GameCard({
                 border: `1px solid ${opp.colors.secondary}`,
                 color: readableTextOn(opp.colors.primary),
               }
-            : { background: 'rgba(255,255,255,0.08)', color: '#A5ACAF' }
+            : { background: 'rgba(255,255,255,0.08)', color: uiTokens.textMuted }
         }>
         {opp?.abbrev ?? '—'}
       </div>
-      <div className="text-[11px] font-extrabold" style={{ color: '#f0f4ff' }}>
+      <div className="text-[11px] font-extrabold" style={{ color: uiTokens.textPrimary }}>
         {game.isHome ? 'vs' : '@'} {opp?.abbrev ?? '—'}
       </div>
       {played ? (
@@ -94,7 +97,7 @@ function GameCard({
         </div>
       ) : (
         <>
-          <div className="text-[10px] font-bold" style={{ color: '#A5ACAF' }}>
+          <div className="text-[10px] font-bold" style={{ color: uiTokens.textMuted }}>
             {formatGameDate(game.date)}
           </div>
           <div
@@ -102,7 +105,7 @@ function GameCard({
             style={
               game.isHome
                 ? { background: uiAccent, color: onAccent }
-                : { background: 'rgba(255,255,255,0.08)', color: '#A5ACAF' }
+                : { background: 'rgba(255,255,255,0.08)', color: uiTokens.textMuted }
             }>
             {game.isHome ? 'HOME' : 'AWAY'}
           </div>
@@ -117,17 +120,17 @@ export default function TeamScheduleView({ team, teams, schedule }: Props) {
 
   const header = (
     <div
-      className="px-5 pb-3"
-      style={{ background: '#0a0e1a', paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
+      className="bg-background px-5 pb-3"
+      style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
       <TeamPageHeader team={team} teams={teams} colors={team.colors} activePage="schedule" />
     </div>
   );
 
   if (!schedule || schedule.games.length === 0) {
     return (
-      <div style={{ minHeight: '100dvh', background: '#0a0e1a', color: '#fff' }}>
+      <div className="bg-background" style={{ minHeight: '100dvh', color: uiTokens.textPrimary }}>
         {header}
-        <p className="px-5 text-sm" style={{ color: '#A5ACAF' }}>
+        <p className="px-5 text-sm" style={{ color: uiTokens.textMuted }}>
           No schedule available for this team yet.
         </p>
       </div>
@@ -135,10 +138,12 @@ export default function TeamScheduleView({ team, teams, schedule }: Props) {
   }
 
   return (
-    <div style={{ minHeight: '100dvh', background: '#0a0e1a', color: '#f0f4ff' }}>
+    <div className="bg-background" style={{ minHeight: '100dvh', color: uiTokens.textPrimary }}>
       {header}
       <div className="px-[18px] pb-1 pt-[18px]">
-        <div className="text-[10px] font-bold tracking-[0.1em]" style={{ color: '#7d848c' }}>
+        <div
+          className="text-[10px] font-bold tracking-[0.1em]"
+          style={{ color: uiTokens.textFaint }}>
           {schedule.season} SEASON
         </div>
       </div>

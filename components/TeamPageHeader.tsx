@@ -17,6 +17,7 @@ import DepthMark from './DepthMark';
 import FullScreenSheet from './FullScreenSheet';
 import NavDrawer from './NavDrawer';
 import NavSwitcher from './NavSwitcher';
+import { colors as uiTokens } from '@/components/ui/tokens';
 
 const PAGE_TABS = [
   { key: 'roster', label: 'ROSTER' },
@@ -111,7 +112,7 @@ export default function TeamPageHeader({
                   aria-disabled={isPending}
                   className={labelClass}
                   style={{
-                    color: '#A5ACAF',
+                    color: uiTokens.textMuted,
                     opacity: isPending ? 0.5 : 1,
                     touchAction: 'manipulation',
                   }}>

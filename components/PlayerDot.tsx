@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import type { Player, RenderSlot, TeamColors, Unit } from '@/lib/types';
 import { readableTextOn } from '@/lib/colors';
 import { positionFullName } from '@/lib/positions';
+import { colors as uiTokens } from '@/components/ui/tokens';
 
 interface PlayerDotProps {
   player: Player;
@@ -108,13 +109,13 @@ export default function PlayerDot({
       <div className={`${LABEL_VISIBILITY[unit]} mt-1 text-center`} style={{ maxWidth: 72 }}>
         <div
           className="text-[8px] font-semibold"
-          style={{ color: '#A5ACAF', letterSpacing: '0.05em' }}>
+          style={{ color: uiTokens.textMuted, letterSpacing: '0.05em' }}>
           {slot.label}
         </div>
         <div
           className="text-[9px] font-bold leading-tight"
           style={{
-            color: isSelected ? teamColors.uiAccent : '#f0f4ff',
+            color: isSelected ? teamColors.uiAccent : uiTokens.textPrimary,
             overflowWrap: 'anywhere',
           }}>
           {lastName(player.name)}

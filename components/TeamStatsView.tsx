@@ -10,6 +10,7 @@ import type { Leader, RosterLeaders, TeamScheduleGame, TeamStats } from '@/lib/t
 import { readableTextOn } from '@/lib/colors';
 import { ordinal } from '@/lib/format';
 import TeamPageHeader from './TeamPageHeader';
+import { colors as uiTokens } from '@/components/ui/tokens';
 
 interface Props {
   team: TeamMeta;
@@ -42,7 +43,7 @@ function wl(wins: number, losses: number): string {
 function StatCell({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <>
-      <td className="py-[9px]" style={{ color: '#7d848c' }}>
+      <td className="py-[9px]" style={{ color: uiTokens.textFaint }}>
         {label}
       </td>
       <td className="py-[9px] text-right font-bold" style={color ? { color } : undefined}>
@@ -79,16 +80,16 @@ export default function TeamStatsView({
   const header = (
     <div
       className="px-5 pb-3"
-      style={{ background: '#0a0e1a', paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
+      style={{ background: uiTokens.bg, paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
       <TeamPageHeader team={team} teams={teams} colors={team.colors} activePage="stats" />
     </div>
   );
 
   if (seasons.length === 0 && !incomingCoach) {
     return (
-      <div style={{ minHeight: '100dvh', background: '#0a0e1a', color: '#fff' }}>
+      <div style={{ minHeight: '100dvh', background: uiTokens.bg, color: uiTokens.textPrimary }}>
         {header}
-        <p className="px-5 text-sm" style={{ color: '#A5ACAF' }}>
+        <p className="px-5 text-sm" style={{ color: uiTokens.textMuted }}>
           No stats available for this team yet.
         </p>
       </div>
@@ -111,11 +112,11 @@ export default function TeamStatsView({
     : null;
   const diff = active?.pointDifferential ?? 0;
   const diffLabel = diff > 0 ? `+${diff}` : String(diff);
-  const diffColor = diff > 0 ? uiAccent : diff < 0 ? '#ef5350' : '#A5ACAF';
+  const diffColor = diff > 0 ? uiAccent : diff < 0 ? uiTokens.statusInjured : uiTokens.textMuted;
   const gamesPlayed = active ? active.overallWins + active.overallLosses + active.overallTies : 0;
 
   return (
-    <div style={{ minHeight: '100dvh', background: '#0a0e1a', color: '#f0f4ff' }}>
+    <div style={{ minHeight: '100dvh', background: uiTokens.bg, color: uiTokens.textPrimary }}>
       {header}
 
       {/* Season switcher — no prev/next arrows: desktop is wide enough to show every
@@ -124,7 +125,7 @@ export default function TeamStatsView({
         className="flex items-center gap-1.5 px-2.5 py-2.5 overflow-x-auto"
         style={{
           borderBottom: '1px solid rgba(255,255,255,0.1)',
-          background: '#0d1220',
+          background: uiTokens.bgFilterbar,
           scrollbarWidth: 'none',
         }}>
         {[...seasons]
@@ -141,13 +142,13 @@ export default function TeamStatsView({
                 className="shrink-0 flex items-center gap-1.5 rounded-[3px] px-3 py-1.5 text-xs font-bold"
                 style={{
                   background: isSelected ? uiAccent : 'transparent',
-                  color: isSelected ? '#0a0e1a' : '#A5ACAF',
+                  color: isSelected ? uiTokens.bg : uiTokens.textMuted,
                   border: `1px solid ${isSelected ? uiAccent : 'rgba(255,255,255,0.15)'}`,
                 }}>
                 {isLatest && (
                   <span
                     className="inline-block h-1.5 w-1.5 rounded-full"
-                    style={{ background: isSelected ? '#0a0e1a' : uiAccent }}
+                    style={{ background: isSelected ? uiTokens.bg : uiAccent }}
                   />
                 )}
                 {s.season}
@@ -163,7 +164,7 @@ export default function TeamStatsView({
             className="shrink-0 flex items-center gap-1.5 rounded-[3px] px-3 py-1.5 text-xs font-bold"
             style={{
               background: clampedIndex === -1 ? uiAccent : 'transparent',
-              color: clampedIndex === -1 ? '#0a0e1a' : '#A5ACAF',
+              color: clampedIndex === -1 ? uiTokens.bg : uiTokens.textMuted,
               border: `1px dashed ${clampedIndex === -1 ? uiAccent : 'rgba(255,255,255,0.3)'}`,
             }}>
             {nextSeasonLabel}
@@ -176,17 +177,19 @@ export default function TeamStatsView({
           incoming-coach chip (index -1) has no season stats to attach to, so it gets its
           own short-circuited render below instead of falling through to `active.coach`. */}
       <div className="px-5 pt-[18px]">
-        <div className="text-[11px] font-bold tracking-[0.1em]" style={{ color: '#7d848c' }}>
+        <div
+          className="text-[11px] font-bold tracking-[0.1em]"
+          style={{ color: uiTokens.textFaint }}>
           {team.city.toUpperCase()} {team.name.toUpperCase()}
         </div>
         {active?.coach && (
-          <div className="mt-0.5 text-[11px]" style={{ color: '#A5ACAF' }}>
+          <div className="mt-0.5 text-[11px]" style={{ color: uiTokens.textMuted }}>
             HC {active.coach.name.toUpperCase()} · {ordinal(active.coach.experience).toUpperCase()}{' '}
             SEASON
           </div>
         )}
         {!active && incomingCoach && (
-          <div className="mt-0.5 text-[11px]" style={{ color: '#A5ACAF' }}>
+          <div className="mt-0.5 text-[11px]" style={{ color: uiTokens.textMuted }}>
             HC {incomingCoach.name.toUpperCase()} · INCOMING
           </div>
         )}
@@ -203,7 +206,7 @@ export default function TeamStatsView({
               <div className="text-[13px] font-bold" style={{ color: uiAccent }}>
                 {active.streak}
               </div>
-              <div className="text-[11px]" style={{ color: '#7d848c' }}>
+              <div className="text-[11px]" style={{ color: uiTokens.textFaint }}>
                 {active.playoffSeed
                   ? `SEED ${active.playoffSeed} · ${team.conference}`
                   : `MISSED PLAYOFFS · ${team.conference}`}
@@ -244,7 +247,7 @@ export default function TeamStatsView({
           {/* Footer ticker */}
           <div
             className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
-            style={{ color: '#5a616a' }}>
+            style={{ color: uiTokens.textFaintest }}>
             {active.season} SEASON · {gamesPlayed} GAMES PLAYED ▸▸▸
           </div>
         </>
@@ -258,13 +261,13 @@ export default function TeamStatsView({
             <div className="text-[28px] font-bold leading-tight tracking-[-0.01em]">
               New head coach
             </div>
-            <div className="mt-1 text-[11px]" style={{ color: '#7d848c' }}>
+            <div className="mt-1 text-[11px]" style={{ color: uiTokens.textFaint }}>
               No games played yet this season.
             </div>
           </div>
           <div
             className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
-            style={{ color: '#5a616a' }}>
+            style={{ color: uiTokens.textFaintest }}>
             {nextSeasonLabel} SEASON · NOT YET STARTED ▸▸▸
           </div>
         </>
@@ -278,10 +281,14 @@ export default function TeamStatsView({
             className="flex items-center justify-between rounded-2xl px-3.5 py-3"
             style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${uiAccent}33` }}>
             <div>
-              <div className="text-[9px] font-bold tracking-[0.08em]" style={{ color: '#A5ACAF' }}>
+              <div
+                className="text-[9px] font-bold tracking-[0.08em]"
+                style={{ color: uiTokens.textMuted }}>
                 NEXT GAME · WEEK {nextGame.week}
               </div>
-              <div className="mt-[3px] text-[13px] font-extrabold" style={{ color: '#f0f4ff' }}>
+              <div
+                className="mt-[3px] text-[13px] font-extrabold"
+                style={{ color: uiTokens.textPrimary }}>
                 {nextGame.isHome ? 'vs' : '@'} {nextGame.opponent.abbrev}
                 {nextGame.date ? ` · ${formatGameDate(nextGame.date)}` : ''}
               </div>
@@ -301,7 +308,9 @@ export default function TeamStatsView({
 
       {leaderRows.length > 0 && leaders && (
         <div className="px-5 pb-7 pt-1">
-          <div className="mb-2 text-[10px] font-bold tracking-[0.1em]" style={{ color: '#A5ACAF' }}>
+          <div
+            className="mb-2 text-[10px] font-bold tracking-[0.1em]"
+            style={{ color: uiTokens.textMuted }}>
             ROSTER LEADERS · {leaders.season}
           </div>
           <div
@@ -323,13 +332,13 @@ export default function TeamStatsView({
                   </div>
                   <div
                     className="mt-0.5 truncate text-xs font-extrabold"
-                    style={{ color: '#f0f4ff' }}>
+                    style={{ color: uiTokens.textPrimary }}>
                     {leader.name}
                   </div>
                 </div>
                 <div
                   className="shrink-0 text-right text-[10px]"
-                  style={{ color: '#A5ACAF', maxWidth: 170 }}>
+                  style={{ color: uiTokens.textMuted, maxWidth: 170 }}>
                   {leader.line}
                 </div>
               </div>

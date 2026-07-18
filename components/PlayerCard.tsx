@@ -12,6 +12,10 @@ import { AnimatePresence, motion, Reorder, useDragControls, type PanInfo } from 
 import { Check, GraduationCap, GripVertical, RotateCcw, Share2, X } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import Badge from '@/components/ui/Badge';
+import StatGrid from '@/components/ui/StatGrid';
+import IconButton from '@/components/ui/IconButton';
+import { colors as uiTokens } from '@/components/ui/tokens';
 
 interface PlayerCardProps {
   player: Player | null;
@@ -24,13 +28,6 @@ interface PlayerCardProps {
   onResetPosition?: (position: Position) => void;
   isPositionCustom?: boolean;
 }
-
-const statusLabel: Record<string, string> = {
-  starter: 'STARTER',
-  backup: 'BACKUP',
-  rookie: 'ROOKIE',
-  injured: 'INJURED',
-};
 
 const depthRankLabel: Record<number, string> = {
   1: 'STARTER',
@@ -245,91 +242,61 @@ export default function PlayerCard({
                     <div
                       className="text-2xl font-black leading-tight -mt-4"
                       style={{
-                        color: '#f0f4ff',
+                        color: uiTokens.textPrimary,
                         letterSpacing: '-0.01em',
                       }}>
                       {player.name}
                     </div>
                     <div className="flex items-center gap-2 mt-2">
-                      <span
-                        className="text-xs font-bold px-2 py-0.5 rounded-full"
-                        style={{
-                          background: 'rgba(0,34,68,0.8)',
-                          color: accent,
-                          border: `1px solid ${accent}66`,
-                        }}>
+                      <Badge kind="position" accent={accent}>
                         {player.position}
-                      </span>
-                      <span className="text-xs font-medium" style={{ color: '#A5ACAF' }}>
+                      </Badge>
+                      <span className="text-xs font-medium" style={{ color: uiTokens.textMuted }}>
                         {positionFullName(player.position)}
                       </span>
-                      <span
-                        className="text-xs font-bold"
-                        style={{ color: statusColor(player.status, colors) }}>
-                        {statusLabel[player.status]}
-                      </span>
+                      <Badge kind="status" status={player.status} accent={accent} />
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 mt-1">
-                  <button
-                    type="button"
+                  <IconButton
+                    variant="plain"
+                    active={copied}
+                    accent={accent}
                     onClick={handleShare}
-                    aria-label={copied ? 'Link copied' : 'Share player'}
-                    className="rounded-full p-2"
-                    style={{
-                      background: copied ? `${accent}26` : 'rgba(255,255,255,0.08)',
-                      touchAction: 'manipulation',
-                    }}>
-                    {copied ? (
-                      <Check size={18} color={accent} strokeWidth={3} />
-                    ) : (
-                      <Share2 size={18} color="#A5ACAF" />
-                    )}
-                  </button>
-                  <button
-                    type="button"
+                    ariaLabel={copied ? 'Link copied' : 'Share player'}
+                    icon={
+                      copied ? (
+                        <Check size={18} color={accent} strokeWidth={3} />
+                      ) : (
+                        <Share2 size={18} color={uiTokens.textMuted} />
+                      )
+                    }
+                  />
+                  <IconButton
+                    variant="plain"
                     onClick={onClose}
-                    aria-label="Close player card"
-                    className="rounded-full p-2"
-                    style={{
-                      background: 'rgba(255,255,255,0.08)',
-                      touchAction: 'manipulation',
-                    }}>
-                    <X size={18} color="#A5ACAF" />
-                  </button>
+                    ariaLabel="Close player card"
+                    icon={<X size={18} color={uiTokens.textMuted} />}
+                  />
                 </div>
               </div>
 
-              <div
-                className="mx-6 my-4 rounded-2xl grid grid-cols-4 divide-x"
-                style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                }}>
-                {[
-                  { label: 'AGE', value: player.age },
-                  { label: 'EXP', value: experienceLabel(player.experience) },
-                  { label: 'HT', value: player.height },
-                  { label: 'WT', value: `${player.weight}` },
-                ].map((stat) => (
-                  <div key={stat.label} className="flex flex-col items-center py-3">
-                    <div
-                      className="text-[10px] font-semibold"
-                      style={{ color: '#A5ACAF', letterSpacing: '0.08em' }}>
-                      {stat.label}
-                    </div>
-                    <div className="text-base font-black mt-0.5" style={{ color: '#f0f4ff' }}>
-                      {stat.value}
-                    </div>
-                  </div>
-                ))}
+              <div className="mx-6 my-4">
+                <StatGrid
+                  stats={[
+                    { label: 'AGE', value: player.age },
+                    { label: 'EXP', value: experienceLabel(player.experience) },
+                    { label: 'HT', value: player.height },
+                    { label: 'WT', value: `${player.weight}` },
+                  ]}
+                />
               </div>
 
               <div className="px-6 mb-3 flex items-center gap-1.5">
                 <GraduationCap size={14} style={{ color: accent, opacity: 0.85 }} />
-                <span className="text-sm font-bold" style={{ color: '#f0f4ff' }}>
+                <span className="text-sm font-bold" style={{ color: uiTokens.textPrimary }}>
                   {player.college}
                 </span>
               </div>
@@ -345,7 +312,7 @@ export default function PlayerCard({
                 <div className="px-6 mb-6">
                   <div
                     className="text-[10px] font-semibold mb-3"
-                    style={{ color: '#A5ACAF', letterSpacing: '0.1em' }}>
+                    style={{ color: uiTokens.textMuted, letterSpacing: '0.1em' }}>
                     2024 SEASON
                   </div>
                   <div className="flex flex-wrap gap-3">
@@ -363,7 +330,7 @@ export default function PlayerCard({
                         </div>
                         <div
                           className="text-[9px] font-semibold mt-0.5"
-                          style={{ color: '#A5ACAF', letterSpacing: '0.06em' }}>
+                          style={{ color: uiTokens.textMuted, letterSpacing: '0.06em' }}>
                           {key.toUpperCase()}
                         </div>
                       </div>
@@ -379,19 +346,13 @@ export default function PlayerCard({
                       {/* Do not show position depth for now. When we design for custom rosters and positions we can add it back in */}
                       {/* <span
                         className="text-[10px] font-semibold"
-                        style={{ color: '#A5ACAF', letterSpacing: '0.1em' }}>
+                        style={{ color: uiTokens.textMuted, letterSpacing: '0.1em' }}>
                         POSITION DEPTH · {player.position}
                       </span> */}
                       {isPositionCustom && (
-                        <span
-                          className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                          style={{
-                            color: accent,
-                            background: `${accent}1a`,
-                            border: `1px solid ${accent}55`,
-                          }}>
+                        <Badge kind="tag" accent={accent}>
                           CUSTOM
-                        </span>
+                        </Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
@@ -400,7 +361,7 @@ export default function PlayerCard({
                           type="button"
                           onClick={() => onResetPosition(player.position)}
                           className="flex items-center gap-1 text-[10px] font-bold"
-                          style={{ color: '#A5ACAF', touchAction: 'manipulation' }}>
+                          style={{ color: uiTokens.textMuted, touchAction: 'manipulation' }}>
                           <RotateCcw size={12} /> Reset
                         </button>
                       )}
@@ -457,7 +418,11 @@ export default function PlayerCard({
                               cursor: 'grab',
                               touchAction: 'none',
                             }}>
-                            <GripVertical size={16} color="#A5ACAF" style={{ flexShrink: 0 }} />
+                            <GripVertical
+                              size={16}
+                              color={uiTokens.textMuted}
+                              style={{ flexShrink: 0 }}
+                            />
                             <div
                               className="text-[10px] font-bold"
                               style={{
@@ -474,7 +439,7 @@ export default function PlayerCard({
                             </div>
                             <div
                               className="flex-1 text-sm font-bold truncate"
-                              style={{ color: p.id === player.id ? accent : '#f0f4ff' }}>
+                              style={{ color: p.id === player.id ? accent : uiTokens.textPrimary }}>
                               {p.name}
                             </div>
                           </Reorder.Item>
@@ -511,7 +476,7 @@ export default function PlayerCard({
                             </div>
                             <div
                               className="flex-1 text-sm font-bold truncate"
-                              style={{ color: isCurrent ? accent : '#f0f4ff' }}>
+                              style={{ color: isCurrent ? accent : uiTokens.textPrimary }}>
                               {p.name}
                             </div>
                             {isCurrent && <Check size={14} color={accent} strokeWidth={3} />}
@@ -527,7 +492,7 @@ export default function PlayerCard({
                 <div className="px-6 pb-8">
                   <div
                     className="text-[10px] font-semibold mb-3"
-                    style={{ color: '#A5ACAF', letterSpacing: '0.1em' }}>
+                    style={{ color: uiTokens.textMuted, letterSpacing: '0.1em' }}>
                     SEASON STATS
                   </div>
                   {/* A columnar table (SZN + the position's stat columns), not one inline
@@ -548,14 +513,14 @@ export default function PlayerCard({
                       }}>
                       <div
                         className="text-[8.5px] font-bold"
-                        style={{ color: '#7d848c', letterSpacing: '0.04em' }}>
+                        style={{ color: uiTokens.textFaint, letterSpacing: '0.04em' }}>
                         SZN
                       </div>
                       {statColumns.map((col) => (
                         <div
                           key={col.header}
                           className="text-[8.5px] font-bold"
-                          style={{ color: '#7d848c', letterSpacing: '0.04em' }}>
+                          style={{ color: uiTokens.textFaint, letterSpacing: '0.04em' }}>
                           {col.header}
                         </div>
                       ))}
@@ -569,11 +534,17 @@ export default function PlayerCard({
                           borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)',
                           background: i === 0 ? `${accent}0d` : 'transparent',
                         }}>
-                        <div style={{ color: i === 0 ? accent : '#f0f4ff' }}>{s.season}</div>
+                        <div style={{ color: i === 0 ? accent : uiTokens.textPrimary }}>
+                          {s.season}
+                        </div>
                         {statColumns.map((col) => (
                           <div
                             key={col.header}
-                            style={{ color: col.danger?.(s) ? '#ef5350' : '#f0f4ff' }}>
+                            style={{
+                              color: col.danger?.(s)
+                                ? uiTokens.statusInjured
+                                : uiTokens.textPrimary,
+                            }}>
                             {col.value(s)}
                           </div>
                         ))}

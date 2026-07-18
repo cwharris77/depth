@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { colors as uiTokens } from '@/components/ui/tokens';
 
 export const metadata: Metadata = {
   title: 'Privacy policy · Depth',
@@ -19,14 +20,14 @@ export default function PrivacyPage() {
           href="/signin"
           aria-label="Back to account"
           className="mb-6 flex w-fit items-center gap-1.5 text-sm font-semibold"
-          style={{ color: '#A5ACAF' }}>
+          style={{ color: uiTokens.textMuted }}>
           <ArrowLeft size={18} /> Back to account
         </Link>
 
-        <h1 className="text-2xl font-black" style={{ color: '#f0f4ff' }}>
+        <h1 className="text-2xl font-black" style={{ color: uiTokens.textPrimary }}>
           Privacy policy
         </h1>
-        <p className="mt-1.5 mb-6 text-[12px]" style={{ color: '#7d848c' }}>
+        <p className="mt-1.5 mb-6 text-[12px]" style={{ color: uiTokens.textFaint }}>
           Last updated July 2026
         </p>
 
@@ -34,7 +35,7 @@ export default function PrivacyPage() {
           className="flex flex-col gap-4 text-[13px] leading-relaxed"
           style={{ color: '#c5cbd8' }}>
           <div>
-            <h2 className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
+            <h2 className="mb-1 text-[13px] font-bold" style={{ color: uiTokens.textPrimary }}>
               What we collect
             </h2>
             <p className="m-0">
@@ -45,7 +46,7 @@ export default function PrivacyPage() {
             </p>
           </div>
           <div>
-            <h2 className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
+            <h2 className="mb-1 text-[13px] font-bold" style={{ color: uiTokens.textPrimary }}>
               Without signing in
             </h2>
             <p className="m-0">
@@ -55,18 +56,18 @@ export default function PrivacyPage() {
             </p>
           </div>
           <div>
-            <h2 className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
+            <h2 className="mb-1 text-[13px] font-bold" style={{ color: uiTokens.textPrimary }}>
               Sharing a depth chart
             </h2>
             <p className="m-0">
               If you share a custom depth chart, anyone with the link can view it, and the part of
-              your email before the <span style={{ color: '#f0f4ff' }}>@</span> (not your full
-              address) is shown publicly as the chart&apos;s owner name. Deleting your account
+              your email before the <span style={{ color: uiTokens.textPrimary }}>@</span> (not your
+              full address) is shown publicly as the chart&apos;s owner name. Deleting your account
               removes all your shared links.
             </p>
           </div>
           <div>
-            <h2 className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
+            <h2 className="mb-1 text-[13px] font-bold" style={{ color: uiTokens.textPrimary }}>
               What we don&apos;t do
             </h2>
             <p className="m-0">
@@ -75,7 +76,7 @@ export default function PrivacyPage() {
             </p>
           </div>
           <div>
-            <h2 className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
+            <h2 className="mb-1 text-[13px] font-bold" style={{ color: uiTokens.textPrimary }}>
               Children&apos;s privacy
             </h2>
             <p className="m-0">
@@ -84,7 +85,7 @@ export default function PrivacyPage() {
             </p>
           </div>
           <div>
-            <h2 className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
+            <h2 className="mb-1 text-[13px] font-bold" style={{ color: uiTokens.textPrimary }}>
               Deleting your data
             </h2>
             <p className="m-0">
@@ -93,11 +94,12 @@ export default function PrivacyPage() {
             </p>
           </div>
           <div>
-            <h2 className="mb-1 text-[13px] font-bold" style={{ color: '#f0f4ff' }}>
+            <h2 className="mb-1 text-[13px] font-bold" style={{ color: uiTokens.textPrimary }}>
               Contact
             </h2>
             <p className="m-0">
-              Questions — reach us at <span style={{ color: '#69BE28' }}>privacy@[domain]</span>.
+              Questions — reach us at{' '}
+              <span style={{ color: uiTokens.accent }}>privacy@[domain]</span>.
             </p>
           </div>
         </div>

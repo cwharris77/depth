@@ -9,6 +9,9 @@ import type { Conference, Player } from '@/lib/types';
 import type { TeamMeta } from '@/lib/roster-source';
 import { readableTextOn } from '@/lib/colors';
 import type { PlayerHit } from '@/lib/search';
+import IconButton from '@/components/ui/IconButton';
+import SegmentedControl from '@/components/ui/SegmentedControl';
+import { colors as uiTokens } from '@/components/ui/tokens';
 
 type ResultItem = { type: 'player'; hit: PlayerHit } | { type: 'team'; team: TeamMeta };
 
@@ -28,7 +31,7 @@ function SectionLabel({ children }: { children: string }) {
   return (
     <div
       className="text-[10px] font-semibold tracking-widest px-5 py-2"
-      style={{ color: '#A5ACAF' }}>
+      style={{ color: uiTokens.textMuted }}>
       {children}
     </div>
   );
@@ -61,7 +64,7 @@ function PlayerAvatar({ hit }: { hit: PlayerHit }) {
           viewBox="0 0 24 24"
           fill="currentColor"
           aria-hidden="true"
-          style={{ width: '60%', height: '60%', opacity: 0.5, color: '#A5ACAF' }}>
+          style={{ width: '60%', height: '60%', opacity: 0.5, color: uiTokens.textMuted }}>
           <circle cx="12" cy="8" r="4" />
           <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4z" />
         </svg>
@@ -122,15 +125,15 @@ function TeamRow({
         {team.abbrev}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-bold truncate" style={{ color: '#f0f4ff' }}>
+        <div className="text-sm font-bold truncate" style={{ color: uiTokens.textPrimary }}>
           {team.city} {team.name}
         </div>
-        <div className="text-[11px]" style={{ color: '#A5ACAF' }}>
+        <div className="text-[11px]" style={{ color: uiTokens.textMuted }}>
           {team.conference} {team.division}
         </div>
       </div>
       {isCurrent && <Check size={16} color={team.colors.uiAccent} strokeWidth={3} />}
-      {highlighted && <CornerDownLeft size={14} color="#A5ACAF" />}
+      {highlighted && <CornerDownLeft size={14} color={uiTokens.textMuted} />}
     </Link>
   );
 }
@@ -162,15 +165,15 @@ function PlayerRow({
       }}>
       <PlayerAvatar hit={hit} />
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-bold truncate" style={{ color: '#f0f4ff' }}>
+        <div className="text-sm font-bold truncate" style={{ color: uiTokens.textPrimary }}>
           {hit.name}
         </div>
-        <div className="text-[11px] truncate" style={{ color: '#A5ACAF' }}>
+        <div className="text-[11px] truncate" style={{ color: uiTokens.textMuted }}>
           {hit.position} · {hit.team.name} · #{hit.number}
           {hit.college ? ` · ${hit.college}` : ''}
         </div>
       </div>
-      {highlighted && <CornerDownLeft size={14} color="#A5ACAF" />}
+      {highlighted && <CornerDownLeft size={14} color={uiTokens.textMuted} />}
     </button>
   );
 }
@@ -346,17 +349,15 @@ export default function NavSwitcher({
   return (
     <>
       <div className="flex items-center justify-between px-5 pt-3 pb-3">
-        <h2 className="text-lg font-black" style={{ color: '#f0f4ff' }}>
+        <h2 className="text-lg font-black" style={{ color: uiTokens.textPrimary }}>
           Jump to
         </h2>
-        <button
-          type="button"
+        <IconButton
+          variant="plain"
           onClick={onClose}
-          aria-label="Close"
-          className="rounded-full p-2"
-          style={{ background: 'rgba(255,255,255,0.08)', touchAction: 'manipulation' }}>
-          <X size={18} color="#A5ACAF" />
-        </button>
+          ariaLabel="Close"
+          icon={<X size={18} color={uiTokens.textMuted} />}
+        />
       </div>
 
       <div className="px-5 pb-3">
@@ -377,11 +378,11 @@ export default function NavSwitcher({
             onBlur={() => setSearchFocused(false)}
             placeholder="Search teams or players"
             className="flex-1 bg-transparent outline-none py-2.5 text-base"
-            style={{ color: '#f0f4ff' }}
+            style={{ color: uiTokens.textPrimary }}
           />
           <span
             className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold"
-            style={{ background: 'rgba(255,255,255,0.08)', color: '#A5ACAF' }}>
+            style={{ background: 'rgba(255,255,255,0.08)', color: uiTokens.textMuted }}>
             ESC
           </span>
         </div>
@@ -390,24 +391,15 @@ export default function NavSwitcher({
       {/* Only meaningful for idle browsing — hidden once you're searching. */}
       {!searching && (
         <div className="px-5 pb-3">
-          <div
-            className="flex rounded-xl p-1 gap-1"
-            style={{ background: 'rgba(255,255,255,0.07)' }}>
-            {(['AFC', 'NFC'] as const).map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setConference(c)}
-                className="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all"
-                style={{
-                  background: conference === c ? 'rgba(255,255,255,0.12)' : 'transparent',
-                  color: conference === c ? '#f0f4ff' : '#A5ACAF',
-                  touchAction: 'manipulation',
-                }}>
-                {c}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            flat
+            options={[
+              { value: 'AFC', label: 'AFC' },
+              { value: 'NFC', label: 'NFC' },
+            ]}
+            value={conference}
+            onChange={(v) => setConference(v as Conference)}
+          />
         </div>
       )}
 
@@ -437,7 +429,7 @@ export default function NavSwitcher({
             </div>
           ))
         ) : nothingFound ? (
-          <div className="px-5 py-6 text-center text-sm" style={{ color: '#A5ACAF' }}>
+          <div className="px-5 py-6 text-center text-sm" style={{ color: uiTokens.textMuted }}>
             No matches for &ldquo;{query.trim()}&rdquo;
           </div>
         ) : (

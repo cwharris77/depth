@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og';
+import { colors as uiTokens } from '@/components/ui/tokens';
 
 export const alt = 'Depth · NFL Depth Charts';
 export const size = { width: 1200, height: 630 };
@@ -14,8 +15,8 @@ export default function Image() {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        background: '#0a0e1a',
-        color: '#f0f4ff',
+        background: uiTokens.bg,
+        color: uiTokens.textPrimary,
         padding: '0 80px',
         fontFamily: 'sans-serif',
       }}>
@@ -25,7 +26,7 @@ export default function Image() {
             width: 56,
             height: 12,
             borderRadius: 6,
-            background: '#69BE28',
+            background: uiTokens.accent,
             marginRight: 20,
           }}
         />
