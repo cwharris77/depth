@@ -1,4 +1,5 @@
 import Logo from './Logo';
+import { colors } from './ui/tokens';
 
 // The single shared mark-to-wordmark gap, used here and by any other spot that hand-rolls
 // Logo + "depth" text (currently just app/signin/page.tsx, which needs a larger size than
@@ -18,7 +19,7 @@ export default function DepthMark({ color, onClick }: { color: string; onClick?:
   const content = (
     <>
       <Logo size={26} color={color} />
-      <span className="text-base font-bold tracking-widest" style={{ color: '#A5ACAF' }}>
+      <span className="text-base font-bold tracking-widest" style={{ color: colors.textMuted }}>
         depth
       </span>
     </>
