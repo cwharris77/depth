@@ -11,7 +11,7 @@ resolved statuses always carry their resolution date
 ## 2026-07-17
 
 ### Observation 1: Ticket claimed "already specced" without verifying spec was fully implemented
-**Status:** OPEN
+**Status:** ACTIONED (2026-07-18) — New skill created per Cooper's approval; staged at skill-updates/2026-07-18/spec-implementation-audit/
 **Date:** 2026-07-17
 **Session context:** Implementing "Launch in-page uniform kit picker" ticket in the depth repo.
 **Skill:** New skill candidate: spec-implementation-audit
@@ -25,7 +25,7 @@ resolved statuses always carry their resolution date
 **Principle:** A locked design decision is a commitment to build, not evidence that building happened — verify implementation against the spec's own file/symbol names rather than trusting a ticket's summary of status.
 
 ### Observation 2: Vercel Flags SDK's `flag()` opts a route out of static generation regardless of `decide()`'s body
-**Status:** OPEN
+**Status:** ACTIONED (2026-07-18) — New skill created per Cooper's approval, scoped as a narrow interrupt (message caveat + ask before adding flag() calls); staged at skill-updates/2026-07-18/nextjs-flags-static-generation-caveat/
 **Date:** 2026-07-17
 **Session context:** Cooper asked to remove the isolated-search-icon flag from the depth repo because "this page's performance is suffering because of it." Confirmed with `npm run build`: `/team/[id]` was building `ƒ` (fully dynamic) despite `generateStaticParams` and despite `lib/flags.ts`'s own header comment documenting that `decide()` is kept request-free specifically to stay statically prerenderable. Removing the one `flag()` call from the route flipped it back to `●` (SSG + ISR).
 **Skill:** New skill candidate: nextjs-flags-static-generation-caveat (or fold into an existing Next.js/Vercel-platform skill if one exists)
@@ -48,7 +48,7 @@ resolved statuses always carry their resolution date
 **Principle:** A tool's structured return value is closer to ground truth than its own prose summary of that value — when they disagree, don't let the prose summary drive an architecture decision; verify directly or ask, rather than defaulting to the safer-looking but more complex workaround.
 
 ### Observation 4: `scheduler-registered.txt` is per-workspace, but one scheduled task now covers multiple workspaces — new workspaces will re-offer setup
-**Status:** OPEN
+**Status:** ACTIONED (2026-07-18) — Approach (a) applied: obsidian's scheduler-registered.txt written retroactively; live scheduled task "skill-observation-review-mon" updated (step 2g) to auto-write the marker into any newly-discovered workspace going forward; documentation of the pattern staged to task-observer's weekly-review.md at ~/.claude/skill-updates/2026-07-18/task-observer/
 **Date:** 2026-07-17
 **Session context:** Cooper asked "do I need to add [scheduler-registered.txt] anywhere else?" after the Mon/Wed/Fri scheduled review was registered. The review task itself is a single shared job that self-discovers every workspace with a `skill-observations/log.md` under Cooper's project roots — deliberately built that way so new repos are covered automatically without editing the task later. But `weekly-review.md`'s Step 0 checks for `scheduler-registered.txt` on a per-workspace basis (`skill-observations/scheduler-registered.txt` inside that specific workspace) to decide whether to offer setting up a scheduler. Only depth has that marker (and a `log.md` to put it next to) right now. The instant another workspace (e.g. the obsidian vault) accumulates its first observations and later trips the 7-day fallback, `task-observer` there will find no marker and no `log.md`-adjacent evidence of the shared scheduler, and will offer to set one up again — even though the Mon/Wed/Fri job already discovers and covers it.
 
@@ -58,7 +58,7 @@ resolved statuses always carry their resolution date
 
 ### Observation 5: db-migration skill's "do not enable RLS" rule is stale
 
-**Status:** OPEN
+**Status:** ACTIONED (2026-07-18) — Applied to db-migration (scheduled review); staged at skill-updates/2026-07-18/db-migration/
 **Date:** 2026-07-17
 **Session context:** Adding schedules/games tables to the depth repo (schema PR).
 **Skill:** db-migration (project skill)
