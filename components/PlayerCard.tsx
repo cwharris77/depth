@@ -6,7 +6,7 @@ import { experienceLabel } from '@/lib/format';
 import { positionFullName } from '@/lib/positions';
 import { getPlayersByPosition } from '@/lib/roster';
 import { playerDeepLinkPath } from '@/lib/share';
-import { statLine } from '@/lib/stat-lines';
+import { hasSeasonStats, seasonStatColumns } from '@/lib/stat-table';
 import type { Player, PlayerSeasonStats, Position, TeamColors, TeamRoster } from '@/lib/types';
 import { AnimatePresence, motion, Reorder, useDragControls, type PanInfo } from 'framer-motion';
 import { Check, GraduationCap, GripVertical, RotateCcw, Share2, X } from 'lucide-react';
@@ -176,13 +176,11 @@ export default function PlayerCard({
   };
 
   const depthChart = player ? getPlayersByPosition(roster, player.position) : [];
-  // statLine returns null for a season with no games (locked decision: show nothing,
-  // not zeros) -- filter those out rather than rendering an empty row.
-  const seasonLines = player
-    ? seasonStats
-        .map((s) => ({ season: s.season, line: statLine(player.position, s) }))
-        .filter((s): s is { season: number; line: string } => s.line !== null)
-    : [];
+  // The SEASON STATS table: the position's columns (header + accessors) and the seasons
+  // the player actually played (hasSeasonStats drops no-games rows — show nothing, not
+  // zeros). Newest-first ordering comes from the API (getPlayerStats orders season desc).
+  const statColumns = player ? seasonStatColumns(player.position) : [];
+  const statSeasons = player ? seasonStats.filter(hasSeasonStats) : [];
 
   return (
     <AnimatePresence>
@@ -525,32 +523,60 @@ export default function PlayerCard({
                 </div>
               )}
 
-              {seasonLines.length > 0 && (
+              {statSeasons.length > 0 && (
                 <div className="px-6 pb-8">
                   <div
                     className="text-[10px] font-semibold mb-3"
                     style={{ color: '#A5ACAF', letterSpacing: '0.1em' }}>
                     SEASON STATS
                   </div>
+                  {/* A columnar table (SZN + the position's stat columns), not one inline
+                      line per season (design spec 5a). Column set is position-specific
+                      (lib/stat-table.ts); the grid template stretches to however many the
+                      position has. */}
                   <div
                     className="rounded-2xl overflow-hidden"
                     style={{
                       background: 'rgba(255,255,255,0.03)',
                       border: '1px solid rgba(255,255,255,0.06)',
                     }}>
-                    {seasonLines.map((s, i) => (
+                    <div
+                      className="grid gap-x-2 px-2.5 py-2"
+                      style={{
+                        gridTemplateColumns: `minmax(40px, 0.7fr) repeat(${statColumns.length}, 1fr)`,
+                        borderBottom: '1px solid rgba(255,255,255,0.06)',
+                      }}>
+                      <div
+                        className="text-[8.5px] font-bold"
+                        style={{ color: '#7d848c', letterSpacing: '0.04em' }}>
+                        SZN
+                      </div>
+                      {statColumns.map((col) => (
+                        <div
+                          key={col.header}
+                          className="text-[8.5px] font-bold"
+                          style={{ color: '#7d848c', letterSpacing: '0.04em' }}>
+                          {col.header}
+                        </div>
+                      ))}
+                    </div>
+                    {statSeasons.map((s, i) => (
                       <div
                         key={s.season}
-                        className="flex items-center gap-3 px-4 py-3"
+                        className="grid gap-x-2 px-2.5 py-[9px] text-[11px] font-bold"
                         style={{
+                          gridTemplateColumns: `minmax(40px, 0.7fr) repeat(${statColumns.length}, 1fr)`,
                           borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)',
+                          background: i === 0 ? `${accent}0d` : 'transparent',
                         }}>
-                        <div className="text-xs font-bold" style={{ color: accent, minWidth: 40 }}>
-                          {s.season}
-                        </div>
-                        <div className="flex-1 text-sm font-bold" style={{ color: '#f0f4ff' }}>
-                          {s.line}
-                        </div>
+                        <div style={{ color: i === 0 ? accent : '#f0f4ff' }}>{s.season}</div>
+                        {statColumns.map((col) => (
+                          <div
+                            key={col.header}
+                            style={{ color: col.danger?.(s) ? '#ef5350' : '#f0f4ff' }}>
+                            {col.value(s)}
+                          </div>
+                        ))}
                       </div>
                     ))}
                   </div>
