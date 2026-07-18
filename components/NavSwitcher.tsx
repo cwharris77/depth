@@ -1,17 +1,17 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Search, X, Check, CornerDownLeft } from 'lucide-react';
-import type { Conference, Player } from '@/lib/types';
-import type { TeamMeta } from '@/lib/roster-source';
-import { readableTextOn } from '@/lib/colors';
-import type { PlayerHit } from '@/lib/search';
 import IconButton from '@/components/ui/IconButton';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import { colors as uiTokens } from '@/components/ui/tokens';
+import { readableTextOn } from '@/lib/colors';
+import type { TeamMeta } from '@/lib/roster-source';
+import type { PlayerHit } from '@/lib/search';
+import type { Conference, Player } from '@/lib/types';
+import { Check, CornerDownLeft, Search, X } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 
 type ResultItem = { type: 'player'; hit: PlayerHit } | { type: 'team'; team: TeamMeta };
 
@@ -393,6 +393,7 @@ export default function NavSwitcher({
         <div className="px-5 pb-3">
           <SegmentedControl
             flat
+            fullWidth
             options={[
               { value: 'AFC', label: 'AFC' },
               { value: 'NFC', label: 'NFC' },
