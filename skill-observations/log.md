@@ -81,3 +81,30 @@ enable RLS" warning for the narrower case of enabling it WITHOUT a read policy.
 **Principle:** A process skill that hard-codes a phase-specific prohibition rots when
 that phase ships; gate such rules on the current invariant, not a point-in-time state,
 and cite the live precedent migration.
+
+### Observation 6: Design-system primitive shipped without the density variant its densest caller needs
+
+**Status:** OPEN
+**Date:** 2026-07-18
+**Session context:** Migrating a bespoke ROSTER/SCHEDULE/STATS tab group onto the shared
+`SegmentedControl` primitive and making the AFC/NFC toggle full-width.
+
+**Skill:** impeccable / frontend-design
+**Type:** open-source
+**Phase/Area:** Component reuse / design-system adoption
+
+**Issue:** The shared `SegmentedControl` was authored sized for one context (the AFC/NFC
+toggle: 11px pill, `w-fit`). Migrating the mobile-header page switcher onto it — a denser
+context sharing a row with a team pill on a 375px screen — overflowed and clipped the last
+tab. The fix wasn't reverting to bespoke markup; it was adding a `size` variant (plus
+`fullWidth`, `href`) to the primitive so both contexts compose from one component.
+
+**Suggested improvement:** When adopting/reusing a design-system primitive, verify it
+against the *densest and the widest* real usage sites before assuming its defaults fit;
+extend it with a size/width prop rather than forking a one-off or shrinking the caller.
+Add a line to component-reuse guidance: a primitive's default sizing is for its first
+caller, not a contract — a new caller in a tighter context extends the primitive.
+
+**Principle:** Reusing a shared component means fitting it to the constraint envelope of
+all its callers, not just the one it was born for; the correct response to "the shared
+component doesn't fit here" is a new prop on the component, not a bespoke re-implementation.
