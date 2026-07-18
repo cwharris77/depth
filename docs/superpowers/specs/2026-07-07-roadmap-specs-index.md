@@ -21,6 +21,7 @@ implementing agent as-is.
 | Item | Status | Spec / record |
 |---|---|---|
 | **5d — Two-team compare** | ❌ | [`2026-07-07-compare-view-design.md`](2026-07-07-compare-view-design.md) |
+| **Team schedule (SCHEDULE tab) + next game** | ❌ (design approved) — header ships a disabled SCHEDULE placeholder (depth#128) | [`2026-07-17-team-schedule-design.md`](2026-07-17-team-schedule-design.md) — nflverse `games.csv` → new `schedules`+`games` tables (PR1 data) → SCHEDULE route + NEXT GAME card + enabled tab (PR2 UI). Vault ticket "Add team schedules page" |
 | **7 — Uniform archive** | 🟡 PR1+PR2 shipped (depth#56/#57), hidden behind a flag; 72-kit curated seed shipped (depth#67–#71) | Launch: [`2026-07-07-phase-7-uniform-launch-design.md`](2026-07-07-phase-7-uniform-launch-design.md) · Archive page: [`2026-07-08-uniform-archive-page-design.md`](2026-07-08-uniform-archive-page-design.md) |
 
 Everything else in the foundation table (0, 1, 1.5, 2, 3, 4, 5a, 5b, 5c, 5e, 6) is
