@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import type { MouseEvent } from 'react';
+import type { CSSProperties, MouseEvent } from 'react';
 import { colors } from './tokens';
 
 // An option renders as a plain <button> unless it carries an `href`, in which case
@@ -30,8 +30,10 @@ type SegmentedControlProps = {
   // Dim and block interaction while a caller-owned action (e.g. a route transition) is
   // pending. Segments stay mounted so layout doesn't jump.
   disabled?: boolean;
-  // Escape hatch for container-level layout tweaks; merged onto the track.
+  // Escape hatches for container-level tweaks, merged onto the track. `style` wins over
+  // the default chrome (e.g. override the track background) since it's spread last.
   className?: string;
+  style?: CSSProperties;
 };
 
 const SIZES: Record<Size, { track: string; item: string }> = {
@@ -54,12 +56,13 @@ export default function SegmentedControl({
   fullWidth = false,
   disabled = false,
   className = '',
+  style,
 }: SegmentedControlProps) {
   const sz = SIZES[size];
   return (
     <div
       className={`flex ${sz.track} ${fullWidth ? 'w-full' : 'w-fit'} ${className}`}
-      style={{ background: colors.surfaceChip }}>
+      style={{ background: colors.surfaceChip, ...style }}>
       {options.map((opt) => {
         const active = opt.value === value;
         const itemClass = `${sz.item} font-bold ${fullWidth ? 'flex-1 text-center' : ''}`;
