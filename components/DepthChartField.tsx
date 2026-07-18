@@ -1,6 +1,5 @@
 'use client';
 
-import { readableTextOn } from '@/lib/colors';
 import {
   applyTeamOverride,
   clearPositionOrder,
@@ -18,9 +17,9 @@ import { unitForPosition } from '@/lib/search';
 import { rosterShareUrlPath } from '@/lib/share';
 import type { Player, Position, TeamRoster, Unit } from '@/lib/types';
 import { useUser } from '@/lib/use-user';
-import { BarChart2, Check, ChevronDown, RotateCcw, Search, Share2, Shirt } from 'lucide-react';
+import { Check, ChevronDown, MoreHorizontal, RotateCcw, Search, Share2, Shirt } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ApplyKitFromQuery from './ApplyKitFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
 import BottomSheet from './BottomSheet';
@@ -40,6 +39,14 @@ const UNIT_LABELS: Record<Unit, string> = {
   special: 'Special',
 };
 
+// The page-level switcher next to the team pill (design spec 5a). SCHEDULE has no
+// route/data yet (no games/schedule table) — rendered disabled until that's scoped.
+const PAGE_TABS = [
+  { key: 'roster', label: 'ROSTER' },
+  { key: 'schedule', label: 'SCHEDULE' },
+  { key: 'stats', label: 'STATS' },
+] as const;
+
 // Pure client component: it receives one resolved roster as a prop and never
 // imports the team registry, so a page ships only its own team's data — not all 32.
 export default function DepthChartField({
@@ -57,6 +64,18 @@ export default function DepthChartField({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [kitOpen, setKitOpen] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
+
+  // Uniform picker + share collapse into a single "•••" menu (design spec 5a).
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!moreMenuOpen) return;
+    const handlePointerDown = (e: MouseEvent) => {
+      if (!moreMenuRef.current?.contains(e.target as Node)) setMoreMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handlePointerDown);
+    return () => document.removeEventListener('mousedown', handlePointerDown);
+  }, [moreMenuOpen]);
 
   const { team } = roster;
 
@@ -231,16 +250,19 @@ export default function DepthChartField({
               here so the header stays uncrowded — see components/NavDrawer.tsx. */}
 
           <DepthMark color={activeColors.uiAccent} onClick={() => setDrawerOpen(true)} />
-          {/* Team/unit switcher trigger — on the right, where users (Mia, Caleb)
+          {/* Team switcher trigger — on the right, where users (Mia, Caleb)
               instinctively tapped expecting a menu. Styled as a visible pill, not
-              plain text, so it reads as tappable. A search-icon circle sits beside
-              it as a direct jump into the switcher's search bar. */}
+              plain text, so it reads as tappable. Labeled with team.abbrev (the
+              existing short-name column) rather than city + mascot — compact
+              enough to sit alongside the page switcher (design spec 5a). A
+              search-icon circle sits beside it as a direct jump into the
+              switcher's search bar. */}
           <div className="flex items-center gap-1.5 min-w-0">
             <button
               type="button"
               onClick={() => setNavOpen(true)}
               aria-label="Switch team or search players"
-              className="flex items-center gap-1.5 text-left min-w-0 rounded-full pl-3 pr-2 py-1.5"
+              className="flex items-center gap-1.5 text-left min-w-0 rounded-full pl-3 pr-2 py-1.5 shrink-0"
               style={{
                 touchAction: 'manipulation',
                 background: 'rgba(255,255,255,0.07)',
@@ -249,7 +271,7 @@ export default function DepthChartField({
               <h1
                 className="text-[10px] font-semibold tracking-widest truncate"
                 style={{ color: activeColors.uiAccent }}>
-                {team.city.toUpperCase()} {team.name.toUpperCase()}
+                {team.abbrev.toUpperCase()}
               </h1>
               <ChevronDown size={14} color="#A5ACAF" className="shrink-0" />
             </button>
@@ -267,78 +289,127 @@ export default function DepthChartField({
                 <Search size={14} color={activeColors.uiAccent} />
               </button>
             )}
-            <Link
-              href={`/team/${team.id}/stats`}
-              aria-label="Team stats"
-              className="shrink-0 flex items-center justify-center rounded-full p-2"
-              style={{
-                touchAction: 'manipulation',
-                background: 'rgba(255,255,255,0.07)',
-                border: `1px solid ${activeColors.uiAccent}40`,
-              }}>
-              <BarChart2 size={14} color={activeColors.uiAccent} />
-            </Link>
-            <button
-              type="button"
-              onClick={() => setKitOpen(true)}
-              aria-label="Choose uniform"
-              className="shrink-0 flex items-center justify-center rounded-full p-2"
-              style={{
-                touchAction: 'manipulation',
-                background: 'rgba(255,255,255,0.07)',
-                border: `1px solid ${activeColors.uiAccent}40`,
-              }}>
-              <Shirt size={14} color={activeColors.uiAccent} />
-            </button>
-            <button
-              type="button"
-              onClick={handleShareRoster}
-              aria-label={shareCopied ? 'Roster link copied' : 'Share this roster'}
-              className="shrink-0 flex items-center justify-center rounded-full p-2"
-              style={{
-                touchAction: 'manipulation',
-                background: shareCopied ? `${activeColors.uiAccent}26` : 'rgba(255,255,255,0.07)',
-                border: `1px solid ${activeColors.uiAccent}40`,
-              }}>
-              {shareCopied ? (
-                <Check size={14} color={activeColors.uiAccent} strokeWidth={3} />
-              ) : (
-                <Share2 size={14} color={activeColors.uiAccent} />
-              )}
-            </button>
+            {/* Page switcher (roster/schedule/stats) — sized to its own labels
+                plus a little padding, not stretched to fill the row (design
+                spec 5a, adjusted per feedback). SCHEDULE has no route/data yet,
+                so it renders disabled rather than as dead-end navigation. */}
+            <div
+              className="flex items-center gap-0.5 rounded-lg p-0.5 shrink-0"
+              style={{ background: 'rgba(255,255,255,0.07)' }}>
+              {PAGE_TABS.map((tab) => {
+                const labelClass = 'px-2 py-1 rounded-md text-[9px] font-bold tracking-wide';
+                if (tab.key === 'roster') {
+                  return (
+                    <span
+                      key={tab.key}
+                      aria-current="page"
+                      className={labelClass}
+                      style={{ background: activeColors.uiAccent, color: activeColors.onAccent }}>
+                      {tab.label}
+                    </span>
+                  );
+                }
+                if (tab.key === 'schedule') {
+                  return (
+                    <span
+                      key={tab.key}
+                      aria-disabled="true"
+                      className={`${labelClass} opacity-40 select-none`}
+                      style={{ color: '#7d848c' }}>
+                      {tab.label}
+                    </span>
+                  );
+                }
+                return (
+                  <Link
+                    key={tab.key}
+                    href={`/team/${team.id}/stats`}
+                    className={labelClass}
+                    style={{ color: '#A5ACAF', touchAction: 'manipulation' }}>
+                    {tab.label}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </div>
-        {/* On its own row, 24px below the header line, so it never crowds the
-            team-switcher tap target the way sharing a row used to. */}
+        {/* On its own row, 20px below the header line: unit tabs as underline
+            tabs (left) and the collapsed uniform/share "•••" menu (right) —
+            visually distinct from the page switcher above so the two levels
+            don't read as duplicate controls (design spec 5a). */}
         <div
-          className="flex rounded-xl p-1 gap-1 mt-6"
-          style={{ background: 'rgba(255,255,255,0.07)', width: 'fit-content' }}>
-          {(['offense', 'defense', 'special'] as const).map((unit) => {
-            // The pill fills with the team's brand primary, which can be any
-            // hue — uiAccent is only guaranteed to read on the dark app
-            // background, not on primary (e.g. Chiefs' #FF4D5E uiAccent on
-            // its #E31837 primary is ~1.45:1, illegible red-on-red). Derive
-            // the label color from primary itself instead.
-            const activeText = readableTextOn(activeColors.primary);
-            return (
+          className="flex items-center justify-between mt-5"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="flex gap-4">
+            {(['offense', 'defense', 'special'] as const).map((unit) => (
               <button
                 key={unit}
                 onClick={() => {
                   setActiveUnit(unit);
                   setSelectedPlayer(null);
                 }}
-                className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all"
+                className="pb-2.5 text-[11px] font-bold"
                 style={{
-                  background: activeUnit === unit ? activeColors.primary : 'transparent',
-                  color: activeUnit === unit ? activeText : '#A5ACAF',
-                  border:
-                    activeUnit === unit ? `1px solid ${activeText}66` : '1px solid transparent',
+                  borderBottom: `2px solid ${activeUnit === unit ? activeColors.uiAccent : 'transparent'}`,
+                  color: activeUnit === unit ? '#f0f4ff' : '#7d848c',
                   touchAction: 'manipulation',
                 }}>
-                {UNIT_LABELS[unit]}
+                {UNIT_LABELS[unit].toUpperCase()}
               </button>
-            );
-          })}
+            ))}
+          </div>
+          <div className="relative pb-2.5" ref={moreMenuRef}>
+            <button
+              type="button"
+              onClick={() => setMoreMenuOpen((open) => !open)}
+              aria-label="More options"
+              aria-expanded={moreMenuOpen}
+              className="flex items-center justify-center px-1"
+              style={{ touchAction: 'manipulation', color: '#A5ACAF' }}>
+              <MoreHorizontal size={16} />
+            </button>
+            {moreMenuOpen && (
+              <div
+                className="absolute right-0 top-full mt-1 rounded-xl overflow-hidden z-10"
+                style={{
+                  background: '#161c2c',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  minWidth: 168,
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMoreMenuOpen(false);
+                    setKitOpen(true);
+                  }}
+                  className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-[12px] font-semibold whitespace-nowrap"
+                  style={{ color: '#f0f4ff', touchAction: 'manipulation' }}>
+                  <Shirt size={14} color={activeColors.uiAccent} />
+                  Choose uniform
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMoreMenuOpen(false);
+                    handleShareRoster();
+                  }}
+                  className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-[12px] font-semibold whitespace-nowrap"
+                  style={{
+                    color: '#f0f4ff',
+                    borderTop: '1px solid rgba(255,255,255,0.08)',
+                    touchAction: 'manipulation',
+                  }}>
+                  {shareCopied ? (
+                    <Check size={14} color={activeColors.uiAccent} strokeWidth={3} />
+                  ) : (
+                    <Share2 size={14} color={activeColors.uiAccent} />
+                  )}
+                  {shareCopied ? 'Link copied' : 'Share roster'}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         {/* Tells the user this team's depth is their custom order, with one-tap revert.
             Hidden while previewing a shared board — that order isn't theirs to reset. */}
