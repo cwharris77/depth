@@ -17,20 +17,16 @@ import { unitForPosition } from '@/lib/search';
 import { rosterShareUrlPath } from '@/lib/share';
 import type { Player, Position, TeamRoster, Unit } from '@/lib/types';
 import { useUser } from '@/lib/use-user';
-import { Check, ChevronDown, MoreHorizontal, RotateCcw, Search, Share2, Shirt } from 'lucide-react';
-import Link from 'next/link';
+import { Check, MoreHorizontal, RotateCcw, Share2, Shirt } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ApplyKitFromQuery from './ApplyKitFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
 import BottomSheet from './BottomSheet';
-import DepthMark from './DepthMark';
-import FullScreenSheet from './FullScreenSheet';
-import NavDrawer from './NavDrawer';
-import NavSwitcher from './NavSwitcher';
 import OpenPlayerFromQuery from './OpenPlayerFromQuery';
 import PlayerCard from './PlayerCard';
 import PlayerDot from './PlayerDot';
 import SharedBoardBanner from './SharedBoardBanner';
+import TeamPageHeader from './TeamPageHeader';
 import UniformSheet from './UniformSheet';
 
 const UNIT_LABELS: Record<Unit, string> = {
@@ -39,29 +35,17 @@ const UNIT_LABELS: Record<Unit, string> = {
   special: 'Special',
 };
 
-// The page-level switcher next to the team pill (design spec 5a). SCHEDULE has no
-// route/data yet (no games/schedule table) — rendered disabled until that's scoped.
-const PAGE_TABS = [
-  { key: 'roster', label: 'ROSTER' },
-  { key: 'schedule', label: 'SCHEDULE' },
-  { key: 'stats', label: 'STATS' },
-] as const;
-
 // Pure client component: it receives one resolved roster as a prop and never
 // imports the team registry, so a page ships only its own team's data — not all 32.
 export default function DepthChartField({
   roster,
   teams,
-  showIsolatedSearchBarIcon,
 }: {
   roster: TeamRoster;
   teams: TeamMeta[];
-  showIsolatedSearchBarIcon: boolean;
 }) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeUnit, setActiveUnit] = useState<Unit>('offense');
-  const [navOpen, setNavOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [kitOpen, setKitOpen] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
 
@@ -244,95 +228,14 @@ export default function DepthChartField({
           flex: '0 0 auto',
           paddingTop: 'max(env(safe-area-inset-top), 12px)',
         }}>
-        <div className="flex items-center justify-between">
-          {/* Wordmark doubles as the navigation-drawer trigger (left), where a menu
-              conventionally lives. Global/growing nav (uniform archive, future views) opens
-              here so the header stays uncrowded — see components/NavDrawer.tsx. */}
-
-          <DepthMark color={activeColors.uiAccent} onClick={() => setDrawerOpen(true)} />
-          {/* Team switcher trigger — on the right, where users (Mia, Caleb)
-              instinctively tapped expecting a menu. Styled as a visible pill, not
-              plain text, so it reads as tappable. Labeled with team.abbrev (the
-              existing short-name column) rather than city + mascot — compact
-              enough to sit alongside the page switcher (design spec 5a). A
-              search-icon circle sits beside it as a direct jump into the
-              switcher's search bar. */}
-          <div className="flex items-center gap-1.5 min-w-0">
-            <button
-              type="button"
-              onClick={() => setNavOpen(true)}
-              aria-label="Switch team or search players"
-              className="flex items-center gap-1.5 text-left min-w-0 rounded-full pl-3 pr-2 py-1.5 shrink-0"
-              style={{
-                touchAction: 'manipulation',
-                background: 'rgba(255,255,255,0.07)',
-                border: `1px solid ${activeColors.uiAccent}40`,
-              }}>
-              <h1
-                className="text-[10px] font-semibold tracking-widest truncate"
-                style={{ color: activeColors.uiAccent }}>
-                {team.abbrev.toUpperCase()}
-              </h1>
-              <ChevronDown size={14} color="#A5ACAF" className="shrink-0" />
-            </button>
-            {showIsolatedSearchBarIcon && (
-              <button
-                type="button"
-                onClick={() => setNavOpen(true)}
-                aria-label="Search teams or players"
-                className="shrink-0 flex items-center justify-center rounded-full p-2"
-                style={{
-                  touchAction: 'manipulation',
-                  background: 'rgba(255,255,255,0.07)',
-                  border: `1px solid ${activeColors.uiAccent}40`,
-                }}>
-                <Search size={14} color={activeColors.uiAccent} />
-              </button>
-            )}
-            {/* Page switcher (roster/schedule/stats) — sized to its own labels
-                plus a little padding, not stretched to fill the row (design
-                spec 5a, adjusted per feedback). SCHEDULE has no route/data yet,
-                so it renders disabled rather than as dead-end navigation. */}
-            <div
-              className="flex items-center gap-0.5 rounded-lg p-0.5 shrink-0"
-              style={{ background: 'rgba(255,255,255,0.07)' }}>
-              {PAGE_TABS.map((tab) => {
-                const labelClass = 'px-2 py-1 rounded-md text-[9px] font-bold tracking-wide';
-                if (tab.key === 'roster') {
-                  return (
-                    <span
-                      key={tab.key}
-                      aria-current="page"
-                      className={labelClass}
-                      style={{ background: activeColors.uiAccent, color: activeColors.onAccent }}>
-                      {tab.label}
-                    </span>
-                  );
-                }
-                if (tab.key === 'schedule') {
-                  return (
-                    <span
-                      key={tab.key}
-                      aria-disabled="true"
-                      className={`${labelClass} opacity-40 select-none`}
-                      style={{ color: '#7d848c' }}>
-                      {tab.label}
-                    </span>
-                  );
-                }
-                return (
-                  <Link
-                    key={tab.key}
-                    href={`/team/${team.id}/stats`}
-                    className={labelClass}
-                    style={{ color: '#A5ACAF', touchAction: 'manipulation' }}>
-                    {tab.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+        <TeamPageHeader
+          team={team}
+          teams={teams}
+          colors={activeColors}
+          activePage="roster"
+          currentTeamPlayers={themedRoster.players}
+          onSelectPlayer={handleNavSelectPlayer}
+        />
         {/* On its own row, 20px below the header line: unit tabs as underline
             tabs (left) and the collapsed uniform/share "•••" menu (right) —
             visually distinct from the page switcher above so the two levels
@@ -475,21 +378,6 @@ export default function DepthChartField({
           })}
         </div>
       </div>
-
-      <NavDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        accent={activeColors.uiAccent}
-      />
-
-      <FullScreenSheet isOpen={navOpen}>
-        <NavSwitcher
-          roster={themedRoster}
-          teams={teams}
-          onSelectPlayer={handleNavSelectPlayer}
-          onClose={() => setNavOpen(false)}
-        />
-      </FullScreenSheet>
 
       <BottomSheet isOpen={kitOpen} onClose={() => setKitOpen(false)}>
         <UniformSheet

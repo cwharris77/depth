@@ -1,5 +1,4 @@
 import DepthChartField from '@/components/DepthChartField';
-import { showIsolatedSearchBarIcon } from '@/lib/flags';
 import { resolveStartupTeam } from '@/lib/home-team';
 import { dbRosterSource } from '@/lib/roster-source.db';
 import { getServerClient } from '@/lib/supabase/server';
@@ -41,21 +40,12 @@ export default async function Home() {
     if (target !== DEFAULT_TEAM_ID) redirect(`/team/${target}`);
   }
 
-  const [roster, teams, isolatedSearchBarIcon] = await Promise.all([
+  const [roster, teams] = await Promise.all([
     dbRosterSource.getTeam(DEFAULT_TEAM_ID),
     dbRosterSource.listTeams(),
-    // Launch gate, evaluated here (server) and passed down — the client component never
-    // reads flags itself (lib/flags.ts).
-    showIsolatedSearchBarIcon(),
   ]);
   if (!roster) {
     notFound();
   }
-  return (
-    <DepthChartField
-      roster={roster}
-      teams={teams}
-      showIsolatedSearchBarIcon={isolatedSearchBarIcon}
-    />
-  );
+  return <DepthChartField roster={roster} teams={teams} />;
 }
