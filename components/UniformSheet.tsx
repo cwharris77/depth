@@ -5,6 +5,7 @@ import { Check, X } from 'lucide-react';
 import type { Uniform } from '@/lib/types';
 import { formatUniformYears } from '@/lib/uniforms';
 import JerseySwatch from './JerseySwatch';
+import IconButton from './ui/IconButton';
 import { colors as uiTokens } from '@/components/ui/tokens';
 
 // The uniform picker's contents (rendered inside BottomSheet). One tappable row per
@@ -30,14 +31,13 @@ export default function UniformSheet({
         <h2 className="text-base font-black" style={{ color: uiTokens.textPrimary }}>
           Uniforms
         </h2>
-        <button
-          type="button"
+        <IconButton
+          icon={<X size={16} color={uiTokens.textMuted} />}
+          variant="plain"
+          size="sm"
           onClick={onClose}
-          aria-label="Close"
-          className="rounded-full p-2"
-          style={{ background: 'rgba(255,255,255,0.08)', touchAction: 'manipulation' }}>
-          <X size={16} color={uiTokens.textMuted} />
-        </button>
+          ariaLabel="Close"
+        />
       </div>
 
       <div className="px-3 pb-3 overflow-y-auto">
@@ -59,8 +59,8 @@ export default function UniformSheet({
                 style={{
                   width: 44,
                   height: 44,
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: uiTokens.surfaceRaised,
+                  border: `1px solid ${uiTokens.borderStrong}`,
                 }}>
                 {u.imagePath ? (
                   <Image
