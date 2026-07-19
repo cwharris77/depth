@@ -21,11 +21,14 @@ export const colors = {
   dangerOn: '#2a0e0e',
   surfaceCard: '#0f1623',
   surfaceCard2: 'rgba(255,255,255,0.03)',
+  surfaceRaised: 'rgba(255,255,255,0.05)', // faint raised fill (rows, subtle cards)
   surfaceInput: 'rgba(255,255,255,0.06)',
   surfaceChip: 'rgba(255,255,255,0.07)',
   surfaceChipHover: 'rgba(255,255,255,0.12)',
+  surfaceMenu: '#161c2c', // opaque popover/menu background (field overflow menu)
   borderSubtle: 'rgba(255,255,255,0.06)',
   borderDefault: 'rgba(255,255,255,0.08)',
+  borderStrong: 'rgba(255,255,255,0.10)', // heavier hairline (menu edge, dividers)
   borderInput: 'rgba(255,255,255,0.14)',
   borderDrawer: '#222b3d',
   statusBackup: '#A5ACAF',
