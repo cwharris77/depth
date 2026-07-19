@@ -60,7 +60,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
       <DepthMark color={uiTokens.accent} onClick={() => setDrawerOpen(true)} />
 
       <h1 className="mt-4 text-2xl font-bold">Uniform archive</h1>
-      <p className="mt-0.5 text-xs" style={{ color: '#6b7686' }}>
+      <p className="mt-0.5 text-xs" style={{ color: uiTokens.textFaint }}>
         {kits.length} kits · 32 teams
       </p>
 
@@ -83,7 +83,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
         <span
           aria-hidden="true"
           className="shrink-0"
-          style={{ width: 1, alignSelf: 'stretch', background: 'rgba(255,255,255,0.1)' }}
+          style={{ width: 1, alignSelf: 'stretch', background: uiTokens.borderStrong }}
         />
         <FilterPill
           active={filters.currentOnly}
@@ -95,7 +95,11 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
           value={filters.era}
           onChange={(e) => setFilters((f) => ({ ...f, era: e.target.value }))}
           className="shrink-0 rounded-full px-3 py-1.5 text-xs"
-          style={{ background: 'rgba(255,255,255,0.06)', color: '#c8cdd6', border: 'none' }}>
+          style={{
+            background: uiTokens.surfaceInput,
+            color: uiTokens.textSecondary,
+            border: 'none',
+          }}>
           <option value="all">All eras</option>
           {eras.map((e) => (
             <option key={e} value={e}>
@@ -114,7 +118,10 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
           <section key={`${g.conference}-${g.division}`} className="mt-7">
             <h2
               className="mb-4 pb-1.5 text-[10px] font-semibold tracking-[0.2em]"
-              style={{ color: uiTokens.textFaint, borderBottom: '1px solid #1a2233' }}>
+              style={{
+                color: uiTokens.textFaint,
+                borderBottom: `1px solid ${uiTokens.borderDrawer}`,
+              }}>
               {g.conference} {g.division.toUpperCase()}
             </h2>
             {g.teams.map((t) => {
@@ -143,7 +150,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
                           />
                           <figcaption
                             className="mt-1 text-[10px] leading-tight"
-                            style={{ color: '#9aa4b2' }}>
+                            style={{ color: uiTokens.textMuted }}>
                             {k.name}
                             {k.yearStart ? (
                               <span className="block" style={{ color: uiTokens.textFaint }}>
@@ -163,7 +170,7 @@ export default function UniformArchive({ kits }: { kits: UniformListing[] }) {
         ))
       )}
 
-      <footer className="mt-10 text-[11px]" style={{ color: '#4b5568' }}>
+      <footer className="mt-10 text-[11px]" style={{ color: uiTokens.textFaintest }}>
         <p>
           Uniform figures are original artwork, no team logos. Proportions modeled on the{' '}
           <a
