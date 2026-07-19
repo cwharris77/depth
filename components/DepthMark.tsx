@@ -13,8 +13,9 @@ export const MARK_WORDMARK_GAP = 'gap-1';
 // wordmark). Also rendered non-interactively in app/team/[id]/loading.tsx's skeleton so the
 // real header doesn't jump in at a different size once data loads.
 //
-// Sizing: the wordmark span's color is always the fixed `#A5ACAF` used everywhere it's
-// rendered; only the logo mark's color varies (team/brand accent), so it's the one prop here.
+// Sizing: the wordmark span's color is always the fixed `colors.textMuted` chrome token used
+// everywhere it's rendered; only the logo mark's color varies (team/brand accent), so it's the
+// one prop here.
 export default function DepthMark({ color, onClick }: { color: string; onClick?: () => void }) {
   const content = (
     <>

@@ -17,9 +17,6 @@ const EXEMPT = new Set(['components/ui/tokens.ts']);
 // Files not yet migrated. DELETE your file here as part of its surface task.
 // NOTE: components/ui/Menu.tsx has intentional component-level boxShadow (not a surface file).
 const MIGRATED_ALLOWLIST = new Set<string>([
-  'components/NavDrawer.tsx',
-  'components/TeamPageHeader.tsx',
-  'components/DepthMark.tsx',
   'components/SharedBoardBanner.tsx',
   'components/IOSInstallHint.tsx',
   'components/ServiceWorkerRegistrar.tsx',

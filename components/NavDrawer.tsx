@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { X, ClipboardList, Grid, User } from 'lucide-react';
 import { useUser } from '@/lib/use-user';
 import { colors as uiTokens } from '@/components/ui/tokens';
+import IconButton from '@/components/ui/IconButton';
 
 // Left navigation drawer (nav IA — 2026-07-08-nav-drawer-design.md). Global, growing
 // navigation lives here, opened from the header logo, so the team header isn't crowded and new
@@ -166,7 +167,7 @@ export default function NavDrawer({
         ref={scrimRef}
         onClick={onClose}
         aria-hidden="true"
-        style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)' }}
+        style={{ position: 'absolute', inset: 0, background: uiTokens.scrim }}
       />
       <div
         ref={panelRef}
@@ -193,9 +194,12 @@ export default function NavDrawer({
             style={{ color: uiTokens.textPrimary }}>
             depth
           </span>
-          <button type="button" onClick={onClose} aria-label="Close navigation" className="p-1">
-            <X size={18} color={uiTokens.textMuted} />
-          </button>
+          <IconButton
+            variant="plain"
+            onClick={onClose}
+            ariaLabel="Close navigation"
+            icon={<X size={18} color={uiTokens.textMuted} />}
+          />
         </div>
         <nav className="flex flex-col flex-1">
           <NavItem
