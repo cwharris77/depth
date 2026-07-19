@@ -95,7 +95,7 @@ export default function PlayerDot({
           border: `2px solid ${borderColor}`,
           boxShadow: isSelected
             ? `0 0 0 3px ${teamColors.uiAccent}66`
-            : '0 2px 8px rgba(0,0,0,0.5)',
+            : `0 2px 8px ${uiTokens.scrimLight}`,
         }}
         animate={{ scale: isSelected ? 1.18 : 1 }}
         transition={{ type: 'spring', stiffness: 400, damping: 28 }}>

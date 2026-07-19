@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { colors as uiTokens } from '@/components/ui/tokens';
 
 // Registers the service worker (public/sw.js) so the app works offline and launches
 // instantly on repeat visits once added to the home screen. Production only: a service
@@ -61,13 +62,17 @@ export default function ServiceWorkerRegistrar() {
   return (
     <div
       className="fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-sm items-center justify-between gap-3 rounded-xl px-4 py-3 text-[13px] shadow-lg"
-      style={{ background: '#131a2b', color: '#f0f4ff', border: '1px solid #4fc3f755' }}>
+      style={{
+        background: '#131a2b',
+        color: uiTokens.textPrimary,
+        border: `1px solid ${uiTokens.statusRookie}55`,
+      }}>
       <span>Update available</span>
       <button
         type="button"
         onClick={() => waitingWorker.postMessage('SKIP_WAITING')}
         className="shrink-0 rounded-full px-3 py-1 text-[12px] font-bold"
-        style={{ background: '#4fc3f7', color: '#0a0e1a' }}>
+        style={{ background: uiTokens.statusRookie, color: uiTokens.onAccent }}>
         Reload
       </button>
     </div>
