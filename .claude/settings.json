@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npm run typecheck",
+            "if": "Bash(git commit*)",
+            "timeout": 60,
+            "statusMessage": "Typechecking before commit..."
+          }
+        ]
+      }
+    ]
+  },
+  "description": "Runs `npm run typecheck` before every git commit so type errors never slip through. `npm run build` is intentionally excluded — it depends on .env.local (Supabase env vars) that fresh worktrees don't have, and would false-block commits; build verification stays part of the manual PR quality-bar checklist / CI."
+}
