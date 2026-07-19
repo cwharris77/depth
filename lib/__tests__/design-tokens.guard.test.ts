@@ -41,10 +41,8 @@ const MIGRATED_ALLOWLIST = new Set<string>([
   'components/ui/Menu.tsx',
   'components/ui/SegmentedControl.tsx',
   'components/ui/Toggle.tsx',
-  'app/not-found.tsx',
-  'app/team/[id]/loading.tsx',
-  'app/opengraph-image.tsx',
-  'app/team/[id]/opengraph-image.tsx',
+  'app/opengraph-image.tsx', // OG image — server-rendered via next/og ImageResponse, not a client component consuming tokens.ts; literal colors legitimate
+  'app/team/[id]/opengraph-image.tsx', // OG image — server-rendered via next/og ImageResponse, uses dynamic team colors + literal fallback card; not a client-token concern
   'app/globals.css',
   'app/layout.tsx',
   'app/manifest.ts',
