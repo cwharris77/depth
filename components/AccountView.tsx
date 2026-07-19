@@ -11,6 +11,7 @@ import Button from '@/components/ui/Button';
 import Toggle from '@/components/ui/Toggle';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
+import SectionLabel from '@/components/ui/SectionLabel';
 import { colors } from '@/components/ui/tokens';
 
 // The sign-in / account page body (Phase C, auth pass 1; OTP-code sign-in, auth pass 3).
@@ -134,11 +135,14 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
   if (user && justSignedIn) {
     return (
       <div className="flex flex-col items-center gap-5 py-6 text-center">
+        {/* Accent-tinted (not chrome) — 0.3-alpha border matches colors.focusRing exactly; the
+            0.14-alpha fill derives from colors.accent via the house hex+alpha-suffix convention
+            (see PlayerCard/TeamStatsView migrations). */}
         <div
           className="flex h-16 w-16 items-center justify-center rounded-full"
           style={{
-            background: 'rgba(105,190,40,0.14)',
-            border: '1px solid rgba(105,190,40,0.3)',
+            background: `${colors.accent}24`,
+            border: `1px solid ${colors.focusRing}`,
           }}>
           <Check size={30} color={colors.accent} strokeWidth={3} />
         </div>
@@ -163,13 +167,14 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
     const initial = (user.email ?? '?').charAt(0).toUpperCase();
     return (
       <div className="flex flex-col gap-6">
-        {/* Identity */}
+        {/* Identity — bare row, not a card (no bg/border to migrate to Card). */}
         <div className="flex items-center gap-3.5">
+          {/* Same accent-tint derivation as the just-signed-in circle above. */}
           <div
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
             style={{
-              background: 'rgba(105,190,40,0.14)',
-              border: '1px solid rgba(105,190,40,0.3)',
+              background: `${colors.accent}24`,
+              border: `1px solid ${colors.focusRing}`,
             }}>
             <span className="text-lg font-bold" style={{ color: colors.accent }}>
               {initial}
@@ -189,6 +194,8 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
 
         {/* Settings section */}
         <div>
+          {/* Not SectionLabel: deliberately accent-colored for emphasis, unlike SectionLabel's
+              fixed textMuted — SectionLabel's API has no color override. */}
           <div
             className="mb-2.5 text-xs font-bold uppercase tracking-widest"
             style={{ color: colors.accent }}>
@@ -202,7 +209,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
                 style={{ color: colors.textPrimary }}>
                 <Star size={15} color={colors.accent} /> Favorite team
               </label>
-              <p className="mb-0.5 text-[12px]" style={{ color: '#8891a3' }}>
+              <p className="mb-0.5 text-[12px]" style={{ color: colors.textFaint }}>
                 Opens automatically when you start the app.
               </p>
               {settingsLoaded ? (
@@ -268,7 +275,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
             color: colors.textSecondary,
           }}>
           Privacy policy
-          <ChevronRight size={16} color="#5b6478" />
+          <ChevronRight size={16} color={colors.textFaintest} />
         </Link>
 
         <Button variant="secondary" size="sm" onClick={() => getBrowserClient().auth.signOut()}>
@@ -277,16 +284,16 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
 
         {/* Danger zone */}
         <div>
-          <div
-            className="mb-2.5 text-xs font-bold uppercase tracking-widest"
-            style={{ color: '#8891a3' }}>
-            Danger zone
-          </div>
+          <SectionLabel className="mb-2.5 uppercase">Danger zone</SectionLabel>
+          {/* Card doesn't fit: this needs rounded-2xl (Card hardcodes rounded-3xl) and a
+              danger-tinted fill/border that Card's surfaceCard/surfaceCard2 pair can't express.
+              The fill/border colors derive from colors.danger via the house hex+alpha-suffix
+              convention (see PlayerCard/TeamStatsView migrations). */}
           <div
             className="flex flex-col gap-3 rounded-2xl p-4"
             style={{
-              background: 'rgba(255,107,107,0.05)',
-              border: '1px solid rgba(255,107,107,0.22)',
+              background: `${colors.danger}0d`,
+              border: `1px solid ${colors.danger}38`,
             }}>
             {isConfirmingDelete ? (
               <>
@@ -375,6 +382,8 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
           )}
         </div>
 
+        {/* Not Button: this is an inline underlined text link, not a padded/rounded control —
+            Button's variants always render padding + rounded + font-bold, no bare-text style. */}
         <button
           type="button"
           onClick={() => {
