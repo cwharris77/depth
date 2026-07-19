@@ -3,6 +3,10 @@ import typescript from 'typescript-eslint';
 
 export default [
   {
+    // .claude/worktrees mirrors vitest.config.ts's exclude: a stray git worktree checked
+    // out under here (from the harness's worktree tool) is a separate checkout with its
+    // own tsconfig — without this, ESLint's typescript-eslint parser treats its files as
+    // part of this project and throws "tsconfigRootDir ambiguity" parse errors.
     ignores: [
       '.next',
       'node_modules',
@@ -12,6 +16,7 @@ export default [
       '.env.local',
       '.env*.local',
       'supabase/migrations',
+      '.claude/worktrees',
     ],
   },
   js.configs.recommended,
