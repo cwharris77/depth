@@ -7,11 +7,11 @@ import { positionFullName } from '@/lib/positions';
 import { getPlayersByPosition } from '@/lib/roster';
 import { playerDeepLinkPath } from '@/lib/share';
 import { hasSeasonStats, seasonStatColumns } from '@/lib/stat-table';
-import type { Player, PlayerSeasonStats, Position, TeamColors, TeamRoster } from '@/lib/types';
+import type { Player, PlayerSeasonStats, Position, TeamRoster } from '@/lib/types';
 import { AnimatePresence, motion, Reorder, useDragControls, type PanInfo } from 'framer-motion';
 import { Check, GraduationCap, GripVertical, RotateCcw, Share2, X } from 'lucide-react';
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import Avatar from '@/components/ui/Avatar';
 import Badge from '@/components/ui/Badge';
 import StatGrid from '@/components/ui/StatGrid';
 import IconButton from '@/components/ui/IconButton';
@@ -34,51 +34,6 @@ const depthRankLabel: Record<number, string> = {
   2: 'BACKUP',
   3: '3RD STRING',
 };
-
-// Real ESPN headshot when available; falls back to a generic player silhouette
-// (Madden-style default card art) via onError, since a stale/missing ESPN id
-// 404s rather than failing to resolve. Keyed by player.id in the parent so the
-// fallback state resets when a different player is selected. next/image
-// (remote pattern configured in next.config.ts) fetches each headshot once and
-// serves a cached/resized copy from Vercel's edge afterward, instead of
-// hitting ESPN's CDN on every card open.
-function PlayerAvatar({ player, colors }: { player: Player; colors: TeamColors }) {
-  const [errored, setErrored] = useState(false);
-  const photoUrl = player.photoUrl;
-  const showPhoto = Boolean(photoUrl) && !errored;
-
-  return (
-    <div
-      className="shrink-0 rounded-full overflow-hidden flex items-center justify-center"
-      style={{
-        width: 72,
-        height: 72,
-        border: `2px solid ${colors.secondary}`,
-        background: colors.primary,
-        color: readableTextOn(colors.primary),
-      }}>
-      {showPhoto && photoUrl ? (
-        <Image
-          src={photoUrl}
-          alt={player.name}
-          width={72}
-          height={72}
-          className="w-full h-full object-cover"
-          onError={() => setErrored(true)}
-        />
-      ) : (
-        <svg
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          aria-hidden="true"
-          style={{ width: '60%', height: '60%', opacity: 0.7 }}>
-          <circle cx="12" cy="8" r="4" />
-          <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4z" />
-        </svg>
-      )}
-    </div>
-  );
-}
 
 export default function PlayerCard({
   player,
@@ -186,7 +141,7 @@ export default function PlayerCard({
           <motion.div
             className="absolute inset-0 z-40"
             style={{
-              background: 'rgba(0,0,0,0.6)',
+              background: uiTokens.scrim,
               backdropFilter: 'blur(4px)',
             }}
             initial={{ opacity: 0 }}
@@ -198,7 +153,7 @@ export default function PlayerCard({
           <motion.div
             className="absolute bottom-0 left-0 right-0 z-50 rounded-t-3xl overflow-hidden"
             style={{
-              background: 'linear-gradient(180deg, #0f1a2e 0%, #0a0e1a 100%)',
+              background: `linear-gradient(180deg, #0f1a2e 0%, ${uiTokens.bg} 100%)`,
               borderTop: `1px solid ${accent}4d`,
               maxHeight: '82vh',
             }}
@@ -221,7 +176,7 @@ export default function PlayerCard({
                 style={{
                   width: 36,
                   height: 4,
-                  background: 'rgba(255,255,255,0.2)',
+                  background: uiTokens.borderInput,
                 }}
               />
             </div>
@@ -229,7 +184,15 @@ export default function PlayerCard({
             <div className="overflow-y-auto" style={{ maxHeight: 'calc(82vh - 32px)' }}>
               <div className="flex items-start justify-between px-6 pt-4 pb-2">
                 <div className="flex items-start gap-4">
-                  <PlayerAvatar key={player.id} player={player} colors={colors} />
+                  <Avatar
+                    key={player.id}
+                    photoUrl={player.photoUrl}
+                    name={player.name}
+                    size={72}
+                    ringColor={accent}
+                    fillColor={colors.primary}
+                    iconColor={readableTextOn(colors.primary)}
+                  />
                   <div>
                     <div
                       className="text-6xl font-black leading-none"
@@ -398,8 +361,8 @@ export default function PlayerCard({
                   <div
                     className="rounded-2xl overflow-hidden"
                     style={{
-                      background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(255,255,255,0.06)',
+                      background: uiTokens.surfaceCard2,
+                      border: `1px solid ${uiTokens.borderDefault}`,
                     }}>
                     {editing && onReorder ? (
                       <Reorder.Group
@@ -414,7 +377,7 @@ export default function PlayerCard({
                             className="flex items-center gap-3 px-4 py-3"
                             style={{
                               background: p.id === player.id ? `${accent}1a` : 'transparent',
-                              borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)',
+                              borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}`,
                               cursor: 'grab',
                               touchAction: 'none',
                             }}>
@@ -456,7 +419,7 @@ export default function PlayerCard({
                             className="w-full flex items-center gap-3 px-4 py-3 text-left"
                             style={{
                               background: isCurrent ? `${accent}1a` : 'transparent',
-                              borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)',
+                              borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}`,
                               touchAction: 'manipulation',
                               cursor: isCurrent ? 'default' : 'pointer',
                             }}>
@@ -502,14 +465,14 @@ export default function PlayerCard({
                   <div
                     className="rounded-2xl overflow-hidden"
                     style={{
-                      background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(255,255,255,0.06)',
+                      background: uiTokens.surfaceCard2,
+                      border: `1px solid ${uiTokens.borderDefault}`,
                     }}>
                     <div
                       className="grid gap-x-2 px-2.5 py-2"
                       style={{
                         gridTemplateColumns: `minmax(40px, 0.7fr) repeat(${statColumns.length}, 1fr)`,
-                        borderBottom: '1px solid rgba(255,255,255,0.06)',
+                        borderBottom: `1px solid ${uiTokens.borderDefault}`,
                       }}>
                       <div
                         className="text-[8.5px] font-bold"
@@ -531,7 +494,7 @@ export default function PlayerCard({
                         className="grid gap-x-2 px-2.5 py-[9px] text-[11px] font-bold"
                         style={{
                           gridTemplateColumns: `minmax(40px, 0.7fr) repeat(${statColumns.length}, 1fr)`,
-                          borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)',
+                          borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}`,
                           background: i === 0 ? `${accent}0d` : 'transparent',
                         }}>
                         <div style={{ color: i === 0 ? accent : uiTokens.textPrimary }}>
