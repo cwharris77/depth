@@ -11,6 +11,7 @@ import { readableTextOn } from '@/lib/colors';
 import { ordinal } from '@/lib/format';
 import TeamPageHeader from './TeamPageHeader';
 import { colors as uiTokens } from '@/components/ui/tokens';
+import SectionLabel from '@/components/ui/SectionLabel';
 
 interface Props {
   team: TeamMeta;
@@ -124,7 +125,7 @@ export default function TeamStatsView({
       <div
         className="flex items-center gap-1.5 px-2.5 py-2.5 overflow-x-auto"
         style={{
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          borderBottom: `1px solid ${uiTokens.borderStrong}`,
           background: uiTokens.bgFilterbar,
           scrollbarWidth: 'none',
         }}>
@@ -143,7 +144,7 @@ export default function TeamStatsView({
                 style={{
                   background: isSelected ? uiAccent : 'transparent',
                   color: isSelected ? uiTokens.bg : uiTokens.textMuted,
-                  border: `1px solid ${isSelected ? uiAccent : 'rgba(255,255,255,0.15)'}`,
+                  border: `1px solid ${isSelected ? uiAccent : uiTokens.borderInput}`,
                 }}>
                 {isLatest && (
                   <span
@@ -165,7 +166,7 @@ export default function TeamStatsView({
             style={{
               background: clampedIndex === -1 ? uiAccent : 'transparent',
               color: clampedIndex === -1 ? uiTokens.bg : uiTokens.textMuted,
-              border: `1px dashed ${clampedIndex === -1 ? uiAccent : 'rgba(255,255,255,0.3)'}`,
+              border: `1px dashed ${clampedIndex === -1 ? uiAccent : uiTokens.borderInput}`,
             }}>
             {nextSeasonLabel}
           </button>
@@ -200,7 +201,7 @@ export default function TeamStatsView({
           {/* Hero record */}
           <div
             className="mt-0.5 flex items-baseline justify-between px-5 pb-[18px] pt-2"
-            style={{ borderBottom: '1px dashed rgba(255,255,255,0.2)' }}>
+            style={{ borderBottom: `1px dashed ${uiTokens.borderInput}` }}>
             <div className="text-[52px] font-bold leading-none tracking-[-0.02em]">{record}</div>
             <div className="text-right">
               <div className="text-[13px] font-bold" style={{ color: uiAccent }}>
@@ -218,12 +219,12 @@ export default function TeamStatsView({
           <div className="px-5">
             <table className="mt-1.5 w-full border-collapse text-xs">
               <tbody>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <tr style={{ borderBottom: `1px solid ${uiTokens.borderStrong}` }}>
                   <StatCell label="HOME" value={wl(active.homeWins, active.homeLosses)} />
                   <td className="w-6" />
                   <StatCell label="ROAD" value={wl(active.roadWins, active.roadLosses)} />
                 </tr>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <tr style={{ borderBottom: `1px solid ${uiTokens.borderStrong}` }}>
                   <StatCell label="DIV" value={wl(active.divisionWins, active.divisionLosses)} />
                   <td className="w-6" />
                   <StatCell
@@ -231,7 +232,7 @@ export default function TeamStatsView({
                     value={wl(active.conferenceWins, active.conferenceLosses)}
                   />
                 </tr>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <tr style={{ borderBottom: `1px solid ${uiTokens.borderStrong}` }}>
                   <StatCell label="PF" value={String(active.pointsFor)} />
                   <td className="w-6" />
                   <StatCell label="PA" value={String(active.pointsAgainst)} />
@@ -257,7 +258,7 @@ export default function TeamStatsView({
               0-0 record (invariant 6). */}
           <div
             className="mt-0.5 px-5 pb-[18px] pt-2"
-            style={{ borderBottom: '1px dashed rgba(255,255,255,0.2)' }}>
+            style={{ borderBottom: `1px dashed ${uiTokens.borderInput}` }}>
             <div className="text-[28px] font-bold leading-tight tracking-[-0.01em]">
               New head coach
             </div>
@@ -279,7 +280,7 @@ export default function TeamStatsView({
         <div className="px-[18px] pt-3.5">
           <div
             className="flex items-center justify-between rounded-2xl px-3.5 py-3"
-            style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${uiAccent}33` }}>
+            style={{ background: uiTokens.surfaceRaised, border: `1px solid ${uiAccent}33` }}>
             <div>
               <div
                 className="text-[9px] font-bold tracking-[0.08em]"
@@ -308,22 +309,22 @@ export default function TeamStatsView({
 
       {leaderRows.length > 0 && leaders && (
         <div className="px-5 pb-7 pt-1">
-          <div
-            className="mb-2 text-[10px] font-bold tracking-[0.1em]"
-            style={{ color: uiTokens.textMuted }}>
-            ROSTER LEADERS · {leaders.season}
-          </div>
+          <SectionLabel className="mb-2">ROSTER LEADERS · {leaders.season}</SectionLabel>
+          {/* Card doesn't fit here: needs rounded-2xl + overflow-hidden clip + zero
+              padding (rows supply their own), none of which Card's API exposes
+              (rounded-3xl only, no clip variant, padding=16 default) — plain div with
+              tokenized colors instead, same deviation pattern as PlayerCard's task. */}
           <div
             className="overflow-hidden rounded-2xl"
             style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.06)',
+              background: uiTokens.surfaceCard2,
+              border: `1px solid ${uiTokens.borderSubtle}`,
             }}>
             {leaderRows.map(({ label, leader }, i) => (
               <div
                 key={label}
                 className="flex items-center justify-between gap-3 px-3.5 py-2.5"
-                style={{ borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)' }}>
+                style={{ borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}` }}>
                 <div className="min-w-0">
                   <div
                     className="text-[9px] font-bold tracking-[0.06em]"

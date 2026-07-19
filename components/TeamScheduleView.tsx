@@ -9,6 +9,7 @@ import type { TeamMeta } from '@/lib/roster-source';
 import type { TeamSchedule, TeamScheduleGame } from '@/lib/types';
 import { readableTextOn } from '@/lib/colors';
 import TeamPageHeader from './TeamPageHeader';
+import Badge from '@/components/ui/Badge';
 import { colors as uiTokens } from '@/components/ui/tokens';
 
 interface Props {
@@ -34,20 +35,12 @@ const RESULT_COLOR: Record<'W' | 'L' | 'T', string> = {
   T: uiTokens.textMuted,
 };
 
-function GameCard({
-  game,
-  uiAccent,
-  onAccent,
-}: {
-  game: TeamScheduleGame;
-  uiAccent: string;
-  onAccent: string;
-}) {
+function GameCard({ game, uiAccent }: { game: TeamScheduleGame; uiAccent: string }) {
   if (game.isBye) {
     return (
       <div
         className="flex min-h-[104px] flex-col items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-center"
-        style={{ border: '1px dashed rgba(255,255,255,0.25)' }}>
+        style={{ border: `1px dashed ${uiTokens.borderInput}` /* nearest token to 0.25 alpha */ }}>
         <div
           className="text-[9px] font-bold tracking-[0.06em]"
           style={{ color: uiTokens.textFaint }}>
@@ -67,8 +60,8 @@ function GameCard({
     <div
       className="flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5"
       style={{
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: uiTokens.surfaceCard2,
+        border: `1px solid ${uiTokens.borderDefault}`,
       }}>
       <div className="text-[9px] font-bold tracking-[0.06em]" style={{ color: uiTokens.textFaint }}>
         WEEK {game.week}
@@ -82,7 +75,10 @@ function GameCard({
                 border: `1px solid ${opp.colors.secondary}`,
                 color: readableTextOn(opp.colors.primary),
               }
-            : { background: 'rgba(255,255,255,0.08)', color: uiTokens.textMuted }
+            : {
+                background: uiTokens.surfaceChip /* nearest token to 0.08 alpha */,
+                color: uiTokens.textMuted,
+              }
         }>
         {opp?.abbrev ?? '—'}
       </div>
@@ -100,15 +96,9 @@ function GameCard({
           <div className="text-[10px] font-bold" style={{ color: uiTokens.textMuted }}>
             {formatGameDate(game.date)}
           </div>
-          <div
-            className="rounded-full px-2 py-0.5 text-[8px] font-bold tracking-[0.06em]"
-            style={
-              game.isHome
-                ? { background: uiAccent, color: onAccent }
-                : { background: 'rgba(255,255,255,0.08)', color: uiTokens.textMuted }
-            }>
+          <Badge kind="tag" accent={game.isHome ? uiAccent : uiTokens.textMuted}>
             {game.isHome ? 'HOME' : 'AWAY'}
-          </div>
+          </Badge>
         </>
       )}
     </div>
@@ -116,7 +106,7 @@ function GameCard({
 }
 
 export default function TeamScheduleView({ team, teams, schedule }: Props) {
-  const { uiAccent, onAccent } = team.colors;
+  const { uiAccent } = team.colors;
 
   const header = (
     <div
@@ -149,7 +139,7 @@ export default function TeamScheduleView({ team, teams, schedule }: Props) {
       </div>
       <div className="grid grid-cols-3 gap-2 px-3.5 pb-6 pt-2">
         {schedule.games.map((game) => (
-          <GameCard key={game.week} game={game} uiAccent={uiAccent} onAccent={onAccent} />
+          <GameCard key={game.week} game={game} uiAccent={uiAccent} />
         ))}
       </div>
     </div>
