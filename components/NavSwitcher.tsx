@@ -1,6 +1,8 @@
 'use client';
 
+import Avatar from '@/components/ui/Avatar';
 import IconButton from '@/components/ui/IconButton';
+import SectionLabel from '@/components/ui/SectionLabel';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import { readableTextOn } from '@/lib/colors';
@@ -8,7 +10,6 @@ import type { TeamMeta } from '@/lib/roster-source';
 import type { PlayerHit } from '@/lib/search';
 import type { Conference, Player } from '@/lib/types';
 import { Check, CornerDownLeft, Search, X } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
@@ -25,52 +26,6 @@ function groupByDivision(teams: TeamMeta[], conference: Conference) {
       .filter((t) => t.conference === conference && t.division === division)
       .sort((a, b) => a.city.localeCompare(b.city)),
   })).filter((g) => g.teams.length > 0);
-}
-
-function SectionLabel({ children }: { children: string }) {
-  return (
-    <div
-      className="text-[10px] font-semibold tracking-widest px-5 py-2"
-      style={{ color: uiTokens.textMuted }}>
-      {children}
-    </div>
-  );
-}
-
-function PlayerAvatar({ hit }: { hit: PlayerHit }) {
-  const [errored, setErrored] = useState(false);
-  const photoUrl = hit.photoUrl;
-  const showPhoto = Boolean(photoUrl) && !errored;
-  return (
-    <div
-      className="shrink-0 rounded-full overflow-hidden flex items-center justify-center"
-      style={{
-        width: 36,
-        height: 36,
-        background: 'rgba(255,255,255,0.06)',
-        border: '1px solid rgba(255,255,255,0.12)',
-      }}>
-      {showPhoto && photoUrl ? (
-        <Image
-          src={photoUrl}
-          alt={hit.name}
-          width={36}
-          height={36}
-          className="w-full h-full object-cover"
-          onError={() => setErrored(true)}
-        />
-      ) : (
-        <svg
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          aria-hidden="true"
-          style={{ width: '60%', height: '60%', opacity: 0.5, color: uiTokens.textMuted }}>
-          <circle cx="12" cy="8" r="4" />
-          <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4z" />
-        </svg>
-      )}
-    </div>
-  );
 }
 
 function TeamRow({
@@ -108,7 +63,7 @@ function TeamRow({
         pointerEvents: disabled ? 'none' : undefined,
         opacity: disabled ? 0.5 : 1,
         background: highlighted
-          ? 'rgba(255,255,255,0.06)'
+          ? uiTokens.surfaceRaised
           : isCurrent
             ? `${team.colors.primary}1a`
             : 'transparent',
@@ -161,9 +116,9 @@ function PlayerRow({
       style={{
         touchAction: 'manipulation',
         opacity: disabled ? 0.5 : 1,
-        background: highlighted ? 'rgba(255,255,255,0.06)' : 'transparent',
+        background: highlighted ? uiTokens.surfaceRaised : 'transparent',
       }}>
-      <PlayerAvatar hit={hit} />
+      <Avatar photoUrl={hit.photoUrl} name={hit.name} size={36} />
       <div className="flex-1 min-w-0">
         <div className="text-sm font-bold truncate" style={{ color: uiTokens.textPrimary }}>
           {hit.name}
@@ -364,7 +319,7 @@ export default function NavSwitcher({
         <div
           className="flex items-center gap-2 rounded-xl px-3 transition-shadow duration-150"
           style={{
-            background: 'rgba(255,255,255,0.06)',
+            background: uiTokens.surfaceInput,
             border: `1px solid ${accentColor}55`,
             boxShadow: searchFocused ? `0 0 0 3px ${accentColor}4d` : 'none',
           }}>
@@ -382,7 +337,7 @@ export default function NavSwitcher({
           />
           <span
             className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold"
-            style={{ background: 'rgba(255,255,255,0.08)', color: uiTokens.textMuted }}>
+            style={{ background: uiTokens.surfaceChip, color: uiTokens.textMuted }}>
             ESC
           </span>
         </div>
@@ -412,8 +367,8 @@ export default function NavSwitcher({
               <div
                 className="mx-5 rounded-2xl overflow-hidden divide-y divide-white/5"
                 style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.06)',
+                  background: uiTokens.surfaceCard2,
+                  border: `1px solid ${uiTokens.borderSubtle}`,
                 }}>
                 {g.teams.map((t) => (
                   <TeamRow
@@ -458,8 +413,8 @@ export default function NavSwitcher({
                 <div
                   className="mx-5 rounded-2xl overflow-hidden divide-y divide-white/5"
                   style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.06)',
+                    background: uiTokens.surfaceCard2,
+                    border: `1px solid ${uiTokens.borderSubtle}`,
                   }}>
                   {teamResults.map((t, i) => (
                     <TeamRow
