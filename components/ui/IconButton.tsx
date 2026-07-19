@@ -36,7 +36,7 @@ export default function IconButton({
   const style =
     variant === 'chrome'
       ? { background: active ? `${accent}26` : colors.surfaceChip, border: `1px solid ${accent}40` }
-      : { background: active ? `${accent}26` : 'rgba(255,255,255,0.08)', border: 'none' };
+      : { background: active ? `${accent}26` : colors.borderDefault, border: 'none' };
   return (
     <button
       type="button"

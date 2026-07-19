@@ -1,5 +1,6 @@
 import IOSInstallHint from '@/components/IOSInstallHint';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
+import { colors } from '@/components/ui/tokens';
 import { VercelToolbar } from '@vercel/toolbar/next';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono, Anton } from 'next/font/google';
@@ -34,10 +35,10 @@ export const metadata: Metadata = {
     'Interactive, mobile-first NFL depth charts. Pick a team and explore the roster on the field.',
 };
 
-// The UI is dark everywhere (bg #0a0e1a), so pin the mobile browser chrome and native
+// The UI is dark everywhere (colors.bg), so pin the mobile browser chrome and native
 // controls to match instead of flashing default white.
 export const viewport: Viewport = {
-  themeColor: '#0a0e1a',
+  themeColor: colors.bg,
   colorScheme: 'dark',
   // Extend the layout under the notch/home-indicator so env(safe-area-inset-*) resolves to
   // real values in the standalone PWA — the header (safe-area-inset-top) and field bottom

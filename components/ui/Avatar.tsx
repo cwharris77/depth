@@ -43,7 +43,7 @@ export default function Avatar({
       style={{
         width: size,
         height: size,
-        border: ringColor ? `2px solid ${ringColor}` : '1px solid rgba(255,255,255,0.12)',
+        border: ringColor ? `2px solid ${ringColor}` : `1px solid ${colors.surfaceChipHover}`,
         background: fillColor,
         color: iconColor,
       }}>

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { colors } from '@/components/ui/tokens';
 
 interface FullScreenSheetProps {
   isOpen: boolean;
@@ -19,7 +20,7 @@ export default function FullScreenSheet({ isOpen, children }: FullScreenSheetPro
         <motion.div
           className="absolute inset-0 z-50 flex flex-col"
           style={{
-            background: 'linear-gradient(180deg, #0f1a2e 0%, #0a0e1a 100%)',
+            background: `linear-gradient(180deg, #0f1a2e 0%, ${colors.bg} 100%)`,
             paddingTop: 'max(env(safe-area-inset-top), 12px)',
           }}
           initial={{ y: '-100%' }}

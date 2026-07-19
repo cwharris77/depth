@@ -67,7 +67,7 @@ export default function SegmentedControl({
         const active = opt.value === value;
         const itemClass = `${sz.item} font-bold ${fullWidth ? 'flex-1 text-center' : ''}`;
         const itemStyle = {
-          background: active ? (flat ? 'rgba(255,255,255,0.12)' : activeColor) : 'transparent',
+          background: active ? (flat ? colors.surfaceChipHover : activeColor) : 'transparent',
           color: active ? (flat ? colors.textPrimary : activeTextColor) : colors.textMuted,
           border: active && !flat ? `1px solid ${activeTextColor}66` : '1px solid transparent',
           opacity: disabled && !active ? 0.5 : 1,
