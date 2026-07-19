@@ -18,7 +18,7 @@ import { rosterShareUrlPath } from '@/lib/share';
 import type { Player, Position, TeamRoster, Unit } from '@/lib/types';
 import { useUser } from '@/lib/use-user';
 import { Check, MoreHorizontal, RotateCcw, Share2, Shirt } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ApplyKitFromQuery from './ApplyKitFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
 import BottomSheet from './BottomSheet';
@@ -29,6 +29,8 @@ import SharedBoardBanner from './SharedBoardBanner';
 import TeamPageHeader from './TeamPageHeader';
 import UniformSheet from './UniformSheet';
 import { colors as uiTokens } from '@/components/ui/tokens';
+import Menu from '@/components/ui/Menu';
+import TabBar from '@/components/ui/TabBar';
 
 const UNIT_LABELS: Record<Unit, string> = {
   offense: 'Offense',
@@ -49,18 +51,6 @@ export default function DepthChartField({
   const [activeUnit, setActiveUnit] = useState<Unit>('offense');
   const [kitOpen, setKitOpen] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
-
-  // Uniform picker + share collapse into a single "•••" menu (design spec 5a).
-  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
-  const moreMenuRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!moreMenuOpen) return;
-    const handlePointerDown = (e: MouseEvent) => {
-      if (!moreMenuRef.current?.contains(e.target as Node)) setMoreMenuOpen(false);
-    };
-    document.addEventListener('mousedown', handlePointerDown);
-    return () => document.removeEventListener('mousedown', handlePointerDown);
-  }, [moreMenuOpen]);
 
   const { team } = roster;
 
@@ -243,77 +233,39 @@ export default function DepthChartField({
             don't read as duplicate controls (design spec 5a). */}
         <div
           className="flex items-center justify-between mt-5"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <div className="flex gap-4">
-            {(['offense', 'defense', 'special'] as const).map((unit) => (
-              <button
-                key={unit}
-                onClick={() => {
-                  setActiveUnit(unit);
-                  setSelectedPlayer(null);
-                }}
-                className="pb-2.5 text-[11px] font-bold"
-                style={{
-                  borderBottom: `2px solid ${activeUnit === unit ? activeColors.uiAccent : 'transparent'}`,
-                  color: activeUnit === unit ? uiTokens.textPrimary : uiTokens.textFaint,
-                  touchAction: 'manipulation',
-                }}>
-                {UNIT_LABELS[unit].toUpperCase()}
-              </button>
-            ))}
-          </div>
-          <div className="relative pb-2.5" ref={moreMenuRef}>
-            <button
-              type="button"
-              onClick={() => setMoreMenuOpen((open) => !open)}
-              aria-label="More options"
-              aria-expanded={moreMenuOpen}
-              className="flex items-center justify-center px-1"
-              style={{ touchAction: 'manipulation', color: uiTokens.textMuted }}>
-              <MoreHorizontal size={16} />
-            </button>
-            {moreMenuOpen && (
-              <div
-                className="absolute right-0 top-full mt-1 rounded-xl overflow-hidden z-10"
-                style={{
-                  background: '#161c2c',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  minWidth: 168,
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-                }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMoreMenuOpen(false);
-                    setKitOpen(true);
-                  }}
-                  className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-[12px] font-semibold whitespace-nowrap"
-                  style={{ color: uiTokens.textPrimary, touchAction: 'manipulation' }}>
-                  <Shirt size={14} color={activeColors.uiAccent} />
-                  Choose uniform
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMoreMenuOpen(false);
-                    handleShareRoster();
-                  }}
-                  className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-[12px] font-semibold whitespace-nowrap"
-                  style={{
-                    color: uiTokens.textPrimary,
-                    borderTop: '1px solid rgba(255,255,255,0.08)',
-                    touchAction: 'manipulation',
-                  }}>
-                  {shareCopied ? (
-                    <Check size={14} color={activeColors.uiAccent} strokeWidth={3} />
-                  ) : (
-                    <Share2 size={14} color={activeColors.uiAccent} />
-                  )}
-                  {shareCopied ? 'Link copied' : 'Share roster'}
-                </button>
-              </div>
-            )}
-          </div>
+          style={{ borderBottom: `1px solid ${uiTokens.borderDefault}` }}>
+          <TabBar
+            options={(['offense', 'defense', 'special'] as const).map((unit) => ({
+              value: unit,
+              label: UNIT_LABELS[unit].toUpperCase(),
+            }))}
+            value={activeUnit}
+            onChange={(v) => {
+              setActiveUnit(v as Unit);
+              setSelectedPlayer(null);
+            }}
+            activeColor={activeColors.uiAccent}
+          />
+          <Menu
+            ariaLabel="More options"
+            trigger={<MoreHorizontal size={16} />}
+            items={[
+              {
+                icon: <Shirt size={14} color={activeColors.uiAccent} />,
+                label: 'Choose uniform',
+                onClick: () => setKitOpen(true),
+              },
+              {
+                icon: shareCopied ? (
+                  <Check size={14} color={activeColors.uiAccent} strokeWidth={3} />
+                ) : (
+                  <Share2 size={14} color={activeColors.uiAccent} />
+                ),
+                label: shareCopied ? 'Link copied' : 'Share roster',
+                onClick: handleShareRoster,
+              },
+            ]}
+          />
         </div>
         {/* Tells the user this team's depth is their custom order, with one-tap revert.
             Hidden while previewing a shared board — that order isn't theirs to reset. */}
@@ -357,7 +309,7 @@ export default function DepthChartField({
             minHeight: 0,
             background:
               'linear-gradient(180deg, #1e3d10 0%, #2d5a1b 40%, #2d5a1b 60%, #1e3d10 100%)',
-            boxShadow: 'inset 0 0 60px rgba(0,0,0,0.4), 0 4px 32px rgba(0,0,0,0.6)',
+            boxShadow: `inset 0 0 60px ${uiTokens.scrimLight}, 0 4px 32px ${uiTokens.scrim}`,
           }}>
           <FieldMarkings />
 
@@ -428,7 +380,7 @@ function FieldMarkings() {
           y1={y}
           x2="100"
           y2={y}
-          stroke="rgba(255,255,255,0.10)"
+          stroke={uiTokens.borderStrong}
           strokeWidth="0.4"
         />
       ))}
@@ -440,8 +392,22 @@ function FieldMarkings() {
       {/* hash marks */}
       {[15, 25, 35, 45, 55, 65, 75, 85].map((y) => (
         <g key={`hash-${y}`}>
-          <line x1="32" y1={y} x2="35" y2={y} stroke="rgba(255,255,255,0.12)" strokeWidth="0.4" />
-          <line x1="65" y1={y} x2="68" y2={y} stroke="rgba(255,255,255,0.12)" strokeWidth="0.4" />
+          <line
+            x1="32"
+            y1={y}
+            x2="35"
+            y2={y}
+            stroke={uiTokens.surfaceChipHover}
+            strokeWidth="0.4"
+          />
+          <line
+            x1="65"
+            y1={y}
+            x2="68"
+            y2={y}
+            stroke={uiTokens.surfaceChipHover}
+            strokeWidth="0.4"
+          />
         </g>
       ))}
     </svg>
