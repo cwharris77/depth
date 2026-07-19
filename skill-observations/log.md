@@ -108,3 +108,29 @@ caller, not a contract — a new caller in a tighter context extends the primiti
 **Principle:** Reusing a shared component means fitting it to the constraint envelope of
 all its callers, not just the one it was born for; the correct response to "the shared
 component doesn't fit here" is a new prop on the component, not a bespoke re-implementation.
+
+### Observation 7: Spec-location default sent the agent to the wrong repo until corrected
+
+**Status:** OPEN
+**Date:** 2026-07-18
+**Session context:** Brainstorming a whole-app design-system migration for depth; about to write
+the spec.
+
+**Skill:** superpowers:brainstorming
+**Type:** open-source
+**Phase/Area:** "After the Design → Documentation" (spec write location)
+
+**Issue:** The brainstorming skill defaults specs to `docs/superpowers/specs/` and depth's own
+`CLAUDE.md` repeats that, so the agent proposed writing the spec into the code repo. The user
+corrected it: specs/tickets/plans live in a separate Obsidian vault (the repo copies are synced,
+vault is source of truth). The skill does note "User preferences for spec location override this
+default," but nothing prompts the agent to *look for* a canonical docs location before defaulting.
+
+**Suggested improvement:** In the Documentation step, add a pre-write check: before writing to the
+default path, look for a project-specific docs/spec home (a linked knowledge vault, a docs repo, a
+`CLAUDE.md`/`AGENTS.md` pointer) and confirm the location if one is ambiguous — especially when
+a sibling knowledge repo is present. Cheaper than writing to the wrong place and moving it.
+
+**Principle:** A "where does the deliverable live" default should be a *last resort* after checking
+for a project's canonical home, not the first move — docs frequently live outside the code repo,
+and the repo's own instructions can point at a synced copy rather than the source of truth.
