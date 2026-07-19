@@ -19,7 +19,7 @@ export default function FilterPill({ active, onClick, children }: FilterPillProp
       className={`shrink-0 rounded-full px-3 py-1.5 text-xs ${active ? 'font-semibold' : 'font-normal'}`}
       style={{
         background: active ? colors.accent : colors.surfaceChip,
-        color: active ? colors.onAccent : '#c8cdd6',
+        color: active ? colors.onAccent : colors.textSecondary,
         border: 'none',
         touchAction: 'manipulation',
       }}>

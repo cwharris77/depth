@@ -9,7 +9,7 @@ type Size = 'md' | 'sm';
 const VARIANTS: Record<Variant, { background: string; color: string; border: string }> = {
   primary: { background: colors.accent, color: colors.onAccent, border: 'none' },
   secondary: {
-    background: 'rgba(255,255,255,0.06)',
+    background: colors.surfaceInput,
     color: colors.textSecondary,
     border: `1px solid ${colors.borderInput}`,
   },
