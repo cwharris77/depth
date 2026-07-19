@@ -22,7 +22,6 @@ const MIGRATED_ALLOWLIST = new Set<string>([
   'components/AccountView.tsx',
   'components/NavSwitcher.tsx',
   'components/DepthChartField.tsx',
-  'components/TeamScheduleView.tsx',
   'components/UniformArchive.tsx',
   'components/UniformSheet.tsx',
   'components/NavDrawer.tsx',
