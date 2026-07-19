@@ -14,25 +14,13 @@ const BLACK_ALPHA = /rgba\(0,\s*0,\s*0,/i;
 const ROOTS = ['components', 'app'];
 const EXEMPT = new Set(['components/ui/tokens.ts']);
 
-// Files not yet migrated. DELETE your file here as part of its surface task.
-// NOTE: components/ui/Menu.tsx has intentional component-level boxShadow (not a surface file).
+// Permanently-exempt files only, each with its own justifying comment — every file that
+// was "not yet migrated" during the design-system migration has since been closed out.
 const MIGRATED_ALLOWLIST = new Set<string>([
-  'components/BottomSheet.tsx',
-  'components/FullScreenSheet.tsx',
-  'components/ui/Avatar.tsx',
-  'components/ui/Button.tsx',
-  'components/ui/FilterPill.tsx',
-  'components/ui/IconButton.tsx',
-  'components/ui/Menu.tsx',
-  'components/ui/SegmentedControl.tsx',
-  'components/ui/Toggle.tsx',
-  'app/not-found.tsx',
-  'app/team/[id]/loading.tsx',
-  'app/opengraph-image.tsx',
-  'app/team/[id]/opengraph-image.tsx',
-  'app/globals.css',
-  'app/layout.tsx',
-  'app/manifest.ts',
+  'components/ui/Menu.tsx', // intentional component-level boxShadow, no matching token exists
+  'app/opengraph-image.tsx', // OG image — server-rendered via next/og ImageResponse, not a client component consuming tokens.ts; literal colors legitimate
+  'app/team/[id]/opengraph-image.tsx', // OG image — server-rendered via next/og ImageResponse, uses dynamic team colors + literal fallback card; not a client-token concern
+  'app/globals.css', // plain CSS, cannot import tokens.ts (a TS module) — this file is tokens.ts's own source of truth
 ]);
 
 function walk(dir: string, out: string[] = []): string[] {

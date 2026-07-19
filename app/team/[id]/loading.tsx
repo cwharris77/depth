@@ -23,12 +23,12 @@ export default function Loading() {
           <DepthMark color={uiTokens.textMuted} />
           <div
             className="rounded-full"
-            style={{ width: 140, height: 30, background: 'rgba(255,255,255,0.07)' }}
+            style={{ width: 140, height: 30, background: uiTokens.surfaceChip }}
           />
         </div>
         <div
           className="rounded-xl mt-6"
-          style={{ width: 180, height: 34, background: 'rgba(255,255,255,0.07)' }}
+          style={{ width: 180, height: 34, background: uiTokens.surfaceChip }}
         />
       </div>
 
@@ -46,7 +46,7 @@ export default function Loading() {
             minHeight: 0,
             background:
               'linear-gradient(180deg, #1e3d10 0%, #2d5a1b 40%, #2d5a1b 60%, #1e3d10 100%)',
-            boxShadow: 'inset 0 0 60px rgba(0,0,0,0.4), 0 4px 32px rgba(0,0,0,0.6)',
+            boxShadow: `inset 0 0 60px ${uiTokens.scrimLight}, 0 4px 32px ${uiTokens.scrim}`,
           }}
         />
       </div>
