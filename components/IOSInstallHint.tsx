@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { X } from 'lucide-react';
 import {
   dismissInstallHint,
   hasDismissedInstallHint,
   isIOSSafari,
   isStandaloneDisplay,
 } from '@/lib/ios-install-hint';
+import { colors as uiTokens } from '@/components/ui/tokens';
+import IconButton from '@/components/ui/IconButton';
 
 // One-time hint for iOS Safari visitors pointing at Share -> Add to Home Screen. iOS Safari has
 // no native install prompt (`beforeinstallprompt` is Chromium-only), so without this the PWA
@@ -43,10 +46,10 @@ export default function IOSInstallHint() {
           className="fixed inset-x-3 z-50 flex items-center gap-3 rounded-xl px-4 py-3 text-[13px]"
           style={{
             bottom: 'max(env(safe-area-inset-bottom), 12px)',
-            color: '#dfe5f0',
-            background: 'linear-gradient(180deg, #131a2b 0%, #0a0e1a 100%)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+            color: uiTokens.textSecondary,
+            background: `linear-gradient(180deg, #131a2b 0%, ${uiTokens.bg} 100%)`,
+            border: `1px solid ${uiTokens.surfaceChipHover}`,
+            boxShadow: `0 8px 32px ${uiTokens.scrimLight}`,
           }}
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -57,14 +60,13 @@ export default function IOSInstallHint() {
             <span aria-hidden="true">⎋</span>, then{' '}
             <span className="font-semibold">Add to Home Screen</span>.
           </span>
-          <button
-            type="button"
+          <IconButton
+            icon={<X size={16} color={uiTokens.textSecondary} />}
+            variant="plain"
+            size="sm"
             onClick={dismiss}
-            aria-label="Dismiss install hint"
-            className="shrink-0 rounded-full px-2 py-1 text-[13px] font-bold"
-            style={{ background: 'rgba(255,255,255,0.1)', color: '#dfe5f0' }}>
-            ✕
-          </button>
+            ariaLabel="Dismiss install hint"
+          />
         </motion.div>
       )}
     </AnimatePresence>

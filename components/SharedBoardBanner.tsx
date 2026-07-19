@@ -6,6 +6,7 @@ import Link from 'next/link';
 import type { TeamDepthOverride } from '@/lib/depth-overrides';
 import type { TeamMeta } from '@/lib/roster-source';
 import { resolveBoard, type BoardResolution, type SharedBoard } from '@/lib/shared-board';
+import { colors as uiTokens } from '@/components/ui/tokens';
 
 // The shared-board preview banner (Phase C, share pass). Reads /team/[id]?board=<slug>,
 // resolves it via /api/shares/[slug], and — unlike the old ?order= links, which silently
@@ -79,7 +80,7 @@ function Inner({ currentTeam, teams, accent, onPreview, onApply }: Props) {
               strip();
             }}
             className="rounded-full px-3 py-1 text-[11px] font-bold"
-            style={{ background: accent, color: '#0a0e1a' }}>
+            style={{ background: accent, color: uiTokens.onAccent }}>
             Apply to my chart
           </button>
           <button
@@ -89,7 +90,7 @@ function Inner({ currentTeam, teams, accent, onPreview, onApply }: Props) {
               strip();
             }}
             className="rounded-full px-3 py-1 text-[11px] font-bold"
-            style={{ background: 'rgba(255,255,255,0.1)', color: '#dfe5f0' }}>
+            style={{ background: uiTokens.surfaceChipHover, color: uiTokens.textSecondary }}>
             Dismiss
           </button>
         </div>
@@ -108,7 +109,7 @@ function Inner({ currentTeam, teams, accent, onPreview, onApply }: Props) {
         <Link
           href={`/team/${encodeURIComponent(board.teamId)}?board=${encodeURIComponent(slug ?? '')}`}
           className="shrink-0 rounded-full px-3 py-1 text-[11px] font-bold"
-          style={{ background: accent, color: '#0a0e1a' }}>
+          style={{ background: accent, color: uiTokens.onAccent }}>
           View it
         </Link>
       </Banner>
@@ -123,7 +124,7 @@ function Banner({ accent, children }: { accent: string; children: ReactNode }) {
     <div
       className="mt-3 flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-[12px]"
       style={{
-        color: '#dfe5f0',
+        color: uiTokens.textSecondary,
         background: `${accent}1a`,
         border: `1px solid ${accent}55`,
       }}>
