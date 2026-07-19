@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { colors } from '@/components/ui/tokens';
 
 // Web app manifest for the mobile-first app: when added to a home screen it launches
 // standalone (no browser chrome) with the dark brand colors, matching the theme-color
@@ -11,8 +12,8 @@ export default function manifest(): MetadataRoute.Manifest {
       'Interactive, mobile-first NFL depth charts. Pick a team and explore the roster on the field.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#0a0e1a',
-    theme_color: '#0a0e1a',
+    background_color: colors.bg,
+    theme_color: colors.bg,
     icons: [
       { src: '/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
       { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
