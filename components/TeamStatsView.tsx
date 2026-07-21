@@ -229,9 +229,13 @@ export default function TeamStatsView({
                 HC {incomingCoach.name.toUpperCase()} · INCOMING
               </div>
             )}
-            {clampedIndex === -1 && !incomingCoach && (
+            {/* No coach change — carry the latest season's coach forward rather than a
+                bare "schedule available" placeholder (the coach doesn't reset just
+                because there's no team_stats row yet for the upcoming season). */}
+            {clampedIndex === -1 && !incomingCoach && seasons[0]?.coach && (
               <div className="mt-0.5 text-[11px]" style={{ color: uiTokens.textMuted }}>
-                UPCOMING SEASON · SCHEDULE AVAILABLE
+                HC {seasons[0].coach.name.toUpperCase()} ·{' '}
+                {ordinal(seasons[0].coach.experience + 1).toUpperCase()} SEASON
               </div>
             )}
             {/* Incoming coach but no upcoming season (shouldn't happen, but
