@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { dbRosterSource, getTeamSchedule } from '@/lib/roster-source.db';
+import { nflSeasonState } from '@/lib/nfl-season';
 import TeamScheduleView from '@/components/TeamScheduleView';
 
 type Params = { params: Promise<{ id: string }> };
@@ -42,5 +43,17 @@ export default async function TeamSchedulePage({ params }: Params) {
     notFound();
   }
 
-  return <TeamScheduleView team={team} teams={teams} schedule={schedule} />;
+  // During the off-season, the schedule page shows the upcoming season's games — mark
+  // it so the view can show an "Upcoming" badge (Stats & Analytics P2).
+  const { isOffseason, upcomingSeason } = nflSeasonState();
+  const isUpcoming = isOffseason && schedule !== null && schedule.season === upcomingSeason;
+
+  return (
+    <TeamScheduleView
+      team={team}
+      teams={teams}
+      schedule={schedule}
+      isUpcoming={isUpcoming}
+    />
+  );
 }
