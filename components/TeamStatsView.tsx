@@ -4,20 +4,21 @@
 // multi-season-team-stats-design.md). A client component so the season switcher can hold
 // local state; it receives one team's already-resolved data as a prop (invariant 5) —
 // `seasons` is small (current + up to two prior years), never a fan-out of all-32 data.
-import { useState } from 'react';
-import type { TeamMeta } from '@/lib/roster-source';
-import type { Leader, RosterLeaders, TeamScheduleGame, TeamStats } from '@/lib/types';
+import SectionLabel from '@/components/ui/SectionLabel';
+import { colors as uiTokens } from '@/components/ui/tokens';
 import { readableTextOn } from '@/lib/colors';
 import { ordinal } from '@/lib/format';
+import type { TeamMeta } from '@/lib/roster-source';
+import type { Leader, RosterLeaders, TeamScheduleGame, TeamStats } from '@/lib/types';
+import { useState } from 'react';
 import TeamPageHeader from './TeamPageHeader';
-import { colors as uiTokens } from '@/components/ui/tokens';
-import SectionLabel from '@/components/ui/SectionLabel';
 
 interface Props {
   team: TeamMeta;
   teams: TeamMeta[];
   seasons: TeamStats[];
   incomingCoach?: { name: string };
+  upcomingSeason?: number;
   // Current-roster passing/rushing/receiving leaders (design spec 5a). Null when no
   // player stats are ingested for the team yet; the block is then omitted entirely.
   leaders?: RosterLeaders | null;
@@ -59,6 +60,7 @@ export default function TeamStatsView({
   teams,
   seasons,
   incomingCoach,
+  upcomingSeason,
   leaders,
   nextGame,
 }: Props) {
@@ -86,7 +88,7 @@ export default function TeamStatsView({
     </div>
   );
 
-  if (seasons.length === 0 && !incomingCoach) {
+  if (seasons.length === 0 && !incomingCoach && !upcomingSeason) {
     return (
       <div style={{ minHeight: '100dvh', background: uiTokens.bg, color: uiTokens.textPrimary }}>
         {header}
@@ -97,14 +99,20 @@ export default function TeamStatsView({
     );
   }
 
-  // A team with a brand-new HC who hasn't coached a game for them yet has no season to
-  // attach that person to (docs/superpowers/specs/2026-07-14-season-scoped-head-coach-
-  // design.md) -- index -1 is a separate "incoming coach" chip, not a season, so it's
+  // Index -1 is the upcoming season (exists during the off-season for ALL teams, not
+  // just new-coach teams — Stats & Analytics P2). For teams with an incoming coach,
+  // index -2 is the incoming coach chip (no season stats to attach to yet). Both are
   // clamped independently of the real `seasons` array below.
-  const minIndex = incomingCoach ? -1 : 0;
+  const hasUpcomingChip = !!upcomingSeason;
+  const hasIncomingCoach = !!incomingCoach;
+  const minIndex = hasUpcomingChip ? (hasIncomingCoach ? -2 : -1) : hasIncomingCoach ? -1 : 0;
   const clampedIndex = Math.min(Math.max(index, minIndex), seasons.length - 1);
   const active = clampedIndex >= 0 ? seasons[clampedIndex] : null;
-  const nextSeasonLabel = seasons[0] ? String(seasons[0].season + 1) : 'NEW';
+  const nextSeasonLabel = upcomingSeason
+    ? String(upcomingSeason)
+    : seasons[0]
+      ? String(seasons[0].season + 1)
+      : 'NEW';
 
   const record = active
     ? active.overallTies
@@ -156,9 +164,10 @@ export default function TeamStatsView({
               </button>
             );
           })}
-        {/* Incoming coach — a future season, so it renders after every real chip
-            (docs/superpowers/specs/2026-07-14-season-scoped-head-coach-design.md). */}
-        {incomingCoach && (
+        {/* Upcoming season chip — shown for ALL teams during the off-season, not just
+            new-coach teams (Stats & Analytics P2). Renders after every real season chip
+            and uses the same badge pattern as the schedule page's HOME/AWAY badge. */}
+        {upcomingSeason && (
           <button
             type="button"
             onClick={() => setIndex(-1)}
@@ -168,7 +177,18 @@ export default function TeamStatsView({
               color: clampedIndex === -1 ? uiTokens.bg : uiTokens.textMuted,
               border: `1px dashed ${clampedIndex === -1 ? uiAccent : uiTokens.borderInput}`,
             }}>
-            {nextSeasonLabel}
+            {upcomingSeason}
+            {(clampedIndex === -1 || !hasIncomingCoach) && (
+              <span
+                className="inline-block rounded-full px-1.5 py-[1px] text-[8px] font-bold tracking-[0.04em]"
+                style={{
+                  color: clampedIndex === -1 ? uiTokens.bg : uiAccent,
+                  background: clampedIndex === -1 ? `${uiTokens.bg}33` : `${uiAccent}1a`,
+                  border: `1px solid ${clampedIndex === -1 ? `${uiTokens.bg}55` : `${uiAccent}55`}`,
+                }}>
+                UPCOMING
+              </span>
+            )}
           </button>
         )}
       </div>
@@ -189,10 +209,27 @@ export default function TeamStatsView({
             SEASON
           </div>
         )}
-        {!active && incomingCoach && (
-          <div className="mt-0.5 text-[11px]" style={{ color: uiTokens.textMuted }}>
-            HC {incomingCoach.name.toUpperCase()} · INCOMING
-          </div>
+        {!active && (
+          <>
+            {/* Upcoming season — general off-season chip for all teams */}
+            {clampedIndex === -1 && incomingCoach && (
+              <div className="mt-0.5 text-[11px]" style={{ color: uiTokens.textMuted }}>
+                HC {incomingCoach.name.toUpperCase()} · INCOMING
+              </div>
+            )}
+            {clampedIndex === -1 && !incomingCoach && (
+              <div className="mt-0.5 text-[11px]" style={{ color: uiTokens.textMuted }}>
+                UPCOMING SEASON · SCHEDULE AVAILABLE
+              </div>
+            )}
+            {/* Incoming coach but no upcoming season (shouldn't happen, but
+                defensive: legacy case from before the generalized chip). */}
+            {clampedIndex === -2 && incomingCoach && (
+              <div className="mt-0.5 text-[11px]" style={{ color: uiTokens.textMuted }}>
+                HC {incomingCoach.name.toUpperCase()} · INCOMING
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -250,6 +287,27 @@ export default function TeamStatsView({
             className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
             style={{ color: uiTokens.textFaintest }}>
             {active.season} SEASON · {gamesPlayed} GAMES PLAYED ▸▸▸
+          </div>
+        </>
+      ) : clampedIndex === -1 && upcomingSeason ? (
+        <>
+          {/* Upcoming season view — shown for ALL teams during the off-season, not
+              just new-coach teams (Stats & Analytics P2). Degrade instead of faking a
+              0-0 record (invariant 6) — there are no stats to show yet. */}
+          <div
+            className="mt-0.5 px-5 pb-[18px] pt-2"
+            style={{ borderBottom: `1px dashed ${uiTokens.borderInput}` }}>
+            <div className="text-[28px] font-bold leading-tight tracking-[-0.01em]">
+              {upcomingSeason} season upcoming
+            </div>
+            <div className="mt-1 text-[11px]" style={{ color: uiTokens.textFaint }}>
+              No games played yet this season
+            </div>
+          </div>
+          <div
+            className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
+            style={{ color: uiTokens.textFaintest }}>
+            {upcomingSeason} SEASON · NOT YET STARTED ▸▸▸
           </div>
         </>
       ) : (
