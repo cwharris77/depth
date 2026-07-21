@@ -16,6 +16,7 @@ interface Props {
   team: TeamMeta;
   teams: TeamMeta[];
   schedule: TeamSchedule | null;
+  isUpcoming?: boolean;
 }
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
@@ -105,7 +106,7 @@ function GameCard({ game, uiAccent }: { game: TeamScheduleGame; uiAccent: string
   );
 }
 
-export default function TeamScheduleView({ team, teams, schedule }: Props) {
+export default function TeamScheduleView({ team, teams, schedule, isUpcoming }: Props) {
   const { uiAccent } = team.colors;
 
   const header = (
@@ -131,10 +132,17 @@ export default function TeamScheduleView({ team, teams, schedule }: Props) {
     <div className="bg-background" style={{ minHeight: '100dvh', color: uiTokens.textPrimary }}>
       {header}
       <div className="px-[18px] pb-1 pt-[18px]">
-        <div
-          className="text-[10px] font-bold tracking-[0.1em]"
-          style={{ color: uiTokens.textFaint }}>
-          {schedule.season} SEASON
+        <div className="flex items-center gap-2">
+          <div
+            className="text-[10px] font-bold tracking-[0.1em]"
+            style={{ color: uiTokens.textFaint }}>
+            {schedule.season} SEASON
+          </div>
+          {isUpcoming && (
+            <Badge kind="tag" accent={uiAccent}>
+              UPCOMING
+            </Badge>
+          )}
         </div>
       </div>
       <div className="grid grid-cols-3 gap-2 px-3.5 pb-6 pt-2">

@@ -3,6 +3,7 @@ import type { Database } from './database.types';
 import type { RosterSource, TeamMeta, TeamStatsPage, UniformListing } from './roster-source';
 import { type LeaderEntry, rosterLeaders } from './roster-leaders';
 import { resolveSchedule } from './schedule';
+import { nflSeasonState } from './nfl-season';
 import { type PlayerHit, positionGroupPositions, rankByNameMatch } from './search';
 import type {
   Game,
@@ -375,6 +376,7 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
   if (coachError) throw new Error(`team_coach_seasons query failed: ${coachError.message}`);
   if (!teamRow) return undefined;
 
+  const { upcomingSeason, isOffseason } = nflSeasonState();
   const coachBySeason = new Map((coachRows ?? []).map((row) => [row.season, row]));
   return {
     team: toTeam(teamRow),
@@ -384,6 +386,9 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
       teamRow.coach_name && teamRow.coach_experience === 0
         ? { name: teamRow.coach_name }
         : undefined,
+    // Show an upcoming-season chip for every team during the off-season, not just
+    // new-coach teams (Stats & Analytics P2).
+    upcomingSeason: isOffseason ? upcomingSeason : undefined,
     seasons: (statsRows ?? []).map((row) => toTeamStats(row, coachBySeason)),
   };
 }

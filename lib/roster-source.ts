@@ -49,10 +49,17 @@ export interface UniformListing {
 // this person yet (there's no season for it to belong to), so without this field
 // they'd either be silently missing or wrongly attached to the latest played season.
 // Independent of `seasons` being empty or not.
+//
+// `upcomingSeason` is set for ALL teams during the NFL off-season (roughly Mar–Aug),
+// not just teams with a coaching change. It lets the stats page's season switcher show
+// an upcoming-season chip for every team. `incomingCoach` continues to be the separate
+// ESPN signal for brand-new HCs who haven't coached a game — it coexists with the
+// general upcoming-season chip (a team can have both).
 export interface TeamStatsPage {
   team: TeamMeta;
   seasons: TeamStats[];
   incomingCoach?: { name: string };
+  upcomingSeason?: number;
 }
 
 export interface RosterSource {
