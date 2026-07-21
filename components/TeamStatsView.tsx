@@ -4,14 +4,14 @@
 // multi-season-team-stats-design.md). A client component so the season switcher can hold
 // local state; it receives one team's already-resolved data as a prop (invariant 5) —
 // `seasons` is small (current + up to two prior years), never a fan-out of all-32 data.
-import { useState } from 'react';
-import type { TeamMeta } from '@/lib/roster-source';
-import type { Leader, RosterLeaders, TeamScheduleGame, TeamStats } from '@/lib/types';
+import SectionLabel from '@/components/ui/SectionLabel';
+import { colors as uiTokens } from '@/components/ui/tokens';
 import { readableTextOn } from '@/lib/colors';
 import { ordinal } from '@/lib/format';
+import type { TeamMeta } from '@/lib/roster-source';
+import type { Leader, RosterLeaders, TeamScheduleGame, TeamStats } from '@/lib/types';
+import { useState } from 'react';
 import TeamPageHeader from './TeamPageHeader';
-import { colors as uiTokens } from '@/components/ui/tokens';
-import SectionLabel from '@/components/ui/SectionLabel';
 
 interface Props {
   team: TeamMeta;
@@ -191,23 +191,6 @@ export default function TeamStatsView({
             )}
           </button>
         )}
-        {/* Incoming coach chip — a future season, renders after every real chip and
-            after the upcoming-season chip when both exist
-            (docs/superpowers/specs/2026-07-14-season-scoped-head-coach-design.md). */}
-        {incomingCoach && (
-          <button
-            type="button"
-            onClick={() => setIndex(hasUpcomingChip ? -2 : -1)}
-            className="shrink-0 flex items-center gap-1.5 rounded-[3px] px-3 py-1.5 text-xs font-bold"
-            style={{
-              background: clampedIndex === (hasUpcomingChip ? -2 : -1) ? uiAccent : 'transparent',
-              color:
-                clampedIndex === (hasUpcomingChip ? -2 : -1) ? uiTokens.bg : uiTokens.textMuted,
-              border: `1px dashed ${clampedIndex === (hasUpcomingChip ? -2 : -1) ? uiAccent : uiTokens.borderInput}`,
-            }}>
-            {nextSeasonLabel}
-          </button>
-        )}
       </div>
 
       {/* Team + coach — coach is season-scoped, keyed off the active season row
@@ -318,9 +301,7 @@ export default function TeamStatsView({
               {upcomingSeason} season upcoming
             </div>
             <div className="mt-1 text-[11px]" style={{ color: uiTokens.textFaint }}>
-              {incomingCoach
-                ? `New head coach ${incomingCoach.name}. Season hasn't started yet.`
-                : "Regular season hasn't started yet. Schedule available."}
+              No games played yet this season
             </div>
           </div>
           <div
