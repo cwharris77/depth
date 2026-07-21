@@ -48,12 +48,5 @@ export default async function TeamSchedulePage({ params }: Params) {
   const { isOffseason, upcomingSeason } = nflSeasonState();
   const isUpcoming = isOffseason && schedule !== null && schedule.season === upcomingSeason;
 
-  return (
-    <TeamScheduleView
-      team={team}
-      teams={teams}
-      schedule={schedule}
-      isUpcoming={isUpcoming}
-    />
-  );
+  return <TeamScheduleView team={team} teams={teams} schedule={schedule} isUpcoming={isUpcoming} />;
 }

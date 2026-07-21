@@ -105,13 +105,7 @@ export default function TeamStatsView({
   // clamped independently of the real `seasons` array below.
   const hasUpcomingChip = !!upcomingSeason;
   const hasIncomingCoach = !!incomingCoach;
-  const minIndex = hasUpcomingChip
-    ? hasIncomingCoach
-      ? -2
-      : -1
-    : hasIncomingCoach
-      ? -1
-      : 0;
+  const minIndex = hasUpcomingChip ? (hasIncomingCoach ? -2 : -1) : hasIncomingCoach ? -1 : 0;
   const clampedIndex = Math.min(Math.max(index, minIndex), seasons.length - 1);
   const active = clampedIndex >= 0 ? seasons[clampedIndex] : null;
   const nextSeasonLabel = upcomingSeason
@@ -207,7 +201,8 @@ export default function TeamStatsView({
             className="shrink-0 flex items-center gap-1.5 rounded-[3px] px-3 py-1.5 text-xs font-bold"
             style={{
               background: clampedIndex === (hasUpcomingChip ? -2 : -1) ? uiAccent : 'transparent',
-              color: clampedIndex === (hasUpcomingChip ? -2 : -1) ? uiTokens.bg : uiTokens.textMuted,
+              color:
+                clampedIndex === (hasUpcomingChip ? -2 : -1) ? uiTokens.bg : uiTokens.textMuted,
               border: `1px dashed ${clampedIndex === (hasUpcomingChip ? -2 : -1) ? uiAccent : uiTokens.borderInput}`,
             }}>
             {nextSeasonLabel}
@@ -325,7 +320,7 @@ export default function TeamStatsView({
             <div className="mt-1 text-[11px]" style={{ color: uiTokens.textFaint }}>
               {incomingCoach
                 ? `New head coach ${incomingCoach.name}. Season hasn't started yet.`
-                : 'Regular season hasn\'t started yet. Schedule available.'}
+                : "Regular season hasn't started yet. Schedule available."}
             </div>
           </div>
           <div
