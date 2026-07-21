@@ -19,9 +19,11 @@ interface Props {
   seasons: TeamStats[];
   incomingCoach?: { name: string };
   upcomingSeason?: number;
-  // Current-roster passing/rushing/receiving leaders (design spec 5a). Null when no
-  // player stats are ingested for the team yet; the block is then omitted entirely.
-  leaders?: RosterLeaders | null;
+  // Passing/rushing/receiving leaders per season (design spec 5a), one entry per
+  // `seasons` row at the same index. Null at an index when no player stats are
+  // ingested for that season; the block is then omitted entirely. Re-derived per the
+  // selected season tab, not pinned to the roster's newest season.
+  leadersBySeason?: (RosterLeaders | null)[];
   // The team's next unplayed game (design spec 5a's NEXT GAME card). Null in the
   // offseason / once the season is complete, in which case the card is omitted.
   nextGame?: TeamScheduleGame | null;
@@ -61,24 +63,11 @@ export default function TeamStatsView({
   seasons,
   incomingCoach,
   upcomingSeason,
-  leaders,
+  leadersBySeason,
   nextGame,
 }: Props) {
   const [index, setIndex] = useState(seasons.length > 0 ? 0 : -1);
   const { uiAccent } = team.colors;
-
-  // Passing/rushing/receiving leaders in a fixed order, dropping any category with no
-  // leader (invariant 6 — show nothing, not a zeroed row). Leaders reflect the current
-  // roster's latest season, independent of the season switcher above.
-  const leaderRows: { label: string; leader: Leader }[] = leaders
-    ? (
-        [
-          ['PASSING', leaders.passing],
-          ['RUSHING', leaders.rushing],
-          ['RECEIVING', leaders.receiving],
-        ] as const
-      ).flatMap(([label, leader]) => (leader ? [{ label, leader }] : []))
-    : [];
 
   const header = (
     <div
@@ -108,6 +97,29 @@ export default function TeamStatsView({
   const minIndex = hasUpcomingChip ? (hasIncomingCoach ? -2 : -1) : hasIncomingCoach ? -1 : 0;
   const clampedIndex = Math.min(Math.max(index, minIndex), seasons.length - 1);
   const active = clampedIndex >= 0 ? seasons[clampedIndex] : null;
+
+  // Leaders for the selected season tab (falls back to null for the upcoming-season/
+  // incoming-coach chips, which have no season stats yet — invariant 6).
+  const leaders = clampedIndex >= 0 ? (leadersBySeason?.[clampedIndex] ?? null) : null;
+  // Passing/rushing/receiving leaders in a fixed order, dropping any category with no
+  // leader (invariant 6 — show nothing, not a zeroed row).
+  const leaderRows: { label: string; leader: Leader }[] = leaders
+    ? (
+        [
+          ['PASSING', leaders.passing],
+          ['RUSHING', leaders.rushing],
+          ['RECEIVING', leaders.receiving],
+        ] as const
+      ).flatMap(([label, leader]) => (leader ? [{ label, leader }] : []))
+    : [];
+
+  // The NEXT GAME pill is scoped to the season actually being viewed: the in-progress
+  // season while the league is in-season, or the upcoming season during the off-season
+  // (Stats & Analytics P1) — never a past season tab.
+  const isViewingCurrentSeason = !upcomingSeason && clampedIndex === 0;
+  const isViewingUpcomingSeason = !!upcomingSeason && clampedIndex === -1;
+  const showNextGame = !!nextGame?.opponent && (isViewingCurrentSeason || isViewingUpcomingSeason);
+
   const nextSeasonLabel = upcomingSeason
     ? String(upcomingSeason)
     : seasons[0]
@@ -217,9 +229,13 @@ export default function TeamStatsView({
                 HC {incomingCoach.name.toUpperCase()} · INCOMING
               </div>
             )}
-            {clampedIndex === -1 && !incomingCoach && (
+            {/* No coach change — carry the latest season's coach forward rather than a
+                bare "schedule available" placeholder (the coach doesn't reset just
+                because there's no team_stats row yet for the upcoming season). */}
+            {clampedIndex === -1 && !incomingCoach && seasons[0]?.coach && (
               <div className="mt-0.5 text-[11px]" style={{ color: uiTokens.textMuted }}>
-                UPCOMING SEASON · SCHEDULE AVAILABLE
+                HC {seasons[0].coach.name.toUpperCase()} ·{' '}
+                {ordinal(seasons[0].coach.experience + 1).toUpperCase()} SEASON
               </div>
             )}
             {/* Incoming coach but no upcoming season (shouldn't happen, but
@@ -332,9 +348,10 @@ export default function TeamStatsView({
         </>
       )}
 
-      {/* NEXT GAME card (design spec 5a). Only when there's an upcoming game with a
-          resolved opponent; omitted in the offseason / once the season is complete. */}
-      {nextGame && nextGame.opponent && (
+      {/* NEXT GAME card (design spec 5a). Only when viewing the current/upcoming season
+          tab (never a past season) and there's an unplayed game with a resolved
+          opponent. */}
+      {showNextGame && nextGame && nextGame.opponent && (
         <div className="px-[18px] pt-3.5">
           <div
             className="flex items-center justify-between rounded-2xl px-3.5 py-3"
