@@ -703,14 +703,18 @@ export async function getTeamSchedule(
 type RosterLeaderStatsRow = PlayerStatsRow & Pick<Tables['player_stats']['Row'], 'player_id'>;
 const ROSTER_LEADER_STATS_SELECT = `player_id, ${PLAYER_STATS_SELECT}`;
 
-// Team passing/rushing/receiving leaders for the stats page (design spec 5a). Two typed
-// queries — the team's players (for id -> name) and their REG season rows — merged in
-// memory, so no user input touches PostgREST filter syntax (invariant 8). rosterLeaders
-// scopes to the latest season and picks the leaders; the field view never needs this, so
-// like getPlayerStats it's a standalone read, not part of RosterSource. Returns null for
-// an unknown team, a roster with no ingested stats yet, or on any query error (degrade,
+// Team passing/rushing/receiving leaders for one season on the stats page (design spec
+// 5a), re-derived per season tab (Stats & Analytics P1 — leaders must track the season
+// switcher, not just the roster's newest season). Two typed queries — the team's players
+// (for id -> name) and their REG rows for that season — merged in memory, so no user
+// input touches PostgREST filter syntax (invariant 8). The field view never needs this,
+// so like getPlayerStats it's a standalone read, not part of RosterSource. Returns null
+// for an unknown team, a season with no ingested stats, or on any query error (degrade,
 // don't throw — the page renders without the block, same as getTeamStats' try/catch).
-export async function getRosterLeaders(teamId: string): Promise<RosterLeaders | null> {
+export async function getRosterLeaders(
+  teamId: string,
+  season: number
+): Promise<RosterLeaders | null> {
   try {
     const client = supabase();
     const { data: playerRows, error: playerError } = await client
@@ -730,6 +734,7 @@ export async function getRosterLeaders(teamId: string): Promise<RosterLeaders | 
         players.map((p) => p.id)
       )
       .eq('season_type', 'REG')
+      .eq('season', season)
       .returns<RosterLeaderStatsRow[]>();
     if (statsError) throw new Error(`player_stats query failed: ${statsError.message}`);
 

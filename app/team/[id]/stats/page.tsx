@@ -34,15 +34,21 @@ export default async function TeamStatsPage({ params }: Params) {
   const { id } = await params;
   // Team metadata for all 32 (for the header's switcher) is lightweight — no player
   // data — same rationale as app/team/[id]/page.tsx's `teams` fetch.
-  const [page, teams, leaders, nextGame] = await Promise.all([
+  const [page, teams, nextGame] = await Promise.all([
     dbRosterSource.getTeamStats(id),
     dbRosterSource.listTeams(),
-    getRosterLeaders(id),
     getNextGame(id),
   ]);
   if (!page) {
     notFound();
   }
+
+  // One leaders fetch per season tab (seasons is small — current + up to two prior
+  // years, invariant 5) so the season switcher can show each season's own leaders
+  // instead of always the roster's newest.
+  const leadersBySeason = await Promise.all(
+    page.seasons.map((s) => getRosterLeaders(id, s.season))
+  );
 
   return (
     <TeamStatsView
@@ -51,7 +57,7 @@ export default async function TeamStatsPage({ params }: Params) {
       seasons={page.seasons}
       incomingCoach={page.incomingCoach}
       upcomingSeason={page.upcomingSeason}
-      leaders={leaders}
+      leadersBySeason={leadersBySeason}
       nextGame={nextGame}
     />
   );
