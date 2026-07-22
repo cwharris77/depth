@@ -141,10 +141,11 @@ and the repo's own instructions can point at a synced copy rather than the sourc
 **Date:** 2026-07-22
 **Session context:** Fixing PR #176 (`agent/swipeable-bottom-sheet-uniform-selector`, ticket
 "Swipeable bottom-sheet uniform selector") in the depth repo after Cooper reviewed the merged
-carousel and rejected its behavior. This session's model tier: Sonnet 5. The original
-implementing session's model tier is not visible from git/PR history — flagging for Cooper to
-cross-reference against symphony's own dispatch record for this ticket, since that data lives
-outside anything this session could inspect.
+carousel and rejected its behavior. This session's model tier: Sonnet 5. Per the ticket's own
+frontmatter (`model_tier: smart`, `run_mode: symphony`) — checked against the ticket file at
+`obsidian/Projects/depth/Tickets/Swipeable bottom-sheet uniform selector.md` — symphony's "smart"
+tier resolves to Kimi K2, confirmed by Cooper. So: Kimi K2 (smart tier, via symphony) implemented
+the original PR; Sonnet 5 (interactive session, not symphony) fixed it.
 **Skill:** New skill candidate, or fold into an existing pre-completion/verification skill
 **Type:** internal
 **Phase/Area:** Acceptance-criteria interpretation for interactive/stateful UI tickets
