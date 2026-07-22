@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useLayoutEffect } from 'react';
 import Image from 'next/image';
 import { Check, X } from 'lucide-react';
 import { motion, type PanInfo } from 'framer-motion';
@@ -14,7 +14,14 @@ import { colors as uiTokens } from '@/components/ui/tokens';
 // carousel replaces the old vertical row-list: each kit is a full-width card; swiping
 // left/right pages between them. Selecting a kit recolors the field live behind the
 // sheet (the parent applies the kit's colors), so the sheet stays open: you can swipe
-// between kits and watch the field change.
+// between kits and watch the field change. The carousel opens on the currently active
+// kit and is bounded — dragConstraints plus the clamped snap target in handleDragEnd
+// keep it from wrapping past the first/last card.
+//
+// The "Active" badge deliberately does not follow the live swipe position: it's pinned
+// to whichever kit was active when the sheet opened (see `committedId`), since the
+// sheet fully unmounts on close and remounts fresh, so the badge only ever reflects a
+// kit that was actually committed by a prior close, not mid-swipe browsing.
 //
 // Snap behavior: releasing a drag mid-swipe settles on the nearest card, matching the
 // drag/settle pattern used elsewhere in this codebase (see PlayerCard.tsx's reorder
@@ -35,6 +42,11 @@ export default function UniformSheet({
   // Track the current carousel index, initialised to the active kit's position.
   const activeIndex = uniforms.findIndex((u) => u.id === activeId);
   const [currentIndex, setCurrentIndex] = useState(activeIndex >= 0 ? activeIndex : 0);
+  // The badge should track the kit that's actually committed, not wherever the user
+  // has swiped to. Freeze it at the value activeId had when the sheet opened — the
+  // sheet unmounts on close (see BottomSheet's `{isOpen && ...}` guard) and remounts
+  // fresh next time, so this naturally picks up the newly-committed kit on reopen.
+  const [committedId] = useState(activeId);
   // The container ref gives us the card width for snap calculations.
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -42,14 +54,20 @@ export default function UniformSheet({
   // snap target with a spring, rather than fighting framer-motion's velocity-based
   // inertia (which doesn't give us a clean snap-to-card).
   const [dragX, setDragX] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
 
-  // Card width = container width (full-width cards). Recalculated on every drag start
-  // so it adapts to resize.
-  const cardWidth = containerRef.current?.clientWidth ?? 320;
-
-  const handleDragStart = useCallback(() => {
-    setIsDragging(true);
+  // Card width = container width (full-width cards). Reading clientWidth directly off
+  // the ref during render is stale on first paint (the ref isn't attached yet), which
+  // let every card render at the 320px fallback and sit side-by-side instead of one
+  // per view. Measure after layout and re-measure on resize instead.
+  const [cardWidth, setCardWidth] = useState(0);
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const measure = () => setCardWidth(el.clientWidth);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   const handleDrag = useCallback(
@@ -61,7 +79,6 @@ export default function UniformSheet({
 
   const handleDragEnd = useCallback(
     (_event: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
-      setIsDragging(false);
       // Determine the snap target: if the velocity is high enough, skip a card;
       // otherwise snap to the nearest card based on offset.
       const threshold = cardWidth * 0.25;
@@ -111,18 +128,17 @@ export default function UniformSheet({
           drag="x"
           dragConstraints={{ left: -(uniforms.length - 1) * cardWidth, right: 0 }}
           dragElastic={0.15}
-          onDragStart={handleDragStart}
           onDrag={handleDrag}
           onDragEnd={handleDragEnd}
           animate={{ x: -currentIndex * cardWidth }}
           transition={{ type: 'spring', stiffness: 360, damping: 38 }}>
           {uniforms.map((u) => {
-            const isActive = u.id === activeId;
+            const isActive = u.id === committedId;
             return (
               <div
                 key={u.id}
                 className="shrink-0 flex flex-col items-center px-5 pb-4"
-                style={{ width: cardWidth || '100%' }}>
+                style={{ width: cardWidth }}>
                 {/* Kit thumbnail — larger than the old row to fill the card */}
                 <div
                   className="rounded-xl overflow-hidden flex items-center justify-center mb-4"
