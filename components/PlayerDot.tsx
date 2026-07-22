@@ -105,18 +105,29 @@ export default function PlayerDot({
       {/* Position + name. Breakpoint varies per unit (LABEL_VISIBILITY) since name
           collisions depend on how tightly that unit's dots are packed, not screen
           width alone. Wraps instead of truncating so long names like
-          "Smith-Njigba" stay readable. */}
-      <div className={`${LABEL_VISIBILITY[unit]} mt-1 text-center`} style={{ maxWidth: 72 }}>
+          "Smith-Njigba" stay readable. Font size and top margin are clamped to
+          viewport height (not a fixed px size) so labels shrink ahead of colliding
+          when the field's available height shrinks — e.g. a short/landscape or
+          split-screen viewport, where dots are still spaced by % of container
+          height but a fixed-size label no longer fits between them. */}
+      <div
+        className={`${LABEL_VISIBILITY[unit]} text-center`}
+        style={{ maxWidth: 72, marginTop: 'clamp(1px, 0.5dvh, 4px)' }}>
         <div
-          className="text-[8px] font-semibold"
-          style={{ color: uiTokens.textMuted, letterSpacing: '0.05em' }}>
+          className="font-semibold"
+          style={{
+            color: uiTokens.textMuted,
+            letterSpacing: '0.05em',
+            fontSize: 'clamp(6px, 1.1dvh, 8px)',
+          }}>
           {slot.label}
         </div>
         <div
-          className="text-[9px] font-bold leading-tight"
+          className="font-bold leading-tight"
           style={{
             color: isSelected ? teamColors.uiAccent : uiTokens.textPrimary,
             overflowWrap: 'anywhere',
+            fontSize: 'clamp(7px, 1.3dvh, 9px)',
           }}>
           {lastName(player.name)}
         </div>
