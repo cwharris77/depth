@@ -93,24 +93,18 @@ function statusOf(a: EspnAthlete, depthRank: number): PlayerStatus {
   return depthRank > 1 ? 'backup' : 'starter';
 }
 
-// Generates a one-line bio from existing ESPN data. Uses the season year and
-// experience to derive the player's approximate NFL entry year — genuinely additive
-// info not already shown in the card (which displays experience in years but not the
-// entry year). Rookies (experience=0) get "Rookie"; veterans get "Entered the NFL in
-// YYYY". Falls back to empty string when the data is missing, which the UI suppresses
-// rather than rendering filler copy.
-function playerBio(experience: number, seasonYear: number): string {
-  if (experience <= 0) return 'Rookie';
-  const entryYear = seasonYear - experience;
-  return `Entered the NFL in ${entryYear}`;
+// Generates a one-line bio from the athlete's birthplace — genuinely additive info
+// not shown anywhere else on the card (unlike experience, which duplicates the EXP
+// stat). State covers US-born players; falls back to country for international
+// players lacking a state. Falls back to empty string when birthPlace or even the
+// city is missing, which the UI suppresses rather than rendering filler copy.
+function playerBio(birthPlace: EspnAthlete['birthPlace']): string {
+  if (!birthPlace?.city) return '';
+  const region = birthPlace.state || birthPlace.country;
+  return region ? `Born in ${birthPlace.city}, ${region}` : `Born in ${birthPlace.city}`;
 }
 
-function toPlayer(
-  a: EspnAthlete,
-  position: Position,
-  depthRank: 1 | 2 | 3,
-  seasonYear: number
-): Player {
+function toPlayer(a: EspnAthlete, position: Position, depthRank: 1 | 2 | 3): Player {
   return {
     id: a.id,
     name: a.fullName,
@@ -123,7 +117,7 @@ function toPlayer(
     experience: a.experience?.years ?? 0,
     height: a.displayHeight ?? a.height ?? '—',
     weight: parseInt(String(a.displayWeight ?? a.weight ?? '0'), 10) || 0,
-    bio: playerBio(a.experience?.years ?? 0, seasonYear),
+    bio: playerBio(a.birthPlace),
     photoUrl: a.headshot?.href,
   };
 }
@@ -170,10 +164,6 @@ export function toTeamRoster(args: {
   teamInfo: EspnTeamInfo;
 }): TeamRoster {
   const { meta, roster, depthcharts, teamInfo } = args;
-  // The roster's season year is needed for deriving the player's NFL entry year
-  // from their experience (playerBio). Every roster has a season, so this is always
-  // available — the fallback 0 is a type guard, not a real case.
-  const seasonYear = roster.season?.year ?? 0;
 
   // Bio lookup by athlete id (from the flat site roster).
   const bios = new Map<string, EspnAthlete>();
@@ -218,7 +208,7 @@ export function toTeamRoster(args: {
             const bio = bios.get(pid);
             if (!bio) continue;
             seen.add(pid);
-            players.push(toPlayer(bio, rosterPosition, rank as 1 | 2 | 3, seasonYear));
+            players.push(toPlayer(bio, rosterPosition, rank as 1 | 2 | 3));
           }
         }
         continue;
@@ -235,7 +225,7 @@ export function toTeamRoster(args: {
         const bio = bios.get(id);
         if (!bio) continue; // depthchart athlete not in roster → skip, no crash
         seen.add(id);
-        players.push(toPlayer(bio, position, rank as 1 | 2 | 3, seasonYear));
+        players.push(toPlayer(bio, position, rank as 1 | 2 | 3));
       }
     }
   }
@@ -253,7 +243,7 @@ export function toTeamRoster(args: {
     const fallbackPosition = mapBioPosition(bio.position?.abbreviation ?? '');
     if (!fallbackPosition) continue;
     seen.add(id);
-    players.push(toPlayer(bio, fallbackPosition, 3, seasonYear));
+    players.push(toPlayer(bio, fallbackPosition, 3));
   }
 
   const specialTeams: SpecialSlot[] = SPECIAL_LAYOUT.map(({ slot, id, x, y, label }) => ({
