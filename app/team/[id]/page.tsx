@@ -1,6 +1,7 @@
 import DepthChartField from '@/components/DepthChartField';
 import RememberTeam from '@/components/RememberTeam';
-import { dbRosterSource } from '@/lib/roster-source.db';
+import { dbRosterSource, getPlayerStats } from '@/lib/roster-source.db';
+import type { PlayerSeasonStats } from '@/lib/types';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -51,11 +52,24 @@ export default async function TeamPage({ params }: Params) {
   if (!roster) {
     notFound();
   }
+
+  // Prefetch season stats for every player on the roster so PlayerCard doesn't need a
+  // client-side round trip. Keyed by player id so the card can look up its player's
+  // stats synchronously. A failed fetch for one player degrades to an empty array
+  // (the card renders no stats section), matching the old client-side error path.
+  const playerStatsMap = new Map<string, PlayerSeasonStats[]>();
+  await Promise.allSettled(
+    roster.players.map(async (player) => {
+      const stats = await getPlayerStats(player.id);
+      playerStatsMap.set(player.id, stats);
+    })
+  );
+
   // RememberTeam records this team in localStorage (5a) so the home route reopens it.
   return (
     <>
       <RememberTeam id={id} />
-      <DepthChartField roster={roster} teams={teams} />
+      <DepthChartField roster={roster} teams={teams} playerStatsMap={playerStatsMap} />
     </>
   );
 }
