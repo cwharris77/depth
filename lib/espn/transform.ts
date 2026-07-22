@@ -93,11 +93,23 @@ function statusOf(a: EspnAthlete, depthRank: number): PlayerStatus {
   return depthRank > 1 ? 'backup' : 'starter';
 }
 
+// Generates a one-line bio from existing ESPN data. Uses the season year and
+// experience to derive the player's approximate NFL entry year — genuinely additive
+// info not already shown in the card (which displays experience in years but not the
+// entry year). Rookies (experience=0) get "Rookie"; veterans get "Entered the NFL in
+// YYYY". Falls back to empty string when the data is missing, which the UI suppresses
+// rather than rendering filler copy.
+function playerBio(experience: number, seasonYear: number): string {
+  if (experience <= 0) return 'Rookie';
+  const entryYear = seasonYear - experience;
+  return `Entered the NFL in ${entryYear}`;
+}
+
 function toPlayer(
   a: EspnAthlete,
   position: Position,
   depthRank: 1 | 2 | 3,
-  teamLabel: string
+  seasonYear: number
 ): Player {
   return {
     id: a.id,
@@ -111,7 +123,7 @@ function toPlayer(
     experience: a.experience?.years ?? 0,
     height: a.displayHeight ?? a.height ?? '—',
     weight: parseInt(String(a.displayWeight ?? a.weight ?? '0'), 10) || 0,
-    bio: `${position} for the ${teamLabel}.`,
+    bio: playerBio(a.experience?.years ?? 0, seasonYear),
     photoUrl: a.headshot?.href,
   };
 }
@@ -158,7 +170,10 @@ export function toTeamRoster(args: {
   teamInfo: EspnTeamInfo;
 }): TeamRoster {
   const { meta, roster, depthcharts, teamInfo } = args;
-  const teamLabel = `${meta.city} ${meta.name}`;
+  // The roster's season year is needed for deriving the player's NFL entry year
+  // from their experience (playerBio). Every roster has a season, so this is always
+  // available — the fallback 0 is a type guard, not a real case.
+  const seasonYear = roster.season?.year ?? 0;
 
   // Bio lookup by athlete id (from the flat site roster).
   const bios = new Map<string, EspnAthlete>();
@@ -203,7 +218,7 @@ export function toTeamRoster(args: {
             const bio = bios.get(pid);
             if (!bio) continue;
             seen.add(pid);
-            players.push(toPlayer(bio, rosterPosition, rank as 1 | 2 | 3, teamLabel));
+            players.push(toPlayer(bio, rosterPosition, rank as 1 | 2 | 3, seasonYear));
           }
         }
         continue;
@@ -220,7 +235,7 @@ export function toTeamRoster(args: {
         const bio = bios.get(id);
         if (!bio) continue; // depthchart athlete not in roster → skip, no crash
         seen.add(id);
-        players.push(toPlayer(bio, position, rank as 1 | 2 | 3, teamLabel));
+        players.push(toPlayer(bio, position, rank as 1 | 2 | 3, seasonYear));
       }
     }
   }
@@ -238,7 +253,7 @@ export function toTeamRoster(args: {
     const fallbackPosition = mapBioPosition(bio.position?.abbreviation ?? '');
     if (!fallbackPosition) continue;
     seen.add(id);
-    players.push(toPlayer(bio, fallbackPosition, 3, teamLabel));
+    players.push(toPlayer(bio, fallbackPosition, 3, seasonYear));
   }
 
   const specialTeams: SpecialSlot[] = SPECIAL_LAYOUT.map(({ slot, id, x, y, label }) => ({
