@@ -44,6 +44,24 @@ function wl(wins: number, losses: number): string {
   return `${wins}-${losses}`;
 }
 
+// Coach treatment (design mock 1a, docs/superpowers/specs — Claude Design "Coach Treatment
+// Options"): a real type hierarchy — bigger name, accent-colored meta caption — instead of
+// one flat 11px line.
+function CoachBadge({ name, meta, uiAccent }: { name: string; meta: string; uiAccent: string }) {
+  return (
+    <div className="mt-[11px]">
+      <div
+        className="text-[16px] font-extrabold leading-tight"
+        style={{ color: uiTokens.textPrimary }}>
+        {name}
+      </div>
+      <div className="mt-0.5 text-[11px] font-bold tracking-[0.06em]" style={{ color: uiAccent }}>
+        {meta}
+      </div>
+    </div>
+  );
+}
+
 function StatCell({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <>
@@ -216,34 +234,40 @@ export default function TeamStatsView({
           {team.city.toUpperCase()} {team.name.toUpperCase()}
         </div>
         {active?.coach && (
-          <div className="mt-0.5 text-[11px]" style={{ color: uiTokens.textMuted }}>
-            HC {active.coach.name.toUpperCase()} · {ordinal(active.coach.experience).toUpperCase()}{' '}
-            SEASON
-          </div>
+          <CoachBadge
+            name={active.coach.name}
+            meta={`HEAD COACH · ${ordinal(active.coach.experience).toUpperCase()} SEASON`}
+            uiAccent={uiAccent}
+          />
         )}
         {!active && (
           <>
             {/* Upcoming season — general off-season chip for all teams */}
             {clampedIndex === -1 && incomingCoach && (
-              <div className="mt-0.5 text-[11px]" style={{ color: uiTokens.textMuted }}>
-                HC {incomingCoach.name.toUpperCase()} · INCOMING
-              </div>
+              <CoachBadge
+                name={incomingCoach.name}
+                meta="HEAD COACH · INCOMING"
+                uiAccent={uiAccent}
+              />
             )}
             {/* No coach change — carry the latest season's coach forward rather than a
                 bare "schedule available" placeholder (the coach doesn't reset just
                 because there's no team_stats row yet for the upcoming season). */}
             {clampedIndex === -1 && !incomingCoach && seasons[0]?.coach && (
-              <div className="mt-0.5 text-[11px]" style={{ color: uiTokens.textMuted }}>
-                HC {seasons[0].coach.name.toUpperCase()} ·{' '}
-                {ordinal(seasons[0].coach.experience + 1).toUpperCase()} SEASON
-              </div>
+              <CoachBadge
+                name={seasons[0].coach.name}
+                meta={`HEAD COACH · ${ordinal(seasons[0].coach.experience + 1).toUpperCase()} SEASON`}
+                uiAccent={uiAccent}
+              />
             )}
             {/* Incoming coach but no upcoming season (shouldn't happen, but
                 defensive: legacy case from before the generalized chip). */}
             {clampedIndex === -2 && incomingCoach && (
-              <div className="mt-0.5 text-[11px]" style={{ color: uiTokens.textMuted }}>
-                HC {incomingCoach.name.toUpperCase()} · INCOMING
-              </div>
+              <CoachBadge
+                name={incomingCoach.name}
+                meta="HEAD COACH · INCOMING"
+                uiAccent={uiAccent}
+              />
             )}
           </>
         )}
