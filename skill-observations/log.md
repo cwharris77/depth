@@ -134,3 +134,52 @@ a sibling knowledge repo is present. Cheaper than writing to the wrong place and
 **Principle:** A "where does the deliverable live" default should be a *last resort* after checking
 for a project's canonical home, not the first move — docs frequently live outside the code repo,
 and the repo's own instructions can point at a synced copy rather than the source of truth.
+
+### Observation 8: Locked ticket's literal acceptance bullet ("indicate active the same way it is now") produced a shipped UX Cooper immediately rejected
+
+**Status:** OPEN
+**Date:** 2026-07-22
+**Session context:** Fixing PR #176 (`agent/swipeable-bottom-sheet-uniform-selector`, ticket
+"Swipeable bottom-sheet uniform selector") in the depth repo after Cooper reviewed the merged
+carousel and rejected its behavior. This session's model tier: Sonnet 5. Per the ticket's own
+frontmatter (`model_tier: smart`, `run_mode: symphony`) — checked against the ticket file at
+`obsidian/Projects/depth/Tickets/Swipeable bottom-sheet uniform selector.md` — symphony's "smart"
+tier resolves to Kimi K2, confirmed by Cooper. So: Kimi K2 (smart tier, via symphony) implemented
+the original PR; Sonnet 5 (interactive session, not symphony) fixed it.
+**Skill:** New skill candidate, or fold into an existing pre-completion/verification skill
+**Type:** internal
+**Phase/Area:** Acceptance-criteria interpretation for interactive/stateful UI tickets
+
+**Issue:** The locked ticket text said: "Swiping to a card calls onSelect(id) the same way
+tapping a row does today — the field must keep recoloring live as you swipe" and "Preserve the
+active-kit indicator... the same way it is now." The implementing agent followed this literally:
+every swipe/dot-click committed `onSelect()` immediately AND the "Active" checkmark badge tracked
+the live `activeId` prop, so it lit up on whatever card the user was currently browsing past. That
+matches the ticket's words, but once Cooper actually used it he rejected it outright: "I don't
+like how the active badge shows for every jersey as soon as you swipe to it... Active should only
+be set when you close the carousel and the jersey is actually set." The ticket text couldn't
+disambiguate "live-tracking indicator" from "committed-choice indicator" — both readings satisfy
+"the same way it is now" if you don't simulate the full open→browse→close interaction. Two
+unrelated implementation bugs shipped in the same PR and were also caught only in this follow-up
+session, not the original one: (1) `cardWidth` was read directly off a container ref during
+render — null on first paint — so every card rendered at a 320px fallback and sat side-by-side
+instead of one-per-view; (2) an `isDragging` state was set but never read, an ESLint error that
+`npm run lint` catches immediately but apparently wasn't run (or wasn't gating) before the
+original PR was opened.
+
+**Suggested improvement:** For any ticket describing a stateful/interactive UI change — especially
+a bullet that says "preserve X the same way it works today" — don't verify by matching each
+acceptance bullet against a single static render. Manually drive the actual interaction sequence
+implied by the feature (open → interact with several items → close → reopen) before calling it
+done, and explicitly ask of any "active"/"current"/"selected" indicator: does this track live
+browsing, or does it track the last committed choice? The ticket text alone often can't answer
+that, and the wrong choice looks correct in a screenshot but reads as wrong within seconds of real
+use. Separately: run `npm run lint` (not just typecheck) before opening a PR — this repo's
+pre-commit hook caught the unused-state error instantly once someone tried to commit, meaning it
+was cheap to find and should have been found before merge, not after.
+
+**Principle:** A locked ticket's literal acceptance bullets are necessary but not sufficient for
+interactive/stateful components — verify by operating the full interaction cycle a real user would
+go through, not by checking each bullet against a static render; ambiguous phrasing like "the same
+way it works today" needs the implementer to name which semantic (live vs. committed) it means,
+because that choice is invisible until someone actually uses the shipped feature.
