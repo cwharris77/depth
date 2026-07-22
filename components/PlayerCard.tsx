@@ -258,12 +258,13 @@ export default function PlayerCard({
         </span>
       </div>
 
-      {/* Do not show bio for now. All it has is their position which is already shown above. When we get more info we can add it */}
-      {/* <div className="px-6 mb-4">
-                <p className="text-sm leading-relaxed" style={{ color: 'rgba(240,244,255,0.75)' }}>
-                  {player.bio}
-                </p>
-              </div> */}
+      {player.bio && (
+        <div className="px-6 mb-4">
+          <p className="text-sm leading-relaxed" style={{ color: 'rgba(240,244,255,0.75)' }}>
+            {player.bio}
+          </p>
+        </div>
+      )}
 
       {player.stats && Object.keys(player.stats).length > 0 && (
         <div className="px-6 mb-6">

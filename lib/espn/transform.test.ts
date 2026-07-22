@@ -145,6 +145,12 @@ describe('toTeamRoster', () => {
     }
   });
 
+  it('derives bio from birthplace (city, state) rather than restating position/team', () => {
+    const withBio = result.players.find((p) => p.bio);
+    if (!withBio) throw new Error('expected at least one player with a bio');
+    expect(withBio.bio).toMatch(/^Born in .+/);
+  });
+
   it("collapsed positions (e.g. lde+rde -> DE) don't collide on depth_chart_entries rank", () => {
     // Guards the DB write path: depth_chart_entries has a unique (team_id, position,
     // depth_rank) constraint, but two raw ESPN keys (lde, rde) both map to Position DE
@@ -220,6 +226,13 @@ describe('toTeamRoster: returner ranked outside the top-3 cap', () => {
     const player = result.players.find((p) => p.id === WR7_ID);
     if (!player) throw new Error('expected the returner to be present in players');
     expect(player.position).toBe('WR');
+  });
+
+  it('suppresses the bio (empty string) rather than falling back to filler when birthplace is missing', () => {
+    const result = toTeamRoster({ meta: META, roster, depthcharts, teamInfo: TEAM_INFO });
+    const player = result.players.find((p) => p.id === WR7_ID);
+    if (!player) throw new Error('expected the returner to be present in players');
+    expect(player.bio).toBe('');
   });
 });
 
