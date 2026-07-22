@@ -23,6 +23,7 @@ export interface EspnAthlete {
   experience?: { years?: number };
   status?: { type?: string };
   headshot?: { href?: string };
+  birthPlace?: { city?: string; state?: string; country?: string };
 }
 export interface EspnDepthcharts {
   items: EspnDepthItem[];
