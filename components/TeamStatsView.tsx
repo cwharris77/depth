@@ -64,6 +64,23 @@ function CoachBadge({ name, meta, uiAccent }: { name: string; meta: string; uiAc
   );
 }
 
+// Shared "UPCOMING" pill for the season switcher — used both by the synthetic
+// upcoming-season chip and by a real season chip when ingest has already landed a
+// team_stats row for that year (a stub row created ahead of kickoff).
+function UpcomingBadge({ selected, uiAccent }: { selected: boolean; uiAccent: string }) {
+  return (
+    <span
+      className="inline-block rounded-full px-1.5 py-[1px] text-[8px] font-bold tracking-[0.04em]"
+      style={{
+        color: selected ? uiTokens.bg : uiAccent,
+        background: selected ? `${uiTokens.bg}33` : `${uiAccent}1a`,
+        border: `1px solid ${selected ? `${uiTokens.bg}55` : `${uiAccent}55`}`,
+      }}>
+      UPCOMING
+    </span>
+  );
+}
+
 function StatCell({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <>
@@ -120,11 +137,18 @@ export default function TeamStatsView({
     );
   }
 
+  // Ingest can land a real team_stats row for the upcoming season ahead of kickoff (a
+  // stub row with no games played yet), in which case that row IS the upcoming season —
+  // no separate synthetic chip, just the UPCOMING badge carried onto the real one.
+  const upcomingSeasonHasRealRow =
+    upcomingSeason !== undefined && seasons.some((s) => s.season === upcomingSeason);
+
   // Index -1 is the upcoming season (exists during the off-season for ALL teams, not
-  // just new-coach teams — Stats & Analytics P2). For teams with an incoming coach,
-  // index -2 is the incoming coach chip (no season stats to attach to yet). Both are
-  // clamped independently of the real `seasons` array below.
-  const hasUpcomingChip = !!upcomingSeason;
+  // just new-coach teams — Stats & Analytics P2), unless it's already one of the real
+  // `seasons` rows above. For teams with an incoming coach, index -2 is the incoming
+  // coach chip (no season stats to attach to yet). Both are clamped independently of
+  // the real `seasons` array below.
+  const hasUpcomingChip = !!upcomingSeason && !upcomingSeasonHasRealRow;
   const hasIncomingCoach = !!incomingCoach;
   const minIndex = hasUpcomingChip ? (hasIncomingCoach ? -2 : -1) : hasIncomingCoach ? -1 : 0;
   const clampedIndex = Math.min(Math.max(index, minIndex), seasons.length - 1);
@@ -147,9 +171,13 @@ export default function TeamStatsView({
 
   // The NEXT GAME pill is scoped to the season actually being viewed: the in-progress
   // season while the league is in-season, or the upcoming season during the off-season
-  // (Stats & Analytics P1) — never a past season tab.
+  // (Stats & Analytics P1) — never a past season tab. When the upcoming season is a
+  // real row rather than the synthetic chip, "viewing it" means the selected real row's
+  // season matches, not the (now nonexistent) index -1.
   const isViewingCurrentSeason = !upcomingSeason && clampedIndex === 0;
-  const isViewingUpcomingSeason = !!upcomingSeason && clampedIndex === -1;
+  const isViewingUpcomingSeason = hasUpcomingChip
+    ? clampedIndex === -1
+    : upcomingSeasonHasRealRow && active?.season === upcomingSeason;
   const showNextGame = !!nextGame?.opponent && (isViewingCurrentSeason || isViewingUpcomingSeason);
 
   const nextSeasonLabel = upcomingSeason
@@ -188,6 +216,10 @@ export default function TeamStatsView({
             .map(({ s, i }) => {
               const isSelected = i === clampedIndex;
               const isLatest = i === 0;
+              // A real row for the upcoming season (ingest stub landed early) carries
+              // the UPCOMING badge instead of the plain "latest" dot — it isn't the
+              // completed current season, even though it's the newest row on file.
+              const isUpcomingRow = upcomingSeasonHasRealRow && s.season === upcomingSeason;
               return (
                 <button
                   key={s.season}
@@ -199,20 +231,23 @@ export default function TeamStatsView({
                     color: isSelected ? uiTokens.bg : uiTokens.textMuted,
                     border: `1px solid ${isSelected ? uiAccent : uiTokens.borderInput}`,
                   }}>
-                  {isLatest && (
+                  {isLatest && !isUpcomingRow && (
                     <span
                       className="inline-block h-1.5 w-1.5 rounded-full"
                       style={{ background: isSelected ? uiTokens.bg : uiAccent }}
                     />
                   )}
                   {s.season}
+                  {isUpcomingRow && <UpcomingBadge selected={isSelected} uiAccent={uiAccent} />}
                 </button>
               );
             })}
           {/* Upcoming season chip — shown for ALL teams during the off-season, not just
-            new-coach teams (Stats & Analytics P2). Renders after every real season chip
-            and uses the same badge pattern as the schedule page's HOME/AWAY badge. */}
-          {upcomingSeason && (
+            new-coach teams (Stats & Analytics P2), unless a real season row for that
+            year already exists above (then that row carries the badge instead — see
+            isUpcomingRow). Uses the same badge pattern as the schedule page's HOME/AWAY
+            badge. */}
+          {hasUpcomingChip && (
             <button
               type="button"
               onClick={() => setIndex(-1)}
@@ -224,15 +259,7 @@ export default function TeamStatsView({
               }}>
               {upcomingSeason}
               {(clampedIndex === -1 || !hasIncomingCoach) && (
-                <span
-                  className="inline-block rounded-full px-1.5 py-[1px] text-[8px] font-bold tracking-[0.04em]"
-                  style={{
-                    color: clampedIndex === -1 ? uiTokens.bg : uiAccent,
-                    background: clampedIndex === -1 ? `${uiTokens.bg}33` : `${uiAccent}1a`,
-                    border: `1px solid ${clampedIndex === -1 ? `${uiTokens.bg}55` : `${uiAccent}55`}`,
-                  }}>
-                  UPCOMING
-                </span>
+                <UpcomingBadge selected={clampedIndex === -1} uiAccent={uiAccent} />
               )}
             </button>
           )}
