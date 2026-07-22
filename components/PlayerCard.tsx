@@ -90,8 +90,8 @@ export default function PlayerCard({
   // Lazy per-player fetch (locked decision: the field view never needs stats, so this
   // isn't part of the roster payload). Aborted on close/player-change so a slow
   // response for a since-dismissed card can't clobber the next card's stats. Loading
-  // and error both render nothing -- setSeasonStats([]) is also the reset when a new
-  // player opens, so a stale season line never flashes before the fresh fetch lands.
+  // and error both render the empty state -- setSeasonStats([]) is also the reset when
+  // a new player opens, so a stale season line never flashes before the fresh fetch lands.
   useEffect(() => {
     setSeasonStats([]);
     if (!player) return;
@@ -265,7 +265,7 @@ export default function PlayerCard({
         </div>
       )}
 
-      {depthChart.length > 1 && (
+      {depthChart.length > 1 ? (
         <div className="px-6 mb-6">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -407,9 +407,27 @@ export default function PlayerCard({
             )}
           </div>
         </div>
+      ) : (
+        <div className="px-6 mb-6">
+          <div
+            className="text-[10px] font-semibold mb-3"
+            style={{ color: uiTokens.textMuted, letterSpacing: '0.1em' }}>
+            POSITION DEPTH · {player.position}
+          </div>
+          <div
+            className="rounded-2xl flex items-center justify-center py-6"
+            style={{
+              background: uiTokens.surfaceCard2,
+              border: `1px solid ${uiTokens.borderDefault}`,
+            }}>
+            <span className="text-xs font-medium" style={{ color: uiTokens.textFaint }}>
+              No backups available
+            </span>
+          </div>
+        </div>
       )}
 
-      {statSeasons.length > 0 && (
+      {statSeasons.length > 0 ? (
         <div className="px-6 pb-8">
           <div
             className="text-[10px] font-semibold mb-3"
@@ -467,6 +485,24 @@ export default function PlayerCard({
                 ))}
               </div>
             ))}
+          </div>
+        </div>
+      ) : (
+        <div className="px-6 pb-8">
+          <div
+            className="text-[10px] font-semibold mb-3"
+            style={{ color: uiTokens.textMuted, letterSpacing: '0.1em' }}>
+            SEASON STATS
+          </div>
+          <div
+            className="rounded-2xl flex items-center justify-center py-6"
+            style={{
+              background: uiTokens.surfaceCard2,
+              border: `1px solid ${uiTokens.borderDefault}`,
+            }}>
+            <span className="text-xs font-medium" style={{ color: uiTokens.textFaint }}>
+              No stats available
+            </span>
           </div>
         </div>
       )}
