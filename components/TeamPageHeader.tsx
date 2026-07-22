@@ -67,7 +67,22 @@ export default function TeamPageHeader({
   return (
     <>
       <div className="flex items-center justify-between">
-        <DepthMark color={colors.uiAccent} onClick={() => setDrawerOpen(true)} />
+        {/* Below xl: the mark opens the nav drawer. At xl the drawer's destinations live
+            in the persistent TeamRail, so the mark hides and the header leads with the
+            team name + division instead (desktop multi-panel layout — TeamPageShell). */}
+        <div className="xl:hidden">
+          <DepthMark color={colors.uiAccent} onClick={() => setDrawerOpen(true)} />
+        </div>
+        <div className="hidden min-w-0 flex-col gap-0.5 xl:flex">
+          <span
+            className="truncate text-lg font-black tracking-[-0.01em]"
+            style={{ color: uiTokens.textPrimary }}>
+            {team.city} {team.name}
+          </span>
+          <span className="text-[11px]" style={{ color: uiTokens.textFaint }}>
+            {team.conference} {team.division}
+          </span>
+        </div>
         {/* Team switcher trigger — styled as a visible pill, not plain text, so it
             reads as tappable. Labeled with team.abbrev (the existing short-name
             column) rather than city + mascot, compact enough to sit alongside the
