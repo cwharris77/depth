@@ -22,8 +22,8 @@ export const OFFENSE_FORMATION: FormationSlot[] = [
   { id: 'off-c-0', position: 'C', index: 0, x: 50, y: 51, label: 'C', onLine: true },
   { id: 'off-rg-0', position: 'RG', index: 0, x: 58, y: 51, label: 'RG', onLine: true },
   { id: 'off-rt-0', position: 'RT', index: 0, x: 66, y: 51, label: 'RT', onLine: true },
-  { id: 'off-qb-0', position: 'QB', index: 0, x: 50, y: 62, label: 'QB', onLine: false },
-  { id: 'off-rb-0', position: 'RB', index: 0, x: 50, y: 74, label: 'RB', onLine: false },
+  { id: 'off-qb-0', position: 'QB', index: 0, x: 50, y: 66, label: 'QB', onLine: false },
+  { id: 'off-rb-0', position: 'RB', index: 0, x: 50, y: 78, label: 'RB', onLine: false },
 ];
 
 // 4-3 base. The four down linemen sit at the line (just past 50 on the defense's side);
