@@ -378,6 +378,7 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
 
   const { upcomingSeason, isOffseason } = nflSeasonState();
   const coachBySeason = new Map((coachRows ?? []).map((row) => [row.season, row]));
+  const seasons = (statsRows ?? []).map((row) => toTeamStats(row, coachBySeason));
   return {
     team: toTeam(teamRow),
     // `coach_experience === 0` is ESPN's live signal for "hired, but hasn't coached a
@@ -387,9 +388,11 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
         ? { name: teamRow.coach_name }
         : undefined,
     // Show an upcoming-season chip for every team during the off-season, not just
-    // new-coach teams (Stats & Analytics P2).
+    // new-coach teams (Stats & Analytics P2). A plain fact about what year is upcoming —
+    // whether `seasons` already has a real row for it (ingest can land a stub row ahead
+    // of kickoff) is the season switcher's concern, not this one's.
     upcomingSeason: isOffseason ? upcomingSeason : undefined,
-    seasons: (statsRows ?? []).map((row) => toTeamStats(row, coachBySeason)),
+    seasons,
   };
 }
 
