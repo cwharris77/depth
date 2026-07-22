@@ -27,6 +27,10 @@ interface PlayerCardProps {
   onReorder?: (position: Position, orderedIds: string[]) => void;
   onResetPosition?: (position: Position) => void;
   isPositionCustom?: boolean;
+  // 'sheet' (default) is the mobile bottom sheet; 'docked' renders the same card body
+  // inline for TeamPageShell's desktop context panel — no scrim, drag handle, or
+  // slide-up, and no body scroll lock (the field stays interactive beside it).
+  variant?: 'sheet' | 'docked';
 }
 
 const depthRankLabel: Record<number, string> = {
@@ -43,6 +47,7 @@ export default function PlayerCard({
   onReorder,
   onResetPosition,
   isPositionCustom = false,
+  variant = 'sheet',
 }: PlayerCardProps) {
   const [editing, setEditing] = useState(false);
   const [showHint, setShowHint] = useState(false);
@@ -65,7 +70,8 @@ export default function PlayerCard({
 
   useEffect(() => {
     if (player) {
-      document.body.classList.add('card-open');
+      // Docked cards sit beside the field, not over it — never lock body scroll.
+      if (variant !== 'docked') document.body.classList.add('card-open');
       // Fresh card: leave edit mode, reset the copied badge, and surface the
       // one-time reorder hint. Keyed on player.id (not the player object) so
       // reordering — which re-applies the override and gives `player` a new
@@ -134,6 +140,343 @@ export default function PlayerCard({
   const statColumns = player ? seasonStatColumns(player.position) : [];
   const statSeasons = player ? seasonStats.filter(hasSeasonStats) : [];
 
+  // The card body — identical between the mobile bottom sheet and the desktop docked
+  // panel (TeamPageShell's aside); only the chrome around it differs (scrim + spring
+  // sheet on mobile, a plain fill-height scroll region when docked).
+  const content = player && (
+    <>
+      <div className="flex items-start justify-between px-6 pt-4 pb-2">
+        <div className="flex items-start gap-4">
+          <Avatar
+            key={player.id}
+            photoUrl={player.photoUrl}
+            name={player.name}
+            size={72}
+            ringColor={accent}
+            fillColor={colors.primary}
+            iconColor={readableTextOn(colors.primary)}
+          />
+          <div>
+            <div
+              className="text-6xl font-black leading-none"
+              style={{
+                color: `${accent}26`,
+                letterSpacing: '-0.03em',
+              }}>
+              #{player.number}
+            </div>
+            <div
+              className="text-2xl font-black leading-tight -mt-4"
+              style={{
+                color: uiTokens.textPrimary,
+                letterSpacing: '-0.01em',
+              }}>
+              {player.name}
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              <Badge kind="position" accent={accent}>
+                {player.position}
+              </Badge>
+              <span className="text-xs font-medium" style={{ color: uiTokens.textMuted }}>
+                {positionFullName(player.position)}
+              </span>
+              <Badge kind="status" status={player.status} accent={accent} />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 mt-1">
+          <IconButton
+            variant="plain"
+            active={copied}
+            accent={accent}
+            onClick={handleShare}
+            ariaLabel={copied ? 'Link copied' : 'Share player'}
+            icon={
+              copied ? (
+                <Check size={18} color={accent} strokeWidth={3} />
+              ) : (
+                <Share2 size={18} color={uiTokens.textMuted} />
+              )
+            }
+          />
+          <IconButton
+            variant="plain"
+            onClick={onClose}
+            ariaLabel="Close player card"
+            icon={<X size={18} color={uiTokens.textMuted} />}
+          />
+        </div>
+      </div>
+
+      <div className="mx-6 my-4">
+        <StatGrid
+          stats={[
+            { label: 'AGE', value: player.age },
+            { label: 'EXP', value: experienceLabel(player.experience) },
+            { label: 'HT', value: player.height },
+            { label: 'WT', value: `${player.weight}` },
+          ]}
+        />
+      </div>
+
+      <div className="px-6 mb-3 flex items-center gap-1.5">
+        <GraduationCap size={14} style={{ color: accent, opacity: 0.85 }} />
+        <span className="text-sm font-bold" style={{ color: uiTokens.textPrimary }}>
+          {player.college}
+        </span>
+      </div>
+
+      {/* Do not show bio for now. All it has is their position which is already shown above. When we get more info we can add it */}
+      {/* <div className="px-6 mb-4">
+                <p className="text-sm leading-relaxed" style={{ color: 'rgba(240,244,255,0.75)' }}>
+                  {player.bio}
+                </p>
+              </div> */}
+
+      {player.stats && Object.keys(player.stats).length > 0 && (
+        <div className="px-6 mb-6">
+          <div
+            className="text-[10px] font-semibold mb-3"
+            style={{ color: uiTokens.textMuted, letterSpacing: '0.1em' }}>
+            2024 SEASON
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {Object.entries(player.stats).map(([key, val]) => (
+              <div
+                key={key}
+                className="flex flex-col items-center rounded-xl px-4 py-2"
+                style={{
+                  background: 'rgba(0,34,68,0.5)',
+                  border: `1px solid ${accent}33`,
+                  minWidth: 64,
+                }}>
+                <div className="text-xl font-black" style={{ color: accent }}>
+                  {val}
+                </div>
+                <div
+                  className="text-[9px] font-semibold mt-0.5"
+                  style={{ color: uiTokens.textMuted, letterSpacing: '0.06em' }}>
+                  {key.toUpperCase()}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {depthChart.length > 1 && (
+        <div className="px-6 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              {/* Do not show position depth for now. When we design for custom rosters and positions we can add it back in */}
+              {/* <span
+                        className="text-[10px] font-semibold"
+                        style={{ color: uiTokens.textMuted, letterSpacing: '0.1em' }}>
+                        POSITION DEPTH · {player.position}
+                      </span> */}
+              {isPositionCustom && (
+                <Badge kind="tag" accent={accent}>
+                  CUSTOM
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {isPositionCustom && onResetPosition && (
+                <button
+                  type="button"
+                  onClick={() => onResetPosition(player.position)}
+                  className="flex items-center gap-1 text-[10px] font-bold"
+                  style={{ color: uiTokens.textMuted, touchAction: 'manipulation' }}>
+                  <RotateCcw size={12} /> Reset
+                </button>
+              )}
+              {onReorder && (
+                <button
+                  type="button"
+                  onClick={toggleEditing}
+                  className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full"
+                  style={{
+                    color: editing ? colors.onAccent : accent,
+                    background: editing ? accent : `${accent}1a`,
+                    border: `1px solid ${accent}55`,
+                    touchAction: 'manipulation',
+                  }}>
+                  {editing ? (
+                    'Done'
+                  ) : (
+                    <>
+                      <GripVertical size={12} /> Reorder
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+
+          {showHint && !editing && onReorder && (
+            <div className="mb-2 text-[11px]" style={{ color: accent }}>
+              Tip: tap Reorder to build your own depth chart — your order is saved on this device.
+            </div>
+          )}
+
+          <div
+            className="rounded-2xl overflow-hidden"
+            style={{
+              background: uiTokens.surfaceCard2,
+              border: `1px solid ${uiTokens.borderDefault}`,
+            }}>
+            {editing && onReorder ? (
+              <Reorder.Group
+                axis="y"
+                values={depthChart.map((p) => p.id)}
+                onReorder={(ids) => onReorder(player.position, ids as string[])}
+                style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                {depthChart.map((p, i) => (
+                  <Reorder.Item
+                    key={p.id}
+                    value={p.id}
+                    className="flex items-center gap-3 px-4 py-3"
+                    style={{
+                      background: p.id === player.id ? `${accent}1a` : 'transparent',
+                      borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}`,
+                      cursor: 'grab',
+                      touchAction: 'none',
+                    }}>
+                    <GripVertical size={16} color={uiTokens.textMuted} style={{ flexShrink: 0 }} />
+                    <div
+                      className="text-[10px] font-bold"
+                      style={{
+                        color: statusColor(p.status, colors),
+                        letterSpacing: '0.08em',
+                        minWidth: 64,
+                      }}>
+                      {depthRankLabel[p.depthRank]}
+                    </div>
+                    <div
+                      className="text-xs font-bold"
+                      style={{ color: 'rgba(165,172,175,0.7)', minWidth: 28 }}>
+                      #{p.number}
+                    </div>
+                    <div
+                      className="flex-1 text-sm font-bold truncate"
+                      style={{ color: p.id === player.id ? accent : uiTokens.textPrimary }}>
+                      {p.name}
+                    </div>
+                  </Reorder.Item>
+                ))}
+              </Reorder.Group>
+            ) : (
+              depthChart.map((p, i) => {
+                const isCurrent = p.id === player.id;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => !isCurrent && onSelectPlayer?.(p)}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-left"
+                    style={{
+                      background: isCurrent ? `${accent}1a` : 'transparent',
+                      borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}`,
+                      touchAction: 'manipulation',
+                      cursor: isCurrent ? 'default' : 'pointer',
+                    }}>
+                    <div
+                      className="text-[10px] font-bold"
+                      style={{
+                        color: statusColor(p.status, colors),
+                        letterSpacing: '0.08em',
+                        minWidth: 64,
+                      }}>
+                      {depthRankLabel[p.depthRank]}
+                    </div>
+                    <div
+                      className="text-xs font-bold"
+                      style={{ color: 'rgba(165,172,175,0.7)', minWidth: 28 }}>
+                      #{p.number}
+                    </div>
+                    <div
+                      className="flex-1 text-sm font-bold truncate"
+                      style={{ color: isCurrent ? accent : uiTokens.textPrimary }}>
+                      {p.name}
+                    </div>
+                    {isCurrent && <Check size={14} color={accent} strokeWidth={3} />}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+
+      {statSeasons.length > 0 && (
+        <div className="px-6 pb-8">
+          <div
+            className="text-[10px] font-semibold mb-3"
+            style={{ color: uiTokens.textMuted, letterSpacing: '0.1em' }}>
+            SEASON STATS
+          </div>
+          {/* A columnar table (SZN + the position's stat columns), not one inline
+                      line per season (design spec 5a). Column set is position-specific
+                      (lib/stat-table.ts); the grid template stretches to however many the
+                      position has. */}
+          <div
+            className="rounded-2xl overflow-hidden"
+            style={{
+              background: uiTokens.surfaceCard2,
+              border: `1px solid ${uiTokens.borderDefault}`,
+            }}>
+            <div
+              className="grid gap-x-2 px-2.5 py-2"
+              style={{
+                gridTemplateColumns: `minmax(40px, 0.7fr) repeat(${statColumns.length}, 1fr)`,
+                borderBottom: `1px solid ${uiTokens.borderDefault}`,
+              }}>
+              <div
+                className="text-[8.5px] font-bold"
+                style={{ color: uiTokens.textFaint, letterSpacing: '0.04em' }}>
+                SZN
+              </div>
+              {statColumns.map((col) => (
+                <div
+                  key={col.header}
+                  className="text-[8.5px] font-bold"
+                  style={{ color: uiTokens.textFaint, letterSpacing: '0.04em' }}>
+                  {col.header}
+                </div>
+              ))}
+            </div>
+            {statSeasons.map((s, i) => (
+              <div
+                key={s.season}
+                className="grid gap-x-2 px-2.5 py-[9px] text-[11px] font-bold"
+                style={{
+                  gridTemplateColumns: `minmax(40px, 0.7fr) repeat(${statColumns.length}, 1fr)`,
+                  borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}`,
+                  background: i === 0 ? `${accent}0d` : 'transparent',
+                }}>
+                <div style={{ color: i === 0 ? accent : uiTokens.textPrimary }}>{s.season}</div>
+                {statColumns.map((col) => (
+                  <div
+                    key={col.header}
+                    style={{
+                      color: col.danger?.(s) ? uiTokens.statusInjured : uiTokens.textPrimary,
+                    }}>
+                    {col.value(s)}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  if (variant === 'docked') {
+    return player ? <div className="h-full overflow-y-auto">{content}</div> : null;
+  }
+
   return (
     <AnimatePresence>
       {player && (
@@ -182,340 +525,7 @@ export default function PlayerCard({
             </div>
 
             <div className="overflow-y-auto" style={{ maxHeight: 'calc(82vh - 32px)' }}>
-              <div className="flex items-start justify-between px-6 pt-4 pb-2">
-                <div className="flex items-start gap-4">
-                  <Avatar
-                    key={player.id}
-                    photoUrl={player.photoUrl}
-                    name={player.name}
-                    size={72}
-                    ringColor={accent}
-                    fillColor={colors.primary}
-                    iconColor={readableTextOn(colors.primary)}
-                  />
-                  <div>
-                    <div
-                      className="text-6xl font-black leading-none"
-                      style={{
-                        color: `${accent}26`,
-                        letterSpacing: '-0.03em',
-                      }}>
-                      #{player.number}
-                    </div>
-                    <div
-                      className="text-2xl font-black leading-tight -mt-4"
-                      style={{
-                        color: uiTokens.textPrimary,
-                        letterSpacing: '-0.01em',
-                      }}>
-                      {player.name}
-                    </div>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Badge kind="position" accent={accent}>
-                        {player.position}
-                      </Badge>
-                      <span className="text-xs font-medium" style={{ color: uiTokens.textMuted }}>
-                        {positionFullName(player.position)}
-                      </span>
-                      <Badge kind="status" status={player.status} accent={accent} />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 mt-1">
-                  <IconButton
-                    variant="plain"
-                    active={copied}
-                    accent={accent}
-                    onClick={handleShare}
-                    ariaLabel={copied ? 'Link copied' : 'Share player'}
-                    icon={
-                      copied ? (
-                        <Check size={18} color={accent} strokeWidth={3} />
-                      ) : (
-                        <Share2 size={18} color={uiTokens.textMuted} />
-                      )
-                    }
-                  />
-                  <IconButton
-                    variant="plain"
-                    onClick={onClose}
-                    ariaLabel="Close player card"
-                    icon={<X size={18} color={uiTokens.textMuted} />}
-                  />
-                </div>
-              </div>
-
-              <div className="mx-6 my-4">
-                <StatGrid
-                  stats={[
-                    { label: 'AGE', value: player.age },
-                    { label: 'EXP', value: experienceLabel(player.experience) },
-                    { label: 'HT', value: player.height },
-                    { label: 'WT', value: `${player.weight}` },
-                  ]}
-                />
-              </div>
-
-              <div className="px-6 mb-3 flex items-center gap-1.5">
-                <GraduationCap size={14} style={{ color: accent, opacity: 0.85 }} />
-                <span className="text-sm font-bold" style={{ color: uiTokens.textPrimary }}>
-                  {player.college}
-                </span>
-              </div>
-
-              {/* Do not show bio for now. All it has is their position which is already shown above. When we get more info we can add it */}
-              {/* <div className="px-6 mb-4">
-                <p className="text-sm leading-relaxed" style={{ color: 'rgba(240,244,255,0.75)' }}>
-                  {player.bio}
-                </p>
-              </div> */}
-
-              {player.stats && Object.keys(player.stats).length > 0 && (
-                <div className="px-6 mb-6">
-                  <div
-                    className="text-[10px] font-semibold mb-3"
-                    style={{ color: uiTokens.textMuted, letterSpacing: '0.1em' }}>
-                    2024 SEASON
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    {Object.entries(player.stats).map(([key, val]) => (
-                      <div
-                        key={key}
-                        className="flex flex-col items-center rounded-xl px-4 py-2"
-                        style={{
-                          background: 'rgba(0,34,68,0.5)',
-                          border: `1px solid ${accent}33`,
-                          minWidth: 64,
-                        }}>
-                        <div className="text-xl font-black" style={{ color: accent }}>
-                          {val}
-                        </div>
-                        <div
-                          className="text-[9px] font-semibold mt-0.5"
-                          style={{ color: uiTokens.textMuted, letterSpacing: '0.06em' }}>
-                          {key.toUpperCase()}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {depthChart.length > 1 && (
-                <div className="px-6 mb-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      {/* Do not show position depth for now. When we design for custom rosters and positions we can add it back in */}
-                      {/* <span
-                        className="text-[10px] font-semibold"
-                        style={{ color: uiTokens.textMuted, letterSpacing: '0.1em' }}>
-                        POSITION DEPTH · {player.position}
-                      </span> */}
-                      {isPositionCustom && (
-                        <Badge kind="tag" accent={accent}>
-                          CUSTOM
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {isPositionCustom && onResetPosition && (
-                        <button
-                          type="button"
-                          onClick={() => onResetPosition(player.position)}
-                          className="flex items-center gap-1 text-[10px] font-bold"
-                          style={{ color: uiTokens.textMuted, touchAction: 'manipulation' }}>
-                          <RotateCcw size={12} /> Reset
-                        </button>
-                      )}
-                      {onReorder && (
-                        <button
-                          type="button"
-                          onClick={toggleEditing}
-                          className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full"
-                          style={{
-                            color: editing ? colors.onAccent : accent,
-                            background: editing ? accent : `${accent}1a`,
-                            border: `1px solid ${accent}55`,
-                            touchAction: 'manipulation',
-                          }}>
-                          {editing ? (
-                            'Done'
-                          ) : (
-                            <>
-                              <GripVertical size={12} /> Reorder
-                            </>
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {showHint && !editing && onReorder && (
-                    <div className="mb-2 text-[11px]" style={{ color: accent }}>
-                      Tip: tap Reorder to build your own depth chart — your order is saved on this
-                      device.
-                    </div>
-                  )}
-
-                  <div
-                    className="rounded-2xl overflow-hidden"
-                    style={{
-                      background: uiTokens.surfaceCard2,
-                      border: `1px solid ${uiTokens.borderDefault}`,
-                    }}>
-                    {editing && onReorder ? (
-                      <Reorder.Group
-                        axis="y"
-                        values={depthChart.map((p) => p.id)}
-                        onReorder={(ids) => onReorder(player.position, ids as string[])}
-                        style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-                        {depthChart.map((p, i) => (
-                          <Reorder.Item
-                            key={p.id}
-                            value={p.id}
-                            className="flex items-center gap-3 px-4 py-3"
-                            style={{
-                              background: p.id === player.id ? `${accent}1a` : 'transparent',
-                              borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}`,
-                              cursor: 'grab',
-                              touchAction: 'none',
-                            }}>
-                            <GripVertical
-                              size={16}
-                              color={uiTokens.textMuted}
-                              style={{ flexShrink: 0 }}
-                            />
-                            <div
-                              className="text-[10px] font-bold"
-                              style={{
-                                color: statusColor(p.status, colors),
-                                letterSpacing: '0.08em',
-                                minWidth: 64,
-                              }}>
-                              {depthRankLabel[p.depthRank]}
-                            </div>
-                            <div
-                              className="text-xs font-bold"
-                              style={{ color: 'rgba(165,172,175,0.7)', minWidth: 28 }}>
-                              #{p.number}
-                            </div>
-                            <div
-                              className="flex-1 text-sm font-bold truncate"
-                              style={{ color: p.id === player.id ? accent : uiTokens.textPrimary }}>
-                              {p.name}
-                            </div>
-                          </Reorder.Item>
-                        ))}
-                      </Reorder.Group>
-                    ) : (
-                      depthChart.map((p, i) => {
-                        const isCurrent = p.id === player.id;
-                        return (
-                          <button
-                            key={p.id}
-                            type="button"
-                            onClick={() => !isCurrent && onSelectPlayer?.(p)}
-                            className="w-full flex items-center gap-3 px-4 py-3 text-left"
-                            style={{
-                              background: isCurrent ? `${accent}1a` : 'transparent',
-                              borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}`,
-                              touchAction: 'manipulation',
-                              cursor: isCurrent ? 'default' : 'pointer',
-                            }}>
-                            <div
-                              className="text-[10px] font-bold"
-                              style={{
-                                color: statusColor(p.status, colors),
-                                letterSpacing: '0.08em',
-                                minWidth: 64,
-                              }}>
-                              {depthRankLabel[p.depthRank]}
-                            </div>
-                            <div
-                              className="text-xs font-bold"
-                              style={{ color: 'rgba(165,172,175,0.7)', minWidth: 28 }}>
-                              #{p.number}
-                            </div>
-                            <div
-                              className="flex-1 text-sm font-bold truncate"
-                              style={{ color: isCurrent ? accent : uiTokens.textPrimary }}>
-                              {p.name}
-                            </div>
-                            {isCurrent && <Check size={14} color={accent} strokeWidth={3} />}
-                          </button>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {statSeasons.length > 0 && (
-                <div className="px-6 pb-8">
-                  <div
-                    className="text-[10px] font-semibold mb-3"
-                    style={{ color: uiTokens.textMuted, letterSpacing: '0.1em' }}>
-                    SEASON STATS
-                  </div>
-                  {/* A columnar table (SZN + the position's stat columns), not one inline
-                      line per season (design spec 5a). Column set is position-specific
-                      (lib/stat-table.ts); the grid template stretches to however many the
-                      position has. */}
-                  <div
-                    className="rounded-2xl overflow-hidden"
-                    style={{
-                      background: uiTokens.surfaceCard2,
-                      border: `1px solid ${uiTokens.borderDefault}`,
-                    }}>
-                    <div
-                      className="grid gap-x-2 px-2.5 py-2"
-                      style={{
-                        gridTemplateColumns: `minmax(40px, 0.7fr) repeat(${statColumns.length}, 1fr)`,
-                        borderBottom: `1px solid ${uiTokens.borderDefault}`,
-                      }}>
-                      <div
-                        className="text-[8.5px] font-bold"
-                        style={{ color: uiTokens.textFaint, letterSpacing: '0.04em' }}>
-                        SZN
-                      </div>
-                      {statColumns.map((col) => (
-                        <div
-                          key={col.header}
-                          className="text-[8.5px] font-bold"
-                          style={{ color: uiTokens.textFaint, letterSpacing: '0.04em' }}>
-                          {col.header}
-                        </div>
-                      ))}
-                    </div>
-                    {statSeasons.map((s, i) => (
-                      <div
-                        key={s.season}
-                        className="grid gap-x-2 px-2.5 py-[9px] text-[11px] font-bold"
-                        style={{
-                          gridTemplateColumns: `minmax(40px, 0.7fr) repeat(${statColumns.length}, 1fr)`,
-                          borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}`,
-                          background: i === 0 ? `${accent}0d` : 'transparent',
-                        }}>
-                        <div style={{ color: i === 0 ? accent : uiTokens.textPrimary }}>
-                          {s.season}
-                        </div>
-                        {statColumns.map((col) => (
-                          <div
-                            key={col.header}
-                            style={{
-                              color: col.danger?.(s)
-                                ? uiTokens.statusInjured
-                                : uiTokens.textPrimary,
-                            }}>
-                            {col.value(s)}
-                          </div>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {content}
             </div>
           </motion.div>
         </>

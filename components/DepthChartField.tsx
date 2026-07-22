@@ -27,7 +27,9 @@ import PlayerCard from './PlayerCard';
 import PlayerDot from './PlayerDot';
 import SharedBoardBanner from './SharedBoardBanner';
 import TeamPageHeader from './TeamPageHeader';
+import TeamPageShell from './TeamPageShell';
 import UniformSheet from './UniformSheet';
+import { DESKTOP_MEDIA_QUERY, useMediaQuery } from '@/lib/use-media-query';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import Menu from '@/components/ui/Menu';
 import TabBar from '@/components/ui/TabBar';
@@ -49,6 +51,11 @@ export default function DepthChartField({
 }) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeUnit, setActiveUnit] = useState<Unit>('offense');
+  // Desktop docks the selected player's card in TeamPageShell's context panel instead
+  // of the bottom sheet. Decided by matchMedia (not CSS show/hide) so only ONE
+  // PlayerCard ever mounts — two would double its per-player stats fetch. Selection is
+  // always null at SSR, so the hook's server-side `false` renders nothing either way.
+  const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
   const [kitOpen, setKitOpen] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
 
@@ -201,167 +208,196 @@ export default function DepthChartField({
     setSelectedPlayer(player);
   };
 
+  // One prop set for both card placements, so sheet and docked stay behaviorally
+  // identical (reorder wiring included).
+  const playerCardProps = {
+    player: displaySelected,
+    roster: themedRoster,
+    onClose: () => setSelectedPlayer(null),
+    onSelectPlayer: setSelectedPlayer,
+    ...(previewing
+      ? {}
+      : {
+          onReorder: handleReorder,
+          onResetPosition: handleResetPosition,
+          isPositionCustom: displaySelected ? !!override[displaySelected.position] : false,
+        }),
+  };
+
   return (
-    <div
-      className="flex flex-col mx-auto w-full"
-      style={{
-        height: '100dvh',
-        maxWidth: 720,
-        overflow: 'hidden',
-        background: uiTokens.bg,
-        position: 'relative',
-      }}>
-      {/* Header */}
+    <TeamPageShell
+      team={team}
+      teams={teams}
+      activePage="roster"
+      accent={activeColors.uiAccent}
+      aside={
+        isDesktop && displaySelected ? (
+          <PlayerCard variant="docked" {...playerCardProps} />
+        ) : (
+          // Empty state from the desktop mock: tells first-time desktop users the card
+          // docks here rather than covering the chart.
+          <div className="flex h-full flex-col items-center justify-center gap-2.5 px-8 text-center">
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-full text-[13px] font-bold"
+              style={{ border: `2px dashed ${uiTokens.borderInput}`, color: uiTokens.textFaint }}>
+              #
+            </div>
+            <div className="text-[13px] font-bold" style={{ color: uiTokens.textSecondary }}>
+              No player selected
+            </div>
+            <div className="text-xs leading-relaxed" style={{ color: uiTokens.textFaint }}>
+              Click a dot on the field — the card docks here instead of covering the chart.
+            </div>
+          </div>
+        )
+      }>
       <div
-        className="px-5 pb-3"
+        className="relative flex flex-col mx-auto w-full max-w-[720px] xl:max-w-none"
         style={{
+          height: '100dvh',
+          overflow: 'hidden',
           background: uiTokens.bg,
-          flex: '0 0 auto',
-          paddingTop: 'max(env(safe-area-inset-top), 12px)',
         }}>
-        <TeamPageHeader
-          team={team}
-          teams={teams}
-          colors={activeColors}
-          activePage="roster"
-          currentTeamPlayers={themedRoster.players}
-          onSelectPlayer={handleNavSelectPlayer}
-        />
-        {/* On its own row, 20px below the header line: unit tabs as underline
+        {/* Header */}
+        <div
+          className="px-5 pb-3"
+          style={{
+            background: uiTokens.bg,
+            flex: '0 0 auto',
+            paddingTop: 'max(env(safe-area-inset-top), 12px)',
+          }}>
+          <TeamPageHeader
+            team={team}
+            teams={teams}
+            colors={activeColors}
+            activePage="roster"
+            currentTeamPlayers={themedRoster.players}
+            onSelectPlayer={handleNavSelectPlayer}
+          />
+          {/* On its own row, 20px below the header line: unit tabs as underline
             tabs (left) and the collapsed uniform/share "•••" menu (right) —
             visually distinct from the page switcher above so the two levels
             don't read as duplicate controls (design spec 5a). */}
-        <div
-          className="flex items-center justify-between mt-5"
-          style={{ borderBottom: `1px solid ${uiTokens.borderDefault}` }}>
-          <TabBar
-            options={(['offense', 'defense', 'special'] as const).map((unit) => ({
-              value: unit,
-              label: UNIT_LABELS[unit].toUpperCase(),
-            }))}
-            value={activeUnit}
-            onChange={(v) => {
-              setActiveUnit(v as Unit);
-              setSelectedPlayer(null);
-            }}
-            activeColor={activeColors.uiAccent}
-          />
-          <Menu
-            ariaLabel="More options"
-            trigger={<MoreHorizontal size={16} />}
-            items={[
-              {
-                icon: <Shirt size={14} color={activeColors.uiAccent} />,
-                label: 'Choose uniform',
-                onClick: () => setKitOpen(true),
-              },
-              {
-                icon: shareCopied ? (
-                  <Check size={14} color={activeColors.uiAccent} strokeWidth={3} />
-                ) : (
-                  <Share2 size={14} color={activeColors.uiAccent} />
-                ),
-                label: shareCopied ? 'Link copied' : 'Share roster',
-                onClick: handleShareRoster,
-              },
-            ]}
+          <div
+            className="flex items-center justify-between mt-5"
+            style={{ borderBottom: `1px solid ${uiTokens.borderDefault}` }}>
+            <TabBar
+              options={(['offense', 'defense', 'special'] as const).map((unit) => ({
+                value: unit,
+                label: UNIT_LABELS[unit].toUpperCase(),
+              }))}
+              value={activeUnit}
+              onChange={(v) => {
+                setActiveUnit(v as Unit);
+                setSelectedPlayer(null);
+              }}
+              activeColor={activeColors.uiAccent}
+            />
+            <Menu
+              ariaLabel="More options"
+              trigger={<MoreHorizontal size={16} />}
+              items={[
+                {
+                  icon: <Shirt size={14} color={activeColors.uiAccent} />,
+                  label: 'Choose uniform',
+                  onClick: () => setKitOpen(true),
+                },
+                {
+                  icon: shareCopied ? (
+                    <Check size={14} color={activeColors.uiAccent} strokeWidth={3} />
+                  ) : (
+                    <Share2 size={14} color={activeColors.uiAccent} />
+                  ),
+                  label: shareCopied ? 'Link copied' : 'Share roster',
+                  onClick: handleShareRoster,
+                },
+              ]}
+            />
+          </div>
+          {/* Tells the user this team's depth is their custom order, with one-tap revert.
+            Hidden while previewing a shared board — that order isn't theirs to reset. */}
+          {hasOverride(override) && !previewing && (
+            <button
+              type="button"
+              onClick={handleResetTeam}
+              className="flex items-center gap-1 mt-3 text-[10px] font-bold px-2 py-1 rounded-full"
+              style={{
+                color: activeColors.uiAccent,
+                background: `${activeColors.uiAccent}1a`,
+                border: `1px solid ${activeColors.uiAccent}55`,
+                width: 'fit-content',
+                touchAction: 'manipulation',
+              }}>
+              <RotateCcw size={11} /> Custom order · Reset all
+            </button>
+          )}
+          {/* Shared-board preview banner (Apply / Dismiss), pinned just above the field. */}
+          <SharedBoardBanner
+            currentTeam={team}
+            teams={teams}
+            accent={activeColors.uiAccent}
+            onPreview={setPreviewOverride}
+            onApply={handleApplySharedOrder}
           />
         </div>
-        {/* Tells the user this team's depth is their custom order, with one-tap revert.
-            Hidden while previewing a shared board — that order isn't theirs to reset. */}
-        {hasOverride(override) && !previewing && (
-          <button
-            type="button"
-            onClick={handleResetTeam}
-            className="flex items-center gap-1 mt-3 text-[10px] font-bold px-2 py-1 rounded-full"
-            style={{
-              color: activeColors.uiAccent,
-              background: `${activeColors.uiAccent}1a`,
-              border: `1px solid ${activeColors.uiAccent}55`,
-              width: 'fit-content',
-              touchAction: 'manipulation',
-            }}>
-            <RotateCcw size={11} /> Custom order · Reset all
-          </button>
-        )}
-        {/* Shared-board preview banner (Apply / Dismiss), pinned just above the field. */}
-        <SharedBoardBanner
-          currentTeam={team}
-          teams={teams}
-          accent={activeColors.uiAccent}
-          onPreview={setPreviewOverride}
-          onApply={handleApplySharedOrder}
-        />
-      </div>
 
-      {/* Field — fills remaining viewport space */}
-      <div
-        className="px-3 flex flex-col"
-        style={{
-          flex: '1 1 0',
-          minHeight: 0,
-          paddingBottom: 'max(env(safe-area-inset-bottom), 8px)',
-        }}>
+        {/* Field — fills remaining viewport space */}
         <div
-          className="relative w-full rounded-2xl overflow-hidden"
+          className="px-3 flex flex-col"
           style={{
             flex: '1 1 0',
             minHeight: 0,
-            background:
-              'linear-gradient(180deg, #1e3d10 0%, #2d5a1b 40%, #2d5a1b 60%, #1e3d10 100%)',
-            boxShadow: `inset 0 0 60px ${uiTokens.scrimLight}, 0 4px 32px ${uiTokens.scrim}`,
+            paddingBottom: 'max(env(safe-area-inset-bottom), 8px)',
           }}>
-          <FieldMarkings />
+          <div
+            className="relative w-full rounded-2xl overflow-hidden"
+            style={{
+              flex: '1 1 0',
+              minHeight: 0,
+              background:
+                'linear-gradient(180deg, #1e3d10 0%, #2d5a1b 40%, #2d5a1b 60%, #1e3d10 100%)',
+              boxShadow: `inset 0 0 60px ${uiTokens.scrimLight}, 0 4px 32px ${uiTokens.scrim}`,
+            }}>
+            <FieldMarkings />
 
-          {slots.map((slot) => {
-            const player = slot.player;
-            if (!player) return null;
-            return (
-              <PlayerDot
-                key={slot.key}
-                player={player}
-                slot={slot}
-                isSelected={selectedPlayer?.id === player.id}
-                onClick={handlePlayerClick}
-                teamPrimary={activeColors.primary}
-                teamColors={activeColors}
-                unit={activeUnit}
-              />
-            );
-          })}
-        </div>
-      </div>
-
-      <BottomSheet isOpen={kitOpen} onClose={() => setKitOpen(false)}>
-        <UniformSheet
-          uniforms={roster.uniforms}
-          activeId={activeUniform?.id ?? ''}
-          accent={activeColors.uiAccent}
-          onSelect={setKitId}
-          onClose={() => setKitOpen(false)}
-        />
-      </BottomSheet>
-
-      <PlayerCard
-        player={displaySelected}
-        roster={themedRoster}
-        onClose={() => setSelectedPlayer(null)}
-        onSelectPlayer={setSelectedPlayer}
-        {...(previewing
-          ? {}
-          : {
-              onReorder: handleReorder,
-              onResetPosition: handleResetPosition,
-              isPositionCustom: displaySelected ? !!override[displaySelected.position] : false,
+            {slots.map((slot) => {
+              const player = slot.player;
+              if (!player) return null;
+              return (
+                <PlayerDot
+                  key={slot.key}
+                  player={player}
+                  slot={slot}
+                  isSelected={selectedPlayer?.id === player.id}
+                  onClick={handlePlayerClick}
+                  teamPrimary={activeColors.primary}
+                  teamColors={activeColors}
+                  unit={activeUnit}
+                />
+              );
             })}
-      />
+          </div>
+        </div>
 
-      <OpenPlayerFromQuery players={displayRoster.players} onOpen={handleNavSelectPlayer} />
+        <BottomSheet isOpen={kitOpen} onClose={() => setKitOpen(false)}>
+          <UniformSheet
+            uniforms={roster.uniforms}
+            activeId={activeUniform?.id ?? ''}
+            accent={activeColors.uiAccent}
+            onSelect={setKitId}
+            onClose={() => setKitOpen(false)}
+          />
+        </BottomSheet>
 
-      <ApplyKitFromQuery validIds={roster.uniforms.map((u) => u.id)} onApply={setKitId} />
+        {!isDesktop && <PlayerCard {...playerCardProps} />}
 
-      <ApplySharedOrder onApply={handleApplySharedOrder} />
-    </div>
+        <OpenPlayerFromQuery players={displayRoster.players} onOpen={handleNavSelectPlayer} />
+
+        <ApplyKitFromQuery validIds={roster.uniforms.map((u) => u.id)} onApply={setKitId} />
+
+        <ApplySharedOrder onApply={handleApplySharedOrder} />
+      </div>
+    </TeamPageShell>
   );
 }
 
