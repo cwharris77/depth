@@ -3,10 +3,10 @@
 // Desktop-only left rail (hidden below `xl` — see lib/use-media-query.ts for the one
 // breakpoint). Persistent navigation for wide screens (Wide-screen responsive multi-panel
 // ticket; layout from the Claude Design "Depth Wide Desktop" mock): the full team list
-// with the current team checked, plus the global destinations (uniform archive,
-// sign-in/account) that live in the mobile NavDrawer. On desktop the rail replaces both
-// the drawer and the header team-switcher's *browse* role — the header pill stays for
-// search (NavSwitcher's player/team command palette). Switching teams preserves the
+// grouped by conference/division (same sectioning as NavSwitcher's idle browse) with the
+// current team checked, plus the global destinations (uniform archive, sign-in/account)
+// that live in the mobile NavDrawer. On desktop the rail fully replaces the drawer and
+// the header's team-switcher pill (which is mobile-only); switching teams preserves the
 // active page, so picking a team from /schedule lands on the new team's /schedule.
 import { colors as uiTokens } from '@/components/ui/tokens';
 import SectionLabel from '@/components/ui/SectionLabel';
@@ -25,15 +25,20 @@ function teamHref(teamId: string, page: TeamPageKey): string {
   return page === 'roster' ? `/team/${teamId}` : `/team/${teamId}/${page}`;
 }
 
-// Conference → division → city, so the list reads in stable league order rather than
-// jumping around alphabetically across the whole league.
-function sortTeams(teams: TeamMeta[]): TeamMeta[] {
-  return [...teams].sort(
-    (a, b) =>
-      a.conference.localeCompare(b.conference) ||
-      a.division.localeCompare(b.division) ||
-      a.city.localeCompare(b.city)
-  );
+// Conference → division sections in league order, cities alphabetical within each — the
+// same grouping NavSwitcher's idle browse uses, so the two team lists read identically.
+const CONFERENCE_ORDER = ['AFC', 'NFC'] as const;
+const DIVISION_ORDER = ['East', 'North', 'South', 'West'] as const;
+
+function groupTeams(teams: TeamMeta[]) {
+  return CONFERENCE_ORDER.flatMap((conference) =>
+    DIVISION_ORDER.map((division) => ({
+      label: `${conference} ${division.toUpperCase()}`,
+      teams: teams
+        .filter((t) => t.conference === conference && t.division === division)
+        .sort((a, b) => a.city.localeCompare(b.city)),
+    }))
+  ).filter((g) => g.teams.length > 0);
 }
 
 export default function TeamRail({
@@ -84,47 +89,51 @@ export default function TeamRail({
       <Link href="/" className="px-2 pb-4 w-fit" aria-label="Depth home">
         <DepthMark color={accent} />
       </Link>
-      <SectionLabel className="px-2 pb-2">TEAMS</SectionLabel>
-      <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
-        {sortTeams(teams).map((t) => {
-          const isCurrent = t.id === team.id;
-          return (
-            <Link
-              key={t.id}
-              ref={isCurrent ? currentRowRef : undefined}
-              href={teamHref(t.id, activePage)}
-              aria-disabled={isPending}
-              aria-current={isCurrent ? 'page' : undefined}
-              onClick={(e) => selectTeam(t, e)}
-              className="flex items-center gap-2.5 rounded-[10px] px-2 py-2"
-              style={{
-                background: isCurrent ? `${t.colors.uiAccent}14` : 'transparent',
-                pointerEvents: isPending ? 'none' : undefined,
-                opacity: isPending ? 0.6 : 1,
-              }}>
-              <span
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[10px] font-black"
-                style={{
-                  background: t.colors.primary,
-                  border: `1px solid ${t.colors.secondary}`,
-                  color: readableTextOn(t.colors.primary),
-                }}>
-                {t.abbrev}
-              </span>
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span
-                  className="truncate text-xs font-bold"
-                  style={{ color: uiTokens.textPrimary }}>
-                  {t.city} {t.name}
-                </span>
-                <span className="text-[10px]" style={{ color: uiTokens.textMuted }}>
-                  {t.conference} {t.division}
-                </span>
-              </span>
-              {isCurrent && <Check size={13} color={t.colors.uiAccent} strokeWidth={3} />}
-            </Link>
-          );
-        })}
+      {/* scrollbar-width: none — the rail is a nav surface, not a document; a visible
+          scrollbar beside the field reads as noise (same suppression as TeamStatsView's
+          season strip). */}
+      <div
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto"
+        style={{ scrollbarWidth: 'none' }}>
+        {groupTeams(teams).map((group) => (
+          <div key={group.label} className="flex flex-col gap-0.5 pb-2">
+            <SectionLabel className="px-2 pb-1 pt-1.5">{group.label}</SectionLabel>
+            {group.teams.map((t) => {
+              const isCurrent = t.id === team.id;
+              return (
+                <Link
+                  key={t.id}
+                  ref={isCurrent ? currentRowRef : undefined}
+                  href={teamHref(t.id, activePage)}
+                  aria-disabled={isPending}
+                  aria-current={isCurrent ? 'page' : undefined}
+                  onClick={(e) => selectTeam(t, e)}
+                  className="flex items-center gap-2.5 rounded-[10px] px-2 py-2"
+                  style={{
+                    background: isCurrent ? `${t.colors.uiAccent}14` : 'transparent',
+                    pointerEvents: isPending ? 'none' : undefined,
+                    opacity: isPending ? 0.6 : 1,
+                  }}>
+                  <span
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[10px] font-black"
+                    style={{
+                      background: t.colors.primary,
+                      border: `1px solid ${t.colors.secondary}`,
+                      color: readableTextOn(t.colors.primary),
+                    }}>
+                    {t.abbrev}
+                  </span>
+                  <span
+                    className="min-w-0 flex-1 truncate text-xs font-bold"
+                    style={{ color: uiTokens.textPrimary }}>
+                    {t.city} {t.name}
+                  </span>
+                  {isCurrent && <Check size={13} color={t.colors.uiAccent} strokeWidth={3} />}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </div>
       <div
         className="mt-3.5 flex flex-col gap-0.5 pt-3.5"
