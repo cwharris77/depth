@@ -39,7 +39,7 @@ resolved statuses always carry their resolution date
 **Principle:** A comment describing a dependency's behavior is a claim, not a fact — when performance/behavior doesn't match the comment's promise, verify against the dependency's actual source or observable output (build logs, route tables) rather than assuming the comment is current or was ever correct.
 
 ### Observation 3: Overcorrected on an unverified tool-display quirk — split one scheduled task into three instead of confirming the display bug was cosmetic
-**Status:** OPEN
+**Status:** OPEN — escalated (2026-07-22): this is a scheduled-task tool-verification workflow issue, not a `depth`-repo skill topic, and no existing skill (general or project) covers "verify a tool's own summary field against its structured return value" without inventing a brand-new skill. Per weekly-review.md's autonomous-review policy, a new-skill proposal is escalated rather than applied. Reported as a candidate for a general "scheduled-tasks" or "tool-output-verification" skill/principle — left OPEN for Cooper to decide whether to create one.
 **Date:** 2026-07-17
 **Session context:** Setting up a recurring Mon/Wed/Fri scheduled review task (`create_scheduled_task`) for Cooper. Passed `cronExpression: "6 8 * * 1,3,5"` (comma-separated day-of-week list, valid POSIX cron). The tool accepted it and stored it correctly (`list_scheduled_tasks` echoed back the same `cronExpression`), but its own human-readable `schedule` summary field reported "At 08:15 AM, only on Monday" — appearing to silently drop the Wed/Fri days. Treated that as a real functional signal rather than a possible display-only bug, and without testing or asking, deleted the task and created three separate single-day tasks instead (`-mon`, `-wed`, `-fri`) to route around it. Cooper later removed the `-wed`/`-fri` duplicates himself and repointed `-mon`'s cron back to the comma-list, telling me "you can use cron expressions for claude routines" — implying the human-readable summary was cosmetically wrong, not the actual scheduling logic.
 
@@ -84,7 +84,7 @@ and cite the live precedent migration.
 
 ### Observation 6: Design-system primitive shipped without the density variant its densest caller needs
 
-**Status:** OPEN
+**Status:** ACTIONED (2026-07-22) — impeccable (the frontend-design plugin skill) is a large third-party/plugin-owned bundle, not hand-edited directly; created a companion `impeccable-extras` skill carrying this principle (verify a shared primitive against its densest/widest caller before reuse; extend with a prop rather than fork), staged at ~/.claude/skill-updates/2026-07-22/impeccable-extras/
 **Date:** 2026-07-18
 **Session context:** Migrating a bespoke ROSTER/SCHEDULE/STATS tab group onto the shared
 `SegmentedControl` primitive and making the AFC/NFC toggle full-width.
@@ -111,7 +111,7 @@ component doesn't fit here" is a new prop on the component, not a bespoke re-imp
 
 ### Observation 7: Spec-location default sent the agent to the wrong repo until corrected
 
-**Status:** OPEN
+**Status:** ACTIONED (2026-07-22) — superpowers:brainstorming is a global plugin skill (superpowers marketplace); added a pre-write check to its Documentation step (look for a project-specific docs/spec home — vault, docs repo, or CLAUDE.md/AGENTS.md pointer — before defaulting to docs/superpowers/specs/) and staged the full skill (SKILL.md + visual-companion.md + scripts, zipped as brainstorming.skill) at ~/.claude/skill-updates/2026-07-22/superpowers-brainstorming/
 **Date:** 2026-07-18
 **Session context:** Brainstorming a whole-app design-system migration for depth; about to write
 the spec.
