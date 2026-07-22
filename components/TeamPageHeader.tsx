@@ -86,13 +86,14 @@ export default function TeamPageHeader({
         {/* Team switcher trigger — styled as a visible pill, not plain text, so it
             reads as tappable. Labeled with team.abbrev (the existing short-name
             column) rather than city + mascot, compact enough to sit alongside the
-            page switcher. */}
+            page switcher. Mobile-only: at xl the persistent TeamRail owns team
+            switching, so the pill (and with it the NavSwitcher sheet) hides. */}
         <div className="flex items-center gap-1.5 min-w-0">
           <button
             type="button"
             onClick={() => setNavOpen(true)}
             aria-label="Switch team or search players"
-            className="flex items-center gap-1.5 text-left min-w-0 rounded-full pl-3 pr-2 py-1.5 shrink-0"
+            className="flex items-center gap-1.5 text-left min-w-0 rounded-full pl-3 pr-2 py-1.5 shrink-0 xl:hidden"
             style={{
               touchAction: 'manipulation',
               background: uiTokens.surfaceChip,
