@@ -11,7 +11,9 @@ import { ordinal } from '@/lib/format';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { Leader, RosterLeaders, TeamScheduleGame, TeamStats } from '@/lib/types';
 import { useState } from 'react';
+import StatsPanel from './StatsPanel';
 import TeamPageHeader from './TeamPageHeader';
+import TeamPageShell from './TeamPageShell';
 
 interface Props {
   team: TeamMeta;
@@ -95,14 +97,26 @@ export default function TeamStatsView({
     </div>
   );
 
+  // Both return paths render inside the shell so desktop keeps the rail + panel frame
+  // even in the degraded no-stats state (StatsPanel renders nothing for zero seasons).
+  const shellProps = {
+    team,
+    teams,
+    activePage: 'stats' as const,
+    accent: uiAccent,
+    aside: <StatsPanel seasons={seasons} accent={uiAccent} />,
+  };
+
   if (seasons.length === 0 && !incomingCoach && !upcomingSeason) {
     return (
-      <div style={{ minHeight: '100dvh', background: uiTokens.bg, color: uiTokens.textPrimary }}>
-        {header}
-        <p className="px-5 text-sm" style={{ color: uiTokens.textMuted }}>
-          No stats available for this team yet.
-        </p>
-      </div>
+      <TeamPageShell {...shellProps}>
+        <div style={{ minHeight: '100dvh', background: uiTokens.bg, color: uiTokens.textPrimary }}>
+          {header}
+          <p className="px-5 text-sm" style={{ color: uiTokens.textMuted }}>
+            No stats available for this team yet.
+          </p>
+        </div>
+      </TeamPageShell>
     );
   }
 
@@ -155,297 +169,299 @@ export default function TeamStatsView({
   const gamesPlayed = active ? active.overallWins + active.overallLosses + active.overallTies : 0;
 
   return (
-    <div style={{ minHeight: '100dvh', background: uiTokens.bg, color: uiTokens.textPrimary }}>
-      {header}
+    <TeamPageShell {...shellProps}>
+      <div style={{ minHeight: '100dvh', background: uiTokens.bg, color: uiTokens.textPrimary }}>
+        {header}
 
-      {/* Season switcher — no prev/next arrows: desktop is wide enough to show every
+        {/* Season switcher — no prev/next arrows: desktop is wide enough to show every
           season at once, and mobile relies on the horizontal swipe affordance. */}
-      <div
-        className="flex items-center gap-1.5 px-2.5 py-2.5 overflow-x-auto"
-        style={{
-          borderBottom: `1px solid ${uiTokens.borderStrong}`,
-          background: uiTokens.bgFilterbar,
-          scrollbarWidth: 'none',
-        }}>
-        {[...seasons]
-          .map((s, i) => ({ s, i }))
-          .reverse()
-          .map(({ s, i }) => {
-            const isSelected = i === clampedIndex;
-            const isLatest = i === 0;
-            return (
-              <button
-                key={s.season}
-                type="button"
-                onClick={() => setIndex(i)}
-                className="shrink-0 flex items-center gap-1.5 rounded-[3px] px-3 py-1.5 text-xs font-bold"
-                style={{
-                  background: isSelected ? uiAccent : 'transparent',
-                  color: isSelected ? uiTokens.bg : uiTokens.textMuted,
-                  border: `1px solid ${isSelected ? uiAccent : uiTokens.borderInput}`,
-                }}>
-                {isLatest && (
-                  <span
-                    className="inline-block h-1.5 w-1.5 rounded-full"
-                    style={{ background: isSelected ? uiTokens.bg : uiAccent }}
-                  />
-                )}
-                {s.season}
-              </button>
-            );
-          })}
-        {/* Upcoming season chip — shown for ALL teams during the off-season, not just
+        <div
+          className="flex items-center gap-1.5 px-2.5 py-2.5 overflow-x-auto"
+          style={{
+            borderBottom: `1px solid ${uiTokens.borderStrong}`,
+            background: uiTokens.bgFilterbar,
+            scrollbarWidth: 'none',
+          }}>
+          {[...seasons]
+            .map((s, i) => ({ s, i }))
+            .reverse()
+            .map(({ s, i }) => {
+              const isSelected = i === clampedIndex;
+              const isLatest = i === 0;
+              return (
+                <button
+                  key={s.season}
+                  type="button"
+                  onClick={() => setIndex(i)}
+                  className="shrink-0 flex items-center gap-1.5 rounded-[3px] px-3 py-1.5 text-xs font-bold"
+                  style={{
+                    background: isSelected ? uiAccent : 'transparent',
+                    color: isSelected ? uiTokens.bg : uiTokens.textMuted,
+                    border: `1px solid ${isSelected ? uiAccent : uiTokens.borderInput}`,
+                  }}>
+                  {isLatest && (
+                    <span
+                      className="inline-block h-1.5 w-1.5 rounded-full"
+                      style={{ background: isSelected ? uiTokens.bg : uiAccent }}
+                    />
+                  )}
+                  {s.season}
+                </button>
+              );
+            })}
+          {/* Upcoming season chip — shown for ALL teams during the off-season, not just
             new-coach teams (Stats & Analytics P2). Renders after every real season chip
             and uses the same badge pattern as the schedule page's HOME/AWAY badge. */}
-        {upcomingSeason && (
-          <button
-            type="button"
-            onClick={() => setIndex(-1)}
-            className="shrink-0 flex items-center gap-1.5 rounded-[3px] px-3 py-1.5 text-xs font-bold"
-            style={{
-              background: clampedIndex === -1 ? uiAccent : 'transparent',
-              color: clampedIndex === -1 ? uiTokens.bg : uiTokens.textMuted,
-              border: `1px dashed ${clampedIndex === -1 ? uiAccent : uiTokens.borderInput}`,
-            }}>
-            {upcomingSeason}
-            {(clampedIndex === -1 || !hasIncomingCoach) && (
-              <span
-                className="inline-block rounded-full px-1.5 py-[1px] text-[8px] font-bold tracking-[0.04em]"
-                style={{
-                  color: clampedIndex === -1 ? uiTokens.bg : uiAccent,
-                  background: clampedIndex === -1 ? `${uiTokens.bg}33` : `${uiAccent}1a`,
-                  border: `1px solid ${clampedIndex === -1 ? `${uiTokens.bg}55` : `${uiAccent}55`}`,
-                }}>
-                UPCOMING
-              </span>
-            )}
-          </button>
-        )}
-      </div>
+          {upcomingSeason && (
+            <button
+              type="button"
+              onClick={() => setIndex(-1)}
+              className="shrink-0 flex items-center gap-1.5 rounded-[3px] px-3 py-1.5 text-xs font-bold"
+              style={{
+                background: clampedIndex === -1 ? uiAccent : 'transparent',
+                color: clampedIndex === -1 ? uiTokens.bg : uiTokens.textMuted,
+                border: `1px dashed ${clampedIndex === -1 ? uiAccent : uiTokens.borderInput}`,
+              }}>
+              {upcomingSeason}
+              {(clampedIndex === -1 || !hasIncomingCoach) && (
+                <span
+                  className="inline-block rounded-full px-1.5 py-[1px] text-[8px] font-bold tracking-[0.04em]"
+                  style={{
+                    color: clampedIndex === -1 ? uiTokens.bg : uiAccent,
+                    background: clampedIndex === -1 ? `${uiTokens.bg}33` : `${uiAccent}1a`,
+                    border: `1px solid ${clampedIndex === -1 ? `${uiTokens.bg}55` : `${uiAccent}55`}`,
+                  }}>
+                  UPCOMING
+                </span>
+              )}
+            </button>
+          )}
+        </div>
 
-      {/* Team + coach — coach is season-scoped, keyed off the active season row
+        {/* Team + coach — coach is season-scoped, keyed off the active season row
           (docs/superpowers/specs/2026-07-14-season-scoped-head-coach-design.md). The
           incoming-coach chip (index -1) has no season stats to attach to, so it gets its
           own short-circuited render below instead of falling through to `active.coach`. */}
-      <div className="px-5 pt-[18px]">
-        <div
-          className="text-[11px] font-bold tracking-[0.1em]"
-          style={{ color: uiTokens.textFaint }}>
-          {team.city.toUpperCase()} {team.name.toUpperCase()}
-        </div>
-        {active?.coach && (
-          <CoachBadge
-            name={active.coach.name}
-            meta={`HEAD COACH · ${ordinal(active.coach.experience).toUpperCase()} SEASON`}
-            uiAccent={uiAccent}
-          />
-        )}
-        {!active && (
-          <>
-            {/* Upcoming season — general off-season chip for all teams */}
-            {clampedIndex === -1 && incomingCoach && (
-              <CoachBadge
-                name={incomingCoach.name}
-                meta="HEAD COACH · INCOMING"
-                uiAccent={uiAccent}
-              />
-            )}
-            {/* No coach change — carry the latest season's coach forward rather than a
+        <div className="px-5 pt-[18px]">
+          <div
+            className="text-[11px] font-bold tracking-[0.1em]"
+            style={{ color: uiTokens.textFaint }}>
+            {team.city.toUpperCase()} {team.name.toUpperCase()}
+          </div>
+          {active?.coach && (
+            <CoachBadge
+              name={active.coach.name}
+              meta={`HEAD COACH · ${ordinal(active.coach.experience).toUpperCase()} SEASON`}
+              uiAccent={uiAccent}
+            />
+          )}
+          {!active && (
+            <>
+              {/* Upcoming season — general off-season chip for all teams */}
+              {clampedIndex === -1 && incomingCoach && (
+                <CoachBadge
+                  name={incomingCoach.name}
+                  meta="HEAD COACH · INCOMING"
+                  uiAccent={uiAccent}
+                />
+              )}
+              {/* No coach change — carry the latest season's coach forward rather than a
                 bare "schedule available" placeholder (the coach doesn't reset just
                 because there's no team_stats row yet for the upcoming season). */}
-            {clampedIndex === -1 && !incomingCoach && seasons[0]?.coach && (
-              <CoachBadge
-                name={seasons[0].coach.name}
-                meta={`HEAD COACH · ${ordinal(seasons[0].coach.experience + 1).toUpperCase()} SEASON`}
-                uiAccent={uiAccent}
-              />
-            )}
-            {/* Incoming coach but no upcoming season (shouldn't happen, but
+              {clampedIndex === -1 && !incomingCoach && seasons[0]?.coach && (
+                <CoachBadge
+                  name={seasons[0].coach.name}
+                  meta={`HEAD COACH · ${ordinal(seasons[0].coach.experience + 1).toUpperCase()} SEASON`}
+                  uiAccent={uiAccent}
+                />
+              )}
+              {/* Incoming coach but no upcoming season (shouldn't happen, but
                 defensive: legacy case from before the generalized chip). */}
-            {clampedIndex === -2 && incomingCoach && (
-              <CoachBadge
-                name={incomingCoach.name}
-                meta="HEAD COACH · INCOMING"
-                uiAccent={uiAccent}
-              />
-            )}
-          </>
-        )}
-      </div>
+              {clampedIndex === -2 && incomingCoach && (
+                <CoachBadge
+                  name={incomingCoach.name}
+                  meta="HEAD COACH · INCOMING"
+                  uiAccent={uiAccent}
+                />
+              )}
+            </>
+          )}
+        </div>
 
-      {active ? (
-        <>
-          {/* Hero record */}
-          <div
-            className="mt-0.5 flex items-baseline justify-between px-5 pb-[18px] pt-2"
-            style={{ borderBottom: `1px dashed ${uiTokens.borderInput}` }}>
-            <div className="text-[52px] font-bold leading-none tracking-[-0.02em]">{record}</div>
-            <div className="text-right">
-              <div className="text-[13px] font-bold" style={{ color: uiAccent }}>
-                {active.streak}
-              </div>
-              <div className="text-[11px]" style={{ color: uiTokens.textFaint }}>
-                {active.playoffSeed
-                  ? `SEED ${active.playoffSeed} · ${team.conference}`
-                  : `MISSED PLAYOFFS · ${team.conference}`}
+        {active ? (
+          <>
+            {/* Hero record */}
+            <div
+              className="mt-0.5 flex items-baseline justify-between px-5 pb-[18px] pt-2"
+              style={{ borderBottom: `1px dashed ${uiTokens.borderInput}` }}>
+              <div className="text-[52px] font-bold leading-none tracking-[-0.02em]">{record}</div>
+              <div className="text-right">
+                <div className="text-[13px] font-bold" style={{ color: uiAccent }}>
+                  {active.streak}
+                </div>
+                <div className="text-[11px]" style={{ color: uiTokens.textFaint }}>
+                  {active.playoffSeed
+                    ? `SEED ${active.playoffSeed} · ${team.conference}`
+                    : `MISSED PLAYOFFS · ${team.conference}`}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Breakdown table */}
-          <div className="px-5">
-            <table className="mt-1.5 w-full border-collapse text-xs">
-              <tbody>
-                <tr style={{ borderBottom: `1px solid ${uiTokens.borderStrong}` }}>
-                  <StatCell label="HOME" value={wl(active.homeWins, active.homeLosses)} />
-                  <td className="w-6" />
-                  <StatCell label="ROAD" value={wl(active.roadWins, active.roadLosses)} />
-                </tr>
-                <tr style={{ borderBottom: `1px solid ${uiTokens.borderStrong}` }}>
-                  <StatCell label="DIV" value={wl(active.divisionWins, active.divisionLosses)} />
-                  <td className="w-6" />
-                  <StatCell
-                    label="CONF"
-                    value={wl(active.conferenceWins, active.conferenceLosses)}
-                  />
-                </tr>
-                <tr style={{ borderBottom: `1px solid ${uiTokens.borderStrong}` }}>
-                  <StatCell label="PF" value={String(active.pointsFor)} />
-                  <td className="w-6" />
-                  <StatCell label="PA" value={String(active.pointsAgainst)} />
-                </tr>
-                <tr>
-                  <StatCell label="DIFF" value={diffLabel} color={diffColor} />
-                  <td colSpan={2} />
-                </tr>
-              </tbody>
-            </table>
-          </div>
+            {/* Breakdown table */}
+            <div className="px-5">
+              <table className="mt-1.5 w-full border-collapse text-xs">
+                <tbody>
+                  <tr style={{ borderBottom: `1px solid ${uiTokens.borderStrong}` }}>
+                    <StatCell label="HOME" value={wl(active.homeWins, active.homeLosses)} />
+                    <td className="w-6" />
+                    <StatCell label="ROAD" value={wl(active.roadWins, active.roadLosses)} />
+                  </tr>
+                  <tr style={{ borderBottom: `1px solid ${uiTokens.borderStrong}` }}>
+                    <StatCell label="DIV" value={wl(active.divisionWins, active.divisionLosses)} />
+                    <td className="w-6" />
+                    <StatCell
+                      label="CONF"
+                      value={wl(active.conferenceWins, active.conferenceLosses)}
+                    />
+                  </tr>
+                  <tr style={{ borderBottom: `1px solid ${uiTokens.borderStrong}` }}>
+                    <StatCell label="PF" value={String(active.pointsFor)} />
+                    <td className="w-6" />
+                    <StatCell label="PA" value={String(active.pointsAgainst)} />
+                  </tr>
+                  <tr>
+                    <StatCell label="DIFF" value={diffLabel} color={diffColor} />
+                    <td colSpan={2} />
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-          {/* Footer ticker */}
-          <div
-            className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
-            style={{ color: uiTokens.textFaintest }}>
-            {active.season} SEASON · {gamesPlayed} GAMES PLAYED ▸▸▸
-          </div>
-        </>
-      ) : clampedIndex === -1 && upcomingSeason ? (
-        <>
-          {/* Upcoming season view — shown for ALL teams during the off-season, not
+            {/* Footer ticker */}
+            <div
+              className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
+              style={{ color: uiTokens.textFaintest }}>
+              {active.season} SEASON · {gamesPlayed} GAMES PLAYED ▸▸▸
+            </div>
+          </>
+        ) : clampedIndex === -1 && upcomingSeason ? (
+          <>
+            {/* Upcoming season view — shown for ALL teams during the off-season, not
               just new-coach teams (Stats & Analytics P2). Degrade instead of faking a
               0-0 record (invariant 6) — there are no stats to show yet. */}
-          <div
-            className="mt-0.5 px-5 pb-[18px] pt-2"
-            style={{ borderBottom: `1px dashed ${uiTokens.borderInput}` }}>
-            <div className="text-[28px] font-bold leading-tight tracking-[-0.01em]">
-              {upcomingSeason} season upcoming
-            </div>
-            <div className="mt-1 text-[11px]" style={{ color: uiTokens.textFaint }}>
-              No games played yet this season
-            </div>
-          </div>
-          <div
-            className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
-            style={{ color: uiTokens.textFaintest }}>
-            {upcomingSeason} SEASON · NOT YET STARTED ▸▸▸
-          </div>
-        </>
-      ) : (
-        <>
-          {/* No season stats for an incoming coach yet — degrade instead of faking a
-              0-0 record (invariant 6). */}
-          <div
-            className="mt-0.5 px-5 pb-[18px] pt-2"
-            style={{ borderBottom: `1px dashed ${uiTokens.borderInput}` }}>
-            <div className="text-[28px] font-bold leading-tight tracking-[-0.01em]">
-              New head coach
-            </div>
-            <div className="mt-1 text-[11px]" style={{ color: uiTokens.textFaint }}>
-              No games played yet this season.
-            </div>
-          </div>
-          <div
-            className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
-            style={{ color: uiTokens.textFaintest }}>
-            {nextSeasonLabel} SEASON · NOT YET STARTED ▸▸▸
-          </div>
-        </>
-      )}
-
-      {/* NEXT GAME card (design spec 5a). Only when viewing the current/upcoming season
-          tab (never a past season) and there's an unplayed game with a resolved
-          opponent. */}
-      {showNextGame && nextGame && nextGame.opponent && (
-        <div className="px-[18px] pt-3.5">
-          <div
-            className="flex items-center justify-between rounded-2xl px-3.5 py-3"
-            style={{ background: uiTokens.surfaceRaised, border: `1px solid ${uiAccent}33` }}>
-            <div>
-              <div
-                className="text-[9px] font-bold tracking-[0.08em]"
-                style={{ color: uiTokens.textMuted }}>
-                NEXT GAME · WEEK {nextGame.week}
+            <div
+              className="mt-0.5 px-5 pb-[18px] pt-2"
+              style={{ borderBottom: `1px dashed ${uiTokens.borderInput}` }}>
+              <div className="text-[28px] font-bold leading-tight tracking-[-0.01em]">
+                {upcomingSeason} season upcoming
               </div>
-              <div
-                className="mt-[3px] text-[13px] font-extrabold"
-                style={{ color: uiTokens.textPrimary }}>
-                {nextGame.isHome ? 'vs' : '@'} {nextGame.opponent.abbrev}
-                {nextGame.date ? ` · ${formatGameDate(nextGame.date)}` : ''}
+              <div className="mt-1 text-[11px]" style={{ color: uiTokens.textFaint }}>
+                No games played yet this season
               </div>
             </div>
             <div
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-[9px] font-black"
-              style={{
-                background: nextGame.opponent.colors.primary,
-                border: `1px solid ${nextGame.opponent.colors.secondary}`,
-                color: readableTextOn(nextGame.opponent.colors.primary),
-              }}>
-              {nextGame.opponent.abbrev}
+              className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
+              style={{ color: uiTokens.textFaintest }}>
+              {upcomingSeason} SEASON · NOT YET STARTED ▸▸▸
+            </div>
+          </>
+        ) : (
+          <>
+            {/* No season stats for an incoming coach yet — degrade instead of faking a
+              0-0 record (invariant 6). */}
+            <div
+              className="mt-0.5 px-5 pb-[18px] pt-2"
+              style={{ borderBottom: `1px dashed ${uiTokens.borderInput}` }}>
+              <div className="text-[28px] font-bold leading-tight tracking-[-0.01em]">
+                New head coach
+              </div>
+              <div className="mt-1 text-[11px]" style={{ color: uiTokens.textFaint }}>
+                No games played yet this season.
+              </div>
+            </div>
+            <div
+              className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
+              style={{ color: uiTokens.textFaintest }}>
+              {nextSeasonLabel} SEASON · NOT YET STARTED ▸▸▸
+            </div>
+          </>
+        )}
+
+        {/* NEXT GAME card (design spec 5a). Only when viewing the current/upcoming season
+          tab (never a past season) and there's an unplayed game with a resolved
+          opponent. */}
+        {showNextGame && nextGame && nextGame.opponent && (
+          <div className="px-[18px] pt-3.5">
+            <div
+              className="flex items-center justify-between rounded-2xl px-3.5 py-3"
+              style={{ background: uiTokens.surfaceRaised, border: `1px solid ${uiAccent}33` }}>
+              <div>
+                <div
+                  className="text-[9px] font-bold tracking-[0.08em]"
+                  style={{ color: uiTokens.textMuted }}>
+                  NEXT GAME · WEEK {nextGame.week}
+                </div>
+                <div
+                  className="mt-[3px] text-[13px] font-extrabold"
+                  style={{ color: uiTokens.textPrimary }}>
+                  {nextGame.isHome ? 'vs' : '@'} {nextGame.opponent.abbrev}
+                  {nextGame.date ? ` · ${formatGameDate(nextGame.date)}` : ''}
+                </div>
+              </div>
+              <div
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-[9px] font-black"
+                style={{
+                  background: nextGame.opponent.colors.primary,
+                  border: `1px solid ${nextGame.opponent.colors.secondary}`,
+                  color: readableTextOn(nextGame.opponent.colors.primary),
+                }}>
+                {nextGame.opponent.abbrev}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {leaderRows.length > 0 && leaders && (
-        <div className="px-5 pb-7 pt-1">
-          <SectionLabel className="mb-2">ROSTER LEADERS · {leaders.season}</SectionLabel>
-          {/* Card doesn't fit here: needs rounded-2xl + overflow-hidden clip + zero
+        {leaderRows.length > 0 && leaders && (
+          <div className="px-5 pb-7 pt-1">
+            <SectionLabel className="mb-2">ROSTER LEADERS · {leaders.season}</SectionLabel>
+            {/* Card doesn't fit here: needs rounded-2xl + overflow-hidden clip + zero
               padding (rows supply their own), none of which Card's API exposes
               (rounded-3xl only, no clip variant, padding=16 default) — plain div with
               tokenized colors instead, same deviation pattern as PlayerCard's task. */}
-          <div
-            className="overflow-hidden rounded-2xl"
-            style={{
-              background: uiTokens.surfaceCard2,
-              border: `1px solid ${uiTokens.borderSubtle}`,
-            }}>
-            {leaderRows.map(({ label, leader }, i) => (
-              <div
-                key={label}
-                className="flex items-center justify-between gap-3 px-3.5 py-2.5"
-                style={{ borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}` }}>
-                <div className="min-w-0">
-                  <div
-                    className="text-[9px] font-bold tracking-[0.06em]"
-                    style={{ color: uiAccent }}>
-                    {label}
-                  </div>
-                  <div
-                    className="mt-0.5 truncate text-xs font-extrabold"
-                    style={{ color: uiTokens.textPrimary }}>
-                    {leader.name}
-                  </div>
-                </div>
+            <div
+              className="overflow-hidden rounded-2xl"
+              style={{
+                background: uiTokens.surfaceCard2,
+                border: `1px solid ${uiTokens.borderSubtle}`,
+              }}>
+              {leaderRows.map(({ label, leader }, i) => (
                 <div
-                  className="shrink-0 text-right text-[10px]"
-                  style={{ color: uiTokens.textMuted, maxWidth: 170 }}>
-                  {leader.line}
+                  key={label}
+                  className="flex items-center justify-between gap-3 px-3.5 py-2.5"
+                  style={{ borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}` }}>
+                  <div className="min-w-0">
+                    <div
+                      className="text-[9px] font-bold tracking-[0.06em]"
+                      style={{ color: uiAccent }}>
+                      {label}
+                    </div>
+                    <div
+                      className="mt-0.5 truncate text-xs font-extrabold"
+                      style={{ color: uiTokens.textPrimary }}>
+                      {leader.name}
+                    </div>
+                  </div>
+                  <div
+                    className="shrink-0 text-right text-[10px]"
+                    style={{ color: uiTokens.textMuted, maxWidth: 170 }}>
+                    {leader.line}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </TeamPageShell>
   );
 }

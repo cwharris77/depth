@@ -8,7 +8,9 @@
 import type { TeamMeta } from '@/lib/roster-source';
 import type { TeamSchedule, TeamScheduleGame } from '@/lib/types';
 import { readableTextOn } from '@/lib/colors';
+import SchedulePanel from './SchedulePanel';
 import TeamPageHeader from './TeamPageHeader';
+import TeamPageShell from './TeamPageShell';
 import Badge from '@/components/ui/Badge';
 import { colors as uiTokens } from '@/components/ui/tokens';
 
@@ -117,39 +119,44 @@ export default function TeamScheduleView({ team, teams, schedule, isUpcoming }: 
     </div>
   );
 
-  if (!schedule || schedule.games.length === 0) {
-    return (
+  return (
+    <TeamPageShell
+      team={team}
+      teams={teams}
+      activePage="schedule"
+      accent={uiAccent}
+      aside={<SchedulePanel schedule={schedule} accent={uiAccent} />}>
       <div className="bg-background" style={{ minHeight: '100dvh', color: uiTokens.textPrimary }}>
         {header}
-        <p className="px-5 text-sm" style={{ color: uiTokens.textMuted }}>
-          No schedule available for this team yet.
-        </p>
+        {!schedule || schedule.games.length === 0 ? (
+          <p className="px-5 text-sm" style={{ color: uiTokens.textMuted }}>
+            No schedule available for this team yet.
+          </p>
+        ) : (
+          <>
+            <div className="px-[18px] pb-1 pt-[18px]">
+              <div className="flex items-center gap-2">
+                <div
+                  className="text-[10px] font-bold tracking-[0.1em]"
+                  style={{ color: uiTokens.textFaint }}>
+                  {schedule.season} SEASON
+                </div>
+                {isUpcoming && (
+                  <Badge kind="tag" accent={uiAccent}>
+                    UPCOMING
+                  </Badge>
+                )}
+              </div>
+            </div>
+            {/* Desktop's wider main column fits more weeks per row (multi-panel mock). */}
+            <div className="grid grid-cols-3 gap-2 px-3.5 pb-6 pt-2 xl:grid-cols-5 xl:gap-3">
+              {schedule.games.map((game) => (
+                <GameCard key={game.week} game={game} uiAccent={uiAccent} />
+              ))}
+            </div>
+          </>
+        )}
       </div>
-    );
-  }
-
-  return (
-    <div className="bg-background" style={{ minHeight: '100dvh', color: uiTokens.textPrimary }}>
-      {header}
-      <div className="px-[18px] pb-1 pt-[18px]">
-        <div className="flex items-center gap-2">
-          <div
-            className="text-[10px] font-bold tracking-[0.1em]"
-            style={{ color: uiTokens.textFaint }}>
-            {schedule.season} SEASON
-          </div>
-          {isUpcoming && (
-            <Badge kind="tag" accent={uiAccent}>
-              UPCOMING
-            </Badge>
-          )}
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-2 px-3.5 pb-6 pt-2">
-        {schedule.games.map((game) => (
-          <GameCard key={game.week} game={game} uiAccent={uiAccent} />
-        ))}
-      </div>
-    </div>
+    </TeamPageShell>
   );
 }
