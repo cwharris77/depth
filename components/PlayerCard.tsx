@@ -27,6 +27,10 @@ interface PlayerCardProps {
   onReorder?: (position: Position, orderedIds: string[]) => void;
   onResetPosition?: (position: Position) => void;
   isPositionCustom?: boolean;
+  // Prefetched season stats keyed by player id (server-side, from the team page).
+  // When provided, the card skips the client-side fetch entirely — no loading state,
+  // no jump. When absent (legacy callers), falls back to the client-side fetch.
+  playerStatsMap?: Map<string, PlayerSeasonStats[]>;
   // 'sheet' (default) is the mobile bottom sheet; 'docked' renders the same card body
   // inline for TeamPageShell's desktop context panel — no scrim, drag handle, or
   // slide-up, and no body scroll lock (the field stays interactive beside it).
@@ -47,12 +51,22 @@ export default function PlayerCard({
   onReorder,
   onResetPosition,
   isPositionCustom = false,
+  playerStatsMap,
   variant = 'sheet',
 }: PlayerCardProps) {
   const [editing, setEditing] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [seasonStats, setSeasonStats] = useState<PlayerSeasonStats[]>([]);
+  // When playerStatsMap is provided (server-side prefetch), stats are available
+  // synchronously — no loading state, no jump. Fall back to client-side fetch for
+  // legacy callers that don't pass the map.
+  const [seasonStats, setSeasonStats] = useState<PlayerSeasonStats[]>(() => {
+    if (playerStatsMap && player) {
+      return playerStatsMap.get(player.id) ?? [];
+    }
+    return [];
+  });
+  const [statsLoading, setStatsLoading] = useState(!playerStatsMap);
   // uiAccent is curated to read on the dark card; the alpha suffixes tint it for
   // borders/watermarks. onAccent isn't needed here (card surfaces are dark).
   const colors = roster.team.colors;
@@ -88,22 +102,35 @@ export default function PlayerCard({
   }, [player?.id]);
 
   // Lazy per-player fetch (locked decision: the field view never needs stats, so this
-  // isn't part of the roster payload). Aborted on close/player-change so a slow
-  // response for a since-dismissed card can't clobber the next card's stats. Loading
-  // and error both render the empty state -- setSeasonStats([]) is also the reset when
-  // a new player opens, so a stale season line never flashes before the fresh fetch lands.
+  // isn't part of the roster payload). Only fires when playerStatsMap is NOT provided
+  // (server-side prefetch). Aborted on close/player-change so a slow response for a
+  // since-dismissed card can't clobber the next card's stats. Loading renders a
+  // skeleton; error renders the empty state -- setSeasonStats([]) is also the reset
+  // when a new player opens, so a stale season line never flashes before the fresh
+  // fetch lands.
   useEffect(() => {
+    if (playerStatsMap) {
+      // Server-side prefetch available: use it synchronously, no fetch needed.
+      setSeasonStats(player ? (playerStatsMap.get(player.id) ?? []) : []);
+      setStatsLoading(false);
+      return;
+    }
     setSeasonStats([]);
+    setStatsLoading(true);
     if (!player) return;
     const controller = new AbortController();
     fetch(`/api/players/${player.id}/stats`, { signal: controller.signal })
       .then((res) => (res.ok ? res.json() : { stats: [] }))
-      .then((data: { stats: PlayerSeasonStats[] }) => setSeasonStats(data.stats))
+      .then((data: { stats: PlayerSeasonStats[] }) => {
+        setSeasonStats(data.stats);
+        setStatsLoading(false);
+      })
       .catch(() => {
         // aborted, or the fetch failed -- render nothing (no error state)
+        setStatsLoading(false);
       });
     return () => controller.abort();
-  }, [player?.id]);
+  }, [player?.id, playerStatsMap]);
 
   // Share the player's deep link. Prefers the native share sheet (mobile/PWA);
   // otherwise copies the absolute URL and flips the button to a "copied" state.
@@ -139,6 +166,10 @@ export default function PlayerCard({
   // zeros). Newest-first ordering comes from the API (getPlayerStats orders season desc).
   const statColumns = player ? seasonStatColumns(player.position) : [];
   const statSeasons = player ? seasonStats.filter(hasSeasonStats) : [];
+  // True while the client-side fetch is in flight (only when playerStatsMap is absent).
+  // During loading, a skeleton placeholder reserves the stats section's height so the
+  // bottom sheet doesn't jump when stats arrive.
+  const showStatsSkeleton = statsLoading && player && statColumns.length > 0;
 
   // The card body — identical between the mobile bottom sheet and the desktop docked
   // panel (TeamPageShell's aside); only the chrome around it differs (scrim + spring
@@ -427,7 +458,7 @@ export default function PlayerCard({
         </div>
       )}
 
-      {statSeasons.length > 0 ? (
+      {statSeasons.length > 0 || showStatsSkeleton ? (
         <div className="px-6 pb-8">
           <div
             className="text-[10px] font-semibold mb-3"
@@ -464,27 +495,56 @@ export default function PlayerCard({
                 </div>
               ))}
             </div>
-            {statSeasons.map((s, i) => (
-              <div
-                key={s.season}
-                className="grid gap-x-2 px-2.5 py-[9px] text-[11px] font-bold"
-                style={{
-                  gridTemplateColumns: `minmax(40px, 0.7fr) repeat(${statColumns.length}, 1fr)`,
-                  borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}`,
-                  background: i === 0 ? `${accent}0d` : 'transparent',
-                }}>
-                <div style={{ color: i === 0 ? accent : uiTokens.textPrimary }}>{s.season}</div>
-                {statColumns.map((col) => (
+            {showStatsSkeleton ? (
+              // Skeleton rows reserving space while stats load. Sized against statColumns
+              // so the grid dimensions match the real table — no layout shift when data arrives.
+              // Two skeleton rows (the typical number of seasons a player has stats for).
+              <>
+                {[0, 1].map((row) => (
                   <div
-                    key={col.header}
+                    key={row}
+                    className="grid gap-x-2 px-2.5 py-[9px]"
                     style={{
-                      color: col.danger?.(s) ? uiTokens.statusInjured : uiTokens.textPrimary,
+                      gridTemplateColumns: `minmax(40px, 0.7fr) repeat(${statColumns.length}, 1fr)`,
+                      borderTop: row === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}`,
                     }}>
-                    {col.value(s)}
+                    <div
+                      className="h-3 rounded animate-pulse"
+                      style={{ background: `${accent}26` }}
+                    />
+                    {statColumns.map((col) => (
+                      <div
+                        key={col.header}
+                        className="h-3 rounded animate-pulse"
+                        style={{ background: `${accent}1a` }}
+                      />
+                    ))}
                   </div>
                 ))}
-              </div>
-            ))}
+              </>
+            ) : (
+              statSeasons.map((s, i) => (
+                <div
+                  key={s.season}
+                  className="grid gap-x-2 px-2.5 py-[9px] text-[11px] font-bold"
+                  style={{
+                    gridTemplateColumns: `minmax(40px, 0.7fr) repeat(${statColumns.length}, 1fr)`,
+                    borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}`,
+                    background: i === 0 ? `${accent}0d` : 'transparent',
+                  }}>
+                  <div style={{ color: i === 0 ? accent : uiTokens.textPrimary }}>{s.season}</div>
+                  {statColumns.map((col) => (
+                    <div
+                      key={col.header}
+                      style={{
+                        color: col.danger?.(s) ? uiTokens.statusInjured : uiTokens.textPrimary,
+                      }}>
+                      {col.value(s)}
+                    </div>
+                  ))}
+                </div>
+              ))
+            )}
           </div>
         </div>
       ) : (

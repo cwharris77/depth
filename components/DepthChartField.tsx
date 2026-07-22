@@ -15,7 +15,7 @@ import { mergeOnSignIn, pushTeamOverride } from '@/lib/overrides-sync';
 import type { TeamMeta } from '@/lib/roster-source';
 import { unitForPosition } from '@/lib/search';
 import { rosterShareUrlPath } from '@/lib/share';
-import type { Player, Position, TeamRoster, Unit } from '@/lib/types';
+import type { Player, PlayerSeasonStats, Position, TeamRoster, Unit } from '@/lib/types';
 import { useUser } from '@/lib/use-user';
 import { Check, MoreHorizontal, RotateCcw, Share2, Shirt } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -45,9 +45,11 @@ const UNIT_LABELS: Record<Unit, string> = {
 export default function DepthChartField({
   roster,
   teams,
+  playerStatsMap,
 }: {
   roster: TeamRoster;
   teams: TeamMeta[];
+  playerStatsMap?: Map<string, PlayerSeasonStats[]>;
 }) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeUnit, setActiveUnit] = useState<Unit>('offense');
@@ -215,6 +217,7 @@ export default function DepthChartField({
     roster: themedRoster,
     onClose: () => setSelectedPlayer(null),
     onSelectPlayer: setSelectedPlayer,
+    playerStatsMap,
     ...(previewing
       ? {}
       : {
