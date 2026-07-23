@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { featuredStarters } from '../og';
+import { featuredStarters, rosterForOgImage } from '../og';
 import { readableTextOn, contrastRatio } from '../colors';
+import { encodeDepthOrder } from '../share';
 import { TEAMS } from '../teams';
 import type { TeamRoster } from '../types';
 
@@ -76,6 +77,31 @@ describe('featuredStarters', () => {
       expect(picks.length).toBeLessThanOrEqual(3);
       expect(picks.every((s) => s.name.length > 0)).toBe(true);
     }
+  });
+});
+
+describe('rosterForOgImage', () => {
+  const r = rosterWith([
+    p('rb1', 'RB', 9), // lower number wins the default depthRank tie
+    p('rb2', 'RB', 21),
+  ]);
+
+  it('with no order param, returns the roster unchanged (default order)', () => {
+    expect(rosterForOgImage(r, null)).toBe(r);
+    expect(featuredStarters(rosterForOgImage(r, null))).toEqual([{ label: 'RB', name: 'rb1' }]);
+  });
+
+  it('with a valid order param, applies the shared override so the featured starter changes', () => {
+    const order = encodeDepthOrder({ RB: ['rb2', 'rb1'] });
+    const applied = rosterForOgImage(r, order);
+    expect(featuredStarters(applied)).toEqual([{ label: 'RB', name: 'rb2' }]);
+  });
+
+  it('with a malformed order param, degrades to the default order instead of throwing', () => {
+    expect(() => rosterForOgImage(r, 'not-valid-base64url-json')).not.toThrow();
+    expect(featuredStarters(rosterForOgImage(r, 'not-valid-base64url-json'))).toEqual([
+      { label: 'RB', name: 'rb1' },
+    ]);
   });
 });
 

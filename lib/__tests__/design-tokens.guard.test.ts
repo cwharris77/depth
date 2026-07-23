@@ -19,7 +19,7 @@ const EXEMPT = new Set(['components/ui/tokens.ts']);
 const MIGRATED_ALLOWLIST = new Set<string>([
   'components/ui/Menu.tsx', // intentional component-level boxShadow, no matching token exists
   'app/opengraph-image.tsx', // OG image — server-rendered via next/og ImageResponse, not a client component consuming tokens.ts; literal colors legitimate
-  'app/team/[id]/opengraph-image.tsx', // OG image — server-rendered via next/og ImageResponse, uses dynamic team colors + literal fallback card; not a client-token concern
+  'app/team/[id]/og-image/route.tsx', // OG image — server-rendered via next/og ImageResponse, uses dynamic team colors + literal fallback card; not a client-token concern
   'app/globals.css', // plain CSS, cannot import tokens.ts (a TS module) — this file is tokens.ts's own source of truth
 ]);
 
