@@ -3,7 +3,7 @@
 import { useEffect, useRef, useTransition } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { X, ClipboardList, Grid, User } from 'lucide-react';
+import { X, ClipboardList, Columns2, Grid, User } from 'lucide-react';
 import { useUser } from '@/lib/use-user';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import IconButton from '@/components/ui/IconButton';
@@ -94,15 +94,18 @@ export default function NavDrawer({
       router.push(href);
     });
   };
-  // Which destination is current: the archive when on /uniforms, otherwise the depth charts
-  // (home + team pages). Drives the active highlight consistently across routes.
+  // Which destination is current: compare/archive/sign-in when on those routes, otherwise
+  // the depth charts (home + team pages). Drives the active highlight consistently across
+  // routes.
   const pathname = usePathname();
   const { user } = useUser();
-  const activeHref = pathname?.startsWith('/uniforms')
-    ? '/uniforms'
-    : pathname?.startsWith('/signin')
-      ? '/signin'
-      : '/';
+  const activeHref = pathname?.startsWith('/compare')
+    ? '/compare'
+    : pathname?.startsWith('/uniforms')
+      ? '/uniforms'
+      : pathname?.startsWith('/signin')
+        ? '/signin'
+        : '/';
   // Carry the current page as ?next= so signing in (magic link) returns the user here, not to
   // the sign-in page. The confirm route threads it into the post-login redirect.
   const signInHref =
@@ -210,6 +213,15 @@ export default function NavDrawer({
             onNavigate={navigate}
             accent={accent}
             active={activeHref === '/'}
+          />
+          <NavItem
+            href="/compare"
+            icon={<Columns2 size={19} />}
+            label="Compare teams"
+            disabled={isPending}
+            onNavigate={navigate}
+            accent={accent}
+            active={activeHref === '/compare'}
           />
           <NavItem
             href="/uniforms"

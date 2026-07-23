@@ -5,12 +5,14 @@
 // ticket; layout from the Claude Design "Depth Wide Desktop" mock): search over teams and
 // players, the full team list grouped by conference/division (same sectioning as
 // NavSwitcher's idle browse) with the current team checked, plus the global destinations
-// (uniform archive, sign-in/account) that live in the mobile NavDrawer. On desktop the
-// rail fully replaces the drawer, the header's team-switcher pill, AND the NavSwitcher
-// sheet (all mobile-only): typing in the search field swaps the grouped list for combined
-// player/team results in place. Switching teams preserves the active page; picking a
-// player deep-links to their roster page via `?player=` (OpenPlayerFromQuery opens the
-// card there), which works uniformly from roster, schedule, and stats.
+// (compare teams, uniform archive, sign-in/account) that live in the mobile NavDrawer. On
+// desktop the rail fully replaces the drawer, the header's team-switcher pill, AND the
+// NavSwitcher sheet (all mobile-only) — including NavSwitcher's "Compare teams" entry row
+// (Decisions table "Entry point" in the compare-view spec), which is why that link lives
+// here too: typing in the search field swaps the grouped list for combined player/team
+// results in place. Switching teams preserves the active page; picking a player deep-links
+// to their roster page via `?player=` (OpenPlayerFromQuery opens the card there), which
+// works uniformly from roster, schedule, and stats.
 import Avatar from '@/components/ui/Avatar';
 import Input from '@/components/ui/Input';
 import SectionLabel from '@/components/ui/SectionLabel';
@@ -19,7 +21,7 @@ import { readableTextOn } from '@/lib/colors';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { PlayerHit } from '@/lib/search';
 import { useUser } from '@/lib/use-user';
-import { Check, Grid, User } from 'lucide-react';
+import { Check, Columns2, Grid, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
@@ -268,6 +270,12 @@ export default function TeamRail({
       <div
         className="mt-3.5 flex flex-col gap-0.5 pt-3.5"
         style={{ borderTop: `1px solid ${uiTokens.borderSubtle}` }}>
+        <Link
+          href="/compare"
+          className="flex items-center gap-2.5 rounded-[10px] px-2 py-2 text-xs font-bold"
+          style={{ color: uiTokens.textSecondary }}>
+          <Columns2 size={15} color={uiTokens.textMuted} /> Compare teams
+        </Link>
         <Link
           href="/uniforms"
           className="flex items-center gap-2.5 rounded-[10px] px-2 py-2 text-xs font-bold"

@@ -8,6 +8,7 @@
 // does no data fetching of its own.
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Columns2 } from 'lucide-react';
 import DepthMark from './DepthMark';
 import FullScreenSheet from './FullScreenSheet';
 import NavDrawer from './NavDrawer';
@@ -16,7 +17,7 @@ import FilterPill from '@/components/ui/FilterPill';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import { COMPARE_POSITIONS } from '@/lib/compare';
 import { statusColor } from '@/lib/colors';
-import { formatLastName, ordinal } from '@/lib/format';
+import { formatLastName } from '@/lib/format';
 import type { TeamMeta } from '@/lib/roster-source';
 import { playerDeepLinkPath } from '@/lib/share';
 import type { Player, Position } from '@/lib/types';
@@ -79,50 +80,76 @@ export default function CompareTable({ teams, a, b, position }: CompareTableProp
         paddingTop: 'max(env(safe-area-inset-top), 20px)',
         paddingBottom: 'max(env(safe-area-inset-bottom), 20px)',
       }}>
-      <DepthMark color={uiTokens.accent} onClick={() => setDrawerOpen(true)} />
+      {/* Bounded to a reading-width column at xl — the table this page centers on has a
+          fixed, fairly narrow natural width (rank + two team columns), so letting it
+          stretch full-bleed on a wide desktop viewport (the un-styled default before this
+          pass) just reads as an empty, un-designed page. Every other non-team-page surface
+          (UniformArchive) is genuinely full-width content (a wrapping kit grid), so it has
+          no such rail — this page's content shape is different, not a house convention. */}
+      <div className="mx-auto xl:max-w-2xl xl:pt-10">
+        <div className="flex items-center justify-between">
+          <DepthMark color={uiTokens.accent} onClick={() => setDrawerOpen(true)} />
+        </div>
 
-      <h1 className="mt-4 text-2xl font-bold">Compare teams</h1>
-      <p className="mt-0.5 text-xs" style={{ color: uiTokens.textFaint }}>
-        Depth at a position, side by side.
-      </p>
+        <div className="mt-5 flex items-center gap-3">
+          <div
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+            style={{
+              background: `${uiTokens.accent}1a`,
+              border: `1px solid ${uiTokens.accent}40`,
+            }}>
+            <Columns2 size={17} color={uiTokens.accent} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Compare teams</h1>
+            <p className="mt-0.5 text-xs" style={{ color: uiTokens.textFaint }}>
+              Pick two teams and a position to see who has the deeper room.
+            </p>
+          </div>
+        </div>
 
-      <div className="mt-4 flex gap-3">
-        <TeamSlotButton side={a} onClick={() => setPickingSlot('a')} />
-        <TeamSlotButton side={b} onClick={() => setPickingSlot('b')} />
-      </div>
+        <div className="mt-5 flex items-center gap-2.5">
+          <TeamSlotButton side={a} onClick={() => setPickingSlot('a')} />
+          <span
+            className="shrink-0 rounded-full px-2 py-1 text-[10px] font-black"
+            style={{ background: uiTokens.surfaceChip, color: uiTokens.textFaint }}
+            aria-hidden="true">
+            VS
+          </span>
+          <TeamSlotButton side={b} onClick={() => setPickingSlot('b')} />
+        </div>
 
-      {sameTeam && (
-        <p className="mt-2 text-xs" style={{ color: uiTokens.textFaint }}>
-          Same team on both sides
-        </p>
-      )}
-
-      {/* Position chip row — horizontally scrollable, same pattern as the uniform
-          archive's kind filter (components/UniformArchive.tsx). */}
-      <div
-        className="mt-4 -mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1"
-        style={{ scrollbarWidth: 'none' }}
-        role="group"
-        aria-label="Filter by position">
-        {COMPARE_POSITIONS.map((pos) => (
-          <FilterPill key={pos} active={pos === position} onClick={() => updateUrl({ pos })}>
-            {pos}
-          </FilterPill>
-        ))}
-      </div>
-
-      <div className="mt-5 pb-6">
-        {!both ? (
-          <p className="text-sm" style={{ color: uiTokens.textMuted }}>
-            Pick two teams to compare
+        {sameTeam && (
+          <p className="mt-2.5 text-xs font-semibold" style={{ color: uiTokens.textFaint }}>
+            Same team on both sides
           </p>
-        ) : noPlayersEitherSide ? (
-          <p className="text-sm" style={{ color: uiTokens.textMuted }}>
-            Neither team lists a {position}
-          </p>
-        ) : (
-          <CompareRows a={both.a} b={both.b} rowCount={rowCount} onOpenPlayer={openPlayer} />
         )}
+
+        {/* Position chip row — horizontally scrollable on mobile (same pattern as the
+            uniform archive's kind filter, components/UniformArchive.tsx); at xl there's
+            room to wrap the full position list instead of hiding most of it behind a
+            scroll affordance. */}
+        <div
+          className="mt-5 -mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 xl:mx-0 xl:flex-wrap xl:overflow-visible xl:px-0 xl:pb-0"
+          style={{ scrollbarWidth: 'none' }}
+          role="group"
+          aria-label="Filter by position">
+          {COMPARE_POSITIONS.map((pos) => (
+            <FilterPill key={pos} active={pos === position} onClick={() => updateUrl({ pos })}>
+              {pos}
+            </FilterPill>
+          ))}
+        </div>
+
+        <div className="mt-5 pb-6">
+          {!both ? (
+            <ComparePrompt aSide={a} bSide={b} />
+          ) : noPlayersEitherSide ? (
+            <EmptyPositionState position={position} />
+          ) : (
+            <CompareRows a={both.a} b={both.b} rowCount={rowCount} onOpenPlayer={openPlayer} />
+          )}
+        </div>
       </div>
 
       <FullScreenSheet isOpen={pickingSlot !== null}>
@@ -149,7 +176,7 @@ function TeamSlotButton({ side, onClick }: { side?: CompareSide; onClick: () => 
       <button
         type="button"
         onClick={onClick}
-        className="flex-1 rounded-2xl px-4 py-6 text-center text-sm font-bold"
+        className="flex-1 min-w-0 rounded-2xl px-4 py-5 text-center text-sm font-bold transition-colors duration-150 hover:bg-white/[0.03]"
         style={{
           border: `1px dashed ${uiTokens.borderInput}`,
           color: uiTokens.textFaint,
@@ -164,7 +191,7 @@ function TeamSlotButton({ side, onClick }: { side?: CompareSide; onClick: () => 
     <button
       type="button"
       onClick={onClick}
-      className="flex-1 min-w-0 rounded-2xl px-4 py-3 text-left"
+      className="group flex-1 min-w-0 rounded-2xl px-4 py-3.5 text-left transition-transform duration-150 hover:-translate-y-0.5"
       style={{
         background: `${team.colors.uiAccent}1a`,
         border: `1px solid ${team.colors.uiAccent}55`,
@@ -178,7 +205,46 @@ function TeamSlotButton({ side, onClick }: { side?: CompareSide; onClick: () => 
       <div className="truncate text-sm font-bold" style={{ color: uiTokens.textPrimary }}>
         {team.city} {team.name}
       </div>
+      <div
+        className="mt-0.5 text-[10px] font-semibold opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+        style={{ color: uiTokens.textFaint }}>
+        Tap to change
+      </div>
     </button>
+  );
+}
+
+// Shown when at least one slot is still unpicked — teaches the interface instead of a
+// bare sentence: names both remaining steps (pick a team, pick a position) so a first-time
+// visitor knows what the two rows above the fold are for.
+function ComparePrompt({ aSide, bSide }: { aSide?: CompareSide; bSide?: CompareSide }) {
+  const pickedCount = [aSide, bSide].filter(Boolean).length;
+  return (
+    <div
+      className="flex flex-col items-center gap-2 rounded-2xl px-6 py-10 text-center"
+      style={{ border: `1px dashed ${uiTokens.borderSubtle}`, background: uiTokens.surfaceCard2 }}>
+      <Columns2 size={22} color={uiTokens.textFaintest} />
+      <p className="text-sm font-bold" style={{ color: uiTokens.textSecondary }}>
+        {pickedCount === 0 ? 'Pick two teams to compare' : 'Pick one more team'}
+      </p>
+      <p className="max-w-[32ch] text-xs" style={{ color: uiTokens.textFaint }}>
+        Their depth at the selected position lines up side by side, rank for rank.
+      </p>
+    </div>
+  );
+}
+
+function EmptyPositionState({ position }: { position: Position }) {
+  return (
+    <div
+      className="rounded-2xl px-6 py-10 text-center text-sm font-semibold"
+      style={{
+        border: `1px solid ${uiTokens.borderDefault}`,
+        background: uiTokens.surfaceCard2,
+        color: uiTokens.textMuted,
+      }}>
+      Neither team lists a {position}
+    </div>
   );
 }
 
@@ -197,7 +263,7 @@ function CompareRows({
     <div
       className="overflow-hidden rounded-2xl"
       style={{ border: `1px solid ${uiTokens.borderDefault}` }}>
-      <div className="grid grid-cols-[32px_1fr_1fr]" style={{ background: uiTokens.surfaceCard2 }}>
+      <div className="grid grid-cols-[36px_1fr_1fr]" style={{ background: uiTokens.surfaceCard2 }}>
         <div />
         <TeamHeaderCell team={a.team} />
         <TeamHeaderCell team={b.team} />
@@ -205,12 +271,19 @@ function CompareRows({
       {Array.from({ length: rowCount }, (_, i) => (
         <div
           key={i}
-          className="grid grid-cols-[32px_1fr_1fr] items-center"
-          style={{ borderTop: `1px solid ${uiTokens.borderSubtle}` }}>
-          <div
-            className="py-3 text-center text-[9px] font-bold"
-            style={{ color: uiTokens.textFaint }}>
-            {ordinal(i + 1)}
+          className="grid grid-cols-[36px_1fr_1fr] items-stretch"
+          style={{
+            borderTop: `1px solid ${uiTokens.borderSubtle}`,
+            // Zebra striping reads more like a real data table at desktop width, where a
+            // 2-column grid with no row separation otherwise looks empty and unfinished.
+            background: i % 2 === 1 ? uiTokens.surfaceCard2 : 'transparent',
+          }}>
+          <div className="flex items-center justify-center">
+            <span
+              className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold"
+              style={{ background: uiTokens.surfaceChip, color: uiTokens.textFaint }}>
+              {i + 1}
+            </span>
           </div>
           <PlayerCell player={a.players[i]} team={a.team} onOpen={onOpenPlayer} />
           <PlayerCell player={b.players[i]} team={b.team} onOpen={onOpenPlayer} />
@@ -222,7 +295,9 @@ function CompareRows({
 
 function TeamHeaderCell({ team }: { team: TeamMeta }) {
   return (
-    <div className="min-w-0 px-2 py-2.5 text-center" style={{ color: team.colors.uiAccent }}>
+    <div
+      className="min-w-0 px-2 py-3 text-center"
+      style={{ color: team.colors.uiAccent, background: `${team.colors.uiAccent}12` }}>
       <div className="text-xs font-black tracking-widest">{team.abbrev}</div>
       <div className="truncate text-[10px] font-semibold" style={{ color: uiTokens.textMuted }}>
         {team.city}
@@ -242,7 +317,9 @@ function PlayerCell({
 }) {
   if (!player) {
     return (
-      <div className="py-3 text-center" style={{ color: uiTokens.textFaintest }}>
+      <div
+        className="flex items-center justify-center py-3"
+        style={{ color: uiTokens.textFaintest }}>
         —
       </div>
     );
@@ -251,7 +328,7 @@ function PlayerCell({
     <button
       type="button"
       onClick={() => onOpen(team.id, player.id)}
-      className="flex min-w-0 items-center justify-center gap-1.5 px-1.5 py-3"
+      className="flex min-w-0 items-center justify-center gap-1.5 px-1.5 py-3 transition-colors duration-150 hover:bg-white/[0.04]"
       style={{ touchAction: 'manipulation' }}>
       <span
         aria-hidden="true"
