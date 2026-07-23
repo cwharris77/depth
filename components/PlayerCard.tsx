@@ -27,6 +27,12 @@ interface PlayerCardProps {
   onReorder?: (position: Position, orderedIds: string[]) => void;
   onResetPosition?: (position: Position) => void;
   isPositionCustom?: boolean;
+  // App-level "edit depth chart" toggle (DepthChartField). When true, this card's
+  // position-depth list is in reorder mode without needing its own per-card Reorder
+  // tap, and the per-card toggle button is hidden — the app-level toggle is the only
+  // way in or out while it's on. Local `editing` state still exists underneath so
+  // per-card behavior is unchanged when the global toggle is off.
+  globalEditMode?: boolean;
   // Prefetched season stats keyed by player id (server-side, from the team page).
   // When provided, the card skips the client-side fetch entirely — no loading state,
   // no jump. When absent (legacy callers), falls back to the client-side fetch.
@@ -51,10 +57,15 @@ export default function PlayerCard({
   onReorder,
   onResetPosition,
   isPositionCustom = false,
+  globalEditMode = false,
   playerStatsMap,
   variant = 'sheet',
 }: PlayerCardProps) {
   const [editing, setEditing] = useState(false);
+  // The global toggle wins over local state — the card is in reorder mode if either
+  // is on. Turning the global toggle off drops back to local `editing` (false unless
+  // the per-card toggle was independently used before the global one turned on).
+  const effectiveEditing = editing || globalEditMode;
   const [showHint, setShowHint] = useState(false);
   const [copied, setCopied] = useState(false);
   // When playerStatsMap is provided (server-side prefetch), stats are available
@@ -365,7 +376,11 @@ export default function PlayerCard({
                   <RotateCcw size={12} /> Reset
                 </button>
               )}
-              {onReorder && (
+              {/* Hidden while the app-level toggle is on — that toggle is the only way
+                  in or out of edit mode for every group at once; a per-card button here
+                  would either be redundant (already editing) or misleadingly imply this
+                  one card can opt out on its own. */}
+              {onReorder && !globalEditMode && (
                 <button
                   type="button"
                   onClick={toggleEditing}
@@ -388,7 +403,7 @@ export default function PlayerCard({
             </div>
           </div>
 
-          {showHint && !editing && onReorder && (
+          {showHint && !effectiveEditing && onReorder && (
             <div className="mb-2 text-[11px]" style={{ color: accent }}>
               Tip: tap Reorder to build your own depth chart — your order is saved on this device.
             </div>
@@ -400,7 +415,7 @@ export default function PlayerCard({
               background: uiTokens.surfaceCard2,
               border: `1px solid ${uiTokens.borderDefault}`,
             }}>
-            {editing && onReorder ? (
+            {effectiveEditing && onReorder ? (
               <Reorder.Group
                 axis="y"
                 values={depthChart.map((p) => p.id)}

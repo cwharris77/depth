@@ -37,4 +37,5 @@ export const colors = {
   scrim: 'rgba(0,0,0,0.6)',
   scrimLight: 'rgba(0,0,0,0.5)',
   focusRing: 'rgba(105,190,40,0.3)',
+  shadowThumb: '0 1px 2px rgba(0,0,0,0.35), 0 1px 1px rgba(0,0,0,0.2)', // Toggle's raised thumb
 } as const;
