@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
 import type { RosterSource, TeamMeta, TeamStatsPage, UniformListing } from './roster-source';
 import { type LeaderEntry, rosterLeaders } from './roster-leaders';
-import { resolveSchedule } from './schedule';
+import { resolvePostseason, resolveSchedule } from './schedule';
 import { nflSeasonState } from './nfl-season';
 import { type PlayerHit, positionGroupPositions, rankByNameMatch } from './search';
 import type {
@@ -698,6 +698,28 @@ export async function getTeamSchedule(
     return { season: resolvedSeason, games: resolved.map((r) => toScheduleGame(r, teamsById)) };
   } catch {
     return null;
+  }
+}
+
+// A team's postseason games for one season (the stats page's postseason section).
+// Reuses fetchTeamGames (already pulls every game_type for the season, filtered to REG by
+// resolveSchedule) with the resolvePostseason filter instead — no separate query. Standalone
+// read like getTeamSchedule; degrades to [] on an unknown team, a season with no postseason
+// games (including a team that missed the postseason), or any query error, so the caller
+// renders no section rather than an empty one (invariant 6).
+export async function getPostseasonGames(
+  teamId: string,
+  season: number
+): Promise<TeamScheduleGame[]> {
+  try {
+    const [games, teamsById] = await Promise.all([
+      fetchTeamGames(teamId, season),
+      fetchTeamMetaMap(),
+    ]);
+    const resolved = resolvePostseason(games, teamId);
+    return resolved.map((r) => toScheduleGame(r, teamsById));
+  } catch {
+    return [];
   }
 }
 
