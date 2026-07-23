@@ -3,11 +3,19 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { colors } from './tokens';
 
-type MenuItem = { label: ReactNode; icon?: ReactNode; onClick: () => void };
+type MenuItem = {
+  label: ReactNode;
+  icon?: ReactNode;
+  onClick: () => void;
+  checked?: boolean;
+  accent?: string;
+};
 
 // Anchored "•••" overflow menu: a trigger button toggling a right-aligned popover of
 // items, dismissed on outside-click or item select. Presentational — callers pass the
-// trigger glyph and item handlers. Used by the field's uniform/share overflow.
+// trigger glyph and item handlers. Used by the field's uniform/share overflow. An item
+// with `checked` set renders as a menuitemcheckbox (trailing filled dot when on) for
+// on/off actions like "Edit depth chart" that live in the menu instead of their own row.
 export default function Menu({
   ariaLabel,
   trigger,
@@ -51,6 +59,8 @@ export default function Menu({
             <button
               key={i}
               type="button"
+              role={item.checked === undefined ? 'menuitem' : 'menuitemcheckbox'}
+              aria-checked={item.checked}
               onClick={() => {
                 setOpen(false);
                 item.onClick();
@@ -62,7 +72,13 @@ export default function Menu({
                 touchAction: 'manipulation',
               }}>
               {item.icon}
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {item.checked && (
+                <span
+                  className="h-3.5 w-3.5 shrink-0 rounded-full"
+                  style={{ background: item.accent ?? colors.accent }}
+                />
+              )}
             </button>
           ))}
         </div>

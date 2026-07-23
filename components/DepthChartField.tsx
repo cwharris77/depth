@@ -17,7 +17,7 @@ import { unitForPosition } from '@/lib/search';
 import { rosterShareUrlPath } from '@/lib/share';
 import type { Player, PlayerSeasonStats, Position, TeamRoster, Unit } from '@/lib/types';
 import { useUser } from '@/lib/use-user';
-import { Check, MoreHorizontal, RotateCcw, Share2, Shirt } from 'lucide-react';
+import { Check, MoreHorizontal, Pencil, RotateCcw, Share2, Shirt } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import ApplyKitFromQuery from './ApplyKitFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
@@ -33,7 +33,6 @@ import { DESKTOP_MEDIA_QUERY, useMediaQuery } from '@/lib/use-media-query';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import Menu from '@/components/ui/Menu';
 import TabBar from '@/components/ui/TabBar';
-import Toggle from '@/components/ui/Toggle';
 
 const UNIT_LABELS: Record<Unit, string> = {
   offense: 'Offense',
@@ -310,7 +309,12 @@ export default function DepthChartField({
             />
             <Menu
               ariaLabel="More options"
-              trigger={<MoreHorizontal size={16} />}
+              trigger={
+                <MoreHorizontal
+                  size={16}
+                  color={globalEditMode ? activeColors.uiAccent : undefined}
+                />
+              }
               items={[
                 {
                   icon: <Shirt size={14} color={activeColors.uiAccent} />,
@@ -326,24 +330,24 @@ export default function DepthChartField({
                   label: shareCopied ? 'Link copied' : 'Share roster',
                   onClick: handleShareRoster,
                 },
+                // App-level edit toggle, folded into the overflow menu instead of its own
+                // row: on puts every position group's card into reorder mode at once (no
+                // per-card Reorder taps needed); off exits all of them together. Omitted
+                // while previewing a shared board, same as reorder itself is disabled there.
+                ...(previewing
+                  ? []
+                  : [
+                      {
+                        icon: <Pencil size={14} color={activeColors.uiAccent} />,
+                        label: 'Edit depth chart',
+                        checked: globalEditMode,
+                        accent: activeColors.uiAccent,
+                        onClick: () => setGlobalEditMode(!globalEditMode),
+                      },
+                    ]),
               ]}
             />
           </div>
-          {/* App-level edit toggle: on puts every position group's card into reorder mode
-            at once (no per-card Reorder taps needed); off exits all of them together.
-            Hidden while previewing a shared board, same as reorder itself is disabled there. */}
-          {!previewing && (
-            <div className="flex items-center justify-between mt-3">
-              <span className="text-[11px] font-bold" style={{ color: uiTokens.textSecondary }}>
-                Edit depth chart
-              </span>
-              <Toggle
-                checked={globalEditMode}
-                onChange={setGlobalEditMode}
-                accent={activeColors.uiAccent}
-              />
-            </div>
-          )}
           {/* Tells the user this team's depth is their custom order, with one-tap revert.
             Hidden while previewing a shared board — that order isn't theirs to reset. */}
           {hasOverride(override) && !previewing && (
