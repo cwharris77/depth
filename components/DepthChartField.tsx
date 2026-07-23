@@ -363,6 +363,39 @@ export default function DepthChartField({
             }}>
             <FieldMarkings />
 
+            {activeUnit === 'special' && (
+              <>
+                {/* Grouping labels for the two special-teams clusters — the slot
+                    coordinates (lib/espn/transform.ts) already cluster KR/PR above
+                    the LOS and LS/K/P below it, but with no label the split reads
+                    as arbitrary rather than a real formation. */}
+                <div
+                  className="absolute font-semibold text-center pointer-events-none"
+                  style={{
+                    left: '50%',
+                    top: '8%',
+                    transform: 'translate(-50%, -50%)',
+                    color: uiTokens.textMuted,
+                    letterSpacing: '0.05em',
+                    fontSize: 'clamp(6px, 1.1dvh, 8px)',
+                  }}>
+                  RETURN UNIT
+                </div>
+                <div
+                  className="absolute font-semibold text-center pointer-events-none"
+                  style={{
+                    left: '50%',
+                    top: '58%',
+                    transform: 'translate(-50%, -50%)',
+                    color: uiTokens.textMuted,
+                    letterSpacing: '0.05em',
+                    fontSize: 'clamp(6px, 1.1dvh, 8px)',
+                  }}>
+                  KICKING UNIT
+                </div>
+              </>
+            )}
+
             {slots.map((slot) => {
               const player = slot.player;
               if (!player) return null;
