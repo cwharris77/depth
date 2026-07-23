@@ -177,7 +177,7 @@ export default function PlayerCard({
   const content = player && (
     <>
       <div className="flex items-start justify-between px-6 pt-4 pb-2">
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-4 min-w-0">
           <Avatar
             key={player.id}
             photoUrl={player.photoUrl}
@@ -187,7 +187,7 @@ export default function PlayerCard({
             fillColor={colors.primary}
             iconColor={readableTextOn(colors.primary)}
           />
-          <div>
+          <div className="min-w-0">
             <div
               className="text-6xl font-black leading-none"
               style={{
@@ -208,7 +208,9 @@ export default function PlayerCard({
               <Badge kind="position" accent={accent}>
                 {player.position}
               </Badge>
-              <span className="text-xs font-medium" style={{ color: uiTokens.textMuted }}>
+              <span
+                className="text-xs font-medium min-w-0 truncate"
+                style={{ color: uiTokens.textMuted }}>
                 {positionFullName(player.position)}
               </span>
               <Badge kind="status" status={player.status} accent={accent} />
@@ -216,7 +218,7 @@ export default function PlayerCard({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mt-1">
+        <div className="flex items-center gap-2 mt-1 shrink-0">
           <IconButton
             variant="plain"
             active={copied}
