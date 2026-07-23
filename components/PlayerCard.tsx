@@ -10,7 +10,7 @@ import { hasSeasonStats, seasonStatColumns } from '@/lib/stat-table';
 import type { Player, PlayerSeasonStats, Position, TeamRoster } from '@/lib/types';
 import { AnimatePresence, motion, Reorder, useDragControls, type PanInfo } from 'framer-motion';
 import { Check, GraduationCap, GripVertical, RotateCcw, Share2, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Avatar from '@/components/ui/Avatar';
 import Badge from '@/components/ui/Badge';
 import StatGrid from '@/components/ui/StatGrid';
@@ -72,6 +72,8 @@ export default function PlayerCard({
   const colors = roster.team.colors;
   const accent = colors.uiAccent;
   const dragControls = useDragControls();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const restoreFocus = useRef<HTMLElement | null>(null);
 
   // The card's content scrolls internally (overflow-y-auto below), so drag can
   // only be initiated from the pull-handle — dragging anywhere else would fight
@@ -100,6 +102,44 @@ export default function PlayerCard({
     }
     return () => document.body.classList.remove('card-open');
   }, [player?.id]);
+
+  // Dialog semantics for the mobile sheet (docked variant sits beside the field, not over
+  // it, so it isn't a modal). Mirrors NavDrawer's focus trap: capture the trigger for
+  // restore, focus the first focusable element in the panel, and wrap Tab/Shift+Tab
+  // between the first/last focusables while Escape closes.
+  useEffect(() => {
+    if (variant === 'docked' || !player) return;
+    restoreFocus.current = document.activeElement as HTMLElement | null;
+    const panel = panelRef.current;
+    const focusables = panel
+      ? Array.from(
+          panel.querySelectorAll<HTMLElement>('a[href], button, [tabindex]:not([tabindex="-1"])')
+        )
+      : [];
+    focusables[0]?.focus();
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab' || focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      restoreFocus.current?.focus();
+    };
+  }, [player?.id, variant, onClose]);
 
   // Lazy per-player fetch (locked decision: the field view never needs stats, so this
   // isn't part of the roster payload). Only fires when playerStatsMap is NOT provided
@@ -591,6 +631,10 @@ export default function PlayerCard({
           />
 
           <motion.div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${player.name} player card`}
             className="absolute bottom-0 left-0 right-0 z-50 rounded-t-3xl overflow-hidden"
             style={{
               background: `linear-gradient(180deg, #0f1a2e 0%, ${uiTokens.bg} 100%)`,
