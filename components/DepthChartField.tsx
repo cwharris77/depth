@@ -33,6 +33,7 @@ import { DESKTOP_MEDIA_QUERY, useMediaQuery } from '@/lib/use-media-query';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import Menu from '@/components/ui/Menu';
 import TabBar from '@/components/ui/TabBar';
+import Toggle from '@/components/ui/Toggle';
 
 const UNIT_LABELS: Record<Unit, string> = {
   offense: 'Offense',
@@ -101,6 +102,16 @@ export default function DepthChartField({
   }, [team.id]);
   const previewing = previewOverride !== null;
   const effectiveOverride = previewOverride ?? override;
+
+  // App-level "edit depth chart" toggle: puts every position group's card into reorder
+  // mode at once (PlayerCard's globalEditMode prop), instead of tapping each card's own
+  // Reorder button in turn. Off is symmetric with on — it drops every group straight back
+  // out, same as tapping Done individually would. Reset on team change so switching teams
+  // doesn't carry a stale "editing" state into the new roster.
+  const [globalEditMode, setGlobalEditMode] = useState(false);
+  useEffect(() => {
+    setGlobalEditMode(false);
+  }, [team.id]);
 
   const displayRoster = useMemo(
     () => applyTeamOverride(roster, effectiveOverride),
@@ -224,6 +235,7 @@ export default function DepthChartField({
           onReorder: handleReorder,
           onResetPosition: handleResetPosition,
           isPositionCustom: displaySelected ? !!override[displaySelected.position] : false,
+          globalEditMode,
         }),
   };
 
@@ -317,6 +329,21 @@ export default function DepthChartField({
               ]}
             />
           </div>
+          {/* App-level edit toggle: on puts every position group's card into reorder mode
+            at once (no per-card Reorder taps needed); off exits all of them together.
+            Hidden while previewing a shared board, same as reorder itself is disabled there. */}
+          {!previewing && (
+            <div className="flex items-center justify-between mt-3">
+              <span className="text-[11px] font-bold" style={{ color: uiTokens.textSecondary }}>
+                Edit depth chart
+              </span>
+              <Toggle
+                checked={globalEditMode}
+                onChange={setGlobalEditMode}
+                accent={activeColors.uiAccent}
+              />
+            </div>
+          )}
           {/* Tells the user this team's depth is their custom order, with one-tap revert.
             Hidden while previewing a shared board — that order isn't theirs to reset. */}
           {hasOverride(override) && !previewing && (
