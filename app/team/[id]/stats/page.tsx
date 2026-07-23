@@ -1,6 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { dbRosterSource, getNextGame, getRosterLeaders } from '@/lib/roster-source.db';
+import {
+  dbRosterSource,
+  getNextGame,
+  getPostseasonGames,
+  getRosterLeaders,
+} from '@/lib/roster-source.db';
 import TeamStatsView from '@/components/TeamStatsView';
 
 type Params = { params: Promise<{ id: string }> };
@@ -50,6 +55,13 @@ export default async function TeamStatsPage({ params }: Params) {
     page.seasons.map((s) => getRosterLeaders(id, s.season))
   );
 
+  // Postseason games for the most recent completed/reported season only (seasons[0] —
+  // newest-first per TeamStatsPage's doc comment), not re-derived per season tab like
+  // leaders — [] for a team that missed the postseason renders no section.
+  const postseasonGames = page.seasons[0]
+    ? await getPostseasonGames(id, page.seasons[0].season)
+    : [];
+
   return (
     <TeamStatsView
       team={page.team}
@@ -59,6 +71,7 @@ export default async function TeamStatsPage({ params }: Params) {
       upcomingSeason={page.upcomingSeason}
       leadersBySeason={leadersBySeason}
       nextGame={nextGame}
+      postseasonGames={postseasonGames}
     />
   );
 }

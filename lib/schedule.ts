@@ -1,8 +1,9 @@
 // Turns the raw `games` for a team into its regular-season schedule from that team's
 // perspective, and finds its next unplayed game (design spec 5a). Pure: no fetch, no DB —
 // the read layer (lib/roster-source.db.ts) hands it Game rows and enriches the resolved
-// opponent ids into full team metadata for the UI. v1 is regular-season only (postseason
-// games are stored but excluded here — spec Out of scope). A bye week is derived (nflverse
+// opponent ids into full team metadata for the UI. resolveSchedule is regular-season only;
+// postseason games (game_type WC/DIV/CON/SB) are resolved separately by resolvePostseason
+// below, for the stats page's postseason section. A bye week is derived (nflverse
 // has no bye row): any REG week with no game is the team's bye.
 
 import type { Game } from './types';
@@ -81,4 +82,49 @@ export function resolveSchedule(games: Game[], teamId: string): ResolvedSchedule
 // skipping byes and already-played games. Null once the regular season is complete.
 export function nextGame(schedule: ResolvedScheduleGame[]): ResolvedScheduleGame | null {
   return schedule.find((g) => !g.isBye && g.result === null) ?? null;
+}
+
+// A team's postseason games for one season, from that team's perspective, sorted by round
+// order (week ascends WC -> DIV -> CON -> SB in nflverse's numbering, so a plain week sort
+// suffices). No bye-filling here — a missed round is just an absent row, not a placeholder
+// (invariant 6: a team that missed the postseason gets an empty array, not empty rows).
+export function resolvePostseason(games: Game[], teamId: string): ResolvedScheduleGame[] {
+  const mine = games.filter(
+    (g) =>
+      g.gameType !== 'REG' &&
+      g.week !== null &&
+      (g.homeTeamId === teamId || g.awayTeamId === teamId)
+  );
+
+  return mine
+    .map((g) => {
+      const isHome = g.homeTeamId === teamId;
+      const teamScore = isHome ? g.homeScore : g.awayScore;
+      const oppScore = isHome ? g.awayScore : g.homeScore;
+      return {
+        week: g.week as number,
+        gameType: g.gameType,
+        isBye: false,
+        date: g.gameday,
+        isHome,
+        opponentTeamId: isHome ? g.awayTeamId : g.homeTeamId,
+        teamScore,
+        oppScore,
+        result: outcome(teamScore, oppScore),
+      };
+    })
+    .sort((a, b) => a.week - b.week);
+}
+
+// nflverse's raw postseason game_type -> a fan-facing round label for the stats page.
+// An unrecognized code degrades to itself rather than throwing (invariant 6).
+const POSTSEASON_ROUND_LABELS: Record<string, string> = {
+  WC: 'Wild Card',
+  DIV: 'Divisional',
+  CON: 'Conference',
+  SB: 'Super Bowl',
+};
+
+export function postseasonRoundLabel(gameType: string): string {
+  return POSTSEASON_ROUND_LABELS[gameType] ?? gameType;
 }
