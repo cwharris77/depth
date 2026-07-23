@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { colors } from './tokens';
 
 const FALLBACK = (
@@ -48,8 +49,8 @@ export default function Avatar({
         color: iconColor,
       }}>
       {showPhoto ? (
-        <img
-          src={photoUrl}
+        <Image
+          src={photoUrl as string}
           alt={name}
           width={size}
           height={size}
