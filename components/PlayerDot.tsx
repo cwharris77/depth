@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import type { Player, RenderSlot, TeamColors, Unit } from '@/lib/types';
 import { readableTextOn } from '@/lib/colors';
+import { formatLastName } from '@/lib/format';
 import { positionFullName } from '@/lib/positions';
 import { colors as uiTokens } from '@/components/ui/tokens';
 
@@ -26,16 +27,6 @@ const LABEL_VISIBILITY: Record<Unit, string> = {
   defense: 'hidden min-[520px]:block',
   special: 'block',
 };
-
-const NAME_SUFFIXES = new Set(['jr', 'jr.', 'sr', 'sr.', 'ii', 'iii', 'iv', 'v']);
-
-function lastName(full: string): string {
-  const parts = full.trim().split(/\s+/);
-  while (parts.length > 1 && NAME_SUFFIXES.has(parts[parts.length - 1].toLowerCase())) {
-    parts.pop();
-  }
-  return parts[parts.length - 1] ?? full;
-}
 
 export default function PlayerDot({
   player,
@@ -129,7 +120,7 @@ export default function PlayerDot({
             overflowWrap: 'anywhere',
             fontSize: 'clamp(7px, 1.3dvh, 9px)',
           }}>
-          {lastName(player.name)}
+          {formatLastName(player.name)}
         </div>
       </div>
     </button>

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { experienceLabel, ordinal } from '../format';
+import { experienceLabel, formatLastName, ordinal } from '../format';
 
 describe('experienceLabel', () => {
   it('calls a player with 0 seasons a rookie', () => {
@@ -39,5 +39,29 @@ describe('ordinal', () => {
     expect(ordinal(21)).toBe('21st');
     expect(ordinal(22)).toBe('22nd');
     expect(ordinal(23)).toBe('23rd');
+  });
+});
+
+describe('formatLastName', () => {
+  it('returns the final word for a plain two-word name', () => {
+    expect(formatLastName('Russell Wilson')).toBe('Wilson');
+  });
+
+  it('keeps a hyphenated last name whole', () => {
+    expect(formatLastName('Jaxon Smith-Njigba')).toBe('Smith-Njigba');
+  });
+
+  it('treats a multi-word surname as the last name', () => {
+    expect(formatLastName('Amon-Ra St. Brown')).toBe('Brown');
+  });
+
+  it('strips a generational suffix so it is not mistaken for the last name', () => {
+    expect(formatLastName('Odell Beckham Jr.')).toBe('Beckham');
+    expect(formatLastName('Odell Beckham Jr')).toBe('Beckham');
+    expect(formatLastName('Michael Pittman III')).toBe('Pittman');
+  });
+
+  it('falls back to the full string for a single-word name', () => {
+    expect(formatLastName('Prime')).toBe('Prime');
   });
 });
