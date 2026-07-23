@@ -1,11 +1,15 @@
 import DepthChartField from '@/components/DepthChartField';
 import RememberTeam from '@/components/RememberTeam';
 import { dbRosterSource, getPlayerStats } from '@/lib/roster-source.db';
+import { OG_IMAGE_ALT, OG_IMAGE_SIZE } from '@/lib/og';
 import type { PlayerSeasonStats } from '@/lib/types';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 type Params = { params: Promise<{ id: string }> };
+type MetadataParams = Params & {
+  searchParams: Promise<{ order?: string | string[] }>;
+};
 
 // ISR: the weekly ESPN ingest (scripts/ingest-espn.mts, Wed 12:00 UTC) writes straight
 // to Postgres and is intentionally decoupled from deploys (AGENTS.md invariant 7), so
@@ -21,7 +25,10 @@ export async function generateStaticParams() {
   return teams.map((team) => ({ id: team.id }));
 }
 
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+  searchParams,
+}: MetadataParams): Promise<Metadata> {
   const { id } = await params;
   const roster = await dbRosterSource.getTeam(id);
   if (!roster) {
@@ -29,6 +36,21 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   }
   const { team } = roster;
   const fullName = `${team.city} ${team.name}`;
+
+  // The OG image is a plain Route Handler (app/team/[id]/og-image/route.tsx), not the
+  // file-convention opengraph-image.tsx special file — Next always strips the incoming
+  // Request/query string before invoking that special file, so it could never see a
+  // shared roster link's `?order=` override (lib/share.ts). Forwarding `order` here, and
+  // pointing openGraph/twitter at the route explicitly, is what makes the link preview
+  // honor an edited order instead of always the default (see
+  // Projects/depth/Tickets/Shared edited roster previews the default.md).
+  const { order } = await searchParams;
+  const orderParam = typeof order === 'string' ? order : undefined;
+  const ogImageUrl = orderParam
+    ? `/team/${id}/og-image?order=${encodeURIComponent(orderParam)}`
+    : `/team/${id}/og-image`;
+  const ogImage = { url: ogImageUrl, ...OG_IMAGE_SIZE, alt: OG_IMAGE_ALT };
+
   return {
     title: `${fullName} Depth Chart · Depth`,
     description: `Interactive depth chart for the ${fullName} — tap any player for their bio and stats.`,
@@ -36,6 +58,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     // NavSwitcher). Those are the same page, so point the canonical at the clean
     // path (resolved against the layout's metadataBase) to consolidate them.
     alternates: { canonical: `/team/${id}` },
+    openGraph: { images: [ogImage] },
+    twitter: { card: 'summary_large_image', images: [ogImage] },
   };
 }
 

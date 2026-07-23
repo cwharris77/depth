@@ -1,21 +1,24 @@
+// Custom Route Handler (not a file-convention `opengraph-image.tsx`) so it can read the
+// incoming request's query string. Next 16's opengraph-image special-file loader always
+// discards the Request/searchParams before invoking the handler (confirmed against
+// node_modules/next/dist/build/webpack/loaders/next-metadata-route-loader.js), and
+// file-based metadata always overrides a manually-specified openGraph.images — so a
+// shared roster link's `?order=` override (lib/share.ts) could never reach the old
+// prerendered card. generateMetadata (../page.tsx) points openGraph/twitter images here,
+// forwarding `order` when the page itself was loaded with one. This trades the old
+// per-team static prerendering for a request-time render — accepted tradeoff, see
+// Projects/depth/Tickets/Shared edited roster previews the default.md.
 import { ImageResponse } from 'next/og';
+import type { NextRequest } from 'next/server';
 import { dbRosterSource } from '@/lib/roster-source.db';
 import { readableTextOn } from '@/lib/colors';
-import { featuredStarters } from '@/lib/og';
+import { featuredStarters, rosterForOgImage, OG_IMAGE_SIZE } from '@/lib/og';
 
-export const alt = 'Team depth chart';
-export const size = { width: 1200, height: 630 };
-export const contentType = 'image/png';
-
-// Prerender one card per team alongside the page (statically optimized + cached).
-export async function generateStaticParams() {
-  const teams = await dbRosterSource.listTeams();
-  return teams.map((team) => ({ id: team.id }));
-}
-
-export default async function Image({ params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const roster = await dbRosterSource.getTeam(id);
+  const orderParam = request.nextUrl.searchParams.get('order');
+  const fetched = await dbRosterSource.getTeam(id);
+  const roster = fetched ? rosterForOgImage(fetched, orderParam) : undefined;
 
   // Unknown id: a clean generic card rather than a broken/blank image.
   if (!roster) {
@@ -34,7 +37,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         }}>
         NFL Depth Charts
       </div>,
-      { ...size }
+      { ...OG_IMAGE_SIZE }
     );
   }
 
@@ -114,6 +117,6 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         ))}
       </div>
     </div>,
-    { ...size }
+    { ...OG_IMAGE_SIZE }
   );
 }
