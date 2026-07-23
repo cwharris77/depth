@@ -17,7 +17,7 @@ import { unitForPosition } from '@/lib/search';
 import { rosterShareUrlPath } from '@/lib/share';
 import type { Player, PlayerSeasonStats, Position, TeamRoster, Unit } from '@/lib/types';
 import { useUser } from '@/lib/use-user';
-import { Check, MoreHorizontal, RotateCcw, Share2, Shirt } from 'lucide-react';
+import { Check, MoreHorizontal, Pencil, RotateCcw, Share2, Shirt } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import ApplyKitFromQuery from './ApplyKitFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
@@ -101,6 +101,16 @@ export default function DepthChartField({
   }, [team.id]);
   const previewing = previewOverride !== null;
   const effectiveOverride = previewOverride ?? override;
+
+  // App-level "edit depth chart" toggle: puts every position group's card into reorder
+  // mode at once (PlayerCard's globalEditMode prop), instead of tapping each card's own
+  // Reorder button in turn. Off is symmetric with on — it drops every group straight back
+  // out, same as tapping Done individually would. Reset on team change so switching teams
+  // doesn't carry a stale "editing" state into the new roster.
+  const [globalEditMode, setGlobalEditMode] = useState(false);
+  useEffect(() => {
+    setGlobalEditMode(false);
+  }, [team.id]);
 
   const displayRoster = useMemo(
     () => applyTeamOverride(roster, effectiveOverride),
@@ -224,6 +234,7 @@ export default function DepthChartField({
           onReorder: handleReorder,
           onResetPosition: handleResetPosition,
           isPositionCustom: displaySelected ? !!override[displaySelected.position] : false,
+          globalEditMode,
         }),
   };
 
@@ -298,7 +309,12 @@ export default function DepthChartField({
             />
             <Menu
               ariaLabel="More options"
-              trigger={<MoreHorizontal size={16} />}
+              trigger={
+                <MoreHorizontal
+                  size={16}
+                  color={globalEditMode ? activeColors.uiAccent : undefined}
+                />
+              }
               items={[
                 {
                   icon: <Shirt size={14} color={activeColors.uiAccent} />,
@@ -314,6 +330,21 @@ export default function DepthChartField({
                   label: shareCopied ? 'Link copied' : 'Share roster',
                   onClick: handleShareRoster,
                 },
+                // App-level edit toggle, folded into the overflow menu instead of its own
+                // row: on puts every position group's card into reorder mode at once (no
+                // per-card Reorder taps needed); off exits all of them together. Omitted
+                // while previewing a shared board, same as reorder itself is disabled there.
+                ...(previewing
+                  ? []
+                  : [
+                      {
+                        icon: <Pencil size={14} color={activeColors.uiAccent} />,
+                        label: 'Edit depth chart',
+                        checked: globalEditMode,
+                        accent: activeColors.uiAccent,
+                        onClick: () => setGlobalEditMode(!globalEditMode),
+                      },
+                    ]),
               ]}
             />
           </div>
