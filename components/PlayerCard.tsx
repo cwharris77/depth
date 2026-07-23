@@ -177,17 +177,21 @@ export default function PlayerCard({
   const content = player && (
     <>
       <div className="flex items-start justify-between px-6 pt-4 pb-2">
-        <div className="flex items-start gap-4">
-          <Avatar
-            key={player.id}
-            photoUrl={player.photoUrl}
-            name={player.name}
-            size={72}
-            ringColor={accent}
-            fillColor={colors.primary}
-            iconColor={readableTextOn(colors.primary)}
-          />
-          <div>
+        <div>
+          {/* Madden Ultimate Team-style header: the head-and-shoulders crop sits
+              inline with the ghost jersey number, bottom-edge aligned (items-end) so
+              the photo reads as part of the number rather than a separate framed
+              chip above it. Name/position/status stack below the pair. */}
+          <div className="flex items-end gap-3">
+            <Avatar
+              key={player.id}
+              photoUrl={player.photoUrl}
+              name={player.name}
+              size={72}
+              shape="crop"
+              fillColor={colors.primary}
+              iconColor={readableTextOn(colors.primary)}
+            />
             <div
               className="text-6xl font-black leading-none"
               style={{
@@ -196,8 +200,10 @@ export default function PlayerCard({
               }}>
               #{player.number}
             </div>
+          </div>
+          <div>
             <div
-              className="text-2xl font-black leading-tight -mt-4"
+              className="text-2xl font-black leading-tight mt-1"
               style={{
                 color: uiTokens.textPrimary,
                 letterSpacing: '-0.01em',
