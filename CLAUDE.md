@@ -186,6 +186,15 @@ Each is named for what it looks like in a diff. The rule prevents it.
     same control gets rebuilt (differently) elsewhere. *Rule: `ls components/ui/` first;
     reuse the primitive that fits, extend one with a prop before forking, add a new
     primitive only when none fits — even for a control you're sure is a one-off (§3).*
+16. **Flash-then-jump on unresolved async.** A component renders a default/placeholder
+    value before its data resolves, then jumps to the real value once it does (shipped
+    bugs: settings page showing "No favorite" before `getSettings()` resolved; the
+    stats section popping in without reserving space). *Rule: every data-driven
+    component gates rendering on an explicit `loading` flag (see `PlayerCard.tsx`'s
+    `statsLoading`) — render a skeleton sized to the eventual content while loading
+    (`PlayerCard.tsx`'s stat-row skeletons, sized against `statColumns`), a distinct
+    empty state once resolved-but-empty, and only the real content once loaded. Never
+    let a component render its post-load shape from data that hasn't arrived yet.*
 
 ## 5. Quality bar per deliverable
 
