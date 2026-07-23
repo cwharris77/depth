@@ -9,7 +9,7 @@ import { readableTextOn } from '@/lib/colors';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { PlayerHit } from '@/lib/search';
 import type { Conference, Player } from '@/lib/types';
-import { Check, CornerDownLeft, Search, X } from 'lucide-react';
+import { Check, Columns2, CornerDownLeft, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
@@ -134,7 +134,10 @@ function PlayerRow({
 }
 
 interface NavSwitcherProps {
-  team: TeamMeta;
+  // Optional so the switcher can run in a neutral "pick a team" context (compare view)
+  // with no single current team — see onPickTeam. Every other caller passes the team
+  // they're viewing, same as before.
+  team?: TeamMeta;
   teams: TeamMeta[];
   // Full player list for the currently-viewed team, when the caller has it loaded
   // (the roster page does; the stats page doesn't — see components/TeamStatsView.tsx).
@@ -144,6 +147,10 @@ interface NavSwitcherProps {
   currentTeamPlayers?: Player[];
   onSelectPlayer: (player: Player) => void;
   onClose: () => void;
+  // Pick mode (compare view's team slots): when set, selecting a team calls this back
+  // with its id instead of navigating to /team/[id]. Suppresses the "Compare teams"
+  // entry row too, since you're already picking a team for a compare slot.
+  onPickTeam?: (id: string) => void;
 }
 
 // The app's full-screen nav. Idle (no query): browse teams by conference/division,
@@ -158,10 +165,11 @@ export default function NavSwitcher({
   currentTeamPlayers = [],
   onSelectPlayer,
   onClose,
+  onPickTeam,
 }: NavSwitcherProps) {
-  const accentColor = team.colors.uiAccent;
+  const accentColor = team?.colors.uiAccent ?? uiTokens.accent;
   const router = useRouter();
-  const [conference, setConference] = useState<Conference>(team.conference);
+  const [conference, setConference] = useState<Conference>(team?.conference ?? 'AFC');
   const [query, setQuery] = useState('');
   const [playerResults, setPlayerResults] = useState<PlayerHit[]>([]);
   const [playersLoading, setPlayersLoading] = useState(false);
@@ -249,7 +257,7 @@ export default function NavSwitcher({
   }, [flatResults]);
 
   const handleSelectPlayer = (hit: PlayerHit) => {
-    if (hit.team.id === team.id) {
+    if (hit.team.id === team?.id) {
       // Already have the full Player (depthRank/status/bio/...) for the current
       // roster — use that instead of the lighter search-result shape.
       const localPlayer = currentTeamPlayers.find((p) => p.id === hit.id);
@@ -267,6 +275,11 @@ export default function NavSwitcher({
   };
 
   const selectTeam = (t: TeamMeta) => {
+    if (onPickTeam) {
+      onPickTeam(t.id);
+      onClose();
+      return;
+    }
     startTransition(() => {
       router.push(`/team/${t.id}`);
     });
@@ -305,7 +318,7 @@ export default function NavSwitcher({
     <>
       <div className="flex items-center justify-between px-5 pt-3 pb-3">
         <h2 className="text-lg font-black" style={{ color: uiTokens.textPrimary }}>
-          Jump to
+          {onPickTeam ? 'Pick a team' : 'Jump to'}
         </h2>
         <IconButton
           variant="plain"
@@ -343,6 +356,31 @@ export default function NavSwitcher({
         </div>
       </div>
 
+      {/* Entry point to the two-team compare view, above the conference browser
+          (Decisions table "Entry point"). Hidden once picking a team for a compare
+          slot — you're already inside that flow — and while searching, same as the
+          conference picker below. */}
+      {!searching && !onPickTeam && (
+        <div className="px-5 pb-3">
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={() => startTransition(() => router.push('/compare'))}
+            className="w-full flex items-center gap-3 rounded-2xl px-3 py-2.5"
+            style={{
+              touchAction: 'manipulation',
+              background: uiTokens.surfaceCard2,
+              border: `1px solid ${uiTokens.borderSubtle}`,
+              opacity: isPending ? 0.5 : 1,
+            }}>
+            <Columns2 size={16} color={accentColor} />
+            <span className="text-sm font-bold" style={{ color: uiTokens.textPrimary }}>
+              Compare teams
+            </span>
+          </button>
+        </div>
+      )}
+
       {/* Only meaningful for idle browsing — hidden once you're searching. */}
       {!searching && (
         <div className="px-5 pb-3">
@@ -374,7 +412,7 @@ export default function NavSwitcher({
                   <TeamRow
                     key={t.id}
                     team={t}
-                    isCurrent={t.id === team.id}
+                    isCurrent={t.id === team?.id}
                     highlighted={false}
                     disabled={isPending}
                     onSelect={selectTeam}
@@ -420,7 +458,7 @@ export default function NavSwitcher({
                     <TeamRow
                       key={t.id}
                       team={t}
-                      isCurrent={t.id === team.id}
+                      isCurrent={t.id === team?.id}
                       highlighted={playerResults.length + i === highlightedIndex}
                       disabled={isPending}
                       onSelect={selectTeam}

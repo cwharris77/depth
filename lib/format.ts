@@ -25,3 +25,16 @@ export function ordinal(n: number): string {
       return `${n}th`;
   }
 }
+
+const NAME_SUFFIXES = new Set(['jr', 'jr.', 'sr', 'sr.', 'ii', 'iii', 'iv', 'v']);
+
+// Last name for space-constrained labels (field dot labels, compare-view mobile
+// columns). Strips a trailing generational suffix ("Jr.", "III", ...) first so it
+// doesn't get mistaken for the last name.
+export function formatLastName(full: string): string {
+  const parts = full.trim().split(/\s+/);
+  while (parts.length > 1 && NAME_SUFFIXES.has(parts[parts.length - 1].toLowerCase())) {
+    parts.pop();
+  }
+  return parts[parts.length - 1] ?? full;
+}
