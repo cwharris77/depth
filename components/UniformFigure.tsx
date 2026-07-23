@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import Image from 'next/image';
 import type { TeamColors } from '@/lib/types';
 import { readableTextOn } from '@/lib/colors';
 import { variantSpec, type UniformVariant } from '@/lib/uniforms/figure';
@@ -121,7 +122,7 @@ export default function UniformFigure({
   const hasPants = spec.parts.includes('pants');
 
   if (imagePath) {
-    return <img src={imagePath} alt={title ?? ''} width={size} height={height} loading="lazy" />;
+    return <Image src={imagePath} alt={title ?? ''} width={size} height={height} />;
   }
 
   // Default trim config, colored from the kit's palette.
