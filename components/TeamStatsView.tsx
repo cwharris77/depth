@@ -368,7 +368,7 @@ export default function TeamStatsView({
             <div
               className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
               style={{ color: uiTokens.textFaintest }}>
-              {active.season} SEASON · {gamesPlayed} GAMES PLAYED ▸▸▸
+              {active.season} SEASON · {gamesPlayed} GAMES PLAYED
             </div>
           </>
         ) : clampedIndex === -1 && upcomingSeason ? (
@@ -389,7 +389,7 @@ export default function TeamStatsView({
             <div
               className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
               style={{ color: uiTokens.textFaintest }}>
-              {upcomingSeason} SEASON · NOT YET STARTED ▸▸▸
+              {upcomingSeason} SEASON · NOT YET STARTED
             </div>
           </>
         ) : (
@@ -409,7 +409,7 @@ export default function TeamStatsView({
             <div
               className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
               style={{ color: uiTokens.textFaintest }}>
-              {nextSeasonLabel} SEASON · NOT YET STARTED ▸▸▸
+              {nextSeasonLabel} SEASON · NOT YET STARTED
             </div>
           </>
         )}
