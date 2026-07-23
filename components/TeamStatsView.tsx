@@ -464,22 +464,22 @@ export default function TeamStatsView({
               {leaderRows.map(({ label, leader }, i) => (
                 <div
                   key={label}
-                  className="flex items-center justify-between gap-3 px-3.5 py-2.5"
+                  className="flex items-center justify-between gap-3 px-3.5 py-3.5"
                   style={{ borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}` }}>
                   <div className="min-w-0">
                     <div
-                      className="text-[9px] font-bold tracking-[0.06em]"
+                      className="text-[10px] font-bold tracking-[0.06em]"
                       style={{ color: uiAccent }}>
                       {label}
                     </div>
                     <div
-                      className="mt-0.5 truncate text-xs font-extrabold"
+                      className="mt-1 truncate text-[17px] font-extrabold leading-tight"
                       style={{ color: uiTokens.textPrimary }}>
                       {leader.name}
                     </div>
                   </div>
                   <div
-                    className="shrink-0 text-right text-[10px]"
+                    className="shrink-0 text-right text-[12px] font-semibold"
                     style={{ color: uiTokens.textMuted, maxWidth: 170 }}>
                     {leader.line}
                   </div>
