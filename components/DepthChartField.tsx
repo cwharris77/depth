@@ -33,6 +33,12 @@ import { DESKTOP_MEDIA_QUERY, useMediaQuery } from '@/lib/use-media-query';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import Menu from '@/components/ui/Menu';
 import TabBar from '@/components/ui/TabBar';
+import Walkthrough from '@/components/ui/Walkthrough';
+import { AnimatePresence } from 'framer-motion';
+import {
+  dismissEditModeWalkthrough,
+  hasDismissedEditModeWalkthrough,
+} from '@/lib/edit-mode-walkthrough';
 
 const UNIT_LABELS: Record<Unit, string> = {
   offense: 'Offense',
@@ -111,6 +117,19 @@ export default function DepthChartField({
   useEffect(() => {
     setGlobalEditMode(false);
   }, [team.id]);
+
+  // First-run walkthrough pointing at the "•••" overflow menu, explaining that "Edit depth
+  // chart" moved there from its own toggle. Shown once ever, app-wide (not per-team) — the
+  // dismiss flag is set the instant it shows, not on dismiss, so navigating away mid-walkthrough
+  // still counts as shown (same pattern as the nav-drawer coachmark). This effect intentionally
+  // runs once per component mount rather than per team.id, since DepthChartField persists across
+  // team switches (see the [team.id] reset effects above).
+  const [showEditModeWalkthrough, setShowEditModeWalkthrough] = useState(false);
+  useEffect(() => {
+    if (hasDismissedEditModeWalkthrough(window.localStorage)) return;
+    dismissEditModeWalkthrough(window.localStorage);
+    setShowEditModeWalkthrough(true);
+  }, []);
 
   const displayRoster = useMemo(
     () => applyTeamOverride(roster, effectiveOverride),
@@ -307,46 +326,59 @@ export default function DepthChartField({
               }}
               activeColor={activeColors.uiAccent}
             />
-            <Menu
-              ariaLabel="More options"
-              trigger={
-                <MoreHorizontal
-                  size={16}
-                  color={globalEditMode ? activeColors.uiAccent : undefined}
-                />
-              }
-              items={[
-                {
-                  icon: <Shirt size={14} color={activeColors.uiAccent} />,
-                  label: 'Choose uniform',
-                  onClick: () => setKitOpen(true),
-                },
-                {
-                  icon: shareCopied ? (
-                    <Check size={14} color={activeColors.uiAccent} strokeWidth={3} />
-                  ) : (
-                    <Share2 size={14} color={activeColors.uiAccent} />
-                  ),
-                  label: shareCopied ? 'Link copied' : 'Share roster',
-                  onClick: handleShareRoster,
-                },
-                // App-level edit toggle, folded into the overflow menu instead of its own
-                // row: on puts every position group's card into reorder mode at once (no
-                // per-card Reorder taps needed); off exits all of them together. Omitted
-                // while previewing a shared board, same as reorder itself is disabled there.
-                ...(previewing
-                  ? []
-                  : [
-                      {
-                        icon: <Pencil size={14} color={activeColors.uiAccent} />,
-                        label: 'Edit depth chart',
-                        checked: globalEditMode,
-                        accent: activeColors.uiAccent,
-                        onClick: () => setGlobalEditMode(!globalEditMode),
-                      },
-                    ]),
-              ]}
-            />
+            <div className="relative">
+              <Menu
+                ariaLabel="More options"
+                trigger={
+                  <MoreHorizontal
+                    size={16}
+                    color={globalEditMode ? activeColors.uiAccent : undefined}
+                  />
+                }
+                items={[
+                  {
+                    icon: <Shirt size={14} color={activeColors.uiAccent} />,
+                    label: 'Choose uniform',
+                    onClick: () => setKitOpen(true),
+                  },
+                  {
+                    icon: shareCopied ? (
+                      <Check size={14} color={activeColors.uiAccent} strokeWidth={3} />
+                    ) : (
+                      <Share2 size={14} color={activeColors.uiAccent} />
+                    ),
+                    label: shareCopied ? 'Link copied' : 'Share roster',
+                    onClick: handleShareRoster,
+                  },
+                  // App-level edit toggle, folded into the overflow menu instead of its own
+                  // row: on puts every position group's card into reorder mode at once (no
+                  // per-card Reorder taps needed); off exits all of them together. Omitted
+                  // while previewing a shared board, same as reorder itself is disabled there.
+                  ...(previewing
+                    ? []
+                    : [
+                        {
+                          icon: <Pencil size={14} color={activeColors.uiAccent} />,
+                          label: 'Edit depth chart',
+                          checked: globalEditMode,
+                          accent: activeColors.uiAccent,
+                          onClick: () => setGlobalEditMode(!globalEditMode),
+                        },
+                      ]),
+                ]}
+              />
+              <AnimatePresence>
+                {showEditModeWalkthrough && !previewing && (
+                  <Walkthrough
+                    steps={[
+                      'We moved things around: "Edit depth chart" now lives in this ••• menu instead of its own button.',
+                      'Tap ••• , then "Edit depth chart" to start reordering your roster.',
+                    ]}
+                    onDismiss={() => setShowEditModeWalkthrough(false)}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
           </div>
           {/* Tells the user this team's depth is their custom order, with one-tap revert.
             Hidden while previewing a shared board — that order isn't theirs to reset. */}
