@@ -8,6 +8,7 @@ import SectionLabel from '@/components/ui/SectionLabel';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import { readableTextOn } from '@/lib/colors';
 import { ordinal } from '@/lib/format';
+import { postseasonRoundLabel } from '@/lib/schedule';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { Leader, RosterLeaders, TeamScheduleGame, TeamStats } from '@/lib/types';
 import { useState } from 'react';
@@ -29,6 +30,10 @@ interface Props {
   // The team's next unplayed game (design spec 5a's NEXT GAME card). Null in the
   // offseason / once the season is complete, in which case the card is omitted.
   nextGame?: TeamScheduleGame | null;
+  // The team's postseason games (opponent, round, result, score) for its most recent
+  // completed/reported season (seasons[0]) only — not re-derived per season tab. Empty
+  // for a team that missed the postseason, in which case no section renders.
+  postseasonGames?: TeamScheduleGame[];
 }
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
@@ -102,6 +107,7 @@ export default function TeamStatsView({
   upcomingSeason,
   leadersBySeason,
   nextGame,
+  postseasonGames,
 }: Props) {
   const [index, setIndex] = useState(seasons.length > 0 ? 0 : -1);
   const { uiAccent } = team.colors;
@@ -179,6 +185,13 @@ export default function TeamStatsView({
     ? clampedIndex === -1
     : upcomingSeasonHasRealRow && active?.season === upcomingSeason;
   const showNextGame = !!nextGame?.opponent && (isViewingCurrentSeason || isViewingUpcomingSeason);
+
+  // Postseason section: only on the season tab it was fetched for (seasons[0], the most
+  // recent completed/reported season) — never on an older season tab or the upcoming-
+  // season/incoming-coach chips, which have no postseason data attached. Empty array
+  // (missed the postseason, or games not ingested yet) renders no section (invariant 6).
+  const showPostseason =
+    !!postseasonGames?.length && !!active && active.season === seasons[0]?.season;
 
   const nextSeasonLabel = upcomingSeason
     ? String(upcomingSeason)
@@ -444,6 +457,56 @@ export default function TeamStatsView({
                 }}>
                 {nextGame.opponent.abbrev}
               </div>
+            </div>
+          </div>
+        )}
+
+        {showPostseason && active && (
+          <div className="px-5 pb-7 pt-1">
+            <SectionLabel className="mb-2">POSTSEASON · {active.season}</SectionLabel>
+            {/* Same card treatment as ROSTER LEADERS below — plain tokenized div, not
+              Card (rounded-2xl + zero-padding rows don't fit Card's API, same deviation
+              noted on that block). */}
+            <div
+              className="overflow-hidden rounded-2xl"
+              style={{
+                background: uiTokens.surfaceCard2,
+                border: `1px solid ${uiTokens.borderSubtle}`,
+              }}>
+              {postseasonGames?.map((g, i) => {
+                const resultColor =
+                  g.result === 'W'
+                    ? uiAccent
+                    : g.result === 'L'
+                      ? uiTokens.statusInjured
+                      : uiTokens.textMuted;
+                const score =
+                  g.teamScore !== null && g.oppScore !== null ? `${g.teamScore}-${g.oppScore}` : '';
+                return (
+                  <div
+                    key={`${g.gameType}-${g.week}`}
+                    className="flex items-center justify-between gap-3 px-3.5 py-2.5"
+                    style={{ borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}` }}>
+                    <div className="min-w-0">
+                      <div
+                        className="text-[9px] font-bold tracking-[0.06em]"
+                        style={{ color: uiAccent }}>
+                        {postseasonRoundLabel(g.gameType).toUpperCase()}
+                      </div>
+                      <div
+                        className="mt-0.5 truncate text-xs font-extrabold"
+                        style={{ color: uiTokens.textPrimary }}>
+                        {g.isHome ? 'vs' : '@'} {g.opponent?.abbrev ?? '—'}
+                      </div>
+                    </div>
+                    <div
+                      className="shrink-0 text-right text-[11px] font-bold"
+                      style={{ color: resultColor }}>
+                      {g.result ?? ''} {score}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
