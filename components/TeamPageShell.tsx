@@ -1,14 +1,19 @@
 'use client';
 
-// Desktop multi-panel frame for the three team pages (Wide-screen responsive multi-panel
-// ticket; layout from the Claude Design "Depth Wide Desktop" mock). At the `xl`
-// breakpoint the page becomes a viewport-height three-column grid — team rail · main
-// content · context panel — instead of a stretched mobile column; below it, children
-// render exactly as before (rail and panel are CSS-hidden, so the prerendered HTML is
-// correct at every width with no JS layout switch — the SSR concern the ticket called
-// out). The panel's content is page-specific and passed in by each view: the docked
-// player card (roster), the season snapshot (schedule), the PF/PA trend (stats). The
-// shell owns only the frame.
+// Desktop multi-panel frame for the three team pages, plus /uniforms and /compare
+// (Wide-screen responsive multi-panel ticket; layout from the Claude Design "Depth Wide
+// Desktop" mock; the no-current-team pages join via the Desktop shell for uniform
+// archive and compare pages ticket). At the `xl` breakpoint the page becomes a
+// viewport-height grid — team rail · main content, plus a context panel column when
+// `aside` is passed — instead of a stretched mobile column; below it, children render
+// exactly as before (rail and panel are CSS-hidden, so the prerendered HTML is correct
+// at every width with no JS layout switch — the SSR concern the ticket called out). The
+// panel's content is page-specific and passed in by each view: the docked player card
+// (roster), the season snapshot (schedule), the PF/PA trend (stats). `team`/`activePage`/
+// `aside` are all optional — /uniforms and /compare have no current team, no team-page
+// tab, and no third context-panel column (their content is full-width or self-centering,
+// not something that wants a docked aside), so they render the rail-plus-main two-column
+// shape instead of forking a separate shell. The shell owns only the frame.
 import { colors as uiTokens } from '@/components/ui/tokens';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { ReactNode } from 'react';
@@ -22,29 +27,34 @@ export default function TeamPageShell({
   aside,
   children,
 }: {
-  team: TeamMeta;
+  team?: TeamMeta;
   teams: TeamMeta[];
-  activePage: TeamPageKey;
+  activePage?: TeamPageKey;
   accent: string;
-  aside: ReactNode;
+  aside?: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <div className="w-full xl:mx-auto xl:grid xl:h-dvh xl:max-w-[1600px] xl:grid-cols-[232px_minmax(0,1fr)_348px] xl:overflow-hidden">
+    <div
+      className={`w-full xl:mx-auto xl:grid xl:h-dvh xl:max-w-[1600px] xl:overflow-hidden ${
+        aside ? 'xl:grid-cols-[232px_minmax(0,1fr)_348px]' : 'xl:grid-cols-[232px_minmax(0,1fr)]'
+      }`}>
       <TeamRail team={team} teams={teams} activePage={activePage} accent={accent} />
       {/* min-w-0 lets the main column shrink inside the grid; on mobile it's a plain
           block wrapper and the children own their own layout. */}
       <main className="min-w-0 xl:min-h-0 xl:overflow-y-auto">{children}</main>
-      <aside
-        className="hidden xl:block xl:min-h-0 xl:overflow-y-auto"
-        style={{
-          borderLeft: `1px solid ${uiTokens.borderDefault}`,
-          // Same panel gradient the mobile sheets use (PlayerCard, FullScreenSheet), so
-          // docked content reads as the same surface it slides up as on mobile.
-          background: `linear-gradient(180deg, #0f1a2e 0%, ${uiTokens.bg} 100%)`,
-        }}>
-        {aside}
-      </aside>
+      {aside && (
+        <aside
+          className="hidden xl:block xl:min-h-0 xl:overflow-y-auto"
+          style={{
+            borderLeft: `1px solid ${uiTokens.borderDefault}`,
+            // Same panel gradient the mobile sheets use (PlayerCard, FullScreenSheet), so
+            // docked content reads as the same surface it slides up as on mobile.
+            background: `linear-gradient(180deg, #0f1a2e 0%, ${uiTokens.bg} 100%)`,
+          }}>
+          {aside}
+        </aside>
+      )}
     </div>
   );
 }

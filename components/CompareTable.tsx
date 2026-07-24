@@ -13,6 +13,7 @@ import DepthMark from './DepthMark';
 import FullScreenSheet from './FullScreenSheet';
 import NavDrawer from './NavDrawer';
 import NavSwitcher from './NavSwitcher';
+import TeamPageShell from './TeamPageShell';
 import FilterPill from '@/components/ui/FilterPill';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import { COMPARE_POSITIONS } from '@/lib/compare';
@@ -71,102 +72,114 @@ export default function CompareTable({ teams, a, b, position }: CompareTableProp
   const noPlayersEitherSide = both !== null && rowCount === 0;
 
   return (
-    <main
-      className="relative px-4"
-      style={{
-        minHeight: '100dvh',
-        background: uiTokens.bg,
-        color: uiTokens.textPrimary,
-        paddingTop: 'max(env(safe-area-inset-top), 20px)',
-        paddingBottom: 'max(env(safe-area-inset-bottom), 20px)',
-      }}>
-      {/* Bounded to a reading-width column at xl — the table this page centers on has a
-          fixed, fairly narrow natural width (rank + two team columns), so letting it
-          stretch full-bleed on a wide desktop viewport (the un-styled default before this
-          pass) just reads as an empty, un-designed page. Every other non-team-page surface
-          (UniformArchive) is genuinely full-width content (a wrapping kit grid), so it has
-          no such rail — this page's content shape is different, not a house convention. */}
-      <div className="mx-auto xl:max-w-2xl xl:pt-10">
-        <div className="flex items-center justify-between">
-          <DepthMark color={uiTokens.accent} onClick={() => setDrawerOpen(true)} />
-        </div>
-
-        <div className="mt-5 flex items-center gap-3">
-          <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-            style={{
-              background: `${uiTokens.accent}1a`,
-              border: `1px solid ${uiTokens.accent}40`,
-            }}>
-            <Columns2 size={17} color={uiTokens.accent} />
+    <TeamPageShell teams={teams} accent={uiTokens.accent}>
+      <div
+        className="relative px-4"
+        style={{
+          minHeight: '100dvh',
+          background: uiTokens.bg,
+          color: uiTokens.textPrimary,
+          paddingTop: 'max(env(safe-area-inset-top), 20px)',
+          paddingBottom: 'max(env(safe-area-inset-bottom), 20px)',
+        }}>
+        {/* Bounded to a reading-width column at xl — the table this page centers on has a
+            fixed, fairly narrow natural width (rank + two team columns), so letting it
+            stretch full-bleed inside TeamPageShell's main column (the un-styled default
+            before this pass) just reads as an empty, un-designed page. UniformArchive is
+            genuinely full-width content (a wrapping kit grid) so it doesn't bound its own
+            width the same way — this page's content shape is different, not a house
+            convention. The shell's own rail (Desktop shell for uniform archive and compare
+            pages ticket) is for navigating away from compare — to a team page, to
+            /uniforms — not for picking the a/b slots below, which stay this page's own
+            inline pickers. */}
+        <div className="mx-auto xl:max-w-2xl xl:pt-10">
+          {/* Below xl: the mark opens the nav drawer. At xl the drawer's destinations live
+              in the persistent TeamRail (TeamPageShell above), so the mark hides. */}
+          <div className="flex items-center justify-between xl:hidden">
+            <DepthMark color={uiTokens.accent} onClick={() => setDrawerOpen(true)} />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold">Compare teams</h1>
-            <p className="mt-0.5 text-xs" style={{ color: uiTokens.textFaint }}>
-              Pick two teams and a position to see who has the deeper room.
+
+          <div className="mt-5 flex items-center gap-3">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+              style={{
+                background: `${uiTokens.accent}1a`,
+                border: `1px solid ${uiTokens.accent}40`,
+              }}>
+              <Columns2 size={17} color={uiTokens.accent} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">Compare teams</h1>
+              <p className="mt-0.5 text-xs" style={{ color: uiTokens.textFaint }}>
+                Pick two teams and a position to see who has the deeper room.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 flex items-center gap-2.5">
+            <TeamSlotButton side={a} onClick={() => setPickingSlot('a')} />
+            <span
+              className="shrink-0 rounded-full px-2 py-1 text-[10px] font-black"
+              style={{ background: uiTokens.surfaceChip, color: uiTokens.textFaint }}
+              aria-hidden="true">
+              VS
+            </span>
+            <TeamSlotButton side={b} onClick={() => setPickingSlot('b')} />
+          </div>
+
+          {sameTeam && (
+            <p className="mt-2.5 text-xs font-semibold" style={{ color: uiTokens.textFaint }}>
+              Same team on both sides
             </p>
-          </div>
-        </div>
+          )}
 
-        <div className="mt-5 flex items-center gap-2.5">
-          <TeamSlotButton side={a} onClick={() => setPickingSlot('a')} />
-          <span
-            className="shrink-0 rounded-full px-2 py-1 text-[10px] font-black"
-            style={{ background: uiTokens.surfaceChip, color: uiTokens.textFaint }}
-            aria-hidden="true">
-            VS
-          </span>
-          <TeamSlotButton side={b} onClick={() => setPickingSlot('b')} />
-        </div>
-
-        {sameTeam && (
-          <p className="mt-2.5 text-xs font-semibold" style={{ color: uiTokens.textFaint }}>
-            Same team on both sides
-          </p>
-        )}
-
-        {/* Position chip row — horizontally scrollable on mobile (same pattern as the
+          {/* Position chip row — horizontally scrollable on mobile (same pattern as the
             uniform archive's kind filter, components/UniformArchive.tsx); at xl there's
             room to wrap the full position list instead of hiding most of it behind a
             scroll affordance. */}
-        <div
-          className="mt-5 -mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 xl:mx-0 xl:flex-wrap xl:overflow-visible xl:px-0 xl:pb-0"
-          style={{ scrollbarWidth: 'none' }}
-          role="group"
-          aria-label="Filter by position">
-          {COMPARE_POSITIONS.map((pos) => (
-            <FilterPill key={pos} active={pos === position} onClick={() => updateUrl({ pos })}>
-              {pos}
-            </FilterPill>
-          ))}
+          <div
+            className="mt-5 -mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 xl:mx-0 xl:flex-wrap xl:overflow-visible xl:px-0 xl:pb-0"
+            style={{ scrollbarWidth: 'none' }}
+            role="group"
+            aria-label="Filter by position">
+            {COMPARE_POSITIONS.map((pos) => (
+              <FilterPill key={pos} active={pos === position} onClick={() => updateUrl({ pos })}>
+                {pos}
+              </FilterPill>
+            ))}
+          </div>
+
+          <div className="mt-5 pb-6">
+            {!both ? (
+              <ComparePrompt aSide={a} bSide={b} />
+            ) : noPlayersEitherSide ? (
+              <EmptyPositionState position={position} />
+            ) : (
+              <CompareRows a={both.a} b={both.b} rowCount={rowCount} onOpenPlayer={openPlayer} />
+            )}
+          </div>
         </div>
 
-        <div className="mt-5 pb-6">
-          {!both ? (
-            <ComparePrompt aSide={a} bSide={b} />
-          ) : noPlayersEitherSide ? (
-            <EmptyPositionState position={position} />
-          ) : (
-            <CompareRows a={both.a} b={both.b} rowCount={rowCount} onOpenPlayer={openPlayer} />
-          )}
-        </div>
-      </div>
+        <FullScreenSheet isOpen={pickingSlot !== null}>
+          <NavSwitcher
+            teams={teams}
+            onSelectPlayer={() => {}}
+            onClose={() => setPickingSlot(null)}
+            onPickTeam={(id) => {
+              if (pickingSlot === 'a') updateUrl({ a: id });
+              else if (pickingSlot === 'b') updateUrl({ b: id });
+              setPickingSlot(null);
+            }}
+          />
+        </FullScreenSheet>
 
-      <FullScreenSheet isOpen={pickingSlot !== null}>
-        <NavSwitcher
-          teams={teams}
-          onSelectPlayer={() => {}}
-          onClose={() => setPickingSlot(null)}
-          onPickTeam={(id) => {
-            if (pickingSlot === 'a') updateUrl({ a: id });
-            else if (pickingSlot === 'b') updateUrl({ b: id });
-            setPickingSlot(null);
-          }}
+        <NavDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          accent={uiTokens.accent}
         />
-      </FullScreenSheet>
-
-      <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} accent={uiTokens.accent} />
-    </main>
+      </div>
+    </TeamPageShell>
   );
 }
 
