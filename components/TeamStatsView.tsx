@@ -22,6 +22,10 @@ interface Props {
   seasons: TeamStats[];
   incomingCoach?: { name: string };
   upcomingSeason?: number;
+  // The current NFL season year. A season is "completed" (all games played, playoff
+  // outcomes known) when its year is less than this. Used to suppress the playoff-status
+  // line for seasons that haven't finished yet.
+  currentSeason: number;
   // Passing/rushing/receiving leaders per season (design spec 5a), one entry per
   // `seasons` row at the same index. Null at an index when no player stats are
   // ingested for that season; the block is then omitted entirely. Re-derived per the
@@ -105,6 +109,7 @@ export default function TeamStatsView({
   seasons,
   incomingCoach,
   upcomingSeason,
+  currentSeason,
   leadersBySeason,
   nextGame,
   postseasonGames,
@@ -339,11 +344,17 @@ export default function TeamStatsView({
                 <div className="text-[13px] font-bold" style={{ color: uiAccent }}>
                   {active.streak}
                 </div>
-                <div className="text-[11px]" style={{ color: uiTokens.textFaint }}>
-                  {active.playoffSeed
-                    ? `SEED ${active.playoffSeed} · ${team.conference}`
-                    : `MISSED PLAYOFFS · ${team.conference}`}
-                </div>
+                {/* Playoff status only for completed seasons — an upcoming or
+                    in-progress season has no playoff outcomes yet, so the line
+                    would falsely claim "MISSED PLAYOFFS" (playoffSeed is 0 for
+                    stub rows with no data). */}
+                {active.season < currentSeason && (
+                  <div className="text-[11px]" style={{ color: uiTokens.textFaint }}>
+                    {active.playoffSeed
+                      ? `SEED ${active.playoffSeed} · ${team.conference}`
+                      : `MISSED PLAYOFFS · ${team.conference}`}
+                  </div>
+                )}
               </div>
             </div>
 

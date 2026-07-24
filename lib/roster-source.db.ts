@@ -390,6 +390,11 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
   if (!teamRow) return undefined;
 
   const { upcomingSeason, isOffseason } = await getNflSeasonState();
+  // The current NFL season year. During the off-season (Feb–Aug) it's the upcoming
+  // season; during the in-season (Sep–Jan) it's the season currently being played.
+  // A season is "completed" when its year is less than this value — all games have
+  // been played and playoff outcomes are known.
+  const currentSeason = isOffseason ? upcomingSeason : upcomingSeason - 1;
   const coachBySeason = new Map((coachRows ?? []).map((row) => [row.season, row]));
   const seasons = (statsRows ?? []).map((row) => toTeamStats(row, coachBySeason));
   return {
@@ -406,6 +411,7 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
     // of kickoff) is the season switcher's concern, not this one's.
     upcomingSeason: isOffseason ? upcomingSeason : undefined,
     seasons,
+    currentSeason,
   };
 }
 

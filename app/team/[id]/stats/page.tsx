@@ -67,6 +67,7 @@ export default async function TeamStatsPage({ params }: Params) {
       seasons={page.seasons}
       incomingCoach={page.incomingCoach}
       upcomingSeason={page.upcomingSeason}
+      currentSeason={page.currentSeason}
       leadersBySeason={leadersBySeason}
       nextGame={nextGame}
       postseasonGames={postseasonGames}

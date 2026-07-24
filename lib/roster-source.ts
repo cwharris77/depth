@@ -60,6 +60,11 @@ export interface TeamStatsPage {
   seasons: TeamStats[];
   incomingCoach?: { name: string };
   upcomingSeason?: number;
+  // The current NFL season year. A season is "completed" (all games played, playoff
+  // outcomes known) when its year is less than this. Used by TeamStatsView to suppress
+  // the playoff-status line ("SEED N" / "MISSED PLAYOFFS") for seasons that haven't
+  // finished yet — see docs/superpowers/specs/2026-07-14-multi-season-team-stats-design.md.
+  currentSeason: number;
 }
 
 export interface RosterSource {
