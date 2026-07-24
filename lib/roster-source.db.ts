@@ -28,13 +28,21 @@ import type {
 // teams/players/depth_chart_entries/special_teams_slots and assembles the same
 // TeamRoster shape the app already renders.
 
+// Module-scoped singleton: this is the public anon-key client (no per-user/per-request
+// state to isolate, unlike lib/supabase/server.ts's cookie-scoped auth client), so
+// there's no reason to construct a fresh one on every call — every fetch* function below
+// called supabase() independently, meaning a single request's parallel queries (e.g.
+// fetchTeamRoster's Promise.all) built several redundant client instances.
+let client: ReturnType<typeof createClient<Database>> | undefined;
 function supabase() {
+  if (client) return client;
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_ANON_KEY;
   if (!url || !key) {
     throw new Error('Missing SUPABASE_URL / SUPABASE_ANON_KEY env vars (see .env.local.example)');
   }
-  return createClient<Database>(url, key);
+  client = createClient<Database>(url, key);
+  return client;
 }
 
 type Tables = Database['public']['Tables'];
