@@ -23,6 +23,9 @@ import { colors as uiTokens } from '@/components/ui/tokens';
 // drawer (mobile); at `xl` a persistent TeamPageShell/TeamRail replaces it (Desktop shell
 // for uniform archive and compare pages ticket) — the archive has no current team, so the
 // rail renders with no team/activePage and nav tints stay the neutral `uiTokens.accent`.
+// Each division's teams go from one full-bleed row each to a 2/3-column grid at `lg`/`xl`
+// (Uniform archive layout on laptop screens ticket) — a separate, lower breakpoint than the
+// shell's `xl` rail switch, since the grid should densify before there's room for a rail.
 
 const KIND_OPTIONS: { value: UniformKind | 'all'; label: string }[] = [
   { value: 'all', label: 'All kits' },
@@ -139,48 +142,54 @@ export default function UniformArchive({
                 }}>
                 {g.conference} {g.division.toUpperCase()}
               </h2>
-              {g.teams.map((t) => {
-                const home = t.kits.find((k) => k.kind === 'home') ?? t.kits[0];
-                return (
-                  <div key={t.teamId} className="mb-6 flex gap-3">
-                    <span
-                      className="shrink-0 rounded-full"
-                      style={{
-                        width: 3,
-                        background: `linear-gradient(${home.colors.primary}, ${home.colors.secondary})`,
-                      }}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <h3 className="mb-2 text-sm font-bold">{t.teamName}</h3>
-                      <div className="flex flex-wrap gap-x-5 gap-y-3">
-                        {t.kits.map((k) => (
-                          <figure key={k.id} className="w-16 text-center">
-                            <UniformFigure
-                              colors={k.colors}
-                              variant="full"
-                              size={54}
-                              imagePath={k.imagePath}
-                              title={`${t.teamName} ${k.name}`}
-                              sharedDefs
-                            />
-                            <figcaption
-                              className="mt-1 text-[10px] leading-tight"
-                              style={{ color: uiTokens.textMuted }}>
-                              {k.name}
-                              {k.yearStart ? (
-                                <span className="block" style={{ color: uiTokens.textFaint }}>
-                                  {k.yearStart}
-                                  {k.yearEnd ? `–${k.yearEnd}` : '–'}
-                                </span>
-                              ) : null}
-                            </figcaption>
-                          </figure>
-                        ))}
+              {/* lg and up: teams sit side by side instead of one full-bleed row each — the
+                  per-team kit layout below (flex flex-wrap) is unchanged, only this
+                  team-to-team arrangement gets denser (Uniform archive layout on laptop
+                  screens ticket). */}
+              <div className="lg:grid lg:grid-cols-2 lg:gap-x-8 xl:grid-cols-3">
+                {g.teams.map((t) => {
+                  const home = t.kits.find((k) => k.kind === 'home') ?? t.kits[0];
+                  return (
+                    <div key={t.teamId} className="mb-6 flex gap-3">
+                      <span
+                        className="shrink-0 rounded-full"
+                        style={{
+                          width: 3,
+                          background: `linear-gradient(${home.colors.primary}, ${home.colors.secondary})`,
+                        }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <h3 className="mb-2 text-sm font-bold">{t.teamName}</h3>
+                        <div className="flex flex-wrap gap-x-5 gap-y-3">
+                          {t.kits.map((k) => (
+                            <figure key={k.id} className="w-16 text-center">
+                              <UniformFigure
+                                colors={k.colors}
+                                variant="full"
+                                size={54}
+                                imagePath={k.imagePath}
+                                title={`${t.teamName} ${k.name}`}
+                                sharedDefs
+                              />
+                              <figcaption
+                                className="mt-1 text-[10px] leading-tight"
+                                style={{ color: uiTokens.textMuted }}>
+                                {k.name}
+                                {k.yearStart ? (
+                                  <span className="block" style={{ color: uiTokens.textFaint }}>
+                                    {k.yearStart}
+                                    {k.yearEnd ? `–${k.yearEnd}` : '–'}
+                                  </span>
+                                ) : null}
+                              </figcaption>
+                            </figure>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </section>
           ))
         )}
