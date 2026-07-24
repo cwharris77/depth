@@ -1,3 +1,5 @@
+import { cacheLife } from 'next/cache';
+
 // NFL season timing. The regular season starts the Thursday after Labor Day (early
 // September) and runs through early February (Super Bowl). The off-season runs from
 // early February through early September.
@@ -36,4 +38,16 @@ export function nflSeasonState(): {
     // Jan: still wrapping up the previous year's postseason
     return { completedSeason: year - 1, upcomingSeason: year, isOffseason: false };
   }
+}
+
+// Cache Components wrapper (next.config.ts): `new Date()` can't be read directly in a
+// prerendered scope — Next requires either request-time data (cookies/headers/
+// searchParams/connection()) or a `'use cache'` boundary first. The season/offseason
+// boundary only flips twice a year, so a cache is the right tool here, not a dynamic
+// hole: 'hours' comfortably re-evaluates well within a day of the actual Sep/Feb
+// transition, which is the only time a stale read would ever be visibly wrong.
+export async function getNflSeasonState(): Promise<ReturnType<typeof nflSeasonState>> {
+  'use cache';
+  cacheLife('hours');
+  return nflSeasonState();
 }
