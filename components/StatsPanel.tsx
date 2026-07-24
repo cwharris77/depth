@@ -14,15 +14,17 @@ function Bar({
   value,
   pct,
   color,
+  title,
 }: {
   label: string;
   value: number;
   pct: number;
   color: string;
+  title?: string;
 }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="w-[26px] text-[9px]" style={{ color: uiTokens.textFaint }}>
+      <span className="w-[26px] text-[9px]" style={{ color: uiTokens.textFaint }} title={title}>
         {label}
       </span>
       <div
@@ -63,12 +65,19 @@ export default function StatsPanel({ seasons, accent }: { seasons: TeamStats[]; 
                 <span style={{ color: diffColor }}>{diff > 0 ? `+${diff}` : diff}</span>
               </div>
               <div className="flex flex-col gap-1">
-                <Bar label="PF" value={s.pointsFor} pct={pct(s.pointsFor)} color={accent} />
+                <Bar
+                  label="PF"
+                  value={s.pointsFor}
+                  pct={pct(s.pointsFor)}
+                  color={accent}
+                  title="Points For"
+                />
                 <Bar
                   label="PA"
                   value={s.pointsAgainst}
                   pct={pct(s.pointsAgainst)}
                   color={uiTokens.statusInjured}
+                  title="Points Against"
                 />
               </div>
             </div>
