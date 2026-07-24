@@ -137,7 +137,7 @@ and the repo's own instructions can point at a synced copy rather than the sourc
 
 ### Observation 8: Locked ticket's literal acceptance bullet ("indicate active the same way it is now") produced a shipped UX Cooper immediately rejected
 
-**Status:** OPEN
+**Status:** ACTIONED (2026-07-24) — Applied to `implement-spec` (step 4: verify stateful/interactive acceptance bullets by driving the full interaction cycle, not a static render) and `ship-pr` (added `npm run lint` to the pre-PR verify sequence). Both are project-owned depth skills; staged at skill-updates/2026-07-24/implement-spec/ and skill-updates/2026-07-24/ship-pr/ (weekly review).
 **Date:** 2026-07-22
 **Session context:** Fixing PR #176 (`agent/swipeable-bottom-sheet-uniform-selector`, ticket
 "Swipeable bottom-sheet uniform selector") in the depth repo after Cooper reviewed the merged
