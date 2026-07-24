@@ -38,6 +38,16 @@ export default async function Home() {
       DEFAULT_TEAM_ID
     );
     if (target !== DEFAULT_TEAM_ID) redirect(`/team/${target}`);
+
+    // Default-team favorite: render right here rather than redirecting to
+    // /team/<DEFAULT_TEAM_ID> (same page either way). Reuse `teams` from above instead
+    // of a second listTeams() call — this is the one signed-in path that falls through
+    // to a full render instead of redirecting.
+    const roster = await dbRosterSource.getTeam(DEFAULT_TEAM_ID);
+    if (!roster) {
+      notFound();
+    }
+    return <DepthChartField roster={roster} teams={teams} />;
   }
 
   const [roster, teams] = await Promise.all([

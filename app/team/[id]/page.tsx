@@ -1,8 +1,7 @@
 import DepthChartField from '@/components/DepthChartField';
 import RememberTeam from '@/components/RememberTeam';
-import { dbRosterSource, getPlayerStats } from '@/lib/roster-source.db';
+import { dbRosterSource, getPlayerStatsForRoster } from '@/lib/roster-source.db';
 import { OG_IMAGE_ALT, OG_IMAGE_SIZE } from '@/lib/og';
-import type { PlayerSeasonStats } from '@/lib/types';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -11,13 +10,12 @@ type MetadataParams = Params & {
   searchParams: Promise<{ order?: string | string[] }>;
 };
 
-// ISR: the weekly ESPN ingest (scripts/ingest-espn.mts, Wed 12:00 UTC) writes straight
-// to Postgres and is intentionally decoupled from deploys (AGENTS.md invariant 7), so
-// without a revalidate window this page would only pick up a fresh ingest on the next
-// redeploy. 6 hours bounds worst-case staleness well under the weekly cadence while
-// still serving the prerendered page from cache for the overwhelming majority of
-// requests between ingests.
-export const revalidate = 21600; // 6 hours, in seconds
+// Cache Components (cacheComponents: true, next.config.ts): staleness/revalidation now
+// lives on the `'use cache'` functions in lib/roster-source.db.ts (cacheLife('ingest')),
+// not a route-segment `revalidate` export — see that file and next.config.ts for the
+// rationale. This also lets generateMetadata's searchParams read (below, for the
+// shared-link OG `order` param) stay without forcing the whole route dynamic, unlike
+// the classic static/dynamic model this route was on before.
 
 // Prerender one static page per team. Unknown ids fall through to notFound() below.
 export async function generateStaticParams() {
@@ -79,15 +77,10 @@ export default async function TeamPage({ params }: Params) {
 
   // Prefetch season stats for every player on the roster so PlayerCard doesn't need a
   // client-side round trip. Keyed by player id so the card can look up its player's
-  // stats synchronously. A failed fetch for one player degrades to an empty array
-  // (the card renders no stats section), matching the old client-side error path.
-  const playerStatsMap = new Map<string, PlayerSeasonStats[]>();
-  await Promise.allSettled(
-    roster.players.map(async (player) => {
-      const stats = await getPlayerStats(player.id);
-      playerStatsMap.set(player.id, stats);
-    })
-  );
+  // stats synchronously. One batched query for the whole roster (getPlayerStatsForRoster)
+  // instead of one query per player — a missing key degrades to an empty array (the card
+  // renders no stats section), matching the old per-player error path.
+  const playerStatsMap = await getPlayerStatsForRoster(roster.players.map((p) => p.id));
 
   // RememberTeam records this team in localStorage (5a) so the home route reopens it.
   return (
