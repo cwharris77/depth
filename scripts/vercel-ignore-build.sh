@@ -12,7 +12,15 @@
 # successful deploy to diff against) — `git diff --quiet '' <sha>` then fails
 # with "fatal: bad revision ''" rather than exiting 0/1, which Vercel treats
 # as a build failure. With nothing to diff, always proceed with the build.
-if [ -z "$VERCEL_GIT_PREVIOUS_SHA" ]; then
+#
+# It can also be non-empty but no longer resolvable: a force-push after a
+# rebase (e.g. rebasing a branch onto a new main before merging) rewrites
+# history, so the commit Vercel remembers as "previous" for that branch can
+# fall out of the pushed history entirely — `git diff` then fails with
+# "fatal: bad object <sha>", which Vercel also treats as a build failure
+# (confirmed live: depth#200's rebase produced exactly this). Same fallback:
+# with nothing valid to diff against, always proceed with the build.
+if [ -z "$VERCEL_GIT_PREVIOUS_SHA" ] || ! git cat-file -e "$VERCEL_GIT_PREVIOUS_SHA" 2>/dev/null; then
   exit 1
 fi
 
