@@ -384,19 +384,30 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
           )}
         </div>
 
-        {/* Not Button: this is an inline underlined text link, not a padded/rounded control —
-            Button's variants always render padding + rounded + font-bold, no bare-text style. */}
-        <button
-          type="button"
-          onClick={() => {
-            setSendState('idle');
-            setCode('');
-            setVerifyState('idle');
-          }}
-          className="self-start text-[12px] underline"
-          style={{ color: colors.textMuted }}>
-          Use a different email
-        </button>
+        {/* Two inline links: "Resend code" (same email, calls sendCode directly) and
+            "Use a different email" (returns to email-entry screen). Both are inline underlined
+            text links, not Button — Button's variants always render padding + rounded + font-bold,
+            no bare-text style. */}
+        <div className="flex gap-4">
+          <button
+            type="button"
+            onClick={sendCode}
+            className="text-[12px] underline"
+            style={{ color: colors.textMuted }}>
+            Resend code
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setSendState('idle');
+              setCode('');
+              setVerifyState('idle');
+            }}
+            className="text-[12px] underline"
+            style={{ color: colors.textMuted }}>
+            Use a different email
+          </button>
+        </div>
       </div>
     );
   }
