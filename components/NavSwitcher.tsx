@@ -12,7 +12,8 @@ import type { Conference, Player } from '@/lib/types';
 import { Check, Columns2, CornerDownLeft, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { usePlayerSearch } from '@/lib/use-player-search';
 
 type ResultItem = { type: 'player'; hit: PlayerHit } | { type: 'team'; team: TeamMeta };
 
@@ -171,16 +172,16 @@ export default function NavSwitcher({
   const router = useRouter();
   const [conference, setConference] = useState<Conference>(team?.conference ?? 'AFC');
   const [query, setQuery] = useState('');
-  const [playerResults, setPlayerResults] = useState<PlayerHit[]>([]);
-  const [playersLoading, setPlayersLoading] = useState(false);
+  const { results: playerResults, loading: playersLoading } = usePlayerSearch(query);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [searchFocused, setSearchFocused] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
   // Navigating (team/player selection) is wrapped in a transition so the sheet
   // stays open — and its rows disabled — until the destination is ready, instead
   // of closing immediately and flashing the still-mounted old team's field
   // (components/DepthChartField.tsx persists across the transition; only its
   // props change once navigation commits). See the "Janky page navigation" ticket.
+  // Legitimate effect: useTransition has no completion callback, only the isPending
+  // value to observe changing across renders — there's no derived-render equivalent.
   const [isPending, startTransition] = useTransition();
   const wasPending = useRef(false);
   useEffect(() => {
@@ -193,10 +194,12 @@ export default function NavSwitcher({
   // Autofocus only for pointer/keyboard devices (the command-palette feel this
   // was designed for). On touch devices it would pop the virtual keyboard the
   // instant the switcher opens, covering half the sheet before the user's asked
-  // for it.
-  useEffect(() => {
-    if (window.matchMedia('(pointer: fine)').matches) {
-      searchInputRef.current?.focus();
+  // for it. A ref callback instead of a mount effect — React calls this once when the
+  // input mounts (this component only ever mounts post-interaction, never during SSR,
+  // so there's no hydration concern), same timing as the effect it replaces.
+  const focusSearchInput = useCallback((el: HTMLInputElement | null) => {
+    if (el && window.matchMedia('(pointer: fine)').matches) {
+      el.focus();
     }
   }, []);
 
@@ -213,34 +216,6 @@ export default function NavSwitcher({
     );
   }, [teams, q, searching]);
 
-  // Debounced so every keystroke doesn't fire a request; aborted on the next
-  // keystroke so a slow earlier response can't clobber a newer one.
-  useEffect(() => {
-    if (!searching) {
-      setPlayerResults([]);
-      return;
-    }
-    const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      setPlayersLoading(true);
-      try {
-        const res = await fetch(`/api/players/search?q=${encodeURIComponent(query.trim())}`, {
-          signal: controller.signal,
-        });
-        const data = await res.json();
-        setPlayerResults(data.results ?? []);
-      } catch (err) {
-        if ((err as Error).name !== 'AbortError') setPlayerResults([]);
-      } finally {
-        setPlayersLoading(false);
-      }
-    }, 200);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [query, searching]);
-
   // Players first, then teams — matches the section order below. Only populated
   // while searching; idle "Teams" browsing isn't keyboard-navigable (it's a list to
   // scroll, not a single ranked result set).
@@ -252,9 +227,15 @@ export default function NavSwitcher({
     ];
   }, [searching, playerResults, teamResults]);
 
-  useEffect(() => {
+  // Reset the highlight to the top whenever the result set changes (a fresh query, or
+  // switching between idle browsing and search). flatResults is memoized above, so its
+  // identity only changes when the underlying results actually do — comparing it during
+  // render (rather than in an effect) applies the reset before this render commits.
+  const [prevFlatResults, setPrevFlatResults] = useState(flatResults);
+  if (flatResults !== prevFlatResults) {
+    setPrevFlatResults(flatResults);
     setHighlightedIndex(0);
-  }, [flatResults]);
+  }
 
   const handleSelectPlayer = (hit: PlayerHit) => {
     if (hit.team.id === team?.id) {
@@ -338,7 +319,7 @@ export default function NavSwitcher({
           }}>
           <Search size={16} color={accentColor} />
           <input
-            ref={searchInputRef}
+            ref={focusSearchInput}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}

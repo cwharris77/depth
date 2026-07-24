@@ -27,6 +27,8 @@ export default function Menu({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  // Legitimate effect: subscribing to a document-level DOM event with no derived-render
+  // equivalent.
   useEffect(() => {
     if (!open) return;
     const onDown = (e: globalThis.MouseEvent) => {

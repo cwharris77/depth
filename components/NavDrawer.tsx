@@ -83,6 +83,8 @@ export default function NavDrawer({
   // flashing the still-mounted old page. See the same pattern in NavSwitcher.
   const [isPending, startTransition] = useTransition();
   const wasPending = useRef(false);
+  // Legitimate effect: useTransition has no completion callback, only the isPending value to
+  // observe changing across renders — there's no derived-render equivalent.
   useEffect(() => {
     if (wasPending.current && !isPending) {
       onClose();
@@ -111,6 +113,8 @@ export default function NavDrawer({
   const signInHref =
     pathname && pathname !== '/signin' ? `/signin?next=${encodeURIComponent(pathname)}` : '/signin';
 
+  // Legitimate effect: focus trap + body-scroll-lock are DOM/document-level mutations with no
+  // derived-render equivalent.
   useEffect(() => {
     if (!open) return;
     restoreFocus.current = document.activeElement as HTMLElement | null;

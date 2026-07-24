@@ -20,6 +20,12 @@ import IconButton from '@/components/ui/IconButton';
 export default function IOSInstallHint() {
   const [visible, setVisible] = useState(false);
 
+  // Legitimate effect, not a lazy-init candidate: this is mounted from the root layout, which
+  // is server-rendered, and the eligibility check below decides whether the hint renders at
+  // all. A lazy useState initializer would run during the server render (no `window`/`navigator`)
+  // and again during client hydration (both present) — those would disagree and cause a
+  // hydration mismatch. Deferring to an effect (client-only, post-hydration) keeps the
+  // server-rendered and first-hydrated output in sync.
   useEffect(() => {
     const standaloneNav = (navigator as Navigator & { standalone?: boolean }).standalone;
     const eligible =

@@ -36,6 +36,12 @@ const COACHMARK_TIMEOUT_MS = 4000;
 export default function DepthMark({ color, onClick }: { color: string; onClick?: () => void }) {
   const [showCoachmark, setShowCoachmark] = useState(false);
 
+  // Legitimate effect, not a lazy-init candidate: DepthMark renders inside a server-rendered
+  // header, and this localStorage check decides whether the coachmark renders at all. Checking
+  // it in a lazy useState initializer would disagree between the server render (no `window`)
+  // and the client's first hydration render (`window` present), causing a hydration mismatch —
+  // deferring to an effect (client-only, post-hydration) is what avoids that. The setTimeout
+  // auto-dismiss also has no derived-render equivalent.
   useEffect(() => {
     if (!onClick) return;
     if (hasDismissedNavDrawerCoachmark(window.localStorage)) return;
