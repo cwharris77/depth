@@ -13,6 +13,12 @@
 // results in place. Switching teams preserves the active page; picking a player deep-links
 // to their roster page via `?player=` (OpenPlayerFromQuery opens the card there), which
 // works uniformly from roster, schedule, and stats.
+//
+// `team`/`activePage` are optional (Desktop shell for uniform archive and compare pages
+// ticket): /uniforms and /compare have no "current team" or team-page tab to be active on,
+// so they render this same rail with both omitted — no current-team checkmark/highlight,
+// and team rows fall back to the roster page. Extended rather than forked (a lighter
+// sibling rail would just re-duplicate the search/list/destinations logic below).
 import Avatar from '@/components/ui/Avatar';
 import Input from '@/components/ui/Input';
 import SectionLabel from '@/components/ui/SectionLabel';
@@ -30,8 +36,9 @@ import DepthMark from './DepthMark';
 
 export type TeamPageKey = 'roster' | 'schedule' | 'stats';
 
-function teamHref(teamId: string, page: TeamPageKey): string {
-  return page === 'roster' ? `/team/${teamId}` : `/team/${teamId}/${page}`;
+// Falls back to the roster page when there's no active team-page tab (uniforms/compare).
+function teamHref(teamId: string, page: TeamPageKey | undefined): string {
+  return !page || page === 'roster' ? `/team/${teamId}` : `/team/${teamId}/${page}`;
 }
 
 // Conference → division sections in league order, cities alphabetical within each — the
@@ -56,9 +63,9 @@ export default function TeamRail({
   activePage,
   accent,
 }: {
-  team: TeamMeta;
+  team?: TeamMeta;
   teams: TeamMeta[];
-  activePage: TeamPageKey;
+  activePage?: TeamPageKey;
   accent: string;
 }) {
   const router = useRouter();
@@ -93,12 +100,13 @@ export default function TeamRail({
 
   // Keep the current team's row visible in the scrollable list (32 rows overflow the
   // rail). 'nearest' avoids yanking the list around when it's already on screen; on
-  // mobile the rail is display:none, so scrollIntoView is a no-op there.
+  // mobile the rail is display:none, so scrollIntoView is a no-op there. No-op when
+  // there's no current team (uniforms/compare) since no row ever gets the ref.
   const currentRowRef = useRef<HTMLAnchorElement>(null);
   // Legitimate effect: an imperative DOM scroll action with no derived-render equivalent.
   useEffect(() => {
     currentRowRef.current?.scrollIntoView({ block: 'nearest' });
-  }, [team.id]);
+  }, [team?.id]);
 
   const selectTeam = (t: TeamMeta, e?: React.MouseEvent) => {
     // Let modifier/middle clicks fall through to the <Link>'s native open-in-new-tab.
@@ -106,7 +114,7 @@ export default function TeamRail({
     e?.preventDefault();
     if (isPending) return;
     setQuery('');
-    if (t.id === team.id) return;
+    if (t.id === team?.id) return;
     startTransition(() => router.push(teamHref(t.id, activePage)));
   };
 
@@ -133,7 +141,7 @@ export default function TeamRail({
   const nothingFound = searching && !playersLoading && !playerResults.length && !teamResults.length;
 
   const teamRow = (t: TeamMeta) => {
-    const isCurrent = t.id === team.id;
+    const isCurrent = t.id === team?.id;
     return (
       <Link
         key={t.id}
