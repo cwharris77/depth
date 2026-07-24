@@ -10,9 +10,9 @@ type Params = {
 
 // Bookmarkable/shareable comparisons via query params rather than a dynamic route
 // segment (32x32x19 combinations is silly to prerender) — Decisions table "Route".
-// Params drive all the content, so this page is never statically generated.
-export const dynamic = 'force-dynamic';
-
+// Params drive all the content, so this page is never statically generated. Under
+// Cache Components (next.config.ts), reading `searchParams` below already makes this a
+// dynamic hole with no segment config needed — `force-dynamic` is a build error here.
 export async function generateMetadata({ searchParams }: Params): Promise<Metadata> {
   const teams = await dbRosterSource.listTeams();
   const { a, b, pos } = parseCompareParams(

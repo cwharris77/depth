@@ -1,9 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
+import { cacheLife } from 'next/cache';
 import type { Database } from './database.types';
 import type { RosterSource, TeamMeta, TeamStatsPage, UniformListing } from './roster-source';
 import { type LeaderEntry, rosterLeaders } from './roster-leaders';
 import { resolvePostseason, resolveSchedule } from './schedule';
-import { nflSeasonState } from './nfl-season';
+import { getNflSeasonState } from './nfl-season';
 import { type PlayerHit, positionGroupPositions, rankByNameMatch } from './search';
 import type {
   Game,
@@ -251,6 +252,8 @@ export function orderUniforms(rows: UniformRow[]): Uniform[] {
 }
 
 async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> {
+  'use cache';
+  cacheLife('ingest');
   const client = supabase();
 
   // All four reads key off teamId, so fire them together — the teams row is not a
@@ -347,6 +350,8 @@ type TeamStatsPageTeamRow = TeamRow & {
 const TEAM_STATS_PAGE_TEAM_SELECT = `${TEAM_SELECT}, coach_name, coach_experience`;
 
 async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undefined> {
+  'use cache';
+  cacheLife('ingest');
   const client = supabase();
 
   const [
@@ -376,7 +381,7 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
   if (coachError) throw new Error(`team_coach_seasons query failed: ${coachError.message}`);
   if (!teamRow) return undefined;
 
-  const { upcomingSeason, isOffseason } = nflSeasonState();
+  const { upcomingSeason, isOffseason } = await getNflSeasonState();
   const coachBySeason = new Map((coachRows ?? []).map((row) => [row.season, row]));
   const seasons = (statsRows ?? []).map((row) => toTeamStats(row, coachBySeason));
   return {
@@ -550,6 +555,8 @@ function toPlayerSeasonStats(row: PlayerStatsRow): PlayerSeasonStats {
 // fetched client-side only when a PlayerCard opens. REG only in v1 (season_type filter
 // mirrors the ingest, which only ever writes REG rows today).
 export async function getPlayerStats(playerId: string): Promise<PlayerSeasonStats[]> {
+  'use cache';
+  cacheLife('ingest');
   const client = supabase();
   const { data, error } = await client
     .from('player_stats')
@@ -560,6 +567,42 @@ export async function getPlayerStats(playerId: string): Promise<PlayerSeasonStat
     .returns<PlayerStatsRow[]>();
   if (error) throw new Error(`player_stats query failed: ${error.message}`);
   return (data ?? []).map(toPlayerSeasonStats);
+}
+
+// player_stats keyed by player only, so we need the player_id to bucket each row back
+// to its owner; PLAYER_STATS_SELECT (single-player read above) omits it.
+type PlayerStatsWithIdRow = PlayerStatsRow & Pick<Tables['player_stats']['Row'], 'player_id'>;
+const PLAYER_STATS_WITH_ID_SELECT = `player_id, ${PLAYER_STATS_SELECT}`;
+
+// Batched variant of getPlayerStats for the team page's roster-wide stats prefetch
+// (app/team/[id]/page.tsx), which otherwise fires one query per roster player (~50+
+// round trips). One `.in()` query for the whole roster, same shape as
+// getRosterLeaders' batching. Missing/empty entries are simply absent from the
+// returned map — callers already treat a missing key as "no stats" (matches the old
+// per-player empty-array degrade).
+export async function getPlayerStatsForRoster(
+  playerIds: string[]
+): Promise<Map<string, PlayerSeasonStats[]>> {
+  'use cache';
+  cacheLife('ingest');
+  const byPlayer = new Map<string, PlayerSeasonStats[]>();
+  if (playerIds.length === 0) return byPlayer;
+  const client = supabase();
+  const { data, error } = await client
+    .from('player_stats')
+    .select(PLAYER_STATS_WITH_ID_SELECT)
+    .in('player_id', playerIds)
+    .eq('season_type', 'REG')
+    .order('season', { ascending: false })
+    .returns<PlayerStatsWithIdRow[]>();
+  if (error) throw new Error(`player_stats query failed: ${error.message}`);
+  for (const row of data ?? []) {
+    const stats = toPlayerSeasonStats(row);
+    const existing = byPlayer.get(row.player_id);
+    if (existing) existing.push(stats);
+    else byPlayer.set(row.player_id, [stats]);
+  }
+  return byPlayer;
 }
 
 type GameRow = Pick<
@@ -611,6 +654,8 @@ async function fetchTeamMetaMap(): Promise<Map<string, Team>> {
 // never an `.or()` string with the id interpolated in (invariant 8). Home/away sets are
 // disjoint, so no dedup is needed.
 async function fetchTeamGames(teamId: string, season: number): Promise<Game[]> {
+  'use cache';
+  cacheLife('ingest');
   const client = supabase();
   const [home, away] = await Promise.all([
     client
@@ -634,6 +679,8 @@ async function fetchTeamGames(teamId: string, season: number): Promise<Game[]> {
 // The newest season with a game for this team; drives the default schedule view. Two eq
 // queries (home, away), each ordered desc limit 1, max of the two.
 async function latestSeasonForTeam(teamId: string): Promise<number | null> {
+  'use cache';
+  cacheLife('ingest');
   const client = supabase();
   const [home, away] = await Promise.all([
     client
@@ -740,6 +787,8 @@ export async function getRosterLeaders(
   teamId: string,
   season: number
 ): Promise<RosterLeaders | null> {
+  'use cache';
+  cacheLife('ingest');
   try {
     const client = supabase();
     const { data: playerRows, error: playerError } = await client
@@ -785,6 +834,8 @@ export async function getNextGame(teamId: string): Promise<TeamScheduleGame | nu
 }
 
 async function fetchAllTeamMeta(): Promise<TeamRow[]> {
+  'use cache';
+  cacheLife('ingest');
   const client = supabase();
   const { data, error } = await client.from('teams').select(TEAM_SELECT).returns<TeamRow[]>();
   if (error) throw new Error(`teams query failed: ${error.message}`);
@@ -792,6 +843,8 @@ async function fetchAllTeamMeta(): Promise<TeamRow[]> {
 }
 
 async function fetchAllUniformRows(): Promise<UniformRow[]> {
+  'use cache';
+  cacheLife('ingest');
   const client = supabase();
   const { data, error } = await client
     .from('uniforms')
@@ -804,6 +857,8 @@ async function fetchAllUniformRows(): Promise<UniformRow[]> {
 }
 
 async function fetchCurrentHomeRows(): Promise<UniformRow[]> {
+  'use cache';
+  cacheLife('ingest');
   const client = supabase();
   const { data, error } = await client
     .from('uniforms')

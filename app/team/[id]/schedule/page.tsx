@@ -1,15 +1,13 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { dbRosterSource, getTeamSchedule } from '@/lib/roster-source.db';
-import { nflSeasonState } from '@/lib/nfl-season';
+import { getNflSeasonState } from '@/lib/nfl-season';
 import TeamScheduleView from '@/components/TeamScheduleView';
 
 type Params = { params: Promise<{ id: string }> };
 
-// ISR: same rationale as app/team/[id]/stats/page.tsx — the nflverse ingest is decoupled
-// from deploys (AGENTS.md invariant 7), so this bounds staleness to 6 hours after an
-// ingest instead of requiring a redeploy for new scores/schedule to reach users.
-export const revalidate = 21600; // 6 hours, in seconds
+// Cache Components: staleness/revalidation lives on the `'use cache'` functions in
+// lib/roster-source.db.ts (cacheLife('ingest')) — see that file and next.config.ts.
 
 // Prerender one static page per team, same shape as app/team/[id]/stats/page.tsx.
 export async function generateStaticParams() {
@@ -45,7 +43,7 @@ export default async function TeamSchedulePage({ params }: Params) {
 
   // During the off-season, the schedule page shows the upcoming season's games — mark
   // it so the view can show an "Upcoming" badge (Stats & Analytics P2).
-  const { isOffseason, upcomingSeason } = nflSeasonState();
+  const { isOffseason, upcomingSeason } = await getNflSeasonState();
   const isUpcoming = isOffseason && schedule !== null && schedule.season === upcomingSeason;
 
   return <TeamScheduleView team={team} teams={teams} schedule={schedule} isUpcoming={isUpcoming} />;
