@@ -31,7 +31,14 @@ export function useTeamOverride(teamId: string, user: User | null) {
 
   // Team switch resets everything team-scoped in one place: reload this team's saved
   // override, drop any shared-board preview from the previous team, and exit edit mode so
-  // it doesn't carry a stale "editing" state into the new roster.
+  // it doesn't carry a stale "editing" state into the new roster. This intentionally stays an
+  // effect rather than a render-time derive-on-prop-change: `override` starts at `{}` (SSR-safe
+  // — matches what the server rendered, since localStorage doesn't exist there) and this effect
+  // is what loads the real localStorage value, on the FIRST mount as much as on later team
+  // switches. A render-time comparison against a `prevTeamId` ref would skip that initial load
+  // (teamId matches itself on mount, so nothing would look "changed"), leaving the real saved
+  // order never applied. Reading localStorage here — after hydration, not during initial
+  // render — is exactly what avoids a hydration mismatch.
   useEffect(() => {
     setOverride(getTeamOverride(teamId));
     setPreviewOverride(null);
@@ -41,7 +48,9 @@ export function useTeamOverride(teamId: string, user: User | null) {
   // On sign-in, pull the durable server overrides (server wins) and push up any team edited
   // only on this device, then re-read the current team's order. mergeOnSignIn is idempotent
   // and self-guarded, so re-running on user change is safe; the [teamId] effect above keeps
-  // the visible order fresh when switching teams.
+  // the visible order fresh when switching teams. Legitimate effect: `user` transitioning from
+  // null is an external event (auth state changing), and the response is an async network
+  // mutation, not a value derivable during render.
   useEffect(() => {
     if (!user) return;
     mergeOnSignIn().then(() => setOverride(getTeamOverride(teamId)));

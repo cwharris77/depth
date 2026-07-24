@@ -10,6 +10,9 @@ import { putSettings } from '@/lib/settings-client';
 // Renders nothing.
 export default function RememberTeam({ id }: { id: string }) {
   const { user } = useUser();
+  // Legitimate effect: this is a network write reacting to an external event (auth resolving
+  // or the team route changing), not a value derivable during render — there's nothing to
+  // "derive," only a side effect to fire.
   useEffect(() => {
     if (user) putSettings({ lastTeamId: id });
   }, [user, id]);

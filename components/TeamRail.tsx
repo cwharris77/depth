@@ -25,6 +25,7 @@ import { Check, Columns2, Grid, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
+import { usePlayerSearch } from '@/lib/use-player-search';
 import DepthMark from './DepthMark';
 
 export type TeamPageKey = 'roster' | 'schedule' | 'stats';
@@ -77,8 +78,7 @@ export default function TeamRail({
   // NavSwitcher). Deliberately lighter than the mobile palette: click (or Enter for the
   // top hit) activates, Escape clears — no arrow-key highlight state.
   const [query, setQuery] = useState('');
-  const [playerResults, setPlayerResults] = useState<PlayerHit[]>([]);
-  const [playersLoading, setPlayersLoading] = useState(false);
+  const { results: playerResults, loading: playersLoading } = usePlayerSearch(query);
   const q = query.trim().toLowerCase();
   const searching = q.length > 0;
 
@@ -91,36 +91,11 @@ export default function TeamRail({
       )
     : [];
 
-  useEffect(() => {
-    if (!searching) {
-      setPlayerResults([]);
-      return;
-    }
-    const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      setPlayersLoading(true);
-      try {
-        const res = await fetch(`/api/players/search?q=${encodeURIComponent(query.trim())}`, {
-          signal: controller.signal,
-        });
-        const data = await res.json();
-        setPlayerResults(data.results ?? []);
-      } catch (err) {
-        if ((err as Error).name !== 'AbortError') setPlayerResults([]);
-      } finally {
-        setPlayersLoading(false);
-      }
-    }, 200);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [query, searching]);
-
   // Keep the current team's row visible in the scrollable list (32 rows overflow the
   // rail). 'nearest' avoids yanking the list around when it's already on screen; on
   // mobile the rail is display:none, so scrollIntoView is a no-op there.
   const currentRowRef = useRef<HTMLAnchorElement>(null);
+  // Legitimate effect: an imperative DOM scroll action with no derived-render equivalent.
   useEffect(() => {
     currentRowRef.current?.scrollIntoView({ block: 'nearest' });
   }, [team.id]);
