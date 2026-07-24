@@ -35,6 +35,8 @@ function Inner({ currentTeam, teams, accent, onPreview, onApply }: Props) {
   // the URL. The link itself stays shareable; only this viewer's local URL is cleaned.
   const strip = () => router.replace(pathname, { scroll: false });
 
+  // Legitimate effect: fetching data reacting to the `?board=` slug, not a value derivable
+  // during render.
   useEffect(() => {
     if (!slug) {
       setResolution('none');

@@ -73,6 +73,12 @@ export default function DepthChartField({
   // still counts as shown (same pattern as the nav-drawer coachmark). This effect intentionally
   // runs once per component mount rather than per team.id, since DepthChartField persists across
   // team switches (see the [team.id] reset effects above).
+  // Legitimate effect, not a lazy-init candidate: this page is server-rendered, and the
+  // localStorage check decides whether the walkthrough renders at all. Reading it in a lazy
+  // useState initializer would run during the server render (where `window` doesn't exist) and
+  // again during client hydration (where it does) — those would disagree and React would throw
+  // a hydration mismatch. Deferring the check to an effect (which only ever runs client-side,
+  // after hydration) is what keeps the server-rendered and first-hydrated output in sync.
   const [showEditModeWalkthrough, setShowEditModeWalkthrough] = useState(false);
   useEffect(() => {
     if (hasDismissedEditModeWalkthrough(window.localStorage)) return;

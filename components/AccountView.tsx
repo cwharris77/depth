@@ -45,6 +45,8 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [deleteState, setDeleteState] = useState<'idle' | 'deleting' | 'error'>('idle');
 
+  // Legitimate effect: fetching data reacting to `user` becoming available, not a value
+  // derivable during render.
   useEffect(() => {
     if (!user) {
       setFavoriteTeamId(null);

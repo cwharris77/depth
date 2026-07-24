@@ -95,29 +95,41 @@ export default function PlayerCard({
     }
   };
 
-  useEffect(() => {
+  // Fresh card: leave edit mode, reset the copied badge, and surface the one-time reorder
+  // hint. Keyed on player.id (not the player object) so reordering — which re-applies the
+  // override and gives `player` a new object identity for the same person — doesn't kick us
+  // out of edit mode. Edit mode should only end when the user taps Done or a different player
+  // is selected. Adjusted during render (comparing against prevPlayerId) rather than in an
+  // effect — safe because `player` starts null on every mount (it's only ever set by a later
+  // user interaction or an effect elsewhere), so this never runs during hydration.
+  const [prevPlayerId, setPrevPlayerId] = useState(player?.id);
+  if (player?.id !== prevPlayerId) {
+    setPrevPlayerId(player?.id);
     if (player) {
-      // Docked cards sit beside the field, not over it — never lock body scroll.
-      if (variant !== 'docked') document.body.classList.add('card-open');
-      // Fresh card: leave edit mode, reset the copied badge, and surface the
-      // one-time reorder hint. Keyed on player.id (not the player object) so
-      // reordering — which re-applies the override and gives `player` a new
-      // object identity for the same person — doesn't kick us out of edit mode.
-      // Edit mode should only end when the user taps Done or a different
-      // player is selected.
       setEditing(false);
       setCopied(false);
       setShowHint(!seenReorderHint());
+    }
+  }
+
+  // Docked cards sit beside the field, not over it — never lock body scroll. Genuine escape
+  // hatch: toggling a class on `document.body` mutates a DOM node outside this component's own
+  // render output, with no derived-render equivalent.
+  useEffect(() => {
+    if (variant === 'docked') return;
+    if (player) {
+      document.body.classList.add('card-open');
     } else {
       document.body.classList.remove('card-open');
     }
     return () => document.body.classList.remove('card-open');
-  }, [player?.id]);
+  }, [player?.id, variant]);
 
   // Dialog semantics for the mobile sheet (docked variant sits beside the field, not over
   // it, so it isn't a modal). Mirrors NavDrawer's focus trap: capture the trigger for
   // restore, focus the first focusable element in the panel, and wrap Tab/Shift+Tab
-  // between the first/last focusables while Escape closes.
+  // between the first/last focusables while Escape closes. Legitimate effect: focus
+  // management is a DOM mutation with no derived-render equivalent.
   useEffect(() => {
     if (variant === 'docked' || !player) return;
     restoreFocus.current = document.activeElement as HTMLElement | null;
@@ -158,7 +170,7 @@ export default function PlayerCard({
   // since-dismissed card can't clobber the next card's stats. Loading renders a
   // skeleton; error renders the empty state -- setSeasonStats([]) is also the reset
   // when a new player opens, so a stale season line never flashes before the fresh
-  // fetch lands.
+  // fetch lands. Legitimate effect: fetching data, not a value derivable during render.
   useEffect(() => {
     if (playerStatsMap) {
       // Server-side prefetch available: use it synchronously, no fetch needed.
