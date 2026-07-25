@@ -6,6 +6,7 @@ import { Check, ChevronRight, Star } from 'lucide-react';
 import { getBrowserClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/use-user';
 import { getSettings, putSettings } from '@/lib/settings-client';
+import { isValidEmail } from '@/lib/email';
 import OtpInput from '@/components/ui/OtpInput';
 import Button from '@/components/ui/Button';
 import Toggle from '@/components/ui/Toggle';
@@ -70,7 +71,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
 
   const sendCode = async () => {
     const trimmed = email.trim();
-    if (!trimmed) return;
+    if (!isValidEmail(trimmed)) return;
     setSendState('sending');
     const { error } = await getBrowserClient().auth.signInWithOtp({ email: trimmed });
     if (error) {
@@ -148,7 +149,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
   // (rendered by signin/page.tsx) still returns the user to where they came from.
   if (user && justSignedIn) {
     return (
-      <div className="flex flex-col items-center gap-5 py-6 text-center">
+      <div className="flex flex-col items-center gap-3 py-6 text-center">
         {/* Accent-tinted (not chrome) — 0.3-alpha border matches colors.focusRing exactly; the
             0.14-alpha fill derives from colors.accent via the house hex+alpha-suffix convention
             (see PlayerCard/TeamStatsView migrations). */}
@@ -180,7 +181,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
   if (user) {
     const initial = (user.email ?? '?').charAt(0).toUpperCase();
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         {/* Identity — bare row, not a card (no bg/border to migrate to Card). */}
         <div className="flex items-center gap-3.5">
           {/* Same accent-tint derivation as the just-signed-in circle above. */}
@@ -304,7 +305,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
               The fill/border colors derive from colors.danger via the house hex+alpha-suffix
               convention (see PlayerCard/TeamStatsView migrations). */}
           <div
-            className="flex flex-col gap-3 rounded-2xl p-4"
+            className="flex flex-col gap-4 rounded-2xl p-4"
             style={{
               background: `${colors.danger}0d`,
               border: `1px solid ${colors.danger}38`,
@@ -378,14 +379,16 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
         </div>
 
         <div className="flex flex-col gap-2">
-          <OtpInput
-            onChange={(value) => {
-              setCode(value);
-              setVerifyState('idle');
-            }}
-            onEnter={verifyCode}
-            disabled={verifyState === 'verifying'}
-          />
+          <div className="flex justify-center">
+            <OtpInput
+              onChange={(value) => {
+                setCode(value);
+                setVerifyState('idle');
+              }}
+              onEnter={verifyCode}
+              disabled={verifyState === 'verifying'}
+            />
+          </div>
           <Button onClick={verifyCode} disabled={verifyState === 'verifying' || code.length !== 6}>
             {verifyState === 'verifying' ? 'Verifying…' : 'Verify & sign in'}
           </Button>
@@ -432,6 +435,10 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
     );
   }
 
+  const trimmedEmail = email.trim();
+  // Only flag invalid once there's input — an empty field isn't "invalid", it's unstarted.
+  const emailFormatIsInvalid = trimmedEmail.length > 0 && !isValidEmail(trimmedEmail);
+
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-black" style={{ color: colors.textPrimary }}>
@@ -451,7 +458,14 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
           }}
           placeholder="you@email.com"
         />
-        <Button onClick={sendCode} disabled={sendState === 'sending'}>
+        {emailFormatIsInvalid && (
+          <div className="text-[12px]" style={{ color: colors.danger }}>
+            Enter a valid email address.
+          </div>
+        )}
+        <Button
+          onClick={sendCode}
+          disabled={sendState === 'sending' || !isValidEmail(trimmedEmail)}>
           {sendState === 'sending' ? 'Sending…' : 'Email me a sign-in code'}
         </Button>
         {sendState === 'error' && (

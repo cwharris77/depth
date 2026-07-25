@@ -145,7 +145,7 @@ export default function DepthChartField({
         ) : (
           // Empty state from the desktop mock: tells first-time desktop users the card
           // docks here rather than covering the chart.
-          <div className="flex h-full flex-col items-center justify-center gap-2.5 px-8 text-center">
+          <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center">
             <div
               className="flex h-11 w-11 items-center justify-center rounded-full text-[13px] font-bold"
               style={{ border: `2px dashed ${uiTokens.borderInput}`, color: uiTokens.textFaint }}>
