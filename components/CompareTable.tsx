@@ -21,6 +21,7 @@ import { statusColor } from '@/lib/colors';
 import { formatLastName } from '@/lib/format';
 import type { TeamMeta } from '@/lib/roster-source';
 import { playerDeepLinkPath } from '@/lib/share';
+import { useLastAccent } from '@/lib/use-last-accent';
 import type { Player, Position } from '@/lib/types';
 
 export interface CompareSide {
@@ -49,6 +50,7 @@ export default function CompareTable({ teams, a, b, position }: CompareTableProp
   const router = useRouter();
   const [pickingSlot, setPickingSlot] = useState<Slot | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const accent = useLastAccent();
 
   const updateUrl = (next: { a?: string; b?: string; pos?: Position }) => {
     router.replace(
@@ -72,7 +74,7 @@ export default function CompareTable({ teams, a, b, position }: CompareTableProp
   const noPlayersEitherSide = both !== null && rowCount === 0;
 
   return (
-    <TeamPageShell teams={teams} accent={uiTokens.accent}>
+    <TeamPageShell teams={teams} accent={accent}>
       <div
         className="relative px-4"
         style={{
@@ -96,17 +98,17 @@ export default function CompareTable({ teams, a, b, position }: CompareTableProp
           {/* Below xl: the mark opens the nav drawer. At xl the drawer's destinations live
               in the persistent TeamRail (TeamPageShell above), so the mark hides. */}
           <div className="flex items-center justify-between xl:hidden">
-            <DepthMark color={uiTokens.accent} onClick={() => setDrawerOpen(true)} />
+            <DepthMark color={accent} onClick={() => setDrawerOpen(true)} />
           </div>
 
           <div className="mt-5 flex items-center gap-3">
             <div
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
               style={{
-                background: `${uiTokens.accent}1a`,
-                border: `1px solid ${uiTokens.accent}40`,
+                background: `${accent}1a`,
+                border: `1px solid ${accent}40`,
               }}>
-              <Columns2 size={17} color={uiTokens.accent} />
+              <Columns2 size={17} color={accent} />
             </div>
             <div>
               <h1 className="text-2xl font-bold">Compare teams</h1>
@@ -173,11 +175,7 @@ export default function CompareTable({ teams, a, b, position }: CompareTableProp
           />
         </FullScreenSheet>
 
-        <NavDrawer
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          accent={uiTokens.accent}
-        />
+        <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} accent={accent} />
       </div>
     </TeamPageShell>
   );
