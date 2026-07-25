@@ -43,7 +43,7 @@ function GameCard({ game, uiAccent }: { game: TeamScheduleGame; uiAccent: string
   if (game.isBye) {
     return (
       <div
-        className="flex min-h-[104px] flex-col items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-center"
+        className="flex min-h-[104px] flex-col items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-center"
         style={{ border: `1px dashed ${uiTokens.borderInput}` /* nearest token to 0.25 alpha */ }}>
         <div
           className="text-[9px] font-bold tracking-[0.06em]"

@@ -232,7 +232,7 @@ function ComparePrompt({ aSide, bSide }: { aSide?: CompareSide; bSide?: CompareS
   const pickedCount = [aSide, bSide].filter(Boolean).length;
   return (
     <div
-      className="flex flex-col items-center gap-2 rounded-2xl px-6 py-10 text-center"
+      className="flex flex-col items-center gap-3 rounded-2xl px-6 py-10 text-center"
       style={{ border: `1px dashed ${uiTokens.borderSubtle}`, background: uiTokens.surfaceCard2 }}>
       <Columns2 size={22} color={uiTokens.textFaintest} />
       <p className="text-sm font-bold" style={{ color: uiTokens.textSecondary }}>

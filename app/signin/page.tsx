@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import AccountView from '@/components/AccountView';
 import Logo from '@/components/Logo';
-import { MARK_WORDMARK_GAP } from '@/components/DepthMark';
+import { MARK_WORDMARK_GAP } from '@/lib/depth-mark-gap';
 import { dbRosterSource } from '@/lib/roster-source.db';
 import { safeNext } from '@/lib/auth-redirect';
 import { colors as uiTokens } from '@/components/ui/tokens';
