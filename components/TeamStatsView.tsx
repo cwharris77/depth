@@ -11,6 +11,7 @@ import { ordinal } from '@/lib/format';
 import { postseasonRoundLabel } from '@/lib/schedule';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { Leader, RosterLeaders, TeamScheduleGame, TeamStats } from '@/lib/types';
+import { useKitColors } from '@/lib/use-kit-colors';
 import { useState } from 'react';
 import StatsPanel from './StatsPanel';
 import TeamPageHeader from './TeamPageHeader';
@@ -115,13 +116,17 @@ export default function TeamStatsView({
   postseasonGames,
 }: Props) {
   const [index, setIndex] = useState(seasons.length > 0 ? 0 : -1);
-  const { uiAccent } = team.colors;
+  // Picks up whichever kit is active on the roster page for this team (lib/use-kit-colors.ts)
+  // instead of always showing the default team colors — falls back to team.colors when
+  // nothing was ever picked this session.
+  const colors = useKitColors(team);
+  const { uiAccent } = colors;
 
   const header = (
     <div
       className="px-5 pb-3"
       style={{ background: uiTokens.bg, paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
-      <TeamPageHeader team={team} teams={teams} colors={team.colors} activePage="stats" />
+      <TeamPageHeader team={team} teams={teams} colors={colors} activePage="stats" />
     </div>
   );
 

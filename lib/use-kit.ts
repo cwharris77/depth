@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useState, useSyncExternalStore } from 'react';
+import { useCallback, useLayoutEffect, useState, useSyncExternalStore } from 'react';
 import type { TeamRoster } from '@/lib/types';
 import { getKitId, setKitId as persistKitId } from '@/lib/kit-selection';
+import { writeKitColors } from './use-kit-colors';
 
 // useSyncExternalStore never notifies us of a change on its own (localStorage writes in
 // this tab go through setKitId below, not through the store's subscription) — it's used
@@ -59,6 +60,13 @@ export function useKit(roster: TeamRoster) {
 
   const activeUniform = roster.uniforms.find((u) => u.id === kitId) ?? roster.uniforms[0];
   const activeColors = activeUniform?.colors ?? roster.team.colors;
+
+  // Mirror the resolved colors into lib/use-kit-colors.ts's store so schedule/stats —
+  // which never fetch uniforms and so can't resolve kitId themselves — can pick up
+  // whichever kit is active here (see that module for why).
+  useLayoutEffect(() => {
+    writeKitColors(roster.team.id, activeColors);
+  }, [roster.team.id, activeColors]);
 
   return { kitId, setKitId, activeUniform, activeColors };
 }

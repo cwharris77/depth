@@ -15,6 +15,7 @@ import NavDrawer from './NavDrawer';
 import TeamPageShell from './TeamPageShell';
 import FilterPill from './ui/FilterPill';
 import { colors as uiTokens } from '@/components/ui/tokens';
+import { useLastAccent } from '@/lib/use-last-accent';
 
 // The uniform archive (roadmap Phase 7). Receives every kit from the server route and
 // filters/groups client-side with the pure helpers in lib/uniforms/filter. State-only — no
@@ -22,7 +23,8 @@ import { colors as uiTokens } from '@/components/ui/tokens';
 // team's kits as generated vector uniforms (UniformFigure). Below `xl`, nav is the logo ->
 // drawer (mobile); at `xl` a persistent TeamPageShell/TeamRail replaces it (Desktop shell
 // for uniform archive and compare pages ticket) — the archive has no current team, so the
-// rail renders with no team/activePage and nav tints stay the neutral `uiTokens.accent`.
+// rail renders with no team/activePage and nav tints use whatever team was last viewed
+// (lib/use-last-accent.ts), falling back to the neutral `uiTokens.accent` on a fresh session.
 // Each division's teams go from one full-bleed row each to a 2/3-column grid at `lg`/`xl`
 // (Uniform archive layout on laptop screens ticket) — a separate, lower breakpoint than the
 // shell's `xl` rail switch, since the grid should densify before there's room for a rail.
@@ -49,6 +51,7 @@ export default function UniformArchive({
     currentOnly: false,
   });
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const accent = useLastAccent();
   const eras = useMemo(() => eraOptions(kits), [kits]);
   const groups = useMemo(
     () => groupByDivision(kits.filter((k) => matchesFilters(k, filters))),
@@ -56,7 +59,7 @@ export default function UniformArchive({
   );
 
   return (
-    <TeamPageShell teams={teams} accent={uiTokens.accent}>
+    <TeamPageShell teams={teams} accent={accent}>
       <div
         style={{
           minHeight: '100dvh',
@@ -74,7 +77,7 @@ export default function UniformArchive({
           the persistent TeamRail (TeamPageShell above), so the mark hides — same pattern as
           TeamPageHeader. */}
         <div className="xl:hidden">
-          <DepthMark color={uiTokens.accent} onClick={() => setDrawerOpen(true)} />
+          <DepthMark color={accent} onClick={() => setDrawerOpen(true)} />
         </div>
 
         <h1 className="mt-4 text-2xl font-bold">Uniform archive</h1>
@@ -222,11 +225,7 @@ export default function UniformArchive({
           </p>
         </footer>
 
-        <NavDrawer
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          accent={uiTokens.accent}
-        />
+        <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} accent={accent} />
       </div>
     </TeamPageShell>
   );
