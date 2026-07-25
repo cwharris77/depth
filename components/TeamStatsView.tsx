@@ -86,21 +86,11 @@ function UpcomingBadge({ selected, uiAccent }: { selected: boolean; uiAccent: st
   );
 }
 
-function StatCell({
-  label,
-  value,
-  color,
-  title,
-}: {
-  label: string;
-  value: string;
-  color?: string;
-  title?: string;
-}) {
+function StatCell({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <>
       <td className="py-[9px]" style={{ color: uiTokens.textFaint }}>
-        <span title={title}>{label}</span>
+        {label}
       </td>
       <td className="py-[9px] text-right font-bold" style={color ? { color } : undefined}>
         {value}
@@ -375,13 +365,9 @@ export default function TeamStatsView({
                     />
                   </tr>
                   <tr style={{ borderBottom: `1px solid ${uiTokens.borderStrong}` }}>
-                    <StatCell label="PF" value={String(active.pointsFor)} title="Points For" />
+                    <StatCell label="PTS FOR" value={String(active.pointsFor)} />
                     <td className="w-6" />
-                    <StatCell
-                      label="PA"
-                      value={String(active.pointsAgainst)}
-                      title="Points Against"
-                    />
+                    <StatCell label="PTS AGAINST" value={String(active.pointsAgainst)} />
                   </tr>
                   <tr>
                     <StatCell label="DIFF" value={diffLabel} color={diffColor} />
