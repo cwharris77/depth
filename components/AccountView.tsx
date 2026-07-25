@@ -30,6 +30,13 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
   const { user, loading } = useUser();
   const [email, setEmail] = useState('');
   const [sendState, setSendState] = useState<SendState>('idle');
+  // Whether the code-entry screen (below) is showing. Separate from sendState because
+  // "Resend code" re-runs sendCode() from that screen, which sets sendState to 'sending'
+  // (and maybe 'error') again — gating this screen on sendState === 'sent' alone would drop
+  // the user back to the email-entry screen for the duration of every resend (flash-then-jump,
+  // AGENTS.md invariant 16). Set true on the first successful send, false only when the user
+  // explicitly backs out via "Use a different email".
+  const [otpScreenActive, setOtpScreenActive] = useState(false);
   const [code, setCode] = useState('');
   const [verifyState, setVerifyState] = useState<VerifyState>('idle');
   // Set on a successful in-page sign-in so we show a success confirmation instead of
@@ -66,7 +73,12 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
     if (!trimmed) return;
     setSendState('sending');
     const { error } = await getBrowserClient().auth.signInWithOtp({ email: trimmed });
-    setSendState(error ? 'error' : 'sent');
+    if (error) {
+      setSendState('error');
+      return;
+    }
+    setSendState('sent');
+    setOtpScreenActive(true);
   };
 
   // Verify the 6-digit code the user types from the email. Synchronous, in-page — the browser
@@ -348,7 +360,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
     );
   }
 
-  if (sendState === 'sent') {
+  if (otpScreenActive) {
     return (
       <div className="flex flex-col gap-4">
         <div>
@@ -387,19 +399,22 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
         {/* Two inline links: "Resend code" (same email, calls sendCode directly) and
             "Use a different email" (returns to email-entry screen). Both are inline underlined
             text links, not Button — Button's variants always render padding + rounded + font-bold,
-            no bare-text style. */}
+            no bare-text style. Resend disables itself while a send is in flight so a rapid
+            double-click can't fire two signInWithOtp calls before the first resolves. */}
         <div className="flex gap-4">
           <button
             type="button"
             onClick={sendCode}
-            className="text-[12px] underline"
+            disabled={sendState === 'sending'}
+            className="text-[12px] underline disabled:no-underline disabled:opacity-50"
             style={{ color: colors.textMuted }}>
-            Resend code
+            {sendState === 'sending' ? 'Resending…' : 'Resend code'}
           </button>
           <button
             type="button"
             onClick={() => {
               setSendState('idle');
+              setOtpScreenActive(false);
               setCode('');
               setVerifyState('idle');
             }}
@@ -408,6 +423,11 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
             Use a different email
           </button>
         </div>
+        {sendState === 'error' && (
+          <div className="text-[12px]" style={{ color: colors.danger }}>
+            Couldn&apos;t resend the code — try again.
+          </div>
+        )}
       </div>
     );
   }
