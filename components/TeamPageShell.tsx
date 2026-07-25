@@ -16,7 +16,8 @@
 // shape instead of forking a separate shell. The shell owns only the frame.
 import { colors as uiTokens } from '@/components/ui/tokens';
 import type { TeamMeta } from '@/lib/roster-source';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
+import { setLastAccent } from '@/lib/use-last-accent';
 import TeamRail, { type TeamPageKey } from './TeamRail';
 
 export default function TeamPageShell({
@@ -34,6 +35,14 @@ export default function TeamPageShell({
   aside?: ReactNode;
   children: ReactNode;
 }) {
+  // Every team page (roster/schedule/stats) mounts the shell with a real `team`, so this
+  // records its accent as "the last team viewed" for pages with no current team (uniform
+  // archive, compare — see lib/use-last-accent.ts) to pick up. Writing to sessionStorage is
+  // a genuine external-system sync, not derivable during render, so it belongs in an effect.
+  useEffect(() => {
+    if (team) setLastAccent(accent);
+  }, [team, accent]);
+
   return (
     <div
       className={`w-full xl:mx-auto xl:grid xl:h-dvh xl:max-w-[1600px] xl:overflow-hidden ${
