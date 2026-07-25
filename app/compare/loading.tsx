@@ -69,7 +69,7 @@ export default function Loading() {
         </div>
 
         <div
-          className="mt-5 mb-6 flex flex-col items-center gap-2 rounded-2xl px-6 py-10"
+          className="mt-5 mb-6 flex flex-col items-center gap-3 rounded-2xl px-6 py-10"
           style={{
             border: `1px dashed ${uiTokens.borderSubtle}`,
             background: uiTokens.surfaceCard2,

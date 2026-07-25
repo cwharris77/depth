@@ -9,12 +9,7 @@ import {
   dismissNavDrawerCoachmark,
   hasDismissedNavDrawerCoachmark,
 } from '@/lib/nav-drawer-coachmark';
-
-// The single shared mark-to-wordmark gap, used here and by any other spot that hand-rolls
-// Logo + "depth" text (currently just app/signin/page.tsx, which needs a larger size than
-// this component renders) — keeps the gap identical everywhere even where DepthMark itself
-// can't be reused as-is.
-export const MARK_WORDMARK_GAP = 'gap-1';
+import { MARK_WORDMARK_GAP } from '@/lib/depth-mark-gap';
 
 const COACHMARK_TIMEOUT_MS = 4000;
 
