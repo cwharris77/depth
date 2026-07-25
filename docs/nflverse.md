@@ -74,6 +74,19 @@ rosters, draft picks, formations) reuse this same scaffolding with their own spe
   player-change), renders a "LAST SEASONS" row per season with a non-null `statLine`.
   Loading and error both render nothing.
 
+## Investigation note: silent 2025 ingestion gap (2026-07-25)
+
+nflverse renamed the player-stats release tag from `player_stats` to `stats_player`
+sometime after the 2024 season (the asset filenames, `stats_player_reg_<season>.csv`, were
+unchanged — only the release tag moved). `scripts/ingest-nflverse.mts`'s `STATS_TAG` still
+pointed at the old `player_stats` tag, which stopped receiving new season assets. This made
+`latestAvailableSeason` 404 on 2025 under the stale tag and silently settle on 2024 as
+"latest available" every run — no error, no STRICT failure, so `ingestion_runs` looked
+healthy while quietly never writing 2025 rows. Confirmed via GitHub's release API:
+`player_stats` tops out at 2024, `stats_player` has the full 1999–2025 set under identical
+file naming. Fixed by pointing `STATS_TAG` at `stats_player`. The off-season-boundary logic
+in `lib/nfl-season.ts` was not involved — it isn't on this fetch path.
+
 ## Crosswalk caveat + skip accounting
 
 nflverse's `players.csv` covers every player across all eras, but not every row has an
