@@ -376,9 +376,9 @@ export default function TeamStatsView({
                     />
                   </tr>
                   <tr style={{ borderBottom: `1px solid ${uiTokens.borderStrong}` }}>
-                    <StatCell label="PF" value={String(active.pointsFor)} />
+                    <StatCell label="PTS FOR" value={String(active.pointsFor)} />
                     <td className="w-6" />
-                    <StatCell label="PA" value={String(active.pointsAgainst)} />
+                    <StatCell label="PTS AGAINST" value={String(active.pointsAgainst)} />
                   </tr>
                   <tr>
                     <StatCell label="DIFF" value={diffLabel} color={diffColor} />

@@ -22,7 +22,7 @@ function Bar({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="w-[26px] text-[9px]" style={{ color: uiTokens.textFaint }}>
+      <span className="w-[62px] whitespace-nowrap text-[9px]" style={{ color: uiTokens.textFaint }}>
         {label}
       </span>
       <div
@@ -63,9 +63,9 @@ export default function StatsPanel({ seasons, accent }: { seasons: TeamStats[]; 
                 <span style={{ color: diffColor }}>{diff > 0 ? `+${diff}` : diff}</span>
               </div>
               <div className="flex flex-col gap-1">
-                <Bar label="PF" value={s.pointsFor} pct={pct(s.pointsFor)} color={accent} />
+                <Bar label="PTS FOR" value={s.pointsFor} pct={pct(s.pointsFor)} color={accent} />
                 <Bar
-                  label="PA"
+                  label="PTS AGAINST"
                   value={s.pointsAgainst}
                   pct={pct(s.pointsAgainst)}
                   color={uiTokens.statusInjured}
