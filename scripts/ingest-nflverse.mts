@@ -21,7 +21,11 @@ import type { Database } from '../lib/database.types';
 
 const PLAYERS_TAG = 'players';
 const PLAYERS_FILE = 'players.csv';
-const STATS_TAG = 'player_stats';
+// nflverse renamed this release tag from `player_stats` to `stats_player` after the 2024
+// season (asset filenames are unchanged). The old tag stopped getting new season assets, so
+// `latestAvailableSeason` silently capped out at 2024 with no error -- no STRICT failure, just
+// a season that never got ingested. See docs/nflverse.md.
+const STATS_TAG = 'stats_player';
 const STATS_PREFIX = 'stats_player_reg_';
 // The schedule/results file lives in nfldata (one CSV, every season 1999+), not the
 // season-suffixed nflverse-data release assets -- so it has its own raw URL, not assetUrl.
