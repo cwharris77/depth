@@ -13,6 +13,7 @@ import TeamPageHeader from './TeamPageHeader';
 import TeamPageShell from './TeamPageShell';
 import Badge from '@/components/ui/Badge';
 import { colors as uiTokens } from '@/components/ui/tokens';
+import { useKitColors } from '@/lib/use-kit-colors';
 
 interface Props {
   team: TeamMeta;
@@ -109,13 +110,17 @@ function GameCard({ game, uiAccent }: { game: TeamScheduleGame; uiAccent: string
 }
 
 export default function TeamScheduleView({ team, teams, schedule, isUpcoming }: Props) {
-  const { uiAccent } = team.colors;
+  // Picks up whichever kit is active on the roster page for this team (lib/use-kit-colors.ts)
+  // instead of always showing the default team colors — falls back to team.colors when
+  // nothing was ever picked this session.
+  const colors = useKitColors(team);
+  const { uiAccent } = colors;
 
   const header = (
     <div
       className="bg-background px-5 pb-3"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
-      <TeamPageHeader team={team} teams={teams} colors={team.colors} activePage="schedule" />
+      <TeamPageHeader team={team} teams={teams} colors={colors} activePage="schedule" />
     </div>
   );
 
