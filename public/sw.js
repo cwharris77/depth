@@ -22,6 +22,10 @@
 // response; the caches are only a fallback when the network is unavailable. That keeps
 // the "my update won't show up" problem away while still working fully offline.
 //
+// First-load performance note: components/ServiceWorkerRegistrar.tsx defers calling
+// navigator.serviceWorker.register('/sw.js') until after the window load event, so this
+// install/precache work does not compete with the critical rendering path on mobile.
+//
 // Passed straight through, never intercepted:
 //   - non-GET requests
 //   - other cross-origin requests (Supabase, etc.) — ESPN headshots are the one
