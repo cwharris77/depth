@@ -1,13 +1,13 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { shouldReloadForServiceWorkerUpdate } from '../service-worker-update';
 
-describe('shouldReloadForServiceWorkerUpdate', () => {
-  it('does not reload when a first-installed worker takes control', () => {
-    expect(shouldReloadForServiceWorkerUpdate(false, false)).toBe(false);
-  });
+describe('service-worker updates', () => {
+  it('activate naturally without exposing a manual update prompt', () => {
+    const registrar = readFileSync('components/ServiceWorkerRegistrar.tsx', 'utf8');
+    const worker = readFileSync('public/sw.js', 'utf8');
 
-  it('reloads once after the user accepts an update', () => {
-    expect(shouldReloadForServiceWorkerUpdate(true, false)).toBe(true);
-    expect(shouldReloadForServiceWorkerUpdate(true, true)).toBe(false);
+    expect(registrar).not.toContain('Update available');
+    expect(registrar).not.toContain('SKIP_WAITING');
+    expect(worker).not.toContain('SKIP_WAITING');
   });
 });
