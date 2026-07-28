@@ -1,9 +1,9 @@
 import type { MetadataRoute } from 'next';
 import { dbRosterSource } from '@/lib/roster-source.db';
+import { getSiteUrl } from '@/lib/site-url';
 
-// Absolute base for sitemap URLs — same source as the layout's metadataBase. Set
-// NEXT_PUBLIC_SITE_URL in production; falls back to localhost for dev/build.
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+// Absolute base for sitemap URLs — same source as the layout's metadataBase.
+const siteUrl = getSiteUrl();
 
 // One entry per prerendered team page plus the home route, so crawlers can find all
 // 32 depth charts (each a distinct static page) instead of only whatever the home
