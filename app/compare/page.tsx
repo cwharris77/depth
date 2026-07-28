@@ -1,4 +1,5 @@
 import CompareTable from '@/components/CompareTable';
+import TeamCompareTable from '@/components/TeamCompareTable';
 import { parseCompareParams } from '@/lib/compare';
 import { getPlayersByPosition } from '@/lib/roster';
 import { dbRosterSource } from '@/lib/roster-source.db';
@@ -15,8 +16,9 @@ type Params = {
 // dynamic hole with no segment config needed — `force-dynamic` is a build error here.
 export async function generateMetadata({ searchParams }: Params): Promise<Metadata> {
   const teams = await dbRosterSource.listTeams();
+  const raw = await searchParams;
   const { a, b, pos } = parseCompareParams(
-    await searchParams,
+    raw,
     teams.map((t) => t.id)
   );
   const teamA = teams.find((t) => t.id === a);
@@ -25,8 +27,12 @@ export async function generateMetadata({ searchParams }: Params): Promise<Metada
     return { title: 'Compare teams · Depth' };
   }
   return {
-    title: `${teamA.abbrev} vs ${teamB.abbrev} — ${pos} depth · Depth`,
-    description: `Side-by-side ${pos} depth chart comparison: ${teamA.city} ${teamA.name} vs ${teamB.city} ${teamB.name}.`,
+    title: raw.pos
+      ? `${teamA.abbrev} vs ${teamB.abbrev} — ${pos} depth · Depth`
+      : `${teamA.abbrev} vs ${teamB.abbrev} matchup · Depth`,
+    description: raw.pos
+      ? `Side-by-side ${pos} depth chart comparison: ${teamA.city} ${teamA.name} vs ${teamB.city} ${teamB.name}.`
+      : `Team matchup comparison: ${teamA.city} ${teamA.name} vs ${teamB.city} ${teamB.name}.`,
     alternates: { canonical: '/compare' },
   };
 }
@@ -36,10 +42,25 @@ export async function generateMetadata({ searchParams }: Params): Promise<Metada
 // team metas, never a whole roster — Decisions table "Rendering".
 export default async function ComparePage({ searchParams }: Params) {
   const teams = await dbRosterSource.listTeams();
+  const raw = await searchParams;
   const { a, b, pos } = parseCompareParams(
-    await searchParams,
+    raw,
     teams.map((t) => t.id)
   );
+
+  if (!raw.pos) {
+    const [statsA, statsB] = await Promise.all([
+      a ? dbRosterSource.getTeamStats(a) : Promise.resolve(undefined),
+      b ? dbRosterSource.getTeamStats(b) : Promise.resolve(undefined),
+    ]);
+    return (
+      <TeamCompareTable
+        teams={teams}
+        a={statsA ? { team: statsA.team, stats: statsA.seasons[0] } : undefined}
+        b={statsB ? { team: statsB.team, stats: statsB.seasons[0] } : undefined}
+      />
+    );
+  }
 
   const [rosterA, rosterB] = await Promise.all([
     a ? dbRosterSource.getTeam(a) : Promise.resolve(undefined),
