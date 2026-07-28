@@ -4,6 +4,7 @@ import { colors } from '@/components/ui/tokens';
 import { VercelToolbar } from '@vercel/toolbar/next';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono, Anton } from 'next/font/google';
+import { getSiteUrl } from '@/lib/site-url';
 import './globals.css';
 
 const geistSans = Geist({
@@ -24,9 +25,9 @@ const anton = Anton({
   subsets: ['latin'],
 });
 
-// Absolute base for generated OG/Twitter image URLs. Set NEXT_PUBLIC_SITE_URL in
-// production; falls back to localhost for dev/build so the URLs still resolve.
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+// Absolute base for generated OG/Twitter image URLs. Vercel deployment env wins in
+// production/preview; local dev falls back to localhost.
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
