@@ -126,12 +126,33 @@ describe('buildCompareTeaser', () => {
   });
 
   it('leaves topA/topB undefined when only one side has players at the deepest position', () => {
-    const playersA = [[], [makePlayer('wrA1'), makePlayer('wrA2')]];
+    const wrA1 = makePlayer('wrA1');
+    const playersA = [[], [wrA1, makePlayer('wrA2')]];
     const playersB = [[], []];
     const teaser = buildCompareTeaser(playersA, playersB, positions);
     expect(teaser?.position).toBe('WR');
     expect(teaser?.countA).toBe(2);
     expect(teaser?.countB).toBe(0);
+    expect(teaser?.topA).toEqual(wrA1);
     expect(teaser?.topB).toBeUndefined();
+  });
+
+  it('guards against a positions array longer than the players arrays rather than throwing', () => {
+    const qbA1 = makePlayer('qbA1');
+    // positions has 2 entries (QB, WR) but playersA/playersB only have 1 entry each,
+    // so index 1 (WR) is out of bounds on both sides — buildCompareTeaser must not
+    // throw a TypeError indexing playersA[1]/playersB[1] (getDeepestPosition already
+    // guards this with `?? 0`; buildCompareTeaser needs the same optional chaining).
+    const playersA = [[qbA1]];
+    const playersB = [[]];
+    expect(() => buildCompareTeaser(playersA, playersB, positions)).not.toThrow();
+    const teaser = buildCompareTeaser(playersA, playersB, positions);
+    expect(teaser).toEqual({
+      position: 'QB',
+      countA: 1,
+      countB: 0,
+      topA: qbA1,
+      topB: undefined,
+    });
   });
 });

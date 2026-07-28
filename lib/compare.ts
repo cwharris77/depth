@@ -88,10 +88,10 @@ export function buildCompareTeaser(
   const i = positions.indexOf(position);
   return {
     position,
-    countA: playersA[i].length,
-    countB: playersB[i].length,
-    topA: playersA[i][0],
-    topB: playersB[i][0],
+    countA: playersA[i]?.length ?? 0,
+    countB: playersB[i]?.length ?? 0,
+    topA: playersA[i]?.[0],
+    topB: playersB[i]?.[0],
   };
 }
 

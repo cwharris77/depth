@@ -6,7 +6,7 @@ import { colors as uiTokens } from '@/components/ui/tokens';
 // gets this treatment (app/team/[id]/loading.tsx); /compare never did, which is why the
 // route reads as "broken" on first load — the browser had nothing to paint until the
 // dynamic hole (both rosters, see lib/roster-source.db.ts) fully resolved (see vault
-// ticket "Compare page first fetch is extremely slow"). Mirrors CompareTable's mobile
+// ticket "Compare page first fetch is extremely slow"). Mirrors CompareView's mobile
 // layout at low fidelity (no team colors known yet) so the swap-in doesn't jump the
 // layout, same approach as the team page's skeleton.
 export default function Loading() {
@@ -66,16 +66,6 @@ export default function Loading() {
             style={{ background: uiTokens.surfaceChipHover }}
           />
           <div className="h-8 flex-1 rounded-xl" />
-        </div>
-
-        <div className="mt-5 flex items-center gap-2 overflow-hidden">
-          {[64, 64, 64, 64, 64].map((w, i) => (
-            <div
-              key={i}
-              className="shrink-0 rounded-full"
-              style={{ width: w, height: 28, background: uiTokens.surfaceChip }}
-            />
-          ))}
         </div>
 
         <div
