@@ -308,10 +308,10 @@ export default function PlayerCard({
       <div className="mx-6 my-4">
         <StatGrid
           stats={[
-            { label: 'AGE', value: player.age },
+            { label: 'AGE', value: player.age || '—' },
             { label: 'EXP', value: experienceLabel(player.experience) },
-            { label: 'HT', value: player.height },
-            { label: 'WT', value: `${player.weight}` },
+            { label: 'HT', value: player.height || '—' },
+            { label: 'WT', value: player.weight || '—' },
           ]}
         />
       </div>
