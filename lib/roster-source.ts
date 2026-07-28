@@ -16,6 +16,13 @@ import type {
 // Lightweight team metadata for listings (e.g. the team switcher) — no player data.
 export type TeamMeta = Team;
 
+export interface TeamStatsRanks {
+  winPercent?: number;
+  pointsFor?: number;
+  pointsAgainst?: number;
+  pointDifferential?: number;
+}
+
 // A single kit flattened with its team's identity, for the archive listing (Phase 7
 // archive page). Lightweight — no player data — so shipping all of them to the archive
 // route does not violate the "one team's roster per page" invariant (this is kit
@@ -58,6 +65,7 @@ export interface UniformListing {
 export interface TeamStatsPage {
   team: TeamMeta;
   seasons: TeamStats[];
+  leagueRanksBySeason: Record<number, TeamStatsRanks>;
   incomingCoach?: { name: string };
   upcomingSeason?: number;
   // The current NFL season year. A season is "completed" (all games played, playoff

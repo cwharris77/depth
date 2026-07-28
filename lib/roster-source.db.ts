@@ -1,7 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 import { cacheLife } from 'next/cache';
 import type { Database } from './database.types';
-import type { RosterSource, TeamMeta, TeamStatsPage, UniformListing } from './roster-source';
+import type {
+  RosterSource,
+  TeamMeta,
+  TeamStatsPage,
+  TeamStatsRanks,
+  UniformListing,
+} from './roster-source';
 import { type LeaderEntry, rosterLeaders } from './roster-leaders';
 import { resolvePostseason, resolveSchedule } from './schedule';
 import { getNflSeasonState } from './nfl-season';
@@ -131,6 +137,12 @@ type TeamStatsRow = Pick<
 >;
 const TEAM_STATS_SELECT =
   'season, overall_wins, overall_losses, overall_ties, win_percent, home_wins, home_losses, road_wins, road_losses, division_wins, division_losses, conference_wins, conference_losses, points_for, points_against, point_differential, streak, playoff_seed';
+type TeamStatsRankRow = Pick<
+  Tables['team_stats']['Row'],
+  'team_id' | 'season' | 'win_percent' | 'points_for' | 'points_against' | 'point_differential'
+>;
+const TEAM_STATS_RANK_SELECT =
+  'team_id, season, win_percent, points_for, points_against, point_differential';
 
 type TeamCoachSeasonRow = Pick<
   Tables['team_coach_seasons']['Row'],
@@ -170,6 +182,46 @@ function toTeamStats(row: TeamStatsRow, coachBySeason: Map<number, TeamCoachSeas
     streak: row.streak ?? '',
     playoffSeed: row.playoff_seed ?? 0,
   };
+}
+
+function rankValue(
+  rows: TeamStatsRankRow[],
+  teamId: string,
+  value: (row: TeamStatsRankRow) => number | null,
+  order: 'asc' | 'desc' = 'desc'
+): number | undefined {
+  const teamRow = rows.find((row) => row.team_id === teamId);
+  if (!teamRow) return undefined;
+  const teamValue = value(teamRow);
+  if (teamValue === null) return undefined;
+  const values = rows
+    .map(value)
+    .filter((v): v is number => typeof v === 'number')
+    .sort((a, b) => (order === 'desc' ? b - a : a - b));
+  return values.findIndex((v) => v === teamValue) + 1 || undefined;
+}
+
+function buildLeagueRanks(
+  teamId: string,
+  rows: TeamStatsRankRow[]
+): Record<number, TeamStatsRanks> {
+  const bySeason = new Map<number, TeamStatsRankRow[]>();
+  for (const row of rows) {
+    const seasonRows = bySeason.get(row.season) ?? [];
+    seasonRows.push(row);
+    bySeason.set(row.season, seasonRows);
+  }
+  return Object.fromEntries(
+    [...bySeason].map(([season, seasonRows]) => [
+      season,
+      {
+        winPercent: rankValue(seasonRows, teamId, (row) => row.win_percent),
+        pointsFor: rankValue(seasonRows, teamId, (row) => row.points_for),
+        pointsAgainst: rankValue(seasonRows, teamId, (row) => row.points_against, 'asc'),
+        pointDifferential: rankValue(seasonRows, teamId, (row) => row.point_differential),
+      },
+    ])
+  );
 }
 
 function toTeam(row: TeamRow): Team {
@@ -366,6 +418,7 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
     { data: teamRow, error: teamError },
     { data: statsRows, error: statsError },
     { data: coachRows, error: coachError },
+    { data: rankRows, error: rankError },
   ] = await Promise.all([
     client
       .from('teams')
@@ -383,10 +436,12 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
       .select(TEAM_COACH_SEASONS_SELECT)
       .eq('team_id', teamId)
       .returns<TeamCoachSeasonRow[]>(),
+    client.from('team_stats').select(TEAM_STATS_RANK_SELECT).returns<TeamStatsRankRow[]>(),
   ]);
   if (teamError) throw new Error(`teams query failed: ${teamError.message}`);
   if (statsError) throw new Error(`team_stats query failed: ${statsError.message}`);
   if (coachError) throw new Error(`team_coach_seasons query failed: ${coachError.message}`);
+  if (rankError) throw new Error(`team_stats rank query failed: ${rankError.message}`);
   if (!teamRow) return undefined;
 
   const { upcomingSeason, isOffseason } = await getNflSeasonState();
@@ -399,6 +454,7 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
   const seasons = (statsRows ?? []).map((row) => toTeamStats(row, coachBySeason));
   return {
     team: toTeam(teamRow),
+    leagueRanksBySeason: buildLeagueRanks(teamId, rankRows ?? []),
     // `coach_experience === 0` is ESPN's live signal for "hired, but hasn't coached a
     // season for this team yet" — see TeamStatsPage.incomingCoach doc comment.
     incomingCoach:
