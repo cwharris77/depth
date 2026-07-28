@@ -36,10 +36,8 @@
 //
 // Update flow: a fresh install (no prior active worker) activates immediately — there's
 // no existing controller to disrupt. An *update* (an active worker already controls the
-// page) instead stays in the "waiting" state; ServiceWorkerRegistrar detects
-// registration.waiting / the updatefound event and shows a reload prompt. Only the
-// SKIP_WAITING message (sent after the user confirms) advances it to activate, so an open
-// tab never has its caches swapped out from under it without notice.
+// page) instead stays in the "waiting" state and activates naturally after all controlled
+// tabs close, so an open tab never has its caches swapped out from under it.
 
 const VERSION = 'v4';
 const PRECACHE = `depth-precache-${VERSION}`;
@@ -130,7 +128,7 @@ self.addEventListener('install', (event) => {
       // No active worker yet means this is the very first install for this client —
       // nothing is controlling the page, so there's nothing to disrupt by activating
       // right away. If one *is* active, this install is an update: stay waiting until
-      // the client confirms (see the message listener below).
+      // every controlled tab closes.
       if (!self.registration.active) self.skipWaiting();
     })
   );
@@ -146,14 +144,6 @@ self.addEventListener('activate', (event) => {
       await self.clients.claim();
     })()
   );
-});
-
-// Lets the client hand control to a waiting worker on demand (the "Reload to update"
-// prompt), rather than it sitting in "waiting" until every tab in scope closes.
-self.addEventListener('message', (event) => {
-  if (event.data === 'SKIP_WAITING' || event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
 });
 
 self.addEventListener('fetch', (event) => {

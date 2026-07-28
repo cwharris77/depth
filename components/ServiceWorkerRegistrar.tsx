@@ -1,8 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { colors as uiTokens } from '@/components/ui/tokens';
-import { shouldReloadForServiceWorkerUpdate } from '@/lib/service-worker-update';
+import { useEffect } from 'react';
 
 // Registers the service worker (public/sw.js) so the app works offline and launches
 // instantly on repeat visits once added to the home screen. Production only: a service
@@ -14,52 +12,13 @@ import { shouldReloadForServiceWorkerUpdate } from '@/lib/service-worker-update'
 // pages) does not compete with the initial page's critical rendering path on slow mobile
 // networks. This keeps first-load LCP/TTI focused on the actual page resources; the
 // worker can warm its caches once the user is already seeing content.
-//
-// Also owns the update prompt: sw.js holds an updated worker in the "waiting" state
-// instead of activating it out from under an open tab (see sw.js's install handler).
-// This component notices that worker via registration.waiting / the updatefound event
-// and surfaces a "reload to update" banner; the reload only happens after the user
-// confirms, via a SKIP_WAITING message to the waiting worker and a controllerchange
-// listener that reloads once it takes over.
 export default function ServiceWorkerRegistrar() {
-  const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
-  const reloadRequested = useRef(false);
-
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') return;
     if (!('serviceWorker' in navigator)) return;
 
-    // Reload once the new worker actually takes control, not on the SKIP_WAITING send —
-    // activation (and clients.claim()) is what makes the fresh cache take effect.
-    let reloaded = false;
-    const onControllerChange = () => {
-      if (!shouldReloadForServiceWorkerUpdate(reloadRequested.current, reloaded)) return;
-      reloaded = true;
-      window.location.reload();
-    };
-    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
-
     const registerSw = () => {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then((registration) => {
-          // A worker was already waiting when this tab loaded (e.g. it opened between a
-          // previous tab's update and this one registering).
-          if (registration.waiting) setWaitingWorker(registration.waiting);
-
-          registration.addEventListener('updatefound', () => {
-            const installing = registration.installing;
-            if (!installing) return;
-            installing.addEventListener('statechange', () => {
-              // "installed" with an existing controller means this is an update sitting in
-              // "waiting", not the page's first-ever install.
-              if (installing.state === 'installed' && navigator.serviceWorker.controller) {
-                setWaitingWorker(installing);
-              }
-            });
-          });
-        })
-        .catch(() => {});
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
     };
 
     // Defer registration until the page is fully loaded so the worker's install/precache
@@ -71,32 +30,9 @@ export default function ServiceWorkerRegistrar() {
     }
 
     return () => {
-      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
       window.removeEventListener('load', registerSw);
     };
   }, []);
 
-  if (!waitingWorker) return null;
-
-  return (
-    <div
-      className="fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-sm items-center justify-between gap-3 rounded-xl px-4 py-3 text-[13px] shadow-lg"
-      style={{
-        background: '#131a2b',
-        color: uiTokens.textPrimary,
-        border: `1px solid ${uiTokens.statusRookie}55`,
-      }}>
-      <span>Update available</span>
-      <button
-        type="button"
-        onClick={() => {
-          reloadRequested.current = true;
-          waitingWorker.postMessage('SKIP_WAITING');
-        }}
-        className="shrink-0 rounded-full px-3 py-1 text-[12px] font-bold"
-        style={{ background: uiTokens.statusRookie, color: uiTokens.onAccent }}>
-        Reload
-      </button>
-    </div>
-  );
+  return null;
 }
