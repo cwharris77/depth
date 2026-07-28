@@ -20,7 +20,6 @@ import { COMPARE_POSITIONS } from '@/lib/compare';
 import { statusColor } from '@/lib/colors';
 import { formatLastName } from '@/lib/format';
 import type { TeamMeta } from '@/lib/roster-source';
-import { playerDeepLinkPath } from '@/lib/share';
 import { useLastAccent } from '@/lib/use-last-accent';
 import type { Player, Position } from '@/lib/types';
 
@@ -61,10 +60,6 @@ export default function CompareTable({ teams, a, b, position }: CompareTableProp
       ),
       { scroll: false }
     );
-  };
-
-  const openPlayer = (teamId: string, playerId: string) => {
-    router.push(playerDeepLinkPath(teamId, playerId));
   };
 
   // Narrows a/b together so the table below never needs a non-null assertion.
@@ -157,7 +152,7 @@ export default function CompareTable({ teams, a, b, position }: CompareTableProp
             ) : noPlayersEitherSide ? (
               <EmptyPositionState position={position} />
             ) : (
-              <CompareRows a={both.a} b={both.b} rowCount={rowCount} onOpenPlayer={openPlayer} />
+              <CompareRows a={both.a} b={both.b} rowCount={rowCount} />
             )}
           </div>
         </div>
@@ -259,17 +254,7 @@ function EmptyPositionState({ position }: { position: Position }) {
   );
 }
 
-function CompareRows({
-  a,
-  b,
-  rowCount,
-  onOpenPlayer,
-}: {
-  a: CompareSide;
-  b: CompareSide;
-  rowCount: number;
-  onOpenPlayer: (teamId: string, playerId: string) => void;
-}) {
+function CompareRows({ a, b, rowCount }: { a: CompareSide; b: CompareSide; rowCount: number }) {
   return (
     <div
       className="overflow-hidden rounded-2xl"
@@ -296,8 +281,8 @@ function CompareRows({
               {i + 1}
             </span>
           </div>
-          <PlayerCell player={a.players[i]} team={a.team} onOpen={onOpenPlayer} />
-          <PlayerCell player={b.players[i]} team={b.team} onOpen={onOpenPlayer} />
+          <PlayerCell player={a.players[i]} team={a.team} />
+          <PlayerCell player={b.players[i]} team={b.team} />
         </div>
       ))}
     </div>
@@ -317,15 +302,7 @@ function TeamHeaderCell({ team }: { team: TeamMeta }) {
   );
 }
 
-function PlayerCell({
-  player,
-  team,
-  onOpen,
-}: {
-  player?: Player;
-  team: TeamMeta;
-  onOpen: (teamId: string, playerId: string) => void;
-}) {
+function PlayerCell({ player, team }: { player?: Player; team: TeamMeta }) {
   if (!player) {
     return (
       <div
@@ -336,11 +313,7 @@ function PlayerCell({
     );
   }
   return (
-    <button
-      type="button"
-      onClick={() => onOpen(team.id, player.id)}
-      className="flex min-w-0 items-center justify-center gap-1.5 px-1.5 py-3 transition-colors duration-150 hover:bg-white/[0.04]"
-      style={{ touchAction: 'manipulation' }}>
+    <div className="flex min-w-0 items-center justify-center gap-1.5 px-1.5 py-3">
       <span
         aria-hidden="true"
         className="shrink-0 rounded-full"
@@ -355,6 +328,6 @@ function PlayerCell({
         <span className="hidden min-[480px]:inline">{player.name}</span>
         <span className="inline min-[480px]:hidden">{formatLastName(player.name)}</span>
       </span>
-    </button>
+    </div>
   );
 }
