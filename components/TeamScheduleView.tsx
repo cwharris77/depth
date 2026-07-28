@@ -8,6 +8,7 @@
 import type { TeamMeta } from '@/lib/roster-source';
 import type { TeamSchedule, TeamScheduleGame } from '@/lib/types';
 import { readableTextOn } from '@/lib/colors';
+import Link from 'next/link';
 import SchedulePanel from './SchedulePanel';
 import TeamPageHeader from './TeamPageHeader';
 import TeamPageShell from './TeamPageShell';
@@ -39,7 +40,15 @@ const RESULT_COLOR: Record<'W' | 'L' | 'T', string> = {
   T: uiTokens.textMuted,
 };
 
-function GameCard({ game, uiAccent }: { game: TeamScheduleGame; uiAccent: string }) {
+function GameCard({
+  game,
+  teamId,
+  uiAccent,
+}: {
+  game: TeamScheduleGame;
+  teamId: string;
+  uiAccent: string;
+}) {
   if (game.isBye) {
     return (
       <div
@@ -59,14 +68,8 @@ function GameCard({ game, uiAccent }: { game: TeamScheduleGame; uiAccent: string
 
   const opp = game.opponent;
   const played = game.result !== null;
-
-  return (
-    <div
-      className="flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5"
-      style={{
-        background: uiTokens.surfaceCard2,
-        border: `1px solid ${uiTokens.borderDefault}`,
-      }}>
+  const content = (
+    <>
       <div className="text-[9px] font-bold tracking-[0.06em]" style={{ color: uiTokens.textFaint }}>
         WEEK {game.week}
       </div>
@@ -105,7 +108,30 @@ function GameCard({ game, uiAccent }: { game: TeamScheduleGame; uiAccent: string
           </Badge>
         </>
       )}
-    </div>
+    </>
+  );
+
+  const cardClass =
+    'flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 transition-colors duration-150 hover:bg-white/[0.05]';
+  const cardStyle = {
+    background: uiTokens.surfaceCard2,
+    border: `1px solid ${uiTokens.borderDefault}`,
+  };
+
+  if (!opp)
+    return (
+      <div className={cardClass} style={cardStyle}>
+        {content}
+      </div>
+    );
+
+  return (
+    <Link
+      href={`/compare?a=${teamId}&b=${opp.id}&from=schedule&scheduleTeam=${teamId}`}
+      className={cardClass}
+      style={cardStyle}>
+      {content}
+    </Link>
   );
 }
 
@@ -156,7 +182,7 @@ export default function TeamScheduleView({ team, teams, schedule, isUpcoming }: 
             {/* Desktop's wider main column fits more weeks per row (multi-panel mock). */}
             <div className="grid grid-cols-3 gap-2 px-3.5 pb-6 pt-2 xl:grid-cols-5 xl:gap-3">
               {schedule.games.map((game) => (
-                <GameCard key={game.week} game={game} uiAccent={uiAccent} />
+                <GameCard key={game.week} game={game} teamId={team.id} uiAccent={uiAccent} />
               ))}
             </div>
           </>
