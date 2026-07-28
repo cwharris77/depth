@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { colors as uiTokens } from '@/components/ui/tokens';
+import { shouldReloadForServiceWorkerUpdate } from '@/lib/service-worker-update';
 
 // Registers the service worker (public/sw.js) so the app works offline and launches
 // instantly on repeat visits once added to the home screen. Production only: a service
@@ -22,6 +23,7 @@ import { colors as uiTokens } from '@/components/ui/tokens';
 // listener that reloads once it takes over.
 export default function ServiceWorkerRegistrar() {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
+  const reloadRequested = useRef(false);
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') return;
@@ -31,7 +33,7 @@ export default function ServiceWorkerRegistrar() {
     // activation (and clients.claim()) is what makes the fresh cache take effect.
     let reloaded = false;
     const onControllerChange = () => {
-      if (reloaded) return;
+      if (!shouldReloadForServiceWorkerUpdate(reloadRequested.current, reloaded)) return;
       reloaded = true;
       window.location.reload();
     };
@@ -87,7 +89,10 @@ export default function ServiceWorkerRegistrar() {
       <span>Update available</span>
       <button
         type="button"
-        onClick={() => waitingWorker.postMessage('SKIP_WAITING')}
+        onClick={() => {
+          reloadRequested.current = true;
+          waitingWorker.postMessage('SKIP_WAITING');
+        }}
         className="shrink-0 rounded-full px-3 py-1 text-[12px] font-bold"
         style={{ background: uiTokens.statusRookie, color: uiTokens.onAccent }}>
         Reload
