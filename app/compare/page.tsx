@@ -6,7 +6,13 @@ import { dbRosterSource } from '@/lib/roster-source.db';
 import type { Metadata } from 'next';
 
 type Params = {
-  searchParams: Promise<{ a?: string; b?: string; pos?: string }>;
+  searchParams: Promise<{
+    a?: string;
+    b?: string;
+    pos?: string;
+    from?: string;
+    scheduleTeam?: string;
+  }>;
 };
 
 // Bookmarkable/shareable comparisons via query params rather than a dynamic route
@@ -49,6 +55,8 @@ export default async function ComparePage({ searchParams }: Params) {
   );
 
   if (!raw.pos) {
+    const scheduleTeam =
+      raw.from === 'schedule' ? teams.find((team) => team.id === raw.scheduleTeam) : undefined;
     const [statsA, statsB] = await Promise.all([
       a ? dbRosterSource.getTeamStats(a) : Promise.resolve(undefined),
       b ? dbRosterSource.getTeamStats(b) : Promise.resolve(undefined),
@@ -58,6 +66,7 @@ export default async function ComparePage({ searchParams }: Params) {
         teams={teams}
         a={statsA ? { team: statsA.team, stats: statsA.seasons[0] } : undefined}
         b={statsB ? { team: statsB.team, stats: statsB.seasons[0] } : undefined}
+        scheduleTeam={scheduleTeam}
       />
     );
   }

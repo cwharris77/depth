@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Columns2 } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowLeft, Columns2 } from 'lucide-react';
 import DepthMark from './DepthMark';
 import FullScreenSheet from './FullScreenSheet';
 import NavDrawer from './NavDrawer';
@@ -22,14 +23,23 @@ interface TeamCompareTableProps {
   teams: TeamMeta[];
   a?: TeamCompareSide;
   b?: TeamCompareSide;
+  scheduleTeam?: TeamMeta;
 }
 
 type Slot = 'a' | 'b';
 
-function buildComparePath(a: string | undefined, b: string | undefined): string {
+function buildComparePath(
+  a: string | undefined,
+  b: string | undefined,
+  scheduleTeamId: string | undefined
+): string {
   const params = new URLSearchParams();
   if (a) params.set('a', a);
   if (b) params.set('b', b);
+  if (scheduleTeamId) {
+    params.set('from', 'schedule');
+    params.set('scheduleTeam', scheduleTeamId);
+  }
   return `/compare?${params.toString()}`;
 }
 
@@ -180,7 +190,7 @@ function TeamComparison({ a, b }: { a: TeamCompareSide; b: TeamCompareSide }) {
   );
 }
 
-export default function TeamCompareTable({ teams, a, b }: TeamCompareTableProps) {
+export default function TeamCompareTable({ teams, a, b, scheduleTeam }: TeamCompareTableProps) {
   const router = useRouter();
   const [pickingSlot, setPickingSlot] = useState<Slot | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -189,7 +199,11 @@ export default function TeamCompareTable({ teams, a, b }: TeamCompareTableProps)
 
   const updateUrl = (next: { a?: string; b?: string }) => {
     router.replace(
-      buildComparePath('a' in next ? next.a : a?.team.id, 'b' in next ? next.b : b?.team.id),
+      buildComparePath(
+        'a' in next ? next.a : a?.team.id,
+        'b' in next ? next.b : b?.team.id,
+        scheduleTeam?.id
+      ),
       {
         scroll: false,
       }
@@ -244,6 +258,23 @@ export default function TeamCompareTable({ teams, a, b }: TeamCompareTableProps)
               <ComparePrompt aSide={a} bSide={b} />
             )}
           </div>
+
+          {scheduleTeam && (
+            <div className="pb-7">
+              <Link
+                href={`/team/${scheduleTeam.id}/schedule`}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold"
+                style={{
+                  background: uiTokens.surfaceInput,
+                  border: `1px solid ${uiTokens.borderInput}`,
+                  color: uiTokens.textSecondary,
+                  touchAction: 'manipulation',
+                }}>
+                <ArrowLeft size={16} />
+                Back to schedule
+              </Link>
+            </div>
+          )}
         </div>
 
         <FullScreenSheet isOpen={pickingSlot !== null}>

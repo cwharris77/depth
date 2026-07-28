@@ -126,7 +126,10 @@ function GameCard({
     );
 
   return (
-    <Link href={`/compare?a=${teamId}&b=${opp.id}`} className={cardClass} style={cardStyle}>
+    <Link
+      href={`/compare?a=${teamId}&b=${opp.id}&from=schedule&scheduleTeam=${teamId}`}
+      className={cardClass}
+      style={cardStyle}>
       {content}
     </Link>
   );
