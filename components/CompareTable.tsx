@@ -17,7 +17,6 @@ import TeamPageShell from './TeamPageShell';
 import FilterPill from '@/components/ui/FilterPill';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import { COMPARE_POSITIONS } from '@/lib/compare';
-import { statusColor } from '@/lib/colors';
 import { formatLastName } from '@/lib/format';
 import type { TeamMeta } from '@/lib/roster-source';
 import { useLastAccent } from '@/lib/use-last-accent';
@@ -256,35 +255,66 @@ function EmptyPositionState({ position }: { position: Position }) {
 
 function CompareRows({ a, b, rowCount }: { a: CompareSide; b: CompareSide; rowCount: number }) {
   return (
-    <div
-      className="overflow-hidden rounded-2xl"
-      style={{ border: `1px solid ${uiTokens.borderDefault}` }}>
-      <div className="grid grid-cols-[36px_1fr_1fr]" style={{ background: uiTokens.surfaceCard2 }}>
-        <div />
-        <TeamHeaderCell team={a.team} />
-        <TeamHeaderCell team={b.team} />
-      </div>
-      {Array.from({ length: rowCount }, (_, i) => (
+    <>
+      <CompareRankLegend teams={[a.team, b.team]} />
+      <div
+        className="overflow-hidden rounded-2xl"
+        style={{ border: `1px solid ${uiTokens.borderDefault}` }}>
         <div
-          key={i}
-          className="grid grid-cols-[36px_1fr_1fr] items-stretch"
-          style={{
-            borderTop: `1px solid ${uiTokens.borderSubtle}`,
-            // Zebra striping reads more like a real data table at desktop width, where a
-            // 2-column grid with no row separation otherwise looks empty and unfinished.
-            background: i % 2 === 1 ? uiTokens.surfaceCard2 : 'transparent',
-          }}>
-          <div className="flex items-center justify-center">
-            <span
-              className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold"
-              style={{ background: uiTokens.surfaceChip, color: uiTokens.textFaint }}>
-              {i + 1}
-            </span>
-          </div>
-          <PlayerCell player={a.players[i]} team={a.team} />
-          <PlayerCell player={b.players[i]} team={b.team} />
+          className="grid grid-cols-[36px_1fr_1fr]"
+          style={{ background: uiTokens.surfaceCard2 }}>
+          <div />
+          <TeamHeaderCell team={a.team} />
+          <TeamHeaderCell team={b.team} />
         </div>
-      ))}
+        {Array.from({ length: rowCount }, (_, i) => (
+          <div
+            key={i}
+            className="grid grid-cols-[36px_1fr_1fr] items-stretch"
+            style={{
+              borderTop: `1px solid ${uiTokens.borderSubtle}`,
+              // Zebra striping reads more like a real data table at desktop width, where a
+              // 2-column grid with no row separation otherwise looks empty and unfinished.
+              background: i % 2 === 1 ? uiTokens.surfaceCard2 : 'transparent',
+            }}>
+            <div className="flex items-center justify-center">
+              <span
+                className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold"
+                style={{ background: uiTokens.surfaceChip, color: uiTokens.textFaint }}>
+                {i + 1}
+              </span>
+            </div>
+            <PlayerCell player={a.players[i]} team={a.team} rank={i + 1} />
+            <PlayerCell player={b.players[i]} team={b.team} rank={i + 1} />
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function CompareRankLegend({ teams }: { teams: [TeamMeta, TeamMeta] }) {
+  return (
+    <div
+      className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[10px] font-bold uppercase tracking-wide"
+      style={{ color: uiTokens.textFaint }}>
+      <span>Dot = row rank</span>
+      <span className="inline-flex items-center gap-1.5">
+        <span className="inline-flex -space-x-1">
+          {teams.map((team) => (
+            <span
+              key={team.id}
+              className="h-2 w-2 rounded-full"
+              style={{ background: team.colors.uiAccent, border: `1px solid ${uiTokens.bg}` }}
+            />
+          ))}
+        </span>
+        Rank 1
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        <span className="h-2 w-2 rounded-full" style={{ background: uiTokens.textFaintest }} />
+        Deeper
+      </span>
     </div>
   );
 }
@@ -302,7 +332,7 @@ function TeamHeaderCell({ team }: { team: TeamMeta }) {
   );
 }
 
-function PlayerCell({ player, team }: { player?: Player; team: TeamMeta }) {
+function PlayerCell({ player, team, rank }: { player?: Player; team: TeamMeta; rank: number }) {
   if (!player) {
     return (
       <div
@@ -315,9 +345,14 @@ function PlayerCell({ player, team }: { player?: Player; team: TeamMeta }) {
   return (
     <div className="flex min-w-0 items-center justify-center gap-1.5 px-1.5 py-3">
       <span
-        aria-hidden="true"
+        role="img"
+        aria-label={rank === 1 ? 'Rank 1' : `Depth rank ${rank}`}
         className="shrink-0 rounded-full"
-        style={{ width: 6, height: 6, background: statusColor(player.status, team.colors) }}
+        style={{
+          width: 6,
+          height: 6,
+          background: rank === 1 ? team.colors.uiAccent : uiTokens.textFaintest,
+        }}
       />
       <span className="min-w-0 truncate text-xs font-bold" style={{ color: uiTokens.textPrimary }}>
         <span className="font-normal" style={{ color: uiTokens.textFaint }}>
