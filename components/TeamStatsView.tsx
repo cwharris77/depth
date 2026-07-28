@@ -92,8 +92,11 @@ function UpcomingBadge({ selected, uiAccent }: { selected: boolean; uiAccent: st
   );
 }
 
-function rankLabel(rank: number | undefined, suffix = 'NFL'): string | undefined {
-  return rank ? `${ordinal(rank).toUpperCase()} ${suffix}` : undefined;
+function rankLabel(
+  rank: number | undefined,
+  qualifier: 'overall' | 'most' | 'least'
+): string | undefined {
+  return rank ? `${ordinal(rank)} ${qualifier}` : undefined;
 }
 
 function StatCell({
@@ -375,7 +378,7 @@ export default function TeamStatsView({
                 </div>
                 {activeRanks?.winPercent && (
                   <div className="text-[11px] font-bold" style={{ color: uiTokens.textMuted }}>
-                    {rankLabel(activeRanks.winPercent)}
+                    {rankLabel(activeRanks.winPercent, 'overall')}
                   </div>
                 )}
                 {/* Playoff status only for completed seasons — an upcoming or
@@ -413,13 +416,13 @@ export default function TeamStatsView({
                     <StatCell
                       label="PTS FOR"
                       value={String(active.pointsFor)}
-                      rank={rankLabel(activeRanks?.pointsFor)}
+                      rank={rankLabel(activeRanks?.pointsFor, 'most')}
                     />
                     <td className="w-6" />
                     <StatCell
                       label="PTS AGAINST"
                       value={String(active.pointsAgainst)}
-                      rank={rankLabel(activeRanks?.pointsAgainst, 'FEWEST')}
+                      rank={rankLabel(activeRanks?.pointsAgainst, 'least')}
                     />
                   </tr>
                   <tr>
@@ -427,7 +430,7 @@ export default function TeamStatsView({
                       label="DIFF"
                       value={diffLabel}
                       color={diffColor}
-                      rank={rankLabel(activeRanks?.pointDifferential)}
+                      rank={rankLabel(activeRanks?.pointDifferential, 'most')}
                     />
                     <td colSpan={2} />
                   </tr>
