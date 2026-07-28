@@ -12,10 +12,12 @@ import type { PlayerHit } from './search';
 // effects.
 const searchCache = new Map<string, PlayerHit[]>();
 
-export function usePlayerSearch(query: string) {
+export function usePlayerSearch(query: string, { enabled = true }: { enabled?: boolean } = {}) {
   const trimmed = query.trim();
-  const searching = trimmed.length > 0;
-  const [results, setResults] = useState<PlayerHit[]>(() => searchCache.get(trimmed) ?? []);
+  const searching = enabled && trimmed.length > 0;
+  const [results, setResults] = useState<PlayerHit[]>(() =>
+    searching ? (searchCache.get(trimmed) ?? []) : []
+  );
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
