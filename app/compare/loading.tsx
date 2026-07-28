@@ -58,6 +58,16 @@ export default function Loading() {
           />
         </div>
 
+        <div
+          className="mt-5 flex gap-1 rounded-2xl p-1"
+          style={{ background: uiTokens.surfaceChip }}>
+          <div
+            className="h-8 flex-1 rounded-xl"
+            style={{ background: uiTokens.surfaceChipHover }}
+          />
+          <div className="h-8 flex-1 rounded-xl" />
+        </div>
+
         <div className="mt-5 flex items-center gap-2 overflow-hidden">
           {[64, 64, 64, 64, 64].map((w, i) => (
             <div
