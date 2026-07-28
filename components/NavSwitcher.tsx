@@ -172,7 +172,13 @@ export default function NavSwitcher({
   const router = useRouter();
   const [conference, setConference] = useState<Conference>(team?.conference ?? 'AFC');
   const [query, setQuery] = useState('');
-  const { results: playerResults, loading: playersLoading } = usePlayerSearch(query);
+  // Compare slots only accept teams. Keep the shared switcher in that constrained mode
+  // rather than letting a player-search result navigate away and discard the comparison.
+  const { results: searchedPlayerResults, loading: searchedPlayersLoading } = usePlayerSearch(
+    onPickTeam ? '' : query
+  );
+  const playerResults = onPickTeam ? [] : searchedPlayerResults;
+  const playersLoading = onPickTeam ? false : searchedPlayersLoading;
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [searchFocused, setSearchFocused] = useState(false);
   // Navigating (team/player selection) is wrapped in a transition so the sheet
@@ -325,7 +331,7 @@ export default function NavSwitcher({
             onKeyDown={handleKeyDown}
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
-            placeholder="Search teams or players"
+            placeholder={onPickTeam ? 'Search teams' : 'Search teams or players'}
             className="flex-1 bg-transparent outline-none py-2.5 text-base"
             style={{ color: uiTokens.textPrimary }}
           />
