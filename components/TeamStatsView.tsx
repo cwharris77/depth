@@ -9,7 +9,7 @@ import { colors as uiTokens } from '@/components/ui/tokens';
 import { readableTextOn } from '@/lib/colors';
 import { ordinal } from '@/lib/format';
 import { postseasonRoundLabel } from '@/lib/schedule';
-import type { TeamMeta } from '@/lib/roster-source';
+import type { TeamMeta, TeamStatsRanks } from '@/lib/roster-source';
 import type { Leader, RosterLeaders, TeamScheduleGame, TeamStats } from '@/lib/types';
 import { useKitColors } from '@/lib/use-kit-colors';
 import { useState } from 'react';
@@ -21,6 +21,7 @@ interface Props {
   team: TeamMeta;
   teams: TeamMeta[];
   seasons: TeamStats[];
+  leagueRanksBySeason?: Record<number, TeamStatsRanks>;
   incomingCoach?: { name: string };
   upcomingSeason?: number;
   // The current NFL season year. A season is "completed" (all games played, playoff
@@ -91,14 +92,42 @@ function UpcomingBadge({ selected, uiAccent }: { selected: boolean; uiAccent: st
   );
 }
 
-function StatCell({ label, value, color }: { label: string; value: string; color?: string }) {
+function rankLabel(
+  rank: number | undefined,
+  lastRank: number,
+  qualifier: 'overall' | 'most' | 'least'
+): string | undefined {
+  if (!rank) return undefined;
+  if (rank === 1) return 'First in NFL';
+  if (rank === lastRank) return 'Last in NFL';
+  return `${ordinal(rank)} ${qualifier}`;
+}
+
+function StatCell({
+  label,
+  value,
+  color,
+  rank,
+}: {
+  label: string;
+  value: string;
+  color?: string;
+  rank?: string;
+}) {
   return (
     <>
       <td className="py-[9px]" style={{ color: uiTokens.textFaint }}>
         {label}
       </td>
-      <td className="py-[9px] text-right font-bold" style={color ? { color } : undefined}>
-        {value}
+      <td className="py-[9px] text-right">
+        <div className="font-bold" style={color ? { color } : undefined}>
+          {value}
+        </div>
+        {rank && (
+          <div className="mt-0.5 text-[9px] font-bold" style={{ color: uiTokens.textFaintest }}>
+            {rank}
+          </div>
+        )}
       </td>
     </>
   );
@@ -108,6 +137,7 @@ export default function TeamStatsView({
   team,
   teams,
   seasons,
+  leagueRanksBySeason,
   incomingCoach,
   upcomingSeason,
   currentSeason,
@@ -218,6 +248,11 @@ export default function TeamStatsView({
   const diffLabel = diff > 0 ? `+${diff}` : String(diff);
   const diffColor = diff > 0 ? uiAccent : diff < 0 ? uiTokens.statusInjured : uiTokens.textMuted;
   const gamesPlayed = active ? active.overallWins + active.overallLosses + active.overallTies : 0;
+  // Stub/upcoming team_stats rows can exist before a season starts. With every team at
+  // 0 games and 0 points, ranking those rows makes everyone look "first" at stats that
+  // have not happened yet, so rank context starts only after a real game is recorded.
+  const activeRanks = active && gamesPlayed > 0 ? leagueRanksBySeason?.[active.season] : undefined;
+  const lastRank = teams.length;
 
   return (
     <TeamPageShell {...shellProps}>
@@ -349,6 +384,11 @@ export default function TeamStatsView({
                 <div className="text-[13px] font-bold" style={{ color: uiAccent }}>
                   {active.streak}
                 </div>
+                {activeRanks?.winPercent && (
+                  <div className="text-[11px] font-bold" style={{ color: uiTokens.textMuted }}>
+                    {rankLabel(activeRanks.winPercent, lastRank, 'overall')}
+                  </div>
+                )}
                 {/* Playoff status only for completed seasons — an upcoming or
                     in-progress season has no playoff outcomes yet, so the line
                     would falsely claim "MISSED PLAYOFFS" (playoffSeed is 0 for
@@ -381,12 +421,25 @@ export default function TeamStatsView({
                     />
                   </tr>
                   <tr style={{ borderBottom: `1px solid ${uiTokens.borderStrong}` }}>
-                    <StatCell label="PTS FOR" value={String(active.pointsFor)} />
+                    <StatCell
+                      label="PTS FOR"
+                      value={String(active.pointsFor)}
+                      rank={rankLabel(activeRanks?.pointsFor, lastRank, 'most')}
+                    />
                     <td className="w-6" />
-                    <StatCell label="PTS AGAINST" value={String(active.pointsAgainst)} />
+                    <StatCell
+                      label="PTS AGAINST"
+                      value={String(active.pointsAgainst)}
+                      rank={rankLabel(activeRanks?.pointsAgainst, lastRank, 'least')}
+                    />
                   </tr>
                   <tr>
-                    <StatCell label="DIFF" value={diffLabel} color={diffColor} />
+                    <StatCell
+                      label="DIFF"
+                      value={diffLabel}
+                      color={diffColor}
+                      rank={rankLabel(activeRanks?.pointDifferential, lastRank, 'most')}
+                    />
                     <td colSpan={2} />
                   </tr>
                 </tbody>
