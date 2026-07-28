@@ -172,13 +172,10 @@ export default function NavSwitcher({
   const router = useRouter();
   const [conference, setConference] = useState<Conference>(team?.conference ?? 'AFC');
   const [query, setQuery] = useState('');
-  // Compare slots only accept teams. Keep the shared switcher in that constrained mode
-  // rather than letting a player-search result navigate away and discard the comparison.
-  const { results: searchedPlayerResults, loading: searchedPlayersLoading } = usePlayerSearch(
-    onPickTeam ? '' : query
-  );
-  const playerResults = onPickTeam ? [] : searchedPlayerResults;
-  const playersLoading = onPickTeam ? false : searchedPlayersLoading;
+  const includePlayerResults = onPickTeam === undefined;
+  const { results: playerResults, loading: playersLoading } = usePlayerSearch(query, {
+    enabled: includePlayerResults,
+  });
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [searchFocused, setSearchFocused] = useState(false);
   // Navigating (team/player selection) is wrapped in a transition so the sheet
