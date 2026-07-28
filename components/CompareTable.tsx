@@ -6,7 +6,7 @@
 // for the pickers — never a whole roster. Picker and position-chip changes push new
 // query params via router.replace so the server component re-resolves; this component
 // does no data fetching of its own.
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Columns2 } from 'lucide-react';
 import DepthMark from './DepthMark';
@@ -48,7 +48,12 @@ export default function CompareTable({ teams, a, b, position }: CompareTableProp
   const router = useRouter();
   const [pickingSlot, setPickingSlot] = useState<Slot | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const activePositionRef = useRef<HTMLSpanElement>(null);
   const accent = useLastAccent();
+
+  useEffect(() => {
+    activePositionRef.current?.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+  }, [position]);
 
   const updateUrl = (next: { a?: string; b?: string; pos?: Position }) => {
     router.replace(
@@ -133,16 +138,25 @@ export default function CompareTable({ teams, a, b, position }: CompareTableProp
             uniform archive's kind filter, components/UniformArchive.tsx); at xl there's
             room to wrap the full position list instead of hiding most of it behind a
             scroll affordance. */}
-          <div
-            className="mt-5 -mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 xl:mx-0 xl:flex-wrap xl:overflow-visible xl:px-0 xl:pb-0"
-            style={{ scrollbarWidth: 'none' }}
-            role="group"
-            aria-label="Filter by position">
-            {COMPARE_POSITIONS.map((pos) => (
-              <FilterPill key={pos} active={pos === position} onClick={() => updateUrl({ pos })}>
-                {pos}
-              </FilterPill>
-            ))}
+          <div className="relative mt-5">
+            <div
+              className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 pr-10 xl:mx-0 xl:flex-wrap xl:overflow-visible xl:px-0 xl:pb-0 xl:pr-0"
+              style={{ scrollbarWidth: 'none' }}
+              role="group"
+              aria-label="Filter by position">
+              {COMPARE_POSITIONS.map((pos) => (
+                <span key={pos} ref={pos === position ? activePositionRef : undefined}>
+                  <FilterPill active={pos === position} onClick={() => updateUrl({ pos })}>
+                    {pos}
+                  </FilterPill>
+                </span>
+              ))}
+            </div>
+            <div
+              className="pointer-events-none absolute inset-y-0 -right-4 w-10 xl:hidden"
+              style={{ background: `linear-gradient(to right, transparent, ${uiTokens.bg})` }}
+              aria-hidden="true"
+            />
           </div>
 
           <div className="mt-5 pb-6">
