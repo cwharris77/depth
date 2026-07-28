@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { parseCompareParams, COMPARE_POSITIONS } from '../compare';
+import {
+  parseCompareParams,
+  COMPARE_POSITIONS,
+  getDeepestPosition,
+  buildCompareTeaser,
+} from '../compare';
+import type { Player, Position } from '../types';
 
 const TEAM_IDS = ['seahawks', 'niners'];
 
@@ -38,5 +44,94 @@ describe('COMPARE_POSITIONS', () => {
     expect(COMPARE_POSITIONS).not.toContain('KR');
     expect(COMPARE_POSITIONS).not.toContain('PR');
     expect(COMPARE_POSITIONS).not.toContain('LS');
+  });
+});
+
+function makePlayer(id: string, overrides: Partial<Player> = {}): Player {
+  return {
+    id,
+    name: id,
+    number: 1,
+    position: 'WR',
+    depthRank: 1,
+    status: 'starter',
+    age: 25,
+    college: 'Test State',
+    experience: 2,
+    height: '6-1',
+    weight: 205,
+    bio: '',
+    ...overrides,
+  };
+}
+
+describe('getDeepestPosition', () => {
+  const positions: Position[] = ['QB', 'WR', 'RB'];
+
+  it('returns undefined when every position is empty on both sides', () => {
+    expect(getDeepestPosition([[], [], []], [[], [], []], positions)).toBeUndefined();
+  });
+
+  it('picks the position with the most combined depth', () => {
+    const playersA = [
+      [makePlayer('qbA')],
+      [makePlayer('wrA1'), makePlayer('wrA2')],
+      [makePlayer('rbA')],
+    ];
+    const playersB = [
+      [makePlayer('qbB')],
+      [makePlayer('wrB1')],
+      [makePlayer('rbB1'), makePlayer('rbB2'), makePlayer('rbB3')],
+    ];
+    expect(getDeepestPosition(playersA, playersB, positions)).toBe('RB');
+  });
+
+  it('breaks ties by earliest position in the list', () => {
+    const playersA = [
+      [makePlayer('qbA1'), makePlayer('qbA2')],
+      [makePlayer('wrA1'), makePlayer('wrA2')],
+      [],
+    ];
+    const playersB = [[], [], []];
+    expect(getDeepestPosition(playersA, playersB, positions)).toBe('QB');
+  });
+
+  it('counts depth from either side independently', () => {
+    const playersA = [[], [makePlayer('wrA')], []];
+    const playersB = [[makePlayer('qbB')], [], []];
+    expect(getDeepestPosition(playersA, playersB, positions)).toBe('QB');
+  });
+});
+
+describe('buildCompareTeaser', () => {
+  const positions: Position[] = ['QB', 'WR'];
+
+  it('returns undefined when there is nothing to tease', () => {
+    expect(buildCompareTeaser([[], []], [[], []], positions)).toBeUndefined();
+  });
+
+  it('builds a preview from the deepest position, rank-1 player first', () => {
+    const wrA1 = makePlayer('wrA1', { name: 'Metcalf' });
+    const wrA2 = makePlayer('wrA2', { name: 'Lockett', depthRank: 2 });
+    const wrB1 = makePlayer('wrB1', { name: 'Aiyuk' });
+    const playersA = [[makePlayer('qbA')], [wrA1, wrA2]];
+    const playersB = [[makePlayer('qbB')], [wrB1]];
+    expect(buildCompareTeaser(playersA, playersB, positions)).toEqual({
+      position: 'WR',
+      countA: 2,
+      countB: 1,
+      topA: wrA1,
+      topB: wrB1,
+    });
+  });
+
+  it('leaves topA/topB undefined when only one side has players at the deepest position', () => {
+    const playersA = [[], [makePlayer('wrA1'), makePlayer('wrA2')]];
+    const playersB = [[], []];
+    const teaser = buildCompareTeaser(playersA, playersB, positions);
+    expect(teaser?.position).toBe('WR');
+    expect(teaser?.countA).toBe(2);
+    expect(teaser?.countB).toBe(0);
+    expect(teaser?.topB).toBeUndefined();
   });
 });
