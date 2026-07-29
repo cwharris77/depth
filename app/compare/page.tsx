@@ -1,6 +1,5 @@
-import CompareTable from '@/components/CompareTable';
-import TeamCompareTable from '@/components/TeamCompareTable';
-import { parseCompareParams } from '@/lib/compare';
+import CompareView from '@/components/CompareView';
+import { buildCompareTeaser, COMPARE_POSITIONS, parseCompareParams } from '@/lib/compare';
 import { getPlayersByPosition } from '@/lib/roster';
 import { dbRosterSource } from '@/lib/roster-source.db';
 import type { Metadata } from 'next';
@@ -16,10 +15,11 @@ type Params = {
 };
 
 // Bookmarkable/shareable comparisons via query params rather than a dynamic route
-// segment (32x32x19 combinations is silly to prerender) — Decisions table "Route".
-// Params drive all the content, so this page is never statically generated. Under
-// Cache Components (next.config.ts), reading `searchParams` below already makes this a
-// dynamic hole with no segment config needed — `force-dynamic` is a build error here.
+// segment (32x32x19 combinations is silly to prerender) — Decisions table "Route" in
+// the 2026-07-07 compare-view spec. Params drive all the content, so this page is
+// never statically generated. Under Cache Components (next.config.ts), reading
+// `searchParams` below already makes this a dynamic hole with no segment config
+// needed — `force-dynamic` is a build error here.
 export async function generateMetadata({ searchParams }: Params): Promise<Metadata> {
   const teams = await dbRosterSource.listTeams();
   const raw = await searchParams;
@@ -43,9 +43,14 @@ export async function generateMetadata({ searchParams }: Params): Promise<Metada
   };
 }
 
-// Server component: resolves both full rosters (same "server resolves, client
-// receives" rule as /team/[id]) but hands the client only the two position groups +
-// team metas, never a whole roster — Decisions table "Rendering".
+// Server component: reunifies the team-matchup view (PR #221) and the position-depth
+// view (PR #193) under one segmented control (2026-07-28 reunification spec). `pos`
+// presence in the query string (not just its parsed value) drives which tab
+// CompareView opens on. Resolves both team stats and both full rosters
+// unconditionally once a/b are picked — never branched on `pos` — because the tab
+// switch is now client-side and both datasets must already be on hand. Only
+// per-position player arrays (never a whole roster) and a small teaser preview cross
+// to the client (AGENTS.md invariant 5).
 export default async function ComparePage({ searchParams }: Params) {
   const teams = await dbRosterSource.listTeams();
   const raw = await searchParams;
@@ -53,35 +58,45 @@ export default async function ComparePage({ searchParams }: Params) {
     raw,
     teams.map((t) => t.id)
   );
+  const hasPos = Boolean(raw.pos);
+  const teamA = a ? teams.find((t) => t.id === a) : undefined;
+  const teamB = b ? teams.find((t) => t.id === b) : undefined;
+  const scheduleTeam =
+    raw.from === 'schedule' ? teams.find((team) => team.id === raw.scheduleTeam) : undefined;
 
-  if (!raw.pos) {
-    const scheduleTeam =
-      raw.from === 'schedule' ? teams.find((team) => team.id === raw.scheduleTeam) : undefined;
-    const [statsA, statsB] = await Promise.all([
-      a ? dbRosterSource.getTeamStats(a) : Promise.resolve(undefined),
-      b ? dbRosterSource.getTeamStats(b) : Promise.resolve(undefined),
-    ]);
-    return (
-      <TeamCompareTable
-        teams={teams}
-        a={statsA ? { team: statsA.team, stats: statsA.seasons[0] } : undefined}
-        b={statsB ? { team: statsB.team, stats: statsB.seasons[0] } : undefined}
-        scheduleTeam={scheduleTeam}
-      />
-    );
-  }
-
-  const [rosterA, rosterB] = await Promise.all([
+  const [statsA, statsB, rosterA, rosterB] = await Promise.all([
+    a ? dbRosterSource.getTeamStats(a) : Promise.resolve(undefined),
+    b ? dbRosterSource.getTeamStats(b) : Promise.resolve(undefined),
     a ? dbRosterSource.getTeam(a) : Promise.resolve(undefined),
     b ? dbRosterSource.getTeam(b) : Promise.resolve(undefined),
   ]);
 
-  const sideA = rosterA
-    ? { team: rosterA.team, players: getPlayersByPosition(rosterA, pos) }
+  const groupsA = rosterA
+    ? COMPARE_POSITIONS.map((p) => getPlayersByPosition(rosterA, p))
     : undefined;
-  const sideB = rosterB
-    ? { team: rosterB.team, players: getPlayersByPosition(rosterB, pos) }
+  const groupsB = rosterB
+    ? COMPARE_POSITIONS.map((p) => getPlayersByPosition(rosterB, p))
     : undefined;
+  const teaser =
+    groupsA && groupsB ? buildCompareTeaser(groupsA, groupsB, COMPARE_POSITIONS) : undefined;
 
-  return <CompareTable teams={teams} a={sideA} b={sideB} position={pos} />;
+  const positionIndex = COMPARE_POSITIONS.indexOf(pos);
+  const positionsA = groupsA?.[positionIndex];
+  const positionsB = groupsB?.[positionIndex];
+
+  return (
+    <CompareView
+      teams={teams}
+      teamA={teamA}
+      teamB={teamB}
+      statsA={statsA?.seasons[0]}
+      statsB={statsB?.seasons[0]}
+      positionsA={positionsA}
+      positionsB={positionsB}
+      position={pos}
+      hasPos={hasPos}
+      teaser={teaser}
+      scheduleTeam={scheduleTeam}
+    />
+  );
 }
