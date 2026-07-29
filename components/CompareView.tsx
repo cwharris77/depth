@@ -13,23 +13,23 @@
 // rosters unconditionally once a/b are picked, precomputes per-position player
 // groups there, and hands this component only the currently-selected position's two
 // arrays plus a small `teaser` preview object — never a whole roster.
-import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import FilterPill from '@/components/ui/FilterPill';
+import SegmentedControl from '@/components/ui/SegmentedControl';
+import { colors as uiTokens } from '@/components/ui/tokens';
+import { COMPARE_POSITIONS, type CompareTeaser } from '@/lib/compare';
+import { formatLastName } from '@/lib/format';
+import type { TeamMeta } from '@/lib/roster-source';
+import type { Player, Position, TeamStats } from '@/lib/types';
+import { useLastAccent } from '@/lib/use-last-accent';
 import { ArrowLeft, ChevronRight, Columns2 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import DepthMark from './DepthMark';
 import FullScreenSheet from './FullScreenSheet';
 import NavDrawer from './NavDrawer';
 import NavSwitcher from './NavSwitcher';
 import TeamPageShell from './TeamPageShell';
-import SegmentedControl from '@/components/ui/SegmentedControl';
-import FilterPill from '@/components/ui/FilterPill';
-import { colors as uiTokens } from '@/components/ui/tokens';
-import { COMPARE_POSITIONS, type CompareTeaser } from '@/lib/compare';
-import { formatLastName } from '@/lib/format';
-import type { TeamMeta } from '@/lib/roster-source';
-import { useLastAccent } from '@/lib/use-last-accent';
-import type { Player, Position, TeamStats } from '@/lib/types';
 
 interface CompareViewProps {
   teams: TeamMeta[];
@@ -146,7 +146,7 @@ export default function CompareView({
             className="mt-5"
             fullWidth
             options={[
-              { value: 'matchup', label: 'Matchup' },
+              { value: 'matchup', label: 'By Team' },
               { value: 'position', label: 'By position' },
             ]}
             value={tab}
