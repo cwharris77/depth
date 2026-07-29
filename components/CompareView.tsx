@@ -146,7 +146,7 @@ export default function CompareView({
             className="mt-5"
             fullWidth
             options={[
-              { value: 'matchup', label: 'By Team' },
+              { value: 'matchup', label: 'By team' },
               { value: 'position', label: 'By position' },
             ]}
             value={tab}
