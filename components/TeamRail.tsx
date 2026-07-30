@@ -11,7 +11,7 @@
 // (Decisions table "Entry point" in the compare-view spec), which is why that link lives
 // here too: typing in the search field swaps the grouped list for combined player/team
 // results in place. Switching teams preserves the active page; picking a player deep-links
-// to their roster page via `?player=` (OpenPlayerFromQuery opens the card there), which
+// to their roster page via `?player=` (SyncSelectionWithQuery opens the card there), which
 // works uniformly from roster, schedule, and stats.
 //
 // `team`/`activePage` are optional (Desktop shell for uniform archive and compare pages
@@ -119,7 +119,7 @@ export default function TeamRail({
   };
 
   // Always the `?player=` deep link, even for the current team: it lands on the roster
-  // page where OpenPlayerFromQuery opens the card, which behaves identically from the
+  // page where SyncSelectionWithQuery opens the card, which behaves identically from the
   // roster, schedule, and stats pages — no per-page selection wiring through the shell.
   const selectPlayer = (hit: PlayerHit) => {
     if (isPending) return;

@@ -4,13 +4,17 @@ import { useEffect } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 // Shared "read a query param once, apply it, then strip it" pattern — used by
-// OpenPlayerFromQuery (?player=), ApplyKitFromQuery (?kit=), and ApplySharedOrder (?order=),
-// which were three near-identical copies of this effect. All three hand the raw param value to
-// a callback, then router.replace to a clean URL regardless of whether the value was valid, so
-// a reload/reshare doesn't reapply it. Genuine effect, not a derived-render value: it performs
-// an imperative navigation (router.replace) on an external system (the router), which has no
-// render-time equivalent. Callers must render this from within a Suspense boundary —
-// useSearchParams requires one during static generation.
+// ApplyKitFromQuery (?kit=) and ApplySharedOrder (?order=), which were near-identical
+// copies of this effect. Both hand the raw param value to a callback, then router.replace
+// to a clean URL regardless of whether the value was valid, so a reload/reshare doesn't
+// reapply it. This is for genuinely one-shot params — `?player=`/`?unit=` used to go
+// through here too, but DEP-130 made selection persistent rather than one-shot
+// (SyncSelectionWithQuery keeps the param and keeps following it, it doesn't strip after
+// one read), so it has its own effect instead of this hook. Genuine effect, not a
+// derived-render value: it performs an imperative navigation (router.replace) on an
+// external system (the router), which has no render-time equivalent. Callers must render
+// this from within a Suspense boundary — useSearchParams requires one during static
+// generation.
 export function useApplyQueryParam(key: string, apply: (value: string) => void) {
   const searchParams = useSearchParams();
   const router = useRouter();

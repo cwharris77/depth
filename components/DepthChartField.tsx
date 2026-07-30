@@ -3,15 +3,17 @@
 import { resolveUnit } from '@/lib/formations';
 import type { TeamMeta } from '@/lib/roster-source';
 import { unitForPosition } from '@/lib/search';
+import { buildTeamSelectionUrl } from '@/lib/team-selection';
 import type { Player, PlayerSeasonStats, TeamRoster, Unit } from '@/lib/types';
 import { useUser } from '@/lib/use-user';
-import { useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ApplyKitFromQuery from './ApplyKitFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
 import BottomSheet from './BottomSheet';
 import FieldHeader from './FieldHeader';
 import FieldMarkings from './FieldMarkings';
-import OpenPlayerFromQuery from './OpenPlayerFromQuery';
+import SyncSelectionWithQuery from './SyncSelectionWithQuery';
 import PlayerCard from './PlayerCard';
 import PlayerDot from './PlayerDot';
 import TeamPageShell from './TeamPageShell';
@@ -46,6 +48,15 @@ export default function DepthChartField({
   // always null at SSR, so the hook's server-side `false` renders nothing either way.
   const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
   const [kitOpen, setKitOpen] = useState(false);
+
+  const router = useRouter();
+  const pathname = usePathname();
+  // Whether the currently-open card was reached by pushing a fresh history entry (a real
+  // "open" from a closed state) rather than a mount-time URL restore or swapping to a
+  // different player while one was already open. Only a pushed-open card gets undone with
+  // router.back() on close (see closePlayer) — closing anything else just replaces the URL,
+  // so it can't pop the user to whatever page happened to precede this load.
+  const openedViaPushRef = useRef(false);
 
   const { team } = roster;
   const { user } = useUser();
@@ -104,15 +115,66 @@ export default function DepthChartField({
     ? (displayRoster.players.find((p) => p.id === selectedPlayer.id) ?? selectedPlayer)
     : null;
 
+  // Selection and the active unit both live in the URL (`?player=&unit=`), mirroring
+  // Compare's `?a=&b=&pos=` pattern (DEP-130). Opening a player from a closed state pushes
+  // a new history entry so Back can close it; everything else — swapping to another
+  // player while one's already open, or changing unit tabs — replaces in place, so
+  // browsing around doesn't pile up a Back stop per click.
+  const selectPlayer = (player: Player, unit: Unit) => {
+    const wasOpen = selectedPlayer !== null;
+    setActiveUnit(unit);
+    setSelectedPlayer(player);
+    const url = buildTeamSelectionUrl(pathname, { unit, playerId: player.id });
+    if (wasOpen) {
+      router.replace(url, { scroll: false });
+    } else {
+      router.push(url, { scroll: false });
+      openedViaPushRef.current = true;
+    }
+  };
+
+  const closePlayer = () => {
+    setSelectedPlayer(null);
+    if (openedViaPushRef.current) {
+      openedViaPushRef.current = false;
+      router.back();
+    } else {
+      router.replace(buildTeamSelectionUrl(pathname, { unit: activeUnit, playerId: null }), {
+        scroll: false,
+      });
+    }
+  };
+
+  const changeUnit = (unit: Unit) => {
+    setActiveUnit(unit);
+    setSelectedPlayer(null);
+    openedViaPushRef.current = false;
+    router.replace(buildTeamSelectionUrl(pathname, { unit, playerId: null }), { scroll: false });
+  };
+
+  // SyncSelectionWithQuery drives this when the URL changes out from under us — mount-time
+  // restore, browser Back/Forward, or a manual URL edit. The URL already matches by the
+  // time this fires, so no router call here; leaving openedViaPushRef false means a later
+  // close replaces/strips the param instead of calling router.back() into whatever
+  // happened to precede this load.
+  const restoreSelectionFromUrl = (player: Player | null, unit: Unit | null) => {
+    openedViaPushRef.current = false;
+    setSelectedPlayer(player);
+    if (unit) setActiveUnit(unit);
+  };
+
   const handlePlayerClick = (player: Player) => {
-    setSelectedPlayer((prev) => (prev?.id === player.id ? null : player));
+    if (selectedPlayer?.id === player.id) {
+      closePlayer();
+    } else {
+      selectPlayer(player, activeUnit);
+    }
   };
 
   // A player picked from the nav's player search jumps the field to their unit,
   // then opens them — same behavior the old header search had.
   const handleNavSelectPlayer = (player: Player) => {
-    setActiveUnit(unitForPosition(player.position));
-    setSelectedPlayer(player);
+    selectPlayer(player, unitForPosition(player.position));
   };
 
   // One prop set for both card placements, so sheet and docked stay behaviorally
@@ -120,8 +182,8 @@ export default function DepthChartField({
   const playerCardProps = {
     player: displaySelected,
     roster: themedRoster,
-    onClose: () => setSelectedPlayer(null),
-    onSelectPlayer: setSelectedPlayer,
+    onClose: closePlayer,
+    onSelectPlayer: (player: Player) => selectPlayer(player, unitForPosition(player.position)),
     playerStatsMap,
     ...(previewing
       ? {}
@@ -174,10 +236,7 @@ export default function DepthChartField({
           currentTeamPlayers={themedRoster.players}
           onSelectPlayer={handleNavSelectPlayer}
           activeUnit={activeUnit}
-          onChangeUnit={(unit) => {
-            setActiveUnit(unit);
-            setSelectedPlayer(null);
-          }}
+          onChangeUnit={changeUnit}
           globalEditMode={globalEditMode}
           onToggleGlobalEditMode={() => setGlobalEditMode(!globalEditMode)}
           previewing={previewing}
@@ -275,7 +334,11 @@ export default function DepthChartField({
 
         {!isDesktop && <PlayerCard {...playerCardProps} />}
 
-        <OpenPlayerFromQuery players={displayRoster.players} onOpen={handleNavSelectPlayer} />
+        <SyncSelectionWithQuery
+          players={displayRoster.players}
+          selectedPlayerId={selectedPlayer?.id ?? null}
+          onChange={restoreSelectionFromUrl}
+        />
 
         <ApplyKitFromQuery validIds={roster.uniforms.map((u) => u.id)} onApply={setKitId} />
 
