@@ -718,6 +718,27 @@ export type Database = {
         }
         Relationships: []
       }
+      uniform_release_watches: {
+        Row: {
+          id: string
+          notified_at: string
+          source_url: string
+          title: string
+        }
+        Insert: {
+          id?: string
+          notified_at?: string
+          source_url: string
+          title: string
+        }
+        Update: {
+          id?: string
+          notified_at?: string
+          source_url?: string
+          title?: string
+        }
+        Relationships: []
+      }
       uniforms: {
         Row: {
           color_accent: string

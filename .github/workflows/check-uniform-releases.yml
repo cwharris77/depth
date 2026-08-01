@@ -1,0 +1,64 @@
+name: Check for new uniform releases
+
+# Recurring monitor for new NFL uniform unveilings (SportsLogos.net News only -- see
+# docs/superpowers/specs). Wraps `npm run check:uniform-releases` on a weekly schedule,
+# plus a manual trigger. On a hit, opens a GitHub issue per new item so Cooper can run
+# the manual capture workflow -- the script itself only records what's new in
+# uniform_release_watches; this job turns that into a notification.
+
+on:
+  schedule:
+    # Monday 12:00 UTC -- offseason cadence, ahead of the Wed ESPN/nflverse ingests.
+    - cron: '0 12 * * 1'
+  workflow_dispatch: {}
+
+# Never let two checks overlap (a slow run + the next schedule, or a manual dispatch
+# during a scheduled one) -- avoids racing inserts into uniform_release_watches.
+concurrency:
+  group: check-uniform-releases
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - id: check
+        run: npm run check:uniform-releases
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Open an issue for each new unveiling
+        if: steps.check.outputs.new_items != '[]'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const items = JSON.parse(process.env.NEW_ITEMS);
+            for (const item of items) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `New NFL uniform unveiling: ${item.title}`,
+                body: [
+                  `SportsLogos.net News: ${item.url}`,
+                  '',
+                  'Manual capture workflow:',
+                  '1. Pull the hex(es) from the source.',
+                  '2. Curate uiAccent/onAccent (contrast-tested against #0a0e1a).',
+                  '3. Append the kit to `lib/uniforms/data.ts`.',
+                  '4. Run `npm run gen:uniform-seed`.',
+                ].join('\n'),
+              });
+            }
+        env:
+          NEW_ITEMS: ${{ steps.check.outputs.new_items }}
