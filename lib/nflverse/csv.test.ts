@@ -1,5 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { parseCsv } from './csv';
+import { parseCsv, parseCsvStream } from './csv';
+
+// Wraps an array of chunk strings as the AsyncIterable<string> parseCsvStream expects
+// (a stand-in for a fetch response body split at arbitrary byte boundaries).
+async function* asyncChunks(chunks: string[]): AsyncIterable<string> {
+  for (const c of chunks) yield c;
+}
+
+async function collectStream(chunks: string[]): Promise<Record<string, string>[]> {
+  const rows: Record<string, string>[] = [];
+  await parseCsvStream(asyncChunks(chunks), (row) => rows.push(row));
+  return rows;
+}
 
 describe('parseCsv', () => {
   it('parses simple rows into header-keyed records', () => {
@@ -41,5 +53,43 @@ describe('parseCsv', () => {
   it('returns an empty array for a header-only file', () => {
     expect(parseCsv('a,b,c\n')).toEqual([]);
     expect(parseCsv('')).toEqual([]);
+  });
+});
+
+describe('parseCsvStream', () => {
+  it('parses rows delivered as a single chunk', async () => {
+    const rows = await collectStream(['a,b,c\n1,2,3\n4,5,6\n']);
+    expect(rows).toEqual([
+      { a: '1', b: '2', c: '3' },
+      { a: '4', b: '5', c: '6' },
+    ]);
+  });
+
+  it('parses rows split across arbitrary chunk boundaries, including mid-field', async () => {
+    const rows = await collectStream(['a,b\n1', ',2\n3,', '4\n']);
+    expect(rows).toEqual([
+      { a: '1', b: '2' },
+      { a: '3', b: '4' },
+    ]);
+  });
+
+  it('handles a quoted field (with embedded comma) split across chunks', async () => {
+    const rows = await collectStream(['name,note\nAlice,"Ran for', ' 100, 2 TDs"\n']);
+    expect(rows).toEqual([{ name: 'Alice', note: 'Ran for 100, 2 TDs' }]);
+  });
+
+  it('handles a quoted field spanning an embedded newline across chunks', async () => {
+    const rows = await collectStream(['name,note\nCarl,"line one', '\nline two"\n']);
+    expect(rows).toEqual([{ name: 'Carl', note: 'line one\nline two' }]);
+  });
+
+  it('handles a missing trailing newline on the final chunk', async () => {
+    const rows = await collectStream(['a,b\n1,2']);
+    expect(rows).toEqual([{ a: '1', b: '2' }]);
+  });
+
+  it('calls onRow zero times for a header-only stream', async () => {
+    expect(await collectStream(['a,b,c\n'])).toEqual([]);
+    expect(await collectStream([''])).toEqual([]);
   });
 });

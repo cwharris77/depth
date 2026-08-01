@@ -1,7 +1,7 @@
 # Phase E — real formations (per-team personnel + alignment)
 
 Date: 2026-07-07
-Status: approved (design)
+Status: ✅ shipped
 Roadmap: Phase E / Future Ideas #6 ("real formations a team runs").
 Depends on: nflverse scaffolding spec. Independent of C/D.
 
