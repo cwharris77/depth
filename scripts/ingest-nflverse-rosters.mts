@@ -86,11 +86,19 @@ async function main() {
 
   let seasons = parseSeasonsArg(process.argv.slice(2));
   if (seasons === null) {
-    // Weekly job: whichever season's roster file nflverse has published most recently.
-    const latestSeason = await latestAvailableSeason(ROSTERS_TAG, ROSTERS_PREFIX);
+    // Weekly job: gate on the STATS file, not the roster file. nflverse publishes a new
+    // season's roster_<season>.csv (rosters/depth charts) well before that season's
+    // stats_player_reg_<season>.csv exists -- gating on roster availability picked a
+    // season the depth heuristic couldn't actually rank (no stats to join against),
+    // 404ing the whole run. Same tag/prefix ingest-nflverse.mts's player-stats ingest
+    // already gates on, for the same reason.
+    const latestSeason = await latestAvailableSeason(STATS_TAG, STATS_PREFIX);
     seasons = latestSeason === null ? [] : [latestSeason];
     if (latestSeason === null) {
-      failures.push({ season: 'latest', message: 'no available roster_<season> file found' });
+      failures.push({
+        season: 'latest',
+        message: 'no available stats_player_reg_<season> file found',
+      });
     }
   }
   const outOfRange = seasons.filter((s) => s < SEASONS_MIN);
