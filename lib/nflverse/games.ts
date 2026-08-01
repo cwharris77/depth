@@ -5,6 +5,12 @@
 // (docs/superpowers/specs/2026-07-17-team-schedule-design.md). A row whose home or away
 // code doesn't crosswalk (resolveCode -> null), or whose season isn't a number, is
 // skipped and counted -- never guessed, same posture as the player-stats transform.
+//
+// games.csv is nfldata's single schedule/results file covering every season since 1999
+// (unlike the player-stats CSVs, there's no per-season asset to scope the fetch to) --
+// so scoping happens after parsing: only the two most recent seasons found in the file
+// are kept, mirroring the "current + previous season" rule the player-stats ingest
+// already applies. Older rows are dropped, not "skipped" (skipped means malformed).
 
 export interface ScheduleInsert {
   team_id: string;
@@ -42,8 +48,7 @@ export function toScheduleAndGameRows(
   csvRows: Record<string, string>[],
   resolveCode: (code: string) => string | null
 ): { games: GameInsert[]; schedules: ScheduleInsert[]; skipped: number } {
-  const games: GameInsert[] = [];
-  const scheduleKeys = new Set<string>(); // `${team_id}|${season}`, dedup across a team's games
+  const parsed: GameInsert[] = [];
   let skipped = 0;
 
   for (const row of csvRows) {
@@ -64,7 +69,7 @@ export function toScheduleAndGameRows(
       continue;
     }
 
-    games.push({
+    parsed.push({
       game_id: row.game_id.trim(),
       season,
       game_type: row.game_type?.trim() || 'REG',
@@ -76,8 +81,19 @@ export function toScheduleAndGameRows(
       home_score: nullableInt(row.home_score),
       away_score: nullableInt(row.away_score),
     });
-    scheduleKeys.add(`${homeId}|${season}`);
-    scheduleKeys.add(`${awayId}|${season}`);
+  }
+
+  // Scope to the two most recent seasons present in the file (current + previous),
+  // same rule as the player-stats ingest. Computed from the data itself rather than
+  // the calendar so a mid-offseason run (next season's games not yet in the file
+  // either) still keeps the two seasons that do exist.
+  const maxSeason = parsed.reduce((max, g) => Math.max(max, g.season), -Infinity);
+  const games = parsed.filter((g) => g.season >= maxSeason - 1);
+
+  const scheduleKeys = new Set<string>(); // `${team_id}|${season}`, dedup across a team's games
+  for (const g of games) {
+    scheduleKeys.add(`${g.home_team_id}|${g.season}`);
+    scheduleKeys.add(`${g.away_team_id}|${g.season}`);
   }
 
   // Stable order (team then season) so a rerun writes the same batch — nice for

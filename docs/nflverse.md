@@ -41,6 +41,11 @@ rosters, draft picks, formations) reuse this same scaffolding with their own spe
   `nfldata/games.csv` into `games` rows (one per shared game) + `schedules` rows (the
   distinct `(team_id, season)` set the games imply). A row with an unresolvable team code
   or a non-numeric season is **skipped and counted**. `'' -> null` for blank scores/dates.
+  `nfldata/games.csv` is one file covering every season since 1999 (no per-season asset
+  like the player-stats CSVs), so the transform scopes itself: after parsing, it keeps
+  only the two most recent seasons found in the file (current + previous), same rule as
+  the player-stats ingest. Dropped older rows aren't counted as skipped (skipped means
+  malformed, not out-of-range).
 - `lib/schedule.ts` — `resolveSchedule(games, teamId)` (regular-season, this-team's
   perspective: home/away, opponent id, W/L/T or null-when-upcoming, ordered by week, BYE
   weeks derived from missing weeks) and `nextGame(schedule)` (earliest unplayed). Pure;
@@ -48,8 +53,9 @@ rosters, draft picks, formations) reuse this same scaffolding with their own spe
 - `scripts/ingest-nflverse.mts` — fetches `players.csv` once, the latest two available
   `stats_player_reg_<season>.csv` files, transforms, and upserts `player_stats`
   (`onConflict: player_id,season,season_type`). Then `ingestGames` fetches
-  `nfldata/data/games.csv` (one file, all seasons 1999+) and upserts **schedules first,
-  then games** (chunked) — the games' composite FKs require the schedule rows to exist.
+  `nfldata/data/games.csv` (one file, all seasons 1999+ — scoped to the two most recent
+  seasons by `toScheduleAndGameRows`, see above) and upserts **schedules first, then
+  games** (chunked) — the games' composite FKs require the schedule rows to exist.
   Writes one `ingestion_runs` row (`source: 'nflverse'`) whose `errors` jsonb carries
   `{ seasons, player_stats_rows, games_written, schedules_written, skipped, failures }`;
   `teams_written` is repurposed as the total row count across both datasets.
