@@ -12,6 +12,7 @@ import { type LeaderEntry, rosterLeaders } from './roster-leaders';
 import { resolvePostseason, resolveSchedule } from './schedule';
 import { getNflSeasonState } from './nfl-season';
 import { type PlayerHit, positionGroupPositions, rankByNameMatch } from './search';
+import { SPECIAL_LAYOUT } from './espn/transform';
 import type {
   Game,
   Player,
@@ -399,6 +400,112 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
     team,
     players,
     specialTeams,
+    uniforms: orderUniforms(rows),
+  };
+}
+
+type RosterHistoryRow = Pick<
+  Tables['roster_history']['Row'],
+  | 'season'
+  | 'name'
+  | 'number'
+  | 'position'
+  | 'college'
+  | 'height'
+  | 'weight'
+  | 'headshot_url'
+  | 'depth_rank'
+  | 'player_order'
+  | 'gsis_id'
+>;
+const ROSTER_HISTORY_SELECT =
+  'season, name, number, position, college, height, weight, headshot_url, depth_rank, player_order, gsis_id';
+
+// Historical player ids are `gsis:<gsis_id>@<season>` (not an ESPN id -- most historical
+// players were never ingested by the live ESPN pipeline). This is the same typed-ref
+// format the D2 boards spec's player refs share, so a board can point at either id space
+// unambiguously (docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-design.md).
+function toHistoricalPlayer(row: RosterHistoryRow, team: Team): Player {
+  const rank = row.depth_rank as 1 | 2 | 3;
+  return {
+    id: `gsis:${row.gsis_id}@${row.season}`,
+    name: row.name,
+    number: row.number ?? 0,
+    position: row.position as Position,
+    depthRank: rank,
+    // Locked decision: historical status is noise beyond starter/backup -- no
+    // injured/rookie flags (the source data doesn't carry them).
+    status: rank === 1 ? 'starter' : 'backup',
+    order: row.player_order,
+    age: 0,
+    college: row.college ?? '—',
+    experience: 0,
+    height: row.height ?? '—',
+    weight: row.weight ?? 0,
+    bio: `${row.season} · ${team.city} ${team.name}`,
+    photoUrl: row.headshot_url ?? undefined,
+  };
+}
+
+// K/P/LS resolve from that season's ranked players; KR/PR always render empty --
+// returner assignments aren't in nflverse's roster data, and the empty-slot-never-guess
+// rule (Phase 1) applies same as the live ESPN path.
+function historicalSpecialTeams(players: Player[]): SpecialSlot[] {
+  const starterAt = (position: Position) =>
+    players.find((p) => p.position === position && p.depthRank === 1) ?? null;
+  const starters: Partial<Record<'k' | 'p' | 'ls', Player | null>> = {
+    k: starterAt('K'),
+    p: starterAt('P'),
+    ls: starterAt('LS'),
+  };
+  return SPECIAL_LAYOUT.map(({ slot, id, x, y, label }) => ({
+    id,
+    playerId: slot in starters ? (starters[slot as 'k' | 'p' | 'ls']?.id ?? null) : null,
+    x,
+    y,
+    label,
+  }));
+}
+
+// A past season's read-only roster (Phase D1). Returns undefined for an unknown team or
+// a season with no ingested rows (out of range, or not yet backfilled) -- same
+// "unknown -> 404" contract as getTeam. Uniforms are the team's normal (current) list,
+// since kit selection is orthogonal to which season's roster is showing.
+export async function getTeamSeason(
+  teamId: string,
+  season: number
+): Promise<TeamRoster | undefined> {
+  'use cache';
+  cacheLife('ingest');
+  const client = supabase();
+
+  const [
+    { data: teamRow, error: teamError },
+    { data: historyRows, error: historyError },
+    { data: uniformRows, error: uniformError },
+  ] = await Promise.all([
+    client.from('teams').select(TEAM_SELECT).eq('id', teamId).maybeSingle<TeamRow>(),
+    client
+      .from('roster_history')
+      .select(ROSTER_HISTORY_SELECT)
+      .eq('team_id', teamId)
+      .eq('season', season)
+      .returns<RosterHistoryRow[]>(),
+    client.from('uniforms').select(UNIFORM_SELECT).eq('team_id', teamId).returns<UniformRow[]>(),
+  ]);
+  if (teamError) throw new Error(`teams query failed: ${teamError.message}`);
+  if (historyError) throw new Error(`roster_history query failed: ${historyError.message}`);
+  if (uniformError) throw new Error(`uniforms query failed: ${uniformError.message}`);
+  if (!teamRow) return undefined;
+  if (!historyRows || historyRows.length === 0) return undefined;
+
+  const rows = uniformRows ?? [];
+  const team = withHomeColors(toTeam(teamRow), rows);
+  const players = historyRows.map((row) => toHistoricalPlayer(row, team));
+  return {
+    team,
+    players,
+    specialTeams: historicalSpecialTeams(players),
     uniforms: orderUniforms(rows),
   };
 }
