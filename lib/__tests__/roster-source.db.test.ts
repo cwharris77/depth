@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { dbRosterSource, searchAllPlayers } from '../roster-source.db';
+import { dbRosterSource, getTeamSeason, searchAllPlayers } from '../roster-source.db';
 
 // Tests against the real Supabase project (not mocked). Rationale: this repo's test
 // suite runs locally/in CI with network access already assumed for the ESPN fetch
@@ -65,6 +65,25 @@ maybeDescribe('dbRosterSource (live Supabase project)', () => {
       kind: 'throwback',
     });
     expect(kits.some((k) => k.kind === 'home')).toBe(true);
+  });
+});
+
+maybeDescribe('getTeamSeason (live Supabase project, Phase D1)', () => {
+  it('assembles a read-only 2013 Seahawks roster with Russell Wilson at QB1', async () => {
+    const roster = await getTeamSeason('seahawks', 2013);
+    if (!roster) throw new Error('expected a 2013 Seahawks roster');
+    expect(roster.team.id).toBe('seahawks');
+    const qb1 = roster.players.find((p) => p.position === 'QB' && p.depthRank === 1);
+    if (!qb1) throw new Error('expected a QB1');
+    expect(qb1.name).toBe('Russell Wilson');
+    expect(qb1.status).toBe('starter');
+    // Historical player ids are the gsis:<id>@<season> typed-ref format (D2 shares it).
+    expect(qb1.id).toMatch(/^gsis:.+@2013$/);
+  });
+
+  it('returns undefined for an unknown team or an out-of-range season', async () => {
+    expect(await getTeamSeason('not-a-real-team', 2013)).toBeUndefined();
+    expect(await getTeamSeason('seahawks', 1950)).toBeUndefined();
   });
 });
 

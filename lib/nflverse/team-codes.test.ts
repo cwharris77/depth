@@ -21,6 +21,14 @@ describe('resolveTeamCode', () => {
     expect(resolveTeamCode('STL')).toBe('rams'); // St. Louis -> LA
   });
 
+  it('maps the abbreviated codes roster_<season>.csv uses for 2001-2015 (Phase D1)', () => {
+    expect(resolveTeamCode('ARZ')).toBe('cardinals');
+    expect(resolveTeamCode('BLT')).toBe('ravens');
+    expect(resolveTeamCode('CLV')).toBe('browns');
+    expect(resolveTeamCode('HST')).toBe('texans');
+    expect(resolveTeamCode('SL')).toBe('rams');
+  });
+
   it('returns null for an unknown code rather than guessing', () => {
     expect(resolveTeamCode('XXX')).toBeNull();
     expect(resolveTeamCode('')).toBeNull();

@@ -44,6 +44,16 @@ export const NFLVERSE_TEAM_CODES: Record<string, string> = {
   SD: 'chargers', // San Diego Chargers (-> Los Angeles 2017)
   STL: 'rams', // St. Louis Rams (-> Los Angeles 2016)
   LAR: 'rams', // ESPN-style alias, in case a nflverse asset ever emits it
+  // roster_<season>.csv (Phase D1) uses these abbreviated codes for seasons 2001-2015,
+  // then switches to the standard forms above from 2016 on -- discovered ingesting the
+  // 2013 backfill (docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-design.md).
+  // nfldata/games.csv (the schedule ingest) never emits these, so they're additive, not
+  // a behavior change for that path.
+  ARZ: 'cardinals',
+  BLT: 'ravens',
+  CLV: 'browns',
+  HST: 'texans',
+  SL: 'rams', // St. Louis Rams, roster_<season>.csv's short form of STL
 };
 
 export function resolveTeamCode(code: string): string | null {

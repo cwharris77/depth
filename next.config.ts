@@ -35,6 +35,15 @@ const nextConfig: NextConfig = {
         hostname: 'a.espncdn.com',
         pathname: '/i/headshots/**',
       },
+      {
+        // Historical rosters' headshot_url (Phase D1, roster_history.headshot_url,
+        // nflverse's roster_<season>.csv) — every row observed across 1999-2024 uses
+        // this same host/path shape (docs/superpowers/specs/2026-07-07-phase-d-history-
+        // and-boards-design.md).
+        protocol: 'https',
+        hostname: 'static.www.nfl.com',
+        pathname: '/image/private/**',
+      },
     ],
   },
 };

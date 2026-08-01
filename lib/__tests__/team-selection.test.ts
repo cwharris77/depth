@@ -46,4 +46,19 @@ describe('buildTeamSelectionUrl', () => {
       '/team/seahawks?player=x%26y%3Dz'
     );
   });
+
+  it('carries season alongside unit/player when set', () => {
+    expect(
+      buildTeamSelectionUrl('/team/seahawks', { unit: 'defense', playerId: 'abc', season: 2013 })
+    ).toBe('/team/seahawks?unit=defense&player=abc&season=2013');
+  });
+
+  it('omits season when null/undefined, same as no selection at all', () => {
+    expect(
+      buildTeamSelectionUrl('/team/seahawks', { unit: 'offense', playerId: null, season: null })
+    ).toBe('/team/seahawks');
+    expect(buildTeamSelectionUrl('/team/seahawks', { unit: 'offense', playerId: null })).toBe(
+      '/team/seahawks'
+    );
+  });
 });

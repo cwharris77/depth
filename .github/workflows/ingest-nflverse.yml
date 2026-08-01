@@ -34,3 +34,11 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           STRICT: '1'
+      # Current season only (no --seasons flag) -- the one-time 1999-present backfill
+      # is a hand run, never part of this scheduled job (docs/superpowers/specs/2026-07-
+      # 07-phase-d-history-and-boards-design.md).
+      - run: npm run ingest:rosters
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          STRICT: '1'
