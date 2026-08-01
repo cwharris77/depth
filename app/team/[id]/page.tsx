@@ -1,10 +1,6 @@
 import DepthChartField from '@/components/DepthChartField';
 import RememberTeam from '@/components/RememberTeam';
-import {
-  dbRosterSource,
-  getPlayerStatsForRoster,
-  getTeamFormations,
-} from '@/lib/roster-source.db';
+import { dbRosterSource, getPlayerStatsForRoster, getTeamFormations } from '@/lib/roster-source.db';
 import { getNflSeasonState } from '@/lib/nfl-season';
 import { OG_IMAGE_ALT, OG_IMAGE_SIZE } from '@/lib/og';
 import type { Metadata } from 'next';
