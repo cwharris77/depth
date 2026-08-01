@@ -1,6 +1,10 @@
 import DepthChartField from '@/components/DepthChartField';
 import RememberTeam from '@/components/RememberTeam';
-import { dbRosterSource, getPlayerStatsForRoster } from '@/lib/roster-source.db';
+import {
+  dbRosterSource,
+  getPlayerStatsForRoster,
+  getTeamFormations,
+} from '@/lib/roster-source.db';
 import { getNflSeasonState } from '@/lib/nfl-season';
 import { OG_IMAGE_ALT, OG_IMAGE_SIZE } from '@/lib/og';
 import type { Metadata } from 'next';
@@ -84,6 +88,10 @@ export default async function TeamPage({ params }: Params) {
   // renders no stats section), matching the old per-player error path.
   const playerStatsMap = await getPlayerStatsForRoster(roster.players.map((p) => p.id));
 
+  // Real per-team formation chips (Phase E) -- empty for a team the ingest judged as
+  // insufficient-coverage, which DepthChartField treats as "no chip row", not an error.
+  const formations = await getTeamFormations(id);
+
   // The season SeasonSheet's "current" row shows (Phase D1) — same "which season is
   // live right now" definition fetchTeamStatsPage uses for its currentSeason field.
   const currentSeason = isOffseason ? upcomingSeason : upcomingSeason - 1;
@@ -96,6 +104,7 @@ export default async function TeamPage({ params }: Params) {
         roster={roster}
         teams={teams}
         playerStatsMap={playerStatsMap}
+        formations={formations}
         currentSeason={currentSeason}
       />
     </>

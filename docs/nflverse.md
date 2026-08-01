@@ -130,9 +130,51 @@ runs never overlap. Same two repo secrets as the ESPN workflow
 nflverse's own code is MIT-licensed; the underlying NFL data is owned by the NFL/its
 partners — same gray-area posture as the ESPN ingest (unofficial, no ToS grant, used
 here for a non-commercial fan project). The formation/personnel dataset
-(`pbp_participation`, not ingested by this ticket) is FTN-sourced and CC-BY-SA 4.0 —
-**the future real-formations work must attribute FTN in the UI** when that data ships;
-noted here since it shares this same `lib/nflverse/` scaffolding.
+(`pbp_participation`) is FTN-sourced and CC-BY-SA 4.0 — the field view attributes FTN
+(`components/DepthChartField.tsx`'s "Formation data © FTN Data (CC-BY-SA 4.0)" footer)
+whenever a real-formation chip is active, the condition of surfacing it.
+
+## Real per-team formations (Phase E)
+
+docs/superpowers/specs/2026-07-07-phase-e-real-formations-design.md. v1 handles only
+the FTN-charted vocabulary (2023+), so only the latest available `pbp_participation`
+season is ever pulled — the older NGS-sourced seasons use a different, finer formation
+vocabulary this repo doesn't parse.
+
+- `lib/nflverse/personnel.ts` — `parsePersonnel(offensePersonnelString)`: pulls RB (FB
+  counts as RB), TE, WR counts out of FTN's `offense_personnel` column, ignoring OL/QB
+  detail and the rare mislabeled special-teams row. `personnelCode({rb, te})` formats
+  the standard NFL shorthand (`"11"`, `"21"`, ...).
+- `lib/nflverse/participation.ts` — `FormationAccumulator`: a streaming-friendly fold
+  (`addRow` per participation row, `finish(season, gamesPlayedByTeam)` to close it out)
+  that counts plays per team per (alignment, personnelCode), excludes blank-alignment
+  rows (kneel-downs/no-charting) and rows whose personnel doesn't sum to 5 skill
+  players, and keeps each team's top 3 combos with an integer `pct`. A team whose
+  charted games cover **less than half** its actual games that season (the
+  `gamesPlayedByTeam` map, sourced from the `games` table) gets **no rows at all** —
+  "no data" rather than a formation built from a sparse sample. `tallyFormations` is the
+  same fold over an in-memory array, for tests.
+- `lib/nflverse/csv.ts` — `parseCsvStream(asyncTextChunks, onRow)`: the streaming
+  sibling of `parseCsv`, for the ~50MB-per-season participation file — same RFC-4180
+  handling, folds straight into `FormationAccumulator` without materializing every row.
+- `lib/formations.ts` — `buildRealFormation(alignment, personnelCode)`: pure geometry,
+  same `FormationSlot[]` shape as the generic `OFFENSE_FORMATION` (so `resolveUnit`
+  needs no changes to render it — pass it as `resolveUnit`'s third argument). Falls back
+  to the generic formation for any code it can't fully place (not two digits 0-3, more
+  than 5 total skill players, or a 3rd RB — never a crash, never a half-built layout).
+  `alignmentLabel(alignment)` maps the three FTN values to a display label.
+- `scripts/ingest-nflverse.mts` — the `ingestFormations` step: fetches the latest
+  `pbp_participation_<season>.csv`, stream-parses it into a `FormationAccumulator`, and
+  upserts `team_formations` (`onConflict: team_id,season,rank`). Runs after
+  `ingestGames` in the same script run, since coverage needs that run's games/scores.
+- `lib/roster-source.db.ts` — `getTeamFormations(teamId)`: a team's top-3 rows for its
+  latest stored season (`order by season desc, rank asc limit 3`). The team page passes
+  the result to `DepthChartField` as the `formations` prop.
+- `components/DepthChartField.tsx` — a chip row (`Base` + one `FilterPill` per stored
+  combo) under the unit toggle, offense unit only, hidden entirely when `formations` is
+  empty. Tapping a chip swaps `resolveUnit`'s offense layout via `buildRealFormation`;
+  choice lives in component state only (not persisted, not in the URL, per the spec's
+  locked decision).
 
 ## RLS policy
 

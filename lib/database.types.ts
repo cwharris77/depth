@@ -537,6 +537,44 @@ export type Database = {
           },
         ]
       }
+      team_formations: {
+        Row: {
+          alignment: string
+          pct: number
+          personnel: string
+          rank: number
+          season: number
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          alignment: string
+          pct: number
+          personnel: string
+          rank: number
+          season: number
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          alignment?: string
+          pct?: number
+          personnel?: string
+          rank?: number
+          season?: number
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_formations_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_stats: {
         Row: {
           conference_losses: number | null
