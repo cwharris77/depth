@@ -149,7 +149,10 @@ export function toDepthChartRows(
   return rows;
 }
 
-const SPECIAL_LAYOUT = [
+// Exported for lib/roster-source.db.ts's getTeamSeason (Phase D1 historical rosters):
+// historical data has no ESPN depth chart to source K/P/LS/KR/PR slot coordinates from,
+// so it reuses this same fixed layout.
+export const SPECIAL_LAYOUT = [
   { slot: 'kr', id: 'st-kr', x: 30, y: 18, label: 'KR' },
   { slot: 'pr', id: 'st-pr', x: 70, y: 18, label: 'PR' },
   { slot: 'ls', id: 'st-ls', x: 50, y: 68, label: 'LS' },
