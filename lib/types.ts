@@ -187,6 +187,21 @@ export interface TeamRosterSeed {
   specialTeams: SpecialSlot[];
 }
 
+// One of a team's top-3 most-used real formations (Phase E, nflverse participation
+// ingestion, docs/superpowers/specs/2026-07-07-phase-e-real-formations-design.md).
+// `alignment` is FTN's charted offense_formation ('SHOTGUN' | 'UNDER CENTER' |
+// 'PISTOL'), `personnel` the standard shorthand ({RB count}{TE count}, e.g. '11') —
+// both feed lib/formations.ts's buildRealFormation. `pct` is an integer share of the
+// team's charted plays that season. A team with insufficient participation coverage
+// has zero rows, not a sparse-sample one (see lib/nflverse/participation.ts).
+export interface TeamFormation {
+  season: number;
+  rank: number;
+  alignment: string;
+  personnel: string;
+  pct: number;
+}
+
 // One player's season stat line (nflverse ingestion, docs/superpowers/specs/2026-07-07-
 // nflverse-ingestion-and-player-stats-design.md). All stat columns nullable: the
 // display set is a subset of nflverse's full frame, and most columns don't apply to

@@ -11,11 +11,12 @@ import dotenv from 'dotenv';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 dotenv.config({ path: '.env.local' });
-import { parseCsv } from '../lib/nflverse/csv';
+import { parseCsv, parseCsvStream } from '../lib/nflverse/csv';
 import { assetUrl, latestAvailableSeason } from '../lib/nflverse/assets';
 import { buildCrosswalk } from '../lib/nflverse/crosswalk';
 import { toPlayerStatsRows } from '../lib/nflverse/transform';
 import { toScheduleAndGameRows } from '../lib/nflverse/games';
+import { FormationAccumulator, type ParticipationRow } from '../lib/nflverse/participation';
 import { resolveTeamCode } from '../lib/nflverse/team-codes';
 import type { Database } from '../lib/database.types';
 
@@ -32,6 +33,12 @@ const STATS_PREFIX = 'stats_player_reg_';
 const GAMES_URL = 'https://github.com/nflverse/nfldata/raw/master/data/games.csv';
 // Supabase upsert payload cap: games is ~7.5k rows, chunk it so one call doesn't time out.
 const UPSERT_CHUNK = 1000;
+// Real per-team formations (docs/superpowers/specs/2026-07-07-phase-e-real-formations-
+// design.md). v1 only handles the FTN-charted vocabulary (2023+), so only the latest
+// available season is ever pulled -- the older NGS-sourced seasons use a different,
+// finer formation vocabulary this repo doesn't parse.
+const PARTICIPATION_TAG = 'pbp_participation';
+const PARTICIPATION_PREFIX = 'pbp_participation_';
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -97,6 +104,102 @@ async function ingestGames(supabase: SupabaseClient<Database>): Promise<{
   }
 }
 
+// Adapts a fetch Response body (a web ReadableStream<Uint8Array>) into the async text
+// chunks parseCsvStream wants. `stream: true` lets TextDecoder hold back a partial
+// multi-byte UTF-8 sequence split across chunk boundaries, decoding it once the rest
+// arrives instead of corrupting it.
+async function* textChunks(body: ReadableStream<Uint8Array>): AsyncGenerator<string> {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) {
+      const tail = decoder.decode();
+      if (tail) yield tail;
+      return;
+    }
+    yield decoder.decode(value, { stream: true });
+  }
+}
+
+// A team's real (played) game count per season, from the games this same run just
+// wrote/refreshed -- the coverage check's denominator (lib/nflverse/participation.ts).
+// A game with no score yet isn't "coverage", it's just unplayed.
+async function getGamesPlayedByTeam(
+  supabase: SupabaseClient<Database>,
+  season: number
+): Promise<Map<string, number>> {
+  const { data, error } = await supabase
+    .from('games')
+    .select('home_team_id, away_team_id, home_score')
+    .eq('season', season);
+  if (error) throw new Error(`games query failed: ${error.message}`);
+  const counts = new Map<string, number>();
+  for (const row of data ?? []) {
+    if (row.home_score === null) continue;
+    counts.set(row.home_team_id, (counts.get(row.home_team_id) ?? 0) + 1);
+    counts.set(row.away_team_id, (counts.get(row.away_team_id) ?? 0) + 1);
+  }
+  return counts;
+}
+
+// Fetches the latest available pbp_participation season and stream-parses it straight
+// into a FormationAccumulator (locked decision: never materialize the ~46k-row season
+// file in memory), then upserts each team's top-3 (alignment, personnel) combos. A team
+// below the coverage bar simply gets no rows -- the field view falls back to the
+// generic formation for it, never a sparse-sample layout.
+async function ingestFormations(supabase: SupabaseClient<Database>): Promise<{
+  season: number | null;
+  written: number;
+  skippedTeams: number;
+  failure: string | null;
+}> {
+  const season = await latestAvailableSeason(PARTICIPATION_TAG, PARTICIPATION_PREFIX);
+  if (season === null) {
+    return {
+      season: null,
+      written: 0,
+      skippedTeams: 0,
+      failure: 'no available pbp_participation season found',
+    };
+  }
+
+  try {
+    const gamesPlayedByTeam = await getGamesPlayedByTeam(supabase, season);
+
+    const url = assetUrl(PARTICIPATION_TAG, `${PARTICIPATION_PREFIX}${season}.csv`);
+    const res = await fetch(url);
+    if (!res.ok || !res.body) throw new Error(`${res.status} ${url}`);
+
+    const accumulator = new FormationAccumulator(resolveTeamCode);
+    await parseCsvStream(textChunks(res.body), (record) => {
+      const row: ParticipationRow = {
+        nflverse_game_id: record.nflverse_game_id ?? '',
+        possession_team: record.possession_team ?? '',
+        offense_formation: record.offense_formation ?? '',
+        offense_personnel: record.offense_personnel ?? '',
+      };
+      accumulator.addRow(row);
+    });
+
+    const { tallies, skippedTeams } = accumulator.finish(season, gamesPlayedByTeam);
+    if (tallies.length) {
+      const { error } = await supabase
+        .from('team_formations')
+        .upsert(tallies, { onConflict: 'team_id,season,rank' });
+      if (error) throw new Error(`team_formations upsert: ${error.message}`);
+    }
+
+    console.log(
+      `formations: season ${season}, wrote ${tallies.length} rows ` +
+        `(${skippedTeams.length} team(s) below coverage, ${accumulator.skipped} rows skipped)`
+    );
+    return { season, written: tallies.length, skippedTeams: skippedTeams.length, failure: null };
+  } catch (e) {
+    return { season, written: 0, skippedTeams: 0, failure: (e as Error).message };
+  }
+}
+
 async function main() {
   const supabase: SupabaseClient<Database> = createClient(
     requireEnv('SUPABASE_URL'),
@@ -156,8 +259,22 @@ async function main() {
   if (gamesResult.failure) failures.push({ season: 'games', message: gamesResult.failure });
   skipped += gamesResult.skipped;
 
+  // Formations depend on this run's just-written games (coverage denominator), so it
+  // runs after ingestGames.
+  const formationsResult = await ingestFormations(supabase);
+  if (formationsResult.failure) {
+    failures.push({
+      season: formationsResult.season ?? 'formations',
+      message: formationsResult.failure,
+    });
+  }
+
   const finishedAt = new Date().toISOString();
-  const totalWritten = rowsWritten + gamesResult.gamesWritten + gamesResult.schedulesWritten;
+  const totalWritten =
+    rowsWritten +
+    gamesResult.gamesWritten +
+    gamesResult.schedulesWritten +
+    formationsResult.written;
   const status = failures.length === 0 ? 'success' : totalWritten > 0 ? 'partial' : 'failure';
 
   const { error: runError } = await supabase.from('ingestion_runs').insert({
@@ -171,6 +288,9 @@ async function main() {
       player_stats_rows: rowsWritten,
       games_written: gamesResult.gamesWritten,
       schedules_written: gamesResult.schedulesWritten,
+      formations_season: formationsResult.season,
+      formations_written: formationsResult.written,
+      formations_teams_below_coverage: formationsResult.skippedTeams,
       skipped,
       failures,
     },
@@ -179,7 +299,8 @@ async function main() {
 
   console.log(
     `\nWrote ${rowsWritten} player-stat rows across ${seasons.length} season(s), ` +
-      `${gamesResult.gamesWritten} games, ${gamesResult.schedulesWritten} schedules. Status: ${status}`
+      `${gamesResult.gamesWritten} games, ${gamesResult.schedulesWritten} schedules, ` +
+      `${formationsResult.written} formation rows. Status: ${status}`
   );
   if (failures.length) {
     console.log('Errors/skips:');

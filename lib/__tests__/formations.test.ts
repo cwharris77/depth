@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { OFFENSE_FORMATION, DEFENSE_FORMATION, resolveUnit } from '../formations';
+import {
+  OFFENSE_FORMATION,
+  DEFENSE_FORMATION,
+  resolveUnit,
+  buildRealFormation,
+  alignmentLabel,
+} from '../formations';
 import { getPlayersByPosition, TEAMS } from '../teams';
 import type { Player, TeamRoster } from '../types';
 
@@ -162,5 +168,80 @@ describe('formations are well-formed', () => {
     const olSlots = OFFENSE_FORMATION.filter((s) => ol.has(s.position));
     expect(olSlots).toHaveLength(5);
     expect(olSlots.every((s) => s.onLine)).toBe(true);
+  });
+});
+
+describe('buildRealFormation — real per-team formations', () => {
+  const ALIGNMENTS = ['SHOTGUN', 'UNDER CENTER', 'PISTOL'] as const;
+  const CODES = ['10', '11', '12', '13', '21', '22'];
+
+  for (const alignment of ALIGNMENTS) {
+    for (const code of CODES) {
+      it(`${alignment} ${code}: exactly 11 well-formed slots`, () => {
+        const slots = buildRealFormation(alignment, code);
+        expect(slots).toHaveLength(11);
+        expect(slots.filter((s) => s.onLine).length).toBe(7);
+        expect(new Set(slots.map((s) => s.id)).size).toBe(11);
+        for (const slot of slots) {
+          expect(slot.x).toBeGreaterThanOrEqual(5);
+          expect(slot.x).toBeLessThanOrEqual(95);
+        }
+      });
+    }
+  }
+
+  it('falls back to the generic formation for a code that is not two digits 0-3', () => {
+    expect(buildRealFormation('SHOTGUN', '99')).toBe(OFFENSE_FORMATION);
+    expect(buildRealFormation('SHOTGUN', '1')).toBe(OFFENSE_FORMATION);
+    expect(buildRealFormation('SHOTGUN', 'ab')).toBe(OFFENSE_FORMATION);
+  });
+
+  it('falls back to the generic formation when total skill players would exceed 5', () => {
+    expect(buildRealFormation('SHOTGUN', '33')).toBe(OFFENSE_FORMATION);
+  });
+
+  it('falls back to the generic formation for a 3rd RB (no defined spot)', () => {
+    expect(buildRealFormation('SHOTGUN', '30')).toBe(OFFENSE_FORMATION);
+  });
+
+  it('flexes the 2nd TE off the line only when a WR is also on the field', () => {
+    const twoTeNoWr = buildRealFormation('SHOTGUN', '23'); // rb2 te3 wr0
+    const te1 = twoTeNoWr.find((s) => s.position === 'TE' && s.index === 1);
+    expect(te1?.onLine).toBe(true);
+
+    const twoTeWithWr = buildRealFormation('SHOTGUN', '12'); // rb1 te2 wr2
+    const te1b = twoTeWithWr.find((s) => s.position === 'TE' && s.index === 1);
+    expect(te1b?.onLine).toBe(false);
+  });
+
+  it('places the QB by alignment', () => {
+    expect(buildRealFormation('UNDER CENTER', '11').find((s) => s.position === 'QB')?.y).toBe(56);
+    expect(buildRealFormation('PISTOL', '11').find((s) => s.position === 'QB')?.y).toBe(63);
+    expect(buildRealFormation('SHOTGUN', '11').find((s) => s.position === 'QB')?.y).toBe(68);
+  });
+
+  it('resolveUnit renders a real formation the same way it renders the generic one', () => {
+    const r = roster([
+      player({ id: 'wr1', position: 'WR', depthRank: 1, number: 11 }),
+      player({ id: 'rb1', position: 'RB', depthRank: 1, number: 22 }),
+      player({ id: 'te1', position: 'TE', depthRank: 1, number: 88 }),
+      player({ id: 'qb1', position: 'QB', depthRank: 1, number: 7 }),
+    ]);
+    const real = buildRealFormation('SHOTGUN', '11');
+    const resolved = resolveUnit(r, 'offense', real);
+    expect(resolved).toHaveLength(11);
+    expect(resolved.find((s) => s.label === 'QB')?.player?.id).toBe('qb1');
+  });
+});
+
+describe('alignmentLabel', () => {
+  it('maps the three FTN alignment values to display labels', () => {
+    expect(alignmentLabel('SHOTGUN')).toBe('Shotgun');
+    expect(alignmentLabel('UNDER CENTER')).toBe('Under center');
+    expect(alignmentLabel('PISTOL')).toBe('Pistol');
+  });
+
+  it('passes an unrecognized value through verbatim', () => {
+    expect(alignmentLabel('WILDCAT')).toBe('WILDCAT');
   });
 });

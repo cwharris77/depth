@@ -23,6 +23,7 @@ import type {
   SpecialSlot,
   Team,
   TeamColors,
+  TeamFormation,
   TeamRoster,
   TeamSchedule,
   TeamScheduleGame,
@@ -744,6 +745,45 @@ export async function getPlayerStats(playerId: string): Promise<PlayerSeasonStat
     .returns<PlayerStatsRow[]>();
   if (error) throw new Error(`player_stats query failed: ${error.message}`);
   return (data ?? []).map(toPlayerSeasonStats);
+}
+
+type TeamFormationRow = Pick<
+  Tables['team_formations']['Row'],
+  'season' | 'rank' | 'alignment' | 'personnel' | 'pct'
+>;
+const TEAM_FORMATION_SELECT = 'season, rank, alignment, personnel, pct';
+
+function toTeamFormation(row: TeamFormationRow): TeamFormation {
+  return {
+    season: row.season,
+    rank: row.rank,
+    alignment: row.alignment,
+    personnel: row.personnel,
+    pct: row.pct,
+  };
+}
+
+// A team's top-3 most-used real formations for its latest ingested season (Phase E,
+// docs/superpowers/specs/2026-07-07-phase-e-real-formations-design.md) — the offense
+// unit's formation chips. `season desc, rank asc` + limit 3 relies on the ingest never
+// storing more than 3 rows for a season, so this always lands on the latest season's
+// full top-3 without a separate max-season query. Empty for a team the ingest judged
+// as insufficient-coverage (or hasn't reached yet) — the field view falls back to the
+// generic formation, never a partial chip row (invariant 6).
+export async function getTeamFormations(teamId: string): Promise<TeamFormation[]> {
+  'use cache';
+  cacheLife('ingest');
+  const client = supabase();
+  const { data, error } = await client
+    .from('team_formations')
+    .select(TEAM_FORMATION_SELECT)
+    .eq('team_id', teamId)
+    .order('season', { ascending: false })
+    .order('rank', { ascending: true })
+    .limit(3)
+    .returns<TeamFormationRow[]>();
+  if (error) throw new Error(`team_formations query failed: ${error.message}`);
+  return (data ?? []).map(toTeamFormation);
 }
 
 // player_stats keyed by player only, so we need the player_id to bucket each row back

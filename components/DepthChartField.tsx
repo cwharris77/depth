@@ -1,10 +1,10 @@
 'use client';
 
-import { resolveUnit } from '@/lib/formations';
+import { alignmentLabel, buildRealFormation, resolveUnit } from '@/lib/formations';
 import type { TeamMeta } from '@/lib/roster-source';
 import { unitForPosition } from '@/lib/search';
 import { buildTeamSelectionUrl } from '@/lib/team-selection';
-import type { Player, PlayerSeasonStats, TeamRoster, Unit } from '@/lib/types';
+import type { Player, PlayerSeasonStats, TeamFormation, TeamRoster, Unit } from '@/lib/types';
 import { useUser } from '@/lib/use-user';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -20,6 +20,7 @@ import PlayerCard from './PlayerCard';
 import PlayerDot from './PlayerDot';
 import TeamPageShell from './TeamPageShell';
 import UniformSheet from './UniformSheet';
+import FilterPill from './ui/FilterPill';
 import { DESKTOP_MEDIA_QUERY, useMediaQuery } from '@/lib/use-media-query';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import { applyTeamOverride } from '@/lib/depth-overrides';
@@ -39,17 +40,29 @@ export default function DepthChartField({
   roster,
   teams,
   playerStatsMap,
+  formations = [],
   currentSeason,
 }: {
   roster: TeamRoster;
   teams: TeamMeta[];
   playerStatsMap?: Map<string, PlayerSeasonStats[]>;
+  formations?: TeamFormation[];
   // The season SeasonSheet lists as "current" / the sheet's most-recent row (Phase D1).
   // Server-computed (app/team/[id]/page.tsx) since it depends on today's date.
   currentSeason: number;
 }) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeUnit, setActiveUnit] = useState<Unit>('offense');
+  // The real-formation chip choice (Phase E) — ephemeral: not persisted, not in the
+  // URL (locked decision). Reset during render, not an effect, whenever the team
+  // changes (same pattern as useKit's team-change detection) since this component
+  // persists across team switches.
+  const [activeFormation, setActiveFormation] = useState<TeamFormation | null>(null);
+  const [formationTeamId, setFormationTeamId] = useState(roster.team.id);
+  if (formationTeamId !== roster.team.id) {
+    setFormationTeamId(roster.team.id);
+    setActiveFormation(null);
+  }
   // Desktop docks the selected player's card in TeamPageShell's context panel instead
   // of the bottom sheet. Decided by matchMedia (not CSS show/hide) so only ONE
   // PlayerCard ever mounts — two would double its per-player stats fetch. Selection is
@@ -146,7 +159,17 @@ export default function DepthChartField({
   // back to the live one mid-fetch, or a stale live frame would flash before the real
   // season's data lands (AGENTS.md invariant 16).
   const fieldRoster = historicalMode ? themedHistoricalRoster : themedRoster;
-  const slots = fieldRoster ? resolveUnit(fieldRoster, activeUnit) : [];
+  // Real-formation chips (Phase E) are about the latest ingested season's live
+  // participation data -- meaningless overlaid on a past season's roster, so only
+  // applied outside historical mode.
+  const realFormation = useMemo(
+    () =>
+      !historicalMode && activeFormation
+        ? buildRealFormation(activeFormation.alignment, activeFormation.personnel)
+        : undefined,
+    [historicalMode, activeFormation]
+  );
+  const slots = fieldRoster ? resolveUnit(fieldRoster, activeUnit, realFormation) : [];
 
   // Keep the open card's player in sync with the reordered roster (fresh depthRank/status).
   const displaySelected = selectedPlayer
@@ -186,6 +209,7 @@ export default function DepthChartField({
 
   const changeUnit = (unit: Unit) => {
     setActiveUnit(unit);
+    if (unit !== 'offense') setActiveFormation(null);
     setSelectedPlayer(null);
     openedViaPushRef.current = false;
     router.replace(buildTeamSelectionUrl(pathname, { unit, playerId: null, season }), {
@@ -342,6 +366,29 @@ export default function DepthChartField({
           onBackToToday={() => changeSeason(null)}
         />
 
+        {/* Real-formation chips (Phase E) — offense only, and only for a team with
+            stored participation data. Tapping swaps the field's slot layout; not
+            persisted, not in the URL (spec's locked decision). Hidden while viewing a
+            past season -- the chips reflect the latest ingested season's data, which
+            doesn't apply to a historical roster (see realFormation above). */}
+        {activeUnit === 'offense' && !historicalMode && formations.length > 0 && (
+          <div
+            className="flex gap-2 overflow-x-auto px-3 pb-2 pt-1"
+            style={{ scrollbarWidth: 'none' }}>
+            <FilterPill active={!activeFormation} onClick={() => setActiveFormation(null)}>
+              Base
+            </FilterPill>
+            {formations.map((f) => (
+              <FilterPill
+                key={f.rank}
+                active={activeFormation?.rank === f.rank}
+                onClick={() => setActiveFormation(f)}>
+                {alignmentLabel(f.alignment)} {f.personnel} · {f.pct}%
+              </FilterPill>
+            ))}
+          </div>
+        )}
+
         {/* Field — fills remaining viewport space */}
         <div
           className="px-3 flex flex-col"
@@ -429,6 +476,14 @@ export default function DepthChartField({
               </div>
             )}
           </div>
+
+          {/* FTN Data is CC-BY-SA 4.0 -- attribution is the condition of surfacing a
+              real-formation chip (docs/nflverse.md). */}
+          {activeUnit === 'offense' && !historicalMode && activeFormation && (
+            <div className="pt-1.5 text-center text-[10px]" style={{ color: uiTokens.textFaint }}>
+              Formation data © FTN Data (CC-BY-SA 4.0)
+            </div>
+          )}
         </div>
 
         <BottomSheet isOpen={kitOpen} onClose={() => setKitOpen(false)}>
