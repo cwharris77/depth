@@ -9,10 +9,12 @@ import { useUser } from '@/lib/use-user';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ApplyKitFromQuery from './ApplyKitFromQuery';
+import ApplySeasonFromQuery from './ApplySeasonFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
 import BottomSheet from './BottomSheet';
 import FieldHeader from './FieldHeader';
 import FieldMarkings from './FieldMarkings';
+import SeasonSheet from './SeasonSheet';
 import SyncSelectionWithQuery from './SyncSelectionWithQuery';
 import PlayerCard from './PlayerCard';
 import PlayerDot from './PlayerDot';
@@ -25,6 +27,8 @@ import { applyTeamOverride } from '@/lib/depth-overrides';
 import { useKit } from '@/lib/use-kit';
 import { useTeamOverride } from '@/lib/use-team-override';
 import { useShareRoster } from '@/lib/use-share-roster';
+import { useTeamSeason } from '@/lib/use-team-season';
+import { SEASONS_MIN } from '@/lib/nflverse/roster-history';
 import {
   dismissEditModeWalkthrough,
   hasDismissedEditModeWalkthrough,
@@ -37,11 +41,15 @@ export default function DepthChartField({
   teams,
   playerStatsMap,
   formations = [],
+  currentSeason,
 }: {
   roster: TeamRoster;
   teams: TeamMeta[];
   playerStatsMap?: Map<string, PlayerSeasonStats[]>;
   formations?: TeamFormation[];
+  // The season SeasonSheet lists as "current" / the sheet's most-recent row (Phase D1).
+  // Server-computed (app/team/[id]/page.tsx) since it depends on today's date.
+  currentSeason: number;
 }) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeUnit, setActiveUnit] = useState<Unit>('offense');
@@ -91,6 +99,22 @@ export default function DepthChartField({
 
   const { shareCopied, handleShareRoster } = useShareRoster(roster, override, kitId, user);
 
+  // Phase D1 historical season selection. Reset to "today" (season: null) whenever the
+  // team changes -- a render-time reset (not an effect), same pattern as useKit's
+  // team-change reset, since this only needs to mirror the roster.team.id prop.
+  const [seasonSelection, setSeasonSelection] = useState<{
+    teamId: string;
+    season: number | null;
+  }>({ teamId: team.id, season: null });
+  if (seasonSelection.teamId !== team.id) {
+    setSeasonSelection({ teamId: team.id, season: null });
+  }
+  const season = seasonSelection.season;
+  const historicalMode = season !== null;
+  const [seasonSheetOpen, setSeasonSheetOpen] = useState(false);
+  const [historicalShareCopied, setHistoricalShareCopied] = useState(false);
+  const { historicalRoster, historyLoading, historyNotFound } = useTeamSeason(team.id, season);
+
   // First-run walkthrough pointing at the "•••" overflow menu, explaining that "Edit depth
   // chart" moved there from its own toggle. Shown once ever, app-wide (not per-team) — the
   // dismiss flag is set the instant it shows, not on dismiss, so navigating away mid-walkthrough
@@ -121,14 +145,31 @@ export default function DepthChartField({
     () => ({ ...displayRoster, team: { ...displayRoster.team, colors: activeColors } }),
     [displayRoster, activeColors]
   );
+  // Historical roster, re-skinned the same way. Kit selection stays live (colors are
+  // orthogonal to which season is showing, locked decision) but reorder overrides never
+  // apply to it -- a past season is a fact, not something the user's live overlay edits.
+  const themedHistoricalRoster = useMemo(
+    () =>
+      historicalRoster
+        ? { ...historicalRoster, team: { ...historicalRoster.team, colors: activeColors } }
+        : null,
+    [historicalRoster, activeColors]
+  );
+  // While viewing history, the field renders ONLY the historical roster -- never falling
+  // back to the live one mid-fetch, or a stale live frame would flash before the real
+  // season's data lands (AGENTS.md invariant 16).
+  const fieldRoster = historicalMode ? themedHistoricalRoster : themedRoster;
+  // Real-formation chips (Phase E) are about the latest ingested season's live
+  // participation data -- meaningless overlaid on a past season's roster, so only
+  // applied outside historical mode.
   const realFormation = useMemo(
     () =>
-      activeFormation
+      !historicalMode && activeFormation
         ? buildRealFormation(activeFormation.alignment, activeFormation.personnel)
         : undefined,
-    [activeFormation]
+    [historicalMode, activeFormation]
   );
-  const slots = resolveUnit(themedRoster, activeUnit, realFormation);
+  const slots = fieldRoster ? resolveUnit(fieldRoster, activeUnit, realFormation) : [];
 
   // Keep the open card's player in sync with the reordered roster (fresh depthRank/status).
   const displaySelected = selectedPlayer
@@ -144,7 +185,7 @@ export default function DepthChartField({
     const wasOpen = selectedPlayer !== null;
     setActiveUnit(unit);
     setSelectedPlayer(player);
-    const url = buildTeamSelectionUrl(pathname, { unit, playerId: player.id });
+    const url = buildTeamSelectionUrl(pathname, { unit, playerId: player.id, season });
     if (wasOpen) {
       router.replace(url, { scroll: false });
     } else {
@@ -159,9 +200,10 @@ export default function DepthChartField({
       openedViaPushRef.current = false;
       router.back();
     } else {
-      router.replace(buildTeamSelectionUrl(pathname, { unit: activeUnit, playerId: null }), {
-        scroll: false,
-      });
+      router.replace(
+        buildTeamSelectionUrl(pathname, { unit: activeUnit, playerId: null, season }),
+        { scroll: false }
+      );
     }
   };
 
@@ -170,7 +212,29 @@ export default function DepthChartField({
     if (unit !== 'offense') setActiveFormation(null);
     setSelectedPlayer(null);
     openedViaPushRef.current = false;
-    router.replace(buildTeamSelectionUrl(pathname, { unit, playerId: null }), { scroll: false });
+    router.replace(buildTeamSelectionUrl(pathname, { unit, playerId: null, season }), {
+      scroll: false,
+    });
+  };
+
+  // Selecting a season (SeasonSheet, or the "Back to today" chip with `next: null`)
+  // closes any open card -- a live-roster selection doesn't necessarily exist in a past
+  // season's data -- and writes `?season=` into the URL (kept, never stripped, so the
+  // link stays shareable). The query-driven mount/Back-Forward path
+  // (applySeasonFromQuery below) only updates local state; the URL is already correct
+  // in that case, so it doesn't re-push it.
+  const changeSeason = (next: number | null) => {
+    setSeasonSelection({ teamId: team.id, season: next });
+    setSelectedPlayer(null);
+    openedViaPushRef.current = false;
+    router.replace(
+      buildTeamSelectionUrl(pathname, { unit: activeUnit, playerId: null, season: next }),
+      { scroll: false }
+    );
+  };
+
+  const applySeasonFromQuery = (next: number | null) => {
+    setSeasonSelection({ teamId: team.id, season: next });
   };
 
   // SyncSelectionWithQuery drives this when the URL changes out from under us — mount-time
@@ -198,15 +262,42 @@ export default function DepthChartField({
     selectPlayer(player, unitForPosition(player.position));
   };
 
+  // A past season is read-only, same as previewing a shared board: no reorder
+  // affordances (locked decision, phase-d spec — editing history is a board, D2, not an
+  // overlay on a fact).
+  const readOnly = previewing || historicalMode;
+
+  // Share while viewing history shares the current `?season=` URL rather than the
+  // override/kit share flow, which doesn't apply to a read-only past season.
+  const handleShareHistoricalRoster = async () => {
+    const url = window.location.href;
+    const title = `${team.city} ${team.name} ${season} season · Depth`;
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({ title, url });
+      } catch {
+        // share sheet dismissed / unavailable — nothing to do
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setHistoricalShareCopied(true);
+      setTimeout(() => setHistoricalShareCopied(false), 1500);
+    } catch {
+      // clipboard blocked (insecure context / permission) — no-op
+    }
+  };
+
   // One prop set for both card placements, so sheet and docked stay behaviorally
   // identical (reorder wiring included).
   const playerCardProps = {
     player: displaySelected,
-    roster: themedRoster,
+    roster: fieldRoster ?? themedRoster,
     onClose: closePlayer,
     onSelectPlayer: (player: Player) => selectPlayer(player, unitForPosition(player.position)),
     playerStatsMap,
-    ...(previewing
+    ...(readOnly
       ? {}
       : {
           onReorder: handleReorder,
@@ -262,20 +353,25 @@ export default function DepthChartField({
           onToggleGlobalEditMode={() => setGlobalEditMode(!globalEditMode)}
           previewing={previewing}
           onChooseUniform={() => setKitOpen(true)}
-          shareCopied={shareCopied}
-          onShareRoster={handleShareRoster}
+          shareCopied={historicalMode ? historicalShareCopied : shareCopied}
+          onShareRoster={historicalMode ? handleShareHistoricalRoster : handleShareRoster}
           showEditModeWalkthrough={showEditModeWalkthrough}
           onDismissWalkthrough={() => setShowEditModeWalkthrough(false)}
           override={override}
           onResetTeam={handleResetTeam}
           onPreviewSharedOrder={setPreviewOverride}
           onApplySharedOrder={handleApplySharedOrder}
+          season={season}
+          onOpenSeasons={() => setSeasonSheetOpen(true)}
+          onBackToToday={() => changeSeason(null)}
         />
 
         {/* Real-formation chips (Phase E) — offense only, and only for a team with
             stored participation data. Tapping swaps the field's slot layout; not
-            persisted, not in the URL (spec's locked decision). */}
-        {activeUnit === 'offense' && formations.length > 0 && (
+            persisted, not in the URL (spec's locked decision). Hidden while viewing a
+            past season -- the chips reflect the latest ingested season's data, which
+            doesn't apply to a historical roster (see realFormation above). */}
+        {activeUnit === 'offense' && !historicalMode && formations.length > 0 && (
           <div
             className="flex gap-2 overflow-x-auto px-3 pb-2 pt-1"
             style={{ scrollbarWidth: 'none' }}>
@@ -361,11 +457,29 @@ export default function DepthChartField({
                 />
               );
             })}
+
+            {/* Historical fetch states: never render live dots in place of these (see
+                fieldRoster above) so a wrong season's data can't flash before the real
+                one lands, and a season with no ingested data reads as empty, not broken. */}
+            {historicalMode && historyLoading && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span className="text-xs font-bold" style={{ color: uiTokens.textMuted }}>
+                  Loading {season} season…
+                </span>
+              </div>
+            )}
+            {historicalMode && historyNotFound && (
+              <div className="absolute inset-0 flex items-center justify-center px-6 text-center pointer-events-none">
+                <span className="text-xs font-bold" style={{ color: uiTokens.textMuted }}>
+                  No {season} roster data for the {team.name} yet.
+                </span>
+              </div>
+            )}
           </div>
 
           {/* FTN Data is CC-BY-SA 4.0 -- attribution is the condition of surfacing a
               real-formation chip (docs/nflverse.md). */}
-          {activeUnit === 'offense' && activeFormation && (
+          {activeUnit === 'offense' && !historicalMode && activeFormation && (
             <div className="pt-1.5 text-center text-[10px]" style={{ color: uiTokens.textFaint }}>
               Formation data © FTN Data (CC-BY-SA 4.0)
             </div>
@@ -382,6 +496,20 @@ export default function DepthChartField({
           />
         </BottomSheet>
 
+        <BottomSheet isOpen={seasonSheetOpen} onClose={() => setSeasonSheetOpen(false)}>
+          <SeasonSheet
+            currentSeason={currentSeason}
+            minSeason={SEASONS_MIN}
+            activeSeason={season}
+            accent={activeColors.uiAccent}
+            onSelect={(next) => {
+              changeSeason(next);
+              setSeasonSheetOpen(false);
+            }}
+            onClose={() => setSeasonSheetOpen(false)}
+          />
+        </BottomSheet>
+
         {!isDesktop && <PlayerCard {...playerCardProps} />}
 
         <SyncSelectionWithQuery
@@ -391,6 +519,8 @@ export default function DepthChartField({
         />
 
         <ApplyKitFromQuery validIds={roster.uniforms.map((u) => u.id)} onApply={setKitId} />
+
+        <ApplySeasonFromQuery onApply={applySeasonFromQuery} />
 
         <ApplySharedOrder onApply={handleApplySharedOrder} />
       </div>

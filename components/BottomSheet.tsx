@@ -31,7 +31,7 @@ export default function BottomSheet({
             onClick={onClose}
           />
           <motion.div
-            className="absolute inset-x-0 bottom-0 z-50"
+            className="absolute inset-x-0 bottom-0 z-50 flex flex-col"
             style={{
               background: `linear-gradient(180deg, #131a2b 0%, ${colors.bg} 100%)`,
               borderTopLeftRadius: 20,
@@ -40,6 +40,7 @@ export default function BottomSheet({
               boxShadow: `0 -8px 32px ${colors.scrimLight}`,
               paddingBottom: 'max(env(safe-area-inset-bottom), 16px)',
               maxHeight: '70%',
+              overflow: 'hidden',
             }}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
