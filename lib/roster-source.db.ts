@@ -12,6 +12,7 @@ import { type LeaderEntry, rosterLeaders } from './roster-leaders';
 import { resolvePostseason, resolveSchedule } from './schedule';
 import { getNflSeasonState } from './nfl-season';
 import { type PlayerHit, positionGroupPositions, rankByNameMatch } from './search';
+import { SPECIAL_LAYOUT } from './espn/transform';
 import type {
   Game,
   Player,
@@ -22,6 +23,7 @@ import type {
   SpecialSlot,
   Team,
   TeamColors,
+  TeamFormation,
   TeamRoster,
   TeamSchedule,
   TeamScheduleGame,
@@ -403,6 +405,112 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
   };
 }
 
+type RosterHistoryRow = Pick<
+  Tables['roster_history']['Row'],
+  | 'season'
+  | 'name'
+  | 'number'
+  | 'position'
+  | 'college'
+  | 'height'
+  | 'weight'
+  | 'headshot_url'
+  | 'depth_rank'
+  | 'player_order'
+  | 'gsis_id'
+>;
+const ROSTER_HISTORY_SELECT =
+  'season, name, number, position, college, height, weight, headshot_url, depth_rank, player_order, gsis_id';
+
+// Historical player ids are `gsis:<gsis_id>@<season>` (not an ESPN id -- most historical
+// players were never ingested by the live ESPN pipeline). This is the same typed-ref
+// format the D2 boards spec's player refs share, so a board can point at either id space
+// unambiguously (docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-design.md).
+function toHistoricalPlayer(row: RosterHistoryRow, team: Team): Player {
+  const rank = row.depth_rank as 1 | 2 | 3;
+  return {
+    id: `gsis:${row.gsis_id}@${row.season}`,
+    name: row.name,
+    number: row.number ?? 0,
+    position: row.position as Position,
+    depthRank: rank,
+    // Locked decision: historical status is noise beyond starter/backup -- no
+    // injured/rookie flags (the source data doesn't carry them).
+    status: rank === 1 ? 'starter' : 'backup',
+    order: row.player_order,
+    age: 0,
+    college: row.college ?? '—',
+    experience: 0,
+    height: row.height ?? '—',
+    weight: row.weight ?? 0,
+    bio: `${row.season} · ${team.city} ${team.name}`,
+    photoUrl: row.headshot_url ?? undefined,
+  };
+}
+
+// K/P/LS resolve from that season's ranked players; KR/PR always render empty --
+// returner assignments aren't in nflverse's roster data, and the empty-slot-never-guess
+// rule (Phase 1) applies same as the live ESPN path.
+function historicalSpecialTeams(players: Player[]): SpecialSlot[] {
+  const starterAt = (position: Position) =>
+    players.find((p) => p.position === position && p.depthRank === 1) ?? null;
+  const starters: Partial<Record<'k' | 'p' | 'ls', Player | null>> = {
+    k: starterAt('K'),
+    p: starterAt('P'),
+    ls: starterAt('LS'),
+  };
+  return SPECIAL_LAYOUT.map(({ slot, id, x, y, label }) => ({
+    id,
+    playerId: slot in starters ? (starters[slot as 'k' | 'p' | 'ls']?.id ?? null) : null,
+    x,
+    y,
+    label,
+  }));
+}
+
+// A past season's read-only roster (Phase D1). Returns undefined for an unknown team or
+// a season with no ingested rows (out of range, or not yet backfilled) -- same
+// "unknown -> 404" contract as getTeam. Uniforms are the team's normal (current) list,
+// since kit selection is orthogonal to which season's roster is showing.
+export async function getTeamSeason(
+  teamId: string,
+  season: number
+): Promise<TeamRoster | undefined> {
+  'use cache';
+  cacheLife('ingest');
+  const client = supabase();
+
+  const [
+    { data: teamRow, error: teamError },
+    { data: historyRows, error: historyError },
+    { data: uniformRows, error: uniformError },
+  ] = await Promise.all([
+    client.from('teams').select(TEAM_SELECT).eq('id', teamId).maybeSingle<TeamRow>(),
+    client
+      .from('roster_history')
+      .select(ROSTER_HISTORY_SELECT)
+      .eq('team_id', teamId)
+      .eq('season', season)
+      .returns<RosterHistoryRow[]>(),
+    client.from('uniforms').select(UNIFORM_SELECT).eq('team_id', teamId).returns<UniformRow[]>(),
+  ]);
+  if (teamError) throw new Error(`teams query failed: ${teamError.message}`);
+  if (historyError) throw new Error(`roster_history query failed: ${historyError.message}`);
+  if (uniformError) throw new Error(`uniforms query failed: ${uniformError.message}`);
+  if (!teamRow) return undefined;
+  if (!historyRows || historyRows.length === 0) return undefined;
+
+  const rows = uniformRows ?? [];
+  const team = withHomeColors(toTeam(teamRow), rows);
+  const players = historyRows.map((row) => toHistoricalPlayer(row, team));
+  return {
+    team,
+    players,
+    specialTeams: historicalSpecialTeams(players),
+    uniforms: orderUniforms(rows),
+  };
+}
+
 type TeamStatsPageTeamRow = TeamRow & {
   coach_name: string | null;
   coach_experience: number | null;
@@ -637,6 +745,45 @@ export async function getPlayerStats(playerId: string): Promise<PlayerSeasonStat
     .returns<PlayerStatsRow[]>();
   if (error) throw new Error(`player_stats query failed: ${error.message}`);
   return (data ?? []).map(toPlayerSeasonStats);
+}
+
+type TeamFormationRow = Pick<
+  Tables['team_formations']['Row'],
+  'season' | 'rank' | 'alignment' | 'personnel' | 'pct'
+>;
+const TEAM_FORMATION_SELECT = 'season, rank, alignment, personnel, pct';
+
+function toTeamFormation(row: TeamFormationRow): TeamFormation {
+  return {
+    season: row.season,
+    rank: row.rank,
+    alignment: row.alignment,
+    personnel: row.personnel,
+    pct: row.pct,
+  };
+}
+
+// A team's top-3 most-used real formations for its latest ingested season (Phase E,
+// docs/superpowers/specs/2026-07-07-phase-e-real-formations-design.md) — the offense
+// unit's formation chips. `season desc, rank asc` + limit 3 relies on the ingest never
+// storing more than 3 rows for a season, so this always lands on the latest season's
+// full top-3 without a separate max-season query. Empty for a team the ingest judged
+// as insufficient-coverage (or hasn't reached yet) — the field view falls back to the
+// generic formation, never a partial chip row (invariant 6).
+export async function getTeamFormations(teamId: string): Promise<TeamFormation[]> {
+  'use cache';
+  cacheLife('ingest');
+  const client = supabase();
+  const { data, error } = await client
+    .from('team_formations')
+    .select(TEAM_FORMATION_SELECT)
+    .eq('team_id', teamId)
+    .order('season', { ascending: false })
+    .order('rank', { ascending: true })
+    .limit(3)
+    .returns<TeamFormationRow[]>();
+  if (error) throw new Error(`team_formations query failed: ${error.message}`);
+  return (data ?? []).map(toTeamFormation);
 }
 
 // player_stats keyed by player only, so we need the player_id to bucket each row back

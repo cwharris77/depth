@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, MoreHorizontal, Pencil, RotateCcw, Share2, Shirt } from 'lucide-react';
+import { Check, History, MoreHorizontal, Pencil, RotateCcw, Share2, Shirt } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import type { TeamDepthOverride } from '@/lib/depth-overrides';
 import { hasOverride } from '@/lib/depth-overrides';
@@ -39,6 +39,11 @@ type Props = {
   onResetTeam: () => void;
   onPreviewSharedOrder: (override: TeamDepthOverride | null) => void;
   onApplySharedOrder: (override: TeamDepthOverride) => void;
+  // Phase D1: null = viewing today's live roster; a year = viewing that past season
+  // read-only.
+  season: number | null;
+  onOpenSeasons: () => void;
+  onBackToToday: () => void;
 };
 
 // Header chrome above the field: team header + nav search, unit tabs, the "•••" overflow
@@ -65,7 +70,11 @@ export default function FieldHeader({
   onResetTeam,
   onPreviewSharedOrder,
   onApplySharedOrder,
+  season,
+  onOpenSeasons,
+  onBackToToday,
 }: Props) {
+  const historicalMode = season !== null;
   return (
     <div
       className="px-5 pb-3"
@@ -114,6 +123,11 @@ export default function FieldHeader({
                 onClick: onChooseUniform,
               },
               {
+                icon: <History size={14} color={activeColors.uiAccent} />,
+                label: 'Seasons',
+                onClick: onOpenSeasons,
+              },
+              {
                 icon: shareCopied ? (
                   <Check size={14} color={activeColors.uiAccent} strokeWidth={3} />
                 ) : (
@@ -125,8 +139,9 @@ export default function FieldHeader({
               // App-level edit toggle, folded into the overflow menu instead of its own
               // row: on puts every position group's card into reorder mode at once (no
               // per-card Reorder taps needed); off exits all of them together. Omitted
-              // while previewing a shared board, same as reorder itself is disabled there.
-              ...(previewing
+              // while previewing a shared board or viewing a past season, same as
+              // reorder itself is disabled in both (locked decision, phase-d spec).
+              ...(previewing || historicalMode
                 ? []
                 : [
                     {
@@ -153,8 +168,9 @@ export default function FieldHeader({
         </div>
       </div>
       {/* Tells the user this team's depth is their custom order, with one-tap revert.
-        Hidden while previewing a shared board — that order isn't theirs to reset. */}
-      {hasOverride(override) && !previewing && (
+        Hidden while previewing a shared board or viewing a past season — neither order
+        is theirs to reset. */}
+      {hasOverride(override) && !previewing && !historicalMode && (
         <button
           type="button"
           onClick={onResetTeam}
@@ -167,6 +183,23 @@ export default function FieldHeader({
             touchAction: 'manipulation',
           }}>
           <RotateCcw size={11} /> Custom order · Reset all
+        </button>
+      )}
+      {/* Read-only past-season indicator with a one-tap way back to today (Phase D1,
+        docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-design.md). */}
+      {historicalMode && (
+        <button
+          type="button"
+          onClick={onBackToToday}
+          className="flex items-center gap-1 mt-3 text-[10px] font-bold px-2 py-1 rounded-full"
+          style={{
+            color: activeColors.uiAccent,
+            background: `${activeColors.uiAccent}1a`,
+            border: `1px solid ${activeColors.uiAccent}55`,
+            width: 'fit-content',
+            touchAction: 'manipulation',
+          }}>
+          <History size={11} /> {season} season · Back to today
         </button>
       )}
       {/* Shared-board preview banner (Apply / Dismiss), pinned just above the field. */}

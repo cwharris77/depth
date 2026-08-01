@@ -10,6 +10,7 @@
     "ingest:espn": "tsx scripts/ingest-espn.mts",
     "gen:espn-seed": "SEED_OUT=supabase/seed.sql tsx scripts/ingest-espn.mts",
     "ingest:nflverse": "tsx scripts/ingest-nflverse.mts",
+    "ingest:rosters": "tsx scripts/ingest-nflverse-rosters.mts",
     "check:uniform-releases": "tsx scripts/check-uniform-releases.mts",
     "preview:bypass-url": "tsx scripts/vercel-preview-url.mts",
     "gen:uniform-seed": "tsx scripts/gen-uniform-seed.mts",

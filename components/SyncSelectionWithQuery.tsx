@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect } from 'react';
+import { Suspense, useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { Player, Unit } from '@/lib/types';
 import { isUnit } from '@/lib/team-selection';
@@ -31,6 +31,19 @@ function Inner({
   const playerId = searchParams.get('player');
   const rawUnit = searchParams.get('unit');
 
+  // Read via a ref, not a dependency: closePlayer's own setSelectedPlayer(null) commits
+  // (and this component re-renders with a new selectedPlayerId) a tick before
+  // router.back()'s URL change actually lands. If selectedPlayerId were a dependency,
+  // that local-state-driven re-render would re-run this effect against the still-stale
+  // URL, find the just-closed player still in `?player=`, and reopen the card out from
+  // under the very close that triggered it (reported bug: swipe-to-close/the X button
+  // silently reverted). Depending only on the URL-derived values means this effect only
+  // ever reacts to a genuine URL change (Back/Forward, initial load, a manual edit),
+  // never to DepthChartField's own writes -- exactly the "not just at mount" cases in
+  // the comment above, no more.
+  const selectedPlayerIdRef = useRef(selectedPlayerId);
+  selectedPlayerIdRef.current = selectedPlayerId;
+
   // Genuine effect, not a derived-render value: DepthChartField's selection state lives
   // in a sibling component, so reacting to a URL change (in particular the browser's own
   // Back/Forward, which nothing in this tree initiates) means calling that sibling's
@@ -38,7 +51,7 @@ function Inner({
   // render. There's no lazy-init or useSyncExternalStore substitute either: this needs to
   // re-run on every navigation the *browser* drives, not just once at mount.
   useEffect(() => {
-    if (playerId === selectedPlayerId) return;
+    if (playerId === selectedPlayerIdRef.current) return;
     if (!playerId) {
       onChange(null, null);
       return;
@@ -46,7 +59,7 @@ function Inner({
     const player = players.find((p) => p.id === playerId);
     if (!player) return;
     onChange(player, isUnit(rawUnit) ? rawUnit : unitForPosition(player.position));
-  }, [playerId, rawUnit, selectedPlayerId, players, onChange]);
+  }, [playerId, rawUnit, players, onChange]);
 
   return null;
 }

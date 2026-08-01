@@ -340,6 +340,65 @@ export type Database = {
           },
         ]
       }
+      roster_history: {
+        Row: {
+          college: string | null
+          depth_rank: number
+          espn_id: string | null
+          gsis_id: string
+          headshot_url: string | null
+          height: string | null
+          name: string
+          number: number | null
+          player_order: number
+          position: string
+          season: number
+          team_id: string
+          updated_at: string
+          weight: number | null
+        }
+        Insert: {
+          college?: string | null
+          depth_rank: number
+          espn_id?: string | null
+          gsis_id: string
+          headshot_url?: string | null
+          height?: string | null
+          name: string
+          number?: number | null
+          player_order: number
+          position: string
+          season: number
+          team_id: string
+          updated_at?: string
+          weight?: number | null
+        }
+        Update: {
+          college?: string | null
+          depth_rank?: number
+          espn_id?: string | null
+          gsis_id?: string
+          headshot_url?: string | null
+          height?: string | null
+          name?: string
+          number?: number | null
+          player_order?: number
+          position?: string
+          season?: number
+          team_id?: string
+          updated_at?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roster_history_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schedules: {
         Row: {
           season: number
@@ -471,6 +530,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "team_coach_seasons_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_formations: {
+        Row: {
+          alignment: string
+          pct: number
+          personnel: string
+          rank: number
+          season: number
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          alignment: string
+          pct: number
+          personnel: string
+          rank: number
+          season: number
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          alignment?: string
+          pct?: number
+          personnel?: string
+          rank?: number
+          season?: number
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_formations_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"

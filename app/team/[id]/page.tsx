@@ -1,6 +1,7 @@
 import DepthChartField from '@/components/DepthChartField';
 import RememberTeam from '@/components/RememberTeam';
-import { dbRosterSource, getPlayerStatsForRoster } from '@/lib/roster-source.db';
+import { dbRosterSource, getPlayerStatsForRoster, getTeamFormations } from '@/lib/roster-source.db';
+import { getNflSeasonState } from '@/lib/nfl-season';
 import { OG_IMAGE_ALT, OG_IMAGE_SIZE } from '@/lib/og';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -67,9 +68,10 @@ export default async function TeamPage({ params }: Params) {
   // so the client only ever receives the team it's viewing. Team metadata for all 32
   // (for the switcher) is lightweight — no player data — so it's safe to ship on
   // every page alongside the one full roster.
-  const [roster, teams] = await Promise.all([
+  const [roster, teams, { isOffseason, upcomingSeason }] = await Promise.all([
     dbRosterSource.getTeam(id),
     dbRosterSource.listTeams(),
+    getNflSeasonState(),
   ]);
   if (!roster) {
     notFound();
@@ -79,14 +81,31 @@ export default async function TeamPage({ params }: Params) {
   // client-side round trip. Keyed by player id so the card can look up its player's
   // stats synchronously. One batched query for the whole roster (getPlayerStatsForRoster)
   // instead of one query per player — a missing key degrades to an empty array (the card
-  // renders no stats section), matching the old per-player error path.
-  const playerStatsMap = await getPlayerStatsForRoster(roster.players.map((p) => p.id));
+  // renders no stats section), matching the old per-player error path. Independent of
+  // getTeamFormations (real per-team formation chips, Phase E — empty for a team the
+  // ingest judged as insufficient-coverage, which DepthChartField treats as "no chip
+  // row", not an error), so both run concurrently instead of adding a second serial
+  // round trip to the page's render time.
+  const [playerStatsMap, formations] = await Promise.all([
+    getPlayerStatsForRoster(roster.players.map((p) => p.id)),
+    getTeamFormations(id),
+  ]);
+
+  // The season SeasonSheet's "current" row shows (Phase D1) — same "which season is
+  // live right now" definition fetchTeamStatsPage uses for its currentSeason field.
+  const currentSeason = isOffseason ? upcomingSeason : upcomingSeason - 1;
 
   // RememberTeam records this team in localStorage (5a) so the home route reopens it.
   return (
     <>
       <RememberTeam id={id} />
-      <DepthChartField roster={roster} teams={teams} playerStatsMap={playerStatsMap} />
+      <DepthChartField
+        roster={roster}
+        teams={teams}
+        playerStatsMap={playerStatsMap}
+        formations={formations}
+        currentSeason={currentSeason}
+      />
     </>
   );
 }
