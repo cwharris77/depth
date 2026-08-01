@@ -81,12 +81,15 @@ export default async function TeamPage({ params }: Params) {
   // client-side round trip. Keyed by player id so the card can look up its player's
   // stats synchronously. One batched query for the whole roster (getPlayerStatsForRoster)
   // instead of one query per player — a missing key degrades to an empty array (the card
-  // renders no stats section), matching the old per-player error path.
-  const playerStatsMap = await getPlayerStatsForRoster(roster.players.map((p) => p.id));
-
-  // Real per-team formation chips (Phase E) -- empty for a team the ingest judged as
-  // insufficient-coverage, which DepthChartField treats as "no chip row", not an error.
-  const formations = await getTeamFormations(id);
+  // renders no stats section), matching the old per-player error path. Independent of
+  // getTeamFormations (real per-team formation chips, Phase E — empty for a team the
+  // ingest judged as insufficient-coverage, which DepthChartField treats as "no chip
+  // row", not an error), so both run concurrently instead of adding a second serial
+  // round trip to the page's render time.
+  const [playerStatsMap, formations] = await Promise.all([
+    getPlayerStatsForRoster(roster.players.map((p) => p.id)),
+    getTeamFormations(id),
+  ]);
 
   // The season SeasonSheet's "current" row shows (Phase D1) — same "which season is
   // live right now" definition fetchTeamStatsPage uses for its currentSeason field.
