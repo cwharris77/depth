@@ -183,3 +183,36 @@ interactive/stateful components — verify by operating the full interaction cyc
 go through, not by checking each bullet against a static render; ambiguous phrasing like "the same
 way it works today" needs the implementer to name which semantic (live vs. committed) it means,
 because that choice is invisible until someone actually uses the shipped feature.
+
+### Observation 9: db-migration skill's grant check didn't prevent a permission-denied miss
+
+**Status:** OPEN
+**Date:** 2026-08-01
+**Session context:** Implementing "Scheduled monitor for new uniform releases" — added a new
+`uniform_release_watches` table modeled on `ingestion_runs` (RLS enabled, no read policy,
+service-role only).
+**Skill:** db-migration
+**Type:** open-source
+**Phase/Area:** "Write the migration" step, the grants bullet
+
+**Issue:** The skill's grants bullet reads "New tables need grants — follow the precedent in
+`20260701171029_grant_default_table_privileges.sql` (default privileges may already cover you;
+check before duplicating)." That migration is a fixed table list, not `ALTER DEFAULT PRIVILEGES`,
+so it does NOT cover new tables — every table added after it (uniforms, player_stats, etc.) has
+carried its own `grant select, insert, update, delete on <table> to anon, authenticated,
+service_role;` line, right next to its RLS-enable line. The current wording reads as "usually
+already covered, verify first," which is backwards: it is never already covered for a new table,
+and the grant is not optional even when RLS ships with no read policy — first run of the new
+script failed with `permission denied for table uniform_release_watches` even though the
+service role has `bypassrls` (a plain GRANT is a separate privilege layer from RLS).
+**Suggested improvement:** Rephrase the grants bullet to state plainly that every new table needs
+its own explicit `grant ... to anon, authenticated, service_role` line in the same migration as
+the table (not "check if default privileges cover you" — they structurally can't for a table
+created after that fixed-list migration), and note that this grant is required even for
+service-role-only tables with RLS-on/no-read-policy, since GRANT and RLS are independent privilege
+layers.
+**Principle:** A "check before duplicating" hedge in a skill is only useful when the thing being
+checked can plausibly already be true; here the referenced precedent is a fixed table list that by
+construction can never cover a table added later, so the hedge should be replaced with an
+unconditional instruction. Also: RLS policies and Postgres table GRANTs are two independent gates
+— disabling/enabling one doesn't change whether the other blocks a service-role client.
