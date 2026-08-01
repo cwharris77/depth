@@ -32,7 +32,9 @@ export default function SeasonSheet({
 
   return (
     <div className="flex flex-col" style={{ height: '100%', minHeight: 0 }}>
-      <div className="flex items-center justify-between px-5 pt-4 pb-2" style={{ flex: '0 0 auto' }}>
+      <div
+        className="flex items-center justify-between px-5 pt-4 pb-2"
+        style={{ flex: '0 0 auto' }}>
         <h2 className="text-base font-black" style={{ color: uiTokens.textPrimary }}>
           Seasons
         </h2>
