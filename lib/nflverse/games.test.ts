@@ -87,4 +87,28 @@ describe('toScheduleAndGameRows', () => {
     expect(games).toHaveLength(0);
     expect(skipped).toBe(1);
   });
+
+  it('only keeps the two most recent seasons found in the file', () => {
+    const { games, schedules } = toScheduleAndGameRows(
+      [
+        row({ game_id: '1999_01_LA_SEA', season: '1999' }),
+        row({ game_id: '2024_01_LA_SEA', season: '2024' }),
+        row({ game_id: '2025_01_LA_SEA', season: '2025' }),
+      ],
+      resolveTeamCode
+    );
+    expect(games.map((g) => g.season).sort()).toEqual([2024, 2025]);
+    expect(schedules.every((s) => s.season === 2024 || s.season === 2025)).toBe(true);
+  });
+
+  it('drops out-of-range seasons without counting them as skipped', () => {
+    const { skipped } = toScheduleAndGameRows(
+      [
+        row({ game_id: '1999_01_LA_SEA', season: '1999' }),
+        row({ game_id: '2025_01_LA_SEA', season: '2025' }),
+      ],
+      resolveTeamCode
+    );
+    expect(skipped).toBe(0);
+  });
 });
