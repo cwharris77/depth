@@ -29,6 +29,7 @@ export default function Tooltip({ content, children, side = 'top' }: TooltipProp
           <Popover.Popup
             className="max-w-[220px] rounded-xl px-3 py-2 text-[11px] font-medium leading-snug"
             style={{
+              position: 'relative',
               color: colors.textPrimary,
               background: colors.surfaceMenu,
               border: `1px solid ${colors.borderStrong}`,
@@ -45,7 +46,17 @@ export default function Tooltip({ content, children, side = 'top' }: TooltipProp
                   state.side === 'right' && 'border-b border-l'
                 )
               }
-              style={{ background: colors.surfaceMenu, borderColor: colors.borderStrong }}
+              style={(state) => ({
+                background: colors.surfaceMenu,
+                borderColor: colors.borderStrong,
+                // Base UI's Arrow only computes the cross-axis position (e.g. `top` for a
+                // left/right-side popup) inline -- the main-axis offset (which edge to sit
+                // flush against, pointing at the trigger) is left to consumer CSS.
+                ...(state.side === 'top' && { bottom: -4 }),
+                ...(state.side === 'bottom' && { top: -4 }),
+                ...(state.side === 'left' && { right: -4 }),
+                ...(state.side === 'right' && { left: -4 }),
+              })}
             />
           </Popover.Popup>
         </Popover.Positioner>
