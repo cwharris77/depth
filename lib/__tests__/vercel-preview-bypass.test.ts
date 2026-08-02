@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import {
   readDotenvValue,
-  VERCEL_PROTECTION_BYPASS_KEY,
-  VERCEL_SET_BYPASS_COOKIE_KEY,
+  VERCEL_PROTECTION_BYPASS_ENV_KEY,
+  VERCEL_PROTECTION_BYPASS_QUERY_KEY,
+  VERCEL_SET_BYPASS_COOKIE_QUERY_KEY,
   withVercelProtectionBypass,
 } from '../vercel-preview-bypass';
 
@@ -13,8 +14,8 @@ describe('vercel preview bypass', () => {
       withVercelProtectionBypass('https://depth-git-feature-cwharris77.vercel.app/team/ari', 'dev')
     );
 
-    expect(url.searchParams.get(VERCEL_PROTECTION_BYPASS_KEY)).toBe('dev');
-    expect(url.searchParams.get(VERCEL_SET_BYPASS_COOKIE_KEY)).toBe('1');
+    expect(url.searchParams.get(VERCEL_PROTECTION_BYPASS_QUERY_KEY)).toBe('dev');
+    expect(url.searchParams.get(VERCEL_SET_BYPASS_COOKIE_QUERY_KEY)).toBe('1');
   });
 
   it('preserves existing params and hash', () => {
@@ -31,14 +32,14 @@ describe('vercel preview bypass', () => {
     );
   });
 
-  it('reads the hyphenated token key from dotenv text', () => {
-    expect(readDotenvValue(`${VERCEL_PROTECTION_BYPASS_KEY}='dev'\nOTHER=value`, 'OTHER')).toBe(
+  it('reads the token key from dotenv text', () => {
+    expect(readDotenvValue(`${VERCEL_PROTECTION_BYPASS_ENV_KEY}='dev'\nOTHER=value`, 'OTHER')).toBe(
       'value'
     );
     expect(
       readDotenvValue(
-        `${VERCEL_PROTECTION_BYPASS_KEY}='dev'\nOTHER=value`,
-        VERCEL_PROTECTION_BYPASS_KEY
+        `${VERCEL_PROTECTION_BYPASS_ENV_KEY}='dev'\nOTHER=value`,
+        VERCEL_PROTECTION_BYPASS_ENV_KEY
       )
     ).toBe('dev');
   });

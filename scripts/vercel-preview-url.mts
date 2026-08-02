@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 
 import {
   readDotenvValue,
-  VERCEL_PROTECTION_BYPASS_KEY,
+  VERCEL_PROTECTION_BYPASS_ENV_KEY,
   withVercelProtectionBypass,
 } from '../lib/vercel-preview-bypass';
 
@@ -18,12 +18,12 @@ const parsed = new URL(previewUrl);
 const envPath = resolve(process.cwd(), process.env.DEPTH_ENV_FILE ?? '.env.local');
 const dotenv = existsSync(envPath) ? readFileSync(envPath, 'utf8') : '';
 const token =
-  process.env[VERCEL_PROTECTION_BYPASS_KEY] ??
-  readDotenvValue(dotenv, VERCEL_PROTECTION_BYPASS_KEY);
+  process.env[VERCEL_PROTECTION_BYPASS_ENV_KEY] ??
+  readDotenvValue(dotenv, VERCEL_PROTECTION_BYPASS_ENV_KEY);
 const bypassUrl = withVercelProtectionBypass(previewUrl, token);
 
 if (parsed.hostname.endsWith('.vercel.app') && bypassUrl === previewUrl) {
-  console.error(`Missing ${VERCEL_PROTECTION_BYPASS_KEY} in ${envPath}`);
+  console.error(`Missing ${VERCEL_PROTECTION_BYPASS_ENV_KEY} in ${envPath}`);
   process.exit(1);
 }
 
