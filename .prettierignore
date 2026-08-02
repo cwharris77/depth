@@ -15,3 +15,6 @@ supabase/
 # Build output and lockfile.
 .next/
 package-lock.json
+
+.claude/
+.agents/
