@@ -91,12 +91,22 @@ export function rankByUsage<T>(entries: UsageEntry<T>[]): RankedEntry<T>[] {
   const ranked: RankedEntry<T>[] = [];
   for (const [position, group] of byPosition) {
     const sorted = [...group].sort((a, b) => b.usage - a.usage || a.number - b.number);
+    // Side assignment is a stable partition of the usage-sorted order (index 0,2,4…
+    // → left, 1,3,5… → right), so each side preserves the group's relative order and
+    // its own rank is just a per-side counter. depthRank must rank within the slot the
+    // player ends up in (LT/RT/LG/RG each need their own starter) — ranking on the
+    // collapsed group left every second side (RG/RT) with no depth_rank=1 row, which
+    // made the roster list start at BACKUP with no STARTER above it.
+    const sideRank = new Map<Position, number>();
     sorted.forEach((entry, i) => {
+      const resolved = resolveOlSide(position, i);
+      const rank = (sideRank.get(resolved) ?? 0) + 1;
+      sideRank.set(resolved, rank);
       ranked.push({
         item: entry.item,
-        position: resolveOlSide(position, i),
-        depthRank: Math.min(i + 1, 3) as 1 | 2 | 3,
-        playerOrder: i + 1,
+        position: resolved,
+        depthRank: Math.min(rank, 3) as 1 | 2 | 3,
+        playerOrder: rank,
       });
     });
   }

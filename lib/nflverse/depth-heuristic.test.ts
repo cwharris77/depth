@@ -82,7 +82,7 @@ describe('rankByUsage', () => {
     expect(ranked.map((r) => r.playerOrder)).toEqual([1, 2, 3, 4, 5]);
   });
 
-  it('alternates OL side by rank order within the group', () => {
+  it('alternates OL side by rank order within the group and ranks each side independently', () => {
     const entries: UsageEntry<string>[] = [
       { item: 'best-tackle', position: 'OL_TACKLE', number: 70, usage: 16 },
       { item: 'second-tackle', position: 'OL_TACKLE', number: 71, usage: 12 },
@@ -90,6 +90,34 @@ describe('rankByUsage', () => {
     ];
     const ranked = rankByUsage(entries);
     expect(ranked.map((r) => r.position)).toEqual(['LT', 'RT', 'LT']);
+    // The side split must not leave one side without a starter: RT's best player is
+    // rank 1 within RT, and LT's second player is rank 2 within LT (regression for the
+    // RG/RT "no depth_rank=1" bug -- every side needs its own STARTER row).
+    expect(ranked.map((r) => r.depthRank)).toEqual([1, 1, 2]);
+    expect(ranked.map((r) => r.playerOrder)).toEqual([1, 1, 2]);
+  });
+
+  it('gives every non-empty position group a depth_rank=1 starter', () => {
+    // Property test across OL collapses (the bug shape): alternating sides must not
+    // produce a group that starts at depth_rank 2.
+    const entries: UsageEntry<string>[] = [
+      { item: 'g1', position: 'OL_GUARD', number: 60, usage: 16 },
+      { item: 'g2', position: 'OL_GUARD', number: 61, usage: 12 },
+      { item: 'g3', position: 'OL_GUARD', number: 62, usage: 8 },
+      { item: 'g4', position: 'OL_GUARD', number: 63, usage: 4 },
+      { item: 't1', position: 'OL_TACKLE', number: 70, usage: 16 },
+      { item: 't2', position: 'OL_TACKLE', number: 71, usage: 12 },
+    ];
+    const ranked = rankByUsage(entries);
+    const byPosition = new Map<string, typeof ranked>();
+    for (const r of ranked) {
+      const group = byPosition.get(r.position) ?? [];
+      group.push(r);
+      byPosition.set(r.position, group);
+    }
+    for (const group of byPosition.values()) {
+      expect(Math.min(...group.map((r) => r.depthRank))).toBe(1);
+    }
   });
 
   it('ranks distinct positions independently', () => {
