@@ -138,20 +138,29 @@ export default function FieldHeader({
               },
               // App-level edit toggle, folded into the overflow menu instead of its own
               // row: on puts every position group's card into reorder mode at once (no
-              // per-card Reorder taps needed); off exits all of them together. Omitted
-              // while previewing a shared board or viewing a past season, same as
-              // reorder itself is disabled in both (locked decision, phase-d spec).
-              ...(previewing || historicalMode
-                ? []
-                : [
-                    {
-                      icon: <Pencil size={14} color={activeColors.uiAccent} />,
-                      label: 'Edit depth chart',
-                      checked: globalEditMode,
-                      accent: activeColors.uiAccent,
-                      onClick: onToggleGlobalEditMode,
-                    },
-                  ]),
+              // per-card Reorder taps needed); off exits all of them together. Disabled
+              // (not omitted) while previewing a shared board or viewing a past season,
+              // same as reorder itself is disabled in both (locked decision, phase-d
+              // spec) -- a Tooltip on the disabled row explains why instead of the item
+              // just silently disappearing.
+              {
+                icon: (
+                  <Pencil
+                    size={14}
+                    color={
+                      previewing || historicalMode ? uiTokens.textFaint : activeColors.uiAccent
+                    }
+                  />
+                ),
+                label: 'Edit depth chart',
+                checked: globalEditMode,
+                accent: activeColors.uiAccent,
+                onClick: onToggleGlobalEditMode,
+                disabled: previewing || historicalMode,
+                disabledReason: previewing
+                  ? "Shared boards are read-only — apply the order to your own team's chart to edit it"
+                  : `${season} season is read-only — back to today's roster to edit`,
+              },
             ]}
           />
           <AnimatePresence>

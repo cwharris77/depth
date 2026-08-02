@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import Tooltip from './Tooltip';
 import { colors } from './tokens';
 
 type MenuItem = {
@@ -9,6 +10,11 @@ type MenuItem = {
   onClick: () => void;
   checked?: boolean;
   accent?: string;
+  // A disabled item stays visible (dimmed, inert) instead of being omitted, with
+  // disabledReason shown in a Tooltip on hover/tap explaining why -- e.g. "Edit depth
+  // chart" while viewing a past season.
+  disabled?: boolean;
+  disabledReason?: ReactNode;
 };
 
 // Anchored "•••" overflow menu: a trigger button toggling a right-aligned popover of
@@ -57,32 +63,43 @@ export default function Menu({
             minWidth: 168,
             boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
           }}>
-          {items.map((item, i) => (
-            <button
-              key={i}
-              type="button"
-              role={item.checked === undefined ? 'menuitem' : 'menuitemcheckbox'}
-              aria-checked={item.checked}
-              onClick={() => {
-                setOpen(false);
-                item.onClick();
-              }}
-              className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-[12px] font-semibold whitespace-nowrap"
-              style={{
-                color: colors.textPrimary,
-                borderTop: i > 0 ? `1px solid ${colors.borderDefault}` : undefined,
-                touchAction: 'manipulation',
-              }}>
-              {item.icon}
-              <span className="flex-1">{item.label}</span>
-              {item.checked && (
-                <span
-                  className="h-3.5 w-3.5 shrink-0 rounded-full"
-                  style={{ background: item.accent ?? colors.accent }}
-                />
-              )}
-            </button>
-          ))}
+          {items.map((item, i) => {
+            const row = (
+              <button
+                key={i}
+                type="button"
+                role={item.checked === undefined ? 'menuitem' : 'menuitemcheckbox'}
+                aria-checked={item.checked}
+                aria-disabled={item.disabled || undefined}
+                onClick={() => {
+                  if (item.disabled) return;
+                  setOpen(false);
+                  item.onClick();
+                }}
+                className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-[12px] font-semibold whitespace-nowrap"
+                style={{
+                  color: item.disabled ? colors.textFaint : colors.textPrimary,
+                  borderTop: i > 0 ? `1px solid ${colors.borderDefault}` : undefined,
+                  touchAction: 'manipulation',
+                }}>
+                {item.icon}
+                <span className="flex-1">{item.label}</span>
+                {item.checked && (
+                  <span
+                    className="h-3.5 w-3.5 shrink-0 rounded-full"
+                    style={{ background: item.accent ?? colors.accent }}
+                  />
+                )}
+              </button>
+            );
+            return item.disabled && item.disabledReason ? (
+              <Tooltip key={i} content={item.disabledReason} side="left">
+                {row}
+              </Tooltip>
+            ) : (
+              row
+            );
+          })}
         </div>
       )}
     </div>
