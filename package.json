@@ -25,6 +25,7 @@
     "fix": "npm run format && npm run lint:fix && npm run typecheck"
   },
   "dependencies": {
+    "@base-ui/react": "^1.6.0",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.110.0",
     "@vercel/toolbar": "^0.2.6",

@@ -1,15 +1,15 @@
 'use client';
 
-import { Check, History, MoreHorizontal, Pencil, RotateCcw, Share2, Shirt } from 'lucide-react';
-import { AnimatePresence } from 'framer-motion';
+import Menu from '@/components/ui/Menu';
+import TabBar from '@/components/ui/TabBar';
+import { colors as uiTokens } from '@/components/ui/tokens';
+import Walkthrough from '@/components/ui/Walkthrough';
 import type { TeamDepthOverride } from '@/lib/depth-overrides';
 import { hasOverride } from '@/lib/depth-overrides';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { Player, Team, TeamColors, Unit } from '@/lib/types';
-import { colors as uiTokens } from '@/components/ui/tokens';
-import Menu from '@/components/ui/Menu';
-import TabBar from '@/components/ui/TabBar';
-import Walkthrough from '@/components/ui/Walkthrough';
+import { AnimatePresence } from 'framer-motion';
+import { Check, History, MoreHorizontal, Pencil, RotateCcw, Share2, Shirt } from 'lucide-react';
 import SharedBoardBanner from './SharedBoardBanner';
 import TeamPageHeader from './TeamPageHeader';
 
@@ -138,20 +138,29 @@ export default function FieldHeader({
               },
               // App-level edit toggle, folded into the overflow menu instead of its own
               // row: on puts every position group's card into reorder mode at once (no
-              // per-card Reorder taps needed); off exits all of them together. Omitted
-              // while previewing a shared board or viewing a past season, same as
-              // reorder itself is disabled in both (locked decision, phase-d spec).
-              ...(previewing || historicalMode
-                ? []
-                : [
-                    {
-                      icon: <Pencil size={14} color={activeColors.uiAccent} />,
-                      label: 'Edit depth chart',
-                      checked: globalEditMode,
-                      accent: activeColors.uiAccent,
-                      onClick: onToggleGlobalEditMode,
-                    },
-                  ]),
+              // per-card Reorder taps needed); off exits all of them together. Disabled
+              // (not omitted) while previewing a shared board or viewing a past season,
+              // same as reorder itself is disabled in both (locked decision, phase-d
+              // spec) -- a Tooltip on the disabled row explains why instead of the item
+              // just silently disappearing.
+              {
+                icon: (
+                  <Pencil
+                    size={14}
+                    color={
+                      previewing || historicalMode ? uiTokens.textFaint : activeColors.uiAccent
+                    }
+                  />
+                ),
+                label: 'Edit depth chart',
+                checked: globalEditMode,
+                accent: activeColors.uiAccent,
+                onClick: onToggleGlobalEditMode,
+                disabled: previewing || historicalMode,
+                disabledReason: previewing
+                  ? "Shared boards are read-only — apply the order to your own team's chart to edit it"
+                  : `Historical seasons are read-only`,
+              },
             ]}
           />
           <AnimatePresence>
