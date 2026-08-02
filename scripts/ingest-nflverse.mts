@@ -13,7 +13,7 @@
 //     (see docs/superpowers/specs/2026-08-01-historic-nflverse-coverage-design.md for
 //     why: player_stats.player_id FKs to `players`, which is current-roster-scoped, so
 //     a historic backfill there needs a separate player-identity decision first).
-// Requires SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in the environment (service role
+// Requires SUPABASE_URL + SUPABASE_SECRET_KEY in the environment (secret key
 // bypasses RLS-equivalent restrictions for writes; never expose it client-side).
 
 import dotenv from 'dotenv';
@@ -223,7 +223,7 @@ async function ingestFormations(supabase: SupabaseClient<Database>): Promise<{
 async function main() {
   const supabase: SupabaseClient<Database> = createClient(
     requireEnv('SUPABASE_URL'),
-    requireEnv('SUPABASE_SERVICE_ROLE_KEY')
+    requireEnv('SUPABASE_SECRET_KEY')
   );
 
   const startedAt = new Date().toISOString();

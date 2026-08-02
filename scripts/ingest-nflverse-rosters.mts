@@ -7,7 +7,7 @@
 // Usage:
 //   npm run ingest:rosters                    # current season only (weekly job)
 //   npm run ingest:rosters -- --seasons 1999-2025
-// Requires SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in the environment (service role
+// Requires SUPABASE_URL + SUPABASE_SECRET_KEY in the environment (secret key
 // bypasses RLS-equivalent restrictions for writes; never expose it client-side).
 
 import dotenv from 'dotenv';
@@ -58,7 +58,7 @@ async function getText(url: string, attempts = 3): Promise<string> {
 async function main() {
   const supabase: SupabaseClient<Database> = createClient(
     requireEnv('SUPABASE_URL'),
-    requireEnv('SUPABASE_SERVICE_ROLE_KEY')
+    requireEnv('SUPABASE_SECRET_KEY')
   );
 
   const startedAt = new Date().toISOString();

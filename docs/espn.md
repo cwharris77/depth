@@ -55,7 +55,7 @@ PR as the migration that changed the schema.
 ## Regenerate
 
 ```bash
-SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npm run ingest:espn
+SUPABASE_URL=... SUPABASE_SECRET_KEY=... npm run ingest:espn
 ```
 
 The service role key is required (bypasses RLS-equivalent restrictions for writes) and
@@ -108,10 +108,10 @@ leave the DB one run stale.
 
 See `.env.local.example`:
 
-- `SUPABASE_URL` / `SUPABASE_ANON_KEY` — used by the app (`dbRosterSource`) for reads.
+- `SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY` — used by the app (`dbRosterSource`) for reads.
   Safe to commit (the example file's values are this project's real anon/publishable
   key and URL — anon key is public-safe by design).
-- `SUPABASE_SERVICE_ROLE_KEY` — used only by `scripts/ingest-espn.mts` for writes.
+- `SUPABASE_SECRET_KEY` — used only by `scripts/ingest-espn.mts` for writes.
   Secret. Never commit; put the real value in your local `.env.local` (gitignored).
 
 ## Scheduling (GitHub Actions)
@@ -136,7 +136,7 @@ Ingestion runs on a schedule via `.github/workflows/ingest-espn.yml`, which just
 The workflow needs these under **Settings → Secrets and variables → Actions**:
 
 - `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_SECRET_KEY`
 
 Without them the run fails loudly on the `requireEnv` check — the intended behavior,
 not a silent no-op.
