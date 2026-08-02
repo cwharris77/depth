@@ -375,14 +375,20 @@ export default function DepthChartField({
           <div
             className="flex gap-2 overflow-x-auto px-3 pb-2 pt-1"
             style={{ scrollbarWidth: 'none' }}>
-            <FilterPill active={!activeFormation} onClick={() => setActiveFormation(null)}>
+            <FilterPill
+              active={!activeFormation}
+              onClick={() => setActiveFormation(null)}
+              accentColor={activeColors.uiAccent}
+              onAccentColor={activeColors.onAccent}>
               Base
             </FilterPill>
             {formations.map((f) => (
               <FilterPill
                 key={f.rank}
                 active={activeFormation?.rank === f.rank}
-                onClick={() => setActiveFormation(f)}>
+                onClick={() => setActiveFormation(f)}
+                accentColor={activeColors.uiAccent}
+                onAccentColor={activeColors.onAccent}>
                 {alignmentLabel(f.alignment)} {f.personnel} · {f.pct}%
               </FilterPill>
             ))}

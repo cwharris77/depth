@@ -1,6 +1,6 @@
 import DepthChartField from '@/components/DepthChartField';
 import { resolveStartupTeam } from '@/lib/home-team';
-import { dbRosterSource } from '@/lib/roster-source.db';
+import { dbRosterSource, getPlayerStatsForRoster, getTeamFormations } from '@/lib/roster-source.db';
 import { getServerClient } from '@/lib/supabase/server';
 import { getNflSeasonState } from '@/lib/nfl-season';
 import { DEFAULT_TEAM_ID } from '@/lib/teams';
@@ -54,7 +54,19 @@ export default async function Home() {
     if (!roster) {
       notFound();
     }
-    return <DepthChartField roster={roster} teams={teams} currentSeason={currentSeason} />;
+    const [playerStatsMap, formations] = await Promise.all([
+      getPlayerStatsForRoster(roster.players.map((p) => p.id)),
+      getTeamFormations(DEFAULT_TEAM_ID),
+    ]);
+    return (
+      <DepthChartField
+        roster={roster}
+        teams={teams}
+        playerStatsMap={playerStatsMap}
+        formations={formations}
+        currentSeason={currentSeason}
+      />
+    );
   }
 
   const [roster, teams] = await Promise.all([
@@ -64,5 +76,17 @@ export default async function Home() {
   if (!roster) {
     notFound();
   }
-  return <DepthChartField roster={roster} teams={teams} currentSeason={currentSeason} />;
+  const [playerStatsMap, formations] = await Promise.all([
+    getPlayerStatsForRoster(roster.players.map((p) => p.id)),
+    getTeamFormations(DEFAULT_TEAM_ID),
+  ]);
+  return (
+    <DepthChartField
+      roster={roster}
+      teams={teams}
+      playerStatsMap={playerStatsMap}
+      formations={formations}
+      currentSeason={currentSeason}
+    />
+  );
 }
