@@ -127,7 +127,7 @@ expected.
 ## Regenerate
 
 ```bash
-SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npm run ingest:nflverse
+SUPABASE_URL=... SUPABASE_SECRET_KEY=... npm run ingest:nflverse
 ```
 
 Requires the ESPN ingest (`npm run ingest:espn`) to have already populated `players` —
@@ -149,7 +149,7 @@ Same as the ESPN ingest — `npm run db:types` reads **local** Postgres
 `ingestion_runs`), `workflow_dispatch` for manual runs, `STRICT=1` so a partial run
 (some season failed to write) turns the workflow red, and a `concurrency` group so two
 runs never overlap. Same two repo secrets as the ESPN workflow
-(`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`).
+(`SUPABASE_URL`, `SUPABASE_SECRET_KEY`).
 
 ## License posture
 

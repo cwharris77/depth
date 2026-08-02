@@ -37,7 +37,7 @@ jobs:
         run: npm run check:uniform-releases
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
       - name: Open an issue for each new unveiling
         if: steps.check.outputs.new_items != '[]'
         uses: actions/github-script@v7
