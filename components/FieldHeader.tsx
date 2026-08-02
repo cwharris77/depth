@@ -1,15 +1,15 @@
 'use client';
 
-import { Check, History, MoreHorizontal, Pencil, RotateCcw, Share2, Shirt } from 'lucide-react';
-import { AnimatePresence } from 'framer-motion';
+import Menu from '@/components/ui/Menu';
+import TabBar from '@/components/ui/TabBar';
+import { colors as uiTokens } from '@/components/ui/tokens';
+import Walkthrough from '@/components/ui/Walkthrough';
 import type { TeamDepthOverride } from '@/lib/depth-overrides';
 import { hasOverride } from '@/lib/depth-overrides';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { Player, Team, TeamColors, Unit } from '@/lib/types';
-import { colors as uiTokens } from '@/components/ui/tokens';
-import Menu from '@/components/ui/Menu';
-import TabBar from '@/components/ui/TabBar';
-import Walkthrough from '@/components/ui/Walkthrough';
+import { AnimatePresence } from 'framer-motion';
+import { Check, History, MoreHorizontal, Pencil, RotateCcw, Share2, Shirt } from 'lucide-react';
 import SharedBoardBanner from './SharedBoardBanner';
 import TeamPageHeader from './TeamPageHeader';
 
@@ -159,7 +159,7 @@ export default function FieldHeader({
                 disabled: previewing || historicalMode,
                 disabledReason: previewing
                   ? "Shared boards are read-only — apply the order to your own team's chart to edit it"
-                  : `${season} season is read-only — back to today's roster to edit`,
+                  : `Historical seasons are read-only`,
               },
             ]}
           />
