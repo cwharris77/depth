@@ -1,5 +1,5 @@
 // Browser Supabase client for auth (Phase C, auth pass 1; OTP-code sign-in, auth pass 3).
-// The app's data reads still go through dbRosterSource with the server-side anon key; this
+// The app's data reads still go through dbRosterSource with the server-side publishable key; this
 // client exists only so the browser can run the code sign-in flow and observe auth state.
 // Singleton — one client per tab keeps a single auth/session listener and cookie writer.
 import { createBrowserClient } from '@supabase/ssr';
@@ -12,7 +12,7 @@ export function getBrowserClient() {
   if (!client) {
     client = createBrowserClient<Database>(
       requireEnv('NEXT_PUBLIC_SUPABASE_URL', process.env.NEXT_PUBLIC_SUPABASE_URL),
-      requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+      requireEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY', process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
     );
   }
   return client;

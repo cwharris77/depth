@@ -274,6 +274,6 @@ instruction here conflicts with a direct request from Cooper (his request wins �
 say which rule you're overriding).
 
 **Never**: force-push or delete `main`; commit a service-role key
-(`SUPABASE_SERVICE_ROLE_KEY` lives only in `.env.local` and GitHub Actions secrets —
+(`SUPABASE_SECRET_KEY` lives only in `.env.local` and GitHub Actions secrets —
 the anon key is public-safe by design); merge-commit; hand-edit generated files;
 delete archive rows.

@@ -4,7 +4,7 @@
 // docs/espn.md). Never part of `next build`.
 //
 // Usage: npm run ingest:espn
-// Requires SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in the environment (service role
+// Requires SUPABASE_URL + SUPABASE_SECRET_KEY in the environment (secret key
 // bypasses RLS-equivalent restrictions for writes; never expose it client-side).
 //
 // Seed mode: `npm run gen:espn-seed` sets SEED_OUT=supabase/seed.sql, which fetches +
@@ -85,7 +85,7 @@ async function main() {
   const seedOut = process.env.SEED_OUT;
   const supabase: SupabaseClient<Database> | null = seedOut
     ? null
-    : createClient(requireEnv('SUPABASE_URL'), requireEnv('SUPABASE_SERVICE_ROLE_KEY'));
+    : createClient(requireEnv('SUPABASE_URL'), requireEnv('SUPABASE_SECRET_KEY'));
 
   const startedAt = new Date().toISOString();
   const espnIndex = await espnTeamIndex();
