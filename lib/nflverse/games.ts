@@ -8,9 +8,11 @@
 //
 // games.csv is nfldata's single schedule/results file covering every season since 1999
 // (unlike the player-stats CSVs, there's no per-season asset to scope the fetch to) --
-// so scoping happens after parsing: only the two most recent seasons found in the file
-// are kept, mirroring the "current + previous season" rule the player-stats ingest
-// already applies. Older rows are dropped, not "skipped" (skipped means malformed).
+// so scoping happens after parsing. By default only the two most recent seasons found
+// in the file are kept, mirroring the "current + previous season" rule the player-stats
+// ingest already applies; an explicit `minSeason` (the historic-backfill script's
+// --seasons flag, docs/nflverse.md) overrides that and keeps everything from that season
+// on. Older rows are dropped, not "skipped" (skipped means malformed).
 
 export interface ScheduleInsert {
   team_id: string;
@@ -46,7 +48,8 @@ function nullableText(value: string | undefined): string | null {
 
 export function toScheduleAndGameRows(
   csvRows: Record<string, string>[],
-  resolveCode: (code: string) => string | null
+  resolveCode: (code: string) => string | null,
+  minSeason?: number
 ): { games: GameInsert[]; schedules: ScheduleInsert[]; skipped: number } {
   const parsed: GameInsert[] = [];
   let skipped = 0;
@@ -83,12 +86,14 @@ export function toScheduleAndGameRows(
     });
   }
 
-  // Scope to the two most recent seasons present in the file (current + previous),
+  // Default: the two most recent seasons present in the file (current + previous),
   // same rule as the player-stats ingest. Computed from the data itself rather than
   // the calendar so a mid-offseason run (next season's games not yet in the file
-  // either) still keeps the two seasons that do exist.
+  // either) still keeps the two seasons that do exist. An explicit minSeason (backfill
+  // mode) overrides this and keeps every season from there on.
   const maxSeason = parsed.reduce((max, g) => Math.max(max, g.season), -Infinity);
-  const games = parsed.filter((g) => g.season >= maxSeason - 1);
+  const floor = minSeason ?? maxSeason - 1;
+  const games = parsed.filter((g) => g.season >= floor);
 
   const scheduleKeys = new Set<string>(); // `${team_id}|${season}`, dedup across a team's games
   for (const g of games) {
