@@ -129,7 +129,7 @@ refactor (see §6).
   live: …" line describing what was actually seen in the browser.
 - **Vercel preview browser QA starts with the bypass URL.** Protected preview
   deployments use Vercel's Protection Bypass for Automation. Keep the token only in
-  `.env.local` as `x-vercel-protection-bypass`; never commit it. Before opening a
+  `.env.local` as `X_VERCEL_PROTECTION_BYPASS`; never commit it. Before opening a
   `*.vercel.app` preview in an agent/browser session, run
   `npm run preview:bypass-url -- <preview-url>` and navigate to the printed URL first.
   It appends `x-vercel-protection-bypass` and `x-vercel-set-bypass-cookie=1` so Vercel
