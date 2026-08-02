@@ -3,7 +3,16 @@
 // Postgres (Supabase). Run by hand (or on a schedule -- see docs/nflverse.md). Never
 // part of `next build`.
 //
-// Usage: npm run ingest:nflverse
+// Usage:
+//   npm run ingest:nflverse                     # weekly job: player_stats current +
+//                                                # previous season, games/schedules
+//                                                # current + previous season
+//   npm run ingest:nflverse -- --seasons 1999-2025
+//     backfills games/schedules for every season in the range (docs/nflverse.md).
+//     player_stats is unaffected by this flag -- it always stays current + previous
+//     (see docs/superpowers/specs/2026-08-01-historic-nflverse-coverage-design.md for
+//     why: player_stats.player_id FKs to `players`, which is current-roster-scoped, so
+//     a historic backfill there needs a separate player-identity decision first).
 // Requires SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in the environment (service role
 // bypasses RLS-equivalent restrictions for writes; never expose it client-side).
 
@@ -18,6 +27,8 @@ import { toPlayerStatsRows } from '../lib/nflverse/transform';
 import { toScheduleAndGameRows } from '../lib/nflverse/games';
 import { FormationAccumulator, type ParticipationRow } from '../lib/nflverse/participation';
 import { resolveTeamCode } from '../lib/nflverse/team-codes';
+import { parseSeasonsArg } from '../lib/nflverse/seasons-arg';
+import { SEASONS_MIN } from '../lib/nflverse/roster-history';
 import type { Database } from '../lib/database.types';
 
 const PLAYERS_TAG = 'players';
@@ -69,7 +80,12 @@ async function getText(url: string, attempts = 3): Promise<string> {
 // resolve. Idempotent upserts (conflict on the PKs), so a rerun is always safe. Returns
 // counts + a fetch/transform failure for the ingestion_runs record; a games failure never
 // throws out of the whole run, matching the per-season player-stats error handling.
-async function ingestGames(supabase: SupabaseClient<Database>): Promise<{
+// `minSeason` is undefined for the weekly job (current + previous, the default inside
+// toScheduleAndGameRows) or an explicit floor for a --seasons backfill run.
+async function ingestGames(
+  supabase: SupabaseClient<Database>,
+  minSeason?: number
+): Promise<{
   schedulesWritten: number;
   gamesWritten: number;
   skipped: number;
@@ -77,7 +93,11 @@ async function ingestGames(supabase: SupabaseClient<Database>): Promise<{
 }> {
   try {
     const csv = await getText(GAMES_URL);
-    const { games, schedules, skipped } = toScheduleAndGameRows(parseCsv(csv), resolveTeamCode);
+    const { games, schedules, skipped } = toScheduleAndGameRows(
+      parseCsv(csv),
+      resolveTeamCode,
+      minSeason
+    );
 
     const { error: schedError } = await supabase
       .from('schedules')
@@ -209,6 +229,14 @@ async function main() {
   const startedAt = new Date().toISOString();
   const failures: { season: number | string; message: string }[] = [];
 
+  // --seasons only scopes the games/schedules step (see the usage comment above);
+  // player_stats keeps its own current+previous selection below regardless.
+  const gamesSeasons = parseSeasonsArg(process.argv.slice(2));
+  const gamesMinSeason = gamesSeasons === null ? undefined : Math.min(...gamesSeasons);
+  if (gamesSeasons !== null && gamesMinSeason !== undefined && gamesMinSeason < SEASONS_MIN) {
+    throw new Error(`--seasons includes years before ${SEASONS_MIN}: ${gamesSeasons.join(', ')}`);
+  }
+
   const playersCsv = await getText(assetUrl(PLAYERS_TAG, PLAYERS_FILE));
   const crosswalk = buildCrosswalk(parseCsv(playersCsv));
   console.log(`crosswalk: ${crosswalk.size} gsis_id -> espn_id mappings`);
@@ -255,7 +283,7 @@ async function main() {
   }
 
   // Schedules + games (nflverse nfldata/games.csv), a second dataset in the same run.
-  const gamesResult = await ingestGames(supabase);
+  const gamesResult = await ingestGames(supabase, gamesMinSeason);
   if (gamesResult.failure) failures.push({ season: 'games', message: gamesResult.failure });
   skipped += gamesResult.skipped;
 
@@ -286,6 +314,7 @@ async function main() {
     errors: {
       seasons,
       player_stats_rows: rowsWritten,
+      games_min_season: gamesMinSeason ?? null,
       games_written: gamesResult.gamesWritten,
       schedules_written: gamesResult.schedulesWritten,
       formations_season: formationsResult.season,
