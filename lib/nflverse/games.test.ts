@@ -111,4 +111,30 @@ describe('toScheduleAndGameRows', () => {
     );
     expect(skipped).toBe(0);
   });
+
+  it('keeps every season from an explicit minSeason on, not just the two most recent', () => {
+    const { games, schedules } = toScheduleAndGameRows(
+      [
+        row({ game_id: '1999_01_LA_SEA', season: '1999' }),
+        row({ game_id: '2010_01_LA_SEA', season: '2010' }),
+        row({ game_id: '2025_01_LA_SEA', season: '2025' }),
+      ],
+      resolveTeamCode,
+      2000
+    );
+    expect(games.map((g) => g.season).sort()).toEqual([2010, 2025]);
+    expect(schedules.every((s) => s.season >= 2000)).toBe(true);
+  });
+
+  it('an explicit minSeason below every row in the file keeps everything', () => {
+    const { games } = toScheduleAndGameRows(
+      [
+        row({ game_id: '1999_01_LA_SEA', season: '1999' }),
+        row({ game_id: '2025_01_LA_SEA', season: '2025' }),
+      ],
+      resolveTeamCode,
+      1999
+    );
+    expect(games.map((g) => g.season).sort()).toEqual([1999, 2025]);
+  });
 });

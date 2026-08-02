@@ -37,28 +37,48 @@ rosters, draft picks, formations) reuse this same scaffolding with their own spe
   our `team.id`. NOT our ESPN `abbrev` (the Rams are nflverse `LA`, our abbrev `LAR`),
   and historic relocations (`OAK`/`SD`/`STL`) fold into the current franchise. A
   hand-reviewed static map; an unknown code -> `null` (its game is skipped-and-counted).
-- `lib/nflverse/games.ts` — `toScheduleAndGameRows(rows, resolveCode)`: pure transform of
-  `nfldata/games.csv` into `games` rows (one per shared game) + `schedules` rows (the
-  distinct `(team_id, season)` set the games imply). A row with an unresolvable team code
-  or a non-numeric season is **skipped and counted**. `'' -> null` for blank scores/dates.
-  `nfldata/games.csv` is one file covering every season since 1999 (no per-season asset
-  like the player-stats CSVs), so the transform scopes itself: after parsing, it keeps
-  only the two most recent seasons found in the file (current + previous), same rule as
-  the player-stats ingest. Dropped older rows aren't counted as skipped (skipped means
-  malformed, not out-of-range).
+- `lib/nflverse/games.ts` — `toScheduleAndGameRows(rows, resolveCode, minSeason?)`: pure
+  transform of `nfldata/games.csv` into `games` rows (one per shared game) + `schedules`
+  rows (the distinct `(team_id, season)` set the games imply). A row with an unresolvable
+  team code or a non-numeric season is **skipped and counted**. `'' -> null` for blank
+  scores/dates. `nfldata/games.csv` is one file covering every season since 1999 (no
+  per-season asset like the player-stats CSVs), so the transform scopes itself: with no
+  `minSeason`, it keeps only the two most recent seasons found in the file (current +
+  previous), same rule as the player-stats ingest; an explicit `minSeason` (the
+  `--seasons` backfill flag, below) keeps every season from there on instead. Dropped
+  older rows aren't counted as skipped (skipped means malformed, not out-of-range).
+- `lib/nflverse/seasons-arg.ts` — `parseSeasonsArg(argv)`: pure parse of the `--seasons`
+  CLI flag (`--seasons 1999-2025` a range, `--seasons 2013` one year, no flag -> `null`
+  meaning "the weekly job's default"). Shared by `scripts/ingest-nflverse-rosters.mts`
+  and `scripts/ingest-nflverse.mts`'s games/schedules step.
 - `lib/schedule.ts` — `resolveSchedule(games, teamId)` (regular-season, this-team's
   perspective: home/away, opponent id, W/L/T or null-when-upcoming, ordered by week, BYE
   weeks derived from missing weeks) and `nextGame(schedule)` (earliest unplayed). Pure;
   the read layer enriches opponent ids into team metadata for the UI.
 - `scripts/ingest-nflverse.mts` — fetches `players.csv` once, the latest two available
   `stats_player_reg_<season>.csv` files, transforms, and upserts `player_stats`
-  (`onConflict: player_id,season,season_type`). Then `ingestGames` fetches
-  `nfldata/data/games.csv` (one file, all seasons 1999+ — scoped to the two most recent
-  seasons by `toScheduleAndGameRows`, see above) and upserts **schedules first, then
-  games** (chunked) — the games' composite FKs require the schedule rows to exist.
-  Writes one `ingestion_runs` row (`source: 'nflverse'`) whose `errors` jsonb carries
-  `{ seasons, player_stats_rows, games_written, schedules_written, skipped, failures }`;
+  (`onConflict: player_id,season,season_type`) — **always current + previous season**,
+  regardless of CLI flags (see the caveat below). Then `ingestGames` fetches
+  `nfldata/data/games.csv` (one file, all seasons 1999+) and upserts **schedules first,
+  then games** (chunked) — the games' composite FKs require the schedule rows to exist.
+  With no flag, games/schedules also scope to the two most recent seasons
+  (`toScheduleAndGameRows`, see above); `npm run ingest:nflverse -- --seasons 1999-2025`
+  backfills games/schedules for the full range instead (`--seasons` parsed the same way
+  as `ingest:rosters`, see `parseSeasonsArg` above). Writes one `ingestion_runs` row
+  (`source: 'nflverse'`) whose `errors` jsonb carries `{ seasons, player_stats_rows,
+  games_min_season, games_written, schedules_written, skipped, failures }`;
   `teams_written` is repurposed as the total row count across both datasets.
+
+  **Why `--seasons` doesn't also backfill `player_stats`:** `player_stats.player_id` is a
+  `not null` FK to `players(id)`, and `players` is populated by the ESPN ingest from
+  *current* rosters only. A historic `stats_player_reg_<year>.csv` row for a player no
+  longer on any of the 32 current rosters has no matching `players` row, so
+  `toPlayerStatsRows`'s `knownPlayerIds` check would skip nearly all of it — backfilling
+  old player-stats seasons doesn't work until player identity for retired/historic
+  players is solved (see
+  `docs/superpowers/specs/2026-08-01-historic-nflverse-coverage-design.md`). Games and
+  schedules have no such FK (they reference `teams`, not `players`), so they backfill
+  cleanly today.
 - `lib/roster-source.db.ts` — `getPlayerStats(playerId)`, a standalone export (same
   shape as `searchAllPlayers`) — lazy per-player, not part of `RosterSource`, since the
   field view never needs stats. `getRosterLeaders(teamId)` — a second standalone read
