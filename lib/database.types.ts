@@ -545,6 +545,7 @@ export type Database = {
           rank: number
           season: number
           team_id: string
+          unit: string
           updated_at: string
         }
         Insert: {
@@ -554,6 +555,7 @@ export type Database = {
           rank: number
           season: number
           team_id: string
+          unit: string
           updated_at?: string
         }
         Update: {
@@ -563,6 +565,7 @@ export type Database = {
           rank?: number
           season?: number
           team_id?: string
+          unit?: string
           updated_at?: string
         }
         Relationships: [

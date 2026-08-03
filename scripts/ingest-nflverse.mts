@@ -26,6 +26,7 @@ import { buildCrosswalk } from '../lib/nflverse/crosswalk';
 import { toPlayerStatsRows } from '../lib/nflverse/transform';
 import { toScheduleAndGameRows } from '../lib/nflverse/games';
 import { FormationAccumulator, type ParticipationRow } from '../lib/nflverse/participation';
+import { DefenseFormationAccumulator } from '../lib/nflverse/defense-participation';
 import { resolveTeamCode } from '../lib/nflverse/team-codes';
 import { parseSeasonsArg } from '../lib/nflverse/seasons-arg';
 import { SEASONS_MIN } from '../lib/nflverse/roster-history';
@@ -164,10 +165,12 @@ async function getGamesPlayedByTeam(
 }
 
 // Fetches the latest available pbp_participation season and stream-parses it straight
-// into a FormationAccumulator (locked decision: never materialize the ~46k-row season
-// file in memory), then upserts each team's top-3 (alignment, personnel) combos. A team
-// below the coverage bar simply gets no rows -- the field view falls back to the
-// generic formation for it, never a sparse-sample layout.
+// into both a FormationAccumulator and a DefenseFormationAccumulator in the same pass
+// (locked decision: never materialize the ~46k-row season file in memory, and never
+// fetch/parse the ~50MB file twice for two units), then upserts each team's top-3
+// (alignment, personnel) combos per unit. A team below the coverage bar simply gets no
+// rows for that unit -- the field view falls back to the generic formation for it,
+// never a sparse-sample layout.
 async function ingestFormations(supabase: SupabaseClient<Database>): Promise<{
   season: number | null;
   written: number;
@@ -191,30 +194,41 @@ async function ingestFormations(supabase: SupabaseClient<Database>): Promise<{
     const res = await fetch(url);
     if (!res.ok || !res.body) throw new Error(`${res.status} ${url}`);
 
-    const accumulator = new FormationAccumulator(resolveTeamCode);
+    const offenseAcc = new FormationAccumulator(resolveTeamCode);
+    const defenseAcc = new DefenseFormationAccumulator(resolveTeamCode);
     await parseCsvStream(textChunks(res.body), (record) => {
       const row: ParticipationRow = {
         nflverse_game_id: record.nflverse_game_id ?? '',
         possession_team: record.possession_team ?? '',
         offense_formation: record.offense_formation ?? '',
         offense_personnel: record.offense_personnel ?? '',
+        defense_personnel: record.defense_personnel ?? '',
       };
-      accumulator.addRow(row);
+      offenseAcc.addRow(row);
+      defenseAcc.addRow(row);
     });
 
-    const { tallies, skippedTeams } = accumulator.finish(season, gamesPlayedByTeam);
+    const offenseResult = offenseAcc.finish(season, gamesPlayedByTeam);
+    const defenseResult = defenseAcc.finish(season, gamesPlayedByTeam);
+    const tallies = [
+      ...offenseResult.tallies.map((t) => ({ ...t, unit: 'offense' as const })),
+      ...defenseResult.tallies.map((t) => ({ ...t, unit: 'defense' as const })),
+    ];
+    const skippedTeams = offenseResult.skippedTeams.length + defenseResult.skippedTeams.length;
+    const skippedRows = offenseAcc.skipped + defenseAcc.skipped;
+
     if (tallies.length) {
       const { error } = await supabase
         .from('team_formations')
-        .upsert(tallies, { onConflict: 'team_id,season,rank' });
+        .upsert(tallies, { onConflict: 'team_id,season,unit,rank' });
       if (error) throw new Error(`team_formations upsert: ${error.message}`);
     }
 
     console.log(
       `formations: season ${season}, wrote ${tallies.length} rows ` +
-        `(${skippedTeams.length} team(s) below coverage, ${accumulator.skipped} rows skipped)`
+        `(${skippedTeams} team(s) below coverage, ${skippedRows} rows skipped)`
     );
-    return { season, written: tallies.length, skippedTeams: skippedTeams.length, failure: null };
+    return { season, written: tallies.length, skippedTeams, failure: null };
   } catch (e) {
     return { season, written: 0, skippedTeams: 0, failure: (e as Error).message };
   }
