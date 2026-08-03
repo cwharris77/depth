@@ -9,7 +9,16 @@ import { hasOverride } from '@/lib/depth-overrides';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { Player, Team, TeamColors, Unit } from '@/lib/types';
 import { AnimatePresence } from 'framer-motion';
-import { Check, History, MoreHorizontal, Pencil, RotateCcw, Share2, Shirt } from 'lucide-react';
+import {
+  Check,
+  History,
+  LayoutGrid,
+  MoreHorizontal,
+  Pencil,
+  RotateCcw,
+  Share2,
+  Shirt,
+} from 'lucide-react';
 import SharedBoardBanner from './SharedBoardBanner';
 import TeamPageHeader from './TeamPageHeader';
 
@@ -44,6 +53,10 @@ type Props = {
   season: number | null;
   onOpenSeasons: () => void;
   onBackToToday: () => void;
+  // Real-formations entry (DEP-142/2a): the ••• menu row that opens FormationsSheet,
+  // showing the current pick inline instead of a separate on-field control.
+  formationsMeta: string;
+  onOpenFormations: () => void;
 };
 
 // Header chrome above the field: team header + nav search, unit tabs, the "•••" overflow
@@ -73,6 +86,8 @@ export default function FieldHeader({
   season,
   onOpenSeasons,
   onBackToToday,
+  formationsMeta,
+  onOpenFormations,
 }: Props) {
   const historicalMode = season !== null;
   return (
@@ -126,6 +141,21 @@ export default function FieldHeader({
                 icon: <History size={14} color={activeColors.uiAccent} />,
                 label: 'Seasons',
                 onClick: onOpenSeasons,
+              },
+              {
+                icon: (
+                  <LayoutGrid
+                    size={14}
+                    color={historicalMode ? uiTokens.textFaint : activeColors.uiAccent}
+                  />
+                ),
+                label: 'Formations',
+                meta: historicalMode ? undefined : formationsMeta,
+                onClick: onOpenFormations,
+                disabled: historicalMode,
+                disabledReason: historicalMode
+                  ? "Historical seasons don't have formation data"
+                  : undefined,
               },
               {
                 icon: shareCopied ? (

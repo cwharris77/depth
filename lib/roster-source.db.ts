@@ -757,27 +757,30 @@ export async function getPlayerStats(playerId: string): Promise<PlayerSeasonStat
 
 type TeamFormationRow = Pick<
   Tables['team_formations']['Row'],
-  'season' | 'rank' | 'alignment' | 'personnel' | 'pct'
+  'season' | 'rank' | 'unit' | 'alignment' | 'personnel' | 'pct'
 >;
-const TEAM_FORMATION_SELECT = 'season, rank, alignment, personnel, pct';
+const TEAM_FORMATION_SELECT = 'season, rank, unit, alignment, personnel, pct';
 
 function toTeamFormation(row: TeamFormationRow): TeamFormation {
   return {
     season: row.season,
     rank: row.rank,
+    unit: row.unit as 'offense' | 'defense',
     alignment: row.alignment,
     personnel: row.personnel,
     pct: row.pct,
   };
 }
 
-// A team's top-3 most-used real formations for its latest ingested season (Phase E,
-// docs/superpowers/specs/2026-07-07-phase-e-real-formations-design.md) — the offense
-// unit's formation chips. `season desc, rank asc` + limit 3 relies on the ingest never
-// storing more than 3 rows for a season, so this always lands on the latest season's
-// full top-3 without a separate max-season query. Empty for a team the ingest judged
-// as insufficient-coverage (or hasn't reached yet) — the field view falls back to the
-// generic formation, never a partial chip row (invariant 6).
+// A team's top-3 most-used real formations per unit for its latest ingested season
+// (Phase E, docs/superpowers/specs/2026-07-07-phase-e-real-formations-design.md;
+// defense added DEP-141) — feeds the Formations sheet for both the offense and defense
+// tabs. Ordered `season desc, unit, rank asc` and capped at 12 (2 units × 3 ranks, with
+// headroom) rather than a separate max-season query; the latest season present in the
+// result is taken from the first row and used to filter out any older season that
+// slipped in. Empty for a team/unit the ingest judged as insufficient-coverage (or
+// hasn't reached yet) — the field view falls back to the generic formation, never a
+// partial list (invariant 6).
 export async function getTeamFormations(teamId: string): Promise<TeamFormation[]> {
   'use cache';
   cacheLife('ingest');
@@ -787,11 +790,14 @@ export async function getTeamFormations(teamId: string): Promise<TeamFormation[]
     .select(TEAM_FORMATION_SELECT)
     .eq('team_id', teamId)
     .order('season', { ascending: false })
+    .order('unit', { ascending: true })
     .order('rank', { ascending: true })
-    .limit(3)
+    .limit(12)
     .returns<TeamFormationRow[]>();
   if (error) throw new Error(`team_formations query failed: ${error.message}`);
-  return (data ?? []).map(toTeamFormation);
+  const rows = data ?? [];
+  const latestSeason = rows[0]?.season;
+  return rows.filter((r) => r.season === latestSeason).map(toTeamFormation);
 }
 
 // player_stats keyed by player only, so we need the player_id to bucket each row back

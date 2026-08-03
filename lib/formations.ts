@@ -42,13 +42,14 @@ export const DEFENSE_FORMATION: FormationSlot[] = [
   { id: 'def-de-1', position: 'DE', index: 1, x: 76, y: 49, label: 'DE', onLine: true },
 ];
 
-// Resolve a unit to render-ready slots for a given roster. `offenseFormation` lets a
-// caller swap in a real per-team layout (buildRealFormation, below) for the offense
-// unit — ignored for defense/special, which have no such override.
+// Resolve a unit to render-ready slots for a given roster. `realFormation` lets a
+// caller swap in a real per-team layout (buildRealFormation / buildRealDefenseFormation,
+// below) for the offense or defense unit — ignored for special, which has no such
+// override.
 export function resolveUnit(
   roster: TeamRosterSeed,
   unit: Unit,
-  offenseFormation?: FormationSlot[]
+  realFormation?: FormationSlot[]
 ): RenderSlot[] {
   if (unit === 'special') {
     return roster.specialTeams.map((slot) => ({
@@ -60,8 +61,8 @@ export function resolveUnit(
     }));
   }
 
-  const formation =
-    unit === 'offense' ? (offenseFormation ?? OFFENSE_FORMATION) : DEFENSE_FORMATION;
+  const fallback = unit === 'offense' ? OFFENSE_FORMATION : DEFENSE_FORMATION;
+  const formation = realFormation ?? fallback;
   return formation.map((slot) => ({
     key: slot.id,
     x: slot.x,
@@ -216,4 +217,99 @@ export function buildRealFormation(alignment: string, code: string): FormationSl
   };
 
   return [...OL_SLOTS, ...skillSlots, ...rbSlots, qbSlot].map((s) => ({ ...s, id: slotId(s) }));
+}
+
+// --- Real per-team defensive formations (mirrors buildRealFormation above) ------------
+//
+// A defensive front is the triple (DL count, LB count, DB count) —
+// lib/nflverse/defense-personnel.ts derives this from nflverse's defense_personnel
+// column and stores it as the "{dl}-{lb}-{db}" shorthand. Geometry is driven by the
+// counts, not by the front's friendly name (Base/Nickel/Dime/...), so any real combo the
+// data yields gets a reasonable layout, not just the handful of named fronts.
+
+const DEFENSE_PERSONNEL_CODE_RE = /^(\d+)-(\d+)-(\d+)$/;
+const DL_Y = 49; // same line the offense's OL sits on, mirrored to the defense's side
+const LB_Y = 37;
+
+function spreadX(count: number, minX: number, maxX: number): number[] {
+  if (count <= 0) return [];
+  if (count === 1) return [(minX + maxX) / 2];
+  const step = (maxX - minX) / (count - 1);
+  return Array.from({ length: count }, (_, i) => minX + step * i);
+}
+
+// The Position enum has no NT/OLB/ILB/FS/SS split (lib/types.ts) — display-only
+// distinctions (a lone lineman reading "NT", an edge DB reading "CB" vs a safety
+// reading "S") live in `label`, decoupled from the `position` used to index the roster.
+function buildDlSlots(dl: number): FormationSlot[] {
+  const counts: Record<'DE' | 'DT', number> = { DE: 0, DT: 0 };
+  return spreadX(dl, 24, 76).map((x, i) => {
+    const isEdge = dl > 1 && (i === 0 || i === dl - 1);
+    const position: 'DE' | 'DT' = isEdge ? 'DE' : 'DT';
+    const label = dl === 1 ? 'NT' : position;
+    const index = counts[position]++;
+    return { id: '', position, index, x, y: DL_Y, onLine: true, label };
+  });
+}
+
+function buildLbSlots(lb: number): FormationSlot[] {
+  return spreadX(lb, 26, 74).map((x, i) => ({
+    id: '',
+    position: 'LB',
+    index: i,
+    x,
+    y: LB_Y,
+    onLine: false,
+    label: 'LB',
+  }));
+}
+
+// Fixed spots, filled in order as the DB count grows past the base 4 (2 edge corners +
+// 2 safeties): a 5th DB is a nickel corner, a 6th a dime safety, a 7th a quarter corner —
+// standard broadcast/coaching convention, same one defenseAlignmentLabel names the front
+// by. Coordinates keep the widest/deepest players (edge CBs, safeties) fixed and fan
+// extra DBs in front of them as the box empties out.
+const DB_SLOTS: { position: 'CB' | 'S'; x: number; y: number }[] = [
+  { position: 'CB', x: 10, y: 26 },
+  { position: 'CB', x: 90, y: 26 },
+  { position: 'S', x: 34, y: 14 },
+  { position: 'S', x: 66, y: 14 },
+  { position: 'CB', x: 50, y: 28 },
+  { position: 'S', x: 50, y: 10 },
+  { position: 'CB', x: 26, y: 30 },
+  { position: 'S', x: 74, y: 30 },
+];
+
+function buildDbSlots(db: number): FormationSlot[] {
+  const counts: Record<'CB' | 'S', number> = { CB: 0, S: 0 };
+  return DB_SLOTS.slice(0, Math.min(db, DB_SLOTS.length)).map((spot) => {
+    const index = counts[spot.position]++;
+    return {
+      id: '',
+      position: spot.position,
+      index,
+      x: spot.x,
+      y: spot.y,
+      onLine: false,
+      label: spot.position,
+    };
+  });
+}
+
+// Builds one team's actual defensive front from its most-used "{dl}-{lb}-{db}" combo.
+// Falls back to the generic DEFENSE_FORMATION for a code this repo can't place (wrong
+// shape, or counts that don't sum to 11) — never a crash, never a half-built layout,
+// same posture as buildRealFormation.
+export function buildRealDefenseFormation(code: string): FormationSlot[] {
+  const m = DEFENSE_PERSONNEL_CODE_RE.exec(code);
+  if (!m) return DEFENSE_FORMATION;
+  const dl = Number(m[1]);
+  const lb = Number(m[2]);
+  const db = Number(m[3]);
+  if (dl + lb + db !== 11) return DEFENSE_FORMATION;
+
+  return [...buildDlSlots(dl), ...buildLbSlots(lb), ...buildDbSlots(db)].map((s) => ({
+    ...s,
+    id: `def-${s.position.toLowerCase()}-${s.index}`,
+  }));
 }
