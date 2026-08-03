@@ -1,6 +1,11 @@
 'use client';
 
-import { alignmentLabel, buildRealFormation, resolveUnit } from '@/lib/formations';
+import {
+  alignmentLabel,
+  buildRealDefenseFormation,
+  buildRealFormation,
+  resolveUnit,
+} from '@/lib/formations';
 import type { TeamMeta } from '@/lib/roster-source';
 import { unitForPosition } from '@/lib/search';
 import { buildTeamSelectionUrl } from '@/lib/team-selection';
@@ -14,13 +19,13 @@ import ApplySharedOrder from './ApplySharedOrder';
 import BottomSheet from './BottomSheet';
 import FieldHeader from './FieldHeader';
 import FieldMarkings from './FieldMarkings';
+import FormationsSheet from './FormationsSheet';
 import SeasonSheet from './SeasonSheet';
 import SyncSelectionWithQuery from './SyncSelectionWithQuery';
 import PlayerCard from './PlayerCard';
 import PlayerDot from './PlayerDot';
 import TeamPageShell from './TeamPageShell';
 import UniformSheet from './UniformSheet';
-import FilterPill from './ui/FilterPill';
 import { DESKTOP_MEDIA_QUERY, useMediaQuery } from '@/lib/use-media-query';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import { applyTeamOverride } from '@/lib/depth-overrides';
@@ -69,6 +74,7 @@ export default function DepthChartField({
   // always null at SSR, so the hook's server-side `false` renders nothing either way.
   const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
   const [kitOpen, setKitOpen] = useState(false);
+  const [formationsSheetOpen, setFormationsSheetOpen] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -159,17 +165,45 @@ export default function DepthChartField({
   // back to the live one mid-fetch, or a stale live frame would flash before the real
   // season's data lands (AGENTS.md invariant 16).
   const fieldRoster = historicalMode ? themedHistoricalRoster : themedRoster;
-  // Real-formation chips (Phase E) are about the latest ingested season's live
-  // participation data -- meaningless overlaid on a past season's roster, so only
-  // applied outside historical mode.
-  const realFormation = useMemo(
-    () =>
-      !historicalMode && activeFormation
-        ? buildRealFormation(activeFormation.alignment, activeFormation.personnel)
-        : undefined,
-    [historicalMode, activeFormation]
+
+  // Real formations (Phase E offense, DEP-141 defense) are about the latest ingested
+  // season's live participation data -- meaningless overlaid on a past season's roster,
+  // so only applied outside historical mode. Special teams has no real-formation data
+  // (see FormationsSheet's empty state), so it always falls back to the static layout.
+  const offenseFormations = useMemo(
+    () => (formations ?? []).filter((f) => f.unit === 'offense'),
+    [formations]
   );
+  const defenseFormations = useMemo(
+    () => (formations ?? []).filter((f) => f.unit === 'defense'),
+    [formations]
+  );
+  const unitFormations =
+    activeUnit === 'offense'
+      ? offenseFormations
+      : activeUnit === 'defense'
+        ? defenseFormations
+        : [];
+
+  const realFormation = useMemo(() => {
+    if (historicalMode || !activeFormation) return undefined;
+    if (activeUnit === 'offense') {
+      return buildRealFormation(activeFormation.alignment, activeFormation.personnel);
+    }
+    if (activeUnit === 'defense') {
+      return buildRealDefenseFormation(activeFormation.personnel);
+    }
+    return undefined;
+  }, [historicalMode, activeUnit, activeFormation]);
   const slots = fieldRoster ? resolveUnit(fieldRoster, activeUnit, realFormation) : [];
+
+  // The ••• menu's "Formations" row shows the current pick inline instead of a separate
+  // on-field control (DEP-142/option 2a).
+  const formationsMeta = !activeFormation
+    ? 'Base'
+    : activeUnit === 'offense'
+      ? `${alignmentLabel(activeFormation.alignment)} ${activeFormation.personnel}`
+      : `${activeFormation.alignment} (${activeFormation.personnel})`;
 
   // Keep the open card's player in sync with the reordered roster (fresh depthRank/status).
   const displaySelected = selectedPlayer
@@ -209,7 +243,9 @@ export default function DepthChartField({
 
   const changeUnit = (unit: Unit) => {
     setActiveUnit(unit);
-    if (unit !== 'offense') setActiveFormation(null);
+    // A selected formation is unit-specific (offense/defense each have their own list) —
+    // switching units always clears it rather than carrying a stale pick across.
+    setActiveFormation(null);
     setSelectedPlayer(null);
     openedViaPushRef.current = false;
     router.replace(buildTeamSelectionUrl(pathname, { unit, playerId: null, season }), {
@@ -364,36 +400,9 @@ export default function DepthChartField({
           season={season}
           onOpenSeasons={() => setSeasonSheetOpen(true)}
           onBackToToday={() => changeSeason(null)}
+          formationsMeta={formationsMeta}
+          onOpenFormations={() => setFormationsSheetOpen(true)}
         />
-
-        {/* Real-formation chips (Phase E) — offense only, and only for a team with
-            stored participation data. Tapping swaps the field's slot layout; not
-            persisted, not in the URL (spec's locked decision). Hidden while viewing a
-            past season -- the chips reflect the latest ingested season's data, which
-            doesn't apply to a historical roster (see realFormation above). */}
-        {activeUnit === 'offense' && !historicalMode && formations.length > 0 && (
-          <div
-            className="flex gap-2 overflow-x-auto px-3 pb-2 pt-1"
-            style={{ scrollbarWidth: 'none' }}>
-            <FilterPill
-              active={!activeFormation}
-              onClick={() => setActiveFormation(null)}
-              accentColor={activeColors.uiAccent}
-              onAccentColor={activeColors.onAccent}>
-              Base
-            </FilterPill>
-            {formations.map((f) => (
-              <FilterPill
-                key={f.rank}
-                active={activeFormation?.rank === f.rank}
-                onClick={() => setActiveFormation(f)}
-                accentColor={activeColors.uiAccent}
-                onAccentColor={activeColors.onAccent}>
-                {alignmentLabel(f.alignment)} {f.personnel} · {f.pct}%
-              </FilterPill>
-            ))}
-          </div>
-        )}
 
         {/* Field — fills remaining viewport space */}
         <div
@@ -482,14 +491,6 @@ export default function DepthChartField({
               </div>
             )}
           </div>
-
-          {/* FTN Data is CC-BY-SA 4.0 -- attribution is the condition of surfacing a
-              real-formation chip (docs/nflverse.md). */}
-          {activeUnit === 'offense' && !historicalMode && activeFormation && (
-            <div className="pt-1.5 text-center text-[10px]" style={{ color: uiTokens.textFaint }}>
-              Formation data © FTN Data (CC-BY-SA 4.0)
-            </div>
-          )}
         </div>
 
         <BottomSheet isOpen={kitOpen} onClose={() => setKitOpen(false)}>
@@ -513,6 +514,20 @@ export default function DepthChartField({
               setSeasonSheetOpen(false);
             }}
             onClose={() => setSeasonSheetOpen(false)}
+          />
+        </BottomSheet>
+
+        <BottomSheet isOpen={formationsSheetOpen} onClose={() => setFormationsSheetOpen(false)}>
+          <FormationsSheet
+            unit={activeUnit}
+            formations={unitFormations}
+            activeFormation={activeFormation}
+            onSelect={(formation) => {
+              setActiveFormation(formation);
+              setFormationsSheetOpen(false);
+            }}
+            onClose={() => setFormationsSheetOpen(false)}
+            accent={activeColors.uiAccent}
           />
         </BottomSheet>
 
