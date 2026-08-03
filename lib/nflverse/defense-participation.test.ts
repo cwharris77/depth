@@ -53,7 +53,7 @@ describe('tallyDefenseFormations', () => {
     ]);
   });
 
-  it('counts fronts into the top-3 (dl-lb-db) combos with pct and a derived alignment label', () => {
+  it('counts fronts into ranked (dl-lb-db) combos with pct and a derived alignment label', () => {
     const rows = [
       ...Array.from({ length: 6 }, () => row({})), // 4-2-5 Nickel
       ...Array.from(
@@ -85,6 +85,18 @@ describe('tallyDefenseFormations', () => {
         pct: 10,
       },
     ]);
+  });
+
+  it('keeps every front uncapped (DEP-141), not just the top 3', () => {
+    const fronts = [
+      '3 CB, 2 DE, 2 DT, 1 FS, 2 ILB, 1 SS', // 4-2-5 Nickel
+      '2 DE, 2 DT, 3 LB, 2 CB, 2 S', // 4-3-4 Base
+      '3 DE, 2 DT, 1 LB, 3 CB, 2 S', // 5-1-5 Nickel-ish
+      '2 DE, 1 DT, 3 LB, 3 CB, 2 S', // 3-3-5 Nickel
+    ];
+    const rows = fronts.map((defense_personnel) => row({ defense_personnel }));
+    const { tallies } = tallyDefenseFormations(rows, 2024, resolve, new Map([['broncos', 1]]));
+    expect(tallies).toHaveLength(4);
   });
 
   it('excludes rows with a blank offense_formation (kneel-downs / non-charted plays)', () => {
