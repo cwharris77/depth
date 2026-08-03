@@ -3,12 +3,10 @@
 import Menu from '@/components/ui/Menu';
 import TabBar from '@/components/ui/TabBar';
 import { colors as uiTokens } from '@/components/ui/tokens';
-import Walkthrough from '@/components/ui/Walkthrough';
 import type { TeamDepthOverride } from '@/lib/depth-overrides';
 import { hasOverride } from '@/lib/depth-overrides';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { Player, Team, TeamColors, Unit } from '@/lib/types';
-import { AnimatePresence } from 'framer-motion';
 import {
   Check,
   History,
@@ -42,8 +40,6 @@ type Props = {
   onChooseUniform: () => void;
   shareCopied: boolean;
   onShareRoster: () => void;
-  showEditModeWalkthrough: boolean;
-  onDismissWalkthrough: () => void;
   override: TeamDepthOverride;
   onResetTeam: () => void;
   onPreviewSharedOrder: (override: TeamDepthOverride | null) => void;
@@ -60,9 +56,9 @@ type Props = {
 };
 
 // Header chrome above the field: team header + nav search, unit tabs, the "•••" overflow
-// menu (uniform/share/edit-mode), the edit-mode walkthrough, the custom-order reset chip,
-// and the shared-board preview banner. Pure presentational — all state lives in
-// DepthChartField's hooks, passed down as props/callbacks.
+// menu (uniform/share/edit-mode), the custom-order reset chip, and the shared-board preview
+// banner. Pure presentational — all state lives in DepthChartField's hooks, passed down as
+// props/callbacks.
 export default function FieldHeader({
   team,
   teams,
@@ -77,8 +73,6 @@ export default function FieldHeader({
   onChooseUniform,
   shareCopied,
   onShareRoster,
-  showEditModeWalkthrough,
-  onDismissWalkthrough,
   override,
   onResetTeam,
   onPreviewSharedOrder,
@@ -122,89 +116,71 @@ export default function FieldHeader({
           onChange={(v) => onChangeUnit(v as Unit)}
           activeColor={activeColors.uiAccent}
         />
-        <div className="relative">
-          <Menu
-            ariaLabel="More options"
-            trigger={
-              <MoreHorizontal
-                size={16}
-                color={globalEditMode ? activeColors.uiAccent : undefined}
-              />
-            }
-            items={[
-              {
-                icon: <Shirt size={14} color={activeColors.uiAccent} />,
-                label: 'Choose uniform',
-                onClick: onChooseUniform,
-              },
-              {
-                icon: <History size={14} color={activeColors.uiAccent} />,
-                label: 'Seasons',
-                onClick: onOpenSeasons,
-              },
-              {
-                icon: (
-                  <LayoutGrid
-                    size={14}
-                    color={historicalMode ? uiTokens.textFaint : activeColors.uiAccent}
-                  />
-                ),
-                label: 'Formations',
-                meta: historicalMode ? undefined : formationsMeta,
-                onClick: onOpenFormations,
-                disabled: historicalMode,
-                disabledReason: historicalMode
-                  ? "Historical seasons don't have formation data"
-                  : undefined,
-              },
-              {
-                icon: shareCopied ? (
-                  <Check size={14} color={activeColors.uiAccent} strokeWidth={3} />
-                ) : (
-                  <Share2 size={14} color={activeColors.uiAccent} />
-                ),
-                label: shareCopied ? 'Link copied' : 'Share roster',
-                onClick: onShareRoster,
-              },
-              // App-level edit toggle, folded into the overflow menu instead of its own
-              // row: on puts every position group's card into reorder mode at once (no
-              // per-card Reorder taps needed); off exits all of them together. Disabled
-              // (not omitted) while previewing a shared board or viewing a past season,
-              // same as reorder itself is disabled in both (locked decision, phase-d
-              // spec) -- a Tooltip on the disabled row explains why instead of the item
-              // just silently disappearing.
-              {
-                icon: (
-                  <Pencil
-                    size={14}
-                    color={
-                      previewing || historicalMode ? uiTokens.textFaint : activeColors.uiAccent
-                    }
-                  />
-                ),
-                label: 'Edit depth chart',
-                checked: globalEditMode,
-                accent: activeColors.uiAccent,
-                onClick: onToggleGlobalEditMode,
-                disabled: previewing || historicalMode,
-                disabledReason: previewing
-                  ? "Shared boards are read-only — apply the order to your own team's chart to edit it"
-                  : `Historical seasons are read-only`,
-              },
-            ]}
-          />
-          <AnimatePresence>
-            {showEditModeWalkthrough && !previewing && (
-              <Walkthrough
-                steps={[
-                  'We moved things around: "Edit depth chart" now lives in this ••• menu instead of its own button.',
-                  'Tap ••• , then "Edit depth chart" to start reordering your roster.',
-                ]}
-                onDismiss={onDismissWalkthrough}
-              />
-            )}
-          </AnimatePresence>
-        </div>
+        <Menu
+          ariaLabel="More options"
+          trigger={
+            <MoreHorizontal size={16} color={globalEditMode ? activeColors.uiAccent : undefined} />
+          }
+          items={[
+            {
+              icon: <Shirt size={14} color={activeColors.uiAccent} />,
+              label: 'Choose uniform',
+              onClick: onChooseUniform,
+            },
+            {
+              icon: <History size={14} color={activeColors.uiAccent} />,
+              label: 'Seasons',
+              onClick: onOpenSeasons,
+            },
+            {
+              icon: (
+                <LayoutGrid
+                  size={14}
+                  color={historicalMode ? uiTokens.textFaint : activeColors.uiAccent}
+                />
+              ),
+              label: 'Formations',
+              meta: historicalMode ? undefined : formationsMeta,
+              onClick: onOpenFormations,
+              disabled: historicalMode,
+              disabledReason: historicalMode
+                ? "Historical seasons don't have formation data"
+                : undefined,
+            },
+            {
+              icon: shareCopied ? (
+                <Check size={14} color={activeColors.uiAccent} strokeWidth={3} />
+              ) : (
+                <Share2 size={14} color={activeColors.uiAccent} />
+              ),
+              label: shareCopied ? 'Link copied' : 'Share roster',
+              onClick: onShareRoster,
+            },
+            // App-level edit toggle, folded into the overflow menu instead of its own
+            // row: on puts every position group's card into reorder mode at once (no
+            // per-card Reorder taps needed); off exits all of them together. Disabled
+            // (not omitted) while previewing a shared board or viewing a past season,
+            // same as reorder itself is disabled in both (locked decision, phase-d
+            // spec) -- a Tooltip on the disabled row explains why instead of the item
+            // just silently disappearing.
+            {
+              icon: (
+                <Pencil
+                  size={14}
+                  color={previewing || historicalMode ? uiTokens.textFaint : activeColors.uiAccent}
+                />
+              ),
+              label: 'Edit depth chart',
+              checked: globalEditMode,
+              accent: activeColors.uiAccent,
+              onClick: onToggleGlobalEditMode,
+              disabled: previewing || historicalMode,
+              disabledReason: previewing
+                ? "Shared boards are read-only — apply the order to your own team's chart to edit it"
+                : `Historical seasons are read-only`,
+            },
+          ]}
+        />
       </div>
       {/* Tells the user this team's depth is their custom order, with one-tap revert.
         Hidden while previewing a shared board or viewing a past season — neither order
