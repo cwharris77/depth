@@ -113,7 +113,7 @@ export default function FormationsSheet({
           </div>
           <div
             className="overflow-y-auto px-4 pb-2 flex flex-col gap-1.5"
-            style={{ WebkitOverflowScrolling: 'touch', flex: '1 1 auto', minHeight: 0 }}>
+            style={{ WebkitOverflowScrolling: 'touch', height: '38vh' }}>
             <FormationRow
               title="Base formation"
               subtitle="Generic starter look"

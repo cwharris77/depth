@@ -522,7 +522,10 @@ export default function DepthChartField({
             unit={activeUnit}
             formations={unitFormations}
             activeFormation={activeFormation}
-            onSelect={setActiveFormation}
+            onSelect={(formation) => {
+              setActiveFormation(formation);
+              setFormationsSheetOpen(false);
+            }}
             onClose={() => setFormationsSheetOpen(false)}
             accent={activeColors.uiAccent}
           />
