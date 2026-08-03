@@ -12,7 +12,7 @@ import { buildTeamSelectionUrl } from '@/lib/team-selection';
 import type { Player, PlayerSeasonStats, TeamFormation, TeamRoster, Unit } from '@/lib/types';
 import { useUser } from '@/lib/use-user';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import ApplyKitFromQuery from './ApplyKitFromQuery';
 import ApplySeasonFromQuery from './ApplySeasonFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
@@ -34,10 +34,6 @@ import { useTeamOverride } from '@/lib/use-team-override';
 import { useShareRoster } from '@/lib/use-share-roster';
 import { useTeamSeason } from '@/lib/use-team-season';
 import { SEASONS_MIN } from '@/lib/nflverse/roster-history';
-import {
-  dismissEditModeWalkthrough,
-  hasDismissedEditModeWalkthrough,
-} from '@/lib/edit-mode-walkthrough';
 
 // Pure client component: it receives one resolved roster as a prop and never
 // imports the team registry, so a page ships only its own team's data — not all 32.
@@ -120,25 +116,6 @@ export default function DepthChartField({
   const [seasonSheetOpen, setSeasonSheetOpen] = useState(false);
   const [historicalShareCopied, setHistoricalShareCopied] = useState(false);
   const { historicalRoster, historyLoading, historyNotFound } = useTeamSeason(team.id, season);
-
-  // First-run walkthrough pointing at the "•••" overflow menu, explaining that "Edit depth
-  // chart" moved there from its own toggle. Shown once ever, app-wide (not per-team) — the
-  // dismiss flag is set the instant it shows, not on dismiss, so navigating away mid-walkthrough
-  // still counts as shown (same pattern as the nav-drawer coachmark). This effect intentionally
-  // runs once per component mount rather than per team.id, since DepthChartField persists across
-  // team switches (see the [team.id] reset effects above).
-  // Legitimate effect, not a lazy-init candidate: this page is server-rendered, and the
-  // localStorage check decides whether the walkthrough renders at all. Reading it in a lazy
-  // useState initializer would run during the server render (where `window` doesn't exist) and
-  // again during client hydration (where it does) — those would disagree and React would throw
-  // a hydration mismatch. Deferring the check to an effect (which only ever runs client-side,
-  // after hydration) is what keeps the server-rendered and first-hydrated output in sync.
-  const [showEditModeWalkthrough, setShowEditModeWalkthrough] = useState(false);
-  useEffect(() => {
-    if (hasDismissedEditModeWalkthrough(window.localStorage)) return;
-    dismissEditModeWalkthrough(window.localStorage);
-    setShowEditModeWalkthrough(true);
-  }, []);
 
   const displayRoster = useMemo(
     () => applyTeamOverride(roster, effectiveOverride),
@@ -391,8 +368,6 @@ export default function DepthChartField({
           onChooseUniform={() => setKitOpen(true)}
           shareCopied={historicalMode ? historicalShareCopied : shareCopied}
           onShareRoster={historicalMode ? handleShareHistoricalRoster : handleShareRoster}
-          showEditModeWalkthrough={showEditModeWalkthrough}
-          onDismissWalkthrough={() => setShowEditModeWalkthrough(false)}
           override={override}
           onResetTeam={handleResetTeam}
           onPreviewSharedOrder={setPreviewOverride}
