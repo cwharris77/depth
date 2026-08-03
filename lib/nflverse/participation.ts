@@ -1,7 +1,8 @@
 // Aggregates nflverse participation rows (`pbp_participation_<season>.csv`, FTN-era
 // 2023+ — docs/superpowers/specs/2026-07-07-phase-e-real-formations-design.md) into
-// each team's top-3 most-used (qbAlignment, personnelCode) combos with a usage share.
-// FormationAccumulator carries the fold's running state so the ingest script can feed
+// every (qbAlignment, personnelCode) combo a team ran that season, each with a usage
+// share (DEP-141: no top-N cap -- the coverage/games-played gate below is the only
+// filter). FormationAccumulator carries the fold's running state so the ingest script can feed
 // it one streamed row at a time (the participation file is ~50MB — never materialize
 // the whole row set in memory); tallyFormations is the same fold over an in-memory
 // array, for tests and any other small-input caller.
@@ -86,10 +87,10 @@ export class FormationAccumulator {
       }
 
       const total = this.totalByTeam.get(teamId) ?? 0;
-      const top3 = [...teamCounts.entries()].sort(
+      const ranked = [...teamCounts.entries()].sort(
         (a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
       );
-      top3.slice(0, 3).forEach(([key, count], i) => {
+      ranked.forEach(([key, count], i) => {
         const [alignment, personnel] = key.split('|');
         tallies.push({
           team_id: teamId,

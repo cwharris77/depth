@@ -14,7 +14,7 @@ function row(over: Partial<ParticipationRow>): ParticipationRow {
 }
 
 describe('tallyFormations', () => {
-  it('counts plays into the top-3 (alignment, personnelCode) combos with pct', () => {
+  it('counts plays into ranked (alignment, personnelCode) combos with pct', () => {
     const rows = [
       ...Array.from({ length: 6 }, () => row({})), // SHOTGUN 11
       ...Array.from({ length: 3 }, () =>
@@ -68,7 +68,7 @@ describe('tallyFormations', () => {
     ]);
   });
 
-  it('keeps only the top 3 combos, breaking ties by count then alphabetically', () => {
+  it('keeps every combo uncapped (DEP-141), breaking ties by count then alphabetically', () => {
     const rows = [
       row({ offense_personnel: '1 RB, 1 TE, 3 WR' }), // SHOTGUN 11 x1
       row({ offense_formation: 'UNDER CENTER', offense_personnel: '1 RB, 1 TE, 3 WR' }), // UNDER CENTER 11 x1
@@ -76,11 +76,12 @@ describe('tallyFormations', () => {
       row({ offense_formation: 'SHOTGUN', offense_personnel: '2 RB, 1 TE, 2 WR' }), // SHOTGUN 21 x1
     ];
     const { tallies } = tallyFormations(rows, 2024, resolve, new Map([['seahawks', 1]]));
-    expect(tallies).toHaveLength(3);
+    expect(tallies).toHaveLength(4);
     expect(tallies.map((t) => `${t.alignment} ${t.personnel}`)).toEqual([
       'PISTOL 11',
       'SHOTGUN 11',
       'SHOTGUN 21',
+      'UNDER CENTER 11',
     ]);
   });
 

@@ -195,11 +195,12 @@ function gamesPlayedByTeamFromGames(games: GameInsert[], season: number): Map<st
 // Fetches the latest available pbp_participation season and stream-parses it straight
 // into both a FormationAccumulator and a DefenseFormationAccumulator in the same pass
 // (locked decision: never materialize the ~46k-row season file in memory, and never
-// fetch/parse the ~50MB file twice for two units), then upserts each team's top-3
-// (alignment, personnel) combos per unit. A team below the coverage bar simply gets no
-// rows for that unit -- the field view falls back to the generic formation for it,
-// never a sparse-sample layout. `getGamesPlayedByTeam` is injected so the live path can
-// query the DB and SEED_OUT mode can reuse this run's freshly computed games instead.
+// fetch/parse the ~50MB file twice for two units), then upserts every (alignment,
+// personnel) combo the team ran per unit (DEP-141: no top-N cap). A team below the
+// coverage bar simply gets no rows for that unit -- the field view falls back to the
+// generic formation for it, never a sparse-sample layout. `getGamesPlayedByTeam` is
+// injected so the live path can query the DB and SEED_OUT mode can reuse this run's
+// freshly computed games instead.
 async function ingestFormations(
   supabase: SupabaseClient<Database> | null,
   getGamesPlayedByTeam: (season: number) => Promise<Map<string, number>>

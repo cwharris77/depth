@@ -772,15 +772,16 @@ function toTeamFormation(row: TeamFormationRow): TeamFormation {
   };
 }
 
-// A team's top-3 most-used real formations per unit for its latest ingested season
-// (Phase E, docs/superpowers/specs/2026-07-07-phase-e-real-formations-design.md;
-// defense added DEP-141) — feeds the Formations sheet for both the offense and defense
-// tabs. Ordered `season desc, unit, rank asc` and capped at 12 (2 units × 3 ranks, with
-// headroom) rather than a separate max-season query; the latest season present in the
-// result is taken from the first row and used to filter out any older season that
-// slipped in. Empty for a team/unit the ingest judged as insufficient-coverage (or
-// hasn't reached yet) — the field view falls back to the generic formation, never a
-// partial list (invariant 6).
+// Every real formation a team ran per unit for its latest ingested season (Phase E,
+// docs/superpowers/specs/2026-07-07-phase-e-real-formations-design.md; defense added,
+// cap lifted DEP-141) — feeds the Formations sheet for both the offense and defense
+// tabs. No `.limit()`: the accumulator is already coverage-gated (lib/nflverse/
+// participation.ts), so a team's real per-season combo count never approaches
+// PostgREST's own 1000-row default. Ordered `season desc, unit, rank asc` rather than a
+// separate max-season query; the latest season present in the result is taken from the
+// first row and used to filter out any older season that slipped in. Empty for a
+// team/unit the ingest judged as insufficient-coverage (or hasn't reached yet) — the
+// field view falls back to the generic formation, never a partial list (invariant 6).
 export async function getTeamFormations(teamId: string): Promise<TeamFormation[]> {
   'use cache';
   cacheLife('ingest');
@@ -792,7 +793,6 @@ export async function getTeamFormations(teamId: string): Promise<TeamFormation[]
     .order('season', { ascending: false })
     .order('unit', { ascending: true })
     .order('rank', { ascending: true })
-    .limit(12)
     .returns<TeamFormationRow[]>();
   if (error) throw new Error(`team_formations query failed: ${error.message}`);
   const rows = data ?? [];

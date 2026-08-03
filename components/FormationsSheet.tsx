@@ -1,13 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { Check, X } from 'lucide-react';
 import IconButton from './ui/IconButton';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import { alignmentLabel } from '@/lib/formations';
 import type { TeamFormation, Unit } from '@/lib/types';
-
-type Sort = 'flat' | 'grouped';
 
 const UNIT_TITLES: Record<Unit, string> = {
   offense: 'Offense formations',
@@ -23,19 +20,20 @@ function rowTitle(unit: Unit, f: TeamFormation): string {
   return `${f.alignment} (${f.personnel})`;
 }
 
-// "By personnel" groups offense rows by RB/TE code (e.g. "11 personnel") and defense
-// rows by front name (e.g. "Nickel") -- the dimension each unit's alignment label
-// doesn't already carry on its own in "by share" order.
+// Groups offense rows by RB/TE code (e.g. "11 personnel") and defense rows by front
+// name (e.g. "Nickel") -- the dimension each unit's alignment label doesn't already
+// carry on its own.
 function groupKey(unit: Unit, f: TeamFormation): string {
   return unit === 'offense' ? `${f.personnel} personnel` : f.alignment;
 }
 
 type Row = { kind: 'header'; label: string } | { kind: 'formation'; formation: TeamFormation };
 
-function sortedRows(unit: Unit, formations: TeamFormation[], sort: Sort): Row[] {
+// Always grouped by personnel/front, groups ordered by their top formation's share,
+// rows within a group ordered by share -- most teams have too few real formations for
+// a separate "by share" view to earn its own tab (see the now-removed sort toggle).
+function groupedRows(unit: Unit, formations: TeamFormation[]): Row[] {
   const byShare = formations.slice().sort((a, b) => b.pct - a.pct);
-  if (sort === 'flat') return byShare.map((formation) => ({ kind: 'formation', formation }));
-
   const byCat = new Map<string, TeamFormation[]>();
   for (const f of byShare) {
     const key = groupKey(unit, f);
@@ -51,10 +49,10 @@ function sortedRows(unit: Unit, formations: TeamFormation[], sort: Sort): Row[] 
   ]);
 }
 
-// The Formations sheet (single-select list, opened from the ••• menu). Base + top-3
-// real formations for whichever unit is currently active on the field (offense/defense
-// tabs share this same component; special teams has no real data, see DEP-141, so it
-// shows an explanatory empty state instead of an empty list).
+// The Formations sheet (single-select list, opened from the ••• menu). Base + every
+// real formation the team ran that season for whichever unit is currently active on the
+// field (offense/defense tabs share this same component; special teams has no real
+// data, see DEP-141, so it shows an explanatory empty state instead of an empty list).
 export default function FormationsSheet({
   unit,
   formations,
@@ -70,10 +68,10 @@ export default function FormationsSheet({
   onClose: () => void;
   accent: string;
 }) {
-  const [sort, setSort] = useState<Sort>('flat');
-
   return (
-    <div className="flex flex-col" style={{ maxHeight: '74vh', minHeight: 0 }}>
+    // Fixed height (not a cap) so every unit -- including special teams' empty state --
+    // opens to the same sheet size instead of shrink-wrapping to its content.
+    <div className="flex flex-col" style={{ height: '74vh' }}>
       <div className="flex items-center justify-center pt-2.5 pb-0.5" style={{ flex: '0 0 auto' }}>
         <div className="h-1 w-9 rounded-full" style={{ background: uiTokens.borderInput }} />
       </div>
@@ -99,21 +97,13 @@ export default function FormationsSheet({
       ) : (
         <>
           <div
-            className="px-5 pb-2 text-xs"
+            className="px-5 pb-3 text-xs"
             style={{ color: uiTokens.textFaint, flex: '0 0 auto' }}>
             Tap a formation — the field rearranges into it live
           </div>
-          <div className="flex gap-1.5 px-5 pb-3" style={{ flex: '0 0 auto' }}>
-            <SortButton label="By share" active={sort === 'flat'} onClick={() => setSort('flat')} />
-            <SortButton
-              label="By personnel"
-              active={sort === 'grouped'}
-              onClick={() => setSort('grouped')}
-            />
-          </div>
           <div
             className="overflow-y-auto px-4 pb-2 flex flex-col gap-1.5"
-            style={{ WebkitOverflowScrolling: 'touch', height: '38vh' }}>
+            style={{ WebkitOverflowScrolling: 'touch', flex: '1 1 auto', minHeight: 0 }}>
             <FormationRow
               title="Base formation"
               subtitle="Generic starter look"
@@ -121,7 +111,7 @@ export default function FormationsSheet({
               accent={accent}
               onClick={() => onSelect(null)}
             />
-            {sortedRows(unit, formations, sort).map((row, i) =>
+            {groupedRows(unit, formations).map((row, i) =>
               row.kind === 'header' ? (
                 <div
                   key={`h-${row.label}-${i}`}
@@ -149,30 +139,6 @@ export default function FormationsSheet({
         </>
       )}
     </div>
-  );
-}
-
-function SortButton({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="rounded-full px-3 py-1.5 text-[10px] font-bold"
-      style={{
-        touchAction: 'manipulation',
-        background: active ? uiTokens.surfaceChipHover : uiTokens.surfaceChip,
-        color: active ? uiTokens.textPrimary : uiTokens.textSecondary,
-      }}>
-      {label}
-    </button>
   );
 }
 
