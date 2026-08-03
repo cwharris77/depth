@@ -186,7 +186,10 @@ because that choice is invisible until someone actually uses the shipped feature
 
 ### Observation 9: db-migration skill's grant check didn't prevent a permission-denied miss
 
-**Status:** OPEN
+**Status:** ACTIONED (2026-08-03) — Applied to db-migration (scheduled review): grants
+bullet rephrased from "check before duplicating" to an unconditional per-table grant
+requirement, with the GRANT-vs-RLS independence note; staged at
+skill-updates/2026-08-03/db-migration/
 **Date:** 2026-08-01
 **Session context:** Implementing "Scheduled monitor for new uniform releases" — added a new
 `uniform_release_watches` table modeled on `ingestion_runs` (RLS enabled, no read policy,
