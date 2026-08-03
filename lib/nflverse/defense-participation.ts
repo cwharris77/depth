@@ -1,7 +1,7 @@
 // Mirrors `participation.ts`'s FormationAccumulator for the defensive side: aggregates
-// nflverse participation rows into each team's top-3 most-used defensive fronts
-// ({DL}-{LB}-{DB} shorthand) with a usage share. See defense-personnel.ts for the
-// parsing/labeling rules.
+// nflverse participation rows into every defensive front ({DL}-{LB}-{DB} shorthand) a
+// team ran that season, with a usage share (DEP-141: no top-N cap). See
+// defense-personnel.ts for the parsing/labeling rules.
 //
 // Key difference from the offense accumulator: `possession_team` names the team WITH
 // the ball, i.e. the OPPOSING defense's data lives in this row. The defending team isn't
@@ -100,10 +100,10 @@ export class DefenseFormationAccumulator {
       }
 
       const total = this.totalByTeam.get(teamId) ?? 0;
-      const top3 = [...teamCounts.entries()].sort(
+      const ranked = [...teamCounts.entries()].sort(
         (a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
       );
-      top3.slice(0, 3).forEach(([key, count], i) => {
+      ranked.forEach(([key, count], i) => {
         const db = Number(key.split('-')[2]);
         tallies.push({
           team_id: teamId,
