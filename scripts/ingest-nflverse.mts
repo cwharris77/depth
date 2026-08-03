@@ -15,20 +15,39 @@
 //     a historic backfill there needs a separate player-identity decision first).
 // Requires SUPABASE_URL + SUPABASE_SECRET_KEY in the environment (secret key
 // bypasses RLS-equivalent restrictions for writes; never expose it client-side).
+//
+// Seed mode: `npm run gen:nflverse-seed` sets SEED_OUT=supabase/seed-nflverse.sql,
+// which fetches + transforms exactly the same way but writes a committed seed script
+// instead of touching the DB (no Supabase creds needed) -- mirrors ingest-espn.mts's
+// SEED_OUT mode. Always current + previous season / latest formations season only, same
+// as the weekly job; the --seasons backfill flag isn't meaningful for a local dev seed.
+// player_stats FKs to `players`, which this mode can't query live -- it instead reads
+// the already-committed ESPN seed (supabase/seed.sql) for known player ids, so run
+// `npm run gen:espn-seed` first. `supabase db reset` then restores nflverse data
+// offline, so contributors don't have to run the live ingest after every reset.
 
 import dotenv from 'dotenv';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 dotenv.config({ path: '.env.local' });
 import { parseCsv, parseCsvStream } from '../lib/nflverse/csv';
 import { assetUrl, latestAvailableSeason } from '../lib/nflverse/assets';
 import { buildCrosswalk } from '../lib/nflverse/crosswalk';
-import { toPlayerStatsRows } from '../lib/nflverse/transform';
-import { toScheduleAndGameRows } from '../lib/nflverse/games';
+import { toPlayerStatsRows, type PlayerStatsInsert } from '../lib/nflverse/transform';
+import { toScheduleAndGameRows, type GameInsert, type ScheduleInsert } from '../lib/nflverse/games';
 import { FormationAccumulator, type ParticipationRow } from '../lib/nflverse/participation';
+import { DefenseFormationAccumulator } from '../lib/nflverse/defense-participation';
 import { resolveTeamCode } from '../lib/nflverse/team-codes';
 import { parseSeasonsArg } from '../lib/nflverse/seasons-arg';
 import { SEASONS_MIN } from '../lib/nflverse/roster-history';
+import {
+  extractPlayerIds,
+  buildPlayerStatsSeedSql,
+  buildSchedulesAndGamesSeedSql,
+  buildTeamFormationsSeedSql,
+  type UnitFormationTally,
+} from '../lib/nflverse/seed-sql';
 import type { Database } from '../lib/database.types';
 
 const PLAYERS_TAG = 'players';
@@ -50,6 +69,9 @@ const UPSERT_CHUNK = 1000;
 // finer formation vocabulary this repo doesn't parse.
 const PARTICIPATION_TAG = 'pbp_participation';
 const PARTICIPATION_PREFIX = 'pbp_participation_';
+// SEED_OUT mode has no live `players` table to query -- it reads known player ids from
+// this already-committed file instead (see the header comment above).
+const ESPN_SEED_PATH = 'supabase/seed.sql';
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -75,19 +97,18 @@ async function getText(url: string, attempts = 3): Promise<string> {
   throw lastError;
 }
 
-// Fetch the nflverse schedule/results file, crosswalk team codes, and upsert schedules
+// Fetch + transform the nflverse schedule/results file (pure), then upsert schedules
 // (the per-team-season anchor) then games -- schedules first so the games' composite FKs
-// resolve. Idempotent upserts (conflict on the PKs), so a rerun is always safe. Returns
-// counts + a fetch/transform failure for the ingestion_runs record; a games failure never
-// throws out of the whole run, matching the per-season player-stats error handling.
+// resolve. `supabase === null` (SEED_OUT mode) skips the writes and only returns the
+// computed rows. Idempotent upserts (conflict on the PKs), so a rerun is always safe.
 // `minSeason` is undefined for the weekly job (current + previous, the default inside
 // toScheduleAndGameRows) or an explicit floor for a --seasons backfill run.
 async function ingestGames(
-  supabase: SupabaseClient<Database>,
+  supabase: SupabaseClient<Database> | null,
   minSeason?: number
 ): Promise<{
-  schedulesWritten: number;
-  gamesWritten: number;
+  schedules: ScheduleInsert[];
+  games: GameInsert[];
   skipped: number;
   failure: string | null;
 }> {
@@ -99,28 +120,25 @@ async function ingestGames(
       minSeason
     );
 
-    const { error: schedError } = await supabase
-      .from('schedules')
-      .upsert(schedules, { onConflict: 'team_id,season' });
-    if (schedError) throw new Error(`schedules upsert: ${schedError.message}`);
+    if (supabase) {
+      const { error: schedError } = await supabase
+        .from('schedules')
+        .upsert(schedules, { onConflict: 'team_id,season' });
+      if (schedError) throw new Error(`schedules upsert: ${schedError.message}`);
 
-    for (let i = 0; i < games.length; i += UPSERT_CHUNK) {
-      const chunk = games.slice(i, i + UPSERT_CHUNK);
-      const { error } = await supabase.from('games').upsert(chunk, { onConflict: 'game_id' });
-      if (error) throw new Error(`games upsert: ${error.message}`);
+      for (let i = 0; i < games.length; i += UPSERT_CHUNK) {
+        const chunk = games.slice(i, i + UPSERT_CHUNK);
+        const { error } = await supabase.from('games').upsert(chunk, { onConflict: 'game_id' });
+        if (error) throw new Error(`games upsert: ${error.message}`);
+      }
     }
 
     console.log(
-      `games: wrote ${games.length} games, ${schedules.length} schedules, skipped ${skipped}`
+      `games: ${supabase ? 'wrote' : 'computed'} ${games.length} games, ${schedules.length} schedules, skipped ${skipped}`
     );
-    return {
-      schedulesWritten: schedules.length,
-      gamesWritten: games.length,
-      skipped,
-      failure: null,
-    };
+    return { schedules, games, skipped, failure: null };
   } catch (e) {
-    return { schedulesWritten: 0, gamesWritten: 0, skipped: 0, failure: (e as Error).message };
+    return { schedules: [], games: [], skipped: 0, failure: (e as Error).message };
   }
 }
 
@@ -142,10 +160,23 @@ async function* textChunks(body: ReadableStream<Uint8Array>): AsyncGenerator<str
   }
 }
 
-// A team's real (played) game count per season, from the games this same run just
-// wrote/refreshed -- the coverage check's denominator (lib/nflverse/participation.ts).
-// A game with no score yet isn't "coverage", it's just unplayed.
-async function getGamesPlayedByTeam(
+// A team's real (played) game count -- the coverage check's denominator
+// (lib/nflverse/participation.ts). A game with no score yet isn't "coverage", it's just
+// unplayed. Shared by both the live path (queries the full `games` table, already
+// season-filtered) and SEED_OUT mode (this run's freshly computed games, filtered here).
+function countGamesPlayed(
+  rows: { home_team_id: string; away_team_id: string; home_score: number | null }[]
+): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    if (row.home_score === null) continue;
+    counts.set(row.home_team_id, (counts.get(row.home_team_id) ?? 0) + 1);
+    counts.set(row.away_team_id, (counts.get(row.away_team_id) ?? 0) + 1);
+  }
+  return counts;
+}
+
+async function getGamesPlayedByTeamDb(
   supabase: SupabaseClient<Database>,
   season: number
 ): Promise<Map<string, number>> {
@@ -154,23 +185,27 @@ async function getGamesPlayedByTeam(
     .select('home_team_id, away_team_id, home_score')
     .eq('season', season);
   if (error) throw new Error(`games query failed: ${error.message}`);
-  const counts = new Map<string, number>();
-  for (const row of data ?? []) {
-    if (row.home_score === null) continue;
-    counts.set(row.home_team_id, (counts.get(row.home_team_id) ?? 0) + 1);
-    counts.set(row.away_team_id, (counts.get(row.away_team_id) ?? 0) + 1);
-  }
-  return counts;
+  return countGamesPlayed(data ?? []);
+}
+
+function gamesPlayedByTeamFromGames(games: GameInsert[], season: number): Map<string, number> {
+  return countGamesPlayed(games.filter((g) => g.season === season));
 }
 
 // Fetches the latest available pbp_participation season and stream-parses it straight
-// into a FormationAccumulator (locked decision: never materialize the ~46k-row season
-// file in memory), then upserts each team's top-3 (alignment, personnel) combos. A team
-// below the coverage bar simply gets no rows -- the field view falls back to the
-// generic formation for it, never a sparse-sample layout.
-async function ingestFormations(supabase: SupabaseClient<Database>): Promise<{
+// into both a FormationAccumulator and a DefenseFormationAccumulator in the same pass
+// (locked decision: never materialize the ~46k-row season file in memory, and never
+// fetch/parse the ~50MB file twice for two units), then upserts each team's top-3
+// (alignment, personnel) combos per unit. A team below the coverage bar simply gets no
+// rows for that unit -- the field view falls back to the generic formation for it,
+// never a sparse-sample layout. `getGamesPlayedByTeam` is injected so the live path can
+// query the DB and SEED_OUT mode can reuse this run's freshly computed games instead.
+async function ingestFormations(
+  supabase: SupabaseClient<Database> | null,
+  getGamesPlayedByTeam: (season: number) => Promise<Map<string, number>>
+): Promise<{
   season: number | null;
-  written: number;
+  tallies: UnitFormationTally[];
   skippedTeams: number;
   failure: string | null;
 }> {
@@ -178,60 +213,73 @@ async function ingestFormations(supabase: SupabaseClient<Database>): Promise<{
   if (season === null) {
     return {
       season: null,
-      written: 0,
+      tallies: [],
       skippedTeams: 0,
       failure: 'no available pbp_participation season found',
     };
   }
 
   try {
-    const gamesPlayedByTeam = await getGamesPlayedByTeam(supabase, season);
+    const gamesPlayedByTeam = await getGamesPlayedByTeam(season);
 
     const url = assetUrl(PARTICIPATION_TAG, `${PARTICIPATION_PREFIX}${season}.csv`);
     const res = await fetch(url);
     if (!res.ok || !res.body) throw new Error(`${res.status} ${url}`);
 
-    const accumulator = new FormationAccumulator(resolveTeamCode);
+    const offenseAcc = new FormationAccumulator(resolveTeamCode);
+    const defenseAcc = new DefenseFormationAccumulator(resolveTeamCode);
     await parseCsvStream(textChunks(res.body), (record) => {
       const row: ParticipationRow = {
         nflverse_game_id: record.nflverse_game_id ?? '',
         possession_team: record.possession_team ?? '',
         offense_formation: record.offense_formation ?? '',
         offense_personnel: record.offense_personnel ?? '',
+        defense_personnel: record.defense_personnel ?? '',
       };
-      accumulator.addRow(row);
+      offenseAcc.addRow(row);
+      defenseAcc.addRow(row);
     });
 
-    const { tallies, skippedTeams } = accumulator.finish(season, gamesPlayedByTeam);
-    if (tallies.length) {
+    const offenseResult = offenseAcc.finish(season, gamesPlayedByTeam);
+    const defenseResult = defenseAcc.finish(season, gamesPlayedByTeam);
+    const tallies: UnitFormationTally[] = [
+      ...offenseResult.tallies.map((t) => ({ ...t, unit: 'offense' as const })),
+      ...defenseResult.tallies.map((t) => ({ ...t, unit: 'defense' as const })),
+    ];
+    const skippedTeams = offenseResult.skippedTeams.length + defenseResult.skippedTeams.length;
+    const skippedRows = offenseAcc.skipped + defenseAcc.skipped;
+
+    if (supabase && tallies.length) {
       const { error } = await supabase
         .from('team_formations')
-        .upsert(tallies, { onConflict: 'team_id,season,rank' });
+        .upsert(tallies, { onConflict: 'team_id,season,unit,rank' });
       if (error) throw new Error(`team_formations upsert: ${error.message}`);
     }
 
     console.log(
-      `formations: season ${season}, wrote ${tallies.length} rows ` +
-        `(${skippedTeams.length} team(s) below coverage, ${accumulator.skipped} rows skipped)`
+      `formations: season ${season}, ${supabase ? 'wrote' : 'computed'} ${tallies.length} rows ` +
+        `(${skippedTeams} team(s) below coverage, ${skippedRows} rows skipped)`
     );
-    return { season, written: tallies.length, skippedTeams: skippedTeams.length, failure: null };
+    return { season, tallies, skippedTeams, failure: null };
   } catch (e) {
-    return { season, written: 0, skippedTeams: 0, failure: (e as Error).message };
+    return { season, tallies: [], skippedTeams: 0, failure: (e as Error).message };
   }
 }
 
 async function main() {
-  const supabase: SupabaseClient<Database> = createClient(
-    requireEnv('SUPABASE_URL'),
-    requireEnv('SUPABASE_SECRET_KEY')
-  );
+  // Seed mode writes a SQL file and never touches the DB, so it needs no Supabase creds.
+  const seedOut = process.env.SEED_OUT;
+  const supabase: SupabaseClient<Database> | null = seedOut
+    ? null
+    : createClient(requireEnv('SUPABASE_URL'), requireEnv('SUPABASE_SECRET_KEY'));
 
   const startedAt = new Date().toISOString();
   const failures: { season: number | string; message: string }[] = [];
 
   // --seasons only scopes the games/schedules step (see the usage comment above);
-  // player_stats keeps its own current+previous selection below regardless.
-  const gamesSeasons = parseSeasonsArg(process.argv.slice(2));
+  // player_stats keeps its own current+previous selection below regardless. Not
+  // meaningful in SEED_OUT mode (locked decision: seed data stays current + previous).
+  const gamesSeasons = seedOut ? null : parseSeasonsArg(process.argv.slice(2));
   const gamesMinSeason = gamesSeasons === null ? undefined : Math.min(...gamesSeasons);
   if (gamesSeasons !== null && gamesMinSeason !== undefined && gamesMinSeason < SEASONS_MIN) {
     throw new Error(`--seasons includes years before ${SEASONS_MIN}: ${gamesSeasons.join(', ')}`);
@@ -241,11 +289,29 @@ async function main() {
   const crosswalk = buildCrosswalk(parseCsv(playersCsv));
   console.log(`crosswalk: ${crosswalk.size} gsis_id -> espn_id mappings`);
 
-  const { data: playerRows, error: playersQueryError } = await supabase
-    .from('players')
-    .select('id');
-  if (playersQueryError) throw new Error(`players query failed: ${playersQueryError.message}`);
-  const knownPlayerIds = new Set((playerRows ?? []).map((p) => p.id));
+  let knownPlayerIds: Set<string>;
+  if (supabase) {
+    const { data: playerRows, error: playersQueryError } = await supabase
+      .from('players')
+      .select('id');
+    if (playersQueryError) throw new Error(`players query failed: ${playersQueryError.message}`);
+    knownPlayerIds = new Set((playerRows ?? []).map((p) => p.id));
+  } else {
+    let espnSeedSql: string;
+    try {
+      espnSeedSql = readFileSync(ESPN_SEED_PATH, 'utf8');
+    } catch {
+      throw new Error(
+        `SEED_OUT mode needs ${ESPN_SEED_PATH} to already exist -- run \`npm run gen:espn-seed\` first`
+      );
+    }
+    knownPlayerIds = extractPlayerIds(espnSeedSql);
+    if (knownPlayerIds.size === 0) {
+      throw new Error(
+        `no player ids found in ${ESPN_SEED_PATH} -- is it stale? run \`npm run gen:espn-seed\` first`
+      );
+    }
+  }
 
   // Season selection: try current calendar year, walk back until an asset exists
   // (2025 wasn't published at spec-verification time -- never hard-code a year), then
@@ -259,6 +325,7 @@ async function main() {
 
   let rowsWritten = 0;
   let skipped = 0;
+  const allStatsRows: PlayerStatsInsert[] = [];
 
   for (const season of seasons) {
     try {
@@ -269,12 +336,13 @@ async function main() {
         knownPlayerIds
       );
       skipped += seasonSkipped;
-      if (rows.length) {
+      if (supabase && rows.length) {
         const { error } = await supabase
           .from('player_stats')
           .upsert(rows, { onConflict: 'player_id,season,season_type' });
         if (error) throw new Error(`player_stats upsert: ${error.message}`);
       }
+      allStatsRows.push(...rows);
       rowsWritten += rows.length;
       console.log(`${season}: wrote ${rows.length} rows, skipped ${seasonSkipped}`);
     } catch (e) {
@@ -287,9 +355,14 @@ async function main() {
   if (gamesResult.failure) failures.push({ season: 'games', message: gamesResult.failure });
   skipped += gamesResult.skipped;
 
-  // Formations depend on this run's just-written games (coverage denominator), so it
-  // runs after ingestGames.
-  const formationsResult = await ingestFormations(supabase);
+  // Formations depend on this run's games (coverage denominator), so it runs after
+  // ingestGames. Live mode queries the DB (may carry more history than this run wrote);
+  // SEED_OUT mode reuses the games this same run just computed in-memory.
+  const formationsResult = await ingestFormations(supabase, (season) =>
+    supabase
+      ? getGamesPlayedByTeamDb(supabase, season)
+      : Promise.resolve(gamesPlayedByTeamFromGames(gamesResult.games, season))
+  );
   if (formationsResult.failure) {
     failures.push({
       season: formationsResult.season ?? 'formations',
@@ -297,12 +370,38 @@ async function main() {
     });
   }
 
+  // Seed mode: dump everything computed above to SQL and stop -- no DB writes (already
+  // skipped throughout), no ingestion_runs row.
+  if (seedOut) {
+    const parts = [
+      '-- Generated by `npm run gen:nflverse-seed` (scripts/ingest-nflverse.mts SEED_OUT mode).',
+      '-- nflverse player-stats/schedules/games/formations snapshot for local `supabase db',
+      '-- reset`. Requires supabase/seed.sql to already be loaded (players FK). Do not',
+      '-- hand-edit; regenerate.',
+      '',
+      buildPlayerStatsSeedSql(allStatsRows),
+      buildSchedulesAndGamesSeedSql(gamesResult.schedules, gamesResult.games),
+      buildTeamFormationsSeedSql(formationsResult.tallies),
+    ];
+    writeFileSync(seedOut, parts.filter(Boolean).join('\n') + '\n');
+    console.log(
+      `\nWrote seed: ${allStatsRows.length} player-stat rows, ${gamesResult.games.length} games, ` +
+        `${gamesResult.schedules.length} schedules, ${formationsResult.tallies.length} formation rows -> ${seedOut}`
+    );
+    if (failures.length) {
+      console.log('Errors/skips:');
+      for (const f of failures) console.log(`  ${f.season}: ${f.message}`);
+    }
+    return;
+  }
+  if (!supabase) return; // unreachable (seedOut handled above); narrows the type below
+
   const finishedAt = new Date().toISOString();
   const totalWritten =
     rowsWritten +
-    gamesResult.gamesWritten +
-    gamesResult.schedulesWritten +
-    formationsResult.written;
+    gamesResult.games.length +
+    gamesResult.schedules.length +
+    formationsResult.tallies.length;
   const status = failures.length === 0 ? 'success' : totalWritten > 0 ? 'partial' : 'failure';
 
   const { error: runError } = await supabase.from('ingestion_runs').insert({
@@ -315,10 +414,10 @@ async function main() {
       seasons,
       player_stats_rows: rowsWritten,
       games_min_season: gamesMinSeason ?? null,
-      games_written: gamesResult.gamesWritten,
-      schedules_written: gamesResult.schedulesWritten,
+      games_written: gamesResult.games.length,
+      schedules_written: gamesResult.schedules.length,
       formations_season: formationsResult.season,
-      formations_written: formationsResult.written,
+      formations_written: formationsResult.tallies.length,
       formations_teams_below_coverage: formationsResult.skippedTeams,
       skipped,
       failures,
@@ -328,8 +427,8 @@ async function main() {
 
   console.log(
     `\nWrote ${rowsWritten} player-stat rows across ${seasons.length} season(s), ` +
-      `${gamesResult.gamesWritten} games, ${gamesResult.schedulesWritten} schedules, ` +
-      `${formationsResult.written} formation rows. Status: ${status}`
+      `${gamesResult.games.length} games, ${gamesResult.schedules.length} schedules, ` +
+      `${formationsResult.tallies.length} formation rows. Status: ${status}`
   );
   if (failures.length) {
     console.log('Errors/skips:');

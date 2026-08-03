@@ -68,7 +68,10 @@ schema_paths = []
 enabled = true
 # Specifies an ordered list of seed files to load during db reset.
 # Supports glob patterns relative to supabase directory: "./seeds/*.sql"
-sql_paths = ["./seed.sql"]
+# seed.sql (ESPN: teams, players) must load first -- seed-nflverse.sql's player_stats
+# FKs players, and both seed-nflverse.sql and seed-roster-history.sql's team_formations/
+# schedules FK teams.
+sql_paths = ["./seed.sql", "./seed-nflverse.sql", "./seed-roster-history.sql"]
 
 [db.network_restrictions]
 # Enable management of network restrictions.
@@ -102,7 +105,7 @@ openai_api_key = "env(OPENAI_API_KEY)"
 
 # Email testing server. Emails sent with the local dev setup are not actually sent - rather, they
 # are monitored, and you can view the emails that would have been sent from the web interface.
-[inbucket]
+[local_smtp]
 enabled = true
 # Port to use for the email testing server web interface.
 port = 54324
