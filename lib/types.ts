@@ -187,16 +187,21 @@ export interface TeamRosterSeed {
   specialTeams: SpecialSlot[];
 }
 
-// One of a team's top-3 most-used real formations (Phase E, nflverse participation
-// ingestion, docs/superpowers/specs/2026-07-07-phase-e-real-formations-design.md).
-// `alignment` is FTN's charted offense_formation ('SHOTGUN' | 'UNDER CENTER' |
-// 'PISTOL'), `personnel` the standard shorthand ({RB count}{TE count}, e.g. '11') —
-// both feed lib/formations.ts's buildRealFormation. `pct` is an integer share of the
-// team's charted plays that season. A team with insufficient participation coverage
-// has zero rows, not a sparse-sample one (see lib/nflverse/participation.ts).
+// One of a team's top-3 most-used real formations per unit (Phase E, nflverse
+// participation ingestion, docs/superpowers/specs/2026-07-07-phase-e-real-formations-
+// design.md; defense added DEP-141). For `unit: 'offense'`, `alignment` is FTN's charted
+// offense_formation ('SHOTGUN' | 'UNDER CENTER' | 'PISTOL') and `personnel` the standard
+// shorthand ({RB count}{TE count}, e.g. '11'), feeding lib/formations.ts's
+// buildRealFormation. For `unit: 'defense'`, `alignment` is the derived front label
+// ('Base' | 'Nickel' | 'Dime' | 'Quarter' | 'Goal Line', lib/nflverse/defense-
+// personnel.ts's defenseAlignmentLabel) and `personnel` the "{DL}-{LB}-{DB}" shorthand,
+// feeding buildRealDefenseFormation. `pct` is an integer share of the team's charted
+// plays that season. A team with insufficient participation coverage has zero rows for
+// that unit, not a sparse-sample one (see lib/nflverse/participation.ts).
 export interface TeamFormation {
   season: number;
   rank: number;
+  unit: 'offense' | 'defense';
   alignment: string;
   personnel: string;
   pct: number;

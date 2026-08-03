@@ -4,6 +4,7 @@ import {
   DEFENSE_FORMATION,
   resolveUnit,
   buildRealFormation,
+  buildRealDefenseFormation,
   alignmentLabel,
 } from '../formations';
 import { getPlayersByPosition, TEAMS } from '../teams';
@@ -231,6 +232,61 @@ describe('buildRealFormation — real per-team formations', () => {
     const resolved = resolveUnit(r, 'offense', real);
     expect(resolved).toHaveLength(11);
     expect(resolved.find((s) => s.label === 'QB')?.player?.id).toBe('qb1');
+  });
+});
+
+describe('buildRealDefenseFormation — real per-team defensive fronts', () => {
+  const CODES = ['4-2-5', '4-3-4', '3-4-4', '2-4-5', '2-3-6', '1-3-7', '4-4-3'];
+
+  for (const code of CODES) {
+    it(`${code}: exactly 11 well-formed slots, all on-field`, () => {
+      const slots = buildRealDefenseFormation(code);
+      expect(slots).toHaveLength(11);
+      expect(new Set(slots.map((s) => s.id)).size).toBe(11);
+      for (const slot of slots) {
+        expect(slot.x).toBeGreaterThanOrEqual(0);
+        expect(slot.x).toBeLessThanOrEqual(100);
+        expect(slot.index).toBeGreaterThanOrEqual(0);
+      }
+    });
+  }
+
+  it('falls back to the generic defense formation for a malformed code', () => {
+    expect(buildRealDefenseFormation('garbage')).toBe(DEFENSE_FORMATION);
+    expect(buildRealDefenseFormation('4-2')).toBe(DEFENSE_FORMATION);
+  });
+
+  it('falls back to the generic defense formation when counts do not sum to 11', () => {
+    expect(buildRealDefenseFormation('4-2-4')).toBe(DEFENSE_FORMATION);
+  });
+
+  it('assigns unique per-position indices (e.g. two DT slots are index 0 and 1)', () => {
+    const slots = buildRealDefenseFormation('4-3-4'); // 2 DE + 2 DT
+    const dts = slots.filter((s) => s.position === 'DT');
+    expect(dts.map((s) => s.index).sort()).toEqual([0, 1]);
+    const des = slots.filter((s) => s.position === 'DE');
+    expect(des.map((s) => s.index).sort()).toEqual([0, 1]);
+  });
+
+  it('a lone lineman is positioned as DT but labeled NT for display', () => {
+    const slots = buildRealDefenseFormation('1-4-6');
+    const dl = slots.filter((s) => s.position === 'DE' || s.position === 'DT');
+    expect(dl).toHaveLength(1);
+    expect(dl[0].position).toBe('DT');
+    expect(dl[0].label).toBe('NT');
+  });
+
+  it('resolveUnit renders a real defensive front the same way it renders the generic one', () => {
+    const r = roster([
+      player({ id: 'de1', position: 'DE', depthRank: 1, number: 91 }),
+      player({ id: 'dt1', position: 'DT', depthRank: 1, number: 99 }),
+      player({ id: 'lb1', position: 'LB', depthRank: 1, number: 54 }),
+      player({ id: 'cb1', position: 'CB', depthRank: 1, number: 21 }),
+      player({ id: 's1', position: 'S', depthRank: 1, number: 32 }),
+    ]);
+    const real = buildRealDefenseFormation('4-3-4');
+    const resolved = resolveUnit(r, 'defense', real);
+    expect(resolved).toHaveLength(11);
   });
 });
 

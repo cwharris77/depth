@@ -15,6 +15,10 @@ type MenuItem = {
   // chart" while viewing a past season.
   disabled?: boolean;
   disabledReason?: ReactNode;
+  // Trailing secondary text, e.g. the current selection preview for "Formations".
+  // Mutually exclusive with `checked` in practice -- an item shows one trailing
+  // indicator or the other, never both.
+  meta?: ReactNode;
 };
 
 // Anchored "•••" overflow menu: a trigger button toggling a right-aligned popover of
@@ -84,6 +88,11 @@ export default function Menu({
                 }}>
                 {item.icon}
                 <span className="flex-1">{item.label}</span>
+                {item.meta && (
+                  <span className="text-[10px] font-semibold" style={{ color: colors.textFaint }}>
+                    {item.meta}
+                  </span>
+                )}
                 {item.checked && (
                   <span
                     className="h-3.5 w-3.5 shrink-0 rounded-full"

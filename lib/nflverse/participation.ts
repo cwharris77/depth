@@ -13,6 +13,9 @@ export interface ParticipationRow {
   possession_team: string;
   offense_formation: string;
   offense_personnel: string;
+  // Only consumed by DefenseFormationAccumulator (defense-participation.ts) — optional
+  // here so existing offense-only callers/fixtures don't need updating.
+  defense_personnel?: string;
 }
 
 export interface FormationTally {
