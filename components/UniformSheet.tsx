@@ -106,7 +106,9 @@ export default function UniformSheet({
   const trackX = -currentIndex * cardWidth + dragX;
 
   return (
-    <div className="flex flex-col" style={{ maxHeight: '100%' }}>
+    // No sizing wrapper here -- these rows render directly inside BottomSheet's own flex
+    // column, which owns the height cap (see BottomSheet's sizing contract comment).
+    <>
       <div className="flex items-center justify-between px-5 pt-4 pb-2">
         <h2 className="text-base font-black" style={{ color: uiTokens.textPrimary }}>
           Uniforms
@@ -215,6 +217,6 @@ export default function UniformSheet({
           ))}
         </div>
       )}
-    </div>
+    </>
   );
 }
