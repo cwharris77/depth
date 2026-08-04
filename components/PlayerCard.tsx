@@ -276,20 +276,18 @@ export default function PlayerCard({
               #{player.number}
             </div>
             <div
-              className="mt-1 text-2xl font-black leading-tight"
+              className="mt-2 text-2xl font-black leading-tight"
               style={{
                 color: uiTokens.textPrimary,
                 letterSpacing: '-0.01em',
               }}>
               {player.name}
             </div>
-            <div className="mt-2 flex min-w-0 items-center gap-2">
+            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
               <Badge kind="position" accent={accent}>
                 {player.position}
               </Badge>
-              <span
-                className="min-w-0 flex-1 truncate text-xs font-medium"
-                style={{ color: uiTokens.textMuted }}>
+              <span className="text-xs font-medium" style={{ color: uiTokens.textMuted }}>
                 {positionFullName(player.position)}
               </span>
               <Badge kind="status" status={player.status} accent={accent} />
@@ -478,7 +476,7 @@ export default function PlayerCard({
                       #{p.number}
                     </div>
                     <div
-                      className="flex-1 text-sm font-bold truncate"
+                      className="flex-1 text-sm font-bold"
                       style={{ color: p.id === player.id ? accent : uiTokens.textPrimary }}>
                       {p.name}
                     </div>
@@ -515,7 +513,7 @@ export default function PlayerCard({
                       #{p.number}
                     </div>
                     <div
-                      className="flex-1 text-sm font-bold truncate"
+                      className="flex-1 text-sm font-bold"
                       style={{ color: isCurrent ? accent : uiTokens.textPrimary }}>
                       {p.name}
                     </div>
