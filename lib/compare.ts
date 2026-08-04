@@ -102,3 +102,24 @@ export interface CompareTeaser {
   topA?: Player;
   topB?: Player;
 }
+
+// Builds the `/compare` query string. Shared by app/compare/page.tsx (server, to
+// redirect a shared link's `pos` onto its normalized value — see parseCompareParams
+// above) and CompareView.tsx (client, for router.replace on picker interactions) so
+// the two never drift on param names/shape.
+export function buildComparePath(
+  a: string | undefined,
+  b: string | undefined,
+  pos: Position | undefined,
+  scheduleTeamId: string | undefined
+): string {
+  const params = new URLSearchParams();
+  if (a) params.set('a', a);
+  if (b) params.set('b', b);
+  if (pos) params.set('pos', pos);
+  if (scheduleTeamId) {
+    params.set('from', 'schedule');
+    params.set('scheduleTeam', scheduleTeamId);
+  }
+  return `/compare?${params.toString()}`;
+}
