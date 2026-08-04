@@ -33,6 +33,7 @@ Run all of these; capture output for the body:
 ```bash
 npm run format          # Prettier — CI rejects format drift
 npx tsc --noEmit        # must exit 0
+npm run lint            # catches unused-var/state errors tsc won't flag
 npm test                # must be green; note the test count
 ```
 
@@ -100,6 +101,7 @@ gh pr merge <N> --squash --delete-branch
 |---|---|
 | Format | `npm run format` |
 | Typecheck | `npx tsc --noEmit` |
+| Lint | `npm run lint` |
 | Tests | `npm test` (note the count) |
 | Live check | dev server via launch.json; write the "Verified live" sentence |
 | Title | `type(scope): message` — becomes `main` history |

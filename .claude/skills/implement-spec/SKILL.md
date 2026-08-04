@@ -54,6 +54,16 @@ implementing from the spec's *description* of the code instead of the code itsel
   malformed-input cases even when unlisted (AGENTS.md invariant 6).
 - New pure logic goes in `lib/` with tests; components stay thin. New modules get a
   role-and-constraint header comment.
+- **A stateful/interactive acceptance bullet ("preserve X the same way it works today")
+  is not verified by matching it against a single static render.** Drive the actual
+  interaction sequence a user would (open → interact with several items → close →
+  reopen) before calling it done. For any "active"/"current"/"selected" indicator,
+  name explicitly which semantic it means — tracks live browsing, or tracks the last
+  committed choice — since ambiguous ticket phrasing can satisfy either reading and
+  the wrong one looks correct in a screenshot but reads as wrong within seconds of
+  real use (depth PR #176: the ticket said "preserve the active-kit indicator the
+  same way it is now," and a live-tracking implementation was rejected on sight —
+  Cooper wanted it to reflect only the committed choice).
 
 ### 5. Ship
 
