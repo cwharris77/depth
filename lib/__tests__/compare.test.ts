@@ -4,6 +4,7 @@ import {
   COMPARE_POSITIONS,
   getDeepestPosition,
   buildCompareTeaser,
+  buildComparePath,
 } from '../compare';
 import type { Player, Position } from '../types';
 
@@ -36,6 +37,24 @@ describe('parseCompareParams', () => {
 
   it('defaults everything when params are missing', () => {
     expect(parseCompareParams({}, TEAM_IDS)).toEqual({ a: undefined, b: undefined, pos: 'QB' });
+  });
+});
+
+describe('buildComparePath', () => {
+  it('omits params that are missing', () => {
+    expect(buildComparePath(undefined, undefined, undefined, undefined)).toBe('/compare?');
+  });
+
+  it('includes only the params that are set', () => {
+    expect(buildComparePath('seahawks', 'niners', 'WR', undefined)).toBe(
+      '/compare?a=seahawks&b=niners&pos=WR'
+    );
+  });
+
+  it('adds from=schedule alongside scheduleTeam when a schedule origin is set', () => {
+    expect(buildComparePath('seahawks', undefined, undefined, 'niners')).toBe(
+      '/compare?a=seahawks&from=schedule&scheduleTeam=niners'
+    );
   });
 });
 

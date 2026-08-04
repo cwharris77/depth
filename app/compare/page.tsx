@@ -1,8 +1,14 @@
 import CompareView from '@/components/CompareView';
-import { buildCompareTeaser, COMPARE_POSITIONS, parseCompareParams } from '@/lib/compare';
+import {
+  buildComparePath,
+  buildCompareTeaser,
+  COMPARE_POSITIONS,
+  parseCompareParams,
+} from '@/lib/compare';
 import { getPlayersByPosition } from '@/lib/roster';
 import { dbRosterSource } from '@/lib/roster-source.db';
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 
 type Params = {
   searchParams: Promise<{
@@ -63,6 +69,13 @@ export default async function ComparePage({ searchParams }: Params) {
   const teamB = b ? teams.find((t) => t.id === b) : undefined;
   const scheduleTeam =
     raw.from === 'schedule' ? teams.find((team) => team.id === raw.scheduleTeam) : undefined;
+
+  // A shared link's `pos` can be stale or garbage (?pos=FB) — parseCompareParams
+  // already degrades content to the QB default, but the address bar must match what
+  // actually rendered, or a re-shared/bookmarked link lies about what it shows.
+  if (raw.pos && raw.pos !== pos) {
+    redirect(buildComparePath(a, b, pos, scheduleTeam?.id));
+  }
 
   const [statsA, statsB, rosterA, rosterB] = await Promise.all([
     a ? dbRosterSource.getTeamStats(a) : Promise.resolve(undefined),
