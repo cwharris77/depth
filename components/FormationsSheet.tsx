@@ -6,12 +6,6 @@ import { colors as uiTokens } from '@/components/ui/tokens';
 import { alignmentLabel } from '@/lib/formations';
 import type { TeamFormation, Unit } from '@/lib/types';
 
-const UNIT_TITLES: Record<Unit, string> = {
-  offense: 'Offense formations',
-  defense: 'Defense formations',
-  special: 'Special teams',
-};
-
 // One row per real formation title -- offense reads as "Shotgun 11", defense as
 // "Nickel (4-2-5)" (front label + the raw DL-LB-DB shorthand, since unlike offense's
 // {RB}{TE} code the same front name can cover more than one DL/LB split).
@@ -49,10 +43,13 @@ function groupedRows(unit: Unit, formations: TeamFormation[]): Row[] {
   ]);
 }
 
-// The Formations sheet (single-select list, opened from the ••• menu). Base + every
-// real formation the team ran that season for whichever unit is currently active on the
-// field (offense/defense tabs share this same component; special teams has no real
-// data, see DEP-141, so it shows an explanatory empty state instead of an empty list).
+// The Formations sheet (single-select list, opened from the ••• menu). Every real
+// formation the team ran that season for whichever unit is currently active on the field
+// (offense/defense tabs share this same component; special teams has no real data, see
+// DEP-141, so it shows an explanatory empty state instead of an empty list). The generic
+// "Base" fallback (lib/formations.ts) is used when a unit has no real-formation rows, but
+// it's never listed here as something to pick -- selection always defaults to the team's
+// top formation instead (see DepthChartField's topFormationFor).
 export default function FormationsSheet({
   unit,
   formations,
@@ -69,18 +66,15 @@ export default function FormationsSheet({
   accent: string;
 }) {
   return (
-    // Fixed height (not a cap) so every unit -- including special teams' empty state --
-    // opens to the same sheet size instead of shrink-wrapping to its content.
-    <div className="flex flex-col" style={{ height: '74vh' }}>
+    // height: 100% fills whatever BottomSheet's own maxHeight cap allows -- a fixed vh
+    // value here previously exceeded that cap and got clipped by BottomSheet's
+    // overflow: hidden, cutting off the bottom of the list (see SeasonSheet for the
+    // same pattern).
+    <div className="flex flex-col" style={{ height: '100%', minHeight: 0 }}>
       <div className="flex items-center justify-center pt-2.5 pb-0.5" style={{ flex: '0 0 auto' }}>
         <div className="h-1 w-9 rounded-full" style={{ background: uiTokens.borderInput }} />
       </div>
-      <div
-        className="flex items-center justify-between px-5 pt-2 pb-2"
-        style={{ flex: '0 0 auto' }}>
-        <h2 className="text-base font-black" style={{ color: uiTokens.textPrimary }}>
-          {UNIT_TITLES[unit]}
-        </h2>
+      <div className="flex items-center justify-end px-5 pt-1 pb-1" style={{ flex: '0 0 auto' }}>
         <IconButton
           icon={<X size={16} color={uiTokens.textMuted} />}
           variant="plain"
@@ -97,20 +91,8 @@ export default function FormationsSheet({
       ) : (
         <>
           <div
-            className="px-5 pb-3 text-xs"
-            style={{ color: uiTokens.textFaint, flex: '0 0 auto' }}>
-            Tap a formation — the field rearranges into it live
-          </div>
-          <div
-            className="overflow-y-auto px-4 pb-2 flex flex-col gap-1.5"
+            className="overflow-y-auto px-4 pt-1 pb-2 flex flex-col gap-1.5"
             style={{ WebkitOverflowScrolling: 'touch', flex: '1 1 auto', minHeight: 0 }}>
-            <FormationRow
-              title="Base formation"
-              subtitle="Generic starter look"
-              active={activeFormation === null}
-              accent={accent}
-              onClick={() => onSelect(null)}
-            />
             {groupedRows(unit, formations).map((row, i) =>
               row.kind === 'header' ? (
                 <div
@@ -142,16 +124,21 @@ export default function FormationsSheet({
   );
 }
 
+// pct is stored as a rounded integer (lib/types.ts) -- a formation run on well under 1%
+// of plays rounds to 0, which reads as "never happened" rather than "rare." Floor it at
+// a "<1%" label instead of a bare "0%".
+function pctLabel(pct: number): string {
+  return pct === 0 ? '<1%' : `${pct}%`;
+}
+
 function FormationRow({
   title,
-  subtitle,
   pct,
   active,
   accent,
   onClick,
 }: {
   title: string;
-  subtitle?: string;
   pct?: number;
   active: boolean;
   accent: string;
@@ -173,15 +160,17 @@ function FormationRow({
           style={{ color: active ? accent : uiTokens.textSecondary }}>
           {title}
         </div>
-        {subtitle && (
-          <div className="mt-0.5 text-xs" style={{ color: uiTokens.textFaint }}>
-            {subtitle}
-          </div>
-        )}
       </div>
       {pct !== undefined && (
-        <div className="shrink-0 text-sm font-black" style={{ color: uiTokens.textPrimary }}>
-          {pct}%
+        // Two lines, not a bare "22%" -- without a separate personnel/utilization
+        // breakdown the number alone doesn't say what it's a share OF.
+        <div className="shrink-0 text-right">
+          <div className="text-sm font-black" style={{ color: uiTokens.textPrimary }}>
+            {pctLabel(pct)}
+          </div>
+          <div className="text-[9px] font-semibold" style={{ color: uiTokens.textFaint }}>
+            of plays
+          </div>
         </div>
       )}
       {active && <Check size={16} color={accent} strokeWidth={3} className="shrink-0" />}
