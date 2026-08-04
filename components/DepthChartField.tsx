@@ -35,6 +35,17 @@ import { useShareRoster } from '@/lib/use-share-roster';
 import { useTeamSeason } from '@/lib/use-team-season';
 import { SEASONS_MIN } from '@/lib/nflverse/roster-history';
 
+// A team's default formation pick is its most-used real formation for that unit, not
+// the generic "Base" look -- users should never see "Base" as something they picked.
+// Falls back to null (Base, internal-only) only when the unit has no real-formation
+// rows at all.
+function topFormationFor(unit: Unit, formations: TeamFormation[]): TeamFormation | null {
+  if (unit === 'special') return null;
+  const unitFormations = formations.filter((f) => f.unit === unit);
+  if (unitFormations.length === 0) return null;
+  return unitFormations.reduce((top, f) => (f.rank < top.rank ? f : top));
+}
+
 // Pure client component: it receives one resolved roster as a prop and never
 // imports the team registry, so a page ships only its own team's data — not all 32.
 export default function DepthChartField({
@@ -55,14 +66,17 @@ export default function DepthChartField({
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeUnit, setActiveUnit] = useState<Unit>('offense');
   // The real-formation chip choice (Phase E) — ephemeral: not persisted, not in the
-  // URL (locked decision). Reset during render, not an effect, whenever the team
-  // changes (same pattern as useKit's team-change detection) since this component
-  // persists across team switches.
-  const [activeFormation, setActiveFormation] = useState<TeamFormation | null>(null);
+  // URL (locked decision). Defaults to the team's most-used formation for the active
+  // unit (topFormationFor), not the generic "Base" look. Reset during render, not an
+  // effect, whenever the team changes (same pattern as useKit's team-change detection)
+  // since this component persists across team switches.
+  const [activeFormation, setActiveFormation] = useState<TeamFormation | null>(() =>
+    topFormationFor('offense', formations)
+  );
   const [formationTeamId, setFormationTeamId] = useState(roster.team.id);
   if (formationTeamId !== roster.team.id) {
     setFormationTeamId(roster.team.id);
-    setActiveFormation(null);
+    setActiveFormation(topFormationFor(activeUnit, formations));
   }
   // Desktop docks the selected player's card in TeamPageShell's context panel instead
   // of the bottom sheet. Decided by matchMedia (not CSS show/hide) so only ONE
@@ -221,8 +235,9 @@ export default function DepthChartField({
   const changeUnit = (unit: Unit) => {
     setActiveUnit(unit);
     // A selected formation is unit-specific (offense/defense each have their own list) —
-    // switching units always clears it rather than carrying a stale pick across.
-    setActiveFormation(null);
+    // switching units always resets to that unit's top formation rather than carrying a
+    // stale pick across.
+    setActiveFormation(topFormationFor(unit, formations));
     setSelectedPlayer(null);
     openedViaPushRef.current = false;
     router.replace(buildTeamSelectionUrl(pathname, { unit, playerId: null, season }), {
