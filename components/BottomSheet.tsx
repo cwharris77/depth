@@ -9,6 +9,17 @@ import { colors } from '@/components/ui/tokens';
 // picker so the field stays on screen and recolors live as you tap a kit. A dimmed
 // backdrop fills the rest; tapping it (or the sheet's own close control) dismisses.
 // Positioned absolutely within DepthChartField's relative root.
+//
+// Sizing contract: THIS component owns the sheet's height cap (maxHeight below) and the
+// flex column that children lay out in — content passed as `children` renders directly
+// inside it, as a Fragment of top-level rows, not wrapped in its own sizing div. A child
+// that needs to fill remaining space (a scrollable list) sets `flex: '1 1 auto'` +
+// `minHeight: 0` on itself; a child that should hug the top/bottom sets `flex: '0 0
+// auto'`. Never give a child of BottomSheet its own height/maxHeight in vh or % — that
+// duplicates this component's cap and, if the two disagree, the excess silently gets
+// clipped by `overflow: hidden` below (DEP formations-sheet bug: a content component
+// once set a fixed 74vh here, which exceeded this cap and cut off the bottom of a long
+// list). One cap, defined once, here.
 export default function BottomSheet({
   isOpen,
   onClose,

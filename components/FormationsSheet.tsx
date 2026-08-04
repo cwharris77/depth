@@ -66,11 +66,9 @@ export default function FormationsSheet({
   accent: string;
 }) {
   return (
-    // height: 100% fills whatever BottomSheet's own maxHeight cap allows -- a fixed vh
-    // value here previously exceeded that cap and got clipped by BottomSheet's
-    // overflow: hidden, cutting off the bottom of the list (see SeasonSheet for the
-    // same pattern).
-    <div className="flex flex-col" style={{ height: '100%', minHeight: 0 }}>
+    // No sizing wrapper here -- these rows render directly inside BottomSheet's own flex
+    // column, which owns the height cap (see BottomSheet's sizing contract comment).
+    <>
       <div className="flex items-center justify-center pt-2.5 pb-0.5" style={{ flex: '0 0 auto' }}>
         <div className="h-1 w-9 rounded-full" style={{ background: uiTokens.borderInput }} />
       </div>
@@ -120,7 +118,7 @@ export default function FormationsSheet({
           </div>
         </>
       )}
-    </div>
+    </>
   );
 }
 

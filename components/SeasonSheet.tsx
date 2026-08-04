@@ -31,7 +31,9 @@ export default function SeasonSheet({
   );
 
   return (
-    <div className="flex flex-col" style={{ height: '100%', minHeight: 0 }}>
+    // No sizing wrapper here -- these rows render directly inside BottomSheet's own flex
+    // column, which owns the height cap (see BottomSheet's sizing contract comment).
+    <>
       <div
         className="flex items-center justify-between px-5 pt-4 pb-2"
         style={{ flex: '0 0 auto' }}>
@@ -65,7 +67,7 @@ export default function SeasonSheet({
           />
         ))}
       </div>
-    </div>
+    </>
   );
 }
 
