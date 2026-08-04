@@ -9,7 +9,15 @@ import { playerDeepLinkPath } from '@/lib/share';
 import { hasSeasonStats, seasonStatColumns } from '@/lib/stat-table';
 import type { Player, PlayerSeasonStats, Position, TeamRoster } from '@/lib/types';
 import { AnimatePresence, motion, Reorder, useDragControls, type PanInfo } from 'framer-motion';
-import { Check, GraduationCap, GripVertical, RotateCcw, Share2, X } from 'lucide-react';
+import {
+  AlertCircle,
+  Check,
+  GraduationCap,
+  GripVertical,
+  RotateCcw,
+  Share2,
+  X,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Avatar from '@/components/ui/Avatar';
 import Badge from '@/components/ui/Badge';
@@ -68,6 +76,10 @@ export default function PlayerCard({
   const effectiveEditing = editing || globalEditMode;
   const [showHint, setShowHint] = useState(false);
   const [copied, setCopied] = useState(false);
+  // Set when the clipboard write itself fails (e.g. permission denied, insecure
+  // context) — distinct from the user simply dismissing the native share sheet,
+  // which is expected and not an error worth surfacing (DEP-131).
+  const [shareFailed, setShareFailed] = useState(false);
   // When playerStatsMap is provided (server-side prefetch), stats are available
   // synchronously — no loading state, no jump. Fall back to client-side fetch for
   // legacy callers that don't pass the map.
@@ -108,6 +120,7 @@ export default function PlayerCard({
     if (player) {
       setEditing(false);
       setCopied(false);
+      setShareFailed(false);
       setShowHint(!seenReorderHint());
     }
   }
@@ -213,7 +226,10 @@ export default function PlayerCard({
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      // clipboard blocked (insecure context / permission) — no-op
+      // clipboard blocked (insecure context / permission) — surface it rather than
+      // leaving the click looking like a no-op (DEP-131)
+      setShareFailed(true);
+      setTimeout(() => setShareFailed(false), 1500);
     }
   };
 
@@ -287,10 +303,12 @@ export default function PlayerCard({
             active={copied}
             accent={accent}
             onClick={handleShare}
-            ariaLabel={copied ? 'Link copied' : 'Share player'}
+            ariaLabel={copied ? 'Link copied' : shareFailed ? "Couldn't copy link" : 'Share player'}
             icon={
               copied ? (
                 <Check size={18} color={accent} strokeWidth={3} />
+              ) : shareFailed ? (
+                <AlertCircle size={18} color={uiTokens.danger} />
               ) : (
                 <Share2 size={18} color={uiTokens.textMuted} />
               )
