@@ -16,7 +16,7 @@
 import FilterPill from '@/components/ui/FilterPill';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import { colors as uiTokens } from '@/components/ui/tokens';
-import { COMPARE_POSITIONS, type CompareTeaser } from '@/lib/compare';
+import { buildComparePath, COMPARE_POSITIONS, type CompareTeaser } from '@/lib/compare';
 import { formatLastName } from '@/lib/format';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { Player, Position, TeamStats } from '@/lib/types';
@@ -47,23 +47,6 @@ interface CompareViewProps {
 
 type Slot = 'a' | 'b';
 type Tab = 'matchup' | 'position';
-
-function buildComparePath(
-  a: string | undefined,
-  b: string | undefined,
-  pos: Position | undefined,
-  scheduleTeamId: string | undefined
-): string {
-  const params = new URLSearchParams();
-  if (a) params.set('a', a);
-  if (b) params.set('b', b);
-  if (pos) params.set('pos', pos);
-  if (scheduleTeamId) {
-    params.set('from', 'schedule');
-    params.set('scheduleTeam', scheduleTeamId);
-  }
-  return `/compare?${params.toString()}`;
-}
 
 export default function CompareView({
   teams,
@@ -246,7 +229,10 @@ function TeamSlotButton({ team, onClick }: { team?: TeamMeta; onClick: () => voi
         {team.abbrev}
       </div>
       <div className="truncate text-sm font-bold" style={{ color: uiTokens.textPrimary }}>
-        {team.city} {team.name}
+        <span className="hidden min-[480px]:inline">
+          {team.city} {team.name}
+        </span>
+        <span className="inline min-[480px]:hidden">{team.name}</span>
       </div>
       <div
         className="mt-0.5 text-[10px] font-semibold opacity-0 transition-opacity duration-150 group-hover:opacity-100"
@@ -273,11 +259,19 @@ function ComparePrompt({ pickedCount, copy }: { pickedCount: number; copy: strin
   );
 }
 
-function SameTeamNote() {
+function SameTeamBlock() {
   return (
-    <p className="mb-2.5 text-xs font-semibold" style={{ color: uiTokens.textFaint }}>
-      Same team on both sides
-    </p>
+    <div
+      className="flex flex-col items-center gap-3 rounded-2xl px-6 py-10 text-center"
+      style={{ border: `1px dashed ${uiTokens.borderSubtle}`, background: uiTokens.surfaceCard2 }}>
+      <Columns2 size={22} color={uiTokens.textFaintest} />
+      <p className="text-sm font-bold" style={{ color: uiTokens.textSecondary }}>
+        Pick two different teams
+      </p>
+      <p className="max-w-[32ch] text-xs" style={{ color: uiTokens.textFaint }}>
+        Comparing a team against itself won&rsquo;t show anything new.
+      </p>
+    </div>
   );
 }
 
@@ -407,9 +401,11 @@ function TeamMatchup({
       />
     );
   }
+  if (sameTeam) {
+    return <SameTeamBlock />;
+  }
   return (
     <>
-      {sameTeam && <SameTeamNote />}
       <div
         className="overflow-hidden rounded-2xl"
         style={{ border: `1px solid ${uiTokens.borderDefault}` }}>
@@ -613,7 +609,6 @@ function PositionDepth({
 
   return (
     <>
-      {sameTeam && <SameTeamNote />}
       <div className="relative">
         <div
           className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 pr-10 xl:mx-0 xl:flex-wrap xl:overflow-visible xl:px-0 xl:pb-0 xl:pr-0"
@@ -641,6 +636,8 @@ function PositionDepth({
             pickedCount={pickedCount}
             copy="Their depth at the selected position lines up side by side, rank for rank."
           />
+        ) : sameTeam ? (
+          <SameTeamBlock />
         ) : noPlayersEitherSide ? (
           <EmptyPositionState position={position} />
         ) : (
