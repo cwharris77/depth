@@ -1,7 +1,6 @@
 import { readableTextOn } from '@/lib/colors';
 import type { TeamColors } from '@/lib/types';
 import type {
-  ColorRef,
   NumberStyle,
   TeamUniformDefinition,
   UniformLayer,
@@ -105,14 +104,10 @@ export interface ResolvedUniformStyle {
   number: Omit<NumberStyle, 'fill' | 'outline'> & { fill: string; outline: string };
 }
 
-export function resolveColor(
-  ref: ColorRef | string,
-  colors: TeamColors,
-  bodyColor: string
-): string {
+export function resolveColor(ref: unknown, colors: TeamColors, bodyColor: string): string {
   if (ref === 'primary' || ref === 'secondary' || ref === 'accent') return colors[ref];
   if (ref === 'readable-on-body') return readableTextOn(bodyColor);
-  if (ref.startsWith('#')) return ref;
+  if (typeof ref === 'string' && ref.startsWith('#')) return ref;
   return colors.primary;
 }
 
@@ -171,7 +166,7 @@ export function resolveUniformModel(
   colors: TeamColors
 ): ResolvedUniformStyle {
   const withDefaults = mergeStyle(GENERIC_UNIFORM_STYLE, definition?.defaults);
-  const style = mergeStyle(withDefaults, definition?.kits[kitSlug]);
+  const style = mergeStyle(withDefaults, definition?.kits?.[kitSlug]);
   const jerseyColor = resolveColor(style.jerseyColor, colors, colors.primary);
 
   return {

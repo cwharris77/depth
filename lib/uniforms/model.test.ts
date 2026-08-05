@@ -99,6 +99,7 @@ describe('uniform model resolver', () => {
     });
     expect(model.layers.some((layer) => layer.id === 'sleeve-band')).toBe(false);
     expect(model.layers.at(-1)).toMatchObject({ id: 'collar-trim', d: 'M4,4' });
+    expect(model.layers.some((layer) => layer.id === 'generic-pants-stripe-left')).toBe(true);
     expect(model.number).toEqual({
       fill: readableTextOn(colors.primary),
       outline: colors.secondary,
@@ -143,6 +144,50 @@ describe('uniform model resolver', () => {
       fill: readableTextOn(colors.primary),
       outline: colors.secondary,
       outlineWidth: GENERIC_UNIFORM_STYLE.number.outlineWidth,
+    });
+  });
+
+  it('falls back to the generic model for an incomplete definition without kits', () => {
+    const incompleteDefinition = { teamId: 'incomplete' } as TeamUniformDefinition;
+
+    expect(resolveUniformModel(incompleteDefinition, 'home', colors)).toEqual(
+      resolveUniformModel(undefined, 'home', colors)
+    );
+  });
+
+  it('falls back to generic colors for incomplete layer paint references', () => {
+    const incompleteDefinition = {
+      teamId: 'incomplete',
+      kits: {
+        home: {
+          layers: [
+            {
+              id: 'incomplete-fill',
+              surface: 'helmet',
+              d: 'M1,1',
+              clip: true,
+              kind: 'fill',
+            },
+            {
+              id: 'incomplete-stroke',
+              surface: 'collar',
+              d: 'M2,2',
+              clip: true,
+              kind: 'stroke',
+              strokeWidth: 3,
+            },
+          ],
+        },
+      },
+    } as unknown as TeamUniformDefinition;
+
+    const model = resolveUniformModel(incompleteDefinition, 'home', colors);
+
+    expect(model.layers.find((layer) => layer.id === 'incomplete-fill')).toMatchObject({
+      fill: colors.primary,
+    });
+    expect(model.layers.find((layer) => layer.id === 'incomplete-stroke')).toMatchObject({
+      stroke: colors.primary,
     });
   });
 });
