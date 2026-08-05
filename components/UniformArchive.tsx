@@ -173,6 +173,7 @@ export default function UniformArchive({
                                 imagePath={k.imagePath}
                                 title={`${t.teamName} ${k.name}`}
                                 sharedDefs
+                                kitId={k.id}
                               />
                               <figcaption
                                 className="mt-1 text-[10px] leading-tight"

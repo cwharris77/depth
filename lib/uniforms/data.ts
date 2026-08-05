@@ -1013,6 +1013,25 @@ export const UNIFORMS: UniformSeed[] = [
       onAccent: '#0a0e1a',
     },
   },
+  // Bengals Color Rush. All white — "a nod to the white tiger" per Cincinnati's own unveiling
+  // (Bengals.com, "Bengals Unveil Color Rush Jerseys", Sept 13 2016). First worn 9/29/2016
+  // (TNF vs Miami), last worn 11/20/2022; paused for the 2021 season.
+  {
+    teamId: 'bengals',
+    slug: 'color-rush',
+    kind: 'color-rush',
+    name: 'Color Rush',
+    yearStart: 2016,
+    yearEnd: 2022,
+    isCurrent: false,
+    colors: {
+      primary: '#FFFFFF',
+      secondary: '#000000',
+      accent: '#000000',
+      uiAccent: '#FF6A33',
+      onAccent: '#0a0e1a',
+    },
+  },
   // Ravens black alternate. Black base, purple/gold trim.
   {
     teamId: 'ravens',
