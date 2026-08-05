@@ -1,3 +1,4 @@
+import { colors as uiTokens } from '@/components/ui/tokens';
 import type { PlayerStatus, TeamColors } from './types';
 
 // The dark app background. uiAccent values are curated to read against this.
@@ -13,6 +14,18 @@ const FIXED_STATUS: Record<Exclude<PlayerStatus, 'starter'>, string> = {
 
 export function statusColor(status: PlayerStatus, colors: TeamColors): string {
   return status === 'starter' ? colors.uiAccent : FIXED_STATUS[status];
+}
+
+// Schedule game-result color (W/L/T), shared by the schedule page and its desktop
+// panel. Win green is a literal (no token yet); loss/tie map to existing UI tokens.
+const GAME_RESULT_COLOR: Record<'W' | 'L' | 'T', string> = {
+  W: '#3fb950',
+  L: uiTokens.statusInjured,
+  T: uiTokens.textMuted,
+};
+
+export function gameResultColor(result: 'W' | 'L' | 'T'): string {
+  return GAME_RESULT_COLOR[result];
 }
 
 // WCAG relative-luminance contrast ratio between two hex colors (#rrggbb).

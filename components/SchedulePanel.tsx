@@ -7,28 +7,10 @@
 // nothing when there's no schedule; the main column already shows the empty state.
 import { colors as uiTokens } from '@/components/ui/tokens';
 import SectionLabel from '@/components/ui/SectionLabel';
-import { readableTextOn } from '@/lib/colors';
+import { gameResultColor, readableTextOn } from '@/lib/colors';
+import { formatGameDate } from '@/lib/format';
 import { scheduleSummary } from '@/lib/schedule-summary';
 import type { TeamSchedule } from '@/lib/types';
-
-// Same W/L/T mapping as TeamScheduleView's result line — the win green is a literal
-// there too (no token yet).
-const RESULT_COLOR: Record<'W' | 'L' | 'T', string> = {
-  W: '#3fb950',
-  L: uiTokens.statusInjured,
-  T: uiTokens.textMuted,
-};
-
-const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-
-// Parse yyyy-mm-dd parts directly, not `new Date(iso)` (UTC parse shifts a day back in
-// western timezones) — same guard as TeamScheduleView/TeamStatsView.
-function formatGameDate(iso: string | null): string {
-  if (!iso) return '';
-  const [, month, day] = iso.split('-').map(Number);
-  if (!month || !day) return '';
-  return `${MONTHS[month - 1]} ${day}`;
-}
 
 function SplitCard({ label, value }: { label: string; value: string }) {
   return (
@@ -122,9 +104,9 @@ export default function SchedulePanel({
                 key={i}
                 className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-black"
                 style={{
-                  color: RESULT_COLOR[result],
-                  background: `${RESULT_COLOR[result]}1a`,
-                  border: `1px solid ${RESULT_COLOR[result]}55`,
+                  color: gameResultColor(result),
+                  background: `${gameResultColor(result)}1a`,
+                  border: `1px solid ${gameResultColor(result)}55`,
                 }}>
                 {result}
               </span>

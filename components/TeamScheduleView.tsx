@@ -7,7 +7,8 @@
 // (invariant 5); it never imports all-32 data — opponent colors are baked into the prop.
 import type { TeamMeta } from '@/lib/roster-source';
 import type { TeamSchedule, TeamScheduleGame } from '@/lib/types';
-import { readableTextOn } from '@/lib/colors';
+import { gameResultColor, readableTextOn } from '@/lib/colors';
+import { formatGameDate } from '@/lib/format';
 import Link from 'next/link';
 import SchedulePanel from './SchedulePanel';
 import TeamPageHeader from './TeamPageHeader';
@@ -22,23 +23,6 @@ interface Props {
   schedule: TeamSchedule | null;
   isUpcoming?: boolean;
 }
-
-const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-
-// Parse the yyyy-mm-dd parts directly rather than `new Date(iso)` — the latter is parsed
-// as UTC midnight and shifts a day back in western timezones. Returns e.g. "SEP 9".
-function formatGameDate(iso: string | null): string {
-  if (!iso) return '';
-  const [, month, day] = iso.split('-').map(Number);
-  if (!month || !day) return '';
-  return `${MONTHS[month - 1]} ${day}`;
-}
-
-const RESULT_COLOR: Record<'W' | 'L' | 'T', string> = {
-  W: '#3fb950',
-  L: uiTokens.statusInjured,
-  T: uiTokens.textMuted,
-};
 
 function GameCard({
   game,
@@ -95,7 +79,7 @@ function GameCard({
       {played ? (
         <div
           className="text-[10px] font-bold"
-          style={{ color: RESULT_COLOR[game.result as 'W' | 'L' | 'T'] }}>
+          style={{ color: gameResultColor(game.result as 'W' | 'L' | 'T') }}>
           {game.result} {game.teamScore}-{game.oppScore}
         </div>
       ) : (

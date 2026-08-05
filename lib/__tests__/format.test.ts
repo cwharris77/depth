@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { experienceLabel, formatLastName, ordinal } from '../format';
+import { experienceLabel, formatGameDate, formatLastName, ordinal } from '../format';
 
 describe('experienceLabel', () => {
   it('calls a player with 0 seasons a rookie', () => {
@@ -63,5 +63,23 @@ describe('formatLastName', () => {
 
   it('falls back to the full string for a single-word name', () => {
     expect(formatLastName('Prime')).toBe('Prime');
+  });
+});
+
+describe('formatGameDate', () => {
+  it('formats a yyyy-mm-dd date as MONTH DAY', () => {
+    expect(formatGameDate('2025-09-09')).toBe('SEP 9');
+  });
+
+  it('does not shift a day in western timezones (no UTC Date parse)', () => {
+    expect(formatGameDate('2025-01-01')).toBe('JAN 1');
+  });
+
+  it('returns empty string for a null date', () => {
+    expect(formatGameDate(null)).toBe('');
+  });
+
+  it('returns empty string for a malformed date', () => {
+    expect(formatGameDate('not-a-date')).toBe('');
   });
 });

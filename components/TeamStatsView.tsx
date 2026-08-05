@@ -7,12 +7,12 @@
 import SectionLabel from '@/components/ui/SectionLabel';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import { readableTextOn } from '@/lib/colors';
-import { ordinal } from '@/lib/format';
+import { formatGameDate, ordinal } from '@/lib/format';
 import { postseasonRoundLabel } from '@/lib/schedule';
 import type { TeamMeta, TeamStatsRanks } from '@/lib/roster-source';
 import type { Leader, RosterLeaders, TeamScheduleGame, TeamStats } from '@/lib/types';
 import { useKitColors } from '@/lib/use-kit-colors';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import StatsPanel from './StatsPanel';
 import TeamPageHeader from './TeamPageHeader';
 import TeamPageShell from './TeamPageShell';
@@ -40,17 +40,6 @@ interface Props {
   // completed/reported season (seasons[0]) only — not re-derived per season tab. Empty
   // for a team that missed the postseason, in which case no section renders.
   postseasonGames?: TeamScheduleGame[];
-}
-
-const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-
-// Parse yyyy-mm-dd parts directly, not `new Date(iso)` (which is UTC and shifts a day in
-// western timezones). Returns e.g. "SEP 9".
-function formatGameDate(iso: string | null): string {
-  if (!iso) return '';
-  const [, month, day] = iso.split('-').map(Number);
-  if (!month || !day) return '';
-  return `${MONTHS[month - 1]} ${day}`;
 }
 
 function wl(wins: number, losses: number): string {
@@ -129,6 +118,66 @@ function StatCell({
           </div>
         )}
       </td>
+    </>
+  );
+}
+
+// Shared "rounded-2xl bordered row list" shell for the POSTSEASON and ROSTER LEADERS
+// sections below — both are a card of rows with no border above the first row and a
+// hairline between the rest; only each row's inner content/typography differs, so that
+// stays with the caller while this owns the repeated container/border structure.
+function RowCardList({
+  rows,
+  rowPaddingY = 'py-2.5',
+}: {
+  rows: { key: string; left: ReactNode; right: ReactNode }[];
+  rowPaddingY?: 'py-2.5' | 'py-3.5';
+}) {
+  return (
+    <div
+      className="overflow-hidden rounded-2xl"
+      style={{ background: uiTokens.surfaceCard2, border: `1px solid ${uiTokens.borderSubtle}` }}>
+      {rows.map((row, i) => (
+        <div
+          key={row.key}
+          className={`flex items-center justify-between gap-3 px-3.5 ${rowPaddingY}`}
+          style={{ borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}` }}>
+          {row.left}
+          {row.right}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Shared hero-block shell for the two "no season stats yet" states (upcoming season /
+// incoming coach) — same wrapper, dashed border, and footer-ticker structure, differing
+// only in heading/subline/footer text. The `active` season's hero has its own record +
+// breakdown table and doesn't fit this shape, so it stays separate.
+function DegradedHero({
+  heading,
+  subline,
+  footerLabel,
+}: {
+  heading: string;
+  subline: string;
+  footerLabel: string;
+}) {
+  return (
+    <>
+      <div
+        className="mt-0.5 px-5 pb-[18px] pt-2"
+        style={{ borderBottom: `1px dashed ${uiTokens.borderInput}` }}>
+        <div className="text-[28px] font-bold leading-tight tracking-[-0.01em]">{heading}</div>
+        <div className="mt-1 text-[11px]" style={{ color: uiTokens.textFaint }}>
+          {subline}
+        </div>
+      </div>
+      <div
+        className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
+        style={{ color: uiTokens.textFaintest }}>
+        {footerLabel}
+      </div>
     </>
   );
 }
@@ -233,6 +282,26 @@ export default function TeamStatsView({
   const showPostseason =
     !!postseasonGames?.length && !!active && active.season === seasons[0]?.season;
 
+  // Coach badge — season-scoped, keyed off the active season row (docs/superpowers/
+  // specs/2026-07-14-season-scoped-head-coach-design.md). Derived once instead of four
+  // near-duplicate <CoachBadge> call sites that each recomputed the same name/meta pair
+  // for a different index/incomingCoach combination.
+  const coachBadge = active?.coach
+    ? {
+        name: active.coach.name,
+        meta: `HEAD COACH · ${ordinal(active.coach.experience).toUpperCase()} SEASON`,
+      }
+    : clampedIndex === -1 && incomingCoach
+      ? { name: incomingCoach.name, meta: 'HEAD COACH · INCOMING' }
+      : clampedIndex === -1 && !incomingCoach && seasons[0]?.coach
+        ? {
+            name: seasons[0].coach.name,
+            meta: `HEAD COACH · ${ordinal(seasons[0].coach.experience + 1).toUpperCase()} SEASON`,
+          }
+        : clampedIndex === -2 && incomingCoach
+          ? { name: incomingCoach.name, meta: 'HEAD COACH · INCOMING' }
+          : null;
+
   const nextSeasonLabel = upcomingSeason
     ? String(upcomingSeason)
     : seasons[0]
@@ -323,53 +392,17 @@ export default function TeamStatsView({
           )}
         </div>
 
-        {/* Team + coach — coach is season-scoped, keyed off the active season row
-          (docs/superpowers/specs/2026-07-14-season-scoped-head-coach-design.md). The
-          incoming-coach chip (index -1) has no season stats to attach to, so it gets its
-          own short-circuited render below instead of falling through to `active.coach`. */}
+        {/* Team + coach — see coachBadge's derivation above for the season-scoped
+          precedence (active season's coach, then the incoming/carried-forward coach for
+          the upcoming-season and incoming-coach chips). */}
         <div className="px-5 pt-[18px]">
           <div
             className="text-[11px] font-bold tracking-[0.1em]"
             style={{ color: uiTokens.textFaint }}>
             {team.city.toUpperCase()} {team.name.toUpperCase()}
           </div>
-          {active?.coach && (
-            <CoachBadge
-              name={active.coach.name}
-              meta={`HEAD COACH · ${ordinal(active.coach.experience).toUpperCase()} SEASON`}
-              uiAccent={uiAccent}
-            />
-          )}
-          {!active && (
-            <>
-              {/* Upcoming season — general off-season chip for all teams */}
-              {clampedIndex === -1 && incomingCoach && (
-                <CoachBadge
-                  name={incomingCoach.name}
-                  meta="HEAD COACH · INCOMING"
-                  uiAccent={uiAccent}
-                />
-              )}
-              {/* No coach change — carry the latest season's coach forward rather than a
-                bare "schedule available" placeholder (the coach doesn't reset just
-                because there's no team_stats row yet for the upcoming season). */}
-              {clampedIndex === -1 && !incomingCoach && seasons[0]?.coach && (
-                <CoachBadge
-                  name={seasons[0].coach.name}
-                  meta={`HEAD COACH · ${ordinal(seasons[0].coach.experience + 1).toUpperCase()} SEASON`}
-                  uiAccent={uiAccent}
-                />
-              )}
-              {/* Incoming coach but no upcoming season (shouldn't happen, but
-                defensive: legacy case from before the generalized chip). */}
-              {clampedIndex === -2 && incomingCoach && (
-                <CoachBadge
-                  name={incomingCoach.name}
-                  meta="HEAD COACH · INCOMING"
-                  uiAccent={uiAccent}
-                />
-              )}
-            </>
+          {coachBadge && (
+            <CoachBadge name={coachBadge.name} meta={coachBadge.meta} uiAccent={uiAccent} />
           )}
         </div>
 
@@ -454,46 +487,22 @@ export default function TeamStatsView({
             </div>
           </>
         ) : clampedIndex === -1 && upcomingSeason ? (
-          <>
-            {/* Upcoming season view — shown for ALL teams during the off-season, not
-              just new-coach teams (Stats & Analytics P2). Degrade instead of faking a
-              0-0 record (invariant 6) — there are no stats to show yet. */}
-            <div
-              className="mt-0.5 px-5 pb-[18px] pt-2"
-              style={{ borderBottom: `1px dashed ${uiTokens.borderInput}` }}>
-              <div className="text-[28px] font-bold leading-tight tracking-[-0.01em]">
-                {upcomingSeason} season upcoming
-              </div>
-              <div className="mt-1 text-[11px]" style={{ color: uiTokens.textFaint }}>
-                No games played yet this season
-              </div>
-            </div>
-            <div
-              className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
-              style={{ color: uiTokens.textFaintest }}>
-              {upcomingSeason} SEASON · NOT YET STARTED
-            </div>
-          </>
+          // Upcoming season view — shown for ALL teams during the off-season, not just
+          // new-coach teams (Stats & Analytics P2). Degrade instead of faking a 0-0
+          // record (invariant 6) — there are no stats to show yet.
+          <DegradedHero
+            heading={`${upcomingSeason} season upcoming`}
+            subline="No games played yet this season"
+            footerLabel={`${upcomingSeason} SEASON · NOT YET STARTED`}
+          />
         ) : (
-          <>
-            {/* No season stats for an incoming coach yet — degrade instead of faking a
-              0-0 record (invariant 6). */}
-            <div
-              className="mt-0.5 px-5 pb-[18px] pt-2"
-              style={{ borderBottom: `1px dashed ${uiTokens.borderInput}` }}>
-              <div className="text-[28px] font-bold leading-tight tracking-[-0.01em]">
-                New head coach
-              </div>
-              <div className="mt-1 text-[11px]" style={{ color: uiTokens.textFaint }}>
-                No games played yet this season.
-              </div>
-            </div>
-            <div
-              className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
-              style={{ color: uiTokens.textFaintest }}>
-              {nextSeasonLabel} SEASON · NOT YET STARTED
-            </div>
-          </>
+          // No season stats for an incoming coach yet — degrade instead of faking a 0-0
+          // record (invariant 6).
+          <DegradedHero
+            heading="New head coach"
+            subline="No games played yet this season."
+            footerLabel={`${nextSeasonLabel} SEASON · NOT YET STARTED`}
+          />
         )}
 
         {/* NEXT GAME card (design spec 5a). Only when viewing the current/upcoming season
@@ -533,50 +542,49 @@ export default function TeamStatsView({
         {showPostseason && active && (
           <div className="px-5 pb-7 pt-1">
             <SectionLabel className="mb-2">POSTSEASON · {active.season}</SectionLabel>
-            {/* Same card treatment as ROSTER LEADERS below — plain tokenized div, not
-              Card (rounded-2xl + zero-padding rows don't fit Card's API, same deviation
-              noted on that block). */}
-            <div
-              className="overflow-hidden rounded-2xl"
-              style={{
-                background: uiTokens.surfaceCard2,
-                border: `1px solid ${uiTokens.borderSubtle}`,
-              }}>
-              {postseasonGames?.map((g, i) => {
-                const resultColor =
-                  g.result === 'W'
-                    ? uiAccent
-                    : g.result === 'L'
-                      ? uiTokens.statusInjured
-                      : uiTokens.textMuted;
-                const score =
-                  g.teamScore !== null && g.oppScore !== null ? `${g.teamScore}-${g.oppScore}` : '';
-                return (
-                  <div
-                    key={`${g.gameType}-${g.week}`}
-                    className="flex items-center justify-between gap-3 px-3.5 py-2.5"
-                    style={{ borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}` }}>
-                    <div className="min-w-0">
-                      <div
-                        className="text-[9px] font-bold tracking-[0.06em]"
-                        style={{ color: uiAccent }}>
-                        {postseasonRoundLabel(g.gameType).toUpperCase()}
-                      </div>
-                      <div
-                        className="mt-0.5 truncate text-xs font-extrabold"
-                        style={{ color: uiTokens.textPrimary }}>
-                        {g.isHome ? 'vs' : '@'} {g.opponent?.abbrev ?? '—'}
-                      </div>
+            {/* Card doesn't fit here: needs rounded-2xl + overflow-hidden clip + zero
+              padding (rows supply their own), none of which Card's API exposes
+              (rounded-3xl only, no clip variant, padding=16 default) — RowCardList
+              instead, same deviation pattern as PlayerCard's task. */}
+            <RowCardList
+              rows={(postseasonGames ?? []).map((g) => ({
+                key: `${g.gameType}-${g.week}`,
+                left: (
+                  <div className="min-w-0">
+                    <div
+                      className="text-[9px] font-bold tracking-[0.06em]"
+                      style={{ color: uiAccent }}>
+                      {postseasonRoundLabel(g.gameType).toUpperCase()}
                     </div>
                     <div
-                      className="shrink-0 text-right text-[11px] font-bold"
-                      style={{ color: resultColor }}>
-                      {g.result ?? ''} {score}
+                      className="mt-0.5 truncate text-xs font-extrabold"
+                      style={{ color: uiTokens.textPrimary }}>
+                      {g.isHome ? 'vs' : '@'} {g.opponent?.abbrev ?? '—'}
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                ),
+                right: (
+                  <div
+                    className="shrink-0 text-right text-[11px] font-bold"
+                    style={{
+                      // Postseason win uses the team's own accent (not the fixed green
+                      // used by the schedule page's W/L/T — this is a hero result, not
+                      // a compact grid chip).
+                      color:
+                        g.result === 'W'
+                          ? uiAccent
+                          : g.result === 'L'
+                            ? uiTokens.statusInjured
+                            : uiTokens.textMuted,
+                    }}>
+                    {g.result ?? ''}{' '}
+                    {g.teamScore !== null && g.oppScore !== null
+                      ? `${g.teamScore}-${g.oppScore}`
+                      : ''}
+                  </div>
+                ),
+              }))}
+            />
           </div>
         )}
 
@@ -585,19 +593,13 @@ export default function TeamStatsView({
             <SectionLabel className="mb-2">ROSTER LEADERS · {leaders.season}</SectionLabel>
             {/* Card doesn't fit here: needs rounded-2xl + overflow-hidden clip + zero
               padding (rows supply their own), none of which Card's API exposes
-              (rounded-3xl only, no clip variant, padding=16 default) — plain div with
-              tokenized colors instead, same deviation pattern as PlayerCard's task. */}
-            <div
-              className="overflow-hidden rounded-2xl"
-              style={{
-                background: uiTokens.surfaceCard2,
-                border: `1px solid ${uiTokens.borderSubtle}`,
-              }}>
-              {leaderRows.map(({ label, leader }, i) => (
-                <div
-                  key={label}
-                  className="flex items-center justify-between gap-3 px-3.5 py-3.5"
-                  style={{ borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}` }}>
+              (rounded-3xl only, no clip variant, padding=16 default) — RowCardList
+              instead, same deviation pattern as PlayerCard's task. */}
+            <RowCardList
+              rowPaddingY="py-3.5"
+              rows={leaderRows.map(({ label, leader }) => ({
+                key: label,
+                left: (
                   <div className="min-w-0">
                     <div
                       className="text-[10px] font-bold tracking-[0.06em]"
@@ -610,14 +612,16 @@ export default function TeamStatsView({
                       {leader.name}
                     </div>
                   </div>
+                ),
+                right: (
                   <div
                     className="shrink-0 text-right text-[12px] font-semibold"
                     style={{ color: uiTokens.textMuted, maxWidth: 170 }}>
                     {leader.line}
                   </div>
-                </div>
-              ))}
-            </div>
+                ),
+              }))}
+            />
           </div>
         )}
       </div>
