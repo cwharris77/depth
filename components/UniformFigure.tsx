@@ -11,6 +11,21 @@ import {
   SLEEVE_STRIPE_PATH_R,
   PANTS_KNEE_ACCENT_L,
   PANTS_KNEE_ACCENT_R,
+  BILLS_HELMET_DECAL_BUFFALO,
+  BILLS_HELMET_DECAL_STRIPE,
+  BILLS_HELMET_EDGE_STRIPE_OUTER,
+  BILLS_HELMET_EDGE_STRIPE_INNER,
+  BILLS_SLEEVE_RED_L,
+  BILLS_SLEEVE_WHITE_L,
+  BILLS_SLEEVE_NAVY_L,
+  BILLS_SLEEVE_RED_R,
+  BILLS_SLEEVE_WHITE_R,
+  BILLS_SLEEVE_NAVY_R,
+  BILLS_COLLAR_WIDTHS,
+  BILLS_NAVY,
+  BILLS_RED,
+  BILLS_ICE_SILVER,
+  BILLS_ICE_SILVER_LIGHT,
 } from '@/lib/uniforms/trim';
 
 // The generated vector uniform. Colors/striping/layout are facts (not copyrightable), so every
@@ -157,7 +172,9 @@ export default function UniformFigure({
   const helmetStripeFill = trim?.helmetStripeColor
     ? resolveTrimColor(trim.helmetStripeColor, colors)
     : stripeFill;
-  const numberFill = readableTextOn(jerseyFill);
+  const numberFill = trim?.numberColor
+    ? resolveTrimColor(trim.numberColor, colors)
+    : readableTextOn(jerseyFill);
   const numFont = { fontFamily: 'var(--font-anton), Anton, Helvetica, sans-serif' };
   const numAttrs = {
     x: 294,
@@ -253,30 +270,71 @@ export default function UniformFigure({
                     fill={stripeFill}
                   />
                 </>
-              ) : (
+              ) : trim?.sleeveStripe === 'bills' ? (
+                <>
+                  <path clipPath={`url(#${uid}-jersey)`} fill={BILLS_RED} d={BILLS_SLEEVE_RED_L} />
+                  <path clipPath={`url(#${uid}-jersey)`} fill="#ffffff" d={BILLS_SLEEVE_WHITE_L} />
+                  <path
+                    clipPath={`url(#${uid}-jersey)`}
+                    fill={BILLS_NAVY}
+                    d={BILLS_SLEEVE_NAVY_L}
+                  />
+                  <path clipPath={`url(#${uid}-jersey)`} fill={BILLS_RED} d={BILLS_SLEEVE_RED_R} />
+                  <path clipPath={`url(#${uid}-jersey)`} fill="#ffffff" d={BILLS_SLEEVE_WHITE_R} />
+                  <path
+                    clipPath={`url(#${uid}-jersey)`}
+                    fill={BILLS_NAVY}
+                    d={BILLS_SLEEVE_NAVY_R}
+                  />
+                </>
+              ) : trim?.sleeveStripe === 'none' ? null : (
                 <>
                   <path clipPath={`url(#${uid}-jersey)`} fill={accent} d={YOKE_L} />
                   <path clipPath={`url(#${uid}-jersey)`} fill={accent} d={YOKE_R} />
                 </>
               )}
-              <path
-                clipPath={`url(#${uid}-jersey)`}
-                fill={stripeFill}
-                d="M34,558 L156,558 L152,578 L34,578 Z"
-              />
-              <path
-                clipPath={`url(#${uid}-jersey)`}
-                fill={stripeFill}
-                d="M554,558 L432,558 L436,578 L554,578 Z"
-              />
+              {trim?.sleeveStripe !== 'none' && (
+                <>
+                  <path
+                    clipPath={`url(#${uid}-jersey)`}
+                    fill={stripeFill}
+                    d="M34,558 L156,558 L152,578 L34,578 Z"
+                  />
+                  <path
+                    clipPath={`url(#${uid}-jersey)`}
+                    fill={stripeFill}
+                    d="M554,558 L432,558 L436,578 L554,578 Z"
+                  />
+                </>
+              )}
             </g>
-            <path
-              clipPath={`url(#${uid}-jersey)`}
-              fill="none"
-              stroke={stripeFill}
-              strokeWidth={13}
-              d="M206,388 L294,455 L386,388"
-            />
+            {trim?.collarTrim === 'bills' ? (
+              <g clipPath={`url(#${uid}-jersey)`} fill="none">
+                <path
+                  stroke="#ffffff"
+                  strokeWidth={BILLS_COLLAR_WIDTHS.white}
+                  d="M206,388 L294,455 L386,388"
+                />
+                <path
+                  stroke={BILLS_RED}
+                  strokeWidth={BILLS_COLLAR_WIDTHS.red}
+                  d="M206,388 L294,455 L386,388"
+                />
+                <path
+                  stroke={BILLS_NAVY}
+                  strokeWidth={BILLS_COLLAR_WIDTHS.navy}
+                  d="M206,388 L294,455 L386,388"
+                />
+              </g>
+            ) : (
+              <path
+                clipPath={`url(#${uid}-jersey)`}
+                fill="none"
+                stroke={stripeFill}
+                strokeWidth={13}
+                d="M206,388 L294,455 L386,388"
+              />
+            )}
             <g stroke="none">
               <text
                 {...numAttrs}
@@ -308,6 +366,30 @@ export default function UniformFigure({
                 fill={helmetStripeFill}
                 stroke="none"
               />
+            ) : trim?.helmetDecal === 'bills' ? (
+              <g clipPath={`url(#${uid}-helmet)`} stroke="none">
+                <path d={BILLS_HELMET_DECAL_BUFFALO.d} fill={BILLS_HELMET_DECAL_BUFFALO.fill} />
+                <path d={BILLS_HELMET_DECAL_STRIPE.d} fill={BILLS_HELMET_DECAL_STRIPE.fill} />
+                <path
+                  fill="none"
+                  stroke={BILLS_HELMET_EDGE_STRIPE_OUTER.stroke}
+                  strokeWidth={BILLS_HELMET_EDGE_STRIPE_OUTER.strokeWidth}
+                  strokeLinecap="round"
+                  d={BILLS_HELMET_EDGE_STRIPE_OUTER.d}
+                />
+                <path
+                  fill="none"
+                  stroke={BILLS_HELMET_EDGE_STRIPE_INNER.stroke}
+                  strokeWidth={BILLS_HELMET_EDGE_STRIPE_INNER.strokeWidth}
+                  strokeLinecap="round"
+                  d={BILLS_HELMET_EDGE_STRIPE_INNER.d}
+                />
+              </g>
+            ) : trim?.helmetDecal === 'bills-ice' ? (
+              <g clipPath={`url(#${uid}-helmet)`} fill="none" stroke={BILLS_NAVY} strokeWidth={3}>
+                <path d={BILLS_HELMET_DECAL_BUFFALO.d} fill={BILLS_ICE_SILVER} />
+                <path d={BILLS_HELMET_DECAL_STRIPE.d} fill={BILLS_ICE_SILVER_LIGHT} />
+              </g>
             ) : (
               <rect
                 clipPath={`url(#${uid}-helmet)`}
