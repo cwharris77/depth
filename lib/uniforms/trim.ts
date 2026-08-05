@@ -143,6 +143,15 @@ export const TRIM_CONFIGS: Record<string, TrimConfig> = {
     stripeColor: '#00338D',
     numberColor: '#A9ADB1',
   },
+  // Away: white jersey (this kit's curated `primary`), but the helmet is always navy regardless
+  // of jersey color, and this curated row's `secondary` is navy (not the green the reference's
+  // number outline actually uses) — override both. No helmet decal yet (see the note near the
+  // bottom of this file) — the home kit's own primary/secondary already happen to be navy/
+  // action-green (lib/teams/league.ts) so it needs no entry at all until a decal exists to add.
+  'seahawks-away': {
+    helmetColor: '#002244',
+    stripeColor: 'accent',
+  },
 };
 
 // The helmet stripe field (5 stripes), authored in the HELMET's own raw coordinate space
@@ -243,3 +252,12 @@ export { BILLS_NAVY, BILLS_RED };
 // thin navy outline traced around each piece.
 export const BILLS_ICE_SILVER = '#9CA0A4';
 export const BILLS_ICE_SILVER_LIGHT = '#D6D8DA';
+
+// Seattle Seahawks helmet decal — pending a compliant high-resolution source. A hand-trace off
+// the ~106x97px gridiron-uniforms.com raster couldn't resolve this logo's thin linework (it's a
+// fine-line mark, not a bold silhouette like the Bills buffalo, so low-resolution pixel-tracing
+// falls apart in a way it didn't for Bills). The team's official vector logo would solve that,
+// but the only copy checked so far (Wikipedia's File:Seattle_Seahawks_logo.svg) is hosted under
+// Wikipedia's own non-free/fair-use policy — permission scoped to their encyclopedic use, not
+// transferable here — so it isn't used. No Seahawks helmet decal is implemented until a source
+// without that restriction is found.
