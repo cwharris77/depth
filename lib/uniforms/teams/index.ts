@@ -1,5 +1,6 @@
 import { BENGALS_UNIFORMS } from './bengals';
 import { BILLS_UNIFORMS } from './bills';
+import { SEAHAWKS_UNIFORMS } from './seahawks';
 import type { TeamUniformDefinition } from './types';
 
 // Server-boundary registry for team construction definitions. Client team pages receive only the
@@ -8,6 +9,7 @@ import type { TeamUniformDefinition } from './types';
 const DEFINITIONS = {
   bengals: BENGALS_UNIFORMS,
   bills: BILLS_UNIFORMS,
+  seahawks: SEAHAWKS_UNIFORMS,
 } satisfies Record<string, TeamUniformDefinition>;
 
 export function getTeamUniformDefinition(teamId: string) {

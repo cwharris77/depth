@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import type { TeamColors } from '@/lib/types';
+import { resolveUniformModel } from '@/lib/uniforms/model';
 import type {
   ColorRef,
   TeamUniformDefinition,
@@ -11,6 +13,13 @@ import { getAllTeamUniformDefinitions, getTeamUniformDefinition } from '@/lib/un
 
 const SEMANTIC_COLORS = new Set<ColorRef>(['primary', 'secondary', 'accent', 'readable-on-body']);
 const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/;
+const SEAHAWKS_COLORS: TeamColors = {
+  primary: '#002244',
+  secondary: '#69BE28',
+  accent: '#A5ACAF',
+  uiAccent: '#69BE28',
+  onAccent: '#0a0e1a',
+};
 
 function expectValidColor(color: ColorRef) {
   expect(SEMANTIC_COLORS.has(color) || HEX_COLOR.test(color)).toBe(true);
@@ -56,7 +65,36 @@ describe('team uniform definitions', () => {
   it('looks up registered definitions and degrades unknown teams', () => {
     expect(getTeamUniformDefinition('bengals')?.teamId).toBe('bengals');
     expect(getTeamUniformDefinition('bills')?.teamId).toBe('bills');
+    expect(getTeamUniformDefinition('seahawks')?.teamId).toBe('seahawks');
     expect(getTeamUniformDefinition('unknown')).toBeUndefined();
+  });
+
+  it('resolves the Seahawks navy home construction without protected marks', () => {
+    const definition = getTeamUniformDefinition('seahawks');
+    const home = definition?.kits.home;
+    const layerIds = home?.layers?.map((layer) => layer.id);
+
+    expect(layerIds).toEqual([
+      'seahawks-helmet-center-stripe',
+      'seahawks-shoulder-silver-left',
+      'seahawks-shoulder-silver-right',
+      'seahawks-shoulder-lime-left',
+      'seahawks-shoulder-lime-right',
+    ]);
+    expect(layerIds?.some((id) => /helmet-logo|wordmark|shield/.test(id))).toBe(false);
+
+    const model = resolveUniformModel(definition, 'home', SEAHAWKS_COLORS);
+    expect(model).toMatchObject({
+      helmetColor: '#002244',
+      jerseyColor: '#002244',
+      pantsColor: '#002244',
+    });
+    expect(
+      model.layers.find((layer) => layer.id === 'seahawks-shoulder-silver-left')
+    ).toMatchObject({ fill: '#A5ACAF' });
+    expect(model.layers.find((layer) => layer.id === 'seahawks-shoulder-lime-left')).toMatchObject({
+      fill: '#69BE28',
+    });
   });
 
   const definitions = getAllTeamUniformDefinitions();
