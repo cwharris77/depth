@@ -83,9 +83,11 @@ boundary; the generic renderer does not import all team definitions directly.
 2. team defaults;
 3. the active kit-slug override.
 
-An omitted property inherits the previous layer. An explicit `null` removes an inherited layer.
-This distinction supports alternates such as Bills Rivalries, whose shoulder and collar marks are
-intentionally absent.
+Layers merge by stable `id`: an override layer with an existing ID replaces it, while a new ID is
+appended. `removeLayerIds` selectively removes inherited layers, and omission inherits unchanged.
+This supports alternates such as Bills Rivalries, whose shoulder and collar marks are intentionally
+absent while its helmet treatment remains independently configurable. `number: null` restores the
+generic number treatment.
 
 The resolver receives `teamId` and kit slug separately where possible. If it must interpret a full
 `kitId`, it removes the known `teamId` prefix rather than splitting on the first hyphen, preserving
@@ -134,7 +136,7 @@ Pure resolver tests cover:
 
 - semantic token resolution against runtime `TeamColors`;
 - generic → team → kit merge order;
-- explicit `null` removal versus omission/inheritance;
+- stable-ID layer replacement, `removeLayerIds`, and omission/inheritance;
 - unknown-team and unknown-kit fallback;
 - team IDs and kit slugs containing hyphens;
 - number glyph fallback and authored number geometry.

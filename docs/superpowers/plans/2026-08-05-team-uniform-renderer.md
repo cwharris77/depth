@@ -56,11 +56,12 @@ expect(resolveColor('readable-on-body', colors, colors.primary)).toBe(
 expect(resolveColor('#FFFFFF', colors, colors.primary)).toBe('#FFFFFF');
 ```
 
-Build a definition whose team default supplies a helmet layer and whose `home` override changes
-that layer, removes a default sleeve layer with `null`, and leaves the number style omitted. Assert
-that `resolveUniformModel` applies generic → team → kit precedence, distinguishes omission from
-explicit removal, and preserves the generic number fallback. Add separate assertions that an
-unknown kit slug uses team defaults and an undefined definition returns the generic model.
+Build a definition whose team default supplies helmet and sleeve layers and whose `home` override
+replaces the helmet layer by stable ID, removes the sleeve layer through `removeLayerIds`, appends a
+new collar layer, and leaves the number style omitted. Assert that `resolveUniformModel` applies
+generic → team → kit precedence, distinguishes omission from selective removal, and preserves the
+generic number fallback. Add separate assertions that an unknown kit slug uses team defaults and
+an undefined definition returns the generic model.
 
 - [ ] **Step 2: Run the tests and verify RED**
 
@@ -125,7 +126,8 @@ export interface UniformStyleOverride {
   helmetColor?: ColorRef;
   jerseyColor?: ColorRef;
   pantsColor?: ColorRef;
-  layers?: UniformLayer[] | null;
+  layers?: UniformLayer[];
+  removeLayerIds?: string[];
   number?: Partial<NumberStyle> | null;
 }
 
@@ -137,10 +139,11 @@ export interface TeamUniformDefinition {
 ```
 
 In `lib/uniforms/model.ts`, define `GENERIC_UNIFORM_STYLE` with the existing renderer defaults and
-implement immutable merge functions. `layers: null` means no custom construction layers; an
-omitted `layers` inherits. `number: null` restores the generic number style. Validate literal hex
-format only in integrity tests; runtime resolution must degrade an unrecognized reference to the
-generic resolved color rather than throw.
+implement immutable merge functions. Layers merge by stable `id`: matching IDs replace inherited
+layers in place, new IDs append, `removeLayerIds` deletes inherited IDs before additions, and an
+omitted `layers`/`removeLayerIds` pair inherits unchanged. `number: null` restores the generic
+number style. Validate literal hex format only in integrity tests; runtime resolution must degrade
+an unrecognized reference to the generic resolved color rather than throw.
 
 - [ ] **Step 4: Run the focused test and verify GREEN**
 
@@ -223,8 +226,8 @@ absence of pants stripes where currently configured.
 
 Create `bills.ts`. Copy every Bills path, brand hex, stroke width, and collar band width byte-for-byte
 from `trim.ts`. Express home, away, and Rivalries behavior as declarative layers and number styles.
-Use explicit `null` removal for the Rivalries sleeve/collar construction. Keep the abstract decal
-geometry; do not add new logo detail.
+Use `removeLayerIds` for the Rivalries sleeve/collar construction while its helmet layers remain
+independently configurable. Keep the abstract decal geometry; do not add new logo detail.
 
 - [ ] **Step 6: Add the server-side registry**
 
