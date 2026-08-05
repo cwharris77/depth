@@ -3,6 +3,15 @@ import Image from 'next/image';
 import type { TeamColors } from '@/lib/types';
 import { readableTextOn } from '@/lib/colors';
 import { variantSpec, type UniformVariant } from '@/lib/uniforms/figure';
+import {
+  TRIM_CONFIGS,
+  resolveTrimColor,
+  HELMET_STRIPE_PATH,
+  SLEEVE_STRIPE_PATH_L,
+  SLEEVE_STRIPE_PATH_R,
+  PANTS_KNEE_ACCENT_L,
+  PANTS_KNEE_ACCENT_R,
+} from '@/lib/uniforms/trim';
 
 // The generated vector uniform. Colors/striping/layout are facts (not copyrightable), so every
 // kit is drawn from its TeamColors — zero external image assets, no team logos. One renderer
@@ -43,6 +52,12 @@ const GEO = {
 };
 
 type GeoKey = keyof typeof GEO;
+
+// The jersey's shoulder/sleeve-cap accent region (both a fill shape in the default trim and a
+// clip region for the `tiger` sleeve-stripe trim). Right is the left shape mirrored across the
+// jersey's x=294 centerline (30+558=588, so mirroredX = 588-x).
+const YOKE_L = 'M30,466 L78,417 L136,401 L168,470 L156,556 L34,556 Z';
+const YOKE_R = 'M558,466 L510,417 L452,401 L420,470 L432,556 L554,556 Z';
 
 // One shared mannequin path, rendered either inline (`<path d=…>`, the default — every figure
 // is self-contained) or as a `<use>` reference into the sprite <UniformFigureDefs> mounts once
@@ -99,6 +114,7 @@ export default function UniformFigure({
   imagePath,
   title,
   sharedDefs = false,
+  kitId,
 }: {
   colors: TeamColors;
   variant?: UniformVariant;
@@ -108,6 +124,10 @@ export default function UniformFigure({
   // Reference <UniformFigureDefs>'s sprite via <use> instead of inlining path data — see Geo
   // above. Only pass this when the caller has mounted <UniformFigureDefs/> once on the page.
   sharedDefs?: boolean;
+  // `${teamId}-${slug}` (a Uniform row's id). Looks up an optional per-kit TRIM_CONFIGS
+  // override (lib/uniforms/trim.ts) — omitted or unmatched renders the default trim below
+  // unchanged, so this is opt-in per kit, not a behavior change for the rest of the archive.
+  kitId?: string;
 }) {
   const rawId = useId();
   const uid = rawId.replace(/:/g, '');
@@ -125,9 +145,19 @@ export default function UniformFigure({
     return <Image src={imagePath} alt={title ?? ''} width={size} height={height} />;
   }
 
-  // Default trim config, colored from the kit's palette.
+  // Default trim, colored from the kit's palette — overridden per-kit by TRIM_CONFIGS
+  // (lib/uniforms/trim.ts) when `kitId` matches one. No match = unchanged from before this
+  // ticket: jersey/pants/helmet all `primary`, stripe accents all `secondary`.
   const { primary, secondary, accent } = colors;
-  const numberFill = readableTextOn(primary);
+  const trim = kitId ? TRIM_CONFIGS[kitId] : undefined;
+  const helmetFill = trim?.helmetColor ? resolveTrimColor(trim.helmetColor, colors) : primary;
+  const jerseyFill = trim?.jerseyColor ? colors[trim.jerseyColor] : primary;
+  const pantsFill = trim?.pantsColor ? colors[trim.pantsColor] : primary;
+  const stripeFill = trim?.stripeColor ? resolveTrimColor(trim.stripeColor, colors) : secondary;
+  const helmetStripeFill = trim?.helmetStripeColor
+    ? resolveTrimColor(trim.helmetStripeColor, colors)
+    : stripeFill;
+  const numberFill = readableTextOn(jerseyFill);
   const numFont = { fontFamily: 'var(--font-anton), Anton, Helvetica, sans-serif' };
   const numAttrs = {
     x: 294,
@@ -174,60 +204,76 @@ export default function UniformFigure({
       <g stroke={OUTLINE} strokeWidth={4} strokeLinejoin="round" strokeLinecap="round">
         {hasPants && (
           <>
-            <Geo part="pants" shared={sharedDefs} fill={primary} />
-            <Geo part="shinL" shared={sharedDefs} fill={primary} />
-            <Geo part="shinR" shared={sharedDefs} fill={primary} />
-            <g stroke="none">
-              <rect
-                clipPath={`url(#${uid}-legL)`}
-                x={118}
-                y={807}
-                width={16}
-                height={655}
-                fill={secondary}
-              />
-              <rect
-                clipPath={`url(#${uid}-legR)`}
-                x={454}
-                y={807}
-                width={16}
-                height={655}
-                fill={secondary}
-              />
-            </g>
+            <Geo part="pants" shared={sharedDefs} fill={pantsFill} />
+            <Geo part="shinL" shared={sharedDefs} fill={pantsFill} />
+            <Geo part="shinR" shared={sharedDefs} fill={pantsFill} />
+            {trim?.pantsStripe === 'tiger' ? (
+              <g stroke="none">
+                <path clipPath={`url(#${uid}-legL)`} d={PANTS_KNEE_ACCENT_L} fill={stripeFill} />
+                <path clipPath={`url(#${uid}-legR)`} d={PANTS_KNEE_ACCENT_R} fill={stripeFill} />
+              </g>
+            ) : trim?.pantsStripe === 'none' ? null : (
+              <g stroke="none">
+                <rect
+                  clipPath={`url(#${uid}-legL)`}
+                  x={118}
+                  y={807}
+                  width={16}
+                  height={655}
+                  fill={stripeFill}
+                />
+                <rect
+                  clipPath={`url(#${uid}-legR)`}
+                  x={454}
+                  y={807}
+                  width={16}
+                  height={655}
+                  fill={stripeFill}
+                />
+              </g>
+            )}
             <Geo part="shoeL" shared={sharedDefs} fill="#ffffff" />
             <Geo part="shoeR" shared={sharedDefs} fill="#ffffff" />
           </>
         )}
         {hasJersey && (
           <>
-            <Geo part="jersey" shared={sharedDefs} fill={primary} />
+            <Geo part="jersey" shared={sharedDefs} fill={jerseyFill} />
             <g stroke="none">
+              {trim?.sleeveStripe === 'tiger' ? (
+                <>
+                  <path
+                    clipPath={`url(#${uid}-jersey)`}
+                    d={SLEEVE_STRIPE_PATH_L}
+                    fill={stripeFill}
+                  />
+                  <path
+                    clipPath={`url(#${uid}-jersey)`}
+                    d={SLEEVE_STRIPE_PATH_R}
+                    fill={stripeFill}
+                  />
+                </>
+              ) : (
+                <>
+                  <path clipPath={`url(#${uid}-jersey)`} fill={accent} d={YOKE_L} />
+                  <path clipPath={`url(#${uid}-jersey)`} fill={accent} d={YOKE_R} />
+                </>
+              )}
               <path
                 clipPath={`url(#${uid}-jersey)`}
-                fill={accent}
-                d="M30,466 L78,417 L136,401 L168,470 L156,556 L34,556 Z"
-              />
-              <path
-                clipPath={`url(#${uid}-jersey)`}
-                fill={accent}
-                d="M558,466 L510,417 L452,401 L420,470 L432,556 L554,556 Z"
-              />
-              <path
-                clipPath={`url(#${uid}-jersey)`}
-                fill={secondary}
+                fill={stripeFill}
                 d="M34,558 L156,558 L152,578 L34,578 Z"
               />
               <path
                 clipPath={`url(#${uid}-jersey)`}
-                fill={secondary}
+                fill={stripeFill}
                 d="M554,558 L432,558 L436,578 L554,578 Z"
               />
             </g>
             <path
               clipPath={`url(#${uid}-jersey)`}
               fill="none"
-              stroke={secondary}
+              stroke={stripeFill}
               strokeWidth={13}
               d="M206,388 L294,455 L386,388"
             />
@@ -235,7 +281,7 @@ export default function UniformFigure({
               <text
                 {...numAttrs}
                 fill="none"
-                stroke={secondary}
+                stroke={stripeFill}
                 strokeWidth={26}
                 strokeLinejoin="round">
                 1
@@ -251,19 +297,28 @@ export default function UniformFigure({
             <Geo
               part="helmet"
               shared={sharedDefs}
-              fill={primary}
+              fill={helmetFill}
               stroke={OUTLINE}
               strokeWidth={8}
             />
-            <rect
-              clipPath={`url(#${uid}-helmet)`}
-              x={150}
-              y={286}
-              width={430}
-              height={44}
-              fill={accent}
-              stroke="none"
-            />
+            {trim?.helmetStripe === 'tiger' ? (
+              <path
+                clipPath={`url(#${uid}-helmet)`}
+                d={HELMET_STRIPE_PATH}
+                fill={helmetStripeFill}
+                stroke="none"
+              />
+            ) : (
+              <rect
+                clipPath={`url(#${uid}-helmet)`}
+                x={150}
+                y={286}
+                width={430}
+                height={44}
+                fill={accent}
+                stroke="none"
+              />
+            )}
             <Geo
               part="facemask"
               shared={sharedDefs}
