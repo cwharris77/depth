@@ -1,5 +1,5 @@
-// Small display formatters for player vitals. Kept pure and separate from the card
-// component so the wording is unit-tested rather than buried in JSX.
+// Small display formatters (player vitals, game dates). Kept pure and separate from
+// components so the wording is unit-tested rather than buried in JSX.
 
 // Years of NFL experience as a fan-facing label: 0 seasons is a rookie, otherwise
 // singular/plural years. Guards against negative/NaN source data by treating
@@ -37,4 +37,16 @@ export function formatLastName(full: string): string {
     parts.pop();
   }
   return parts[parts.length - 1] ?? full;
+}
+
+const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+// Game-date label for schedule/stats cards, e.g. "SEP 9". Parses the yyyy-mm-dd parts
+// directly rather than `new Date(iso)` — the latter parses as UTC midnight and shifts a
+// day back in western timezones.
+export function formatGameDate(iso: string | null): string {
+  if (!iso) return '';
+  const [, month, day] = iso.split('-').map(Number);
+  if (!month || !day) return '';
+  return `${MONTHS[month - 1]} ${day}`;
 }
