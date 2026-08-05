@@ -8,14 +8,9 @@ import type { TeamColors } from '../types';
 // `primary` — e.g. an orange jersey with white pants), and whether the sleeve/helmet/pants
 // trim is the default solid stripe or the jagged `tiger` pattern.
 //
-// Stripe shapes are an exact vector trace of the owner-supplied reference renders (2025 season
-// combos + the 2016 Color Rush combo — see docs/superpowers/specs, ticket "Uniform archive
-// per-kit design accuracy"): each reference PNG's stripe pixels were isolated by color,
-// contour-traced, and simplified to straight-edge polygons (Douglas-Peucker), then mapped from
-// image-pixel space into this file's coordinate spaces via an affine fit against the mannequin's
-// own known geometry (helmet silhouette bbox for HELMET_STRIPE_PATH; jersey silhouette bbox for
-// the sleeve/pants paths). Not a parametric approximation — the exported *_PATH constants below
-// are literal traced polygons, authored once and never hand-tuned.
+// The stripe shapes below (see ticket "Uniform archive per-kit design accuracy") are placeholder
+// geometry pending a hand-authored replacement — do not treat the current *_PATH constants as
+// final.
 
 export type ColorSlot = 'primary' | 'secondary' | 'accent';
 
@@ -95,28 +90,26 @@ export const TRIM_CONFIGS: Record<string, TrimConfig> = {
   },
 };
 
-// The traced helmet stripe field (5 stripes), authored in the HELMET's own raw coordinate space
+// The helmet stripe field (5 stripes), authored in the HELMET's own raw coordinate space
 // (x:139-802, y:65-674 — same space as GEO.helmet in UniformFigure.tsx, i.e. render this path as
 // a sibling of the helmet's <path>, inside its `translate(80.25 11) scale(0.5)` group, no extra
 // transform needed). One multi-subpath `d` string (5 disjoint stripe polygons, fill-rule
-// nonzero) traced from 2025_CIN_G_black-home.png's helmet — verified pixel-identical across all
-// 4 Bengals references, so one path covers every kit that sets `helmetStripe: 'tiger'`.
+// nonzero) shared by every kit that sets `helmetStripe: 'tiger'`.
 export const HELMET_STRIPE_PATH =
   'M409.3,516.9 L345.0,504.1 L277.4,436.8 L251.6,359.9 L258.1,276.5 L316.0,167.6 L415.8,81.0 L451.2,77.8 L435.1,100.3 L467.3,100.3 L486.6,81.0 L512.3,81.0 L560.6,103.5 L509.1,148.3 L470.5,218.9 L457.6,263.7 L457.6,366.3 L425.4,283.0 L425.4,186.8 L454.4,106.7 L422.2,106.7 L386.8,141.9 L348.2,199.6 L309.6,295.8 L309.6,359.9 L328.9,417.6 L457.6,468.9 L396.5,491.3 L409.3,516.9 Z M261.3,484.9 L242.0,484.9 L213.0,462.5 L193.7,411.2 L193.7,276.5 L213.0,218.9 L271.0,122.7 L338.5,87.4 L232.3,225.3 L206.6,302.2 L213.0,398.3 L261.3,484.9 Z M551.0,324.6 L509.1,321.4 L515.6,257.3 L554.2,180.4 L589.6,138.7 L615.3,132.3 L637.9,154.7 L573.5,218.9 L534.9,315.0 L551.0,324.6 Z M602.5,324.6 L573.5,321.4 L586.4,295.8 L679.7,215.6 L689.4,257.3 L647.5,279.8 L602.5,324.6 Z';
 
-// The traced shoulder/sleeve-cap stripe (2 claw-shaped stripes, one with a small forked flick),
+// The shoulder/sleeve-cap stripe (2 claw-shaped stripes, one with a small forked flick),
 // authored in the OUTER viewBox's own coordinate space (same space as GEO.jersey/YOKE_L/YOKE_R —
-// render directly, no transform). Traced from the same reference's left shoulder; the right is
-// this shape mirrored across the jersey's x=294 centerline (mirroredX = 588 - x), same
-// convention as YOKE_R.
+// render directly, no transform). The right shape is the left one mirrored across the jersey's
+// x=294 centerline (mirroredX = 588 - x), same convention as YOKE_R.
 export const SLEEVE_STRIPE_PATH_L =
   'M106.8,526.4 L86.0,457.6 L86.0,419.2 L103.6,411.2 L102.0,444.8 L111.6,483.2 L106.8,526.4 Z M71.6,497.6 L47.6,451.2 L47.6,441.6 L55.6,433.6 L66.8,451.2 L73.2,476.8 L71.6,497.6 Z M55.6,491.2 L36.4,491.2 L34.8,483.2 L49.2,484.8 L55.6,491.2 Z';
 export const SLEEVE_STRIPE_PATH_R =
   'M481.2,526.4 L502.0,457.6 L502.0,419.2 L484.4,411.2 L486.0,444.8 L476.4,483.2 L481.2,526.4 Z M516.4,497.6 L540.4,451.2 L540.4,441.6 L532.4,433.6 L521.2,451.2 L514.8,476.8 L516.4,497.6 Z M532.4,491.2 L551.6,491.2 L553.2,483.2 L538.8,484.8 L532.4,491.2 Z';
 
-// The Color Rush pants' actual reference (2016_CIN_7_color-rush-white.png) has no full-leg
-// stripe field — just a single small diagonal claw mark on the outer knee, per leg. Traced in
-// the same outer-viewBox space as GEO.pants; right is the left mirrored (mirroredX = 588 - x).
+// The Color Rush pants' trim is a single small diagonal claw mark on the outer knee, per leg —
+// not a full-leg stripe field. Authored in the same outer-viewBox space as GEO.pants; right is
+// the left mirrored (mirroredX = 588 - x).
 export const PANTS_KNEE_ACCENT_L =
   'M161.2,1163.2 L145.2,1156.8 L130.8,1142.4 L127.6,1132.8 L132.4,1118.4 L140.4,1139.2 L161.2,1163.2 Z';
 export const PANTS_KNEE_ACCENT_R =
