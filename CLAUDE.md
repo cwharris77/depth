@@ -202,6 +202,19 @@ Each is named for what it looks like in a diff. The rule prevents it.
     (`PlayerCard.tsx`'s stat-row skeletons, sized against `statColumns`), a distinct
     empty state once resolved-but-empty, and only the real content once loaded. Never
     let a component render its post-load shape from data that hasn't arrived yet.*
+17. **Copy-pasted div structure and duplicated ternary text.** You paste the same card/
+    row/list JSX block a second time in the same file with only the inner values
+    changed, or repeat the same conditional string-building logic across two-or-more
+    JSX branches instead of deriving it once (shipped case: `TeamStatsView.tsx` had two
+    near-identical "rounded-2xl bordered row list" blocks — postseason and roster
+    leaders — and a four-way `CoachBadge` ternary chain that each recomputed the same
+    name/meta pair). *Rule: this is a different axis from primitive adoption (#15's
+    rule) — a block can already use `components/ui/` primitives and still be
+    structurally duplicated. The second time you write (or are about to paste) the same
+    div structure or the same conditional-text logic in one file, extract it: a local
+    component for repeated structure (parameterize the parts that actually differ, not
+    every stylistic detail), or a single derived value computed once for repeated
+    ternary text, instead of a per-branch JSX ternary chain.*
 
 ## 5. Quality bar per deliverable
 
@@ -214,6 +227,8 @@ Adjectives don't count; these boxes do.
 - [ ] UI-visible change verified in a running browser; PR body says what was seen
 - [ ] New UI composed from `components/ui/` primitives — no bespoke re-implementation
       of an existing primitive; new primitives (if any) live in `components/ui/`
+- [ ] No div structure or conditional-text logic pasted a second time in the same file
+      (mistake #17) — extracted into a local component or a single derived value instead
 - [ ] Diff contains only the stated concern; no unrelated reformatting
 - [ ] New/changed modules carry a role-and-constraint header comment
 - [ ] Conventional-commit title with a scope from the list in §3
