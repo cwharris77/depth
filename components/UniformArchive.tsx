@@ -16,6 +16,7 @@ import TeamPageShell from './TeamPageShell';
 import FilterPill from './ui/FilterPill';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import { useLastAccent } from '@/lib/use-last-accent';
+import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
 
 // The uniform archive (roadmap Phase 7). Receives every kit from the server route and
 // filters/groups client-side with the pure helpers in lib/uniforms/filter. State-only — no
@@ -41,9 +42,11 @@ const KIND_OPTIONS: { value: UniformKind | 'all'; label: string }[] = [
 export default function UniformArchive({
   kits,
   teams,
+  definitions,
 }: {
   kits: UniformListing[];
   teams: TeamMeta[];
+  definitions: Record<string, TeamUniformDefinition>;
 }) {
   const [filters, setFilters] = useState<UniformFilters>({
     kind: 'all',
@@ -174,6 +177,7 @@ export default function UniformArchive({
                                 title={`${t.teamName} ${k.name}`}
                                 sharedDefs
                                 kitId={k.id}
+                                definition={definitions[k.teamId]}
                               />
                               <figcaption
                                 className="mt-1 text-[10px] leading-tight"

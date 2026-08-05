@@ -5,6 +5,7 @@ import { getServerClient } from '@/lib/supabase/server';
 import { getNflSeasonState } from '@/lib/nfl-season';
 import { DEFAULT_TEAM_ID } from '@/lib/teams';
 import { notFound, redirect } from 'next/navigation';
+import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
 
 // The home route. Signed-in visitors resolve to their startup team (favorite ->
 // last-viewed -> default) server-side and are redirected to /team/<id>, so the app opens
@@ -65,6 +66,7 @@ export default async function Home() {
         playerStatsMap={playerStatsMap}
         formations={formations}
         currentSeason={currentSeason}
+        uniformDefinition={getTeamUniformDefinition(roster.team.id)}
       />
     );
   }
@@ -87,6 +89,7 @@ export default async function Home() {
       playerStatsMap={playerStatsMap}
       formations={formations}
       currentSeason={currentSeason}
+      uniformDefinition={getTeamUniformDefinition(roster.team.id)}
     />
   );
 }

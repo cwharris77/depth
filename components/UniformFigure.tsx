@@ -1,43 +1,19 @@
 import { useId } from 'react';
 import Image from 'next/image';
 import type { TeamColors } from '@/lib/types';
-import { readableTextOn } from '@/lib/colors';
 import { variantSpec, type UniformVariant } from '@/lib/uniforms/figure';
-import {
-  TRIM_CONFIGS,
-  resolveTrimColor,
-  HELMET_STRIPE_PATH,
-  SLEEVE_STRIPE_PATH_L,
-  SLEEVE_STRIPE_PATH_R,
-  PANTS_KNEE_ACCENT_L,
-  PANTS_KNEE_ACCENT_R,
-  BILLS_HELMET_DECAL_BUFFALO,
-  BILLS_HELMET_DECAL_STRIPE,
-  BILLS_HELMET_EDGE_STRIPE_OUTER,
-  BILLS_HELMET_EDGE_STRIPE_INNER,
-  BILLS_SLEEVE_RED_L,
-  BILLS_SLEEVE_WHITE_L,
-  BILLS_SLEEVE_NAVY_L,
-  BILLS_SLEEVE_RED_R,
-  BILLS_SLEEVE_WHITE_R,
-  BILLS_SLEEVE_NAVY_R,
-  BILLS_COLLAR_WIDTHS,
-  BILLS_NAVY,
-  BILLS_RED,
-  BILLS_ICE_SILVER,
-  BILLS_ICE_SILVER_LIGHT,
-} from '@/lib/uniforms/trim';
+import { resolveUniformModel, type ResolvedUniformStyle } from '@/lib/uniforms/model';
+import type { TeamUniformDefinition, UniformSurface } from '@/lib/uniforms/teams/types';
 
 // The generated vector uniform. Colors/striping/layout are facts (not copyrightable), so every
 // kit is drawn from its TeamColors — zero external image assets, no team logos. One renderer
 // backs the picker (variant="jersey") and the archive (variant="full"); a variant is a viewBox
 // crop over one shared full-body mannequin. A committed image (imagePath) overrides the figure.
 //
-// Geometry + the region/trim model are ported from the "uniform vectorization with color
-// regions" handoff (Claude Design), itself modeled on the CC BY 3.0 Wikimedia uniform template
-// by JohnnySeoul (see ATTRIBUTIONS.md). For now every kit uses ONE default trim config, colored
-// from its palette; per-kit trim variants (yoke/collar/stripe/number styles — the config shape
-// the handoff's teams.js demonstrates) are the future "differentiate per team" step.
+// Geometry is ported from the "uniform vectorization with color regions" handoff (Claude
+// Design), itself modeled on the CC BY 3.0 Wikimedia uniform template by JohnnySeoul (see
+// ATTRIBUTIONS.md). Team modules own optional construction layers; this component only resolves
+// their typed model and assembles surfaces in the mannequin's shared paint order.
 //
 // Color contract: primary = helmet shell / jersey body / pants; secondary = helmet + sleeve +
 // pant stripes and the number outline; accent = shoulder yoke + helmet stripe; number fill =
@@ -67,12 +43,6 @@ const GEO = {
 };
 
 type GeoKey = keyof typeof GEO;
-
-// The jersey's shoulder/sleeve-cap accent region (both a fill shape in the default trim and a
-// clip region for the `tiger` sleeve-stripe trim). Right is the left shape mirrored across the
-// jersey's x=294 centerline (30+558=588, so mirroredX = 588-x).
-const YOKE_L = 'M30,466 L78,417 L136,401 L168,470 L156,556 L34,556 Z';
-const YOKE_R = 'M558,466 L510,417 L452,401 L420,470 L432,556 L554,556 Z';
 
 // One shared mannequin path, rendered either inline (`<path d=…>`, the default — every figure
 // is self-contained) or as a `<use>` reference into the sprite <UniformFigureDefs> mounts once
@@ -107,6 +77,43 @@ function Geo({
   );
 }
 
+type ResolvedLayer = ResolvedUniformStyle['layers'][number];
+
+function clipPathForSurface(surface: UniformSurface, uid: string) {
+  if (surface === 'helmet') return `url(#${uid}-helmet)`;
+  if (surface === 'pants') return `url(#${uid}-pants)`;
+  if (surface === 'leg-left') return `url(#${uid}-legL)`;
+  if (surface === 'leg-right') return `url(#${uid}-legR)`;
+  return `url(#${uid}-jersey)`;
+}
+
+// Definition layers are always SVG paths; their semantic surface determines paint order and,
+// when requested, which shared mannequin geometry clips them. Paint values are already resolved
+// through resolveColor by resolveUniformModel.
+function UniformLayerPath({ layer, uid }: { layer: ResolvedLayer; uid: string }) {
+  const clipPath = layer.clip ? clipPathForSurface(layer.surface, uid) : undefined;
+
+  return layer.kind === 'fill' ? (
+    <path
+      data-layer-id={layer.id}
+      clipPath={clipPath}
+      d={layer.d}
+      fill={layer.fill}
+      stroke="none"
+    />
+  ) : (
+    <path
+      data-layer-id={layer.id}
+      clipPath={clipPath}
+      d={layer.d}
+      fill="none"
+      stroke={layer.stroke}
+      strokeWidth={layer.strokeWidth}
+      strokeLinecap={layer.lineCap}
+    />
+  );
+}
+
 // The sprite `<use>`-referencing figures draw from when passed `sharedDefs`. Mount this ONCE
 // per page — its ids are fixed (not per-instance), so a second mount would emit duplicate DOM
 // ids. Zero-size and absolutely positioned so it never affects layout.
@@ -130,6 +137,7 @@ export default function UniformFigure({
   title,
   sharedDefs = false,
   kitId,
+  definition,
 }: {
   colors: TeamColors;
   variant?: UniformVariant;
@@ -139,10 +147,10 @@ export default function UniformFigure({
   // Reference <UniformFigureDefs>'s sprite via <use> instead of inlining path data — see Geo
   // above. Only pass this when the caller has mounted <UniformFigureDefs/> once on the page.
   sharedDefs?: boolean;
-  // `${teamId}-${slug}` (a Uniform row's id). Looks up an optional per-kit TRIM_CONFIGS
-  // override (lib/uniforms/trim.ts) — omitted or unmatched renders the default trim below
-  // unchanged, so this is opt-in per kit, not a behavior change for the rest of the archive.
+  // `${teamId}-${slug}` (a Uniform row's id). The definition's team id is stripped before model
+  // resolution; omitted or unmatched kits retain the team's defaults.
   kitId?: string;
+  definition?: TeamUniformDefinition;
 }) {
   const rawId = useId();
   const uid = rawId.replace(/:/g, '');
@@ -160,21 +168,18 @@ export default function UniformFigure({
     return <Image src={imagePath} alt={title ?? ''} width={size} height={height} />;
   }
 
-  // Default trim, colored from the kit's palette — overridden per-kit by TRIM_CONFIGS
-  // (lib/uniforms/trim.ts) when `kitId` matches one. No match = unchanged from before this
-  // ticket: jersey/pants/helmet all `primary`, stripe accents all `secondary`.
-  const { primary, secondary, accent } = colors;
-  const trim = kitId ? TRIM_CONFIGS[kitId] : undefined;
-  const helmetFill = trim?.helmetColor ? resolveTrimColor(trim.helmetColor, colors) : primary;
-  const jerseyFill = trim?.jerseyColor ? colors[trim.jerseyColor] : primary;
-  const pantsFill = trim?.pantsColor ? colors[trim.pantsColor] : primary;
-  const stripeFill = trim?.stripeColor ? resolveTrimColor(trim.stripeColor, colors) : secondary;
-  const helmetStripeFill = trim?.helmetStripeColor
-    ? resolveTrimColor(trim.helmetStripeColor, colors)
-    : stripeFill;
-  const numberFill = trim?.numberColor
-    ? resolveTrimColor(trim.numberColor, colors)
-    : readableTextOn(jerseyFill);
+  const kitPrefix = definition ? `${definition.teamId}-` : '';
+  const kitSlug = kitId?.startsWith(kitPrefix) ? kitId.slice(kitPrefix.length) : (kitId ?? '');
+  const model = resolveUniformModel(definition, kitSlug, colors);
+  const pantsLayers = model.layers.filter((layer) =>
+    ['pants', 'leg-left', 'leg-right'].includes(layer.surface)
+  );
+  const jerseyLayers = model.layers.filter((layer) =>
+    ['jersey', 'sleeve-left', 'sleeve-right'].includes(layer.surface)
+  );
+  const collarLayers = model.layers.filter((layer) => layer.surface === 'collar');
+  const numberLayers = model.layers.filter((layer) => layer.surface === 'number');
+  const helmetLayers = model.layers.filter((layer) => layer.surface === 'helmet');
   const numFont = { fontFamily: 'var(--font-anton), Anton, Helvetica, sans-serif' };
   const numAttrs = {
     x: 294,
@@ -207,6 +212,9 @@ export default function UniformFigure({
         )}
         {hasPants && (
           <>
+            <clipPath id={`${uid}-pants`}>
+              <Geo part="pants" shared={sharedDefs} />
+            </clipPath>
             <clipPath id={`${uid}-legL`}>
               <Geo part="pants" shared={sharedDefs} />
               <Geo part="shinL" shared={sharedDefs} />
@@ -221,133 +229,53 @@ export default function UniformFigure({
       <g stroke={OUTLINE} strokeWidth={4} strokeLinejoin="round" strokeLinecap="round">
         {hasPants && (
           <>
-            <Geo part="pants" shared={sharedDefs} fill={pantsFill} />
-            <Geo part="shinL" shared={sharedDefs} fill={pantsFill} />
-            <Geo part="shinR" shared={sharedDefs} fill={pantsFill} />
-            {trim?.pantsStripe === 'tiger' ? (
-              <g stroke="none">
-                <path clipPath={`url(#${uid}-legL)`} d={PANTS_KNEE_ACCENT_L} fill={stripeFill} />
-                <path clipPath={`url(#${uid}-legR)`} d={PANTS_KNEE_ACCENT_R} fill={stripeFill} />
-              </g>
-            ) : trim?.pantsStripe === 'none' ? null : (
-              <g stroke="none">
-                <rect
-                  clipPath={`url(#${uid}-legL)`}
-                  x={118}
-                  y={807}
-                  width={16}
-                  height={655}
-                  fill={stripeFill}
-                />
-                <rect
-                  clipPath={`url(#${uid}-legR)`}
-                  x={454}
-                  y={807}
-                  width={16}
-                  height={655}
-                  fill={stripeFill}
-                />
-              </g>
-            )}
+            <Geo part="pants" shared={sharedDefs} fill={model.pantsColor} />
+            <Geo part="shinL" shared={sharedDefs} fill={model.pantsColor} />
+            <Geo part="shinR" shared={sharedDefs} fill={model.pantsColor} />
+            {pantsLayers.map((layer) => (
+              <UniformLayerPath key={layer.id} layer={layer} uid={uid} />
+            ))}
             <Geo part="shoeL" shared={sharedDefs} fill="#ffffff" />
             <Geo part="shoeR" shared={sharedDefs} fill="#ffffff" />
           </>
         )}
         {hasJersey && (
           <>
-            <Geo part="jersey" shared={sharedDefs} fill={jerseyFill} />
-            <g stroke="none">
-              {trim?.sleeveStripe === 'tiger' ? (
-                <>
-                  <path
-                    clipPath={`url(#${uid}-jersey)`}
-                    d={SLEEVE_STRIPE_PATH_L}
-                    fill={stripeFill}
-                  />
-                  <path
-                    clipPath={`url(#${uid}-jersey)`}
-                    d={SLEEVE_STRIPE_PATH_R}
-                    fill={stripeFill}
-                  />
-                </>
-              ) : trim?.sleeveStripe === 'bills' ? (
-                <>
-                  <path clipPath={`url(#${uid}-jersey)`} fill={BILLS_RED} d={BILLS_SLEEVE_RED_L} />
-                  <path clipPath={`url(#${uid}-jersey)`} fill="#ffffff" d={BILLS_SLEEVE_WHITE_L} />
-                  <path
-                    clipPath={`url(#${uid}-jersey)`}
-                    fill={BILLS_NAVY}
-                    d={BILLS_SLEEVE_NAVY_L}
-                  />
-                  <path clipPath={`url(#${uid}-jersey)`} fill={BILLS_RED} d={BILLS_SLEEVE_RED_R} />
-                  <path clipPath={`url(#${uid}-jersey)`} fill="#ffffff" d={BILLS_SLEEVE_WHITE_R} />
-                  <path
-                    clipPath={`url(#${uid}-jersey)`}
-                    fill={BILLS_NAVY}
-                    d={BILLS_SLEEVE_NAVY_R}
-                  />
-                </>
-              ) : trim?.sleeveStripe === 'none' ? null : (
-                <>
-                  <path clipPath={`url(#${uid}-jersey)`} fill={accent} d={YOKE_L} />
-                  <path clipPath={`url(#${uid}-jersey)`} fill={accent} d={YOKE_R} />
-                </>
-              )}
-              {trim?.sleeveStripe !== 'none' && (
-                <>
-                  <path
-                    clipPath={`url(#${uid}-jersey)`}
-                    fill={stripeFill}
-                    d="M34,558 L156,558 L152,578 L34,578 Z"
-                  />
-                  <path
-                    clipPath={`url(#${uid}-jersey)`}
-                    fill={stripeFill}
-                    d="M554,558 L432,558 L436,578 L554,578 Z"
-                  />
-                </>
-              )}
-            </g>
-            {trim?.collarTrim === 'bills' ? (
-              <g clipPath={`url(#${uid}-jersey)`} fill="none">
+            <Geo part="jersey" shared={sharedDefs} fill={model.jerseyColor} />
+            {jerseyLayers.map((layer) => (
+              <UniformLayerPath key={layer.id} layer={layer} uid={uid} />
+            ))}
+            {collarLayers.map((layer) => (
+              <UniformLayerPath key={layer.id} layer={layer} uid={uid} />
+            ))}
+            {numberLayers.map((layer) => (
+              <UniformLayerPath key={layer.id} layer={layer} uid={uid} />
+            ))}
+            {model.number.glyphPath ? (
+              <>
                 <path
-                  stroke="#ffffff"
-                  strokeWidth={BILLS_COLLAR_WIDTHS.white}
-                  d="M206,388 L294,455 L386,388"
+                  d={model.number.glyphPath}
+                  fill="none"
+                  stroke={model.number.outline}
+                  strokeWidth={model.number.outlineWidth}
                 />
-                <path
-                  stroke={BILLS_RED}
-                  strokeWidth={BILLS_COLLAR_WIDTHS.red}
-                  d="M206,388 L294,455 L386,388"
-                />
-                <path
-                  stroke={BILLS_NAVY}
-                  strokeWidth={BILLS_COLLAR_WIDTHS.navy}
-                  d="M206,388 L294,455 L386,388"
-                />
-              </g>
+                <path d={model.number.glyphPath} fill={model.number.fill} stroke="none" />
+              </>
             ) : (
-              <path
-                clipPath={`url(#${uid}-jersey)`}
-                fill="none"
-                stroke={stripeFill}
-                strokeWidth={13}
-                d="M206,388 L294,455 L386,388"
-              />
+              <g stroke="none">
+                <text
+                  {...numAttrs}
+                  fill="none"
+                  stroke={model.number.outline}
+                  strokeWidth={model.number.outlineWidth}
+                  strokeLinejoin="round">
+                  1
+                </text>
+                <text {...numAttrs} fill={model.number.fill}>
+                  1
+                </text>
+              </g>
             )}
-            <g stroke="none">
-              <text
-                {...numAttrs}
-                fill="none"
-                stroke={stripeFill}
-                strokeWidth={26}
-                strokeLinejoin="round">
-                1
-              </text>
-              <text {...numAttrs} fill={numberFill}>
-                1
-              </text>
-            </g>
           </>
         )}
         {hasHelmet && (
@@ -355,52 +283,13 @@ export default function UniformFigure({
             <Geo
               part="helmet"
               shared={sharedDefs}
-              fill={helmetFill}
+              fill={model.helmetColor}
               stroke={OUTLINE}
               strokeWidth={8}
             />
-            {trim?.helmetStripe === 'tiger' ? (
-              <path
-                clipPath={`url(#${uid}-helmet)`}
-                d={HELMET_STRIPE_PATH}
-                fill={helmetStripeFill}
-                stroke="none"
-              />
-            ) : trim?.helmetDecal === 'bills' ? (
-              <g clipPath={`url(#${uid}-helmet)`} stroke="none">
-                <path d={BILLS_HELMET_DECAL_BUFFALO.d} fill={BILLS_HELMET_DECAL_BUFFALO.fill} />
-                <path d={BILLS_HELMET_DECAL_STRIPE.d} fill={BILLS_HELMET_DECAL_STRIPE.fill} />
-                <path
-                  fill="none"
-                  stroke={BILLS_HELMET_EDGE_STRIPE_OUTER.stroke}
-                  strokeWidth={BILLS_HELMET_EDGE_STRIPE_OUTER.strokeWidth}
-                  strokeLinecap="round"
-                  d={BILLS_HELMET_EDGE_STRIPE_OUTER.d}
-                />
-                <path
-                  fill="none"
-                  stroke={BILLS_HELMET_EDGE_STRIPE_INNER.stroke}
-                  strokeWidth={BILLS_HELMET_EDGE_STRIPE_INNER.strokeWidth}
-                  strokeLinecap="round"
-                  d={BILLS_HELMET_EDGE_STRIPE_INNER.d}
-                />
-              </g>
-            ) : trim?.helmetDecal === 'bills-ice' ? (
-              <g clipPath={`url(#${uid}-helmet)`} fill="none" stroke={BILLS_NAVY} strokeWidth={3}>
-                <path d={BILLS_HELMET_DECAL_BUFFALO.d} fill={BILLS_ICE_SILVER} />
-                <path d={BILLS_HELMET_DECAL_STRIPE.d} fill={BILLS_ICE_SILVER_LIGHT} />
-              </g>
-            ) : (
-              <rect
-                clipPath={`url(#${uid}-helmet)`}
-                x={150}
-                y={286}
-                width={430}
-                height={44}
-                fill={accent}
-                stroke="none"
-              />
-            )}
+            {helmetLayers.map((layer) => (
+              <UniformLayerPath key={layer.id} layer={layer} uid={uid} />
+            ))}
             <Geo
               part="facemask"
               shared={sharedDefs}

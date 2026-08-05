@@ -34,6 +34,7 @@ import { useTeamOverride } from '@/lib/use-team-override';
 import { useShareRoster } from '@/lib/use-share-roster';
 import { useTeamSeason } from '@/lib/use-team-season';
 import { SEASONS_MIN } from '@/lib/nflverse/roster-history';
+import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
 
 // A team's default formation pick is its most-used real formation for that unit, not
 // the generic "Base" look -- users should never see "Base" as something they picked.
@@ -54,6 +55,7 @@ export default function DepthChartField({
   playerStatsMap,
   formations = [],
   currentSeason,
+  uniformDefinition,
 }: {
   roster: TeamRoster;
   teams: TeamMeta[];
@@ -62,6 +64,7 @@ export default function DepthChartField({
   // The season SeasonSheet lists as "current" / the sheet's most-recent row (Phase D1).
   // Server-computed (app/team/[id]/page.tsx) since it depends on today's date.
   currentSeason: number;
+  uniformDefinition?: TeamUniformDefinition;
 }) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeUnit, setActiveUnit] = useState<Unit>('offense');
@@ -488,6 +491,7 @@ export default function DepthChartField({
             uniforms={roster.uniforms}
             activeId={activeUniform?.id ?? ''}
             accent={activeColors.uiAccent}
+            definition={uniformDefinition}
             onSelect={setKitId}
             onClose={() => setKitOpen(false)}
           />

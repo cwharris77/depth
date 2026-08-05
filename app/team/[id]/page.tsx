@@ -5,6 +5,7 @@ import { getNflSeasonState } from '@/lib/nfl-season';
 import { OG_IMAGE_ALT, OG_IMAGE_SIZE } from '@/lib/og';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
 
 type Params = { params: Promise<{ id: string }> };
 type MetadataParams = Params & {
@@ -105,6 +106,7 @@ export default async function TeamPage({ params }: Params) {
         playerStatsMap={playerStatsMap}
         formations={formations}
         currentSeason={currentSeason}
+        uniformDefinition={getTeamUniformDefinition(roster.team.id)}
       />
     </>
   );
