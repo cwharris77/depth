@@ -6,16 +6,18 @@ import type { TeamUniformDefinition } from './types';
 // Server-boundary registry for team construction definitions. Client team pages receive only the
 // selected definition instead of importing every team's geometry into their bundle.
 
-const DEFINITIONS = {
+const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   bengals: BENGALS_UNIFORMS,
   bills: BILLS_UNIFORMS,
   seahawks: SEAHAWKS_UNIFORMS,
-} satisfies Record<string, TeamUniformDefinition>;
+};
 
-export function getTeamUniformDefinition(teamId: string) {
-  return DEFINITIONS[teamId as keyof typeof DEFINITIONS];
+export function getTeamUniformDefinition(teamId: string): TeamUniformDefinition | undefined {
+  return Object.hasOwn(DEFINITIONS, teamId) ? DEFINITIONS[teamId] : undefined;
 }
 
-export function getAllTeamUniformDefinitions() {
+export function getAllTeamUniformDefinitions(): Readonly<
+  Partial<Record<string, TeamUniformDefinition>>
+> {
   return DEFINITIONS;
 }

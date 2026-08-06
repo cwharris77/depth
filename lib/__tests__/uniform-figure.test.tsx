@@ -13,7 +13,17 @@ const colors: TeamColors = {
   onAccent: '#000000',
 };
 
-const customLayerIds = ['test-helmet-fill', 'test-sleeve-left', 'test-sleeve-right', 'test-collar'];
+const customLayerIds = [
+  'test-helmet-fill',
+  'test-sleeve-left',
+  'test-sleeve-right',
+  'test-jersey-fill',
+  'test-collar',
+  'test-number-mark',
+  'test-pants-fill',
+  'test-leg-left',
+  'test-leg-right',
+];
 
 const definition: TeamUniformDefinition = {
   teamId: 'test',
@@ -57,6 +67,46 @@ const definition: TeamUniformDefinition = {
         kind: 'stroke',
         stroke: 'accent',
         strokeWidth: 7,
+      },
+      {
+        id: 'test-jersey-fill',
+        surface: 'jersey',
+        d: 'M351,352 L353,354 Z',
+        clip: true,
+        kind: 'fill',
+        fill: 'primary',
+      },
+      {
+        id: 'test-number-mark',
+        surface: 'number',
+        d: 'M451,452 L453,454 Z',
+        clip: true,
+        kind: 'fill',
+        fill: 'secondary',
+      },
+      {
+        id: 'test-pants-fill',
+        surface: 'pants',
+        d: 'M601,602 L603,604 Z',
+        clip: true,
+        kind: 'fill',
+        fill: 'primary',
+      },
+      {
+        id: 'test-leg-left',
+        surface: 'leg-left',
+        d: 'M701,702 L703,704 Z',
+        clip: true,
+        kind: 'fill',
+        fill: 'secondary',
+      },
+      {
+        id: 'test-leg-right',
+        surface: 'leg-right',
+        d: 'M801,802 L803,804 Z',
+        clip: true,
+        kind: 'fill',
+        fill: 'secondary',
       },
     ],
     number: {
@@ -120,12 +170,38 @@ describe('UniformFigure', () => {
     }
   });
 
-  it('clips helmet layers to the helmet geometry', () => {
+  it.each([
+    ['test-helmet-fill', 'helmet'],
+    ['test-sleeve-left', 'jersey'],
+    ['test-sleeve-right', 'jersey'],
+    ['test-jersey-fill', 'jersey'],
+    ['test-collar', 'jersey'],
+    ['test-number-mark', 'jersey'],
+    ['test-pants-fill', 'pants'],
+    ['test-leg-left', 'legL'],
+    ['test-leg-right', 'legR'],
+  ])('clips %s to the %s surface geometry', (layerId, clipId) => {
     const markup = renderFigure({ definition });
 
     expect(markup).toMatch(
-      /<path[^>]*data-layer-id="test-helmet-fill"[^>]*clip-path="url\(#[^"]+-helmet\)"[^>]*>/
+      new RegExp(
+        `<path[^>]*data-layer-id="${layerId}"[^>]*clip-path="url\\(#[^"]+-${clipId}\\)"[^>]*>`
+      )
     );
+  });
+
+  it.each([
+    ['test-leg-right', 'fill="#ffffff"'],
+    ['test-pants-fill', 'test-jersey-fill'],
+    ['test-sleeve-right', 'test-collar'],
+    ['test-jersey-fill', 'test-collar'],
+    ['test-collar', 'test-number-mark'],
+    ['test-number-mark', 'test-helmet-fill'],
+    ['test-helmet-fill', 'fill="#4b5158"'],
+  ])('paints %s before %s', (earlier, later) => {
+    const markup = renderFigure({ definition });
+
+    expect(markup.indexOf(earlier)).toBeLessThan(markup.indexOf(later));
   });
 
   it('renders an authored number glyph instead of the fallback text', () => {
@@ -135,10 +211,47 @@ describe('UniformFigure', () => {
     expect(markup).not.toContain('>1</text>');
   });
 
+  it('clips both authored number glyph paths to the jersey geometry', () => {
+    const markup = renderFigure({ definition });
+    const glyphPaths = markup.match(/<path[^>]*d="M501,502 L503,504 Z"[^>]*>/g);
+
+    expect(glyphPaths).toHaveLength(2);
+    for (const glyphPath of glyphPaths ?? []) {
+      expect(glyphPath).toMatch(/clip-path="url\(#[^"]+-jersey\)"/);
+    }
+  });
+
   it('uses team defaults when the kit is unknown', () => {
     expect(() => renderFigure({ definition, kitId: 'test-unknown' })).not.toThrow();
     expect(renderFigure({ definition, kitId: 'test-unknown' })).toContain(
       'data-layer-id="test-helmet-fill"'
     );
+  });
+
+  it('preserves a hyphenated team prefix and Rivalries kit slug', () => {
+    const hyphenatedDefinition: TeamUniformDefinition = {
+      teamId: 'team-with-hyphen',
+      kits: {
+        'rivalries-2025': {
+          layers: [
+            {
+              id: 'hyphenated-rivalries-layer',
+              surface: 'jersey',
+              d: 'M901,902 L903,904 Z',
+              clip: true,
+              kind: 'fill',
+              fill: 'accent',
+            },
+          ],
+        },
+      },
+    };
+
+    expect(
+      renderFigure({
+        definition: hyphenatedDefinition,
+        kitId: 'team-with-hyphen-rivalries-2025',
+      })
+    ).toContain('data-layer-id="hyphenated-rivalries-layer"');
   });
 });

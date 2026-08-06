@@ -69,6 +69,13 @@ describe('team uniform definitions', () => {
     expect(getTeamUniformDefinition('unknown')).toBeUndefined();
   });
 
+  it.each(['constructor', '__proto__', 'toString'])(
+    'does not resolve the inherited %s property as a team definition',
+    (teamId) => {
+      expect(getTeamUniformDefinition(teamId)).toBeUndefined();
+    }
+  );
+
   it('resolves the Seahawks navy home construction without protected marks', () => {
     const definition = getTeamUniformDefinition('seahawks');
     const home = definition?.kits.home;
@@ -95,16 +102,27 @@ describe('team uniform definitions', () => {
     expect(model.layers.find((layer) => layer.id === 'seahawks-shoulder-lime-left')).toMatchObject({
       fill: '#69BE28',
     });
+    for (const displacedLayerId of [
+      'generic-helmet-stripe',
+      'generic-sleeve-yoke-left',
+      'generic-sleeve-yoke-right',
+      'generic-sleeve-stripe-left',
+      'generic-sleeve-stripe-right',
+    ]) {
+      expect(model.layers.some((layer) => layer.id === displacedLayerId)).toBe(false);
+    }
   });
 
-  const definitions = getAllTeamUniformDefinitions();
+  const definitions = Object.values(getAllTeamUniformDefinitions()).filter(
+    (definition): definition is TeamUniformDefinition => definition !== undefined
+  );
 
   it('uses unique team IDs', () => {
-    const teamIds = Object.values(definitions).map((definition) => definition.teamId);
+    const teamIds = definitions.map((definition) => definition.teamId);
     expect(new Set(teamIds).size).toBe(teamIds.length);
   });
 
-  for (const definition of Object.values(definitions) as TeamUniformDefinition[]) {
+  for (const definition of definitions) {
     it(`${definition.teamId} uses non-empty kit keys`, () => {
       for (const kitKey of Object.keys(definition.kits)) expect(kitKey.trim()).not.toBe('');
     });

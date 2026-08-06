@@ -160,7 +160,7 @@ confirming that trademarked logos remain absent.
 Completion requires fresh successful runs of:
 
 ```text
-npm test -- lib/__tests__/uniform-figure.test.ts
+npm test -- lib/__tests__/uniform-figure.test.tsx
 npm test
 npm run typecheck
 npm run format:check

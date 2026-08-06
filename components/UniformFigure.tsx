@@ -254,12 +254,18 @@ export default function UniformFigure({
             {model.number.glyphPath ? (
               <>
                 <path
+                  clipPath={`url(#${uid}-jersey)`}
                   d={model.number.glyphPath}
                   fill="none"
                   stroke={model.number.outline}
                   strokeWidth={model.number.outlineWidth}
                 />
-                <path d={model.number.glyphPath} fill={model.number.fill} stroke="none" />
+                <path
+                  clipPath={`url(#${uid}-jersey)`}
+                  d={model.number.glyphPath}
+                  fill={model.number.fill}
+                  stroke="none"
+                />
               </>
             ) : (
               <g stroke="none">
