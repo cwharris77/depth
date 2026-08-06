@@ -18,3 +18,33 @@ resolved statuses always carry their resolution date
 **Suggested improvement:** When a tool's own human-readable/summary field disagrees with the structured value it just echoed back (same call, same response), that's ambiguous evidence, not confirmed evidence — the summary is a second code path that can have its own bug independent of the field it's summarizing. Before restructuring a solution around a suspected limitation like this: (1) prefer a cheap, non-destructive way to test the actual claim first if one exists (e.g. a manual "run now" trigger, or checking the tool's own docs/changelog for known display bugs) over redesigning around it, and (2) if no cheap test exists, say the uncertainty out loud and ask the user rather than silently picking the more conservative (but more complex/redundant) design. Tripling the task count was a real cost (3x the staging output, 3x drift risk if only one copy gets edited later) paid to route around something that may never have been broken.
 
 **Principle:** A tool's structured return value is closer to ground truth than its own prose summary of that value — when they disagree, don't let the prose summary drive an architecture decision; verify directly or ask, rather than defaulting to the safer-looking but more complex workaround.
+
+### Observation 4: Machine-generated artifacts must be substituted programmatically, never retyped
+
+**Status:** OPEN
+**Date:** 2026-08-06
+**Session context:** Adding NFL uniform team definitions to the depth repo. Each team's helmet decal is produced by a contour tracer that writes an SVG path to a scratchpad file, which then has to end up inside a TypeScript module.
+**Skill:** New skill candidate: handling-generated-artifacts (or an addition to any skill that pipes tool output into source files)
+**Type:** open-source
+**Phase/Area:** Moving generated output into source code
+
+**Issue:** After running the tracer and confirming its output visually, I wrote the destination module in one pass — and typed a *fabricated* SVG path into it instead of the traced one. The invented path was a plausible-looking staircase of coordinates; it typechecked, it passed every test, and it would have rendered a wrong shape that only a browser check would catch. I noticed only because I re-read my own file immediately afterward. Six earlier decals in the same session were pasted correctly, so the failure was not a lack of care in general — it was that the correct path was in a file I had not read in the same turn, and the model filled the gap.
+
+**Suggested improvement:** Never transcribe a generated artifact into source by hand or from context. Write it in with a scripted substitution that reads the artifact file at write time (`re.sub` on the destination anchored to the constant's name, asserting the file changed and the artifact is present), or read the artifact into context in the immediately preceding step. Add a verification step: after writing, grep the destination for a distinctive substring of the artifact file and fail if absent. Treat "the generated value lives in a file I have not read this turn" as a hard stop.
+
+**Principle:** Any value produced by a tool is data to be moved mechanically, not content to be reproduced from memory. A model asked to emit a long opaque literal it cannot see will confabulate one that looks right, and type checks and unit tests do not distinguish real from plausible — so the substitution must be scripted and then verified against the source artifact.
+
+### Observation 5: `git stash` around a branch switch needs the push confirmed before the pop
+
+**Status:** OPEN
+**Date:** 2026-08-06
+**Session context:** Merging a PR and syncing the default branch while an unrelated edit sat in the working tree.
+**Skill:** ship-pr (and any skill that syncs a branch mid-session)
+**Type:** open-source
+**Phase/Area:** Post-merge cleanup / branch sync
+
+**Issue:** I ran `git stash -q; git checkout <default>; git pull; git stash pop` to get an uncommitted local edit past a sync. The edit had meanwhile landed upstream, so the tree was already clean and `git stash -q` created nothing — and the blind `git stash pop` then popped a *pre-existing, unrelated* stash from an earlier session, producing a merge conflict in a file I had never touched. Recovering was easy (the failed pop keeps its entry), but the sequence silently reached into someone else's saved work.
+
+**Suggested improvement:** Never pair an unconditional `git stash` with an unconditional `git stash pop`. Either capture the stash's identity (`git stash create` / compare `git stash list` before and after) and pop only that ref, or check `git status --porcelain` first and skip the stash/pop pair entirely when the tree is clean. When a pop does conflict, stop and inspect rather than resolving — a conflict in a file unrelated to the current task is the signal that the wrong stash was popped.
+
+**Principle:** A stash is a shared, session-spanning stack, not a scratch variable. Operations that assume "the thing I pushed is on top" are unsafe whenever the push may have been a no-op; always pop by identity or guard the pair behind a dirty-tree check.
