@@ -13,10 +13,14 @@ import { getAllTeamUniformDefinitions, getTeamUniformDefinition } from '@/lib/un
 
 const SEMANTIC_COLORS = new Set<ColorRef>(['primary', 'secondary', 'accent', 'readable-on-body']);
 const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/;
+// The home kit's palette comes from ESPN via toTeamColors, which sets accent = secondary — so a
+// home render has no third token and `accent` can never be wolf grey. Mirroring that here keeps
+// this suite honest: a curated palette with a distinct accent would pass while the live page
+// painted the shoulder band green. Curated archive rows (away, below) do carry a real accent.
 const SEAHAWKS_COLORS: TeamColors = {
-  primary: '#002244',
+  primary: '#002a5c',
   secondary: '#69BE28',
-  accent: '#A5ACAF',
+  accent: '#69BE28',
   uiAccent: '#69BE28',
   onAccent: '#0a0e1a',
 };
@@ -83,25 +87,38 @@ describe('team uniform definitions', () => {
 
     expect(layerIds).toEqual([
       'seahawks-helmet-center-stripe',
-      'seahawks-shoulder-silver-left',
-      'seahawks-shoulder-silver-right',
-      'seahawks-shoulder-lime-left',
-      'seahawks-shoulder-lime-right',
+      'seahawks-helmet-hawk',
+      'seahawks-helmet-hawk-eye',
+      'seahawks-shoulder-bar-left',
+      'seahawks-shoulder-bar-right',
+      'seahawks-shoulder-band-left',
+      'seahawks-shoulder-band-right',
+      'seahawks-shoulder-cap-left',
+      'seahawks-shoulder-cap-right',
     ]);
-    expect(layerIds?.some((id) => /helmet-logo|wordmark|shield/.test(id))).toBe(false);
+    // The helmet decal is the one traced mark; chest wordmarks, league shields and sponsor marks
+    // stay out of every kit.
+    expect(layerIds?.some((id) => /wordmark|shield|sponsor/.test(id))).toBe(false);
 
     const model = resolveUniformModel(definition, 'home', SEAHAWKS_COLORS);
     expect(model).toMatchObject({
-      helmetColor: '#002244',
-      jerseyColor: '#002244',
-      pantsColor: '#002244',
+      helmetColor: '#002a5c',
+      jerseyColor: '#002a5c',
+      pantsColor: '#002a5c',
     });
-    expect(
-      model.layers.find((layer) => layer.id === 'seahawks-shoulder-silver-left')
-    ).toMatchObject({ fill: '#A5ACAF' });
-    expect(model.layers.find((layer) => layer.id === 'seahawks-shoulder-lime-left')).toMatchObject({
+    // Wolf grey must survive as a literal: resolving it from `accent` would silently paint the
+    // band and the number the same action green as the sleeve cap on every home render.
+    for (const layerId of [
+      'seahawks-shoulder-bar-left',
+      'seahawks-shoulder-band-left',
+      'seahawks-shoulder-band-right',
+    ]) {
+      expect(model.layers.find((layer) => layer.id === layerId)).toMatchObject({ fill: '#A5ACAF' });
+    }
+    expect(model.layers.find((layer) => layer.id === 'seahawks-shoulder-cap-left')).toMatchObject({
       fill: '#69BE28',
     });
+    expect(model.number).toMatchObject({ fill: '#A5ACAF', outline: '#69BE28' });
     for (const displacedLayerId of [
       'generic-helmet-stripe',
       'generic-sleeve-yoke-left',
@@ -113,7 +130,7 @@ describe('team uniform definitions', () => {
     }
   });
 
-  it('keeps the Seahawks away helmet navy and construction trim action green', () => {
+  it('mirrors the home construction on the Seahawks away kit in navy', () => {
     const definition = getTeamUniformDefinition('seahawks');
     const model = resolveUniformModel(definition, 'away', {
       ...SEAHAWKS_COLORS,
@@ -122,18 +139,41 @@ describe('team uniform definitions', () => {
       accent: '#69BE28',
     });
 
+    // Away wears the same shoulder construction as home with navy in wolf grey's place, so its
+    // band resolves from secondary while the sleeve cap takes accent — the inverse of home's
+    // token usage for the same painted result.
     expect(model.helmetColor).toBe('#002244');
-    expect(model.number.outline).toBe('#69BE28');
-    for (const layerId of [
-      'generic-sleeve-stripe-left',
-      'generic-sleeve-stripe-right',
-      'generic-collar',
-      'generic-pants-stripe-left',
-      'generic-pants-stripe-right',
-    ]) {
-      const layer = model.layers.find((candidate) => candidate.id === layerId);
-      expect(layer?.kind === 'fill' ? layer.fill : layer?.stroke).toBe('#69BE28');
+    expect(model.number).toMatchObject({ fill: '#002244', outline: '#69BE28' });
+    expect(model.layers.find((layer) => layer.id === 'seahawks-shoulder-band-left')).toMatchObject({
+      fill: '#002244',
+    });
+    expect(model.layers.find((layer) => layer.id === 'seahawks-shoulder-cap-left')).toMatchObject({
+      fill: '#69BE28',
+    });
+    // The away collar is navy in the reference, not green — it inherits the generic chevron,
+    // which already resolves to this kit's secondary.
+    const collar = model.layers.find((layer) => layer.id === 'generic-collar');
+    expect(collar?.kind === 'stroke' ? collar.stroke : undefined).toBe('#002244');
+    // The reference's white away pants carry no stripe at all, so the generic pair is dropped
+    // rather than recolored.
+    for (const droppedLayerId of ['generic-pants-stripe-left', 'generic-pants-stripe-right']) {
+      expect(model.layers.some((layer) => layer.id === droppedLayerId)).toBe(false);
     }
+  });
+
+  it('gives the 1976 throwback a silver shell and era bands instead of the modern decal', () => {
+    const definition = getTeamUniformDefinition('seahawks');
+    const model = resolveUniformModel(definition, '1976-throwback', {
+      ...SEAHAWKS_COLORS,
+      primary: '#003087',
+      secondary: '#046A38',
+      accent: '#8A8D8F',
+    });
+
+    expect(model).toMatchObject({ helmetColor: '#8A8D8F', pantsColor: '#8A8D8F' });
+    // That era used an entirely different mark, so the traced modern hawk must not leak onto it.
+    expect(model.layers.some((layer) => layer.id.startsWith('seahawks-helmet-hawk'))).toBe(false);
+    expect(model.layers.some((layer) => layer.id === 'seahawks-1976-helmet-royal')).toBe(true);
   });
 
   const definitions = Object.values(getAllTeamUniformDefinitions()).filter(

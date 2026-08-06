@@ -207,7 +207,8 @@ export default function UniformArchive({
 
         <footer className="mt-10 text-[11px]" style={{ color: uiTokens.textFaintest }}>
           <p>
-            Uniform figures are original artwork, no team logos. Proportions modeled on the{' '}
+            Uniform figures are original artwork; team marks are reproduced for identification only.
+            Proportions modeled on the{' '}
             <a
               href="https://commons.wikimedia.org/wiki/File:NFL-Uniform-template-V3.png"
               className="underline">

@@ -6,7 +6,9 @@ import { resolveUniformModel, type ResolvedUniformStyle } from '@/lib/uniforms/m
 import type { TeamUniformDefinition, UniformSurface } from '@/lib/uniforms/teams/types';
 
 // The generated vector uniform. Colors/striping/layout are facts (not copyrightable), so every
-// kit is drawn from its TeamColors — zero external image assets, no team logos. One renderer
+// kit is drawn from its TeamColors — zero external image assets. Team modules may additionally
+// supply a helmet decal path; those are team marks reproduced for identification, and each starts
+// life as a machine trace flagged TRACE-PENDING-STYLIZE until it is hand-stylized. One renderer
 // backs the picker (variant="jersey") and the archive (variant="full"); a variant is a viewBox
 // crop over one shared full-body mannequin. A committed image (imagePath) overrides the figure.
 //
@@ -99,6 +101,7 @@ function UniformLayerPath({ layer, uid }: { layer: ResolvedLayer; uid: string })
       clipPath={clipPath}
       d={layer.d}
       fill={layer.fill}
+      fillRule={layer.fillRule}
       stroke="none"
     />
   ) : (
