@@ -841,7 +841,13 @@ export const UNIFORMS: UniformSeed[] = [
       onAccent: '#0a0e1a',
     },
   },
-  // Cardinals 2025 Rivalries: white base (stage lighting is red in the reveal), cardinal/black. Heritage cardinal #97233F.
+  // Cardinals 2025 Rivalries. Corrected from a white/cardinal/black guess (the original comment
+  // noted the reveal was shot under red stage lighting, which is what it was read from) after
+  // checking it against the GUD 2025 composite: it is a sandstone kit — speckled cream body and
+  // shell, a brighter red than heritage cardinal, and an orange offset on the numerals. Black
+  // appears nowhere on it. All three sampled from that composite; same caveat as every GUD
+  // sample, its renderings run a step brighter than official hexes. uiAccent is the orange, which
+  // clears AA on the dark UI at 6.24 where the kit's red is 2.80.
   {
     teamId: 'cardinals',
     slug: 'rivalries-2025',
@@ -851,10 +857,10 @@ export const UNIFORMS: UniformSeed[] = [
     yearEnd: null,
     isCurrent: true,
     colors: {
-      primary: '#FFFFFF',
-      secondary: '#97233F',
-      accent: '#000000',
-      uiAccent: '#FF4D6A',
+      primary: '#FFF7E3',
+      secondary: '#B31529',
+      accent: '#EE6B3D',
+      uiAccent: '#EE6B3D',
       onAccent: '#0a0e1a',
     },
   },
@@ -892,7 +898,15 @@ export const UNIFORMS: UniformSeed[] = [
       onAccent: '#0a0e1a',
     },
   },
-  // Seahawks 2025 Rivalries 'soundwave': wolf-grey base, navy/action-green. Heritage navy #002244 + green #69BE28.
+  // Seahawks 2025 Rivalries. Corrected from a wolf-grey/action-green guess after checking the kit
+  // against the GUD 2025 composite: the body is an ice blue-grey, not wolf grey, and the kit's
+  // green is a muted pine — action green appears nowhere on it. primary/accent sampled from that
+  // composite (#C6D3DC body, #29594C number and shoulder print); secondary is heritage College
+  // Navy #002244 (teamcolorcodes), which GUD renders as #24293C exactly as it renders the same
+  // navy on the home kit. Caveat: GUD's renderings run a step lighter than official hexes (its
+  // navy is that #24293C), so the two sampled values are approximations pending a published hex.
+  // uiAccent is the ice body because both the pine (2.41) and the kit's teal shell (1.57) fail AA
+  // against the dark UI background — see the contrast tests in lib/__tests__/uniforms.test.ts.
   {
     teamId: 'seahawks',
     slug: 'rivalries-2025',
@@ -902,10 +916,10 @@ export const UNIFORMS: UniformSeed[] = [
     yearEnd: null,
     isCurrent: true,
     colors: {
-      primary: '#A5ACAF',
+      primary: '#C6D3DC',
       secondary: '#002244',
-      accent: '#69BE28',
-      uiAccent: '#69BE28',
+      accent: '#29594C',
+      uiAccent: '#C6D3DC',
       onAccent: '#0a0e1a',
     },
   },
