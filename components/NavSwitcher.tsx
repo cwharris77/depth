@@ -323,12 +323,14 @@ export default function NavSwitcher({
           <Search size={16} color={accentColor} />
           <input
             ref={focusSearchInput}
+            type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
             placeholder={onPickTeam ? 'Search teams' : 'Search teams or players'}
+            aria-label={onPickTeam ? 'Search teams' : 'Search teams or players'}
             className="flex-1 bg-transparent outline-none py-2.5 text-base"
             style={{ color: uiTokens.textPrimary }}
           />
