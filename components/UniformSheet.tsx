@@ -6,6 +6,7 @@ import { Check, X } from 'lucide-react';
 import { motion, type PanInfo } from 'framer-motion';
 import type { Uniform } from '@/lib/types';
 import { formatUniformYears } from '@/lib/uniforms';
+import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
 import JerseySwatch from './JerseySwatch';
 import IconButton from './ui/IconButton';
 import { colors as uiTokens } from '@/components/ui/tokens';
@@ -30,12 +31,14 @@ export default function UniformSheet({
   uniforms,
   activeId,
   accent,
+  definition,
   onSelect,
   onClose,
 }: {
   uniforms: Uniform[];
   activeId: string;
   accent: string;
+  definition?: TeamUniformDefinition;
   onSelect: (id: string) => void;
   onClose: () => void;
 }) {
@@ -160,7 +163,12 @@ export default function UniformSheet({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <JerseySwatch colors={u.colors} size={160} />
+                    <JerseySwatch
+                      colors={u.colors}
+                      size={160}
+                      kitId={u.id}
+                      definition={definition}
+                    />
                   )}
                 </div>
 

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { dbRosterSource } from '@/lib/roster-source.db';
 import UniformArchive from '@/components/UniformArchive';
+import { getAllTeamUniformDefinitions } from '@/lib/uniforms/teams';
 
 export const metadata: Metadata = {
   title: 'Uniform Archive · Depth',
@@ -17,5 +18,5 @@ export default async function UniformsPage() {
     dbRosterSource.listUniforms(),
     dbRosterSource.listTeams(),
   ]);
-  return <UniformArchive kits={kits} teams={teams} />;
+  return <UniformArchive kits={kits} teams={teams} definitions={getAllTeamUniformDefinitions()} />;
 }
