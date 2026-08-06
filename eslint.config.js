@@ -3,10 +3,16 @@ import typescript from 'typescript-eslint';
 
 export default [
   {
-    // .claude/worktrees mirrors vitest.config.ts's exclude: a stray git worktree checked
-    // out under here (from the harness's worktree tool) is a separate checkout with its
-    // own tsconfig — without this, ESLint's typescript-eslint parser treats its files as
-    // part of this project and throws "tsconfigRootDir ambiguity" parse errors.
+    // Both worktree roots mirror vitest.config.ts's exclude: a stray git worktree checked
+    // out under either (from the harness's worktree tool, or `git worktree add` by hand) is
+    // a separate checkout with its own tsconfig — without this, ESLint's typescript-eslint
+    // parser treats its files as part of this project and throws "tsconfigRootDir
+    // ambiguity" parse errors. Both paths are already gitignored; linting them is never
+    // meaningful, and a stray worktree left behind after a merge would otherwise fail the
+    // pre-commit hook for unrelated work.
+    //
+    // supabase/.temp holds bundled edge-runtime output from `supabase start` — generated,
+    // minified, and not ours to lint.
     ignores: [
       '.next',
       'node_modules',
@@ -16,7 +22,9 @@ export default [
       '.env.local',
       '.env*.local',
       'supabase/migrations',
+      'supabase/.temp',
       '.claude/worktrees',
+      '.worktrees',
     ],
   },
   js.configs.recommended,
