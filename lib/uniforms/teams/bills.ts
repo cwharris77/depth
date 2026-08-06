@@ -3,8 +3,10 @@ import type { TeamUniformDefinition, UniformLayer } from './types';
 // Buffalo's modern uniform construction, using Gridiron Uniform Database composites and official
 // Nike/NFL Rivalries product shots as visual references. Fixed marks use literal construction
 // colors; kit bodies still resolve from runtime TeamColors supplied by roster/archive data.
-// The abstract geometry is provisional pending a hand-authored replacement; do not treat it as an
-// exact or licensed reproduction of the reference art.
+//
+// TRACE-PENDING-STYLIZE — the buffalo and its diagonal stripe below are machine-derived geometry,
+// not final art. House workflow is trace-then-stylize: land an accurate trace, then replace it
+// with hand-stylized geometry. Grep TRACE-PENDING-STYLIZE for every path still in that state.
 
 // teamcolorcodes supplies Buffalo's navy and red brand hexes. They remain fixed across kits because
 // helmet and band construction does not recolor when a kit's runtime primary changes white/blue.

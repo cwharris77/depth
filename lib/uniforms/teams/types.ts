@@ -22,7 +22,9 @@ interface LayerBase {
 }
 
 export type UniformLayer =
-  | (LayerBase & { kind: 'fill'; fill: ColorRef })
+  // fillRule is for multi-subpath marks that carry their own holes (traced decals): without
+  // 'evenodd' the enclosed subpaths fill solid instead of punching through.
+  | (LayerBase & { kind: 'fill'; fill: ColorRef; fillRule?: 'nonzero' | 'evenodd' })
   | (LayerBase & {
       kind: 'stroke';
       stroke: ColorRef;
