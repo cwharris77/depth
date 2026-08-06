@@ -17,8 +17,10 @@ used under the **Creative Commons Attribution 3.0 Unported (CC BY 3.0)** license
 
 ## Team marks
 
-Some team modules under `lib/uniforms/teams/` include a helmet decal path (currently Buffalo and
-Seattle). These reproduce team marks and are used for identification of the team only.
+Some team modules under `lib/uniforms/teams/` include a helmet decal path; the set grows as teams
+are added, so run `grep -rln "surface: 'helmet'" lib/uniforms/teams` for the current list rather
+than relying on an enumeration here. These reproduce team marks and are used for identification of
+the team only.
 
 Team names, logos, and uniform marks are trademarks of their respective clubs and of the National
 Football League. This project is not affiliated with, endorsed by, or sponsored by the NFL or any

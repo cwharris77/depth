@@ -1,7 +1,11 @@
 import { BEARS_UNIFORMS } from './bears';
 import { BENGALS_UNIFORMS } from './bengals';
+
 import { BILLS_UNIFORMS } from './bills';
+import { BROWNS_UNIFORMS } from './browns';
 import { CARDINALS_UNIFORMS } from './cardinals';
+import { COLTS_UNIFORMS } from './colts';
+import { COWBOYS_UNIFORMS } from './cowboys';
 import { FALCONS_UNIFORMS } from './falcons';
 import { PACKERS_UNIFORMS } from './packers';
 import { SAINTS_UNIFORMS } from './saints';
@@ -17,7 +21,10 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   bears: BEARS_UNIFORMS,
   bengals: BENGALS_UNIFORMS,
   bills: BILLS_UNIFORMS,
+  browns: BROWNS_UNIFORMS,
   cardinals: CARDINALS_UNIFORMS,
+  colts: COLTS_UNIFORMS,
+  cowboys: COWBOYS_UNIFORMS,
   falcons: FALCONS_UNIFORMS,
   packers: PACKERS_UNIFORMS,
   saints: SAINTS_UNIFORMS,
