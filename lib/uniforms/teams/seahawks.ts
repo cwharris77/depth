@@ -73,5 +73,55 @@ export const SEAHAWKS_UNIFORMS: TeamUniformDefinition = {
         },
       ],
     },
+    // The away kit's white body still uses Seattle's navy shell. Its curated `secondary` is navy,
+    // while the reference uses action green for the construction trim that the generic model
+    // normally resolves from `secondary`; replace only those generic layers by stable ID.
+    away: {
+      helmetColor: '#002244',
+      layers: [
+        {
+          id: 'generic-sleeve-stripe-left',
+          surface: 'sleeve-left',
+          d: 'M34,558 L156,558 L152,578 L34,578 Z',
+          clip: true,
+          kind: 'fill',
+          fill: 'accent',
+        },
+        {
+          id: 'generic-sleeve-stripe-right',
+          surface: 'sleeve-right',
+          d: 'M554,558 L432,558 L436,578 L554,578 Z',
+          clip: true,
+          kind: 'fill',
+          fill: 'accent',
+        },
+        {
+          id: 'generic-collar',
+          surface: 'collar',
+          d: 'M206,388 L294,455 L386,388',
+          clip: true,
+          kind: 'stroke',
+          stroke: 'accent',
+          strokeWidth: 13,
+        },
+        {
+          id: 'generic-pants-stripe-left',
+          surface: 'leg-left',
+          d: 'M118,807 H134 V1462 H118 Z',
+          clip: true,
+          kind: 'fill',
+          fill: 'accent',
+        },
+        {
+          id: 'generic-pants-stripe-right',
+          surface: 'leg-right',
+          d: 'M454,807 H470 V1462 H454 Z',
+          clip: true,
+          kind: 'fill',
+          fill: 'accent',
+        },
+      ],
+      number: { outline: 'accent' },
+    },
   },
 };

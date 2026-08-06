@@ -113,6 +113,29 @@ describe('team uniform definitions', () => {
     }
   });
 
+  it('keeps the Seahawks away helmet navy and construction trim action green', () => {
+    const definition = getTeamUniformDefinition('seahawks');
+    const model = resolveUniformModel(definition, 'away', {
+      ...SEAHAWKS_COLORS,
+      primary: '#FFFFFF',
+      secondary: '#002244',
+      accent: '#69BE28',
+    });
+
+    expect(model.helmetColor).toBe('#002244');
+    expect(model.number.outline).toBe('#69BE28');
+    for (const layerId of [
+      'generic-sleeve-stripe-left',
+      'generic-sleeve-stripe-right',
+      'generic-collar',
+      'generic-pants-stripe-left',
+      'generic-pants-stripe-right',
+    ]) {
+      const layer = model.layers.find((candidate) => candidate.id === layerId);
+      expect(layer?.kind === 'fill' ? layer.fill : layer?.stroke).toBe('#69BE28');
+    }
+  });
+
   const definitions = Object.values(getAllTeamUniformDefinitions()).filter(
     (definition): definition is TeamUniformDefinition => definition !== undefined
   );
