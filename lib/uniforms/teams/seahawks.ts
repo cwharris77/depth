@@ -1,3 +1,4 @@
+import { HELMET_CROWN_STRIPE_PATH } from './shared';
 import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } from './types';
 
 // Seattle's four archived kits, redrawn from the Gridiron Uniform Database references in
@@ -22,10 +23,8 @@ export const SEAHAWKS_WOLF_GREY = '#A5ACAF';
 // read as a dark smudge rather than a lighter stripe. This value re-bases the inset's tonal step
 // (+43/+38/+32) onto that brighter navy so the same relationship survives.
 export const SEAHAWKS_HELMET_CENTER_COLOR = '#2B507C';
-// A band hugging the crown silhouette from the back quarter to the front, which is all a side view
-// can show of a center stripe. It thins toward the front to echo the inset's taper.
-export const SEAHAWKS_HELMET_CENTER_STRIPE_PATH =
-  'M236,127 L252,115 L302,91 L334,79 L374,69 L402,65 L455,65 L509,73 L547,85 L593,109 L631,137 L625,146 L589,119 L545,96 L508,85 L455,78 L402,79 L375,84 L336,95 L305,108 L257,133 L242,146 Z';
+// The crown band this kit paints that color now lives in ./shared — San Francisco needs the same
+// geometry, and it is a fact about the mannequin shell rather than about Seattle.
 
 // TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
 // this path is a contour trace of the club's helmet mark, lifted from the GUD composite so there
@@ -172,7 +171,7 @@ export const SEAHAWKS_UNIFORMS: TeamUniformDefinition = {
         {
           id: 'seahawks-helmet-center-stripe',
           surface: 'helmet',
-          d: SEAHAWKS_HELMET_CENTER_STRIPE_PATH,
+          d: HELMET_CROWN_STRIPE_PATH,
           clip: true,
           kind: 'fill',
           fill: SEAHAWKS_HELMET_CENTER_COLOR,
@@ -200,7 +199,7 @@ export const SEAHAWKS_UNIFORMS: TeamUniformDefinition = {
         {
           id: 'seahawks-helmet-center-stripe',
           surface: 'helmet',
-          d: SEAHAWKS_HELMET_CENTER_STRIPE_PATH,
+          d: HELMET_CROWN_STRIPE_PATH,
           clip: true,
           kind: 'fill',
           fill: SEAHAWKS_HELMET_CENTER_COLOR,
