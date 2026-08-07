@@ -318,6 +318,24 @@ describe('buildRealDefenseFormation — real per-team defensive fronts', () => {
     const rbSlot = resolvedOffense.find((s) => s.label === 'RB');
     expect(rbSlot?.player?.id).toBe('fb1');
   });
+
+  it('group-based resolution sorts by depthRank then jersey number, same as exact-match resolution', () => {
+    // Mirrors "getPlayersByPosition — deterministic order" above, but through the
+    // group-based path (buildDlSlots' groupIndex) instead of an exact position match --
+    // scrambled input order across two granular DL positions (LDE, RDE) at the same
+    // depthRank must still resolve in ascending jersey-number order.
+    const r = roster([
+      player({ id: 'de-16', position: 'RDE', depthRank: 1, number: 16 }),
+      player({ id: 'de-11', position: 'LDE', depthRank: 1, number: 11 }),
+      player({ id: 'de-14', position: 'RDE', depthRank: 1, number: 14 }),
+    ]);
+    const real = buildRealDefenseFormation('3-4-4'); // 3 DL slots, groupIndex 0..2
+    const resolved = resolveUnit(r, 'defense', real);
+    const dlIds = real
+      .filter((s) => s.group === 'DL')
+      .map((s) => resolved.find((r2) => r2.key === s.id)?.player?.id);
+    expect(dlIds).toEqual(['de-11', 'de-14', 'de-16']);
+  });
 });
 
 describe('alignmentLabel', () => {

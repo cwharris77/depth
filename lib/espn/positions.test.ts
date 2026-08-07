@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { mapDepthchartPosition, mapSpecialPosition, classifyItem } from './positions';
+import {
+  mapDepthchartPosition,
+  mapSpecialPosition,
+  mapBioPosition,
+  classifyItem,
+} from './positions';
 
 describe('mapDepthchartPosition', () => {
   it('maps offense keys', () => {
@@ -24,6 +29,34 @@ describe('mapDepthchartPosition', () => {
   });
   it('drops positions not in our enum', () => {
     expect(mapDepthchartPosition('h')).toBeNull();
+  });
+});
+
+describe('mapBioPosition', () => {
+  it('maps the bio-abbreviation-distinguishable granular keys, not the collapsed groups', () => {
+    // Unlike the depthchart keys above, a bio abbreviation carries no side/role info
+    // (a lineman/linebacker/corner reads generically) -- but fb/nt/fs/ss are real,
+    // distinct ESPN bio abbreviations, so those still resolve granular here too.
+    expect(mapBioPosition('fb')).toBe('FB');
+    expect(mapBioPosition('nt')).toBe('NT');
+    expect(mapBioPosition('fs')).toBe('FS');
+    expect(mapBioPosition('ss')).toBe('SS');
+  });
+  it('keeps the generic fallback for positions bio abbreviations cannot distinguish a side/role for', () => {
+    expect(mapBioPosition('de')).toBe('DE');
+    expect(mapBioPosition('dt')).toBe('DT');
+    expect(mapBioPosition('lb')).toBe('LB');
+    expect(mapBioPosition('cb')).toBe('CB');
+    expect(mapBioPosition('s')).toBe('S');
+  });
+  it('defaults ambiguous OL abbreviations to the left side', () => {
+    expect(mapBioPosition('ot')).toBe('LT');
+    expect(mapBioPosition('t')).toBe('LT');
+    expect(mapBioPosition('g')).toBe('LG');
+    expect(mapBioPosition('og')).toBe('LG');
+  });
+  it('returns null for an abbreviation not in the table', () => {
+    expect(mapBioPosition('h')).toBeNull();
   });
 });
 

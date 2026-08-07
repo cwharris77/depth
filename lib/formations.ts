@@ -7,48 +7,59 @@ import type {
   TeamRosterSeed,
   Unit,
 } from './types';
-import { getPlayerById, getPlayersByPosition } from './roster';
+import { byDepthOrder, getPlayerById, getPlayersByPosition } from './roster';
 
 // Maps a granular Position to the broad group nflverse's count-only personnel data can
 // resolve against (lib/types.ts's PositionGroup doc comment). Used only by the real-
 // formation slot builders below (buildDlSlots/buildLbSlots/buildDbSlots, and
 // buildRealFormation's RB slots) — the depth chart, player cards, and compare view match
-// the full granular Position everywhere else.
+// the full granular Position everywhere else. A total Record (not a switch with a
+// `default`) so adding a Position to the union without a group entry here is a compile
+// error — the same enforcement POSITION_FULL_NAMES and lib/teams/_build.ts's BUILD rely
+// on. Without it, a future granular position could silently resolve to `undefined` here
+// and get dropped from every nflverse-driven real-formation slot with no tsc error to
+// catch it — exactly the risk class this PR's own spec flagged as highest-priority.
+const POSITION_GROUP: Record<Position, PositionGroup | undefined> = {
+  QB: undefined,
+  RB: 'RB',
+  FB: 'RB',
+  WR: undefined,
+  TE: undefined,
+  LT: undefined,
+  LG: undefined,
+  C: undefined,
+  RG: undefined,
+  RT: undefined,
+  DE: 'DL',
+  LDE: 'DL',
+  RDE: 'DL',
+  DT: 'DL',
+  NT: 'DL',
+  LB: 'LB',
+  WLB: 'LB',
+  LILB: 'LB',
+  RILB: 'LB',
+  SLB: 'LB',
+  CB: 'CB',
+  LCB: 'CB',
+  RCB: 'CB',
+  NB: 'CB',
+  S: 'S',
+  SS: 'S',
+  FS: 'S',
+  K: undefined,
+  P: undefined,
+  LS: undefined,
+  KR: undefined,
+  PR: undefined,
+};
+
 function positionGroup(position: Position): PositionGroup | undefined {
-  switch (position) {
-    case 'DE':
-    case 'LDE':
-    case 'RDE':
-    case 'DT':
-    case 'NT':
-      return 'DL';
-    case 'LB':
-    case 'WLB':
-    case 'LILB':
-    case 'RILB':
-    case 'SLB':
-      return 'LB';
-    case 'CB':
-    case 'LCB':
-    case 'RCB':
-    case 'NB':
-      return 'CB';
-    case 'S':
-    case 'SS':
-    case 'FS':
-      return 'S';
-    case 'RB':
-    case 'FB':
-      return 'RB';
-    default:
-      return undefined;
-  }
+  return POSITION_GROUP[position];
 }
 
 function getPlayersByPositionGroup(roster: TeamRosterSeed, group: PositionGroup): Player[] {
-  return roster.players
-    .filter((p) => positionGroup(p.position) === group)
-    .sort((a, b) => a.depthRank - b.depthRank || (a.order ?? a.number) - (b.order ?? b.number));
+  return roster.players.filter((p) => positionGroup(p.position) === group).sort(byDepthOrder);
 }
 
 // Shared, generic formations. Every team's offense/defense renders on these — slots

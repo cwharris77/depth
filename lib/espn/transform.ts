@@ -123,8 +123,9 @@ function toPlayer(a: EspnAthlete, position: Position, depthRank: 1 | 2 | 3): Pla
 }
 
 // depth_chart_entries has a unique (team_id, position, depth_rank) constraint, but
-// multiple ESPN depthchart keys can collapse into one Position (e.g. lde+rde -> DE),
-// each independently ranked 1..3 -- so two DE1s can exist on `players`. Re-rank within
+// multiple ESPN depthchart keys can still collapse into one Position for the handful of
+// codes with no side/role in ESPN's data (e.g. lb+mlb -> LB), each independently ranked
+// 1..3 -- so two LB1s can exist on `players`. Re-rank within
 // each position group (stable: existing depthRank, then jersey number) and cap at 3,
 // dropping the rest, so every (team, position, rank) triple is unique for DB writes.
 // The in-memory Player.depthRank is untouched -- lib/roster.ts's getPlayersByPosition
