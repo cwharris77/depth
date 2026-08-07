@@ -108,6 +108,8 @@ The decal **is** in scope. The workflow is: land an accurate machine trace as a 
 
 Size alone does not decide it — the Bears C traced beautifully at 31×21px while the Falcons falcon shredded at 28×34px. **Shape character decides it.** When it won't trace, leave the shell bare and say why in the module header; an illegible trace is worse than none.
 
+**How many layers a decal needs is decided by the interior, not by how complex the mark looks.** Ask whether the mark's interior regions are the shell color. If they are, they need no path at all — the shell reads through a single traced region. Chiefs' arrowhead is one path: the letters inside it are shell-red, so tracing the white region alone renders the whole mark. Cowboys' star needs two; the 49ers' oval needs three. Count the distinct *non-shell* colors in the mark and that is your layer count.
+
 Tracer mechanics (`scratchpad`, pure PIL, no numpy):
 
 1. Crop tight to the mark, upsample ~10× LANCZOS, threshold per color region.
@@ -115,6 +117,8 @@ Tracer mechanics (`scratchpad`, pure PIL, no numpy):
 3. **Detect holes**: background components inside a shape's bbox that cannot reach its border are emitted as extra subpaths. Without this, any shape with a counter fills solid — this was the original defect in the Seahawks trace.
 4. Emit all subpaths of a layer into one `d`, and set **`fillRule: 'evenodd'`** so the holes punch through.
 5. Filter border-touching components (they are background, not mark).
+
+**Do not trace letterforms as `evenodd` holes.** The rule in (4) is safe for a genuine counter in a solid region, where whatever sits beneath the hole is what should show. It is not safe for letters. A glyph's edge is antialiased, so the pixels ringing it fall *outside* the color predicate and get emitted as hole subpaths — the hole then punches all the way through to the layer beneath. The 49ers' "F" rendered solid black this way: the shading around the letter became a hole exposing the dark layer under the oval. Trace letters as plain unions stacked in paint order instead — one filled path per color, no `evenodd`, later paths covering earlier ones.
 
 Two useful inversions:
 - Trace the *white* region and paint a slightly larger shape beneath it — the Packers G came out as two clean paths this way instead of a fragmented sixteen, because the white region's boundary already *is* the oval-minus-glyph.
