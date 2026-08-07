@@ -27,6 +27,19 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } fr
 // the numeral keyline.
 export const COMMANDERS_WHITE = '#FFFFFF';
 
+// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
+// these paths are a contour trace of the club's helmet mark, lifted from the GUD composite so
+// there is an accurate starting point to hand-stylize against. They are a literal reproduction of
+// a third-party mark and are expected to be REPLACED by original stylized geometry before this kit
+// is treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
+//
+// The "W", traced from the home figure's shell (bbox x1268-1382, y299-409 in the reference) mapped
+// onto the raw helmet space at ~6.25x. One layer and four subpaths: the mark is four flat gold
+// strokes separated by shell-colored gaps, with no keyline and no interior detail, so it needs
+// neither a second color nor a grown outline — the simplest decal of the 32.
+export const COMMANDERS_DECAL_PATH =
+  'M531.6,143.2 L589.7,143.2 L591.2,148.7 L586.1,157.0 L549.0,271.2 L544.7,274.0 L500.3,274.0 L498.1,269.8 L501.0,260.8 L535.2,166.0 L535.2,152.2 L530.8,143.9 Z M336.7,143.2 L393.4,144.6 L405.1,178.5 L405.8,192.3 L382.5,256.0 L378.9,254.6 L378.2,244.9 L353.5,173.0 L336.0,143.9 Z M443.6,143.2 L490.9,143.2 L509.8,192.3 L509.8,199.9 L485.0,268.5 L446.5,152.9 L442.1,148.0 L442.9,143.9 Z M431.2,155.0 L434.9,157.7 L457.4,229.0 L440.0,273.3 L392.0,274.0 L390.5,270.5 L394.9,266.4 L430.5,155.7 Z';
+
 // The sleeve band, measured on the home figure (jersey top y=403, sleeve hem y=469, figure center
 // x=1320.5, so scaleY = 191/66 and scaleX = 264/84.5). A column at reference x=1250 crosses gold
 // y432-441, white y442-446 and gold y447-456, with body color above and below. The set spans
@@ -72,6 +85,20 @@ function sleeveBand(band: ColorRef, line: ColorRef): UniformLayer[] {
   return out;
 }
 
+// The mark is gold on every kit; only which token carries the gold moves with the palette.
+function decal(fill: ColorRef): UniformLayer[] {
+  return [
+    {
+      id: 'commanders-decal',
+      surface: 'helmet',
+      d: COMMANDERS_DECAL_PATH,
+      clip: true,
+      kind: 'fill',
+      fill,
+    },
+  ];
+}
+
 export const COMMANDERS_UNIFORMS: TeamUniformDefinition = {
   teamId: 'commanders',
   defaults: { removeLayerIds: GENERIC_STRIPPED },
@@ -80,7 +107,7 @@ export const COMMANDERS_UNIFORMS: TeamUniformDefinition = {
     // the numeral face; the line through the band and the numeral keyline are white, which this
     // palette cannot supply, so both take the literal.
     home: {
-      layers: sleeveBand('secondary', COMMANDERS_WHITE),
+      layers: [...sleeveBand('secondary', COMMANDERS_WHITE), ...decal('secondary')],
       number: { fill: 'secondary', outline: COMMANDERS_WHITE, outlineWidth: 14 },
     },
     // White body under the burgundy shell. The away palette moves white into primary, burgundy into
@@ -88,13 +115,13 @@ export const COMMANDERS_UNIFORMS: TeamUniformDefinition = {
     // approximation noted above.
     away: {
       helmetColor: 'secondary',
-      layers: sleeveBand('secondary', 'accent'),
+      layers: [...sleeveBand('secondary', 'accent'), ...decal('accent')],
       number: { fill: 'secondary', outline: 'accent', outlineWidth: 14 },
     },
     // The same uniform as home, authored against a palette that carries white in `accent` — so
     // nothing here is a literal. See the note above on why these two kits render the same.
     '70s-burgundy': {
-      layers: sleeveBand('secondary', 'accent'),
+      layers: [...sleeveBand('secondary', 'accent'), ...decal('secondary')],
       number: { fill: 'secondary', outline: 'accent', outlineWidth: 14 },
     },
   },

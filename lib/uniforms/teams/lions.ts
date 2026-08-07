@@ -26,9 +26,25 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } fr
 // numeral face.
 export const LIONS_WHITE = '#FFFFFF';
 
-// The shell is left bare. The club's leaping lion is a solid single-color silhouette and would very
-// likely trace — it belongs in the "traces well" column with the Vikings horn — but it was not
-// attempted on this pass. It is the best remaining decal candidate of the teams still unmapped.
+// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
+// these paths are a contour trace of the club's helmet mark, lifted from the GUD composite so
+// there is an accurate starting point to hand-stylize against. They are a literal reproduction of
+// a third-party mark and are expected to be REPLACED by original stylized geometry before this kit
+// is treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
+//
+// The leaping lion, traced from the home figure's shell (bbox x875-981, y321-418 in the reference)
+// mapped onto the raw helmet space at ~6.25x. Two plain-union fills in paint order, never evenodd
+// holes — the keyline first, the body over it.
+//
+// The keyline is NOT a traced ring. The white outline is barely two reference px and its pixels
+// blend below any usable white predicate after upsampling, so tracing it directly returns the body
+// contour again. It is instead the body mask GROWN by nine upsampled px and traced as a fill. That
+// also beats stroking the body path: this renderer exposes no strokeLinejoin, and a miter join on
+// a jagged machine trace spikes at every reversal.
+export const LIONS_DECAL_KEYLINE_PATH =
+  'M421.2,122.3 L436.9,132.5 L443.9,132.5 L450.2,138.8 L461.1,138.8 L513.5,181.9 L522.1,191.4 L515.8,200.8 L533.0,208.6 L546.3,222.7 L545.6,239.2 L525.2,260.4 L515.8,260.4 L519.8,264.3 L529.1,264.3 L545.6,281.6 L546.3,294.9 L524.4,316.9 L490.8,296.5 L475.2,296.5 L465.0,304.4 L454.9,304.4 L447.8,298.1 L440.0,304.4 L429.1,298.1 L417.3,298.1 L402.5,307.5 L402.5,313.8 L395.4,320.8 L403.3,331.8 L402.5,344.4 L386.8,360.9 L373.6,360.1 L367.3,353.8 L359.5,360.9 L328.2,360.9 L318.0,354.6 L308.7,361.7 L314.9,369.5 L314.1,382.1 L300.1,397.8 L290.7,397.0 L278.9,404.0 L256.3,382.1 L256.3,342.0 L268.8,327.1 L269.6,309.1 L252.4,296.5 L237.5,276.1 L238.3,261.2 L244.5,251.8 L234.4,245.5 L225.8,254.9 L221.1,254.1 L208.6,241.6 L197.6,239.2 L189.0,230.6 L189.0,223.5 L196.9,215.7 L203.9,214.9 L214.1,225.1 L219.5,219.6 L213.3,211.0 L221.1,203.1 L228.9,201.6 L241.4,209.4 L271.1,238.4 L277.4,247.9 L277.4,257.3 L282.9,263.6 L291.5,265.1 L307.9,252.6 L314.9,251.8 L325.1,241.6 L329.0,233.7 L325.9,220.4 L343.8,193.7 L343.8,173.3 L354.0,163.9 L372.0,171.7 L389.2,156.0 L384.5,148.2 L420.5,123.1 Z';
+export const LIONS_DECAL_BODY_PATH =
+  'M425.9,147.4 L432.2,147.4 L436.9,153.7 L446.3,153.7 L449.4,158.4 L461.1,161.5 L483.8,184.3 L492.4,185.9 L498.6,192.1 L492.4,203.9 L474.4,203.1 L469.7,208.6 L472.1,214.9 L480.7,215.7 L486.9,222.0 L523.7,222.7 L524.4,236.9 L517.4,240.8 L490.0,240.0 L455.6,276.9 L447.0,279.2 L446.3,284.7 L454.1,291.0 L468.9,291.8 L465.0,297.3 L453.3,296.5 L445.5,284.7 L425.9,272.2 L407.2,273.0 L415.0,284.0 L430.6,284.7 L443.1,295.7 L436.1,297.3 L425.9,290.2 L415.0,291.8 L411.1,297.3 L402.5,298.1 L395.4,305.9 L395.4,313.8 L389.2,316.1 L389.2,307.5 L395.4,304.4 L397.8,292.6 L413.4,291.8 L414.2,284.7 L405.6,283.2 L390.8,288.7 L387.6,303.6 L374.3,314.6 L365.7,314.6 L355.6,324.8 L355.6,328.7 L366.5,335.8 L375.1,329.5 L380.6,331.0 L381.4,339.7 L372.0,346.0 L363.4,346.0 L354.8,339.7 L333.7,338.9 L332.9,334.2 L339.9,329.5 L334.5,316.1 L347.0,303.6 L355.6,302.8 L357.1,298.1 L350.9,296.5 L336.8,302.0 L325.9,314.6 L318.8,331.8 L287.5,353.8 L287.5,367.1 L293.8,377.3 L285.2,383.6 L278.9,383.6 L277.4,380.5 L277.4,343.6 L283.6,338.9 L289.1,327.1 L289.9,298.9 L271.1,288.7 L258.6,276.1 L257.1,262.0 L252.4,260.4 L250.0,278.5 L269.6,297.3 L278.2,297.3 L281.3,302.0 L281.3,329.5 L275.8,331.8 L274.3,338.9 L268.8,342.8 L268.0,357.7 L268.8,382.8 L275.0,385.2 L278.2,392.3 L286.8,393.0 L278.2,396.2 L263.3,382.1 L263.3,342.0 L275.8,328.7 L276.6,307.5 L266.4,298.1 L259.4,296.5 L251.6,287.9 L250.0,279.2 L244.5,276.1 L245.3,261.2 L250.8,258.8 L251.6,248.6 L245.3,245.5 L244.5,240.0 L228.9,239.2 L220.3,231.4 L220.3,225.9 L229.7,222.7 L256.3,247.9 L260.2,258.8 L264.1,257.3 L264.9,247.9 L232.0,214.1 L221.1,214.1 L220.3,211.0 L230.5,209.4 L264.1,238.4 L270.3,247.9 L270.3,257.3 L264.1,261.2 L263.3,270.6 L277.4,284.7 L292.2,287.9 L309.4,273.0 L317.3,273.0 L325.9,266.7 L345.4,244.7 L352.4,226.7 L352.4,211.8 L369.6,195.3 L365.0,187.4 L365.7,181.1 L380.6,172.5 L392.3,160.0 L415.8,159.2 L425.2,148.2 Z M354.0,170.9 L360.3,171.7 L356.4,180.4 L357.1,189.8 L344.6,209.4 L337.6,243.9 L318.0,264.3 L307.9,264.3 L291.5,278.5 L278.2,276.9 L271.1,269.8 L271.9,262.0 L275.8,262.8 L278.2,270.6 L289.1,273.0 L307.9,259.6 L318.0,258.1 L331.3,243.9 L336.0,233.7 L332.1,222.7 L350.9,193.7 L353.2,171.7 Z M322.7,335.8 L328.2,347.5 L355.6,347.5 L359.5,353.8 L328.2,353.8 L321.2,346.7 L311.0,353.8 L303.2,354.6 L300.8,360.1 L307.9,369.5 L307.9,380.5 L300.1,390.7 L291.5,391.5 L301.6,380.5 L300.8,367.9 L294.6,361.7 L296.1,355.4 L303.2,348.3 L312.6,348.3 L322.0,336.5 Z M495.5,206.3 L523.7,209.4 L539.3,222.7 L538.5,239.2 L525.2,253.4 L498.6,252.6 L494.0,255.7 L501.0,264.3 L490.0,262.8 L487.7,255.7 L490.8,249.4 L524.4,247.1 L533.8,237.7 L533.8,224.3 L526.8,220.4 L524.4,214.1 L497.1,214.9 L494.7,207.0 Z M508.0,264.3 L514.3,265.9 L517.4,271.4 L529.1,271.4 L538.5,281.6 L539.3,294.9 L526.8,309.1 L520.5,309.9 L519.8,305.9 L533.0,295.7 L533.0,283.2 L526.8,277.7 L516.6,277.7 L514.3,271.4 L504.1,270.6 L504.1,265.1 L507.2,265.1 Z M449.4,145.8 L461.1,145.8 L484.6,169.4 L513.5,189.0 L515.1,194.5 L503.3,203.9 L502.6,198.4 L508.0,192.1 L501.8,185.1 L495.5,182.7 L492.4,176.4 L484.6,176.4 L461.1,151.3 L448.6,151.3 L448.6,146.6 Z M478.3,265.9 L487.7,267.5 L491.6,273.0 L501.8,273.0 L508.0,280.0 L524.4,285.5 L525.2,293.4 L515.8,301.2 L507.2,300.4 L492.4,289.5 L471.3,289.5 L458.0,281.6 L477.5,266.7 Z M376.7,316.1 L386.8,316.9 L396.2,331.8 L395.4,344.4 L386.8,353.8 L372.8,352.2 L373.6,348.3 L378.2,349.9 L386.8,346.0 L390.0,338.1 L389.2,329.5 L377.5,321.6 L375.9,316.9 Z';
 
 // The sleeve set, measured on the home figure (jersey top y=425, sleeve hem y=491, figure center
 // x=919.5, so scaleY = 191/66 and scaleX = 264/84.5). A column at reference x=845 crosses silver
@@ -77,6 +93,28 @@ function sleeveStripes(band: ColorRef, line: ColorRef): UniformLayer[] {
   return out;
 }
 
+// The lion is blue over a white keyline on every kit; only which token carries the blue moves.
+function decal(body: ColorRef): UniformLayer[] {
+  return [
+    {
+      id: 'lions-decal-keyline',
+      surface: 'helmet',
+      d: LIONS_DECAL_KEYLINE_PATH,
+      clip: true,
+      kind: 'fill',
+      fill: LIONS_WHITE,
+    },
+    {
+      id: 'lions-decal-body',
+      surface: 'helmet',
+      d: LIONS_DECAL_BODY_PATH,
+      clip: true,
+      kind: 'fill',
+      fill: body,
+    },
+  ];
+}
+
 export const LIONS_UNIFORMS: TeamUniformDefinition = {
   teamId: 'lions',
   defaults: { removeLayerIds: GENERIC_STRIPPED },
@@ -86,7 +124,7 @@ export const LIONS_UNIFORMS: TeamUniformDefinition = {
     // which this palette cannot supply, so both take the literal.
     home: {
       helmetColor: 'secondary',
-      layers: sleeveStripes('secondary', LIONS_WHITE),
+      layers: [...sleeveStripes('secondary', LIONS_WHITE), ...decal('primary')],
       number: { fill: LIONS_WHITE, outline: LIONS_WHITE, outlineWidth: 10 },
     },
     // White body over silver pants under the same silver shell. The away palette moves white into
@@ -96,14 +134,14 @@ export const LIONS_UNIFORMS: TeamUniformDefinition = {
     away: {
       helmetColor: 'accent',
       pantsColor: 'accent',
-      layers: sleeveStripes('secondary', 'accent'),
+      layers: [...sleeveStripes('secondary', 'accent'), ...decal('secondary')],
       number: { fill: 'secondary', outline: 'secondary', outlineWidth: 10 },
     },
     // INFERRED — no silver jersey appears in the 2025 reference. Silver is this kit's primary, so
     // the shell and pants need no override; the bands take the kit's own blue `secondary` and the
     // lines fall back to the white literal, matching how every other kit here separates its bands.
     'gridiron-gray': {
-      layers: sleeveStripes('secondary', LIONS_WHITE),
+      layers: [...sleeveStripes('secondary', LIONS_WHITE), ...decal('secondary')],
       number: { fill: LIONS_WHITE, outline: 'secondary', outlineWidth: 14 },
     },
   },
