@@ -11,6 +11,7 @@ import { CHIEFS_UNIFORMS } from './chiefs';
 import { COLTS_UNIFORMS } from './colts';
 import { COWBOYS_UNIFORMS } from './cowboys';
 import { DOLPHINS_UNIFORMS } from './dolphins';
+import { EAGLES_UNIFORMS } from './eagles';
 import { FALCONS_UNIFORMS } from './falcons';
 import { GIANTS_UNIFORMS } from './giants';
 import { JAGUARS_UNIFORMS } from './jaguars';
@@ -26,6 +27,7 @@ import { SAINTS_UNIFORMS } from './saints';
 import { SEAHAWKS_UNIFORMS } from './seahawks';
 import { STEELERS_UNIFORMS } from './steelers';
 import { TEXANS_UNIFORMS } from './texans';
+import { TITANS_UNIFORMS } from './titans';
 import { VIKINGS_UNIFORMS } from './vikings';
 import type { TeamUniformDefinition } from './types';
 
@@ -46,6 +48,7 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   cowboys: COWBOYS_UNIFORMS,
   dolphins: DOLPHINS_UNIFORMS,
   '49ers': NINERS_UNIFORMS,
+  eagles: EAGLES_UNIFORMS,
   falcons: FALCONS_UNIFORMS,
   giants: GIANTS_UNIFORMS,
   jaguars: JAGUARS_UNIFORMS,
@@ -60,6 +63,7 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   seahawks: SEAHAWKS_UNIFORMS,
   steelers: STEELERS_UNIFORMS,
   texans: TEXANS_UNIFORMS,
+  titans: TITANS_UNIFORMS,
   vikings: VIKINGS_UNIFORMS,
 };
 
