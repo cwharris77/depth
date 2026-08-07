@@ -90,12 +90,14 @@ export interface FormationSlot {
   // specific granular position a player fills. Unset (BASE_DEFENSE, OFFENSE_FORMATION,
   // and every other Position on the offense side) keeps the exact-match behavior.
   group?: PositionGroup;
-  // Index within `group` (not within `position`) — only meaningful alongside `group`.
-  // buildDlSlots spans two position types (DE/DT) under one 'DL' group with their own
-  // per-type `index` counters, so `index` alone can't double as the group lookup key
-  // there; every other real-formation builder's per-type index already happens to equal
-  // its group-relative position, so this is only ever set explicitly by buildDlSlots.
-  groupIndex?: number;
+  // Only meaningful alongside `group`. When a group slot's label names a specific
+  // granular position (e.g. DB_SLOTS' "SS"/"FS"/"LCB"/"RCB"/"NB"), resolveUnit tries an
+  // exact match on this first — a roster's real free safety fills the FS-labeled slot
+  // even though nflverse's count-only data can only say "some safety goes here" — and
+  // falls back to next-best-ranked group member only when no player carries the tag
+  // (DEP-148: indexing the group pool by raw depth rank ignored the label entirely,
+  // so a real FS could land in the SS dot, or left/right corners could swap).
+  preferredPosition?: Position;
   x: number;
   y: number;
   label: string;
