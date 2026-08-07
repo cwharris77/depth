@@ -135,19 +135,30 @@ The decal **is** in scope. The workflow is: land an accurate machine trace as a 
 
 **Mirroring a traced path** is a regex over the coordinate pairs — `x → 588 − x`, y untouched. Generate the mirror in the scratchpad script rather than by hand.
 
-**Decide first whether it will trace at all.** Proven both ways across sixteen attempts:
+**Decide first whether it will trace at all.** Proven both ways across all 32 teams:
 
 | Traces well | Does not trace |
 |---|---|
-| Solid filled regions (Cardinals, 4 color regions) | Thin swooping linework (Seahawks keyline, Falcons falcon) |
-| Bold letterforms (Bears C at 31×21px, Packers G, Denver's Orange Crush "D") | Marks embedding a wordmark (Steelers — also out of scope) |
-| Bold solid shapes (Vikings horn, Denver's horse, LA's bolt) | Anything under ~25px of *stroke-bearing* detail (Baltimore's raven — a 2px gold keyline around a purple head) |
-| Solid shape inside a solid ring (Miami's dolphin, both era marks) | A solid mass read through fine linework (Jacksonville's jaguar — the gold traces, the sub-2px white jaw does not, and the result is a blob) |
-| Bold shape under a keyline (Carolina's panther) | |
+| Solid filled regions (Cardinals, 4 color regions) | Thin swooping linework with no solid region at all (Seahawks keyline, Falcons falcon, Raiders shield) |
+| Bold letterforms (Bears C at 31×21px, Packers G, Denver's Orange Crush "D", the Jets wordmark) | A mark whose color is the *same value as its own shell* (Houston's bull — see below) |
+| Bold solid shapes (Vikings horn, Denver's horse, LA's bolt, Detroit's lion) | Anything whose every part is sub-3px (not merely its keyline or its interior detail) |
+| Solid shape inside a solid ring (Miami's dolphin, both era marks) | |
+| Bold shape under a keyline (Carolina's panther, Baltimore's raven, New England's Flying Elvis) | |
+| Outlined shapes freckled with shell-colored spots (Jacksonville's jaguar) | |
 
 Size alone does not decide it — the Bears C traced beautifully at 31×21px while the Falcons falcon shredded at 28×34px. **Shape character decides it.** When it won't trace, leave the shell bare and say why in the module header; an illegible trace is worse than none.
 
+**Four rows of that table used to say the opposite, and every one of them was wrong the same way** — the module had judged the *hardest part* of a mark and condemned the whole mark with it. Ravens ("a 2px gold keyline"), Jaguars ("read through a sub-2px white jaw"), Saints ("a thin ornamental mark"), Steelers ("embeds a wordmark") all shipped clean traces once the hard part was handled separately rather than treated as disqualifying. The generalisation is worth stating as a rule, because it is the single most expensive mistake this workflow makes:
+
+> **Never let the hardest feature of a mark decide whether the mark traces.** Ask instead what the mark is *mostly* made of. If that part is solid, it traces — and the hard feature is then a separate, smaller question with its own answer: derive it (a keyline is a filled shape one layer down), let it fall out for free (a shell-colored spot is a gap), or drop it (a sub-2px interior line, a six-px wordmark) and say so in the header. Three of those four answers cost nothing.
+
+**Houston is the one genuine impossibility, and it is a category the table did not have.** The bull is big enough (≈50×44px on the away figure) and solid enough, but its left half samples *exactly* the shell navy — both `(3,24,37)` — so no predicate separates the mark from the surface it sits on, and the white keyline that divides them breaks into four disconnected components, so it cannot be closed into a fillable region either. This is not a linework failure. **Before assuming a mark is traceable because it is bold, check that it is a different value from its shell.**
+
 **How many layers a decal needs is decided by the interior, not by how complex the mark looks.** Ask whether the mark's interior regions are the shell color. If they are, they need no path at all — the shell reads through a single traced region. Chiefs' arrowhead is one path: the letters inside it are shell-red, so tracing the white region alone renders the whole mark. Cowboys' star needs two; the 49ers' oval needs three. Count the distinct *non-shell* colors in the mark and that is your layer count.
+
+**That rule extends past interiors to any shell-colored region, including scattered ones** — and it is what makes Jacksonville's jaguar tractable. The black spots freckling its gold crown look like the evenodd trap waiting to happen; they are not, because they *are* the shell color. Trace the gold as plain unions and every spot falls out as a gap between components, with the shell showing through it. No holes, no extra layer, no trap.
+
+**But a shell-colored trick is scoped to the kits whose shell is actually that color, and that is a scope decision you must make explicitly.** Jacksonville wears black on three kits and teal on the throwback: on teal every spot would come out teal and the crown would read as a different animal, so the throwback ships bare with a comment saying what it would need. Whenever you rely on "the shell reads through", enumerate the kits and check each one — this is the same class of error as assuming one construction serves every kit (§5).
 
 Tracer mechanics (`scratchpad`, pure PIL, no numpy):
 
@@ -163,13 +174,31 @@ Two useful inversions:
 - Trace the *white* region and paint a slightly larger shape beneath it — the Packers G came out as two clean paths this way instead of a fragmented sixteen, because the white region's boundary already *is* the oval-minus-glyph.
 - Paint order matters: keyline/shadow first, body over it, details last.
 
-**Never trace a keyline as its own region — trace the union and let the body cover it.** A keyline is thin by definition, so a predicate that selects only its color returns slivers: Carolina's blue outline came back as nine disconnected fragments that read as debris beside the panther. Tracing blue OR black instead gives one silhouette; painting the black body over it leaves precisely the keyline showing, and it is continuous because it was never cut up. This is the Packers inversion generalized, and it is what makes an animal mark with an outline tractable at all. It also means a mark whose keyline is its only detail (Baltimore's raven) still does not trace — there is no body to paint over.
+**Never trace a keyline as its own region — trace the union and let the body cover it.** A keyline is thin by definition, so a predicate that selects only its color returns slivers: Carolina's blue outline came back as nine disconnected fragments that read as debris beside the panther. Tracing blue OR black instead gives one silhouette; painting the black body over it leaves precisely the keyline showing, and it is continuous because it was never cut up. This is the Packers inversion generalized, and it is what makes an animal mark with an outline tractable at all.
+
+This paragraph used to end by claiming Baltimore's raven "still does not trace — there is no body to paint over". It has a body: a purple head. The mistake was reading "the keyline is the mark's most distinctive feature" as "the keyline is all there is", which is the same error the table above warns about. Traced as a filled silhouette with the purple painted over it, the gold keyline is exactly the two px it should be and never had to be traced as a stroke at all. **An outline too thin to trace is usually a filled shape one layer down.**
 
 **But do not assume the union is one component, and never reduce it with "take the largest".** The two colors often do not touch: an antialiased seam runs between them matching neither predicate, so the union is two disjoint components. Los Angeles' shell bolt is exactly this — keyline 22k px, body 26k px, adjacent and separate. Taking the largest component returns the body alone, drops the keyline entirely, raises no error, and produces a mark that looks completely plausible until you hold it against the reference. **Keep every non-border component and filter by size instead**, which is both safer and does other necessary work: on that same helmet the size floor is what removes the numerals GUD paints on the shell, which are the keyline's exact blue and would otherwise be traced as part of the mark.
 
 Three distinct ways a keyline trace fails, then, and they need different fixes: traced alone it fragments (union it); traced with `evenodd` its antialiasing punches through (stack unions); traced as a union it may not be connected (keep all components, filter by size).
 
+**A fourth: the keyline has no usable predicate at all, and then you grow one.** Detroit's lion is white-keylined on a silver shell — after upsampling, the keyline's two px blend to values no white predicate catches without also catching the shell, so tracing it returns the *body contour* again (the giveaway: your keyline path and your body path come back with the same point count). The fix is to take the body mask, **dilate it by N upsampled px, and trace that as a fill** to paint under the body. It is the union trick with the union synthesised instead of sampled, and it generalises: whenever a keyline's color is not separable, its geometry is still just the body grown outward.
+
+Do **not** reach for a stroked contour instead. It is the obvious alternative and it is wrong here for a concrete reason: `UniformFigure` exposes `strokeWidth` and `lineCap` but **no `strokeLinejoin`**, so the default miter spikes at every reversal of a jagged machine trace. Grown fills have no joins.
+
+**Order of operations in that dilation is load-bearing: drop border-touching components BEFORE growing, never after.** Grow first and the mark fuses to whatever same-colored furniture shares the crop — a helmet edge, a facemask — and the fused blob now touches the border, so the border filter discards *the mark itself*. The symptom is an empty result with no error. (`trace_keyline` in the scratchpad does it in the right order.)
+
+**The Moore walk can lock onto the inner contour of an annulus and hand you the hole.** Any mark drawn as an *outlined* shape whose middle is shell-colored — New Orleans' fleur-de-lis is the canonical one — is topologically a ribbon, and the boundary walk can return its inner loop instead of its outer one. It renders as a thin skeleton of the real mark: recognisable enough that you may accept it, wrong enough to matter. **Close the holes before walking** (flood the background in from the border; anything unreached is a hole; fill it, then trace). That is `trace_filled`. Reach for it by default on any outlined shape, and sanity-check a suspicious trace by comparing the traced polygon's shoelace area against the mask's cell count — they should agree within a percent or two.
+
+**When the shape is a circle, do not trace it — fit it.** A traced disc comes back polygonal, and notched wherever something punches into it (Pittsburgh's disc is notched by the wordmark, which reads as damage rather than as a circle). Fit a circle to the traced bounds and emit an `A` arc pair instead: cleaner, two orders of magnitude smaller, and closer to the thing it represents. Same for concentric rings.
+
+**Half-traced and half-constructed is a legitimate outcome, not a failure.** Tennessee's circle-T is right on the ~25px floor: its rings came back as broken dashes, so they are fitted circles, while the T and stars inside them are genuine traces from a box drawn *inside* the disc so the ring's own white does not join them. Say which is which in the header — a future reader needs to know which parts are measurements and which are reconstructions.
+
+**Not every component of a color is the feature you want, and size does not tell you which is which.** New England's white traces to four components; three are pieces of the *keyline* and only one is the star. Painted on top, the keyline pieces repaint over the face and swallow detail that should show. Identify the component you want **by bbox position**, not by rank — and note this is the same reduction hazard as "take the largest": any rank-based pick assumes the candidates are alternatives when they are actually parts.
+
 Prefer a flat, straight-on source when one exists — GUD draws a 3/4 shell, so a trace bakes in the curvature distortion. But check licensing: Commons carries most *wordmarks* freely while the primary head/animal marks are typically non-free fair-use on English Wikipedia. Surface the source and its license rather than picking one silently.
+
+**Normalize GIF sources to RGB before measuring — and then re-derive your predicates, don't reuse them.** Three sheets are GIFs (Raiders, Dolphins, Patriots, Steelers). Converting is the obvious half; the half that costs a wasted trace is that the palettes differ enough to break thresholds tuned on the PNG sheets. New England's navy samples `(3,18,51)`, so a blue-channel test of `b > 60` — perfectly reasonable, and correct on every PNG team — matches nothing and the face comes back empty with no error. **Sample the actual colors in the crop before writing any predicate**, every time; it costs one `Counter` over the region.
 
 **A team can wear more than one mark.** Miami's 1972 throwback wears a dolphin breaking through a solid ring where its current kits wear a dolphin inside a sunburst; Denver's Orange Crush wears the era "D" where the modern kits wear the horse. Check every kit's helmet before assuming one traced decal serves them all, and give the second mark its own pair of paths with a `throwback` flag on the factory rather than a second copy of the factory.
 
