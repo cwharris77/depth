@@ -7,16 +7,22 @@ describe('mapDepthchartPosition', () => {
     expect(mapDepthchartPosition('rt')).toBe('RT');
     expect(mapDepthchartPosition('qb')).toBe('QB');
   });
-  it('collapses defensive variants', () => {
-    expect(mapDepthchartPosition('lde')).toBe('DE');
-    expect(mapDepthchartPosition('rde')).toBe('DE');
-    expect(mapDepthchartPosition('nt')).toBe('DT');
-    expect(mapDepthchartPosition('lilb')).toBe('LB');
-    expect(mapDepthchartPosition('fs')).toBe('S');
-    expect(mapDepthchartPosition('nb')).toBe('CB');
+  it('maps every granular defensive/FB key to its own Position, not a collapsed group', () => {
+    expect(mapDepthchartPosition('lde')).toBe('LDE');
+    expect(mapDepthchartPosition('rde')).toBe('RDE');
+    expect(mapDepthchartPosition('nt')).toBe('NT');
+    expect(mapDepthchartPosition('wlb')).toBe('WLB');
+    expect(mapDepthchartPosition('lilb')).toBe('LILB');
+    expect(mapDepthchartPosition('rilb')).toBe('RILB');
+    expect(mapDepthchartPosition('slb')).toBe('SLB');
+    expect(mapDepthchartPosition('lcb')).toBe('LCB');
+    expect(mapDepthchartPosition('rcb')).toBe('RCB');
+    expect(mapDepthchartPosition('nb')).toBe('NB');
+    expect(mapDepthchartPosition('ss')).toBe('SS');
+    expect(mapDepthchartPosition('fs')).toBe('FS');
+    expect(mapDepthchartPosition('fb')).toBe('FB');
   });
   it('drops positions not in our enum', () => {
-    expect(mapDepthchartPosition('fb')).toBeNull();
     expect(mapDepthchartPosition('h')).toBeNull();
   });
 });

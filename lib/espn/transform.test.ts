@@ -151,13 +151,13 @@ describe('toTeamRoster', () => {
     expect(withBio.bio).toMatch(/^Born in .+/);
   });
 
-  it("collapsed positions (e.g. lde+rde -> DE) don't collide on depth_chart_entries rank", () => {
+  it("doesn't collide on depth_chart_entries rank", () => {
     // Guards the DB write path: depth_chart_entries has a unique (team_id, position,
-    // depth_rank) constraint, but two raw ESPN keys (lde, rde) both map to Position DE
-    // and each independently ranks 1..3, so `players` can hold two DE-rank-1s.
+    // depth_rank) constraint. Real ESPN depth charts now map every raw key to its own
+    // granular Position (no more lde+rde -> DE collapsing), so toDepthChartRows'
+    // collision handling is exercised below with a synthetic still-collapsed pair
+    // (lb + mlb both -> LB) instead.
     const rows = toDepthChartRows(result.players);
-    const de1 = result.players.filter((p) => p.position === 'DE' && p.depthRank === 1);
-    expect(de1.length).toBeGreaterThanOrEqual(2); // the actual collision this guards against
     const seen = new Set<string>();
     for (const row of rows) {
       const key = `${row.position}:${row.depthRank}`;
@@ -233,6 +233,65 @@ describe('toTeamRoster: returner ranked outside the top-3 cap', () => {
     const player = result.players.find((p) => p.id === WR7_ID);
     if (!player) throw new Error('expected the returner to be present in players');
     expect(player.bio).toBe('');
+  });
+});
+
+describe('toTeamRoster: still-collapsed raw keys (e.g. lb + mlb -> LB)', () => {
+  // Most granular defensive keys now map 1:1 to their own Position (SS/FS/LDE/RDE/NT/
+  // WLB/LILB/RILB/SLB/LCB/RCB/NB), but a few generic fallback keys (lb, mlb) still
+  // collapse onto the same Position — real depth chart data for a team scheme this
+  // repo hasn't sampled could still produce that shape, so toTeamRoster/toDepthChartRows
+  // must keep handling it (docs/superpowers/specs/2026-08-04-full-espn-position-
+  // taxonomy-design.md's Files list: exhaustive Record<Position,...>/switch call sites,
+  // not this collision guard specifically — but the guard itself still needs a live key
+  // pair to exercise it since the real fixture no longer has one).
+  const ref = (id: string) => ({
+    $ref: `http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2025/athletes/${id}?lang=en`,
+  });
+
+  const roster: EspnRoster = {
+    season: { year: 2025 },
+    athletes: [
+      {
+        position: 'defense',
+        items: [
+          {
+            id: '1001',
+            fullName: 'Weakside Backer',
+            jersey: '55',
+            position: { abbreviation: 'LB' },
+          } as EspnRoster['athletes'][number]['items'][number],
+          {
+            id: '1002',
+            fullName: 'Mike Backer',
+            jersey: '56',
+            position: { abbreviation: 'LB' },
+          } as EspnRoster['athletes'][number]['items'][number],
+        ],
+      },
+    ],
+  };
+
+  const depthcharts: EspnDepthcharts = {
+    items: [
+      {
+        name: 'Base D',
+        positions: {
+          lb: { athletes: [{ rank: 1, athlete: ref('1001') }] },
+          mlb: { athletes: [{ rank: 1, athlete: ref('1002') }] },
+        },
+      },
+    ],
+  };
+
+  it("both raw keys land on Position 'LB' at depthRank 1, and toDepthChartRows re-ranks them apart", () => {
+    const result = toTeamRoster({ meta: META, roster, depthcharts, teamInfo: TEAM_INFO });
+    const lb1 = result.players.filter((p) => p.position === 'LB' && p.depthRank === 1);
+    expect(lb1).toHaveLength(2);
+
+    const rows = toDepthChartRows(result.players);
+    const keys = rows.map((r) => `${r.position}:${r.depthRank}`);
+    expect(new Set(keys).size).toBe(keys.length);
   });
 });
 
