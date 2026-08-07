@@ -94,3 +94,21 @@ resolved statuses always carry their resolution date
 **Suggested improvement:** Never reduce a candidate set by a rank-based heuristic (largest, first, nearest) when the count itself is diagnostic. Prefer a threshold that admits every plausible member, then verify the count against what the subject should contain. Where a rank-based pick is genuinely wanted, assert the expected count first and fail loudly on a mismatch. More generally: when two selection criteria are combined with OR and the result is treated as one object, check that assumption explicitly, because the boundary between them is exactly where the combination breaks.
 
 **Principle:** A reduction step encodes a precondition about its input, and rank-based reductions encode the strongest one — that the candidates are alternatives rather than parts. When they are parts, the reduction does not fail, it succeeds on a fragment, which is worse. Any heuristic that turns many into one should either verify the count it expected or be replaced by a filter that cannot discard a part. Silent partial success is the failure mode to design against, not absence of output.
+
+### Observation 9: A capability judgement recorded as a durable comment outlives the evidence for it
+
+**Status:** OPEN
+**Date:** 2026-08-07
+**Session context:** depth uniform archive — tracing helmet decals for the twelve teams whose modules shipped with a bare shell.
+
+**Skill:** raster-reference-transcription (new skill candidate, see Observations 7 and 8)
+**Type:** open-source
+**Phase/Area:** Feasibility assessment, and how negative results get written down
+
+**Issue:** Four modules carried header comments asserting that the team's mark could not be traced — each written in an earlier session, each with specific and plausible reasoning ("a 2px keyline is sub-3px stroke detail", "the spots would hit the evenodd trap", "it embeds a wordmark"). All four were wrong, and all four failed identically: the author had assessed the *hardest feature* of the mark and let that verdict stand for the whole mark. Every one traced cleanly once the hard feature was handled as its own smaller question — derive it, let it fall out for free, or drop it.
+
+The compounding problem is not the original misjudgement, which is cheap and recoverable. It is that the judgement was written into a durable artifact as a settled fact, in the same voice as the measured facts around it, with the evidence ("I tried predicate X and got fragments") discarded. A later reader — including a later session of the same agent — cannot distinguish "this was tested and is impossible" from "this looked hard once". I only revisited these four because a sweep forced me to, not because anything in the comment invited re-examination.
+
+**Suggested improvement:** Distinguish two kinds of negative result and write them differently. A *demonstrated* impossibility records the measurement that proves it and stays settled — Houston's bull is unreachable because its navy samples exactly the shell's navy, `(3,24,37)`, and that is a fact a reader can re-check in one line. A *judgement* that something is not worth attempting should be written as provisional, name the specific approach that failed, and say what would change the answer. Concretely, in any artifact that records a capability verdict: state the predicate or method tried, not just the conclusion; and where the verdict is "too hard" rather than "provably impossible", mark it as such so the next reader knows it is an invitation rather than a wall.
+
+**Principle:** A negative capability judgement is a claim about the method available at the time, not a property of the subject, but comments record it as though it were the latter. When writing one down, separate the measurement from the verdict and preserve the measurement — the verdict decays as methods improve, the measurement does not. And beware the specific failure of letting a subject's hardest feature determine the assessment of the whole: ask what the thing is *mostly* made of, then treat the hard part as a separate and usually cheaper question.
