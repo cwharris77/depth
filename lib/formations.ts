@@ -62,6 +62,65 @@ function getPlayersByPositionGroup(roster: TeamRosterSeed, group: PositionGroup)
   return roster.players.filter((p) => positionGroup(p.position) === group).sort(byDepthOrder);
 }
 
+// Assigns players to a set of same-group slots: a slot with `preferredPosition` claims
+// the best-ranked player carrying that exact tag first (so DB_SLOTS' "SS" dot gets the
+// roster's actual strong safety, not just whichever safety sorts first); every remaining
+// slot (no preference, or no player carries it) is filled in original slot order from
+// whatever's left of the depth-ordered pool — the same fallback semantics group-based
+// resolution always had (DEP-148).
+function assignPositionGroup(pool: Player[], slots: FormationSlot[]): (Player | undefined)[] {
+  const remaining = [...pool];
+  const result: (Player | undefined)[] = new Array(slots.length).fill(undefined);
+  const fallbackIndices: number[] = [];
+
+  slots.forEach((slot, i) => {
+    if (!slot.preferredPosition) {
+      fallbackIndices.push(i);
+      return;
+    }
+    const matchIdx = remaining.findIndex((p) => p.position === slot.preferredPosition);
+    if (matchIdx === -1) {
+      fallbackIndices.push(i);
+      return;
+    }
+    result[i] = remaining[matchIdx];
+    remaining.splice(matchIdx, 1);
+  });
+
+  fallbackIndices.forEach((i) => {
+    result[i] = remaining.shift();
+  });
+
+  return result;
+}
+
+// Resolves every group-based slot in a formation, one group at a time, so a slot in the
+// 'S' group and a slot in the 'CB' group don't compete for the same pool.
+function resolveGroupedSlots(
+  roster: TeamRosterSeed,
+  slots: FormationSlot[]
+): (Player | undefined)[] {
+  const result: (Player | undefined)[] = new Array(slots.length).fill(undefined);
+  const groups = new Set(
+    slots.map((s) => s.group).filter((g): g is PositionGroup => g !== undefined)
+  );
+  for (const group of groups) {
+    const indices: number[] = [];
+    slots.forEach((s, i) => {
+      if (s.group === group) indices.push(i);
+    });
+    const pool = getPlayersByPositionGroup(roster, group);
+    const assigned = assignPositionGroup(
+      pool,
+      indices.map((i) => slots[i])
+    );
+    indices.forEach((slotIdx, j) => {
+      result[slotIdx] = assigned[j];
+    });
+  }
+  return result;
+}
+
 // Shared, generic formations. Every team's offense/defense renders on these — slots
 // resolve to players by position group + depth index, so adding a team is data-only.
 //
@@ -84,7 +143,22 @@ export const OFFENSE_FORMATION: FormationSlot[] = [
   { id: 'off-rg-0', position: 'RG', index: 0, x: 58, y: 51, label: 'RG', onLine: true },
   { id: 'off-rt-0', position: 'RT', index: 0, x: 66, y: 51, label: 'RT', onLine: true },
   { id: 'off-qb-0', position: 'QB', index: 0, x: 50, y: 66, label: 'QB', onLine: false },
-  { id: 'off-rb-0', position: 'RB', index: 0, x: 50, y: 78, label: 'RB', onLine: false },
+  // group: 'RB' + preferredPosition: 'RB' — prefers an exact RB tag (the common case: a
+  // real halfback fills this dot) but falls back to the roster's best-ranked FB when the
+  // team has no player tagged RB at all, so a true fullback isn't invisible on the
+  // fallback formation either (DEP-148). resolveUnit's FB relabel then reads this dot
+  // "FB" instead of "RB" whenever that fallback fires.
+  {
+    id: 'off-rb-0',
+    position: 'RB',
+    group: 'RB',
+    preferredPosition: 'RB',
+    index: 0,
+    x: 50,
+    y: 78,
+    label: 'RB',
+    onLine: false,
+  },
 ];
 
 // True 3-4 base: a 3-man front (LDE/NT/RDE) + 4 linebackers (WLB/LILB/RILB/SLB) = 7 in
@@ -128,16 +202,18 @@ export function resolveUnit(
 
   const fallback = unit === 'offense' ? OFFENSE_FORMATION : BASE_DEFENSE;
   const formation = realFormation ?? fallback;
-  return formation.map((slot) => ({
-    key: slot.id,
-    x: slot.x,
-    y: slot.y,
-    label: slot.label,
-    onLine: slot.onLine,
-    player: slot.group
-      ? getPlayersByPositionGroup(roster, slot.group)[slot.groupIndex ?? slot.index]
-      : getPlayersByPosition(roster, slot.position)[slot.index],
-  }));
+  const groupedPlayers = resolveGroupedSlots(roster, formation);
+
+  return formation.map((slot, i) => {
+    const player = slot.group
+      ? groupedPlayers[i]
+      : getPlayersByPosition(roster, slot.position)[slot.index];
+    // An RB-group slot that actually resolved to a fullback reads as "FB", not "RB" —
+    // the taxonomy pull this label distinction exists for otherwise never surfaces on
+    // the field (DEP-148).
+    const label = slot.group === 'RB' && player?.position === 'FB' ? 'FB' : slot.label;
+    return { key: slot.id, x: slot.x, y: slot.y, label, onLine: slot.onLine, player };
+  });
 }
 
 // --- Real per-team formations (Phase E, docs/superpowers/specs/2026-07-07-phase-e-
@@ -330,10 +406,7 @@ function buildDlSlots(dl: number): FormationSlot[] {
     const position: 'DE' | 'DT' = isEdge ? 'DE' : 'DT';
     const label = dl === 1 ? 'NT' : position;
     const index = counts[position]++;
-    // groupIndex = i (this slot's rank across the whole DL front, DE and DT together) —
-    // `index` alone can't serve as the group lookup key since it resets per position type
-    // (DE 0,1 and DT 0 would otherwise both resolve to the group array's 0th player).
-    return { id: '', position, group: 'DL', groupIndex: i, index, x, y: DL_Y, onLine: true, label };
+    return { id: '', position, group: 'DL', index, x, y: DL_Y, onLine: true, label };
   });
 }
 
@@ -356,13 +429,22 @@ function buildLbSlots(lb: number): FormationSlot[] {
 // by. Coordinates keep the widest/deepest players (edge CBs, safeties) fixed and fan
 // extra DBs in front of them as the box empties out. `label` carries the explicit L/R
 // (and nickel) distinction display-only; `position`/`group` stay the generic CB/S group
-// match since nflverse's count can't say which specific corner or safety fills which spot.
-const DB_SLOTS: { position: 'CB' | 'S'; label: string; x: number; y: number }[] = [
-  { position: 'CB', label: 'LCB', x: 10, y: 26 },
-  { position: 'CB', label: 'RCB', x: 90, y: 26 },
-  { position: 'S', label: 'SS', x: 34, y: 14 },
-  { position: 'S', label: 'FS', x: 66, y: 14 },
-  { position: 'CB', label: 'NB', x: 50, y: 28 },
+// match since nflverse's count can't say which specific corner or safety fills which
+// spot — but where the label names an exact granular tag (LCB/RCB/SS/FS/NB), that tag is
+// also the slot's `preferredPosition`, so resolveGroupedSlots seats the matching real
+// player there first instead of just the next-best-ranked group member (DEP-148).
+const DB_SLOTS: {
+  position: 'CB' | 'S';
+  label: string;
+  preferredPosition?: Position;
+  x: number;
+  y: number;
+}[] = [
+  { position: 'CB', label: 'LCB', preferredPosition: 'LCB', x: 10, y: 26 },
+  { position: 'CB', label: 'RCB', preferredPosition: 'RCB', x: 90, y: 26 },
+  { position: 'S', label: 'SS', preferredPosition: 'SS', x: 34, y: 14 },
+  { position: 'S', label: 'FS', preferredPosition: 'FS', x: 66, y: 14 },
+  { position: 'CB', label: 'NB', preferredPosition: 'NB', x: 50, y: 28 },
   { position: 'S', label: 'S', x: 50, y: 10 },
   { position: 'CB', label: 'CB', x: 26, y: 30 },
   { position: 'S', label: 'S', x: 74, y: 30 },
@@ -376,6 +458,7 @@ function buildDbSlots(db: number): FormationSlot[] {
       id: '',
       position: spot.position,
       group: spot.position === 'CB' ? 'CB' : 'S',
+      preferredPosition: spot.preferredPosition,
       index,
       x: spot.x,
       y: spot.y,
