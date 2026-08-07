@@ -4,10 +4,35 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } fr
 // nfl-uniform-refs/steelers. Sleeve and pant paths use the outer 588-wide mannequin space; right
 // paths mirror the left across the jersey centerline x=294 (mirroredX = 588 - x).
 //
-// No helmet decal. Pittsburgh's mark is the one case so far where tracing is the wrong call on
-// both counts: it renders about 30px across in the reference, which traces to mush, and it embeds
-// a wordmark, which the trademark boundary keeps out of the model regardless. Leaving the shell
-// bare is more honest than shipping an illegible trace.
+// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
+// these paths are a contour trace of the club's helmet mark, lifted from the GUD composite so
+// there is an accurate starting point to hand-stylize against. They are a literal reproduction of
+// a third-party mark and are expected to be REPLACED by original stylized geometry before this kit
+// is treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
+//
+// The three hypocycloids, traced from the home figure's shell (bbox x58-164, y93-189 in the
+// reference) mapped onto the raw helmet space at ~6.25x. This module previously called the mark
+// untraceable on two counts; one of those was right and one was not. The wordmark inside the disc
+// IS out — it renders about six px tall and would be illegible geometry either way. The three
+// diamonds are NOT: they are flat single-color shapes and trace cleanly at ~9px each.
+//
+// The DISC IS NOT A TRACE. Traced, its contour comes back polygonal and notched where the wordmark
+// punches into it, which reads as damage rather than as a circle. It is authored instead as a
+// circle fitted to the traced bounds — center (430.8, 226.4), r 79 — which is both cleaner and
+// closer to the thing it represents.
+//
+// Left where it is, on the shell's upper-left. The club really wears this mark on the right side
+// only, and the mannequin draws a left profile, so a strictly accurate Pittsburgh helmet would be
+// bare here. The reference composite draws the mark on the visible side, and the reference is the
+// source of truth for this pass.
+export const STEELERS_DECAL_DISC_PATH =
+  'M351.8,226.4 A79.0,79.0 0 1 0 509.8,226.4 A79.0,79.0 0 1 0 351.8,226.4 Z';
+export const STEELERS_DECAL_GOLD_PATH =
+  'M428.6,157.0 L447.4,179.8 L456.1,183.0 L453.0,188.7 L438.6,198.9 L430.5,214.1 L419.2,194.4 L406.1,184.9 L426.7,165.9 L428.0,157.6 Z';
+export const STEELERS_DECAL_RED_PATH =
+  'M471.8,199.5 L484.3,217.9 L499.3,226.1 L483.0,235.0 L475.5,243.3 L473.0,252.1 L459.9,235.6 L443.6,227.4 L457.4,217.9 L471.1,200.1 Z';
+export const STEELERS_DECAL_BLUE_PATH =
+  'M428.6,233.1 L439.9,252.8 L448.0,261.0 L458.6,264.2 L456.1,269.9 L438.6,283.9 L430.5,299.7 L426.7,297.8 L426.7,289.6 L419.2,276.2 L398.6,265.5 L401.7,261.7 L411.1,261.7 L419.8,252.8 L427.3,243.3 L428.6,233.7 Z';
 
 // Construction colors are fixed across kits — the sleeve stripe set does not recolor when the body
 // changes black/white, and its black separators only become visible on the white away body.
@@ -182,6 +207,30 @@ function bumblebeeLayers(): UniformLayer[] {
   ];
 }
 
+// Fixed art on the black shell — the mark does not recolor with the kit, so like the sleeve stripe
+// set above it takes literals rather than tokens. Gold reuses the module's own STEELERS_GOLD; the
+// red and blue have no token on any Pittsburgh palette and are sampled off the reference.
+export const STEELERS_DECAL_RED = '#C60C30';
+export const STEELERS_DECAL_BLUE = '#00539B';
+
+function decal(): UniformLayer[] {
+  return (
+    [
+      ['steelers-decal-disc', STEELERS_DECAL_DISC_PATH, '#FFFFFF'],
+      ['steelers-decal-gold', STEELERS_DECAL_GOLD_PATH, STEELERS_GOLD],
+      ['steelers-decal-red', STEELERS_DECAL_RED_PATH, STEELERS_DECAL_RED],
+      ['steelers-decal-blue', STEELERS_DECAL_BLUE_PATH, STEELERS_DECAL_BLUE],
+    ] as [string, string, ColorRef][]
+  ).map(([id, d, fill]) => ({
+    id,
+    surface: 'helmet' as const,
+    d,
+    clip: true,
+    kind: 'fill' as const,
+    fill,
+  }));
+}
+
 export const STEELERS_UNIFORMS: TeamUniformDefinition = {
   teamId: 'steelers',
   kits: {
@@ -195,7 +244,7 @@ export const STEELERS_UNIFORMS: TeamUniformDefinition = {
       jerseyColor: 'secondary',
       pantsColor: 'primary',
       removeLayerIds: GENERIC_STRIPPED,
-      layers: [...sleeveStripes(), ...pantsStripes()],
+      layers: [...sleeveStripes(), ...pantsStripes(), ...decal()],
       number: { fill: '#FFFFFF', outline: STEELERS_GOLD },
     },
     // Away is a white body over the same gold pants and black shell; here the stripe set's black
@@ -204,7 +253,7 @@ export const STEELERS_UNIFORMS: TeamUniformDefinition = {
       helmetColor: 'accent',
       pantsColor: 'secondary',
       removeLayerIds: GENERIC_STRIPPED,
-      layers: [...sleeveStripes(), ...pantsStripes()],
+      layers: [...sleeveStripes(), ...pantsStripes(), ...decal()],
       number: { fill: 'accent', outline: 'secondary' },
     },
     // The 1934 "Bumblebee" throwback inverts the kit: gold shell and gold body, with the black
