@@ -5,6 +5,7 @@ import { BILLS_UNIFORMS } from './bills';
 import { BRONCOS_UNIFORMS } from './broncos';
 import { BROWNS_UNIFORMS } from './browns';
 import { CARDINALS_UNIFORMS } from './cardinals';
+import { CHARGERS_UNIFORMS } from './chargers';
 import { CHIEFS_UNIFORMS } from './chiefs';
 import { COLTS_UNIFORMS } from './colts';
 import { COWBOYS_UNIFORMS } from './cowboys';
@@ -35,6 +36,7 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   broncos: BRONCOS_UNIFORMS,
   browns: BROWNS_UNIFORMS,
   cardinals: CARDINALS_UNIFORMS,
+  chargers: CHARGERS_UNIFORMS,
   chiefs: CHIEFS_UNIFORMS,
   colts: COLTS_UNIFORMS,
   cowboys: COWBOYS_UNIFORMS,
