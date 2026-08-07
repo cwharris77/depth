@@ -9,6 +9,7 @@ import { CARDINALS_UNIFORMS } from './cardinals';
 import { CHARGERS_UNIFORMS } from './chargers';
 import { CHIEFS_UNIFORMS } from './chiefs';
 import { COLTS_UNIFORMS } from './colts';
+import { COMMANDERS_UNIFORMS } from './commanders';
 import { COWBOYS_UNIFORMS } from './cowboys';
 import { DOLPHINS_UNIFORMS } from './dolphins';
 import { EAGLES_UNIFORMS } from './eagles';
@@ -19,6 +20,7 @@ import { JETS_UNIFORMS } from './jets';
 import { LIONS_UNIFORMS } from './lions';
 import { NINERS_UNIFORMS } from './niners';
 import { PANTHERS_UNIFORMS } from './panthers';
+import { PATRIOTS_UNIFORMS } from './patriots';
 import { RAIDERS_UNIFORMS } from './raiders';
 import { PACKERS_UNIFORMS } from './packers';
 import { RAMS_UNIFORMS } from './rams';
@@ -45,6 +47,7 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   chargers: CHARGERS_UNIFORMS,
   chiefs: CHIEFS_UNIFORMS,
   colts: COLTS_UNIFORMS,
+  commanders: COMMANDERS_UNIFORMS,
   cowboys: COWBOYS_UNIFORMS,
   dolphins: DOLPHINS_UNIFORMS,
   '49ers': NINERS_UNIFORMS,
@@ -56,6 +59,7 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   lions: LIONS_UNIFORMS,
   packers: PACKERS_UNIFORMS,
   panthers: PANTHERS_UNIFORMS,
+  patriots: PATRIOTS_UNIFORMS,
   raiders: RAIDERS_UNIFORMS,
   rams: RAMS_UNIFORMS,
   ravens: RAVENS_UNIFORMS,
