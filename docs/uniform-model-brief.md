@@ -1,6 +1,6 @@
 # Mapping a team kit into `lib/uniforms/teams/`
 
-The exact procedure for turning a reference image into a `TeamUniformDefinition`. Written after doing bengals, bills, seahawks, cardinals, packers, steelers, bears, vikings, falcons and saints — every step here exists because skipping it cost a rework on one of those.
+The exact procedure for turning a reference image into a `TeamUniformDefinition`. Every step here exists because skipping it cost a rework on a real team; where a rule names a team, that is the pass it was learned on.
 
 **Do one to three teams per pass, measured.** The value is in actually measuring the reference, not in generated approximations. A fast pass produces plausible-looking modules that are wrong in ways only a browser render reveals.
 
@@ -22,11 +22,24 @@ curl -s "http://127.0.0.1:54321/rest/v1/uniforms?team_id=eq.<team>&select=id,kin
   -H "apikey: <local anon key from 'supabase status'>" | python3 -m json.tool
 ```
 
-Two traps live here:
+Three traps live here:
 
 **1. `accent` always equals `secondary` on the `home` kit.** `toTeamColors` in `lib/espn/transform.ts` literally sets `accent: secondary` — ESPN supplies only two colors, so a synthesized home row has no third token. Any construction color that is neither body nor trim must be a **literal hex with a cited source**. This silently painted Seattle's wolf-grey shoulder band green and Arizona's white shoulder bars black. Curated archive rows (away/throwback/alternate, from `lib/uniforms/data.ts`) *do* carry three real colors — only the home row collapses.
 
-**2. ESPN's `color` is often not the jersey color.** Where `alternateColor` is neutral black, `isNeutral()` keeps `primary` as the team's pop color while the real jersey is black — and the generic model paints helmet, jersey *and* pants from `primary`. A full 32-team sweep found exactly four: **bengals, steelers, falcons, saints**. All four are fixed; no fifth exists, so any new team is safe on this axis unless its jersey is black. Fix in the definition (`jerseyColor: 'secondary'`), never by patching `teams.colors` — that is machine-owned and the weekly ingest overwrites it (invariant 3).
+**2. A kit's `primary` is often not its jersey color.** Where `alternateColor` is neutral black, `isNeutral()` keeps `primary` as the team's pop color while the real jersey is black — and the generic model paints helmet, jersey *and* pants from `primary`. A full 32-team sweep found exactly four: **bengals, steelers, falcons, saints**. Read that sweep as scoped to **ESPN-synthesized home rows**, which is all it covered. Curated rows in `data.ts` fail the same way for a different reason: a curator may set `primary` to an era's *identity* color rather than its jersey color. Denver's Orange Crush stores `#001489` royal — the helmet and the era's identity — while the jersey is orange, making it a fifth case. So the rule is not "only these four"; it is **check every kit, and treat `primary` as an assertion to verify against the figure rather than a fact.** Fix in the definition (`jerseyColor: 'secondary'`), never by patching `teams.colors` — that is machine-owned and the weekly ingest overwrites it (invariant 3).
+
+**3. The stored home row can be stale, and a later correction is not always a safe re-color.** `lib/uniforms/reconcile.ts` pins a home row until a change is confirmed on two consecutive runs, so a home palette can sit disagreeing with `teams.colors` indefinitely. Cross-check it before authoring:
+
+```bash
+# every team whose home uniform row disagrees with its teams.color_primary
+curl -s ".../teams?select=id,color_primary" -H "apikey: $K" > /tmp/t.json
+curl -s ".../uniforms?kind=eq.home&select=team_id,color_primary" -H "apikey: $K" > /tmp/u.json
+# join on id and print the mismatches
+```
+
+Most disagreements are shade drift and harmless. Three are categorical — **broncos, steelers, titans** — where the stored primary is a different color entirely from what ESPN now reports. Denver stores orange against a navy team primary, which is why its `home` and `orange-alt` both render orange and why the reference's navy jersey has no kit to hold it.
+
+**The dangerous part is what happens when such a row is corrected.** A palette flip re-colors a kit safely only if the construction is symmetric in those tokens. Denver's is not: the orange jersey wears white-over-navy on the shoulder and the navy jersey wears orange-over-white — the *order* inverts, not just the colors. Promote that home row and the kit renders the wedge upside-down with its collar and numeral keyline on the wrong colors, silently. When you author against a palette you know to be stale, say so in the module header, name the figure to re-measure against, and say which assignments will not survive.
 
 Note which colors the kit needs that no token supplies. Those become literals.
 
@@ -34,9 +47,11 @@ Note which colors the kit needs that no token supplies. Those become literals.
 
 Open the composite and map each combo to a depth kit slug. Watch for:
 
-- **Kits absent from the 2025 composite** (Chicago's orange alternate, Atlanta's red alternate). Those must be *inferred* by recoloring measured construction — say so in the module header and treat as provisional.
+- **Kits absent from the 2025 composite** (Chicago's orange alternate, Atlanta's red alternate, Jacksonville's black alternate, Detroit's gridiron-gray). Those must be *inferred* by recoloring measured construction — say so in the module header and treat as provisional.
 - **Kits with identical stored palettes** that differ only in construction (Minnesota's away vs Winter Warrior). The definition expresses the difference via `helmetColor`/`pantsColor`.
-- **Stale data**: Tennessee stores navy but the 2025 reference is light blue. That is a data decision, not a definition fix — surface it, don't paper over it.
+- **Two kits that are genuinely the same uniform.** Los Angeles' `home` and `powder-blue` store the same palette but for `accent`, and the reference draws exactly one powder-blue jersey — so they are not a bug to route around, they are two rows describing one look. Don't force them apart. Share the construction and let the difference be which token each reaches a color through: `home` takes white as a literal, `powder-blue` takes it from `accent`, and the two render identically because they should. Confirm that in the browser rather than asserting it.
+- **Stale data**: Tennessee stores navy but the 2025 reference is light blue. That is a data decision, not a definition fix — surface it, don't paper over it. See Step 1 trap 3: Tennessee is one of three teams whose home row disagrees categorically with `teams.colors`, so this is likely the same stale-home-row cause rather than its own oddity.
+- **A jersey in the reference with no kit to hold it** is the same signal read from the other end. Denver's navy jersey and Los Angeles' gold and navy alternates all appear on the 2025 sheets with no row to render them. Record them in the module header as candidates; adding rows is a data decision.
 
 ## Step 3 — Locate the figures
 
@@ -51,7 +66,10 @@ run = [x for x, n in prof if n > 0]
 groups = [...]                      # itertools.groupby on x - index
 ```
 
-GUD figures are consistently **169px wide**. Groups of that width are figures; anything narrower is a stripe swatch or patch.
+GUD figures are consistently **169–170px wide**. Groups of that width are figures; anything narrower is a stripe swatch or patch. Two things this predicate gets wrong on its own:
+
+- **White jerseys vanish.** The non-background test eats them, so a row of white figures returns fewer groups than there are figures, or groups that are only as wide as the numerals. Find that row's figures from its *helmet* band instead — helmets are never white-on-white against the page — and derive each figure's left edge from the helmet's, which sits at a fixed offset (+40px on every sheet checked).
+- **Rows are not always on the same grid.** Denver's row 3 and Miami's row 2 are both indented relative to row 1, so figure *n* in one row is not at figure *n*'s x in another. Locate figures per row, never once for the sheet.
 
 ## Step 4 — Establish the coordinate mapping
 
@@ -96,24 +114,36 @@ Record every measurement in the module as a comment — the reference coordinate
 
 ### Before authoring, separate the kit from GUD's drawing of it
 
-You are measuring a rendering, so every boundary you find belongs either to the kit or to GUD's presentation of it — seam outlines, hem lines, drop-shadows, highlights. No color predicate can tell those apart; they are made of the same pixels. Transcribing presentation as construction produces a module that is pixel-faithful to the sheet and wrong about the jersey, and it will not show up until Step 8. Two tells, both structural rather than chromatic:
+You are measuring a rendering, so every boundary you find belongs to one of three things: the kit, GUD's *presentation* of the kit (seam outlines, hem lines, drop-shadows, highlights), or GUD's *annotation* of it (shoulder numerals, sleeve patches, collar tabs, era patches). No color predicate can tell them apart; they are made of the same pixels. Transcribing either of the latter two as construction produces a module that is pixel-faithful to the sheet and wrong about the jersey, and it will not show up until Step 8. Three tells, all structural rather than chromatic:
+
+- **An isolated mark high on the shoulder is GUD's numeral, not a stripe.** Miami's home sleeve column crosses a clean orange run just below the shoulder seam; it is the "1" GUD draws above the sleeve. Authoring from that column alone would have put a stripe on two kits that have none — Miami's home and away carry no sleeve trim at all. The tell is that a stripe runs the width of the sleeve while an annotation is a short isolated island: **row-run across the whole sleeve before believing any column.** When a mark looks like construction but only one column shows it, crop the figure and look at it.
 
 - **A thin neutral line between two same-colored regions is a seam, not a gap.** Jacksonville's sleeve measures as two runs of black six units apart; that gap is GUD's own hem outline drawn over one continuous band. The mannequin draws no such outline, so authored as two bands it rendered as two thin stripes with the jersey color showing between them, where the reference reads as a solid block. Kansas City reached the same conclusion ("only a hairline outline between them — so the mannequin bands are authored contiguous"). **Author contiguous.** Two bands are only genuinely two bands when they are different colors, as on Jacksonville's throwback.
 - **A dark edge on one side only is a shadow, not trim.** Baltimore's shoulder bar reads white with a gold keyline, but its full outer boundary spans seven pixels, because the lower two are a black drop-shadow. Folding that into the gold rendered the keyline at twice its weight — the bar came out gold-with-a-white-slot instead of white-with-a-gold-keyline.
 
-The general fix for both: **measure a cut through the middle of the shape, not its silhouette.** A column sample across the interior crosses each layer exactly once and names it; an outer-boundary trace cannot distinguish a layer from its own shadow. Where the two disagree, the interior cut is right.
+The general fix for the last two: **measure a cut through the middle of the shape, not its silhouette.** A column sample across the interior crosses each layer exactly once and names it; an outer-boundary trace cannot distinguish a layer from its own shadow. Where the two disagree, the interior cut is right.
+
+And the general fix for all three: **crop the figure at 8× and look at it before you author.** Every one of these was found by eye in seconds and would have survived any amount of further sampling. Measurement tells you where a boundary is; only looking tells you what it belongs to.
+
+**A team with no construction at all is a real answer.** Las Vegas' sleeve runs unbroken black from shoulder to hem, its pants are unbroken silver, its collar has no trim; Miami's home and away are the same. Those modules carry zero layers and are correct. Say so explicitly in the header — an empty module otherwise reads as unfinished work, and the next person re-measures it.
 
 ## Step 6 — The helmet decal: trace-then-stylize
 
 The decal **is** in scope. The workflow is: land an accurate machine trace as a faithful starting point, then hand-stylize it. Every traced path carries a `TRACE-PENDING-STYLIZE` comment; `grep -rn TRACE-PENDING-STYLIZE lib components docs` lists everything awaiting that pass.
 
-**Decide first whether it will trace at all.** Proven both ways across seven attempts:
+**The tracer is not only for helmets.** Any solid construction mark is a candidate, and a traced one beats a hand-approximated one whenever the shape has corners you would otherwise guess at. Los Angeles' shoulder bolt is traced into mannequin *sleeve* space — same tracer, same union-and-cover method, only the coordinate map changes (`X = 294 + (refX − center) · scaleX`, `Y = 383 + (refY − jerseyTop) · scaleY` instead of the helmet map). Reach for it whenever hand-authoring would mean inventing a zigzag.
+
+**Mirroring a traced path** is a regex over the coordinate pairs — `x → 588 − x`, y untouched. Generate the mirror in the scratchpad script rather than by hand.
+
+**Decide first whether it will trace at all.** Proven both ways across sixteen attempts:
 
 | Traces well | Does not trace |
 |---|---|
 | Solid filled regions (Cardinals, 4 color regions) | Thin swooping linework (Seahawks keyline, Falcons falcon) |
-| Bold letterforms (Bears C at 31×21px, Packers G) | Marks embedding a wordmark (Steelers — also out of scope) |
-| Bold solid shapes (Vikings horn) | Anything under ~25px of *stroke-bearing* detail |
+| Bold letterforms (Bears C at 31×21px, Packers G, Denver's Orange Crush "D") | Marks embedding a wordmark (Steelers — also out of scope) |
+| Bold solid shapes (Vikings horn, Denver's horse, LA's bolt) | Anything under ~25px of *stroke-bearing* detail (Baltimore's raven — a 2px gold keyline around a purple head) |
+| Solid shape inside a solid ring (Miami's dolphin, both era marks) | A solid mass read through fine linework (Jacksonville's jaguar — the gold traces, the sub-2px white jaw does not, and the result is a blob) |
+| Bold shape under a keyline (Carolina's panther) | |
 
 Size alone does not decide it — the Bears C traced beautifully at 31×21px while the Falcons falcon shredded at 28×34px. **Shape character decides it.** When it won't trace, leave the shell bare and say why in the module header; an illegible trace is worse than none.
 
@@ -135,13 +165,19 @@ Two useful inversions:
 
 **Never trace a keyline as its own region — trace the union and let the body cover it.** A keyline is thin by definition, so a predicate that selects only its color returns slivers: Carolina's blue outline came back as nine disconnected fragments that read as debris beside the panther. Tracing blue OR black instead gives one silhouette; painting the black body over it leaves precisely the keyline showing, and it is continuous because it was never cut up. This is the Packers inversion generalized, and it is what makes an animal mark with an outline tractable at all. It also means a mark whose keyline is its only detail (Baltimore's raven) still does not trace — there is no body to paint over.
 
+**But do not assume the union is one component, and never reduce it with "take the largest".** The two colors often do not touch: an antialiased seam runs between them matching neither predicate, so the union is two disjoint components. Los Angeles' shell bolt is exactly this — keyline 22k px, body 26k px, adjacent and separate. Taking the largest component returns the body alone, drops the keyline entirely, raises no error, and produces a mark that looks completely plausible until you hold it against the reference. **Keep every non-border component and filter by size instead**, which is both safer and does other necessary work: on that same helmet the size floor is what removes the numerals GUD paints on the shell, which are the keyline's exact blue and would otherwise be traced as part of the mark.
+
+Three distinct ways a keyline trace fails, then, and they need different fixes: traced alone it fragments (union it); traced with `evenodd` its antialiasing punches through (stack unions); traced as a union it may not be connected (keep all components, filter by size).
+
 Prefer a flat, straight-on source when one exists — GUD draws a 3/4 shell, so a trace bakes in the curvature distortion. But check licensing: Commons carries most *wordmarks* freely while the primary head/animal marks are typically non-free fair-use on English Wikipedia. Surface the source and its license rather than picking one silently.
 
-**Always out of scope, every kit:** chest wordmarks, league shields, sponsor marks.
+**A team can wear more than one mark.** Miami's 1972 throwback wears a dolphin breaking through a solid ring where its current kits wear a dolphin inside a sunburst; Denver's Orange Crush wears the era "D" where the modern kits wear the horse. Check every kit's helmet before assuming one traced decal serves them all, and give the second mark its own pair of paths with a `throwback` flag on the factory rather than a second copy of the factory.
+
+**Always out of scope, every kit:** chest wordmarks, league shields, sponsor marks, GUD's shoulder numerals, sleeve patches, and collar tabs (Carolina's "KEEP POUNDING", Denver's "BRONCOS COUNTRY", Miami's "MIAMI"/"GO FINS!").
 
 ## Step 7 — Write the module
 
-Structure that has held up across ten teams:
+Structure that has held up across twenty-odd teams:
 
 - Header comment: reference used, what is measured vs inferred, coordinate spaces, the mirroring rule.
 - Named `const` exports for every path and fixed color, each with its source cited.
@@ -149,7 +185,16 @@ Structure that has held up across ten teams:
 - `GENERIC_STRIPPED` array — most teams remove nearly the whole generic model.
 - Per-kit overrides, each with a comment saying what the reference shows.
 
-Prefer tokens (`'primary'`/`'secondary'`/`'accent'`) over literals wherever the palette genuinely supplies the color; use a cited literal where it does not.
+**Do not assume one construction per team.** It is the common case, not the rule. Miami is three: home and away carry no sleeve trim, the throwback a five-band set, Rivalries a sleeve wedge with a slash and a collar V. When kits genuinely differ, write separate factories rather than one factory with a growing flag list.
+
+**Parameterize both colors of a two-tone mark, not one.** It is tempting to treat a two-tone shoulder as "trim over body" and hard-code the one you think is fixed. Denver proves why not — the orange jersey wears white-over-navy and the navy jersey wears orange-over-white, so a factory that assumes either position renders one of them inverted. `shoulderWedge(upper, lower)` costs nothing and is flip-safe.
+
+Two mannequin facts worth reaching for before hand-rolling:
+
+- **Collars.** The generic chevron `M206,388 L294,455 L386,388` (bears, bills) is right when the arms meet at the chest. Often they don't: Jacksonville and Denver both wear short arcs down each side of the neck that stop well short of closing, and drawing a chevron there wrongly seals the V. Extrapolate the measured arms — if their meeting point is far below where the color ends, author two separate strokes. Carolina's V is the opposite case: it closes, but far deeper than the generic path (y=513 against y=455), so it needs its own path rather than the shared one.
+- **Helmet crown stripes.** `HELMET_CROWN_STRIPE_PATH` in `shared.ts` hugs the crown silhouette, which is all a side view can show. The generic model's straight rectangle is the wrong shape and should be stripped. Miami wears one on all four kits — orange on three, teal on the throwback — and it is easy to miss because it sits exactly on the shell's outline where it reads as the drawing's own edge.
+
+Prefer tokens (`'primary'`/`'secondary'`/`'accent'`) over literals wherever the palette genuinely supplies the color; use a cited literal where it does not. Where a kit has no keyline at all, set `outline` to the face color rather than leaving it to inherit the generic model's contrasting stroke.
 
 `number.outlineWidth` defaults to 26, which is tuned for a keyline that reads at swatch size. Teams with a *thin* numeral trim need ~10–14, or the trim swallows the face and every number renders as one solid color (caught on Minnesota).
 
@@ -174,7 +219,12 @@ const svgs = [...h.closest('div,section,li,article').parentElement.querySelector
 // clone into a fixed overlay at width 188 and screenshot
 ```
 
-Inspect `[data-layer-id]` fills to confirm each layer resolved to the color you intended, rather than trusting that it did.
+Inspect `[data-layer-id]` fills to confirm each layer resolved to the color you intended, rather than trusting that it did. Two things that check does not cover, and both have bitten:
+
+- **`jerseyColor` / `helmetColor` / `pantsColor` are not layers**, so a `jerseyColor: 'secondary'` override does not appear in that audit at all. Confirm the body color by censusing every fill in the kit's SVG — on Denver's Orange Crush that is what proved the body resolved to orange rather than the palette's royal `primary`.
+- **Render at 380–400px as well as at swatch size.** Fine work reads as noise at 188px and you cannot tell "correct but small" from "collapsed". Miami's throwback bands, Denver's shoulder wedge and Los Angeles' bolt tail all needed the larger render to confirm.
+
+Console errors during a session are cumulative and survive a reload, so stale HMR failures from a mid-edit state will still be listed after the fix. Confirm health with a server-side fetch (`curl -o /dev/null -w '%{http_code}' /uniforms`, plus `/team/<id>`) rather than by reading the console buffer.
 
 If a `data.ts` palette needs correcting, regenerate the seed and apply **locally only**:
 
@@ -188,8 +238,12 @@ Never `db push` to the linked prod project as part of this work — that is Coop
 ## Done means
 
 - [ ] Runtime palette checked before authoring; literals used where no token exists, each citing a source
+- [ ] Home row cross-checked against `teams.color_primary`; any drift, and which token assignments would not survive it, recorded in the header
+- [ ] Every kit's `primary` verified against its figure rather than assumed to be the jersey color
+- [ ] Figure cropped and *looked at* before authoring, not only sampled
 - [ ] Every path derived from a measurement recorded in a comment, not eyeballed
-- [ ] Anything inferred rather than measured is labelled as such in the module header
-- [ ] Traced decals carry `TRACE-PENDING-STYLIZE`; skipped decals say why
+- [ ] Anything inferred rather than measured is labelled as such in the module header; a layerless module says it is deliberate
+- [ ] Traced decals carry `TRACE-PENDING-STYLIZE`; skipped decals say why; every kit's helmet checked for a second mark
 - [ ] `tsc`, tests and `format:check` clean
-- [ ] Rendered in a browser and visually compared against the reference
+- [ ] Rendered in a browser at both swatch size and ~390px, and visually compared against the reference
+- [ ] Layer fills read back from the DOM; body/helmet/pants overrides confirmed by fill census, since they are not layers
