@@ -64,10 +64,10 @@ function getPlayersByPositionGroup(roster: TeamRosterSeed, group: PositionGroup)
 
 // Assigns players to a set of same-group slots: a slot with `preferredPosition` claims
 // the best-ranked player carrying that exact tag first (so DB_SLOTS' "SS" dot gets the
-// roster's actual free... strong safety, not just whichever safety sorts first); every
-// remaining slot (no preference, or no player carries it) is filled in original slot
-// order from whatever's left of the depth-ordered pool — the same fallback semantics
-// group-based resolution always had (DEP-148).
+// roster's actual strong safety, not just whichever safety sorts first); every remaining
+// slot (no preference, or no player carries it) is filled in original slot order from
+// whatever's left of the depth-ordered pool — the same fallback semantics group-based
+// resolution always had (DEP-148).
 function assignPositionGroup(pool: Player[], slots: FormationSlot[]): (Player | undefined)[] {
   const remaining = [...pool];
   const result: (Player | undefined)[] = new Array(slots.length).fill(undefined);
@@ -143,7 +143,22 @@ export const OFFENSE_FORMATION: FormationSlot[] = [
   { id: 'off-rg-0', position: 'RG', index: 0, x: 58, y: 51, label: 'RG', onLine: true },
   { id: 'off-rt-0', position: 'RT', index: 0, x: 66, y: 51, label: 'RT', onLine: true },
   { id: 'off-qb-0', position: 'QB', index: 0, x: 50, y: 66, label: 'QB', onLine: false },
-  { id: 'off-rb-0', position: 'RB', index: 0, x: 50, y: 78, label: 'RB', onLine: false },
+  // group: 'RB' + preferredPosition: 'RB' — prefers an exact RB tag (the common case: a
+  // real halfback fills this dot) but falls back to the roster's best-ranked FB when the
+  // team has no player tagged RB at all, so a true fullback isn't invisible on the
+  // fallback formation either (DEP-148). resolveUnit's FB relabel then reads this dot
+  // "FB" instead of "RB" whenever that fallback fires.
+  {
+    id: 'off-rb-0',
+    position: 'RB',
+    group: 'RB',
+    preferredPosition: 'RB',
+    index: 0,
+    x: 50,
+    y: 78,
+    label: 'RB',
+    onLine: false,
+  },
 ];
 
 // True 3-4 base: a 3-man front (LDE/NT/RDE) + 4 linebackers (WLB/LILB/RILB/SLB) = 7 in

@@ -83,12 +83,13 @@ export interface FormationSlot {
   id: string;
   position: Position;
   index: number;
-  // Set only on slots built by lib/formations.ts's real-formation resolvers
-  // (buildDlSlots/buildLbSlots/buildDbSlots, buildRealFormation's RB slots). When
-  // present, resolveUnit fills the slot by broad group + groupIndex instead of an exact
-  // match on `position`/`index` — nflverse's count-only personnel data can't say which
-  // specific granular position a player fills. Unset (BASE_DEFENSE, OFFENSE_FORMATION,
-  // and every other Position on the offense side) keeps the exact-match behavior.
+  // Set on slots built by lib/formations.ts's real-formation resolvers
+  // (buildDlSlots/buildLbSlots/buildDbSlots, buildRealFormation's RB slots) and on
+  // OFFENSE_FORMATION's RB slot. When present, resolveUnit fills the slot via
+  // resolveGroupedSlots (broad group + optional preferredPosition) instead of an exact
+  // match on `position`/`index` alone — nflverse's count-only personnel data can't say
+  // which specific granular position a player fills. Unset (BASE_DEFENSE and every other
+  // Position on the offense side) keeps the plain exact-match behavior.
   group?: PositionGroup;
   // Only meaningful alongside `group`. When a group slot's label names a specific
   // granular position (e.g. DB_SLOTS' "SS"/"FS"/"LCB"/"RCB"/"NB"), resolveUnit tries an
