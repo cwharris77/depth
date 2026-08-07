@@ -8,11 +8,18 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer } from './types';
 // an omission. No sleeve stripe, no pant stripe, no helmet stripe. The home kit carries a collar
 // trim; the other two carry none at all, so their only construction is the numeral treatment.
 //
-// The club's bull-horn mark sits on each sleeve and is NOT authored. On the home figure it measures
-// about 13x18 reference px with a sub-2px white sliver through it — stroke-bearing detail well
-// under the ~25px floor, so it would shred exactly the way the Falcons falcon did. Worth noting for
-// whoever revisits: the away figure draws the same mark noticeably larger, so if it is ever traced,
-// trace it from row-1 figure 5 rather than from the home figure.
+// The club's bull-horn mark sits on each sleeve and is NOT authored — see above on size.
+//
+// THE HELMET MARK IS ALSO NOT AUTHORED, and the reason is worth recording because it is not the
+// usual one. Size is fine: the away figure (row-1 figure 5) draws the bull about 50x44 reference
+// px, well clear of the ~25px floor, and it was traced from there rather than from the home
+// figure. What defeats it is that the bull's LEFT HALF IS THE SAME NAVY AS THE SHELL — sampled,
+// both are exactly (3,24,37) — so no predicate separates the mark from the surface it sits on. The
+// only thing dividing them is the white keyline, and that keyline breaks into four disconnected
+// components at this resolution, so it cannot be closed into a region to fill either. Every other
+// mark in this archive is separable by color from its shell; this one is not, which is a different
+// failure from the Falcons' and Raiders' fine linework. Re-derive from a source where the bull's
+// navy and the shell navy are distinct values.
 //
 // Out of scope on every kit: the chest wordmark, the league shield, the "H-TOWN" collar tab, the
 // sleeve mark above, and the shoulder numerals.
