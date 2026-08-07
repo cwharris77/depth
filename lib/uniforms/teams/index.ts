@@ -4,6 +4,7 @@ import { BENGALS_UNIFORMS } from './bengals';
 import { BILLS_UNIFORMS } from './bills';
 import { BRONCOS_UNIFORMS } from './broncos';
 import { BROWNS_UNIFORMS } from './browns';
+import { BUCCANEERS_UNIFORMS } from './buccaneers';
 import { CARDINALS_UNIFORMS } from './cardinals';
 import { CHARGERS_UNIFORMS } from './chargers';
 import { CHIEFS_UNIFORMS } from './chiefs';
@@ -13,6 +14,7 @@ import { DOLPHINS_UNIFORMS } from './dolphins';
 import { FALCONS_UNIFORMS } from './falcons';
 import { GIANTS_UNIFORMS } from './giants';
 import { JAGUARS_UNIFORMS } from './jaguars';
+import { JETS_UNIFORMS } from './jets';
 import { LIONS_UNIFORMS } from './lions';
 import { NINERS_UNIFORMS } from './niners';
 import { PANTHERS_UNIFORMS } from './panthers';
@@ -23,6 +25,7 @@ import { RAVENS_UNIFORMS } from './ravens';
 import { SAINTS_UNIFORMS } from './saints';
 import { SEAHAWKS_UNIFORMS } from './seahawks';
 import { STEELERS_UNIFORMS } from './steelers';
+import { TEXANS_UNIFORMS } from './texans';
 import { VIKINGS_UNIFORMS } from './vikings';
 import type { TeamUniformDefinition } from './types';
 
@@ -35,6 +38,7 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   bills: BILLS_UNIFORMS,
   broncos: BRONCOS_UNIFORMS,
   browns: BROWNS_UNIFORMS,
+  buccaneers: BUCCANEERS_UNIFORMS,
   cardinals: CARDINALS_UNIFORMS,
   chargers: CHARGERS_UNIFORMS,
   chiefs: CHIEFS_UNIFORMS,
@@ -45,6 +49,7 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   falcons: FALCONS_UNIFORMS,
   giants: GIANTS_UNIFORMS,
   jaguars: JAGUARS_UNIFORMS,
+  jets: JETS_UNIFORMS,
   lions: LIONS_UNIFORMS,
   packers: PACKERS_UNIFORMS,
   panthers: PANTHERS_UNIFORMS,
@@ -54,6 +59,7 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   saints: SAINTS_UNIFORMS,
   seahawks: SEAHAWKS_UNIFORMS,
   steelers: STEELERS_UNIFORMS,
+  texans: TEXANS_UNIFORMS,
   vikings: VIKINGS_UNIFORMS,
 };
 
