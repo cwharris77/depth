@@ -170,6 +170,32 @@ describe('formations are well-formed', () => {
     expect(olSlots).toHaveLength(5);
     expect(olSlots.every((s) => s.onLine)).toBe(true);
   });
+
+  it('a slot with preferredPosition names a tag that actually belongs to its own group', () => {
+    // Cheap insurance against a future data-entry mismatch: a slot claiming
+    // preferredPosition: 'FS' inside group: 'CB' would silently never match (findIndex
+    // never finds it) and regress to the pre-DEP-148 fallback-only behavior with no
+    // compile or test failure to catch it -- this pins the known group membership for
+    // every preferredPosition value in use today.
+    const GROUP_OF: Record<string, string> = {
+      RB: 'RB',
+      FB: 'RB',
+      LCB: 'CB',
+      RCB: 'CB',
+      NB: 'CB',
+      SS: 'S',
+      FS: 'S',
+    };
+    const allRealSlots = [
+      ...buildRealDefenseFormation('4-3-4'),
+      ...buildRealDefenseFormation('3-2-6'),
+      ...OFFENSE_FORMATION,
+    ];
+    for (const slot of allRealSlots) {
+      if (!slot.group || !slot.preferredPosition) continue;
+      expect(GROUP_OF[slot.preferredPosition]).toBe(slot.group);
+    }
+  });
 });
 
 describe('buildRealFormation — real per-team formations', () => {
@@ -315,26 +341,145 @@ describe('buildRealDefenseFormation — real per-team defensive fronts', () => {
 
     const realOffense = buildRealFormation('SHOTGUN', '12'); // 1 RB (matches FB via group)
     const resolvedOffense = resolveUnit(r, 'offense', realOffense);
-    const rbSlot = resolvedOffense.find((s) => s.label === 'RB');
+    // Relabeled to "FB" (not "RB") since the resolved player is actually tagged FB —
+    // see the "relabels an RB-group slot to FB" tests below for the dedicated coverage.
+    const rbSlot = resolvedOffense.find((s) => s.label === 'FB');
     expect(rbSlot?.player?.id).toBe('fb1');
   });
 
   it('group-based resolution sorts by depthRank then jersey number, same as exact-match resolution', () => {
     // Mirrors "getPlayersByPosition — deterministic order" above, but through the
-    // group-based path (buildDlSlots' groupIndex) instead of an exact position match --
-    // scrambled input order across two granular DL positions (LDE, RDE) at the same
-    // depthRank must still resolve in ascending jersey-number order.
+    // group-based path (resolveGroupedSlots' fallback fill) instead of an exact position
+    // match -- scrambled input order across two granular DL positions (LDE, RDE) at the
+    // same depthRank must still resolve in ascending jersey-number order.
     const r = roster([
       player({ id: 'de-16', position: 'RDE', depthRank: 1, number: 16 }),
       player({ id: 'de-11', position: 'LDE', depthRank: 1, number: 11 }),
       player({ id: 'de-14', position: 'RDE', depthRank: 1, number: 14 }),
     ]);
-    const real = buildRealDefenseFormation('3-4-4'); // 3 DL slots, groupIndex 0..2
+    const real = buildRealDefenseFormation('3-4-4'); // 3 DL slots, no preferredPosition
     const resolved = resolveUnit(r, 'defense', real);
     const dlIds = real
       .filter((s) => s.group === 'DL')
       .map((s) => resolved.find((r2) => r2.key === s.id)?.player?.id);
     expect(dlIds).toEqual(['de-11', 'de-14', 'de-16']);
+  });
+
+  it('group-based LB resolution sorts by depthRank then jersey number too', () => {
+    // Same coverage as the DL case above, for buildLbSlots' 'LB' group -- scrambled
+    // input order across granular LB positions at the same depthRank must still resolve
+    // in ascending jersey-number order.
+    const r = roster([
+      player({ id: 'lb-58', position: 'SLB', depthRank: 1, number: 58 }),
+      player({ id: 'lb-52', position: 'WLB', depthRank: 1, number: 52 }),
+      player({ id: 'lb-54', position: 'LILB', depthRank: 1, number: 54 }),
+    ]);
+    const real = buildRealDefenseFormation('4-3-4'); // 3 LB slots, no preferredPosition
+    const resolved = resolveUnit(r, 'defense', real);
+    const lbIds = real
+      .filter((s) => s.group === 'LB')
+      .map((s) => resolved.find((r2) => r2.key === s.id)?.player?.id);
+    expect(lbIds).toEqual(['lb-52', 'lb-54', 'lb-58']);
+  });
+});
+
+describe('grouped slots prefer an exact granular-position match over raw depth rank (DEP-148)', () => {
+  it('seats the real FS in the FS-labeled dot and the real SS in the SS-labeled dot, even when the FS out-ranks the SS', () => {
+    // Julian Love (FS, depthRank 1) / Ty Okada (SS, depthRank 2) repro from the ticket:
+    // indexing the S group by raw rank would put Love (rank 1) in the SS slot and Okada
+    // (rank 2) in the FS slot — backwards from what their actual tags say.
+    const r = roster([
+      player({ id: 'love', position: 'FS', depthRank: 1, number: 20 }),
+      player({ id: 'okada', position: 'SS', depthRank: 2, number: 33 }),
+    ]);
+    const real = buildRealDefenseFormation('4-3-4'); // includes SS + FS DB slots
+    const resolved = resolveUnit(r, 'defense', real);
+    expect(resolved.find((s) => s.label === 'SS')?.player?.id).toBe('okada');
+    expect(resolved.find((s) => s.label === 'FS')?.player?.id).toBe('love');
+  });
+
+  it('seats the real LCB in the LCB-labeled dot and the real RCB in the RCB-labeled dot, even when they are reverse-ranked', () => {
+    const r = roster([
+      player({ id: 'left-corner', position: 'LCB', depthRank: 2, number: 24 }),
+      player({ id: 'right-corner', position: 'RCB', depthRank: 1, number: 21 }),
+    ]);
+    const real = buildRealDefenseFormation('4-3-4');
+    const resolved = resolveUnit(r, 'defense', real);
+    expect(resolved.find((s) => s.label === 'LCB')?.player?.id).toBe('left-corner');
+    expect(resolved.find((s) => s.label === 'RCB')?.player?.id).toBe('right-corner');
+  });
+
+  it('falls back to next-best-ranked group member when no player carries the specific tag', () => {
+    // Only generic 'S' entries on the roster -- no one tagged SS or FS specifically.
+    const r = roster([
+      player({ id: 's1', position: 'S', depthRank: 1, number: 30 }),
+      player({ id: 's2', position: 'S', depthRank: 2, number: 31 }),
+    ]);
+    const real = buildRealDefenseFormation('4-3-4');
+    const resolved = resolveUnit(r, 'defense', real);
+    expect(resolved.find((s) => s.label === 'SS')?.player?.id).toBe('s1');
+    expect(resolved.find((s) => s.label === 'FS')?.player?.id).toBe('s2');
+  });
+
+  it('an exact-tag match claims its slot before the fallback pass runs, so it is not double-assigned', () => {
+    // fs1 must be pulled out of the pool for the FS slot before the generic S entries
+    // fill everything else, or fs1 could end up assigned twice.
+    const r = roster([
+      player({ id: 'fs1', position: 'FS', depthRank: 2, number: 25 }),
+      player({ id: 's1', position: 'S', depthRank: 1, number: 30 }),
+    ]);
+    const real = buildRealDefenseFormation('3-2-6'); // 6 DB slots: LCB/RCB/SS/FS/NB/S
+    const resolved = resolveUnit(r, 'defense', real);
+    expect(resolved.find((s) => s.label === 'FS')?.player?.id).toBe('fs1');
+    expect(resolved.find((s) => s.label === 'SS')?.player?.id).toBe('s1');
+    const usedIds = resolved
+      .map((s) => s.player?.id)
+      .filter((id): id is string => id !== undefined);
+    expect(new Set(usedIds).size).toBe(usedIds.length);
+  });
+});
+
+describe('resolveUnit relabels an RB-group slot to "FB" when the resolved player is actually tagged FB (DEP-148)', () => {
+  it('relabels the 2nd RB slot to FB when a fullback fills it behind a real featured back', () => {
+    const r = roster([
+      player({ id: 'rb1', position: 'RB', depthRank: 1, number: 22 }),
+      player({ id: 'fb1', position: 'FB', depthRank: 1, number: 44 }),
+    ]);
+    const real = buildRealFormation('SHOTGUN', '20'); // 2 RB slots, 0 TE
+    const resolved = resolveUnit(r, 'offense', real);
+    expect(resolved.find((s) => s.label === 'RB')?.player?.id).toBe('rb1');
+    expect(resolved.find((s) => s.label === 'FB')?.player?.id).toBe('fb1');
+  });
+
+  it('does not relabel a real running back to FB', () => {
+    const r = roster([
+      player({ id: 'rb1', position: 'RB', depthRank: 1, number: 22 }),
+      player({ id: 'rb2', position: 'RB', depthRank: 2, number: 23 }),
+    ]);
+    const real = buildRealFormation('SHOTGUN', '20');
+    const resolved = resolveUnit(r, 'offense', real);
+    expect(resolved.filter((s) => s.label === 'RB')).toHaveLength(2);
+    expect(resolved.some((s) => s.label === 'FB')).toBe(false);
+  });
+
+  it('the generic fallback formation (no real per-team data) prefers a real RB over a fullback', () => {
+    // OFFENSE_FORMATION's single RB slot has preferredPosition: 'RB' -- a team's actual
+    // starting RB must fill it even if a depth-ranked-higher FB is also on the roster.
+    const r = roster([
+      player({ id: 'rb1', position: 'RB', depthRank: 1, number: 22 }),
+      player({ id: 'fb1', position: 'FB', depthRank: 1, number: 44 }),
+    ]);
+    const resolved = resolveUnit(r, 'offense');
+    expect(resolved.find((s) => s.key === 'off-rb-0')?.player?.id).toBe('rb1');
+    expect(resolved.find((s) => s.key === 'off-rb-0')?.label).toBe('RB');
+  });
+
+  it('the generic fallback formation shows a fullback (relabeled FB) when the roster has no RB at all', () => {
+    const r = roster([player({ id: 'fb1', position: 'FB', depthRank: 1, number: 44 })]);
+    const resolved = resolveUnit(r, 'offense');
+    const rbDot = resolved.find((s) => s.key === 'off-rb-0');
+    expect(rbDot?.player?.id).toBe('fb1');
+    expect(rbDot?.label).toBe('FB');
   });
 });
 
