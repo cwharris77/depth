@@ -5,17 +5,20 @@
 // highest single value across every season shown. Renders straight from the `seasons`
 // prop the page already ships (AGENTS.md invariant 5); nothing here fetches. Empty
 // seasons render nothing — the main column already handles the no-stats state.
+import Tooltip from '@/components/ui/Tooltip';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import SectionLabel from '@/components/ui/SectionLabel';
 import type { TeamStats } from '@/lib/types';
 
 function Bar({
   label,
+  tooltip,
   value,
   pct,
   color,
 }: {
   label: string;
+  tooltip?: string;
   value: number;
   pct: number;
   color: string;
@@ -23,7 +26,13 @@ function Bar({
   return (
     <div className="flex items-center gap-2">
       <span className="w-[62px] whitespace-nowrap text-[9px]" style={{ color: uiTokens.textFaint }}>
-        {label}
+        {tooltip ? (
+          <Tooltip content={tooltip}>
+            <span>{label}</span>
+          </Tooltip>
+        ) : (
+          label
+        )}
       </span>
       <div
         className="h-2 flex-1 overflow-hidden rounded-full"
@@ -63,9 +72,16 @@ export default function StatsPanel({ seasons, accent }: { seasons: TeamStats[]; 
                 <span style={{ color: diffColor }}>{diff > 0 ? `+${diff}` : diff}</span>
               </div>
               <div className="flex flex-col gap-1">
-                <Bar label="PTS FOR" value={s.pointsFor} pct={pct(s.pointsFor)} color={accent} />
+                <Bar
+                  label="PTS FOR"
+                  tooltip="Total points scored by the team"
+                  value={s.pointsFor}
+                  pct={pct(s.pointsFor)}
+                  color={accent}
+                />
                 <Bar
                   label="PTS AGAINST"
+                  tooltip="Total points scored against the team"
                   value={s.pointsAgainst}
                   pct={pct(s.pointsAgainst)}
                   color={uiTokens.statusInjured}

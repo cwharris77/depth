@@ -5,6 +5,7 @@
 // local state; it receives one team's already-resolved data as a prop (invariant 5) —
 // `seasons` is small (current + up to two prior years), never a fan-out of all-32 data.
 import SectionLabel from '@/components/ui/SectionLabel';
+import Tooltip from '@/components/ui/Tooltip';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import { readableTextOn } from '@/lib/colors';
 import { formatGameDate, ordinal } from '@/lib/format';
@@ -98,7 +99,7 @@ function StatCell({
   color,
   rank,
 }: {
-  label: string;
+  label: ReactNode;
   value: string;
   color?: string;
   rank?: string;
@@ -455,13 +456,21 @@ export default function TeamStatsView({
                   </tr>
                   <tr style={{ borderBottom: `1px solid ${uiTokens.borderStrong}` }}>
                     <StatCell
-                      label="PTS FOR"
+                      label={
+                        <Tooltip content="Total points scored by the team">
+                          <span>PTS FOR</span>
+                        </Tooltip>
+                      }
                       value={String(active.pointsFor)}
                       rank={rankLabel(activeRanks?.pointsFor, lastRank, 'most')}
                     />
                     <td className="w-6" />
                     <StatCell
-                      label="PTS AGAINST"
+                      label={
+                        <Tooltip content="Total points scored against the team">
+                          <span>PTS AGAINST</span>
+                        </Tooltip>
+                      }
                       value={String(active.pointsAgainst)}
                       rank={rankLabel(activeRanks?.pointsAgainst, lastRank, 'least')}
                     />
