@@ -11,6 +11,7 @@ import { FALCONS_UNIFORMS } from './falcons';
 import { GIANTS_UNIFORMS } from './giants';
 import { NINERS_UNIFORMS } from './niners';
 import { PACKERS_UNIFORMS } from './packers';
+import { RAMS_UNIFORMS } from './rams';
 import { SAINTS_UNIFORMS } from './saints';
 import { SEAHAWKS_UNIFORMS } from './seahawks';
 import { STEELERS_UNIFORMS } from './steelers';
@@ -33,6 +34,7 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   falcons: FALCONS_UNIFORMS,
   giants: GIANTS_UNIFORMS,
   packers: PACKERS_UNIFORMS,
+  rams: RAMS_UNIFORMS,
   saints: SAINTS_UNIFORMS,
   seahawks: SEAHAWKS_UNIFORMS,
   steelers: STEELERS_UNIFORMS,
