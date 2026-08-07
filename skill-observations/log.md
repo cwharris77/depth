@@ -48,3 +48,18 @@ resolved statuses always carry their resolution date
 **Suggested improvement:** Never pair an unconditional `git stash` with an unconditional `git stash pop`. Either capture the stash's identity (`git stash create` / compare `git stash list` before and after) and pop only that ref, or check `git status --porcelain` first and skip the stash/pop pair entirely when the tree is clean. When a pop does conflict, stop and inspect rather than resolving — a conflict in a file unrelated to the current task is the signal that the wrong stash was popped.
 
 **Principle:** A stash is a shared, session-spanning stack, not a scratch variable. Operations that assume "the thing I pushed is on top" are unsafe whenever the push may have been a no-op; always pop by identity or guard the pair behind a dirty-tree check.
+
+### Observation 6: A skill's verification step prescribed a command that reports failures from stale sibling worktrees
+
+**Status:** OPEN
+**Date:** 2026-08-06
+**Session context:** Shipping a docs-only change through the project's ship-PR skill. Its verification step says to run the project's plain test command and treat any failure as a stop-and-fix. The plain command's default include globs reach into checked-out sibling worktrees inside the repo, each holding an older copy of the suite and its own installed dependencies. It reported 31 failures across 5 files, every one of them from those stale copies; the same run scoped to the working tree was fully green. A separate, unrelated document in the same repo already recorded the workaround, so the knowledge existed but not where the verification step could use it.
+**Skill:** ship-pr (project-level) — "Verify — before writing the commit message" step and its Quick reference table
+**Type:** open-source
+**Phase/Area:** Pre-commit verification
+
+**Issue:** The skill hard-codes a verification command whose failure output is not trustworthy in this repo's normal working state, while simultaneously carrying a red-flag rule that a failing verification must halt the workflow. An agent following the skill literally either halts on phantom failures or, worse, learns to wave off red test output — which defeats the point of the gate. The correct invocation was documented elsewhere, so this is a knowledge-placement failure, not a missing discovery.
+
+**Suggested improvement:** Where a verification step names a command, the skill should name the *scoped* invocation that is actually trustworthy, with a one-line note on why the scoping exists. Better still, push the scope into the tool's own config so the plain command is correct by default and the skill can stay short — a skill instructing people to remember flags is a workaround for a misconfigured tool. Add a check to the skill: if a verification command reports failures, confirm the failing paths lie inside the working tree before treating them as real.
+
+**Principle:** A verification gate is only as good as the trustworthiness of the command behind it. When a prescribed command reliably produces false failures, the fix belongs in the tool's configuration first and the skill's wording second — never in the agent's memory. Any skill that both names a command and declares its failures blocking must ensure that command's failures are real, or it trains the exact habit of ignoring red output that the gate exists to prevent.
