@@ -1,6 +1,13 @@
+// DE/DT/LB/CB/S remain valid alongside their granular splits below: ESPN's per-athlete
+// bio abbreviation (the fallback path in lib/espn/positions.ts's BIO_POSITION) carries
+// no side/role info for a lineman, linebacker, or corner, so those fall back to the
+// generic code; nflverse's roster CSVs also still emit some of these directly. SS/FS/
+// NT/FB do have a distinguishable bio abbreviation, so those always resolve granular
+// (docs: 2026-08-04-full-espn-position-taxonomy-design.md).
 export type Position =
   | 'QB'
   | 'RB'
+  | 'FB'
   | 'WR'
   | 'TE'
   | 'LT'
@@ -9,15 +16,34 @@ export type Position =
   | 'RG'
   | 'RT'
   | 'DE'
+  | 'LDE'
+  | 'RDE'
   | 'DT'
+  | 'NT'
   | 'LB'
+  | 'WLB'
+  | 'LILB'
+  | 'RILB'
+  | 'SLB'
   | 'CB'
+  | 'LCB'
+  | 'RCB'
+  | 'NB'
   | 'S'
+  | 'SS'
+  | 'FS'
   | 'K'
   | 'P'
   | 'LS'
   | 'KR'
   | 'PR';
+
+// The broad depth-chart family a granular Position belongs to. nflverse's real-formation
+// participation data (defense_personnel/offense_personnel counts) has no per-player
+// archetype info — it can't say which linebacker is strongside vs weak, or which safety
+// is strong vs free — so the count-driven formation resolvers in lib/formations.ts match
+// on this broader group instead of the exact granular Position everywhere else uses.
+export type PositionGroup = 'DL' | 'LB' | 'CB' | 'S' | 'RB';
 
 export type PlayerStatus = 'starter' | 'backup' | 'rookie' | 'injured';
 
@@ -57,6 +83,19 @@ export interface FormationSlot {
   id: string;
   position: Position;
   index: number;
+  // Set only on slots built by lib/formations.ts's real-formation resolvers
+  // (buildDlSlots/buildLbSlots/buildDbSlots, buildRealFormation's RB slots). When
+  // present, resolveUnit fills the slot by broad group + groupIndex instead of an exact
+  // match on `position`/`index` — nflverse's count-only personnel data can't say which
+  // specific granular position a player fills. Unset (BASE_DEFENSE, OFFENSE_FORMATION,
+  // and every other Position on the offense side) keeps the exact-match behavior.
+  group?: PositionGroup;
+  // Index within `group` (not within `position`) — only meaningful alongside `group`.
+  // buildDlSlots spans two position types (DE/DT) under one 'DL' group with their own
+  // per-type `index` counters, so `index` alone can't double as the group lookup key
+  // there; every other real-formation builder's per-type index already happens to equal
+  // its group-relative position, so this is only ever set explicitly by buildDlSlots.
+  groupIndex?: number;
   x: number;
   y: number;
   label: string;

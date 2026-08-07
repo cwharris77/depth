@@ -23,6 +23,7 @@ implementing agent as-is.
 | **5d — Two-team compare** | ❌ | [`2026-07-07-compare-view-design.md`](2026-07-07-compare-view-design.md) |
 | **Team schedule (SCHEDULE tab) + next game** | ❌ (design approved) — header ships a disabled SCHEDULE placeholder (depth#128) | [`2026-07-17-team-schedule-design.md`](2026-07-17-team-schedule-design.md) — nflverse `games.csv` → new `schedules`+`games` tables (PR1 data) → SCHEDULE route + NEXT GAME card + enabled tab (PR2 UI). Vault ticket "Add team schedules page" |
 | **7 — Uniform archive** | 🟡 PR1+PR2 shipped (depth#56/#57), hidden behind a flag; 72-kit curated seed shipped (depth#67–#71) | Launch: [`2026-07-07-phase-7-uniform-launch-design.md`](2026-07-07-phase-7-uniform-launch-design.md) · Archive page: [`2026-07-08-uniform-archive-page-design.md`](2026-07-08-uniform-archive-page-design.md) |
+| **Full ESPN position taxonomy (SS/FS/FB and beyond)** | ✅ shipped | [`2026-08-04-full-espn-position-taxonomy-design.md`](2026-08-04-full-espn-position-taxonomy-design.md) (DEP-134) — widens `Position` to ESPN's full depth-chart granularity. Adjacent tickets DEP-145 (data cleaning) and DEP-146 (nflverse as sole source) are split out, not started |
 
 Everything else in the foundation table (0, 1, 1.5, 2, 3, 4, 5a, 5b, 5c, 5e, 6) is
 shipped and recorded in the vault Roadmap's status table.

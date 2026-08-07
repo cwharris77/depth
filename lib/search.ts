@@ -1,7 +1,36 @@
 import type { Player, Position, Team, TeamRosterSeed, Unit } from './types';
 
-const OFFENSE_POSITIONS = new Set<Position>(['QB', 'RB', 'WR', 'TE', 'LT', 'LG', 'C', 'RG', 'RT']);
-const DEFENSE_POSITIONS = new Set<Position>(['DE', 'DT', 'LB', 'CB', 'S']);
+const OFFENSE_POSITIONS = new Set<Position>([
+  'QB',
+  'RB',
+  'FB',
+  'WR',
+  'TE',
+  'LT',
+  'LG',
+  'C',
+  'RG',
+  'RT',
+]);
+const DEFENSE_POSITIONS = new Set<Position>([
+  'DE',
+  'LDE',
+  'RDE',
+  'DT',
+  'NT',
+  'LB',
+  'WLB',
+  'LILB',
+  'RILB',
+  'SLB',
+  'CB',
+  'LCB',
+  'RCB',
+  'NB',
+  'S',
+  'SS',
+  'FS',
+]);
 
 // The unit a player primarily lines up on, used to jump the field to a search hit
 // (e.g. searching a cornerback while viewing offense switches to defense).
@@ -19,15 +48,15 @@ const POSITION_GROUPS: Record<string, Position[]> = {
   ol: ['LT', 'LG', 'C', 'RG', 'RT'],
   oline: ['LT', 'LG', 'C', 'RG', 'RT'],
   offensiveline: ['LT', 'LG', 'C', 'RG', 'RT'],
-  dl: ['DE', 'DT'],
-  dline: ['DE', 'DT'],
-  defensiveline: ['DE', 'DT'],
-  edge: ['DE'],
-  db: ['CB', 'S'],
-  dbs: ['CB', 'S'],
-  secondary: ['CB', 'S'],
-  lbs: ['LB'],
-  linebackers: ['LB'],
+  dl: ['DE', 'LDE', 'RDE', 'DT', 'NT'],
+  dline: ['DE', 'LDE', 'RDE', 'DT', 'NT'],
+  defensiveline: ['DE', 'LDE', 'RDE', 'DT', 'NT'],
+  edge: ['DE', 'LDE', 'RDE'],
+  db: ['CB', 'LCB', 'RCB', 'NB', 'S', 'SS', 'FS'],
+  dbs: ['CB', 'LCB', 'RCB', 'NB', 'S', 'SS', 'FS'],
+  secondary: ['CB', 'LCB', 'RCB', 'NB', 'S', 'SS', 'FS'],
+  lbs: ['LB', 'WLB', 'LILB', 'RILB', 'SLB'],
+  linebackers: ['LB', 'WLB', 'LILB', 'RILB', 'SLB'],
   off: [...OFFENSE_POSITIONS],
   offense: [...OFFENSE_POSITIONS],
   def: [...DEFENSE_POSITIONS],

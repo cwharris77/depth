@@ -36,17 +36,41 @@ describe('unitForPosition', () => {
     expect(unitForPosition('K')).toBe('special');
     expect(unitForPosition('P')).toBe('special');
   });
+
+  it('maps every granular position to the same unit as its collapsed group', () => {
+    expect(unitForPosition('FB')).toBe('offense');
+    expect(unitForPosition('LDE')).toBe('defense');
+    expect(unitForPosition('RDE')).toBe('defense');
+    expect(unitForPosition('NT')).toBe('defense');
+    expect(unitForPosition('WLB')).toBe('defense');
+    expect(unitForPosition('LILB')).toBe('defense');
+    expect(unitForPosition('RILB')).toBe('defense');
+    expect(unitForPosition('SLB')).toBe('defense');
+    expect(unitForPosition('LCB')).toBe('defense');
+    expect(unitForPosition('RCB')).toBe('defense');
+    expect(unitForPosition('NB')).toBe('defense');
+    expect(unitForPosition('SS')).toBe('defense');
+    expect(unitForPosition('FS')).toBe('defense');
+  });
 });
 
 describe('positionGroupPositions', () => {
   it('resolves the offensive and defensive line groups', () => {
     expect(positionGroupPositions('OL')).toEqual(['LT', 'LG', 'C', 'RG', 'RT']);
-    expect(positionGroupPositions('dl')).toEqual(['DE', 'DT']);
+    expect(positionGroupPositions('dl')).toEqual(['DE', 'LDE', 'RDE', 'DT', 'NT']);
   });
 
   it('resolves the secondary and accepts spacing/hyphen variants', () => {
-    expect(positionGroupPositions('secondary')).toEqual(['CB', 'S']);
-    expect(positionGroupPositions('D-Line')).toEqual(['DE', 'DT']);
+    expect(positionGroupPositions('secondary')).toEqual([
+      'CB',
+      'LCB',
+      'RCB',
+      'NB',
+      'S',
+      'SS',
+      'FS',
+    ]);
+    expect(positionGroupPositions('D-Line')).toEqual(['DE', 'LDE', 'RDE', 'DT', 'NT']);
     expect(positionGroupPositions('  o line  ')).toEqual(['LT', 'LG', 'C', 'RG', 'RT']);
   });
 
