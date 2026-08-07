@@ -94,6 +94,15 @@ Classifier pitfalls that have each cost a pass:
 
 Record every measurement in the module as a comment — the reference coordinates and the derived mannequin values.
 
+### Before authoring, separate the kit from GUD's drawing of it
+
+You are measuring a rendering, so every boundary you find belongs either to the kit or to GUD's presentation of it — seam outlines, hem lines, drop-shadows, highlights. No color predicate can tell those apart; they are made of the same pixels. Transcribing presentation as construction produces a module that is pixel-faithful to the sheet and wrong about the jersey, and it will not show up until Step 8. Two tells, both structural rather than chromatic:
+
+- **A thin neutral line between two same-colored regions is a seam, not a gap.** Jacksonville's sleeve measures as two runs of black six units apart; that gap is GUD's own hem outline drawn over one continuous band. The mannequin draws no such outline, so authored as two bands it rendered as two thin stripes with the jersey color showing between them, where the reference reads as a solid block. Kansas City reached the same conclusion ("only a hairline outline between them — so the mannequin bands are authored contiguous"). **Author contiguous.** Two bands are only genuinely two bands when they are different colors, as on Jacksonville's throwback.
+- **A dark edge on one side only is a shadow, not trim.** Baltimore's shoulder bar reads white with a gold keyline, but its full outer boundary spans seven pixels, because the lower two are a black drop-shadow. Folding that into the gold rendered the keyline at twice its weight — the bar came out gold-with-a-white-slot instead of white-with-a-gold-keyline.
+
+The general fix for both: **measure a cut through the middle of the shape, not its silhouette.** A column sample across the interior crosses each layer exactly once and names it; an outer-boundary trace cannot distinguish a layer from its own shadow. Where the two disagree, the interior cut is right.
+
 ## Step 6 — The helmet decal: trace-then-stylize
 
 The decal **is** in scope. The workflow is: land an accurate machine trace as a faithful starting point, then hand-stylize it. Every traced path carries a `TRACE-PENDING-STYLIZE` comment; `grep -rn TRACE-PENDING-STYLIZE lib components docs` lists everything awaiting that pass.
@@ -123,6 +132,8 @@ Tracer mechanics (`scratchpad`, pure PIL, no numpy):
 Two useful inversions:
 - Trace the *white* region and paint a slightly larger shape beneath it — the Packers G came out as two clean paths this way instead of a fragmented sixteen, because the white region's boundary already *is* the oval-minus-glyph.
 - Paint order matters: keyline/shadow first, body over it, details last.
+
+**Never trace a keyline as its own region — trace the union and let the body cover it.** A keyline is thin by definition, so a predicate that selects only its color returns slivers: Carolina's blue outline came back as nine disconnected fragments that read as debris beside the panther. Tracing blue OR black instead gives one silhouette; painting the black body over it leaves precisely the keyline showing, and it is continuous because it was never cut up. This is the Packers inversion generalized, and it is what makes an animal mark with an outline tractable at all. It also means a mark whose keyline is its only detail (Baltimore's raven) still does not trace — there is no body to paint over.
 
 Prefer a flat, straight-on source when one exists — GUD draws a 3/4 shell, so a trace bakes in the curvature distortion. But check licensing: Commons carries most *wordmarks* freely while the primary head/animal marks are typically non-free fair-use on English Wikipedia. Surface the source and its license rather than picking one silently.
 
