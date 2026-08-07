@@ -1,5 +1,66 @@
-import type { FormationSlot, Position, RenderSlot, TeamRosterSeed, Unit } from './types';
-import { getPlayerById, getPlayersByPosition } from './roster';
+import type {
+  FormationSlot,
+  Player,
+  Position,
+  PositionGroup,
+  RenderSlot,
+  TeamRosterSeed,
+  Unit,
+} from './types';
+import { byDepthOrder, getPlayerById, getPlayersByPosition } from './roster';
+
+// Maps a granular Position to the broad group nflverse's count-only personnel data can
+// resolve against (lib/types.ts's PositionGroup doc comment). Used only by the real-
+// formation slot builders below (buildDlSlots/buildLbSlots/buildDbSlots, and
+// buildRealFormation's RB slots) — the depth chart, player cards, and compare view match
+// the full granular Position everywhere else. A total Record (not a switch with a
+// `default`) so adding a Position to the union without a group entry here is a compile
+// error — the same enforcement POSITION_FULL_NAMES and lib/teams/_build.ts's BUILD rely
+// on. Without it, a future granular position could silently resolve to `undefined` here
+// and get dropped from every nflverse-driven real-formation slot with no tsc error to
+// catch it — exactly the risk class this PR's own spec flagged as highest-priority.
+const POSITION_GROUP: Record<Position, PositionGroup | undefined> = {
+  QB: undefined,
+  RB: 'RB',
+  FB: 'RB',
+  WR: undefined,
+  TE: undefined,
+  LT: undefined,
+  LG: undefined,
+  C: undefined,
+  RG: undefined,
+  RT: undefined,
+  DE: 'DL',
+  LDE: 'DL',
+  RDE: 'DL',
+  DT: 'DL',
+  NT: 'DL',
+  LB: 'LB',
+  WLB: 'LB',
+  LILB: 'LB',
+  RILB: 'LB',
+  SLB: 'LB',
+  CB: 'CB',
+  LCB: 'CB',
+  RCB: 'CB',
+  NB: 'CB',
+  S: 'S',
+  SS: 'S',
+  FS: 'S',
+  K: undefined,
+  P: undefined,
+  LS: undefined,
+  KR: undefined,
+  PR: undefined,
+};
+
+function positionGroup(position: Position): PositionGroup | undefined {
+  return POSITION_GROUP[position];
+}
+
+function getPlayersByPositionGroup(roster: TeamRosterSeed, group: PositionGroup): Player[] {
+  return roster.players.filter((p) => positionGroup(p.position) === group).sort(byDepthOrder);
+}
 
 // Shared, generic formations. Every team's offense/defense renders on these — slots
 // resolve to players by position group + depth index, so adding a team is data-only.
@@ -26,20 +87,24 @@ export const OFFENSE_FORMATION: FormationSlot[] = [
   { id: 'off-rb-0', position: 'RB', index: 0, x: 50, y: 78, label: 'RB', onLine: false },
 ];
 
-// 4-3 base. The four down linemen sit at the line (just past 50 on the defense's side);
-// linebackers, then corners and safeties stack back. onLine marks the DL front.
-export const DEFENSE_FORMATION: FormationSlot[] = [
-  { id: 'def-s-0', position: 'S', index: 0, x: 34, y: 14, label: 'SS', onLine: false },
-  { id: 'def-s-1', position: 'S', index: 1, x: 66, y: 14, label: 'FS', onLine: false },
-  { id: 'def-cb-0', position: 'CB', index: 0, x: 10, y: 26, label: 'CB', onLine: false },
-  { id: 'def-cb-1', position: 'CB', index: 1, x: 90, y: 26, label: 'CB', onLine: false },
-  { id: 'def-lb-0', position: 'LB', index: 0, x: 26, y: 37, label: 'LB', onLine: false },
-  { id: 'def-lb-1', position: 'LB', index: 1, x: 50, y: 37, label: 'LB', onLine: false },
-  { id: 'def-lb-2', position: 'LB', index: 2, x: 74, y: 37, label: 'LB', onLine: false },
-  { id: 'def-de-0', position: 'DE', index: 0, x: 24, y: 49, label: 'DE', onLine: true },
-  { id: 'def-dt-0', position: 'DT', index: 0, x: 42, y: 49, label: 'DT', onLine: true },
-  { id: 'def-dt-1', position: 'DT', index: 1, x: 58, y: 49, label: 'DT', onLine: true },
-  { id: 'def-de-1', position: 'DE', index: 1, x: 76, y: 49, label: 'DE', onLine: true },
+// True 3-4 base: a 3-man front (LDE/NT/RDE) + 4 linebackers (WLB/LILB/RILB/SLB) = 7 in
+// the box, plus 2 corners and 2 safeties — matching what every sampled team's real ESPN
+// depth chart names "Base 3-4 D" (docs/superpowers/specs/2026-08-04-full-espn-position-
+// taxonomy-design.md's Verified source facts). Formerly a 4-3-shaped DEFENSE_FORMATION
+// (2 DE + 2 DT + 3 LB) that no team's real data actually described. onLine marks the DL
+// front.
+export const BASE_DEFENSE: FormationSlot[] = [
+  { id: 'def-ss-0', position: 'SS', index: 0, x: 34, y: 14, label: 'SS', onLine: false },
+  { id: 'def-fs-0', position: 'FS', index: 0, x: 66, y: 14, label: 'FS', onLine: false },
+  { id: 'def-lcb-0', position: 'LCB', index: 0, x: 10, y: 26, label: 'LCB', onLine: false },
+  { id: 'def-rcb-0', position: 'RCB', index: 0, x: 90, y: 26, label: 'RCB', onLine: false },
+  { id: 'def-wlb-0', position: 'WLB', index: 0, x: 22, y: 37, label: 'WLB', onLine: false },
+  { id: 'def-lilb-0', position: 'LILB', index: 0, x: 42, y: 37, label: 'LILB', onLine: false },
+  { id: 'def-rilb-0', position: 'RILB', index: 0, x: 58, y: 37, label: 'RILB', onLine: false },
+  { id: 'def-slb-0', position: 'SLB', index: 0, x: 78, y: 37, label: 'SLB', onLine: false },
+  { id: 'def-lde-0', position: 'LDE', index: 0, x: 26, y: 49, label: 'LDE', onLine: true },
+  { id: 'def-nt-0', position: 'NT', index: 0, x: 50, y: 49, label: 'NT', onLine: true },
+  { id: 'def-rde-0', position: 'RDE', index: 0, x: 74, y: 49, label: 'RDE', onLine: true },
 ];
 
 // Resolve a unit to render-ready slots for a given roster. `realFormation` lets a
@@ -61,7 +126,7 @@ export function resolveUnit(
     }));
   }
 
-  const fallback = unit === 'offense' ? OFFENSE_FORMATION : DEFENSE_FORMATION;
+  const fallback = unit === 'offense' ? OFFENSE_FORMATION : BASE_DEFENSE;
   const formation = realFormation ?? fallback;
   return formation.map((slot) => ({
     key: slot.id,
@@ -69,7 +134,9 @@ export function resolveUnit(
     y: slot.y,
     label: slot.label,
     onLine: slot.onLine,
-    player: getPlayersByPosition(roster, slot.position)[slot.index],
+    player: slot.group
+      ? getPlayersByPositionGroup(roster, slot.group)[slot.groupIndex ?? slot.index]
+      : getPlayersByPosition(roster, slot.position)[slot.index],
   }));
 }
 
@@ -118,6 +185,7 @@ const WR_SPOTS: { x: number; y: number; onLine: boolean }[] = [
 
 interface SkillSlot {
   position: Position;
+  group?: PositionGroup;
   index: number;
   x: number;
   y: number;
@@ -191,11 +259,14 @@ export function buildRealFormation(alignment: string, code: string): FormationSl
     }
   }
 
+  // group: 'RB' since nflverse's RB count can include an FB (no separate personnel
+  // digit for it) -- getPlayersByPositionGroup matches either granular Position.
   const isShotgun = alignment === 'SHOTGUN';
   const rbSlots: SkillSlot[] = [];
   if (rb >= 1) {
     rbSlots.push({
       position: 'RB',
+      group: 'RB',
       index: 0,
       x: isShotgun ? 58 : 50,
       y: isShotgun ? 70 : 76,
@@ -204,7 +275,15 @@ export function buildRealFormation(alignment: string, code: string): FormationSl
     });
   }
   if (rb >= 2) {
-    rbSlots.push({ position: 'RB', index: 1, x: 42, y: 70, onLine: false, label: 'RB' });
+    rbSlots.push({
+      position: 'RB',
+      group: 'RB',
+      index: 1,
+      x: 42,
+      y: 70,
+      onLine: false,
+      label: 'RB',
+    });
   }
 
   const qbSlot: SkillSlot = {
@@ -238,9 +317,12 @@ function spreadX(count: number, minX: number, maxX: number): number[] {
   return Array.from({ length: count }, (_, i) => minX + step * i);
 }
 
-// The Position enum has no NT/OLB/ILB/FS/SS split (lib/types.ts) — display-only
-// distinctions (a lone lineman reading "NT", an edge DB reading "CB" vs a safety
-// reading "S") live in `label`, decoupled from the `position` used to index the roster.
+// nflverse's count-only defense_personnel data can't say which specific player is the
+// nose tackle vs a 4-3 end, or which linebacker is strong/weak/inside — so these slots
+// carry a generic `position` ('DE'/'DT'/'LB') plus `group` ('DL'/'LB'), and resolveUnit
+// fills them by broad group + index (getPlayersByPositionGroup) instead of an exact
+// match. Display-only distinctions (a lone lineman reading "NT") live in `label`,
+// decoupled from both.
 function buildDlSlots(dl: number): FormationSlot[] {
   const counts: Record<'DE' | 'DT', number> = { DE: 0, DT: 0 };
   return spreadX(dl, 24, 76).map((x, i) => {
@@ -248,7 +330,10 @@ function buildDlSlots(dl: number): FormationSlot[] {
     const position: 'DE' | 'DT' = isEdge ? 'DE' : 'DT';
     const label = dl === 1 ? 'NT' : position;
     const index = counts[position]++;
-    return { id: '', position, index, x, y: DL_Y, onLine: true, label };
+    // groupIndex = i (this slot's rank across the whole DL front, DE and DT together) —
+    // `index` alone can't serve as the group lookup key since it resets per position type
+    // (DE 0,1 and DT 0 would otherwise both resolve to the group array's 0th player).
+    return { id: '', position, group: 'DL', groupIndex: i, index, x, y: DL_Y, onLine: true, label };
   });
 }
 
@@ -256,6 +341,7 @@ function buildLbSlots(lb: number): FormationSlot[] {
   return spreadX(lb, 26, 74).map((x, i) => ({
     id: '',
     position: 'LB',
+    group: 'LB',
     index: i,
     x,
     y: LB_Y,
@@ -268,16 +354,18 @@ function buildLbSlots(lb: number): FormationSlot[] {
 // 2 safeties): a 5th DB is a nickel corner, a 6th a dime safety, a 7th a quarter corner —
 // standard broadcast/coaching convention, same one defenseAlignmentLabel names the front
 // by. Coordinates keep the widest/deepest players (edge CBs, safeties) fixed and fan
-// extra DBs in front of them as the box empties out.
-const DB_SLOTS: { position: 'CB' | 'S'; x: number; y: number }[] = [
-  { position: 'CB', x: 10, y: 26 },
-  { position: 'CB', x: 90, y: 26 },
-  { position: 'S', x: 34, y: 14 },
-  { position: 'S', x: 66, y: 14 },
-  { position: 'CB', x: 50, y: 28 },
-  { position: 'S', x: 50, y: 10 },
-  { position: 'CB', x: 26, y: 30 },
-  { position: 'S', x: 74, y: 30 },
+// extra DBs in front of them as the box empties out. `label` carries the explicit L/R
+// (and nickel) distinction display-only; `position`/`group` stay the generic CB/S group
+// match since nflverse's count can't say which specific corner or safety fills which spot.
+const DB_SLOTS: { position: 'CB' | 'S'; label: string; x: number; y: number }[] = [
+  { position: 'CB', label: 'LCB', x: 10, y: 26 },
+  { position: 'CB', label: 'RCB', x: 90, y: 26 },
+  { position: 'S', label: 'SS', x: 34, y: 14 },
+  { position: 'S', label: 'FS', x: 66, y: 14 },
+  { position: 'CB', label: 'NB', x: 50, y: 28 },
+  { position: 'S', label: 'S', x: 50, y: 10 },
+  { position: 'CB', label: 'CB', x: 26, y: 30 },
+  { position: 'S', label: 'S', x: 74, y: 30 },
 ];
 
 function buildDbSlots(db: number): FormationSlot[] {
@@ -287,26 +375,27 @@ function buildDbSlots(db: number): FormationSlot[] {
     return {
       id: '',
       position: spot.position,
+      group: spot.position === 'CB' ? 'CB' : 'S',
       index,
       x: spot.x,
       y: spot.y,
       onLine: false,
-      label: spot.position,
+      label: spot.label,
     };
   });
 }
 
 // Builds one team's actual defensive front from its most-used "{dl}-{lb}-{db}" combo.
-// Falls back to the generic DEFENSE_FORMATION for a code this repo can't place (wrong
-// shape, or counts that don't sum to 11) — never a crash, never a half-built layout,
-// same posture as buildRealFormation.
+// Falls back to the generic BASE_DEFENSE for a code this repo can't place (wrong shape,
+// or counts that don't sum to 11) — never a crash, never a half-built layout, same
+// posture as buildRealFormation.
 export function buildRealDefenseFormation(code: string): FormationSlot[] {
   const m = DEFENSE_PERSONNEL_CODE_RE.exec(code);
-  if (!m) return DEFENSE_FORMATION;
+  if (!m) return BASE_DEFENSE;
   const dl = Number(m[1]);
   const lb = Number(m[2]);
   const db = Number(m[3]);
-  if (dl + lb + db !== 11) return DEFENSE_FORMATION;
+  if (dl + lb + db !== 11) return BASE_DEFENSE;
 
   return [...buildDlSlots(dl), ...buildLbSlots(lb), ...buildDbSlots(db)].map((s) => ({
     ...s,

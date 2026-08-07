@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   OFFENSE_FORMATION,
-  DEFENSE_FORMATION,
+  BASE_DEFENSE,
   resolveUnit,
   buildRealFormation,
   buildRealDefenseFormation,
@@ -96,7 +96,7 @@ describe('resolveUnit — offense/defense via shared formation', () => {
 
   it('leaves every slot empty for an empty roster, without throwing', () => {
     const resolved = resolveUnit(roster([]), 'defense');
-    expect(resolved).toHaveLength(DEFENSE_FORMATION.length);
+    expect(resolved).toHaveLength(BASE_DEFENSE.length);
     expect(resolved.every((s) => s.player === undefined)).toBe(true);
   });
 });
@@ -148,14 +148,14 @@ describe('shipped rosters resolve fully against the formation', () => {
 
 describe('formations are well-formed', () => {
   it('every formation slot index is non-negative', () => {
-    for (const slot of [...OFFENSE_FORMATION, ...DEFENSE_FORMATION]) {
+    for (const slot of [...OFFENSE_FORMATION, ...BASE_DEFENSE]) {
       expect(slot.index).toBeGreaterThanOrEqual(0);
     }
   });
 
   it('slot ids are unique within each unit', () => {
     const offIds = OFFENSE_FORMATION.map((s) => s.id);
-    const defIds = DEFENSE_FORMATION.map((s) => s.id);
+    const defIds = BASE_DEFENSE.map((s) => s.id);
     expect(new Set(offIds).size).toBe(offIds.length);
     expect(new Set(defIds).size).toBe(defIds.length);
   });
@@ -252,12 +252,12 @@ describe('buildRealDefenseFormation — real per-team defensive fronts', () => {
   }
 
   it('falls back to the generic defense formation for a malformed code', () => {
-    expect(buildRealDefenseFormation('garbage')).toBe(DEFENSE_FORMATION);
-    expect(buildRealDefenseFormation('4-2')).toBe(DEFENSE_FORMATION);
+    expect(buildRealDefenseFormation('garbage')).toBe(BASE_DEFENSE);
+    expect(buildRealDefenseFormation('4-2')).toBe(BASE_DEFENSE);
   });
 
   it('falls back to the generic defense formation when counts do not sum to 11', () => {
-    expect(buildRealDefenseFormation('4-2-4')).toBe(DEFENSE_FORMATION);
+    expect(buildRealDefenseFormation('4-2-4')).toBe(BASE_DEFENSE);
   });
 
   it('assigns unique per-position indices (e.g. two DT slots are index 0 and 1)', () => {
@@ -287,6 +287,54 @@ describe('buildRealDefenseFormation — real per-team defensive fronts', () => {
     const real = buildRealDefenseFormation('4-3-4');
     const resolved = resolveUnit(r, 'defense', real);
     expect(resolved).toHaveLength(11);
+  });
+
+  it('fills a nflverse-driven layout from a roster tagged with only granular positions (positionGroup() regression)', () => {
+    // No plain LB/S/RB entries anywhere on this roster -- if the count-driven slot
+    // builders (buildDlSlots/buildLbSlots/buildDbSlots/buildRealFormation's RB slots)
+    // ever regress to an exact match on the old collapsed groups instead of
+    // getPlayersByPositionGroup, every one of these slots comes back empty.
+    const r = roster([
+      player({ id: 'lde1', position: 'LDE', depthRank: 1, number: 91 }),
+      player({ id: 'nt1', position: 'NT', depthRank: 1, number: 99 }),
+      player({ id: 'rde1', position: 'RDE', depthRank: 1, number: 94 }),
+      player({ id: 'wlb1', position: 'WLB', depthRank: 1, number: 54 }),
+      player({ id: 'lilb1', position: 'LILB', depthRank: 1, number: 55 }),
+      player({ id: 'lcb1', position: 'LCB', depthRank: 1, number: 21 }),
+      player({ id: 'rcb1', position: 'RCB', depthRank: 1, number: 22 }),
+      player({ id: 'nb1', position: 'NB', depthRank: 1, number: 23 }),
+      player({ id: 'ss1', position: 'SS', depthRank: 1, number: 32 }),
+      player({ id: 'fs1', position: 'FS', depthRank: 1, number: 33 }),
+      player({ id: 'ss2', position: 'SS', depthRank: 2, number: 34 }),
+      player({ id: 'fb1', position: 'FB', depthRank: 1, number: 44 }),
+    ]);
+
+    const realDefense = buildRealDefenseFormation('3-2-6'); // 3 DL, 2 LB, 6 DB
+    const resolvedDefense = resolveUnit(r, 'defense', realDefense);
+    expect(resolvedDefense.filter((s) => !s.player)).toEqual([]);
+
+    const realOffense = buildRealFormation('SHOTGUN', '12'); // 1 RB (matches FB via group)
+    const resolvedOffense = resolveUnit(r, 'offense', realOffense);
+    const rbSlot = resolvedOffense.find((s) => s.label === 'RB');
+    expect(rbSlot?.player?.id).toBe('fb1');
+  });
+
+  it('group-based resolution sorts by depthRank then jersey number, same as exact-match resolution', () => {
+    // Mirrors "getPlayersByPosition — deterministic order" above, but through the
+    // group-based path (buildDlSlots' groupIndex) instead of an exact position match --
+    // scrambled input order across two granular DL positions (LDE, RDE) at the same
+    // depthRank must still resolve in ascending jersey-number order.
+    const r = roster([
+      player({ id: 'de-16', position: 'RDE', depthRank: 1, number: 16 }),
+      player({ id: 'de-11', position: 'LDE', depthRank: 1, number: 11 }),
+      player({ id: 'de-14', position: 'RDE', depthRank: 1, number: 14 }),
+    ]);
+    const real = buildRealDefenseFormation('3-4-4'); // 3 DL slots, groupIndex 0..2
+    const resolved = resolveUnit(r, 'defense', real);
+    const dlIds = real
+      .filter((s) => s.group === 'DL')
+      .map((s) => resolved.find((r2) => r2.key === s.id)?.player?.id);
+    expect(dlIds).toEqual(['de-11', 'de-14', 'de-16']);
   });
 });
 

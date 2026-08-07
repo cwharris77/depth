@@ -64,6 +64,26 @@ describe('COMPARE_POSITIONS', () => {
     expect(COMPARE_POSITIONS).not.toContain('PR');
     expect(COMPARE_POSITIONS).not.toContain('LS');
   });
+
+  it('includes every granular position ESPN offers, not just the collapsed groups', () => {
+    for (const pos of [
+      'SS',
+      'FS',
+      'LDE',
+      'RDE',
+      'NT',
+      'WLB',
+      'LILB',
+      'RILB',
+      'SLB',
+      'LCB',
+      'RCB',
+      'NB',
+      'FB',
+    ] as Position[]) {
+      expect(COMPARE_POSITIONS).toContain(pos);
+    }
+  });
 });
 
 function makePlayer(id: string, overrides: Partial<Player> = {}): Player {

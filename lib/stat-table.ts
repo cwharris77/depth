@@ -59,6 +59,7 @@ export function seasonStatColumns(position: Position): StatColumn[] {
         { header: 'YPA', value: (s) => ratio(s.passingYards, s.attempts) },
       ];
     case 'RB':
+    case 'FB':
       return [
         { header: 'CAR', value: (s) => String(n(s.carries)) },
         { header: 'YDS', value: (s) => grp(s.rushingYards) },
@@ -82,10 +83,22 @@ export function seasonStatColumns(position: Position): StatColumn[] {
     case 'RT':
       return [{ header: 'GP', value: (s) => String(n(s.games)) }];
     case 'DE':
+    case 'LDE':
+    case 'RDE':
     case 'DT':
+    case 'NT':
     case 'LB':
+    case 'WLB':
+    case 'LILB':
+    case 'RILB':
+    case 'SLB':
     case 'CB':
+    case 'LCB':
+    case 'RCB':
+    case 'NB':
     case 'S':
+    case 'SS':
+    case 'FS':
       return [
         { header: 'TKL', value: (s) => String(n(s.defTacklesSolo)) },
         { header: 'SK', value: (s) => formatSacks(s.defSacks) },

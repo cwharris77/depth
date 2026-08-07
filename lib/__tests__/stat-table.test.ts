@@ -87,6 +87,36 @@ describe('seasonStatColumns', () => {
     });
   });
 
+  it('every granular defensive position shares the same TKL/SK/INT columns as its parent group', () => {
+    const expected = seasonStatColumns('LB').map((c) => c.header);
+    for (const pos of [
+      'DE',
+      'LDE',
+      'RDE',
+      'DT',
+      'NT',
+      'WLB',
+      'LILB',
+      'RILB',
+      'SLB',
+      'CB',
+      'LCB',
+      'RCB',
+      'NB',
+      'S',
+      'SS',
+      'FS',
+    ] as Position[]) {
+      expect(seasonStatColumns(pos).map((c) => c.header)).toEqual(expected);
+    }
+  });
+
+  it('FB shares RB rushing/receiving columns', () => {
+    expect(seasonStatColumns('FB').map((c) => c.header)).toEqual(
+      seasonStatColumns('RB').map((c) => c.header)
+    );
+  });
+
   it('K: made, attempted, and FG%', () => {
     expect(render('K', { fgMade: 30, fgAtt: 35 })).toEqual({ FGM: '30', FGA: '35', 'FG%': '86' });
   });
