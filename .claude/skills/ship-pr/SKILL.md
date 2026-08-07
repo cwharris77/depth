@@ -44,7 +44,14 @@ flow, and write down what you saw — one concrete sentence, e.g.
 Steelers page". That sentence goes in the body verbatim as `Verified live: …`.
 
 **A failing or skipped verification means stop and fix — never open the PR "to see
-if CI agrees".**
+if CI agrees".** But before treating a `npm test` failure as real, confirm the
+failing file paths are inside the working tree — `.worktrees/` and
+`.claude/worktrees/` sibling checkouts hold their own copy of the suite (and their
+own installed deps), and a stale copy failing there is not a signal about your
+change. If every failure traces to one of those paths, the run is a false
+positive; if `vitest.config.*`'s `exclude` doesn't already cover the sibling
+worktree directory in play, that's a config gap worth fixing rather than a
+per-run workaround.
 
 ### 3. Commit
 
@@ -93,7 +100,15 @@ gh pr merge <N> --squash --delete-branch
 - If the PR shipped or killed a roadmap item: update README's status table (and the
   specs index if a spec's status changed) — as its own small `docs(readme):` PR if it
   didn't fit in this one.
-- `git checkout main && git pull` before starting the next thing.
+- `git checkout main && git pull` before starting the next thing. If uncommitted work
+  needs to survive the switch, never pair an unconditional `git stash` with an
+  unconditional `git stash pop` — the stash is a shared, session-spanning stack, and
+  a no-op push (nothing was dirty) followed by a blind pop can resurrect an unrelated,
+  older stash instead. Check `git status --porcelain` first and skip the pair entirely
+  on a clean tree; otherwise capture the stash's identity (`git stash list` before and
+  after, or `git stash create`) and pop only that ref. A pop that conflicts in a file
+  you never touched is the signal you popped the wrong stash — stop and inspect, don't
+  resolve through it.
 
 ## Quick reference
 
