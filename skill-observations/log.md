@@ -36,7 +36,7 @@ resolved statuses always carry their resolution date
 
 ### Observation 5: `git stash` around a branch switch needs the push confirmed before the pop
 
-**Status:** OPEN
+**Status:** ACTIONED (2026-08-07) — Applied to ship-pr (weekly review): step 6 now requires checking `git status --porcelain` first and popping by identity rather than pairing unconditional stash/pop.
 **Date:** 2026-08-06
 **Session context:** Merging a PR and syncing the default branch while an unrelated edit sat in the working tree.
 **Skill:** ship-pr (and any skill that syncs a branch mid-session)
@@ -51,7 +51,7 @@ resolved statuses always carry their resolution date
 
 ### Observation 6: A skill's verification step prescribed a command that reports failures from stale sibling worktrees
 
-**Status:** OPEN
+**Status:** ACTIONED (2026-08-07) — Applied to ship-pr (weekly review): step 2 now notes to confirm failing paths are inside the working tree before trusting a `npm test` failure, and flags the `.worktrees/` gap in `vitest.config.*`'s exclude list for Cooper to fix separately (a code change, not a skill edit).
 **Date:** 2026-08-06
 **Session context:** Shipping a docs-only change through the project's ship-PR skill. Its verification step says to run the project's plain test command and treat any failure as a stop-and-fix. The plain command's default include globs reach into checked-out sibling worktrees inside the repo, each holding an older copy of the suite and its own installed dependencies. It reported 31 failures across 5 files, every one of them from those stale copies; the same run scoped to the working tree was fully green. A separate, unrelated document in the same repo already recorded the workaround, so the knowledge existed but not where the verification step could use it.
 **Skill:** ship-pr (project-level) — "Verify — before writing the commit message" step and its Quick reference table
