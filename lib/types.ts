@@ -184,6 +184,11 @@ export interface TeamStats {
   pointDifferential: number;
   streak: string;
   playoffSeed: number;
+  // nflverse-sourced fields (team_season_stats table), nullable: may not exist for
+  // every team-season yet (DEP-136 scope), and distance-list columns are null until
+  // DEP-149 ships the full parse.
+  passingYards?: number;
+  rushingYards?: number;
 }
 
 // A kit's category. `home` rows are ESPN-owned (machine-managed); every other kind is

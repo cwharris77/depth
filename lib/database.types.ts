@@ -578,6 +578,71 @@ export type Database = {
           },
         ]
       }
+      team_season_stats: {
+        Row: {
+          attempts: number | null
+          carries: number | null
+          completions: number | null
+          games: number | null
+          passing_interceptions: number | null
+          passing_tds: number | null
+          passing_yards: number | null
+          receiving_tds: number | null
+          receiving_yards: number | null
+          receptions: number | null
+          rushing_tds: number | null
+          rushing_yards: number | null
+          season: number
+          targets: number | null
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number | null
+          carries?: number | null
+          completions?: number | null
+          games?: number | null
+          passing_interceptions?: number | null
+          passing_tds?: number | null
+          passing_yards?: number | null
+          receiving_tds?: number | null
+          receiving_yards?: number | null
+          receptions?: number | null
+          rushing_tds?: number | null
+          rushing_yards?: number | null
+          season: number
+          targets?: number | null
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number | null
+          carries?: number | null
+          completions?: number | null
+          games?: number | null
+          passing_interceptions?: number | null
+          passing_tds?: number | null
+          passing_yards?: number | null
+          receiving_tds?: number | null
+          receiving_yards?: number | null
+          receptions?: number | null
+          rushing_tds?: number | null
+          rushing_yards?: number | null
+          season?: number
+          targets?: number | null
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_season_stats_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_stats: {
         Row: {
           conference_losses: number | null

@@ -11,6 +11,7 @@
 // gsis_id, 20260801031305_add_roster_history.sql) and needs no filtering.
 import { insertStatement } from '../seed-sql';
 import type { PlayerStatsInsert } from './transform';
+import type { TeamSeasonStatsInsert } from './team-stats';
 import type { ScheduleInsert, GameInsert } from './games';
 import type { RosterHistoryInsert } from './roster-history';
 import type { FormationTally } from './participation';
@@ -70,6 +71,31 @@ export function buildPlayerStatsSeedSql(rows: PlayerStatsInsert[]): string {
 
 // schedules must precede games — games' composite FKs reference schedules(team_id,
 // season), same ordering the live ingest (ingestGames in ingest-nflverse.mts) enforces.
+export function buildTeamSeasonStatsSeedSql(rows: TeamSeasonStatsInsert[]): string {
+  return insertStatement(
+    'team_season_stats',
+    [
+      'team_id',
+      'season',
+      'games',
+      'completions',
+      'attempts',
+      'passing_yards',
+      'passing_tds',
+      'passing_interceptions',
+      'carries',
+      'rushing_yards',
+      'rushing_tds',
+      'receptions',
+      'targets',
+      'receiving_yards',
+      'receiving_tds',
+    ],
+    rows,
+    'team_id,season'
+  );
+}
+
 export function buildSchedulesAndGamesSeedSql(
   schedules: ScheduleInsert[],
   games: GameInsert[]

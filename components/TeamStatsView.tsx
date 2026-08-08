@@ -484,6 +484,29 @@ export default function TeamStatsView({
                     />
                     <td colSpan={2} />
                   </tr>
+                  {active.passingYards !== undefined && (
+                    <tr style={{ borderTop: `1px solid ${uiTokens.borderInput}` }}>
+                      <StatCell
+                        label={
+                          <Tooltip content="Total team passing yards">
+                            <span>PASS YDS</span>
+                          </Tooltip>
+                        }
+                        value={String(active.passingYards)}
+                        rank={rankLabel(activeRanks?.passingYards, lastRank, 'most')}
+                      />
+                      <td className="w-6" />
+                      <StatCell
+                        label={
+                          <Tooltip content="Total team rushing yards">
+                            <span>RUSH YDS</span>
+                          </Tooltip>
+                        }
+                        value={String(active.rushingYards ?? 0)}
+                        rank={rankLabel(activeRanks?.rushingYards, lastRank, 'most')}
+                      />
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
