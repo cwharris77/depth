@@ -37,6 +37,16 @@ rosters, draft picks, formations) reuse this same scaffolding with their own spe
   our `team.id`. NOT our ESPN `abbrev` (the Rams are nflverse `LA`, our abbrev `LAR`),
   and historic relocations (`OAK`/`SD`/`STL`) fold into the current franchise. A
   hand-reviewed static map; an unknown code -> `null` (its game is skipped-and-counted).
+- `lib/nflverse/team-stats.ts` — `parseDistanceList(raw)`: pure parse of a
+  semicolon-delimited string (e.g. `"42;50;29;47"`) into `number[]`, blank -> `[]`.
+  `toTeamStatsRows(csvRows, resolveCode?)`: transforms nflverse
+  `stats_team_reg_<season>.csv` rows into `TeamStatsInsert` upsert rows — coerces every
+  scalar column (`''/NaN -> null`), resolves team codes (including relocation codes),
+  verifies `season_type = REG`, and parses the seven distance-list columns (`fg_made_list`,
+  `fg_missed_list`, `fg_blocked_list`, `fg_made_distance`, `fg_missed_distance`,
+  `fg_blocked_distance`, `gwfg_distance_list`) into `int[]`. Fetch and parse are
+  separate calls in the ingest script — a fetch failure never corrupts a parse, and
+  vice versa. Unresolvable/non-REG rows are skipped and counted.
 - `lib/nflverse/games.ts` — `toScheduleAndGameRows(rows, resolveCode, minSeason?)`: pure
   transform of `nfldata/games.csv` into `games` rows (one per shared game) + `schedules`
   rows (the distinct `(team_id, season)` set the games imply). A row with an unresolvable
@@ -64,10 +74,15 @@ rosters, draft picks, formations) reuse this same scaffolding with their own spe
   With no flag, games/schedules also scope to the two most recent seasons
   (`toScheduleAndGameRows`, see above); `npm run ingest:nflverse -- --seasons 1999-2025`
   backfills games/schedules for the full range instead (`--seasons` parsed the same way
-  as `ingest:rosters`, see `parseSeasonsArg` above). Writes one `ingestion_runs` row
+  as `ingest:rosters`, see `parseSeasonsArg` above). **Team season stats** (`ingestTeamStats`)
+  follows the same `--seasons` scoping — full backfill with the flag, latest+previous
+  by default. The `stats_team` release tag (asset `stats_team_reg_<season>.csv`) mirrors
+  the player-stats naming; `team_season_stats` FKs to `teams` (not `players`), so
+  historic backfill works cleanly. Writes one `ingestion_runs` row
   (`source: 'nflverse'`) whose `errors` jsonb carries `{ seasons, player_stats_rows,
-  games_min_season, games_written, schedules_written, skipped, failures }`;
-  `teams_written` is repurposed as the total row count across both datasets.
+  games_min_season, games_written, schedules_written, formations_season,
+  formations_written, team_stats_seasons, team_stats_rows, team_stats_skipped, skipped,
+  failures }`; `teams_written` is repurposed as the total row count across all datasets.
 
   **Why `--seasons` doesn't also backfill `player_stats`:** `player_stats.player_id` is a
   `not null` FK to `players(id)`, and `players` is populated by the ESPN ingest from
@@ -204,6 +219,6 @@ vocabulary this repo doesn't parse.
 
 ## RLS policy
 
-`player_stats` ships with RLS enabled and a `"public read"` policy from its first
+`player_stats` and `team_season_stats` ship with RLS enabled and a `"public read"` policy from their first
 migration (AGENTS.md invariant 10) — same pattern as `team_stats` and every other base
 table. Writes go through the service-role ingest script, which bypasses RLS.
