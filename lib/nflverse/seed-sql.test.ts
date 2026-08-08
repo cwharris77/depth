@@ -2,12 +2,14 @@ import { describe, it, expect } from 'vitest';
 import {
   extractPlayerIds,
   buildPlayerStatsSeedSql,
+  buildTeamSeasonStatsSeedSql,
   buildSchedulesAndGamesSeedSql,
   buildTeamFormationsSeedSql,
   buildRosterHistorySeedSql,
   type UnitFormationTally,
 } from './seed-sql';
 import type { PlayerStatsInsert } from './transform';
+import type { TeamSeasonStatsInsert } from './team-stats';
 import type { ScheduleInsert, GameInsert } from './games';
 import type { RosterHistoryInsert } from './roster-history';
 
@@ -75,6 +77,41 @@ describe('buildPlayerStatsSeedSql', () => {
 
   it('returns empty string for no rows', () => {
     expect(buildPlayerStatsSeedSql([])).toBe('');
+  });
+});
+
+function teamStatsRow(over: Partial<TeamSeasonStatsInsert> = {}): TeamSeasonStatsInsert {
+  return {
+    team_id: 'sea',
+    season: 2025,
+    games: 17,
+    completions: null,
+    attempts: null,
+    passing_yards: 4183,
+    passing_tds: null,
+    passing_interceptions: null,
+    carries: null,
+    rushing_yards: null,
+    rushing_tds: null,
+    receptions: null,
+    targets: null,
+    receiving_yards: null,
+    receiving_tds: null,
+    ...over,
+  };
+}
+
+describe('buildTeamSeasonStatsSeedSql', () => {
+  it('emits a team_season_stats insert keyed on team_id,season', () => {
+    const sql = buildTeamSeasonStatsSeedSql([teamStatsRow()]);
+    expect(sql).toContain('insert into team_season_stats');
+    expect(sql).toContain('on conflict (team_id,season) do nothing;');
+    expect(sql).toContain("'sea', 2025, 17");
+    expect(sql).toContain('4183');
+  });
+
+  it('returns empty string for no rows', () => {
+    expect(buildTeamSeasonStatsSeedSql([])).toBe('');
   });
 });
 
