@@ -60,7 +60,7 @@ export default function Menu({
       </button>
       {open && (
         <div
-          className="absolute right-0 top-full mt-1 rounded-xl overflow-hidden z-10"
+          className="absolute right-0 top-full mt-1 rounded-xl overflow-hidden z-30"
           style={{
             background: colors.surfaceMenu,
             border: `1px solid ${colors.borderStrong}`,
