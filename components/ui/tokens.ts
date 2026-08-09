@@ -39,3 +39,18 @@ export const colors = {
   focusRing: 'rgba(105,190,40,0.3)',
   shadowThumb: '0 1px 2px rgba(0,0,0,0.35), 0 1px 1px rgba(0,0,0,0.2)', // Toggle's raised thumb
 } as const;
+
+// The app's one stacking-order scale. Every z-index in the app must come from here —
+// a hardcoded number (inline `zIndex:` or a Tailwind `z-*` class) is an ESLint error
+// (see the no-restricted-syntax rules in eslint.config.js) precisely because a value
+// picked in isolation, without checking what else it needs to clear, is how the field's
+// overflow menu once ended up tied with (and losing to) the player dots it's supposed to
+// float above. Add a new tier here — never a bare number at the call site — and the
+// lint rule extends to it automatically.
+export const zIndex = {
+  dot: 10, // resting player dot (DepthChartField)
+  dotSelected: 20, // selected player dot, raised above resting dots
+  popover: 30, // anchored popovers: field overflow menu, Tooltip, Coachmark
+  overlayBackdrop: 40, // sheet/modal dimmed backdrop
+  overlayPanel: 50, // sheet/modal panel content, nav drawer, install-hint toast
+} as const;

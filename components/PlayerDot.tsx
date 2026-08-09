@@ -5,7 +5,7 @@ import type { Player, RenderSlot, TeamColors, Unit } from '@/lib/types';
 import { readableTextOn } from '@/lib/colors';
 import { formatLastName } from '@/lib/format';
 import { positionFullName } from '@/lib/positions';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, zIndex } from '@/components/ui/tokens';
 
 interface PlayerDotProps {
   player: Player;
@@ -64,7 +64,7 @@ export default function PlayerDot({
         left: `${slot.x}%`,
         top: `${slot.y}%`,
         transform: `translate(-50%, calc(-50% + ${lineOffset}px))`,
-        zIndex: isSelected ? 20 : 10,
+        zIndex: isSelected ? zIndex.dotSelected : zIndex.dot,
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
         background: 'transparent',

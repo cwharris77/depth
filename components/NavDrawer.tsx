@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { X, ClipboardList, Columns2, Grid, User } from 'lucide-react';
 import { useUser } from '@/lib/use-user';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, zIndex } from '@/components/ui/tokens';
 import IconButton from '@/components/ui/IconButton';
 
 // Left navigation drawer (nav IA — 2026-07-08-nav-drawer-design.md). Global, growing
@@ -169,7 +169,7 @@ export default function NavDrawer({
       role="dialog"
       aria-modal="true"
       aria-label="Navigation"
-      style={{ position: 'fixed', inset: 0, zIndex: 50 }}>
+      style={{ position: 'fixed', inset: 0, zIndex: zIndex.overlayPanel }}>
       <div
         ref={scrimRef}
         onClick={onClose}
