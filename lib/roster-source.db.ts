@@ -158,15 +158,13 @@ type TeamSeasonStatsRankRow = Pick<
   Tables['team_season_stats']['Row'],
   'team_id' | 'season' | 'passing_yards' | 'rushing_yards'
 >;
-const TEAM_SEASON_STATS_RANK_SELECT =
-  'team_id, season, passing_yards, rushing_yards';
+const TEAM_SEASON_STATS_RANK_SELECT = 'team_id, season, passing_yards, rushing_yards';
 
 type TeamSeasonStatsValueRow = Pick<
   Tables['team_season_stats']['Row'],
   'season' | 'passing_yards' | 'rushing_yards'
 >;
-const TEAM_SEASON_STATS_VALUE_SELECT =
-  'season, passing_yards, rushing_yards';
+const TEAM_SEASON_STATS_VALUE_SELECT = 'season, passing_yards, rushing_yards';
 
 type TeamCoachSeasonRow = Pick<
   Tables['team_coach_seasons']['Row'],
@@ -612,8 +610,10 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
   if (statsError) throw new Error(`team_stats query failed: ${statsError.message}`);
   if (coachError) throw new Error(`team_coach_seasons query failed: ${coachError.message}`);
   if (rankError) throw new Error(`team_stats rank query failed: ${rankError.message}`);
-  if (nflverseStatsError) throw new Error(`team_season_stats query failed: ${nflverseStatsError.message}`);
-  if (nflverseRankError) throw new Error(`team_season_stats rank query failed: ${nflverseRankError.message}`);
+  if (nflverseStatsError)
+    throw new Error(`team_season_stats query failed: ${nflverseStatsError.message}`);
+  if (nflverseRankError)
+    throw new Error(`team_season_stats rank query failed: ${nflverseRankError.message}`);
   if (!teamRow) return undefined;
 
   const { upcomingSeason, isOffseason } = await getNflSeasonState();
