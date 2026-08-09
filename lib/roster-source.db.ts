@@ -154,7 +154,7 @@ type TeamStatsRankRow = Pick<
 const TEAM_STATS_RANK_SELECT =
   'team_id, season, win_percent, points_for, points_against, point_differential';
 
-type TeamSeasonStatsRankRow = Pick<
+export type TeamSeasonStatsRankRow = Pick<
   Tables['team_season_stats']['Row'],
   'team_id' | 'season' | 'passing_yards' | 'rushing_yards'
 >;
@@ -232,7 +232,7 @@ function rankValue<T>(
   return values.findIndex((v) => v === teamValue) + 1 || undefined;
 }
 
-function buildLeagueRanks(
+export function buildLeagueRanks(
   teamId: string,
   rows: TeamStatsRankRow[],
   nflverseRows?: TeamSeasonStatsRankRow[]

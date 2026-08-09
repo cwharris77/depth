@@ -502,7 +502,7 @@ export default function TeamStatsView({
                             <span>RUSH YDS</span>
                           </Tooltip>
                         }
-                        value={String(active.rushingYards ?? 0)}
+                        value={String(active.rushingYards ?? '—')}
                         rank={rankLabel(activeRanks?.rushingYards, lastRank, 'most')}
                       />
                     </tr>
