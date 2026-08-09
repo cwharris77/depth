@@ -396,31 +396,66 @@ function spreadX(count: number, minX: number, maxX: number): number[] {
 // nflverse's count-only defense_personnel data can't say which specific player is the
 // nose tackle vs a 4-3 end, or which linebacker is strong/weak/inside — so these slots
 // carry a generic `position` ('DE'/'DT'/'LB') plus `group` ('DL'/'LB'), and resolveUnit
-// fills them by broad group + index (getPlayersByPositionGroup) instead of an exact
-// match. Display-only distinctions (a lone lineman reading "NT") live in `label`,
-// decoupled from both.
+// fills them by broad group + index (getPlayersByPositionGroup) as a fallback. Where the
+// front shape is one the taxonomy spec verified as real (single-gap NT, an edge-rush
+// pair, or the true 3-4's LDE/NT/RDE — docs/superpowers/specs/2026-08-04-full-espn-
+// position-taxonomy-design.md), `preferredPosition` seats the exact-tagged player first,
+// same as DB_SLOTS/RB (DEP-148, PR #299) — Jarren Reid tagged NT shouldn't render on the
+// left edge just because he sorted first in the DL pool. Larger interior counts (4+ DL)
+// stay generic: which specific tackle plays which interior gap isn't a settled
+// convention the way DB nickel/dime seniority is, so guessing would just trade one wrong
+// label for another.
+function preferredDlPosition(dl: number, i: number): Position | undefined {
+  if (dl === 1) return 'NT';
+  if (i === 0) return 'LDE';
+  if (i === dl - 1) return 'RDE';
+  if (dl === 3) return 'NT'; // the lone interior spot in a true 3-4 front
+  return undefined;
+}
+
 function buildDlSlots(dl: number): FormationSlot[] {
   const counts: Record<'DE' | 'DT', number> = { DE: 0, DT: 0 };
   return spreadX(dl, 24, 76).map((x, i) => {
     const isEdge = dl > 1 && (i === 0 || i === dl - 1);
     const position: 'DE' | 'DT' = isEdge ? 'DE' : 'DT';
-    const label = dl === 1 ? 'NT' : position;
+    const preferredPosition = preferredDlPosition(dl, i);
+    const label = preferredPosition ?? position;
     const index = counts[position]++;
-    return { id: '', position, group: 'DL', index, x, y: DL_Y, onLine: true, label };
+    return {
+      id: '',
+      position,
+      group: 'DL',
+      preferredPosition,
+      index,
+      x,
+      y: DL_Y,
+      onLine: true,
+      label,
+    };
   });
 }
 
+// The verified real 3-4 base (WLB/LILB/RILB/SLB, left to right — same order
+// BASE_DEFENSE uses) is the only LB-count shape the taxonomy spec confirms as a real
+// front; other counts (2-3 LB sub-packages) don't have a settled which-backer-plays-
+// where convention the way the 4-man base does, so they stay generic rather than guess.
+const LB_TAGS: Position[] = ['WLB', 'LILB', 'RILB', 'SLB'];
+
 function buildLbSlots(lb: number): FormationSlot[] {
-  return spreadX(lb, 26, 74).map((x, i) => ({
-    id: '',
-    position: 'LB',
-    group: 'LB',
-    index: i,
-    x,
-    y: LB_Y,
-    onLine: false,
-    label: 'LB',
-  }));
+  return spreadX(lb, 26, 74).map((x, i) => {
+    const preferredPosition = lb === 4 ? LB_TAGS[i] : undefined;
+    return {
+      id: '',
+      position: 'LB',
+      group: 'LB',
+      preferredPosition,
+      index: i,
+      x,
+      y: LB_Y,
+      onLine: false,
+      label: preferredPosition ?? 'LB',
+    };
+  });
 }
 
 // Fixed spots, filled in order as the DB count grows past the base 4 (2 edge corners +
