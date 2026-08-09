@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { colors } from './tokens';
+import { colors, zIndex } from './tokens';
 
 // One-time anchored hint: a small arrow-tipped bubble pointing up at whatever it's rendered
 // under. Purely presentational — no localStorage/timeout logic here, callers own visibility
@@ -12,12 +12,13 @@ export default function Coachmark({ message }: { message: string }) {
   return (
     <motion.div
       role="tooltip"
-      className="absolute left-0 top-full z-10 mt-2 w-56 rounded-xl px-3 py-2.5 text-[12px] font-medium leading-snug"
+      className="absolute left-0 top-full mt-2 w-56 rounded-xl px-3 py-2.5 text-[12px] font-medium leading-snug"
       style={{
         color: colors.textPrimary,
         background: colors.surfaceMenu,
         border: `1px solid ${colors.borderStrong}`,
         boxShadow: `0 8px 24px ${colors.scrimLight}`,
+        zIndex: zIndex.popover,
       }}
       initial={{ opacity: 0, y: -4 }}
       animate={{ opacity: 1, y: 0 }}

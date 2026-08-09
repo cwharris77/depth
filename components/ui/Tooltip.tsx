@@ -3,7 +3,7 @@
 import { Popover } from '@base-ui/react/popover';
 import type { ReactElement, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import { colors } from './tokens';
+import { colors, zIndex } from './tokens';
 
 type TooltipProps = {
   content: ReactNode;
@@ -25,7 +25,7 @@ export default function Tooltip({ content, children, side = 'top' }: TooltipProp
     <Popover.Root>
       <Popover.Trigger render={children} openOnHover delay={300} closeDelay={100} />
       <Popover.Portal>
-        <Popover.Positioner side={side} sideOffset={8} className="z-20">
+        <Popover.Positioner side={side} sideOffset={8} style={{ zIndex: zIndex.popover }}>
           <Popover.Popup
             className="max-w-[220px] rounded-xl px-3 py-2 text-[11px] font-medium leading-snug"
             style={{

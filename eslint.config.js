@@ -61,6 +61,26 @@ export default [
       // General
       'no-debugger': 'warn',
       eqeqeq: ['error', 'always'],
+
+      // Every z-index in the app must come from the zIndex scale in
+      // components/ui/tokens.ts (see its header comment) -- a value picked in
+      // isolation, without checking what else needs to sit above/below it, is how the
+      // field's overflow menu once ended up tied with the player dots it's supposed to
+      // float over. Add a new tier to that object instead of a bare number here.
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "Property[key.name='zIndex'] Literal",
+          message:
+            'Hardcoded z-index. Add or use a tier from the zIndex scale in components/ui/tokens.ts instead.',
+        },
+        {
+          selector:
+            "JSXAttribute[name.name='className'] Literal[value=/\\bz-(0|10|20|30|40|50)\\b/]",
+          message:
+            'Hardcoded Tailwind z-index utility. Use the zIndex scale in components/ui/tokens.ts via an inline style instead.',
+        },
+      ],
     },
   },
   // Service worker globals

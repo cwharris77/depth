@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Tooltip from './Tooltip';
-import { colors } from './tokens';
+import { colors, zIndex } from './tokens';
 
 type MenuItem = {
   label: ReactNode;
@@ -60,12 +60,13 @@ export default function Menu({
       </button>
       {open && (
         <div
-          className="absolute right-0 top-full mt-1 rounded-xl overflow-hidden z-30"
+          className="absolute right-0 top-full mt-1 rounded-xl overflow-hidden"
           style={{
             background: colors.surfaceMenu,
             border: `1px solid ${colors.borderStrong}`,
             minWidth: 168,
             boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+            zIndex: zIndex.popover,
           }}>
           {items.map((item, i) => {
             const row = (

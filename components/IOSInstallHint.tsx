@@ -9,7 +9,7 @@ import {
   isIOSSafari,
   isStandaloneDisplay,
 } from '@/lib/ios-install-hint';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, zIndex } from '@/components/ui/tokens';
 import IconButton from '@/components/ui/IconButton';
 
 // One-time hint for iOS Safari visitors pointing at Share -> Add to Home Screen. iOS Safari has
@@ -49,13 +49,14 @@ export default function IOSInstallHint() {
         <motion.div
           role="dialog"
           aria-label="Install this app"
-          className="fixed inset-x-3 z-50 flex items-center gap-3 rounded-xl px-4 py-3 text-[13px]"
+          className="fixed inset-x-3 flex items-center gap-3 rounded-xl px-4 py-3 text-[13px]"
           style={{
             bottom: 'max(env(safe-area-inset-bottom), 12px)',
             color: uiTokens.textSecondary,
             background: `linear-gradient(180deg, #131a2b 0%, ${uiTokens.bg} 100%)`,
             border: `1px solid ${uiTokens.surfaceChipHover}`,
             boxShadow: `0 8px 32px ${uiTokens.scrimLight}`,
+            zIndex: zIndex.overlayPanel,
           }}
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}

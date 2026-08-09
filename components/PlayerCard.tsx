@@ -23,7 +23,7 @@ import Avatar from '@/components/ui/Avatar';
 import Badge from '@/components/ui/Badge';
 import StatGrid from '@/components/ui/StatGrid';
 import IconButton from '@/components/ui/IconButton';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, zIndex } from '@/components/ui/tokens';
 
 interface PlayerCardProps {
   player: Player | null;
@@ -664,10 +664,11 @@ export default function PlayerCard({
       {player && (
         <>
           <motion.div
-            className="absolute inset-0 z-40"
+            className="absolute inset-0"
             style={{
               background: uiTokens.scrim,
               backdropFilter: 'blur(4px)',
+              zIndex: zIndex.overlayBackdrop,
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -680,11 +681,12 @@ export default function PlayerCard({
             role="dialog"
             aria-modal="true"
             aria-label={`${player.name} player card`}
-            className="absolute bottom-0 left-0 right-0 z-50 rounded-t-3xl overflow-hidden"
+            className="absolute bottom-0 left-0 right-0 rounded-t-3xl overflow-hidden"
             style={{
               background: `linear-gradient(180deg, #0f1a2e 0%, ${uiTokens.bg} 100%)`,
               borderTop: `1px solid ${accent}4d`,
               maxHeight: '82vh',
+              zIndex: zIndex.overlayPanel,
             }}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
