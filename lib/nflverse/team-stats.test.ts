@@ -3,9 +3,7 @@ import { parseDistanceList, toTeamStatsRows } from './team-stats';
 
 describe('parseDistanceList', () => {
   it('parses a semicolon-delimited string into an integer array', () => {
-    expect(parseDistanceList('42;50;29;47;34;28;33;57')).toEqual([
-      42, 50, 29, 47, 34, 28, 33, 57,
-    ]);
+    expect(parseDistanceList('42;50;29;47;34;28;33;57')).toEqual([42, 50, 29, 47, 34, 28, 33, 57]);
   });
 
   it('returns an empty array for an empty string', () => {
@@ -96,9 +94,7 @@ describe('toTeamStatsRows', () => {
       return codes[code] ?? null;
     };
     const { rows, skipped } = toTeamStatsRows(
-      [
-        { team: 'OAK', season: '2019', season_type: 'REG', games: '16' },
-      ],
+      [{ team: 'OAK', season: '2019', season_type: 'REG', games: '16' }],
       historicResolve
     );
     expect(skipped).toBe(0);
@@ -107,9 +103,7 @@ describe('toTeamStatsRows', () => {
 
   it('skips and counts a row with an unresolvable team code', () => {
     const { rows, skipped } = toTeamStatsRows(
-      [
-        { team: 'XYZ', season: '2024', season_type: 'REG' },
-      ],
+      [{ team: 'XYZ', season: '2024', season_type: 'REG' }],
       resolveCode
     );
     expect(rows).toEqual([]);
@@ -118,9 +112,7 @@ describe('toTeamStatsRows', () => {
 
   it('skips and counts a row with a missing team code', () => {
     const { rows, skipped } = toTeamStatsRows(
-      [
-        { team: '', season: '2024', season_type: 'REG' },
-      ],
+      [{ team: '', season: '2024', season_type: 'REG' }],
       resolveCode
     );
     expect(rows).toEqual([]);
@@ -129,9 +121,7 @@ describe('toTeamStatsRows', () => {
 
   it('skips and counts a row with a non-numeric season', () => {
     const { rows, skipped } = toTeamStatsRows(
-      [
-        { team: 'KC', season: 'bad', season_type: 'REG' },
-      ],
+      [{ team: 'KC', season: 'bad', season_type: 'REG' }],
       resolveCode
     );
     expect(rows).toEqual([]);
@@ -140,9 +130,7 @@ describe('toTeamStatsRows', () => {
 
   it('skips non-REG season_type rows (POST)', () => {
     const { rows, skipped } = toTeamStatsRows(
-      [
-        { team: 'KC', season: '2024', season_type: 'POST', games: '3' },
-      ],
+      [{ team: 'KC', season: '2024', season_type: 'POST', games: '3' }],
       resolveCode
     );
     expect(rows).toEqual([]);
@@ -151,9 +139,7 @@ describe('toTeamStatsRows', () => {
 
   it('skips non-REG season_type rows (PRE)', () => {
     const { rows, skipped } = toTeamStatsRows(
-      [
-        { team: 'KC', season: '2024', season_type: 'PRE', games: '2' },
-      ],
+      [{ team: 'KC', season: '2024', season_type: 'PRE', games: '2' }],
       resolveCode
     );
     expect(rows).toEqual([]);

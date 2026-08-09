@@ -428,9 +428,8 @@ async function main() {
   // no identity problem) or latest + previous with no flag. The --seasons scoping
   // is shared with games/schedules: gamesSeasons is set above from --seasons (or null
   // for the weekly job's default), and teamStatsSeasons follows the same rule.
-  const teamStatsSeasons = gamesSeasons ?? (
-    latestSeason === null ? [] : [latestSeason, latestSeason - 1]
-  );
+  const teamStatsSeasons =
+    gamesSeasons ?? (latestSeason === null ? [] : [latestSeason, latestSeason - 1]);
   const teamStatsResult = await ingestTeamStats(supabase, teamStatsSeasons);
   for (const f of teamStatsResult.failures) failures.push({ season: f.season, message: f.message });
   skipped += teamStatsResult.skipped;
