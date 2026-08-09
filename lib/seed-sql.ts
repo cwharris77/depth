@@ -3,15 +3,19 @@
 // lib/nflverse/seed-sql.ts) builds its rows, then calls insertStatement() here for the
 // actual escaping/serialization -- one place owns "how does untrusted ingested text
 // become a safe SQL literal", never duplicated per source.
-export type Val = string | number | boolean | null | undefined;
+export type Val = string | number | boolean | number[] | null | undefined;
 
 // SQL literal for a single value. Strings are single-quote-escaped; null/undefined ->
-// NULL. Untrusted ingested text (player names with apostrophes, etc.) must never break
-// the script.
+// NULL. number[] (Postgres int[]) serialized as '{1,2,3}'. Untrusted ingested text
+// (player names with apostrophes, etc.) must never break the script.
 export function sqlValue(v: Val): string {
   if (v === null || v === undefined) return 'null';
   if (typeof v === 'number') return Number.isFinite(v) ? String(v) : 'null';
   if (typeof v === 'boolean') return v ? 'true' : 'false';
+  if (Array.isArray(v)) {
+    if (v.length === 0) return "'{}'";
+    return `'{${v.join(',')}}'`;
+  }
   return `'${v.replace(/'/g, "''")}'`;
 }
 

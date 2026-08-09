@@ -5,11 +5,13 @@ import {
   buildSchedulesAndGamesSeedSql,
   buildTeamFormationsSeedSql,
   buildRosterHistorySeedSql,
+  buildTeamStatsSeedSql,
   type UnitFormationTally,
 } from './seed-sql';
 import type { PlayerStatsInsert } from './transform';
 import type { ScheduleInsert, GameInsert } from './games';
 import type { RosterHistoryInsert } from './roster-history';
+import type { TeamStatsInsert } from './team-stats';
 
 describe('extractPlayerIds', () => {
   it('pulls ids out of a real insertStatement-shaped players block', () => {
@@ -164,5 +166,155 @@ describe('buildRosterHistorySeedSql', () => {
 
   it('returns empty string for no rows', () => {
     expect(buildRosterHistorySeedSql([])).toBe('');
+  });
+});
+
+describe('buildTeamStatsSeedSql', () => {
+  it('emits a team_season_stats insert keyed on team_id,season with distance-list arrays', () => {
+    const rows: TeamStatsInsert[] = [
+      {
+        team_id: 'chiefs',
+        season: 2024,
+        season_type: 'REG',
+        games: 17,
+        completions: 392,
+        attempts: 597,
+        passing_yards: 4183,
+        passing_tds: 26,
+        passing_interceptions: 11,
+        sacks_suffered: null,
+        sack_yards_lost: null,
+        sack_fumbles: null,
+        sack_fumbles_lost: null,
+        passing_air_yards: null,
+        passing_yards_after_catch: null,
+        passing_first_downs: null,
+        passing_epa: null,
+        passing_cpoe: null,
+        passing_2pt_conversions: null,
+        passing_10: null,
+        passing_16: null,
+        passing_20: null,
+        passing_40: null,
+        carries: null,
+        rushing_yards: null,
+        rushing_tds: null,
+        rushing_fumbles: null,
+        rushing_fumbles_lost: null,
+        rushing_first_downs: null,
+        rushing_epa: null,
+        rushing_2pt_conversions: null,
+        rushing_10: null,
+        rushing_12: null,
+        rushing_20: null,
+        rushing_40: null,
+        receptions: null,
+        targets: null,
+        receiving_yards: null,
+        receiving_tds: null,
+        receiving_fumbles: null,
+        receiving_fumbles_lost: null,
+        receiving_air_yards: null,
+        receiving_yards_after_catch: null,
+        receiving_first_downs: null,
+        receiving_epa: null,
+        receiving_2pt_conversions: null,
+        receiving_10: null,
+        receiving_16: null,
+        receiving_20: null,
+        receiving_40: null,
+        special_teams_tds: null,
+        def_tackles_solo: null,
+        def_tackles_with_assist: null,
+        def_tackle_assists: null,
+        def_tackles_for_loss: null,
+        def_tackles_for_loss_yards: null,
+        def_fumbles_forced: null,
+        def_sacks: null,
+        def_sack_yards: null,
+        def_qb_hits: null,
+        def_interceptions: null,
+        def_interception_yards: null,
+        def_pass_defended: null,
+        def_tds: null,
+        def_fumbles: null,
+        def_safeties: null,
+        misc_yards: null,
+        fumble_recovery_own: null,
+        fumble_recovery_yards_own: null,
+        fumble_recovery_opp: null,
+        fumble_recovery_yards_opp: null,
+        fumble_recovery_tds: null,
+        penalties: null,
+        penalty_yards: null,
+        timeouts: null,
+        fumbles_forced_by_opp: null,
+        fumbles_not_forced: null,
+        fumbles_out_of_bounds: null,
+        fumbles_total: null,
+        fumbles_lost_total: null,
+        punt_returns: null,
+        punt_return_yards: null,
+        kickoff_returns: null,
+        kickoff_return_yards: null,
+        fg_made: null,
+        fg_att: null,
+        fg_missed: null,
+        fg_blocked: null,
+        fg_long: null,
+        fg_pct: null,
+        fg_made_0_19: null,
+        fg_made_20_29: null,
+        fg_made_30_39: null,
+        fg_made_40_49: null,
+        fg_made_50_: null,
+        fg_missed_0_19: null,
+        fg_missed_20_29: null,
+        fg_missed_30_39: null,
+        fg_missed_40_49: null,
+        fg_missed_50_: null,
+        pat_made: null,
+        pat_att: null,
+        pat_missed: null,
+        pat_blocked: null,
+        pat_pct: null,
+        gwfg_made: null,
+        gwfg_att: null,
+        gwfg_missed: null,
+        gwfg_blocked: null,
+        pt_att: null,
+        pt_blocked: null,
+        pt_long: null,
+        pt_yards: null,
+        pt_inside_20: null,
+        pt_out_of_bounds: null,
+        pt_downed: null,
+        pt_touchback: null,
+        pt_fair_caught: null,
+        pt_returned: null,
+        pt_return_yards: null,
+        pt_return_tds: null,
+        pt_net_yards: null,
+        fg_made_list: [42, 50, 29, 47],
+        fg_missed_list: [44, 51],
+        fg_blocked_list: [],
+        fg_made_distance: [],
+        fg_missed_distance: [],
+        fg_blocked_distance: [],
+        gwfg_distance_list: [57],
+      },
+    ];
+    const sql = buildTeamStatsSeedSql(rows);
+    expect(sql).toContain('insert into team_season_stats');
+    expect(sql).toContain('on conflict (team_id,season) do nothing;');
+    expect(sql).toContain("'chiefs', 2024, 'REG'");
+    expect(sql).toContain("'{42,50,29,47}'");
+    expect(sql).toContain("'{44,51}'");
+    expect(sql).toContain("'{}'");
+    expect(sql).toContain("'{57}'");
+  });
+
+  it('returns empty string for no rows', () => {
+    expect(buildTeamStatsSeedSql([])).toBe('');
   });
 });
