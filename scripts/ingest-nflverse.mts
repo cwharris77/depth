@@ -36,6 +36,7 @@ import { assetUrl, latestAvailableSeason } from '../lib/nflverse/assets';
 import { buildCrosswalk } from '../lib/nflverse/crosswalk';
 import { toPlayerStatsRows, type PlayerStatsInsert } from '../lib/nflverse/transform';
 import { toScheduleAndGameRows, type GameInsert, type ScheduleInsert } from '../lib/nflverse/games';
+import { toTeamStatsRows, type TeamStatsInsert } from '../lib/nflverse/team-stats';
 import { FormationAccumulator, type ParticipationRow } from '../lib/nflverse/participation';
 import { DefenseFormationAccumulator } from '../lib/nflverse/defense-participation';
 import { resolveTeamCode } from '../lib/nflverse/team-codes';
@@ -46,6 +47,7 @@ import {
   buildPlayerStatsSeedSql,
   buildSchedulesAndGamesSeedSql,
   buildTeamFormationsSeedSql,
+  buildTeamStatsSeedSql,
   type UnitFormationTally,
 } from '../lib/nflverse/seed-sql';
 import type { Database } from '../lib/database.types';
@@ -69,6 +71,10 @@ const UPSERT_CHUNK = 1000;
 // finer formation vocabulary this repo doesn't parse.
 const PARTICIPATION_TAG = 'pbp_participation';
 const PARTICIPATION_PREFIX = 'pbp_participation_';
+// Team season stats — one row per (team, season), full 131-column stat line.
+// Asset naming mirrors the player-stats convention: stats_team_reg_<season>.csv.
+const TEAM_STATS_TAG = 'stats_team';
+const TEAM_STATS_PREFIX = 'stats_team_reg_';
 // SEED_OUT mode has no live `players` table to query -- it reads known player ids from
 // this already-committed file instead (see the header comment above).
 const ESPN_SEED_PATH = 'supabase/seed.sql';
@@ -267,6 +273,53 @@ async function ingestFormations(
   }
 }
 
+// Fetches nflverse stats_team_reg_<season>.csv rows, transforms them through the
+// pure toTeamStatsRows pipeline, and upserts into team_season_stats. Fetch (getText)
+// and parse (parseCsv + toTeamStatsRows) are separate calls so that a fetch failure
+// and a parse failure can never abort or corrupt one another (two-phase pipeline).
+// `seasons` is the complete list of season years to backfill (1999-2025 for a full
+// backfill, [latest, latest-1] for the weekly job). Idempotent upsert on (team_id,
+// season). SKIP_TEAM_STATS env var skips this step entirely for faster dev iteration.
+async function ingestTeamStats(
+  supabase: SupabaseClient<Database> | null,
+  seasons: number[]
+): Promise<{
+  rows: TeamStatsInsert[];
+  skipped: number;
+  failures: { season: number; message: string }[];
+}> {
+  if (process.env.SKIP_TEAM_STATS) {
+    console.log('team-stats: skipped (SKIP_TEAM_STATS set)');
+    return { rows: [], skipped: 0, failures: [] };
+  }
+
+  let skipped = 0;
+  const failures: { season: number; message: string }[] = [];
+  const allRows: TeamStatsInsert[] = [];
+
+  for (const season of seasons) {
+    try {
+      const csvText = await getText(assetUrl(TEAM_STATS_TAG, `${TEAM_STATS_PREFIX}${season}.csv`));
+      const parsed = parseCsv(csvText);
+      const { rows, skipped: seasonSkipped } = toTeamStatsRows(parsed);
+      skipped += seasonSkipped;
+
+      if (supabase && rows.length) {
+        const { error } = await supabase
+          .from('team_season_stats')
+          .upsert(rows, { onConflict: 'team_id,season' });
+        if (error) throw new Error(`team_season_stats upsert: ${error.message}`);
+      }
+      allRows.push(...rows);
+      console.log(`team-stats ${season}: ${rows.length} rows, skipped ${seasonSkipped}`);
+    } catch (e) {
+      failures.push({ season, message: (e as Error).message });
+    }
+  }
+
+  return { rows: allRows, skipped, failures };
+}
+
 async function main() {
   // Seed mode writes a SQL file and never touches the DB, so it needs no Supabase creds.
   const seedOut = process.env.SEED_OUT;
@@ -371,6 +424,16 @@ async function main() {
     });
   }
 
+  // Team season stats: backfill full --seasons range (FKs to teams, not players, so
+  // no identity problem) or latest + previous with no flag. The --seasons scoping
+  // is shared with games/schedules: gamesSeasons is set above from --seasons (or null
+  // for the weekly job's default), and teamStatsSeasons follows the same rule.
+  const teamStatsSeasons =
+    gamesSeasons ?? (latestSeason === null ? [] : [latestSeason, latestSeason - 1]);
+  const teamStatsResult = await ingestTeamStats(supabase, teamStatsSeasons);
+  for (const f of teamStatsResult.failures) failures.push({ season: f.season, message: f.message });
+  skipped += teamStatsResult.skipped;
+
   // Seed mode: dump everything computed above to SQL and stop -- no DB writes (already
   // skipped throughout), no ingestion_runs row.
   if (seedOut) {
@@ -383,11 +446,13 @@ async function main() {
       buildPlayerStatsSeedSql(allStatsRows),
       buildSchedulesAndGamesSeedSql(gamesResult.schedules, gamesResult.games),
       buildTeamFormationsSeedSql(formationsResult.tallies),
+      buildTeamStatsSeedSql(teamStatsResult.rows),
     ];
     writeFileSync(seedOut, parts.filter(Boolean).join('\n') + '\n');
     console.log(
       `\nWrote seed: ${allStatsRows.length} player-stat rows, ${gamesResult.games.length} games, ` +
-        `${gamesResult.schedules.length} schedules, ${formationsResult.tallies.length} formation rows -> ${seedOut}`
+        `${gamesResult.schedules.length} schedules, ${formationsResult.tallies.length} formation rows, ` +
+        `${teamStatsResult.rows.length} team-stats rows -> ${seedOut}`
     );
     if (failures.length) {
       console.log('Errors/skips:');
@@ -402,7 +467,8 @@ async function main() {
     rowsWritten +
     gamesResult.games.length +
     gamesResult.schedules.length +
-    formationsResult.tallies.length;
+    formationsResult.tallies.length +
+    teamStatsResult.rows.length;
   const status = failures.length === 0 ? 'success' : totalWritten > 0 ? 'partial' : 'failure';
 
   const { error: runError } = await supabase.from('ingestion_runs').insert({
@@ -420,6 +486,9 @@ async function main() {
       formations_season: formationsResult.season,
       formations_written: formationsResult.tallies.length,
       formations_teams_below_coverage: formationsResult.skippedTeams,
+      team_stats_seasons: teamStatsSeasons,
+      team_stats_rows: teamStatsResult.rows.length,
+      team_stats_skipped: teamStatsResult.skipped,
       skipped,
       failures,
     },
@@ -429,7 +498,9 @@ async function main() {
   console.log(
     `\nWrote ${rowsWritten} player-stat rows across ${seasons.length} season(s), ` +
       `${gamesResult.games.length} games, ${gamesResult.schedules.length} schedules, ` +
-      `${formationsResult.tallies.length} formation rows. Status: ${status}`
+      `${formationsResult.tallies.length} formation rows, ` +
+      `${teamStatsResult.rows.length} team-stats rows across ${teamStatsSeasons.length} season(s). ` +
+      `Status: ${status}`
   );
   if (failures.length) {
     console.log('Errors/skips:');
