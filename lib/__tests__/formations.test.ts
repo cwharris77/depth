@@ -8,7 +8,7 @@ import {
   alignmentLabel,
 } from '../formations';
 import { getPlayersByPosition, TEAMS } from '../teams';
-import type { Player, TeamRoster } from '../types';
+import type { FormationSlot, Player, TeamRoster } from '../types';
 
 // Minimal roster factory — only the fields the resolver touches.
 function player(
@@ -185,6 +185,13 @@ describe('formations are well-formed', () => {
       NB: 'CB',
       SS: 'S',
       FS: 'S',
+      LDE: 'DL',
+      RDE: 'DL',
+      NT: 'DL',
+      WLB: 'LB',
+      LILB: 'LB',
+      RILB: 'LB',
+      SLB: 'LB',
     };
     const allRealSlots = [
       ...buildRealDefenseFormation('4-3-4'),
@@ -195,6 +202,39 @@ describe('formations are well-formed', () => {
       if (!slot.group || !slot.preferredPosition) continue;
       expect(GROUP_OF[slot.preferredPosition]).toBe(slot.group);
     }
+  });
+
+  it('a group-based slot whose label promises a specific tag actually seats that tag', () => {
+    // The DL/LB bug (Jarren Reid rendering as NT on the wrong dot, fixed alongside this
+    // test): buildDlSlots labeled a slot "NT" without ever setting preferredPosition:
+    // 'NT', so the label promised a specific player but the resolver filled it by raw
+    // depth rank -- any DL could land there. A slot's generic bucket label always equals
+    // its own `position` field (bare 'DE'/'DT'/'CB'/'S'/'LB'/'RB'); the moment a builder
+    // gives a slot a more specific label (an L/R side, NT, or a role like SS/FS/WLB), the
+    // resolver can only honor that promise via preferredPosition -- so any slot with
+    // label !== position must carry preferredPosition (and it must equal that label).
+    // Swept across every front shape the DL/LB/DB counts can realistically take, so a
+    // future builder (or a new field on an existing one) that reintroduces this gap
+    // fails here instead of waiting for someone to notice a misplaced dot on a team page.
+    const allGroupSlots: FormationSlot[] = [];
+    for (let dl = 0; dl <= 7; dl++) {
+      for (let lb = 0; lb <= 7; lb++) {
+        const db = 11 - dl - lb;
+        if (db < 0 || db > 8) continue;
+        allGroupSlots.push(...buildRealDefenseFormation(`${dl}-${lb}-${db}`));
+      }
+    }
+    for (let rb = 0; rb <= 2; rb++) {
+      for (let te = 0; te <= 3 - rb; te++) {
+        if (5 - rb - te < 0) continue;
+        allGroupSlots.push(...buildRealFormation('SHOTGUN', `${rb}${te}`));
+      }
+    }
+
+    const mislabeled = allGroupSlots.filter(
+      (s) => s.group && s.label !== s.position && s.preferredPosition !== s.label
+    );
+    expect(mislabeled).toEqual([]);
   });
 });
 
@@ -350,14 +390,17 @@ describe('buildRealDefenseFormation — real per-team defensive fronts', () => {
   it('group-based resolution sorts by depthRank then jersey number, same as exact-match resolution', () => {
     // Mirrors "getPlayersByPosition — deterministic order" above, but through the
     // group-based path (resolveGroupedSlots' fallback fill) instead of an exact position
-    // match -- scrambled input order across two granular DL positions (LDE, RDE) at the
-    // same depthRank must still resolve in ascending jersey-number order.
+    // match -- scrambled input order across plain (non-granular) DL-group tags at the
+    // same depthRank must still resolve in ascending jersey-number order. Tagged plain
+    // 'DE' (not LDE/RDE/NT) so none of the 3-DL front's preferredPosition slots claim
+    // them early -- all three fall to the group's fallback ordering, same as before
+    // buildDlSlots gained preferredPosition (PR #299's DL/LB follow-up).
     const r = roster([
-      player({ id: 'de-16', position: 'RDE', depthRank: 1, number: 16 }),
-      player({ id: 'de-11', position: 'LDE', depthRank: 1, number: 11 }),
-      player({ id: 'de-14', position: 'RDE', depthRank: 1, number: 14 }),
+      player({ id: 'de-16', position: 'DE', depthRank: 1, number: 16 }),
+      player({ id: 'de-11', position: 'DE', depthRank: 1, number: 11 }),
+      player({ id: 'de-14', position: 'DE', depthRank: 1, number: 14 }),
     ]);
-    const real = buildRealDefenseFormation('3-4-4'); // 3 DL slots, no preferredPosition
+    const real = buildRealDefenseFormation('3-4-4'); // 3 DL slots, no plain-DE preferredPosition match
     const resolved = resolveUnit(r, 'defense', real);
     const dlIds = real
       .filter((s) => s.group === 'DL')
@@ -380,6 +423,53 @@ describe('buildRealDefenseFormation — real per-team defensive fronts', () => {
       .filter((s) => s.group === 'LB')
       .map((s) => resolved.find((r2) => r2.key === s.id)?.player?.id);
     expect(lbIds).toEqual(['lb-52', 'lb-54', 'lb-58']);
+  });
+
+  it("seats the exact-tagged nose tackle in the true 3-4 front's interior DL slot, not by raw depth rank", () => {
+    // Regression for the bug this file's DL/LB slots shared with DB_SLOTS pre-#299:
+    // a nose tackle who sorts first by depthRank/jersey must still land in the middle
+    // (NT) slot, not the left edge, just because he's the top-ranked DL.
+    const r = roster([
+      player({ id: 'nt1', position: 'NT', depthRank: 1, number: 90 }),
+      player({ id: 'lde1', position: 'LDE', depthRank: 2, number: 91 }),
+      player({ id: 'rde1', position: 'RDE', depthRank: 3, number: 92 }),
+    ]);
+    const real = buildRealDefenseFormation('3-4-4'); // true 3-4: LDE/NT/RDE
+    const resolved = resolveUnit(r, 'defense', real);
+    const byLabel = (label: string) =>
+      resolved.find((s) => real.find((slot) => slot.id === s.key)?.label === label)?.player?.id;
+    expect(byLabel('LDE')).toBe('lde1');
+    expect(byLabel('NT')).toBe('nt1');
+    expect(byLabel('RDE')).toBe('rde1');
+  });
+
+  it('seats the exact-tagged linebackers in the true 3-4 base front (WLB/LILB/RILB/SLB)', () => {
+    const r = roster([
+      player({ id: 'slb1', position: 'SLB', depthRank: 1, number: 58 }),
+      player({ id: 'wlb1', position: 'WLB', depthRank: 2, number: 54 }),
+      player({ id: 'rilb1', position: 'RILB', depthRank: 3, number: 53 }),
+      player({ id: 'lilb1', position: 'LILB', depthRank: 3, number: 52 }),
+    ]);
+    const real = buildRealDefenseFormation('3-4-4'); // 4 LB slots: WLB/LILB/RILB/SLB
+    const resolved = resolveUnit(r, 'defense', real);
+    const byLabel = (label: string) =>
+      resolved.find((s) => real.find((slot) => slot.id === s.key)?.label === label)?.player?.id;
+    expect(byLabel('WLB')).toBe('wlb1');
+    expect(byLabel('LILB')).toBe('lilb1');
+    expect(byLabel('RILB')).toBe('rilb1');
+    expect(byLabel('SLB')).toBe('slb1');
+  });
+
+  it('falls back to depth-rank order for DL/LB counts with no verified exact-tag mapping', () => {
+    // A 4-DL front's 2 interior gaps, and any LB count other than the true 3-4's 4, have
+    // no confirmed which-guy-plays-where convention (unlike the 3-4's LDE/NT/RDE or
+    // WLB/LILB/RILB/SLB), so they must keep filling by raw group + depth rank -- no
+    // preferredPosition guessing. Edges of a 4-DL front are still confidently LDE/RDE.
+    const front = buildRealDefenseFormation('4-3-4'); // 4 DL, 3 LB, 4 DB
+    const dlSlots = front.filter((s) => s.group === 'DL');
+    const lbSlots = front.filter((s) => s.group === 'LB');
+    expect(dlSlots.map((s) => s.preferredPosition)).toEqual(['LDE', undefined, undefined, 'RDE']);
+    expect(lbSlots.every((s) => s.preferredPosition === undefined)).toBe(true);
   });
 });
 
