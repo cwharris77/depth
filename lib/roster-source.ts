@@ -21,6 +21,8 @@ export interface TeamStatsRanks {
   pointsFor?: number;
   pointsAgainst?: number;
   pointDifferential?: number;
+  passingYards?: number;
+  rushingYards?: number;
 }
 
 // A single kit flattened with its team's identity, for the archive listing (Phase 7

@@ -184,6 +184,10 @@ export interface TeamStats {
   pointDifferential: number;
   streak: string;
   playoffSeed: number;
+  // nflverse-sourced fields (team_season_stats table), optional: nflverse backfill may
+  // lag behind ESPN team_stats, so a season can lack passing/rushing values.
+  passingYards?: number;
+  rushingYards?: number;
 }
 
 // A kit's category. `home` rows are ESPN-owned (machine-managed); every other kind is

@@ -154,6 +154,18 @@ type TeamStatsRankRow = Pick<
 const TEAM_STATS_RANK_SELECT =
   'team_id, season, win_percent, points_for, points_against, point_differential';
 
+export type TeamSeasonStatsRankRow = Pick<
+  Tables['team_season_stats']['Row'],
+  'team_id' | 'season' | 'passing_yards' | 'rushing_yards'
+>;
+const TEAM_SEASON_STATS_RANK_SELECT = 'team_id, season, passing_yards, rushing_yards';
+
+type TeamSeasonStatsValueRow = Pick<
+  Tables['team_season_stats']['Row'],
+  'season' | 'passing_yards' | 'rushing_yards'
+>;
+const TEAM_SEASON_STATS_VALUE_SELECT = 'season, passing_yards, rushing_yards';
+
 type TeamCoachSeasonRow = Pick<
   Tables['team_coach_seasons']['Row'],
   'season' | 'coach_name' | 'coach_experience'
@@ -167,8 +179,15 @@ const TEAM_COACH_SEASONS_SELECT = 'season, coach_name, coach_experience';
 // (docs/superpowers/specs/2026-07-14-season-scoped-head-coach-design.md) — a season with
 // no curated row (not yet backfilled) simply has no coach, same "degrade, don't fake"
 // rule as every other optional field here.
-function toTeamStats(row: TeamStatsRow, coachBySeason: Map<number, TeamCoachSeasonRow>): TeamStats {
+// `nflverseStatsBySeason` carries team_season_stats (nflverse) values merged alongside
+// team_stats (ESPN) values — optional per-season, since nflverse backfill may lag.
+function toTeamStats(
+  row: TeamStatsRow,
+  coachBySeason: Map<number, TeamCoachSeasonRow>,
+  nflverseStatsBySeason?: Map<number, TeamSeasonStatsValueRow>
+): TeamStats {
   const coachRow = coachBySeason.get(row.season);
+  const nflverse = nflverseStatsBySeason?.get(row.season);
   return {
     season: row.season,
     coach: coachRow
@@ -191,19 +210,21 @@ function toTeamStats(row: TeamStatsRow, coachBySeason: Map<number, TeamCoachSeas
     pointDifferential: row.point_differential ?? 0,
     streak: row.streak ?? '',
     playoffSeed: row.playoff_seed ?? 0,
+    passingYards: nflverse?.passing_yards ?? undefined,
+    rushingYards: nflverse?.rushing_yards ?? undefined,
   };
 }
 
-function rankValue(
-  rows: TeamStatsRankRow[],
+function rankValue<T>(
+  rows: T[],
   teamId: string,
-  value: (row: TeamStatsRankRow) => number | null,
+  value: (row: T) => number | null | undefined,
   order: 'asc' | 'desc' = 'desc'
 ): number | undefined {
-  const teamRow = rows.find((row) => row.team_id === teamId);
+  const teamRow = rows.find((row) => (row as { team_id: string }).team_id === teamId);
   if (!teamRow) return undefined;
   const teamValue = value(teamRow);
-  if (teamValue === null) return undefined;
+  if (teamValue === null || teamValue === undefined) return undefined;
   const values = rows
     .map(value)
     .filter((v): v is number => typeof v === 'number')
@@ -211,15 +232,24 @@ function rankValue(
   return values.findIndex((v) => v === teamValue) + 1 || undefined;
 }
 
-function buildLeagueRanks(
+export function buildLeagueRanks(
   teamId: string,
-  rows: TeamStatsRankRow[]
+  rows: TeamStatsRankRow[],
+  nflverseRows?: TeamSeasonStatsRankRow[]
 ): Record<number, TeamStatsRanks> {
   const bySeason = new Map<number, TeamStatsRankRow[]>();
   for (const row of rows) {
     const seasonRows = bySeason.get(row.season) ?? [];
     seasonRows.push(row);
     bySeason.set(row.season, seasonRows);
+  }
+  const nflverseBySeason = new Map<number, TeamSeasonStatsRankRow[]>();
+  if (nflverseRows) {
+    for (const row of nflverseRows) {
+      const seasonRows = nflverseBySeason.get(row.season) ?? [];
+      seasonRows.push(row);
+      nflverseBySeason.set(row.season, seasonRows);
+    }
   }
   return Object.fromEntries(
     [...bySeason].map(([season, seasonRows]) => [
@@ -229,6 +259,16 @@ function buildLeagueRanks(
         pointsFor: rankValue(seasonRows, teamId, (row) => row.points_for),
         pointsAgainst: rankValue(seasonRows, teamId, (row) => row.points_against, 'asc'),
         pointDifferential: rankValue(seasonRows, teamId, (row) => row.point_differential),
+        passingYards: rankValue(
+          nflverseBySeason.get(season) ?? [],
+          teamId,
+          (row) => row.passing_yards
+        ),
+        rushingYards: rankValue(
+          nflverseBySeason.get(season) ?? [],
+          teamId,
+          (row) => row.rushing_yards
+        ),
       },
     ])
   );
@@ -535,6 +575,8 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
     { data: statsRows, error: statsError },
     { data: coachRows, error: coachError },
     { data: rankRows, error: rankError },
+    { data: nflverseStatsRows, error: nflverseStatsError },
+    { data: nflverseRankRows, error: nflverseRankError },
   ] = await Promise.all([
     client
       .from('teams')
@@ -553,11 +595,25 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
       .eq('team_id', teamId)
       .returns<TeamCoachSeasonRow[]>(),
     client.from('team_stats').select(TEAM_STATS_RANK_SELECT).returns<TeamStatsRankRow[]>(),
+    client
+      .from('team_season_stats')
+      .select(TEAM_SEASON_STATS_VALUE_SELECT)
+      .eq('team_id', teamId)
+      .order('season', { ascending: false })
+      .returns<TeamSeasonStatsValueRow[]>(),
+    client
+      .from('team_season_stats')
+      .select(TEAM_SEASON_STATS_RANK_SELECT)
+      .returns<TeamSeasonStatsRankRow[]>(),
   ]);
   if (teamError) throw new Error(`teams query failed: ${teamError.message}`);
   if (statsError) throw new Error(`team_stats query failed: ${statsError.message}`);
   if (coachError) throw new Error(`team_coach_seasons query failed: ${coachError.message}`);
   if (rankError) throw new Error(`team_stats rank query failed: ${rankError.message}`);
+  if (nflverseStatsError)
+    throw new Error(`team_season_stats query failed: ${nflverseStatsError.message}`);
+  if (nflverseRankError)
+    throw new Error(`team_season_stats rank query failed: ${nflverseRankError.message}`);
   if (!teamRow) return undefined;
 
   const { upcomingSeason, isOffseason } = await getNflSeasonState();
@@ -567,10 +623,11 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
   // been played and playoff outcomes are known.
   const currentSeason = isOffseason ? upcomingSeason : upcomingSeason - 1;
   const coachBySeason = new Map((coachRows ?? []).map((row) => [row.season, row]));
-  const seasons = (statsRows ?? []).map((row) => toTeamStats(row, coachBySeason));
+  const nflverseBySeason = new Map((nflverseStatsRows ?? []).map((row) => [row.season, row]));
+  const seasons = (statsRows ?? []).map((row) => toTeamStats(row, coachBySeason, nflverseBySeason));
   return {
     team: toTeam(teamRow),
-    leagueRanksBySeason: buildLeagueRanks(teamId, rankRows ?? []),
+    leagueRanksBySeason: buildLeagueRanks(teamId, rankRows ?? [], nflverseRankRows ?? []),
     // `coach_experience === 0` is ESPN's live signal for "hired, but hasn't coached a
     // season for this team yet" — see TeamStatsPage.incomingCoach doc comment.
     incomingCoach:
