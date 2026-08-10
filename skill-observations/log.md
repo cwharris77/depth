@@ -112,3 +112,23 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 **Suggested improvement:** Distinguish two kinds of negative result and write them differently. A *demonstrated* impossibility records the measurement that proves it and stays settled — Houston's bull is unreachable because its navy samples exactly the shell's navy, `(3,24,37)`, and that is a fact a reader can re-check in one line. A *judgement* that something is not worth attempting should be written as provisional, name the specific approach that failed, and say what would change the answer. Concretely, in any artifact that records a capability verdict: state the predicate or method tried, not just the conclusion; and where the verdict is "too hard" rather than "provably impossible", mark it as such so the next reader knows it is an invitation rather than a wall.
 
 **Principle:** A negative capability judgement is a claim about the method available at the time, not a property of the subject, but comments record it as though it were the latter. When writing one down, separate the measurement from the verdict and preserve the measurement — the verdict decays as methods improve, the measurement does not. And beware the specific failure of letting a subject's hardest feature determine the assessment of the whole: ask what the thing is *mostly* made of, then treat the hard part as a separate and usually cheaper question.
+
+### Observation 10: "Which season is current" has two legitimate definitions in one codebase — a picker's top row must match its page's default view
+
+**Status:** OPEN
+**Date:** 2026-08-10
+**Session context:** depth past-season schedule view — wiring a SeasonSheet season picker onto the SCHEDULE tab. The roster page computes `currentSeason = isOffseason ? upcomingSeason : upcomingSeason - 1` ("the season whose roster is live"), but the schedule page's default view is `getTeamSchedule(id)`'s latest-season-present, which during the off-season is the *upcoming* season (already scheduled) and in January is still the in-progress season. Using the roster page's definition for the schedule picker would have produced a top row ("2025 · Current") that disagreed with the view actually on screen (2026), making the picker's active-row check read as wrong seconds after opening it.
+
+**Suggested improvement:** When adding a season/state picker to a page that already has a default view, derive the picker's "current" row from that page's own default (here `schedule.season`), not from a sibling page's definition — even when both pages are in the same app and the sibling's constant is already server-computed. Note the divergence in a comment at the point of choice, because the two definitions are both "right" and only one agrees with the page.
+
+**Principle:** A "current" or "active" label has to mean the same thing as the view it annotates; reusing a sibling surface's definition because it shares a name is how an indicator ends up tracking a different notion of "today" than the content below it.
+
+### Observation 11: A spec that defers a feature usually leaves the pattern for it in an older sibling — check the app's established precedent before designing the deferred feature
+
+**Status:** OPEN
+**Date:** 2026-08-10
+**Session context:** depth past-season schedule view. The 2026-07-17 team-schedule spec locked "v1 shows the latest season only; a season switcher is a later add" and the depth chart's Phase D1 spec (an *older* feature) had already shipped the season-picker pattern: `SeasonSheet` + `BottomSheet` + `?season=` URL + client hook + API route + `ApplySeasonFromQuery`. Every design question the new ticket raised (URL vs local state, flat list vs decade grouping, "back to today" semantics) was already answered by that precedent, so the whole feature reused existing seams instead of inventing new ones — SeasonSheet, BottomSheet, ApplySeasonFromQuery, the use-team-season hook shape, and the history API route shape were all copied/mirrored verbatim.
+
+**Suggested improvement:** In implement-spec (or any "implement this deferred feature" workflow), add a first step: when a spec's Out-of-scope/future-work list names the feature you're about to build, search the app for an existing implementation of that same interaction on a different surface before making design decisions. Deferred features are usually deferred precisely because a sibling shipped first with the pattern.
+
+**Principle:** "Deferred" and "never built" are different facts — a feature deferred by one spec may already exist in an older sibling's scope, and the cheapest correct design is the one that copies the sibling's proven seams rather than re-deriving the decisions from scratch.
