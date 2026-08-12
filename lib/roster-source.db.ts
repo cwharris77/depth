@@ -11,7 +11,13 @@ import type {
 import { type LeaderEntry, rosterLeaders } from './roster-leaders';
 import { resolvePostseason, resolveSchedule } from './schedule';
 import { getNflSeasonState } from './nfl-season';
-import { type PlayerHit, positionGroupPositions, rankByNameMatch } from './search';
+import {
+  type PlayerHit,
+  escapeLike,
+  normalizePlayerSearchQuery,
+  positionGroupPositions,
+  rankByNameMatch,
+} from './search';
 import { SPECIAL_LAYOUT } from './espn/transform';
 import type {
   Game,
@@ -674,9 +680,32 @@ function toPlayerHit(row: PlayerSearchRow): PlayerHit | null {
 // separate query rather than building one OR'd filter string, so user input never
 // gets interpolated into PostgREST filter syntax. `players_name_trgm_idx` (pg_trgm
 // GIN) keeps the name ILIKE fast as the table grows past the current ~2,000 rows.
+//
+// Module-scoped result cache: this is a public, unauthenticated route and the client
+// fires it per keystroke, so hot repeated queries must not hit Postgres every call.
+// Keyed by the normalized query + limit; an entry serves hits for MAX_SEARCH_CACHE_MS
+// before the next identical query refetches. Instance-local by design — deliberately
+// not Next's `use cache`, which is unobservable under vitest and redundant for a
+// keystroke burst that lands on one warm instance; the route's rate limiter
+// (lib/rate-limit.ts) is the global backstop for a flood of distinct queries.
+const MAX_SEARCH_CACHE_MS = 60_000;
+const MAX_SEARCH_CACHE_ENTRIES = 5_000;
+const searchCache = new Map<string, { at: number; value: PlayerHit[] }>();
+
 export async function searchAllPlayers(query: string, limit = 8): Promise<PlayerHit[]> {
-  const q = query.trim();
+  const q = normalizePlayerSearchQuery(query);
   if (!q) return [];
+
+  const cacheKey = `${limit}:${q}`;
+  const now = Date.now();
+  const cached = searchCache.get(cacheKey);
+  if (cached && now - cached.at < MAX_SEARCH_CACHE_MS) return cached.value;
+
+  // Escape LIKE wildcards so % / _ / \ in the input match literally instead of acting as
+  // pattern wildcards (see escapeLike in lib/search.ts). The position filter is an exact
+  // match but still parameterized through the same ILIKE operator, so it gets the same
+  // treatment — an input of "Q%" must not match every position starting with Q.
+  const escaped = escapeLike(q);
   const client = supabase();
 
   const asNumber = Number(q);
@@ -686,19 +715,19 @@ export async function searchAllPlayers(query: string, limit = 8): Promise<Player
     client
       .from('players')
       .select(PLAYER_SEARCH_SELECT)
-      .ilike('name', `%${q}%`)
+      .ilike('name', `%${escaped}%`)
       .limit(limit)
       .returns<PlayerSearchRow[]>(),
     client
       .from('players')
       .select(PLAYER_SEARCH_SELECT)
-      .ilike('college', `%${q}%`)
+      .ilike('college', `%${escaped}%`)
       .limit(limit)
       .returns<PlayerSearchRow[]>(),
     client
       .from('players')
       .select(PLAYER_SEARCH_SELECT)
-      .ilike('position', q)
+      .ilike('position', escaped)
       .limit(limit)
       .returns<PlayerSearchRow[]>(),
   ];
@@ -739,7 +768,17 @@ export async function searchAllPlayers(query: string, limit = 8): Promise<Player
     }
   }
 
-  return rankByNameMatch([...byId.values()], q).slice(0, limit);
+  const hits = rankByNameMatch([...byId.values()], q).slice(0, limit);
+
+  // A failed query throws above and never caches, so a transient DB error isn't pinned
+  // for the window. Evict the oldest entry when over capacity so a distinct-query flood
+  // can't grow memory unboundedly (the route's rate limiter is the real defense).
+  if (searchCache.size >= MAX_SEARCH_CACHE_ENTRIES) {
+    const oldest = searchCache.keys().next().value;
+    if (oldest !== undefined) searchCache.delete(oldest);
+  }
+  searchCache.set(cacheKey, { at: now, value: hits });
+  return hits;
 }
 
 type PlayerStatsRow = Pick<

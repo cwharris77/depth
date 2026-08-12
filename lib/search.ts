@@ -100,6 +100,31 @@ export function rankByNameMatch<T extends { name: string }>(hits: T[], query: st
   });
 }
 
+// The longest query worth running against Postgres. The player-search route is public
+// and unauthenticated, so this caps the LIKE pattern and the cache key: overlong input
+// is rejected with 400 by the route (app/api/players/search/route.ts) and returns [] if
+// it somehow still reaches searchAllPlayers (lib/roster-source.db.ts).
+export const MAX_PLAYER_SEARCH_QUERY_LENGTH = 30;
+
+// Normalize a raw search input for the cache key and the DB LIKE pattern: trim, then
+// collapse internal whitespace runs so "geno  smith" and "geno smith" share one cache
+// entry and one query. Returns null when the input is empty, whitespace-only, or longer
+// than MAX_PLAYER_SEARCH_QUERY_LENGTH — the search route turns null into a 400. Search
+// is unauthenticated, so nothing user-supplied may reach Postgres unvetted.
+export function normalizePlayerSearchQuery(raw: string): string | null {
+  const q = raw.trim().replace(/\s+/g, ' ');
+  if (!q || q.length > MAX_PLAYER_SEARCH_QUERY_LENGTH) return null;
+  return q;
+}
+
+// Escape LIKE wildcards so a query matches literally. Postgres reads %, _ and \ in an
+// ILIKE pattern as wildcards/escape, so unescaped input like "100%" would match every
+// name that merely starts with "100" instead of a literal percent. Applied to the
+// normalized query at every place searchAllPlayers interpolates it into a pattern.
+export function escapeLike(input: string): string {
+  return input.replace(/[\\%_]/g, '\\$&');
+}
+
 // Match players by name (substring), college (substring), exact jersey number, or
 // exact position. College matching lets a fan pull up, say, every Georgia product.
 export function searchPlayers(roster: TeamRosterSeed, query: string, limit = 8): Player[] {
