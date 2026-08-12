@@ -1,4 +1,4 @@
-import type { Player, Position, Team, TeamRosterSeed, Unit } from './types';
+import type { Position, Team, Unit } from './types';
 
 const OFFENSE_POSITIONS = new Set<Position>([
   'QB',
@@ -98,24 +98,4 @@ export function rankByNameMatch<T extends { name: string }>(hits: T[], query: st
     const bStarts = b.name.toLowerCase().startsWith(q) ? 0 : 1;
     return aStarts - bStarts || a.name.localeCompare(b.name);
   });
-}
-
-// Match players by name (substring), college (substring), exact jersey number, or
-// exact position. College matching lets a fan pull up, say, every Georgia product.
-export function searchPlayers(roster: TeamRosterSeed, query: string, limit = 8): Player[] {
-  const q = query.trim().toLowerCase();
-  if (!q) return [];
-
-  const group = positionGroupPositions(query);
-  const groupSet = group ? new Set<Position>(group) : null;
-
-  const matches = roster.players.filter(
-    (p) =>
-      p.name.toLowerCase().includes(q) ||
-      p.college.toLowerCase().includes(q) ||
-      p.position.toLowerCase() === q ||
-      String(p.number) === q ||
-      (groupSet?.has(p.position) ?? false)
-  );
-  return rankByNameMatch(matches, q).slice(0, limit);
 }
