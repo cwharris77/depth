@@ -13,18 +13,20 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
   const { slug } = await params;
   const supabase = await getServerClient();
 
-  const { data: board } = await supabase
+  const { data: board, error: boardError } = await supabase
     .from('shared_boards')
     .select('user_id, team_id, owner_name')
     .eq('slug', slug)
     .maybeSingle();
+  if (boardError) return NextResponse.json({ error: 'read failed' }, { status: 500 });
   if (!board) return NextResponse.json({ error: 'not found' }, { status: 404 });
 
-  const { data: rows } = await supabase
+  const { data: rows, error: rowsError } = await supabase
     .from('depth_overrides')
     .select('position, player_ids')
     .eq('user_id', board.user_id)
     .eq('team_id', board.team_id);
+  if (rowsError) return NextResponse.json({ error: 'read failed' }, { status: 500 });
 
   const override: TeamDepthOverride = {};
   for (const row of rows ?? []) override[row.position as Position] = row.player_ids;

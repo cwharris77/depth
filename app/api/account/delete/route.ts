@@ -13,8 +13,12 @@ export async function POST() {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
-  const { error } = await getAdminClient().auth.admin.deleteUser(user.id);
-  if (error) return NextResponse.json({ error: 'delete failed' }, { status: 500 });
+  try {
+    const { error } = await getAdminClient().auth.admin.deleteUser(user.id);
+    if (error) return NextResponse.json({ error: 'delete failed' }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'delete failed' }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }
