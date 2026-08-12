@@ -5,6 +5,7 @@
 // -> 401 (no anon persistence, by design: account-gated).
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerClient } from '@/lib/supabase/server';
+import { tables } from '@/lib/supabase/tables';
 import type { Database } from '@/lib/database.types';
 import type { TeamDepthOverride } from '@/lib/depth-overrides';
 import type { Position } from '@/lib/types';
@@ -19,7 +20,7 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   const { data, error } = await supabase
-    .from('depth_overrides')
+    .from(tables.depthOverrides)
     .select('team_id, position, player_ids')
     .eq('user_id', user.id);
   if (error) return NextResponse.json({ error: 'read failed' }, { status: 500 });
@@ -57,7 +58,7 @@ export async function PUT(request: NextRequest) {
   }
 
   const del = await supabase
-    .from('depth_overrides')
+    .from(tables.depthOverrides)
     .delete()
     .eq('user_id', user.id)
     .eq('team_id', teamId);
@@ -77,7 +78,7 @@ export async function PUT(request: NextRequest) {
     }));
 
   if (rows.length > 0) {
-    const ins = await supabase.from('depth_overrides').insert(rows);
+    const ins = await supabase.from(tables.depthOverrides).insert(rows);
     if (ins.error) return NextResponse.json({ error: 'write failed' }, { status: 500 });
   }
 

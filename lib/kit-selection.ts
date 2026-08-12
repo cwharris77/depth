@@ -5,7 +5,9 @@
 // a Record<teamId, kitId> under its own key. localStorage only for now (single device,
 // no accounts); a real backend comes with auth later.
 
-const STORAGE_KEY = 'depth:kit';
+import { STORAGE_KEY_DEPTH_KIT } from './storage-keys';
+
+const STORAGE_KEY = STORAGE_KEY_DEPTH_KIT;
 type Store = Record<string, string>; // teamId -> kitId
 
 function readStore(): Store {

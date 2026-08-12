@@ -3,6 +3,7 @@ import type { Database, Json } from '../database.types';
 import type { TeamColors } from '../types';
 import { contrastRatio, DARK_BG } from '../colors';
 import { decideReconcile, type PendingHome } from './reconcile';
+import { tables } from '@/lib/supabase/tables';
 
 // ESPN drift auto-promote — the I/O half. Runs after the weekly ESPN ingest writes
 // teams.colors. For each team it asks decideReconcile() (pure) what to do, then applies it:
@@ -80,7 +81,7 @@ async function setPending(
   pending: PendingHome | null
 ): Promise<void> {
   const { error } = await client
-    .from('teams')
+    .from(tables.teams)
     .update({ pending_home_colors: pending as unknown as Json | null })
     .eq('id', teamId);
   if (error) throw new Error(`reconcile: set pending for ${teamId}: ${error.message}`);
@@ -98,7 +99,7 @@ async function upsertHome(
     name: string;
   }
 ): Promise<void> {
-  const { error } = await client.from('uniforms').upsert(
+  const { error } = await client.from(tables.uniforms).upsert(
     {
       id: row.id,
       team_id: row.teamId,
@@ -123,7 +124,7 @@ async function upsertHome(
 // The current home keeps its stable `${team}-home` id; promotion updates it in place.
 async function pinCurrentHome(client: Client, id: string, colors: TeamColors): Promise<void> {
   const { error } = await client
-    .from('uniforms')
+    .from(tables.uniforms)
     .update({
       is_current: true,
       year_start: null,
@@ -144,7 +145,7 @@ async function pinCurrentHome(client: Client, id: string, colors: TeamColors): P
 async function freeRetiredId(client: Client, teamId: string, year: number): Promise<string> {
   const base = `${teamId}-home-${year}`;
   const { data, error } = await client
-    .from('uniforms')
+    .from(tables.uniforms)
     .select('id')
     .eq('team_id', teamId)
     .like('id', `${base}%`);
@@ -170,7 +171,7 @@ export async function reconcileHomeUniforms(
   };
 
   const { data: teamRows, error: teamErr } = await client
-    .from('teams')
+    .from(tables.teams)
     .select(
       'id, color_primary, color_secondary, color_accent, ui_accent, on_accent, pending_home_colors'
     )
@@ -178,7 +179,7 @@ export async function reconcileHomeUniforms(
   if (teamErr) throw new Error(`reconcile: teams read failed: ${teamErr.message}`);
 
   const { data: homeRows, error: homeErr } = await client
-    .from('uniforms')
+    .from(tables.uniforms)
     .select(
       'id, team_id, color_primary, color_secondary, color_accent, ui_accent, on_accent, year_start'
     )

@@ -4,11 +4,12 @@
 // no accounts); a real backend comes with auth later. See [[Decisions]] (base+overlay).
 
 import type { Player, PlayerStatus, Position, TeamRoster } from './types';
+import { STORAGE_KEY_DEPTH_OVERRIDES, STORAGE_KEY_DEPTH_SEEN_REORDER_HINT } from './storage-keys';
 
-// A team's overlay: position -> the user's ordering of player ids at that position.
+// A team's overlay: position -> the user's ordering of player ids per position.
 export type TeamDepthOverride = Partial<Record<Position, string[]>>;
 
-const STORAGE_KEY = 'depth:overrides';
+const STORAGE_KEY = STORAGE_KEY_DEPTH_OVERRIDES;
 type Store = Record<string, TeamDepthOverride>; // teamId -> override
 
 // --- pure application -------------------------------------------------------------
@@ -161,7 +162,7 @@ export function hasOverride(override: TeamDepthOverride): boolean {
 
 // One-time discoverability hint for the reorder feature. Defaults to "seen" on the
 // server / when storage is blocked so we never flash the hint where we can't dismiss it.
-const HINT_KEY = 'depth:seen-reorder-hint';
+const HINT_KEY = STORAGE_KEY_DEPTH_SEEN_REORDER_HINT;
 
 export function seenReorderHint(): boolean {
   if (typeof window === 'undefined') return true;

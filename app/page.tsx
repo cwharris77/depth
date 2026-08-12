@@ -6,6 +6,7 @@ import { getNflSeasonState } from '@/lib/nfl-season';
 import { DEFAULT_TEAM_ID } from '@/lib/teams';
 import { notFound, redirect } from 'next/navigation';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
+import { tables } from '@/lib/supabase/tables';
 
 // The home route. Signed-in visitors resolve to their startup team (favorite ->
 // last-viewed -> default) server-side and are redirected to /team/<id>, so the app opens
@@ -28,7 +29,7 @@ export default async function Home() {
   if (user) {
     const [{ data: settings }, teams] = await Promise.all([
       supabase
-        .from('user_settings')
+        .from(tables.userSettings)
         .select('favorite_team_id, last_team_id, start_on_favorite')
         .eq('user_id', user.id)
         .maybeSingle(),
