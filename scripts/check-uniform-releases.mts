@@ -16,18 +16,13 @@
 import dotenv from 'dotenv';
 import { appendFileSync } from 'node:fs';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { getSupabaseUrl, getSupabaseSecretKey } from '../lib/env';
 
 dotenv.config({ path: '.env.local' });
 import { parseSportsLogosFeed } from '../lib/sportslogos/parse';
 import type { Database } from '../lib/database.types';
 
 const NFL_FEED_URL = 'https://news.sportslogos.net/category/nfl/feed/';
-
-function requireEnv(name: string): string {
-  const v = process.env[name];
-  if (!v) throw new Error(`Missing required env var: ${name}`);
-  return v;
-}
 
 // SportsLogos.net is a third-party site -- a fetch can blip like any other network call.
 // Retry a few times with backoff rather than failing the whole run (same shape as
@@ -49,8 +44,8 @@ async function getText(url: string, attempts = 3): Promise<string> {
 
 async function main() {
   const supabase: SupabaseClient<Database> = createClient(
-    requireEnv('SUPABASE_URL'),
-    requireEnv('SUPABASE_SECRET_KEY')
+    getSupabaseUrl(),
+    getSupabaseSecretKey()
   );
 
   const feedXml = await getText(NFL_FEED_URL);

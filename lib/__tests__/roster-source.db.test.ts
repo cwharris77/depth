@@ -6,9 +6,12 @@ import { dbRosterSource, getTeamSeason, searchAllPlayers } from '../roster-sourc
 // script, and the DB is a fixed, already-seeded dev project (not prod user data) — a
 // mock would only re-assert our own assumptions about the schema, whereas hitting the
 // real tables catches drift between this code and the actual columns/constraints.
-// Skips gracefully (no failures) if SUPABASE_URL/SUPABASE_PUBLISHABLE_KEY aren't set, so a
+// Skips gracefully (no failures) if the Supabase env vars aren't set, so a
 // contributor without the env vars configured doesn't get a red suite.
-const hasEnv = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_PUBLISHABLE_KEY);
+const hasEnv = Boolean(
+  (process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL) &&
+  (process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
+);
 const maybeDescribe = hasEnv ? describe : describe.skip;
 
 maybeDescribe('dbRosterSource (live Supabase project)', () => {
@@ -121,9 +124,7 @@ maybeDescribe('searchAllPlayers (live Supabase project)', () => {
 describe('dbRosterSource (env not configured)', () => {
   it('documents the skip condition so a missing env var is visible, not silent', () => {
     if (!hasEnv) {
-      console.warn(
-        'SUPABASE_URL/SUPABASE_PUBLISHABLE_KEY not set — dbRosterSource live tests skipped.'
-      );
+      console.warn('Supabase env vars not set — dbRosterSource live tests skipped.');
     }
     expect(true).toBe(true);
   });

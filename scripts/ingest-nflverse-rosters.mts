@@ -21,6 +21,7 @@
 import dotenv from 'dotenv';
 import { writeFileSync } from 'node:fs';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { getSupabaseUrl, getSupabaseSecretKey } from '../lib/env';
 
 dotenv.config({ path: '.env.local' });
 import { parseCsv } from '../lib/nflverse/csv';
@@ -45,12 +46,6 @@ const STATS_PREFIX = 'stats_player_reg_';
 // but the full backfill sends every season in one process run.
 const UPSERT_CHUNK = 1000;
 
-function requireEnv(name: string): string {
-  const v = process.env[name];
-  if (!v) throw new Error(`Missing required env var: ${name}`);
-  return v;
-}
-
 // nflverse's CSV assets are stable, but a GitHub release download can blip like any
 // other network call -- retry a few times with backoff rather than failing the whole
 // run on one flaky fetch (same shape as ingest-espn.mts's getJson).
@@ -74,7 +69,7 @@ async function main() {
   const seedOut = process.env.SEED_OUT;
   const supabase: SupabaseClient<Database> | null = seedOut
     ? null
-    : createClient(requireEnv('SUPABASE_URL'), requireEnv('SUPABASE_SECRET_KEY'));
+    : createClient(getSupabaseUrl(), getSupabaseSecretKey());
 
   const startedAt = new Date().toISOString();
   const failures: { season: number | string; message: string }[] = [];
