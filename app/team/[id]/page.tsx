@@ -25,6 +25,9 @@ export async function generateStaticParams() {
   return teams.map((team) => ({ id: team.id }));
 }
 
+export const dynamicParams = false;
+export const revalidate = 21600;
+
 export async function generateMetadata({
   params,
   searchParams,

@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-import { cacheLife } from 'next/cache';
 import type { Database } from './database.types';
 import type {
   RosterSource,
@@ -362,8 +361,6 @@ export function orderUniforms(rows: UniformRow[]): Uniform[] {
 }
 
 async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> {
-  'use cache';
-  cacheLife('ingest');
   const client = supabase();
 
   // All four reads key off teamId, so fire them together — the teams row is not a
@@ -524,8 +521,6 @@ export async function getTeamSeason(
   teamId: string,
   season: number
 ): Promise<TeamRoster | undefined> {
-  'use cache';
-  cacheLife('ingest');
   const client = supabase();
 
   const [
@@ -566,8 +561,6 @@ type TeamStatsPageTeamRow = TeamRow & {
 const TEAM_STATS_PAGE_TEAM_SELECT = `${TEAM_SELECT}, coach_name, coach_experience`;
 
 async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undefined> {
-  'use cache';
-  cacheLife('ingest');
   const client = supabase();
 
   const [
@@ -798,8 +791,6 @@ function toPlayerSeasonStats(row: PlayerStatsRow): PlayerSeasonStats {
 // fetched client-side only when a PlayerCard opens. REG only in v1 (season_type filter
 // mirrors the ingest, which only ever writes REG rows today).
 export async function getPlayerStats(playerId: string): Promise<PlayerSeasonStats[]> {
-  'use cache';
-  cacheLife('ingest');
   const client = supabase();
   const { data, error } = await client
     .from('player_stats')
@@ -840,8 +831,6 @@ function toTeamFormation(row: TeamFormationRow): TeamFormation {
 // team/unit the ingest judged as insufficient-coverage (or hasn't reached yet) — the
 // field view falls back to the generic formation, never a partial list (invariant 6).
 export async function getTeamFormations(teamId: string): Promise<TeamFormation[]> {
-  'use cache';
-  cacheLife('ingest');
   const client = supabase();
   const { data, error } = await client
     .from('team_formations')
@@ -871,8 +860,6 @@ const PLAYER_STATS_WITH_ID_SELECT = `player_id, ${PLAYER_STATS_SELECT}`;
 export async function getPlayerStatsForRoster(
   playerIds: string[]
 ): Promise<Map<string, PlayerSeasonStats[]>> {
-  'use cache';
-  cacheLife('ingest');
   const byPlayer = new Map<string, PlayerSeasonStats[]>();
   if (playerIds.length === 0) return byPlayer;
   const client = supabase();
@@ -942,8 +929,6 @@ async function fetchTeamMetaMap(): Promise<Map<string, Team>> {
 // never an `.or()` string with the id interpolated in (invariant 8). Home/away sets are
 // disjoint, so no dedup is needed.
 async function fetchTeamGames(teamId: string, season: number): Promise<Game[]> {
-  'use cache';
-  cacheLife('ingest');
   const client = supabase();
   const [home, away] = await Promise.all([
     client
@@ -967,8 +952,6 @@ async function fetchTeamGames(teamId: string, season: number): Promise<Game[]> {
 // The newest season with a game for this team; drives the default schedule view. Two eq
 // queries (home, away), each ordered desc limit 1, max of the two.
 async function latestSeasonForTeam(teamId: string): Promise<number | null> {
-  'use cache';
-  cacheLife('ingest');
   const client = supabase();
   const [home, away] = await Promise.all([
     client
@@ -1075,8 +1058,6 @@ export async function getRosterLeaders(
   teamId: string,
   season: number
 ): Promise<RosterLeaders | null> {
-  'use cache';
-  cacheLife('ingest');
   try {
     const client = supabase();
     const { data: playerRows, error: playerError } = await client
@@ -1122,8 +1103,6 @@ export async function getNextGame(teamId: string): Promise<TeamScheduleGame | nu
 }
 
 async function fetchAllTeamMeta(): Promise<TeamRow[]> {
-  'use cache';
-  cacheLife('ingest');
   const client = supabase();
   const { data, error } = await client.from('teams').select(TEAM_SELECT).returns<TeamRow[]>();
   if (error) throw new Error(`teams query failed: ${error.message}`);
@@ -1131,8 +1110,6 @@ async function fetchAllTeamMeta(): Promise<TeamRow[]> {
 }
 
 async function fetchAllUniformRows(): Promise<UniformRow[]> {
-  'use cache';
-  cacheLife('ingest');
   const client = supabase();
   const { data, error } = await client
     .from('uniforms')
@@ -1145,8 +1122,6 @@ async function fetchAllUniformRows(): Promise<UniformRow[]> {
 }
 
 async function fetchCurrentHomeRows(): Promise<UniformRow[]> {
-  'use cache';
-  cacheLife('ingest');
   const client = supabase();
   const { data, error } = await client
     .from('uniforms')
