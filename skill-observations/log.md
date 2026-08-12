@@ -34,36 +34,6 @@ resolved statuses always carry their resolution date
 
 **Principle:** Any value produced by a tool is data to be moved mechanically, not content to be reproduced from memory. A model asked to emit a long opaque literal it cannot see will confabulate one that looks right, and type checks and unit tests do not distinguish real from plausible — so the substitution must be scripted and then verified against the source artifact.
 
-### Observation 5: `git stash` around a branch switch needs the push confirmed before the pop
-
-**Status:** ACTIONED (2026-08-07) — Applied to ship-pr (weekly review): step 6 now requires checking `git status --porcelain` first and popping by identity rather than pairing unconditional stash/pop.
-**Date:** 2026-08-06
-**Session context:** Merging a PR and syncing the default branch while an unrelated edit sat in the working tree.
-**Skill:** ship-pr (and any skill that syncs a branch mid-session)
-**Type:** open-source
-**Phase/Area:** Post-merge cleanup / branch sync
-
-**Issue:** I ran `git stash -q; git checkout <default>; git pull; git stash pop` to get an uncommitted local edit past a sync. The edit had meanwhile landed upstream, so the tree was already clean and `git stash -q` created nothing — and the blind `git stash pop` then popped a *pre-existing, unrelated* stash from an earlier session, producing a merge conflict in a file I had never touched. Recovering was easy (the failed pop keeps its entry), but the sequence silently reached into someone else's saved work.
-
-**Suggested improvement:** Never pair an unconditional `git stash` with an unconditional `git stash pop`. Either capture the stash's identity (`git stash create` / compare `git stash list` before and after) and pop only that ref, or check `git status --porcelain` first and skip the stash/pop pair entirely when the tree is clean. When a pop does conflict, stop and inspect rather than resolving — a conflict in a file unrelated to the current task is the signal that the wrong stash was popped.
-
-**Principle:** A stash is a shared, session-spanning stack, not a scratch variable. Operations that assume "the thing I pushed is on top" are unsafe whenever the push may have been a no-op; always pop by identity or guard the pair behind a dirty-tree check.
-
-### Observation 6: A skill's verification step prescribed a command that reports failures from stale sibling worktrees
-
-**Status:** ACTIONED (2026-08-07) — Applied to ship-pr (weekly review): step 2 now notes to confirm failing paths are inside the working tree before trusting a `npm test` failure, and flags the `.worktrees/` gap in `vitest.config.*`'s exclude list for Cooper to fix separately (a code change, not a skill edit).
-**Date:** 2026-08-06
-**Session context:** Shipping a docs-only change through the project's ship-PR skill. Its verification step says to run the project's plain test command and treat any failure as a stop-and-fix. The plain command's default include globs reach into checked-out sibling worktrees inside the repo, each holding an older copy of the suite and its own installed dependencies. It reported 31 failures across 5 files, every one of them from those stale copies; the same run scoped to the working tree was fully green. A separate, unrelated document in the same repo already recorded the workaround, so the knowledge existed but not where the verification step could use it.
-**Skill:** ship-pr (project-level) — "Verify — before writing the commit message" step and its Quick reference table
-**Type:** open-source
-**Phase/Area:** Pre-commit verification
-
-**Issue:** The skill hard-codes a verification command whose failure output is not trustworthy in this repo's normal working state, while simultaneously carrying a red-flag rule that a failing verification must halt the workflow. An agent following the skill literally either halts on phantom failures or, worse, learns to wave off red test output — which defeats the point of the gate. The correct invocation was documented elsewhere, so this is a knowledge-placement failure, not a missing discovery.
-
-**Suggested improvement:** Where a verification step names a command, the skill should name the *scoped* invocation that is actually trustworthy, with a one-line note on why the scoping exists. Better still, push the scope into the tool's own config so the plain command is correct by default and the skill can stay short — a skill instructing people to remember flags is a workaround for a misconfigured tool. Add a check to the skill: if a verification command reports failures, confirm the failing paths lie inside the working tree before treating them as real.
-
-**Principle:** A verification gate is only as good as the trustworthiness of the command behind it. When a prescribed command reliably produces false failures, the fix belongs in the tool's configuration first and the skill's wording second — never in the agent's memory. Any skill that both names a command and declares its failures blocking must ensure that command's failures are real, or it trains the exact habit of ignoring red output that the gate exists to prevent.
-
 ### Observation 7: Transcribing a raster reference reproduced the source renderer's own outline as a gap in the output
 
 **Status:** OPEN
@@ -112,3 +82,18 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 **Suggested improvement:** Distinguish two kinds of negative result and write them differently. A *demonstrated* impossibility records the measurement that proves it and stays settled — Houston's bull is unreachable because its navy samples exactly the shell's navy, `(3,24,37)`, and that is a fact a reader can re-check in one line. A *judgement* that something is not worth attempting should be written as provisional, name the specific approach that failed, and say what would change the answer. Concretely, in any artifact that records a capability verdict: state the predicate or method tried, not just the conclusion; and where the verdict is "too hard" rather than "provably impossible", mark it as such so the next reader knows it is an invitation rather than a wall.
 
 **Principle:** A negative capability judgement is a claim about the method available at the time, not a property of the subject, but comments record it as though it were the latter. When writing one down, separate the measurement from the verdict and preserve the measurement — the verdict decays as methods improve, the measurement does not. And beware the specific failure of letting a subject's hardest feature determine the assessment of the whole: ask what the thing is *mostly* made of, then treat the hard part as a separate and usually cheaper question.
+
+### Observation 10: Parallel explore-agent sweeps beat one-pass manual review for full-codebase audits
+
+**Status:** OPEN
+**Date:** 2026-08-10
+**Session context:** User asked for a complete code-quality pass over a ~55-component, 181-file-lib Next.js app (design tokens, components, pages, Next.js practice).
+**Skill:** New skill candidate: "codebase-audit-review"
+**Type:** open-source
+**Phase/Area:** Task decomposition / parallel review
+
+**Issue:** A full-repo audit is too large for one context. Splitting it by layer (design tokens + ui primitives / feature components / app routes + Next.js / lib data layer) and dispatching parallel explore agents produced four deep, cross-checked reports; spot-greps confirmed every headline claim I re-checked (a 5-way duplicated panel gradient with two disagreeing hex values, only 1/16 primitives using cn(), two dead exports). The two agents that were explicitly told to grep-verify dead-code and "verified non-issue" claims did so and marked them — the instruction changed the quality of the report.
+
+**Suggested improvement:** Codify a "codebase audit" workflow: (1) inventory the repo by layer and size, (2) dispatch ≥1 explore agent per layer with an explicit instruction list of anti-patterns to hunt AND "verify any dead-code / missing-file claim with grep before reporting", (3) re-verify the top 3-5 headline claims myself before answering, (4) ask each agent to separate "flagged but OK" (typechecked negative results) from real findings — parallel to Observation topic above.
+
+**Principle:** When a deliverable is too big for one context, parallel subagents with per-layer scope and a verification mandate give better coverage than a sequential manual pass — but the orchestrator must spot-check the highest-claim findings and instruct agents to separate verified negatives from genuine findings, or the report mixes noise and hallucination and the orchestration adds nothing.
