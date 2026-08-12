@@ -1,7 +1,7 @@
 import DepthChartField from '@/components/DepthChartField';
 import { resolveStartupTeam } from '@/lib/home-team';
 import { dbRosterSource, getPlayerStatsForRoster, getTeamFormations } from '@/lib/roster-source.db';
-import { getServerClient } from '@/lib/supabase/server';
+import { getServerClient, requireUser } from '@/lib/supabase/server';
 import { getNflSeasonState } from '@/lib/nfl-season';
 import { DEFAULT_TEAM_ID } from '@/lib/teams';
 import { notFound, redirect } from 'next/navigation';
@@ -14,18 +14,14 @@ import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
 // rendered directly here, statically-shaped like every /team/[id] page, with no
 // download-hydrate-redirect hop (backlog: "Home-load feels slow", 2026-07-08).
 export default async function Home() {
-  const supabase = await getServerClient();
-  const [
-    {
-      data: { user },
-    },
-    { isOffseason, upcomingSeason },
-  ] = await Promise.all([supabase.auth.getUser(), getNflSeasonState()]);
+  const user = await requireUser();
+  const { isOffseason, upcomingSeason } = await getNflSeasonState();
   // Same "which season is live right now" definition as /team/[id] (Phase D1's
   // SeasonSheet current-season row).
   const currentSeason = isOffseason ? upcomingSeason : upcomingSeason - 1;
 
   if (user) {
+    const supabase = await getServerClient();
     const [{ data: settings }, teams] = await Promise.all([
       supabase
         .from('user_settings')

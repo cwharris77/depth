@@ -3,14 +3,11 @@
 // `on delete cascade` FKs to auth.users (see supabase/migrations), so no per-table cleanup
 // is needed here.
 import { NextResponse } from 'next/server';
-import { getServerClient } from '@/lib/supabase/server';
+import { requireUser } from '@/lib/supabase/server';
 import { getAdminClient } from '@/lib/supabase/admin';
 
 export async function POST() {
-  const supabase = await getServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await requireUser();
   if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   const { error } = await getAdminClient().auth.admin.deleteUser(user.id);
