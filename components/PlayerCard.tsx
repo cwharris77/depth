@@ -284,20 +284,20 @@ export default function PlayerCard({
               {player.name}
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
-              <Badge kind="position" accent={accent}>
+              <Badge variant="position" accent={accent}>
                 {player.position}
               </Badge>
               <span className="text-xs font-medium" style={{ color: uiTokens.textMuted }}>
                 {positionFullName(player.position)}
               </span>
-              <Badge kind="status" status={player.status} accent={accent} />
+              <Badge variant="status" status={player.status} accent={accent} />
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2 mt-1 shrink-0">
           <IconButton
-            variant="plain"
+            variant="ghost"
             active={copied}
             accent={accent}
             onClick={handleShare}
@@ -313,7 +313,7 @@ export default function PlayerCard({
             }
           />
           <IconButton
-            variant="plain"
+            variant="ghost"
             onClick={onClose}
             ariaLabel="Close player card"
             icon={<X size={18} color={uiTokens.textMuted} />}
@@ -389,7 +389,7 @@ export default function PlayerCard({
                         POSITION DEPTH · {player.position}
                       </span> */}
               {isPositionCustom && (
-                <Badge kind="tag" accent={accent}>
+                <Badge variant="tag" accent={accent}>
                   CUSTOM
                 </Badge>
               )}

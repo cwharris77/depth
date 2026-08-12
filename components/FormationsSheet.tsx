@@ -75,7 +75,7 @@ export default function FormationsSheet({
       <div className="flex items-center justify-end px-5 pt-1 pb-1" style={{ flex: '0 0 auto' }}>
         <IconButton
           icon={<X size={16} color={uiTokens.textMuted} />}
-          variant="plain"
+          variant="ghost"
           size="sm"
           onClick={onClose}
           ariaLabel="Close"

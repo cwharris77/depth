@@ -42,7 +42,7 @@ export default function SeasonSheet({
         </h2>
         <IconButton
           icon={<X size={16} color={uiTokens.textMuted} />}
-          variant="plain"
+          variant="ghost"
           size="sm"
           onClick={onClose}
           ariaLabel="Close"

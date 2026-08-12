@@ -305,7 +305,7 @@ export default function NavSwitcher({
           {onPickTeam ? 'Pick a team' : 'Jump to'}
         </h2>
         <IconButton
-          variant="plain"
+          variant="ghost"
           onClick={onClose}
           ariaLabel="Close"
           icon={<X size={18} color={uiTokens.textMuted} />}

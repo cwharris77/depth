@@ -87,7 +87,7 @@ function GameCard({
           <div className="text-[10px] font-bold" style={{ color: uiTokens.textMuted }}>
             {formatGameDate(game.date)}
           </div>
-          <Badge kind="tag" accent={game.isHome ? uiAccent : uiTokens.textMuted}>
+          <Badge variant="tag" accent={game.isHome ? uiAccent : uiTokens.textMuted}>
             {game.isHome ? 'HOME' : 'AWAY'}
           </Badge>
         </>
@@ -157,7 +157,7 @@ export default function TeamScheduleView({ team, teams, schedule, isUpcoming }: 
                   {schedule.season} SEASON
                 </div>
                 {isUpcoming && (
-                  <Badge kind="tag" accent={uiAccent}>
+                  <Badge variant="tag" accent={uiAccent}>
                     UPCOMING
                   </Badge>
                 )}
