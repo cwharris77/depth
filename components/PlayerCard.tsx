@@ -683,7 +683,7 @@ export default function PlayerCard({
             aria-label={`${player.name} player card`}
             className="absolute bottom-0 left-0 right-0 rounded-t-3xl overflow-hidden"
             style={{
-              background: `linear-gradient(180deg, #0f1a2e 0%, ${uiTokens.bg} 100%)`,
+              background: uiTokens.panelGradient,
               borderTop: `1px solid ${accent}4d`,
               maxHeight: '82vh',
               zIndex: zIndex.overlayPanel,

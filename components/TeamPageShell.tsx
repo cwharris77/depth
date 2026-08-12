@@ -59,7 +59,7 @@ export default function TeamPageShell({
             borderLeft: `1px solid ${uiTokens.borderDefault}`,
             // Same panel gradient the mobile sheets use (PlayerCard, FullScreenSheet), so
             // docked content reads as the same surface it slides up as on mobile.
-            background: `linear-gradient(180deg, #0f1a2e 0%, ${uiTokens.bg} 100%)`,
+            background: uiTokens.panelGradient,
           }}>
           {aside}
         </aside>

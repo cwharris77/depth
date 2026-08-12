@@ -20,7 +20,7 @@ export default function FullScreenSheet({ isOpen, children }: FullScreenSheetPro
         <motion.div
           className="absolute inset-0 flex flex-col"
           style={{
-            background: `linear-gradient(180deg, #0f1a2e 0%, ${colors.bg} 100%)`,
+            background: colors.panelGradient,
             paddingTop: 'max(env(safe-area-inset-top), 12px)',
             zIndex: zIndex.overlayPanel,
           }}
