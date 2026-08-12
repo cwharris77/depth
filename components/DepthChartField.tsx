@@ -132,7 +132,12 @@ export default function DepthChartField({
   const historicalMode = season !== null;
   const [seasonSheetOpen, setSeasonSheetOpen] = useState(false);
   const [historicalShareCopied, setHistoricalShareCopied] = useState(false);
-  const { historicalRoster, historyLoading, historyNotFound } = useTeamSeason(team.id, season);
+  const [retryCount, setRetryCount] = useState(0);
+  const { historicalRoster, historyLoading, historyNotFound, historyError } = useTeamSeason(
+    team.id,
+    season,
+    retryCount
+  );
 
   const displayRoster = useMemo(
     () => applyTeamOverride(roster, effectiveOverride),
@@ -481,6 +486,20 @@ export default function DepthChartField({
                 <span className="text-xs font-bold" style={{ color: uiTokens.textMuted }}>
                   No {season} roster data for the {team.name} yet.
                 </span>
+              </div>
+            )}
+            {historicalMode && historyError && (
+              <div className="absolute inset-0 flex items-center justify-center px-6 text-center pointer-events-none">
+                <span className="text-xs font-bold" style={{ color: uiTokens.textMuted }}>
+                  Couldn't load {season} season data.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setRetryCount((c) => c + 1)}
+                  className="ml-2 text-xs font-bold underline"
+                  style={{ color: uiTokens.accent }}>
+                  Retry
+                </button>
               </div>
             )}
           </div>

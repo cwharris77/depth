@@ -12,6 +12,8 @@ export default defineConfig({
     alias: { '@': path.resolve(__dirname, '.') },
   },
   test: {
+    environment: 'jsdom',
     exclude: ['**/node_modules/**', '**/.claude/**'],
+    setupFiles: ['./vitest.setup.ts'],
   },
 });
