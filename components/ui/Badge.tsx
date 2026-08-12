@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { colors } from './tokens';
+import { withAlpha } from '@/lib/colors';
 
 type Status = 'starter' | 'backup' | 'rookie' | 'injured';
 type Kind = 'position' | 'status' | 'tag';
@@ -48,7 +49,11 @@ export default function Badge({
     return (
       <span
         className="inline-block rounded-full px-1.5 py-0.5 text-[9px] font-bold"
-        style={{ color: accent, background: `${accent}1a`, border: `1px solid ${accent}55` }}>
+        style={{
+          color: accent,
+          background: withAlpha(accent, 10),
+          border: `1px solid ${withAlpha(accent, 33)}`,
+        }}>
         {children}
       </span>
     );
@@ -56,7 +61,11 @@ export default function Badge({
   return (
     <span
       className="rounded-full px-2 py-0.5 text-xs font-bold"
-      style={{ color: accent, background: 'rgba(0,34,68,0.8)', border: `1px solid ${accent}66` }}>
+      style={{
+        color: accent,
+        background: colors.surfaceNavy,
+        border: `1px solid ${withAlpha(accent, 40)}`,
+      }}>
       {children}
     </span>
   );

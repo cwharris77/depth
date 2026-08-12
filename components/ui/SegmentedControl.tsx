@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { CSSProperties, MouseEvent } from 'react';
 import { colors } from './tokens';
+import { withAlpha } from '@/lib/colors';
 
 // An option renders as a plain <button> unless it carries an `href`, in which case
 // it renders as a Next <Link> — so a link-shaped switcher (e.g. the ROSTER/SCHEDULE/
@@ -69,7 +70,10 @@ export default function SegmentedControl({
         const itemStyle = {
           background: active ? (flat ? colors.surfaceChipHover : activeColor) : 'transparent',
           color: active ? (flat ? colors.textPrimary : activeTextColor) : colors.textMuted,
-          border: active && !flat ? `1px solid ${activeTextColor}66` : '1px solid transparent',
+          border:
+            active && !flat
+              ? `1px solid ${withAlpha(activeTextColor, 40)}`
+              : '1px solid transparent',
           opacity: disabled && !active ? 0.5 : 1,
           pointerEvents: disabled ? ('none' as const) : undefined,
           touchAction: 'manipulation' as const,

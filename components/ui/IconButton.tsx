@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { colors } from './tokens';
+import { withAlpha } from '@/lib/colors';
 
 type Variant = 'chrome' | 'plain';
 type Size = 'sm' | 'md';
@@ -35,8 +36,11 @@ export default function IconButton({
   const dim = DIMENSIONS[size];
   const style =
     variant === 'chrome'
-      ? { background: active ? `${accent}26` : colors.surfaceChip, border: `1px solid ${accent}40` }
-      : { background: active ? `${accent}26` : colors.borderDefault, border: 'none' };
+      ? {
+          background: active ? withAlpha(accent, 15) : colors.surfaceChip,
+          border: `1px solid ${withAlpha(accent, 25)}`,
+        }
+      : { background: active ? withAlpha(accent, 15) : colors.borderDefault, border: 'none' };
   return (
     <button
       type="button"
