@@ -1,14 +1,15 @@
 ---
 name: implement-spec
-description: Use when asked to implement, build, or continue a roadmap phase or design doc in the depth repo — anything referencing docs/superpowers/specs/, "the spec", a phase name (Phase C, 5d, nflverse, compare view, uniform launch), or "next thing on the roadmap".
+description: Use when asked to implement, build, or continue a roadmap phase or design doc in the depth repo — anything referencing the vault's Projects/depth/specs/, "the spec", a phase name (Phase C, 5d, nflverse, compare view, uniform launch), or "next thing on the roadmap".
 ---
 
 # Implementing a design spec
 
 ## Overview
 
-Specs in `docs/superpowers/specs/` are written to be handed to an implementing agent
-as-is: decisions are already made and marked **locked**. Your job is faithful
+Specs live in the vault (`../obsidian/Projects/depth/specs/`), not this repo — they
+are written to be handed to an implementing agent as-is: decisions are already made
+and marked **locked**. Your job is faithful
 execution plus mechanical adaptation to code drift — not re-design. The failure modes
 this skill prevents: relitigating locked decisions, doing out-of-scope work, and
 implementing from the spec's *description* of the code instead of the code itself.
@@ -19,9 +20,11 @@ implementing from the spec's *description* of the code instead of the code itsel
 
 ### 1. Load context, in this order
 
-1. The spec itself, fully — including **Out of scope** and **Tests**.
-2. `2026-*-roadmap-specs-index.md` — confirm the spec's status and its dependencies
-   ("Requires C first" means C, first; don't start a blocked spec).
+1. The spec itself, fully — including **Out of scope** and **Tests** (vault:
+   `../obsidian/Projects/depth/specs/`).
+2. The vault's `2026-*-roadmap-specs-index.md` (same directory) — confirm the spec's
+   status and its dependencies ("Requires C first" means C, first; don't start a
+   blocked spec).
 3. **Every file the spec names.** Read the current code — the spec was written on a
    given date and the code may have moved. Note each mismatch you find.
 4. The Next.js guide under `node_modules/next/dist/docs/` for any Next API involved
@@ -73,7 +76,7 @@ drift you adapted to under a `## Spec drift` heading.
 ### 6. Close the loop
 
 After the final PR merges:
-- Update the specs index row (status → shipped, link the PR numbers).
+- Update the vault specs index row (status → shipped, link the PR numbers).
 - Update README's status table if a roadmap phase moved.
 - If the spec deferred anything to "the launch spec" / a later phase, confirm that
   pointer still exists; if it doesn't, say so rather than silently dropping the ball.
