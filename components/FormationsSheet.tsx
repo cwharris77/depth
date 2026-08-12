@@ -1,7 +1,7 @@
 'use client';
 
-import { Check, X } from 'lucide-react';
-import IconButton from './ui/IconButton';
+import { Check } from 'lucide-react';
+import SheetHeader from './ui/SheetHeader';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import { alignmentLabel } from '@/lib/formations';
 import type { TeamFormation, Unit } from '@/lib/types';
@@ -72,15 +72,7 @@ export default function FormationsSheet({
       <div className="flex items-center justify-center pt-2.5 pb-0.5" style={{ flex: '0 0 auto' }}>
         <div className="h-1 w-9 rounded-full" style={{ background: uiTokens.borderInput }} />
       </div>
-      <div className="flex items-center justify-end px-5 pt-1 pb-1" style={{ flex: '0 0 auto' }}>
-        <IconButton
-          icon={<X size={16} color={uiTokens.textMuted} />}
-          variant="plain"
-          size="sm"
-          onClick={onClose}
-          ariaLabel="Close"
-        />
-      </div>
+      <SheetHeader onClose={onClose} />
 
       {unit === 'special' ? (
         <div className="px-5 pb-6 text-sm" style={{ color: uiTokens.textFaint, flex: '0 0 auto' }}>

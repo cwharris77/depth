@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { colors, zIndex } from '@/components/ui/tokens';
+import { colors, springSheet, zIndex } from '@/components/ui/tokens';
 
 interface FullScreenSheetProps {
   isOpen: boolean;
@@ -27,7 +27,7 @@ export default function FullScreenSheet({ isOpen, children }: FullScreenSheetPro
           initial={{ y: '-100%' }}
           animate={{ y: 0 }}
           exit={{ y: '-100%' }}
-          transition={{ type: 'spring', stiffness: 360, damping: 38 }}>
+          transition={springSheet}>
           {children}
         </motion.div>
       )}

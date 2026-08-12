@@ -9,7 +9,7 @@ import {
   isIOSSafari,
   isStandaloneDisplay,
 } from '@/lib/ios-install-hint';
-import { colors as uiTokens, zIndex } from '@/components/ui/tokens';
+import { colors as uiTokens, springSheet, zIndex } from '@/components/ui/tokens';
 import IconButton from '@/components/ui/IconButton';
 
 // One-time hint for iOS Safari visitors pointing at Share -> Add to Home Screen. iOS Safari has
@@ -61,7 +61,7 @@ export default function IOSInstallHint() {
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 40, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 360, damping: 38 }}>
+          transition={springSheet}>
           <span className="min-w-0 flex-1">
             Install Depth: tap <span className="font-semibold">Share</span>{' '}
             <span aria-hidden="true">⎋</span>, then{' '}
