@@ -50,10 +50,14 @@ function GameCard({
   game,
   teamId,
   uiAccent,
+  isPastSeason,
 }: {
   game: TeamScheduleGame;
   teamId: string;
   uiAccent: string;
+  // A completed season's games are all in the past — a null `result` there is missing
+  // data, not an upcoming game, so it must not render the HOME/AWAY "upcoming" badge.
+  isPastSeason: boolean;
 }) {
   if (game.isBye) {
     return (
@@ -103,6 +107,10 @@ function GameCard({
           className="text-[10px] font-bold"
           style={{ color: gameResultColor(game.result as 'W' | 'L' | 'T') }}>
           {game.result} {game.teamScore}-{game.oppScore}
+        </div>
+      ) : isPastSeason ? (
+        <div className="text-[10px] font-bold" style={{ color: uiTokens.textMuted }}>
+          No result
         </div>
       ) : (
         <>
@@ -198,6 +206,27 @@ export default function TeamScheduleView({
   const displaySchedule = viewedSeason === null ? schedule : pastSchedule;
   const showUpcoming = isUpcoming && viewedSeason === null;
   const viewedLabel = displaySchedule?.season ?? viewedSeason ?? currentSeason;
+  // Anything shown via a season fetch (viewedSeason !== null) is, by construction, not
+  // the live current season — normalizeViewedSeason already folds currentSeason into the
+  // default (null) view, so a non-null viewedSeason is always strictly in the past.
+  const isPastSeason = viewedSeason !== null;
+
+  // The desktop aside (SchedulePanel) is a summary of `displaySchedule`, not gated by
+  // `loading` like the main grid is — without this it would blank out and reappear on
+  // every season switch, which reads as broken chrome even though the main content
+  // handles its own loading state correctly. Render-time "keep last value" (same pattern
+  // as the team-id reset above), not an effect: hold the last non-loading schedule and
+  // only swap once the new one has actually landed.
+  const [panelSchedule, setPanelSchedule] = useState<TeamSchedule | null>(displaySchedule);
+  // The default view's data is a prop, never gated by `loading` (which only reflects the
+  // past-season hook and can lag one render behind a team switch) — sync it immediately.
+  if (
+    viewedSeason === null
+      ? panelSchedule !== displaySchedule
+      : !loading && panelSchedule !== displaySchedule
+  ) {
+    setPanelSchedule(displaySchedule);
+  }
 
   const header = (
     <div
@@ -213,7 +242,7 @@ export default function TeamScheduleView({
       teams={teams}
       activePage="schedule"
       accent={uiAccent}
-      aside={<SchedulePanel schedule={displaySchedule} accent={uiAccent} />}>
+      aside={<SchedulePanel schedule={panelSchedule} accent={uiAccent} />}>
       <div
         className="relative bg-background"
         style={{ minHeight: '100dvh', color: uiTokens.textPrimary }}>
@@ -255,7 +284,13 @@ export default function TeamScheduleView({
           /* Desktop's wider main column fits more weeks per row (multi-panel mock). */
           <div className="grid grid-cols-3 gap-2 px-3.5 pb-6 pt-2 xl:grid-cols-5 xl:gap-3">
             {displaySchedule.games.map((game) => (
-              <GameCard key={game.week} game={game} teamId={team.id} uiAccent={uiAccent} />
+              <GameCard
+                key={game.week}
+                game={game}
+                teamId={team.id}
+                uiAccent={uiAccent}
+                isPastSeason={isPastSeason}
+              />
             ))}
           </div>
         ) : (

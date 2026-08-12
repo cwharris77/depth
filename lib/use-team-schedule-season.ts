@@ -33,8 +33,12 @@ export function useTeamScheduleSeason(teamId: string, season: number | null) {
       .then((data: { schedule: TeamSchedule }) => {
         setSchedule(data.schedule);
         setLoading(false);
+        setNotFound(false);
       })
       .catch(() => {
+        // A superseded request's abort rejects here too — its state setters must not
+        // clobber whatever the newer in-flight request has already set.
+        if (controller.signal.aborted) return;
         setLoading(false);
         setNotFound(true);
       });
