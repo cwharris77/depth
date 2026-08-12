@@ -4,9 +4,10 @@ Player season stats are ingested from [nflverse](https://github.com/nflverse/nfl
 (open community NFL data, CSV assets on GitHub releases, no API key) into Postgres
 (Supabase project `jiqoaqmzmvtovimnmbzl`) — the second data source next to ESPN, using
 the same pattern: external fetch → pure transform → upsert, one `ingestion_runs` row per
-run. First slice: player season stats on `PlayerCard` (docs/superpowers/specs/2026-07-07-
-nflverse-ingestion-and-player-stats-design.md). Later phases (contracts, historical
-rosters, draft picks, formations) reuse this same scaffolding with their own specs.
+run. First slice: player season stats on `PlayerCard` (vault spec
+`../obsidian/Projects/depth/specs/2026-07-07-nflverse-ingestion-and-player-stats-design.md`).
+Later phases (contracts, historical rosters, draft picks, formations) reuse this same
+scaffolding with their own specs.
 
 ## Architecture
 
@@ -75,8 +76,8 @@ rosters, draft picks, formations) reuse this same scaffolding with their own spe
   longer on any of the 32 current rosters has no matching `players` row, so
   `toPlayerStatsRows`'s `knownPlayerIds` check would skip nearly all of it — backfilling
   old player-stats seasons doesn't work until player identity for retired/historic
-  players is solved (see
-  `docs/superpowers/specs/2026-08-01-historic-nflverse-coverage-design.md`). Games and
+  players is solved (see vault spec
+  `../obsidian/Projects/depth/specs/2026-08-01-historic-nflverse-coverage-design.md`). Games and
   schedules have no such FK (they reference `teams`, not `players`), so they backfill
   cleanly today.
 - `lib/roster-source.db.ts` — `getPlayerStats(playerId)`, a standalone export (same
@@ -162,7 +163,7 @@ whenever a real-formation chip is active, the condition of surfacing it.
 
 ## Real per-team formations (Phase E)
 
-docs/superpowers/specs/2026-07-07-phase-e-real-formations-design.md. v1 handles only
+Vault spec `../obsidian/Projects/depth/specs/2026-07-07-phase-e-real-formations-design.md`. v1 handles only
 the FTN-charted vocabulary (2023+), so only the latest available `pbp_participation`
 season is ever pulled — the older NGS-sourced seasons use a different, finer formation
 vocabulary this repo doesn't parse.
