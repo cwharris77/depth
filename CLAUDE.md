@@ -26,10 +26,14 @@ ESPN unofficial APIs
   → DepthChartField            (client, receives ONE resolved roster as a prop)
 ```
 
-Design docs live in `docs/superpowers/specs/` (dated `*-design.md` + an index). The
-product roadmap is in the Obsidian vault (`../obsidian/Projects/depth/Roadmap.md`) —
-if you can't read the vault, the specs index + README status table are the fallback;
-do not guess at roadmap intent.
+Design docs (specs) live in the Obsidian vault, not this repo:
+`../obsidian/Projects/depth/specs/` (dated `*-design.md` + an index). Implementation
+plans — checkbox task lists an agent executes against the code — live here instead, in
+`docs/superpowers/plans/`. The product roadmap is also in the vault
+(`../obsidian/Projects/depth/Roadmap.md`) — if you can't read the vault, the vault
+specs index + README status table are the fallback; do not guess at roadmap intent.
+Never write a new spec into this repo's `docs/` — that reintroduces the repo/vault
+copies drifting out of sync that this split exists to prevent.
 
 ## 2. Architecture invariants
 
@@ -136,7 +140,7 @@ refactor (see §6).
   sets the bypass cookie; later same-domain navigation can use the normal preview URL.
 - **Docs move with behavior.** A PR that changes data flow updates `docs/espn.md`; a
   PR that ships/kills a roadmap item updates README's status table and, when relevant,
-  the specs index.
+  the vault specs index (`../obsidian/Projects/depth/specs/2026-07-07-roadmap-specs-index.md`).
 
 ## 4. Mistakes you will make here unless you follow these rules
 
@@ -243,11 +247,16 @@ Adjectives don't count; these boxes do.
 - [ ] RLS untouched (or the PR is the auth phase and ships read policies)
 
 **Design spec**
-- [ ] File is `docs/superpowers/specs/YYYY-MM-DD-<slug>-design.md`
+- [ ] File is `../obsidian/Projects/depth/specs/YYYY-MM-DD-<slug>-design.md` — the
+      vault, never this repo's `docs/`
 - [ ] Has: Status line, roadmap linkage, locked decisions with rationale,
       Tests section (a concrete list), Out of scope section
 - [ ] Self-contained: an agent can implement from it without asking product questions
-- [ ] Index (`*-roadmap-specs-index.md`) row added/updated
+- [ ] Vault index (`*-roadmap-specs-index.md`) row added/updated
+
+**Implementation plan**
+- [ ] File is `docs/superpowers/plans/YYYY-MM-DD-<slug>.md` — this repo, not the vault
+- [ ] Header links the vault spec it implements (relative path)
 
 **Curated data (kits, seeds)**
 - [ ] Every hex cites its source in a comment (teamcolorcodes / GUD / TruColor / press release)
@@ -262,9 +271,10 @@ Adjectives don't count; these boxes do.
 
 ## 6. When uncertain — escalation rules
 
-**Proceed without asking** when the work is covered by an approved spec in
-`docs/superpowers/specs/`, or is a bugfix/small feature that follows the invariants
-above. Locked decisions in a spec are settled — implement them; do not relitigate.
+**Proceed without asking** when the work is covered by an approved spec in the vault
+(`../obsidian/Projects/depth/specs/`), or is a bugfix/small feature that follows the
+invariants above. Locked decisions in a spec are settled — implement them; do not
+relitigate.
 
 **Ask first (blocking)** before any of:
 - adding a dependency,
