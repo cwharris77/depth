@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Tooltip from './Tooltip';
 import { colors, zIndex } from './tokens';
@@ -30,10 +31,12 @@ export default function Menu({
   ariaLabel,
   trigger,
   items,
+  className,
 }: {
   ariaLabel: string;
   trigger: ReactNode;
   items: MenuItem[];
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -48,7 +51,7 @@ export default function Menu({
     return () => document.removeEventListener('mousedown', onDown);
   }, [open]);
   return (
-    <div className="relative pb-2.5" ref={ref}>
+    <div className={cn('relative pb-2.5', className)} ref={ref}>
       <button
         type="button"
         aria-label={ariaLabel}

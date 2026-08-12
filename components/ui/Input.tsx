@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import { colors } from './tokens';
@@ -15,6 +16,7 @@ type InputProps = {
   inputMode?: 'text' | 'email' | 'numeric' | 'tel' | 'url' | 'search' | 'none' | 'decimal';
   autoComplete?: string;
   ariaLabel?: string;
+  className?: string;
 };
 
 // Text/email input — one style everywhere. Focus swaps a glow (accent @30%) in via
@@ -31,6 +33,7 @@ export default function Input({
   inputMode,
   autoComplete,
   ariaLabel,
+  className,
 }: InputProps) {
   const [focused, setFocused] = useState(false);
   return (
@@ -46,7 +49,10 @@ export default function Input({
       aria-label={ariaLabel}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
-      className="w-full rounded-xl px-4 py-3 text-base outline-none transition-shadow duration-150"
+      className={cn(
+        'w-full rounded-xl px-4 py-3 text-base outline-none transition-shadow duration-150',
+        className
+      )}
       style={{
         background: colors.surfaceInput,
         border: `1px solid ${focused ? accent : colors.borderInput}`,
