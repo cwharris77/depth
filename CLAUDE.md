@@ -124,7 +124,7 @@ refactor (see §6).
 - **Conventional Commits** for commits and PR titles. Scopes in use: `uniforms`,
   `nav`, `search`, `player`, `field`, `depth`, `card`, `switcher`, `teams`, `colors`,
   `espn`, `ingest`, `supabase`, `scripts`, `pwa`, `seo`, `theme`, `layout`, `ci`,
-  `specs`, `readme`. Types include `a11y:` where apt.
+  `specs`, `readme`, `auth`. Types include `a11y:` where apt.
 - **Squash-merge only** (`gh pr merge --squash`). Never merge-commit, never rebase-
   merge, never delete or force-push `main`.
 - **PR bodies follow the house shape**: `## What` / `## Why` / `## Tests` (or
