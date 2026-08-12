@@ -112,3 +112,19 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 **Suggested improvement:** Distinguish two kinds of negative result and write them differently. A *demonstrated* impossibility records the measurement that proves it and stays settled — Houston's bull is unreachable because its navy samples exactly the shell's navy, `(3,24,37)`, and that is a fact a reader can re-check in one line. A *judgement* that something is not worth attempting should be written as provisional, name the specific approach that failed, and say what would change the answer. Concretely, in any artifact that records a capability verdict: state the predicate or method tried, not just the conclusion; and where the verdict is "too hard" rather than "provably impossible", mark it as such so the next reader knows it is an invitation rather than a wall.
 
 **Principle:** A negative capability judgement is a claim about the method available at the time, not a property of the subject, but comments record it as though it were the latter. When writing one down, separate the measurement from the verdict and preserve the measurement — the verdict decays as methods improve, the measurement does not. And beware the specific failure of letting a subject's hardest feature determine the assessment of the whole: ask what the thing is *mostly* made of, then treat the hard part as a separate and usually cheaper question.
+
+### Observation 10: Testing a module-scoped singleton store needs vi.resetModules + dynamic import, not a React render
+
+**Status:** OPEN
+**Date:** 2026-08-12
+**Session context:** Hardening the depth repo's use-user auth singleton (lib/use-user.ts) and adding the ticket-mandated tests for it — the store is module-scoped (useSyncExternalStore), and vitest keeps one module instance per file, so state leaked across `it` blocks.
+
+**Skill:** vitest-testing
+**Type:** open-source
+**Phase/Area:** Mocking / test isolation for module-scoped state
+
+**Issue:** The unit under test holds state at module scope (started flag, current state, an auth generation counter) and is consumed through a React hook. The repo has no @testing-library/react or react-test-renderer, and rendering through useSyncExternalStore under react-dom/server reads only the *server* snapshot, so the async state transitions could not be observed by rendering at all. Two techniques made the tests clean and are easy to miss: (1) exporting the store's own `subscribe`/`getSnapshot` interface from the hook module so tests drive the store directly instead of through React — which also required a header-comment note that those exports are the store's interface, not React's; (2) `vi.resetModules()` in `beforeEach` followed by a per-test `await import()` of the module, so the singleton's module state (and the `vi.mock`-ed supabase client harness) is fresh for every test. Without the reset, the second test ran against the first test's `started === true` and the mock auth harness silently never engaged.
+
+**Suggested improvement:** In the vitest-testing skill, add a "Module-scoped state (singletons, caches, external stores)" subsection under Mocking: for a module-scoped store, reset it between tests with `vi.resetModules()` + dynamic import (the `vi.mock` factory survives the reset and re-applies), and prefer exposing/using the store's subscribe/getSnapshot contract as the testable surface rather than forcing a React render — SSR render cannot observe store updates because useSyncExternalStore uses getServerSnapshot off the client.
+
+**Principle:** Test isolation is a property of the module registry, not of assertions — module-scoped state is shared state, and resetting it requires re-importing the module, not just clearing mocks. And when a React hook is a thin wrapper over a store, the store's own subscription interface is the right seam to test: it avoids a DOM/testing-library dependency and is the exact contract React binds to.
