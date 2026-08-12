@@ -112,3 +112,18 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 **Suggested improvement:** Distinguish two kinds of negative result and write them differently. A *demonstrated* impossibility records the measurement that proves it and stays settled — Houston's bull is unreachable because its navy samples exactly the shell's navy, `(3,24,37)`, and that is a fact a reader can re-check in one line. A *judgement* that something is not worth attempting should be written as provisional, name the specific approach that failed, and say what would change the answer. Concretely, in any artifact that records a capability verdict: state the predicate or method tried, not just the conclusion; and where the verdict is "too hard" rather than "provably impossible", mark it as such so the next reader knows it is an invitation rather than a wall.
 
 **Principle:** A negative capability judgement is a claim about the method available at the time, not a property of the subject, but comments record it as though it were the latter. When writing one down, separate the measurement from the verdict and preserve the measurement — the verdict decays as methods improve, the measurement does not. And beware the specific failure of letting a subject's hardest feature determine the assessment of the whole: ask what the thing is *mostly* made of, then treat the hard part as a separate and usually cheaper question.
+
+### Observation 10: Parallel explore-agent sweeps beat one-pass manual review for full-codebase audits
+
+**Status:** OPEN
+**Date:** 2026-08-10
+**Session context:** User asked for a complete code-quality pass over a ~55-component, 181-file-lib Next.js app (design tokens, components, pages, Next.js practice).
+**Skill:** New skill candidate: "codebase-audit-review"
+**Type:** open-source
+**Phase/Area:** Task decomposition / parallel review
+
+**Issue:** A full-repo audit is too large for one context. Splitting it by layer (design tokens + ui primitives / feature components / app routes + Next.js / lib data layer) and dispatching parallel explore agents produced four deep, cross-checked reports; spot-greps confirmed every headline claim I re-checked (a 5-way duplicated panel gradient with two disagreeing hex values, only 1/16 primitives using cn(), two dead exports). The two agents that were explicitly told to grep-verify dead-code and "verified non-issue" claims did so and marked them — the instruction changed the quality of the report.
+
+**Suggested improvement:** Codify a "codebase audit" workflow: (1) inventory the repo by layer and size, (2) dispatch ≥1 explore agent per layer with an explicit instruction list of anti-patterns to hunt AND "verify any dead-code / missing-file claim with grep before reporting", (3) re-verify the top 3-5 headline claims myself before answering, (4) ask each agent to separate "flagged but OK" (typechecked negative results) from real findings — parallel to Observation topic above.
+
+**Principle:** When a deliverable is too big for one context, parallel subagents with per-layer scope and a verification mandate give better coverage than a sequential manual pass — but the orchestrator must spot-check the highest-claim findings and instruct agents to separate verified negatives from genuine findings, or the report mixes noise and hallucination and the orchestration adds nothing.
