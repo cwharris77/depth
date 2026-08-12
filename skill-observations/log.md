@@ -34,36 +34,6 @@ resolved statuses always carry their resolution date
 
 **Principle:** Any value produced by a tool is data to be moved mechanically, not content to be reproduced from memory. A model asked to emit a long opaque literal it cannot see will confabulate one that looks right, and type checks and unit tests do not distinguish real from plausible — so the substitution must be scripted and then verified against the source artifact.
 
-### Observation 5: `git stash` around a branch switch needs the push confirmed before the pop
-
-**Status:** ACTIONED (2026-08-07) — Applied to ship-pr (weekly review): step 6 now requires checking `git status --porcelain` first and popping by identity rather than pairing unconditional stash/pop.
-**Date:** 2026-08-06
-**Session context:** Merging a PR and syncing the default branch while an unrelated edit sat in the working tree.
-**Skill:** ship-pr (and any skill that syncs a branch mid-session)
-**Type:** open-source
-**Phase/Area:** Post-merge cleanup / branch sync
-
-**Issue:** I ran `git stash -q; git checkout <default>; git pull; git stash pop` to get an uncommitted local edit past a sync. The edit had meanwhile landed upstream, so the tree was already clean and `git stash -q` created nothing — and the blind `git stash pop` then popped a *pre-existing, unrelated* stash from an earlier session, producing a merge conflict in a file I had never touched. Recovering was easy (the failed pop keeps its entry), but the sequence silently reached into someone else's saved work.
-
-**Suggested improvement:** Never pair an unconditional `git stash` with an unconditional `git stash pop`. Either capture the stash's identity (`git stash create` / compare `git stash list` before and after) and pop only that ref, or check `git status --porcelain` first and skip the stash/pop pair entirely when the tree is clean. When a pop does conflict, stop and inspect rather than resolving — a conflict in a file unrelated to the current task is the signal that the wrong stash was popped.
-
-**Principle:** A stash is a shared, session-spanning stack, not a scratch variable. Operations that assume "the thing I pushed is on top" are unsafe whenever the push may have been a no-op; always pop by identity or guard the pair behind a dirty-tree check.
-
-### Observation 6: A skill's verification step prescribed a command that reports failures from stale sibling worktrees
-
-**Status:** ACTIONED (2026-08-07) — Applied to ship-pr (weekly review): step 2 now notes to confirm failing paths are inside the working tree before trusting a `npm test` failure, and flags the `.worktrees/` gap in `vitest.config.*`'s exclude list for Cooper to fix separately (a code change, not a skill edit).
-**Date:** 2026-08-06
-**Session context:** Shipping a docs-only change through the project's ship-PR skill. Its verification step says to run the project's plain test command and treat any failure as a stop-and-fix. The plain command's default include globs reach into checked-out sibling worktrees inside the repo, each holding an older copy of the suite and its own installed dependencies. It reported 31 failures across 5 files, every one of them from those stale copies; the same run scoped to the working tree was fully green. A separate, unrelated document in the same repo already recorded the workaround, so the knowledge existed but not where the verification step could use it.
-**Skill:** ship-pr (project-level) — "Verify — before writing the commit message" step and its Quick reference table
-**Type:** open-source
-**Phase/Area:** Pre-commit verification
-
-**Issue:** The skill hard-codes a verification command whose failure output is not trustworthy in this repo's normal working state, while simultaneously carrying a red-flag rule that a failing verification must halt the workflow. An agent following the skill literally either halts on phantom failures or, worse, learns to wave off red test output — which defeats the point of the gate. The correct invocation was documented elsewhere, so this is a knowledge-placement failure, not a missing discovery.
-
-**Suggested improvement:** Where a verification step names a command, the skill should name the *scoped* invocation that is actually trustworthy, with a one-line note on why the scoping exists. Better still, push the scope into the tool's own config so the plain command is correct by default and the skill can stay short — a skill instructing people to remember flags is a workaround for a misconfigured tool. Add a check to the skill: if a verification command reports failures, confirm the failing paths lie inside the working tree before treating them as real.
-
-**Principle:** A verification gate is only as good as the trustworthiness of the command behind it. When a prescribed command reliably produces false failures, the fix belongs in the tool's configuration first and the skill's wording second — never in the agent's memory. Any skill that both names a command and declares its failures blocking must ensure that command's failures are real, or it trains the exact habit of ignoring red output that the gate exists to prevent.
-
 ### Observation 7: Transcribing a raster reference reproduced the source renderer's own outline as a gap in the output
 
 **Status:** OPEN
@@ -112,3 +82,50 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 **Suggested improvement:** Distinguish two kinds of negative result and write them differently. A *demonstrated* impossibility records the measurement that proves it and stays settled — Houston's bull is unreachable because its navy samples exactly the shell's navy, `(3,24,37)`, and that is a fact a reader can re-check in one line. A *judgement* that something is not worth attempting should be written as provisional, name the specific approach that failed, and say what would change the answer. Concretely, in any artifact that records a capability verdict: state the predicate or method tried, not just the conclusion; and where the verdict is "too hard" rather than "provably impossible", mark it as such so the next reader knows it is an invitation rather than a wall.
 
 **Principle:** A negative capability judgement is a claim about the method available at the time, not a property of the subject, but comments record it as though it were the latter. When writing one down, separate the measurement from the verdict and preserve the measurement — the verdict decays as methods improve, the measurement does not. And beware the specific failure of letting a subject's hardest feature determine the assessment of the whole: ask what the thing is *mostly* made of, then treat the hard part as a separate and usually cheaper question.
+
+## 2026-08-12
+
+### Observation 10: `cacheLife()` throws when a `'use cache'` function runs under vitest
+
+**Status:** OPEN
+**Date:** 2026-08-12
+**Session context:** Hardening the public player-search endpoint (depth repo). Evaluated adding Next's `'use cache'` to a DB-read function and planned a unit test that would call it with a mocked supabase client.
+**Skill:** vitest-testing
+**Type:** open-source
+**Phase/Area:** Mocking modules that use Next Cache Components
+
+**Issue:** `cacheLife()` from `next/cache` throws `E887` ("only available with cacheComponents config") unless `process.env.__NEXT_USE_CACHE` is set, and then throws `E818` ("can only be called inside a use cache function") because vitest has no cache work-unit store. So any function carrying `'use cache'` + `cacheLife()` cannot be invoked under vitest without `vi.mock('next/cache', () => ({ cacheLife: () => {} }))` — and even neutralized, the caching behavior itself is unobservable in a unit test. Existing live-DB tests in this repo that call such functions would hit the same throw the moment env vars are present (they're skipped today). I chose an in-module TTL cache instead, precisely so the "DB not hit twice" contract could be asserted.
+
+**Suggested improvement:** When a ticket asks for caching a DB read AND for tests proving "repeated calls stop hitting the DB", prefer a hand-rolled in-memory TTL cache (observable, testable) over `'use cache'`, or `vi.mock('next/cache')` in any test that must invoke a cached function. Consider noting in the project's vitest-testing skill that `'use cache'` functions cannot be exercised under vitest.
+
+**Principle:** A framework caching primitive that is invisible outside the framework's runtime is not unit-testable. Pick testability at the cache layer (an in-memory structure you own), or accept the framework behavior as an integration-only guarantee and say so in the test file.
+
+### Observation 11: A module-scoped cache leaks across tests in the same file
+
+**Status:** OPEN
+**Date:** 2026-08-12
+**Session context:** Writing unit tests for searchAllPlayers' new module-scoped result cache in the depth repo. The TTL-expiry test failed confusingly until I realized an earlier test had already cached the same key.
+**Skill:** vitest-testing
+**Type:** internal
+**Phase/Area:** Isolation of module-level mutable state
+
+**Issue:** Module-level mutable state (a `Map` cache, a singleton client) persists across `it()` blocks within one test file. The first test cached `8:geno`; the TTL test then read that entry as a fresh hit under `vi.setSystemTime(0)` — `Date.now()` at 0 minus the entry's large real-time `at` is always within the window, so the refetch never fired. Working around it with "unique query strings per test" is fragile: a reorder or a shared fixture silently re-breaks it.
+
+**Suggested improvement:** For tests of module-cached behavior, isolate per test with `vi.resetModules()` + a dynamic `await import(...)` in `beforeEach` — a fresh module instance means a fresh cache. Hoisted `vi.hoisted` mock state survives `resetModules`, so recording mocks keep working.
+
+**Principle:** Module-level mutable state is shared state across the tests in a file. Tests of code that owns it must isolate by fresh module instance, not by carefully-crafted inputs that happen to avoid the collision.
+
+### Observation 12: Mocking a module doesn't bypass a real guard that reads env vars before the mocked call
+
+**Status:** OPEN
+**Date:** 2026-08-12
+**Session context:** In the depth repo, mocking `@supabase/supabase-js` so searchAllPlayers runs against a recording fake client in vitest. Tests failed with the real "Missing SUPABASE_URL" error.
+**Skill:** vitest-testing
+**Type:** internal
+**Phase/Area:** Mocking factory/guard code
+
+**Issue:** `supabase()` in lib/roster-source.db.ts throws when the SUPABASE env vars are absent — before `createClient` is ever called. `vi.mock('@supabase/supabase-js')` only replaces the imported module; it cannot bypass a pre-mock guard in the code under test. The mock looked like it should have worked (the error even mentions the env var), and the actual missing piece was stubbing the two vars so the guard passes into the mocked path.
+
+**Suggested improvement:** When the code under test guards on env vars (or other ambient state) before reaching the mocked call, stub that state too: `vi.stubEnv` in `beforeAll`, `vi.unstubAllEnvs` in `afterAll`. Note that vitest gives each test file its own worker, so the stubs don't disturb sibling files' skip logic.
+
+**Principle:** A mock replaces a dependency, not the code around its call site. If the path to the mocked call passes through a guard over process state, the test must satisfy that guard or the real path — and its real error — still runs.
