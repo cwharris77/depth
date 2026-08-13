@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
 import { colors } from './tokens';
 
@@ -12,6 +13,7 @@ type FilterPillProps = {
   // (uniform archive, compare), which stay on the default green.
   accentColor?: string;
   onAccentColor?: string;
+  className?: string;
 };
 
 // Filter chip — the uniform archive's kind/era filter bar. Active = accent fill;
@@ -22,12 +24,17 @@ export default function FilterPill({
   children,
   accentColor = colors.accent,
   onAccentColor = colors.onAccent,
+  className,
 }: FilterPillProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`shrink-0 rounded-full px-3 py-1.5 text-xs ${active ? 'font-semibold' : 'font-normal'}`}
+      className={cn(
+        'shrink-0 rounded-full px-3 py-1.5 text-xs',
+        active ? 'font-semibold' : 'font-normal',
+        className
+      )}
       style={{
         background: active ? accentColor : colors.surfaceChip,
         color: active ? onAccentColor : colors.textSecondary,

@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
 import { colors } from './tokens';
 
@@ -16,6 +17,7 @@ type IconButtonProps = {
   size?: Size;
   onClick?: () => void;
   ariaLabel: string;
+  className?: string;
 };
 
 // Circular icon button — the dominant control shape in Depth's header/toolbars (unit
@@ -31,6 +33,7 @@ export default function IconButton({
   size = 'md',
   onClick,
   ariaLabel,
+  className,
 }: IconButtonProps) {
   const dim = DIMENSIONS[size];
   const style =
@@ -42,7 +45,10 @@ export default function IconButton({
       type="button"
       aria-label={ariaLabel}
       onClick={onClick}
-      className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full"
+      className={cn(
+        'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full',
+        className
+      )}
       style={{ ...style, width: dim, height: dim, touchAction: 'manipulation' }}>
       {icon}
     </button>

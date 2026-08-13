@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
 import { colors } from './tokens';
 
@@ -7,14 +8,14 @@ import { colors } from './tokens';
 // className where the default (px-5 py-2) doesn't fit.
 export default function SectionLabel({
   children,
-  className = 'px-5 py-2',
+  className,
 }: {
   children: ReactNode;
   className?: string;
 }) {
   return (
     <div
-      className={`text-[10px] font-semibold tracking-widest ${className}`}
+      className={cn('text-[10px] font-semibold tracking-widest px-5 py-2', className)}
       style={{ color: colors.textMuted }}>
       {children}
     </div>

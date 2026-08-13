@@ -573,7 +573,7 @@ export default function TeamStatsView({
 
         {showPostseason && active && (
           <div className="px-5 pb-7 pt-1">
-            <SectionLabel className="mb-2">POSTSEASON · {active.season}</SectionLabel>
+            <SectionLabel className="px-0 mb-2">POSTSEASON · {active.season}</SectionLabel>
             {/* Card doesn't fit here: needs rounded-2xl + overflow-hidden clip + zero
               padding (rows supply their own), none of which Card's API exposes
               (rounded-3xl only, no clip variant, padding=16 default) — RowCardList
@@ -622,7 +622,7 @@ export default function TeamStatsView({
 
         {leaderRows.length > 0 && leaders && (
           <div className="px-5 pb-7 pt-1">
-            <SectionLabel className="mb-2">ROSTER LEADERS · {leaders.season}</SectionLabel>
+            <SectionLabel className="px-0 mb-2">ROSTER LEADERS · {leaders.season}</SectionLabel>
             {/* Card doesn't fit here: needs rounded-2xl + overflow-hidden clip + zero
               padding (rows supply their own), none of which Card's API exposes
               (rounded-3xl only, no clip variant, padding=16 default) — RowCardList

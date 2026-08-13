@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
 import { colors } from './tokens';
 
@@ -35,6 +36,7 @@ type ButtonProps = {
   children: ReactNode;
   onClick?: () => void;
   type?: 'button' | 'submit';
+  className?: string;
 };
 
 // Depth's one button primitive — generalizes the primary/secondary/ghost/danger button
@@ -49,6 +51,7 @@ export default function Button({
   children,
   onClick,
   type = 'button',
+  className,
 }: ButtonProps) {
   const v = VARIANTS[variant];
   return (
@@ -56,7 +59,13 @@ export default function Button({
       type={type}
       disabled={disabled}
       onClick={onClick}
-      className={`inline-flex items-center justify-center gap-2 font-bold ${SIZE_CLASSES[size]} ${fullWidth ? 'w-full' : ''} ${disabled ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
+      className={cn(
+        'inline-flex items-center justify-center gap-2 font-bold',
+        SIZE_CLASSES[size],
+        fullWidth && 'w-full',
+        disabled ? 'cursor-default opacity-60' : 'cursor-pointer',
+        className
+      )}
       style={{
         background: v.background,
         color: v.color,
