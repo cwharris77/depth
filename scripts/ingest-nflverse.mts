@@ -315,6 +315,29 @@ async function ingestTeamStats(
   return { rows: allRows, skipped, failures };
 }
 
+// PostgREST caps an unranged select at 1000 rows (Supabase's default db-max-rows) --
+// `players` already exceeds that (2184+ rows across 32 rosters), so a plain
+// `.select('id')` silently returned only the first page and starved knownPlayerIds
+// for every player past it, dropping their player_stats rows with no error (shipped
+// bug: Jaxon Smith-Njigba and ~1000+ other rostered players had zero player_stats
+// rows despite being fully rostered, every run, because they never appeared in this
+// set). Page through with `.range()` until a short page signals the end.
+const PLAYERS_PAGE_SIZE = 1000;
+
+async function fetchAllPlayerIds(supabase: SupabaseClient<Database>): Promise<Set<string>> {
+  const ids = new Set<string>();
+  for (let from = 0; ; from += PLAYERS_PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from('players')
+      .select('id')
+      .range(from, from + PLAYERS_PAGE_SIZE - 1);
+    if (error) throw new Error(`players query failed: ${error.message}`);
+    for (const row of data ?? []) ids.add(row.id);
+    if (!data || data.length < PLAYERS_PAGE_SIZE) break;
+  }
+  return ids;
+}
+
 async function main() {
   // Seed mode writes a SQL file and never touches the DB, so it needs no Supabase creds.
   const seedOut = process.env.SEED_OUT;
@@ -340,11 +363,7 @@ async function main() {
 
   let knownPlayerIds: Set<string>;
   if (supabase) {
-    const { data: playerRows, error: playersQueryError } = await supabase
-      .from('players')
-      .select('id');
-    if (playersQueryError) throw new Error(`players query failed: ${playersQueryError.message}`);
-    knownPlayerIds = new Set((playerRows ?? []).map((p) => p.id));
+    knownPlayerIds = await fetchAllPlayerIds(supabase);
   } else {
     let espnSeedSql: string;
     try {
