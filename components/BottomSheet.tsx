@@ -44,7 +44,7 @@ export default function BottomSheet({
           <motion.div
             className="absolute inset-x-0 bottom-0 flex flex-col"
             style={{
-              background: `linear-gradient(180deg, #131a2b 0%, ${colors.bg} 100%)`,
+              background: colors.panelGradient,
               borderTopLeftRadius: 20,
               borderTopRightRadius: 20,
               borderTop: `1px solid ${colors.borderDefault}`,

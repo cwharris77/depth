@@ -21,6 +21,7 @@ export const colors = {
   dangerOn: '#2a0e0e',
   surfaceCard: '#0f1623',
   surfaceCard2: 'rgba(255,255,255,0.03)',
+  panelGradient: 'linear-gradient(180deg, #0f1a2e 0%, #0a0e1a 100%)',
   surfaceRaised: 'rgba(255,255,255,0.05)', // faint raised fill (rows, subtle cards)
   surfaceInput: 'rgba(255,255,255,0.06)',
   surfaceChip: 'rgba(255,255,255,0.07)',
