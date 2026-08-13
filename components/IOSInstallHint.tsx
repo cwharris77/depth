@@ -53,7 +53,7 @@ export default function IOSInstallHint() {
           style={{
             bottom: 'max(env(safe-area-inset-bottom), 12px)',
             color: uiTokens.textSecondary,
-            background: `linear-gradient(180deg, #131a2b 0%, ${uiTokens.bg} 100%)`,
+            background: uiTokens.panelGradient,
             border: `1px solid ${uiTokens.surfaceChipHover}`,
             boxShadow: `0 8px 32px ${uiTokens.scrimLight}`,
             zIndex: zIndex.overlayPanel,
