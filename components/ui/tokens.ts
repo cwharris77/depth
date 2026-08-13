@@ -47,6 +47,8 @@ export const colors = {
 // overflow menu once ended up tied with (and losing to) the player dots it's supposed to
 // float above. Add a new tier here — never a bare number at the call site — and the
 // lint rule extends to it automatically.
+export const springSheet = { type: 'spring', stiffness: 360, damping: 38 } as const;
+
 export const zIndex = {
   dot: 10, // resting player dot (DepthChartField)
   dotSelected: 20, // selected player dot, raised above resting dots

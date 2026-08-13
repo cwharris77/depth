@@ -1,7 +1,7 @@
 'use client';
 
-import { Check, History, X } from 'lucide-react';
-import IconButton from './ui/IconButton';
+import { Check, History } from 'lucide-react';
+import SheetHeader from './ui/SheetHeader';
 import { colors as uiTokens } from '@/components/ui/tokens';
 
 // The season picker's contents (rendered inside BottomSheet, Phase D1). One row per
@@ -34,20 +34,7 @@ export default function SeasonSheet({
     // No sizing wrapper here -- these rows render directly inside BottomSheet's own flex
     // column, which owns the height cap (see BottomSheet's sizing contract comment).
     <>
-      <div
-        className="flex items-center justify-between px-5 pt-4 pb-2"
-        style={{ flex: '0 0 auto' }}>
-        <h2 className="text-base font-black" style={{ color: uiTokens.textPrimary }}>
-          Seasons
-        </h2>
-        <IconButton
-          icon={<X size={16} color={uiTokens.textMuted} />}
-          variant="plain"
-          size="sm"
-          onClick={onClose}
-          ariaLabel="Close"
-        />
-      </div>
+      <SheetHeader title="Seasons" onClose={onClose} />
       <div
         className="overflow-y-auto pb-2"
         style={{ WebkitOverflowScrolling: 'touch', flex: '1 1 auto', minHeight: 0 }}>

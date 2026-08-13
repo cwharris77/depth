@@ -23,7 +23,7 @@ import Avatar from '@/components/ui/Avatar';
 import Badge from '@/components/ui/Badge';
 import StatGrid from '@/components/ui/StatGrid';
 import IconButton from '@/components/ui/IconButton';
-import { colors as uiTokens, zIndex } from '@/components/ui/tokens';
+import { colors as uiTokens, springSheet, zIndex } from '@/components/ui/tokens';
 
 interface PlayerCardProps {
   player: Player | null;
@@ -691,7 +691,7 @@ export default function PlayerCard({
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 350, damping: 38 }}
+            transition={springSheet}
             drag="y"
             dragControls={dragControls}
             dragListener={false}
