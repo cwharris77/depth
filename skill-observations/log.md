@@ -212,3 +212,18 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 **Suggested improvement:** In the vitest-testing skill, add a "Module-scoped state (singletons, caches, external stores)" subsection under Mocking: for a module-scoped store, reset it between tests with `vi.resetModules()` + dynamic import (the `vi.mock` factory survives the reset and re-applies), and prefer exposing/using the store's subscribe/getSnapshot contract as the testable surface rather than forcing a React render — SSR render cannot observe store updates because useSyncExternalStore uses getServerSnapshot off the client.
 
 **Principle:** Test isolation is a property of the module registry, not of assertions — module-scoped state is shared state, and resetting it requires re-importing the module, not just clearing mocks. And when a React hook is a thin wrapper over a store, the store's own subscription interface is the right seam to test: it avoids a DOM/testing-library dependency and is the exact contract React binds to.
+
+### Observation 19: Unit-testing Next.js app-dir route handlers by mocking the supabase client module
+
+**Status:** OPEN
+**Date:** 2026-08-12
+**Session context:** depth — fixing four API routes that threw or swallowed DB errors (ticket "fix route handlers that throw or swallow errors"). First route-handler tests this repo has had; all prior tests live under lib/.
+**Skill:** vitest-testing
+**Type:** internal
+**Phase/Area:** Testing Next.js route handlers under vitest
+
+**Issue:** Writing `route.test.ts` files for `app/api/**` had three friction points that cost time to work out. (1) `npx vitest` resolved a different vitest from the npx cache and failed with "Cannot find module 'vitest/config'" — the repo's own config needs the local install. (2) The supabase client modules were hard to mock because they pull in `next/headers` and `next/cache` at module scope — but `vi.mock` of the whole module sidesteps loading them entirely, so the route under test only needs `next/server` (which works fine in vitest's node env). (3) Uncertainty whether colocated `route.test.ts` files under `app/` would be treated as routes or picked up by vitest — neither happens: the app router only recognizes its special file names, and vitest's default glob catches `**/*.test.ts`. A full `next build` (118 pages) succeeded with the four test files present, confirming no conflict.
+
+**Suggested improvement:** In the vitest-testing skill, document the pattern for testing a Next.js app-dir route handler: colocate `route.test.ts` next to `route.ts`; `vi.mock('@/lib/supabase/server', ...)` (and the data-access module, e.g. `@/lib/roster-source.db`) with a factory returning `vi.fn()`; build a chainable fake for the supabase query builder where the terminal method resolves the result object (an awaited `maybeSingle()` returns the result; an awaited terminal `.eq()` on a builder can just return the plain `{ data, error }` object); and prefer `npm test` / the local `./node_modules/.bin/vitest` over `npx vitest`.
+
+**Principle:** The test seam for a route handler is the module boundary at the DB client, not HTTP — when a handler's only external dependency is the client, mocking that one module makes the handler fully testable with zero network layer. And always prefer the repo's local binaries over `npx`, which can silently resolve a different version.
