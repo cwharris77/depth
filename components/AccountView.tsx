@@ -299,7 +299,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
 
         {/* Danger zone */}
         <div>
-          <SectionLabel className="mb-2.5 uppercase">Danger zone</SectionLabel>
+          <SectionLabel className="px-0 mb-2.5 uppercase">Danger zone</SectionLabel>
           {/* Card doesn't fit: this needs rounded-2xl (Card hardcodes rounded-3xl) and a
               danger-tinted fill/border that Card's surfaceCard/surfaceCard2 pair can't express.
               The fill/border colors derive from colors.danger via the house hex+alpha-suffix

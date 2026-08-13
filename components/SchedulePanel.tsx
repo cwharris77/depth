@@ -41,7 +41,7 @@ export default function SchedulePanel({
   return (
     <div className="flex flex-col gap-[18px] px-[22px] py-6">
       <div>
-        <SectionLabel className="pb-2">SEASON SNAPSHOT</SectionLabel>
+        <SectionLabel className="px-0 pb-2">SEASON SNAPSHOT</SectionLabel>
         <div className="flex items-baseline justify-between">
           <span
             className="text-[40px] font-black leading-none tracking-[-0.02em]"
@@ -58,7 +58,7 @@ export default function SchedulePanel({
 
       {next?.opponent && (
         <div>
-          <SectionLabel className="pb-2.5">NEXT GAME</SectionLabel>
+          <SectionLabel className="px-0 pb-2.5">NEXT GAME</SectionLabel>
           <div
             className="flex items-center gap-3 rounded-[14px] p-3.5"
             style={{
@@ -88,7 +88,7 @@ export default function SchedulePanel({
       )}
 
       <div>
-        <SectionLabel className="pb-2.5">HOME / ROAD</SectionLabel>
+        <SectionLabel className="px-0 pb-2.5">HOME / ROAD</SectionLabel>
         <div className="flex gap-2">
           <SplitCard label="HOME" value={s.homeRecord} />
           <SplitCard label="ROAD" value={s.roadRecord} />
@@ -97,7 +97,7 @@ export default function SchedulePanel({
 
       {s.recentForm.length > 0 && (
         <div>
-          <SectionLabel className="pb-2.5">RECENT FORM</SectionLabel>
+          <SectionLabel className="px-0 pb-2.5">RECENT FORM</SectionLabel>
           <div className="flex gap-2">
             {s.recentForm.map((result, i) => (
               <span
