@@ -5,10 +5,10 @@ import IconButton from './ui/IconButton';
 import { colors as uiTokens } from '@/components/ui/tokens';
 
 // The season picker's contents (rendered inside BottomSheet, Phase D1). One row per
-// season, current-season row first then descending -- mirrors NavSwitcher's TeamRow
-// list pattern (row = identity + a trailing check on the active one). Selecting
-// `currentSeason` is "back to today": it clears the historical view rather than
-// fetching roster_history for a season that also happens to be ingested there
+// season, roster row first then descending -- mirrors NavSwitcher's TeamRow list pattern
+// (row = identity + a trailing check on the active one). Selecting `currentSeason` is
+// "back to today": it clears the historical view rather than fetching roster_history for
+// a season that also happens to be ingested there
 // (docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-design.md).
 export default function SeasonSheet({
   currentSeason,
@@ -51,8 +51,11 @@ export default function SeasonSheet({
       <div
         className="overflow-y-auto pb-2"
         style={{ WebkitOverflowScrolling: 'touch', flex: '1 1 auto', minHeight: 0 }}>
+        {/* Labeled "Roster", not "Current", on purpose: this row is the live roster
+          year (rosters are set before kickoff), while the stats page's switcher calls
+          the same 2026 season "UPCOMING" until games are played — see TeamStatsView. */}
         <SeasonRow
-          label={`${currentSeason} · Current`}
+          label={`${currentSeason} · Roster`}
           isActive={activeSeason === null}
           accent={accent}
           onClick={() => onSelect(null)}

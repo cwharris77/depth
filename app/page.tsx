@@ -22,7 +22,7 @@ export default async function Home() {
     { isOffseason, upcomingSeason },
   ] = await Promise.all([supabase.auth.getUser(), getNflSeasonState()]);
   // Same "which season is live right now" definition as /team/[id] (Phase D1's
-  // SeasonSheet current-season row).
+  // SeasonSheet roster row).
   const currentSeason = isOffseason ? upcomingSeason : upcomingSeason - 1;
 
   if (user) {

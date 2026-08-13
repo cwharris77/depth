@@ -61,7 +61,7 @@ export default function DepthChartField({
   teams: TeamMeta[];
   playerStatsMap?: Map<string, PlayerSeasonStats[]>;
   formations?: TeamFormation[];
-  // The season SeasonSheet lists as "current" / the sheet's most-recent row (Phase D1).
+  // The season SeasonSheet's "roster" row shows (the sheet's most-recent row, Phase D1).
   // Server-computed (app/team/[id]/page.tsx) since it depends on today's date.
   currentSeason: number;
   uniformDefinition?: TeamUniformDefinition;
