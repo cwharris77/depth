@@ -97,6 +97,30 @@ describe('toPlayerStatsRows', () => {
     expect(rows[0].games).toBe(16);
   });
 
+  it('writes a crosswalk-only match when requireCurrentRoster is false', () => {
+    const { rows, skipped } = toPlayerStatsRows(
+      [{ player_id: '00-0033873', season: '2013', season_type: 'REG', games: '16' }],
+      CROSSWALK,
+      new Set(), // no known (current-roster) players
+      { requireCurrentRoster: false }
+    );
+    expect(skipped).toBe(0);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].player_id).toBe('espn-mahomes');
+    expect(rows[0].season).toBe(2013);
+  });
+
+  it('still skips a row with no crosswalk match when requireCurrentRoster is false', () => {
+    const { rows, skipped } = toPlayerStatsRows(
+      [{ player_id: '00-9999999', season: '2013', season_type: 'REG', games: '10' }],
+      CROSSWALK,
+      new Set(),
+      { requireCurrentRoster: false }
+    );
+    expect(rows).toEqual([]);
+    expect(skipped).toBe(1);
+  });
+
   it('passes POST rows through with their season_type', () => {
     const { rows } = toPlayerStatsRows(
       [{ player_id: '00-0033873', season: '2024', season_type: 'POST', games: '3' }],

@@ -8,11 +8,11 @@
 //                                                # previous season, games/schedules
 //                                                # current + previous season
 //   npm run ingest:nflverse -- --seasons 1999-2025
-//     backfills games/schedules for every season in the range (docs/nflverse.md).
-//     player_stats is unaffected by this flag -- it always stays current + previous
-//     (see docs/superpowers/specs/2026-08-01-historic-nflverse-coverage-design.md for
-//     why: player_stats.player_id FKs to `players`, which is current-roster-scoped, so
-//     a historic backfill there needs a separate player-identity decision first).
+//     backfills games/schedules/team_season_stats/player_stats for every season in the
+//     range (docs/nflverse.md). player_stats widens its gate for this flag -- a row
+//     writes on a crosswalk match alone, not requiring current-roster membership (see
+//     docs/superpowers/specs/2026-08-13-player-stats-historic-identity-design.md for
+//     why).
 // Requires SUPABASE_URL + SUPABASE_SECRET_KEY in the environment (secret key
 // bypasses RLS-equivalent restrictions for writes; never expose it client-side).
 //
@@ -348,8 +348,8 @@ async function main() {
   const startedAt = new Date().toISOString();
   const failures: { season: number | string; message: string }[] = [];
 
-  // --seasons only scopes the games/schedules step (see the usage comment above);
-  // player_stats keeps its own current+previous selection below regardless. Not
+  // --seasons scopes games/schedules, team_season_stats, and player_stats alike (see
+  // the usage comment above and the player_stats season-selection comment below). Not
   // meaningful in SEED_OUT mode (locked decision: seed data stays current + previous).
   const gamesSeasons = seedOut ? null : parseSeasonsArg(process.argv.slice(2));
   const gamesMinSeason = gamesSeasons === null ? undefined : Math.min(...gamesSeasons);
@@ -384,10 +384,14 @@ async function main() {
   // Season selection: try current calendar year, walk back until an asset exists
   // (2025 wasn't published at spec-verification time -- never hard-code a year), then
   // also pull the season before that. Locked decision: "current + previous season",
-  // not a fixed lookback.
+  // not a fixed lookback -- unless --seasons is set, in which case player_stats
+  // follows the same range as games/schedules/team_season_stats (gamesSeasons, set
+  // above) and widens its knownPlayerIds gate accordingly (requireCurrentRoster below;
+  // see docs/superpowers/specs/2026-08-13-player-stats-historic-identity-design.md).
   const latestSeason = await latestAvailableSeason(STATS_TAG, STATS_PREFIX);
-  const seasons = latestSeason === null ? [] : [latestSeason, latestSeason - 1];
-  if (latestSeason === null) {
+  const seasons = gamesSeasons ?? (latestSeason === null ? [] : [latestSeason, latestSeason - 1]);
+  const requireCurrentRoster = gamesSeasons === null;
+  if (latestSeason === null && gamesSeasons === null) {
     failures.push({ season: 'latest', message: 'no available stats_player_reg season found' });
   }
 
@@ -401,7 +405,8 @@ async function main() {
       const { rows, skipped: seasonSkipped } = toPlayerStatsRows(
         parseCsv(statsCsv),
         crosswalk,
-        knownPlayerIds
+        knownPlayerIds,
+        { requireCurrentRoster }
       );
       skipped += seasonSkipped;
       if (supabase && rows.length) {
