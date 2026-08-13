@@ -271,15 +271,7 @@ export type Database = {
           targets?: number | null
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "player_stats_player_id_fkey"
-            columns: ["player_id"]
-            isOneToOne: false
-            referencedRelation: "players"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       players: {
         Row: {
