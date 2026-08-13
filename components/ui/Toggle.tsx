@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { colors } from './tokens';
+import { focusRing } from '@/lib/colors';
 
 type ToggleProps = {
   checked: boolean;
@@ -37,7 +38,7 @@ export default function Toggle({
       style={{
         background: checked ? accent : colors.borderInput,
         border: 'none',
-        boxShadow: focused ? `0 0 0 3px ${accent}4d` : 'none',
+        boxShadow: focused ? focusRing(accent) : 'none',
       }}>
       <span
         className="absolute top-0.5 left-0.5 h-5 w-5 rounded-full transition-transform duration-150 ease-out"

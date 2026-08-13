@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
 import { colors } from './tokens';
+import { withAlpha } from '@/lib/colors';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'danger-outline';
 type Size = 'md' | 'sm';
@@ -19,7 +20,7 @@ const VARIANTS: Record<Variant, { background: string; color: string; border: str
   'danger-outline': {
     background: 'transparent',
     color: colors.danger,
-    border: '1px solid rgba(255,107,107,0.4)',
+    border: `1px solid ${withAlpha(colors.danger, 40)}`,
   },
 };
 

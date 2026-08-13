@@ -4,6 +4,29 @@ import type { PlayerStatus, TeamColors } from './types';
 // The dark app background. uiAccent values are curated to read against this.
 export const DARK_BG = '#0a0e1a';
 
+// Convert a 6-digit (or 3-digit short) hex color to an rgba() string at the
+// given percentage opacity. Short hex (#RGB) is expanded first.
+export function withAlpha(hex: string, pct: number): string {
+  const cleaned = hex.replace('#', '');
+  const expanded =
+    cleaned.length === 3
+      ? cleaned
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : cleaned;
+  const r = parseInt(expanded.slice(0, 2), 16);
+  const g = parseInt(expanded.slice(2, 4), 16);
+  const b = parseInt(expanded.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${pct / 100})`;
+}
+
+// Standard focus ring: 3px box-shadow using the given color at 30% opacity,
+// matching the tokens.focusRing intent (accent @30%).
+export function focusRing(color: string): string {
+  return `0 0 0 3px ${withAlpha(color, 30)}`;
+}
+
 // Status colors. "starter" is team-driven (uiAccent so each team reads on the dark UI);
 // backup/rookie/injured are fixed semantic colors shared by every team.
 const FIXED_STATUS: Record<Exclude<PlayerStatus, 'starter'>, string> = {
