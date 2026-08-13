@@ -829,6 +829,31 @@ function toPlayerSeasonStats(row: PlayerStatsRow): PlayerSeasonStats {
   };
 }
 
+// Historical player ids (toHistoricalPlayer, above) are gsis:<gsis_id>@<season>, not an
+// ESPN id -- player_stats.player_id is always ESPN's id space. Resolve via roster_history's
+// espn_id column (populated for players nflverse's crosswalk could also match to ESPN) before
+// querying player_stats. No match (older/ESPN-unmapped player) means no ESPN-sourced stats
+// exist to show -- return [] rather than guessing (AGENTS.md invariant 6).
+const HISTORICAL_PLAYER_ID_PATTERN = /^gsis:(.+)@\d+$/;
+
+async function resolveEspnId(
+  client: ReturnType<typeof supabase>,
+  playerId: string
+): Promise<string | null> {
+  const match = playerId.match(HISTORICAL_PLAYER_ID_PATTERN);
+  if (!match) return playerId;
+  const gsisId = match[1];
+  const { data, error } = await client
+    .from(tables.rosterHistory)
+    .select('espn_id')
+    .eq('gsis_id', gsisId)
+    .not('espn_id', 'is', null)
+    .limit(1)
+    .maybeSingle<{ espn_id: string | null }>();
+  if (error) throw new Error(`roster_history query failed: ${error.message}`);
+  return data?.espn_id ?? null;
+}
+
 // Lazy per-player read (locked decision: the field view never needs stats, so this
 // isn't part of fetchTeamRoster's batch) -- backs app/api/players/[id]/stats/route.ts,
 // fetched client-side only when a PlayerCard opens. REG only in v1 (season_type filter
@@ -837,10 +862,12 @@ export async function getPlayerStats(playerId: string): Promise<PlayerSeasonStat
   'use cache';
   cacheLife('ingest');
   const client = supabase();
+  const espnId = await resolveEspnId(client, playerId);
+  if (!espnId) return [];
   const { data, error } = await client
     .from(tables.playerStats)
     .select(PLAYER_STATS_SELECT)
-    .eq('player_id', playerId)
+    .eq('player_id', espnId)
     .eq('season_type', 'REG')
     .order('season', { ascending: false })
     .returns<PlayerStatsRow[]>();
