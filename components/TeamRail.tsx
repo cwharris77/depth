@@ -85,7 +85,12 @@ export default function TeamRail({
   // NavSwitcher). Deliberately lighter than the mobile palette: click (or Enter for the
   // top hit) activates, Escape clears — no arrow-key highlight state.
   const [query, setQuery] = useState('');
-  const { results: playerResults, loading: playersLoading } = usePlayerSearch(query);
+  const [retryCount, setRetryCount] = useState(0);
+  const {
+    results: playerResults,
+    loading: playersLoading,
+    error: playersError,
+  } = usePlayerSearch(query, { retry: retryCount });
   const q = query.trim().toLowerCase();
   const searching = q.length > 0;
 
@@ -138,7 +143,8 @@ export default function TeamRail({
     }
   };
 
-  const nothingFound = searching && !playersLoading && !playerResults.length && !teamResults.length;
+  const nothingFound =
+    searching && !playersLoading && !playersError && !playerResults.length && !teamResults.length;
 
   const teamRow = (t: TeamMeta) => {
     const isCurrent = t.id === team?.id;
@@ -209,6 +215,17 @@ export default function TeamRail({
               {group.teams.map(teamRow)}
             </div>
           ))
+        ) : playersError ? (
+          <div className="px-2 py-4 text-xs" style={{ color: uiTokens.textMuted }}>
+            Couldn't load search results.
+            <button
+              type="button"
+              onClick={() => setRetryCount((c) => c + 1)}
+              className="ml-1 underline"
+              style={{ color: uiTokens.accent }}>
+              Retry
+            </button>
+          </div>
         ) : nothingFound ? (
           <div className="px-2 py-4 text-xs" style={{ color: uiTokens.textMuted }}>
             No matches for &ldquo;{query.trim()}&rdquo;
