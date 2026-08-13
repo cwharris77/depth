@@ -132,3 +132,50 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 **Suggested improvement:** Before implementing a ticket that quotes code locations, re-locate each quoted reference in the live tree (grep for the quoted string, not the line number). If a quoted block is gone, that is not evidence the ticket is stale — the ticket's Done-when and intent are the contract; the quoted lines are only its map. Re-map the intent onto the current code and note the drift, as CLAUDE.md's "flag in the PR body but proceed" rule says for specs. Treat a line-numbered quote in a ticket the same way you treat one in an observation log: an address, not a fact.
 
 **Principle:** In any artifact that describes code (ticket, spec, observation), quoted line ranges are addresses to the artifact's past, not current truth. The intent they support can outlive them; never invalidate a task because its quoted evidence drifted, and never implement against a quoted shape without confirming it still exists.
+
+## 2026-08-12
+
+### Observation 14: `cacheLife()` throws when a `'use cache'` function runs under vitest
+
+**Status:** OPEN
+**Date:** 2026-08-12
+**Session context:** Hardening the public player-search endpoint (depth repo). Evaluated adding Next's `'use cache'` to a DB-read function and planned a unit test that would call it with a mocked supabase client.
+**Skill:** vitest-testing
+**Type:** open-source
+**Phase/Area:** Mocking modules that use Next Cache Components
+
+**Issue:** `cacheLife()` from `next/cache` throws `E887` ("only available with cacheComponents config") unless `process.env.__NEXT_USE_CACHE` is set, and then throws `E818` ("can only be called inside a use cache function") because vitest has no cache work-unit store. So any function carrying `'use cache'` + `cacheLife()` cannot be invoked under vitest without `vi.mock('next/cache', () => ({ cacheLife: () => {} }))` — and even neutralized, the caching behavior itself is unobservable in a unit test. Existing live-DB tests in this repo that call such functions would hit the same throw the moment env vars are present (they're skipped today). I chose an in-module TTL cache instead, precisely so the "DB not hit twice" contract could be asserted.
+
+**Suggested improvement:** When a ticket asks for caching a DB read AND for tests proving "repeated calls stop hitting the DB", prefer a hand-rolled in-memory TTL cache (observable, testable) over `'use cache'`, or `vi.mock('next/cache')` in any test that must invoke a cached function. Consider noting in the project's vitest-testing skill that `'use cache'` functions cannot be exercised under vitest.
+
+**Principle:** A framework caching primitive that is invisible outside the framework's runtime is not unit-testable. Pick testability at the cache layer (an in-memory structure you own), or accept the framework behavior as an integration-only guarantee and say so in the test file.
+
+### Observation 15: A module-scoped cache leaks across tests in the same file
+
+**Status:** OPEN
+**Date:** 2026-08-12
+**Session context:** Writing unit tests for searchAllPlayers' new module-scoped result cache in the depth repo. The TTL-expiry test failed confusingly until I realized an earlier test had already cached the same key.
+**Skill:** vitest-testing
+**Type:** internal
+**Phase/Area:** Isolation of module-level mutable state
+
+**Issue:** Module-level mutable state (a `Map` cache, a singleton client) persists across `it()` blocks within one test file. The first test cached `8:geno`; the TTL test then read that entry as a fresh hit under `vi.setSystemTime(0)` — `Date.now()` at 0 minus the entry's large real-time `at` is always within the window, so the refetch never fired. Working around it with "unique query strings per test" is fragile: a reorder or a shared fixture silently re-breaks it.
+
+**Suggested improvement:** For tests of module-cached behavior, isolate per test with `vi.resetModules()` + a dynamic `await import(...)` in `beforeEach` — a fresh module instance means a fresh cache. Hoisted `vi.hoisted` mock state survives `resetModules`, so recording mocks keep working.
+
+**Principle:** Module-level mutable state is shared state across the tests in a file. Tests of code that owns it must isolate by fresh module instance, not by carefully-crafted inputs that happen to avoid the collision.
+
+### Observation 16: Mocking a module doesn't bypass a real guard that reads env vars before the mocked call
+
+**Status:** OPEN
+**Date:** 2026-08-12
+**Session context:** In the depth repo, mocking `@supabase/supabase-js` so searchAllPlayers runs against a recording fake client in vitest. Tests failed with the real "Missing SUPABASE_URL" error.
+**Skill:** vitest-testing
+**Type:** internal
+**Phase/Area:** Mocking factory/guard code
+
+**Issue:** `supabase()` in lib/roster-source.db.ts throws when the SUPABASE env vars are absent — before `createClient` is ever called. `vi.mock('@supabase/supabase-js')` only replaces the imported module; it cannot bypass a pre-mock guard in the code under test. The mock looked like it should have worked (the error even mentions the env var), and the actual missing piece was stubbing the two vars so the guard passes into the mocked path.
+
+**Suggested improvement:** When the code under test guards on env vars (or other ambient state) before reaching the mocked call, stub that state too: `vi.stubEnv` in `beforeAll`, `vi.unstubAllEnvs` in `afterAll`. Note that vitest gives each test file its own worker, so the stubs don't disturb sibling files' skip logic.
+
+**Principle:** A mock replaces a dependency, not the code around its call site. If the path to the mocked call passes through a guard over process state, the test must satisfy that guard or the real path — and its real error — still runs.
