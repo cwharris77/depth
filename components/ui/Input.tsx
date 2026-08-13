@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import { colors } from './tokens';
+import { focusRing } from '@/lib/colors';
 
 type InputProps = {
   type?: string;
@@ -57,7 +58,7 @@ export default function Input({
         background: colors.surfaceInput,
         border: `1px solid ${focused ? accent : colors.borderInput}`,
         color: colors.textPrimary,
-        boxShadow: focused ? `0 0 0 3px ${accent}4d` : 'none',
+        boxShadow: focused ? focusRing(accent) : 'none',
       }}
     />
   );

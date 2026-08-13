@@ -25,6 +25,7 @@ export const colors = {
   surfaceInput: 'rgba(255,255,255,0.06)',
   surfaceChip: 'rgba(255,255,255,0.07)',
   surfaceChipHover: 'rgba(255,255,255,0.12)',
+  surfaceNavy: 'rgba(0,34,68,0.8)',
   surfaceMenu: '#161c2c', // opaque popover/menu background (field overflow menu)
   borderSubtle: 'rgba(255,255,255,0.06)',
   borderDefault: 'rgba(255,255,255,0.08)',
