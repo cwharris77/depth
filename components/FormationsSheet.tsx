@@ -1,6 +1,7 @@
 'use client';
 
 import { Check, X } from 'lucide-react';
+import FTNAttribution from './FTNAttribution';
 import IconButton from './ui/IconButton';
 import { colors as uiTokens } from '@/components/ui/tokens';
 import { alignmentLabel } from '@/lib/formations';
@@ -111,11 +112,10 @@ export default function FormationsSheet({
               )
             )}
           </div>
-          <div
-            className="text-center text-[10px] pb-4 pt-1"
-            style={{ color: uiTokens.textFaint, flex: '0 0 auto' }}>
-            Formation data © FTN Data (CC-BY-SA 4.0)
-          </div>
+          {/* FTN charting is CC-BY-SA 4.0 -- attribution is the condition of listing
+              these rows at all (docs/nflverse.md). Shared component, not a local
+              string, so every surface that shows formation data says the same thing. */}
+          <FTNAttribution className="pb-4 pt-1" />
         </>
       )}
     </>
