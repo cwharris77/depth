@@ -43,10 +43,7 @@ async function getText(url: string, attempts = 3): Promise<string> {
 }
 
 async function main() {
-  const supabase: SupabaseClient<Database> = createClient(
-    getSupabaseUrl(),
-    getSupabaseSecretKey()
-  );
+  const supabase: SupabaseClient<Database> = createClient(getSupabaseUrl(), getSupabaseSecretKey());
 
   const feedXml = await getText(NFL_FEED_URL);
   const items = parseSportsLogosFeed(feedXml);
