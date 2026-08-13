@@ -1,8 +1,13 @@
 // Turns nflverse's stats_player_reg_<season>.csv rows into player_stats upsert rows.
 // Pure: no fetch, no DB. Joins each row's gsis_id (nflverse's key) to our players.id
 // (ESPN athlete id) via the crosswalk built in crosswalk.ts, and drops -- with a
-// count, never a guess -- rows that don't resolve to a known player (locked decision,
-// docs/superpowers/specs/2026-07-07-nflverse-ingestion-and-player-stats-design.md).
+// count, never a guess -- rows whose gsis_id has no crosswalk match at all. With
+// `requireCurrentRoster` (default true, the weekly job's behavior), a crosswalk match
+// still isn't enough -- the resolved ESPN id must also be in `knownPlayerIds`
+// (`players`, current-roster-scoped). A `--seasons` historic backfill passes
+// `requireCurrentRoster: false` to accept any crosswalk match regardless of `players`
+// membership (locked decision, vault spec
+// 2026-08-13-player-stats-historic-identity-design.md).
 
 export interface PlayerStatsInsert {
   player_id: string;
@@ -60,15 +65,17 @@ const NUMERIC_COLUMNS = [
 export function toPlayerStatsRows(
   statsCsvRows: Record<string, string>[],
   crosswalk: Map<string, string>,
-  knownPlayerIds: Set<string>
+  knownPlayerIds: Set<string>,
+  opts?: { requireCurrentRoster?: boolean }
 ): { rows: PlayerStatsInsert[]; skipped: number } {
+  const requireCurrentRoster = opts?.requireCurrentRoster ?? true;
   const rows: PlayerStatsInsert[] = [];
   let skipped = 0;
 
   for (const row of statsCsvRows) {
     const gsisId = row.player_id?.trim();
     const espnId = gsisId ? crosswalk.get(gsisId) : undefined;
-    if (!espnId || !knownPlayerIds.has(espnId)) {
+    if (!espnId || (requireCurrentRoster && !knownPlayerIds.has(espnId))) {
       skipped++;
       continue;
     }

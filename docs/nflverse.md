@@ -24,11 +24,16 @@ scaffolding with their own specs.
   id) — **no name-matching fallback**, since that's where silent data corruption comes
   from. A row missing either id is simply omitted from the map.
 - `lib/nflverse/transform.ts` — `toPlayerStatsRows(statsCsvRows, crosswalk,
-  knownPlayerIds)`: pure join + numeric coercion (`''` -> `null`, else `Number(...)`,
-  `NaN` -> `null`). A stats row whose `gsis_id` has no crosswalk match, or whose
-  crosswalked `espn_id` isn't in `knownPlayerIds` (not yet ingested by ESPN), is
-  **skipped and counted** rather than guessed — the skip count is recorded on the
-  `ingestion_runs` row (see below), so a growing skip count is visible, not silent.
+  knownPlayerIds, opts?)`: pure join + numeric coercion (`''` -> `null`, else
+  `Number(...)`, `NaN` -> `null`). A stats row whose `gsis_id` has no crosswalk match is
+  always **skipped and counted** rather than guessed. With `opts.requireCurrentRoster`
+  (default `true`, the weekly job's behavior), a row whose crosswalked `espn_id` isn't
+  in `knownPlayerIds` (not on a current roster) is skipped too; a `--seasons` backfill
+  run passes `requireCurrentRoster: false` to accept any crosswalk match regardless of
+  `players` membership (vault spec
+  `../obsidian/Projects/depth/specs/2026-08-13-player-stats-historic-identity-design.md`).
+  The skip count is recorded on the `ingestion_runs` row (see below), so a growing skip
+  count is visible, not silent.
 - `lib/stat-lines.ts` — `statLine(position, stats)`: the position -> displayed-line
   mapping for the PlayerCard (QB completions/yards/TD/INT, RB carries/yards/TD [+rec],
   WR/TE receptions/yards/TD, OL/P/LS/KR/PR games-only, defense tackles/sacks/INT, K
@@ -66,35 +71,41 @@ scaffolding with their own specs.
   perspective: home/away, opponent id, W/L/T or null-when-upcoming, ordered by week, BYE
   weeks derived from missing weeks) and `nextGame(schedule)` (earliest unplayed). Pure;
   the read layer enriches opponent ids into team metadata for the UI.
-- `scripts/ingest-nflverse.mts` — fetches `players.csv` once, the latest two available
-  `stats_player_reg_<season>.csv` files, transforms, and upserts `player_stats`
-  (`onConflict: player_id,season,season_type`) — **always current + previous season**,
-  regardless of CLI flags (see the caveat below). Then `ingestGames` fetches
-  `nfldata/data/games.csv` (one file, all seasons 1999+) and upserts **schedules first,
-  then games** (chunked) — the games' composite FKs require the schedule rows to exist.
-  With no flag, games/schedules also scope to the two most recent seasons
-  (`toScheduleAndGameRows`, see above); `npm run ingest:nflverse -- --seasons 1999-2025`
-  backfills games/schedules for the full range instead (`--seasons` parsed the same way
-  as `ingest:rosters`, see `parseSeasonsArg` above). **Team season stats** (`ingestTeamStats`)
-  follows the same `--seasons` scoping — full backfill with the flag, latest+previous
-  by default. The `stats_team` release tag (asset `stats_team_reg_<season>.csv`) mirrors
-  the player-stats naming; `team_season_stats` FKs to `teams` (not `players`), so
-  historic backfill works cleanly. Writes one `ingestion_runs` row
+- `scripts/ingest-nflverse.mts` — fetches `players.csv` once, then `stats_player_reg_
+  <season>.csv` for each season in scope, transforms, and upserts `player_stats`
+  (`onConflict: player_id,season,season_type`). With no flag: **current + previous
+  season only**, current-roster gate (`requireCurrentRoster: true`, the weekly job's
+  behavior). `npm run ingest:nflverse -- --seasons 1999-2025` widens this to every
+  season in the range with `requireCurrentRoster: false` (see the identity note below).
+  Then `ingestGames` fetches `nfldata/data/games.csv` (one file, all seasons 1999+) and
+  upserts **schedules first, then games** (chunked) — the games' composite FKs require
+  the schedule rows to exist. With no flag, games/schedules also scope to the two most
+  recent seasons (`toScheduleAndGameRows`, see above); `--seasons` backfills the full
+  range instead (parsed the same way as `ingest:rosters`, see `parseSeasonsArg` above) —
+  `player_stats` follows the identical range (`gamesSeasons`, shared between the two
+  steps). **Team season stats** (`ingestTeamStats`) follows the same `--seasons`
+  scoping — full backfill with the flag, latest+previous by default. The `stats_team`
+  release tag (asset `stats_team_reg_<season>.csv`) mirrors the player-stats naming;
+  `team_season_stats` FKs to `teams` (not `players`), so historic backfill works
+  cleanly regardless of player identity. Writes one `ingestion_runs` row
   (`source: 'nflverse'`) whose `errors` jsonb carries `{ seasons, player_stats_rows,
   games_min_season, games_written, schedules_written, formations_season,
   formations_written, team_stats_seasons, team_stats_rows, team_stats_skipped, skipped,
   failures }`; `teams_written` is repurposed as the total row count across all datasets.
 
-  **Why `--seasons` doesn't also backfill `player_stats`:** `player_stats.player_id` is a
-  `not null` FK to `players(id)`, and `players` is populated by the ESPN ingest from
-  *current* rosters only. A historic `stats_player_reg_<year>.csv` row for a player no
-  longer on any of the 32 current rosters has no matching `players` row, so
-  `toPlayerStatsRows`'s `knownPlayerIds` check would skip nearly all of it — backfilling
-  old player-stats seasons doesn't work until player identity for retired/historic
-  players is solved (see vault spec
-  `../obsidian/Projects/depth/specs/2026-08-01-historic-nflverse-coverage-design.md`). Games and
-  schedules have no such FK (they reference `teams`, not `players`), so they backfill
-  cleanly today.
+  **Why `player_stats` needed its own identity decision to backfill:**
+  `player_stats.player_id` used to be a `not null` FK to `players(id)`, and `players` is
+  populated by the ESPN ingest from *current* rosters only. A historic
+  `stats_player_reg_<year>.csv` row for a player no longer on any of the 32 current
+  rosters had no matching `players` row, so `toPlayerStatsRows`'s `knownPlayerIds` check
+  skipped nearly all of it. Resolved 2026-08-13 (vault spec
+  `../obsidian/Projects/depth/specs/2026-08-13-player-stats-historic-identity-design.md`):
+  the FK is dropped (`player_stats_player_id_fkey`) — `player_id` stays an ESPN id, just
+  no longer required to exist in `players` — and `toPlayerStatsRows` takes a
+  `requireCurrentRoster` option so the weekly job's current-roster gate stays intact
+  while a `--seasons` backfill run widens it to "any crosswalk match." Games and
+  schedules never had this FK (they reference `teams`, not `players`), so they backfilled
+  cleanly from the start.
 - `lib/roster-source.db.ts` — `getPlayerStats(playerId)`, a standalone export (same
   shape as `searchAllPlayers`) — lazy per-player, not part of `RosterSource`, since the
   field view never needs stats. `getRosterLeaders(teamId)` — a second standalone read
