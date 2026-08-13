@@ -10,7 +10,9 @@ import { colors as uiTokens } from '@/components/ui/tokens';
 // closing the tab forgets it, same as before this existed. Module-scope external store (not
 // React context) so `setLastAccent` can be called from TeamPageShell without needing a
 // provider mounted above every route.
-const STORAGE_KEY = 'depth:last-accent';
+const STORAGE_KEY = STORAGE_KEY_DEPTH_LAST_ACCENT;
+
+import { STORAGE_KEY_DEPTH_LAST_ACCENT } from './storage-keys';
 
 let cached: string = uiTokens.accent;
 let hydrated = false;
@@ -18,7 +20,7 @@ const listeners = new Set<() => void>();
 
 function readStorage(): string {
   try {
-    return window.sessionStorage.getItem(STORAGE_KEY) ?? uiTokens.accent;
+    return window.sessionStorage.getItem(STORAGE_KEY_DEPTH_LAST_ACCENT) ?? uiTokens.accent;
   } catch {
     // Storage can throw in private-browsing/blocked-cookie contexts; the neutral
     // default is a safe fallback in that case.

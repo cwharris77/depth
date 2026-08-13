@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { cacheLife } from 'next/cache';
+import { tables } from '@/lib/supabase/tables';
 import type { Database } from './database.types';
 import { getSupabaseUrl, getSupabaseAnonKey } from './env';
 import type {
@@ -369,18 +370,22 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
     { data: stRows, error: stError },
     { data: uniformRows, error: uniformError },
   ] = await Promise.all([
-    client.from('teams').select(TEAM_SELECT).eq('id', teamId).maybeSingle<TeamRow>(),
+    client.from(tables.teams).select(TEAM_SELECT).eq('id', teamId).maybeSingle<TeamRow>(),
     client
-      .from('depth_chart_entries')
+      .from(tables.depthChartEntries)
       .select('team_id, position, depth_rank, player_id')
       .eq('team_id', teamId)
       .returns<DepthChartRow[]>(),
     client
-      .from('special_teams_slots')
+      .from(tables.specialTeamsSlots)
       .select('team_id, label, player_id, x, y')
       .eq('team_id', teamId)
       .returns<SpecialSlotRow[]>(),
-    client.from('uniforms').select(UNIFORM_SELECT).eq('team_id', teamId).returns<UniformRow[]>(),
+    client
+      .from(tables.uniforms)
+      .select(UNIFORM_SELECT)
+      .eq('team_id', teamId)
+      .returns<UniformRow[]>(),
   ]);
   if (teamError) throw new Error(`teams query failed: ${teamError.message}`);
   if (depthError) throw new Error(`depth_chart_entries query failed: ${depthError.message}`);
@@ -399,7 +404,7 @@ async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> 
   let playerRows: PlayerRow[] = [];
   if (playerIds.length) {
     const { data, error } = await client
-      .from('players')
+      .from(tables.players)
       .select(
         'id, team_id, name, number, position, status, age, college, experience, height, weight, bio, photo_url'
       )
@@ -527,14 +532,18 @@ export async function getTeamSeason(
     { data: historyRows, error: historyError },
     { data: uniformRows, error: uniformError },
   ] = await Promise.all([
-    client.from('teams').select(TEAM_SELECT).eq('id', teamId).maybeSingle<TeamRow>(),
+    client.from(tables.teams).select(TEAM_SELECT).eq('id', teamId).maybeSingle<TeamRow>(),
     client
-      .from('roster_history')
+      .from(tables.rosterHistory)
       .select(ROSTER_HISTORY_SELECT)
       .eq('team_id', teamId)
       .eq('season', season)
       .returns<RosterHistoryRow[]>(),
-    client.from('uniforms').select(UNIFORM_SELECT).eq('team_id', teamId).returns<UniformRow[]>(),
+    client
+      .from(tables.uniforms)
+      .select(UNIFORM_SELECT)
+      .eq('team_id', teamId)
+      .returns<UniformRow[]>(),
   ]);
   if (teamError) throw new Error(`teams query failed: ${teamError.message}`);
   if (historyError) throw new Error(`roster_history query failed: ${historyError.message}`);
@@ -573,30 +582,30 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
     { data: nflverseRankRows, error: nflverseRankError },
   ] = await Promise.all([
     client
-      .from('teams')
+      .from(tables.teams)
       .select(TEAM_STATS_PAGE_TEAM_SELECT)
       .eq('id', teamId)
       .maybeSingle<TeamStatsPageTeamRow>(),
     client
-      .from('team_stats')
+      .from(tables.teamStats)
       .select(TEAM_STATS_SELECT)
       .eq('team_id', teamId)
       .order('season', { ascending: false })
       .returns<TeamStatsRow[]>(),
     client
-      .from('team_coach_seasons')
+      .from(tables.teamCoachSeasons)
       .select(TEAM_COACH_SEASONS_SELECT)
       .eq('team_id', teamId)
       .returns<TeamCoachSeasonRow[]>(),
-    client.from('team_stats').select(TEAM_STATS_RANK_SELECT).returns<TeamStatsRankRow[]>(),
+    client.from(tables.teamStats).select(TEAM_STATS_RANK_SELECT).returns<TeamStatsRankRow[]>(),
     client
-      .from('team_season_stats')
+      .from(tables.teamSeasonStats)
       .select(TEAM_SEASON_STATS_VALUE_SELECT)
       .eq('team_id', teamId)
       .order('season', { ascending: false })
       .returns<TeamSeasonStatsValueRow[]>(),
     client
-      .from('team_season_stats')
+      .from(tables.teamSeasonStats)
       .select(TEAM_SEASON_STATS_RANK_SELECT)
       .returns<TeamSeasonStatsRankRow[]>(),
   ]);
@@ -701,19 +710,19 @@ export async function searchAllPlayers(query: string, limit = 8): Promise<Player
 
   const queries = [
     client
-      .from('players')
+      .from(tables.players)
       .select(PLAYER_SEARCH_SELECT)
       .ilike('name', `%${escaped}%`)
       .limit(limit)
       .returns<PlayerSearchRow[]>(),
     client
-      .from('players')
+      .from(tables.players)
       .select(PLAYER_SEARCH_SELECT)
       .ilike('college', `%${escaped}%`)
       .limit(limit)
       .returns<PlayerSearchRow[]>(),
     client
-      .from('players')
+      .from(tables.players)
       .select(PLAYER_SEARCH_SELECT)
       .ilike('position', escaped)
       .limit(limit)
@@ -722,7 +731,7 @@ export async function searchAllPlayers(query: string, limit = 8): Promise<Player
   if (isNumberQuery) {
     queries.push(
       client
-        .from('players')
+        .from(tables.players)
         .select(PLAYER_SEARCH_SELECT)
         .eq('number', asNumber)
         .limit(limit)
@@ -735,7 +744,7 @@ export async function searchAllPlayers(query: string, limit = 8): Promise<Player
   if (group) {
     queries.push(
       client
-        .from('players')
+        .from(tables.players)
         .select(PLAYER_SEARCH_SELECT)
         .in('position', group)
         .limit(limit)
@@ -829,7 +838,7 @@ export async function getPlayerStats(playerId: string): Promise<PlayerSeasonStat
   cacheLife('ingest');
   const client = supabase();
   const { data, error } = await client
-    .from('player_stats')
+    .from(tables.playerStats)
     .select(PLAYER_STATS_SELECT)
     .eq('player_id', playerId)
     .eq('season_type', 'REG')
@@ -871,7 +880,7 @@ export async function getTeamFormations(teamId: string): Promise<TeamFormation[]
   cacheLife('ingest');
   const client = supabase();
   const { data, error } = await client
-    .from('team_formations')
+    .from(tables.teamFormations)
     .select(TEAM_FORMATION_SELECT)
     .eq('team_id', teamId)
     .order('season', { ascending: false })
@@ -904,7 +913,7 @@ export async function getPlayerStatsForRoster(
   if (playerIds.length === 0) return byPlayer;
   const client = supabase();
   const { data, error } = await client
-    .from('player_stats')
+    .from(tables.playerStats)
     .select(PLAYER_STATS_WITH_ID_SELECT)
     .in('player_id', playerIds)
     .eq('season_type', 'REG')
@@ -974,13 +983,13 @@ async function fetchTeamGames(teamId: string, season: number): Promise<Game[]> {
   const client = supabase();
   const [home, away] = await Promise.all([
     client
-      .from('games')
+      .from(tables.games)
       .select(GAME_SELECT)
       .eq('home_team_id', teamId)
       .eq('season', season)
       .returns<GameRow[]>(),
     client
-      .from('games')
+      .from(tables.games)
       .select(GAME_SELECT)
       .eq('away_team_id', teamId)
       .eq('season', season)
@@ -999,14 +1008,14 @@ async function latestSeasonForTeam(teamId: string): Promise<number | null> {
   const client = supabase();
   const [home, away] = await Promise.all([
     client
-      .from('games')
+      .from(tables.games)
       .select('season')
       .eq('home_team_id', teamId)
       .order('season', { ascending: false })
       .limit(1)
       .returns<Pick<GameRow, 'season'>[]>(),
     client
-      .from('games')
+      .from(tables.games)
       .select('season')
       .eq('away_team_id', teamId)
       .order('season', { ascending: false })
@@ -1107,7 +1116,7 @@ export async function getRosterLeaders(
   try {
     const client = supabase();
     const { data: playerRows, error: playerError } = await client
-      .from('players')
+      .from(tables.players)
       .select('id, name')
       .eq('team_id', teamId)
       .returns<Pick<Tables['players']['Row'], 'id' | 'name'>[]>();
@@ -1116,7 +1125,7 @@ export async function getRosterLeaders(
     if (players.length === 0) return null;
 
     const { data: statRows, error: statsError } = await client
-      .from('player_stats')
+      .from(tables.playerStats)
       .select(ROSTER_LEADER_STATS_SELECT)
       .in(
         'player_id',
@@ -1152,7 +1161,7 @@ async function fetchAllTeamMeta(): Promise<TeamRow[]> {
   'use cache';
   cacheLife('ingest');
   const client = supabase();
-  const { data, error } = await client.from('teams').select(TEAM_SELECT).returns<TeamRow[]>();
+  const { data, error } = await client.from(tables.teams).select(TEAM_SELECT).returns<TeamRow[]>();
   if (error) throw new Error(`teams query failed: ${error.message}`);
   return data ?? [];
 }
@@ -1162,7 +1171,7 @@ async function fetchAllUniformRows(): Promise<UniformRow[]> {
   cacheLife('ingest');
   const client = supabase();
   const { data, error } = await client
-    .from('uniforms')
+    .from(tables.uniforms)
     .select(UNIFORM_SELECT)
     .order('team_id', { ascending: true })
     .order('is_current', { ascending: false })
@@ -1176,7 +1185,7 @@ async function fetchCurrentHomeRows(): Promise<UniformRow[]> {
   cacheLife('ingest');
   const client = supabase();
   const { data, error } = await client
-    .from('uniforms')
+    .from(tables.uniforms)
     .select(UNIFORM_SELECT)
     .eq('kind', 'home')
     .eq('is_current', true)

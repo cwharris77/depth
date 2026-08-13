@@ -11,6 +11,7 @@ import type { Coach } from './transform';
 import type { TeamRoster, TeamStats } from '../types';
 // Escaping/serialization lives in lib/seed-sql.ts, shared with lib/nflverse/seed-sql.ts.
 import { insertStatement, type Val } from '../seed-sql';
+import { tables } from '@/lib/supabase/tables';
 
 export interface SeedEntry {
   roster: TeamRoster;
@@ -119,7 +120,7 @@ export function buildSeedSql(entries: SeedEntry[]): string {
     '-- ESPN roster snapshot for local `supabase db reset`. Do not hand-edit; regenerate.',
     '',
     insertStatement(
-      'teams',
+      tables.teams,
       [
         'id',
         'espn_id',
@@ -161,7 +162,7 @@ export function buildSeedSql(entries: SeedEntry[]): string {
       ]
     ),
     insertStatement(
-      'players',
+      tables.players,
       [
         'id',
         'team_id',
@@ -181,19 +182,19 @@ export function buildSeedSql(entries: SeedEntry[]): string {
       'id'
     ),
     insertStatement(
-      'depth_chart_entries',
+      tables.depthChartEntries,
       ['team_id', 'position', 'depth_rank', 'player_id'],
       depth,
       'team_id,position,depth_rank'
     ),
     insertStatement(
-      'special_teams_slots',
+      tables.specialTeamsSlots,
       ['id', 'team_id', 'label', 'player_id', 'x', 'y'],
       special,
       'id'
     ),
     insertStatement(
-      'team_stats',
+      tables.teamStats,
       [
         'team_id',
         'season',
