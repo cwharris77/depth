@@ -4,11 +4,11 @@ import { useLayoutEffect, useState } from 'react';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { TeamColors } from '@/lib/types';
 
-const STORAGE_PREFIX = 'depth:kit-colors:';
+import { STORAGE_KEY_DEPTH_KIT_COLORS } from './storage-keys';
 
 function readStoredColors(teamId: string): TeamColors | undefined {
   try {
-    const raw = window.sessionStorage.getItem(STORAGE_PREFIX + teamId);
+    const raw = window.sessionStorage.getItem(STORAGE_KEY_DEPTH_KIT_COLORS + teamId);
     return raw ? (JSON.parse(raw) as TeamColors) : undefined;
   } catch {
     return undefined;
@@ -19,7 +19,7 @@ function readStoredColors(teamId: string): TeamColors | undefined {
 // resolves, so the pick is available outside DepthChartField too.
 export function writeKitColors(teamId: string, colors: TeamColors) {
   try {
-    window.sessionStorage.setItem(STORAGE_PREFIX + teamId, JSON.stringify(colors));
+    window.sessionStorage.setItem(STORAGE_KEY_DEPTH_KIT_COLORS + teamId, JSON.stringify(colors));
   } catch {
     // Storage can throw in private-browsing/blocked-cookie contexts — non-fatal, see
     // lib/use-kit.ts's writeStoredKit for the same reasoning.

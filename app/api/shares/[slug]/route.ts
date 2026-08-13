@@ -6,6 +6,7 @@
 // Named `shares` (not `boards`) -- the Phase D spec introduces /api/boards/* for saved boards.
 import { NextResponse } from 'next/server';
 import { getServerClient } from '@/lib/supabase/server';
+import { tables } from '@/lib/supabase/tables';
 import type { TeamDepthOverride } from '@/lib/depth-overrides';
 import type { Position } from '@/lib/types';
 
@@ -14,14 +15,14 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
   const supabase = await getServerClient();
 
   const { data: board } = await supabase
-    .from('shared_boards')
+    .from(tables.sharedBoards)
     .select('user_id, team_id, owner_name')
     .eq('slug', slug)
     .maybeSingle();
   if (!board) return NextResponse.json({ error: 'not found' }, { status: 404 });
 
   const { data: rows } = await supabase
-    .from('depth_overrides')
+    .from(tables.depthOverrides)
     .select('position, player_ids')
     .eq('user_id', board.user_id)
     .eq('team_id', board.team_id);

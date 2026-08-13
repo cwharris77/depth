@@ -4,6 +4,7 @@
 // does it. Signed out -> 401 (no anon persistence, by design: account-gated).
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerClient, requireUser } from '@/lib/supabase/server';
+import { tables } from '@/lib/supabase/tables';
 import type { Database } from '@/lib/database.types';
 import type { UserSettings } from '@/lib/home-team';
 
@@ -15,7 +16,7 @@ export async function GET() {
 
   const supabase = await getServerClient();
   const { data } = await supabase
-    .from('user_settings')
+    .from(tables.userSettings)
     .select('favorite_team_id, last_team_id, start_on_favorite')
     .eq('user_id', user.id)
     .maybeSingle();
@@ -56,7 +57,9 @@ export async function PUT(request: NextRequest) {
   if ('lastTeamId' in body) patch.last_team_id = body.lastTeamId ?? null;
   if ('startOnFavorite' in body) patch.start_on_favorite = body.startOnFavorite;
 
-  const { error } = await supabase.from('user_settings').upsert(patch, { onConflict: 'user_id' });
+  const { error } = await supabase
+    .from(tables.userSettings)
+    .upsert(patch, { onConflict: 'user_id' });
   if (error) return NextResponse.json({ error: 'write failed' }, { status: 500 });
 
   return NextResponse.json({ ok: true });

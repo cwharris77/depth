@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerClient, requireUser } from '@/lib/supabase/server';
 import { newSlug } from '@/lib/slug';
+import { tables } from '@/lib/supabase/tables';
 
 export async function POST(request: NextRequest) {
   const user = await requireUser();
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
 
   // Stable links: reuse the existing slug for this (user, team) if there is one.
   const existing = await supabase
-    .from('shared_boards')
+    .from(tables.sharedBoards)
     .select('slug')
     .eq('user_id', user.id)
     .eq('team_id', teamId)
@@ -34,14 +35,14 @@ export async function POST(request: NextRequest) {
   const ownerName = (user.email ?? '').split('@')[0] || 'someone';
   const slug = newSlug();
   const { error } = await supabase
-    .from('shared_boards')
+    .from(tables.sharedBoards)
     .insert({ slug, user_id: user.id, team_id: teamId, owner_name: ownerName });
 
   if (error) {
     // Lost a race to a concurrent first-share (unique (user_id, team_id)) -- return the row
     // the other request created rather than surfacing a 500.
     const raced = await supabase
-      .from('shared_boards')
+      .from(tables.sharedBoards)
       .select('slug')
       .eq('user_id', user.id)
       .eq('team_id', teamId)

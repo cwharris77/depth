@@ -4,7 +4,9 @@
 // returning null, and this hint must degrade (never crash the page) if that happens — worst
 // case it just reappears next visit instead of staying gone forever.
 
-const DISMISSED_KEY = 'depth:nav-drawer-coachmark-dismissed';
+import { STORAGE_KEY_DEPTH_NAV_DRAWER_DISMISSED } from './storage-keys';
+
+const DISMISSED_KEY = STORAGE_KEY_DEPTH_NAV_DRAWER_DISMISSED;
 
 export function hasDismissedNavDrawerCoachmark(storage: Pick<Storage, 'getItem'>): boolean {
   try {

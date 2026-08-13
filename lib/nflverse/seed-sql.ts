@@ -10,6 +10,7 @@
 // ESPN seed (supabase/seed.sql). roster_history has no such FK (nflverse-keyed by
 // gsis_id, 20260801031305_add_roster_history.sql) and needs no filtering.
 import { insertStatement } from '../seed-sql';
+import { tables } from '@/lib/supabase/tables';
 import type { PlayerStatsInsert } from './transform';
 import type { ScheduleInsert, GameInsert } from './games';
 import type { RosterHistoryInsert } from './roster-history';
@@ -40,7 +41,7 @@ export function extractPlayerIds(seedSql: string): Set<string> {
 
 export function buildPlayerStatsSeedSql(rows: PlayerStatsInsert[]): string {
   return insertStatement(
-    'player_stats',
+    tables.playerStats,
     [
       'player_id',
       'season',
@@ -78,7 +79,7 @@ export function buildSchedulesAndGamesSeedSql(
   const parts = [
     insertStatement('schedules', ['team_id', 'season'], schedules, 'team_id,season'),
     insertStatement(
-      'games',
+      tables.games,
       [
         'game_id',
         'season',
@@ -100,7 +101,7 @@ export function buildSchedulesAndGamesSeedSql(
 
 export function buildTeamFormationsSeedSql(tallies: UnitFormationTally[]): string {
   return insertStatement(
-    'team_formations',
+    tables.teamFormations,
     ['team_id', 'season', 'unit', 'rank', 'alignment', 'personnel', 'pct'],
     tallies,
     'team_id,season,unit,rank'
@@ -109,7 +110,7 @@ export function buildTeamFormationsSeedSql(tallies: UnitFormationTally[]): strin
 
 export function buildRosterHistorySeedSql(rows: RosterHistoryInsert[]): string {
   return insertStatement(
-    'roster_history',
+    tables.rosterHistory,
     [
       'season',
       'team_id',
@@ -132,7 +133,7 @@ export function buildRosterHistorySeedSql(rows: RosterHistoryInsert[]): string {
 
 export function buildTeamStatsSeedSql(rows: TeamStatsInsert[]): string {
   return insertStatement(
-    'team_season_stats',
+    tables.teamSeasonStats,
     [
       'team_id',
       'season',
