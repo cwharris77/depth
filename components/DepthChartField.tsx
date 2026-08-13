@@ -17,6 +17,7 @@ import ApplyKitFromQuery from './ApplyKitFromQuery';
 import ApplySeasonFromQuery from './ApplySeasonFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
 import BottomSheet from './BottomSheet';
+import FTNAttribution from './FTNAttribution';
 import FieldHeader from './FieldHeader';
 import FieldMarkings from './FieldMarkings';
 import FormationsSheet from './FormationsSheet';
@@ -484,6 +485,14 @@ export default function DepthChartField({
               </div>
             )}
           </div>
+
+          {/* FTN Data is CC-BY-SA 4.0 -- attribution is the condition of surfacing it
+              (docs/nflverse.md). Shown whenever the active unit has real-formation data
+              on screen -- not only once a formation is picked, since the default pick
+              is the team's top formation and the field renders FTN-sourced layouts
+              from first paint. Historical seasons have no formation data, so none
+              here. */}
+          {!historicalMode && unitFormations.length > 0 && <FTNAttribution className="pt-1.5" />}
         </div>
 
         <BottomSheet isOpen={kitOpen} onClose={() => setKitOpen(false)}>

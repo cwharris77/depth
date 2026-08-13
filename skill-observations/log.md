@@ -117,3 +117,18 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 **Suggested improvement:** In implement-spec (or any "implement this deferred feature" workflow), add a first step: when a spec's Out-of-scope/future-work list names the feature you're about to build, search the app for an existing implementation of that same interaction on a different surface before making design decisions. Deferred features are usually deferred precisely because a sibling shipped first with the pattern.
 
 **Principle:** "Deferred" and "never built" are different facts — a feature deferred by one spec may already exist in an older sibling's scope, and the cheapest correct design is the one that copies the sibling's proven seams rather than re-deriving the decisions from scratch.
+
+### Observation 13: A ticket's quoted code references are a snapshot that drifts
+
+**Status:** OPEN
+**Date:** 2026-08-11
+**Session context:** Implementing the depth "Add FTN attribution to formation surfaces" ticket end-to-end. The ticket's Context section quoted two line ranges in components/DepthChartField.tsx (the attribution line at :486-492 and a formation chip row at :369-396) as the current state of the code. Both were gone by the time the branch was checked out — the chip row had been removed and the whole formations surface redesigned (PR #248) after the ticket was written. The attribution the ticket described as showing only "after a tap" actually lived in a different component (FormationsSheet.tsx), and the field rendered FTN-derived layouts from first paint with no attribution at all. The ticket's Done-when survived intact; only its quoted evidence was stale.
+**Skill:** New skill candidate: ticket-execution
+**Type:** open-source
+**Phase/Area:** Reading the ticket before implementing
+
+**Issue:** A ticket that quotes line ranges ("DepthChartField.tsx:486-492") as evidence reads like a live inspection, but it is a snapshot from the day it was written. Between that date and the implementation session, other PRs land that move the quoted code — the reference silently stops matching while the prose claim ("attribution under-fires") can still be true, or has changed shape entirely. An agent that trusts the snapshot either searches for a chip row that no longer exists or, worse, "fixes" the old shape in a file where it no longer lives.
+
+**Suggested improvement:** Before implementing a ticket that quotes code locations, re-locate each quoted reference in the live tree (grep for the quoted string, not the line number). If a quoted block is gone, that is not evidence the ticket is stale — the ticket's Done-when and intent are the contract; the quoted lines are only its map. Re-map the intent onto the current code and note the drift, as CLAUDE.md's "flag in the PR body but proceed" rule says for specs. Treat a line-numbered quote in a ticket the same way you treat one in an observation log: an address, not a fact.
+
+**Principle:** In any artifact that describes code (ticket, spec, observation), quoted line ranges are addresses to the artifact's past, not current truth. The intent they support can outlive them; never invalidate a task because its quoted evidence drifted, and never implement against a quoted shape without confirming it still exists.
