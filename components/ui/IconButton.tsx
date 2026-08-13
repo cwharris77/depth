@@ -12,8 +12,6 @@ import type { Intent } from './variants';
 type Variant = Extract<Intent, 'primary' | 'ghost'>;
 type Size = 'sm' | 'md';
 
-const DIMENSIONS: Record<Size, number> = { sm: 32, md: 36 };
-
 type IconButtonProps = {
   icon: ReactNode;
   variant?: Variant;
@@ -40,7 +38,6 @@ export default function IconButton({
   ariaLabel,
   className,
 }: IconButtonProps) {
-  const dim = DIMENSIONS[size];
   const style =
     variant === 'primary'
       ? {
@@ -55,9 +52,10 @@ export default function IconButton({
       onClick={onClick}
       className={cn(
         'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full',
+        size === 'sm' ? 'w-8 h-8' : 'w-9 h-9',
         className
       )}
-      style={{ ...style, width: dim, height: dim, touchAction: 'manipulation' }}>
+      style={{ ...style, touchAction: 'manipulation' }}>
       {icon}
     </button>
   );

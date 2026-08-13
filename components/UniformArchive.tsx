@@ -92,8 +92,7 @@ export default function UniformArchive({
           Current-only toggle and era select. `-mx-4 px-4` bleeds it to the screen edges so
           items scroll under the padding instead of being clipped mid-chip. */}
         <div
-          className="mt-4 -mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1"
-          style={{ scrollbarWidth: 'none' }}
+          className="mt-4 -mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 hide-scrollbar"
           role="group"
           aria-label="Filter kits">
           {KIND_OPTIONS.map((k) => (

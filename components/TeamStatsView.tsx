@@ -332,11 +332,10 @@ export default function TeamStatsView({
         {/* Season switcher — no prev/next arrows: desktop is wide enough to show every
           season at once, and mobile relies on the horizontal swipe affordance. */}
         <div
-          className="flex items-center gap-1.5 px-2.5 py-2.5 overflow-x-auto"
+          className="flex items-center gap-1.5 px-2.5 py-2.5 overflow-x-auto hide-scrollbar"
           style={{
             borderBottom: `1px solid ${uiTokens.borderStrong}`,
             background: uiTokens.bgFilterbar,
-            scrollbarWidth: 'none',
           }}>
           {[...seasons]
             .map((s, i) => ({ s, i }))
