@@ -3,19 +3,17 @@
 // so these handlers never filter by user id themselves — the server client's session
 // does it. Signed out -> 401 (no anon persistence, by design: account-gated).
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerClient } from '@/lib/supabase/server';
+import { getServerClient, requireUser } from '@/lib/supabase/server';
 import type { Database } from '@/lib/database.types';
 import type { UserSettings } from '@/lib/home-team';
 
 const EMPTY: UserSettings = { favoriteTeamId: null, lastTeamId: null, startOnFavorite: true };
 
 export async function GET() {
-  const supabase = await getServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await requireUser();
   if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
+  const supabase = await getServerClient();
   const { data } = await supabase
     .from('user_settings')
     .select('favorite_team_id, last_team_id, start_on_favorite')
@@ -35,12 +33,10 @@ export async function GET() {
 // Partial upsert: only the fields present in the body change. Sending { lastTeamId }
 // leaves an existing favorite untouched; { favoriteTeamId } leaves last-viewed untouched.
 export async function PUT(request: NextRequest) {
-  const supabase = await getServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await requireUser();
   if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
+  const supabase = await getServerClient();
   let body: {
     favoriteTeamId?: string | null;
     lastTeamId?: string | null;

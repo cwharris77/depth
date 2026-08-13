@@ -33,3 +33,11 @@ export async function getServerClient() {
     }
   );
 }
+
+export async function requireUser() {
+  const supabase = await getServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
+}

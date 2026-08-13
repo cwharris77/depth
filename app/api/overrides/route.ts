@@ -4,7 +4,7 @@
 // explicit user_id filters below are for clarity and to key the wholesale replace. Signed out
 // -> 401 (no anon persistence, by design: account-gated).
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerClient } from '@/lib/supabase/server';
+import { getServerClient, requireUser } from '@/lib/supabase/server';
 import type { Database } from '@/lib/database.types';
 import type { TeamDepthOverride } from '@/lib/depth-overrides';
 import type { Position } from '@/lib/types';
@@ -12,12 +12,10 @@ import type { Position } from '@/lib/types';
 // GET -> the user's overrides shaped as Record<teamId, TeamDepthOverride> (position -> ids),
 // exactly the shape lib/depth-overrides and the field render from.
 export async function GET() {
-  const supabase = await getServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await requireUser();
   if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
+  const supabase = await getServerClient();
   const { data, error } = await supabase
     .from('depth_overrides')
     .select('team_id, position, player_ids')
@@ -38,12 +36,10 @@ export async function GET() {
 // the team with no override (reverts to default), which the next write heals. Last-write-wins,
 // matching the fire-and-forget client. 401 signed out.
 export async function PUT(request: NextRequest) {
-  const supabase = await getServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await requireUser();
   if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
+  const supabase = await getServerClient();
   let body: { teamId?: unknown; override?: unknown };
   try {
     body = await request.json();

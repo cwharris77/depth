@@ -3,16 +3,14 @@
 // already in someone's hands keeps working (and keeps resolving to the owner's *live* order).
 // The share is a reference, not a snapshot -- no override data is copied here. 401 signed out.
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerClient } from '@/lib/supabase/server';
+import { getServerClient, requireUser } from '@/lib/supabase/server';
 import { newSlug } from '@/lib/slug';
 
 export async function POST(request: NextRequest) {
-  const supabase = await getServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await requireUser();
   if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
+  const supabase = await getServerClient();
   let body: { teamId?: unknown };
   try {
     body = await request.json();
