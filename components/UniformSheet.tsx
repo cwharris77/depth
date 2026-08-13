@@ -9,7 +9,7 @@ import { formatUniformYears } from '@/lib/uniforms';
 import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
 import JerseySwatch from './JerseySwatch';
 import SheetHeader from './ui/SheetHeader';
-import { colors as uiTokens, springSheet } from '@/components/ui/tokens';
+import { colors as uiTokens, springSheet, typeScale } from '@/components/ui/tokens';
 
 // The uniform picker's contents (rendered inside BottomSheet). A horizontal swipeable
 // carousel replaces the old vertical row-list: each kit is a full-width card; swiping
@@ -180,7 +180,9 @@ export default function UniformSheet({
                       border: `1px solid ${accent}55`,
                     }}>
                     <Check size={14} color={accent} strokeWidth={3} />
-                    <span className="text-[11px] font-bold" style={{ color: accent }}>
+                    <span
+                      className="font-bold"
+                      style={{ color: accent, fontSize: typeScale.label }}>
                       Active
                     </span>
                   </div>

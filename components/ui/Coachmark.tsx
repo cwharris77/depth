@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { colors, zIndex } from './tokens';
+import { colors, typeScale, zIndex } from './tokens';
 
 // One-time anchored hint: a small arrow-tipped bubble pointing up at whatever it's rendered
 // under. Purely presentational — no localStorage/timeout logic here, callers own visibility
@@ -14,7 +14,7 @@ export default function Coachmark({ message, className }: { message: string; cla
     <motion.div
       role="tooltip"
       className={cn(
-        'absolute left-0 top-full mt-2 w-56 rounded-xl px-3 py-2.5 text-[12px] font-medium leading-snug',
+        'absolute left-0 top-full mt-2 w-56 rounded-xl px-3 py-2.5 font-medium leading-snug',
         className
       )}
       style={{
@@ -22,6 +22,7 @@ export default function Coachmark({ message, className }: { message: string; cla
         background: colors.surfaceMenu,
         border: `1px solid ${colors.borderStrong}`,
         boxShadow: `0 8px 24px ${colors.scrimLight}`,
+        fontSize: typeScale.body,
         zIndex: zIndex.popover,
       }}
       initial={{ opacity: 0, y: -4 }}

@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { colors } from './tokens';
+import { colors, typeScale } from './tokens';
 
 type Stat = { label: string; value: string | number };
 
@@ -25,8 +25,8 @@ export default function StatGrid({ stats, className }: StatGridProps) {
           className="flex flex-col items-center py-3"
           style={{ borderLeft: i === 0 ? 'none' : `1px solid ${colors.borderDefault}` }}>
           <div
-            className="text-[10px] font-semibold tracking-wide"
-            style={{ color: colors.textMuted }}>
+            className="font-semibold tracking-wide"
+            style={{ color: colors.textMuted, fontSize: typeScale.caption }}>
             {s.label}
           </div>
           <div className="mt-0.5 text-base font-black" style={{ color: colors.textPrimary }}>

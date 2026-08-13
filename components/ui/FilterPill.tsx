@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
-import { colors } from './tokens';
+import { colors, typeScale } from './tokens';
 
 type FilterPillProps = {
   active: boolean;
@@ -31,13 +31,14 @@ export default function FilterPill({
       type="button"
       onClick={onClick}
       className={cn(
-        'shrink-0 rounded-full px-3 py-1.5 text-xs',
+        'shrink-0 rounded-full px-3 py-1.5',
         active ? 'font-semibold' : 'font-normal',
         className
       )}
       style={{
         background: active ? accentColor : colors.surfaceChip,
         color: active ? onAccentColor : colors.textSecondary,
+        fontSize: typeScale.body,
         border: 'none',
         touchAction: 'manipulation',
       }}>

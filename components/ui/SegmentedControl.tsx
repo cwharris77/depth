@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import type { CSSProperties, MouseEvent } from 'react';
-import { colors } from './tokens';
+import { colors, typeScale } from './tokens';
 import { withAlpha } from '@/lib/colors';
 
 // An option renders as a plain <button> unless it carries an `href`, in which case
@@ -39,8 +39,8 @@ type SegmentedControlProps = {
 };
 
 const SIZES: Record<Size, { track: string; item: string }> = {
-  md: { track: 'gap-1 rounded-2xl p-1', item: 'rounded-xl px-2.5 py-1.5 text-[11px]' },
-  sm: { track: 'gap-0.5 rounded-lg p-0.5', item: 'rounded-md px-2 py-1 text-[9px] tracking-wide' },
+  md: { track: 'gap-1 rounded-2xl p-1', item: 'rounded-xl px-2.5 py-1.5' },
+  sm: { track: 'gap-0.5 rounded-lg p-0.5', item: 'rounded-md px-2 py-1 tracking-wide' },
 };
 
 // Rounded-pill tab group. Two flavors: 'fill' (default — active segment fills with a
@@ -71,6 +71,7 @@ export default function SegmentedControl({
         const itemStyle = {
           background: active ? (flat ? colors.surfaceChipHover : activeColor) : 'transparent',
           color: active ? (flat ? colors.textPrimary : activeTextColor) : colors.textMuted,
+          fontSize: typeScale.body,
           border:
             active && !flat
               ? `1px solid ${withAlpha(activeTextColor, 40)}`
