@@ -43,7 +43,12 @@ export function usePlayerSearch(query: string, { enabled = true }: { enabled?: b
       } catch (err) {
         if ((err as Error).name !== 'AbortError') setResults([]);
       } finally {
-        setLoading(false);
+        // A superseded request's own abort lands here too (when the previous fetch was
+        // already in flight, past its debounce delay, and a new keystroke arrives before
+        // it resolves) -- it must not clobber the newer request's `setLoading(true)`,
+        // already set synchronously when its effect ran, before this stale rejection is
+        // even delivered.
+        if (!controller.signal.aborted) setLoading(false);
       }
     }, delay);
     prevTrimmedRef.current = trimmed;

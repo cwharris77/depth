@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, act } from '@testing-library/react';
+import { render, act, cleanup } from '@testing-library/react';
 import { usePlayerSearch } from '../use-player-search';
 
 const mockFetch = vi.fn();
@@ -23,6 +23,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  cleanup();
   vi.useRealTimers();
   mockFetch.mockReset();
 });
@@ -84,5 +85,43 @@ describe('usePlayerSearch debounce', () => {
       vi.advanceTimersByTime(1000);
     });
     expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("a superseded in-flight request does not clobber the newer request's loading state", async () => {
+    let rejectFirst: (e: unknown) => void = () => {};
+    const firstFetch = new Promise((_resolve, reject) => {
+      rejectFirst = reject;
+    });
+    mockFetch
+      .mockImplementationOnce((_url: string, opts: { signal: AbortSignal }) => {
+        opts.signal.addEventListener('abort', () => {
+          const err = new Error('aborted');
+          err.name = 'AbortError';
+          rejectFirst(err);
+        });
+        return firstFetch;
+      })
+      .mockImplementationOnce(() => new Promise(() => {})); // second fetch stays pending
+
+    const { rerender, getByTestId } = render(<SearchComponent query="" />);
+    rerender(<SearchComponent query="Zz" />);
+    await act(async () => {
+      vi.advanceTimersByTime(1); // immediate (0ms) delay, fires fetch #1 -- left pending
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(getByTestId('loading').textContent).toBe('true');
+
+    // Second keystroke arrives while the first fetch is still in flight -- its cleanup
+    // aborts fetch #1 (rejecting it), and the new effect fires fetch #2 once its 200ms
+    // debounce elapses.
+    rerender(<SearchComponent query="Zzz" />);
+    await act(async () => {
+      vi.advanceTimersByTime(200);
+      await Promise.resolve(); // flush the aborted fetch #1's rejection microtasks
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    // Fetch #2 is still pending -- loading must still read true, not be clobbered false
+    // by fetch #1's aborted rejection settling after fetch #2's setLoading(true) ran.
+    expect(getByTestId('loading').textContent).toBe('true');
   });
 });
