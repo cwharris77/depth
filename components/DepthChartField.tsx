@@ -1,32 +1,31 @@
 'use client';
 
-import { resolveUnit } from '@/lib/formations';
+import { typeScale, colors as uiTokens } from '@/components/ui/tokens';
 import type { TeamMeta } from '@/lib/roster-source';
 import { unitForPosition } from '@/lib/search';
 import { buildTeamSelectionUrl } from '@/lib/team-selection';
 import type { Player, PlayerSeasonStats, TeamFormation, TeamRoster, Unit } from '@/lib/types';
+import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
+import { useDepthChartRoster } from '@/lib/use-depth-chart-roster';
+import { useDepthChartSeason } from '@/lib/use-depth-chart-season';
+import { useDepthChartSelection } from '@/lib/use-depth-chart-selection';
+import { useDepthChartSheets } from '@/lib/use-depth-chart-sheets';
+import { useFormations } from '@/lib/use-formations';
+import { useKit } from '@/lib/use-kit';
+import { DESKTOP_MEDIA_QUERY, useMediaQuery } from '@/lib/use-media-query';
+import { useShareRoster } from '@/lib/use-share-roster';
+import { useTeamOverride } from '@/lib/use-team-override';
 import { useUser } from '@/lib/use-user';
 import { usePathname, useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
 import ApplyKitFromQuery from './ApplyKitFromQuery';
 import ApplySeasonFromQuery from './ApplySeasonFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
 import DepthChartFieldSurface from './DepthChartFieldSurface';
 import DepthChartSheets from './DepthChartSheets';
 import FieldHeader from './FieldHeader';
-import SyncSelectionWithQuery from './SyncSelectionWithQuery';
 import PlayerCard from './PlayerCard';
+import SyncSelectionWithQuery from './SyncSelectionWithQuery';
 import TeamPageShell from './TeamPageShell';
-import { DESKTOP_MEDIA_QUERY, useMediaQuery } from '@/lib/use-media-query';
-import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
-import { applyTeamOverride } from '@/lib/depth-overrides';
-import { useKit } from '@/lib/use-kit';
-import { useTeamOverride } from '@/lib/use-team-override';
-import { useShareRoster } from '@/lib/use-share-roster';
-import { useDepthChartSeason } from '@/lib/use-depth-chart-season';
-import { useDepthChartSelection } from '@/lib/use-depth-chart-selection';
-import { useFormations } from '@/lib/use-formations';
-import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
 
 // Pure client component: it receives one resolved roster as a prop and never
 // imports the team registry, so a page ships only its own team's data — not all 32.
@@ -52,8 +51,6 @@ export default function DepthChartField({
   // PlayerCard ever mounts — two would double its per-player stats fetch. Selection is
   // always null at SSR, so the hook's server-side `false` renders nothing either way.
   const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
-  const [kitOpen, setKitOpen] = useState(false);
-  const [formationsSheetOpen, setFormationsSheetOpen] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -90,7 +87,6 @@ export default function DepthChartField({
     historicalShareCopied,
     handleShareHistoricalRoster,
   } = useDepthChartSeason(team);
-  const [seasonSheetOpen, setSeasonSheetOpen] = useState(false);
 
   const {
     selectedPlayer,
@@ -112,38 +108,16 @@ export default function DepthChartField({
     resetToTopForUnit,
   } = useFormations(team.id, activeUnit, formations, historicalMode);
 
-  const displayRoster = useMemo(
-    () => applyTeamOverride(roster, effectiveOverride),
-    [roster, effectiveOverride]
-  );
-  // Same roster (players/override), re-skinned in the selected kit's colors. One lever:
-  // every child that reads team colors (dots via props, PlayerCard/NavSwitcher via
-  // roster.team.colors) follows the kit through this.
-  const themedRoster = useMemo(
-    () => ({ ...displayRoster, team: { ...displayRoster.team, colors: activeColors } }),
-    [displayRoster, activeColors]
-  );
-  // Historical roster, re-skinned the same way. Kit selection stays live (colors are
-  // orthogonal to which season is showing, locked decision) but reorder overrides never
-  // apply to it -- a past season is a fact, not something the user's live overlay edits.
-  const themedHistoricalRoster = useMemo(
-    () =>
-      historicalRoster
-        ? { ...historicalRoster, team: { ...historicalRoster.team, colors: activeColors } }
-        : null,
-    [historicalRoster, activeColors]
-  );
-  // While viewing history, the field renders ONLY the historical roster -- never falling
-  // back to the live one mid-fetch, or a stale live frame would flash before the real
-  // season's data lands (AGENTS.md invariant 16).
-  const fieldRoster = historicalMode ? themedHistoricalRoster : themedRoster;
-
-  const slots = fieldRoster ? resolveUnit(fieldRoster, activeUnit, realFormation) : [];
-
-  // Keep the open card's player in sync with the reordered roster (fresh depthRank/status).
-  const displaySelected = selectedPlayer
-    ? (displayRoster.players.find((p) => p.id === selectedPlayer.id) ?? selectedPlayer)
-    : null;
+  const { displayRoster, themedRoster, fieldRoster, slots, displaySelected } = useDepthChartRoster({
+    roster,
+    effectiveOverride,
+    activeColors,
+    historicalRoster,
+    historicalMode,
+    activeUnit,
+    realFormation,
+    selectedPlayer,
+  });
 
   // A selected formation is unit-specific (offense/defense each have their own list) --
   // switching units always resets to that unit's top formation rather than carrying a
@@ -206,6 +180,20 @@ export default function DepthChartField({
         }),
   };
 
+  const { sheets, openKitSheet, openSeasonSheet, openFormationsSheet } = useDepthChartSheets({
+    kitUniforms: roster.uniforms,
+    activeKitId: activeUniform?.id ?? '',
+    kitDefinition: uniformDefinition,
+    onSelectKit: setKitId,
+    currentSeason,
+    activeSeason: season,
+    onSelectSeason: changeSeason,
+    activeUnit,
+    unitFormations,
+    activeFormation,
+    onSelectFormation: setActiveFormation,
+  });
+
   return (
     <TeamPageShell
       team={team}
@@ -253,13 +241,13 @@ export default function DepthChartField({
           nav={{ players: themedRoster.players, onSelectPlayer: handleNavSelectPlayer }}
           unit={{ active: activeUnit, onChange: changeUnit }}
           menu={{
-            onChooseUniform: () => setKitOpen(true),
+            onChooseUniform: openKitSheet,
             season: {
               value: season,
-              onOpen: () => setSeasonSheetOpen(true),
+              onOpen: openSeasonSheet,
               onBackToToday: () => changeSeason(null),
             },
-            formations: { meta: formationsMeta, onOpen: () => setFormationsSheetOpen(true) },
+            formations: { meta: formationsMeta, onOpen: openFormationsSheet },
             share: {
               copied: historicalMode ? historicalShareCopied : shareCopied,
               onShare: historicalMode ? handleShareHistoricalRoster : handleShareRoster,
@@ -290,38 +278,7 @@ export default function DepthChartField({
           onRetryHistory={retryHistory}
         />
 
-        <DepthChartSheets
-          accent={activeColors.uiAccent}
-          kit={{
-            open: kitOpen,
-            onClose: () => setKitOpen(false),
-            uniforms: roster.uniforms,
-            activeId: activeUniform?.id ?? '',
-            definition: uniformDefinition,
-            onSelect: setKitId,
-          }}
-          season={{
-            open: seasonSheetOpen,
-            onClose: () => setSeasonSheetOpen(false),
-            currentSeason,
-            active: season,
-            onSelect: (next) => {
-              changeSeason(next);
-              setSeasonSheetOpen(false);
-            },
-          }}
-          formations={{
-            open: formationsSheetOpen,
-            onClose: () => setFormationsSheetOpen(false),
-            unit: activeUnit,
-            list: unitFormations,
-            active: activeFormation,
-            onSelect: (formation) => {
-              setActiveFormation(formation);
-              setFormationsSheetOpen(false);
-            },
-          }}
-        />
+        <DepthChartSheets accent={activeColors.uiAccent} {...sheets} />
 
         {!isDesktop && <PlayerCard {...playerCardProps} />}
 
