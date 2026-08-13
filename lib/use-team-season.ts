@@ -38,8 +38,12 @@ export function useTeamSeason(teamId: string, season: number | null, retry?: num
         setLoading(false);
       })
       .catch((err) => {
+        // A superseded request's own abort lands here too (when the previous fetch was
+        // already in flight and a new season/retry arrives before it resolves) -- it
+        // must not clobber the newer request's state, already set synchronously when
+        // its effect ran, before this stale rejection is even delivered.
+        if (controller.signal.aborted || (err as Error).name === 'AbortError') return;
         setLoading(false);
-        if ((err as Error).name === 'AbortError') return;
         if ((err as Response).status === 404) {
           setNotFound(true);
         } else {

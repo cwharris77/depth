@@ -496,7 +496,7 @@ export default function DepthChartField({
                 <button
                   type="button"
                   onClick={() => setRetryCount((c) => c + 1)}
-                  className="ml-2 text-xs font-bold underline"
+                  className="ml-2 text-xs font-bold underline pointer-events-auto"
                   style={{ color: uiTokens.accent }}>
                   Retry
                 </button>
