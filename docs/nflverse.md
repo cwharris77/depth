@@ -172,9 +172,11 @@ runs never overlap. Same two repo secrets as the ESPN workflow
 nflverse's own code is MIT-licensed; the underlying NFL data is owned by the NFL/its
 partners — same gray-area posture as the ESPN ingest (unofficial, no ToS grant, used
 here for a non-commercial fan project). The formation/personnel dataset
-(`pbp_participation`) is FTN-sourced and CC-BY-SA 4.0 — the field view attributes FTN
-(`components/DepthChartField.tsx`'s "Formation data © FTN Data (CC-BY-SA 4.0)" footer)
-whenever a real-formation chip is active, the condition of surfacing it.
+(`pbp_participation`) is FTN-sourced and CC-BY-SA 4.0 — every surface that shows
+formation data attributes FTN (`components/FTNAttribution.tsx`'s "Formation data © FTN
+Data (CC-BY-SA 4.0)" footer) whenever a unit's real-formation data is on screen — the
+field footer (shown whenever the active unit has formations, offense or defense, not
+only once one is picked) and FormationsSheet — the condition of surfacing it.
 
 ## Real per-team formations (Phase E)
 
