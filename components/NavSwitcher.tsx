@@ -173,8 +173,14 @@ export default function NavSwitcher({
   const [conference, setConference] = useState<Conference>(team?.conference ?? 'AFC');
   const [query, setQuery] = useState('');
   const includePlayerResults = onPickTeam === undefined;
-  const { results: playerResults, loading: playersLoading } = usePlayerSearch(query, {
+  const [retryCount, setRetryCount] = useState(0);
+  const {
+    results: playerResults,
+    loading: playersLoading,
+    error: playersError,
+  } = usePlayerSearch(query, {
     enabled: includePlayerResults,
+    retry: retryCount,
   });
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [searchFocused, setSearchFocused] = useState(false);
@@ -296,7 +302,7 @@ export default function NavSwitcher({
 
   const showPlayers = searching && playerResults.length > 0;
   const showTeams = searching && teamResults.length > 0;
-  const nothingFound = searching && !playersLoading && !showPlayers && !showTeams;
+  const nothingFound = searching && !playersLoading && !playersError && !showPlayers && !showTeams;
 
   return (
     <>
@@ -408,6 +414,17 @@ export default function NavSwitcher({
               </div>
             </div>
           ))
+        ) : playersError ? (
+          <div className="px-5 py-6 text-center text-sm" style={{ color: uiTokens.textMuted }}>
+            Couldn't load search results.
+            <button
+              type="button"
+              onClick={() => setRetryCount((c) => c + 1)}
+              className="ml-1 underline"
+              style={{ color: uiTokens.accent }}>
+              Retry
+            </button>
+          </div>
         ) : nothingFound ? (
           <div className="px-5 py-6 text-center text-sm" style={{ color: uiTokens.textMuted }}>
             No matches for &ldquo;{query.trim()}&rdquo;

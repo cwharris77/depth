@@ -5,7 +5,10 @@ import type { PlayerHit } from './search';
 
 const searchCache = new Map<string, PlayerHit[]>();
 
-export function usePlayerSearch(query: string, { enabled = true }: { enabled?: boolean } = {}) {
+export function usePlayerSearch(
+  query: string,
+  { enabled = true, retry }: { enabled?: boolean; retry?: number } = {}
+) {
   const trimmed = query.trim();
   const searching = enabled && trimmed.length > 0;
   const prevTrimmedRef = useRef('');
@@ -13,11 +16,13 @@ export function usePlayerSearch(query: string, { enabled = true }: { enabled?: b
     searching ? (searchCache.get(trimmed) ?? []) : []
   );
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (!searching) {
       setResults([]);
       setLoading(false);
+      setError(null);
       prevTrimmedRef.current = trimmed;
       return;
     }
@@ -25,11 +30,13 @@ export function usePlayerSearch(query: string, { enabled = true }: { enabled?: b
     if (cached) {
       setResults(cached);
       setLoading(false);
+      setError(null);
       prevTrimmedRef.current = trimmed;
       return;
     }
     const controller = new AbortController();
     setLoading(true);
+    setError(null);
     const delay = prevTrimmedRef.current === '' ? 0 : 200;
     const timer = setTimeout(async () => {
       try {
@@ -41,7 +48,9 @@ export function usePlayerSearch(query: string, { enabled = true }: { enabled?: b
         searchCache.set(trimmed, hits);
         setResults(hits);
       } catch (err) {
-        if ((err as Error).name !== 'AbortError') setResults([]);
+        if ((err as Error).name !== 'AbortError') {
+          setError(err instanceof Error ? err : new Error(String(err)));
+        }
       } finally {
         // A superseded request's own abort lands here too (when the previous fetch was
         // already in flight, past its debounce delay, and a new keystroke arrives before
@@ -56,7 +65,7 @@ export function usePlayerSearch(query: string, { enabled = true }: { enabled?: b
       clearTimeout(timer);
       controller.abort();
     };
-  }, [trimmed, searching]);
+  }, [trimmed, searching, retry]);
 
-  return { results, loading };
+  return { results, loading, error };
 }
