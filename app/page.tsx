@@ -14,8 +14,10 @@ import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
 // rendered directly here, statically-shaped like every /team/[id] page, with no
 // download-hydrate-redirect hop (backlog: "Home-load feels slow", 2026-07-08).
 export default async function Home() {
-  const user = await requireUser();
-  const { isOffseason, upcomingSeason } = await getNflSeasonState();
+  const [user, { isOffseason, upcomingSeason }] = await Promise.all([
+    requireUser(),
+    getNflSeasonState(),
+  ]);
   // Same "which season is live right now" definition as /team/[id] (Phase D1's
   // SeasonSheet current-season row).
   const currentSeason = isOffseason ? upcomingSeason : upcomingSeason - 1;
