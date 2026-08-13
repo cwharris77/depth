@@ -1,20 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { PlayerHit } from './search';
 
-// Debounced player search against /api/players/search, shared by NavSwitcher (mobile) and
-// TeamRail (desktop) — both used to run this fetch independently, meaning typing the same
-// query in either surface (or switching between them) always hit the API again. A
-// module-scoped cache keyed by the trimmed query dedupes that: once a query's results land,
-// every caller (this session, this page load) reuses them instead of re-fetching. 200ms
-// debounce and AbortController-on-restart are unchanged from the original per-component
-// effects.
 const searchCache = new Map<string, PlayerHit[]>();
 
 export function usePlayerSearch(query: string, { enabled = true }: { enabled?: boolean } = {}) {
   const trimmed = query.trim();
   const searching = enabled && trimmed.length > 0;
+  const prevTrimmedRef = useRef('');
   const [results, setResults] = useState<PlayerHit[]>(() =>
     searching ? (searchCache.get(trimmed) ?? []) : []
   );
@@ -24,16 +18,19 @@ export function usePlayerSearch(query: string, { enabled = true }: { enabled?: b
     if (!searching) {
       setResults([]);
       setLoading(false);
+      prevTrimmedRef.current = trimmed;
       return;
     }
     const cached = searchCache.get(trimmed);
     if (cached) {
       setResults(cached);
       setLoading(false);
+      prevTrimmedRef.current = trimmed;
       return;
     }
     const controller = new AbortController();
     setLoading(true);
+    const delay = prevTrimmedRef.current === '' ? 0 : 200;
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(`/api/players/search?q=${encodeURIComponent(trimmed)}`, {
@@ -46,9 +43,15 @@ export function usePlayerSearch(query: string, { enabled = true }: { enabled?: b
       } catch (err) {
         if ((err as Error).name !== 'AbortError') setResults([]);
       } finally {
-        setLoading(false);
+        // A superseded request's own abort lands here too (when the previous fetch was
+        // already in flight, past its debounce delay, and a new keystroke arrives before
+        // it resolves) -- it must not clobber the newer request's `setLoading(true)`,
+        // already set synchronously when its effect ran, before this stale rejection is
+        // even delivered.
+        if (!controller.signal.aborted) setLoading(false);
       }
-    }, 200);
+    }, delay);
+    prevTrimmedRef.current = trimmed;
     return () => {
       clearTimeout(timer);
       controller.abort();
