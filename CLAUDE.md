@@ -229,6 +229,32 @@ Each is named for what it looks like in a diff. The rule prevents it.
     component for repeated structure (parameterize the parts that actually differ, not
     every stylistic detail), or a single derived value computed once for repeated
     ternary text, instead of a per-branch JSX ternary chain.*
+18. **Stale abort clobbers a newer request's state.** A debounced/abortable fetch
+    hook's `.catch`/`.finally` unconditionally calls `setLoading(false)` (or sets
+    `notFound`/`error`) without checking whether *this specific request* was the one
+    superseded — a slow, since-aborted request's rejection is delivered after the
+    *new* request's synchronous `setLoading(true)` and silently stomps it back to
+    false, so the UI reads "not loading" while a fetch is genuinely in flight (shipped
+    bug, three independent instances the same night: `use-player-search.ts`,
+    `use-team-schedule-season.ts`, `use-team-season.ts`). *Rule: any reject handler in
+    an abortable fetch must check `controller.signal.aborted` (and/or
+    `err.name === 'AbortError'`) before calling a state setter — never call
+    `setLoading`/`setError`/`setNotFound` from a `.catch`/`.finally` unconditionally.
+    Prefer composing on the shared abortable-fetch hook (see the tracked ticket to
+    build one) over hand-rolling this per-hook.*
+19. **Primitive/hook behavior change verified only against the callers in your diff.**
+    You fix or extract a shared primitive/hook and confirm the call sites you touched
+    look right, but every *other* existing caller — the ones you never opened — also
+    inherits the new behavior, silently (shipped bug: routing `SectionLabel` through
+    `cn()` correctly started applying its base `px-5 py-2` for the first time to ~10
+    existing callers that a JS-default-parameter footgun had been silently skipping it
+    for, visibly misaligning two live pages; a separate extraction the same night also
+    dropped a `Promise.all` on the home page, serializing what had been a parallel
+    fetch). *Rule: before merging a primitive/hook behavior change, `grep` every call
+    site across the whole repo, not just the ones your diff touches. For anything
+    render-affecting, verify with a real before/after screenshot (spin up the base
+    branch on a second port) rather than trusting a diff read — typecheck/lint/test
+    do not catch a visual regression or a dropped `Promise.all`.*
 
 ## 5. Quality bar per deliverable
 
@@ -295,7 +321,17 @@ relitigate.
   `show-uniform-picker` — changing its env var in Vercel or its `decide()` default),
 - changing CI, the ingest cadence, or repo secrets,
 - removing user-visible behavior (even "obviously dead" — #54 removed arrows shipped
-  in #53 *by decision*, not by cleanup).
+  in #53 *by decision*, not by cleanup),
+- reverting or disabling a previously-adopted architectural setting (a `next.config.ts`
+  feature flag like `cacheComponents`, a caching strategy, a build-time toggle) to
+  route around a conflict with your current task — even when the conflict is real and
+  the revert would fix your task's symptom (shipped near-miss: a ticket asking for
+  `dynamicParams = false` hit a real Next.js constraint — `cacheComponents: true` is
+  all-or-nothing and incompatible with route-segment `export const revalidate` — and
+  silently reverted Cache Components app-wide to route around it, undocumented in the
+  PR, without verifying the revert actually fixed the target page; it didn't). *Surface
+  the conflict and the trade-off instead of resolving it unilaterally — check `git log`
+  for why the setting was adopted before touching it.*
 
 **Flag in the PR body but proceed** when a spec has drifted from the code it
 describes: the code is the truth for what exists; the spec is the truth for what to
