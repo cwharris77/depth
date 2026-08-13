@@ -5,13 +5,13 @@
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import type { Database } from '@/lib/database.types';
-import { requireEnv } from '@/lib/env';
+import { getSupabaseUrl, getSupabaseAnonKey } from '@/lib/env';
 
 export async function getServerClient() {
   const cookieStore = await cookies();
   return createServerClient<Database>(
-    requireEnv('NEXT_PUBLIC_SUPABASE_URL', process.env.NEXT_PUBLIC_SUPABASE_URL),
-    requireEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY', process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY),
+    getSupabaseUrl(),
+    getSupabaseAnonKey(),
     {
       cookies: {
         getAll() {

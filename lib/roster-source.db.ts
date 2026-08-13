@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { cacheLife } from 'next/cache';
 import type { Database } from './database.types';
+import { getSupabaseUrl, getSupabaseAnonKey } from './env';
 import type {
   RosterSource,
   TeamMeta,
@@ -50,20 +51,7 @@ import type {
 let client: ReturnType<typeof createClient<Database>> | undefined;
 function supabase() {
   if (client) return client;
-  // Falls back to the NEXT_PUBLIC_-prefixed pair (same publishable values, safe to
-  // read server-side too) when the unprefixed names aren't set -- Vercel's Supabase
-  // integration only auto-manages the NEXT_PUBLIC_ pair, not these; a project that
-  // hasn't had SUPABASE_URL/SUPABASE_PUBLISHABLE_KEY added by hand still builds.
-  // Mirrors lib/supabase/admin.ts's existing SUPABASE_URL fallback.
-  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key =
-    process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) {
-    throw new Error(
-      'Missing SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY (or their NEXT_PUBLIC_ equivalents) env vars (see .env.local.example)'
-    );
-  }
-  client = createClient<Database>(url, key);
+  client = createClient<Database>(getSupabaseUrl(), getSupabaseAnonKey());
   return client;
 }
 
