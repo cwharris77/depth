@@ -128,3 +128,21 @@ const POSTSEASON_ROUND_LABELS: Record<string, string> = {
 export function postseasonRoundLabel(gameType: string): string {
   return POSTSEASON_ROUND_LABELS[gameType] ?? gameType;
 }
+
+// Maps a `?season=` value to the schedule season to view, or null for the default view
+// (docs/superpowers/specs/2026-08-10-past-season-schedule-view-design.md). `null` means
+// "today" — the page's prerendered latest-season schedule. The current season IS that
+// default view, so an explicit param equal to `currentSeason` normalizes to null rather
+// than double-fetching it through the API (same semantic as SeasonSheet's current row).
+// A param outside the covered range — below `minSeason` (SEASONS_MIN), above the current
+// season, or a non-integer already rejected upstream — clamps to the default instead of
+// erroring: `?season=` is untrusted input and must never throw (invariant 6).
+export function normalizeViewedSeason(
+  season: number | null,
+  currentSeason: number,
+  minSeason: number
+): number | null {
+  if (season === null) return null;
+  if (season < minSeason || season > currentSeason) return null;
+  return season === currentSeason ? null : season;
+}
