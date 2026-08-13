@@ -2,14 +2,14 @@
 
 import { useState, useRef, useCallback, useLayoutEffect } from 'react';
 import Image from 'next/image';
-import { Check, X } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { motion, type PanInfo } from 'framer-motion';
 import type { Uniform } from '@/lib/types';
 import { formatUniformYears } from '@/lib/uniforms';
 import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
 import JerseySwatch from './JerseySwatch';
-import IconButton from './ui/IconButton';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import SheetHeader from './ui/SheetHeader';
+import { colors as uiTokens, springSheet } from '@/components/ui/tokens';
 
 // The uniform picker's contents (rendered inside BottomSheet). A horizontal swipeable
 // carousel replaces the old vertical row-list: each kit is a full-width card; swiping
@@ -112,18 +112,7 @@ export default function UniformSheet({
     // No sizing wrapper here -- these rows render directly inside BottomSheet's own flex
     // column, which owns the height cap (see BottomSheet's sizing contract comment).
     <>
-      <div className="flex items-center justify-between px-5 pt-4 pb-2">
-        <h2 className="text-base font-black" style={{ color: uiTokens.textPrimary }}>
-          Uniforms
-        </h2>
-        <IconButton
-          icon={<X size={16} color={uiTokens.textMuted} />}
-          variant="plain"
-          size="sm"
-          onClick={onClose}
-          ariaLabel="Close"
-        />
-      </div>
+      <SheetHeader title="Uniforms" onClose={onClose} />
 
       {/* Carousel track */}
       <div ref={containerRef} className="relative overflow-hidden" style={{ touchAction: 'pan-y' }}>
@@ -136,7 +125,7 @@ export default function UniformSheet({
           onDrag={handleDrag}
           onDragEnd={handleDragEnd}
           animate={{ x: -currentIndex * cardWidth }}
-          transition={{ type: 'spring', stiffness: 360, damping: 38 }}>
+          transition={springSheet}>
           {uniforms.map((u) => {
             const isActive = u.id === committedId;
             return (
