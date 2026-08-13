@@ -71,18 +71,6 @@ export function applyTeamOverride(
   return { ...roster, players };
 }
 
-// Swap a player one slot up or down within an ordered id list. Returns the same list
-// reference (no change) when the move would run off either end.
-export function moveInOrder(ids: string[], id: string, dir: 'up' | 'down'): string[] {
-  const from = ids.indexOf(id);
-  if (from === -1) return ids;
-  const to = dir === 'up' ? from - 1 : from + 1;
-  if (to < 0 || to >= ids.length) return ids;
-  const next = [...ids];
-  [next[from], next[to]] = [next[to], next[from]];
-  return next;
-}
-
 // --- persistence (localStorage, SSR- and private-mode-guarded) --------------------
 
 function readStore(): Store {

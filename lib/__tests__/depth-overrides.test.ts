@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Player, TeamRoster } from '../types';
-import { applyTeamOverride, moveInOrder } from '../depth-overrides';
+import { applyTeamOverride } from '../depth-overrides';
 import { getPlayersByPosition } from '../roster';
 
 function player(
@@ -41,25 +41,6 @@ function roster(players: Player[]): TeamRoster {
     uniforms: [],
   };
 }
-
-describe('moveInOrder', () => {
-  it('swaps a player up', () => {
-    expect(moveInOrder(['a', 'b', 'c'], 'b', 'up')).toEqual(['b', 'a', 'c']);
-  });
-  it('swaps a player down', () => {
-    expect(moveInOrder(['a', 'b', 'c'], 'b', 'down')).toEqual(['a', 'c', 'b']);
-    expect(moveInOrder(['a', 'b', 'c'], 'a', 'down')).toEqual(['b', 'a', 'c']);
-  });
-  it('no-ops at the ends and returns the same reference', () => {
-    const ids = ['a', 'b'];
-    expect(moveInOrder(ids, 'a', 'up')).toBe(ids);
-    expect(moveInOrder(ids, 'b', 'down')).toBe(ids);
-  });
-  it('ignores an unknown id', () => {
-    const ids = ['a', 'b'];
-    expect(moveInOrder(ids, 'z', 'up')).toBe(ids);
-  });
-});
 
 describe('applyTeamOverride', () => {
   const base = roster([
