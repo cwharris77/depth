@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 import type { ChangeEvent, ClipboardEvent, KeyboardEvent } from 'react';
 import { distributeOtpPaste, sanitizeOtpChar } from '@/lib/otp-input';
 import { colors } from './tokens';
+import { focusRing } from '@/lib/colors';
 
 type OtpInputProps = {
   length?: number;
@@ -94,7 +95,7 @@ export default function OtpInput({
             color: colors.textPrimary,
           }}
           onFocus={(e) => {
-            e.currentTarget.style.boxShadow = `0 0 0 3px ${colors.focusRing}`;
+            e.currentTarget.style.boxShadow = focusRing(colors.accent);
             e.currentTarget.style.borderColor = colors.accent;
           }}
           onBlur={(e) => {
