@@ -2,9 +2,11 @@ import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
 import { colors } from './tokens';
 import { withAlpha } from '@/lib/colors';
+import type { Intent } from './variants';
 
 type Status = 'starter' | 'backup' | 'rookie' | 'injured';
-type Kind = 'position' | 'status' | 'tag';
+// Badge's content-type subset of the shared vocabulary (variants.ts) — what the badge says.
+type Variant = Extract<Intent, 'position' | 'status' | 'tag'>;
 
 const STATUS_COLORS: Record<Status, string> = {
   starter: colors.accent,
@@ -20,7 +22,7 @@ const STATUS_LABELS: Record<Status, string> = {
 };
 
 type BadgeProps = {
-  kind?: Kind;
+  variant?: Variant;
   status?: Status;
   accent?: string;
   children?: ReactNode;
@@ -33,13 +35,13 @@ type BadgeProps = {
 //   For 'starter', pass the team's uiAccent as `accent` — status color falls back to it.
 // - 'tag': the small filled/outlined pill for meta flags like "CUSTOM" or a depth badge.
 export default function Badge({
-  kind = 'position',
+  variant = 'position',
   status,
   accent = colors.accent,
   children,
   className,
 }: BadgeProps) {
-  if (kind === 'status' && status) {
+  if (variant === 'status' && status) {
     return (
       <span
         className={cn('text-[13px] font-bold', className)}
@@ -48,7 +50,7 @@ export default function Badge({
       </span>
     );
   }
-  if (kind === 'tag') {
+  if (variant === 'tag') {
     return (
       <span
         className={cn('inline-block rounded-full px-1.5 py-0.5 text-[9px] font-bold', className)}

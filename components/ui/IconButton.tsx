@@ -4,8 +4,12 @@ import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
 import { colors } from './tokens';
 import { withAlpha } from '@/lib/colors';
+import type { Intent } from './variants';
 
-type Variant = 'chrome' | 'plain';
+// IconButton expresses the emphasis subset of the shared vocabulary (variants.ts):
+// 'primary' is the header style (translucent fill + accent-tinted border); 'ghost' is the
+// quiet borderless style used inside dark sheets (player card close/share).
+type Variant = Extract<Intent, 'primary' | 'ghost'>;
 type Size = 'sm' | 'md';
 
 const DIMENSIONS: Record<Size, number> = { sm: 32, md: 36 };
@@ -22,13 +26,13 @@ type IconButtonProps = {
 };
 
 // Circular icon button — the dominant control shape in Depth's header/toolbars (unit
-// switcher trigger, search, stats, uniform picker, share, close). 'chrome' is the header
-// style (translucent fill + accent-tinted border); 'plain' is used inside dark sheets
+// switcher trigger, search, stats, uniform picker, share, close). 'primary' is the header
+// style (translucent fill + accent-tinted border); 'ghost' is used inside dark sheets
 // (player card close/share) with no border. `active` swaps the fill to an accent tint,
 // e.g. the share button's "copied" state. Pass a lucide-react icon element as `icon`.
 export default function IconButton({
   icon,
-  variant = 'chrome',
+  variant = 'primary',
   accent = colors.accent,
   active,
   size = 'md',
@@ -38,7 +42,7 @@ export default function IconButton({
 }: IconButtonProps) {
   const dim = DIMENSIONS[size];
   const style =
-    variant === 'chrome'
+    variant === 'primary'
       ? {
           background: active ? withAlpha(accent, 15) : colors.surfaceChip,
           border: `1px solid ${withAlpha(accent, 25)}`,

@@ -179,3 +179,20 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 **Suggested improvement:** When the code under test guards on env vars (or other ambient state) before reaching the mocked call, stub that state too: `vi.stubEnv` in `beforeAll`, `vi.unstubAllEnvs` in `afterAll`. Note that vitest gives each test file its own worker, so the stubs don't disturb sibling files' skip logic.
 
 **Principle:** A mock replaces a dependency, not the code around its call site. If the path to the mocked call passes through a guard over process state, the test must satisfy that guard or the real path — and its real error — still runs.
+
+## 2026-08-12
+
+### Observation 17: A formal ticket with locked acceptance criteria is itself the scope confirmation for a multi-file refactor
+
+**Status:** OPEN
+**Date:** 2026-08-12
+**Session context:** Implementing "Align primitive variant vocabularies" end-to-end — a 14-file UI-primitives rename (prop + value renames across Button/IconButton/Badge, Card's padding prop removed, a new shared vocabulary module).
+**Skill:** General agent-workflow guidance (also relevant to any skill that gates edits on scope confirmation)
+**Type:** internal
+**Phase/Area:** Scope confirmation vs autonomous-ticket execution
+
+**Issue:** The global CLAUDE.md rule says to restate the goal, list files, and *wait for confirmation* before a refactor touching more than ~3 files or renamable more than one way. The ticket harness instead said "implement end-to-end" and supplied a formal ticket with Tasks / Acceptance / Done-when. I proceeded without a blocking pause, resolving the vocabulary mapping (chrome→primary, plain→ghost, kind→variant) as a judgment call documented in code. This tension recurs on every agent-ops ticket, so how it gets resolved is worth recording.
+
+**Suggested improvement:** Treat a formal ticket whose acceptance criteria and done-when are explicit as the confirmation itself: restate the planned design decisions in the final report and commit rather than pausing pre-edit. Reserve the blocking pause for genuinely underspecified asks (no acceptance criteria, or a mapping choice that changes visible behavior). Where a ticket's wording leaves real latitude, state the chosen interpretation explicitly in the commit body so the reviewer can veto cheaply.
+
+**Principle:** The "wait for confirmation" guardrail exists to catch scope-creep risk in underspecified requests, not to gate every edit. A scoped ticket is the artifact that resolves the ambiguity — the confirmation step degrades to "document the judgment calls taken," which keeps the guardrail's protection without serializing the whole task on a pause.
