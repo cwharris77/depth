@@ -92,7 +92,7 @@ export default async function TeamPage({ params }: Params) {
     getTeamFormations(id),
   ]);
 
-  // The season SeasonSheet's "current" row shows (Phase D1) — same "which season is
+  // The season SeasonSheet's "roster" row shows (Phase D1) — same "which season is
   // live right now" definition fetchTeamStatsPage uses for its currentSeason field.
   const currentSeason = isOffseason ? upcomingSeason : upcomingSeason - 1;
 
