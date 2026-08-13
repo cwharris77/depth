@@ -2,15 +2,12 @@
 // reach the browser bundle, so only import this from route handlers, not client components.
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
-import { requireEnv } from '@/lib/env';
+import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/env';
 
 export function getAdminClient() {
   return createClient<Database>(
-    requireEnv(
-      'SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL',
-      process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL
-    ),
-    requireEnv('SUPABASE_SECRET_KEY', process.env.SUPABASE_SECRET_KEY),
+    getSupabaseUrl(),
+    getSupabaseSecretKey(),
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
 }

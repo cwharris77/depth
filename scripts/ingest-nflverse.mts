@@ -29,6 +29,7 @@
 import dotenv from 'dotenv';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { getSupabaseUrl, getSupabaseSecretKey } from '../lib/env';
 
 dotenv.config({ path: '.env.local' });
 import { parseCsv, parseCsvStream } from '../lib/nflverse/csv';
@@ -78,12 +79,6 @@ const TEAM_STATS_PREFIX = 'stats_team_reg_';
 // SEED_OUT mode has no live `players` table to query -- it reads known player ids from
 // this already-committed file instead (see the header comment above).
 const ESPN_SEED_PATH = 'supabase/seed.sql';
-
-function requireEnv(name: string): string {
-  const v = process.env[name];
-  if (!v) throw new Error(`Missing required env var: ${name}`);
-  return v;
-}
 
 // nflverse's CSV assets are stable, but a GitHub release download can blip like any
 // other network call -- retry a few times with backoff rather than failing the whole
@@ -325,7 +320,7 @@ async function main() {
   const seedOut = process.env.SEED_OUT;
   const supabase: SupabaseClient<Database> | null = seedOut
     ? null
-    : createClient(requireEnv('SUPABASE_URL'), requireEnv('SUPABASE_SECRET_KEY'));
+    : createClient(getSupabaseUrl(), getSupabaseSecretKey());
 
   const startedAt = new Date().toISOString();
   const failures: { season: number | string; message: string }[] = [];

@@ -15,6 +15,7 @@
 import dotenv from 'dotenv';
 import { appendFileSync, writeFileSync } from 'node:fs';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { getSupabaseUrl, getSupabaseSecretKey } from '../lib/env';
 
 dotenv.config({ path: '.env.local' });
 import { toCoach, toDepthChartRows, toTeamRoster, type Coach } from '../lib/espn/transform';
@@ -63,12 +64,6 @@ async function espnTeamIndex(): Promise<Map<string, EspnTeamInfo>> {
   return map;
 }
 
-function requireEnv(name: string): string {
-  const v = process.env[name];
-  if (!v) throw new Error(`Missing required env var: ${name}`);
-  return v;
-}
-
 // ISO week number. The home-drift guard keys "distinct pull" on season+week, so a manual
 // re-run in the same week reuses the same runId and can't count as a second confirmation.
 function isoWeek(d: Date): number {
@@ -85,7 +80,7 @@ async function main() {
   const seedOut = process.env.SEED_OUT;
   const supabase: SupabaseClient<Database> | null = seedOut
     ? null
-    : createClient(requireEnv('SUPABASE_URL'), requireEnv('SUPABASE_SECRET_KEY'));
+    : createClient(getSupabaseUrl(), getSupabaseSecretKey());
 
   const startedAt = new Date().toISOString();
   const espnIndex = await espnTeamIndex();

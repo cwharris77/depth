@@ -4,15 +4,15 @@
 // Singleton — one client per tab keeps a single auth/session listener and cookie writer.
 import { createBrowserClient } from '@supabase/ssr';
 import type { Database } from '@/lib/database.types';
-import { requireEnv } from '@/lib/env';
+import { getSupabaseUrl, getSupabaseAnonKey } from '@/lib/env';
 
 let client: ReturnType<typeof createBrowserClient<Database>> | undefined;
 
 export function getBrowserClient() {
   if (!client) {
     client = createBrowserClient<Database>(
-      requireEnv('NEXT_PUBLIC_SUPABASE_URL', process.env.NEXT_PUBLIC_SUPABASE_URL),
-      requireEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY', process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
+      getSupabaseUrl(),
+      getSupabaseAnonKey()
     );
   }
   return client;
