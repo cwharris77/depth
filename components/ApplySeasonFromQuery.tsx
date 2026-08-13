@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 // A shared/bookmarked `/team/[id]?season=<year>` link opens the page already showing
 // that past season. Unlike ApplyKitFromQuery/useApplyQueryParam's one-shot params,
@@ -13,13 +13,17 @@ import { useSearchParams } from 'next/navigation';
 // Own Suspense boundary because useSearchParams requires one during static generation.
 function Inner({ onApply }: { onApply: (season: number | null) => void }) {
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const raw = searchParams.get('season');
   useEffect(() => {
     const season = raw ? Number(raw) : null;
     onApply(Number.isInteger(season) ? season : null);
     // `onApply` is expected to be stable for the page's lifetime, same assumption
-    // useApplyQueryParam makes.
-  }, [raw]);
+    // useApplyQueryParam makes. `pathname` is in the dependency array (not just `raw`)
+    // so navigating to a different team whose URL happens to carry the same `season`
+    // value still re-applies it -- the team switch's own render-time reset otherwise
+    // leaves `viewedSeason` at the default with nothing to pull it back in sync.
+  }, [raw, pathname]);
   return null;
 }
 

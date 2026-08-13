@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { nextGame, postseasonRoundLabel, resolvePostseason, resolveSchedule } from '../schedule';
+import {
+  nextGame,
+  normalizeViewedSeason,
+  postseasonRoundLabel,
+  resolvePostseason,
+  resolveSchedule,
+} from '../schedule';
 import type { Game } from '../types';
 
 // Minimal Game fixture; only the fields a case exercises need to be set.
@@ -178,5 +184,35 @@ describe('postseasonRoundLabel', () => {
 
   it('degrades to the raw code for an unrecognized value', () => {
     expect(postseasonRoundLabel('XYZ')).toBe('XYZ');
+  });
+});
+
+describe('normalizeViewedSeason', () => {
+  // 2026 as current, 1999 as the coverage floor — the schedule page's real bounds.
+  const CURRENT = 2026;
+  const MIN = 1999;
+
+  it('null means the default view', () => {
+    expect(normalizeViewedSeason(null, CURRENT, MIN)).toBeNull();
+  });
+
+  it('keeps a season within the covered range below current', () => {
+    expect(normalizeViewedSeason(2010, CURRENT, MIN)).toBe(2010);
+  });
+
+  it('keeps the floor season', () => {
+    expect(normalizeViewedSeason(1999, CURRENT, MIN)).toBe(1999);
+  });
+
+  it('normalizes the current season to the default view (no double fetch)', () => {
+    expect(normalizeViewedSeason(2026, CURRENT, MIN)).toBeNull();
+  });
+
+  it('clamps a season below coverage to the default view', () => {
+    expect(normalizeViewedSeason(1998, CURRENT, MIN)).toBeNull();
+  });
+
+  it('clamps a future season to the default view', () => {
+    expect(normalizeViewedSeason(2027, CURRENT, MIN)).toBeNull();
   });
 });
