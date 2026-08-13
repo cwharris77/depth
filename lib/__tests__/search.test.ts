@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { positionGroupPositions, rankByNameMatch, searchPlayers, unitForPosition } from '../search';
+import {
+  escapeLike,
+  MAX_PLAYER_SEARCH_QUERY_LENGTH,
+  normalizePlayerSearchQuery,
+  positionGroupPositions,
+  rankByNameMatch,
+  searchPlayers,
+  unitForPosition,
+} from '../search';
 import { TEAMS, DEFAULT_TEAM_ID } from '../teams';
 import type { Player, Position, TeamRosterSeed } from '../types';
 
@@ -165,6 +173,40 @@ describe('searchPlayers', () => {
   it('finds a real Seahawks player by name', () => {
     const hits = searchPlayers(roster, 'geno');
     expect(hits.some((x) => x.name.includes('Geno'))).toBe(true);
+  });
+});
+
+describe('normalizePlayerSearchQuery', () => {
+  it('trims surrounding whitespace and collapses internal runs', () => {
+    expect(normalizePlayerSearchQuery('  geno  smith  ')).toBe('geno smith');
+    expect(normalizePlayerSearchQuery('geno\t smith')).toBe('geno smith');
+  });
+
+  it('returns null for empty or whitespace-only input', () => {
+    expect(normalizePlayerSearchQuery('')).toBeNull();
+    expect(normalizePlayerSearchQuery('   ')).toBeNull();
+    expect(normalizePlayerSearchQuery('\t\n ')).toBeNull();
+  });
+
+  it('rejects input past the length cap, measured after normalization', () => {
+    expect(normalizePlayerSearchQuery('x'.repeat(MAX_PLAYER_SEARCH_QUERY_LENGTH + 1))).toBeNull();
+    expect(normalizePlayerSearchQuery('x'.repeat(MAX_PLAYER_SEARCH_QUERY_LENGTH))).toBe(
+      'x'.repeat(MAX_PLAYER_SEARCH_QUERY_LENGTH)
+    );
+  });
+});
+
+describe('escapeLike', () => {
+  it('escapes % _ and backslash so input matches literally', () => {
+    expect(escapeLike('100%')).toBe('100\\%');
+    expect(escapeLike('a_b')).toBe('a\\_b');
+    expect(escapeLike('a\\b')).toBe('a\\\\b');
+    expect(escapeLike('100%_a\\b')).toBe('100\\%\\_a\\\\b');
+  });
+
+  it('leaves ordinary queries untouched', () => {
+    expect(escapeLike('geno smith')).toBe('geno smith');
+    expect(escapeLike('QB')).toBe('QB');
   });
 });
 
