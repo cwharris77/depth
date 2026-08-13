@@ -205,9 +205,7 @@ export default function TeamRail({
       {/* scrollbar-width: none — the rail is a nav surface, not a document; a visible
           scrollbar beside the field reads as noise (same suppression as TeamStatsView's
           season strip). */}
-      <div
-        className="flex min-h-0 flex-1 flex-col overflow-y-auto"
-        style={{ scrollbarWidth: 'none' }}>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto hide-scrollbar">
         {!searching ? (
           groupTeams(teams).map((group) => (
             <div key={group.label} className="flex flex-col gap-0.5 pb-2">

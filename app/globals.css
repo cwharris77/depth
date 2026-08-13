@@ -25,3 +25,11 @@ body {
 body.card-open {
   overflow: hidden;
 }
+
+@utility hide-scrollbar {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
