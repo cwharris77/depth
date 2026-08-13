@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import type { MouseEvent } from 'react';
 import { colors } from './tokens';
 
@@ -23,7 +24,7 @@ export default function TabBar({
   className?: string;
 }) {
   return (
-    <div className={className}>
+    <div className={cn('flex gap-4', className)}>
       {options.map((opt) => {
         const active = opt.value === value;
         return (

@@ -1,17 +1,19 @@
+import { cn } from '@/lib/utils';
 import { colors } from './tokens';
 
 type Stat = { label: string; value: string | number };
 
 type StatGridProps = {
   stats: Stat[];
+  className?: string;
 };
 
 // 4-column stat readout (player card: AGE / EXP / HT / WT). Equal columns, thin
 // dividers, label above value.
-export default function StatGrid({ stats }: StatGridProps) {
+export default function StatGrid({ stats, className }: StatGridProps) {
   return (
     <div
-      className="grid rounded-3xl"
+      className={cn('grid rounded-3xl', className)}
       style={{
         gridTemplateColumns: `repeat(${stats.length}, 1fr)`,
         background: colors.surfaceCard2,

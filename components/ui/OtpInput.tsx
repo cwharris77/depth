@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import { useRef, useState } from 'react';
 import type { ChangeEvent, ClipboardEvent, KeyboardEvent } from 'react';
 import { distributeOtpPaste, sanitizeOtpChar } from '@/lib/otp-input';
@@ -10,6 +11,7 @@ type OtpInputProps = {
   onChange: (code: string) => void;
   onEnter?: () => void;
   disabled?: boolean;
+  className?: string;
 };
 
 // Boxed one-time-code input — the design system's first primitive (components/ui/). One box per
@@ -21,7 +23,13 @@ type OtpInputProps = {
 // and its existing disabled/error handling unchanged. Resets naturally when unmounted (the
 // parent only renders this while sendState === 'sent', so "Use a different email" clears it by
 // unmounting rather than needing an explicit reset prop).
-export default function OtpInput({ length = 6, onChange, onEnter, disabled }: OtpInputProps) {
+export default function OtpInput({
+  length = 6,
+  onChange,
+  onEnter,
+  disabled,
+  className,
+}: OtpInputProps) {
   const [boxes, setBoxes] = useState<string[]>(() => Array(length).fill(''));
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
@@ -59,7 +67,10 @@ export default function OtpInput({ length = 6, onChange, onEnter, disabled }: Ot
   };
 
   return (
-    <div className="flex gap-2.5" role="group" aria-label={`${length}-digit sign-in code`}>
+    <div
+      className={cn('flex gap-2.5', className)}
+      role="group"
+      aria-label={`${length}-digit sign-in code`}>
       {boxes.map((char, i) => (
         <input
           key={i}

@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import type { CSSProperties, MouseEvent } from 'react';
 import { colors } from './tokens';
@@ -61,11 +62,11 @@ export default function SegmentedControl({
   const sz = SIZES[size];
   return (
     <div
-      className={`flex ${sz.track} ${fullWidth ? 'w-full' : 'w-fit'} ${className}`}
+      className={cn('flex', sz.track, fullWidth ? 'w-full' : 'w-fit', className)}
       style={{ background: colors.surfaceChip, ...style }}>
       {options.map((opt) => {
         const active = opt.value === value;
-        const itemClass = `${sz.item} font-bold ${fullWidth ? 'flex-1 text-center' : ''}`;
+        const itemClass = cn(sz.item, 'font-bold', fullWidth && 'flex-1 text-center');
         const itemStyle = {
           background: active ? (flat ? colors.surfaceChipHover : activeColor) : 'transparent',
           color: active ? (flat ? colors.textPrimary : activeTextColor) : colors.textMuted,

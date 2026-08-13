@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import Image from 'next/image';
 import { colors } from './tokens';
@@ -22,6 +23,7 @@ type AvatarProps = {
   ringColor?: string;
   fillColor?: string;
   iconColor?: string;
+  className?: string;
 };
 
 // Circular player photo with a silhouette fallback (used when photoUrl is missing or
@@ -35,12 +37,16 @@ export default function Avatar({
   ringColor,
   fillColor = colors.surfaceInput,
   iconColor = colors.textMuted,
+  className,
 }: AvatarProps) {
   const [errored, setErrored] = useState(false);
   const showPhoto = Boolean(photoUrl) && !errored;
   return (
     <div
-      className="flex shrink-0 items-center justify-center overflow-hidden rounded-full"
+      className={cn(
+        'flex shrink-0 items-center justify-center overflow-hidden rounded-full',
+        className
+      )}
       style={{
         width: size,
         height: size,

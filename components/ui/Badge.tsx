@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
 import { colors } from './tokens';
 
@@ -22,6 +23,7 @@ type BadgeProps = {
   status?: Status;
   accent?: string;
   children?: ReactNode;
+  className?: string;
 };
 
 // Three small label styles used across player/roster surfaces:
@@ -34,11 +36,12 @@ export default function Badge({
   status,
   accent = colors.accent,
   children,
+  className,
 }: BadgeProps) {
   if (kind === 'status' && status) {
     return (
       <span
-        className="text-[13px] font-bold"
+        className={cn('text-[13px] font-bold', className)}
         style={{ color: status === 'starter' ? accent : STATUS_COLORS[status] }}>
         {STATUS_LABELS[status]}
       </span>
@@ -47,7 +50,7 @@ export default function Badge({
   if (kind === 'tag') {
     return (
       <span
-        className="inline-block rounded-full px-1.5 py-0.5 text-[9px] font-bold"
+        className={cn('inline-block rounded-full px-1.5 py-0.5 text-[9px] font-bold', className)}
         style={{ color: accent, background: `${accent}1a`, border: `1px solid ${accent}55` }}>
         {children}
       </span>
@@ -55,7 +58,7 @@ export default function Badge({
   }
   return (
     <span
-      className="rounded-full px-2 py-0.5 text-xs font-bold"
+      className={cn('rounded-full px-2 py-0.5 text-xs font-bold', className)}
       style={{ color: accent, background: 'rgba(0,34,68,0.8)', border: `1px solid ${accent}66` }}>
       {children}
     </span>

@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { colors, zIndex } from './tokens';
 
@@ -8,11 +9,14 @@ import { colors, zIndex } from './tokens';
 // (see components/DepthMark's nav-drawer coachmark, lib/nav-drawer-coachmark.ts for the
 // dismiss-gate pattern it follows). Positioned by the caller via a `relative` ancestor; this
 // renders `absolute` beneath that anchor, left-aligned so the arrow sits under the trigger.
-export default function Coachmark({ message }: { message: string }) {
+export default function Coachmark({ message, className }: { message: string; className?: string }) {
   return (
     <motion.div
       role="tooltip"
-      className="absolute left-0 top-full mt-2 w-56 rounded-xl px-3 py-2.5 text-[12px] font-medium leading-snug"
+      className={cn(
+        'absolute left-0 top-full mt-2 w-56 rounded-xl px-3 py-2.5 text-[12px] font-medium leading-snug',
+        className
+      )}
       style={{
         color: colors.textPrimary,
         background: colors.surfaceMenu,
