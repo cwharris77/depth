@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Tooltip from './Tooltip';
-import { colors, zIndex } from './tokens';
+import { colors, typeScale, zIndex } from './tokens';
 
 type MenuItem = {
   label: ReactNode;
@@ -84,16 +84,19 @@ export default function Menu({
                   setOpen(false);
                   item.onClick();
                 }}
-                className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-[12px] font-semibold whitespace-nowrap"
+                className="flex items-center gap-2 w-full px-3 py-2.5 text-left font-semibold whitespace-nowrap"
                 style={{
                   color: item.disabled ? colors.textFaint : colors.textPrimary,
                   borderTop: i > 0 ? `1px solid ${colors.borderDefault}` : undefined,
+                  fontSize: typeScale.body,
                   touchAction: 'manipulation',
                 }}>
                 {item.icon}
                 <span className="flex-1">{item.label}</span>
                 {item.meta && (
-                  <span className="text-[10px] font-semibold" style={{ color: colors.textFaint }}>
+                  <span
+                    className="font-semibold"
+                    style={{ color: colors.textFaint, fontSize: typeScale.caption }}>
                     {item.meta}
                   </span>
                 )}

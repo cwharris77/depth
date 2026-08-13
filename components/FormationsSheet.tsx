@@ -3,7 +3,7 @@
 import { Check } from 'lucide-react';
 import FTNAttribution from './FTNAttribution';
 import SheetHeader from './ui/SheetHeader';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import { alignmentLabel } from '@/lib/formations';
 import type { TeamFormation, Unit } from '@/lib/types';
 
@@ -88,8 +88,8 @@ export default function FormationsSheet({
               row.kind === 'header' ? (
                 <div
                   key={`h-${row.label}-${i}`}
-                  className="px-1 pt-2 pb-0.5 text-[10px] font-extrabold uppercase tracking-wide"
-                  style={{ color: uiTokens.textFaintest }}>
+                  className="px-1 pt-2 pb-0.5 font-extrabold uppercase tracking-wide"
+                  style={{ color: uiTokens.textFaintest, fontSize: typeScale.caption }}>
                   {row.label}
                 </div>
               ) : (
@@ -158,7 +158,9 @@ function FormationRow({
           <div className="text-sm font-black" style={{ color: uiTokens.textPrimary }}>
             {pctLabel(pct)}
           </div>
-          <div className="text-[9px] font-semibold" style={{ color: uiTokens.textFaint }}>
+          <div
+            className="font-semibold"
+            style={{ color: uiTokens.textFaint, fontSize: typeScale.micro }}>
             of plays
           </div>
         </div>

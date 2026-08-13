@@ -1,6 +1,6 @@
 'use client';
 
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 
 // FTN charting (the nflverse pbp_participation dataset) is CC-BY-SA 4.0 — this
 // one-line footer is the license-mandated attribution, the condition of surfacing
@@ -13,8 +13,8 @@ import { colors as uiTokens } from '@/components/ui/tokens';
 export default function FTNAttribution({ className = '' }: { className?: string }) {
   return (
     <div
-      className={`shrink-0 text-center text-[10px] ${className}`}
-      style={{ color: uiTokens.textFaint }}>
+      className={`shrink-0 text-center ${className}`}
+      style={{ color: uiTokens.textFaint, fontSize: typeScale.caption }}>
       Formation data © FTN Data (CC-BY-SA 4.0)
     </div>
   );

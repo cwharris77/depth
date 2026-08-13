@@ -1,5 +1,5 @@
 import DepthMark from '@/components/DepthMark';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 
 // Route-level fallback for /compare (loading.md): Next.js prefetches and shows this
 // immediately on navigation, wrapping page.tsx in a Suspense boundary. /team/[id] already
@@ -47,8 +47,12 @@ export default function Loading() {
             style={{ height: 68, border: `1px dashed ${uiTokens.borderInput}` }}
           />
           <span
-            className="shrink-0 rounded-full px-2 py-1 text-[10px] font-black"
-            style={{ background: uiTokens.surfaceChip, color: uiTokens.textFaint }}
+            className="shrink-0 rounded-full px-2 py-1 font-black"
+            style={{
+              background: uiTokens.surfaceChip,
+              color: uiTokens.textFaint,
+              fontSize: typeScale.caption,
+            }}
             aria-hidden="true">
             VS
           </span>

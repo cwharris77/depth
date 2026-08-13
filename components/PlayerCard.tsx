@@ -23,7 +23,7 @@ import Avatar from '@/components/ui/Avatar';
 import Badge from '@/components/ui/Badge';
 import StatGrid from '@/components/ui/StatGrid';
 import IconButton from '@/components/ui/IconButton';
-import { colors as uiTokens, springSheet, zIndex } from '@/components/ui/tokens';
+import { colors as uiTokens, springSheet, typeScale, zIndex } from '@/components/ui/tokens';
 
 interface PlayerCardProps {
   player: Player | null;
@@ -354,8 +354,12 @@ export default function PlayerCard({
       {player.stats && Object.keys(player.stats).length > 0 && (
         <div className="px-6 mb-6">
           <div
-            className="text-[10px] font-semibold mb-3"
-            style={{ color: uiTokens.textMuted, letterSpacing: '0.1em' }}>
+            className="font-semibold mb-3"
+            style={{
+              color: uiTokens.textMuted,
+              letterSpacing: '0.1em',
+              fontSize: typeScale.caption,
+            }}>
             2024 SEASON
           </div>
           <div className="flex flex-wrap gap-3">
@@ -372,8 +376,12 @@ export default function PlayerCard({
                   {val}
                 </div>
                 <div
-                  className="text-[9px] font-semibold mt-0.5"
-                  style={{ color: uiTokens.textMuted, letterSpacing: '0.06em' }}>
+                  className="font-semibold mt-0.5"
+                  style={{
+                    color: uiTokens.textMuted,
+                    letterSpacing: '0.06em',
+                    fontSize: typeScale.micro,
+                  }}>
                   {key.toUpperCase()}
                 </div>
               </div>
@@ -403,8 +411,12 @@ export default function PlayerCard({
                 <button
                   type="button"
                   onClick={() => onResetPosition(player.position)}
-                  className="flex items-center gap-1 text-[10px] font-bold"
-                  style={{ color: uiTokens.textMuted, touchAction: 'manipulation' }}>
+                  className="flex items-center gap-1 font-bold"
+                  style={{
+                    color: uiTokens.textMuted,
+                    touchAction: 'manipulation',
+                    fontSize: typeScale.caption,
+                  }}>
                   <RotateCcw size={12} /> Reset
                 </button>
               )}
@@ -416,11 +428,12 @@ export default function PlayerCard({
                 <button
                   type="button"
                   onClick={toggleEditing}
-                  className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full"
+                  className="flex items-center gap-1 font-bold px-2 py-1 rounded-full"
                   style={{
                     color: editing ? colors.onAccent : accent,
                     background: editing ? accent : `${accent}1a`,
                     border: `1px solid ${accent}55`,
+                    fontSize: typeScale.caption,
                     touchAction: 'manipulation',
                   }}>
                   {editing ? (
@@ -436,7 +449,7 @@ export default function PlayerCard({
           </div>
 
           {showHint && !effectiveEditing && onReorder && (
-            <div className="mb-2 text-[11px]" style={{ color: accent }}>
+            <div className="mb-2" style={{ color: accent, fontSize: typeScale.label }}>
               Tip: tap Reorder to build your own depth chart — your order is saved on this device.
             </div>
           )}
@@ -466,11 +479,12 @@ export default function PlayerCard({
                     }}>
                     <GripVertical size={16} color={uiTokens.textMuted} style={{ flexShrink: 0 }} />
                     <div
-                      className="text-[10px] font-bold"
+                      className="font-bold"
                       style={{
                         color: statusColor(p.status, colors),
                         letterSpacing: '0.08em',
                         minWidth: 64,
+                        fontSize: typeScale.caption,
                       }}>
                       {depthRankLabel(p.depthRank)}
                     </div>
@@ -503,11 +517,12 @@ export default function PlayerCard({
                       cursor: isCurrent ? 'default' : 'pointer',
                     }}>
                     <div
-                      className="text-[10px] font-bold"
+                      className="font-bold"
                       style={{
                         color: statusColor(p.status, colors),
                         letterSpacing: '0.08em',
                         minWidth: 64,
+                        fontSize: typeScale.caption,
                       }}>
                       {depthRankLabel(p.depthRank)}
                     </div>
@@ -531,8 +546,12 @@ export default function PlayerCard({
       ) : (
         <div className="px-6 mb-6">
           <div
-            className="text-[10px] font-semibold mb-3"
-            style={{ color: uiTokens.textMuted, letterSpacing: '0.1em' }}>
+            className="font-semibold mb-3"
+            style={{
+              color: uiTokens.textMuted,
+              letterSpacing: '0.1em',
+              fontSize: typeScale.caption,
+            }}>
             POSITION DEPTH · {player.position}
           </div>
           <div
@@ -551,8 +570,12 @@ export default function PlayerCard({
       {statSeasons.length > 0 || showStatsSkeleton ? (
         <div className="px-6 pb-8">
           <div
-            className="text-[10px] font-semibold mb-3"
-            style={{ color: uiTokens.textMuted, letterSpacing: '0.1em' }}>
+            className="font-semibold mb-3"
+            style={{
+              color: uiTokens.textMuted,
+              letterSpacing: '0.1em',
+              fontSize: typeScale.caption,
+            }}>
             SEASON STATS
           </div>
           {/* A columnar table (SZN + the position's stat columns), not one inline
@@ -616,11 +639,12 @@ export default function PlayerCard({
               statSeasons.map((s, i) => (
                 <div
                   key={s.season}
-                  className="grid gap-x-2 px-2.5 py-[9px] text-[11px] font-bold"
+                  className="grid gap-x-2 px-2.5 py-[9px] font-bold"
                   style={{
                     gridTemplateColumns: `minmax(40px, 0.7fr) repeat(${statColumns.length}, 1fr)`,
                     borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}`,
                     background: i === 0 ? `${accent}0d` : 'transparent',
+                    fontSize: typeScale.label,
                   }}>
                   <div style={{ color: i === 0 ? accent : uiTokens.textPrimary }}>{s.season}</div>
                   {statColumns.map((col) => (
@@ -640,8 +664,12 @@ export default function PlayerCard({
       ) : (
         <div className="px-6 pb-8">
           <div
-            className="text-[10px] font-semibold mb-3"
-            style={{ color: uiTokens.textMuted, letterSpacing: '0.1em' }}>
+            className="font-semibold mb-3"
+            style={{
+              color: uiTokens.textMuted,
+              letterSpacing: '0.1em',
+              fontSize: typeScale.caption,
+            }}>
             SEASON STATS
           </div>
           <div

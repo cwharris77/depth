@@ -28,7 +28,7 @@ import PlayerDot from './PlayerDot';
 import TeamPageShell from './TeamPageShell';
 import UniformSheet from './UniformSheet';
 import { DESKTOP_MEDIA_QUERY, useMediaQuery } from '@/lib/use-media-query';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import { applyTeamOverride } from '@/lib/depth-overrides';
 import { useKit } from '@/lib/use-kit';
 import { useTeamOverride } from '@/lib/use-team-override';
@@ -366,11 +366,17 @@ export default function DepthChartField({
           // docks here rather than covering the chart.
           <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center">
             <div
-              className="flex h-11 w-11 items-center justify-center rounded-full text-[13px] font-bold"
-              style={{ border: `2px dashed ${uiTokens.borderInput}`, color: uiTokens.textFaint }}>
+              className="flex h-11 w-11 items-center justify-center rounded-full font-bold"
+              style={{
+                border: `2px dashed ${uiTokens.borderInput}`,
+                color: uiTokens.textFaint,
+                fontSize: typeScale.title,
+              }}>
               #
             </div>
-            <div className="text-[13px] font-bold" style={{ color: uiTokens.textSecondary }}>
+            <div
+              className="font-bold"
+              style={{ color: uiTokens.textSecondary, fontSize: typeScale.title }}>
               No player selected
             </div>
             <div className="text-xs leading-relaxed" style={{ color: uiTokens.textFaint }}>

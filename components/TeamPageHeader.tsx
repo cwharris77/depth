@@ -8,7 +8,7 @@
 // state so callers don't have to wire it up per page. All three tabs are live routes:
 // ROSTER (/team/[id]), SCHEDULE (/team/[id]/schedule), STATS (/team/[id]/stats).
 import SegmentedControl from '@/components/ui/SegmentedControl';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { Player, TeamColors } from '@/lib/types';
 import { ChevronDown } from 'lucide-react';
@@ -79,7 +79,7 @@ export default function TeamPageHeader({
             style={{ color: uiTokens.textPrimary }}>
             {team.city} {team.name}
           </span>
-          <span className="text-[11px]" style={{ color: uiTokens.textFaint }}>
+          <span style={{ color: uiTokens.textFaint, fontSize: typeScale.label }}>
             {team.conference} {team.division}
           </span>
         </div>
@@ -100,8 +100,8 @@ export default function TeamPageHeader({
               border: `1px solid ${colors.uiAccent}40`,
             }}>
             <h1
-              className="text-[10px] font-semibold tracking-widest truncate"
-              style={{ color: colors.uiAccent }}>
+              className="font-semibold tracking-widest truncate"
+              style={{ color: colors.uiAccent, fontSize: typeScale.caption }}>
               {team.abbrev.toUpperCase()}
             </h1>
             <ChevronDown size={14} color={uiTokens.textMuted} className="shrink-0" />

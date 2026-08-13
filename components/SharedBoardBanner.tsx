@@ -6,7 +6,7 @@ import Link from 'next/link';
 import type { TeamDepthOverride } from '@/lib/depth-overrides';
 import type { TeamMeta } from '@/lib/roster-source';
 import { resolveBoard, type BoardResolution, type SharedBoard } from '@/lib/shared-board';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 
 // The shared-board preview banner (Phase C, share pass). Reads /team/[id]?board=<slug>,
 // resolves it via /api/shares/[slug], and — unlike the old ?order= links, which silently
@@ -81,8 +81,8 @@ function Inner({ currentTeam, teams, accent, onPreview, onApply }: Props) {
               onPreview(null);
               strip();
             }}
-            className="rounded-full px-3 py-1 text-[11px] font-bold"
-            style={{ background: accent, color: uiTokens.onAccent }}>
+            className="rounded-full px-3 py-1 font-bold"
+            style={{ background: accent, color: uiTokens.onAccent, fontSize: typeScale.label }}>
             Apply to my chart
           </button>
           <button
@@ -91,8 +91,12 @@ function Inner({ currentTeam, teams, accent, onPreview, onApply }: Props) {
               onPreview(null);
               strip();
             }}
-            className="rounded-full px-3 py-1 text-[11px] font-bold"
-            style={{ background: uiTokens.surfaceChipHover, color: uiTokens.textSecondary }}>
+            className="rounded-full px-3 py-1 font-bold"
+            style={{
+              background: uiTokens.surfaceChipHover,
+              color: uiTokens.textSecondary,
+              fontSize: typeScale.label,
+            }}>
             Dismiss
           </button>
         </div>
@@ -110,8 +114,8 @@ function Inner({ currentTeam, teams, accent, onPreview, onApply }: Props) {
         </span>
         <Link
           href={`/team/${encodeURIComponent(board.teamId)}?board=${encodeURIComponent(slug ?? '')}`}
-          className="shrink-0 rounded-full px-3 py-1 text-[11px] font-bold"
-          style={{ background: accent, color: uiTokens.onAccent }}>
+          className="shrink-0 rounded-full px-3 py-1 font-bold"
+          style={{ background: accent, color: uiTokens.onAccent, fontSize: typeScale.label }}>
           View it
         </Link>
       </Banner>
@@ -124,11 +128,12 @@ function Inner({ currentTeam, teams, accent, onPreview, onApply }: Props) {
 function Banner({ accent, children }: { accent: string; children: ReactNode }) {
   return (
     <div
-      className="mt-3 flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-[12px]"
+      className="mt-3 flex items-center justify-between gap-3 rounded-xl px-3 py-2"
       style={{
         color: uiTokens.textSecondary,
         background: `${accent}1a`,
         border: `1px solid ${accent}55`,
+        fontSize: typeScale.body,
       }}>
       {children}
     </div>

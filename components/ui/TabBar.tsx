@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import type { MouseEvent } from 'react';
-import { colors } from './tokens';
+import { colors, typeScale } from './tokens';
 
 type Option = { value: string; label: string };
 
@@ -32,10 +32,11 @@ export default function TabBar({
             key={opt.value}
             type="button"
             onClick={(e) => onChange(opt.value, e)}
-            className="pb-2.5 text-[11px] font-bold"
+            className="pb-2.5 font-bold"
             style={{
               borderBottom: `2px solid ${active ? activeColor : 'transparent'}`,
               color: active ? colors.textPrimary : colors.textFaint,
+              fontSize: typeScale.label,
               touchAction: 'manipulation',
             }}>
             {opt.label}

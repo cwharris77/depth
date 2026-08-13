@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
-import { colors } from './tokens';
+import { colors, typeScale } from './tokens';
 
 // Caps micro-header that labels a section/group (e.g. "NFC EAST", "SETTINGS"). Muted,
 // letter-spaced, uppercase-by-content. Repeated verbatim across nav/account/field/static
@@ -15,8 +15,8 @@ export default function SectionLabel({
 }) {
   return (
     <div
-      className={cn('text-[10px] font-semibold tracking-widest px-5 py-2', className)}
-      style={{ color: colors.textMuted }}>
+      className={cn('font-semibold tracking-widest px-5 py-2', className)}
+      style={{ color: colors.textMuted, fontSize: typeScale.caption }}>
       {children}
     </div>
   );

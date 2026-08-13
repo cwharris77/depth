@@ -5,7 +5,7 @@
 // form. Everything is derived client-side from the schedule prop the page already ships
 // (lib/schedule-summary.ts) — no second data fetch (AGENTS.md invariant 5). Renders
 // nothing when there's no schedule; the main column already shows the empty state.
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import SectionLabel from '@/components/ui/SectionLabel';
 import { gameResultColor, readableTextOn } from '@/lib/colors';
 import { formatGameDate } from '@/lib/format';
@@ -17,7 +17,9 @@ function SplitCard({ label, value }: { label: string; value: string }) {
     <div
       className="flex-1 rounded-xl px-3 py-3 text-center"
       style={{ background: uiTokens.surfaceCard2, border: `1px solid ${uiTokens.borderDefault}` }}>
-      <div className="text-[9px] font-bold tracking-[0.08em]" style={{ color: uiTokens.textFaint }}>
+      <div
+        className="font-bold tracking-[0.08em]"
+        style={{ color: uiTokens.textFaint, fontSize: typeScale.micro }}>
         {label}
       </div>
       <div className="mt-1 text-lg font-black" style={{ color: uiTokens.textPrimary }}>
@@ -66,19 +68,22 @@ export default function SchedulePanel({
               border: `1px solid ${uiTokens.borderDefault}`,
             }}>
             <span
-              className="flex h-9 w-9 items-center justify-center rounded-[9px] text-[11px] font-black"
+              className="flex h-9 w-9 items-center justify-center rounded-[9px] font-black"
               style={{
                 background: next.opponent.colors.primary,
                 border: `1px solid ${next.opponent.colors.secondary}`,
                 color: readableTextOn(next.opponent.colors.primary),
+                fontSize: typeScale.label,
               }}>
               {next.opponent.abbrev}
             </span>
             <div className="flex-1">
-              <div className="text-[13px] font-extrabold" style={{ color: uiTokens.textPrimary }}>
+              <div
+                className="font-extrabold"
+                style={{ color: uiTokens.textPrimary, fontSize: typeScale.title }}>
                 {next.isHome ? 'vs' : '@'} {next.opponent.abbrev}
               </div>
-              <div className="text-[11px]" style={{ color: uiTokens.textMuted }}>
+              <div style={{ color: uiTokens.textMuted, fontSize: typeScale.label }}>
                 Week {next.week}
                 {next.date ? ` · ${formatGameDate(next.date)}` : ''}
               </div>

@@ -15,7 +15,7 @@
 // arrays plus a small `teaser` preview object — never a whole roster.
 import FilterPill from '@/components/ui/FilterPill';
 import SegmentedControl from '@/components/ui/SegmentedControl';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import { buildComparePath, COMPARE_POSITIONS, type CompareTeaser } from '@/lib/compare';
 import { formatLastName } from '@/lib/format';
 import type { TeamMeta } from '@/lib/roster-source';
@@ -117,8 +117,12 @@ export default function CompareView({
           <div className="mt-5 flex items-center gap-2.5">
             <TeamSlotButton team={teamA} onClick={() => setPickingSlot('a')} />
             <span
-              className="shrink-0 rounded-full px-2 py-1 text-[10px] font-black"
-              style={{ background: uiTokens.surfaceChip, color: uiTokens.textFaint }}
+              className="shrink-0 rounded-full px-2 py-1 font-black"
+              style={{
+                background: uiTokens.surfaceChip,
+                color: uiTokens.textFaint,
+                fontSize: typeScale.caption,
+              }}
               aria-hidden="true">
               VS
             </span>
@@ -224,8 +228,8 @@ function TeamSlotButton({ team, onClick }: { team?: TeamMeta; onClick: () => voi
         touchAction: 'manipulation',
       }}>
       <div
-        className="text-[11px] font-bold tracking-widest"
-        style={{ color: team.colors.uiAccent }}>
+        className="font-bold tracking-widest"
+        style={{ color: team.colors.uiAccent, fontSize: typeScale.label }}>
         {team.abbrev}
       </div>
       <div className="truncate text-sm font-bold" style={{ color: uiTokens.textPrimary }}>
@@ -235,8 +239,8 @@ function TeamSlotButton({ team, onClick }: { team?: TeamMeta; onClick: () => voi
         <span className="inline min-[480px]:hidden">{team.name}</span>
       </div>
       <div
-        className="mt-0.5 text-[10px] font-semibold opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-        style={{ color: uiTokens.textFaint }}>
+        className="mt-0.5 font-semibold opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+        style={{ color: uiTokens.textFaint, fontSize: typeScale.caption }}>
         Tap to change
       </div>
     </button>
@@ -296,7 +300,9 @@ function StatLine({ label, a, b }: { label: string; a: string; b: string }) {
       <div className="truncate text-right font-bold" style={{ color: uiTokens.textPrimary }}>
         {a}
       </div>
-      <div className="text-center text-[10px] font-bold" style={{ color: uiTokens.textFaint }}>
+      <div
+        className="text-center font-bold"
+        style={{ color: uiTokens.textFaint, fontSize: typeScale.caption }}>
         {label}
       </div>
       <div className="truncate font-bold" style={{ color: uiTokens.textPrimary }}>
@@ -310,15 +316,17 @@ function MatchupTeamHeader({ team, stats }: { team: TeamMeta; stats?: TeamStats 
   return (
     <div className="min-w-0 text-center">
       <div
-        className="text-[11px] font-black tracking-widest"
-        style={{ color: team.colors.uiAccent }}>
+        className="font-black tracking-widest"
+        style={{ color: team.colors.uiAccent, fontSize: typeScale.label }}>
         {team.abbrev}
       </div>
       <div className="truncate text-xs font-bold" style={{ color: uiTokens.textPrimary }}>
         {team.city}
       </div>
       {stats && (
-        <div className="mt-1 text-[10px] font-bold" style={{ color: uiTokens.textFaint }}>
+        <div
+          className="mt-1 font-bold"
+          style={{ color: uiTokens.textFaint, fontSize: typeScale.caption }}>
           {stats.season}
         </div>
       )}
@@ -359,8 +367,8 @@ function DeepestRoomTeaser({
       </span>
       <span className="min-w-0 flex-1">
         <span
-          className="block text-[9px] font-bold uppercase tracking-wide"
-          style={{ color: uiTokens.textFaintest }}>
+          className="block font-bold uppercase tracking-wide"
+          style={{ color: uiTokens.textFaintest, fontSize: typeScale.micro }}>
           Deepest room · {teaser.position}
         </span>
         <span
@@ -411,7 +419,9 @@ function TeamMatchup({
         style={{ border: `1px solid ${uiTokens.borderDefault}` }}>
         <div className="grid grid-cols-[1fr_56px_1fr] items-center gap-2 px-3 py-4">
           <MatchupTeamHeader team={both.a} stats={statsA} />
-          <div className="text-center text-[10px] font-black" style={{ color: uiTokens.textFaint }}>
+          <div
+            className="text-center font-black"
+            style={{ color: uiTokens.textFaint, fontSize: typeScale.caption }}>
             VS
           </div>
           <MatchupTeamHeader team={both.b} stats={statsB} />
@@ -464,8 +474,8 @@ function EmptyPositionState({ position }: { position: Position }) {
 function CompareRankLegend({ teams }: { teams: [TeamMeta, TeamMeta] }) {
   return (
     <div
-      className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[10px] font-bold uppercase tracking-wide"
-      style={{ color: uiTokens.textFaint }}>
+      className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 font-bold uppercase tracking-wide"
+      style={{ color: uiTokens.textFaint, fontSize: typeScale.caption }}>
       <span>Dot = row rank</span>
       <span className="inline-flex items-center gap-1.5">
         <span className="inline-flex -space-x-1">
@@ -493,7 +503,9 @@ function TeamHeaderCell({ team }: { team: TeamMeta }) {
       className="min-w-0 px-2 py-3 text-center"
       style={{ color: team.colors.uiAccent, background: `${team.colors.uiAccent}12` }}>
       <div className="text-xs font-black tracking-widest">{team.abbrev}</div>
-      <div className="truncate text-[10px] font-semibold" style={{ color: uiTokens.textMuted }}>
+      <div
+        className="truncate font-semibold"
+        style={{ color: uiTokens.textMuted, fontSize: typeScale.caption }}>
         {team.city}
       </div>
     </div>
@@ -565,8 +577,12 @@ function CompareRows({
             }}>
             <div className="flex items-center justify-center">
               <span
-                className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold"
-                style={{ background: uiTokens.surfaceChip, color: uiTokens.textFaint }}>
+                className="flex h-5 w-5 items-center justify-center rounded-full font-bold"
+                style={{
+                  background: uiTokens.surfaceChip,
+                  color: uiTokens.textFaint,
+                  fontSize: typeScale.caption,
+                }}>
                 {i + 1}
               </span>
             </div>

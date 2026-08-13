@@ -6,7 +6,7 @@
 // `seasons` is small (current + up to two prior years), never a fan-out of all-32 data.
 import SectionLabel from '@/components/ui/SectionLabel';
 import Tooltip from '@/components/ui/Tooltip';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import { readableTextOn } from '@/lib/colors';
 import { formatGameDate, ordinal } from '@/lib/format';
 import { postseasonRoundLabel } from '@/lib/schedule';
@@ -58,7 +58,9 @@ function CoachBadge({ name, meta, uiAccent }: { name: string; meta: string; uiAc
         style={{ color: uiTokens.textPrimary }}>
         {name}
       </div>
-      <div className="mt-0.5 text-[11px] font-bold tracking-[0.06em]" style={{ color: uiAccent }}>
+      <div
+        className="mt-0.5 font-bold tracking-[0.06em]"
+        style={{ color: uiAccent, fontSize: typeScale.label }}>
         {meta}
       </div>
     </div>
@@ -114,7 +116,9 @@ function StatCell({
           {value}
         </div>
         {rank && (
-          <div className="mt-0.5 text-[9px] font-bold" style={{ color: uiTokens.textFaintest }}>
+          <div
+            className="mt-0.5 font-bold"
+            style={{ color: uiTokens.textFaintest, fontSize: typeScale.micro }}>
             {rank}
           </div>
         )}
@@ -170,13 +174,13 @@ function DegradedHero({
         className="mt-0.5 px-5 pb-[18px] pt-2"
         style={{ borderBottom: `1px dashed ${uiTokens.borderInput}` }}>
         <div className="text-[28px] font-bold leading-tight tracking-[-0.01em]">{heading}</div>
-        <div className="mt-1 text-[11px]" style={{ color: uiTokens.textFaint }}>
+        <div className="mt-1" style={{ color: uiTokens.textFaint, fontSize: typeScale.label }}>
           {subline}
         </div>
       </div>
       <div
-        className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
-        style={{ color: uiTokens.textFaintest }}>
+        className="px-5 pb-[22px] pt-3.5 tracking-[0.06em]"
+        style={{ color: uiTokens.textFaintest, fontSize: typeScale.caption }}>
         {footerLabel}
       </div>
     </>
@@ -397,8 +401,8 @@ export default function TeamStatsView({
           the upcoming-season and incoming-coach chips). */}
         <div className="px-5 pt-[18px]">
           <div
-            className="text-[11px] font-bold tracking-[0.1em]"
-            style={{ color: uiTokens.textFaint }}>
+            className="font-bold tracking-[0.1em]"
+            style={{ color: uiTokens.textFaint, fontSize: typeScale.label }}>
             {team.city.toUpperCase()} {team.name.toUpperCase()}
           </div>
           {coachBadge && (
@@ -414,11 +418,13 @@ export default function TeamStatsView({
               style={{ borderBottom: `1px dashed ${uiTokens.borderInput}` }}>
               <div className="text-[52px] font-bold leading-none tracking-[-0.02em]">{record}</div>
               <div className="text-right">
-                <div className="text-[13px] font-bold" style={{ color: uiAccent }}>
+                <div className="font-bold" style={{ color: uiAccent, fontSize: typeScale.title }}>
                   {active.streak}
                 </div>
                 {activeRanks?.winPercent && (
-                  <div className="text-[11px] font-bold" style={{ color: uiTokens.textMuted }}>
+                  <div
+                    className="font-bold"
+                    style={{ color: uiTokens.textMuted, fontSize: typeScale.label }}>
                     {rankLabel(activeRanks.winPercent, lastRank, 'overall')}
                   </div>
                 )}
@@ -427,7 +433,7 @@ export default function TeamStatsView({
                     would falsely claim "MISSED PLAYOFFS" (playoffSeed is 0 for
                     stub rows with no data). */}
                 {active.season < currentSeason && (
-                  <div className="text-[11px]" style={{ color: uiTokens.textFaint }}>
+                  <div style={{ color: uiTokens.textFaint, fontSize: typeScale.label }}>
                     {active.playoffSeed
                       ? `SEED ${active.playoffSeed} · ${team.conference}`
                       : `MISSED PLAYOFFS · ${team.conference}`}
@@ -512,8 +518,8 @@ export default function TeamStatsView({
 
             {/* Footer ticker */}
             <div
-              className="px-5 pb-[22px] pt-3.5 text-[10px] tracking-[0.06em]"
-              style={{ color: uiTokens.textFaintest }}>
+              className="px-5 pb-[22px] pt-3.5 tracking-[0.06em]"
+              style={{ color: uiTokens.textFaintest, fontSize: typeScale.caption }}>
               {active.season} SEASON · {gamesPlayed} GAMES PLAYED
             </div>
           </>
@@ -546,23 +552,24 @@ export default function TeamStatsView({
               style={{ background: uiTokens.surfaceRaised, border: `1px solid ${uiAccent}33` }}>
               <div>
                 <div
-                  className="text-[9px] font-bold tracking-[0.08em]"
-                  style={{ color: uiTokens.textMuted }}>
+                  className="font-bold tracking-[0.08em]"
+                  style={{ color: uiTokens.textMuted, fontSize: typeScale.micro }}>
                   NEXT GAME · WEEK {nextGame.week}
                 </div>
                 <div
-                  className="mt-[3px] text-[13px] font-extrabold"
-                  style={{ color: uiTokens.textPrimary }}>
+                  className="mt-[3px] font-extrabold"
+                  style={{ color: uiTokens.textPrimary, fontSize: typeScale.title }}>
                   {nextGame.isHome ? 'vs' : '@'} {nextGame.opponent.abbrev}
                   {nextGame.date ? ` · ${formatGameDate(nextGame.date)}` : ''}
                 </div>
               </div>
               <div
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-[9px] font-black"
+                className="flex h-7 w-7 items-center justify-center rounded-lg font-black"
                 style={{
                   background: nextGame.opponent.colors.primary,
                   border: `1px solid ${nextGame.opponent.colors.secondary}`,
                   color: readableTextOn(nextGame.opponent.colors.primary),
+                  fontSize: typeScale.micro,
                 }}>
                 {nextGame.opponent.abbrev}
               </div>
@@ -583,8 +590,8 @@ export default function TeamStatsView({
                 left: (
                   <div className="min-w-0">
                     <div
-                      className="text-[9px] font-bold tracking-[0.06em]"
-                      style={{ color: uiAccent }}>
+                      className="font-bold tracking-[0.06em]"
+                      style={{ color: uiAccent, fontSize: typeScale.micro }}>
                       {postseasonRoundLabel(g.gameType).toUpperCase()}
                     </div>
                     <div
@@ -596,8 +603,9 @@ export default function TeamStatsView({
                 ),
                 right: (
                   <div
-                    className="shrink-0 text-right text-[11px] font-bold"
+                    className="shrink-0 text-right font-bold"
                     style={{
+                      fontSize: typeScale.label,
                       // Postseason win uses the team's own accent (not the fixed green
                       // used by the schedule page's W/L/T — this is a hero result, not
                       // a compact grid chip).
@@ -633,8 +641,8 @@ export default function TeamStatsView({
                 left: (
                   <div className="min-w-0">
                     <div
-                      className="text-[10px] font-bold tracking-[0.06em]"
-                      style={{ color: uiAccent }}>
+                      className="font-bold tracking-[0.06em]"
+                      style={{ color: uiAccent, fontSize: typeScale.caption }}>
                       {label}
                     </div>
                     <div
@@ -646,8 +654,8 @@ export default function TeamStatsView({
                 ),
                 right: (
                   <div
-                    className="shrink-0 text-right text-[12px] font-semibold"
-                    style={{ color: uiTokens.textMuted, maxWidth: 170 }}>
+                    className="shrink-0 text-right font-semibold"
+                    style={{ color: uiTokens.textMuted, maxWidth: 170, fontSize: typeScale.body }}>
                     {leader.line}
                   </div>
                 ),

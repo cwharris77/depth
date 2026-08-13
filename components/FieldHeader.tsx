@@ -2,7 +2,7 @@
 
 import Menu from '@/components/ui/Menu';
 import TabBar from '@/components/ui/TabBar';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import type { TeamDepthOverride } from '@/lib/depth-overrides';
 import { hasOverride } from '@/lib/depth-overrides';
 import type { TeamMeta } from '@/lib/roster-source';
@@ -189,11 +189,12 @@ export default function FieldHeader({
         <button
           type="button"
           onClick={onResetTeam}
-          className="flex items-center gap-1 mt-3 text-[10px] font-bold px-2 py-1 rounded-full"
+          className="flex items-center gap-1 mt-3 font-bold px-2 py-1 rounded-full"
           style={{
             color: activeColors.uiAccent,
             background: `${activeColors.uiAccent}1a`,
             border: `1px solid ${activeColors.uiAccent}55`,
+            fontSize: typeScale.caption,
             width: 'fit-content',
             touchAction: 'manipulation',
           }}>
@@ -206,11 +207,12 @@ export default function FieldHeader({
         <button
           type="button"
           onClick={onBackToToday}
-          className="flex items-center gap-1 mt-3 text-[10px] font-bold px-2 py-1 rounded-full"
+          className="flex items-center gap-1 mt-3 font-bold px-2 py-1 rounded-full"
           style={{
             color: activeColors.uiAccent,
             background: `${activeColors.uiAccent}1a`,
             border: `1px solid ${activeColors.uiAccent}55`,
+            fontSize: typeScale.caption,
             width: 'fit-content',
             touchAction: 'manipulation',
           }}>

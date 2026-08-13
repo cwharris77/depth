@@ -13,7 +13,7 @@ import Toggle from '@/components/ui/Toggle';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import SectionLabel from '@/components/ui/SectionLabel';
-import { colors } from '@/components/ui/tokens';
+import { colors, typeScale } from '@/components/ui/tokens';
 
 // The sign-in / account page body (Phase C, auth pass 1; OTP-code sign-in, auth pass 3).
 // Reached from the nav drawer's account item at /signin. Signed out: email + 6-digit code
@@ -197,8 +197,8 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
           </div>
           <div className="min-w-0">
             <div
-              className="text-[11px] font-semibold uppercase tracking-widest"
-              style={{ color: colors.textFaint }}>
+              className="font-semibold uppercase tracking-widest"
+              style={{ color: colors.textFaint, fontSize: typeScale.label }}>
               Signed in as
             </div>
             <div className="truncate text-base font-bold" style={{ color: colors.textPrimary }}>
@@ -224,7 +224,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
                 style={{ color: colors.textPrimary }}>
                 <Star size={15} color={colors.accent} /> Favorite team
               </label>
-              <p className="mb-0.5 text-[12px]" style={{ color: colors.textFaint }}>
+              <p className="mb-0.5" style={{ color: colors.textFaint, fontSize: typeScale.body }}>
                 Opens automatically when you start the app.
               </p>
               {settingsLoaded ? (
@@ -311,14 +311,14 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
                     Delete your account?
                   </div>
                   <p
-                    className="m-0 text-[12px] leading-relaxed"
-                    style={{ color: colors.textMuted }}>
+                    className="m-0 leading-relaxed"
+                    style={{ color: colors.textMuted, fontSize: typeScale.body }}>
                     This permanently removes your account, favorite team, and settings. This
                     can&apos;t be undone.
                   </p>
                 </div>
                 {deleteState === 'error' && (
-                  <div className="text-[12px]" style={{ color: colors.danger }}>
+                  <div style={{ color: colors.danger, fontSize: typeScale.body }}>
                     Couldn&apos;t delete your account — try again.
                   </div>
                 )}
@@ -367,7 +367,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
             <span style={{ color: colors.textPrimary }}>{email.trim()}</span>. Enter it below to
             finish signing in.
           </p>
-          <p className="mt-1 text-[12px]" style={{ color: colors.textFaint }}>
+          <p className="mt-1" style={{ color: colors.textFaint, fontSize: typeScale.body }}>
             Don&apos;t see it? Check your spam folder.
           </p>
         </div>
@@ -387,7 +387,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
             {verifyState === 'verifying' ? 'Verifying…' : 'Verify & sign in'}
           </Button>
           {verifyState === 'error' && (
-            <div className="text-[12px]" style={{ color: colors.danger }}>
+            <div style={{ color: colors.danger, fontSize: typeScale.body }}>
               That code is invalid or expired — use the newest email, or resend below.
             </div>
           )}
@@ -403,8 +403,8 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
             type="button"
             onClick={sendCode}
             disabled={sendState === 'sending'}
-            className="text-[12px] underline disabled:no-underline disabled:opacity-50"
-            style={{ color: colors.textMuted }}>
+            className="underline disabled:no-underline disabled:opacity-50"
+            style={{ color: colors.textMuted, fontSize: typeScale.body }}>
             {sendState === 'sending' ? 'Resending…' : 'Resend code'}
           </button>
           <button
@@ -415,13 +415,13 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
               setCode('');
               setVerifyState('idle');
             }}
-            className="text-[12px] underline"
-            style={{ color: colors.textMuted }}>
+            className="underline"
+            style={{ color: colors.textMuted, fontSize: typeScale.body }}>
             Use a different email
           </button>
         </div>
         {sendState === 'error' && (
-          <div className="text-[12px]" style={{ color: colors.danger }}>
+          <div style={{ color: colors.danger, fontSize: typeScale.body }}>
             Couldn&apos;t resend the code — try again.
           </div>
         )}
@@ -453,7 +453,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
           placeholder="you@email.com"
         />
         {emailFormatIsInvalid && (
-          <div className="text-[12px]" style={{ color: colors.danger }}>
+          <div style={{ color: colors.danger, fontSize: typeScale.body }}>
             Enter a valid email address.
           </div>
         )}
@@ -463,13 +463,13 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
           {sendState === 'sending' ? 'Sending…' : 'Email me a sign-in code'}
         </Button>
         {sendState === 'error' && (
-          <div className="text-[12px]" style={{ color: colors.danger }}>
+          <div style={{ color: colors.danger, fontSize: typeScale.body }}>
             Couldn&apos;t send — try again.
           </div>
         )}
       </div>
 
-      <p className="text-[11px] leading-relaxed" style={{ color: colors.textFaint }}>
+      <p className="leading-relaxed" style={{ color: colors.textFaint, fontSize: typeScale.label }}>
         By continuing you agree to our{' '}
         <Link href="/privacy" style={{ color: colors.accent }} className="underline">
           privacy policy
