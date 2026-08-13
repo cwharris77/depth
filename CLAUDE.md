@@ -113,8 +113,15 @@ refactor (see §6).
   unlock conditions. Toolbar overrides work in previews via the discovery endpoint
   (`app/.well-known/vercel/flags`, authed by `FLAGS_SECRET`).
 - **Imports use the `@/*` alias.** Package manager is **npm** (package-lock.json).
-- **No new dependencies without asking.** The runtime dep list is 9 packages and that
-  is a feature. Hand-roll small utilities (see base64url in `lib/share.ts`).
+- **Public, unauthenticated API routes gate input at the boundary.** The player-search
+  route is the reference (`app/api/players/search/route.ts`): validate + normalize query
+  params in pure `lib/` functions and reject invalid/whitespace-only/overlong input with
+  400 before any DB work, escape `%`/`_`/`\` before input enters a LIKE pattern
+  (`escapeLike` in `lib/search.ts`), cap per-client hits with an in-memory sliding window
+  (`lib/rate-limit.ts`), and cache repeated normalized queries so hot searches don't hit
+  Postgres per keystroke.
+- **No new dependencies without asking.** The runtime dep list is 9 packages and that is
+  a feature. Hand-roll small utilities (see base64url in `lib/share.ts`).
 
 ### Process
 
