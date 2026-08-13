@@ -12,11 +12,19 @@ export async function GET(
 ) {
   const { id, season: seasonParam } = await params;
   const season = Number(seasonParam);
+  if (!id || id.length > 64) {
+    return NextResponse.json({ error: 'invalid team' }, { status: 404 });
+  }
   if (!Number.isInteger(season) || season < SEASONS_MIN) {
     return NextResponse.json({ error: 'invalid season' }, { status: 404 });
   }
 
-  const roster = await getTeamSeason(id, season);
+  let roster;
+  try {
+    roster = await getTeamSeason(id, season);
+  } catch {
+    return NextResponse.json({ error: 'read failed' }, { status: 500 });
+  }
   if (!roster) {
     return NextResponse.json({ error: 'not found' }, { status: 404 });
   }

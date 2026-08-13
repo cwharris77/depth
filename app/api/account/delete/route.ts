@@ -7,11 +7,20 @@ import { requireUser } from '@/lib/supabase/server';
 import { getAdminClient } from '@/lib/supabase/admin';
 
 export async function POST() {
-  const user = await requireUser();
+  let user;
+  try {
+    user = await requireUser();
+  } catch {
+    return NextResponse.json({ error: 'read failed' }, { status: 500 });
+  }
   if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
-  const { error } = await getAdminClient().auth.admin.deleteUser(user.id);
-  if (error) return NextResponse.json({ error: 'delete failed' }, { status: 500 });
+  try {
+    const { error } = await getAdminClient().auth.admin.deleteUser(user.id);
+    if (error) return NextResponse.json({ error: 'delete failed' }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'delete failed' }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }
