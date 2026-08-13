@@ -611,8 +611,7 @@ function PositionDepth({
     <>
       <div className="relative">
         <div
-          className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 pr-10 xl:mx-0 xl:flex-wrap xl:overflow-visible xl:px-0 xl:pb-0 xl:pr-0"
-          style={{ scrollbarWidth: 'none' }}
+          className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 pr-10 xl:mx-0 xl:flex-wrap xl:overflow-visible xl:px-0 xl:pb-0 xl:pr-0 hide-scrollbar"
           role="group"
           aria-label="Filter by position">
           {COMPARE_POSITIONS.map((pos) => (
