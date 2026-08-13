@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 
 export const metadata: Metadata = {
   title: 'Privacy policy · Depth',
@@ -27,15 +27,15 @@ export default function PrivacyPage() {
         <h1 className="text-2xl font-black" style={{ color: uiTokens.textPrimary }}>
           Privacy policy
         </h1>
-        <p className="mt-1.5 mb-6 text-[12px]" style={{ color: uiTokens.textFaint }}>
+        <p className="mt-1.5 mb-6" style={{ color: uiTokens.textFaint, fontSize: typeScale.body }}>
           Last updated July 2026
         </p>
 
         <div
-          className="flex flex-col gap-4 text-[13px] leading-relaxed"
-          style={{ color: '#c5cbd8' }}>
+          className="flex flex-col gap-4 leading-relaxed"
+          style={{ color: '#c5cbd8', fontSize: typeScale.title }}>
           <div>
-            <h2 className="mb-1 text-[13px] font-bold" style={{ color: uiTokens.textPrimary }}>
+            <h2 className="mb-1 font-bold" style={{ color: uiTokens.textPrimary }}>
               What we collect
             </h2>
             <p className="m-0">
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
             </p>
           </div>
           <div>
-            <h2 className="mb-1 text-[13px] font-bold" style={{ color: uiTokens.textPrimary }}>
+            <h2 className="mb-1 font-bold" style={{ color: uiTokens.textPrimary }}>
               Without signing in
             </h2>
             <p className="m-0">
@@ -56,7 +56,7 @@ export default function PrivacyPage() {
             </p>
           </div>
           <div>
-            <h2 className="mb-1 text-[13px] font-bold" style={{ color: uiTokens.textPrimary }}>
+            <h2 className="mb-1 font-bold" style={{ color: uiTokens.textPrimary }}>
               Sharing a depth chart
             </h2>
             <p className="m-0">
@@ -67,7 +67,7 @@ export default function PrivacyPage() {
             </p>
           </div>
           <div>
-            <h2 className="mb-1 text-[13px] font-bold" style={{ color: uiTokens.textPrimary }}>
+            <h2 className="mb-1 font-bold" style={{ color: uiTokens.textPrimary }}>
               What we don&apos;t do
             </h2>
             <p className="m-0">
@@ -76,7 +76,7 @@ export default function PrivacyPage() {
             </p>
           </div>
           <div>
-            <h2 className="mb-1 text-[13px] font-bold" style={{ color: uiTokens.textPrimary }}>
+            <h2 className="mb-1 font-bold" style={{ color: uiTokens.textPrimary }}>
               Children&apos;s privacy
             </h2>
             <p className="m-0">
@@ -85,7 +85,7 @@ export default function PrivacyPage() {
             </p>
           </div>
           <div>
-            <h2 className="mb-1 text-[13px] font-bold" style={{ color: uiTokens.textPrimary }}>
+            <h2 className="mb-1 font-bold" style={{ color: uiTokens.textPrimary }}>
               Deleting your data
             </h2>
             <p className="m-0">
@@ -94,7 +94,7 @@ export default function PrivacyPage() {
             </p>
           </div>
           <div>
-            <h2 className="mb-1 text-[13px] font-bold" style={{ color: uiTokens.textPrimary }}>
+            <h2 className="mb-1 font-bold" style={{ color: uiTokens.textPrimary }}>
               Contact
             </h2>
             <p className="m-0">

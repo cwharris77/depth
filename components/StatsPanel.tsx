@@ -6,7 +6,7 @@
 // prop the page already ships (AGENTS.md invariant 5); nothing here fetches. Empty
 // seasons render nothing — the main column already handles the no-stats state.
 import Tooltip from '@/components/ui/Tooltip';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import SectionLabel from '@/components/ui/SectionLabel';
 import type { TeamStats } from '@/lib/types';
 
@@ -25,7 +25,9 @@ function Bar({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="w-[62px] whitespace-nowrap text-[9px]" style={{ color: uiTokens.textFaint }}>
+      <span
+        className="w-[62px] whitespace-nowrap"
+        style={{ color: uiTokens.textFaint, fontSize: typeScale.micro }}>
         {tooltip ? (
           <Tooltip content={tooltip}>
             <span>{label}</span>
@@ -40,8 +42,8 @@ function Bar({
         <div className="h-full rounded-full" style={{ background: color, width: `${pct}%` }} />
       </div>
       <span
-        className="w-[30px] text-right text-[10px] font-bold"
-        style={{ color: uiTokens.textPrimary }}>
+        className="w-[30px] text-right font-bold"
+        style={{ color: uiTokens.textPrimary, fontSize: typeScale.caption }}>
         {value}
       </span>
     </div>
@@ -66,8 +68,8 @@ export default function StatsPanel({ seasons, accent }: { seasons: TeamStats[]; 
           return (
             <div key={s.season}>
               <div
-                className="mb-1.5 flex justify-between text-[11px] font-bold"
-                style={{ color: uiTokens.textSecondary }}>
+                className="mb-1.5 flex justify-between font-bold"
+                style={{ color: uiTokens.textSecondary, fontSize: typeScale.label }}>
                 <span>{s.season}</span>
                 <span style={{ color: diffColor }}>{diff > 0 ? `+${diff}` : diff}</span>
               </div>

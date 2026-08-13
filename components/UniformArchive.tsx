@@ -14,7 +14,7 @@ import DepthMark from './DepthMark';
 import NavDrawer from './NavDrawer';
 import TeamPageShell from './TeamPageShell';
 import FilterPill from './ui/FilterPill';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import { useLastAccent } from '@/lib/use-last-accent';
 import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
 
@@ -140,10 +140,11 @@ export default function UniformArchive({
           groups.map((g) => (
             <section key={`${g.conference}-${g.division}`} className="mt-7">
               <h2
-                className="mb-4 pb-1.5 text-[10px] font-semibold tracking-[0.2em]"
+                className="mb-4 pb-1.5 font-semibold tracking-[0.2em]"
                 style={{
                   color: uiTokens.textFaint,
                   borderBottom: `1px solid ${uiTokens.borderDrawer}`,
+                  fontSize: typeScale.caption,
                 }}>
                 {g.conference} {g.division.toUpperCase()}
               </h2>
@@ -182,8 +183,8 @@ export default function UniformArchive({
                                 definition={definition}
                               />
                               <figcaption
-                                className="mt-1 text-[10px] leading-tight"
-                                style={{ color: uiTokens.textMuted }}>
+                                className="mt-1 leading-tight"
+                                style={{ color: uiTokens.textMuted, fontSize: typeScale.caption }}>
                                 {k.name}
                                 {k.yearStart ? (
                                   <span className="block" style={{ color: uiTokens.textFaint }}>
@@ -204,7 +205,9 @@ export default function UniformArchive({
           ))
         )}
 
-        <footer className="mt-10 text-[11px]" style={{ color: uiTokens.textFaintest }}>
+        <footer
+          className="mt-10"
+          style={{ color: uiTokens.textFaintest, fontSize: typeScale.label }}>
           <p>
             Uniform figures are original artwork; team marks are reproduced for identification only.
             Proportions modeled on the{' '}

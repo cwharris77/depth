@@ -4,7 +4,7 @@ import Avatar from '@/components/ui/Avatar';
 import IconButton from '@/components/ui/IconButton';
 import SectionLabel from '@/components/ui/SectionLabel';
 import SegmentedControl from '@/components/ui/SegmentedControl';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import { readableTextOn } from '@/lib/colors';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { PlayerHit } from '@/lib/search';
@@ -70,13 +70,14 @@ function TeamRow({
             : 'transparent',
       }}>
       <div
-        className="shrink-0 rounded-lg flex items-center justify-center font-black text-[11px]"
+        className="shrink-0 rounded-lg flex items-center justify-center font-black"
         style={{
           width: 32,
           height: 32,
           background: team.colors.primary,
           color: badgeText,
           border: `1px solid ${team.colors.secondary}`,
+          fontSize: typeScale.label,
         }}>
         {team.abbrev}
       </div>
@@ -84,7 +85,7 @@ function TeamRow({
         <div className="text-sm font-bold truncate" style={{ color: uiTokens.textPrimary }}>
           {team.city} {team.name}
         </div>
-        <div className="text-[11px]" style={{ color: uiTokens.textMuted }}>
+        <div style={{ color: uiTokens.textMuted, fontSize: typeScale.label }}>
           {team.conference} {team.division}
         </div>
       </div>
@@ -124,7 +125,7 @@ function PlayerRow({
         <div className="text-sm font-bold truncate" style={{ color: uiTokens.textPrimary }}>
           {hit.name}
         </div>
-        <div className="text-[11px] truncate" style={{ color: uiTokens.textMuted }}>
+        <div className="truncate" style={{ color: uiTokens.textMuted, fontSize: typeScale.label }}>
           {hit.position} · {hit.team.name} · #{hit.number}
           {hit.college ? ` · ${hit.college}` : ''}
         </div>
@@ -341,8 +342,12 @@ export default function NavSwitcher({
             style={{ color: uiTokens.textPrimary }}
           />
           <span
-            className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold"
-            style={{ background: uiTokens.surfaceChip, color: uiTokens.textMuted }}>
+            className="shrink-0 rounded px-1.5 py-0.5 font-bold"
+            style={{
+              background: uiTokens.surfaceChip,
+              color: uiTokens.textMuted,
+              fontSize: typeScale.caption,
+            }}>
             ESC
           </span>
         </div>

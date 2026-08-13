@@ -22,7 +22,7 @@
 import Avatar from '@/components/ui/Avatar';
 import Input from '@/components/ui/Input';
 import SectionLabel from '@/components/ui/SectionLabel';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import { readableTextOn } from '@/lib/colors';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { PlayerHit } from '@/lib/search';
@@ -163,11 +163,12 @@ export default function TeamRail({
           opacity: isPending ? 0.6 : 1,
         }}>
         <span
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[10px] font-black"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg font-black"
           style={{
             background: t.colors.primary,
             border: `1px solid ${t.colors.secondary}`,
             color: readableTextOn(t.colors.primary),
+            fontSize: typeScale.caption,
           }}>
           {t.abbrev}
         </span>
@@ -248,7 +249,9 @@ export default function TeamRail({
                         style={{ color: uiTokens.textPrimary }}>
                         {hit.name}
                       </span>
-                      <span className="truncate text-[10px]" style={{ color: uiTokens.textMuted }}>
+                      <span
+                        className="truncate"
+                        style={{ color: uiTokens.textMuted, fontSize: typeScale.caption }}>
                         {hit.position} · {hit.team.name} · #{hit.number}
                       </span>
                     </span>

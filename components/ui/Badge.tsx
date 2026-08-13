@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
-import { colors } from './tokens';
+import { colors, typeScale } from './tokens';
 import { withAlpha } from '@/lib/colors';
 import type { Intent } from './variants';
 
@@ -44,8 +44,11 @@ export default function Badge({
   if (variant === 'status' && status) {
     return (
       <span
-        className={cn('text-[13px] font-bold', className)}
-        style={{ color: status === 'starter' ? accent : STATUS_COLORS[status] }}>
+        className={cn('font-bold', className)}
+        style={{
+          color: status === 'starter' ? accent : STATUS_COLORS[status],
+          fontSize: typeScale.title,
+        }}>
         {STATUS_LABELS[status]}
       </span>
     );
@@ -53,11 +56,12 @@ export default function Badge({
   if (variant === 'tag') {
     return (
       <span
-        className={cn('inline-block rounded-full px-1.5 py-0.5 text-[9px] font-bold', className)}
+        className={cn('inline-block rounded-full px-1.5 py-0.5 font-bold', className)}
         style={{
           color: accent,
           background: withAlpha(accent, 10),
           border: `1px solid ${withAlpha(accent, 33)}`,
+          fontSize: typeScale.body,
         }}>
         {children}
       </span>
@@ -65,11 +69,12 @@ export default function Badge({
   }
   return (
     <span
-      className={cn('rounded-full px-2 py-0.5 text-xs font-bold', className)}
+      className={cn('rounded-full px-2 py-0.5 font-bold', className)}
       style={{
         color: accent,
         background: colors.surfaceNavy,
         border: `1px solid ${withAlpha(accent, 40)}`,
+        fontSize: typeScale.body,
       }}>
       {children}
     </span>

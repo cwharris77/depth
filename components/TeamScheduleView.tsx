@@ -29,7 +29,7 @@ import SeasonSheet from './SeasonSheet';
 import TeamPageHeader from './TeamPageHeader';
 import TeamPageShell from './TeamPageShell';
 import Badge from '@/components/ui/Badge';
-import { colors as uiTokens } from '@/components/ui/tokens';
+import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import { useKitColors } from '@/lib/use-kit-colors';
 
 interface Props {
@@ -65,8 +65,8 @@ function GameCard({
         className="flex min-h-[104px] flex-col items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-center"
         style={{ border: `1px dashed ${uiTokens.borderInput}` /* nearest token to 0.25 alpha */ }}>
         <div
-          className="text-[9px] font-bold tracking-[0.06em]"
-          style={{ color: uiTokens.textFaint }}>
+          className="font-bold tracking-[0.06em]"
+          style={{ color: uiTokens.textFaint, fontSize: typeScale.micro }}>
           WEEK {game.week}
         </div>
         <div className="text-xs font-black" style={{ color: uiTokens.textMuted }}>
@@ -80,41 +80,54 @@ function GameCard({
   const played = game.result !== null;
   const content = (
     <>
-      <div className="text-[9px] font-bold tracking-[0.06em]" style={{ color: uiTokens.textFaint }}>
+      <div
+        className="font-bold tracking-[0.06em]"
+        style={{ color: uiTokens.textFaint, fontSize: typeScale.micro }}>
         WEEK {game.week}
       </div>
       <div
-        className="flex h-[30px] w-[30px] items-center justify-center rounded-lg text-[9px] font-black"
+        className="flex h-[30px] w-[30px] items-center justify-center rounded-lg font-black"
         style={
           opp
             ? {
                 background: opp.colors.primary,
                 border: `1px solid ${opp.colors.secondary}`,
                 color: readableTextOn(opp.colors.primary),
+                fontSize: typeScale.micro,
               }
             : {
                 background: uiTokens.surfaceChip /* nearest token to 0.08 alpha */,
                 color: uiTokens.textMuted,
+                fontSize: typeScale.micro,
               }
         }>
         {opp?.abbrev ?? '—'}
       </div>
-      <div className="text-[11px] font-extrabold" style={{ color: uiTokens.textPrimary }}>
+      <div
+        className="font-extrabold"
+        style={{ color: uiTokens.textPrimary, fontSize: typeScale.label }}>
         {game.isHome ? 'vs' : '@'} {opp?.abbrev ?? '—'}
       </div>
       {played ? (
         <div
-          className="text-[10px] font-bold"
-          style={{ color: gameResultColor(game.result as 'W' | 'L' | 'T') }}>
+          className="font-bold"
+          style={{
+            color: gameResultColor(game.result as 'W' | 'L' | 'T'),
+            fontSize: typeScale.caption,
+          }}>
           {game.result} {game.teamScore}-{game.oppScore}
         </div>
       ) : isPastSeason ? (
-        <div className="text-[10px] font-bold" style={{ color: uiTokens.textMuted }}>
+        <div
+          className="font-bold"
+          style={{ color: uiTokens.textMuted, fontSize: typeScale.caption }}>
           No result
         </div>
       ) : (
         <>
-          <div className="text-[10px] font-bold" style={{ color: uiTokens.textMuted }}>
+          <div
+            className="font-bold"
+            style={{ color: uiTokens.textMuted, fontSize: typeScale.caption }}>
             {formatGameDate(game.date)}
           </div>
           <Badge variant="tag" accent={game.isHome ? uiAccent : uiTokens.textMuted}>
@@ -259,8 +272,8 @@ export default function TeamScheduleView({
               style={{ touchAction: 'manipulation' }}>
               <History size={12} color={uiTokens.textFaint} />
               <span
-                className="text-[10px] font-bold tracking-[0.1em]"
-                style={{ color: uiTokens.textFaint }}>
+                className="font-bold tracking-[0.1em]"
+                style={{ color: uiTokens.textFaint, fontSize: typeScale.caption }}>
                 {viewedLabel} SEASON
               </span>
               <ChevronDown size={12} color={uiTokens.textFaint} />

@@ -42,6 +42,25 @@ export const colors = {
   shadowThumb: '0 1px 2px rgba(0,0,0,0.35), 0 1px 1px rgba(0,0,0,0.2)', // Toggle's raised thumb
 } as const;
 
+// The app's one small text scale. Every sub-body-size font size in UI chrome must come
+// from here — a bare arbitrary font-size utility is a judgment call per component, which
+// is exactly how near-identical pills ended up disagreeing (SegmentedControl 9px vs
+// FilterPill 12px). These five steps cover every recurring small size in the codebase
+// (9–13px, verified by sweep); anything smaller (8/8.5px) or larger (16px+ display
+// numerals) is an intentional per-container one-off and deliberately not part of the
+// scale. Same-purpose text always uses the same token: every pill (FilterPill,
+// SegmentedControl, Badge position/tag) renders at `body`; section/stat/meta labels at
+// `caption`; tabs and tooltips at `label`; emphasized labels (Badge status) at `title`.
+// Components apply a token as an inline `fontSize` (mirroring how `colors`/`zIndex` are
+// consumed) so the classname stays free of arbitrary values.
+export const typeScale = {
+  micro: '9px', // smallest text — overlines, compact micro-labels
+  caption: '10px', // section labels, stat headers, menu meta
+  label: '11px', // default small UI labels — tabs, tooltips
+  body: '12px', // standard body text — menu items, pills, coachmarks
+  title: '13px', // emphasized labels — badge status
+} as const;
+
 // The app's one stacking-order scale. Every z-index in the app must come from here —
 // a hardcoded number (inline `zIndex:` or a Tailwind `z-*` class) is an ESLint error
 // (see the no-restricted-syntax rules in eslint.config.js) precisely because a value
