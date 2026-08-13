@@ -37,12 +37,21 @@ const nextConfig: NextConfig = {
       },
       {
         // Historical rosters' headshot_url (Phase D1, roster_history.headshot_url,
-        // nflverse's roster_<season>.csv) — every row observed across 1999-2024 uses
-        // this same host/path shape (docs/superpowers/specs/2026-07-07-phase-d-history-
-        // and-boards-design.md).
+        // nflverse's roster_<season>.csv) — every row observed 1999-2024 uses this
+        // path shape (docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-
+        // design.md).
         protocol: 'https',
         hostname: 'static.www.nfl.com',
         pathname: '/image/private/**',
+      },
+      {
+        // NFL.com's CDN switched most players to a new `/image/upload/**` path
+        // during the 2025 season (a remaining minority of rows still use
+        // /image/private/** above) — both are allowed so a season isn't at the
+        // mercy of which path NFL.com happened to use when its data was captured.
+        protocol: 'https',
+        hostname: 'static.www.nfl.com',
+        pathname: '/image/upload/**',
       },
     ],
   },

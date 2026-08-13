@@ -51,11 +51,15 @@ interface PlayerCardProps {
   variant?: 'sheet' | 'docked';
 }
 
-const depthRankLabel: Record<number, string> = {
-  1: 'STARTER',
-  2: 'BACKUP',
-  3: '3RD STRING',
-};
+// Historical depth ranks are capped at 3 by the usage heuristic (see
+// lib/nflverse/depth-heuristic.ts), and current-season ESPN depth charts can run
+// deeper than 3 at some positions -- rank 3+ is bucketed as "reserve" rather than
+// implying a literal ordinal that isn't real.
+function depthRankLabel(rank: number): string {
+  if (rank === 1) return 'STARTER';
+  if (rank === 2) return 'BACKUP';
+  return 'RESERVE';
+}
 
 export default function PlayerCard({
   player,
@@ -468,7 +472,7 @@ export default function PlayerCard({
                         letterSpacing: '0.08em',
                         minWidth: 64,
                       }}>
-                      {depthRankLabel[p.depthRank]}
+                      {depthRankLabel(p.depthRank)}
                     </div>
                     <div
                       className="text-xs font-bold"
@@ -505,7 +509,7 @@ export default function PlayerCard({
                         letterSpacing: '0.08em',
                         minWidth: 64,
                       }}>
-                      {depthRankLabel[p.depthRank]}
+                      {depthRankLabel(p.depthRank)}
                     </div>
                     <div
                       className="text-xs font-bold"
