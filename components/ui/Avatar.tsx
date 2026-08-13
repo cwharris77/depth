@@ -57,7 +57,7 @@ export default function Avatar({
       {showPhoto ? (
         <Image
           src={photoUrl as string}
-          alt={name}
+          alt={name || 'Avatar'}
           width={size}
           height={size}
           className="h-full w-full object-cover"
