@@ -15,11 +15,12 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   const supabase = await getServerClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from(tables.userSettings)
     .select('favorite_team_id, last_team_id, start_on_favorite')
     .eq('user_id', user.id)
     .maybeSingle();
+  if (error) return NextResponse.json({ error: 'read failed' }, { status: 500 });
 
   const settings: UserSettings = data
     ? {
@@ -53,9 +54,27 @@ export async function PUT(request: NextRequest) {
     user_id: user.id,
     updated_at: new Date().toISOString(),
   };
-  if ('favoriteTeamId' in body) patch.favorite_team_id = body.favoriteTeamId ?? null;
-  if ('lastTeamId' in body) patch.last_team_id = body.lastTeamId ?? null;
-  if ('startOnFavorite' in body) patch.start_on_favorite = body.startOnFavorite;
+  if ('favoriteTeamId' in body) {
+    const value = body.favoriteTeamId;
+    if (value !== null && typeof value !== 'string') {
+      return NextResponse.json({ error: 'bad request' }, { status: 400 });
+    }
+    patch.favorite_team_id = value;
+  }
+  if ('lastTeamId' in body) {
+    const value = body.lastTeamId;
+    if (value !== null && typeof value !== 'string') {
+      return NextResponse.json({ error: 'bad request' }, { status: 400 });
+    }
+    patch.last_team_id = value;
+  }
+  if ('startOnFavorite' in body) {
+    const value = body.startOnFavorite;
+    if (typeof value !== 'boolean') {
+      return NextResponse.json({ error: 'bad request' }, { status: 400 });
+    }
+    patch.start_on_favorite = value;
+  }
 
   const { error } = await supabase
     .from(tables.userSettings)
