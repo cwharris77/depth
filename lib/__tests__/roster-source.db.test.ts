@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { dbRosterSource, getTeamSeason, searchAllPlayers } from '../roster-source.db';
+import {
+  dbRosterSource,
+  getPlayerStats,
+  getTeamSeason,
+  searchAllPlayers,
+} from '../roster-source.db';
 
 // Tests against the real Supabase project (not mocked). Rationale: this repo's test
 // suite runs locally/in CI with network access already assumed for the ESPN fetch
@@ -87,6 +92,21 @@ maybeDescribe('getTeamSeason (live Supabase project, Phase D1)', () => {
   it('returns undefined for an unknown team or an out-of-range season', async () => {
     expect(await getTeamSeason('not-a-real-team', 2013)).toBeUndefined();
     expect(await getTeamSeason('seahawks', 1950)).toBeUndefined();
+  });
+
+  it('resolves stats for a historical (gsis:<id>@<season>) player id via roster_history.espn_id', async () => {
+    const roster = await getTeamSeason('seahawks', 2024);
+    if (!roster) throw new Error('expected a 2024 Seahawks roster');
+    const withStats = roster.players.find((p) => p.name === 'Geno Smith');
+    if (!withStats) throw new Error('expected Geno Smith on the 2024 roster');
+    expect(withStats.id).toMatch(/^gsis:.+@2024$/);
+    const stats = await getPlayerStats(withStats.id);
+    expect(stats.length).toBeGreaterThan(0);
+    expect(stats.some((s) => s.season === 2024)).toBe(true);
+  });
+
+  it('returns [] for a historical player id with no ESPN crosswalk match', async () => {
+    expect(await getPlayerStats('gsis:00-not-a-real-gsis-id@2024')).toEqual([]);
   });
 });
 
