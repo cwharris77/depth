@@ -333,7 +333,15 @@ export default function DepthChartField({
     roster: fieldRoster ?? themedRoster,
     onClose: closePlayer,
     onSelectPlayer: (player: Player) => selectPlayer(player, unitForPosition(player.position)),
-    playerStatsMap,
+    // playerStatsMap is a server prefetch keyed by the *current* roster's player ids
+    // (app/team/[id]/page.tsx) -- a historical season's players resolve to different ids
+    // (synthetic gsis:<id>@<season> or a still-active player's real id looked up fresh),
+    // none of which are keys in that map. Passing it through unconditionally made
+    // PlayerCard treat the map as authoritative and render "no stats" for every
+    // historical player instead of falling back to its own client-side fetch (which
+    // already resolves historical ids correctly, see getPlayerStats). Omit it in
+    // historicalMode so PlayerCard fetches instead.
+    playerStatsMap: historicalMode ? undefined : playerStatsMap,
     ...(readOnly
       ? {}
       : {
