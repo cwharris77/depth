@@ -28,7 +28,7 @@ export default function SheetHeader({ title, onClose, children }: SheetHeaderPro
       </div>
       <IconButton
         icon={<X size={16} color={uiTokens.textMuted} />}
-        variant="plain"
+        variant="ghost"
         size="sm"
         onClick={onClose}
         ariaLabel="Close"

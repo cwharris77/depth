@@ -4,8 +4,10 @@ import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
 import { colors } from './tokens';
 import { withAlpha } from '@/lib/colors';
+import type { Intent } from './variants';
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'danger-outline';
+// Button expresses the action subset of the shared vocabulary (variants.ts).
+type Variant = Extract<Intent, 'primary' | 'secondary' | 'ghost' | 'danger' | 'danger-outline'>;
 type Size = 'md' | 'sm';
 
 const VARIANTS: Record<Variant, { background: string; color: string; border: string }> = {

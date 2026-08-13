@@ -69,7 +69,7 @@ export default function IOSInstallHint() {
           </span>
           <IconButton
             icon={<X size={16} color={uiTokens.textSecondary} />}
-            variant="plain"
+            variant="ghost"
             size="sm"
             onClick={dismiss}
             ariaLabel="Dismiss install hint"

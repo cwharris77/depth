@@ -117,7 +117,7 @@ function GameCard({
           <div className="text-[10px] font-bold" style={{ color: uiTokens.textMuted }}>
             {formatGameDate(game.date)}
           </div>
-          <Badge kind="tag" accent={game.isHome ? uiAccent : uiTokens.textMuted}>
+          <Badge variant="tag" accent={game.isHome ? uiAccent : uiTokens.textMuted}>
             {game.isHome ? 'HOME' : 'AWAY'}
           </Badge>
         </>
@@ -266,7 +266,7 @@ export default function TeamScheduleView({
               <ChevronDown size={12} color={uiTokens.textFaint} />
             </button>
             {showUpcoming && (
-              <Badge kind="tag" accent={uiAccent}>
+              <Badge variant="tag" accent={uiAccent}>
                 UPCOMING
               </Badge>
             )}

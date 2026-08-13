@@ -216,7 +216,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
             style={{ color: colors.accent }}>
             Settings
           </div>
-          <Card padding={16} className="flex flex-col gap-4">
+          <Card className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label
                 htmlFor="favorite-team"

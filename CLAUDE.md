@@ -102,7 +102,10 @@ refactor (see §6).
   component** (see `SegmentedControl`'s `size`/`fullWidth`/`href` — added rather than
   cloned); only add a *new* primitive to `components/ui/` (props-driven, token-styled,
   with a role-and-constraint header) when none fits. Bespoke inline UI in a page/feature
-  component is a review-blocking regression, not a shortcut.
+  component is a review-blocking regression, not a shortcut. Every primitive's `variant`
+  prop means semantic intent and takes its values from the shared vocabulary in
+  `components/ui/variants.ts` — never a per-component visual name (`chrome`/`plain`) or a
+  one-off prop name (`kind`).
 - **Data-integrity tests loop over the data**: one generated `it` per row/team (see
   `uniforms.test.ts`), so a failure names the offending row.
 - **Launch gates are Vercel Flags SDK flags in `lib/flags.ts`** — never bool/string

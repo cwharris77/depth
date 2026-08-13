@@ -202,7 +202,7 @@ export default function NavDrawer({
             depth
           </span>
           <IconButton
-            variant="plain"
+            variant="ghost"
             onClick={onClose}
             ariaLabel="Close navigation"
             icon={<X size={18} color={uiTokens.textMuted} />}
