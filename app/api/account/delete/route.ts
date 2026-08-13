@@ -7,10 +7,16 @@ import { getServerClient } from '@/lib/supabase/server';
 import { getAdminClient } from '@/lib/supabase/admin';
 
 export async function POST() {
-  const supabase = await getServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user;
+  try {
+    const supabase = await getServerClient();
+    const {
+      data: { user: authedUser },
+    } = await supabase.auth.getUser();
+    user = authedUser;
+  } catch {
+    return NextResponse.json({ error: 'read failed' }, { status: 500 });
+  }
   if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   try {

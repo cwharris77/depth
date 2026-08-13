@@ -42,6 +42,22 @@ describe('POST /api/account/delete', () => {
     expect(res.status).toBe(401);
   });
 
+  it('500s with JSON when getUser() itself throws, not an unhandled error', async () => {
+    const client = {
+      auth: {
+        getUser: vi.fn(async () => {
+          throw new Error('network error');
+        }),
+      },
+    };
+    vi.mocked(getServerClient).mockResolvedValue(
+      client as unknown as Awaited<ReturnType<typeof getServerClient>>
+    );
+    const res = await POST();
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ error: 'read failed' });
+  });
+
   it('500s with JSON when the secret-key env is missing instead of throwing', async () => {
     mockSignedIn();
     vi.mocked(getAdminClient).mockImplementation(() => {
