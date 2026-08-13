@@ -4,7 +4,9 @@
 // Share -> Add to Home Screen. Kept pure and testable rather than inlined in the component:
 // the iOS-vs-other-iOS-browser and iPadOS-UA-spoofing checks are easy to get subtly wrong.
 
-const DISMISSED_KEY = 'depth:ios-install-hint-dismissed';
+import { STORAGE_KEY_DEPTH_IOS_INSTALL_HINT_DISMISSED } from './storage-keys';
+
+const DISMISSED_KEY = STORAGE_KEY_DEPTH_IOS_INSTALL_HINT_DISMISSED;
 
 // True only for Safari on iOS/iPadOS — not Chrome/Firefox/Edge/Opera on iOS. Those ship their
 // own UI shell over WebKit and tag it in the UA; several either hide "Add to Home Screen" or
