@@ -10,7 +10,8 @@ import { getBrowserClient } from '@/lib/supabase/client';
 
 // Module-scoped, not per-component: the Supabase subscription is a genuine external system
 // (useSyncExternalStore's textbook case), started once and shared by every useUser() call
-// rather than re-subscribed per component instance.
+// rather than re-subscribed per component instance. subscribe/getSnapshot are exported as the
+// store's own interface — useUser() binds them to React, and the tests drive them directly.
 type AuthState = { user: User | null; loading: boolean };
 
 // A single stable reference — useSyncExternalStore compares snapshots with Object.is, so
@@ -21,6 +22,15 @@ const INITIAL_STATE: AuthState = { user: null, loading: true };
 let state: AuthState = INITIAL_STATE;
 const listeners = new Set<() => void>();
 let started = false;
+// Monotonic guard for the async getUser() read: every auth event increments it, and getUser()
+// snapshots it before the server round-trip so it only publishes its result if no fresher
+// event has fired since — a slow read can never clobber a newer sign-in/sign-out.
+let authGeneration = 0;
+// The onAuthStateChange unsubscribe, held so the singleton's subscription lifecycle is explicit
+// rather than dropped. It is deliberately never called: this store is module-scoped, so its
+// subscription is meant to live for the app's lifetime — re-subscribing per component (the
+// alternative) is what would leak, not keeping this one.
+let _unsubscribeAuth: (() => void) | undefined;
 
 function notify() {
   listeners.forEach((listener) => listener());
@@ -30,25 +40,39 @@ function ensureStarted() {
   if (started) return;
   started = true;
   const supabase = getBrowserClient();
+  const getUserGeneration = authGeneration;
   // getUser() revalidates against the auth server (unlike onAuthStateChange's initial event,
-  // which only reflects local storage) — kept as the authoritative first read.
-  supabase.auth.getUser().then(({ data }) => {
-    state = { user: data.user ?? null, loading: false };
-    notify();
-  });
-  supabase.auth.onAuthStateChange((_event, session) => {
+  // which only reflects local storage) — kept as the authoritative first read. A failed read
+  // resolves loading to the safe "unauthenticated" state instead of leaving it stuck true.
+  supabase.auth
+    .getUser()
+    .then(({ data }) => {
+      if (authGeneration !== getUserGeneration) return;
+      state = { user: data.user ?? null, loading: false };
+      notify();
+    })
+    .catch(() => {
+      if (authGeneration !== getUserGeneration) return;
+      state = { user: null, loading: false };
+      notify();
+    });
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    authGeneration += 1;
     state = { user: session?.user ?? null, loading: false };
     notify();
   });
+  _unsubscribeAuth = subscription.unsubscribe;
 }
 
-function subscribe(listener: () => void) {
+export function subscribe(listener: () => void) {
   ensureStarted();
   listeners.add(listener);
   return () => listeners.delete(listener);
 }
 
-function getSnapshot() {
+export function getSnapshot(): AuthState {
   return state;
 }
 
