@@ -93,6 +93,8 @@ scaffolding with their own specs.
   formations_written, team_stats_seasons, team_stats_rows, team_stats_skipped, skipped,
   failures }`; `teams_written` is repurposed as the total row count across all datasets.
 
+  **Team per season row (DEP-202):** `player_stats.team_id` (nullable, FK'd to `teams`) carries nflverse's `recent_team` for that season/season_type, resolved through the same `lib/nflverse/team-codes.ts` map `ingestGames` uses — one team per row, no mid-season-trade split (locked scope). Unlike `player_id`'s FK, this one stays: `teams` always holds all 32 franchises regardless of season, so there's no historic-membership gap to work around. An unresolvable/missing code degrades the row's `team_id` to `null` rather than dropping the row. `lib/roster-source.db.ts`'s player-stats reads embed it (`teams(abbrev)`) for `PlayerCardSeasonStats`'s TM column.
+
   **Why `player_stats` needed its own identity decision to backfill:**
   `player_stats.player_id` used to be a `not null` FK to `players(id)`, and `players` is
   populated by the ESPN ingest from *current* rosters only. A historic

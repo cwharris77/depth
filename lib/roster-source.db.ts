@@ -800,14 +800,20 @@ type PlayerStatsRow = Pick<
   | 'def_interceptions'
   | 'fg_made'
   | 'fg_att'
->;
+> & {
+  // Embedded via the team_id FK (DEP-202) -- null when team_id is null (unresolved
+  // source code, or a pre-DEP-202 row) or, in principle, dangling (FK-enforced, so
+  // shouldn't happen; degrades to null rather than throwing either way, invariant 6).
+  teams: Pick<Tables['teams']['Row'], 'abbrev'> | null;
+};
 const PLAYER_STATS_SELECT =
-  'season, season_type, games, completions, attempts, passing_yards, passing_tds, passing_interceptions, carries, rushing_yards, rushing_tds, receptions, targets, receiving_yards, receiving_tds, def_tackles_solo, def_sacks, def_interceptions, fg_made, fg_att';
+  'season, season_type, games, completions, attempts, passing_yards, passing_tds, passing_interceptions, carries, rushing_yards, rushing_tds, receptions, targets, receiving_yards, receiving_tds, def_tackles_solo, def_sacks, def_interceptions, fg_made, fg_att, teams(abbrev)';
 
 function toPlayerSeasonStats(row: PlayerStatsRow): PlayerSeasonStats {
   return {
     season: row.season,
     seasonType: row.season_type as PlayerSeasonStats['seasonType'],
+    teamAbbrev: row.teams?.abbrev ?? null,
     games: row.games,
     completions: row.completions,
     attempts: row.attempts,

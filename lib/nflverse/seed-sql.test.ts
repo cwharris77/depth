@@ -45,6 +45,7 @@ function statsRow(over: Partial<PlayerStatsInsert> = {}): PlayerStatsInsert {
     player_id: 'p1',
     season: 2025,
     season_type: 'REG',
+    team_id: null,
     games: 10,
     completions: null,
     attempts: null,

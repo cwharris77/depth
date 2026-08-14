@@ -47,7 +47,10 @@ export default function PlayerCardSeasonStats({
     );
   }
 
-  const gridTemplateColumns = `minmax(40px, 0.7fr) repeat(${statColumns.length}, 1fr)`;
+  // SZN + TM are both fixed columns ahead of the position-specific stat columns (DEP-202
+  // adds TM — which team that season/season_type is attributed to, nflverse's
+  // `recent_team`, one team per row per the locked scope, no mid-season-trade split).
+  const gridTemplateColumns = `minmax(40px, 0.7fr) minmax(32px, 0.6fr) repeat(${statColumns.length}, 1fr)`;
 
   return (
     <div className="px-6 pb-8">
@@ -69,6 +72,11 @@ export default function PlayerCardSeasonStats({
             className="text-[8.5px] font-bold"
             style={{ color: uiTokens.textFaint, letterSpacing: '0.04em' }}>
             SZN
+          </div>
+          <div
+            className="text-[8.5px] font-bold"
+            style={{ color: uiTokens.textFaint, letterSpacing: '0.04em' }}>
+            TM
           </div>
           {statColumns.map((col) => (
             <div
@@ -94,6 +102,7 @@ export default function PlayerCardSeasonStats({
                   borderTop: row === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}`,
                 }}>
                 <div className="h-3 rounded animate-pulse" style={{ background: `${accent}26` }} />
+                <div className="h-3 rounded animate-pulse" style={{ background: `${accent}1a` }} />
                 {statColumns.map((col) => (
                   <div
                     key={col.header}
@@ -116,6 +125,7 @@ export default function PlayerCardSeasonStats({
                 fontSize: typeScale.label,
               }}>
               <div style={{ color: i === 0 ? accent : uiTokens.textPrimary }}>{s.season}</div>
+              <div style={{ color: uiTokens.textMuted }}>{s.teamAbbrev ?? '—'}</div>
               {statColumns.map((col) => (
                 <div
                   key={col.header}
