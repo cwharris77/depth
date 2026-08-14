@@ -3,9 +3,9 @@
 import { typeScale, colors as uiTokens } from '@/components/ui/tokens';
 import type { TeamMeta } from '@/lib/roster-source';
 import { unitForPosition } from '@/lib/search';
-import { buildTeamSelectionUrl } from '@/lib/team-selection';
-import type { Player, PlayerSeasonStats, TeamFormation, TeamRoster, Unit } from '@/lib/types';
+import type { Player, PlayerSeasonStats, TeamFormation, TeamRoster } from '@/lib/types';
 import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
+import { useDepthChartCommands } from '@/lib/use-depth-chart-commands';
 import { useDepthChartRoster } from '@/lib/use-depth-chart-roster';
 import { useDepthChartSeason } from '@/lib/use-depth-chart-season';
 import { useDepthChartSelection } from '@/lib/use-depth-chart-selection';
@@ -16,7 +16,6 @@ import { DESKTOP_MEDIA_QUERY, useMediaQuery } from '@/lib/use-media-query';
 import { useShareRoster } from '@/lib/use-share-roster';
 import { useTeamOverride } from '@/lib/use-team-override';
 import { useUser } from '@/lib/use-user';
-import { usePathname, useRouter } from 'next/navigation';
 import ApplyKitFromQuery from './ApplyKitFromQuery';
 import ApplySeasonFromQuery from './ApplySeasonFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
@@ -51,9 +50,6 @@ export default function DepthChartField({
   // PlayerCard ever mounts — two would double its per-player stats fetch. Selection is
   // always null at SSR, so the hook's server-side `false` renders nothing either way.
   const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
-
-  const router = useRouter();
-  const pathname = usePathname();
 
   const { team } = roster;
   const { user } = useUser();
@@ -119,35 +115,14 @@ export default function DepthChartField({
     selectedPlayer,
   });
 
-  // A selected formation is unit-specific (offense/defense each have their own list) --
-  // switching units always resets to that unit's top formation rather than carrying a
-  // stale pick across. use-depth-chart-selection.ts owns the selection/URL side;
-  // this composes in the formation reset the selection hook has no knowledge of.
-  const changeUnit = (unit: Unit) => {
-    changeSelectionUnit(unit);
-    resetToTopForUnit(unit);
-  };
-
-  // Selecting a season (SeasonSheet, or the "Back to today" chip with `next: null`)
-  // closes any open card -- a live-roster selection doesn't necessarily exist in a past
-  // season's data -- and writes `?season=` into the URL (kept, never stripped, so the
-  // link stays shareable). The query-driven mount/Back-Forward path
-  // (ApplySeasonFromQuery below) only updates local state via setSeason directly; the
-  // URL is already correct in that case, so it doesn't re-push it.
-  const changeSeason = (next: number | null) => {
-    setSeason(next);
-    resetForSeasonChange();
-    router.replace(
-      buildTeamSelectionUrl(pathname, { unit: activeUnit, playerId: null, season: next }),
-      { scroll: false }
-    );
-  };
-
-  // A player picked from the nav's player search jumps the field to their unit,
-  // then opens them — same behavior the old header search had.
-  const handleNavSelectPlayer = (player: Player) => {
-    selectPlayer(player, unitForPosition(player.position));
-  };
+  const { changeUnit, changeSeason, handleNavSelectPlayer } = useDepthChartCommands({
+    activeUnit,
+    changeSelectionUnit,
+    resetToTopForUnit,
+    selectPlayer,
+    setSeason,
+    resetForSeasonChange,
+  });
 
   // A past season is read-only, same as previewing a shared board: no reorder
   // affordances (locked decision, phase-d spec — editing history is a board, D2, not an
