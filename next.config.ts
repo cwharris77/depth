@@ -25,6 +25,13 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
+        // Team logos (teams.logo_url / logo_dark_url, ESPN-sourced) -- distinct path
+        // from headshots below, same hostname (DEP-202 season-stats TM column).
+        protocol: 'https',
+        hostname: 'a.espncdn.com',
+        pathname: '/i/teamlogos/**',
+      },
+      {
         // Not every player has an NFL headshot yet (rookies/deep bench players)
         // — ESPN falls back to their college-football photo at a sibling path
         // (.../headshots/college-football/players/full/...), so this can't be

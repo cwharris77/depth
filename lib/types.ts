@@ -264,8 +264,11 @@ export interface PlayerSeasonStats {
   seasonType: 'REG' | 'POST';
   // The team that season/season_type is attributed to (nflverse's `recent_team`, DEP-202).
   // One team per row -- a mid-season trade isn't split; null when the source code didn't
-  // resolve to a team, or on old rows written before this column existed.
+  // resolve to a team, or on old rows written before this column existed. teamLogo is
+  // ESPN-sourced (teams.logo_url) and can be null even when teamAbbrev resolved -- the
+  // logo is the primary display, abbrev is the a11y/fallback label.
   teamAbbrev: string | null;
+  teamLogo: string | null;
   games: number | null;
   completions: number | null;
   attempts: number | null;
