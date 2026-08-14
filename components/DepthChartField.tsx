@@ -16,14 +16,12 @@ import { DESKTOP_MEDIA_QUERY, useMediaQuery } from '@/lib/hooks/use-media-query'
 import { useShareRoster } from '@/lib/hooks/overrides/use-share-roster';
 import { useTeamOverride } from '@/lib/hooks/overrides/use-team-override';
 import { useUser } from '@/lib/hooks/use-user';
-import ApplyKitFromQuery from './ApplyKitFromQuery';
-import ApplySeasonFromQuery from './ApplySeasonFromQuery';
 import ApplySharedOrder from './ApplySharedOrder';
 import DepthChartFieldSurface from './DepthChartFieldSurface';
 import DepthChartSheets from './DepthChartSheets';
 import FieldHeader from './FieldHeader';
 import PlayerCard from './PlayerCard';
-import SyncSelectionWithQuery from './SyncSelectionWithQuery';
+import SyncSelectionFromQuery from './SyncSelectionFromQuery';
 import TeamPageShell from './TeamPageShell';
 
 // Pure client component: it receives one resolved roster as a prop and never
@@ -257,15 +255,14 @@ export default function DepthChartField({
 
         {!isDesktop && <PlayerCard {...playerCardProps} />}
 
-        <SyncSelectionWithQuery
+        <SyncSelectionFromQuery
           players={displayRoster.players}
           selectedPlayerId={selectedPlayer?.id ?? null}
-          onChange={restoreSelectionFromUrl}
+          onChangeSelection={restoreSelectionFromUrl}
+          onApplySeason={setSeason}
+          validKitIds={roster.uniforms.map((u) => u.id)}
+          onApplyKit={setKitId}
         />
-
-        <ApplyKitFromQuery validIds={roster.uniforms.map((u) => u.id)} onApply={setKitId} />
-
-        <ApplySeasonFromQuery onApply={setSeason} />
 
         <ApplySharedOrder onApply={handleApplySharedOrder} />
       </div>
