@@ -21,7 +21,7 @@ resolved statuses always carry their resolution date
 
 ### Observation 4: Machine-generated artifacts must be substituted programmatically, never retyped
 
-**Status:** OPEN
+**Status:** OPEN — escalated (2026-08-14): proposes a new skill ("handling-generated-artifacts"), naming/scope needs Cooper's decision per weekly-review.md's autonomous-review policy.
 **Date:** 2026-08-06
 **Session context:** Adding NFL uniform team definitions to the depth repo. Each team's helmet decal is produced by a contour tracer that writes an SVG path to a scratchpad file, which then has to end up inside a TypeScript module.
 **Skill:** New skill candidate: handling-generated-artifacts (or an addition to any skill that pipes tool output into source files)
@@ -36,7 +36,7 @@ resolved statuses always carry their resolution date
 
 ### Observation 7: Transcribing a raster reference reproduced the source renderer's own outline as a gap in the output
 
-**Status:** OPEN
+**Status:** OPEN — escalated (2026-08-14): proposes a new skill ("raster-reference-transcription"), naming/scope needs Cooper's decision — groups with Observations 8 and 9.
 **Date:** 2026-08-06
 **Session context:** Transcribing printed uniform artwork into vector definitions by measuring a raster reference pixel by pixel. A sleeve marking measured as two stacked bands of the same color with a several-pixel gap between them. Both bands were authored faithfully. In the rendered output the marking read as two thin stripes with a body-colored channel between them, where the reference reads as one solid block — because the "gap" was not part of the artwork at all. It was the reference renderer's own seam outline, drawn over a continuous band, and the target renderer draws no such outline. An older module in the same codebase had already hit this and resolved it in a one-line aside ("only a hairline outline between them — so the bands are authored contiguous"), but the procedure doc did not carry the finding, so it was rediscovered from scratch.
 **Skill:** New skill candidate: raster-reference-transcription (or an addition to any procedure that measures a rendered image to reproduce its subject)
@@ -51,7 +51,7 @@ resolved statuses always carry their resolution date
 
 ### Observation 8: "Take the largest component" silently discarded half of a two-part shape
 
-**Status:** OPEN
+**Status:** OPEN — escalated (2026-08-14): extends Observation 7's new-skill proposal ("raster-reference-transcription"); groups with 7 and 9.
 **Date:** 2026-08-07
 **Session context:** Converting a two-color mark from a raster reference into vector paths. The mark is a solid body inside a contrasting outline. The intended method was to select both colors at once, trace the resulting silhouette, and paint the body over it so the outline survives as a continuous edge. To isolate the mark from unrelated same-colored artwork nearby, the selection was reduced with the usual heuristic: keep the largest connected component. The output looked entirely plausible — a clean, correct-looking body — and was only caught by holding it against the source. The outline was gone. The two colors never touch: an antialiased seam runs between them matching neither color test, so the "union" was two adjacent components, and the largest was the body alone. The fix was to keep every candidate component and reject by size threshold instead, which also removed the unrelated artwork the heuristic had been introduced for.
 
@@ -67,7 +67,7 @@ resolved statuses always carry their resolution date
 
 ### Observation 9: A capability judgement recorded as a durable comment outlives the evidence for it
 
-**Status:** OPEN
+**Status:** OPEN — escalated (2026-08-14): extends Observation 7's new-skill proposal ("raster-reference-transcription"); groups with 7 and 8.
 **Date:** 2026-08-07
 **Session context:** depth uniform archive — tracing helmet decals for the twelve teams whose modules shipped with a bare shell.
 
@@ -85,7 +85,7 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 
 ### Observation 10: Parallel explore-agent sweeps beat one-pass manual review for full-codebase audits
 
-**Status:** OPEN
+**Status:** OPEN — escalated (2026-08-14): proposes a new skill ("codebase-audit-review"), naming/scope needs Cooper's decision.
 **Date:** 2026-08-10
 **Session context:** User asked for a complete code-quality pass over a ~55-component, 181-file-lib Next.js app (design tokens, components, pages, Next.js practice).
 **Skill:** New skill candidate: "codebase-audit-review"
@@ -110,7 +110,7 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 
 ### Observation 12: A spec that defers a feature usually leaves the pattern for it in an older sibling — check the app's established precedent before designing the deferred feature
 
-**Status:** OPEN
+**Status:** ACTIONED (2026-08-14) — Applied to `implement-spec` (step 1: added a rule to search the app for an already-shipped sibling pattern before designing a spec-deferred feature; also folded in Observation 13's "quoted line ranges drift, re-locate by string not line number" rule in the same edit) (scheduled review)
 **Date:** 2026-08-10
 **Session context:** depth past-season schedule view. The 2026-07-17 team-schedule spec locked "v1 shows the latest season only; a season switcher is a later add" and the depth chart's Phase D1 spec (an *older* feature) had already shipped the season-picker pattern: `SeasonSheet` + `BottomSheet` + `?season=` URL + client hook + API route + `ApplySeasonFromQuery`. Every design question the new ticket raised (URL vs local state, flat list vs decade grouping, "back to today" semantics) was already answered by that precedent, so the whole feature reused existing seams instead of inventing new ones — SeasonSheet, BottomSheet, ApplySeasonFromQuery, the use-team-season hook shape, and the history API route shape were all copied/mirrored verbatim.
 
@@ -120,7 +120,7 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 
 ### Observation 13: A ticket's quoted code references are a snapshot that drifts
 
-**Status:** OPEN
+**Status:** OPEN — escalated (2026-08-14): proposes a new skill ("ticket-execution"), naming/scope needs Cooper's decision. Note: the stale-quote-reference part of this observation's suggested improvement was folded into `implement-spec`'s step 1 as an additive fix during this review (see Observation 12's ACTIONED note above) — this observation stays OPEN because the new-skill proposal itself is still undecided.
 **Date:** 2026-08-11
 **Session context:** Implementing the depth "Add FTN attribution to formation surfaces" ticket end-to-end. The ticket's Context section quoted two line ranges in components/DepthChartField.tsx (the attribution line at :486-492 and a formation chip row at :369-396) as the current state of the code. Both were gone by the time the branch was checked out — the chip row had been removed and the whole formations surface redesigned (PR #248) after the ticket was written. The attribution the ticket described as showing only "after a tap" actually lived in a different component (FormationsSheet.tsx), and the field rendered FTN-derived layouts from first paint with no attribution at all. The ticket's Done-when survived intact; only its quoted evidence was stale.
 **Skill:** New skill candidate: ticket-execution
@@ -137,7 +137,7 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 
 ### Observation 14: `cacheLife()` throws when a `'use cache'` function runs under vitest
 
-**Status:** OPEN
+**Status:** ACTIONED (2026-08-14) — Applied to `vitest-testing` (new "depth-specific gotchas" section) (scheduled review)
 **Date:** 2026-08-12
 **Session context:** Hardening the public player-search endpoint (depth repo). Evaluated adding Next's `'use cache'` to a DB-read function and planned a unit test that would call it with a mocked supabase client.
 **Skill:** vitest-testing
@@ -152,7 +152,7 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 
 ### Observation 15: A module-scoped cache leaks across tests in the same file
 
-**Status:** OPEN
+**Status:** ACTIONED (2026-08-14) — Applied to `vitest-testing` (new "depth-specific gotchas" section) (scheduled review)
 **Date:** 2026-08-12
 **Session context:** Writing unit tests for searchAllPlayers' new module-scoped result cache in the depth repo. The TTL-expiry test failed confusingly until I realized an earlier test had already cached the same key.
 **Skill:** vitest-testing
@@ -167,7 +167,7 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 
 ### Observation 16: Mocking a module doesn't bypass a real guard that reads env vars before the mocked call
 
-**Status:** OPEN
+**Status:** ACTIONED (2026-08-14) — Applied to `vitest-testing` (new "depth-specific gotchas" section) (scheduled review)
 **Date:** 2026-08-12
 **Session context:** In the depth repo, mocking `@supabase/supabase-js` so searchAllPlayers runs against a recording fake client in vitest. Tests failed with the real "Missing SUPABASE_URL" error.
 **Skill:** vitest-testing
@@ -199,7 +199,7 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 
 ### Observation 18: Testing a module-scoped singleton store needs vi.resetModules + dynamic import, not a React render
 
-**Status:** OPEN
+**Status:** ACTIONED (2026-08-14) — Applied to `vitest-testing` (new "depth-specific gotchas" section) (scheduled review)
 **Date:** 2026-08-12
 **Session context:** Hardening the depth repo's use-user auth singleton (lib/use-user.ts) and adding the ticket-mandated tests for it — the store is module-scoped (useSyncExternalStore), and vitest keeps one module instance per file, so state leaked across `it` blocks.
 
@@ -215,7 +215,7 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 
 ### Observation 19: Unit-testing Next.js app-dir route handlers by mocking the supabase client module
 
-**Status:** OPEN
+**Status:** ACTIONED (2026-08-14) — Applied to `vitest-testing` (new "depth-specific gotchas" section) (scheduled review)
 **Date:** 2026-08-12
 **Session context:** depth — fixing four API routes that threw or swallowed DB errors (ticket "fix route handlers that throw or swallow errors"). First route-handler tests this repo has had; all prior tests live under lib/.
 **Skill:** vitest-testing
