@@ -29,20 +29,20 @@
 import dotenv from 'dotenv';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { getSupabaseUrl, getSupabaseSecretKey } from '../lib/env';
+import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/utils/env';
 
 dotenv.config({ path: '.env.local' });
-import { parseCsv, parseCsvStream } from '../lib/nflverse/csv';
-import { assetUrl, latestAvailableSeason } from '../lib/nflverse/assets';
-import { buildCrosswalk } from '../lib/nflverse/crosswalk';
-import { toPlayerStatsRows, type PlayerStatsInsert } from '../lib/nflverse/transform';
-import { toScheduleAndGameRows, type GameInsert, type ScheduleInsert } from '../lib/nflverse/games';
-import { toTeamStatsRows, type TeamStatsInsert } from '../lib/nflverse/team-stats';
-import { FormationAccumulator, type ParticipationRow } from '../lib/nflverse/participation';
-import { DefenseFormationAccumulator } from '../lib/nflverse/defense-participation';
-import { resolveTeamCode } from '../lib/nflverse/team-codes';
-import { parseSeasonsArg } from '../lib/nflverse/seasons-arg';
-import { SEASONS_MIN } from '../lib/nflverse/roster-history';
+import { parseCsv, parseCsvStream } from '@/lib/nflverse/csv';
+import { assetUrl, latestAvailableSeason } from '@/lib/nflverse/assets';
+import { buildCrosswalk } from '@/lib/nflverse/crosswalk';
+import { toPlayerStatsRows, type PlayerStatsInsert } from '@/lib/nflverse/transform';
+import { toScheduleAndGameRows, type GameInsert, type ScheduleInsert } from '@/lib/nflverse/games';
+import { toTeamStatsRows, type TeamStatsInsert } from '@/lib/nflverse/team-stats';
+import { FormationAccumulator, type ParticipationRow } from '@/lib/nflverse/participation';
+import { DefenseFormationAccumulator } from '@/lib/nflverse/defense-participation';
+import { resolveTeamCode } from '@/lib/nflverse/team-codes';
+import { parseSeasonsArg } from '@/lib/nflverse/seasons-arg';
+import { SEASONS_MIN } from '@/lib/nflverse/roster-history';
 import {
   extractPlayerIds,
   buildPlayerStatsSeedSql,
@@ -50,8 +50,8 @@ import {
   buildTeamFormationsSeedSql,
   buildTeamStatsSeedSql,
   type UnitFormationTally,
-} from '../lib/nflverse/seed-sql';
-import type { Database } from '../lib/database.types';
+} from '@/lib/nflverse/seed-sql';
+import type { Database } from '@/lib/database.types';
 
 const PLAYERS_TAG = 'players';
 const PLAYERS_FILE = 'players.csv';

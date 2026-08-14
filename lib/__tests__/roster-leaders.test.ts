@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { rosterLeaders, type LeaderEntry } from '../roster-leaders';
-import type { PlayerSeasonStats } from '../types';
+import { rosterLeaders, type LeaderEntry } from '@/lib/utils/roster/roster-leaders';
+import type { PlayerSeasonStats } from '@/lib/types';
 
 // A full-null stats row for one season; spread over with the fields a case cares about,
 // so each entry only states the stats relevant to the leader it's meant to win/lose.

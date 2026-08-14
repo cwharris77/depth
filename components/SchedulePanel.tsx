@@ -3,13 +3,13 @@
 // Desktop context panel for the schedule page (TeamPageShell's aside; Claude Design
 // "Depth Wide Desktop" mock): season snapshot, next game, home/road splits, and recent
 // form. Everything is derived client-side from the schedule prop the page already ships
-// (lib/schedule-summary.ts) — no second data fetch (AGENTS.md invariant 5). Renders
+// (lib/utils/schedule/schedule-summary.ts) — no second data fetch (AGENTS.md invariant 5). Renders
 // nothing when there's no schedule; the main column already shows the empty state.
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import SectionLabel from '@/components/ui/SectionLabel';
-import { gameResultColor, readableTextOn } from '@/lib/colors';
-import { formatGameDate } from '@/lib/format';
-import { scheduleSummary } from '@/lib/schedule-summary';
+import { gameResultColor, readableTextOn } from '@/lib/utils/colors';
+import { formatGameDate } from '@/lib/utils/format';
+import { scheduleSummary } from '@/lib/utils/schedule/schedule-summary';
 import type { TeamSchedule } from '@/lib/types';
 
 function SplitCard({ label, value }: { label: string; value: string }) {

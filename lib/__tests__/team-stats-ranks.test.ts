@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { buildLeagueRanks, type TeamSeasonStatsRankRow } from '../roster-source.db';
-import type { Database } from '../database.types';
+import { buildLeagueRanks, type TeamSeasonStatsRankRow } from '@/lib/roster-source.db';
+import type { Database } from '@/lib/database.types';
 
 type Tables = Database['public']['Tables'];
 type TeamStatsRankRow = Pick<

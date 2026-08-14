@@ -2,9 +2,9 @@
 
 import { motion } from 'framer-motion';
 import type { Player, RenderSlot, TeamColors, Unit } from '@/lib/types';
-import { readableTextOn } from '@/lib/colors';
-import { formatLastName } from '@/lib/format';
-import { positionFullName } from '@/lib/positions';
+import { readableTextOn } from '@/lib/utils/colors';
+import { formatLastName } from '@/lib/utils/format';
+import { positionFullName } from '@/lib/utils/team/positions';
 import { colors as uiTokens, zIndex } from '@/components/ui/tokens';
 
 interface PlayerDotProps {

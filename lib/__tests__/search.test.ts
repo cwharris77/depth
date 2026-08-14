@@ -6,7 +6,7 @@ import {
   positionGroupPositions,
   rankByNameMatch,
   unitForPosition,
-} from '../search';
+} from '@/lib/utils/search/search';
 
 describe('unitForPosition', () => {
   it('maps offense, defense, and special positions', () => {

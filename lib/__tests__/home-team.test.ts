@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveStartupTeam } from '../home-team';
+import { resolveStartupTeam } from '@/lib/utils/team/home-team';
 
 const VALID = ['seahawks', 'eagles', '49ers'];
 

@@ -4,7 +4,7 @@ import {
   getPlayerStats,
   getTeamSeason,
   searchAllPlayers,
-} from '../roster-source.db';
+} from '@/lib/roster-source.db';
 
 // Tests against the real Supabase project (not mocked). Rationale: this repo's test
 // suite runs locally/in CI with network access already assumed for the ESPN fetch

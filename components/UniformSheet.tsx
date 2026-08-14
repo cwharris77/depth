@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Check } from 'lucide-react';
 import { motion, type PanInfo } from 'framer-motion';
 import type { Uniform } from '@/lib/types';
-import { formatUniformYears } from '@/lib/uniforms';
+import { formatUniformYears } from '@/lib/utils/uniforms';
 import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
 import JerseySwatch from './JerseySwatch';
 import SheetHeader from './ui/SheetHeader';

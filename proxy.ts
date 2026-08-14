@@ -17,7 +17,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import type { Database } from '@/lib/database.types';
-import { getSupabaseUrl, getSupabaseAnonKey } from '@/lib/env';
+import { getSupabaseUrl, getSupabaseAnonKey } from '@/lib/utils/env';
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

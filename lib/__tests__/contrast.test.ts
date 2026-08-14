@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { TEAMS } from '../teams';
-import { contrastRatio, readableTextOn } from '../colors';
+import { TEAMS } from '@/lib/teams';
+import { contrastRatio, readableTextOn } from '@/lib/utils/colors';
 
 // uiAccent is now the team's real brand primary (no curated/derived contrast color),
 // so we no longer assert every team's accent clears the dark UI — a dark primary that's

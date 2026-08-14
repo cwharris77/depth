@@ -9,7 +9,7 @@
 // this seed can see, via extractPlayerIds() below, parsed from the already-committed
 // ESPN seed (supabase/seed.sql). roster_history has no such FK (nflverse-keyed by
 // gsis_id, 20260801031305_add_roster_history.sql) and needs no filtering.
-import { insertStatement } from '../seed-sql';
+import { insertStatement } from '@/lib/utils/seed-sql';
 import { tables } from '@/lib/supabase/tables';
 import type { PlayerStatsInsert } from './transform';
 import type { ScheduleInsert, GameInsert } from './games';

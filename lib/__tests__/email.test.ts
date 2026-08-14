@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isValidEmail } from '../email';
+import { isValidEmail } from '@/lib/utils/email';
 
 describe('isValidEmail', () => {
   it('accepts a plain address', () => {

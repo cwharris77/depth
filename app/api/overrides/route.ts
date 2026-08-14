@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerClient, requireUser } from '@/lib/supabase/server';
 import { tables } from '@/lib/supabase/tables';
 import type { Database } from '@/lib/database.types';
-import type { TeamDepthOverride } from '@/lib/depth-overrides';
+import type { TeamDepthOverride } from '@/lib/utils/depth-chart/depth-overrides';
 import type { Position } from '@/lib/types';
 
 // GET -> the user's overrides shaped as Record<teamId, TeamDepthOverride> (position -> ids),

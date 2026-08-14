@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { dbRosterSource } from '@/lib/roster-source.db';
-import { getSiteUrl } from '@/lib/site-url';
+import { getSiteUrl } from '@/lib/utils/site-url';
 
 // Absolute base for sitemap URLs — same source as the layout's metadataBase.
 const siteUrl = getSiteUrl();

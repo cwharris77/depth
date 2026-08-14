@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { scheduleSummary } from '../schedule-summary';
-import type { TeamScheduleGame } from '../types';
+import { scheduleSummary } from '@/lib/utils/schedule/schedule-summary';
+import type { TeamScheduleGame } from '@/lib/types';
 
 // Minimal game builder — only the fields scheduleSummary reads vary per test.
 function game(overrides: Partial<TeamScheduleGame> = {}): TeamScheduleGame {

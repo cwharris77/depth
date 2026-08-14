@@ -5,7 +5,7 @@ import {
   readDotenvValue,
   VERCEL_PROTECTION_BYPASS_ENV_KEY,
   withVercelProtectionBypass,
-} from '../lib/vercel-preview-bypass';
+} from '@/lib/utils/vercel-preview-bypass';
 
 const previewUrl = process.argv[2];
 

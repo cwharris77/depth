@@ -8,8 +8,8 @@ import { colors } from './ui/tokens';
 import {
   dismissNavDrawerCoachmark,
   hasDismissedNavDrawerCoachmark,
-} from '@/lib/nav-drawer-coachmark';
-import { MARK_WORDMARK_GAP } from '@/lib/depth-mark-gap';
+} from '@/lib/utils/nav-drawer-coachmark';
+import { MARK_WORDMARK_GAP } from '@/lib/utils/depth-chart/depth-mark-gap';
 
 const COACHMARK_TIMEOUT_MS = 4000;
 
@@ -23,7 +23,7 @@ const COACHMARK_TIMEOUT_MS = 4000;
 // everywhere it's rendered; only the logo mark's color varies (team/brand accent), so it's the
 // one prop here.
 //
-// First-load coachmark: shown once per visitor, gated by lib/nav-drawer-coachmark.ts's
+// First-load coachmark: shown once per visitor, gated by lib/utils/nav-drawer-coachmark.ts's
 // localStorage flag (set the instant the mark shows, not on dismiss — so navigating away
 // before it dismisses still counts as "shown"). Only wired up when this is acting as the nav
 // trigger (`onClick` set) — the non-interactive renders (loading skeleton, sign-in page) never

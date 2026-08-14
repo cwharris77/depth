@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { experienceLabel, formatGameDate, formatLastName, ordinal } from '../format';
+import { experienceLabel, formatGameDate, formatLastName, ordinal } from '@/lib/utils/format';
 
 describe('experienceLabel', () => {
   it('calls a player with 0 seasons a rookie', () => {

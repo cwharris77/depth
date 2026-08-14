@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerClient, requireUser } from '@/lib/supabase/server';
 import { tables } from '@/lib/supabase/tables';
 import type { Database } from '@/lib/database.types';
-import type { UserSettings } from '@/lib/home-team';
+import type { UserSettings } from '@/lib/utils/team/home-team';
 
 const EMPTY: UserSettings = { favoriteTeamId: null, lastTeamId: null, startOnFavorite: true };
 

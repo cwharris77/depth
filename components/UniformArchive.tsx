@@ -15,7 +15,7 @@ import NavDrawer from './NavDrawer';
 import TeamPageShell from './TeamPageShell';
 import FilterPill from './ui/FilterPill';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
-import { useLastAccent } from '@/lib/use-last-accent';
+import { useLastAccent } from '@/lib/hooks/use-last-accent';
 import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
 
 // The uniform archive (roadmap Phase 7). Receives every kit from the server route and
@@ -25,7 +25,7 @@ import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
 // drawer (mobile); at `xl` a persistent TeamPageShell/TeamRail replaces it (Desktop shell
 // for uniform archive and compare pages ticket) — the archive has no current team, so the
 // rail renders with no team/activePage and nav tints use whatever team was last viewed
-// (lib/use-last-accent.ts), falling back to the neutral `uiTokens.accent` on a fresh session.
+// (lib/hooks/use-last-accent.ts), falling back to the neutral `uiTokens.accent` on a fresh session.
 // Each division's teams go from one full-bleed row each to a 2/3-column grid at `lg`/`xl`
 // (Uniform archive layout on laptop screens ticket) — a separate, lower breakpoint than the
 // shell's `xl` rail switch, since the grid should densify before there's room for a rail.

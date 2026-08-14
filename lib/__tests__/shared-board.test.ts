@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveBoard, type SharedBoard } from '../shared-board';
+import { resolveBoard, type SharedBoard } from '@/lib/utils/depth-chart/shared-board';
 
 const board: SharedBoard = { teamId: 'seahawks', ownerName: 'cooper', override: { QB: ['a'] } };
 

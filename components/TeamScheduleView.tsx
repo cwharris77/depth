@@ -14,10 +14,10 @@
 // matching the depth chart's Phase D1 precedent); the default view is `null`.
 import type { TeamMeta } from '@/lib/roster-source';
 import type { TeamSchedule, TeamScheduleGame } from '@/lib/types';
-import { gameResultColor, readableTextOn } from '@/lib/colors';
-import { formatGameDate } from '@/lib/format';
-import { normalizeViewedSeason } from '@/lib/schedule';
-import { useTeamScheduleSeason } from '@/lib/use-team-schedule-season';
+import { gameResultColor, readableTextOn } from '@/lib/utils/colors';
+import { formatGameDate } from '@/lib/utils/format';
+import { normalizeViewedSeason } from '@/lib/utils/schedule/schedule';
+import { useTeamScheduleSeason } from '@/lib/hooks/schedule/use-team-schedule-season';
 import { ChevronDown, History } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -30,7 +30,7 @@ import TeamPageHeader from './TeamPageHeader';
 import TeamPageShell from './TeamPageShell';
 import Badge from '@/components/ui/Badge';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
-import { useKitColors } from '@/lib/use-kit-colors';
+import { useKitColors } from '@/lib/hooks/use-kit-colors';
 
 interface Props {
   team: TeamMeta;
@@ -170,7 +170,7 @@ export default function TeamScheduleView({
   currentSeason,
   minSeason,
 }: Props) {
-  // Picks up whichever kit is active on the roster page for this team (lib/use-kit-colors.ts)
+  // Picks up whichever kit is active on the roster page for this team (lib/hooks/use-kit-colors.ts)
   // instead of always showing the default team colors — falls back to team.colors when
   // nothing was ever picked this session.
   const colors = useKitColors(team);

@@ -3,8 +3,8 @@
 import { Suspense, useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { Player, Unit } from '@/lib/types';
-import { isUnit } from '@/lib/team-selection';
-import { unitForPosition } from '@/lib/search';
+import { isUnit } from '@/lib/utils/depth-chart/team-selection';
+import { unitForPosition } from '@/lib/utils/search/search';
 
 // Keeps DepthChartField's selection state following `?player=&unit=` whenever the URL
 // changes out from under it — not just at mount. That covers three cases with one

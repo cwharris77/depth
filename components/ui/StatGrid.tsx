@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/class-names';
 import { colors, typeScale } from './tokens';
 
 type Stat = { label: string; value: string | number };

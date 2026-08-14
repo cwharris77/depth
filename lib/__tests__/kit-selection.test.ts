@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { getKitId, setKitId, clearKitId } from '../kit-selection';
+import { getKitId, setKitId, clearKitId } from '@/lib/utils/depth-chart/kit-selection';
 
 // Mock localStorage for SSR-safe testing.
 const store = new Map<string, string>();

@@ -9,7 +9,7 @@
 // Re-run after changing the registry; commit the regenerated migration.
 
 import { writeFileSync } from 'node:fs';
-import { generateTeamSeedSql } from '../lib/teams/seed-sql';
+import { generateTeamSeedSql } from '@/lib/teams/seed-sql';
 
 const outPath = process.argv[2];
 const sql = generateTeamSeedSql();

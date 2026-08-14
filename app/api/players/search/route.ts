@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSlidingWindowLimiter } from '@/lib/rate-limit';
+import { createSlidingWindowLimiter } from '@/lib/utils/rate-limit';
 import { searchAllPlayers } from '@/lib/roster-source.db';
-import { normalizePlayerSearchQuery } from '@/lib/search';
+import { normalizePlayerSearchQuery } from '@/lib/utils/search/search';
 
 // Backs the nav's player-search mode: searches every ingested team's players, not
 // just the one roster the client already has (dbRosterSource only ever ships one
 // team to the browser, by design — see app/team/[id]/page.tsx).
 //
 // Server-side gate for a public, unauthenticated route: the client debounce
-// (lib/use-player-search.ts) and searchAllPlayers' result cache stop repeated queries,
+// (lib/hooks/search/use-player-search.ts) and searchAllPlayers' result cache stop repeated queries,
 // but a burst of distinct queries would still reach Postgres (up to four ILIKEs each),
 // and bad input must be rejected before any DB work. This route (a) caps hits per
 // client IP with a sliding window and (b) normalizes + validates the query — rejecting
