@@ -221,6 +221,7 @@ export type Database = {
           season: number
           season_type: string
           targets: number | null
+          team_id: string | null
           updated_at: string
         }
         Insert: {
@@ -245,6 +246,7 @@ export type Database = {
           season: number
           season_type?: string
           targets?: number | null
+          team_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -269,9 +271,18 @@ export type Database = {
           season?: number
           season_type?: string
           targets?: number | null
+          team_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "player_stats_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       players: {
         Row: {

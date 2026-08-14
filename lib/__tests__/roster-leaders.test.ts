@@ -8,6 +8,7 @@ function stats(season: number, over: Partial<PlayerSeasonStats>): PlayerSeasonSt
   return {
     season,
     seasonType: 'REG',
+    teamAbbrev: null,
     games: 17,
     completions: null,
     attempts: null,
