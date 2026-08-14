@@ -68,7 +68,7 @@ export function useDepthChartSelection(season: number | null) {
     openedViaPushRef.current = false;
   };
 
-  // SyncSelectionWithQuery drives this when the URL changes out from under us -- mount-
+  // SyncSelectionFromQuery drives this when the URL changes out from under us -- mount-
   // time restore, browser Back/Forward, or a manual URL edit. The URL already matches by
   // the time this fires, so no router call here; leaving openedViaPushRef false means a
   // later close replaces/strips the param instead of calling router.back() into whatever

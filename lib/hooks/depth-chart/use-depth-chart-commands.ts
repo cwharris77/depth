@@ -40,9 +40,9 @@ export function useDepthChartCommands({
   // Selecting a season (SeasonSheet, or the "Back to today" chip with `next: null`)
   // closes any open card -- a live-roster selection doesn't necessarily exist in a past
   // season's data -- and writes `?season=` into the URL (kept, never stripped, so the
-  // link stays shareable). The query-driven mount/Back-Forward path
-  // (ApplySeasonFromQuery) only updates local state via setSeason directly; the URL is
-  // already correct in that case, so it doesn't re-push it.
+  // link stays shareable). The query-driven mount/Back-Forward path (SyncSelectionFromQuery's
+  // season read) only updates local state via setSeason directly; the URL is already
+  // correct in that case, so it doesn't re-push it.
   const changeSeason = (next: number | null) => {
     setSeason(next);
     resetForSeasonChange();

@@ -145,7 +145,7 @@ interface NavSwitcherProps {
   // (the roster page does; the stats page doesn't — see components/TeamStatsView.tsx).
   // Selecting a player already on this team opens them in place via onSelectPlayer;
   // without this, or for any other team, selection navigates to that team's roster
-  // page instead (?player=<id>, opened there by SyncSelectionWithQuery).
+  // page instead (?player=<id>, opened there by SyncSelectionFromQuery).
   currentTeamPlayers?: Player[];
   onSelectPlayer: (player: Player) => void;
   onClose: () => void;
@@ -259,7 +259,7 @@ export default function NavSwitcher({
       }
     }
     // Different team: navigate there and open the player once its roster loads
-    // (SyncSelectionWithQuery on the destination page reads `?player=`).
+    // (SyncSelectionFromQuery on the destination page reads `?player=`).
     startTransition(() => {
       router.push(`/team/${hit.team.id}?player=${hit.id}`);
     });

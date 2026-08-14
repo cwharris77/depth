@@ -8,9 +8,10 @@ import { useApplyQueryParam } from '@/lib/hooks/use-apply-query-param';
 // Opening a shared roster link (/team/[id]?order=<packed>) applies the sender's custom
 // depth order on arrival, then strips the param so a reload/reshare is clean. Isolated
 // in its own Suspense boundary (useApplyQueryParam's useSearchParams requires one during
-// static generation), like SyncSelectionWithQuery.
+// static generation), like SyncSelectionFromQuery.
 function Inner({ onApply }: { onApply: (override: TeamDepthOverride) => void }) {
   useApplyQueryParam('order', (param) => {
+    if (!param) return;
     const override = decodeDepthOrder(param);
     if (override) onApply(override);
   });
