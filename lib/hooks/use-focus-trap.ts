@@ -23,7 +23,12 @@ export function useFocusTrap(
           panel.querySelectorAll<HTMLElement>('a[href], button, [tabindex]:not([tabindex="-1"])')
         )
       : [];
-    focusables[0]?.focus();
+    // preventScroll: true — DEP-201 found the default focus() call scrolls its target
+    // into view, which visibly jumped the underlying page to the top the instant the
+    // sheet opened (the panel is absolutely positioned off-screen-adjacent at mount,
+    // so the browser "helpfully" scrolled the ancestor scroll container to reveal it).
+    // The trap still moves focus into the panel for a11y; it just doesn't scroll to do it.
+    focusables[0]?.focus({ preventScroll: true });
 
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
