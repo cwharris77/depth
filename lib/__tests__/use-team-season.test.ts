@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useTeamSeason } from '../use-team-season';
+import { useTeamSeason } from '@/lib/hooks/schedule/use-team-season';
 
 const mockTeamId = 'SEA';
 const mockSeason = 2025;

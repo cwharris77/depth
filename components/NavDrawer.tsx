@@ -4,7 +4,7 @@ import { useEffect, useRef, useTransition } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { X, ClipboardList, Columns2, Grid, User } from 'lucide-react';
-import { useUser } from '@/lib/use-user';
+import { useUser } from '@/lib/hooks/use-user';
 import { colors as uiTokens, zIndex } from '@/components/ui/tokens';
 import IconButton from '@/components/ui/IconButton';
 

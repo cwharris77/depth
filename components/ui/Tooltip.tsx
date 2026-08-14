@@ -2,7 +2,7 @@
 
 import { Popover } from '@base-ui/react/popover';
 import type { ReactElement, ReactNode } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/class-names';
 import { colors, typeScale, zIndex } from './tokens';
 
 type TooltipProps = {

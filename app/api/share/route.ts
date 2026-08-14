@@ -4,7 +4,7 @@
 // The share is a reference, not a snapshot -- no override data is copied here. 401 signed out.
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerClient, requireUser } from '@/lib/supabase/server';
-import { newSlug } from '@/lib/slug';
+import { newSlug } from '@/lib/utils/slug';
 import { tables } from '@/lib/supabase/tables';
 
 export async function POST(request: NextRequest) {

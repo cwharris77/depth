@@ -34,7 +34,7 @@ beforeEach(() => {
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 async function loadStore() {
-  return await import('@/lib/use-user');
+  return await import('@/lib/hooks/use-user');
 }
 
 describe('use-user auth store', () => {

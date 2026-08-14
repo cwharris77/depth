@@ -1,6 +1,6 @@
 'use client';
 
-// Desktop-only left rail (hidden below `xl` — see lib/use-media-query.ts for the one
+// Desktop-only left rail (hidden below `xl` — see lib/hooks/use-media-query.ts for the one
 // breakpoint). Persistent navigation for wide screens (Wide-screen responsive multi-panel
 // ticket; layout from the Claude Design "Depth Wide Desktop" mock): search over teams and
 // players, the full team list grouped by conference/division (same sectioning as
@@ -23,15 +23,15 @@ import Avatar from '@/components/ui/Avatar';
 import Input from '@/components/ui/Input';
 import SectionLabel from '@/components/ui/SectionLabel';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
-import { readableTextOn } from '@/lib/colors';
+import { readableTextOn } from '@/lib/utils/colors';
 import type { TeamMeta } from '@/lib/roster-source';
-import type { PlayerHit } from '@/lib/search';
-import { useUser } from '@/lib/use-user';
+import type { PlayerHit } from '@/lib/utils/search/search';
+import { useUser } from '@/lib/hooks/use-user';
 import { Check, Columns2, Grid, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
-import { usePlayerSearch } from '@/lib/use-player-search';
+import { usePlayerSearch } from '@/lib/hooks/search/use-player-search';
 import DepthMark from './DepthMark';
 
 export type TeamPageKey = 'roster' | 'schedule' | 'stats';

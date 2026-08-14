@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createSlidingWindowLimiter } from '../rate-limit';
+import { createSlidingWindowLimiter } from '@/lib/utils/rate-limit';
 
 describe('createSlidingWindowLimiter', () => {
   it('allows up to max hits in a window, then denies', () => {

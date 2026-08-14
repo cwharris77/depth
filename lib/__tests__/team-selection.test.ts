@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildTeamSelectionUrl, isUnit } from '../team-selection';
+import { buildTeamSelectionUrl, isUnit } from '@/lib/utils/depth-chart/team-selection';
 
 describe('isUnit', () => {
   it('accepts the three known units', () => {

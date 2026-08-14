@@ -1,12 +1,12 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/class-names';
 import { motion } from 'framer-motion';
 import { colors, typeScale, zIndex } from './tokens';
 
 // One-time anchored hint: a small arrow-tipped bubble pointing up at whatever it's rendered
 // under. Purely presentational — no localStorage/timeout logic here, callers own visibility
-// (see components/DepthMark's nav-drawer coachmark, lib/nav-drawer-coachmark.ts for the
+// (see components/DepthMark's nav-drawer coachmark, lib/utils/nav-drawer-coachmark.ts for the
 // dismiss-gate pattern it follows). Positioned by the caller via a `relative` ancestor; this
 // renders `absolute` beneath that anchor, left-aligned so the arrow sits under the trigger.
 export default function Coachmark({ message, className }: { message: string; className?: string }) {

@@ -4,8 +4,8 @@ import {
   buildCompareTeaser,
   COMPARE_POSITIONS,
   parseCompareParams,
-} from '@/lib/compare';
-import { getPlayersByPosition } from '@/lib/roster';
+} from '@/lib/utils/compare';
+import { getPlayersByPosition } from '@/lib/utils/roster/roster';
 import { dbRosterSource } from '@/lib/roster-source.db';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';

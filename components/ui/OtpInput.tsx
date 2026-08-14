@@ -1,11 +1,11 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/class-names';
 import { useRef, useState } from 'react';
 import type { ChangeEvent, ClipboardEvent, KeyboardEvent } from 'react';
-import { distributeOtpPaste, sanitizeOtpChar } from '@/lib/otp-input';
+import { distributeOtpPaste, sanitizeOtpChar } from '@/lib/utils/auth/otp-input';
 import { colors } from './tokens';
-import { focusRing } from '@/lib/colors';
+import { focusRing } from '@/lib/utils/colors';
 
 type OtpInputProps = {
   length?: number;

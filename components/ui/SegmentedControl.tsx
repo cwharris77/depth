@@ -1,10 +1,10 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/class-names';
 import Link from 'next/link';
 import type { CSSProperties, MouseEvent } from 'react';
 import { colors, typeScale } from './tokens';
-import { withAlpha } from '@/lib/colors';
+import { withAlpha } from '@/lib/utils/colors';
 
 // An option renders as a plain <button> unless it carries an `href`, in which case
 // it renders as a Next <Link> — so a link-shaped switcher (e.g. the ROSTER/SCHEDULE/

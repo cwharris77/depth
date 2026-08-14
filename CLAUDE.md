@@ -52,11 +52,11 @@ refactor (see §6).
    large controlled surfaces only (field tint, header, OG cards). `uiAccent/onAccent`
    are curated/derived to read on the dark bg `#0a0e1a` — text, dots, rings, stat
    accents. PR #25 was a bug from mixing these up. Every curated color pair must pass
-   the WCAG-AA contrast test (`lib/__tests__/uniforms.test.ts` pattern, `lib/colors.ts`).
+   the WCAG-AA contrast test (`lib/__tests__/uniforms.test.ts` pattern, `lib/utils/colors.ts`).
 5. **A team page ships one team's data.** Client components receive a resolved
    `TeamRoster` prop; importing all-32 data into a client bundle is a regression.
 6. **Untrusted input degrades, never throws.** Share params decode to `null` on any
-   malformed input (`lib/share.ts`); the DB reader skips dangling references;
+   malformed input (`lib/utils/depth-chart/share.ts`); the DB reader skips dangling references;
    `getTeam` returns `undefined` → 404. ESPN fetches retry with backoff.
 7. **Ingestion is decoupled from deploys.** `ingest:espn` is never part of
    `next build` or CI-for-PRs; a failed ingest leaves the DB one run stale, never
@@ -90,7 +90,15 @@ refactor (see §6).
   house style in opposite directions.
 - **Pure logic lives in `lib/` with colocated tests** (`lib/__tests__/` or next to the
   file in `lib/espn/`). Components stay thin; anything worth testing gets extracted
-  into a pure function first.
+  into a pure function first. `lib/` itself is area-scoped: React hooks live under
+  `lib/hooks/<area>/` (e.g. `lib/hooks/depth-chart/`), non-hook helpers under
+  `lib/utils/<area>/` — flat directly in `lib/hooks/`/`lib/utils/` only when genuinely
+  cross-cutting (`lib/hooks/use-user.ts`, `lib/utils/colors.ts`). `lib/types.ts`,
+  `lib/database.types.ts`, `lib/roster-source.ts`/`.db.ts`, and `lib/class-names.ts`
+  (the `cn()` helper) stay at `lib/` root; ingest/domain subtrees (`lib/espn/`,
+  `lib/nflverse/`, `lib/teams/`, `lib/uniforms/`, `lib/sportslogos/`, `lib/supabase/`)
+  are untouched by this split. Add a new area folder before defaulting a new hook or
+  util to the flat catch-all.
 - **Every page is composed from `components/ui/` primitives — no bespoke one-offs.**
   Before hand-rolling a styled `<div>`/`<button>`/pill/input, `ls components/ui/` and
   use the primitive that fits (`Button`, `IconButton`, `Badge`, `Card`, `Input`,
@@ -108,7 +116,7 @@ refactor (see §6).
   one-off prop name (`kind`).
 - **Data-integrity tests loop over the data**: one generated `it` per row/team (see
   `uniforms.test.ts`), so a failure names the offending row.
-- **Launch gates are Vercel Flags SDK flags in `lib/flags.ts`** — never bool/string
+- **Launch gates are Vercel Flags SDK flags in `lib/utils/flags.ts`** — never bool/string
   consts in components, never raw `process.env` reads outside a flag's `decide()`.
   A flag is evaluated server-side in the page and threaded down as a prop; client
   components never call a flag. `decide()` stays request-free (no cookies/headers)
@@ -120,11 +128,11 @@ refactor (see §6).
   route is the reference (`app/api/players/search/route.ts`): validate + normalize query
   params in pure `lib/` functions and reject invalid/whitespace-only/overlong input with
   400 before any DB work, escape `%`/`_`/`\` before input enters a LIKE pattern
-  (`escapeLike` in `lib/search.ts`), cap per-client hits with an in-memory sliding window
-  (`lib/rate-limit.ts`), and cache repeated normalized queries so hot searches don't hit
-  Postgres per keystroke.
+  (`escapeLike` in `lib/utils/search/search.ts`), cap per-client hits with an in-memory
+  sliding window (`lib/utils/rate-limit.ts`), and cache repeated normalized queries so
+  hot searches don't hit Postgres per keystroke.
 - **No new dependencies without asking.** The runtime dep list is 9 packages and that is
-  a feature. Hand-roll small utilities (see base64url in `lib/share.ts`).
+  a feature. Hand-roll small utilities (see base64url in `lib/utils/depth-chart/share.ts`).
 
 ### Process
 
@@ -317,7 +325,7 @@ relitigate.
 - a schema change not written in an approved spec,
 - enabling RLS, touching auth, or anything that writes to the hosted DB outside a
   migration or the existing ingest script,
-- flipping a launch gate in a deployed environment (a `lib/flags.ts` flag, e.g.
+- flipping a launch gate in a deployed environment (a `lib/utils/flags.ts` flag, e.g.
   `show-uniform-picker` — changing its env var in Vercel or its `decide()` default),
 - changing CI, the ingest cadence, or repo secrets,
 - removing user-visible behavior (even "obviously dead" — #54 removed arrows shipped

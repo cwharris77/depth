@@ -1,8 +1,8 @@
 import DepthChartField from '@/components/DepthChartField';
 import RememberTeam from '@/components/RememberTeam';
 import { dbRosterSource, getPlayerStatsForRoster, getTeamFormations } from '@/lib/roster-source.db';
-import { getNflSeasonState } from '@/lib/nfl-season';
-import { OG_IMAGE_ALT, OG_IMAGE_SIZE } from '@/lib/og';
+import { getNflSeasonState } from '@/lib/utils/team/nfl-season';
+import { OG_IMAGE_ALT, OG_IMAGE_SIZE } from '@/lib/utils/og';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
@@ -40,7 +40,7 @@ export async function generateMetadata({
   // The OG image is a plain Route Handler (app/team/[id]/og-image/route.tsx), not the
   // file-convention opengraph-image.tsx special file — Next always strips the incoming
   // Request/query string before invoking that special file, so it could never see a
-  // shared roster link's `?order=` override (lib/share.ts). Forwarding `order` here, and
+  // shared roster link's `?order=` override (lib/utils/depth-chart/share.ts). Forwarding `order` here, and
   // pointing openGraph/twitter at the route explicitly, is what makes the link preview
   // honor an edited order instead of always the default (see
   // Projects/depth/Tickets/Shared edited roster previews the default.md).

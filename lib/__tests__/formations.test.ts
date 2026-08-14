@@ -6,9 +6,9 @@ import {
   buildRealFormation,
   buildRealDefenseFormation,
   alignmentLabel,
-} from '../formations';
-import { getPlayersByPosition, TEAMS } from '../teams';
-import type { FormationSlot, Player, TeamRoster } from '../types';
+} from '@/lib/utils/depth-chart/formations';
+import { getPlayersByPosition, TEAMS } from '@/lib/teams';
+import type { FormationSlot, Player, TeamRoster } from '@/lib/types';
 
 // Minimal roster factory — only the fields the resolver touches.
 function player(

@@ -6,7 +6,7 @@ import type {
   TeamRoster,
   TeamStats,
   UniformKind,
-} from './types';
+} from '@/lib/types';
 
 // The single seam between the app and where roster data comes from. Routes and
 // components depend on this interface, never on a registry directly. The only

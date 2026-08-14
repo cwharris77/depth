@@ -1,26 +1,26 @@
 import { createClient } from '@supabase/supabase-js';
 import { cacheLife } from 'next/cache';
 import { tables } from '@/lib/supabase/tables';
-import type { Database } from './database.types';
-import { getSupabaseUrl, getSupabaseAnonKey } from './env';
+import type { Database } from '@/lib/database.types';
+import { getSupabaseUrl, getSupabaseAnonKey } from '@/lib/utils/env';
 import type {
   RosterSource,
   TeamMeta,
   TeamStatsPage,
   TeamStatsRanks,
   UniformListing,
-} from './roster-source';
-import { type LeaderEntry, rosterLeaders } from './roster-leaders';
-import { resolvePostseason, resolveSchedule } from './schedule';
-import { getNflSeasonState } from './nfl-season';
+} from '@/lib/roster-source';
+import { type LeaderEntry, rosterLeaders } from '@/lib/utils/roster/roster-leaders';
+import { resolvePostseason, resolveSchedule } from '@/lib/utils/schedule/schedule';
+import { getNflSeasonState } from '@/lib/utils/team/nfl-season';
 import {
   type PlayerHit,
   escapeLike,
   normalizePlayerSearchQuery,
   positionGroupPositions,
   rankByNameMatch,
-} from './search';
-import { SPECIAL_LAYOUT } from './espn/transform';
+} from '@/lib/utils/search/search';
+import { SPECIAL_LAYOUT } from '@/lib/espn/transform';
 import type {
   Game,
   Player,
@@ -38,7 +38,7 @@ import type {
   TeamStats,
   Uniform,
   UniformKind,
-} from './types';
+} from '@/lib/types';
 
 // Postgres-backed RosterSource (roadmap: ESPN ingestion -> DB -> app). Reads
 // teams/players/depth_chart_entries/special_teams_slots and assembles the same
@@ -684,7 +684,7 @@ function toPlayerHit(row: PlayerSearchRow): PlayerHit | null {
 // before the next identical query refetches. Instance-local by design — deliberately
 // not Next's `use cache`, which is unobservable under vitest and redundant for a
 // keystroke burst that lands on one warm instance; the route's rate limiter
-// (lib/rate-limit.ts) is the global backstop for a flood of distinct queries.
+// (lib/utils/rate-limit.ts) is the global backstop for a flood of distinct queries.
 const MAX_SEARCH_CACHE_MS = 60_000;
 const MAX_SEARCH_CACHE_ENTRIES = 5_000;
 const searchCache = new Map<string, { at: number; value: PlayerHit[] }>();
@@ -699,7 +699,7 @@ export async function searchAllPlayers(query: string, limit = 8): Promise<Player
   if (cached && now - cached.at < MAX_SEARCH_CACHE_MS) return cached.value;
 
   // Escape LIKE wildcards so % / _ / \ in the input match literally instead of acting as
-  // pattern wildcards (see escapeLike in lib/search.ts). The position filter is an exact
+  // pattern wildcards (see escapeLike in lib/utils/search/search.ts). The position filter is an exact
   // match but still parameterized through the same ILIKE operator, so it gets the same
   // treatment — an input of "Q%" must not match every position starting with Q.
   const escaped = escapeLike(q);

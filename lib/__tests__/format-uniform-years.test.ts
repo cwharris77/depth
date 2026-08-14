@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { TeamColors, Uniform } from '../types';
-import { formatUniformYears } from '../uniforms';
+import type { TeamColors, Uniform } from '@/lib/types';
+import { formatUniformYears } from '@/lib/utils/uniforms';
 
 const COLORS: TeamColors = {
   primary: '#000000',

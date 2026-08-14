@@ -16,11 +16,11 @@
 import dotenv from 'dotenv';
 import { appendFileSync } from 'node:fs';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { getSupabaseUrl, getSupabaseSecretKey } from '../lib/env';
+import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/utils/env';
 
 dotenv.config({ path: '.env.local' });
-import { parseSportsLogosFeed } from '../lib/sportslogos/parse';
-import type { Database } from '../lib/database.types';
+import { parseSportsLogosFeed } from '@/lib/sportslogos/parse';
+import type { Database } from '@/lib/database.types';
 
 const NFL_FEED_URL = 'https://news.sportslogos.net/category/nfl/feed/';
 

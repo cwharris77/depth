@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { dismissNavDrawerCoachmark, hasDismissedNavDrawerCoachmark } from '../nav-drawer-coachmark';
+import {
+  dismissNavDrawerCoachmark,
+  hasDismissedNavDrawerCoachmark,
+} from '@/lib/utils/nav-drawer-coachmark';
 
 // Minimal Storage stand-in so these tests don't depend on a DOM/localStorage environment —
 // same pattern as lib/__tests__/ios-install-hint.test.ts.

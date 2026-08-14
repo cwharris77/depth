@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readableTextOn } from '@/lib/colors';
+import { readableTextOn } from '@/lib/utils/colors';
 import type { TeamColors } from '@/lib/types';
 import { GENERIC_UNIFORM_STYLE, resolveColor, resolveUniformModel } from './model';
 import type { ColorRef, TeamUniformDefinition } from './teams/types';

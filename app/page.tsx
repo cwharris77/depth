@@ -1,8 +1,8 @@
 import DepthChartField from '@/components/DepthChartField';
-import { resolveStartupTeam } from '@/lib/home-team';
+import { resolveStartupTeam } from '@/lib/utils/team/home-team';
 import { dbRosterSource, getPlayerStatsForRoster, getTeamFormations } from '@/lib/roster-source.db';
 import { getServerClient, requireUser } from '@/lib/supabase/server';
-import { getNflSeasonState } from '@/lib/nfl-season';
+import { getNflSeasonState } from '@/lib/utils/team/nfl-season';
 import { DEFAULT_TEAM_ID } from '@/lib/teams';
 import { notFound, redirect } from 'next/navigation';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';

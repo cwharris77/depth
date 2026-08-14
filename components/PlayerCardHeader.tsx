@@ -5,9 +5,9 @@
 // changes, adjusted during render (comparing against prevPlayerId) rather than in an
 // effect — safe because it only fires on an actual prop change, never during
 // hydration. No prop-mirror effect needed.
-import { readableTextOn } from '@/lib/colors';
-import { positionFullName } from '@/lib/positions';
-import { playerDeepLinkPath } from '@/lib/share';
+import { readableTextOn } from '@/lib/utils/colors';
+import { positionFullName } from '@/lib/utils/team/positions';
+import { playerDeepLinkPath } from '@/lib/utils/depth-chart/share';
 import type { Player, TeamColors } from '@/lib/types';
 import { AlertCircle, Check, Share2, X } from 'lucide-react';
 import { useState } from 'react';

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { hasSeasonStats, seasonStatColumns } from '../stat-table';
-import type { PlayerSeasonStats, Position } from '../types';
+import { hasSeasonStats, seasonStatColumns } from '@/lib/utils/stat-table';
+import type { PlayerSeasonStats, Position } from '@/lib/types';
 
 const BASE: PlayerSeasonStats = {
   season: 2024,

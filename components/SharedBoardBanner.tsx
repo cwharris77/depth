@@ -3,9 +3,13 @@
 import { Suspense, useEffect, useState, type ReactNode } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import type { TeamDepthOverride } from '@/lib/depth-overrides';
+import type { TeamDepthOverride } from '@/lib/utils/depth-chart/depth-overrides';
 import type { TeamMeta } from '@/lib/roster-source';
-import { resolveBoard, type BoardResolution, type SharedBoard } from '@/lib/shared-board';
+import {
+  resolveBoard,
+  type BoardResolution,
+  type SharedBoard,
+} from '@/lib/utils/depth-chart/shared-board';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 
 // The shared-board preview banner (Phase C, share pass). Reads /team/[id]?board=<slug>,

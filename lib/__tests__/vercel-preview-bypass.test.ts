@@ -6,7 +6,7 @@ import {
   VERCEL_PROTECTION_BYPASS_QUERY_KEY,
   VERCEL_SET_BYPASS_COOKIE_QUERY_KEY,
   withVercelProtectionBypass,
-} from '../vercel-preview-bypass';
+} from '@/lib/utils/vercel-preview-bypass';
 
 describe('vercel preview bypass', () => {
   it('appends the bypass token and cookie flag to vercel previews', () => {

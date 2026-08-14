@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { useApplyQueryParam } from '@/lib/use-apply-query-param';
+import { useApplyQueryParam } from '@/lib/hooks/use-apply-query-param';
 
 // A shared/bookmarked `/team/[id]?kit=<uniformId>` link opens the page already wearing
 // that kit. Mirrors SyncSelectionWithQuery: read the param, apply it if it names a real

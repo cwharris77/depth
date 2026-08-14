@@ -8,7 +8,7 @@ import {
   hasDismissedInstallHint,
   isIOSSafari,
   isStandaloneDisplay,
-} from '@/lib/ios-install-hint';
+} from '@/lib/utils/ios-install-hint';
 import { colors as uiTokens, springSheet, typeScale, zIndex } from '@/components/ui/tokens';
 import IconButton from '@/components/ui/IconButton';
 

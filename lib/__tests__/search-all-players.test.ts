@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { PlayerHit } from '../search';
+import type { PlayerHit } from '@/lib/utils/search/search';
 
 const { ilikeCalls, queryCounts } = vi.hoisted(() => ({
   ilikeCalls: [] as Array<[string, string]>,
@@ -62,7 +62,7 @@ describe('searchAllPlayers (mocked client)', () => {
   // cases (vi.mock above still applies to each fresh module instance).
   beforeEach(async () => {
     vi.resetModules();
-    ({ searchAllPlayers } = await import('../roster-source.db'));
+    ({ searchAllPlayers } = await import('@/lib/roster-source.db'));
     ilikeCalls.length = 0;
     queryCounts.total = 0;
   });

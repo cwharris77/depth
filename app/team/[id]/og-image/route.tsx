@@ -3,7 +3,7 @@
 // discards the Request/searchParams before invoking the handler (confirmed against
 // node_modules/next/dist/build/webpack/loaders/next-metadata-route-loader.js), and
 // file-based metadata always overrides a manually-specified openGraph.images — so a
-// shared roster link's `?order=` override (lib/share.ts) could never reach the old
+// shared roster link's `?order=` override (lib/utils/depth-chart/share.ts) could never reach the old
 // prerendered card. generateMetadata (../page.tsx) points openGraph/twitter images here,
 // forwarding `order` when the page itself was loaded with one. This trades the old
 // per-team static prerendering for a request-time render — accepted tradeoff, see
@@ -11,8 +11,8 @@
 import { ImageResponse } from 'next/og';
 import type { NextRequest } from 'next/server';
 import { dbRosterSource } from '@/lib/roster-source.db';
-import { readableTextOn } from '@/lib/colors';
-import { featuredStarters, rosterForOgImage, OG_IMAGE_SIZE } from '@/lib/og';
+import { readableTextOn } from '@/lib/utils/colors';
+import { featuredStarters, rosterForOgImage, OG_IMAGE_SIZE } from '@/lib/utils/og';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

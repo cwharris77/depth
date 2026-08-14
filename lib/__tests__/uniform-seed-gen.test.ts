@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { generateCuratedSeedSql } from '../uniforms/seed-sql';
-import { UNIFORMS } from '../uniforms/data';
+import { generateCuratedSeedSql } from '@/lib/uniforms/seed-sql';
+import { UNIFORMS } from '@/lib/uniforms/data';
 
 // The generated seed migration must be source-guarded: it can only ever write/rewrite
 // source='curated' rows, so a curated slug can never clobber a machine-owned espn home row.

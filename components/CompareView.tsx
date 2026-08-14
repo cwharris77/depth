@@ -16,11 +16,11 @@
 import FilterPill from '@/components/ui/FilterPill';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
-import { buildComparePath, COMPARE_POSITIONS, type CompareTeaser } from '@/lib/compare';
-import { formatLastName } from '@/lib/format';
+import { buildComparePath, COMPARE_POSITIONS, type CompareTeaser } from '@/lib/utils/compare';
+import { formatLastName } from '@/lib/utils/format';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { Player, Position, TeamStats } from '@/lib/types';
-import { useLastAccent } from '@/lib/use-last-accent';
+import { useLastAccent } from '@/lib/hooks/use-last-accent';
 import { ArrowLeft, ChevronRight, Columns2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';

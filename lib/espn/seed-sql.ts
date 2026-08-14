@@ -10,7 +10,7 @@ import { toDepthChartRows } from './transform';
 import type { Coach } from './transform';
 import type { TeamRoster, TeamStats } from '../types';
 // Escaping/serialization lives in lib/seed-sql.ts, shared with lib/nflverse/seed-sql.ts.
-import { insertStatement, type Val } from '../seed-sql';
+import { insertStatement, type Val } from '@/lib/utils/seed-sql';
 import { tables } from '@/lib/supabase/tables';
 
 export interface SeedEntry {

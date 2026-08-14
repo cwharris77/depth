@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/class-names';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Tooltip from './Tooltip';
 import { colors, typeScale, zIndex } from './tokens';

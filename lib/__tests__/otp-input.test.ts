@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { distributeOtpPaste, sanitizeOtpChar } from '../otp-input';
+import { distributeOtpPaste, sanitizeOtpChar } from '@/lib/utils/auth/otp-input';
 
 describe('sanitizeOtpChar', () => {
   it('passes through a single digit', () => {

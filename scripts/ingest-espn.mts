@@ -15,17 +15,17 @@
 import dotenv from 'dotenv';
 import { appendFileSync, writeFileSync } from 'node:fs';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { getSupabaseUrl, getSupabaseSecretKey } from '../lib/env';
+import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/utils/env';
 
 dotenv.config({ path: '.env.local' });
-import { toCoach, toDepthChartRows, toTeamRoster, type Coach } from '../lib/espn/transform';
-import { buildSeedSql, type SeedEntry } from '../lib/espn/seed-sql';
-import { parseStandings, parseTeamStats, type EspnStandings } from '../lib/espn/standings';
-import { reconcileHomeUniforms } from '../lib/uniforms/reconcile-db';
-import { TEAMS } from '../lib/teams/index';
-import type { EspnDepthcharts, EspnRoster, EspnTeamInfo } from '../lib/espn/types';
-import type { TeamRoster, TeamStats } from '../lib/types';
-import type { Database } from '../lib/database.types';
+import { toCoach, toDepthChartRows, toTeamRoster, type Coach } from '@/lib/espn/transform';
+import { buildSeedSql, type SeedEntry } from '@/lib/espn/seed-sql';
+import { parseStandings, parseTeamStats, type EspnStandings } from '@/lib/espn/standings';
+import { reconcileHomeUniforms } from '@/lib/uniforms/reconcile-db';
+import { TEAMS } from '@/lib/teams/index';
+import type { EspnDepthcharts, EspnRoster, EspnTeamInfo } from '@/lib/espn/types';
+import type { TeamRoster, TeamStats } from '@/lib/types';
+import type { Database } from '@/lib/database.types';
 
 const SITE = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl';
 const CORE = 'https://sports.core.api.espn.com/v2/sports/football/leagues/nfl';

@@ -1,4 +1,4 @@
-import { readableTextOn } from '@/lib/colors';
+import { readableTextOn } from '@/lib/utils/colors';
 import type { TeamColors } from '@/lib/types';
 import type {
   NumberStyle,

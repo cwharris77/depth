@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { orderUniforms } from '../roster-source.db';
+import { orderUniforms } from '@/lib/roster-source.db';
 
 // orderUniforms is the read layer's one real piece of logic: current home first, then other
 // active kits by name, then retired kits newest-first with a stable id tie-break.

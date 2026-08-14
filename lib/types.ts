@@ -41,7 +41,7 @@ export type Position =
 // The broad depth-chart family a granular Position belongs to. nflverse's real-formation
 // participation data (defense_personnel/offense_personnel counts) has no per-player
 // archetype info — it can't say which linebacker is strongside vs weak, or which safety
-// is strong vs free — so the count-driven formation resolvers in lib/formations.ts match
+// is strong vs free — so the count-driven formation resolvers in lib/utils/depth-chart/formations.ts match
 // on this broader group instead of the exact granular Position everywhere else uses.
 export type PositionGroup = 'DL' | 'LB' | 'CB' | 'S' | 'RB';
 
@@ -59,7 +59,7 @@ export interface Player {
   position: Position;
   depthRank: 1 | 2 | 3;
   status: PlayerStatus;
-  // Set only on players reordered by a user depth override (lib/depth-overrides.ts):
+  // Set only on players reordered by a user depth override (lib/utils/depth-chart/depth-overrides.ts):
   // a full-precision within-position rank that getPlayersByPosition prefers over the
   // jersey-number tiebreak, so a custom order is honored past the top 3. Undefined for
   // source data, which keeps the default jersey-number tiebreak.
@@ -83,7 +83,7 @@ export interface FormationSlot {
   id: string;
   position: Position;
   index: number;
-  // Set on slots built by lib/formations.ts's real-formation resolvers
+  // Set on slots built by lib/utils/depth-chart/formations.ts's real-formation resolvers
   // (buildDlSlots/buildLbSlots/buildDbSlots, buildRealFormation's RB slots) and on
   // OFFENSE_FORMATION's RB slot. When present, resolveUnit fills the slot via
   // resolveGroupedSlots (broad group + optional preferredPosition) instead of an exact
@@ -238,7 +238,7 @@ export interface TeamRosterSeed {
 // design.md; defense added, top-N cap lifted, DEP-141). For `unit: 'offense'`,
 // `alignment` is FTN's charted offense_formation ('SHOTGUN' | 'UNDER CENTER' | 'PISTOL')
 // and `personnel` the standard shorthand ({RB count}{TE count}, e.g. '11'), feeding
-// lib/formations.ts's buildRealFormation. For `unit: 'defense'`, `alignment` is the
+// lib/utils/depth-chart/formations.ts's buildRealFormation. For `unit: 'defense'`, `alignment` is the
 // derived front label ('Base' | 'Nickel' | 'Dime' | 'Quarter' | 'Goal Line',
 // lib/nflverse/defense-personnel.ts's defenseAlignmentLabel) and `personnel` the
 // "{DL}-{LB}-{DB}" shorthand, feeding buildRealDefenseFormation. `pct` is an integer
@@ -330,7 +330,7 @@ export interface TeamSchedule {
 
 // Team production leaders for one season, shown on the stats page (design spec 5a).
 // A single leader per category (passing/rushing/receiving); `line` is the preformatted
-// summary the UI renders verbatim (see lib/roster-leaders.ts). Any category can be null
+// summary the UI renders verbatim (see lib/utils/roster/roster-leaders.ts). Any category can be null
 // — a team with no positive yardage in it (e.g. a defense-heavy sample) shows nothing,
 // not a zero-filled row (the repo's "show nothing, not zeros" posture).
 export interface Leader {

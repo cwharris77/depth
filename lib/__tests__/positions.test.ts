@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { POSITION_FULL_NAMES, positionFullName } from '../positions';
-import type { Position } from '../types';
+import { POSITION_FULL_NAMES, positionFullName } from '@/lib/utils/team/positions';
+import type { Position } from '@/lib/types';
 
 const ALL_POSITIONS: Position[] = [
   'QB',

@@ -2,8 +2,8 @@
 
 import ActionChip from '@/components/ui/ActionChip';
 import { colors as uiTokens } from '@/components/ui/tokens';
-import type { TeamDepthOverride } from '@/lib/depth-overrides';
-import { hasOverride } from '@/lib/depth-overrides';
+import type { TeamDepthOverride } from '@/lib/utils/depth-chart/depth-overrides';
+import { hasOverride } from '@/lib/utils/depth-chart/depth-overrides';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { Player, Team, TeamColors, Unit } from '@/lib/types';
 import { History, RotateCcw } from 'lucide-react';

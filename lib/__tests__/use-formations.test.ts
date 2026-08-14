@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useFormations } from '../use-formations';
-import type { TeamFormation } from '../types';
+import { useFormations } from '@/lib/hooks/depth-chart/use-formations';
+import type { TeamFormation } from '@/lib/types';
 
 const formations: TeamFormation[] = [
   { season: 2025, rank: 2, unit: 'offense', alignment: 'shotgun', personnel: '11', pct: 40 },

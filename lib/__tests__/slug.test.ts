@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { newSlug } from '../slug';
+import { newSlug } from '@/lib/utils/slug';
 
 describe('newSlug', () => {
   it('is 10 chars by default', () => {

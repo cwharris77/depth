@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { dbRosterSource, getTeamSchedule } from '@/lib/roster-source.db';
-import { getNflSeasonState } from '@/lib/nfl-season';
+import { getNflSeasonState } from '@/lib/utils/team/nfl-season';
 import { SEASONS_MIN } from '@/lib/nflverse/roster-history';
 import TeamScheduleView from '@/components/TeamScheduleView';
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { UNIFORMS } from '../uniforms/data';
-import { contrastRatio, DARK_BG } from '../colors';
+import { UNIFORMS } from '@/lib/uniforms/data';
+import { contrastRatio, DARK_BG } from '@/lib/utils/colors';
 
 // The uniform archive is hand-curated (no structured source exists), so unlike the
 // ESPN-derived team colors, we CAN and DO enforce strict dark-UI legibility on every

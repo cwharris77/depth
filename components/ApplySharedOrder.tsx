@@ -1,9 +1,9 @@
 'use client';
 
 import { Suspense } from 'react';
-import type { TeamDepthOverride } from '@/lib/depth-overrides';
-import { decodeDepthOrder } from '@/lib/share';
-import { useApplyQueryParam } from '@/lib/use-apply-query-param';
+import type { TeamDepthOverride } from '@/lib/utils/depth-chart/depth-overrides';
+import { decodeDepthOrder } from '@/lib/utils/depth-chart/share';
+import { useApplyQueryParam } from '@/lib/hooks/use-apply-query-param';
 
 // Opening a shared roster link (/team/[id]?order=<packed>) applies the sender's custom
 // depth order on arrival, then strips the param so a reload/reshare is clean. Isolated

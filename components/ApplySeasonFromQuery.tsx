@@ -8,7 +8,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 // `season` is deliberately NOT stripped after applying -- season links stay shareable
 // through reload and re-share (docs/superpowers/specs/2026-07-07-phase-d-history-and-
 // boards-design.md), and DepthChartField itself keeps the param alive through player/
-// unit changes (see lib/team-selection.ts). Re-applies on every `season` param change
+// unit changes (see lib/utils/depth-chart/team-selection.ts). Re-applies on every `season` param change
 // (Back/Forward, a fresh share link, or the field's own URL updates), not just once.
 // Own Suspense boundary because useSearchParams requires one during static generation.
 function Inner({ onApply }: { onApply: (season: number | null) => void }) {

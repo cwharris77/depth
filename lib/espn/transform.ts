@@ -14,7 +14,7 @@ import {
   mapDepthchartPosition,
   mapSpecialPosition,
 } from './positions';
-import { readableTextOn } from '../colors';
+import { readableTextOn } from '@/lib/utils/colors';
 
 export interface Coach {
   name: string;
@@ -128,7 +128,7 @@ function toPlayer(a: EspnAthlete, position: Position, depthRank: 1 | 2 | 3): Pla
 // 1..3 -- so two LB1s can exist on `players`. Re-rank within
 // each position group (stable: existing depthRank, then jersey number) and cap at 3,
 // dropping the rest, so every (team, position, rank) triple is unique for DB writes.
-// The in-memory Player.depthRank is untouched -- lib/roster.ts's getPlayersByPosition
+// The in-memory Player.depthRank is untouched -- lib/utils/roster/roster.ts's getPlayersByPosition
 // already tolerates (and relies on) multiple players sharing one raw depthRank.
 export function toDepthChartRows(
   players: Player[]

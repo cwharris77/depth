@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { eraBucket, eraOptions, matchesFilters, groupByDivision } from '../uniforms/filter';
-import type { UniformListing } from '../roster-source';
+import { eraBucket, eraOptions, matchesFilters, groupByDivision } from '@/lib/uniforms/filter';
+import type { UniformListing } from '@/lib/roster-source';
 
 const kit = (over: Partial<UniformListing>): UniformListing => ({
   teamId: 'bills',

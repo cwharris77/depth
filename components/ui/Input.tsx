@@ -1,10 +1,10 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/class-names';
 import { useState } from 'react';
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import { colors } from './tokens';
-import { focusRing } from '@/lib/colors';
+import { focusRing } from '@/lib/utils/colors';
 
 type InputProps = {
   type?: string;

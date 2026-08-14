@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { gameResultColor, withAlpha, focusRing } from '../colors';
+import { gameResultColor, withAlpha, focusRing } from '@/lib/utils/colors';
 
 describe('gameResultColor', () => {
   it('returns a distinct color for each result', () => {

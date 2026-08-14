@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getSiteUrl } from '../site-url';
+import { getSiteUrl } from '@/lib/utils/site-url';
 
 describe('getSiteUrl', () => {
   it('prefers the Vercel production URL over a stale public site URL', () => {

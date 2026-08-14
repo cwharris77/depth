@@ -2,10 +2,10 @@
 
 // PlayerCard's "season stats" section: a columnar table (SZN + the position's stat
 // columns), a loading skeleton sized to match it, or an empty state. Column set is
-// position-specific (lib/stat-table.ts); the grid template stretches to however many
+// position-specific (lib/utils/stat-table.ts); the grid template stretches to however many
 // the position has.
 import type { PlayerSeasonStats } from '@/lib/types';
-import type { StatColumn } from '@/lib/stat-table';
+import type { StatColumn } from '@/lib/utils/stat-table';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 
 interface PlayerCardSeasonStatsProps {

@@ -1,9 +1,9 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/class-names';
 import type { ReactNode } from 'react';
 import { colors } from './tokens';
-import { withAlpha } from '@/lib/colors';
+import { withAlpha } from '@/lib/utils/colors';
 import type { Intent } from './variants';
 
 // Button expresses the action subset of the shared vocabulary (variants.ts).

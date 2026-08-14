@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseSportsLogosFeed } from '../sportslogos/parse';
+import { parseSportsLogosFeed } from '@/lib/sportslogos/parse';
 
 // Fixture trimmed from a real https://news.sportslogos.net/category/nfl/feed/ response.
 const FEED_FIXTURE = `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0">

@@ -17,7 +17,7 @@
 import { colors as uiTokens } from '@/components/ui/tokens';
 import type { TeamMeta } from '@/lib/roster-source';
 import { type ReactNode, useEffect } from 'react';
-import { setLastAccent } from '@/lib/use-last-accent';
+import { setLastAccent } from '@/lib/hooks/use-last-accent';
 import TeamRail, { type TeamPageKey } from './TeamRail';
 
 export default function TeamPageShell({
@@ -37,7 +37,7 @@ export default function TeamPageShell({
 }) {
   // Every team page (roster/schedule/stats) mounts the shell with a real `team`, so this
   // records its accent as "the last team viewed" for pages with no current team (uniform
-  // archive, compare — see lib/use-last-accent.ts) to pick up. Writing to sessionStorage is
+  // archive, compare — see lib/hooks/use-last-accent.ts) to pick up. Writing to sessionStorage is
   // a genuine external-system sync, not derivable during render, so it belongs in an effect.
   useEffect(() => {
     if (team) setLastAccent(accent);

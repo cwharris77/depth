@@ -4,7 +4,7 @@ import { colors } from '@/components/ui/tokens';
 import { VercelToolbar } from '@vercel/toolbar/next';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono, Anton } from 'next/font/google';
-import { getSiteUrl } from '@/lib/site-url';
+import { getSiteUrl } from '@/lib/utils/site-url';
 import './globals.css';
 
 const geistSans = Geist({

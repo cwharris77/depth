@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '../database.types';
 import type { TeamColors } from '../types';
-import { contrastRatio, DARK_BG } from '../colors';
+import { contrastRatio, DARK_BG } from '@/lib/utils/colors';
 import { decideReconcile, type PendingHome } from './reconcile';
 import { tables } from '@/lib/supabase/tables';
 
