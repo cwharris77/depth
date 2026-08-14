@@ -12,6 +12,7 @@
 // season API route and shown in the same grid — a completed season is all-played results,
 // so no separate "history" card layout exists. `?season=` stays in the URL (shareable,
 // matching the depth chart's Phase D1 precedent); the default view is `null`.
+import { cn } from '@/lib/class-names';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { TeamSchedule, TeamScheduleGame } from '@/lib/types';
 import { gameResultColor, readableTextOn } from '@/lib/utils/colors';
@@ -138,14 +139,20 @@ function GameCard({
     </>
   );
 
-  const cardClass =
-    'flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 transition-colors duration-150 hover:bg-white/[0.05]';
+  // Historical seasons have no compare-page destination yet (DEP-198) — the card is a
+  // placeholder guard, not a real disabled control: muted opacity and no hover/cursor
+  // affordance so it reads as intentionally inert rather than broken. Remove this guard
+  // (restore the unconditional Link) once historical compare exists.
+  const cardClass = cn(
+    'flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 transition-colors duration-150',
+    isPastSeason ? 'cursor-default opacity-60' : 'cursor-pointer hover:bg-white/[0.05]'
+  );
   const cardStyle = {
     background: uiTokens.surfaceCard2,
     border: `1px solid ${uiTokens.borderDefault}`,
   };
 
-  if (!opp)
+  if (!opp || isPastSeason)
     return (
       <div className={cardClass} style={cardStyle}>
         {content}
