@@ -4,8 +4,8 @@ import {
   encodeDepthOrder,
   playerDeepLinkPath,
   rosterShareUrlPath,
-} from '../share';
-import type { TeamDepthOverride } from '../depth-overrides';
+} from '@/lib/utils/depth-chart/share';
+import type { TeamDepthOverride } from '@/lib/utils/depth-chart/depth-overrides';
 
 describe('playerDeepLinkPath', () => {
   it('builds the team page path with the player as a query param', () => {

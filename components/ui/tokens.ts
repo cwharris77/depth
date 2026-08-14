@@ -2,7 +2,7 @@
 // Values are the app's existing UI-chrome palette, extracted as-is from where they're already
 // used (AccountView.tsx, NavDrawer.tsx, PlayerCard.tsx, etc.) rather than newly chosen, so
 // primitives stay visually consistent with the rest of the app. Distinct from the brand
-// primary/secondary/accent and curated uiAccent/onAccent team colors in lib/colors.ts — see
+// primary/secondary/accent and curated uiAccent/onAccent team colors in lib/utils/colors.ts — see
 // AGENTS.md invariant 4; these are UI chrome only, never team-specific. Mirrors
 // tokens/colors.css in the Depth Design System (claude.ai/design project df062d5f), which was
 // reverse-extracted from this same codebase — code here remains the ground truth.

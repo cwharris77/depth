@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { featuredStarters, rosterForOgImage } from '../og';
-import { readableTextOn, contrastRatio } from '../colors';
-import { encodeDepthOrder } from '../share';
-import { TEAMS } from '../teams';
-import type { TeamRoster } from '../types';
+import { featuredStarters, rosterForOgImage } from '@/lib/utils/og';
+import { readableTextOn, contrastRatio } from '@/lib/utils/colors';
+import { encodeDepthOrder } from '@/lib/utils/depth-chart/share';
+import { TEAMS } from '@/lib/teams';
+import type { TeamRoster } from '@/lib/types';
 
 function rosterWith(players: TeamRoster['players']): TeamRoster {
   return {

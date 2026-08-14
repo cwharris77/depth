@@ -8,12 +8,12 @@
 // remounting of these two produced a duplicate-mount rendering bug here); stats
 // loading lives in usePlayerCardStats, and the sheet's focus trap lives in
 // useFocusTrap.
-import { experienceLabel } from '@/lib/format';
-import { getPlayersByPosition } from '@/lib/roster';
-import { hasSeasonStats, seasonStatColumns } from '@/lib/stat-table';
+import { experienceLabel } from '@/lib/utils/format';
+import { getPlayersByPosition } from '@/lib/utils/roster/roster';
+import { hasSeasonStats, seasonStatColumns } from '@/lib/utils/stat-table';
 import type { Player, PlayerSeasonStats, Position, TeamRoster } from '@/lib/types';
-import { usePlayerCardStats } from '@/lib/use-player-card-stats';
-import { useFocusTrap } from '@/lib/use-focus-trap';
+import { usePlayerCardStats } from '@/lib/hooks/player-card/use-player-card-stats';
+import { useFocusTrap } from '@/lib/hooks/use-focus-trap';
 import { AnimatePresence, motion, useDragControls, type PanInfo } from 'framer-motion';
 import { GraduationCap } from 'lucide-react';
 import { useEffect, useRef } from 'react';

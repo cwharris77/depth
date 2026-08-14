@@ -5,8 +5,8 @@ import {
   getDeepestPosition,
   buildCompareTeaser,
   buildComparePath,
-} from '../compare';
-import type { Player, Position } from '../types';
+} from '@/lib/utils/compare';
+import type { Player, Position } from '@/lib/types';
 
 const TEAM_IDS = ['seahawks', 'niners'];
 

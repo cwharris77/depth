@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 // Guard: UI-chrome colors must come from components/ui/tokens.ts, never raw literals in a
 // surface file (spec 2026-07-18 decision 1). Ratchet: files still carrying literals are
 // listed below and removed as each is migrated; a listed file that is ALREADY clean also
-// fails, forcing the list to shrink. Team colors (lib/colors.ts) are dynamic — not matched.
+// fails, forcing the list to shrink. Team colors (lib/utils/colors.ts) are dynamic — not matched.
 const CHROME_HEX =
   /#(?:f0f4ff|dfe5f0|a5acaf|7d848c|5a616a|5b6478|5f6b7a|0f1623|161c2c|222b3d|0a0e1a|69be28|ff6b6b|4fc3f7|ef5350|c8cdd6)\b/i;
 const WHITE_ALPHA = /rgba\(255,\s*255,\s*255,/i;

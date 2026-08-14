@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { decideReconcile, type PendingHome } from '../uniforms/reconcile';
-import type { TeamColors } from '../types';
+import { decideReconcile, type PendingHome } from '@/lib/uniforms/reconcile';
+import type { TeamColors } from '@/lib/types';
 
 function colors(primary: string, secondary: string): TeamColors {
   return { primary, secondary, accent: '#cccccc', uiAccent: '#69BE28', onAccent: '#0a0e1a' };

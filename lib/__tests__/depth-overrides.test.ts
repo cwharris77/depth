@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import type { Player, TeamRoster } from '../types';
-import { applyTeamOverride } from '../depth-overrides';
-import { getPlayersByPosition } from '../roster';
+import type { Player, TeamRoster } from '@/lib/types';
+import { applyTeamOverride } from '@/lib/utils/depth-chart/depth-overrides';
+import { getPlayersByPosition } from '@/lib/utils/roster/roster';
 
 function player(
   p: Partial<Player> & Pick<Player, 'id' | 'position' | 'depthRank' | 'number'>

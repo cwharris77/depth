@@ -7,12 +7,12 @@
 import SectionLabel from '@/components/ui/SectionLabel';
 import Tooltip from '@/components/ui/Tooltip';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
-import { readableTextOn } from '@/lib/colors';
-import { formatGameDate, ordinal } from '@/lib/format';
-import { postseasonRoundLabel } from '@/lib/schedule';
+import { readableTextOn } from '@/lib/utils/colors';
+import { formatGameDate, ordinal } from '@/lib/utils/format';
+import { postseasonRoundLabel } from '@/lib/utils/schedule/schedule';
 import type { TeamMeta, TeamStatsRanks } from '@/lib/roster-source';
 import type { Leader, RosterLeaders, TeamScheduleGame, TeamStats } from '@/lib/types';
-import { useKitColors } from '@/lib/use-kit-colors';
+import { useKitColors } from '@/lib/hooks/use-kit-colors';
 import { type ReactNode, useState } from 'react';
 import StatsPanel from './StatsPanel';
 import TeamPageHeader from './TeamPageHeader';
@@ -200,7 +200,7 @@ export default function TeamStatsView({
   postseasonGames,
 }: Props) {
   const [index, setIndex] = useState(seasons.length > 0 ? 0 : -1);
-  // Picks up whichever kit is active on the roster page for this team (lib/use-kit-colors.ts)
+  // Picks up whichever kit is active on the roster page for this team (lib/hooks/use-kit-colors.ts)
   // instead of always showing the default team colors — falls back to team.colors when
   // nothing was ever picked this session.
   const colors = useKitColors(team);

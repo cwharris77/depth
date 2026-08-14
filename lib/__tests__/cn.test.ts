@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cn } from '../utils';
+import { cn } from '@/lib/class-names';
 
 describe('cn / twMerge caller-over-base precedence', () => {
   it('caller class wins over base class for conflicting utilities', () => {

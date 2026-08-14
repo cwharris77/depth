@@ -6,8 +6,8 @@
 // wrapper (Reorder.Item vs a plain button) and the trailing check icon differ.
 // Edit/hint state resets when player.id changes, adjusted during render (comparing
 // against prevPlayerId) rather than in an effect — no prop-mirror effect needed.
-import { statusColor } from '@/lib/colors';
-import { markReorderHintSeen, seenReorderHint } from '@/lib/depth-overrides';
+import { statusColor } from '@/lib/utils/colors';
+import { markReorderHintSeen, seenReorderHint } from '@/lib/utils/depth-chart/depth-overrides';
 import type { Player, Position, TeamColors } from '@/lib/types';
 import { Reorder } from 'framer-motion';
 import { Check, GripVertical, RotateCcw } from 'lucide-react';

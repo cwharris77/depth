@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/class-names';
 import type { ReactNode } from 'react';
 import { colors, typeScale } from './tokens';
 

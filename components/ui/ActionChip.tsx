@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { withAlpha } from '@/lib/colors';
-import { cn } from '@/lib/utils';
+import { withAlpha } from '@/lib/utils/colors';
+import { cn } from '@/lib/class-names';
 import { typeScale } from './tokens';
 
 type ActionChipProps = {

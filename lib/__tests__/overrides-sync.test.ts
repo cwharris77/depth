@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { planMerge } from '../overrides-sync';
+import { planMerge } from '@/lib/utils/depth-chart/overrides-sync';
 
 // planMerge is the whole risk surface of the sign-in reconcile: everything else is fetch
 // glue. The rule is server-wins per team, local-only teams push up, empty produces no work.

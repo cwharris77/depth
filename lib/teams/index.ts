@@ -21,4 +21,4 @@ export function getActiveTeam(): TeamRosterSeed {
 }
 
 // Re-exported for convenience; defined registry-free in lib/roster.
-export { getPlayerById, getPlayersByPosition } from '../roster';
+export { getPlayerById, getPlayersByPosition } from '@/lib/utils/roster/roster';

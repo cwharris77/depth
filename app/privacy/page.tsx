@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 // Static privacy policy page (Phase C, P0 App Store requirement). Copy is grounded in what the
-// app actually does (verified against lib/share.ts, the shared_boards migration, and the
+// app actually does (verified against lib/utils/depth-chart/share.ts, the shared_boards migration, and the
 // absence of any analytics/tracking dependency) — not a substitute for an actual attorney's
 // review, but not a generic template either. Still needs a real contact address before ship.
 export default function PrivacyPage() {

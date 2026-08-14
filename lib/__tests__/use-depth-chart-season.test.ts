@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useDepthChartSeason } from '../use-depth-chart-season';
+import { useDepthChartSeason } from '@/lib/hooks/depth-chart/use-depth-chart-season';
 
 const mockTeam = { id: 'SEA', city: 'Seattle', name: 'Seahawks' };
 

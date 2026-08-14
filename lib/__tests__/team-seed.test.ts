@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { LEAGUE } from '../teams/league';
-import { generateTeamSeedSql } from '../teams/seed-sql';
+import { LEAGUE } from '@/lib/teams/league';
+import { generateTeamSeedSql } from '@/lib/teams/seed-sql';
 
 describe('team seed generator', () => {
   const sql = generateTeamSeedSql();

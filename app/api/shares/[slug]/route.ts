@@ -7,7 +7,7 @@
 import { NextResponse } from 'next/server';
 import { getServerClient } from '@/lib/supabase/server';
 import { tables } from '@/lib/supabase/tables';
-import type { TeamDepthOverride } from '@/lib/depth-overrides';
+import type { TeamDepthOverride } from '@/lib/utils/depth-chart/depth-overrides';
 import type { Position } from '@/lib/types';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {

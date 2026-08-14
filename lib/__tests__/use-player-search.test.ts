@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { usePlayerSearch } from '../use-player-search';
+import { usePlayerSearch } from '@/lib/hooks/search/use-player-search';
 
 beforeEach(() => {
   vi.restoreAllMocks();

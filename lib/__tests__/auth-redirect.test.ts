@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { safeNext } from '../auth-redirect';
+import { safeNext } from '@/lib/utils/auth/auth-redirect';
 
 describe('safeNext', () => {
   it('returns a valid relative path unchanged', () => {

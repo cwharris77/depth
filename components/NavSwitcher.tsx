@@ -5,15 +5,15 @@ import IconButton from '@/components/ui/IconButton';
 import SectionLabel from '@/components/ui/SectionLabel';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
-import { readableTextOn } from '@/lib/colors';
+import { readableTextOn } from '@/lib/utils/colors';
 import type { TeamMeta } from '@/lib/roster-source';
-import type { PlayerHit } from '@/lib/search';
+import type { PlayerHit } from '@/lib/utils/search/search';
 import type { Conference, Player } from '@/lib/types';
 import { Check, Columns2, CornerDownLeft, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import { usePlayerSearch } from '@/lib/use-player-search';
+import { usePlayerSearch } from '@/lib/hooks/search/use-player-search';
 
 type ResultItem = { type: 'player'; hit: PlayerHit } | { type: 'team'; team: TeamMeta };
 

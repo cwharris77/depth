@@ -21,20 +21,20 @@
 import dotenv from 'dotenv';
 import { writeFileSync } from 'node:fs';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { getSupabaseUrl, getSupabaseSecretKey } from '../lib/env';
+import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/utils/env';
 
 dotenv.config({ path: '.env.local' });
-import { parseCsv } from '../lib/nflverse/csv';
-import { assetUrl, latestAvailableSeason } from '../lib/nflverse/assets';
-import { resolveTeamCode } from '../lib/nflverse/team-codes';
+import { parseCsv } from '@/lib/nflverse/csv';
+import { assetUrl, latestAvailableSeason } from '@/lib/nflverse/assets';
+import { resolveTeamCode } from '@/lib/nflverse/team-codes';
 import {
   toRosterHistoryRows,
   SEASONS_MIN,
   type RosterHistoryInsert,
-} from '../lib/nflverse/roster-history';
-import { parseSeasonsArg } from '../lib/nflverse/seasons-arg';
-import { buildRosterHistorySeedSql } from '../lib/nflverse/seed-sql';
-import type { Database } from '../lib/database.types';
+} from '@/lib/nflverse/roster-history';
+import { parseSeasonsArg } from '@/lib/nflverse/seasons-arg';
+import { buildRosterHistorySeedSql } from '@/lib/nflverse/seed-sql';
+import type { Database } from '@/lib/database.types';
 
 const ROSTERS_TAG = 'rosters';
 const ROSTERS_PREFIX = 'roster_';

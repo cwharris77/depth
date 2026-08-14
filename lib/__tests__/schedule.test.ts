@@ -5,8 +5,8 @@ import {
   postseasonRoundLabel,
   resolvePostseason,
   resolveSchedule,
-} from '../schedule';
-import type { Game } from '../types';
+} from '@/lib/utils/schedule/schedule';
+import type { Game } from '@/lib/types';
 
 // Minimal Game fixture; only the fields a case exercises need to be set.
 function game(over: Partial<Game>): Game {

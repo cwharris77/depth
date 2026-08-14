@@ -4,7 +4,7 @@ import { Check } from 'lucide-react';
 import FTNAttribution from './FTNAttribution';
 import SheetHeader from './ui/SheetHeader';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
-import { alignmentLabel } from '@/lib/formations';
+import { alignmentLabel } from '@/lib/utils/depth-chart/formations';
 import type { TeamFormation, Unit } from '@/lib/types';
 
 // One row per real formation title -- offense reads as "Shotgun 11", defense as
@@ -48,7 +48,7 @@ function groupedRows(unit: Unit, formations: TeamFormation[]): Row[] {
 // formation the team ran that season for whichever unit is currently active on the field
 // (offense/defense tabs share this same component; special teams has no real data, see
 // DEP-141, so it shows an explanatory empty state instead of an empty list). The generic
-// "Base" fallback (lib/formations.ts) is used when a unit has no real-formation rows, but
+// "Base" fallback (lib/utils/depth-chart/formations.ts) is used when a unit has no real-formation rows, but
 // it's never listed here as something to pick -- selection always defaults to the team's
 // top formation instead (see DepthChartField's topFormationFor).
 export default function FormationsSheet({
