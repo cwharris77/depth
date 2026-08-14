@@ -7,6 +7,29 @@
 import type { PlayerSeasonStats } from '@/lib/types';
 import type { StatColumn } from '@/lib/utils/stat-table';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
+import Image from 'next/image';
+import { useState } from 'react';
+
+// The TM column's cell: a small team logo, with the abbrev as both a11y label and the
+// fallback when there's no logo (team_id didn't resolve, or ESPN has no logo_url for that
+// team) or the image 404s. Local to this file rather than a components/ui/ primitive --
+// it's a single row-cell render, not a reusable shape elsewhere in the app yet.
+function TeamLogoCell({ logo, abbrev }: { logo: string | null; abbrev: string | null }) {
+  const [errored, setErrored] = useState(false);
+  if (!logo || errored) {
+    return <span style={{ color: uiTokens.textMuted }}>{abbrev ?? '—'}</span>;
+  }
+  return (
+    <Image
+      src={logo}
+      alt={abbrev ?? 'Team logo'}
+      width={16}
+      height={16}
+      className="object-contain"
+      onError={() => setErrored(true)}
+    />
+  );
+}
 
 interface PlayerCardSeasonStatsProps {
   statColumns: StatColumn[];
@@ -125,7 +148,9 @@ export default function PlayerCardSeasonStats({
                 fontSize: typeScale.label,
               }}>
               <div style={{ color: i === 0 ? accent : uiTokens.textPrimary }}>{s.season}</div>
-              <div style={{ color: uiTokens.textMuted }}>{s.teamAbbrev ?? '—'}</div>
+              <div className="flex items-center">
+                <TeamLogoCell logo={s.teamLogo} abbrev={s.teamAbbrev} />
+              </div>
               {statColumns.map((col) => (
                 <div
                   key={col.header}

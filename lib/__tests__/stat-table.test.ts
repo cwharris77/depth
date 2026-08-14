@@ -6,6 +6,7 @@ const BASE: PlayerSeasonStats = {
   season: 2024,
   seasonType: 'REG',
   teamAbbrev: null,
+  teamLogo: null,
   games: 16,
   completions: null,
   attempts: null,
