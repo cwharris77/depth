@@ -88,7 +88,11 @@ export default function TeamPageHeader({
             column) rather than city + mascot, compact enough to sit alongside the
             page switcher. Mobile-only: at xl the persistent TeamRail owns team
             switching, so the pill (and with it the NavSwitcher sheet) hides. */}
-        <div className="flex items-center gap-1.5 min-w-0">
+        {/* flex-wrap + justify-end: below xl, the pill and page switcher share this
+            row while there's space; once their combined content no longer fits (small
+            phones — see DEP-199), the switcher drops to its own right-aligned line
+            instead of overflowing past the viewport edge and colliding with the logo. */}
+        <div className="flex flex-1 flex-wrap items-center justify-end gap-1.5 min-w-0">
           <button
             type="button"
             onClick={() => setNavOpen(true)}
