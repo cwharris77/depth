@@ -46,6 +46,7 @@ export function buildPlayerStatsSeedSql(rows: PlayerStatsInsert[]): string {
       'player_id',
       'season',
       'season_type',
+      'team_id',
       'games',
       'completions',
       'attempts',

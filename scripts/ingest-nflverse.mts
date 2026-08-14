@@ -406,6 +406,7 @@ async function main() {
         parseCsv(statsCsv),
         crosswalk,
         knownPlayerIds,
+        resolveTeamCode,
         { requireCurrentRoster }
       );
       skipped += seasonSkipped;

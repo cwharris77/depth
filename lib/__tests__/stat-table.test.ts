@@ -5,6 +5,7 @@ import type { PlayerSeasonStats, Position } from '@/lib/types';
 const BASE: PlayerSeasonStats = {
   season: 2024,
   seasonType: 'REG',
+  teamAbbrev: null,
   games: 16,
   completions: null,
   attempts: null,
