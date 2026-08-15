@@ -67,6 +67,13 @@ actor CachingDepthRepository: DepthRepository {
         try? await store.teamSnapshotCachedAt(teamId: teamId)
     }
 
+    /// Schedule reads are intentionally not folded into T5's snapshot cache: schedules
+    /// update on a different cadence and this focused feature only needs delegation at
+    /// the stable repository seam.
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        try await underlying.teamSchedule(teamId: teamId, season: season)
+    }
+
     static func isStale(_ cachedAt: Date, now: Date = Date()) -> Bool {
         now.timeIntervalSince(cachedAt) > staleAfter
     }

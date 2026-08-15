@@ -37,4 +37,31 @@ final class DepthUITests: XCTestCase {
         closeButton.tap()
         XCTAssertFalse(closeButton.waitForExistence(timeout: 2), "dismissing should close the player detail sheet")
     }
+
+    func testOpenTeamSchedule() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launch()
+
+        let searchField = app.searchFields.firstMatch
+        XCTAssertTrue(searchField.waitForExistence(timeout: 10), "search field should appear once the team list loads")
+        searchField.tap()
+        searchField.typeText("Bills")
+
+        let teamRow = app.buttons["team-row-bills"]
+        XCTAssertTrue(teamRow.waitForExistence(timeout: 10), "searching \"Bills\" should surface the Buffalo Bills row")
+        teamRow.tap()
+
+        let scheduleButton = app.buttons["schedule-destination"]
+        XCTAssertTrue(scheduleButton.waitForExistence(timeout: 10), "team detail should expose a Schedule destination")
+        scheduleButton.tap()
+
+        let scheduleContent = app.otherElements["schedule-content"]
+        XCTAssertTrue(scheduleContent.waitForExistence(timeout: 10), "the schedule should render production-shaped staging content")
+
+        let weekCard = app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier BEGINSWITH 'schedule-week-'")
+        ).firstMatch
+        XCTAssertTrue(weekCard.waitForExistence(timeout: 5), "the schedule should render at least one weekly card")
+    }
 }

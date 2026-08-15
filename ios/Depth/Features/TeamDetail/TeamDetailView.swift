@@ -14,18 +14,21 @@ struct TeamDetailView: View {
     @State private var confirmedOrders: [Position: [String]] = [:]
 
     private let preferences: UserPreferences
+    private let repository: CachingDepthRepository
     private let sessionStore: AuthSessionStore
     private let authService: any DepthAuthServicing
     private let overrideService: any DepthOverrideServicing
 
     init(
         viewModel: TeamDetailViewModel,
+        repository: CachingDepthRepository,
         preferences: UserPreferences,
         sessionStore: AuthSessionStore,
         authService: any DepthAuthServicing,
         overrideService: any DepthOverrideServicing
     ) {
         _viewModel = State(initialValue: viewModel)
+        self.repository = repository
         self.preferences = preferences
         self.sessionStore = sessionStore
         self.authService = authService
@@ -54,8 +57,17 @@ struct TeamDetailView: View {
                 }
             }
             .toolbar {
-                if !editableGroups.isEmpty {
-                    ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    NavigationLink {
+                        ScheduleView(teamId: viewModel.teamId, repository: repository)
+                    } label: {
+                        Label("Schedule", systemImage: "calendar")
+                    }
+                    .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityLabel("Schedule")
+                    .accessibilityIdentifier("schedule-destination")
+
+                    if !editableGroups.isEmpty {
                         Menu("Edit Order", systemImage: "arrow.up.arrow.down") {
                             ForEach(editableGroups) { group in
                                 Button(group.position.rawValue) { beginEditing(group) }

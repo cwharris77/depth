@@ -35,6 +35,10 @@ private actor FakeDepthRepository: DepthRepository {
         return try result.get()
     }
 
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        throw DepthError.notFound
+    }
+
     func appConfig() async throws -> AppConfig {
         try appConfigResult.get()
     }
