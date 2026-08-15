@@ -16,7 +16,7 @@ import Testing
 // successfully (identical policy), anon and authenticated writes are both denied
 // (no write policy exists), and service-role bypasses RLS entirely for both.
 
-private enum LocalSupabase {
+enum LocalSupabase {
     // The anon/publishable key is meant to be public — safe to commit, same as
     // ios/xcconfig's SUPABASE_PUBLISHABLE_KEY. Local-only demo value `supabase start`
     // prints, stable across every local Supabase project by default.

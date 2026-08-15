@@ -11,10 +11,22 @@ struct TeamListView: View {
 
     private let repository: CachingDepthRepository
     private let preferences: UserPreferences
+    private let sessionStore: AuthSessionStore
+    private let authService: any DepthAuthServicing
+    private let overrideService: any DepthOverrideServicing
 
-    init(repository: CachingDepthRepository, preferences: UserPreferences) {
+    init(
+        repository: CachingDepthRepository,
+        preferences: UserPreferences,
+        sessionStore: AuthSessionStore,
+        authService: any DepthAuthServicing,
+        overrideService: any DepthOverrideServicing
+    ) {
         self.repository = repository
         self.preferences = preferences
+        self.sessionStore = sessionStore
+        self.authService = authService
+        self.overrideService = overrideService
         _viewModel = State(initialValue: TeamListViewModel(repository: repository))
     }
 
@@ -26,8 +38,19 @@ struct TeamListView: View {
                 .navigationDestination(for: String.self) { teamId in
                     TeamDetailView(
                         viewModel: TeamDetailViewModel(teamId: teamId, repository: repository),
-                        preferences: preferences
+                        preferences: preferences,
+                        sessionStore: sessionStore,
+                        authService: authService,
+                        overrideService: overrideService
                     )
+                }
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        AccountSettingsButton(
+                            sessionStore: sessionStore,
+                            authService: authService
+                        )
+                    }
                 }
         }
         .task { await viewModel.load() }
