@@ -78,7 +78,8 @@ struct TeamDetailView: View {
                 }
             }
             .sheet(item: $selectedPlayer) { player in
-                PlayerDetailView(player: player, team: viewModel.snapshot?.team)
+                PlayerDetailView(player: player, team: viewModel.snapshot?.team, repository: repository)
+                    .id(player.id)
             }
             .sheet(isPresented: $showAuth, onDismiss: finishAuthentication) {
                 AuthSheet(service: authService, sessionStore: sessionStore)

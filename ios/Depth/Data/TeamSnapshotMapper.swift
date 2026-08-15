@@ -69,9 +69,28 @@ enum TeamSnapshotMapper {
         guard (1...3).contains(depthRank) else {
             throw DepthError.decoding("player \(dto.id): depthRank \(depthRank) out of range 1...3")
         }
+        guard let status = PlayerStatus(rawValue: dto.status ?? "backup") else {
+            throw DepthError.decoding("player \(dto.id): unknown status \"\(dto.status ?? "")\"")
+        }
         return Player(
             id: dto.id, name: dto.name, position: position, depthRank: depthRank, number: number,
-            photoUrl: dto.photoUrl
+            status: status, age: dto.age ?? 0, college: dto.college ?? "",
+            experience: dto.experience ?? 0, height: dto.height ?? "", weight: dto.weight ?? 0,
+            bio: dto.bio ?? "", photoUrl: dto.photoUrl
+        )
+    }
+
+    static func mapPlayerSeasonStats(_ dto: PlayerSeasonStatsDTO) -> PlayerSeasonStats {
+        PlayerSeasonStats(
+            season: dto.season, seasonType: .regular, teamAbbrev: dto.teams?.abbrev,
+            games: dto.games, completions: dto.completions, attempts: dto.attempts,
+            passingYards: dto.passingYards, passingTds: dto.passingTds,
+            passingInterceptions: dto.passingInterceptions, carries: dto.carries,
+            rushingYards: dto.rushingYards, rushingTds: dto.rushingTds,
+            receptions: dto.receptions, targets: dto.targets, receivingYards: dto.receivingYards,
+            receivingTds: dto.receivingTds, defTacklesSolo: dto.defTacklesSolo,
+            defSacks: dto.defSacks, defInterceptions: dto.defInterceptions, fgMade: dto.fgMade,
+            fgAtt: dto.fgAtt
         )
     }
 

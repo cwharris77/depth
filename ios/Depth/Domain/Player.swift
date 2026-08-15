@@ -1,11 +1,9 @@
 import Foundation
 
-// Mirrors the subset of lib/types.ts's Player that formation resolution and the T6
-// basic player-detail screen touch (id/name/position/depthRank/number/order/photoUrl).
-// `name` defaults to "" so the formation-parity fixtures (which only exercise ordering,
-// never display) don't need updating. Remaining bio/stat fields (age, college,
-// experience, height, weight, bio) join this struct when T8 ships full player profiles
-// — adding them now would be speculative ahead of that screen's real requirements.
+// Mirrors the complete native profile projection from `players` while retaining the
+// small initializer required by formation fixtures. Source absence stays represented by
+// the web-equivalent empty/zero values so the profile formatter, not the mapper, owns
+// the user-facing em dash fallback.
 struct Player: Codable, Hashable, Identifiable {
     let id: String
     let name: String
@@ -17,11 +15,20 @@ struct Player: Codable, Hashable, Identifiable {
     /// Set only on players reordered by a user depth override — see lib/utils/depth-
     /// chart/depth-overrides.ts. Undefined (nil) keeps the default jersey-number tiebreak.
     let order: Int?
+    let status: PlayerStatus
+    let age: Int
+    let college: String
+    let experience: Int
+    let height: String
+    let weight: Int
+    let bio: String
     let photoUrl: String?
 
     init(
         id: String, name: String = "", position: Position, depthRank: Int, number: Int,
-        order: Int? = nil, photoUrl: String? = nil
+        order: Int? = nil, status: PlayerStatus = .backup, age: Int = 0, college: String = "",
+        experience: Int = 0, height: String = "", weight: Int = 0, bio: String = "",
+        photoUrl: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -29,6 +36,13 @@ struct Player: Codable, Hashable, Identifiable {
         self.depthRank = depthRank
         self.number = number
         self.order = order
+        self.status = status
+        self.age = age
+        self.college = college
+        self.experience = experience
+        self.height = height
+        self.weight = weight
+        self.bio = bio
         self.photoUrl = photoUrl
     }
 }

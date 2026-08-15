@@ -53,6 +53,8 @@ actor SupabaseDepthRepository: DepthRepository {
     private static let scheduleSelect = "team_id, season"
     private static let gameSelect =
         "game_id, season, game_type, week, gameday, home_team_id, away_team_id, home_score, away_score"
+    private static let playerStatsSelect =
+        "season, season_type, games, completions, attempts, passing_yards, passing_tds, passing_interceptions, carries, rushing_yards, rushing_tds, receptions, targets, receiving_yards, receiving_tds, def_tackles_solo, def_sacks, def_interceptions, fg_made, fg_att, teams(abbrev)"
 
     func teams() async throws -> [Team] {
         do {
@@ -115,6 +117,28 @@ actor SupabaseDepthRepository: DepthRepository {
             )
         } catch let error as DepthError {
             throw error
+        } catch let error as PostgrestError {
+            throw Self.mapPostgrestError(error)
+        } catch let error as DecodingError {
+            throw DepthError.decoding("\(error)")
+        } catch is URLError {
+            throw DepthError.offline
+        } catch {
+            throw DepthError.server("\(error)")
+        }
+    }
+
+    func playerStats(playerId: String) async throws -> [PlayerSeasonStats] {
+        do {
+            let rows: [PlayerSeasonStatsDTO] = try await client
+                .from("player_stats")
+                .select(Self.playerStatsSelect)
+                .eq("player_id", value: playerId)
+                .eq("season_type", value: "REG")
+                .order("season", ascending: false)
+                .execute()
+                .value
+            return rows.map(TeamSnapshotMapper.mapPlayerSeasonStats)
         } catch let error as PostgrestError {
             throw Self.mapPostgrestError(error)
         } catch let error as DecodingError {
