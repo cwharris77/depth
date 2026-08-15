@@ -15,9 +15,11 @@ configFiles:
   Release: xcconfig/Release.xcconfig
 
 packages:
+  # Exact pin, not `from:` — a reviewed version per the design spec, not an
+  # up-to-next-major range that could silently pick up an unreviewed release.
   Supabase:
     url: https://github.com/supabase/supabase-swift
-    from: 2.55.1
+    exactVersion: 2.55.1
 
 targets:
   Depth:
