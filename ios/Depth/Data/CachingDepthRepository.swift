@@ -67,6 +67,12 @@ actor CachingDepthRepository: DepthRepository {
         try? await store.teamSnapshotCachedAt(teamId: teamId)
     }
 
+    /// Historical rosters are immutable on-demand reads. Delegating avoids persisting
+    /// dozens of rarely opened seasons in the current snapshot cache.
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        try await underlying.teamSeason(teamId: teamId, season: season)
+    }
+
     /// Schedule reads are intentionally not folded into T5's snapshot cache: schedules
     /// update on a different cadence and this focused feature only needs delegation at
     /// the stable repository seam.
@@ -76,8 +82,8 @@ actor CachingDepthRepository: DepthRepository {
 
     /// Player stats are a separate on-demand read; snapshot-cache restructuring would
     /// add stale, unused payload to every depth-chart launch.
-    func playerStats(playerId: String) async throws -> [PlayerSeasonStats] {
-        try await underlying.playerStats(playerId: playerId)
+    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] {
+        try await underlying.playerStats(playerId: playerId, teamId: teamId)
     }
 
     static func isStale(_ cachedAt: Date, now: Date = Date()) -> Bool {

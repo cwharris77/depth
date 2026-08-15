@@ -14,7 +14,9 @@ struct PlayerDetailView: View {
     init(player: Player, team: Team?, repository: DepthRepository) {
         self.player = player
         self.team = team
-        _viewModel = State(initialValue: PlayerProfileViewModel(playerID: player.id, repository: repository))
+        _viewModel = State(initialValue: PlayerProfileViewModel(
+            playerID: player.id, teamID: team?.id, repository: repository
+        ))
     }
 
     var body: some View {
