@@ -44,6 +44,15 @@ final class AppStoreScreenshotsUITests: XCTestCase {
 
         // 2. Team depth chart — "See every position at a glance."
         teamRow.tap()
+        // Selecting a team is a sheet dismiss over the previously-mounted chart, not a
+        // fresh push, so waiting on the unit picker/player slot alone doesn't prove the
+        // Bills chart is what's actually on screen — it proves *a* chart is. Wait for the
+        // switcher button to relabel for the Bills specifically first (see
+        // UITestHelpers.swift's `selectTeam` for the same reasoning).
+        XCTAssertTrue(
+            switcher.waitForLabel(containing: "Buffalo Bills"),
+            "the switcher button should relabel for the Buffalo Bills once the switch completes"
+        )
         let unitPicker = app.segmentedControls.firstMatch
         XCTAssertTrue(unitPicker.waitForExistence(timeout: 15), "depth chart should render a unit picker once the team snapshot loads")
         let playerSlot = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'player-slot-'")).firstMatch

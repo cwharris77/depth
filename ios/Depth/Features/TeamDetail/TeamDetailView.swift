@@ -2,8 +2,8 @@ import SwiftUI
 
 // Team depth chart — offense/defense/special-teams sections over one cached/refreshed
 // `TeamSnapshot` (design spec Milestone 1 item 16). Restores the last-viewed section via
-// `UserPreferences.lastUnit` and persists it on change, same pattern as the team-list
-// restoration in TeamListView.
+// `UserPreferences.lastUnit` and persists it on change, same pattern as the last-team
+// restoration in DepthChartsTab.
 struct TeamDetailView: View {
     @State private var viewModel: TeamDetailViewModel
     @State private var unit: Unit

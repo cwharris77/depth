@@ -941,15 +941,15 @@ git commit -m "feat(ios): capture App Store screenshot #1 from the team switcher
 - Modify: `.superpowers/sdd/2026-08-15-native-ios-navigation-parity/progress.md` (gitignored by default — `git add -f`)
 - Modify: `../obsidian/Projects/depth/specs/2026-08-15-native-ios-navigation-parity-design.md`
 
-- [ ] **Step 1: Check off this plan's completed tasks**
+- [x] **Step 1: Check off this plan's completed tasks**
 
 Tick every `- [ ]` completed in Tasks 1–3.
 
-- [ ] **Step 2: Point the vault spec at the real plan**
+- [x] **Step 2: Point the vault spec at the real plan**
 
 In the vault spec's header, replace `Implementation plan: \`depth/docs/superpowers/plans/<dated>-native-ios-navigation-parity.md\` (to be written)` with the actual path, and update the Status line to record that it shipped and on what date.
 
-- [ ] **Step 3: Commit and merge**
+- [x] **Step 3: Commit and merge**
 
 ```bash
 git add -f .superpowers/sdd/2026-08-15-native-ios-navigation-parity/progress.md

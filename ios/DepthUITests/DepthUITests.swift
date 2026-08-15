@@ -21,7 +21,7 @@ final class DepthUITests: XCTestCase {
         // No stored preference → the default team's chart is the launch destination.
         XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
 
-        app.selectTeam("bills", searching: "Bills")
+        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
 
         let unitPicker = app.segmentedControls.firstMatch
         XCTAssertTrue(unitPicker.waitForExistence(timeout: 10), "depth chart should render a unit picker once the team snapshot loads")
@@ -63,7 +63,7 @@ final class DepthUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
-        app.selectTeam("bills", searching: "Bills")
+        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
 
         let scheduleButton = app.buttons["schedule-destination"]
         XCTAssertTrue(scheduleButton.waitForExistence(timeout: 10), "team detail should expose a Schedule destination")
@@ -84,7 +84,7 @@ final class DepthUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
-        app.selectTeam("seahawks", searching: "Seahawks")
+        app.selectTeam("seahawks", searching: "Seahawks", expectedDisplayName: "Seattle Seahawks")
 
         let historyButton = app.buttons["history-destination"]
         XCTAssertTrue(historyButton.waitForExistence(timeout: 10), "team detail should expose History")
@@ -156,7 +156,7 @@ final class DepthUITests: XCTestCase {
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
         app.launch()
         XCTAssertTrue(app.waitForDepthChart())
-        app.selectTeam("bills", searching: "Bills")
+        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
         app.terminate()
 
         // No reset argument — this launch must inherit the stored preference.
