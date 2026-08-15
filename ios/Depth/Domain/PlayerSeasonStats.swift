@@ -75,7 +75,7 @@ enum PlayerProfileDisplay {
     }
 }
 
-enum PlayerStatColumn: Hashable {
+enum PlayerStatColumn: Hashable, CaseIterable {
     case completionsAttempts, passingYards, passingTds, passingInterceptions, passingYardsPerAttempt
     case carries, rushingYards, rushingTds, receptions, rushingYardsPerCarry
     case targets, receivingYards, receivingTds, receivingYardsPerReception
@@ -158,6 +158,54 @@ enum PlayerStatColumn: Hashable {
         formatter.maximumFractionDigits = 0
         return formatter
     }()
+}
+
+// Spoken column names and combined row labels for VoiceOver (design spec Milestone 3
+// item 30). The stat table's on-screen headers are deliberately compact ("YDS", "YPA")
+// so numeric columns fit; VoiceOver reads those as opaque letter strings, and a row
+// combined from bare cells announces a run of unlabeled numbers. These pure builders
+// keep the spoken vocabulary testable outside SwiftUI, the same split
+// `PlayerProfileDisplay` already uses for visible copy.
+extension PlayerStatColumn {
+    var accessibleName: String {
+        switch self {
+        case .completionsAttempts: "Completions of attempts"
+        case .passingYards: "Passing yards"
+        case .passingTds: "Passing touchdowns"
+        case .passingInterceptions: "Interceptions thrown"
+        case .passingYardsPerAttempt: "Yards per attempt"
+        case .carries: "Carries"
+        case .rushingYards: "Rushing yards"
+        case .rushingTds: "Rushing touchdowns"
+        case .rushingYardsPerCarry: "Yards per carry"
+        case .receptions: "Receptions"
+        case .targets: "Targets"
+        case .receivingYards: "Receiving yards"
+        case .receivingTds: "Receiving touchdowns"
+        case .receivingYardsPerReception: "Yards per reception"
+        case .games: "Games played"
+        case .tackles: "Solo tackles"
+        case .sacks: "Sacks"
+        case .interceptions: "Interceptions"
+        case .fieldGoalsMade: "Field goals made"
+        case .fieldGoalsAttempted: "Field goals attempted"
+        case .fieldGoalPercentage: "Field goal percentage"
+        }
+    }
+}
+
+enum PlayerStatsAccessibility {
+    /// One spoken sentence per season row: the season, the team it was played for when
+    /// known, then every column paired with its own value so no number is announced
+    /// without the stat it belongs to.
+    static func rowLabel(for stats: PlayerSeasonStats, columns: [PlayerStatColumn]) -> String {
+        var parts = ["\(stats.season) season"]
+        if let teamAbbrev = stats.teamAbbrev, !teamAbbrev.isEmpty {
+            parts.append(teamAbbrev)
+        }
+        parts.append(contentsOf: columns.map { "\($0.accessibleName) \($0.value(for: stats))" })
+        return parts.joined(separator: ", ")
+    }
 }
 
 func playerStatColumns(for position: Position) -> [PlayerStatColumn] {

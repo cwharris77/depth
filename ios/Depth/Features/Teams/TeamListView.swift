@@ -74,10 +74,17 @@ struct TeamListView: View {
     private var content: some View {
         switch viewModel.loadState {
         case .loading:
-            List(0..<8, id: \.self) { _ in TeamRowSkeleton() }
-                .listStyle(.plain)
-                .redacted(reason: .placeholder)
-                .accessibilityHidden(true)
+            // Hiding the placeholder rows keeps VoiceOver from reading eight blank
+            // stand-ins, but a fully hidden screen announces nothing at all — the
+            // container carries the state instead.
+            List(0..<8, id: \.self) { _ in
+                TeamRowSkeleton().accessibilityHidden(true)
+            }
+            .listStyle(.plain)
+            .redacted(reason: .placeholder)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Loading teams")
+            .accessibilityIdentifier("team-list-loading")
 
         case .failed(let error):
             ContentUnavailableView {
@@ -137,13 +144,19 @@ private struct TeamRow: View {
     }
 }
 
+// Sized against the same scaled badge metric as `TeamRow`, so the list doesn't resize
+// under the user when real rows land (AGENTS.md's flash-then-jump rule).
 private struct TeamRowSkeleton: View {
+    @ScaledMetric(relativeTo: .body) private var badgeSize: CGFloat = TeamBadge.baseSize
+    @ScaledMetric(relativeTo: .body) private var titleHeight: CGFloat = 16
+    @ScaledMetric(relativeTo: .caption) private var subtitleHeight: CGFloat = 12
+
     var body: some View {
         HStack(spacing: 12) {
-            Circle().fill(.gray).frame(width: 36, height: 36)
-            VStack(alignment: .leading, spacing: 6) {
-                RoundedRectangle(cornerRadius: 4).fill(.gray).frame(width: 140, height: 14)
-                RoundedRectangle(cornerRadius: 4).fill(.gray).frame(width: 90, height: 10)
+            Circle().fill(.gray).frame(width: badgeSize, height: badgeSize)
+            VStack(alignment: .leading, spacing: 8) {
+                RoundedRectangle(cornerRadius: 4).fill(.gray).frame(maxWidth: 140, maxHeight: titleHeight)
+                RoundedRectangle(cornerRadius: 4).fill(.gray).frame(maxWidth: 90, maxHeight: subtitleHeight)
             }
         }
         .padding(.vertical, 4)
@@ -154,7 +167,12 @@ private struct TeamRowSkeleton: View {
 /// image blobs"), so `logo`/`logoDark` are opportunistic `AsyncImage` loads with this as
 /// the fallback while loading or when the URL is nil/fails.
 struct TeamBadge: View {
+    /// Shared with `TeamRowSkeleton` so the placeholder and the real row scale together.
+    static let baseSize: CGFloat = 36
+
     let team: Team
+
+    @ScaledMetric(relativeTo: .body) private var size: CGFloat = TeamBadge.baseSize
 
     var body: some View {
         ZStack {
@@ -171,7 +189,7 @@ struct TeamBadge: View {
                 initials
             }
         }
-        .frame(width: 36, height: 36)
+        .frame(width: size, height: size)
         .accessibilityHidden(true)
     }
 
