@@ -6,9 +6,12 @@ struct AuthSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: AuthFlowViewModel
 
-    init(service: any DepthAuthServicing, sessionStore: AuthSessionStore) {
+    init(
+        service: any DepthAuthServicing, sessionStore: AuthSessionStore,
+        events: any AppEventsRecording = NoOpAppEventsRecorder()
+    ) {
         _viewModel = State(
-            initialValue: AuthFlowViewModel(service: service, sessionStore: sessionStore))
+            initialValue: AuthFlowViewModel(service: service, sessionStore: sessionStore, events: events))
     }
 
     var body: some View {

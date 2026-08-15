@@ -14,20 +14,23 @@ struct TeamListView: View {
     private let sessionStore: AuthSessionStore
     private let authService: any DepthAuthServicing
     private let overrideService: any DepthOverrideServicing
+    private let events: any AppEventsRecording
 
     init(
         repository: CachingDepthRepository,
         preferences: UserPreferences,
         sessionStore: AuthSessionStore,
         authService: any DepthAuthServicing,
-        overrideService: any DepthOverrideServicing
+        overrideService: any DepthOverrideServicing,
+        events: any AppEventsRecording = NoOpAppEventsRecorder()
     ) {
         self.repository = repository
         self.preferences = preferences
         self.sessionStore = sessionStore
         self.authService = authService
         self.overrideService = overrideService
-        _viewModel = State(initialValue: TeamListViewModel(repository: repository))
+        self.events = events
+        _viewModel = State(initialValue: TeamListViewModel(repository: repository, events: events))
     }
 
     var body: some View {
@@ -37,12 +40,13 @@ struct TeamListView: View {
                 .searchable(text: $viewModel.searchText, prompt: "Search teams")
                 .navigationDestination(for: String.self) { teamId in
                     TeamDetailView(
-                        viewModel: TeamDetailViewModel(teamId: teamId, repository: repository),
+                        viewModel: TeamDetailViewModel(teamId: teamId, repository: repository, events: events),
                         repository: repository,
                         preferences: preferences,
                         sessionStore: sessionStore,
                         authService: authService,
-                        overrideService: overrideService
+                        overrideService: overrideService,
+                        events: events
                     )
                 }
                 .toolbar {
@@ -50,7 +54,8 @@ struct TeamListView: View {
                         AccountSettingsButton(
                             sessionStore: sessionStore,
                             authService: authService,
-                            dataSavedAt: viewModel.cachedAt
+                            dataSavedAt: viewModel.cachedAt,
+                            events: events
                         )
                     }
                 }

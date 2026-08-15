@@ -17,6 +17,7 @@ struct SettingsView: View {
     /// The team list's on-device cache timestamp — passed down from `TeamListViewModel`
     /// (already loaded by the time Settings can be reached) rather than re-fetched here.
     let dataSavedAt: Date?
+    var events: any AppEventsRecording = NoOpAppEventsRecorder()
     var clearPrivateData: @Sendable () async -> Void = {}
 
     @State private var showAuth = false
@@ -76,7 +77,7 @@ struct SettingsView: View {
             }
         }
         .sheet(isPresented: $showAuth) {
-            AuthSheet(service: authService, sessionStore: sessionStore)
+            AuthSheet(service: authService, sessionStore: sessionStore, events: events)
         }
         .sheet(isPresented: $showDeletion) {
             if let email = sessionStore.user?.email {
@@ -113,6 +114,7 @@ struct AccountSettingsButton: View {
     let sessionStore: AuthSessionStore
     let authService: any DepthAuthServicing
     let dataSavedAt: Date?
+    var events: any AppEventsRecording = NoOpAppEventsRecorder()
     var clearPrivateData: @Sendable () async -> Void = {}
 
     var body: some View {
@@ -125,6 +127,7 @@ struct AccountSettingsButton: View {
                 sessionStore: sessionStore,
                 authService: authService,
                 dataSavedAt: dataSavedAt,
+                events: events,
                 clearPrivateData: clearPrivateData
             )
         }

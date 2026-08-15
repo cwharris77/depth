@@ -17,11 +17,13 @@ struct ContentView: View {
                     preferences: DepthEnvironment.preferences,
                     sessionStore: authSessionStore,
                     authService: DepthEnvironment.authService,
-                    overrideService: DepthEnvironment.overrideService
+                    overrideService: DepthEnvironment.overrideService,
+                    events: DepthEnvironment.appEvents
                 )
             }
         }
         .task {
+            DepthEnvironment.appEvents.record(.appLaunch)
             authSessionStore.start()
             await authSessionStore.refresh()
             await updateGate.check()

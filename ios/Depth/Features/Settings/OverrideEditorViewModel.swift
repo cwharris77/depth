@@ -14,13 +14,18 @@ final class OverrideEditorViewModel {
     private(set) var error: DepthError?
 
     @ObservationIgnored private let writer: any DepthOverrideWriting
+    @ObservationIgnored private let events: any AppEventsRecording
 
-    init(teamId: String, position: String, playerIds: [String], writer: any DepthOverrideWriting) {
+    init(
+        teamId: String, position: String, playerIds: [String], writer: any DepthOverrideWriting,
+        events: any AppEventsRecording = NoOpAppEventsRecorder()
+    ) {
         self.teamId = teamId
         self.position = position
         savedPlayerIds = playerIds
         draftPlayerIds = playerIds
         self.writer = writer
+        self.events = events
     }
 
     var hasUnsavedChanges: Bool { draftPlayerIds != savedPlayerIds }
@@ -38,10 +43,12 @@ final class OverrideEditorViewModel {
         guard !isSaving else { return false }
         guard !draftPlayerIds.isEmpty else {
             error = .validation("Keep at least one starter in this group.")
+            events.record(.error(category: "validation"))
             return false
         }
         guard Set(draftPlayerIds).count == draftPlayerIds.count else {
             error = .validation("A player can appear only once in a position group.")
+            events.record(.error(category: "validation"))
             return false
         }
 
@@ -51,12 +58,15 @@ final class OverrideEditorViewModel {
         do {
             try await writer.save(teamId: teamId, position: position, playerIds: draftPlayerIds)
             savedPlayerIds = draftPlayerIds
+            events.record(.overrideSaved)
             return true
         } catch let depthError as DepthError {
             error = depthError
+            events.record(.error(category: depthError.telemetryCategory))
             return false
         } catch let unexpectedError {
             error = .server(unexpectedError.localizedDescription)
+            events.record(.error(category: "server"))
             return false
         }
     }
