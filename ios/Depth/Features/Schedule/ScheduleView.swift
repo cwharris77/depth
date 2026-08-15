@@ -88,7 +88,7 @@ struct ScheduleView: View {
             )
         ) {
             ForEach(viewModel.seasonOptions, id: \.self) { season in
-                Text("\(season)").tag(season)
+                Text(verbatim: "\(season)").tag(season)
             }
         }
         .pickerStyle(.menu)
