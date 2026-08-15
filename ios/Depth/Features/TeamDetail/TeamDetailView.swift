@@ -19,6 +19,7 @@ struct TeamDetailView: View {
     private let sessionStore: AuthSessionStore
     private let authService: any DepthAuthServicing
     private let overrideService: any DepthOverrideServicing
+    private let events: any AppEventsRecording
     @State private var historyViewModel: HistoryViewModel
 
     init(
@@ -27,7 +28,8 @@ struct TeamDetailView: View {
         preferences: UserPreferences,
         sessionStore: AuthSessionStore,
         authService: any DepthAuthServicing,
-        overrideService: any DepthOverrideServicing
+        overrideService: any DepthOverrideServicing,
+        events: any AppEventsRecording = NoOpAppEventsRecorder()
     ) {
         _viewModel = State(initialValue: viewModel)
         self.repository = repository
@@ -35,6 +37,7 @@ struct TeamDetailView: View {
         self.sessionStore = sessionStore
         self.authService = authService
         self.overrideService = overrideService
+        self.events = events
         _unit = State(initialValue: preferences.lastUnit ?? .offense)
         _historyViewModel = State(initialValue: HistoryViewModel(teamId: viewModel.teamId, repository: repository))
     }
@@ -109,7 +112,7 @@ struct TeamDetailView: View {
                 }
             }
             .sheet(isPresented: $showAuth, onDismiss: finishAuthentication) {
-                AuthSheet(service: authService, sessionStore: sessionStore)
+                AuthSheet(service: authService, sessionStore: sessionStore, events: events)
             }
             .sheet(item: $selectedOverrideGroup) { group in
                 let players = players(for: group.position)
@@ -118,7 +121,8 @@ struct TeamDetailView: View {
                         teamId: viewModel.teamId,
                         position: group.position.rawValue,
                         playerIds: players.map(\.id),
-                        writer: overrideService
+                        writer: overrideService,
+                        events: events
                     ),
                     playerNames: Dictionary(
                         uniqueKeysWithValues: players.map {

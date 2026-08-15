@@ -35,4 +35,19 @@ extension DepthError {
             return "Something went wrong loading this. Please try again."
         }
     }
+
+    /// Non-sensitive bucket for `AppEvent.error` (design spec Milestone 2B item 26) —
+    /// the case name only, never the associated diagnostic string.
+    var telemetryCategory: String {
+        switch self {
+        case .notFound: "notFound"
+        case .offline: "offline"
+        case .unauthenticated: "unauthenticated"
+        case .permissionDenied: "permissionDenied"
+        case .validation: "validation"
+        case .incompatibleBuild: "incompatibleBuild"
+        case .server: "server"
+        case .decoding: "decoding"
+        }
+    }
 }

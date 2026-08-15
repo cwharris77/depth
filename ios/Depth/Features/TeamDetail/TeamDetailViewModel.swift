@@ -21,10 +21,15 @@ final class TeamDetailViewModel {
     private(set) var cachedAt: Date?
 
     private let repository: CachingDepthRepository
+    private let events: any AppEventsRecording
 
-    init(teamId: String, repository: CachingDepthRepository) {
+    init(
+        teamId: String, repository: CachingDepthRepository,
+        events: any AppEventsRecording = NoOpAppEventsRecorder()
+    ) {
         self.teamId = teamId
         self.repository = repository
+        self.events = events
     }
 
     var isStale: Bool {
@@ -33,6 +38,7 @@ final class TeamDetailViewModel {
     }
 
     func load() async {
+        let firstLoad = snapshot == nil
         if snapshot == nil {
             loadState = .loading
         }
@@ -41,15 +47,22 @@ final class TeamDetailViewModel {
             snapshot = result
             cachedAt = await repository.teamSnapshotCachedAt(teamId: teamId)
             loadState = .loaded
+            // Fires once per team-detail visit, on the first successful resolve —
+            // not on every 15-minute background/pull-to-refresh reload, which would
+            // inflate the "reached a depth chart" funnel step (design spec Milestone
+            // 2B item 26).
+            if firstLoad { events.record(.depthChartReached) }
         } catch let error as DepthError {
             // A failure never clears a snapshot already on screen — retain last good
             // data (design spec's "retain the last good snapshot on failure").
             if snapshot == nil {
                 loadState = .failed(error)
+                events.record(.error(category: error.telemetryCategory))
             }
         } catch {
             if snapshot == nil {
                 loadState = .failed(.server("\(error)"))
+                events.record(.error(category: "server"))
             }
         }
     }
