@@ -36,40 +36,42 @@ jobs:
         run: |
           set -euo pipefail
 
+          # `simctl list devicetypes` (no -j) is indentation-sensitive plain text whose
+          # exact formatting isn't guaranteed across Xcode versions/runners — a first cut
+          # of this step parsed that text with grep/sed/awk/sort and silently aborted on
+          # a GitHub-hosted runner (pipefail treats a non-matching grep inside a pipeline
+          # as pipeline failure, so `set -e` exited before the fallback error even
+          # printed). `-j` gives stable, versioned JSON instead; parse with jq only.
+          TYPES_JSON=$(xcrun simctl list devicetypes -j)
+
           # Oldest-supported-class approximation: the design spec's performance budgets
           # target "iPhone XS/XR-class" devices, but those device types are no longer
           # creatable against current iOS simulator runtimes (Apple drops old hardware
           # templates from new runtimes). Fall through a list of the smallest/oldest
           # device types that are still commonly creatable, oldest first.
-          OLD_CANDIDATES=(
-            "iPhone SE (3rd generation)"
-            "iPhone SE (2nd generation)"
-            "iPhone 12 mini"
-            "iPhone 13 mini"
-            "iPhone 12"
-          )
-          OLD_DEVICE=""
-          for d in "${OLD_CANDIDATES[@]}"; do
-            if xcrun simctl list devicetypes | grep -qF "$d ("; then
-              OLD_DEVICE="$d"
-              break
-            fi
-          done
+          OLD_DEVICE=$(echo "$TYPES_JSON" | jq -r '
+            .devicetypes | map(.name) as $names |
+            ["iPhone SE (3rd generation)", "iPhone SE (2nd generation)", "iPhone 12 mini", "iPhone 13 mini", "iPhone 12"]
+            | map(select(. as $c | $names | index($c))) | first // empty
+          ')
           if [ -z "$OLD_DEVICE" ]; then
             echo "::error::No oldest-class candidate simulator device type is installed on this runner."
+            echo "$TYPES_JSON" | jq -r '.devicetypes[].name'
             exit 1
           fi
 
           # Current flagship: highest-numbered plain "iPhone N" or "iPhone N Pro" device
           # type installed (skips Plus/Max/mini/e variants, which aren't a meaningful
           # second matrix leg alongside the oldest-class device above).
-          NEW_DEVICE=$(xcrun simctl list devicetypes \
-            | grep -E '^    iPhone [0-9]+( Pro)? \(' \
-            | sed -E 's/^    (iPhone [0-9]+( Pro)?) \(.*/\1/' \
-            | awk '{print $2, $0}' | sort -n -r | cut -d' ' -f2- \
-            | head -1)
+          NEW_DEVICE=$(echo "$TYPES_JSON" | jq -r '
+            [.devicetypes[]
+              | select(.productFamily == "iPhone" and (.name | test("^iPhone [0-9]+( Pro)?$")))
+              | {name, num: (.name | capture("^iPhone (?<n>[0-9]+)") | .n | tonumber)}]
+            | sort_by(.num) | last | .name // empty
+          ')
           if [ -z "$NEW_DEVICE" ]; then
             echo "::error::No current-flagship candidate simulator device type is installed on this runner."
+            echo "$TYPES_JSON" | jq -r '.devicetypes[].name'
             exit 1
           fi
 
