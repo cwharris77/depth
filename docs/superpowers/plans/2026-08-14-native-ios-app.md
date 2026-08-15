@@ -112,16 +112,34 @@ build alone.
     unit tests, 5 RLS integration tests against local Supabase (anon/authenticated/service-role).
     Owner/non-owner distinction not applicable yet — all 5 snapshot tables are public-read with
     zero write policies until `depth_overrides` ships in T7.
-- [ ] **T5 (P1, human: ~2d / CC: ~4h)** — Cache — implement versioned SwiftData snapshots,
+- [x] **T5 (P1, human: ~2d / CC: ~4h)** — Cache — implement versioned SwiftData snapshots,
   cache-first refresh, deduplication, stale labels, preferences, and update-gate behavior.
   - Surfaced by: Performance — a polished phone app must remain fast and useful during outages.
   - Files: `ios/Depth/Data/`, `ios/Depth/App/`, `ios/DepthTests/`, `supabase/`.
   - Verify: cache/update/concurrency suites; warm render <1 s on oldest device.
-- [ ] **T6 (P1, human: ~5d / CC: ~1d)** — Core UX — ship team search, depth chart, player detail,
+  - Shipped: depth#355 (+ depth#356 for T6, built on top). `CachingDepthRepository` actor
+    decorator over `SupabaseDepthRepository` — cache-first reads, deduplicated background
+    refresh, retained last-good snapshot on failed refresh, 32-team cache cap, safe
+    schema-version discard (`CachedSnapshotStore`, a `@ModelActor`). `app_config` table/
+    migration + update gate wired into the app root. Warm-render/performance budget
+    (<1s on oldest supported device) not independently measured yet — no perf-metrics
+    harness exists until T9.
+- [x] **T6 (P1, human: ~5d / CC: ~1d)** — Core UX — ship team search, depth chart, player detail,
   restoration, and complete state/accessibility behavior.
   - Surfaced by: Test Review — first vertical slice has no native coverage or implementation.
   - Files: `ios/Depth/Features/Teams/`, `TeamDetail/`, `ios/DepthUITests/`.
   - Verify: seven-day device use; critical XCUITest journey; VoiceOver/XXXL checklist.
+  - Shipped: depth#356. Searchable team list → depth chart (offense/defense/special via
+    the existing T3 `resolveUnit`) → basic player detail, all cache-first through T5;
+    last-viewed team/section restoration; explicit loading/empty/stale/offline/error
+    states throughout. One critical XCUITest journey (search → team → chart → player
+    detail → dismiss) passes against real staging data. Seven-day device use and a full
+    manual VoiceOver/Accessibility-XXXL audit are human-only gates, not yet run — basic
+    accessibility labels/identifiers/44×44 tap targets are in place but unverified on a
+    physical device. Real per-team formation layouts (`buildRealFormation`/
+    `buildRealDefenseFormation`, T3) aren't wired in yet — the projected snapshot query
+    doesn't select `qbAlignment`/personnel-code columns, so the chart currently always
+    renders the generic formation.
 - [ ] **T7 (P1, human: ~4d / CC: ~1d)** — Accounts — implement native email OTP, session
   lifecycle, owner-only group upserts, edit recovery, and fresh-OTP account deletion.
   - Surfaced by: Architecture — browser auth and current deletion assurances are insufficient.
