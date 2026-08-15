@@ -31,28 +31,35 @@ actor CachedSnapshotStore {
     }
 
     func teamSnapshot(teamId: String) throws -> TeamSnapshot? {
+        guard let row = try validSnapshotRow(teamId: teamId) else { return nil }
+        // Row passed the version check in validSnapshotRow — decode it for real here
+        // (validSnapshotRow only trial-decodes to validate, it doesn't return the value,
+        // keeping that helper cheap for teamSnapshotCachedAt's metadata-only callers).
+        return try? JSONDecoder().decode(TeamSnapshot.self, from: row.payload)
+    }
+
+    /// Same validity rules as `teamSnapshot` (version check + payload decode), so a
+    /// caller using this for a stale-label timestamp never sees a `cachedAt` for a row
+    /// `teamSnapshot` would treat as a cache miss.
+    func teamSnapshotCachedAt(teamId: String) throws -> Date? {
+        try validSnapshotRow(teamId: teamId)?.cachedAt
+    }
+
+    /// Fetches the row for `teamId`, discarding (and returning nil for) anything that
+    /// fails the schema-version check or doesn't decode against this build's Domain
+    /// structs — the one place both read paths above apply "safe schema discard."
+    private func validSnapshotRow(teamId: String) throws -> CachedTeamSnapshot? {
         var descriptor = FetchDescriptor<CachedTeamSnapshot>(predicate: #Predicate { $0.teamId == teamId })
         descriptor.fetchLimit = 1
         guard let row = try modelContext.fetch(descriptor).first else { return nil }
-        guard row.schemaVersion == depthCacheSchemaVersion else {
+        guard row.schemaVersion == depthCacheSchemaVersion,
+            (try? JSONDecoder().decode(TeamSnapshot.self, from: row.payload)) != nil
+        else {
             modelContext.delete(row)
             try modelContext.save()
             return nil
         }
-        guard let snapshot = try? JSONDecoder().decode(TeamSnapshot.self, from: row.payload) else {
-            // Payload doesn't decode against this build's Domain structs even though the
-            // version tag matched — discard rather than surface a decode crash later.
-            modelContext.delete(row)
-            try modelContext.save()
-            return nil
-        }
-        return snapshot
-    }
-
-    func teamSnapshotCachedAt(teamId: String) throws -> Date? {
-        var descriptor = FetchDescriptor<CachedTeamSnapshot>(predicate: #Predicate { $0.teamId == teamId })
-        descriptor.fetchLimit = 1
-        return try modelContext.fetch(descriptor).first?.cachedAt
+        return row
     }
 
     func saveTeamSnapshot(_ snapshot: TeamSnapshot, teamId: String, cachedAt: Date) throws {
@@ -89,7 +96,16 @@ actor CachedSnapshotStore {
             predicate: #Predicate { $0.singletonKey == key }
         )
         descriptor.fetchLimit = 1
-        return try modelContext.fetch(descriptor).first?.config
+        guard let row = try modelContext.fetch(descriptor).first else { return nil }
+        guard row.schemaVersion == depthCacheSchemaVersion else {
+            // A future app_config contract change (safe schema discard, same as the
+            // snapshot/list caches) must not let a differently-shaped old value reach
+            // the update gate.
+            modelContext.delete(row)
+            try modelContext.save()
+            return nil
+        }
+        return row.config
     }
 
     func saveAppConfig(_ config: AppConfig, cachedAt: Date) throws {
@@ -101,9 +117,10 @@ actor CachedSnapshotStore {
         if let existing = try modelContext.fetch(descriptor).first {
             existing.minimumSupportedBuild = config.minimumSupportedBuild
             existing.maintenanceMessage = config.maintenanceMessage
+            existing.schemaVersion = depthCacheSchemaVersion
             existing.cachedAt = cachedAt
         } else {
-            modelContext.insert(CachedAppConfig(config: config, cachedAt: cachedAt))
+            modelContext.insert(CachedAppConfig(config: config, schemaVersion: depthCacheSchemaVersion, cachedAt: cachedAt))
         }
         try modelContext.save()
     }

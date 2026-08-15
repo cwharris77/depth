@@ -85,14 +85,16 @@ final class CachedAppConfig {
     @Attribute(.unique) var singletonKey: String
     var minimumSupportedBuild: Int
     var maintenanceMessage: String?
+    var schemaVersion: Int
     var cachedAt: Date
 
     static let key = "app_config"
 
-    init(config: AppConfig, cachedAt: Date) {
+    init(config: AppConfig, schemaVersion: Int, cachedAt: Date) {
         self.singletonKey = Self.key
         self.minimumSupportedBuild = config.minimumSupportedBuild
         self.maintenanceMessage = config.maintenanceMessage
+        self.schemaVersion = schemaVersion
         self.cachedAt = cachedAt
     }
 

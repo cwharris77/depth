@@ -172,3 +172,29 @@ private func snapshot(teamId: String = "bills") -> TeamSnapshot {
     let result = try await repository.teamSnapshot(teamId: "bills")
     #expect(result.team.id == "bills", "a discarded incompatible row falls through to a real network fetch")
 }
+
+@Test func teamSnapshotCachedAtReturnsNilForARowTeamSnapshotWouldDiscard() async throws {
+    let container = inMemoryContainer()
+    let context = ModelContext(container)
+    let payload = try JSONEncoder().encode(snapshot())
+    context.insert(CachedTeamSnapshot(teamId: "bills", payload: payload, schemaVersion: depthCacheSchemaVersion + 1, cachedAt: Date()))
+    try context.save()
+
+    let store = CachedSnapshotStore(modelContainer: container)
+    let cachedAt = try await store.teamSnapshotCachedAt(teamId: "bills")
+    #expect(cachedAt == nil, "a stale-label caller must never see a cache date for a row teamSnapshot() treats as missing")
+}
+
+@Test func incompatibleAppConfigSchemaVersionIsDiscardedAsCacheMiss() async throws {
+    let container = inMemoryContainer()
+    let context = ModelContext(container)
+    context.insert(CachedAppConfig(
+        config: AppConfig(minimumSupportedBuild: 7, maintenanceMessage: nil),
+        schemaVersion: depthCacheSchemaVersion + 1, cachedAt: Date()
+    ))
+    try context.save()
+
+    let store = CachedSnapshotStore(modelContainer: container)
+    let cached = try await store.appConfig()
+    #expect(cached == nil)
+}
