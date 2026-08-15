@@ -52,7 +52,7 @@ xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -de
   (optimistic, so the chart renders before the team list round-trip finishes) and
   once when the team list arrives (validating, to correct a stale preference).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `ios/DepthTests/StartupTeamTests.swift`:
 
@@ -99,7 +99,7 @@ import Testing
 }
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 ```bash
 xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -destination 'platform=iOS Simulator,id=<SIM_ID>' -only-testing:DepthTests test
@@ -107,7 +107,7 @@ xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -de
 
 Expected: compile failure — `cannot find 'StartupTeam' in scope`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `ios/Depth/Domain/StartupTeam.swift`:
 
@@ -147,7 +147,7 @@ enum StartupTeam {
 }
 ```
 
-- [ ] **Step 4: Regenerate the Xcode project and run the tests**
+- [x] **Step 4: Regenerate the Xcode project and run the tests**
 
 ```bash
 cd ios && xcodegen generate && cd ..
@@ -156,7 +156,7 @@ xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -de
 
 Expected: PASS, all 8 new tests green, no existing test regressed.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add ios/Depth/Domain/StartupTeam.swift ios/DepthTests/StartupTeamTests.swift ios/Depth.xcodeproj
@@ -198,7 +198,7 @@ This is one atomic PR. Work through the steps in order; the build is expected to
   - `TeamDetailView(viewModel:repository:preferences:sessionStore:authService:overrideService:events:onOpenTeamSwitcher:)` — `onOpenTeamSwitcher` is a required `() -> Void`.
   - UI-test accessibility identifiers: `team-switcher-button`, `team-switcher-sheet`, `compare-placeholder`. Tab bar items are addressed by label (`app.tabBars.buttons["Depth Charts"]`), not by identifier — `Tab` is a `TabContent`, not a `View`, and does not reliably accept `.accessibilityIdentifier`.
 
-- [ ] **Step 1: Turn `TeamListView` into switcher content**
+- [x] **Step 1: Turn `TeamListView` into switcher content**
 
 Replace `ios/Depth/Features/Teams/TeamListView.swift`'s header comment and the `TeamListView` struct (through `restoreLastTeamIfNeeded()`, i.e. lines 1–119) with the following. Leave `TeamRow`, `TeamRowSkeleton`, `TeamBadge`, and the `Color(hex:)` extension below it exactly as they are.
 
@@ -287,7 +287,7 @@ struct TeamListView: View {
 }
 ```
 
-- [ ] **Step 2: Add the switcher sheet**
+- [x] **Step 2: Add the switcher sheet**
 
 Create `ios/Depth/Features/Teams/TeamSwitcherSheet.swift`:
 
@@ -332,7 +332,7 @@ struct TeamSwitcherSheet: View {
 }
 ```
 
-- [ ] **Step 3: Make the navigation-bar team name the switcher trigger**
+- [x] **Step 3: Make the navigation-bar team name the switcher trigger**
 
 In `ios/Depth/Features/TeamDetail/TeamDetailView.swift`:
 
@@ -376,7 +376,7 @@ In `ios/Depth/Features/TeamDetail/TeamDetailView.swift`:
                 }
 ```
 
-- [ ] **Step 4: Add the Depth Charts tab**
+- [x] **Step 4: Add the Depth Charts tab**
 
 Create `ios/Depth/Features/Teams/DepthChartsTab.swift`:
 
@@ -462,7 +462,7 @@ struct DepthChartsTab: View {
 }
 ```
 
-- [ ] **Step 5: Add the Compare placeholder**
+- [x] **Step 5: Add the Compare placeholder**
 
 Create `ios/Depth/Features/Compare/CompareView.swift`:
 
@@ -489,7 +489,7 @@ struct CompareView: View {
 }
 ```
 
-- [ ] **Step 6: Promote Settings to a tab**
+- [x] **Step 6: Promote Settings to a tab**
 
 In `ios/Depth/Features/Settings/SettingsView.swift`:
 
@@ -562,7 +562,7 @@ struct AccountTab: View {
 }
 ```
 
-- [ ] **Step 7: Add the root tab bar**
+- [x] **Step 7: Add the root tab bar**
 
 Create `ios/Depth/App/RootTabView.swift`:
 
@@ -611,7 +611,7 @@ struct RootTabView: View {
 }
 ```
 
-- [ ] **Step 8: Swap the root and fix the two stale comments**
+- [x] **Step 8: Swap the root and fix the two stale comments**
 
 In `ios/Depth/App/ContentView.swift`, replace the `TeamListView(...)` call (lines 15–22) with `RootTabView(sessionStore: authSessionStore)`, and update the file header comment:
 
@@ -634,7 +634,7 @@ In `ios/Depth/App/DepthApp.swift`, replace the `UI_TESTING_APPSTORE_SCREENSHOTS`
         // ContentView's `.task` (after session restore has a chance to run).
 ```
 
-- [ ] **Step 9: Move the app-launch signpost onto the depth chart**
+- [x] **Step 9: Move the app-launch signpost onto the depth chart**
 
 The launch signpost's whole purpose is "app init → first useful render". The first useful render is now the depth chart, not the team list.
 
@@ -673,7 +673,7 @@ The launch signpost's whole purpose is "app init → first useful render". The f
 4. In the same file, update the `launchState` doc comment's file reference from `TeamListViewModel.load()` to `TeamDetailViewModel.load()`, and `beginAppLaunch`'s "No-op if already started" comment likewise (`TeamDetailViewModel.load()` runs again on refresh and team switch).
 5. In `ios/Depth/App/DepthApp.swift`, update the `beginAppLaunch()` comment on line 11 to read `closed by TeamDetailViewModel.load() on its first successful load`.
 
-- [ ] **Step 10: Add the UI-test helper and update the existing journeys**
+- [x] **Step 10: Add the UI-test helper and update the existing journeys**
 
 Create `ios/DepthUITests/UITestHelpers.swift`:
 
@@ -767,7 +767,7 @@ In `ios/DepthUITests/AuthUITests.swift`, replace the `settings-button` block (li
         accountTab.tap()
 ```
 
-- [ ] **Step 11: Add the two new UI tests from the spec**
+- [x] **Step 11: Add the two new UI tests from the spec**
 
 Append to `ios/DepthUITests/DepthUITests.swift`:
 
@@ -823,7 +823,7 @@ Append to `ios/DepthUITests/DepthUITests.swift`:
     }
 ```
 
-- [ ] **Step 12: Re-point the performance tests at the chart**
+- [x] **Step 12: Re-point the performance tests at the chart**
 
 In `ios/DepthUITests/PerformanceUITests.swift`, replace `waitForFirstTeamRow` (lines 22–31) with:
 
@@ -849,7 +849,7 @@ Update the three call sites (`_ = waitForFirstTeamRow(in: app)` and the two `XCT
     /// a real CI number exceeds it, not preemptively.
 ```
 
-- [ ] **Step 13: Regenerate, build, and run the full suite**
+- [x] **Step 13: Regenerate, build, and run the full suite**
 
 ```bash
 cd ios && xcodegen generate && cd ..
@@ -858,11 +858,11 @@ xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -de
 
 Expected: PASS. If a new UI test looks flaky, reproduce against the same device type CI used and read the xcresult's accessibility hierarchy rather than widening timeouts — CI runs a two-leg matrix (oldest-supported-class + current flagship) and the small-screen leg has previously exposed below-the-fold elements that never render until scrolled.
 
-- [ ] **Step 14: Verify in the simulator by hand**
+- [x] **Step 14: Verify in the simulator by hand**
 
 Launch the app on a booted simulator and confirm, with a screenshot for the PR body: (a) it opens on a depth chart, not a list; (b) the header team name opens the switcher and picking a team swaps the chart; (c) all three tabs render; (d) force-quit and relaunch opens the last-viewed team with no list-then-push flash.
 
-- [ ] **Step 15: Commit**
+- [x] **Step 15: Commit**
 
 ```bash
 git add ios docs
@@ -881,7 +881,7 @@ git commit -m "feat(nav): launch into a depth chart behind a three-tab root"
 - Consumes: `team-switcher-button` / `team-switcher-sheet` identifiers and `XCUIApplication.waitForDepthChart()` (Task 2).
 - Produces: nothing other tasks depend on.
 
-- [ ] **Step 1: Capture screenshot #1 from the switcher**
+- [x] **Step 1: Capture screenshot #1 from the switcher**
 
 Replace the "1. Team selector/search" block (lines 22–35) with:
 
@@ -911,11 +911,11 @@ Replace the "1. Team selector/search" block (lines 22–35) with:
 
 The `teamRow.tap()` that opens screenshot #2 already follows; it now dismisses the sheet rather than pushing, and the subsequent unit-picker/player-slot waits are unchanged.
 
-- [ ] **Step 2: Update the screenshot doc**
+- [x] **Step 2: Update the screenshot doc**
 
 In `docs/ios-appstore-screenshots.md`, update every description of screenshot #1 and the flow narrative: the app launches into a depth chart, screenshot #1 is the team switcher sheet opened from the header team name, and screenshots #2–#5 follow selecting Buffalo Bills from that sheet. Captions and the required simulator/resolution are unchanged.
 
-- [ ] **Step 3: Run the screenshot suite explicitly**
+- [x] **Step 3: Run the screenshot suite explicitly**
 
 It is excluded from the default scheme, so run it on its own against a 6.9-inch simulator:
 
@@ -925,7 +925,7 @@ xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -de
 
 Expected: PASS with five attachments. Export the PNGs from the `.xcresult` per the doc and eyeball #1 — it must show the switcher sheet with the Bills row visible and no keyboard.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add ios/DepthUITests/AppStoreScreenshotsUITests.swift docs/ios-appstore-screenshots.md
