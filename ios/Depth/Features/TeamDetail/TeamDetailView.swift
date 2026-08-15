@@ -87,6 +87,12 @@ struct TeamDetailView: View {
                         }
                         .accessibilityIdentifier("edit-depth-order")
                     }
+
+                    // Live snapshot only (design spec locked decision #10) — historical
+                    // rosters have no equivalent share-card visual contract yet.
+                    if !historyViewModel.isHistorical, let snapshot = displayedSnapshot {
+                        DepthChartShareButton(snapshot: snapshot)
+                    }
                 }
             }
             .sheet(item: $selectedPlayer) { player in
