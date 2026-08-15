@@ -12,6 +12,11 @@ import SwiftUI
 // text is still capped at `.accessibility1`: positioned slots can't reflow, so a scaled
 // glyph would merge the offensive line into one shape, and the full content stays
 // reachable at any size through each slot's VoiceOver label.
+//
+// On top of #378's geometry, the field now renders a real green surface — gradient +
+// yard-line/hash-mark/end-zone markings (FieldMarkings) — in place of the old flat
+// team-tinted rect, and dots fill `primary` with a `secondary` ring (web's PlayerDot
+// semantics) instead of a flat `uiAccent` fill (2026-08-15 visual-pass).
 struct DepthChartFieldView: View {
     let snapshot: TeamSnapshot
     let unit: Unit
@@ -26,8 +31,15 @@ struct DepthChartFieldView: View {
         GeometryReader { proxy in
             let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: proxy.size)
             ZStack {
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(hex: snapshot.team.colors.primary).opacity(0.15))
+                LinearGradient(
+                    colors: [Color(hex: "#1e3d10"), Color(hex: "#2d5a1b"), Color(hex: "#1e3d10")],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                FieldMarkings()
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
 
                 ForEach(slots, id: \.key) { slot in
                     slotView(slot, dotSize: layout.dotSize)
@@ -64,7 +76,10 @@ struct DepthChartFieldView: View {
     private func slotDot(label: String, number: Int?, dotSize: CGFloat) -> some View {
         VStack(spacing: 4) {
             Circle()
-                .fill(Color(hex: snapshot.team.colors.uiAccent))
+                .fill(Color(hex: snapshot.team.colors.primary))
+                .overlay {
+                    Circle().strokeBorder(Color(hex: snapshot.team.colors.secondary), lineWidth: 2)
+                }
                 .overlay {
                     if let number {
                         // Verbatim: a jersey number is an identifier, not a quantity —
@@ -72,11 +87,11 @@ struct DepthChartFieldView: View {
                         // same bug class already fixed for the season year elsewhere.
                         Text(verbatim: "\(number)")
                             .font(.caption.bold())
-                            .foregroundStyle(Color(hex: snapshot.team.colors.onAccent))
+                            .foregroundStyle(Color(hex: readableTextOn(snapshot.team.colors.primary)))
                     } else {
                         Image(systemName: "questionmark")
                             .font(.caption2)
-                            .foregroundStyle(Color(hex: snapshot.team.colors.onAccent))
+                            .foregroundStyle(Color(hex: readableTextOn(snapshot.team.colors.primary)))
                     }
                 }
                 .frame(width: dotSize, height: dotSize)
