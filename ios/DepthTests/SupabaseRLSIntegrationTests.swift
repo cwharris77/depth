@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 import Supabase
 import Testing
@@ -61,10 +62,40 @@ enum LocalSupabase {
             options: .init(auth: .init(storageKey: "test-\(UUID().uuidString)"))
         )
     }
+
+    // GitHub-hosted macOS CI runners can't run `supabase start` (Docker doesn't run
+    // there — no nested virtualization), so these integration suites can't reach a
+    // local Supabase stack in CI. Rather than fail the whole job, gate every test in
+    // this file (and NativeAuthIntegrationTests, which shares this type) on a real
+    // reachability probe of the local API port — the same "skip gracefully without
+    // the infra" shape as the web CI's DB-dependent tests (.github/workflows/ci.yml).
+    // Full RLS/auth coverage still runs locally before every merge per AGENTS.md's
+    // verification command.
+    static let isReachable: Bool = {
+        let fd = socket(AF_INET, SOCK_STREAM, 0)
+        guard fd >= 0 else { return false }
+        defer { Darwin.close(fd) }
+
+        var timeout = timeval(tv_sec: 1, tv_usec: 0)
+        setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, socklen_t(MemoryLayout<timeval>.size))
+
+        var addr = sockaddr_in()
+        addr.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+        addr.sin_family = sa_family_t(AF_INET)
+        addr.sin_port = in_port_t(54321).bigEndian
+        addr.sin_addr.s_addr = inet_addr("127.0.0.1")
+
+        let result = withUnsafePointer(to: &addr) { pointer in
+            pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { sockaddrPointer in
+                connect(fd, sockaddrPointer, socklen_t(MemoryLayout<sockaddr_in>.size))
+            }
+        }
+        return result == 0
+    }()
 }
 
 // Anonymous actor — the app's real, default (unauthenticated) path.
-@Test func anonymousCanReadTeamSnapshot() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func anonymousCanReadTeamSnapshot() async throws {
     let repository = SupabaseDepthRepository(client: LocalSupabase.client(key: LocalSupabase.anonKey))
     let snapshot = try await repository.teamSnapshot(teamId: "bills")
     #expect(snapshot.team.id == "bills")
@@ -75,7 +106,7 @@ enum LocalSupabase {
 // simply isn't visible to update, so PostgREST returns 200 with zero affected rows —
 // the same shape as a real "no rows matched the WHERE clause" update. Asserting on the
 // returned representation (empty array) is the correct check, not `#expect(throws:)`.
-@Test func anonymousWriteToTeamsIsDenied() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func anonymousWriteToTeamsIsDenied() async throws {
     let client = LocalSupabase.client(key: LocalSupabase.anonKey)
     struct NameOnly: Decodable { let id: String; let name: String }
     let response: [NameOnly] = try await client.from("teams")
@@ -86,7 +117,7 @@ enum LocalSupabase {
 
 // Authenticated actor — same public-read policy as anon on these 5 tables; there is no
 // owner/non-owner distinction to test until depth_overrides ships (T7).
-@Test func authenticatedNonOwnerCanReadTeamSnapshotIdenticallyToAnon() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func authenticatedNonOwnerCanReadTeamSnapshotIdenticallyToAnon() async throws {
     let email = "t4-rls-\(UUID().uuidString)@example.com"
     let authClient = LocalSupabase.client(key: LocalSupabase.anonKey)
     _ = try await authClient.auth.signUp(email: email, password: "test-password-123")
@@ -96,7 +127,7 @@ enum LocalSupabase {
     #expect(snapshot.team.id == "bills")
 }
 
-@Test func authenticatedWriteToTeamsIsDenied() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func authenticatedWriteToTeamsIsDenied() async throws {
     let email = "t4-rls-\(UUID().uuidString)@example.com"
     let authClient = LocalSupabase.client(key: LocalSupabase.anonKey)
     _ = try await authClient.auth.signUp(email: email, password: "test-password-123")
@@ -111,7 +142,7 @@ enum LocalSupabase {
 // Owner-only override operation — one RPC call owns identity through auth.uid(), validates
 // the complete ordered group before writing, and leaves the prior group intact after a
 // rejected save. Random users isolate this test from parallel simulator runs.
-@Test func overrideActorMatrixAndAtomicValidation() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func overrideActorMatrixAndAtomicValidation() async throws {
     let serviceClient = LocalSupabase.client(key: try LocalSupabase.serviceRoleKey())
     let anonymousClient = LocalSupabase.client(key: LocalSupabase.anonKey)
     let ownerClient = LocalSupabase.client(key: LocalSupabase.anonKey)
@@ -220,7 +251,7 @@ enum LocalSupabase {
 }
 
 // Service-role actor — bypasses RLS entirely (used only by ingestion, never the app).
-@Test func serviceRoleCanReadAndWrite() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func serviceRoleCanReadAndWrite() async throws {
     let client = LocalSupabase.client(key: try LocalSupabase.serviceRoleKey())
     let repository = SupabaseDepthRepository(client: client)
     let snapshot = try await repository.teamSnapshot(teamId: "bills")
@@ -248,7 +279,7 @@ enum LocalSupabase {
 
 // Not-found actor-independent behavior — confirms DepthError.notFound, not a crash or a
 // bare decoding failure, for a team id that doesn't exist.
-@Test func unknownTeamIdMapsToNotFound() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func unknownTeamIdMapsToNotFound() async throws {
     let repository = SupabaseDepthRepository(client: LocalSupabase.client(key: LocalSupabase.anonKey))
     await #expect(throws: DepthError.notFound) {
         _ = try await repository.teamSnapshot(teamId: "does-not-exist")
@@ -256,14 +287,14 @@ enum LocalSupabase {
 }
 
 // T5 additions to the repository seam — same public-read RLS shape as teamSnapshot.
-@Test func anonymousCanReadTeamList() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func anonymousCanReadTeamList() async throws {
     let repository = SupabaseDepthRepository(client: LocalSupabase.client(key: LocalSupabase.anonKey))
     let teams = try await repository.teams()
     #expect(teams.count == 32)
     #expect(teams.contains { $0.id == "bills" })
 }
 
-@Test func anonymousCanReadAppConfig() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func anonymousCanReadAppConfig() async throws {
     let repository = SupabaseDepthRepository(client: LocalSupabase.client(key: LocalSupabase.anonKey))
     let config = try await repository.appConfig()
     #expect(config.minimumSupportedBuild >= 1)
@@ -273,7 +304,7 @@ enum LocalSupabase {
 // relies on RLS to filter the row out) — Postgres denies this at the privilege level
 // before RLS is even evaluated, so the failure mode here is a thrown error, not an
 // empty-array response.
-@Test func anonymousWriteToAppConfigIsDenied() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func anonymousWriteToAppConfigIsDenied() async throws {
     let client = LocalSupabase.client(key: LocalSupabase.anonKey)
     await #expect(throws: (any Error).self) {
         try await client.from("app_config")
@@ -287,7 +318,7 @@ enum LocalSupabase {
 // all — same privilege-level (not RLS-level) denial shape as app_config's UPDATE case
 // above — so the only client-visible operation is a successful, unreadable insert.
 
-@Test func anonymousCanInsertAnAppEvent() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func anonymousCanInsertAnAppEvent() async throws {
     let client = LocalSupabase.client(key: LocalSupabase.anonKey)
     try await client.from("app_events").insert(["event_name": "app_launch"]).execute()
 }
@@ -296,7 +327,7 @@ enum LocalSupabase {
 // `created_at` explicitly, forging a timestamp that corrupts time-based aggregate
 // analytics. The grant is column-restricted to event_name/error_category, so any
 // attempt to also set created_at (or id) must be denied at the privilege level.
-@Test func anonymousCannotForgeAnEventTimestamp() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func anonymousCannotForgeAnEventTimestamp() async throws {
     let client = LocalSupabase.client(key: LocalSupabase.anonKey)
     await #expect(throws: (any Error).self) {
         try await client.from("app_events")
@@ -305,21 +336,21 @@ enum LocalSupabase {
     }
 }
 
-@Test func anonymousCannotReadAppEvents() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func anonymousCannotReadAppEvents() async throws {
     let client = LocalSupabase.client(key: LocalSupabase.anonKey)
     await #expect(throws: (any Error).self) {
         try await client.from("app_events").select().execute()
     }
 }
 
-@Test func insertingAnUnknownEventNameIsRejectedByTheCheckConstraint() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func insertingAnUnknownEventNameIsRejectedByTheCheckConstraint() async throws {
     let client = LocalSupabase.client(key: LocalSupabase.anonKey)
     await #expect(throws: (any Error).self) {
         try await client.from("app_events").insert(["event_name": "not_a_real_event"]).execute()
     }
 }
 
-@Test func insertingAnErrorCategoryWithoutTheErrorEventNameIsRejected() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func insertingAnErrorCategoryWithoutTheErrorEventNameIsRejected() async throws {
     let client = LocalSupabase.client(key: LocalSupabase.anonKey)
     await #expect(throws: (any Error).self) {
         try await client.from("app_events")
@@ -328,7 +359,7 @@ enum LocalSupabase {
     }
 }
 
-@Test func serviceRoleCanInsertAndReadAppEvents() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func serviceRoleCanInsertAndReadAppEvents() async throws {
     let client = LocalSupabase.client(key: try LocalSupabase.serviceRoleKey())
     try await client.from("app_events").insert(["event_name": "override_saved"]).execute()
 

@@ -1,0 +1,175 @@
+name: iOS CI
+
+# Builds and tests the native app (ios/) on every PR/push. Runs a small device matrix
+# (an oldest-supported-class simulator and the newest available flagship simulator) per
+# the native iOS plan's T9 requirement. RLS/native-auth integration suites
+# (DepthTests/SupabaseRLSIntegrationTests, DepthTests/NativeAuthIntegrationTests) need a
+# local Supabase stack (`supabase start`, which needs Docker); GitHub-hosted macOS
+# runners can't run Docker (no nested virtualization), so those suites self-gate on a
+# reachability probe and skip cleanly here — see LocalSupabase.isReachable in
+# ios/DepthTests/SupabaseRLSIntegrationTests.swift. Full coverage still runs locally
+# before every merge per the native iOS plan's verification command.
+
+on:
+  pull_request:
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios-ci.yml'
+
+concurrency:
+  group: ios-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  resolve-devices:
+    runs-on: macos-latest
+    outputs:
+      matrix: ${{ steps.resolve.outputs.matrix }}
+    steps:
+      - id: resolve
+        name: Resolve device matrix from installed simulator device types
+        run: |
+          set -euo pipefail
+
+          # `simctl list devicetypes` (no -j) is indentation-sensitive plain text whose
+          # exact formatting isn't guaranteed across Xcode versions/runners — a first cut
+          # of this step parsed that text with grep/sed/awk/sort and silently aborted on
+          # a GitHub-hosted runner (pipefail treats a non-matching grep inside a pipeline
+          # as pipeline failure, so `set -e` exited before the fallback error even
+          # printed). `-j` gives stable, versioned JSON instead; parse with jq only.
+          TYPES_JSON=$(xcrun simctl list devicetypes -j)
+
+          RUNTIME=$(xcrun simctl list runtimes -j \
+            | jq -r '[.runtimes[] | select(.platform == "iOS" and .isAvailable)] | sort_by(.version) | last | .identifier')
+          if [ -z "$RUNTIME" ] || [ "$RUNTIME" = "null" ]; then
+            echo "::error::No available iOS simulator runtime found on this runner."
+            exit 1
+          fi
+
+          # A device type being *installed* doesn't mean it's *creatable* against the
+          # newest runtime — Apple periodically drops old hardware templates from new
+          # runtimes (confirmed locally: iPhone XS/XR device types exist but
+          # `simctl create` rejects them as "Incompatible device" against iOS 26.5).
+          # Test-create (and immediately delete) each candidate in order and use the
+          # first that actually succeeds, instead of trusting presence in the type list.
+          try_create() {
+            local name="$1"
+            local device_id
+            if device_id=$(xcrun simctl create "compat-check-$$-$RANDOM" "$name" "$RUNTIME" 2>/dev/null); then
+              xcrun simctl delete "$device_id" >/dev/null 2>&1 || true
+              echo "$device_id" # non-empty on success, used only as a truthy marker
+              return 0
+            fi
+            return 1
+          }
+
+          # Oldest-supported-class approximation: the design spec's performance budgets
+          # target "iPhone XS/XR-class" devices, but those device types are no longer
+          # creatable against current iOS simulator runtimes. Fall through a list of the
+          # smallest/oldest device types that are still commonly creatable, oldest first.
+          OLD_DEVICE=""
+          for candidate in "iPhone SE (3rd generation)" "iPhone SE (2nd generation)" "iPhone 12 mini" "iPhone 13 mini" "iPhone 12"; do
+            if echo "$TYPES_JSON" | jq -e --arg c "$candidate" '.devicetypes | map(.name) | index($c)' >/dev/null \
+              && try_create "$candidate" >/dev/null; then
+              OLD_DEVICE="$candidate"
+              break
+            fi
+          done
+          if [ -z "$OLD_DEVICE" ]; then
+            echo "::error::No oldest-class candidate simulator device type is both installed and creatable against runtime $RUNTIME on this runner."
+            echo "$TYPES_JSON" | jq -r '.devicetypes[].name'
+            exit 1
+          fi
+
+          # Current flagship: highest-numbered plain "iPhone N" or "iPhone N Pro" device
+          # type that's both installed and creatable (skips Plus/Max/mini/e variants,
+          # which aren't a meaningful second matrix leg alongside the oldest-class
+          # device above), trying candidates newest-first.
+          CANDIDATES=$(echo "$TYPES_JSON" | jq -r '
+            [.devicetypes[]
+              | select(.productFamily == "iPhone" and (.name | test("^iPhone [0-9]+( Pro)?$")))
+              | {name, num: (.name | capture("^iPhone (?<n>[0-9]+)") | .n | tonumber)}]
+            | sort_by(-.num) | .[].name
+          ')
+          NEW_DEVICE=""
+          while IFS= read -r candidate; do
+            [ -z "$candidate" ] && continue
+            if try_create "$candidate" >/dev/null; then
+              NEW_DEVICE="$candidate"
+              break
+            fi
+          done <<< "$CANDIDATES"
+          if [ -z "$NEW_DEVICE" ]; then
+            echo "::error::No current-flagship candidate simulator device type is both installed and creatable against runtime $RUNTIME on this runner."
+            echo "$TYPES_JSON" | jq -r '.devicetypes[].name'
+            exit 1
+          fi
+
+          MATRIX=$(jq -nc \
+            --arg old "$OLD_DEVICE" \
+            --arg new "$NEW_DEVICE" \
+            --arg runtime "$RUNTIME" \
+            '{include: [
+              {label: "oldest-supported", device: $old, runtime: $runtime},
+              {label: "current", device: $new, runtime: $runtime}
+            ]}')
+          echo "Resolved device matrix: $MATRIX"
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: resolve-devices
+    runs-on: macos-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.resolve-devices.outputs.matrix) }}
+    steps:
+      # Pinned to commit SHAs, not mutable tags — an upstream tag move would otherwise
+      # silently change what runs with this job's inherited token and checked-out
+      # source (Greptile P2 on this PR's first review).
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Select latest stable Xcode
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
+        with:
+          xcode-version: latest-stable
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project from project.yml
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Verify checked-in project matches project.yml
+        run: |
+          if ! git diff --exit-code -- ios/Depth.xcodeproj; then
+            echo "::error::ios/Depth.xcodeproj is out of sync with ios/project.yml — run 'xcodegen generate' in ios/ and commit the regenerated project."
+            exit 1
+          fi
+
+      - name: Boot ${{ matrix.label }} simulator (${{ matrix.device }})
+        id: sim
+        run: |
+          set -euo pipefail
+          # Device/runtime pair was already validated as creatable in resolve-devices —
+          # reuse it directly instead of re-resolving the runtime on this separate
+          # runner (which could in principle pick up a different image/runtime set).
+          DEVICE_ID=$(xcrun simctl create "ci-${{ matrix.label }}" "${{ matrix.device }}" "${{ matrix.runtime }}")
+          xcrun simctl boot "$DEVICE_ID"
+          echo "device_id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Run unit + UI tests (Staging config)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project ios/Depth.xcodeproj \
+            -scheme Depth \
+            -configuration Staging \
+            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.device_id }}" \
+            test

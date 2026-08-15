@@ -8,7 +8,7 @@ import Testing
 // fresh-AMR Edge Function deletion, and cascade verification. The current local CLI runtime
 // auto-discovers account-delete; no separate `supabase functions serve` process is required.
 // Every run owns a random user.
-@Test func nativeOtpOverrideAndDeletionJourney() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func nativeOtpOverrideAndDeletionJourney() async throws {
     let serviceClient = LocalSupabase.client(key: try LocalSupabase.serviceRoleKey())
     let appClient = LocalSupabase.client(key: LocalSupabase.anonKey)
     let email = "t7-native-\(UUID().uuidString)@example.com".lowercased()
