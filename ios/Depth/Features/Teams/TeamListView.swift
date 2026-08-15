@@ -13,14 +13,14 @@ struct TeamListView: View {
     private let preferences: UserPreferences
     private let sessionStore: AuthSessionStore
     private let authService: any DepthAuthServicing
-    private let overrideService: any DepthOverrideWriting
+    private let overrideService: any DepthOverrideServicing
 
     init(
         repository: CachingDepthRepository,
         preferences: UserPreferences,
         sessionStore: AuthSessionStore,
         authService: any DepthAuthServicing,
-        overrideService: any DepthOverrideWriting
+        overrideService: any DepthOverrideServicing
     ) {
         self.repository = repository
         self.preferences = preferences

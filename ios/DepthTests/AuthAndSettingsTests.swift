@@ -278,3 +278,43 @@ private actor AsyncCounter {
     #expect(await firstSave)
     #expect(await writer.savedValues() == [["b", "a"]])
 }
+
+@Test func persistedOverrideProjectionReranksPlayersAndKeepsRosterAdditions() {
+    let colors = TeamColors(
+        primary: "#000000",
+        secondary: "#111111",
+        accent: "#222222",
+        uiAccent: "#FFFFFF",
+        onAccent: "#000000"
+    )
+    let snapshot = TeamSnapshot(
+        team: Team(
+            id: "test",
+            city: "Test",
+            name: "Team",
+            abbrev: "TST",
+            conference: "AFC",
+            division: "West",
+            colors: colors,
+            logo: nil,
+            logoDark: nil
+        ),
+        players: [
+            Player(id: "a", position: .qb, depthRank: 1, number: 10),
+            Player(id: "b", position: .qb, depthRank: 2, number: 20),
+            Player(id: "new", position: .qb, depthRank: 3, number: 30),
+        ],
+        specialTeams: [],
+        uniforms: []
+    )
+
+    let projected = applyingDepthOverrides(
+        to: snapshot,
+        orders: [.qb: ["removed", "b", "a"]]
+    )
+    let quarterbacks = projected.players.filter { $0.position == .qb }.sorted(by: byDepthOrder)
+
+    #expect(quarterbacks.map(\.id) == ["b", "a", "new"])
+    #expect(quarterbacks.map(\.depthRank) == [1, 2, 3])
+    #expect(quarterbacks.map(\.order) == [0, 1, 2])
+}

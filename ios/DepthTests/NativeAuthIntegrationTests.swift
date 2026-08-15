@@ -29,6 +29,8 @@ import Testing
             position: "QB",
             playerIds: ["native-player-a", "native-player-b"]
         )
+        let loadedOrders = try await overrideService.load(teamId: "bills")
+        #expect(loadedOrders[.qb] == ["native-player-a", "native-player-b"])
         try await authService.deleteAccount()
 
         await #expect(throws: AuthError.self) {

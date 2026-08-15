@@ -11,18 +11,19 @@ struct TeamDetailView: View {
     @State private var selectedOverrideGroup: EditableOverrideGroup?
     @State private var pendingOverrideGroup: EditableOverrideGroup?
     @State private var showAuth = false
+    @State private var confirmedOrders: [Position: [String]] = [:]
 
     private let preferences: UserPreferences
     private let sessionStore: AuthSessionStore
     private let authService: any DepthAuthServicing
-    private let overrideService: any DepthOverrideWriting
+    private let overrideService: any DepthOverrideServicing
 
     init(
         viewModel: TeamDetailViewModel,
         preferences: UserPreferences,
         sessionStore: AuthSessionStore,
         authService: any DepthAuthServicing,
-        overrideService: any DepthOverrideWriting
+        overrideService: any DepthOverrideServicing
     ) {
         _viewModel = State(initialValue: viewModel)
         self.preferences = preferences
@@ -36,9 +37,22 @@ struct TeamDetailView: View {
         content
             .navigationTitle(viewModel.snapshot.map { "\($0.team.city) \($0.team.name)" } ?? "Team")
             .navigationBarTitleDisplayMode(.inline)
-            .task { await viewModel.load() }
-            .refreshable { await viewModel.load() }
+            .task {
+                await viewModel.load()
+                await loadOverrides()
+            }
+            .refreshable {
+                await viewModel.load()
+                await loadOverrides()
+            }
             .onChange(of: unit) { _, newValue in preferences.lastUnit = newValue }
+            .onChange(of: sessionStore.user) { _, user in
+                if user == nil {
+                    confirmedOrders = [:]
+                } else {
+                    Task { await loadOverrides() }
+                }
+            }
             .toolbar {
                 if !editableGroups.isEmpty {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -70,14 +84,15 @@ struct TeamDetailView: View {
                         uniqueKeysWithValues: players.map {
                             ($0.id, $0.name.isEmpty ? "#\($0.number)" : $0.name)
                         }
-                    )
+                    ),
+                    onSaved: { confirmedOrders[group.position] = $0 }
                 )
             }
     }
 
     @ViewBuilder
     private var content: some View {
-        if let snapshot = viewModel.snapshot {
+        if let snapshot = displayedSnapshot {
             ScrollView {
                 VStack(spacing: 16) {
                     if viewModel.isStale {
@@ -129,7 +144,7 @@ struct TeamDetailView: View {
     }
 
     private var editableGroups: [EditableOverrideGroup] {
-        guard let snapshot = viewModel.snapshot else { return [] }
+        guard let snapshot = displayedSnapshot else { return [] }
         let positions = Set(snapshot.players.filter { $0.position.unit == unit }.map(\.position))
         return
             positions
@@ -139,8 +154,22 @@ struct TeamDetailView: View {
     }
 
     private func players(for position: Position) -> [Player] {
-        viewModel.snapshot?.players.filter { $0.position == position }.sorted(by: byDepthOrder)
+        displayedSnapshot?.players.filter { $0.position == position }.sorted(by: byDepthOrder)
             ?? []
+    }
+
+    private var displayedSnapshot: TeamSnapshot? {
+        viewModel.snapshot.map { applyingDepthOverrides(to: $0, orders: confirmedOrders) }
+    }
+
+    private func loadOverrides() async {
+        guard sessionStore.user != nil else {
+            confirmedOrders = [:]
+            return
+        }
+        if let orders = try? await overrideService.load(teamId: viewModel.teamId) {
+            confirmedOrders = orders
+        }
     }
 
     private func beginEditing(_ group: EditableOverrideGroup) {

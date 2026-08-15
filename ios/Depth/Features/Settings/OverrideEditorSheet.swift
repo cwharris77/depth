@@ -9,10 +9,16 @@ struct OverrideEditorSheet: View {
     @State private var showDiscardConfirmation = false
 
     private let playerNames: [String: String]
+    private let onSaved: ([String]) -> Void
 
-    init(viewModel: OverrideEditorViewModel, playerNames: [String: String]) {
+    init(
+        viewModel: OverrideEditorViewModel,
+        playerNames: [String: String],
+        onSaved: @escaping ([String]) -> Void = { _ in }
+    ) {
         _viewModel = State(initialValue: viewModel)
         self.playerNames = playerNames
+        self.onSaved = onSaved
     }
 
     var body: some View {
@@ -46,6 +52,7 @@ struct OverrideEditorSheet: View {
                     Button("Save") {
                         Task {
                             if await viewModel.save() {
+                                onSaved(viewModel.savedPlayerIds)
                                 UINotificationFeedbackGenerator().notificationOccurred(.success)
                                 dismiss()
                             }
