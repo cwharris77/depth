@@ -140,7 +140,7 @@ build alone.
     `buildRealDefenseFormation`, T3) aren't wired in yet — the projected snapshot query
     doesn't select `qbAlignment`/personnel-code columns, so the chart currently always
     renders the generic formation.
-- [ ] **T7 (P1, human: ~4d / CC: ~1d)** — Accounts — implement native email OTP, session
+- [x] **T7 (P1, human: ~4d / CC: ~1d)** — Accounts — implement native email OTP, session
   lifecycle, owner-only group upserts, edit recovery, and fresh-OTP account deletion.
   - Surfaced by: Architecture — browser auth and current deletion assurances are insufficient.
   - Files: `ios/Depth/Features/Auth/`, `Settings/`, `TeamDetail/`, `supabase/functions/`, tests.
