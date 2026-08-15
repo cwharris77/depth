@@ -14,6 +14,21 @@ final class AuthUITests: XCTestCase {
         )
         settingsButton.tap()
 
+        XCTAssertTrue(
+            app.staticTexts["settings-about-name"].waitForExistence(timeout: 5),
+            "About should show the app display name"
+        )
+        XCTAssertTrue(app.staticTexts["settings-about-version"].exists, "About should show version/build")
+        XCTAssertTrue(
+            app.staticTexts["settings-about-disclaimer"].exists,
+            "About should show the non-affiliation disclaimer"
+        )
+        XCTAssertTrue(
+            app.staticTexts["settings-data-saved-at"].exists,
+            "Data section should show a saved-on-device timestamp or its fallback"
+        )
+        XCTAssertTrue(app.staticTexts["settings-data-explanation"].exists)
+
         let signInButton = app.buttons["Sign In"]
         XCTAssertTrue(
             signInButton.waitForExistence(timeout: 5),
