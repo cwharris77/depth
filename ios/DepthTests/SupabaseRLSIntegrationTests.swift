@@ -108,6 +108,111 @@ private enum LocalSupabase {
     #expect(response.isEmpty, "RLS should filter the row out of the update entirely")
 }
 
+// Owner-only override operation — one RPC call owns identity through auth.uid(), validates
+// the complete ordered group before writing, and leaves the prior group intact after a
+// rejected save. Random users isolate this test from parallel simulator runs.
+@Test func overrideActorMatrixAndAtomicValidation() async throws {
+    let serviceClient = LocalSupabase.client(key: try LocalSupabase.serviceRoleKey())
+    let anonymousClient = LocalSupabase.client(key: LocalSupabase.anonKey)
+    let ownerClient = LocalSupabase.client(key: LocalSupabase.anonKey)
+    let nonOwnerClient = LocalSupabase.client(key: LocalSupabase.anonKey)
+    let ownerAuth = try await ownerClient.auth.signUp(
+        email: "t7-owner-\(UUID().uuidString)@example.com",
+        password: "test-password-123"
+    )
+    let nonOwnerAuth = try await nonOwnerClient.auth.signUp(
+        email: "t7-non-owner-\(UUID().uuidString)@example.com",
+        password: "test-password-123"
+    )
+
+    struct UpsertParams: Encodable {
+        let pTeamId: String
+        let pPosition: String
+        let pPlayerIds: [String]
+
+        enum CodingKeys: String, CodingKey {
+            case pTeamId = "p_team_id"
+            case pPosition = "p_position"
+            case pPlayerIds = "p_player_ids"
+        }
+    }
+    struct OverrideRow: Decodable, Equatable {
+        let userId: UUID
+        let teamId: String
+        let position: String
+        let playerIds: [String]
+
+        enum CodingKeys: String, CodingKey {
+            case userId = "user_id"
+            case teamId = "team_id"
+            case position
+            case playerIds = "player_ids"
+        }
+    }
+
+    let valid = UpsertParams(
+        pTeamId: "bills",
+        pPosition: "QB",
+        pPlayerIds: ["player-a", "player-b"]
+    )
+    do {
+        await #expect(throws: PostgrestError.self) {
+            try await anonymousClient.rpc("upsert_depth_override_group", params: valid).execute()
+        }
+
+        try await ownerClient.rpc("upsert_depth_override_group", params: valid).execute()
+
+        let nonOwnerRows: [OverrideRow] = try await nonOwnerClient.from("depth_overrides")
+            .select("user_id, team_id, position, player_ids")
+            .eq("user_id", value: ownerAuth.user.id)
+            .execute().value
+        #expect(nonOwnerRows.isEmpty)
+
+        let serviceRows: [OverrideRow] = try await serviceClient.from("depth_overrides")
+            .select("user_id, team_id, position, player_ids")
+            .eq("user_id", value: ownerAuth.user.id)
+            .execute().value
+        #expect(serviceRows == [
+            OverrideRow(
+                userId: ownerAuth.user.id,
+                teamId: "bills",
+                position: "QB",
+                playerIds: ["player-a", "player-b"]
+            )
+        ])
+
+        let duplicate = UpsertParams(
+            pTeamId: "bills",
+            pPosition: "QB",
+            pPlayerIds: ["player-a", "player-a"]
+        )
+        await #expect(throws: PostgrestError.self) {
+            try await ownerClient.rpc("upsert_depth_override_group", params: duplicate).execute()
+        }
+
+        let ownerRows: [OverrideRow] = try await ownerClient.from("depth_overrides")
+            .select("user_id, team_id, position, player_ids")
+            .eq("team_id", value: "bills")
+            .eq("position", value: "QB")
+            .execute().value
+        #expect(ownerRows == [
+            OverrideRow(
+                userId: ownerAuth.user.id,
+                teamId: "bills",
+                position: "QB",
+                playerIds: ["player-a", "player-b"]
+            )
+        ])
+    } catch {
+        try? await serviceClient.auth.admin.deleteUser(id: ownerAuth.user.id)
+        try? await serviceClient.auth.admin.deleteUser(id: nonOwnerAuth.user.id)
+        throw error
+    }
+
+    try await serviceClient.auth.admin.deleteUser(id: ownerAuth.user.id)
+    try await serviceClient.auth.admin.deleteUser(id: nonOwnerAuth.user.id)
+}
+
 // Service-role actor — bypasses RLS entirely (used only by ingestion, never the app).
 @Test func serviceRoleCanReadAndWrite() async throws {
     let client = LocalSupabase.client(key: try LocalSupabase.serviceRoleKey())
