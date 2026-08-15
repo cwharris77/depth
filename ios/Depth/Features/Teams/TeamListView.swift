@@ -38,6 +38,7 @@ struct TeamListView: View {
                 .navigationDestination(for: String.self) { teamId in
                     TeamDetailView(
                         viewModel: TeamDetailViewModel(teamId: teamId, repository: repository),
+                        repository: repository,
                         preferences: preferences,
                         sessionStore: sessionStore,
                         authService: authService,

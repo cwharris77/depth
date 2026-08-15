@@ -9,6 +9,10 @@ protocol DepthRepository: Sendable {
     /// `teamSnapshot`, not a side effect of it).
     func teams() async throws -> [Team]
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot
+    /// The selected team's latest available regular-season schedule when `season` is
+    /// nil, or a requested historical season. This remains a standalone read so it
+    /// does not bloat the cacheable depth-chart snapshot.
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule
     /// The public `app_config` singleton backing the update gate (design spec's
     /// "Database evolution and update gate"). Callers cache the last known value and
     /// fall back to it when this throws.
