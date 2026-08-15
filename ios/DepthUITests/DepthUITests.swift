@@ -37,10 +37,22 @@ final class DepthUITests: XCTestCase {
 
         let profile = app.scrollViews["player-profile-content"]
         XCTAssertTrue(profile.waitForExistence(timeout: 5), "player detail should expose a scrollable complete profile")
-        XCTAssertTrue(app.staticTexts["player-profile-name"].exists, "profile should show the player name")
-        XCTAssertTrue(app.staticTexts["player-profile-position"].exists, "profile should show granular and full position")
-        XCTAssertTrue(app.staticTexts["player-profile-status"].exists, "profile should show player status")
-        XCTAssertTrue(app.otherElements["player-profile-vitals"].exists, "profile should show age, experience, height, and weight")
+        XCTAssertTrue(
+            app.staticTexts["player-profile-name"].waitForExistence(timeout: 5),
+            "profile should show the player name"
+        )
+        XCTAssertTrue(
+            app.staticTexts["player-profile-position"].waitForExistence(timeout: 5),
+            "profile should show granular and full position"
+        )
+        XCTAssertTrue(
+            app.staticTexts["player-profile-status"].waitForExistence(timeout: 5),
+            "profile should show player status"
+        )
+        XCTAssertTrue(
+            app.otherElements["player-profile-vitals"].waitForExistence(timeout: 5),
+            "profile should show age, experience, height, and weight"
+        )
         XCTAssertTrue(app.otherElements["player-profile-stats"].waitForExistence(timeout: 10), "profile should resolve a stats state")
 
         closeButton.tap()
@@ -108,7 +120,7 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(quarterback.waitForExistence(timeout: 10), "the historical field should render its QB")
         quarterback.tap()
         XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["player-profile-name"].exists)
+        XCTAssertTrue(app.staticTexts["player-profile-name"].waitForExistence(timeout: 5))
         app.buttons["Close"].tap()
 
         let backToToday = app.buttons["history-back-to-today"]

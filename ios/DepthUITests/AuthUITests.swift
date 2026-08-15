@@ -18,16 +18,19 @@ final class AuthUITests: XCTestCase {
             app.staticTexts["settings-about-name"].waitForExistence(timeout: 10),
             "About should show the app display name"
         )
-        XCTAssertTrue(app.staticTexts["settings-about-version"].exists, "About should show version/build")
         XCTAssertTrue(
-            app.staticTexts["settings-about-disclaimer"].exists,
+            app.staticTexts["settings-about-version"].waitForExistence(timeout: 10),
+            "About should show version/build"
+        )
+        XCTAssertTrue(
+            app.staticTexts["settings-about-disclaimer"].waitForExistence(timeout: 10),
             "About should show the non-affiliation disclaimer"
         )
         XCTAssertTrue(
-            app.staticTexts["settings-data-saved-at"].exists,
+            app.staticTexts["settings-data-saved-at"].waitForExistence(timeout: 10),
             "Data section should show a saved-on-device timestamp or its fallback"
         )
-        XCTAssertTrue(app.staticTexts["settings-data-explanation"].exists)
+        XCTAssertTrue(app.staticTexts["settings-data-explanation"].waitForExistence(timeout: 10))
 
         let signInButton = app.buttons["Sign In"]
         XCTAssertTrue(
@@ -40,6 +43,6 @@ final class AuthUITests: XCTestCase {
             app.textFields["auth-email"].waitForExistence(timeout: 10),
             "sign-in should present the native email OTP flow"
         )
-        XCTAssertTrue(app.buttons["auth-send-code"].exists)
+        XCTAssertTrue(app.buttons["auth-send-code"].waitForExistence(timeout: 10))
     }
 }
