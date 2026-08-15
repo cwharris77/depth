@@ -103,11 +103,15 @@ build alone.
   - Shipped: depth#350. Formation/depth-ordering domain logic only (the scope this repo's
     formations.ts/roster.ts actually cover) — no separate historical/season-parity fixtures
     exist to port yet.
-- [ ] **T4 (P1, human: ~3d / CC: ~6h)** — Data — build typed errors, DTO/domain mappers, the
+- [x] **T4 (P1, human: ~3d / CC: ~6h)** — Data — build typed errors, DTO/domain mappers, the
   repository actor, projected team snapshot, and real actor-matrix RLS tests.
   - Surfaced by: Architecture and Code Quality — UI/database coupling and ambiguous failures.
   - Files: `ios/Depth/Data/`, `ios/DepthTests/`, `supabase/`.
   - Verify: mapping/repository tests and local Supabase RLS suite pass.
+  - Shipped: depth#352 (+ depth#353 for the parallel-work-boundaries doc update). 9 mapper
+    unit tests, 5 RLS integration tests against local Supabase (anon/authenticated/service-role).
+    Owner/non-owner distinction not applicable yet — all 5 snapshot tables are public-read with
+    zero write policies until `depth_overrides` ships in T7.
 - [ ] **T5 (P1, human: ~2d / CC: ~4h)** — Cache — implement versioned SwiftData snapshots,
   cache-first refresh, deduplication, stale labels, preferences, and update-gate behavior.
   - Surfaced by: Performance — a polished phone app must remain fast and useful during outages.
