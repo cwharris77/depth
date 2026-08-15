@@ -69,7 +69,9 @@ enum PlayerProfileDisplay {
     static func meaningful(_ value: String?) -> String? {
         guard let value else { return nil }
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? nil : trimmed
+        // ESPN ingestion stores an em dash for absent college data; preserve the same
+        // absence semantics as an empty source string instead of rendering "College —".
+        return trimmed.isEmpty || trimmed == "—" ? nil : trimmed
     }
 }
 

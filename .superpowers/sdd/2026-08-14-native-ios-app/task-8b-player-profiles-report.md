@@ -99,3 +99,18 @@ No unresolved product or code concerns remain in Task 8B scope. Physical-device
 VoiceOver/Accessibility XXXL validation remains the plan's human-only release gate; the
 implementation uses semantic labels, 44×44 Close/Retry controls, and a horizontally
 scrollable stats table for large Dynamic Type.
+
+## Follow-up — missing-college sentinel regression
+
+Independent review found that ESPN ingestion persists `—` as the missing-college
+sentinel. The initial `PlayerProfileDisplay.meaningful` implementation trimmed whitespace
+but treated that sentinel as real content, which would render `College —`.
+
+- **RED:** added an em-dash regression expectation (with surrounding whitespace); the
+  focused `DepthTests` target failed in
+  `profileDisplayUsesHumanLabelsAndMissingValueFallbacks` before the fix.
+- **GREEN:** `meaningful` now trims first and returns `nil` for either empty text or the
+  exact em-dash sentinel. Focused `DepthTests`: **68 passed, 0 failed**.
+- **Final exact Staging suite:** **72 passed, 0 failed, 0 skipped** on iPhone 17 Pro
+  `736575DC-2DBD-4F28-85FC-D00C9E75D6F9` (result bundle
+  `Test-Depth-2026.08.14_23-38-13--0700.xcresult`).

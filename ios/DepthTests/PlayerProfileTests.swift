@@ -51,6 +51,7 @@ import Testing
     #expect(PlayerProfileDisplay.weight(0) == "—")
     #expect(PlayerProfileDisplay.weight(220) == "220 lb")
     #expect(PlayerProfileDisplay.meaningful(" \n ") == nil)
+    #expect(PlayerProfileDisplay.meaningful("  — \n") == nil)
 }
 
 @Test func quarterbackStatColumnsMatchWebVocabularyAndFormatting() {
