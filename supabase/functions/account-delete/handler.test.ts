@@ -1,3 +1,5 @@
+// Contract tests for the runtime-neutral deletion handler. All privileged dependencies are
+// fakes so these cases cannot mutate Auth while exercising authorization and failure mapping.
 import { describe, expect, it } from 'vitest';
 import { handleAccountDeletion, type AccountDeletionDependencies } from './handler';
 

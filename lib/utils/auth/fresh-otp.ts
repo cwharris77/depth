@@ -1,6 +1,6 @@
-// Validates the authentication-method claim used by the privileged account-deletion
-// boundary. JWT issue time is intentionally ignored because token refresh can mint a
-// new JWT without proving that the user recently controlled their email inbox.
+// Shared fresh-authentication policy for destructive account operations. It checks the
+// verified JWT's authentication-method claim rather than issue time because token refresh
+// can mint a new JWT without proving recent control of the user's email inbox.
 export function hasFreshOtp(amr: unknown, nowSeconds: number): boolean {
   if (!Array.isArray(amr)) return false;
 

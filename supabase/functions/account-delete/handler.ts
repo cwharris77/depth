@@ -1,4 +1,6 @@
-import { hasFreshOtp } from './fresh-otp.ts';
+// Runtime-neutral account-deletion handler. Dependencies isolate verified-claim lookup and
+// the one privileged admin operation so policy and failure responses stay directly testable.
+import { hasFreshOtp } from '../../../lib/utils/auth/fresh-otp.ts';
 
 export interface AccountDeletionDependencies {
   nowSeconds(): number;

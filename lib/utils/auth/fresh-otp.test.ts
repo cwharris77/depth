@@ -1,3 +1,5 @@
+// Boundary tests for the shared fresh-OTP policy. These intentionally exercise malformed
+// claim shapes because AMR data crosses a signed-but-still-untyped JWT boundary.
 import { describe, expect, it } from 'vitest';
 import { hasFreshOtp } from './fresh-otp';
 
@@ -17,12 +19,12 @@ describe('hasFreshOtp', () => {
   });
 
   it.each([
-    ['ten-minute boundary', [{ method: 'otp', timestamp: now - 600 }]],
-    ['refresh without OTP', [{ method: 'token_refresh', timestamp: now }]],
-    ['future OTP', [{ method: 'otp', timestamp: now + 1 }]],
     ['missing AMR', undefined],
-    ['malformed AMR', [{ method: 'otp', timestamp: 'recent' }]],
-  ])('rejects %s', (_name, amr) => {
+    ['stale OTP', [{ method: 'otp', timestamp: now - 600 }]],
+    ['future OTP', [{ method: 'otp', timestamp: now + 1 }]],
+    ['refresh only', [{ method: 'token_refresh', timestamp: now }]],
+    ['malformed timestamp', [{ method: 'otp', timestamp: 'recent' }]],
+  ])('rejects %s', (_, amr) => {
     expect(hasFreshOtp(amr, now)).toBe(false);
   });
 });
