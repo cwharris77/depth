@@ -47,6 +47,49 @@ actor SupabaseDepthRepository: DepthRepository {
         }
     }
 
+    private static let teamListSelect =
+        "id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url"
+
+    func teams() async throws -> [Team] {
+        do {
+            let rows: [TeamListRowDTO] = try await client
+                .from("teams")
+                .select(Self.teamListSelect)
+                .order("city")
+                .execute()
+                .value
+            return rows.map(TeamSnapshotMapper.mapTeamListRow)
+        } catch let error as PostgrestError {
+            throw Self.mapPostgrestError(error)
+        } catch let error as DecodingError {
+            throw DepthError.decoding("\(error)")
+        } catch is URLError {
+            throw DepthError.offline
+        } catch {
+            throw DepthError.server("\(error)")
+        }
+    }
+
+    func appConfig() async throws -> AppConfig {
+        do {
+            let dto: AppConfigDTO = try await client
+                .from("app_config")
+                .select("minimum_supported_build, maintenance_message")
+                .single()
+                .execute()
+                .value
+            return TeamSnapshotMapper.mapAppConfig(dto)
+        } catch let error as PostgrestError {
+            throw Self.mapPostgrestError(error)
+        } catch let error as DecodingError {
+            throw DepthError.decoding("\(error)")
+        } catch is URLError {
+            throw DepthError.offline
+        } catch {
+            throw DepthError.server("\(error)")
+        }
+    }
+
     /// PostgREST error codes seen with `.single()` and RLS-restricted tables — see
     /// https://postgrest.org/en/stable/references/errors.html. Anything unrecognized
     /// maps to `.server` rather than being silently swallowed.
