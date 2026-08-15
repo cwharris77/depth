@@ -1,0 +1,1154 @@
+[
+  {
+    "description": "true 3-4 base — DL gets LDE/NT/RDE, LB gets all 4 exact tags",
+    "code": "3-4-4",
+    "expectedSlots": [
+      {
+        "id": "def-de-0",
+        "position": "DE",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": "LDE",
+        "x": 24,
+        "y": 49,
+        "label": "LDE",
+        "onLine": true
+      },
+      {
+        "id": "def-dt-0",
+        "position": "DT",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": "NT",
+        "x": 50,
+        "y": 49,
+        "label": "NT",
+        "onLine": true
+      },
+      {
+        "id": "def-de-1",
+        "position": "DE",
+        "index": 1,
+        "group": "DL",
+        "preferredPosition": "RDE",
+        "x": 76,
+        "y": 49,
+        "label": "RDE",
+        "onLine": true
+      },
+      {
+        "id": "def-lb-0",
+        "position": "LB",
+        "index": 0,
+        "group": "LB",
+        "preferredPosition": "WLB",
+        "x": 26,
+        "y": 37,
+        "label": "WLB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-1",
+        "position": "LB",
+        "index": 1,
+        "group": "LB",
+        "preferredPosition": "LILB",
+        "x": 42,
+        "y": 37,
+        "label": "LILB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-2",
+        "position": "LB",
+        "index": 2,
+        "group": "LB",
+        "preferredPosition": "RILB",
+        "x": 58,
+        "y": 37,
+        "label": "RILB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-3",
+        "position": "LB",
+        "index": 3,
+        "group": "LB",
+        "preferredPosition": "SLB",
+        "x": 74,
+        "y": 37,
+        "label": "SLB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-0",
+        "position": "CB",
+        "index": 0,
+        "group": "CB",
+        "preferredPosition": "LCB",
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-1",
+        "position": "CB",
+        "index": 1,
+        "group": "CB",
+        "preferredPosition": "RCB",
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false
+      },
+      {
+        "id": "def-s-0",
+        "position": "S",
+        "index": 0,
+        "group": "S",
+        "preferredPosition": "SS",
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false
+      },
+      {
+        "id": "def-s-1",
+        "position": "S",
+        "index": 1,
+        "group": "S",
+        "preferredPosition": "FS",
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false
+      }
+    ],
+    "isFallback": false
+  },
+  {
+    "description": "4-3 front — 4 DL (2 edge DE + 2 interior DT), 3 LB stays generic (not 4)",
+    "code": "4-3-4",
+    "expectedSlots": [
+      {
+        "id": "def-de-0",
+        "position": "DE",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": "LDE",
+        "x": 24,
+        "y": 49,
+        "label": "LDE",
+        "onLine": true
+      },
+      {
+        "id": "def-dt-0",
+        "position": "DT",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": null,
+        "x": 41.33333333333333,
+        "y": 49,
+        "label": "DT",
+        "onLine": true
+      },
+      {
+        "id": "def-dt-1",
+        "position": "DT",
+        "index": 1,
+        "group": "DL",
+        "preferredPosition": null,
+        "x": 58.666666666666664,
+        "y": 49,
+        "label": "DT",
+        "onLine": true
+      },
+      {
+        "id": "def-de-1",
+        "position": "DE",
+        "index": 1,
+        "group": "DL",
+        "preferredPosition": "RDE",
+        "x": 76,
+        "y": 49,
+        "label": "RDE",
+        "onLine": true
+      },
+      {
+        "id": "def-lb-0",
+        "position": "LB",
+        "index": 0,
+        "group": "LB",
+        "preferredPosition": null,
+        "x": 26,
+        "y": 37,
+        "label": "LB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-1",
+        "position": "LB",
+        "index": 1,
+        "group": "LB",
+        "preferredPosition": null,
+        "x": 50,
+        "y": 37,
+        "label": "LB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-2",
+        "position": "LB",
+        "index": 2,
+        "group": "LB",
+        "preferredPosition": null,
+        "x": 74,
+        "y": 37,
+        "label": "LB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-0",
+        "position": "CB",
+        "index": 0,
+        "group": "CB",
+        "preferredPosition": "LCB",
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-1",
+        "position": "CB",
+        "index": 1,
+        "group": "CB",
+        "preferredPosition": "RCB",
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false
+      },
+      {
+        "id": "def-s-0",
+        "position": "S",
+        "index": 0,
+        "group": "S",
+        "preferredPosition": "SS",
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false
+      },
+      {
+        "id": "def-s-1",
+        "position": "S",
+        "index": 1,
+        "group": "S",
+        "preferredPosition": "FS",
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false
+      }
+    ],
+    "isFallback": false
+  },
+  {
+    "description": "2-man DL front — both edges, no NT (dl != 1 and dl != 3)",
+    "code": "2-4-5",
+    "expectedSlots": [
+      {
+        "id": "def-de-0",
+        "position": "DE",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": "LDE",
+        "x": 24,
+        "y": 49,
+        "label": "LDE",
+        "onLine": true
+      },
+      {
+        "id": "def-de-1",
+        "position": "DE",
+        "index": 1,
+        "group": "DL",
+        "preferredPosition": "RDE",
+        "x": 76,
+        "y": 49,
+        "label": "RDE",
+        "onLine": true
+      },
+      {
+        "id": "def-lb-0",
+        "position": "LB",
+        "index": 0,
+        "group": "LB",
+        "preferredPosition": "WLB",
+        "x": 26,
+        "y": 37,
+        "label": "WLB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-1",
+        "position": "LB",
+        "index": 1,
+        "group": "LB",
+        "preferredPosition": "LILB",
+        "x": 42,
+        "y": 37,
+        "label": "LILB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-2",
+        "position": "LB",
+        "index": 2,
+        "group": "LB",
+        "preferredPosition": "RILB",
+        "x": 58,
+        "y": 37,
+        "label": "RILB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-3",
+        "position": "LB",
+        "index": 3,
+        "group": "LB",
+        "preferredPosition": "SLB",
+        "x": 74,
+        "y": 37,
+        "label": "SLB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-0",
+        "position": "CB",
+        "index": 0,
+        "group": "CB",
+        "preferredPosition": "LCB",
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-1",
+        "position": "CB",
+        "index": 1,
+        "group": "CB",
+        "preferredPosition": "RCB",
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false
+      },
+      {
+        "id": "def-s-0",
+        "position": "S",
+        "index": 0,
+        "group": "S",
+        "preferredPosition": "SS",
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false
+      },
+      {
+        "id": "def-s-1",
+        "position": "S",
+        "index": 1,
+        "group": "S",
+        "preferredPosition": "FS",
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-2",
+        "position": "CB",
+        "index": 2,
+        "group": "CB",
+        "preferredPosition": "NB",
+        "x": 50,
+        "y": 28,
+        "label": "NB",
+        "onLine": false
+      }
+    ],
+    "isFallback": false
+  },
+  {
+    "description": "1-man DL front — sole lineman tagged NT",
+    "code": "1-4-6",
+    "expectedSlots": [
+      {
+        "id": "def-dt-0",
+        "position": "DT",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": "NT",
+        "x": 50,
+        "y": 49,
+        "label": "NT",
+        "onLine": true
+      },
+      {
+        "id": "def-lb-0",
+        "position": "LB",
+        "index": 0,
+        "group": "LB",
+        "preferredPosition": "WLB",
+        "x": 26,
+        "y": 37,
+        "label": "WLB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-1",
+        "position": "LB",
+        "index": 1,
+        "group": "LB",
+        "preferredPosition": "LILB",
+        "x": 42,
+        "y": 37,
+        "label": "LILB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-2",
+        "position": "LB",
+        "index": 2,
+        "group": "LB",
+        "preferredPosition": "RILB",
+        "x": 58,
+        "y": 37,
+        "label": "RILB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-3",
+        "position": "LB",
+        "index": 3,
+        "group": "LB",
+        "preferredPosition": "SLB",
+        "x": 74,
+        "y": 37,
+        "label": "SLB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-0",
+        "position": "CB",
+        "index": 0,
+        "group": "CB",
+        "preferredPosition": "LCB",
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-1",
+        "position": "CB",
+        "index": 1,
+        "group": "CB",
+        "preferredPosition": "RCB",
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false
+      },
+      {
+        "id": "def-s-0",
+        "position": "S",
+        "index": 0,
+        "group": "S",
+        "preferredPosition": "SS",
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false
+      },
+      {
+        "id": "def-s-1",
+        "position": "S",
+        "index": 1,
+        "group": "S",
+        "preferredPosition": "FS",
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-2",
+        "position": "CB",
+        "index": 2,
+        "group": "CB",
+        "preferredPosition": "NB",
+        "x": 50,
+        "y": 28,
+        "label": "NB",
+        "onLine": false
+      },
+      {
+        "id": "def-s-2",
+        "position": "S",
+        "index": 2,
+        "group": "S",
+        "preferredPosition": null,
+        "x": 50,
+        "y": 10,
+        "label": "S",
+        "onLine": false
+      }
+    ],
+    "isFallback": false
+  },
+  {
+    "description": "nickel: 5 DBs — 4 base slots plus the 5th (NB) fixed slot",
+    "code": "4-2-5",
+    "expectedSlots": [
+      {
+        "id": "def-de-0",
+        "position": "DE",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": "LDE",
+        "x": 24,
+        "y": 49,
+        "label": "LDE",
+        "onLine": true
+      },
+      {
+        "id": "def-dt-0",
+        "position": "DT",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": null,
+        "x": 41.33333333333333,
+        "y": 49,
+        "label": "DT",
+        "onLine": true
+      },
+      {
+        "id": "def-dt-1",
+        "position": "DT",
+        "index": 1,
+        "group": "DL",
+        "preferredPosition": null,
+        "x": 58.666666666666664,
+        "y": 49,
+        "label": "DT",
+        "onLine": true
+      },
+      {
+        "id": "def-de-1",
+        "position": "DE",
+        "index": 1,
+        "group": "DL",
+        "preferredPosition": "RDE",
+        "x": 76,
+        "y": 49,
+        "label": "RDE",
+        "onLine": true
+      },
+      {
+        "id": "def-lb-0",
+        "position": "LB",
+        "index": 0,
+        "group": "LB",
+        "preferredPosition": null,
+        "x": 26,
+        "y": 37,
+        "label": "LB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-1",
+        "position": "LB",
+        "index": 1,
+        "group": "LB",
+        "preferredPosition": null,
+        "x": 74,
+        "y": 37,
+        "label": "LB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-0",
+        "position": "CB",
+        "index": 0,
+        "group": "CB",
+        "preferredPosition": "LCB",
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-1",
+        "position": "CB",
+        "index": 1,
+        "group": "CB",
+        "preferredPosition": "RCB",
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false
+      },
+      {
+        "id": "def-s-0",
+        "position": "S",
+        "index": 0,
+        "group": "S",
+        "preferredPosition": "SS",
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false
+      },
+      {
+        "id": "def-s-1",
+        "position": "S",
+        "index": 1,
+        "group": "S",
+        "preferredPosition": "FS",
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-2",
+        "position": "CB",
+        "index": 2,
+        "group": "CB",
+        "preferredPosition": "NB",
+        "x": 50,
+        "y": 28,
+        "label": "NB",
+        "onLine": false
+      }
+    ],
+    "isFallback": false
+  },
+  {
+    "description": "dime: 6 DBs — adds the 6th fixed (generic S) slot",
+    "code": "4-1-6",
+    "expectedSlots": [
+      {
+        "id": "def-de-0",
+        "position": "DE",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": "LDE",
+        "x": 24,
+        "y": 49,
+        "label": "LDE",
+        "onLine": true
+      },
+      {
+        "id": "def-dt-0",
+        "position": "DT",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": null,
+        "x": 41.33333333333333,
+        "y": 49,
+        "label": "DT",
+        "onLine": true
+      },
+      {
+        "id": "def-dt-1",
+        "position": "DT",
+        "index": 1,
+        "group": "DL",
+        "preferredPosition": null,
+        "x": 58.666666666666664,
+        "y": 49,
+        "label": "DT",
+        "onLine": true
+      },
+      {
+        "id": "def-de-1",
+        "position": "DE",
+        "index": 1,
+        "group": "DL",
+        "preferredPosition": "RDE",
+        "x": 76,
+        "y": 49,
+        "label": "RDE",
+        "onLine": true
+      },
+      {
+        "id": "def-lb-0",
+        "position": "LB",
+        "index": 0,
+        "group": "LB",
+        "preferredPosition": null,
+        "x": 50,
+        "y": 37,
+        "label": "LB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-0",
+        "position": "CB",
+        "index": 0,
+        "group": "CB",
+        "preferredPosition": "LCB",
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-1",
+        "position": "CB",
+        "index": 1,
+        "group": "CB",
+        "preferredPosition": "RCB",
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false
+      },
+      {
+        "id": "def-s-0",
+        "position": "S",
+        "index": 0,
+        "group": "S",
+        "preferredPosition": "SS",
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false
+      },
+      {
+        "id": "def-s-1",
+        "position": "S",
+        "index": 1,
+        "group": "S",
+        "preferredPosition": "FS",
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-2",
+        "position": "CB",
+        "index": 2,
+        "group": "CB",
+        "preferredPosition": "NB",
+        "x": 50,
+        "y": 28,
+        "label": "NB",
+        "onLine": false
+      },
+      {
+        "id": "def-s-2",
+        "position": "S",
+        "index": 2,
+        "group": "S",
+        "preferredPosition": null,
+        "x": 50,
+        "y": 10,
+        "label": "S",
+        "onLine": false
+      }
+    ],
+    "isFallback": false
+  },
+  {
+    "description": "quarter: 7 DBs — adds the 7th fixed (generic CB) slot",
+    "code": "4-0-7",
+    "expectedSlots": [
+      {
+        "id": "def-de-0",
+        "position": "DE",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": "LDE",
+        "x": 24,
+        "y": 49,
+        "label": "LDE",
+        "onLine": true
+      },
+      {
+        "id": "def-dt-0",
+        "position": "DT",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": null,
+        "x": 41.33333333333333,
+        "y": 49,
+        "label": "DT",
+        "onLine": true
+      },
+      {
+        "id": "def-dt-1",
+        "position": "DT",
+        "index": 1,
+        "group": "DL",
+        "preferredPosition": null,
+        "x": 58.666666666666664,
+        "y": 49,
+        "label": "DT",
+        "onLine": true
+      },
+      {
+        "id": "def-de-1",
+        "position": "DE",
+        "index": 1,
+        "group": "DL",
+        "preferredPosition": "RDE",
+        "x": 76,
+        "y": 49,
+        "label": "RDE",
+        "onLine": true
+      },
+      {
+        "id": "def-cb-0",
+        "position": "CB",
+        "index": 0,
+        "group": "CB",
+        "preferredPosition": "LCB",
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-1",
+        "position": "CB",
+        "index": 1,
+        "group": "CB",
+        "preferredPosition": "RCB",
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false
+      },
+      {
+        "id": "def-s-0",
+        "position": "S",
+        "index": 0,
+        "group": "S",
+        "preferredPosition": "SS",
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false
+      },
+      {
+        "id": "def-s-1",
+        "position": "S",
+        "index": 1,
+        "group": "S",
+        "preferredPosition": "FS",
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-2",
+        "position": "CB",
+        "index": 2,
+        "group": "CB",
+        "preferredPosition": "NB",
+        "x": 50,
+        "y": 28,
+        "label": "NB",
+        "onLine": false
+      },
+      {
+        "id": "def-s-2",
+        "position": "S",
+        "index": 2,
+        "group": "S",
+        "preferredPosition": null,
+        "x": 50,
+        "y": 10,
+        "label": "S",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-3",
+        "position": "CB",
+        "index": 3,
+        "group": "CB",
+        "preferredPosition": null,
+        "x": 26,
+        "y": 30,
+        "label": "CB",
+        "onLine": false
+      }
+    ],
+    "isFallback": false
+  },
+  {
+    "description": "counts do not sum to 11 — falls back to BASE_DEFENSE",
+    "code": "4-4-4",
+    "expectedSlots": [
+      {
+        "id": "def-ss-0",
+        "position": "SS",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false
+      },
+      {
+        "id": "def-fs-0",
+        "position": "FS",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false
+      },
+      {
+        "id": "def-lcb-0",
+        "position": "LCB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false
+      },
+      {
+        "id": "def-rcb-0",
+        "position": "RCB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false
+      },
+      {
+        "id": "def-wlb-0",
+        "position": "WLB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 22,
+        "y": 37,
+        "label": "WLB",
+        "onLine": false
+      },
+      {
+        "id": "def-lilb-0",
+        "position": "LILB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 42,
+        "y": 37,
+        "label": "LILB",
+        "onLine": false
+      },
+      {
+        "id": "def-rilb-0",
+        "position": "RILB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 58,
+        "y": 37,
+        "label": "RILB",
+        "onLine": false
+      },
+      {
+        "id": "def-slb-0",
+        "position": "SLB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 78,
+        "y": 37,
+        "label": "SLB",
+        "onLine": false
+      },
+      {
+        "id": "def-lde-0",
+        "position": "LDE",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 26,
+        "y": 49,
+        "label": "LDE",
+        "onLine": true
+      },
+      {
+        "id": "def-nt-0",
+        "position": "NT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 49,
+        "label": "NT",
+        "onLine": true
+      },
+      {
+        "id": "def-rde-0",
+        "position": "RDE",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 74,
+        "y": 49,
+        "label": "RDE",
+        "onLine": true
+      }
+    ],
+    "isFallback": true
+  },
+  {
+    "description": "malformed code — falls back to BASE_DEFENSE",
+    "code": "not-a-code",
+    "expectedSlots": [
+      {
+        "id": "def-ss-0",
+        "position": "SS",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false
+      },
+      {
+        "id": "def-fs-0",
+        "position": "FS",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false
+      },
+      {
+        "id": "def-lcb-0",
+        "position": "LCB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false
+      },
+      {
+        "id": "def-rcb-0",
+        "position": "RCB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false
+      },
+      {
+        "id": "def-wlb-0",
+        "position": "WLB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 22,
+        "y": 37,
+        "label": "WLB",
+        "onLine": false
+      },
+      {
+        "id": "def-lilb-0",
+        "position": "LILB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 42,
+        "y": 37,
+        "label": "LILB",
+        "onLine": false
+      },
+      {
+        "id": "def-rilb-0",
+        "position": "RILB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 58,
+        "y": 37,
+        "label": "RILB",
+        "onLine": false
+      },
+      {
+        "id": "def-slb-0",
+        "position": "SLB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 78,
+        "y": 37,
+        "label": "SLB",
+        "onLine": false
+      },
+      {
+        "id": "def-lde-0",
+        "position": "LDE",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 26,
+        "y": 49,
+        "label": "LDE",
+        "onLine": true
+      },
+      {
+        "id": "def-nt-0",
+        "position": "NT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 49,
+        "label": "NT",
+        "onLine": true
+      },
+      {
+        "id": "def-rde-0",
+        "position": "RDE",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 74,
+        "y": 49,
+        "label": "RDE",
+        "onLine": true
+      }
+    ],
+    "isFallback": true
+  }
+]

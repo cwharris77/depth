@@ -25,6 +25,7 @@ targets:
     platform: iOS
     sources:
       - path: Depth/App
+      - path: Depth/Domain
       - path: Depth/Assets.xcassets
     info:
       path: Depth/Info.plist

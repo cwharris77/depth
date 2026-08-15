@@ -1,0 +1,18 @@
+[
+  {
+    "alignment": "SHOTGUN",
+    "expectedLabel": "Shotgun"
+  },
+  {
+    "alignment": "UNDER CENTER",
+    "expectedLabel": "Under center"
+  },
+  {
+    "alignment": "PISTOL",
+    "expectedLabel": "Pistol"
+  },
+  {
+    "alignment": "WILDCAT",
+    "expectedLabel": "WILDCAT"
+  }
+]
