@@ -1281,6 +1281,22 @@ export type Database = {
     Functions: {
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      upsert_depth_override_group: {
+        Args: { p_player_ids: string[]; p_position: string; p_team_id: string }
+        Returns: {
+          player_ids: string[]
+          position: string
+          team_id: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "depth_overrides"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never
