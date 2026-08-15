@@ -43,6 +43,7 @@
 		6906FAA57C5B9DC926729482 /* HistorySeasonSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64ECA11ED67DB4F54B0E5CCF /* HistorySeasonSheet.swift */; };
 		690F6FC9B14F8370801A8F6B /* DepthOverrideService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 718497F1FE3079352CB07880 /* DepthOverrideService.swift */; };
 		6F9514F25DCF231B32CB5E66 /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F8DBF3EB4D70F6DF2E44420 /* ScheduleView.swift */; };
+		72B3BE2B76D243F3EFBA4849 /* DepthChartFieldLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB41998204F25F2F2187619 /* DepthChartFieldLayout.swift */; };
 		72BB407EBD75889F652AA8F2 /* HistoricalRosterDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121908B720F13534ED4C3EA /* HistoricalRosterDTO.swift */; };
 		72F2A4F9ED2F188C0493D2FA /* DepthError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3FAC7E6A6D97F9DB462C939 /* DepthError.swift */; };
 		79CBA961DD4279FF61E930E1 /* RecordingAppEventsRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C2DE91B6A232290671FD77 /* RecordingAppEventsRecorder.swift */; };
@@ -70,6 +71,7 @@
 		B41D7BCD75AAF30866913BE2 /* StartupTeam.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6C33A0D7CAEFAEEEE07D8A /* StartupTeam.swift */; };
 		B7EC527E571B84DCDB819672 /* AppEventsRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E636B964C5DE055FDAD2CB44 /* AppEventsRecorder.swift */; };
 		BA3E87A82A1E0D1528ECF9D5 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 6BF366F7B2E5A4241AA22D27 /* Supabase */; };
+		BC722D8E91C6C886838011CF /* DepthChartFieldLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E372B1C3FDDFC4260939314C /* DepthChartFieldLayoutTests.swift */; };
 		BC786357DAB17986863FF90E /* DepthSignposts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0F9DA82B880B33391B6E216 /* DepthSignposts.swift */; };
 		BCA0AEE81DE806BB93DBCC24 /* ShareCardContentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32CF7D3E3A42BD02111EB0D6 /* ShareCardContentTests.swift */; };
 		BDC16651BCF7C07924F4DEC1 /* AccountDeletionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9152627F4CAC783C2C1E5E6 /* AccountDeletionViewModel.swift */; };
@@ -130,6 +132,7 @@
 		286DAC04287DC13BCB6A3936 /* TeamSwitcherSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSwitcherSheet.swift; sourceTree = "<group>"; };
 		29F97862C18E5EAD7104430A /* FixtureLoading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureLoading.swift; sourceTree = "<group>"; };
 		2A8697D4C577F9758ACBA23D /* ShareCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCardView.swift; sourceTree = "<group>"; };
+		2FB41998204F25F2F2187619 /* DepthChartFieldLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthChartFieldLayout.swift; sourceTree = "<group>"; };
 		30A33C79C70F2F28FB91F680 /* TeamSnapshotMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSnapshotMapper.swift; sourceTree = "<group>"; };
 		324A96001AEB67B20E09794B /* SupabaseDepthRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseDepthRepository.swift; sourceTree = "<group>"; };
 		32CF7D3E3A42BD02111EB0D6 /* ShareCardContentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCardContentTests.swift; sourceTree = "<group>"; };
@@ -200,6 +203,7 @@
 		E147E349DAED0C3DFF5A965C /* ShareUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareUITests.swift; sourceTree = "<group>"; };
 		E235B4DBA71FCAE9FC954FF4 /* AuthSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSessionStore.swift; sourceTree = "<group>"; };
 		E2B86BB6DD9B066ECA8E654F /* SettingsAboutAndTimestampTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAboutAndTimestampTests.swift; sourceTree = "<group>"; };
+		E372B1C3FDDFC4260939314C /* DepthChartFieldLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthChartFieldLayoutTests.swift; sourceTree = "<group>"; };
 		E5A218C128DC97B0923883AE /* Depth.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Depth.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E5AB202504F3965C8C62D5F8 /* AccountTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountTab.swift; sourceTree = "<group>"; };
 		E636B964C5DE055FDAD2CB44 /* AppEventsRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEventsRecorder.swift; sourceTree = "<group>"; };
@@ -299,6 +303,7 @@
 		6149DF990977A37709D927F2 /* TeamDetail */ = {
 			isa = PBXGroup;
 			children = (
+				2FB41998204F25F2F2187619 /* DepthChartFieldLayout.swift */,
 				B14888EF10F7F9A82139F0BD /* DepthChartFieldView.swift */,
 				C639766327FBE3B5E14D722F /* PlayerDetailView.swift */,
 				42A711DE2216F626464157F5 /* PlayerProfileViewModel.swift */,
@@ -372,6 +377,7 @@
 				A50B9DB06DE3CBD6B5F61C84 /* AppEventsTests.swift */,
 				E67531979ED38F349577206E /* AuthAndSettingsTests.swift */,
 				ADAF14C6ADEF3A0B809897F9 /* CachingDepthRepositoryTests.swift */,
+				E372B1C3FDDFC4260939314C /* DepthChartFieldLayoutTests.swift */,
 				7971C7A65ECC4B94913325CD /* DepthTests.swift */,
 				29F97862C18E5EAD7104430A /* FixtureLoading.swift */,
 				C62ABB8FA352722CEF133910 /* FormationsParityTests.swift */,
@@ -606,6 +612,7 @@
 				899F1EE1BC16BAD58D80C106 /* AppEventsTests.swift in Sources */,
 				5DF288F4FE20EF2FEE2C3358 /* AuthAndSettingsTests.swift in Sources */,
 				A8BC97475680BFF262BD9ACB /* CachingDepthRepositoryTests.swift in Sources */,
+				BC722D8E91C6C886838011CF /* DepthChartFieldLayoutTests.swift in Sources */,
 				A33FB64445E73B74A1AA7011 /* DepthTests.swift in Sources */,
 				88BE6ACCCEDA76C1CBB97025 /* FixtureLoading.swift in Sources */,
 				7C5132BAE9E0A0D27086FBD3 /* FormationsParityTests.swift in Sources */,
@@ -645,6 +652,7 @@
 				E867C4E09655C5AF25569C6B /* DataTimestampFormatting.swift in Sources */,
 				AC65C1250448AD4BFD7E7919 /* DepthApp.swift in Sources */,
 				C11893E533C74A67E2CEA185 /* DepthAuthService.swift in Sources */,
+				72B3BE2B76D243F3EFBA4849 /* DepthChartFieldLayout.swift in Sources */,
 				1EAD5ECB38956C0395E81458 /* DepthChartFieldView.swift in Sources */,
 				64BB6EC2B752CD639C86321D /* DepthChartShareButton.swift in Sources */,
 				0AE16FEB0CC82155EB87714A /* DepthChartsTab.swift in Sources */,
