@@ -11,6 +11,7 @@ struct TeamDetailView: View {
     @State private var selectedOverrideGroup: EditableOverrideGroup?
     @State private var pendingOverrideGroup: EditableOverrideGroup?
     @State private var showAuth = false
+    @State private var showHistory = false
     @State private var confirmedOrders: [Position: [String]] = [:]
 
     private let preferences: UserPreferences
@@ -18,6 +19,7 @@ struct TeamDetailView: View {
     private let sessionStore: AuthSessionStore
     private let authService: any DepthAuthServicing
     private let overrideService: any DepthOverrideServicing
+    @State private var historyViewModel: HistoryViewModel
 
     init(
         viewModel: TeamDetailViewModel,
@@ -34,6 +36,7 @@ struct TeamDetailView: View {
         self.authService = authService
         self.overrideService = overrideService
         _unit = State(initialValue: preferences.lastUnit ?? .offense)
+        _historyViewModel = State(initialValue: HistoryViewModel(teamId: viewModel.teamId, repository: repository))
     }
 
     var body: some View {
@@ -45,10 +48,15 @@ struct TeamDetailView: View {
                 await loadOverrides()
             }
             .refreshable {
-                await viewModel.load()
-                await loadOverrides()
+                if historyViewModel.isHistorical {
+                    await historyViewModel.retry()
+                } else {
+                    await viewModel.load()
+                    await loadOverrides()
+                }
             }
             .onChange(of: unit) { _, newValue in preferences.lastUnit = newValue }
+            .onChange(of: historyViewModel.selectedSeason) { _, _ in selectedPlayer = nil }
             .onChange(of: sessionStore.user) { _, user in
                 if user == nil {
                     confirmedOrders = [:]
@@ -58,6 +66,10 @@ struct TeamDetailView: View {
             }
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button("History", systemImage: "clock.arrow.circlepath") { showHistory = true }
+                        .frame(minWidth: 44, minHeight: 44)
+                        .accessibilityIdentifier("history-destination")
+
                     NavigationLink {
                         ScheduleView(teamId: viewModel.teamId, repository: repository)
                     } label: {
@@ -78,8 +90,17 @@ struct TeamDetailView: View {
                 }
             }
             .sheet(item: $selectedPlayer) { player in
-                PlayerDetailView(player: player, team: viewModel.snapshot?.team, repository: repository)
+                PlayerDetailView(player: player, team: displayedSnapshot?.team, repository: repository)
                     .id(player.id)
+            }
+            .sheet(isPresented: $showHistory) {
+                HistorySeasonSheet(
+                    seasons: historyViewModel.seasons,
+                    selectedSeason: historyViewModel.selectedSeason
+                ) { season in
+                    showHistory = false
+                    historyViewModel.selectImmediately(season)
+                }
             }
             .sheet(isPresented: $showAuth, onDismiss: finishAuthentication) {
                 AuthSheet(service: authService, sessionStore: sessionStore)
@@ -105,33 +126,46 @@ struct TeamDetailView: View {
 
     @ViewBuilder
     private var content: some View {
-        if let snapshot = displayedSnapshot {
-            ScrollView {
-                VStack(spacing: 16) {
-                    if viewModel.isStale {
-                        StaleBanner()
-                    }
-                    if case .failed = viewModel.loadState {
-                        // Only reachable if a refresh failed after we already had data —
-                        // last-good snapshot stays on screen (design spec's failure-mode
-                        // table), this just surfaces that a background refresh didn't land.
-                        RefreshFailedBanner()
-                    }
-                    Picker("Unit", selection: $unit) {
-                        Text("Offense").tag(Unit.offense)
-                        Text("Defense").tag(Unit.defense)
-                        Text("Special Teams").tag(Unit.special)
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal)
+        if historyViewModel.isHistorical {
+            historicalContent
+        } else {
+            currentContent
+        }
+    }
 
-                    DepthChartFieldView(snapshot: snapshot, unit: unit) { player in
-                        selectedPlayer = player
-                    }
-                    .padding(.horizontal)
-                }
-                .padding(.vertical)
+    @ViewBuilder
+    private var historicalContent: some View {
+        switch historyViewModel.state {
+        case .loading:
+            VStack {
+                ProgressView()
+                Text("Loading historical roster…").foregroundStyle(.secondary).padding(.top, 8)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .accessibilityIdentifier("history-loading")
+        case .loaded:
+            if let snapshot = historyViewModel.snapshot {
+                rosterContent(snapshot: snapshot, historical: true)
+            } else {
+                ContentUnavailableView("No Data", systemImage: "sportscourt")
+            }
+        case .empty:
+            historyUnavailable(
+                title: "No roster data", description: "This season doesn't have a historical roster yet."
+            )
+        case .failed(let error):
+            historyUnavailable(
+                title: "Couldn't load this season", description: error.recoveryDescription, retry: true
+            )
+        case .current:
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private var currentContent: some View {
+        if let snapshot = displayedSnapshot {
+            rosterContent(snapshot: snapshot, historical: false)
         } else {
             switch viewModel.loadState {
             case .loading:
@@ -156,7 +190,70 @@ struct TeamDetailView: View {
         }
     }
 
+    private func rosterContent(snapshot: TeamSnapshot, historical: Bool) -> some View {
+            ScrollView {
+                VStack(spacing: 16) {
+                    if historical {
+                        HStack {
+                            Text(verbatim: "\(historyViewModel.selectedSeason.year) season")
+                                .font(.headline)
+                                .accessibilityIdentifier("history-season-state")
+                            Spacer()
+                            Button("Back to today") {
+                                historyViewModel.selectImmediately(.current(historyViewModel.currentSeason))
+                            }
+                            .frame(minWidth: 44, minHeight: 44)
+                            .accessibilityIdentifier("history-back-to-today")
+                        }
+                        .padding(.horizontal)
+                    }
+                    if !historical && viewModel.isStale {
+                        StaleBanner()
+                    }
+                    if !historical, case .failed = viewModel.loadState {
+                        // Only reachable if a refresh failed after we already had data —
+                        // last-good snapshot stays on screen (design spec's failure-mode
+                        // table), this just surfaces that a background refresh didn't land.
+                        RefreshFailedBanner()
+                    }
+                    Picker("Unit", selection: $unit) {
+                        Text("Offense").tag(Unit.offense)
+                        Text("Defense").tag(Unit.defense)
+                        Text("Special Teams").tag(Unit.special)
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal)
+
+                    DepthChartFieldView(snapshot: snapshot, unit: unit) { player in
+                        selectedPlayer = player
+                    }
+                    .padding(.horizontal)
+                }
+                .padding(.vertical)
+            }
+    }
+
+    private func historyUnavailable(title: String, description: String, retry: Bool = false) -> some View {
+        ContentUnavailableView {
+            Label(title, systemImage: "clock.arrow.circlepath")
+        } description: {
+            Text(description)
+        } actions: {
+            if retry {
+                Button("Retry") { Task { await historyViewModel.retry() } }
+                    .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityIdentifier("history-retry")
+            }
+            Button("Back to today") {
+                historyViewModel.selectImmediately(.current(historyViewModel.currentSeason))
+            }
+            .frame(minWidth: 44, minHeight: 44)
+            .accessibilityIdentifier("history-back-to-today")
+        }
+    }
+
     private var editableGroups: [EditableOverrideGroup] {
+        guard !historyViewModel.isHistorical else { return [] }
         guard let snapshot = displayedSnapshot else { return [] }
         let positions = Set(snapshot.players.filter { $0.position.unit == unit }.map(\.position))
         return
@@ -172,7 +269,10 @@ struct TeamDetailView: View {
     }
 
     private var displayedSnapshot: TeamSnapshot? {
-        viewModel.snapshot.map { applyingDepthOverrides(to: $0, orders: confirmedOrders) }
+        if historyViewModel.isHistorical {
+            return historyViewModel.snapshot
+        }
+        return viewModel.snapshot.map { applyingDepthOverrides(to: $0, orders: confirmedOrders) }
     }
 
     private func loadOverrides() async {

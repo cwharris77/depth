@@ -55,6 +55,8 @@ actor SupabaseDepthRepository: DepthRepository {
         "game_id, season, game_type, week, gameday, home_team_id, away_team_id, home_score, away_score"
     private static let playerStatsSelect =
         "season, season_type, games, completions, attempts, passing_yards, passing_tds, passing_interceptions, carries, rushing_yards, rushing_tds, receptions, targets, receiving_yards, receiving_tds, def_tackles_solo, def_sacks, def_interceptions, fg_made, fg_att, teams(abbrev)"
+    private static let historicalRosterSelect =
+        "season, team_id, gsis_id, name, number, position, college, height, weight, depth_rank, player_order"
 
     func teams() async throws -> [Team] {
         do {
@@ -128,12 +130,71 @@ actor SupabaseDepthRepository: DepthRepository {
         }
     }
 
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        guard (1999...currentRosterSeason()).contains(season) else {
+            throw DepthError.validation("season")
+        }
+        do {
+            let team: TeamListRowDTO = try await client
+                .from("teams")
+                .select(Self.teamListSelect)
+                .eq("id", value: teamId)
+                .single()
+                .execute()
+                .value
+            let rows: [HistoricalRosterRowDTO] = try await client
+                .from("roster_history")
+                .select(Self.historicalRosterSelect)
+                .eq("team_id", value: teamId)
+                .eq("season", value: season)
+                .order("position")
+                .order("player_order")
+                .execute()
+                .value
+            guard !rows.isEmpty else { throw DepthError.notFound }
+            return try HistoricalRosterMapper.map(team: TeamSnapshotMapper.mapTeamListRow(team), rows: rows)
+        } catch let error as DepthError {
+            throw error
+        } catch let error as PostgrestError {
+            throw Self.mapPostgrestError(error)
+        } catch let error as DecodingError {
+            throw DepthError.decoding("\(error)")
+        } catch is URLError {
+            throw DepthError.offline
+        } catch {
+            throw DepthError.server("\(error)")
+        }
+    }
+
     func playerStats(playerId: String) async throws -> [PlayerSeasonStats] {
         do {
+            let resolvedId: String
+            switch playerStatsLookup(for: playerId) {
+            case .current(let playerId):
+                resolvedId = playerId
+            case .historical(let reference):
+                struct HistoricalStatsPlayerDTO: Decodable {
+                    let espnId: String?
+
+                    enum CodingKeys: String, CodingKey { case espnId = "espn_id" }
+                }
+                let row: HistoricalStatsPlayerDTO? = try await client
+                    .from("roster_history")
+                    .select("espn_id")
+                    .eq("gsis_id", value: reference.gsisId)
+                    .eq("season", value: reference.season)
+                    .maybeSingle()
+                    .execute()
+                    .value
+                guard let espnId = row?.espnId, !espnId.isEmpty else { return [] }
+                resolvedId = espnId
+            case .invalidHistorical:
+                return []
+            }
             let rows: [PlayerSeasonStatsDTO] = try await client
                 .from("player_stats")
                 .select(Self.playerStatsSelect)
-                .eq("player_id", value: playerId)
+                .eq("player_id", value: resolvedId)
                 .eq("season_type", value: "REG")
                 .order("season", ascending: false)
                 .execute()

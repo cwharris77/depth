@@ -9,6 +9,9 @@ protocol DepthRepository: Sendable {
     /// `teamSnapshot`, not a side effect of it).
     func teams() async throws -> [Team]
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot
+    /// Read-only historical roster, intentionally separate from the current snapshot
+    /// cache because each season is opened on demand and is immutable once decoded.
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot
     /// The selected team's latest available regular-season schedule when `season` is
     /// nil, or a requested historical season. This remains a standalone read so it
     /// does not bloat the cacheable depth-chart snapshot.
@@ -20,4 +23,10 @@ protocol DepthRepository: Sendable {
     /// "Database evolution and update gate"). Callers cache the last known value and
     /// fall back to it when this throws.
     func appConfig() async throws -> AppConfig
+}
+
+extension DepthRepository {
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        throw DepthError.notFound
+    }
 }

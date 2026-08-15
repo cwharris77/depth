@@ -10,17 +10,21 @@ import Testing
 private actor FakeDepthRepository: DepthRepository {
     var teamsResult: Result<[Team], Error>
     var snapshotResults: [String: Result<TeamSnapshot, Error>]
+    var seasonResults: [Int: Result<TeamSnapshot, Error>]
     var appConfigResult: Result<AppConfig, Error>
     private(set) var teamSnapshotCallCount: [String: Int] = [:]
     private(set) var teamsCallCount = 0
+    private(set) var seasonCallCount = 0
 
     init(
         teamsResult: Result<[Team], Error> = .success([]),
         snapshotResults: [String: Result<TeamSnapshot, Error>] = [:],
+        seasonResults: [Int: Result<TeamSnapshot, Error>] = [:],
         appConfigResult: Result<AppConfig, Error> = .success(AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil))
     ) {
         self.teamsResult = teamsResult
         self.snapshotResults = snapshotResults
+        self.seasonResults = seasonResults
         self.appConfigResult = appConfigResult
     }
 
@@ -32,6 +36,12 @@ private actor FakeDepthRepository: DepthRepository {
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot {
         teamSnapshotCallCount[teamId, default: 0] += 1
         guard let result = snapshotResults[teamId] else { throw DepthError.notFound }
+        return try result.get()
+    }
+
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        seasonCallCount += 1
+        guard let result = seasonResults[season] else { throw DepthError.notFound }
         return try result.get()
     }
 
@@ -52,6 +62,8 @@ private actor FakeDepthRepository: DepthRepository {
     func callCount(forTeam teamId: String) -> Int {
         teamSnapshotCallCount[teamId, default: 0]
     }
+
+    func historyCallCount() -> Int { seasonCallCount }
 }
 
 private func inMemoryContainer() -> ModelContainer {
@@ -83,6 +95,19 @@ private func snapshot(teamId: String = "bills") -> TeamSnapshot {
     let result = try await repository.teamSnapshot(teamId: "bills")
     #expect(result.team.id == "bills")
     #expect(await underlying.callCount(forTeam: "bills") == 1)
+}
+
+@Test func historicalRosterDelegatesWithoutEnteringTheCurrentSnapshotCache() async throws {
+    let historical = snapshot(teamId: "bills")
+    let underlying = FakeDepthRepository(seasonResults: [2013: .success(historical)])
+    let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
+
+    let first = try await repository.teamSeason(teamId: "bills", season: 2013)
+    let second = try await repository.teamSeason(teamId: "bills", season: 2013)
+
+    #expect(first == historical)
+    #expect(second == historical)
+    #expect(await underlying.historyCallCount() == 2)
 }
 
 @Test func teamSnapshotReturnsCachedValueWithoutBlockingOnNetwork() async throws {
