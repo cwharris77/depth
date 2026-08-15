@@ -30,7 +30,17 @@ final class AuthUITests: XCTestCase {
             app.staticTexts["settings-data-saved-at"].waitForExistence(timeout: 10),
             "Data section should show a saved-on-device timestamp or its fallback"
         )
-        XCTAssertTrue(app.staticTexts["settings-data-explanation"].waitForExistence(timeout: 10))
+
+        // On a small screen (e.g. iPhone SE) the Form's Data section footnote row sits
+        // below the fold and is never materialized in the accessibility tree until
+        // scrolled into view — no amount of waitForExistence timeout helps an element
+        // that was never rendered. Same swipe-retry shape as DepthUITests.swift's
+        // season-picker scroll.
+        let dataExplanation = app.staticTexts["settings-data-explanation"]
+        for _ in 0..<4 where !dataExplanation.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(dataExplanation.waitForExistence(timeout: 10))
 
         let signInButton = app.buttons["Sign In"]
         XCTAssertTrue(
