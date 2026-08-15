@@ -1,0 +1,82 @@
+name: Depth
+options:
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+
+configs:
+  Debug: debug
+  Staging: debug
+  Release: release
+
+configFiles:
+  Debug: xcconfig/Debug.xcconfig
+  Staging: xcconfig/Staging.xcconfig
+  Release: xcconfig/Release.xcconfig
+
+packages:
+  Supabase:
+    url: https://github.com/supabase/supabase-swift
+    from: 2.55.1
+
+targets:
+  Depth:
+    type: application
+    platform: iOS
+    sources:
+      - path: Depth/App
+      - path: Depth/Assets.xcassets
+    info:
+      path: Depth/Info.plist
+      properties:
+        CFBundleDisplayName: Depth
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        SUPABASE_URL: $(SUPABASE_URL)
+        SUPABASE_PUBLISHABLE_KEY: $(SUPABASE_PUBLISHABLE_KEY)
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: NO
+    dependencies:
+      - package: Supabase
+        product: Supabase
+
+  DepthTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: DepthTests
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: Depth
+
+  DepthUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: DepthUITests
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: Depth
+
+schemes:
+  Depth:
+    build:
+      targets:
+        Depth: all
+        DepthTests: [test]
+        DepthUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - DepthTests
+        - DepthUITests
+    archive:
+      config: Release
