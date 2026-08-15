@@ -43,3 +43,8 @@ next-env.d.ts
 /.worktrees/
 .env*.local
 __pycache__/
+
+# iOS / Xcode
+ios/**/xcuserdata/
+*.xcuserstate
+ios/DerivedData/

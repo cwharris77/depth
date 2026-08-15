@@ -1,0 +1,6 @@
+#include "Base.xcconfig"
+
+// TODO(DEP-40 Lane B): points at production until a dedicated staging Supabase project
+// exists. Swap this URL/key once Lane B provisions persistent staging.
+SUPABASE_URL = https:/$()/jiqoaqmzmvtovimnmbzl.supabase.co
+SUPABASE_PUBLISHABLE_KEY = sb_publishable_JPsqvaeJbAGnX1JzkUGBqA_riP7wR9u
