@@ -42,6 +42,7 @@
 		8F38AC4DC5380D3CD035AD20 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6CB4D73E208BE9903C44E15 /* ContentView.swift */; };
 		91D7BD00C341BC0A1EEE88E8 /* OverrideEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51E315FD7379710252D46B96 /* OverrideEditorViewModel.swift */; };
 		96EE9CC19DC42FC68DEB9F90 /* TeamListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA198C4CAB3B2E7EFB862E6 /* TeamListViewModel.swift */; };
+		9F60A5FF883ED001520157AC /* SettingsAboutAndTimestampTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B86BB6DD9B066ECA8E654F /* SettingsAboutAndTimestampTests.swift */; };
 		A1E1EFE3A8781B7BA2758DB4 /* AuthUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFE9E3629D2A8EF20465A2F7 /* AuthUITests.swift */; };
 		A33FB64445E73B74A1AA7011 /* DepthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7971C7A65ECC4B94913325CD /* DepthTests.swift */; };
 		A5496CFB188C0EC7DE985548 /* Formations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12541806712112F37DAC99FC /* Formations.swift */; };
@@ -62,8 +63,10 @@
 		CF41F37C9326B8476CE36B8D /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCDC4EF2FDB8D9CC070628C2 /* Player.swift */; };
 		D028D091F525E2DDCA7ED6CD /* TeamDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED8C07254AA1A7D5B8F4DB53 /* TeamDetailViewModel.swift */; };
 		D448FF5EA6F5184AD7517AA3 /* TeamSnapshotMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30A33C79C70F2F28FB91F680 /* TeamSnapshotMapper.swift */; };
+		D9183133755E8C0F9EE05612 /* AppBuildInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50938E38F00E79484F436B49 /* AppBuildInfo.swift */; };
 		DC95DB2C72B7E87E9FE73999 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 025761971C890C088DEB466C /* AppConfig.swift */; };
 		DEA6657C52F2D9ACB38F070D /* Position.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F022703396305729D075AA5 /* Position.swift */; };
+		E867C4E09655C5AF25569C6B /* DataTimestampFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B19D86049171F706874AFF7 /* DataTimestampFormatting.swift */; };
 		EA23E4310B915968F4523778 /* HistoricalRosterMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B86644C1AB56B9F8C429F7 /* HistoricalRosterMapper.swift */; };
 		EFF8B47F7B414593005AA116 /* HistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 902F5629F8D437E89953B681 /* HistoryViewModel.swift */; };
 		F24DC74F4E029AF45C2E80B7 /* TeamSnapshotDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C4D96EE256B7056FA88238F /* TeamSnapshotDTO.swift */; };
@@ -113,6 +116,7 @@
 		48FA4E18037077277DE72192 /* Team.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Team.swift; sourceTree = "<group>"; };
 		4E08CA3C995029A6BAC0AB0E /* DepthUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DepthUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F264CCAAD3DD2BD01CFF1D9 /* CachingDepthRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingDepthRepository.swift; sourceTree = "<group>"; };
+		50938E38F00E79484F436B49 /* AppBuildInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBuildInfo.swift; sourceTree = "<group>"; };
 		51E315FD7379710252D46B96 /* OverrideEditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverrideEditorViewModel.swift; sourceTree = "<group>"; };
 		541B596A222BBAA528EB2458 /* FormationSlot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormationSlot.swift; sourceTree = "<group>"; };
 		5E7327B7FE220C00C465A0C5 /* PlayerProfileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfileTests.swift; sourceTree = "<group>"; };
@@ -126,6 +130,7 @@
 		7971C7A65ECC4B94913325CD /* DepthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthTests.swift; sourceTree = "<group>"; };
 		7C4D96EE256B7056FA88238F /* TeamSnapshotDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSnapshotDTO.swift; sourceTree = "<group>"; };
 		88314A701F47D93C3F85CFC9 /* Staging.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Staging.xcconfig; sourceTree = "<group>"; };
+		8B19D86049171F706874AFF7 /* DataTimestampFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataTimestampFormatting.swift; sourceTree = "<group>"; };
 		90067E10E437365481EFD0E3 /* BlockingUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingUpdateView.swift; sourceTree = "<group>"; };
 		902F5629F8D437E89953B681 /* HistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewModel.swift; sourceTree = "<group>"; };
 		9F022703396305729D075AA5 /* Position.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Position.swift; sourceTree = "<group>"; };
@@ -154,6 +159,7 @@
 		D8FC6EE7ED8FF20B422D809B /* ScheduleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleViewModel.swift; sourceTree = "<group>"; };
 		E1198A75270838E0A7F45ABE /* UserPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPreferences.swift; sourceTree = "<group>"; };
 		E235B4DBA71FCAE9FC954FF4 /* AuthSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSessionStore.swift; sourceTree = "<group>"; };
+		E2B86BB6DD9B066ECA8E654F /* SettingsAboutAndTimestampTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAboutAndTimestampTests.swift; sourceTree = "<group>"; };
 		E5A218C128DC97B0923883AE /* Depth.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Depth.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E67531979ED38F349577206E /* AuthAndSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthAndSettingsTests.swift; sourceTree = "<group>"; };
 		E6CB4D73E208BE9903C44E15 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -300,6 +306,7 @@
 				78EB3744AA605C27F09EC8EB /* NativeAuthIntegrationTests.swift */,
 				5E7327B7FE220C00C465A0C5 /* PlayerProfileTests.swift */,
 				3C89B84763FF4CDE45B5A7D9 /* ScheduleFeatureTests.swift */,
+				E2B86BB6DD9B066ECA8E654F /* SettingsAboutAndTimestampTests.swift */,
 				6552F9CA65DF43159FA618D0 /* SupabaseRLSIntegrationTests.swift */,
 				46B2552D4A053BA192766213 /* TeamSnapshotMapperTests.swift */,
 			);
@@ -323,6 +330,8 @@
 			isa = PBXGroup;
 			children = (
 				AE2CDFAE59D2F55DFD495B79 /* .gitkeep */,
+				50938E38F00E79484F436B49 /* AppBuildInfo.swift */,
+				8B19D86049171F706874AFF7 /* DataTimestampFormatting.swift */,
 				FCEB2197DF04D84335401768 /* DepthEnvironment.swift */,
 			);
 			path = Support;
@@ -521,6 +530,7 @@
 				4FFF76CE7A865150A0929EF3 /* NativeAuthIntegrationTests.swift in Sources */,
 				1710638BC3FA5FAD1EB88880 /* PlayerProfileTests.swift in Sources */,
 				028DB6758D8847C5EBD21D3C /* ScheduleFeatureTests.swift in Sources */,
+				9F60A5FF883ED001520157AC /* SettingsAboutAndTimestampTests.swift in Sources */,
 				A71200F26409705F92CA14E8 /* SupabaseRLSIntegrationTests.swift in Sources */,
 				549264E5E1E69E023D91CD6A /* TeamSnapshotMapperTests.swift in Sources */,
 			);
@@ -532,6 +542,7 @@
 			files = (
 				F73EBF610767D6026A6A9852 /* AccountDeletionSheet.swift in Sources */,
 				BDC16651BCF7C07924F4DEC1 /* AccountDeletionViewModel.swift in Sources */,
+				D9183133755E8C0F9EE05612 /* AppBuildInfo.swift in Sources */,
 				DC95DB2C72B7E87E9FE73999 /* AppConfig.swift in Sources */,
 				5ED6D7C11A5A64156BC6A2DF /* AuthFlowViewModel.swift in Sources */,
 				C8CCEA1A7BCF1B48488ABFC3 /* AuthSessionStore.swift in Sources */,
@@ -541,6 +552,7 @@
 				6885D42C0072D1BB6A3C8A0E /* CachedSnapshotStore.swift in Sources */,
 				B04373D05283099BC265E21C /* CachingDepthRepository.swift in Sources */,
 				8F38AC4DC5380D3CD035AD20 /* ContentView.swift in Sources */,
+				E867C4E09655C5AF25569C6B /* DataTimestampFormatting.swift in Sources */,
 				AC65C1250448AD4BFD7E7919 /* DepthApp.swift in Sources */,
 				C11893E533C74A67E2CEA185 /* DepthAuthService.swift in Sources */,
 				1EAD5ECB38956C0395E81458 /* DepthChartFieldView.swift in Sources */,
