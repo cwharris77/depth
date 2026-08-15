@@ -7,18 +7,28 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0F6FD5C287B8974874D6F67E /* DepthEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCEB2197DF04D84335401768 /* DepthEnvironment.swift */; };
 		28BE2E5939AE5607BB4CC133 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4163276566B599870A6F754E /* Assets.xcassets */; };
+		395710372FD0077DB2AF33D5 /* DepthRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FCC4475C04D0057618A6FE /* DepthRepository.swift */; };
 		50BB531E17CF38D6FDF1C71D /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 0065E218A34DF99B5279CD03 /* Supabase */; };
+		549264E5E1E69E023D91CD6A /* TeamSnapshotMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B2552D4A053BA192766213 /* TeamSnapshotMapperTests.swift */; };
+		5AB8FFDF7A29877D1E98EC94 /* SupabaseDepthRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 324A96001AEB67B20E09794B /* SupabaseDepthRepository.swift */; };
 		5B9538595A885E3D730A7A12 /* DepthUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1134BC81FF92C3AF1A114845 /* DepthUITests.swift */; };
+		72F2A4F9ED2F188C0493D2FA /* DepthError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3FAC7E6A6D97F9DB462C939 /* DepthError.swift */; };
 		7C5132BAE9E0A0D27086FBD3 /* FormationsParityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62ABB8FA352722CEF133910 /* FormationsParityTests.swift */; };
 		88BE6ACCCEDA76C1CBB97025 /* FixtureLoading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29F97862C18E5EAD7104430A /* FixtureLoading.swift */; };
 		8EEDDBFFF4D3D9EE186A3638 /* FormationSlot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 541B596A222BBAA528EB2458 /* FormationSlot.swift */; };
 		8F38AC4DC5380D3CD035AD20 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6CB4D73E208BE9903C44E15 /* ContentView.swift */; };
 		A33FB64445E73B74A1AA7011 /* DepthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7971C7A65ECC4B94913325CD /* DepthTests.swift */; };
 		A5496CFB188C0EC7DE985548 /* Formations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12541806712112F37DAC99FC /* Formations.swift */; };
+		A71200F26409705F92CA14E8 /* SupabaseRLSIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6552F9CA65DF43159FA618D0 /* SupabaseRLSIntegrationTests.swift */; };
+		A76DE210A4F5A111AEA3C45C /* Team.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48FA4E18037077277DE72192 /* Team.swift */; };
 		AC65C1250448AD4BFD7E7919 /* DepthApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 223FADA68FC13AD96EF5FB10 /* DepthApp.swift */; };
+		BA3E87A82A1E0D1528ECF9D5 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 6BF366F7B2E5A4241AA22D27 /* Supabase */; };
 		CF41F37C9326B8476CE36B8D /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCDC4EF2FDB8D9CC070628C2 /* Player.swift */; };
+		D448FF5EA6F5184AD7517AA3 /* TeamSnapshotMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30A33C79C70F2F28FB91F680 /* TeamSnapshotMapper.swift */; };
 		DEA6657C52F2D9ACB38F070D /* Position.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F022703396305729D075AA5 /* Position.swift */; };
+		F24DC74F4E029AF45C2E80B7 /* TeamSnapshotDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C4D96EE256B7056FA88238F /* TeamSnapshotDTO.swift */; };
 		F9B69E26A9D64D62D14A4349 /* Roster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3757D55E58A34FC37F1E6C19 /* Roster.swift */; };
 /* End PBXBuildFile section */
 
@@ -40,25 +50,36 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0A44099956079A79C4E08595 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		1134BC81FF92C3AF1A114845 /* DepthUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthUITests.swift; sourceTree = "<group>"; };
 		12541806712112F37DAC99FC /* Formations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formations.swift; sourceTree = "<group>"; };
 		223FADA68FC13AD96EF5FB10 /* DepthApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthApp.swift; sourceTree = "<group>"; };
 		29F97862C18E5EAD7104430A /* FixtureLoading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureLoading.swift; sourceTree = "<group>"; };
+		30A33C79C70F2F28FB91F680 /* TeamSnapshotMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSnapshotMapper.swift; sourceTree = "<group>"; };
+		324A96001AEB67B20E09794B /* SupabaseDepthRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseDepthRepository.swift; sourceTree = "<group>"; };
 		3757D55E58A34FC37F1E6C19 /* Roster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Roster.swift; sourceTree = "<group>"; };
 		4163276566B599870A6F754E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		46B2552D4A053BA192766213 /* TeamSnapshotMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSnapshotMapperTests.swift; sourceTree = "<group>"; };
+		47FCC4475C04D0057618A6FE /* DepthRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthRepository.swift; sourceTree = "<group>"; };
+		48FA4E18037077277DE72192 /* Team.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Team.swift; sourceTree = "<group>"; };
 		4E08CA3C995029A6BAC0AB0E /* DepthUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DepthUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		541B596A222BBAA528EB2458 /* FormationSlot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormationSlot.swift; sourceTree = "<group>"; };
+		6552F9CA65DF43159FA618D0 /* SupabaseRLSIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseRLSIntegrationTests.swift; sourceTree = "<group>"; };
 		7518E7BCF106B235BF6CB349 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		7971C7A65ECC4B94913325CD /* DepthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthTests.swift; sourceTree = "<group>"; };
+		7C4D96EE256B7056FA88238F /* TeamSnapshotDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSnapshotDTO.swift; sourceTree = "<group>"; };
 		88314A701F47D93C3F85CFC9 /* Staging.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Staging.xcconfig; sourceTree = "<group>"; };
 		9F022703396305729D075AA5 /* Position.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Position.swift; sourceTree = "<group>"; };
+		A3FAC7E6A6D97F9DB462C939 /* DepthError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthError.swift; sourceTree = "<group>"; };
 		A908CA33DBCD1775825E5B8D /* DepthTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DepthTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB35D08E30FEA6E565452307 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
+		AE2CDFAE59D2F55DFD495B79 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		B6AEFA01C7AE1138FA0B9741 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		C62ABB8FA352722CEF133910 /* FormationsParityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormationsParityTests.swift; sourceTree = "<group>"; };
 		E5A218C128DC97B0923883AE /* Depth.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Depth.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E6CB4D73E208BE9903C44E15 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		FCDC4EF2FDB8D9CC070628C2 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
+		FCEB2197DF04D84335401768 /* DepthEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthEnvironment.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,6 +88,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				50BB531E17CF38D6FDF1C71D /* Supabase in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C1738E9097E1421A75869653 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BA3E87A82A1E0D1528ECF9D5 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,6 +111,7 @@
 				FCDC4EF2FDB8D9CC070628C2 /* Player.swift */,
 				9F022703396305729D075AA5 /* Position.swift */,
 				3757D55E58A34FC37F1E6C19 /* Roster.swift */,
+				48FA4E18037077277DE72192 /* Team.swift */,
 			);
 			path = Domain;
 			sourceTree = "<group>";
@@ -94,6 +124,19 @@
 				88314A701F47D93C3F85CFC9 /* Staging.xcconfig */,
 			);
 			path = xcconfig;
+			sourceTree = "<group>";
+		};
+		6589916CE9454AE5B7BC21C9 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				0A44099956079A79C4E08595 /* .gitkeep */,
+				A3FAC7E6A6D97F9DB462C939 /* DepthError.swift */,
+				47FCC4475C04D0057618A6FE /* DepthRepository.swift */,
+				324A96001AEB67B20E09794B /* SupabaseDepthRepository.swift */,
+				7C4D96EE256B7056FA88238F /* TeamSnapshotDTO.swift */,
+				30A33C79C70F2F28FB91F680 /* TeamSnapshotMapper.swift */,
+			);
+			path = Data;
 			sourceTree = "<group>";
 		};
 		77DEE2A0C556DEDB6B3DD14B /* DepthUITests */ = {
@@ -110,6 +153,8 @@
 				7971C7A65ECC4B94913325CD /* DepthTests.swift */,
 				29F97862C18E5EAD7104430A /* FixtureLoading.swift */,
 				C62ABB8FA352722CEF133910 /* FormationsParityTests.swift */,
+				6552F9CA65DF43159FA618D0 /* SupabaseRLSIntegrationTests.swift */,
+				46B2552D4A053BA192766213 /* TeamSnapshotMapperTests.swift */,
 			);
 			path = DepthTests;
 			sourceTree = "<group>";
@@ -119,9 +164,20 @@
 			children = (
 				4163276566B599870A6F754E /* Assets.xcassets */,
 				C33ED319000E90FD1A1993FB /* App */,
+				6589916CE9454AE5B7BC21C9 /* Data */,
 				2E106AA613F29EF584520F0F /* Domain */,
+				B76C3DD40F523FA2389D3308 /* Support */,
 			);
 			path = Depth;
+			sourceTree = "<group>";
+		};
+		B76C3DD40F523FA2389D3308 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				AE2CDFAE59D2F55DFD495B79 /* .gitkeep */,
+				FCEB2197DF04D84335401768 /* DepthEnvironment.swift */,
+			);
+			path = Support;
 			sourceTree = "<group>";
 		};
 		C33ED319000E90FD1A1993FB /* App */ = {
@@ -180,6 +236,7 @@
 			buildConfigurationList = 2338B96993CC7A78D1E84531 /* Build configuration list for PBXNativeTarget "DepthTests" */;
 			buildPhases = (
 				5ACA526188BA530E42E7D5DD /* Sources */,
+				C1738E9097E1421A75869653 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -188,6 +245,7 @@
 			);
 			name = DepthTests;
 			packageProductDependencies = (
+				6BF366F7B2E5A4241AA22D27 /* Supabase */,
 			);
 			productName = DepthTests;
 			productReference = A908CA33DBCD1775825E5B8D /* DepthTests.xctest */;
@@ -280,6 +338,8 @@
 				A33FB64445E73B74A1AA7011 /* DepthTests.swift in Sources */,
 				88BE6ACCCEDA76C1CBB97025 /* FixtureLoading.swift in Sources */,
 				7C5132BAE9E0A0D27086FBD3 /* FormationsParityTests.swift in Sources */,
+				A71200F26409705F92CA14E8 /* SupabaseRLSIntegrationTests.swift in Sources */,
+				549264E5E1E69E023D91CD6A /* TeamSnapshotMapperTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -289,11 +349,18 @@
 			files = (
 				8F38AC4DC5380D3CD035AD20 /* ContentView.swift in Sources */,
 				AC65C1250448AD4BFD7E7919 /* DepthApp.swift in Sources */,
+				0F6FD5C287B8974874D6F67E /* DepthEnvironment.swift in Sources */,
+				72F2A4F9ED2F188C0493D2FA /* DepthError.swift in Sources */,
+				395710372FD0077DB2AF33D5 /* DepthRepository.swift in Sources */,
 				8EEDDBFFF4D3D9EE186A3638 /* FormationSlot.swift in Sources */,
 				A5496CFB188C0EC7DE985548 /* Formations.swift in Sources */,
 				CF41F37C9326B8476CE36B8D /* Player.swift in Sources */,
 				DEA6657C52F2D9ACB38F070D /* Position.swift in Sources */,
 				F9B69E26A9D64D62D14A4349 /* Roster.swift in Sources */,
+				5AB8FFDF7A29877D1E98EC94 /* SupabaseDepthRepository.swift in Sources */,
+				A76DE210A4F5A111AEA3C45C /* Team.swift in Sources */,
+				F24DC74F4E029AF45C2E80B7 /* TeamSnapshotDTO.swift in Sources */,
+				D448FF5EA6F5184AD7517AA3 /* TeamSnapshotMapper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -693,6 +760,11 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		0065E218A34DF99B5279CD03 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0AF7C9B956977D5B6B267125 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+		6BF366F7B2E5A4241AA22D27 /* Supabase */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 0AF7C9B956977D5B6B267125 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;

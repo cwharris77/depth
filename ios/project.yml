@@ -26,6 +26,8 @@ targets:
     sources:
       - path: Depth/App
       - path: Depth/Domain
+      - path: Depth/Data
+      - path: Depth/Support
       - path: Depth/Assets.xcassets
     info:
       path: Depth/Info.plist
@@ -53,6 +55,8 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: Depth
+      - package: Supabase
+        product: Supabase
 
   DepthUITests:
     type: bundle.ui-testing
