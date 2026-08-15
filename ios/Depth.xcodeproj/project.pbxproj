@@ -26,6 +26,7 @@
 		4E18C9EB0333BA8628859332 /* HistoryFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D250B90FB2B6E6C1379C9B01 /* HistoryFeatureTests.swift */; };
 		4FFF76CE7A865150A0929EF3 /* NativeAuthIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78EB3744AA605C27F09EC8EB /* NativeAuthIntegrationTests.swift */; };
 		50BB531E17CF38D6FDF1C71D /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 0065E218A34DF99B5279CD03 /* Supabase */; };
+		52029FDEE87BA6779F4B144E /* StartupTeamTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954B921C7ED809C93EB75D81 /* StartupTeamTests.swift */; };
 		549264E5E1E69E023D91CD6A /* TeamSnapshotMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B2552D4A053BA192766213 /* TeamSnapshotMapperTests.swift */; };
 		5AB8FFDF7A29877D1E98EC94 /* SupabaseDepthRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 324A96001AEB67B20E09794B /* SupabaseDepthRepository.swift */; };
 		5B9538595A885E3D730A7A12 /* DepthUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1134BC81FF92C3AF1A114845 /* DepthUITests.swift */; };
@@ -61,6 +62,7 @@
 		B04373D05283099BC265E21C /* CachingDepthRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F264CCAAD3DD2BD01CFF1D9 /* CachingDepthRepository.swift */; };
 		B333D97107732F3B32800053 /* ScheduleDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F2F20D10A0081AA2EF11B8 /* ScheduleDTO.swift */; };
 		B3C56DFCE68E85A8095083C5 /* UserPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1198A75270838E0A7F45ABE /* UserPreferences.swift */; };
+		B41D7BCD75AAF30866913BE2 /* StartupTeam.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6C33A0D7CAEFAEEEE07D8A /* StartupTeam.swift */; };
 		B7EC527E571B84DCDB819672 /* AppEventsRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E636B964C5DE055FDAD2CB44 /* AppEventsRecorder.swift */; };
 		BA3E87A82A1E0D1528ECF9D5 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 6BF366F7B2E5A4241AA22D27 /* Supabase */; };
 		BC786357DAB17986863FF90E /* DepthSignposts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0F9DA82B880B33391B6E216 /* DepthSignposts.swift */; };
@@ -155,6 +157,7 @@
 		90067E10E437365481EFD0E3 /* BlockingUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingUpdateView.swift; sourceTree = "<group>"; };
 		902F5629F8D437E89953B681 /* HistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewModel.swift; sourceTree = "<group>"; };
 		922288D41A6979441CB8E2EF /* DepthChartShareButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthChartShareButton.swift; sourceTree = "<group>"; };
+		954B921C7ED809C93EB75D81 /* StartupTeamTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTeamTests.swift; sourceTree = "<group>"; };
 		9F022703396305729D075AA5 /* Position.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Position.swift; sourceTree = "<group>"; };
 		A0DE3824F1EEDE104DC7FDFB /* CachedSnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedSnapshotStore.swift; sourceTree = "<group>"; };
 		A0F9DA82B880B33391B6E216 /* DepthSignposts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthSignposts.swift; sourceTree = "<group>"; };
@@ -182,6 +185,7 @@
 		D250B90FB2B6E6C1379C9B01 /* HistoryFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryFeatureTests.swift; sourceTree = "<group>"; };
 		D4B86644C1AB56B9F8C429F7 /* HistoricalRosterMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoricalRosterMapper.swift; sourceTree = "<group>"; };
 		D8FC6EE7ED8FF20B422D809B /* ScheduleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleViewModel.swift; sourceTree = "<group>"; };
+		DE6C33A0D7CAEFAEEEE07D8A /* StartupTeam.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTeam.swift; sourceTree = "<group>"; };
 		E1198A75270838E0A7F45ABE /* UserPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPreferences.swift; sourceTree = "<group>"; };
 		E147E349DAED0C3DFF5A965C /* ShareUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareUITests.swift; sourceTree = "<group>"; };
 		E235B4DBA71FCAE9FC954FF4 /* AuthSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSessionStore.swift; sourceTree = "<group>"; };
@@ -253,6 +257,7 @@
 				9F022703396305729D075AA5 /* Position.swift */,
 				AB3BA3372BC4904E43F19F9A /* ReadableText.swift */,
 				3757D55E58A34FC37F1E6C19 /* Roster.swift */,
+				DE6C33A0D7CAEFAEEEE07D8A /* StartupTeam.swift */,
 				48FA4E18037077277DE72192 /* Team.swift */,
 				BE03AF4D1E15ED94B758ADBE /* TeamSchedule.swift */,
 			);
@@ -355,6 +360,7 @@
 				3C89B84763FF4CDE45B5A7D9 /* ScheduleFeatureTests.swift */,
 				E2B86BB6DD9B066ECA8E654F /* SettingsAboutAndTimestampTests.swift */,
 				32CF7D3E3A42BD02111EB0D6 /* ShareCardContentTests.swift */,
+				954B921C7ED809C93EB75D81 /* StartupTeamTests.swift */,
 				6552F9CA65DF43159FA618D0 /* SupabaseRLSIntegrationTests.swift */,
 				46B2552D4A053BA192766213 /* TeamSnapshotMapperTests.swift */,
 			);
@@ -585,6 +591,7 @@
 				028DB6758D8847C5EBD21D3C /* ScheduleFeatureTests.swift in Sources */,
 				9F60A5FF883ED001520157AC /* SettingsAboutAndTimestampTests.swift in Sources */,
 				BCA0AEE81DE806BB93DBCC24 /* ShareCardContentTests.swift in Sources */,
+				52029FDEE87BA6779F4B144E /* StartupTeamTests.swift in Sources */,
 				A71200F26409705F92CA14E8 /* SupabaseRLSIntegrationTests.swift in Sources */,
 				549264E5E1E69E023D91CD6A /* TeamSnapshotMapperTests.swift in Sources */,
 			);
@@ -639,6 +646,7 @@
 				16168662B8CF4E7B450CA34B /* ScheduleViewModel.swift in Sources */,
 				BF92CF2CE4CF9FE16C7E3CE6 /* SettingsView.swift in Sources */,
 				603210A77A4D480A09C2F034 /* ShareCardView.swift in Sources */,
+				B41D7BCD75AAF30866913BE2 /* StartupTeam.swift in Sources */,
 				5AB8FFDF7A29877D1E98EC94 /* SupabaseDepthRepository.swift in Sources */,
 				A76DE210A4F5A111AEA3C45C /* Team.swift in Sources */,
 				FCB7419B6D19F100EBF99D11 /* TeamDetailView.swift in Sources */,
