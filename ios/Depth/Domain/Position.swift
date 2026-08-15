@@ -38,6 +38,45 @@ enum Position: String, Codable, Hashable {
     case pr = "PR"
 }
 
+extension Position {
+    var fullName: String {
+        switch self {
+        case .qb: "Quarterback"
+        case .rb: "Running Back"
+        case .fb: "Fullback"
+        case .wr: "Wide Receiver"
+        case .te: "Tight End"
+        case .lt: "Left Tackle"
+        case .lg: "Left Guard"
+        case .c: "Center"
+        case .rg: "Right Guard"
+        case .rt: "Right Tackle"
+        case .de: "Defensive End"
+        case .lde: "Left Defensive End"
+        case .rde: "Right Defensive End"
+        case .dt: "Defensive Tackle"
+        case .nt: "Nose Tackle"
+        case .lb: "Linebacker"
+        case .wlb: "Weakside Linebacker"
+        case .lilb: "Left Inside Linebacker"
+        case .rilb: "Right Inside Linebacker"
+        case .slb: "Strongside Linebacker"
+        case .cb: "Cornerback"
+        case .lcb: "Left Cornerback"
+        case .rcb: "Right Cornerback"
+        case .nb: "Nickel Back"
+        case .s: "Safety"
+        case .ss: "Strong Safety"
+        case .fs: "Free Safety"
+        case .k: "Kicker"
+        case .p: "Punter"
+        case .ls: "Long Snapper"
+        case .kr: "Kick Returner"
+        case .pr: "Punt Returner"
+        }
+    }
+}
+
 // Mirrors lib/types.ts's PositionGroup.
 enum PositionGroup: String, Codable, Hashable {
     case dl = "DL"

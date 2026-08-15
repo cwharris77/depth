@@ -34,6 +34,15 @@ final class DepthUITests: XCTestCase {
 
         let closeButton = app.buttons["Close"]
         XCTAssertTrue(closeButton.waitForExistence(timeout: 5), "player detail sheet should present with a Close action")
+
+        let profile = app.scrollViews["player-profile-content"]
+        XCTAssertTrue(profile.waitForExistence(timeout: 5), "player detail should expose a scrollable complete profile")
+        XCTAssertTrue(app.staticTexts["player-profile-name"].exists, "profile should show the player name")
+        XCTAssertTrue(app.staticTexts["player-profile-position"].exists, "profile should show granular and full position")
+        XCTAssertTrue(app.staticTexts["player-profile-status"].exists, "profile should show player status")
+        XCTAssertTrue(app.otherElements["player-profile-vitals"].exists, "profile should show age, experience, height, and weight")
+        XCTAssertTrue(app.otherElements["player-profile-stats"].waitForExistence(timeout: 10), "profile should resolve a stats state")
+
         closeButton.tap()
         XCTAssertFalse(closeButton.waitForExistence(timeout: 2), "dismissing should close the player detail sheet")
     }

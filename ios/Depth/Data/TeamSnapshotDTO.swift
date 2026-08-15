@@ -103,6 +103,54 @@ struct PlayerDTO: Decodable {
     }
 }
 
+// Public `player_stats` projection for a profile's independent on-demand read. The
+// nested team relation deliberately selects only its text abbreviation; native team-logo
+// use remains out of scope until rights are cleared.
+struct TeamAbbreviationDTO: Decodable {
+    let abbrev: String
+}
+
+struct PlayerSeasonStatsDTO: Decodable {
+    let season: Int
+    let seasonType: String
+    let games: Int?
+    let completions: Int?
+    let attempts: Int?
+    let passingYards: Int?
+    let passingTds: Int?
+    let passingInterceptions: Int?
+    let carries: Int?
+    let rushingYards: Int?
+    let rushingTds: Int?
+    let receptions: Int?
+    let targets: Int?
+    let receivingYards: Int?
+    let receivingTds: Int?
+    let defTacklesSolo: Int?
+    let defSacks: Double?
+    let defInterceptions: Int?
+    let fgMade: Int?
+    let fgAtt: Int?
+    let teams: TeamAbbreviationDTO?
+
+    enum CodingKeys: String, CodingKey {
+        case season, games, completions, attempts, carries, receptions, targets, teams
+        case seasonType = "season_type"
+        case passingYards = "passing_yards"
+        case passingTds = "passing_tds"
+        case passingInterceptions = "passing_interceptions"
+        case rushingYards = "rushing_yards"
+        case rushingTds = "rushing_tds"
+        case receivingYards = "receiving_yards"
+        case receivingTds = "receiving_tds"
+        case defTacklesSolo = "def_tackles_solo"
+        case defSacks = "def_sacks"
+        case defInterceptions = "def_interceptions"
+        case fgMade = "fg_made"
+        case fgAtt = "fg_att"
+    }
+}
+
 struct DepthChartEntryDTO: Decodable {
     let teamId: String
     let position: String
