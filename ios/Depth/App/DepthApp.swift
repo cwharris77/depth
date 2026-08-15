@@ -7,6 +7,10 @@ import SwiftUI
 @main
 struct DepthApp: App {
     init() {
+        // Opens the "app init → first useful render" signpost interval (Performance
+        // Review #5); closed by `TeamListViewModel.load()` on its first successful load.
+        DepthSignposts.beginAppLaunch()
+
         // UI tests launch with this argument so every test starts from the same
         // anonymous, no-restored-team state instead of inheriting whatever a previous
         // run/manual session left in UserDefaults.
