@@ -126,15 +126,17 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
     #expect(parseHistoricalPlayerReference("gsis:00-0031234@2013") == HistoricalPlayerReference(gsisId: "00-0031234", season: 2013))
     #expect(parseHistoricalPlayerReference("gsis:@2013") == nil)
     #expect(parseHistoricalPlayerReference("gsis:00-0031234@") == nil)
+    #expect(parseHistoricalPlayerReference("gsis:00-0031234@2013@2014") == nil)
     #expect(parseHistoricalPlayerReference("espn:123") == nil)
 }
 
-@Test func statsLookupKeepsCurrentIdsAndRequiresAnExactHistoricalReference() {
-    #expect(playerStatsLookup(for: "12345") == .current(playerId: "12345"))
-    #expect(playerStatsLookup(for: "gsis:00-0031234@2013") == .historical(
-        HistoricalPlayerReference(gsisId: "00-0031234", season: 2013)
+@Test func statsLookupRequiresHistoricalTeamContextAndKeepsCurrentIDs() {
+    #expect(playerStatsLookup(for: "12345", teamId: nil) == .current(playerId: "12345"))
+    #expect(playerStatsLookup(for: "gsis:00-0031234@2013", teamId: "seahawks") == .historical(
+        HistoricalPlayerReference(gsisId: "00-0031234", season: 2013), teamId: "seahawks"
     ))
-    #expect(playerStatsLookup(for: "gsis:00-0031234@") == .invalidHistorical)
+    #expect(playerStatsLookup(for: "gsis:00-0031234@2013", teamId: nil) == .invalidHistorical)
+    #expect(playerStatsLookup(for: "gsis:00-0031234@2013@2014", teamId: "seahawks") == .invalidHistorical)
 }
 
 @Test func historyViewModelShowsHistoricalSuccessWithoutLiveSnapshot() async {
@@ -241,7 +243,7 @@ private actor HistoryRepositoryFake: DepthRepository {
         return try next.get()
     }
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
-    func playerStats(playerId: String) async throws -> [PlayerSeasonStats] { [] }
+    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
     func appConfig() async throws -> AppConfig { AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil) }
 }
 
@@ -262,7 +264,7 @@ private actor DelayedHistoryRepository: DepthRepository {
         }
     }
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
-    func playerStats(playerId: String) async throws -> [PlayerSeasonStats] { [] }
+    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
     func appConfig() async throws -> AppConfig { AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil) }
 
     func waitForRequest(season: Int, count: Int) async {

@@ -166,13 +166,13 @@ actor SupabaseDepthRepository: DepthRepository {
         }
     }
 
-    func playerStats(playerId: String) async throws -> [PlayerSeasonStats] {
+    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] {
         do {
             let resolvedId: String
-            switch playerStatsLookup(for: playerId) {
+            switch playerStatsLookup(for: playerId, teamId: teamId) {
             case .current(let playerId):
                 resolvedId = playerId
-            case .historical(let reference):
+            case .historical(let reference, let teamId):
                 struct HistoricalStatsPlayerDTO: Decodable {
                     let espnId: String?
 
@@ -183,6 +183,7 @@ actor SupabaseDepthRepository: DepthRepository {
                     .select("espn_id")
                     .eq("gsis_id", value: reference.gsisId)
                     .eq("season", value: reference.season)
+                    .eq("team_id", value: teamId)
                     .maybeSingle()
                     .execute()
                     .value

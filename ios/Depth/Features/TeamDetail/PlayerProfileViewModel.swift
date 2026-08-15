@@ -15,14 +15,16 @@ final class PlayerProfileViewModel {
     }
 
     let playerID: String
+    let teamID: String?
     private(set) var statsState: StatsState = .loading
     private(set) var stats: [PlayerSeasonStats] = []
 
     private let repository: DepthRepository
     private var latestRequestID = 0
 
-    init(playerID: String, repository: DepthRepository) {
+    init(playerID: String, teamID: String?, repository: DepthRepository) {
         self.playerID = playerID
+        self.teamID = teamID
         self.repository = repository
     }
 
@@ -31,7 +33,7 @@ final class PlayerProfileViewModel {
         let requestID = latestRequestID
         statsState = .loading
         do {
-            let response = try await repository.playerStats(playerId: playerID)
+            let response = try await repository.playerStats(playerId: playerID, teamId: teamID)
             guard requestID == latestRequestID else { return }
             let played = response.filter(\.hasPlayedGames)
             stats = played

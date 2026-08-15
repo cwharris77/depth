@@ -18,15 +18,9 @@ protocol DepthRepository: Sendable {
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule
     /// Independent lazy profile read. It is intentionally excluded from team snapshots
     /// and cache persistence because opening a player is the only consumer.
-    func playerStats(playerId: String) async throws -> [PlayerSeasonStats]
+    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats]
     /// The public `app_config` singleton backing the update gate (design spec's
     /// "Database evolution and update gate"). Callers cache the last known value and
     /// fall back to it when this throws.
     func appConfig() async throws -> AppConfig
-}
-
-extension DepthRepository {
-    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
-        throw DepthError.notFound
-    }
 }

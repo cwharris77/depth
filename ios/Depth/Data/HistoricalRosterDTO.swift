@@ -34,7 +34,7 @@ struct HistoricalPlayerReference: Equatable {
 
 enum PlayerStatsLookup: Equatable {
     case current(playerId: String)
-    case historical(HistoricalPlayerReference)
+    case historical(HistoricalPlayerReference, teamId: String)
     case invalidHistorical
 }
 
@@ -42,7 +42,7 @@ func parseHistoricalPlayerReference(_ playerId: String) -> HistoricalPlayerRefer
     let prefix = "gsis:"
     guard playerId.hasPrefix(prefix) else { return nil }
     let remainder = playerId.dropFirst(prefix.count)
-    guard let at = remainder.lastIndex(of: "@") else { return nil }
+    guard remainder.filter({ $0 == "@" }).count == 1, let at = remainder.firstIndex(of: "@") else { return nil }
     let gsisId = String(remainder[..<at])
     let seasonText = remainder[remainder.index(after: at)...]
     guard !gsisId.isEmpty, !seasonText.isEmpty, seasonText.allSatisfy(\.isNumber),
@@ -50,8 +50,11 @@ func parseHistoricalPlayerReference(_ playerId: String) -> HistoricalPlayerRefer
     return HistoricalPlayerReference(gsisId: gsisId, season: season)
 }
 
-func playerStatsLookup(for playerId: String) -> PlayerStatsLookup {
+func playerStatsLookup(for playerId: String, teamId: String?) -> PlayerStatsLookup {
     guard playerId.hasPrefix("gsis:") else { return .current(playerId: playerId) }
-    guard let reference = parseHistoricalPlayerReference(playerId) else { return .invalidHistorical }
-    return .historical(reference)
+    guard let reference = parseHistoricalPlayerReference(playerId),
+          let teamId = teamId?.trimmingCharacters(in: .whitespacesAndNewlines), !teamId.isEmpty else {
+        return .invalidHistorical
+    }
+    return .historical(reference, teamId: teamId)
 }
