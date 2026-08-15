@@ -1,5 +1,6 @@
 import Foundation
 import Supabase
+import SwiftData
 
 // Constructs the one shared SupabaseClient from the values baked into Info.plist by the
 // active .xcconfig (SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY — see ios/xcconfig/). Only
@@ -17,5 +18,19 @@ enum DepthEnvironment {
         return SupabaseClient(supabaseURL: url, supabaseKey: key)
     }()
 
-    static let repository: DepthRepository = SupabaseDepthRepository(client: supabaseClient)
+    static let modelContainer: ModelContainer = {
+        let schema = Schema(DepthCacheSchema.models)
+        do {
+            return try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema)])
+        } catch {
+            fatalError("Failed to create SwiftData ModelContainer: \(error)")
+        }
+    }()
+
+    static let repository: CachingDepthRepository = CachingDepthRepository(
+        underlying: SupabaseDepthRepository(client: supabaseClient),
+        store: CachedSnapshotStore(modelContainer: modelContainer)
+    )
+
+    static let preferences = UserPreferences()
 }

@@ -43,6 +43,22 @@ enum TeamSnapshotMapper {
         return TeamSnapshot(team: team, players: players, specialTeams: specialTeams, uniforms: uniforms)
     }
 
+    static func mapTeamListRow(_ dto: TeamListRowDTO) -> Team {
+        Team(
+            id: dto.id, city: dto.city, name: dto.name, abbrev: dto.abbrev,
+            conference: dto.conference, division: dto.division,
+            colors: TeamColors(
+                primary: dto.colorPrimary, secondary: dto.colorSecondary, accent: dto.colorAccent,
+                uiAccent: dto.uiAccent, onAccent: dto.onAccent
+            ),
+            logo: dto.logoUrl, logoDark: dto.logoDarkUrl
+        )
+    }
+
+    static func mapAppConfig(_ dto: AppConfigDTO) -> AppConfig {
+        AppConfig(minimumSupportedBuild: dto.minimumSupportedBuild, maintenanceMessage: dto.maintenanceMessage)
+    }
+
     static func mapPlayer(_ dto: PlayerDTO, depthRank: Int) throws -> Player {
         guard let position = Position(rawValue: dto.position) else {
             throw DepthError.decoding("player \(dto.id): unknown position \"\(dto.position)\"")
@@ -53,7 +69,10 @@ enum TeamSnapshotMapper {
         guard (1...3).contains(depthRank) else {
             throw DepthError.decoding("player \(dto.id): depthRank \(depthRank) out of range 1...3")
         }
-        return Player(id: dto.id, position: position, depthRank: depthRank, number: number)
+        return Player(
+            id: dto.id, name: dto.name, position: position, depthRank: depthRank, number: number,
+            photoUrl: dto.photoUrl
+        )
     }
 
     static func mapUniform(_ dto: UniformDTO) throws -> Uniform {
