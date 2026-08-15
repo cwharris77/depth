@@ -88,6 +88,11 @@
                BlueprintName = "DepthUITests"
                ReferencedContainer = "container:Depth.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "AppStoreScreenshotsUITests">
+               </Test>
+            </SkippedTests>
          </TestableReference>
       </Testables>
       <CommandLineArguments>

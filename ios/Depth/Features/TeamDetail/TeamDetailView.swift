@@ -86,6 +86,7 @@ struct TeamDetailView: View {
                         Menu("Edit Order", systemImage: "arrow.up.arrow.down") {
                             ForEach(editableGroups) { group in
                                 Button(group.position.rawValue) { beginEditing(group) }
+                                    .accessibilityIdentifier("edit-depth-order-\(group.position.rawValue)")
                             }
                         }
                         .accessibilityIdentifier("edit-depth-order")
@@ -304,12 +305,22 @@ struct TeamDetailView: View {
     }
 
     private func beginEditing(_ group: EditableOverrideGroup) {
-        if sessionStore.user == nil {
+        // App Store screenshot capture (task-9d-screenshots-brief.md) needs to reach
+        // this sheet without a real authenticated session — "without exposing an email
+        // or test secret" rules out fabricating a real sign-in. The editor itself does
+        // nothing network-bound until Save is tapped (OverrideEditorViewModel loads its
+        // draft from the caller-supplied playerIds, not a fetch), so opening it here
+        // just previews the unsaved-drag reorder UI; a screenshot run never taps Save.
+        if sessionStore.user == nil && !isAppStoreScreenshotMode {
             pendingOverrideGroup = group
             showAuth = true
         } else {
             selectedOverrideGroup = group
         }
+    }
+
+    private var isAppStoreScreenshotMode: Bool {
+        ProcessInfo.processInfo.arguments.contains("UI_TESTING_APPSTORE_SCREENSHOTS")
     }
 
     private func finishAuthentication() {

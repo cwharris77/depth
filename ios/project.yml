@@ -85,6 +85,15 @@ schemes:
       config: Debug
       targets:
         - DepthTests
-        - DepthUITests
+        - name: DepthUITests
+          # AppStoreScreenshotsUITests is a slow, human-triggered release-prep tool
+          # (task-9d-screenshots-brief.md), not a correctness gate — excluded here so
+          # the default `xcodebuild test` run (this scheme's plain `test` action,
+          # which is what ios-ci.yml's `test` job runs) skips it. `-only-testing` at
+          # invocation time cannot override a scheme-level skip, so running it directly
+          # needs project.yml regenerated without this entry — see
+          # docs/ios-appstore-screenshots.md for the documented local workflow.
+          skippedTests:
+            - AppStoreScreenshotsUITests
     archive:
       config: Release

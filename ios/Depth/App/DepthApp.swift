@@ -18,6 +18,21 @@ struct DepthApp: App {
             DepthEnvironment.preferences.lastTeamId = nil
             DepthEnvironment.preferences.lastUnit = nil
         }
+
+        // App Store screenshot capture (task-9d-screenshots-brief.md) needs the same
+        // clean-slate starting state as UI_TESTING_RESET_STATE — screenshot #1 is the
+        // root team-selector/search screen itself, so restoring straight into a team
+        // (the naive reading of "pre-select team bills") would skip past it entirely.
+        // AppStoreScreenshotsUITests supplies the "bills" consistency by searching and
+        // tapping the Buffalo Bills row itself, same as the rest of the suite; every
+        // later screenshot in the sequence stays on that team because the NavigationStack
+        // push persists for the rest of the one launch. The signed-out half of
+        // "deterministic, signed-out state" is enforced in ContentView's `.task` (after
+        // session restore has a chance to run).
+        if ProcessInfo.processInfo.arguments.contains("UI_TESTING_APPSTORE_SCREENSHOTS") {
+            DepthEnvironment.preferences.lastTeamId = nil
+            DepthEnvironment.preferences.lastUnit = nil
+        }
     }
 
     var body: some Scene {
