@@ -292,6 +292,19 @@ enum LocalSupabase {
     try await client.from("app_events").insert(["event_name": "app_launch"]).execute()
 }
 
+// Greptile review on depth#368: an unrestricted INSERT grant would let a client set
+// `created_at` explicitly, forging a timestamp that corrupts time-based aggregate
+// analytics. The grant is column-restricted to event_name/error_category, so any
+// attempt to also set created_at (or id) must be denied at the privilege level.
+@Test func anonymousCannotForgeAnEventTimestamp() async throws {
+    let client = LocalSupabase.client(key: LocalSupabase.anonKey)
+    await #expect(throws: (any Error).self) {
+        try await client.from("app_events")
+            .insert(["event_name": "app_launch", "created_at": "2020-01-01T00:00:00Z"])
+            .execute()
+    }
+}
+
 @Test func anonymousCannotReadAppEvents() async throws {
     let client = LocalSupabase.client(key: LocalSupabase.anonKey)
     await #expect(throws: (any Error).self) {

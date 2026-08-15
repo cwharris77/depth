@@ -35,8 +35,12 @@ comment on table app_events is
 -- Clients only ever insert their own fire-and-forget event; nobody reads through RLS
 -- -- aggregate analysis happens via the service role, which bypasses RLS by design, so
 -- no anon/authenticated read policy is needed here (AGENTS.md invariant 10's "read
--- policy for whoever reads it" reader is the service role, not a client).
-grant insert on app_events to anon, authenticated;
+-- policy for whoever reads it" reader is the service role, not a client). Column-
+-- restricted to event_name/error_category only -- an unrestricted grant would let a
+-- client set id/created_at explicitly, overriding the server-assigned defaults and
+-- forging timestamps that corrupt time-based aggregate analytics (Greptile review on
+-- depth#368).
+grant insert (event_name, error_category) on app_events to anon, authenticated;
 grant select, insert, update, delete on app_events to service_role;
 
 alter table app_events enable row level security;
