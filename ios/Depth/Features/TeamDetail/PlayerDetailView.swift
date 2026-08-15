@@ -11,6 +11,17 @@ struct PlayerDetailView: View {
 
     @Environment(\.dismiss) private var dismiss
 
+    // Portrait and vital tiles scale with body text so an Accessibility XXXL reader
+    // gets a proportionate layout rather than large type crammed beside fixed chrome.
+    // The portrait is capped because past that it is the text, not the image, that
+    // needs the width.
+    @ScaledMetric(relativeTo: .title) private var scaledPhotoSize: CGFloat = 96
+    @ScaledMetric(relativeTo: .body) private var vitalColumnMinimum: CGFloat = 110
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var photoSize: CGFloat { min(scaledPhotoSize, 140) }
+
     init(player: Player, team: Team?, repository: DepthRepository) {
         self.player = player
         self.team = team
@@ -47,28 +58,43 @@ struct PlayerDetailView: View {
         .presentationDetents([.large])
     }
 
+    // Side-by-side portrait and name only works while the name still has room to wrap on
+    // word boundaries. At accessibility sizes the remaining column is narrower than a
+    // single word, so the layout stacks instead — otherwise names break mid-word
+    // ("DJ Moor / e"), which is the failure this switch exists to prevent.
     private var header: some View {
-        HStack(alignment: .top, spacing: 16) {
-            photo
-            VStack(alignment: .leading, spacing: 6) {
-                Text(player.name.isEmpty ? "#\(player.number)" : player.name)
-                    .font(.title.bold())
-                    .accessibilityIdentifier("player-profile-name")
-                Text("#\(player.number) · \(player.position.rawValue) · \(player.position.fullName)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .accessibilityIdentifier("player-profile-position")
-                Text(player.status.rawValue.capitalized)
-                    .font(.subheadline.weight(.semibold))
-                    .accessibilityIdentifier("player-profile-status")
+        let identity = VStack(alignment: .leading, spacing: 8) {
+            Text(player.name.isEmpty ? "#\(player.number)" : player.name)
+                .font(.title.bold())
+                .accessibilityIdentifier("player-profile-name")
+            Text("#\(player.number) · \(player.position.rawValue) · \(player.position.fullName)")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .accessibilityIdentifier("player-profile-position")
+            Text(player.status.rawValue.capitalized)
+                .font(.subheadline.weight(.semibold))
+                .accessibilityIdentifier("player-profile-status")
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+
+        return Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 16) {
+                    photo
+                    identity
+                }
+            } else {
+                HStack(alignment: .top, spacing: 16) {
+                    photo
+                    identity
+                }
             }
-            Spacer(minLength: 0)
         }
         .accessibilityElement(children: .contain)
     }
 
     private var vitals: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 12)], spacing: 12) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: vitalColumnMinimum), spacing: 12)], spacing: 12) {
             vital("Age", PlayerProfileDisplay.age(player.age))
             vital("Experience", PlayerProfileDisplay.experience(player.experience))
             vital("Height", PlayerProfileDisplay.height(player.height))
@@ -79,7 +105,7 @@ struct PlayerDetailView: View {
     }
 
     private var statsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             Text("Season Stats")
                 .font(.headline)
             switch viewModel.statsState {
@@ -143,7 +169,7 @@ struct PlayerDetailView: View {
                 initials(onAccent)
             }
         }
-        .frame(width: 96, height: 96)
+        .frame(width: photoSize, height: photoSize)
         .accessibilityHidden(true)
     }
 
@@ -155,31 +181,45 @@ struct PlayerDetailView: View {
 }
 
 // The table remains horizontally scrollable at Accessibility XXXL rather than truncating
-// numeric columns; its combined row labels preserve a useful VoiceOver reading order.
+// numeric columns, so its column widths scale with the text (`@ScaledMetric`) instead of
+// clipping larger digits inside fixed frames. On-screen headers stay compact; the spoken
+// reading comes from `PlayerStatsAccessibility.rowLabel`, which pairs every value with
+// its column name — a row combined from the bare cells would announce unlabeled numbers.
 private struct PlayerStatsTable: View {
     let stats: [PlayerSeasonStats]
     let columns: [PlayerStatColumn]
 
+    @ScaledMetric(relativeTo: .footnote) private var seasonWidth: CGFloat = 44
+    @ScaledMetric(relativeTo: .footnote) private var teamWidth: CGFloat = 40
+    @ScaledMetric(relativeTo: .footnote) private var statWidth: CGFloat = 52
+
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 14) {
-                    cell("SZN", width: 44, header: true)
-                    cell("TM", width: 40, header: true)
+                HStack(spacing: 16) {
+                    cell("SZN", width: seasonWidth, header: true)
+                    cell("TM", width: teamWidth, header: true)
                     ForEach(columns, id: \.self) { column in
-                        cell(column.header, width: 52, header: true)
+                        cell(column.header, width: statWidth, header: true)
                     }
                 }
+                // Each data row carries the full spoken label, so repeating the compact
+                // headers as their own VoiceOver stops is pure noise.
+                .accessibilityHidden(true)
+
                 ForEach(stats) { season in
-                    HStack(spacing: 14) {
-                        cell("\(season.season)", width: 44)
-                        cell(season.teamAbbrev ?? "—", width: 40)
+                    HStack(spacing: 16) {
+                        cell("\(season.season)", width: seasonWidth)
+                        cell(season.teamAbbrev ?? "—", width: teamWidth)
                         ForEach(columns, id: \.self) { column in
-                            cell(column.value(for: season), width: 52)
+                            cell(column.value(for: season), width: statWidth)
                         }
                     }
                     .padding(.vertical, 8)
-                    .accessibilityElement(children: .combine)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(
+                        PlayerStatsAccessibility.rowLabel(for: season, columns: columns)
+                    )
                 }
             }
             .padding(12)
@@ -195,25 +235,31 @@ private struct PlayerStatsTable: View {
     }
 }
 
+// Sized against the same scaled metrics as the table it stands in for, so the section
+// doesn't resize when real rows land (AGENTS.md's flash-then-jump rule).
 private struct PlayerStatsSkeleton: View {
     let columnCount: Int
 
+    @ScaledMetric(relativeTo: .footnote) private var cellWidth: CGFloat = 44
+    @ScaledMetric(relativeTo: .footnote) private var cellHeight: CGFloat = 14
+
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 12) {
             ForEach(0..<2, id: \.self) { _ in
                 HStack(spacing: 8) {
                     ForEach(0..<(columnCount + 2), id: \.self) { _ in
                         RoundedRectangle(cornerRadius: 4)
                             .fill(.tertiary)
-                            .frame(width: 44, height: 14)
+                            .frame(width: cellWidth, height: cellHeight)
                     }
                 }
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 70)
+        .frame(maxWidth: .infinity, minHeight: 72)
         .padding(12)
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
         .redacted(reason: .placeholder)
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel("Loading season stats")
     }
 }

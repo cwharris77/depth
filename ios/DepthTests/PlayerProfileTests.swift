@@ -69,6 +69,44 @@ import Testing
     #expect(columns.map { $0.value(for: stats) } == ["401/580", "4,321", "32", "9", "7.5"])
 }
 
+@Test func statColumnsExposeSpokenNamesDistinctFromCompactHeaders() {
+    #expect(PlayerStatColumn.passingYards.accessibleName == "Passing yards")
+    #expect(PlayerStatColumn.passingYardsPerAttempt.accessibleName == "Yards per attempt")
+    #expect(PlayerStatColumn.completionsAttempts.accessibleName == "Completions of attempts")
+    #expect(PlayerStatColumn.fieldGoalPercentage.accessibleName == "Field goal percentage")
+    // Every column must differ from its compact header, or the spoken name adds
+    // nothing over the letter-string VoiceOver already reads badly.
+    for column in PlayerStatColumn.allCases {
+        #expect(column.accessibleName != column.header, "\(column.header) needs a spoken name")
+    }
+}
+
+@Test func statsRowAccessibilityLabelPairsEverySpokenNameWithItsValue() {
+    let stats = PlayerSeasonStats(
+        season: 2025, seasonType: .regular, teamAbbrev: "BUF", games: 17,
+        completions: 401, attempts: 580, passingYards: 4_321, passingTds: 32,
+        passingInterceptions: 9, carries: nil, rushingYards: nil, rushingTds: nil,
+        receptions: nil, targets: nil, receivingYards: nil, receivingTds: nil,
+        defTacklesSolo: nil, defSacks: nil, defInterceptions: nil, fgMade: nil, fgAtt: nil
+    )
+
+    let label = PlayerStatsAccessibility.rowLabel(for: stats, columns: playerStatColumns(for: .qb))
+
+    #expect(
+        label == "2025 season, BUF, Completions of attempts 401/580, Passing yards 4,321, "
+            + "Passing touchdowns 32, Interceptions thrown 9, Yards per attempt 7.5"
+    )
+}
+
+@Test func statsRowAccessibilityLabelOmitsAnAbsentTeamAndSurvivesNoColumns() {
+    let stats = PlayerSeasonStats.empty(season: 2024, games: 3)
+
+    #expect(PlayerStatsAccessibility.rowLabel(for: stats, columns: []) == "2024 season")
+    #expect(
+        PlayerStatsAccessibility.rowLabel(for: stats, columns: [.games]) == "2024 season, Games played 3"
+    )
+}
+
 @Test func profileViewModelDropsNoGameRowsAfterSuccessfulLoad() async {
     let repository = PlayerStatsRepositoryFake(results: [
         .success([
