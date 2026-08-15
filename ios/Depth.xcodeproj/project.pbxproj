@@ -68,6 +68,7 @@
 		BED59061572203ADA429575F /* BlockingUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90067E10E437365481EFD0E3 /* BlockingUpdateView.swift */; };
 		BF92CF2CE4CF9FE16C7E3CE6 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC02FC1D8BC116C2D077870D /* SettingsView.swift */; };
 		C11893E533C74A67E2CEA185 /* DepthAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C97FD1B3B972D4063D8A72A2 /* DepthAuthService.swift */; };
+		C34BDFEA64ECB80BA1EE640C /* AppStoreScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69C97D21FFB3852484D4E4F2 /* AppStoreScreenshotsUITests.swift */; };
 		C4492067A8E11B1C4E0FB199 /* OverrideEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2825FB9CFC808C8C627FA025 /* OverrideEditorSheet.swift */; };
 		C8CCEA1A7BCF1B48488ABFC3 /* AuthSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E235B4DBA71FCAE9FC954FF4 /* AuthSessionStore.swift */; };
 		CB4FD1096A9B377BFD07C517 /* PerformanceUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C20C08065BC045F4A9C3C2D /* PerformanceUITests.swift */; };
@@ -140,6 +141,7 @@
 		64ECA11ED67DB4F54B0E5CCF /* HistorySeasonSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistorySeasonSheet.swift; sourceTree = "<group>"; };
 		6552F9CA65DF43159FA618D0 /* SupabaseRLSIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseRLSIntegrationTests.swift; sourceTree = "<group>"; };
 		67F2F20D10A0081AA2EF11B8 /* ScheduleDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleDTO.swift; sourceTree = "<group>"; };
+		69C97D21FFB3852484D4E4F2 /* AppStoreScreenshotsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreScreenshotsUITests.swift; sourceTree = "<group>"; };
 		718497F1FE3079352CB07880 /* DepthOverrideService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthOverrideService.swift; sourceTree = "<group>"; };
 		750C8A0A5BB67EDAFD2A1A97 /* AccountDeletionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDeletionSheet.swift; sourceTree = "<group>"; };
 		7518E7BCF106B235BF6CB349 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
@@ -311,6 +313,7 @@
 		77DEE2A0C556DEDB6B3DD14B /* DepthUITests */ = {
 			isa = PBXGroup;
 			children = (
+				69C97D21FFB3852484D4E4F2 /* AppStoreScreenshotsUITests.swift */,
 				AFE9E3629D2A8EF20465A2F7 /* AuthUITests.swift */,
 				1134BC81FF92C3AF1A114845 /* DepthUITests.swift */,
 				4C20C08065BC045F4A9C3C2D /* PerformanceUITests.swift */,
@@ -651,6 +654,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C34BDFEA64ECB80BA1EE640C /* AppStoreScreenshotsUITests.swift in Sources */,
 				A1E1EFE3A8781B7BA2758DB4 /* AuthUITests.swift in Sources */,
 				5B9538595A885E3D730A7A12 /* DepthUITests.swift in Sources */,
 				CB4FD1096A9B377BFD07C517 /* PerformanceUITests.swift in Sources */,
