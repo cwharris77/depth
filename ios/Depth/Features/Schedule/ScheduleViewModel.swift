@@ -21,6 +21,7 @@ final class ScheduleViewModel {
     private(set) var defaultSeason: Int?
 
     private let repository: DepthRepository
+    private var latestRequestID = 0
 
     init(teamId: String, repository: DepthRepository) {
         self.teamId = teamId
@@ -51,10 +52,13 @@ final class ScheduleViewModel {
     }
 
     private func fetch(season: Int?) async {
+        latestRequestID += 1
+        let requestID = latestRequestID
         schedule = nil
         loadState = .loading
         do {
             let result = try await repository.teamSchedule(teamId: teamId, season: season)
+            guard requestID == latestRequestID else { return }
             if defaultSeason == nil {
                 defaultSeason = result.season
             }
@@ -62,9 +66,11 @@ final class ScheduleViewModel {
             schedule = result
             loadState = result.games.isEmpty ? .empty : .loaded
         } catch let error as DepthError {
+            guard requestID == latestRequestID else { return }
             schedule = nil
             loadState = error == .notFound ? .empty : .failed(error)
         } catch {
+            guard requestID == latestRequestID else { return }
             schedule = nil
             loadState = .failed(.server("\(error)"))
         }

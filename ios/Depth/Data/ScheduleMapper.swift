@@ -22,12 +22,15 @@ enum ScheduleMapper {
             let teamScore = isHome ? game.homeScore : game.awayScore
             let opponentScore = isHome ? game.awayScore : game.homeScore
             let opponentId = isHome ? game.awayTeamId : game.homeTeamId
+            guard let opponent = teamsById[opponentId] else {
+                throw DepthError.decoding("game \(game.gameId): missing opponent \(opponentId)")
+            }
             gamesByWeek[week] = ScheduleGame(
                 week: week,
                 isBye: false,
                 date: game.gameday,
                 isHome: isHome,
-                opponent: teamsById[opponentId],
+                opponent: opponent,
                 teamScore: teamScore,
                 opponentScore: opponentScore,
                 result: outcome(teamScore: teamScore, opponentScore: opponentScore)

@@ -132,7 +132,9 @@ private struct ScheduleGameCard: View {
     }
 
     private var opponentLabel: String {
-        guard let opponent = game.opponent else { return "Opponent unavailable" }
+        // ScheduleMapper rejects a non-bye row without an opponent before it reaches
+        // feature state, so this only protects locally constructed preview/test data.
+        guard let opponent = game.opponent else { return "" }
         return game.isHome ? "vs \(opponent.abbrev)" : "at \(opponent.abbrev)"
     }
 

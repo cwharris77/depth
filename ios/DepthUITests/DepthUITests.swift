@@ -58,5 +58,10 @@ final class DepthUITests: XCTestCase {
 
         let scheduleContent = app.otherElements["schedule-content"]
         XCTAssertTrue(scheduleContent.waitForExistence(timeout: 10), "the schedule should render production-shaped staging content")
+
+        let weekCard = app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier BEGINSWITH 'schedule-week-'")
+        ).firstMatch
+        XCTAssertTrue(weekCard.waitForExistence(timeout: 5), "the schedule should render at least one weekly card")
     }
 }
