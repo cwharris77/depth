@@ -1,0 +1,100 @@
+import SwiftUI
+
+// Account settings surface shared by anonymous and authenticated users. Sign-in is a
+// sheet rather than a navigation replacement, preserving public browsing continuity.
+struct SettingsView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Bindable var sessionStore: AuthSessionStore
+
+    let authService: any DepthAuthServicing
+    var clearPrivateData: @Sendable () async -> Void = {}
+
+    @State private var showAuth = false
+    @State private var showDeletion = false
+    @State private var signOutError: DepthAuthError?
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Account") {
+                    if let user = sessionStore.user {
+                        LabeledContent("Email", value: user.email)
+                        Button("Sign Out") {
+                            Task { await signOut() }
+                        }
+                        Button("Delete Account", role: .destructive) {
+                            showDeletion = true
+                        }
+                    } else {
+                        Text(
+                            "Sign in only when you want to save private preferences or depth orders."
+                        )
+                        .foregroundStyle(.secondary)
+                        Button("Sign In") { showAuth = true }
+                    }
+                }
+
+                if let signOutError {
+                    Section { Text(signOutError.message).foregroundStyle(.red) }
+                }
+            }
+            .navigationTitle("Settings")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        .sheet(isPresented: $showAuth) {
+            AuthSheet(service: authService, sessionStore: sessionStore)
+        }
+        .sheet(isPresented: $showDeletion) {
+            if let email = sessionStore.user?.email {
+                AccountDeletionSheet(
+                    viewModel: AccountDeletionViewModel(
+                        email: email,
+                        service: authService,
+                        sessionStore: sessionStore,
+                        clearPrivateData: clearPrivateData
+                    )
+                )
+            }
+        }
+    }
+
+    private func signOut() async {
+        signOutError = nil
+        do {
+            try await sessionStore.signOut()
+            await clearPrivateData()
+        } catch let error as DepthAuthError {
+            signOutError = error
+        } catch {
+            signOutError = .server
+        }
+    }
+}
+
+// Drop-in navigation-toolbar entry point. Keeping presentation in Settings/ lets the
+// team-list and team-detail features opt in without owning auth state or Supabase calls.
+struct AccountSettingsButton: View {
+    @State private var showSettings = false
+
+    let sessionStore: AuthSessionStore
+    let authService: any DepthAuthServicing
+    var clearPrivateData: @Sendable () async -> Void = {}
+
+    var body: some View {
+        Button("Settings", systemImage: "gearshape") {
+            showSettings = true
+        }
+        .accessibilityIdentifier("settings-button")
+        .sheet(isPresented: $showSettings) {
+            SettingsView(
+                sessionStore: sessionStore,
+                authService: authService,
+                clearPrivateData: clearPrivateData
+            )
+        }
+    }
+}

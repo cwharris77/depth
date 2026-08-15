@@ -52,4 +52,9 @@ enum DepthEnvironment {
     )
 
     static let preferences = UserPreferences()
+    static let authService: any DepthAuthServicing =
+        SupabaseDepthAuthService(client: supabaseClient)
+    static let overrideService: any DepthOverrideWriting =
+        SupabaseDepthOverrideService(client: supabaseClient)
+    @MainActor static let authSessionStore = AuthSessionStore(service: authService)
 }
