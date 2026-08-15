@@ -212,11 +212,16 @@ run_build_and_scan() {
     exit 1
   fi
 
+  # Scan every file in the built bundle, not just Info.plist and the main binary.
+  # Today those two are the only two files Depth.app actually contains, but the app has
+  # no embedded frameworks/extensions/other bundled resources yet -- scanning the whole
+  # tree means this check doesn't silently lose coverage the day one is added (Greptile
+  # P2 on this PR's first review: a scan hardcoded to two named files creates exactly
+  # that gap). `strings` extracts printable text the same way regardless of file type
+  # (binary plist, Mach-O executable, plain resource file, ...).
   local violations=0 target text_dump match
-  for target in "$info_plist" "$binary"; do
+  while IFS= read -r -d '' target; do
     text_dump="$(mktemp)"
-    # `strings` extracts printable text regardless of whether the source is a binary
-    # plist or a Mach-O executable, so both files are scanned the same way.
     strings -a "$target" >"$text_dump"
     while IFS= read -r match; do
       [ -z "$match" ] && continue
@@ -224,14 +229,14 @@ run_build_and_scan() {
       violations=$((violations + 1))
     done < <(scan_file_for_secrets "$text_dump")
     rm -f "$text_dump"
-  done
+  done < <(find "$app_path" -type f -print0)
 
   if [ "$violations" -gt 0 ]; then
     echo "FAILED: $violations forbidden secret pattern occurrence(s) found in the built app bundle." >&2
     exit 1
   fi
 
-  echo "OK: no service-role-shaped secrets found in Info.plist or the compiled binary."
+  echo "OK: no service-role-shaped secrets found anywhere in the built app bundle ($app_path)."
 }
 
 main() {
