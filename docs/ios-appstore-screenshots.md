@@ -10,11 +10,15 @@ or `UI_TESTING_APPSTORE_SCREENSHOTS`.
 
 `AppStoreScreenshotsUITests.testCaptureAppStoreScreenshotSequence` walks one team (the
 Buffalo Bills — `bills`, the repo's existing stable fixture team) through the design
-spec's five-screenshot sequence and attaches a full-resolution PNG at each step:
+spec's five-screenshot sequence and attaches a full-resolution PNG at each step. The app
+now launches directly into a depth chart (2026-08-15 navigation-parity spec) rather than
+a searchable team list, so screenshot #1 captures the team switcher sheet — opened via
+the `team-switcher-button` in the chart's navigation bar — instead of an app-root list;
+screenshots #2–#5 follow selecting the Buffalo Bills from that sheet, unchanged:
 
 | # | File | Screen | Suggested caption |
 | --- | --- | --- | --- |
-| 1 | `01-team-search.png` | Team selector/search | Every team. One clear depth chart. |
+| 1 | `01-team-search.png` | Team switcher sheet | Every team. One clear depth chart. |
 | 2 | `02-team-depth-chart.png` | Team depth chart | See every position at a glance. |
 | 3 | `03-player-detail.png` | Player detail | Know who's next. |
 | 4 | `04-reorder-editing.png` | Personal reorder editing | Make the chart yours. |

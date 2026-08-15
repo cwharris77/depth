@@ -19,9 +19,17 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         app.launchArguments = ["UI_TESTING_APPSTORE_SCREENSHOTS"]
         app.launch()
 
-        // 1. Team selector/search — "Every team. One clear depth chart."
+        // 1. Team selector/search — "Every team. One clear depth chart." The selector is
+        // no longer the app root (2026-08-15 navigation-parity spec); it is the switcher
+        // sheet, so this opens it explicitly. The five-shot sequence and its captions are
+        // otherwise unchanged.
+        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
+        let switcher = app.buttons["team-switcher-button"]
+        XCTAssertTrue(switcher.waitForExistence(timeout: 15), "the chart header should expose the team switcher")
+        switcher.tap()
+
         let searchField = app.searchFields.firstMatch
-        XCTAssertTrue(searchField.waitForExistence(timeout: 15), "search field should appear once the team list loads")
+        XCTAssertTrue(searchField.waitForExistence(timeout: 15), "the switcher sheet should offer team search")
         searchField.tap()
         searchField.typeText("Bills")
 
