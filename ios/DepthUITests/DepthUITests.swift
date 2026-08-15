@@ -73,4 +73,47 @@ final class DepthUITests: XCTestCase {
         ).firstMatch
         XCTAssertTrue(weekCard.waitForExistence(timeout: 5), "the schedule should render at least one weekly card")
     }
+
+    func testOpenHistoricalRosterProfileAndReturnToToday() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launch()
+
+        let searchField = app.searchFields.firstMatch
+        XCTAssertTrue(searchField.waitForExistence(timeout: 10))
+        searchField.tap()
+        searchField.typeText("Seahawks")
+
+        let teamRow = app.buttons["team-row-seahawks"]
+        XCTAssertTrue(teamRow.waitForExistence(timeout: 10))
+        teamRow.tap()
+
+        let historyButton = app.buttons["history-destination"]
+        XCTAssertTrue(historyButton.waitForExistence(timeout: 10), "team detail should expose History")
+        historyButton.tap()
+
+        let season = app.buttons["history-season-2013"]
+        for _ in 0..<4 where !season.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(season.waitForExistence(timeout: 5), "2013 should be available in the season picker")
+        season.tap()
+
+        let seasonState = app.staticTexts["history-season-state"]
+        XCTAssertTrue(seasonState.waitForExistence(timeout: 10))
+        XCTAssertEqual(seasonState.label, "2013 season")
+        XCTAssertFalse(app.buttons["edit-depth-order"].exists, "historical rosters are read-only")
+
+        let quarterback = app.buttons["player-slot-off-qb-0"]
+        XCTAssertTrue(quarterback.waitForExistence(timeout: 10), "the historical field should render its QB")
+        quarterback.tap()
+        XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["player-profile-name"].exists)
+        app.buttons["Close"].tap()
+
+        let backToToday = app.buttons["history-back-to-today"]
+        XCTAssertTrue(backToToday.waitForExistence(timeout: 5))
+        backToToday.tap()
+        XCTAssertFalse(seasonState.waitForExistence(timeout: 2))
+    }
 }

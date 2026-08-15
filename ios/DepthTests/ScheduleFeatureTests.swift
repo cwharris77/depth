@@ -252,12 +252,16 @@ private actor ScheduleRepositoryFake: DepthRepository {
         throw DepthError.notFound
     }
 
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        throw DepthError.notFound
+    }
+
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
         guard let result = schedules[season] else { throw DepthError.notFound }
         return try result.get()
     }
 
-    func playerStats(playerId: String) async throws -> [PlayerSeasonStats] { [] }
+    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
 
     func appConfig() async throws -> AppConfig {
         AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)
@@ -280,6 +284,10 @@ private actor DelayedScheduleRepository: DepthRepository {
         throw DepthError.notFound
     }
 
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        throw DepthError.notFound
+    }
+
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
         guard let season else { return defaultSchedule }
         requests.insert(season)
@@ -289,7 +297,7 @@ private actor DelayedScheduleRepository: DepthRepository {
         }
     }
 
-    func playerStats(playerId: String) async throws -> [PlayerSeasonStats] { [] }
+    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
 
     func appConfig() async throws -> AppConfig {
         AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)

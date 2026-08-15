@@ -76,7 +76,7 @@ import Testing
             PlayerSeasonStats.empty(season: 2024, games: 14),
         ]),
     ])
-    let viewModel = await PlayerProfileViewModel(playerID: "p1", repository: repository)
+    let viewModel = await PlayerProfileViewModel(playerID: "p1", teamID: nil, repository: repository)
 
     await viewModel.load()
 
@@ -86,11 +86,24 @@ import Testing
 
 @Test func profileViewModelShowsEmptyAfterAResolvedNoStatsRead() async {
     let repository = PlayerStatsRepositoryFake(results: [.success([PlayerSeasonStats.empty(season: 2025)])])
-    let viewModel = await PlayerProfileViewModel(playerID: "p1", repository: repository)
+    let viewModel = await PlayerProfileViewModel(playerID: "p1", teamID: nil, repository: repository)
 
     await viewModel.load()
 
     #expect(await viewModel.statsState == .empty)
+}
+
+@Test func profileViewModelForwardsDisplayedTeamForHistoricalStats() async {
+    let repository = PlayerStatsRepositoryFake(results: [.success([])])
+    let viewModel = await PlayerProfileViewModel(
+        playerID: "gsis:00-0031234@2013", teamID: "seahawks", repository: repository
+    )
+
+    await viewModel.load()
+
+    #expect(await repository.requests == [
+        PlayerStatsRequest(playerID: "gsis:00-0031234@2013", teamID: "seahawks"),
+    ])
 }
 
 @Test func profileViewModelRetainsProfileAndRecoversWithRetryAfterStatsFailure() async {
@@ -98,7 +111,7 @@ import Testing
         .failure(.offline),
         .success([PlayerSeasonStats.empty(season: 2025, games: 17)]),
     ])
-    let viewModel = await PlayerProfileViewModel(playerID: "p1", repository: repository)
+    let viewModel = await PlayerProfileViewModel(playerID: "p1", teamID: nil, repository: repository)
 
     await viewModel.load()
     #expect(await viewModel.statsState == .failed(.offline))
@@ -110,7 +123,7 @@ import Testing
 
 @Test func staleProfileStatsResponseCannotOverwriteANewerLoad() async {
     let repository = DelayedPlayerStatsRepository()
-    let viewModel = await PlayerProfileViewModel(playerID: "p1", repository: repository)
+    let viewModel = await PlayerProfileViewModel(playerID: "p1", teamID: nil, repository: repository)
 
     let firstLoad = Task { @MainActor in await viewModel.load() }
     await repository.waitForRequest(1)
@@ -125,8 +138,14 @@ import Testing
     #expect(await viewModel.stats.map(\.season) == [2025])
 }
 
+private struct PlayerStatsRequest: Equatable {
+    let playerID: String
+    let teamID: String?
+}
+
 private actor PlayerStatsRepositoryFake: DepthRepository {
     private var results: [Result<[PlayerSeasonStats], DepthError>]
+    private(set) var requests: [PlayerStatsRequest] = []
 
     init(results: [Result<[PlayerSeasonStats], DepthError>]) {
         self.results = results
@@ -134,10 +153,12 @@ private actor PlayerStatsRepositoryFake: DepthRepository {
 
     func teams() async throws -> [Team] { [] }
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot { throw DepthError.notFound }
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot { throw DepthError.notFound }
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
     func appConfig() async throws -> AppConfig { AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil) }
 
-    func playerStats(playerId: String) async throws -> [PlayerSeasonStats] {
+    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] {
+        requests.append(PlayerStatsRequest(playerID: playerId, teamID: teamId))
         guard !results.isEmpty else { throw DepthError.notFound }
         return try results.removeFirst().get()
     }
@@ -150,10 +171,11 @@ private actor DelayedPlayerStatsRepository: DepthRepository {
 
     func teams() async throws -> [Team] { [] }
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot { throw DepthError.notFound }
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot { throw DepthError.notFound }
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
     func appConfig() async throws -> AppConfig { AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil) }
 
-    func playerStats(playerId: String) async throws -> [PlayerSeasonStats] {
+    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] {
         requestCount += 1
         let request = requestCount
         requestWaiters.removeValue(forKey: request)?.resume()
