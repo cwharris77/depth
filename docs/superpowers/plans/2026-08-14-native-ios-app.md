@@ -167,12 +167,30 @@ build alone.
     before any instrumentation shipped. Every implementation PR ran the full Staging
     `xcodebuild ... test` suite (unit + XCUITest) on the booted iPhone 17 Pro simulator
     and addressed Greptile's initial review before squash-merge.
-- [ ] **T9 (P1, human: ~3d / CC: ~6h)** — CI and release QA — add macOS build/test CI,
+- [x] **T9 (P1, human: ~3d / CC: ~6h)** — CI and release QA — add macOS build/test CI,
   performance metrics, archive-secret inspection, deterministic screenshot automation, and device
   matrix runs.
   - Surfaced by: Test and Performance Reviews — every critical path and budget needs enforcement.
   - Files: `.github/workflows/`, `ios/DepthTests/`, `ios/DepthUITests/`.
   - Verify: CI green; performance budgets met; five clean exact-size screenshots captured.
+  - Shipped: depth#370 (macOS CI workflow — two-leg simulator device matrix, resolved and
+    compatibility-validated dynamically since fixed device-type names age out of new iOS runtimes;
+    RLS/native-auth integration suites self-gate on a local-Supabase reachability probe since
+    GitHub-hosted macOS runners can't run Docker), depth#371 (performance metrics — `os_signpost`
+    instrumentation around launch/query/decode/cache plus `XCTClockMetric`/`XCTApplicationLaunchMetric`/
+    `XCTOSSignpostMetric` tests; CI-blocking thresholds are deliberately looser than the design
+    spec's raw budgets to absorb real CI-runner noise, with the spec-accurate numbers hard-asserted
+    only where the path is genuinely deterministic), depth#372 (archive-secret inspection — a
+    standalone script builds Release/unsigned/iphonesimulator and scans the built bundle for
+    service-role-shaped Supabase secrets; a new `archive-secret-check` CI job), depth#373
+    (deterministic App Store screenshots — a `UI_TESTING_APPSTORE_SCREENSHOTS` launch mode and a
+    five-screenshot XCUITest sequence against the stable Bills fixture team; the personal-reorder
+    screenshot opens the real, unsaved editor UI via a screenshot-only sign-in-gate bypass rather
+    than a fabricated session, since the editor does no network I/O until Save). T9A's first real
+    CI run surfaced two genuine defects the local-only verification habit across T2-T8 never
+    caught — a device/runtime-compatibility gap in the CI script itself, and a real XCUITest
+    race/below-the-fold-rendering bug — both root-caused by reproducing against the same simulator
+    device type CI uses rather than guessing from log timing.
 - [ ] **T10 (P1, human: ~5d / CC: ~1d)** — Consumer polish — finalize the icon, visual system,
   accessibility, privacy/support pages, App Privacy, metadata, and two TestFlight rounds.
   - Surfaced by: Architecture/Test Review — App Store readiness extends beyond code completion.
