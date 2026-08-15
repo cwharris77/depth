@@ -277,6 +277,11 @@ struct TeamDetailView: View {
                     DepthChartFieldView(snapshot: snapshot, unit: unit) { player in
                         selectedPlayer = player
                     }
+                    // The field is the screen's primary content, so it fills the
+                    // available height instead of capping at a fixed ~1.4:1 aspect and
+                    // leaving a large blank area beneath it (DEP-207). Width still comes
+                    // from the horizontal padding; only the vertical axis is sized here.
+                    .containerRelativeFrame(.vertical)
                     .padding(.horizontal)
                 }
                 .padding(.vertical)
