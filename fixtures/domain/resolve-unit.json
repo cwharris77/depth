@@ -1,0 +1,907 @@
+[
+  {
+    "description": "generic offense: fills each slot by position+index, no crash on missing players",
+    "unit": "offense",
+    "roster": {
+      "players": [
+        {
+          "id": "wr1",
+          "position": "WR",
+          "depthRank": 1,
+          "number": 11,
+          "order": null
+        },
+        {
+          "id": "qb1",
+          "position": "QB",
+          "depthRank": 1,
+          "number": 7,
+          "order": null
+        }
+      ],
+      "specialTeams": []
+    },
+    "realFormation": null,
+    "resolved": [
+      {
+        "key": "off-wr-0",
+        "x": 88,
+        "y": 51,
+        "label": "WR",
+        "onLine": true,
+        "playerId": "wr1"
+      },
+      {
+        "key": "off-wr-1",
+        "x": 12,
+        "y": 55,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-2",
+        "x": 24,
+        "y": 56,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-te-0",
+        "x": 74,
+        "y": 51,
+        "label": "TE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-lt-0",
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-lg-0",
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-c-0",
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-rg-0",
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-rt-0",
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-qb-0",
+        "x": 50,
+        "y": 66,
+        "label": "QB",
+        "onLine": false,
+        "playerId": "qb1"
+      },
+      {
+        "key": "off-rb-0",
+        "x": 50,
+        "y": 78,
+        "label": "RB",
+        "onLine": false,
+        "playerId": null
+      }
+    ]
+  },
+  {
+    "description": "empty roster leaves every slot empty, correct slot count, no throw",
+    "unit": "defense",
+    "roster": {
+      "players": [],
+      "specialTeams": []
+    },
+    "realFormation": null,
+    "resolved": [
+      {
+        "key": "def-ss-0",
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-fs-0",
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-lcb-0",
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-rcb-0",
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-wlb-0",
+        "x": 22,
+        "y": 37,
+        "label": "WLB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-lilb-0",
+        "x": 42,
+        "y": 37,
+        "label": "LILB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-rilb-0",
+        "x": 58,
+        "y": 37,
+        "label": "RILB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-slb-0",
+        "x": 78,
+        "y": 37,
+        "label": "SLB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-lde-0",
+        "x": 26,
+        "y": 49,
+        "label": "LDE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "def-nt-0",
+        "x": 50,
+        "y": 49,
+        "label": "NT",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "def-rde-0",
+        "x": 74,
+        "y": 49,
+        "label": "RDE",
+        "onLine": true,
+        "playerId": null
+      }
+    ]
+  },
+  {
+    "description": "special teams: explicit playerId resolves; null playerId renders an empty slot",
+    "unit": "special",
+    "roster": {
+      "players": [
+        {
+          "id": "kicker",
+          "position": "K",
+          "depthRank": 1,
+          "number": 3,
+          "order": null
+        }
+      ],
+      "specialTeams": [
+        {
+          "id": "st-k",
+          "playerId": "kicker",
+          "x": 50,
+          "y": 80,
+          "label": "K"
+        },
+        {
+          "id": "st-pr",
+          "playerId": null,
+          "x": 70,
+          "y": 18,
+          "label": "PR"
+        }
+      ]
+    },
+    "realFormation": null,
+    "resolved": [
+      {
+        "key": "st-k",
+        "x": 50,
+        "y": 80,
+        "label": "K",
+        "onLine": null,
+        "playerId": "kicker"
+      },
+      {
+        "key": "st-pr",
+        "x": 70,
+        "y": 18,
+        "label": "PR",
+        "onLine": null,
+        "playerId": null
+      }
+    ]
+  },
+  {
+    "description": "RB-group slot with no tagged RB falls back to the best-ranked FB, relabeled \"FB\"",
+    "unit": "offense",
+    "roster": {
+      "players": [
+        {
+          "id": "fb1",
+          "position": "FB",
+          "depthRank": 1,
+          "number": 44,
+          "order": null
+        }
+      ],
+      "specialTeams": []
+    },
+    "realFormation": null,
+    "resolved": [
+      {
+        "key": "off-wr-0",
+        "x": 88,
+        "y": 51,
+        "label": "WR",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-1",
+        "x": 12,
+        "y": 55,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-2",
+        "x": 24,
+        "y": 56,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-te-0",
+        "x": 74,
+        "y": 51,
+        "label": "TE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-lt-0",
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-lg-0",
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-c-0",
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-rg-0",
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-rt-0",
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-qb-0",
+        "x": 50,
+        "y": 66,
+        "label": "QB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-rb-0",
+        "x": 50,
+        "y": 78,
+        "label": "FB",
+        "onLine": false,
+        "playerId": "fb1"
+      }
+    ]
+  },
+  {
+    "description": "real defense 3-4: exact-tag seating puts the real WLB/LILB/RILB/SLB/LDE/NT/RDE players in their named slots even when input order is scrambled",
+    "unit": "defense",
+    "roster": {
+      "players": [
+        {
+          "id": "slb1",
+          "position": "SLB",
+          "depthRank": 1,
+          "number": 55,
+          "order": null
+        },
+        {
+          "id": "lde1",
+          "position": "LDE",
+          "depthRank": 1,
+          "number": 91,
+          "order": null
+        },
+        {
+          "id": "wlb1",
+          "position": "WLB",
+          "depthRank": 1,
+          "number": 50,
+          "order": null
+        },
+        {
+          "id": "nt1",
+          "position": "NT",
+          "depthRank": 1,
+          "number": 99,
+          "order": null
+        },
+        {
+          "id": "rde1",
+          "position": "RDE",
+          "depthRank": 1,
+          "number": 93,
+          "order": null
+        },
+        {
+          "id": "lilb1",
+          "position": "LILB",
+          "depthRank": 1,
+          "number": 52,
+          "order": null
+        },
+        {
+          "id": "rilb1",
+          "position": "RILB",
+          "depthRank": 1,
+          "number": 53,
+          "order": null
+        }
+      ],
+      "specialTeams": []
+    },
+    "realFormation": [
+      {
+        "id": "def-de-0",
+        "position": "DE",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": "LDE",
+        "x": 24,
+        "y": 49,
+        "label": "LDE",
+        "onLine": true
+      },
+      {
+        "id": "def-dt-0",
+        "position": "DT",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": "NT",
+        "x": 50,
+        "y": 49,
+        "label": "NT",
+        "onLine": true
+      },
+      {
+        "id": "def-de-1",
+        "position": "DE",
+        "index": 1,
+        "group": "DL",
+        "preferredPosition": "RDE",
+        "x": 76,
+        "y": 49,
+        "label": "RDE",
+        "onLine": true
+      },
+      {
+        "id": "def-lb-0",
+        "position": "LB",
+        "index": 0,
+        "group": "LB",
+        "preferredPosition": "WLB",
+        "x": 26,
+        "y": 37,
+        "label": "WLB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-1",
+        "position": "LB",
+        "index": 1,
+        "group": "LB",
+        "preferredPosition": "LILB",
+        "x": 42,
+        "y": 37,
+        "label": "LILB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-2",
+        "position": "LB",
+        "index": 2,
+        "group": "LB",
+        "preferredPosition": "RILB",
+        "x": 58,
+        "y": 37,
+        "label": "RILB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-3",
+        "position": "LB",
+        "index": 3,
+        "group": "LB",
+        "preferredPosition": "SLB",
+        "x": 74,
+        "y": 37,
+        "label": "SLB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-0",
+        "position": "CB",
+        "index": 0,
+        "group": "CB",
+        "preferredPosition": "LCB",
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-1",
+        "position": "CB",
+        "index": 1,
+        "group": "CB",
+        "preferredPosition": "RCB",
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false
+      },
+      {
+        "id": "def-s-0",
+        "position": "S",
+        "index": 0,
+        "group": "S",
+        "preferredPosition": "SS",
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false
+      },
+      {
+        "id": "def-s-1",
+        "position": "S",
+        "index": 1,
+        "group": "S",
+        "preferredPosition": "FS",
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false
+      }
+    ],
+    "resolved": [
+      {
+        "key": "def-de-0",
+        "x": 24,
+        "y": 49,
+        "label": "LDE",
+        "onLine": true,
+        "playerId": "lde1"
+      },
+      {
+        "key": "def-dt-0",
+        "x": 50,
+        "y": 49,
+        "label": "NT",
+        "onLine": true,
+        "playerId": "nt1"
+      },
+      {
+        "key": "def-de-1",
+        "x": 76,
+        "y": 49,
+        "label": "RDE",
+        "onLine": true,
+        "playerId": "rde1"
+      },
+      {
+        "key": "def-lb-0",
+        "x": 26,
+        "y": 37,
+        "label": "WLB",
+        "onLine": false,
+        "playerId": "wlb1"
+      },
+      {
+        "key": "def-lb-1",
+        "x": 42,
+        "y": 37,
+        "label": "LILB",
+        "onLine": false,
+        "playerId": "lilb1"
+      },
+      {
+        "key": "def-lb-2",
+        "x": 58,
+        "y": 37,
+        "label": "RILB",
+        "onLine": false,
+        "playerId": "rilb1"
+      },
+      {
+        "key": "def-lb-3",
+        "x": 74,
+        "y": 37,
+        "label": "SLB",
+        "onLine": false,
+        "playerId": "slb1"
+      },
+      {
+        "key": "def-cb-0",
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-cb-1",
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-s-0",
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-s-1",
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false,
+        "playerId": null
+      }
+    ]
+  },
+  {
+    "description": "nickel DB seating: LCB/RCB/SS/FS get exact tags, 5th (NB) slot prefers the NB tag over a generic CB",
+    "unit": "defense",
+    "roster": {
+      "players": [
+        {
+          "id": "lcb1",
+          "position": "LCB",
+          "depthRank": 1,
+          "number": 24,
+          "order": null
+        },
+        {
+          "id": "rcb1",
+          "position": "RCB",
+          "depthRank": 1,
+          "number": 21,
+          "order": null
+        },
+        {
+          "id": "ss1",
+          "position": "SS",
+          "depthRank": 1,
+          "number": 31,
+          "order": null
+        },
+        {
+          "id": "fs1",
+          "position": "FS",
+          "depthRank": 1,
+          "number": 20,
+          "order": null
+        },
+        {
+          "id": "nb1",
+          "position": "NB",
+          "depthRank": 1,
+          "number": 27,
+          "order": null
+        },
+        {
+          "id": "extracb",
+          "position": "CB",
+          "depthRank": 2,
+          "number": 22,
+          "order": null
+        }
+      ],
+      "specialTeams": []
+    },
+    "realFormation": [
+      {
+        "id": "def-de-0",
+        "position": "DE",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": "LDE",
+        "x": 24,
+        "y": 49,
+        "label": "LDE",
+        "onLine": true
+      },
+      {
+        "id": "def-dt-0",
+        "position": "DT",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": null,
+        "x": 41.33333333333333,
+        "y": 49,
+        "label": "DT",
+        "onLine": true
+      },
+      {
+        "id": "def-dt-1",
+        "position": "DT",
+        "index": 1,
+        "group": "DL",
+        "preferredPosition": null,
+        "x": 58.666666666666664,
+        "y": 49,
+        "label": "DT",
+        "onLine": true
+      },
+      {
+        "id": "def-de-1",
+        "position": "DE",
+        "index": 1,
+        "group": "DL",
+        "preferredPosition": "RDE",
+        "x": 76,
+        "y": 49,
+        "label": "RDE",
+        "onLine": true
+      },
+      {
+        "id": "def-lb-0",
+        "position": "LB",
+        "index": 0,
+        "group": "LB",
+        "preferredPosition": null,
+        "x": 26,
+        "y": 37,
+        "label": "LB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-1",
+        "position": "LB",
+        "index": 1,
+        "group": "LB",
+        "preferredPosition": null,
+        "x": 74,
+        "y": 37,
+        "label": "LB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-0",
+        "position": "CB",
+        "index": 0,
+        "group": "CB",
+        "preferredPosition": "LCB",
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-1",
+        "position": "CB",
+        "index": 1,
+        "group": "CB",
+        "preferredPosition": "RCB",
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false
+      },
+      {
+        "id": "def-s-0",
+        "position": "S",
+        "index": 0,
+        "group": "S",
+        "preferredPosition": "SS",
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false
+      },
+      {
+        "id": "def-s-1",
+        "position": "S",
+        "index": 1,
+        "group": "S",
+        "preferredPosition": "FS",
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-2",
+        "position": "CB",
+        "index": 2,
+        "group": "CB",
+        "preferredPosition": "NB",
+        "x": 50,
+        "y": 28,
+        "label": "NB",
+        "onLine": false
+      }
+    ],
+    "resolved": [
+      {
+        "key": "def-de-0",
+        "x": 24,
+        "y": 49,
+        "label": "LDE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "def-dt-0",
+        "x": 41.33333333333333,
+        "y": 49,
+        "label": "DT",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "def-dt-1",
+        "x": 58.666666666666664,
+        "y": 49,
+        "label": "DT",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "def-de-1",
+        "x": 76,
+        "y": 49,
+        "label": "RDE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "def-lb-0",
+        "x": 26,
+        "y": 37,
+        "label": "LB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-lb-1",
+        "x": 74,
+        "y": 37,
+        "label": "LB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-cb-0",
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false,
+        "playerId": "lcb1"
+      },
+      {
+        "key": "def-cb-1",
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false,
+        "playerId": "rcb1"
+      },
+      {
+        "key": "def-s-0",
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false,
+        "playerId": "ss1"
+      },
+      {
+        "key": "def-s-1",
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false,
+        "playerId": "fs1"
+      },
+      {
+        "key": "def-cb-2",
+        "x": 50,
+        "y": 28,
+        "label": "NB",
+        "onLine": false,
+        "playerId": "nb1"
+      }
+    ]
+  }
+]

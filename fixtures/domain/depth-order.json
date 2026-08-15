@@ -1,0 +1,93 @@
+[
+  {
+    "description": "three WR1s in scrambled input/number order, tiebreak by jersey number",
+    "players": [
+      {
+        "id": "c",
+        "position": "WR",
+        "depthRank": 1,
+        "number": 16,
+        "order": null
+      },
+      {
+        "id": "a",
+        "position": "WR",
+        "depthRank": 1,
+        "number": 11,
+        "order": null
+      },
+      {
+        "id": "b",
+        "position": "WR",
+        "depthRank": 1,
+        "number": 14,
+        "order": null
+      },
+      {
+        "id": "d",
+        "position": "WR",
+        "depthRank": 2,
+        "number": 80,
+        "order": null
+      }
+    ],
+    "position": "WR",
+    "expectedIds": ["a", "b", "c", "d"]
+  },
+  {
+    "description": "stable regardless of input array order",
+    "players": [
+      {
+        "id": "b",
+        "position": "QB",
+        "depthRank": 2,
+        "number": 19,
+        "order": null
+      },
+      {
+        "id": "a",
+        "position": "QB",
+        "depthRank": 1,
+        "number": 7,
+        "order": null
+      }
+    ],
+    "position": "QB",
+    "expectedIds": ["a", "b"]
+  },
+  {
+    "description": "a user override (order field) beats the jersey-number tiebreak",
+    "players": [
+      {
+        "id": "a",
+        "position": "RB",
+        "depthRank": 1,
+        "number": 20,
+        "order": 2
+      },
+      {
+        "id": "b",
+        "position": "RB",
+        "depthRank": 1,
+        "number": 5,
+        "order": 1
+      }
+    ],
+    "position": "RB",
+    "expectedIds": ["b", "a"]
+  },
+  {
+    "description": "empty roster at a position returns an empty list",
+    "players": [
+      {
+        "id": "a",
+        "position": "QB",
+        "depthRank": 1,
+        "number": 7,
+        "order": null
+      }
+    ],
+    "position": "RB",
+    "expectedIds": []
+  }
+]
