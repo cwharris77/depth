@@ -192,13 +192,16 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					3B434A68ECA5BC763E8833C0 = {
+						DevelopmentTeam = 63JZBB528Q;
 						ProvisioningStyle = Automatic;
 						TestTargetID = BA5E1E94337F893173EEBC0A;
 					};
 					8A7EE9588675E74B9C5AE163 = {
+						DevelopmentTeam = 63JZBB528Q;
 						ProvisioningStyle = Automatic;
 					};
 					BA5E1E94337F893173EEBC0A = {
+						DevelopmentTeam = 63JZBB528Q;
 						ProvisioningStyle = Automatic;
 					};
 				};
