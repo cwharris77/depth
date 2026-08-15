@@ -26,8 +26,14 @@ struct DepthChartShareButton: View {
 
     var body: some View {
         if let image = renderedImage {
+            // `preview:` only drives the share sheet's own preview UI — it is not
+            // transferred to the chosen destination (Greptile review on depth#367).
+            // `subject`/`message` are the actual accompanying text some destinations
+            // (Mail, Messages) attach alongside the image.
             ShareLink(
                 item: image,
+                subject: Text(shareTitle),
+                message: Text(shareTitle),
                 preview: SharePreview(shareTitle, image: image)
             ) {
                 Label("Share", systemImage: "square.and.arrow.up")
