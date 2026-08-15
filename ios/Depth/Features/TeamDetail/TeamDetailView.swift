@@ -8,12 +8,28 @@ struct TeamDetailView: View {
     @State private var viewModel: TeamDetailViewModel
     @State private var unit: Unit
     @State private var selectedPlayer: Player?
+    @State private var selectedOverrideGroup: EditableOverrideGroup?
+    @State private var pendingOverrideGroup: EditableOverrideGroup?
+    @State private var showAuth = false
+    @State private var confirmedOrders: [Position: [String]] = [:]
 
     private let preferences: UserPreferences
+    private let sessionStore: AuthSessionStore
+    private let authService: any DepthAuthServicing
+    private let overrideService: any DepthOverrideServicing
 
-    init(viewModel: TeamDetailViewModel, preferences: UserPreferences) {
+    init(
+        viewModel: TeamDetailViewModel,
+        preferences: UserPreferences,
+        sessionStore: AuthSessionStore,
+        authService: any DepthAuthServicing,
+        overrideService: any DepthOverrideServicing
+    ) {
         _viewModel = State(initialValue: viewModel)
         self.preferences = preferences
+        self.sessionStore = sessionStore
+        self.authService = authService
+        self.overrideService = overrideService
         _unit = State(initialValue: preferences.lastUnit ?? .offense)
     }
 
@@ -21,17 +37,62 @@ struct TeamDetailView: View {
         content
             .navigationTitle(viewModel.snapshot.map { "\($0.team.city) \($0.team.name)" } ?? "Team")
             .navigationBarTitleDisplayMode(.inline)
-            .task { await viewModel.load() }
-            .refreshable { await viewModel.load() }
+            .task {
+                await viewModel.load()
+                await loadOverrides()
+            }
+            .refreshable {
+                await viewModel.load()
+                await loadOverrides()
+            }
             .onChange(of: unit) { _, newValue in preferences.lastUnit = newValue }
+            .onChange(of: sessionStore.user) { _, user in
+                if user == nil {
+                    confirmedOrders = [:]
+                } else {
+                    Task { await loadOverrides() }
+                }
+            }
+            .toolbar {
+                if !editableGroups.isEmpty {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Menu("Edit Order", systemImage: "arrow.up.arrow.down") {
+                            ForEach(editableGroups) { group in
+                                Button(group.position.rawValue) { beginEditing(group) }
+                            }
+                        }
+                        .accessibilityIdentifier("edit-depth-order")
+                    }
+                }
+            }
             .sheet(item: $selectedPlayer) { player in
                 PlayerDetailView(player: player, team: viewModel.snapshot?.team)
+            }
+            .sheet(isPresented: $showAuth, onDismiss: finishAuthentication) {
+                AuthSheet(service: authService, sessionStore: sessionStore)
+            }
+            .sheet(item: $selectedOverrideGroup) { group in
+                let players = players(for: group.position)
+                OverrideEditorSheet(
+                    viewModel: OverrideEditorViewModel(
+                        teamId: viewModel.teamId,
+                        position: group.position.rawValue,
+                        playerIds: players.map(\.id),
+                        writer: overrideService
+                    ),
+                    playerNames: Dictionary(
+                        uniqueKeysWithValues: players.map {
+                            ($0.id, $0.name.isEmpty ? "#\($0.number)" : $0.name)
+                        }
+                    ),
+                    onSaved: { confirmedOrders[group.position] = $0 }
+                )
             }
     }
 
     @ViewBuilder
     private var content: some View {
-        if let snapshot = viewModel.snapshot {
+        if let snapshot = displayedSnapshot {
             ScrollView {
                 VStack(spacing: 16) {
                     if viewModel.isStale {
@@ -79,6 +140,70 @@ struct TeamDetailView: View {
                 // sets one), but fail safe rather than showing a blank screen.
                 ContentUnavailableView("No Data", systemImage: "sportscourt")
             }
+        }
+    }
+
+    private var editableGroups: [EditableOverrideGroup] {
+        guard let snapshot = displayedSnapshot else { return [] }
+        let positions = Set(snapshot.players.filter { $0.position.unit == unit }.map(\.position))
+        return
+            positions
+            .filter { players(for: $0).count > 1 }
+            .sorted { $0.rawValue < $1.rawValue }
+            .map { EditableOverrideGroup(position: $0) }
+    }
+
+    private func players(for position: Position) -> [Player] {
+        displayedSnapshot?.players.filter { $0.position == position }.sorted(by: byDepthOrder)
+            ?? []
+    }
+
+    private var displayedSnapshot: TeamSnapshot? {
+        viewModel.snapshot.map { applyingDepthOverrides(to: $0, orders: confirmedOrders) }
+    }
+
+    private func loadOverrides() async {
+        guard sessionStore.user != nil else {
+            confirmedOrders = [:]
+            return
+        }
+        if let orders = try? await overrideService.load(teamId: viewModel.teamId) {
+            confirmedOrders = orders
+        }
+    }
+
+    private func beginEditing(_ group: EditableOverrideGroup) {
+        if sessionStore.user == nil {
+            pendingOverrideGroup = group
+            showAuth = true
+        } else {
+            selectedOverrideGroup = group
+        }
+    }
+
+    private func finishAuthentication() {
+        if sessionStore.user != nil {
+            selectedOverrideGroup = pendingOverrideGroup
+        }
+        pendingOverrideGroup = nil
+    }
+}
+
+private struct EditableOverrideGroup: Identifiable {
+    let position: Position
+    var id: String { position.rawValue }
+}
+
+extension Position {
+    fileprivate var unit: Unit {
+        switch self {
+        case .qb, .rb, .fb, .wr, .te, .lt, .lg, .c, .rg, .rt:
+            .offense
+        case .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb, .cb, .lcb,
+            .rcb, .nb, .s, .ss, .fs:
+            .defense
+        case .k, .p, .ls, .kr, .pr:
+            .special
         }
     }
 }
