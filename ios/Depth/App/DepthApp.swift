@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 // App entry point. Owns nothing but scene wiring — no Supabase/repository access here
@@ -5,9 +6,20 @@ import SwiftUI
 // protocol (Data/), per the design spec's "views never query Supabase directly" rule.
 @main
 struct DepthApp: App {
+    init() {
+        // UI tests launch with this argument so every test starts from the same
+        // anonymous, no-restored-team state instead of inheriting whatever a previous
+        // run/manual session left in UserDefaults.
+        if ProcessInfo.processInfo.arguments.contains("UI_TESTING_RESET_STATE") {
+            DepthEnvironment.preferences.lastTeamId = nil
+            DepthEnvironment.preferences.lastUnit = nil
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(DepthEnvironment.modelContainer)
     }
 }

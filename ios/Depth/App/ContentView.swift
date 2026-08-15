@@ -1,11 +1,20 @@
 import SwiftUI
 
-// Placeholder root view confirming the project skeleton launches (T2). Replaced by the
-// real team-list/depth-chart flow in T6 — not a scope holder for anything beyond that.
+// Root view — the T6 vertical slice (searchable team list → depth chart → player
+// detail), gated by the T5 update screen when the installed build is below the server's
+// minimum. Composition only: real state lives in TeamListView/UpdateGateViewModel.
 struct ContentView: View {
+    @State private var updateGate = UpdateGateViewModel(repository: DepthEnvironment.repository)
+
     var body: some View {
-        Text("Depth")
-            .font(.largeTitle)
+        Group {
+            if updateGate.isBlocked {
+                BlockingUpdateView()
+            } else {
+                TeamListView(repository: DepthEnvironment.repository, preferences: DepthEnvironment.preferences)
+            }
+        }
+        .task { await updateGate.check() }
     }
 }
 

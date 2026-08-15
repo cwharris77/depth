@@ -29,6 +29,7 @@ targets:
       - path: Depth/App
       - path: Depth/Domain
       - path: Depth/Data
+      - path: Depth/Features
       - path: Depth/Support
       - path: Depth/Assets.xcassets
     info:
