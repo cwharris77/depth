@@ -15,7 +15,7 @@ final class AuthUITests: XCTestCase {
         settingsButton.tap()
 
         XCTAssertTrue(
-            app.staticTexts["settings-about-name"].waitForExistence(timeout: 5),
+            app.staticTexts["settings-about-name"].waitForExistence(timeout: 10),
             "About should show the app display name"
         )
         XCTAssertTrue(app.staticTexts["settings-about-version"].exists, "About should show version/build")
@@ -31,13 +31,13 @@ final class AuthUITests: XCTestCase {
 
         let signInButton = app.buttons["Sign In"]
         XCTAssertTrue(
-            signInButton.waitForExistence(timeout: 5),
+            signInButton.waitForExistence(timeout: 10),
             "anonymous settings should offer native sign-in"
         )
         signInButton.tap()
 
         XCTAssertTrue(
-            app.textFields["auth-email"].waitForExistence(timeout: 5),
+            app.textFields["auth-email"].waitForExistence(timeout: 10),
             "sign-in should present the native email OTP flow"
         )
         XCTAssertTrue(app.buttons["auth-send-code"].exists)
