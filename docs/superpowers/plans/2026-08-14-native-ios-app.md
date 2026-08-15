@@ -40,6 +40,47 @@
 - Conflict flags: A and D both touch `ios/`; one lane owns the Xcode project file. A and B both touch
   fixtures/data contracts; version the JSON schema and land fixture changes before dependent code.
 
+### Current state and concrete parallel-work boundaries (2026-08-14, after T2-T4)
+
+T2 (native project skeleton), T3 (domain/formations logic + fixtures), and T4 (data layer —
+`DepthRepository`/`SupabaseDepthRepository`, DTOs, mapper, typed `DepthError`) are shipped
+(depth#348-352). `Domain/` and the `TeamSnapshot` read path are a stable contract now — build
+against them, don't rewrite them. What's genuinely safe to run concurrently vs. what needs one
+owner at a time:
+
+**Safe to fully parallelize — separate leaf directories, near-zero conflict risk:**
+- T6 (Core UX) → new files under `ios/Depth/Features/Teams/`, `Features/TeamDetail/`
+- T7 (Auth) → new files under `ios/Depth/Features/Auth/`, `Features/Settings/`, `supabase/functions/`
+- T8 (v1 parity) → other new `Features/` subfolders (Schedule/, History/, Share/)
+- T10 (icons/visual polish) → `ios/Depth/Assets.xcassets/` and static-site copy
+- T1 (Gate 0 release-process work) → entirely outside the repo (App Store Connect, legal)
+- T5 (SwiftData cache) → new files in `ios/Depth/Data/` (e.g. a cache/decorator type) as long as
+  it doesn't rewrite `SupabaseDepthRepository.swift`/`DepthRepository.swift` themselves — treat
+  those as a stable seam to wrap, not edit
+
+**Needs one owner at a time — shared/generated files, real merge-conflict risk:**
+- `ios/project.yml` + the generated `ios/Depth.xcodeproj/` — adding a new `Features/` subfolder
+  means adding it to `project.yml`'s `sources:` list, which regenerates the whole (large,
+  diff-hostile) `project.pbxproj`. Two agents doing this on parallel branches will produce two
+  incompatible full-file diffs. Merge one project.yml-touching PR at a time; each new PR rebases
+  onto main and regenerates (`xcodegen generate`) before opening, not before merging — same
+  discipline used for T2-T4 here.
+- `ios/Depth/Support/DepthEnvironment.swift` — the one composition root. New features needing new
+  repository/environment wiring should add a property, not restructure the file; prefer landing
+  these edits one PR at a time too.
+- This plan file's own `## Tasks` checkboxes — fine for parallel agents to check off different
+  `T`s, but rebase before merging so two concurrent checkbox edits don't silently clobber each
+  other (git will merge cleanly line-by-line as long as each PR is small and rebased).
+- Local Supabase integration tests that mutate shared seed rows (e.g. team "bills") — restore the
+  original value immediately after asserting (see `SupabaseRLSIntegrationTests.swift`), or better,
+  create disposable rows/users (random UUID emails, as the auth tests do) instead of touching seed
+  data another agent's test run might read concurrently.
+
+**Always before merging, regardless of lane:** run the real build+test (`xcodebuild ... test`
+against a live simulator, not just `xcodegen generate`), and check Greptile's review
+(`gh pr checks` / `gh api repos/cwharris77/depth/pulls/<n>/comments`) — don't merge on a green
+build alone.
+
 
 ## Tasks
 
