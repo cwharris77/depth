@@ -127,6 +127,12 @@ struct TeamDetailView: View {
             .sheet(item: $selectedPlayer) { player in
                 PlayerDetailView(player: player, team: displayedSnapshot?.team, repository: repository)
                     .id(player.id)
+                    // `.sheet()` content gets a fresh UITraitCollection rather than
+                    // inheriting ContentView's UI_TESTING_DYNAMIC_TYPE override — see
+                    // that modifier's doc comment. Re-applied here so
+                    // `PlayerDetailView`'s accessibility-size header stacking (T10) is
+                    // actually driven by the override in both real use and tests.
+                    .modifier(UITestingDynamicTypeOverride())
             }
             .sheet(isPresented: $showHistory) {
                 HistorySeasonSheet(

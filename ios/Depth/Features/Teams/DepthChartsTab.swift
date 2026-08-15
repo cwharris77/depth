@@ -63,6 +63,12 @@ struct DepthChartsTab: View {
             ) { selected in
                 teamId = selected
             }
+            // `.sheet()` content gets a fresh UITraitCollection rather than inheriting
+            // ContentView's UI_TESTING_DYNAMIC_TYPE override — see that modifier's doc
+            // comment. Re-applied here so the switcher's team-row scaling (TeamBadge's
+            // @ScaledMetric) actually reflects the accessibility size in real use and in
+            // AccessibilityUITests.
+            .modifier(UITestingDynamicTypeOverride())
         }
         .task {
             // A stale `lastTeamId` (team removed or renamed between releases) would

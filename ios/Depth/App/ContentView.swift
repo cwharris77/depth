@@ -40,7 +40,16 @@ struct ContentView: View {
 // app therefore applies the size itself, through the same environment value the real
 // system setting drives — same launch-argument convention as `UI_TESTING_RESET_STATE`.
 // Absent the argument this is inert and the real system setting applies.
-private struct UITestingDynamicTypeOverride: ViewModifier {
+//
+// Not `private`: a `.sheet()` presentation gets a fresh `UITraitCollection` from the
+// system rather than inheriting a `.dynamicTypeSize()` override set on the presenting
+// view (measured directly: identical inside a switcher-sheet team row across "large"
+// and "accessibility5" launches, while the same override reaches non-sheet tab content
+// correctly). Every `.sheet()` whose content is covered by an accessibility-size test
+// or design requirement (2026-08-15 nav-parity's `TeamSwitcherSheet`, T10's
+// `PlayerDetailView`) re-applies this modifier at its own presentation point rather than
+// relying on inheritance through the sheet boundary.
+struct UITestingDynamicTypeOverride: ViewModifier {
     func body(content: Content) -> some View {
         if let size = Self.launchArgumentSize {
             content.dynamicTypeSize(size)
