@@ -48,16 +48,20 @@
   - Surfaced by: Architecture — public release has unresolved identity and IP dependencies.
   - Files: App Store Connect, `static-site/`, release decision record.
   - Verify: each gate is `go`, `fallback`, or externally blocked; App Store record exists.
-- [ ] **T2 (P1, human: ~1d / CC: ~1h)** — iOS foundation — create the iOS 18 SwiftUI project,
+- [x] **T2 (P1, human: ~1d / CC: ~1h)** — iOS foundation — create the iOS 18 SwiftUI project,
   configurations, signing, dependency pin, folder layout, and environment injection.
   - Surfaced by: Architecture — native client and environment boundaries do not exist.
   - Files: `ios/`.
   - Verify: Debug/Staging/Release simulator builds; archive has no privileged secret.
-- [ ] **T3 (P1, human: ~2d / CC: ~4h)** — Contracts — add versioned JSON fixtures and port domain
+  - Shipped: depth#348, depth#349.
+- [x] **T3 (P1, human: ~2d / CC: ~4h)** — Contracts — add versioned JSON fixtures and port domain
   rules with TypeScript/Swift parity tests.
   - Surfaced by: Code Quality — web behavior must be a precise migration specification.
   - Files: `fixtures/`, TypeScript tests, `ios/Depth/Domain/`, `ios/DepthTests/`.
   - Verify: both suites pass every canonical fixture.
+  - Shipped: depth#350. Formation/depth-ordering domain logic only (the scope this repo's
+    formations.ts/roster.ts actually cover) — no separate historical/season-parity fixtures
+    exist to port yet.
 - [ ] **T4 (P1, human: ~3d / CC: ~6h)** — Data — build typed errors, DTO/domain mappers, the
   repository actor, projected team snapshot, and real actor-matrix RLS tests.
   - Surfaced by: Architecture and Code Quality — UI/database coupling and ambiguous failures.
