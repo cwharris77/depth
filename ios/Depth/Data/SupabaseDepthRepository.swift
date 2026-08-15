@@ -50,6 +50,10 @@ actor SupabaseDepthRepository: DepthRepository {
     private static let teamListSelect =
         "id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url"
 
+    private static let scheduleSelect = "team_id, season"
+    private static let gameSelect =
+        "game_id, season, game_type, week, gameday, home_team_id, away_team_id, home_score, away_score"
+
     func teams() async throws -> [Team] {
         do {
             let rows: [TeamListRowDTO] = try await client
@@ -59,6 +63,58 @@ actor SupabaseDepthRepository: DepthRepository {
                 .execute()
                 .value
             return rows.map(TeamSnapshotMapper.mapTeamListRow)
+        } catch let error as PostgrestError {
+            throw Self.mapPostgrestError(error)
+        } catch let error as DecodingError {
+            throw DepthError.decoding("\(error)")
+        } catch is URLError {
+            throw DepthError.offline
+        } catch {
+            throw DepthError.server("\(error)")
+        }
+    }
+
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        if let season, season < TeamSchedule.earliestSeason {
+            throw DepthError.validation("season")
+        }
+        do {
+            let schedules: [ScheduleDTO] = try await client
+                .from("schedules")
+                .select(Self.scheduleSelect)
+                .eq("team_id", value: teamId)
+                .order("season", ascending: false)
+                .execute()
+                .value
+            guard let selectedSchedule = season.map({ requested in
+                schedules.first(where: { $0.season == requested })
+            }) ?? schedules.first else {
+                throw DepthError.notFound
+            }
+
+            async let homeGames: [GameDTO] = client
+                .from("games")
+                .select(Self.gameSelect)
+                .eq("season", value: selectedSchedule.season)
+                .eq("home_team_id", value: teamId)
+                .execute()
+                .value
+            async let awayGames: [GameDTO] = client
+                .from("games")
+                .select(Self.gameSelect)
+                .eq("season", value: selectedSchedule.season)
+                .eq("away_team_id", value: teamId)
+                .execute()
+                .value
+            let (home, away) = try await (homeGames, awayGames)
+            let allTeams = try await teams()
+            return try ScheduleMapper.map(
+                schedule: selectedSchedule,
+                games: home + away,
+                teamsById: Dictionary(uniqueKeysWithValues: allTeams.map { ($0.id, $0) })
+            )
+        } catch let error as DepthError {
+            throw error
         } catch let error as PostgrestError {
             throw Self.mapPostgrestError(error)
         } catch let error as DecodingError {

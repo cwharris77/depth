@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		028DB6758D8847C5EBD21D3C /* ScheduleFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C89B84763FF4CDE45B5A7D9 /* ScheduleFeatureTests.swift */; };
 		0CC455D8CA174BBB060DE8ED /* CachedSnapshotModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD58C5053B074511EA4E2608 /* CachedSnapshotModels.swift */; };
 		0F6FD5C287B8974874D6F67E /* DepthEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCEB2197DF04D84335401768 /* DepthEnvironment.swift */; };
+		16168662B8CF4E7B450CA34B /* ScheduleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FC6EE7ED8FF20B422D809B /* ScheduleViewModel.swift */; };
 		164B2254852E6C1428CD8181 /* PlayerDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C639766327FBE3B5E14D722F /* PlayerDetailView.swift */; };
 		1EAD5ECB38956C0395E81458 /* DepthChartFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14888EF10F7F9A82139F0BD /* DepthChartFieldView.swift */; };
 		28BE2E5939AE5607BB4CC133 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4163276566B599870A6F754E /* Assets.xcassets */; };
@@ -22,10 +24,13 @@
 		5B9538595A885E3D730A7A12 /* DepthUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1134BC81FF92C3AF1A114845 /* DepthUITests.swift */; };
 		5DF288F4FE20EF2FEE2C3358 /* AuthAndSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E67531979ED38F349577206E /* AuthAndSettingsTests.swift */; };
 		5ED6D7C11A5A64156BC6A2DF /* AuthFlowViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F3CD595D63F3FD0998CD65 /* AuthFlowViewModel.swift */; };
+		66F6BBAF1B3D78957CB02C09 /* TeamSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE03AF4D1E15ED94B758ADBE /* TeamSchedule.swift */; };
 		6885D42C0072D1BB6A3C8A0E /* CachedSnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0DE3824F1EEDE104DC7FDFB /* CachedSnapshotStore.swift */; };
 		690F6FC9B14F8370801A8F6B /* DepthOverrideService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 718497F1FE3079352CB07880 /* DepthOverrideService.swift */; };
+		6F9514F25DCF231B32CB5E66 /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F8DBF3EB4D70F6DF2E44420 /* ScheduleView.swift */; };
 		72F2A4F9ED2F188C0493D2FA /* DepthError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3FAC7E6A6D97F9DB462C939 /* DepthError.swift */; };
 		7C5132BAE9E0A0D27086FBD3 /* FormationsParityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62ABB8FA352722CEF133910 /* FormationsParityTests.swift */; };
+		7DBE8842FD1DEC8D017AABB1 /* ScheduleMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD908EA6E702771824EF1659 /* ScheduleMapper.swift */; };
 		88BE6ACCCEDA76C1CBB97025 /* FixtureLoading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29F97862C18E5EAD7104430A /* FixtureLoading.swift */; };
 		8EEDDBFFF4D3D9EE186A3638 /* FormationSlot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 541B596A222BBAA528EB2458 /* FormationSlot.swift */; };
 		8F38AC4DC5380D3CD035AD20 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6CB4D73E208BE9903C44E15 /* ContentView.swift */; };
@@ -39,6 +44,7 @@
 		A8BC97475680BFF262BD9ACB /* CachingDepthRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADAF14C6ADEF3A0B809897F9 /* CachingDepthRepositoryTests.swift */; };
 		AC65C1250448AD4BFD7E7919 /* DepthApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 223FADA68FC13AD96EF5FB10 /* DepthApp.swift */; };
 		B04373D05283099BC265E21C /* CachingDepthRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F264CCAAD3DD2BD01CFF1D9 /* CachingDepthRepository.swift */; };
+		B333D97107732F3B32800053 /* ScheduleDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F2F20D10A0081AA2EF11B8 /* ScheduleDTO.swift */; };
 		B3C56DFCE68E85A8095083C5 /* UserPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1198A75270838E0A7F45ABE /* UserPreferences.swift */; };
 		BA3E87A82A1E0D1528ECF9D5 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 6BF366F7B2E5A4241AA22D27 /* Supabase */; };
 		BDC16651BCF7C07924F4DEC1 /* AccountDeletionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9152627F4CAC783C2C1E5E6 /* AccountDeletionViewModel.swift */; };
@@ -82,12 +88,14 @@
 		12541806712112F37DAC99FC /* Formations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formations.swift; sourceTree = "<group>"; };
 		12A1C43C94C87299E927B13F /* AuthSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSheet.swift; sourceTree = "<group>"; };
 		16777E464D29CE02F612C8FD /* TeamDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamDetailView.swift; sourceTree = "<group>"; };
+		1F8DBF3EB4D70F6DF2E44420 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
 		223FADA68FC13AD96EF5FB10 /* DepthApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthApp.swift; sourceTree = "<group>"; };
 		2825FB9CFC808C8C627FA025 /* OverrideEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverrideEditorSheet.swift; sourceTree = "<group>"; };
 		29F97862C18E5EAD7104430A /* FixtureLoading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureLoading.swift; sourceTree = "<group>"; };
 		30A33C79C70F2F28FB91F680 /* TeamSnapshotMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSnapshotMapper.swift; sourceTree = "<group>"; };
 		324A96001AEB67B20E09794B /* SupabaseDepthRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseDepthRepository.swift; sourceTree = "<group>"; };
 		3757D55E58A34FC37F1E6C19 /* Roster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Roster.swift; sourceTree = "<group>"; };
+		3C89B84763FF4CDE45B5A7D9 /* ScheduleFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleFeatureTests.swift; sourceTree = "<group>"; };
 		3EF23A4738905D53A9740E41 /* UpdateGateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateGateViewModel.swift; sourceTree = "<group>"; };
 		4163276566B599870A6F754E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		46B2552D4A053BA192766213 /* TeamSnapshotMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSnapshotMapperTests.swift; sourceTree = "<group>"; };
@@ -98,6 +106,7 @@
 		51E315FD7379710252D46B96 /* OverrideEditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverrideEditorViewModel.swift; sourceTree = "<group>"; };
 		541B596A222BBAA528EB2458 /* FormationSlot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormationSlot.swift; sourceTree = "<group>"; };
 		6552F9CA65DF43159FA618D0 /* SupabaseRLSIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseRLSIntegrationTests.swift; sourceTree = "<group>"; };
+		67F2F20D10A0081AA2EF11B8 /* ScheduleDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleDTO.swift; sourceTree = "<group>"; };
 		718497F1FE3079352CB07880 /* DepthOverrideService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthOverrideService.swift; sourceTree = "<group>"; };
 		750C8A0A5BB67EDAFD2A1A97 /* AccountDeletionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDeletionSheet.swift; sourceTree = "<group>"; };
 		7518E7BCF106B235BF6CB349 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
@@ -112,6 +121,7 @@
 		A7F3CD595D63F3FD0998CD65 /* AuthFlowViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthFlowViewModel.swift; sourceTree = "<group>"; };
 		A908CA33DBCD1775825E5B8D /* DepthTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DepthTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB35D08E30FEA6E565452307 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
+		AD908EA6E702771824EF1659 /* ScheduleMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleMapper.swift; sourceTree = "<group>"; };
 		ADAF14C6ADEF3A0B809897F9 /* CachingDepthRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingDepthRepositoryTests.swift; sourceTree = "<group>"; };
 		AE2CDFAE59D2F55DFD495B79 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		AFE9E3629D2A8EF20465A2F7 /* AuthUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthUITests.swift; sourceTree = "<group>"; };
@@ -121,9 +131,11 @@
 		BBA198C4CAB3B2E7EFB862E6 /* TeamListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamListViewModel.swift; sourceTree = "<group>"; };
 		BC02FC1D8BC116C2D077870D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		BD58C5053B074511EA4E2608 /* CachedSnapshotModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedSnapshotModels.swift; sourceTree = "<group>"; };
+		BE03AF4D1E15ED94B758ADBE /* TeamSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSchedule.swift; sourceTree = "<group>"; };
 		C62ABB8FA352722CEF133910 /* FormationsParityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormationsParityTests.swift; sourceTree = "<group>"; };
 		C639766327FBE3B5E14D722F /* PlayerDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerDetailView.swift; sourceTree = "<group>"; };
 		C97FD1B3B972D4063D8A72A2 /* DepthAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthAuthService.swift; sourceTree = "<group>"; };
+		D8FC6EE7ED8FF20B422D809B /* ScheduleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleViewModel.swift; sourceTree = "<group>"; };
 		E1198A75270838E0A7F45ABE /* UserPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPreferences.swift; sourceTree = "<group>"; };
 		E235B4DBA71FCAE9FC954FF4 /* AuthSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSessionStore.swift; sourceTree = "<group>"; };
 		E5A218C128DC97B0923883AE /* Depth.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Depth.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -159,6 +171,7 @@
 			isa = PBXGroup;
 			children = (
 				3FC1C621C3B3BC1D3F14BEF1 /* Auth */,
+				CB261C562DD1AE80756810D1 /* Schedule */,
 				8F7A4807540E2189303A995B /* Settings */,
 				6149DF990977A37709D927F2 /* TeamDetail */,
 				E4D07C3AE82632AA5B701036 /* Teams */,
@@ -177,6 +190,7 @@
 				9F022703396305729D075AA5 /* Position.swift */,
 				3757D55E58A34FC37F1E6C19 /* Roster.swift */,
 				48FA4E18037077277DE72192 /* Team.swift */,
+				BE03AF4D1E15ED94B758ADBE /* TeamSchedule.swift */,
 			);
 			path = Domain;
 			sourceTree = "<group>";
@@ -221,6 +235,8 @@
 				4F264CCAAD3DD2BD01CFF1D9 /* CachingDepthRepository.swift */,
 				A3FAC7E6A6D97F9DB462C939 /* DepthError.swift */,
 				47FCC4475C04D0057618A6FE /* DepthRepository.swift */,
+				67F2F20D10A0081AA2EF11B8 /* ScheduleDTO.swift */,
+				AD908EA6E702771824EF1659 /* ScheduleMapper.swift */,
 				324A96001AEB67B20E09794B /* SupabaseDepthRepository.swift */,
 				7C4D96EE256B7056FA88238F /* TeamSnapshotDTO.swift */,
 				30A33C79C70F2F28FB91F680 /* TeamSnapshotMapper.swift */,
@@ -260,6 +276,7 @@
 				29F97862C18E5EAD7104430A /* FixtureLoading.swift */,
 				C62ABB8FA352722CEF133910 /* FormationsParityTests.swift */,
 				78EB3744AA605C27F09EC8EB /* NativeAuthIntegrationTests.swift */,
+				3C89B84763FF4CDE45B5A7D9 /* ScheduleFeatureTests.swift */,
 				6552F9CA65DF43159FA618D0 /* SupabaseRLSIntegrationTests.swift */,
 				46B2552D4A053BA192766213 /* TeamSnapshotMapperTests.swift */,
 			);
@@ -308,6 +325,15 @@
 				64C07E06AA68A7BC0BA99F56 /* xcconfig */,
 				D50C68333AF9B3FCCE8541AC /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		CB261C562DD1AE80756810D1 /* Schedule */ = {
+			isa = PBXGroup;
+			children = (
+				1F8DBF3EB4D70F6DF2E44420 /* ScheduleView.swift */,
+				D8FC6EE7ED8FF20B422D809B /* ScheduleViewModel.swift */,
+			);
+			path = Schedule;
 			sourceTree = "<group>";
 		};
 		D50C68333AF9B3FCCE8541AC /* Products */ = {
@@ -460,6 +486,7 @@
 				88BE6ACCCEDA76C1CBB97025 /* FixtureLoading.swift in Sources */,
 				7C5132BAE9E0A0D27086FBD3 /* FormationsParityTests.swift in Sources */,
 				4FFF76CE7A865150A0929EF3 /* NativeAuthIntegrationTests.swift in Sources */,
+				028DB6758D8847C5EBD21D3C /* ScheduleFeatureTests.swift in Sources */,
 				A71200F26409705F92CA14E8 /* SupabaseRLSIntegrationTests.swift in Sources */,
 				549264E5E1E69E023D91CD6A /* TeamSnapshotMapperTests.swift in Sources */,
 			);
@@ -495,6 +522,10 @@
 				164B2254852E6C1428CD8181 /* PlayerDetailView.swift in Sources */,
 				DEA6657C52F2D9ACB38F070D /* Position.swift in Sources */,
 				F9B69E26A9D64D62D14A4349 /* Roster.swift in Sources */,
+				B333D97107732F3B32800053 /* ScheduleDTO.swift in Sources */,
+				7DBE8842FD1DEC8D017AABB1 /* ScheduleMapper.swift in Sources */,
+				6F9514F25DCF231B32CB5E66 /* ScheduleView.swift in Sources */,
+				16168662B8CF4E7B450CA34B /* ScheduleViewModel.swift in Sources */,
 				BF92CF2CE4CF9FE16C7E3CE6 /* SettingsView.swift in Sources */,
 				5AB8FFDF7A29877D1E98EC94 /* SupabaseDepthRepository.swift in Sources */,
 				A76DE210A4F5A111AEA3C45C /* Team.swift in Sources */,
@@ -502,6 +533,7 @@
 				D028D091F525E2DDCA7ED6CD /* TeamDetailViewModel.swift in Sources */,
 				FF338B862BDF1825AA91B360 /* TeamListView.swift in Sources */,
 				96EE9CC19DC42FC68DEB9F90 /* TeamListViewModel.swift in Sources */,
+				66F6BBAF1B3D78957CB02C09 /* TeamSchedule.swift in Sources */,
 				F24DC74F4E029AF45C2E80B7 /* TeamSnapshotDTO.swift in Sources */,
 				D448FF5EA6F5184AD7517AA3 /* TeamSnapshotMapper.swift in Sources */,
 				2D9BA1094A1074B3FF3A9B9A /* UpdateGateViewModel.swift in Sources */,
