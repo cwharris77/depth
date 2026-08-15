@@ -17,14 +17,35 @@ import Testing
 // (no write policy exists), and service-role bypasses RLS entirely for both.
 
 private enum LocalSupabase {
-    // Local-only demo keys `supabase start` prints — stable across every local Supabase
-    // project by default, valid only against 127.0.0.1:54321. Never used outside these
-    // integration tests; never a real credential.
+    // The anon/publishable key is meant to be public — safe to commit, same as
+    // ios/xcconfig's SUPABASE_PUBLISHABLE_KEY. Local-only demo value `supabase start`
+    // prints, stable across every local Supabase project by default.
     static let url = URL(string: "http://127.0.0.1:54321")!
     static let anonKey =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
-    static let serviceRoleKey =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"
+
+    // The service-role key is never committed, even a well-known local-only default —
+    // CLAUDE.md's blanket rule ("never commit a service-role key") has no local-vs-prod
+    // carve-out, and a token that *looks* like a real service-role JWT defeats the point
+    // of that rule for anyone scanning history later. `xcodebuild test` does not forward
+    // host shell environment variables (or `SIMCTL_CHILD_*`) into the simulator test
+    // process, so — same pattern as DepthTests/FixtureLoading.swift — this reads a
+    // gitignored local file instead: create `ios/.local-service-role-key` (repo root of
+    // `ios/`) with the value from `supabase status`, one line, no trailing newline.
+    static func serviceRoleKey() throws -> String {
+        let fileURL = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent() // DepthTests/
+            .deletingLastPathComponent() // ios/
+            .appendingPathComponent(".local-service-role-key")
+        guard let key = try? String(contentsOf: fileURL, encoding: .utf8)
+            .trimmingCharacters(in: .whitespacesAndNewlines), !key.isEmpty
+        else {
+            throw DepthError.validation(
+                "Create ios/.local-service-role-key (gitignored) with the value from `supabase status` before running this suite."
+            )
+        }
+        return key
+    }
 
     // Each call gets its own Keychain storage key. SupabaseClient's default Auth storage
     // is a *shared* Keychain entry across every client instance in the process — without
@@ -89,20 +110,29 @@ private enum LocalSupabase {
 
 // Service-role actor — bypasses RLS entirely (used only by ingestion, never the app).
 @Test func serviceRoleCanReadAndWrite() async throws {
-    let client = LocalSupabase.client(key: LocalSupabase.serviceRoleKey)
+    let client = LocalSupabase.client(key: try LocalSupabase.serviceRoleKey())
     let repository = SupabaseDepthRepository(client: client)
     let snapshot = try await repository.teamSnapshot(teamId: "bills")
     #expect(snapshot.team.id == "bills")
 
-    // Round-trip a real write to prove bypass, then restore the original value —
-    // never leave seed data mutated for other tests/local dev use.
+    // Round-trip a real write to prove bypass. `defer` can't run async code, so the
+    // restore is done in both the success and failure path of this do/catch instead of
+    // sequentially after the assertion — the original version restored only after
+    // `#expect`, which would have skipped it entirely had the write itself thrown,
+    // leaving the shared seed row permanently renamed for every other test/local dev
+    // session (caught in review, depth#352).
     let original = snapshot.team.name
     struct NameOnly: Decodable, Equatable { let id: String; let name: String }
-    let writeResponse: [NameOnly] = try await client.from("teams")
-        .update(["name": "RLS Test Write"]).eq("id", value: "bills")
-        .select("id, name").execute().value
-    #expect(writeResponse == [NameOnly(id: "bills", name: "RLS Test Write")])
-    try await client.from("teams").update(["name": original]).eq("id", value: "bills").execute()
+    do {
+        let writeResponse: [NameOnly] = try await client.from("teams")
+            .update(["name": "RLS Test Write"]).eq("id", value: "bills")
+            .select("id, name").execute().value
+        try await client.from("teams").update(["name": original]).eq("id", value: "bills").execute()
+        #expect(writeResponse == [NameOnly(id: "bills", name: "RLS Test Write")])
+    } catch {
+        try? await client.from("teams").update(["name": original]).eq("id", value: "bills").execute()
+        throw error
+    }
 }
 
 // Not-found actor-independent behavior — confirms DepthError.notFound, not a crash or a
