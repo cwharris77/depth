@@ -1,65 +1,74 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST } from './route';
-import { requireUser } from '@/lib/supabase/server';
-import { getAdminClient } from '@/lib/supabase/admin';
+import { getServerClient } from '@/lib/supabase/server';
 
 vi.mock('@/lib/supabase/server', () => ({
-  requireUser: vi.fn(),
+  getServerClient: vi.fn(),
 }));
-vi.mock('@/lib/supabase/admin', () => ({
-  getAdminClient: vi.fn(),
+vi.mock('@/lib/utils/env', () => ({
+  getSupabaseUrl: () => 'https://example.supabase.co',
+  getSupabaseAnonKey: () => 'publishable-key',
 }));
 
-function mockSignedIn() {
-  vi.mocked(requireUser).mockResolvedValue({ id: 'u1' } as Awaited<ReturnType<typeof requireUser>>);
+function mockSession(accessToken: string | null) {
+  vi.mocked(getServerClient).mockResolvedValue({
+    auth: {
+      getSession: vi.fn(async () => ({
+        data: { session: accessToken ? { access_token: accessToken } : null },
+        error: null,
+      })),
+    },
+  } as unknown as Awaited<ReturnType<typeof getServerClient>>);
 }
 
-function mockAdminClient(deleteUser: ReturnType<typeof vi.fn>) {
-  const client = { auth: { admin: { deleteUser } } };
-  vi.mocked(getAdminClient).mockReturnValue(client as unknown as ReturnType<typeof getAdminClient>);
-  return client;
-}
-
-beforeEach(() => vi.resetAllMocks());
+beforeEach(() => {
+  vi.resetAllMocks();
+  vi.unstubAllGlobals();
+});
 
 describe('POST /api/account/delete', () => {
   it('401s when signed out', async () => {
-    vi.mocked(requireUser).mockResolvedValue(null);
+    mockSession(null);
     const res = await POST();
     expect(res.status).toBe(401);
   });
 
-  it('500s with JSON when requireUser() itself throws, not an unhandled error', async () => {
-    vi.mocked(requireUser).mockRejectedValue(new Error('network error'));
-    const res = await POST();
-    expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: 'read failed' });
-  });
-
-  it('500s with JSON when the secret-key env is missing instead of throwing', async () => {
-    mockSignedIn();
-    vi.mocked(getAdminClient).mockImplementation(() => {
-      throw new Error('Missing required environment variable: SUPABASE_SECRET_KEY');
-    });
+  it('500s with JSON when session lookup throws, not an unhandled error', async () => {
+    vi.mocked(getServerClient).mockRejectedValue(new Error('network error'));
     const res = await POST();
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({ error: 'delete failed' });
   });
 
-  it('500s when the admin client reports a delete error', async () => {
-    mockSignedIn();
-    mockAdminClient(vi.fn(async () => ({ error: { message: 'user not found' } })));
+  it('forwards a fresh-OTP denial and correlation-safe response from the function', async () => {
+    mockSession('user-jwt');
+    const request = vi.fn(async () =>
+      Response.json({ error: 'fresh_otp_required' }, { status: 403 })
+    );
+    vi.stubGlobal('fetch', request);
     const res = await POST();
-    expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: 'delete failed' });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'fresh_otp_required' });
+    expect(request).toHaveBeenCalledWith(
+      'https://example.supabase.co/functions/v1/account-delete',
+      expect.objectContaining({
+        method: 'POST',
+        headers: {
+          apikey: 'publishable-key',
+          authorization: 'Bearer user-jwt',
+        },
+      })
+    );
   });
 
-  it('200s when the deletion succeeds', async () => {
-    mockSignedIn();
-    const admin = mockAdminClient(vi.fn(async () => ({ error: null })));
+  it('200s only when the fresh-OTP function confirms deletion', async () => {
+    mockSession('fresh-user-jwt');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Response.json({ ok: true }))
+    );
     const res = await POST();
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
-    expect(admin.auth.admin.deleteUser).toHaveBeenCalledWith('u1');
   });
 });

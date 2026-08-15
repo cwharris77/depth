@@ -1,26 +1,31 @@
-// Account deletion (Phase C, P0 App Store requirement). Deletes the auth.users row via the
-// service-role admin client; user_settings, depth_overrides, and shared_boards all have
-// `on delete cascade` FKs to auth.users (see supabase/migrations), so no per-table cleanup
-// is needed here.
-import { NextResponse } from 'next/server';
-import { requireUser } from '@/lib/supabase/server';
-import { getAdminClient } from '@/lib/supabase/admin';
+// Rollback-window compatibility adapter for account deletion. The web client proxies its
+// signed-in JWT to the same fresh-OTP Edge Function as native iOS so no legacy route can
+// bypass the destructive-action reauthentication boundary.
+import { getServerClient } from '@/lib/supabase/server';
+import { getSupabaseAnonKey, getSupabaseUrl } from '@/lib/utils/env';
 
 export async function POST() {
-  let user;
   try {
-    user = await requireUser();
-  } catch {
-    return NextResponse.json({ error: 'read failed' }, { status: 500 });
-  }
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
+    const supabase = await getServerClient();
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+    if (error) throw error;
+    if (!session) return Response.json({ error: 'unauthenticated' }, { status: 401 });
 
-  try {
-    const { error } = await getAdminClient().auth.admin.deleteUser(user.id);
-    if (error) return NextResponse.json({ error: 'delete failed' }, { status: 500 });
+    const response = await fetch(`${getSupabaseUrl()}/functions/v1/account-delete`, {
+      method: 'POST',
+      headers: {
+        apikey: getSupabaseAnonKey(),
+        authorization: `Bearer ${session.access_token}`,
+      },
+    });
+    return new Response(response.body, {
+      status: response.status,
+      headers: { 'content-type': response.headers.get('content-type') ?? 'application/json' },
+    });
   } catch {
-    return NextResponse.json({ error: 'delete failed' }, { status: 500 });
+    return Response.json({ error: 'delete failed' }, { status: 500 });
   }
-
-  return NextResponse.json({ ok: true });
 }
