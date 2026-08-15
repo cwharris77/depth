@@ -31,6 +31,12 @@ actor CachedSnapshotStore {
     }
 
     func teamSnapshot(teamId: String) throws -> TeamSnapshot? {
+        // Signpost interval around the SwiftData cache read transaction (Performance
+        // Review #5's "cache transaction" budget — this is the fast, warm-cache path
+        // the <1s "warm cached content" budget targets).
+        let signpostID = DepthSignposts.signposter.makeSignpostID()
+        let state = DepthSignposts.signposter.beginInterval(DepthSignposts.teamSnapshotCacheTransaction, id: signpostID)
+        defer { DepthSignposts.signposter.endInterval(DepthSignposts.teamSnapshotCacheTransaction, state) }
         guard let row = try validSnapshotRow(teamId: teamId) else { return nil }
         // Row passed the version check in validSnapshotRow — decode it for real here
         // (validSnapshotRow only trial-decodes to validate, it doesn't return the value,
@@ -63,6 +69,11 @@ actor CachedSnapshotStore {
     }
 
     func saveTeamSnapshot(_ snapshot: TeamSnapshot, teamId: String, cachedAt: Date) throws {
+        // Same cache-transaction signpost interval as the read path above, covering the
+        // write side (initial network-primed save + background-refresh overwrite).
+        let signpostID = DepthSignposts.signposter.makeSignpostID()
+        let state = DepthSignposts.signposter.beginInterval(DepthSignposts.teamSnapshotCacheTransaction, id: signpostID)
+        defer { DepthSignposts.signposter.endInterval(DepthSignposts.teamSnapshotCacheTransaction, state) }
         let payload = try JSONEncoder().encode(snapshot)
         var descriptor = FetchDescriptor<CachedTeamSnapshot>(predicate: #Predicate { $0.teamId == teamId })
         descriptor.fetchLimit = 1

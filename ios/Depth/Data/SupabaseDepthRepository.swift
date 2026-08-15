@@ -25,6 +25,11 @@ actor SupabaseDepthRepository: DepthRepository {
         """
 
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot {
+        // Signpost interval around the network query + JSON decode (Performance Review
+        // #5/#6's "query, decode" budget: p95 <1.5s good Wi-Fi, <3s constrained).
+        let signpostID = DepthSignposts.signposter.makeSignpostID()
+        let state = DepthSignposts.signposter.beginInterval(DepthSignposts.teamSnapshotQuery, id: signpostID)
+        defer { DepthSignposts.signposter.endInterval(DepthSignposts.teamSnapshotQuery, state) }
         do {
             let dto: TeamDTO = try await client
                 .from("teams")
