@@ -2,8 +2,8 @@ import SwiftUI
 
 // Team depth chart — offense/defense/special-teams sections over one cached/refreshed
 // `TeamSnapshot` (design spec Milestone 1 item 16). Restores the last-viewed section via
-// `UserPreferences.lastUnit` and persists it on change, same pattern as the team-list
-// restoration in TeamListView.
+// `UserPreferences.lastUnit` and persists it on change, same pattern as the last-team
+// restoration in DepthChartsTab.
 struct TeamDetailView: View {
     @State private var viewModel: TeamDetailViewModel
     @State private var unit: Unit
@@ -20,6 +20,10 @@ struct TeamDetailView: View {
     private let authService: any DepthAuthServicing
     private let overrideService: any DepthOverrideServicing
     private let events: any AppEventsRecording
+    /// Opens the team switcher. Required, not optional: `DepthChartsTab` is the only
+    /// place this view is constructed now that it is a tab's stack root rather than a
+    /// pushed destination, so an unset case would be dead code.
+    private let onOpenTeamSwitcher: () -> Void
     @State private var historyViewModel: HistoryViewModel
 
     init(
@@ -29,7 +33,8 @@ struct TeamDetailView: View {
         sessionStore: AuthSessionStore,
         authService: any DepthAuthServicing,
         overrideService: any DepthOverrideServicing,
-        events: any AppEventsRecording = NoOpAppEventsRecorder()
+        events: any AppEventsRecording = NoOpAppEventsRecorder(),
+        onOpenTeamSwitcher: @escaping () -> Void
     ) {
         _viewModel = State(initialValue: viewModel)
         self.repository = repository
@@ -38,13 +43,18 @@ struct TeamDetailView: View {
         self.authService = authService
         self.overrideService = overrideService
         self.events = events
+        self.onOpenTeamSwitcher = onOpenTeamSwitcher
         _unit = State(initialValue: preferences.lastUnit ?? .offense)
         _historyViewModel = State(initialValue: HistoryViewModel(teamId: viewModel.teamId, repository: repository))
     }
 
+    private var navigationTitleText: String {
+        viewModel.snapshot.map { "\($0.team.city) \($0.team.name)" } ?? "Team"
+    }
+
     var body: some View {
         content
-            .navigationTitle(viewModel.snapshot.map { "\($0.team.city) \($0.team.name)" } ?? "Team")
+            .navigationTitle(navigationTitleText)
             .navigationBarTitleDisplayMode(.inline)
             .task {
                 await viewModel.load()
@@ -68,6 +78,21 @@ struct TeamDetailView: View {
                 }
             }
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Button(action: onOpenTeamSwitcher) {
+                        HStack(spacing: 4) {
+                            Text(navigationTitleText)
+                                .font(.headline)
+                            Image(systemName: "chevron.down")
+                                .font(.caption2.weight(.bold))
+                        }
+                    }
+                    .frame(minHeight: 44)
+                    .accessibilityIdentifier("team-switcher-button")
+                    .accessibilityLabel("\(navigationTitleText), change team")
+                    .accessibilityHint("Opens the team switcher")
+                }
+
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button("History", systemImage: "clock.arrow.circlepath") { showHistory = true }
                         .frame(minWidth: 44, minHeight: 44)
@@ -102,6 +127,12 @@ struct TeamDetailView: View {
             .sheet(item: $selectedPlayer) { player in
                 PlayerDetailView(player: player, team: displayedSnapshot?.team, repository: repository)
                     .id(player.id)
+                    // `.sheet()` content gets a fresh UITraitCollection rather than
+                    // inheriting ContentView's UI_TESTING_DYNAMIC_TYPE override — see
+                    // that modifier's doc comment. Re-applied here so
+                    // `PlayerDetailView`'s accessibility-size header stacking (T10) is
+                    // actually driven by the override in both real use and tests.
+                    .modifier(UITestingDynamicTypeOverride())
             }
             .sheet(isPresented: $showHistory) {
                 HistorySeasonSheet(

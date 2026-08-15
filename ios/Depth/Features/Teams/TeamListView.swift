@@ -1,73 +1,34 @@
 import SwiftUI
 
-// The app's root screen — searchable 32-team list → team detail (design spec Milestone
-// 1 item 16: "searchable team list → team depth chart → basic player detail"). Owns the
-// NavigationStack path so it can restore the last-viewed team on relaunch (item 16's
-// restoration requirement) by pushing it once the list has loaded.
+// The searchable 32-team list. This used to be the app's root screen; as of the
+// 2026-08-15 navigation-parity spec (locked decision #5) it is the *content of the team
+// switcher sheet* instead — "the list stops being a place you are and becomes a control
+// you use". It therefore owns no NavigationStack, no navigation destination, and no
+// last-team restoration: the enclosing TeamSwitcherSheet supplies the stack and chrome,
+// and DepthChartsTab owns which team is current. Selection is a callback, not a push.
 struct TeamListView: View {
     @State private var viewModel: TeamListViewModel
-    @State private var path: [String] = []
-    @State private var didRestore = false
 
-    private let repository: CachingDepthRepository
-    private let preferences: UserPreferences
-    private let sessionStore: AuthSessionStore
-    private let authService: any DepthAuthServicing
-    private let overrideService: any DepthOverrideServicing
-    private let events: any AppEventsRecording
+    /// Highlighted with a checkmark so the sheet shows where you are, matching the web
+    /// switcher's current-team affordance.
+    private let selectedTeamId: String
+    private let onSelect: (String) -> Void
 
     init(
         repository: CachingDepthRepository,
-        preferences: UserPreferences,
-        sessionStore: AuthSessionStore,
-        authService: any DepthAuthServicing,
-        overrideService: any DepthOverrideServicing,
-        events: any AppEventsRecording = NoOpAppEventsRecorder()
+        events: any AppEventsRecording = NoOpAppEventsRecorder(),
+        selectedTeamId: String,
+        onSelect: @escaping (String) -> Void
     ) {
-        self.repository = repository
-        self.preferences = preferences
-        self.sessionStore = sessionStore
-        self.authService = authService
-        self.overrideService = overrideService
-        self.events = events
+        self.selectedTeamId = selectedTeamId
+        self.onSelect = onSelect
         _viewModel = State(initialValue: TeamListViewModel(repository: repository, events: events))
     }
 
     var body: some View {
-        NavigationStack(path: $path) {
-            content
-                .navigationTitle("Depth")
-                .searchable(text: $viewModel.searchText, prompt: "Search teams")
-                .navigationDestination(for: String.self) { teamId in
-                    TeamDetailView(
-                        viewModel: TeamDetailViewModel(teamId: teamId, repository: repository, events: events),
-                        repository: repository,
-                        preferences: preferences,
-                        sessionStore: sessionStore,
-                        authService: authService,
-                        overrideService: overrideService,
-                        events: events
-                    )
-                }
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        AccountSettingsButton(
-                            sessionStore: sessionStore,
-                            authService: authService,
-                            dataSavedAt: viewModel.cachedAt,
-                            events: events
-                        )
-                    }
-                }
-        }
-        .task { await viewModel.load() }
-        .onChange(of: viewModel.loadState) { _, newValue in
-            guard newValue == .loaded else { return }
-            restoreLastTeamIfNeeded()
-        }
-        .onChange(of: path) { _, newPath in
-            preferences.lastTeamId = newPath.last
-        }
+        content
+            .searchable(text: $viewModel.searchText, prompt: "Search teams")
+            .task { await viewModel.load() }
     }
 
     @ViewBuilder
@@ -104,24 +65,26 @@ struct TeamListView: View {
                 }
             } else {
                 List(viewModel.filteredTeams) { team in
-                    NavigationLink(value: team.id) {
-                        TeamRow(team: team)
+                    Button {
+                        onSelect(team.id)
+                    } label: {
+                        HStack {
+                            TeamRow(team: team)
+                            Spacer()
+                            if team.id == selectedTeamId {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(.tint)
+                                    .accessibilityHidden(true)
+                            }
+                        }
                     }
+                    .buttonStyle(.plain)
                     .accessibilityIdentifier("team-row-\(team.id)")
                 }
                 .listStyle(.plain)
                 .refreshable { await viewModel.load() }
             }
         }
-    }
-
-    private func restoreLastTeamIfNeeded() {
-        guard !didRestore else { return }
-        didRestore = true
-        guard path.isEmpty, let lastTeamId = preferences.lastTeamId,
-            viewModel.teams.contains(where: { $0.id == lastTeamId })
-        else { return }
-        path = [lastTeamId]
     }
 }
 

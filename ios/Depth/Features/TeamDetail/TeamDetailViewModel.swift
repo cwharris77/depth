@@ -47,6 +47,12 @@ final class TeamDetailViewModel {
             snapshot = result
             cachedAt = await repository.teamSnapshotCachedAt(teamId: teamId)
             loadState = .loaded
+            // Closes the app-launch signpost on the first screen with real, user-visible
+            // content. As of the 2026-08-15 navigation-parity change that is this depth
+            // chart — the launch destination — not the team list, which now only loads
+            // when the switcher sheet is opened. No-op on every later load (background
+            // refresh, pull-to-refresh, team switch).
+            DepthSignposts.endAppLaunchIfNeeded()
             // Fires once per team-detail visit, on the first successful resolve —
             // not on every 15-minute background/pull-to-refresh reload, which would
             // inflate the "reached a depth chart" funnel step (design spec Milestone

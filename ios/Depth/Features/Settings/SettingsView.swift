@@ -10,13 +10,16 @@ import SwiftUI
 // no real production domain/support contact exists yet (T1/Gate 0 is still open), and
 // guessing a placeholder URL/email is worse than omitting the row.
 struct SettingsView: View {
-    @Environment(\.dismiss) private var dismiss
     @Bindable var sessionStore: AuthSessionStore
 
     let authService: any DepthAuthServicing
-    /// The team list's on-device cache timestamp — passed down from `TeamListViewModel`
-    /// (already loaded by the time Settings can be reached) rather than re-fetched here.
+    /// The team list's on-device cache timestamp, supplied by `AccountTab`.
     let dataSavedAt: Date?
+    /// True while `AccountTab` is still reading the timestamp. Account is now reachable
+    /// at launch, so this section can render before the value exists — without this the
+    /// Data row would show its "no saved data" fallback and then jump to a real date
+    /// (AGENTS.md mistake #16). It renders a redacted placeholder instead.
+    var dataSavedAtLoading: Bool = false
     var events: any AppEventsRecording = NoOpAppEventsRecorder()
     var clearPrivateData: @Sendable () async -> Void = {}
 
@@ -61,8 +64,14 @@ struct SettingsView: View {
                 }
 
                 Section("Data") {
-                    SavedOnDeviceLabel(cachedAt: dataSavedAt)
-                        .accessibilityIdentifier("settings-data-saved-at")
+                    if dataSavedAtLoading {
+                        SavedOnDeviceLabel(cachedAt: Date())
+                            .redacted(reason: .placeholder)
+                            .accessibilityHidden(true)
+                    } else {
+                        SavedOnDeviceLabel(cachedAt: dataSavedAt)
+                            .accessibilityIdentifier("settings-data-saved-at")
+                    }
                     Text(DataTimestamp.explanation)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
@@ -70,11 +79,6 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
         }
         .sheet(isPresented: $showAuth) {
             AuthSheet(service: authService, sessionStore: sessionStore, events: events)
@@ -102,34 +106,6 @@ struct SettingsView: View {
             signOutError = error
         } catch {
             signOutError = .server
-        }
-    }
-}
-
-// Drop-in navigation-toolbar entry point. Keeping presentation in Settings/ lets the
-// team-list and team-detail features opt in without owning auth state or Supabase calls.
-struct AccountSettingsButton: View {
-    @State private var showSettings = false
-
-    let sessionStore: AuthSessionStore
-    let authService: any DepthAuthServicing
-    let dataSavedAt: Date?
-    var events: any AppEventsRecording = NoOpAppEventsRecorder()
-    var clearPrivateData: @Sendable () async -> Void = {}
-
-    var body: some View {
-        Button("Settings", systemImage: "gearshape") {
-            showSettings = true
-        }
-        .accessibilityIdentifier("settings-button")
-        .sheet(isPresented: $showSettings) {
-            SettingsView(
-                sessionStore: sessionStore,
-                authService: authService,
-                dataSavedAt: dataSavedAt,
-                events: events,
-                clearPrivateData: clearPrivateData
-            )
         }
     }
 }

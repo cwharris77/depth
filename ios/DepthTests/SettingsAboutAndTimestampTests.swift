@@ -5,8 +5,9 @@ import Testing
 @testable import Depth
 
 // Task 8D coverage: About-section version/build formatting, the "Saved on this device"
-// timestamp copy (Settings' Data section and the team-detail banner), and the two view
-// models that capture the underlying cache timestamps. See
+// timestamp copy (Settings' Data section and the team-detail banner), and
+// `TeamDetailViewModel`'s capture of the underlying cache timestamp (used for
+// staleness tracking). See
 // `.superpowers/sdd/2026-08-14-native-ios-app/task-8d-settings-about-timestamps-brief.md`.
 
 @Test func versionAndBuildFormatsBothPresentValues() {
@@ -84,31 +85,6 @@ private func team(id: String = "bills") -> Team {
 
 private func snapshot(teamId: String = "bills") -> TeamSnapshot {
     TeamSnapshot(team: team(id: teamId), players: [], specialTeams: [], uniforms: [])
-}
-
-@Test @MainActor func teamListViewModelCapturesCachedAtOnlyAfterAValidLoad() async {
-    let underlying = FakeDepthRepository(teamsResult: .success([team()]))
-    let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
-    let model = TeamListViewModel(repository: repository)
-
-    #expect(model.cachedAt == nil)
-    await model.load()
-    #expect(model.cachedAt != nil)
-}
-
-@Test @MainActor func teamListViewModelLeavesCachedAtUnsetAfterAFailedLoad() async {
-    let underlying = FakeDepthRepository(teamsResult: .failure(DepthError.offline))
-    let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
-    let model = TeamListViewModel(repository: repository)
-
-    await model.load()
-
-    #expect(model.cachedAt == nil)
-    if case .failed = model.loadState {
-        // expected
-    } else {
-        Issue.record("expected a failed load state")
-    }
 }
 
 @Test @MainActor func teamDetailViewModelCapturesCachedAtAndTracksStaleness() async {

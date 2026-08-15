@@ -15,23 +15,20 @@ enum DepthSignposts {
 
     static let signposter = OSSignposter(subsystem: subsystem, category: category)
 
-    /// App init → first useful render. There is no dedicated "chart visible" event in
-    /// the current UI structure, so this closes on the team list's first successful
-    /// load (`TeamListViewModel.load()`) — the earliest screen with real, user-visible
-    /// content, and the gate every other screen (including the depth chart) renders
-    /// behind on cold start.
+    /// App init → first useful render, closed by `TeamDetailViewModel.load()` on its
+    /// first successful load: the depth chart is the launch destination (2026-08-15
+    /// navigation-parity spec), so it is now both the first screen with real content and
+    /// the gate the rest of the app renders behind. This interval therefore includes
+    /// startup-team resolution, which is a pure `UserPreferences` read and adds no I/O.
     ///
     /// This closes when the data is ready, not when SwiftUI has finished committing the
     /// resulting render pass — the same "data-ready" proxy `AppEventsRecorder`'s
-    /// `depthChartReached` event already uses for its own "reached" telemetry
-    /// (`TeamDetailViewModel.load()`). A render-accurate close would need a paint-
-    /// completion hook (e.g. `.onAppear`/`CADisplayLink` on the rendered `List`) with a
-    /// SwiftUI-lifecycle dependency this signpost's other two call sites (which are
-    /// pure `Data/` layer, no view access) don't have — out of scope for this task. The
-    /// data-to-paint gap this leaves is small on the actual "first team list" case; the
-    /// XCUITest suite's regression guard (`PerformanceUITests.swift`) verifies against
-    /// an actual rendered team row appearing, not just this signpost closing, so a
-    /// budget regression is still caught even where this interval alone would look fine.
+    /// `depthChartReached` event already uses. A render-accurate close would need a
+    /// paint-completion hook with a SwiftUI-lifecycle dependency this signpost's other
+    /// two call sites (pure `Data/` layer, no view access) don't have. The XCUITest
+    /// regression guard (`PerformanceUITests.swift`) waits on an actually-rendered
+    /// player slot rather than just this interval closing, so a budget regression is
+    /// still caught where this interval alone would look fine.
     static let appLaunch: StaticString = "AppLaunchToFirstUsefulRender"
 
     /// Network query + JSON decode for one team's full snapshot
@@ -45,15 +42,15 @@ enum DepthSignposts {
     static let teamSnapshotCacheTransaction: StaticString = "TeamSnapshotCacheTransaction"
 
     /// App-launch signpost start/end happen in two different files (`DepthApp.init()`
-    /// and `TeamListViewModel.load()`) that don't otherwise share state, so the
+    /// and `TeamDetailViewModel.load()`) that don't otherwise share state, so the
     /// in-flight `OSSignpostIntervalState` has to live somewhere both can reach. Actor
     /// isolation is `@MainActor` because both call sites already run there (SwiftUI
-    /// `App.init()` and `TeamListViewModel`'s `@MainActor` isolation), which is also
+    /// `App.init()` and `TeamDetailViewModel`'s `@MainActor` isolation), which is also
     /// what Swift 6 strict concurrency requires for this shared mutable static.
     @MainActor private static var launchState: OSSignpostIntervalState?
 
-    /// No-op if already started — `TeamListViewModel.load()` can run more than once
-    /// (pull-to-refresh) but the launch interval only ever opens once per process.
+    /// No-op if already started — `TeamDetailViewModel.load()` can run more than once
+    /// (pull-to-refresh, team switch) but the launch interval only ever opens once per process.
     @MainActor static func beginAppLaunch() {
         guard launchState == nil else { return }
         launchState = signposter.beginInterval(appLaunch)

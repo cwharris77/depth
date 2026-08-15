@@ -21,28 +21,32 @@ final class AccessibilityUITests: XCTestCase {
         return app
     }
 
-    /// Height of a team row, used as the proof that a Dynamic Type override actually
-    /// landed. Without this the accessibility assertions below could all pass at default
-    /// size and prove nothing.
+    /// Height of a team row inside the team switcher sheet, used as the proof that a
+    /// Dynamic Type override actually landed. Without this the accessibility assertions
+    /// below could all pass at default size and prove nothing. The app now launches
+    /// directly into a depth chart (2026-08-15 navigation-parity spec) rather than a root
+    /// team list, so this opens the switcher and searches — it only needs the row to
+    /// exist, not to actually select a team.
     private func firstTeamRowHeight(_ app: XCUIApplication) -> CGFloat {
+        XCTAssertTrue(app.waitForDepthChart(timeout: 15), "the app should launch straight into a depth chart")
+        let switcher = app.buttons["team-switcher-button"]
+        XCTAssertTrue(switcher.waitForExistence(timeout: 15), "the depth chart header should expose the team switcher")
+        switcher.tap()
+
         let row = app.buttons["team-row-bills"]
         let searchField = app.searchFields.firstMatch
-        XCTAssertTrue(searchField.waitForExistence(timeout: 15), "team list should load")
+        XCTAssertTrue(searchField.waitForExistence(timeout: 15), "the switcher sheet should offer team search")
         searchField.tap()
         searchField.typeText("Bills")
         XCTAssertTrue(row.waitForExistence(timeout: 10), "Bills row should exist")
         return row.frame.height
     }
 
+    /// The app launches into the default team's chart; this switches to Bills via the
+    /// header switcher sheet rather than searching from a root list.
     private func openBillsDepthChart(_ app: XCUIApplication) {
-        let searchField = app.searchFields.firstMatch
-        XCTAssertTrue(searchField.waitForExistence(timeout: 10), "team list should reach a searchable loaded state")
-        searchField.tap()
-        searchField.typeText("Bills")
-
-        let teamRow = app.buttons["team-row-bills"]
-        XCTAssertTrue(teamRow.waitForExistence(timeout: 10), "searching \"Bills\" should surface the Buffalo Bills row")
-        teamRow.tap()
+        XCTAssertTrue(app.waitForDepthChart(timeout: 15), "the app should launch straight into a depth chart")
+        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
     }
 
     // Proves the override mechanism itself works, so the layout assertions below cannot
@@ -148,9 +152,14 @@ final class AccessibilityUITests: XCTestCase {
     }
 
     // The loading list hides its placeholder rows from VoiceOver; without a label on the
-    // container the whole screen would announce nothing while teams load.
+    // container the whole screen would announce nothing while teams load. The team list
+    // now lives inside the switcher sheet rather than at the app root.
     func testTeamListAnnouncesItsLoadingState() throws {
         let app = launchApp()
+        XCTAssertTrue(app.waitForDepthChart(timeout: 15), "the app should launch straight into a depth chart")
+        let switcher = app.buttons["team-switcher-button"]
+        XCTAssertTrue(switcher.waitForExistence(timeout: 15), "the depth chart header should expose the team switcher")
+        switcher.tap()
 
         let loading = app.otherElements["team-list-loading"]
         let searchField = app.searchFields.firstMatch
@@ -159,7 +168,7 @@ final class AccessibilityUITests: XCTestCase {
         if loading.waitForExistence(timeout: 2) {
             XCTAssertEqual(loading.label, "Loading teams")
         } else {
-            XCTAssertTrue(searchField.waitForExistence(timeout: 15), "the team list should reach a loaded state")
+            XCTAssertTrue(searchField.waitForExistence(timeout: 15), "the switcher sheet should reach a loaded state")
         }
     }
 }

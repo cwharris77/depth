@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		028DB6758D8847C5EBD21D3C /* ScheduleFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C89B84763FF4CDE45B5A7D9 /* ScheduleFeatureTests.swift */; };
+		0A476DD65C57C553CAA0A3AF /* UITestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A33972CBA3A43968B410F6 /* UITestHelpers.swift */; };
+		0AE16FEB0CC82155EB87714A /* DepthChartsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC28FD5A3D6B31E76BAA669 /* DepthChartsTab.swift */; };
 		0C5839F354A2C1DB41FB0D66 /* AccessibilityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15AED7FA002B19217B8B64B4 /* AccessibilityUITests.swift */; };
 		0CC455D8CA174BBB060DE8ED /* CachedSnapshotModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD58C5053B074511EA4E2608 /* CachedSnapshotModels.swift */; };
 		0F6FD5C287B8974874D6F67E /* DepthEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCEB2197DF04D84335401768 /* DepthEnvironment.swift */; };
@@ -26,6 +28,7 @@
 		4E18C9EB0333BA8628859332 /* HistoryFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D250B90FB2B6E6C1379C9B01 /* HistoryFeatureTests.swift */; };
 		4FFF76CE7A865150A0929EF3 /* NativeAuthIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78EB3744AA605C27F09EC8EB /* NativeAuthIntegrationTests.swift */; };
 		50BB531E17CF38D6FDF1C71D /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 0065E218A34DF99B5279CD03 /* Supabase */; };
+		52029FDEE87BA6779F4B144E /* StartupTeamTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954B921C7ED809C93EB75D81 /* StartupTeamTests.swift */; };
 		549264E5E1E69E023D91CD6A /* TeamSnapshotMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B2552D4A053BA192766213 /* TeamSnapshotMapperTests.swift */; };
 		5AB8FFDF7A29877D1E98EC94 /* SupabaseDepthRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 324A96001AEB67B20E09794B /* SupabaseDepthRepository.swift */; };
 		5B9538595A885E3D730A7A12 /* DepthUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1134BC81FF92C3AF1A114845 /* DepthUITests.swift */; };
@@ -34,6 +37,7 @@
 		603210A77A4D480A09C2F034 /* ShareCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8697D4C577F9758ACBA23D /* ShareCardView.swift */; };
 		61C6B9BB1A508019064A6E8C /* PerformanceMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F629F1E1AD1252D01CF8F030 /* PerformanceMetricsTests.swift */; };
 		64BB6EC2B752CD639C86321D /* DepthChartShareButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922288D41A6979441CB8E2EF /* DepthChartShareButton.swift */; };
+		662A290C858ABB616CC4F769 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF284769E046DB24841CF1E8 /* RootTabView.swift */; };
 		66F6BBAF1B3D78957CB02C09 /* TeamSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE03AF4D1E15ED94B758ADBE /* TeamSchedule.swift */; };
 		6885D42C0072D1BB6A3C8A0E /* CachedSnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0DE3824F1EEDE104DC7FDFB /* CachedSnapshotStore.swift */; };
 		6906FAA57C5B9DC926729482 /* HistorySeasonSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64ECA11ED67DB4F54B0E5CCF /* HistorySeasonSheet.swift */; };
@@ -46,10 +50,12 @@
 		7DBE8842FD1DEC8D017AABB1 /* ScheduleMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD908EA6E702771824EF1659 /* ScheduleMapper.swift */; };
 		88BE6ACCCEDA76C1CBB97025 /* FixtureLoading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29F97862C18E5EAD7104430A /* FixtureLoading.swift */; };
 		899F1EE1BC16BAD58D80C106 /* AppEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50B9DB06DE3CBD6B5F61C84 /* AppEventsTests.swift */; };
+		8B37305D22C2894A2F233F40 /* TeamSwitcherSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286DAC04287DC13BCB6A3936 /* TeamSwitcherSheet.swift */; };
 		8EEDDBFFF4D3D9EE186A3638 /* FormationSlot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 541B596A222BBAA528EB2458 /* FormationSlot.swift */; };
 		8F38AC4DC5380D3CD035AD20 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6CB4D73E208BE9903C44E15 /* ContentView.swift */; };
 		91D7BD00C341BC0A1EEE88E8 /* OverrideEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51E315FD7379710252D46B96 /* OverrideEditorViewModel.swift */; };
 		96EE9CC19DC42FC68DEB9F90 /* TeamListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA198C4CAB3B2E7EFB862E6 /* TeamListViewModel.swift */; };
+		96FB4B9FB4B2264E46677EB4 /* AccountTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5AB202504F3965C8C62D5F8 /* AccountTab.swift */; };
 		9F60A5FF883ED001520157AC /* SettingsAboutAndTimestampTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B86BB6DD9B066ECA8E654F /* SettingsAboutAndTimestampTests.swift */; };
 		A1E1EFE3A8781B7BA2758DB4 /* AuthUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFE9E3629D2A8EF20465A2F7 /* AuthUITests.swift */; };
 		A33FB64445E73B74A1AA7011 /* DepthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7971C7A65ECC4B94913325CD /* DepthTests.swift */; };
@@ -61,6 +67,7 @@
 		B04373D05283099BC265E21C /* CachingDepthRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F264CCAAD3DD2BD01CFF1D9 /* CachingDepthRepository.swift */; };
 		B333D97107732F3B32800053 /* ScheduleDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F2F20D10A0081AA2EF11B8 /* ScheduleDTO.swift */; };
 		B3C56DFCE68E85A8095083C5 /* UserPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1198A75270838E0A7F45ABE /* UserPreferences.swift */; };
+		B41D7BCD75AAF30866913BE2 /* StartupTeam.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6C33A0D7CAEFAEEEE07D8A /* StartupTeam.swift */; };
 		B7EC527E571B84DCDB819672 /* AppEventsRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E636B964C5DE055FDAD2CB44 /* AppEventsRecorder.swift */; };
 		BA3E87A82A1E0D1528ECF9D5 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 6BF366F7B2E5A4241AA22D27 /* Supabase */; };
 		BC786357DAB17986863FF90E /* DepthSignposts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0F9DA82B880B33391B6E216 /* DepthSignposts.swift */; };
@@ -83,6 +90,7 @@
 		E867C4E09655C5AF25569C6B /* DataTimestampFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B19D86049171F706874AFF7 /* DataTimestampFormatting.swift */; };
 		EA23E4310B915968F4523778 /* HistoricalRosterMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B86644C1AB56B9F8C429F7 /* HistoricalRosterMapper.swift */; };
 		EFF8B47F7B414593005AA116 /* HistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 902F5629F8D437E89953B681 /* HistoryViewModel.swift */; };
+		F0BAAFAD8DD63BF43C660855 /* CompareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F77173A1C2A8C8107538608F /* CompareView.swift */; };
 		F24DC74F4E029AF45C2E80B7 /* TeamSnapshotDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C4D96EE256B7056FA88238F /* TeamSnapshotDTO.swift */; };
 		F73EBF610767D6026A6A9852 /* AccountDeletionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750C8A0A5BB67EDAFD2A1A97 /* AccountDeletionSheet.swift */; };
 		F9B69E26A9D64D62D14A4349 /* Roster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3757D55E58A34FC37F1E6C19 /* Roster.swift */; };
@@ -117,7 +125,9 @@
 		16777E464D29CE02F612C8FD /* TeamDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamDetailView.swift; sourceTree = "<group>"; };
 		1F8DBF3EB4D70F6DF2E44420 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
 		223FADA68FC13AD96EF5FB10 /* DepthApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthApp.swift; sourceTree = "<group>"; };
+		25A33972CBA3A43968B410F6 /* UITestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestHelpers.swift; sourceTree = "<group>"; };
 		2825FB9CFC808C8C627FA025 /* OverrideEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverrideEditorSheet.swift; sourceTree = "<group>"; };
+		286DAC04287DC13BCB6A3936 /* TeamSwitcherSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSwitcherSheet.swift; sourceTree = "<group>"; };
 		29F97862C18E5EAD7104430A /* FixtureLoading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureLoading.swift; sourceTree = "<group>"; };
 		2A8697D4C577F9758ACBA23D /* ShareCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCardView.swift; sourceTree = "<group>"; };
 		30A33C79C70F2F28FB91F680 /* TeamSnapshotMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSnapshotMapper.swift; sourceTree = "<group>"; };
@@ -155,6 +165,7 @@
 		90067E10E437365481EFD0E3 /* BlockingUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingUpdateView.swift; sourceTree = "<group>"; };
 		902F5629F8D437E89953B681 /* HistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewModel.swift; sourceTree = "<group>"; };
 		922288D41A6979441CB8E2EF /* DepthChartShareButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthChartShareButton.swift; sourceTree = "<group>"; };
+		954B921C7ED809C93EB75D81 /* StartupTeamTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTeamTests.swift; sourceTree = "<group>"; };
 		9F022703396305729D075AA5 /* Position.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Position.swift; sourceTree = "<group>"; };
 		A0DE3824F1EEDE104DC7FDFB /* CachedSnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedSnapshotStore.swift; sourceTree = "<group>"; };
 		A0F9DA82B880B33391B6E216 /* DepthSignposts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthSignposts.swift; sourceTree = "<group>"; };
@@ -182,16 +193,21 @@
 		D250B90FB2B6E6C1379C9B01 /* HistoryFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryFeatureTests.swift; sourceTree = "<group>"; };
 		D4B86644C1AB56B9F8C429F7 /* HistoricalRosterMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoricalRosterMapper.swift; sourceTree = "<group>"; };
 		D8FC6EE7ED8FF20B422D809B /* ScheduleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleViewModel.swift; sourceTree = "<group>"; };
+		DCC28FD5A3D6B31E76BAA669 /* DepthChartsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthChartsTab.swift; sourceTree = "<group>"; };
+		DE6C33A0D7CAEFAEEEE07D8A /* StartupTeam.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTeam.swift; sourceTree = "<group>"; };
+		DF284769E046DB24841CF1E8 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		E1198A75270838E0A7F45ABE /* UserPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPreferences.swift; sourceTree = "<group>"; };
 		E147E349DAED0C3DFF5A965C /* ShareUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareUITests.swift; sourceTree = "<group>"; };
 		E235B4DBA71FCAE9FC954FF4 /* AuthSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSessionStore.swift; sourceTree = "<group>"; };
 		E2B86BB6DD9B066ECA8E654F /* SettingsAboutAndTimestampTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAboutAndTimestampTests.swift; sourceTree = "<group>"; };
 		E5A218C128DC97B0923883AE /* Depth.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Depth.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E5AB202504F3965C8C62D5F8 /* AccountTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountTab.swift; sourceTree = "<group>"; };
 		E636B964C5DE055FDAD2CB44 /* AppEventsRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEventsRecorder.swift; sourceTree = "<group>"; };
 		E67531979ED38F349577206E /* AuthAndSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthAndSettingsTests.swift; sourceTree = "<group>"; };
 		E6CB4D73E208BE9903C44E15 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		ED8C07254AA1A7D5B8F4DB53 /* TeamDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamDetailViewModel.swift; sourceTree = "<group>"; };
 		F629F1E1AD1252D01CF8F030 /* PerformanceMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceMetricsTests.swift; sourceTree = "<group>"; };
+		F77173A1C2A8C8107538608F /* CompareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareView.swift; sourceTree = "<group>"; };
 		F9152627F4CAC783C2C1E5E6 /* AccountDeletionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDeletionViewModel.swift; sourceTree = "<group>"; };
 		FCDC4EF2FDB8D9CC070628C2 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		FCEB2197DF04D84335401768 /* DepthEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthEnvironment.swift; sourceTree = "<group>"; };
@@ -230,6 +246,7 @@
 			isa = PBXGroup;
 			children = (
 				3FC1C621C3B3BC1D3F14BEF1 /* Auth */,
+				46AE5985DFDCD6A2592B00FF /* Compare */,
 				D822EBFE1A2A936B633F257B /* History */,
 				CB261C562DD1AE80756810D1 /* Schedule */,
 				8F7A4807540E2189303A995B /* Settings */,
@@ -253,6 +270,7 @@
 				9F022703396305729D075AA5 /* Position.swift */,
 				AB3BA3372BC4904E43F19F9A /* ReadableText.swift */,
 				3757D55E58A34FC37F1E6C19 /* Roster.swift */,
+				DE6C33A0D7CAEFAEEEE07D8A /* StartupTeam.swift */,
 				48FA4E18037077277DE72192 /* Team.swift */,
 				BE03AF4D1E15ED94B758ADBE /* TeamSchedule.swift */,
 			);
@@ -268,6 +286,14 @@
 				C97FD1B3B972D4063D8A72A2 /* DepthAuthService.swift */,
 			);
 			path = Auth;
+			sourceTree = "<group>";
+		};
+		46AE5985DFDCD6A2592B00FF /* Compare */ = {
+			isa = PBXGroup;
+			children = (
+				F77173A1C2A8C8107538608F /* CompareView.swift */,
+			);
+			path = Compare;
 			sourceTree = "<group>";
 		};
 		6149DF990977A37709D927F2 /* TeamDetail */ = {
@@ -321,6 +347,7 @@
 				1134BC81FF92C3AF1A114845 /* DepthUITests.swift */,
 				4C20C08065BC045F4A9C3C2D /* PerformanceUITests.swift */,
 				E147E349DAED0C3DFF5A965C /* ShareUITests.swift */,
+				25A33972CBA3A43968B410F6 /* UITestHelpers.swift */,
 			);
 			path = DepthUITests;
 			sourceTree = "<group>";
@@ -330,6 +357,7 @@
 			children = (
 				750C8A0A5BB67EDAFD2A1A97 /* AccountDeletionSheet.swift */,
 				F9152627F4CAC783C2C1E5E6 /* AccountDeletionViewModel.swift */,
+				E5AB202504F3965C8C62D5F8 /* AccountTab.swift */,
 				718497F1FE3079352CB07880 /* DepthOverrideService.swift */,
 				2825FB9CFC808C8C627FA025 /* OverrideEditorSheet.swift */,
 				51E315FD7379710252D46B96 /* OverrideEditorViewModel.swift */,
@@ -355,6 +383,7 @@
 				3C89B84763FF4CDE45B5A7D9 /* ScheduleFeatureTests.swift */,
 				E2B86BB6DD9B066ECA8E654F /* SettingsAboutAndTimestampTests.swift */,
 				32CF7D3E3A42BD02111EB0D6 /* ShareCardContentTests.swift */,
+				954B921C7ED809C93EB75D81 /* StartupTeamTests.swift */,
 				6552F9CA65DF43159FA618D0 /* SupabaseRLSIntegrationTests.swift */,
 				46B2552D4A053BA192766213 /* TeamSnapshotMapperTests.swift */,
 			);
@@ -393,6 +422,7 @@
 				90067E10E437365481EFD0E3 /* BlockingUpdateView.swift */,
 				E6CB4D73E208BE9903C44E15 /* ContentView.swift */,
 				223FADA68FC13AD96EF5FB10 /* DepthApp.swift */,
+				DF284769E046DB24841CF1E8 /* RootTabView.swift */,
 				3EF23A4738905D53A9740E41 /* UpdateGateViewModel.swift */,
 			);
 			path = App;
@@ -440,8 +470,10 @@
 		E4D07C3AE82632AA5B701036 /* Teams */ = {
 			isa = PBXGroup;
 			children = (
+				DCC28FD5A3D6B31E76BAA669 /* DepthChartsTab.swift */,
 				B8FF910E933BD5EBFA34FABB /* TeamListView.swift */,
 				BBA198C4CAB3B2E7EFB862E6 /* TeamListViewModel.swift */,
+				286DAC04287DC13BCB6A3936 /* TeamSwitcherSheet.swift */,
 			);
 			path = Teams;
 			sourceTree = "<group>";
@@ -585,6 +617,7 @@
 				028DB6758D8847C5EBD21D3C /* ScheduleFeatureTests.swift in Sources */,
 				9F60A5FF883ED001520157AC /* SettingsAboutAndTimestampTests.swift in Sources */,
 				BCA0AEE81DE806BB93DBCC24 /* ShareCardContentTests.swift in Sources */,
+				52029FDEE87BA6779F4B144E /* StartupTeamTests.swift in Sources */,
 				A71200F26409705F92CA14E8 /* SupabaseRLSIntegrationTests.swift in Sources */,
 				549264E5E1E69E023D91CD6A /* TeamSnapshotMapperTests.swift in Sources */,
 			);
@@ -596,6 +629,7 @@
 			files = (
 				F73EBF610767D6026A6A9852 /* AccountDeletionSheet.swift in Sources */,
 				BDC16651BCF7C07924F4DEC1 /* AccountDeletionViewModel.swift in Sources */,
+				96FB4B9FB4B2264E46677EB4 /* AccountTab.swift in Sources */,
 				D9183133755E8C0F9EE05612 /* AppBuildInfo.swift in Sources */,
 				DC95DB2C72B7E87E9FE73999 /* AppConfig.swift in Sources */,
 				B7EC527E571B84DCDB819672 /* AppEventsRecorder.swift in Sources */,
@@ -606,12 +640,14 @@
 				0CC455D8CA174BBB060DE8ED /* CachedSnapshotModels.swift in Sources */,
 				6885D42C0072D1BB6A3C8A0E /* CachedSnapshotStore.swift in Sources */,
 				B04373D05283099BC265E21C /* CachingDepthRepository.swift in Sources */,
+				F0BAAFAD8DD63BF43C660855 /* CompareView.swift in Sources */,
 				8F38AC4DC5380D3CD035AD20 /* ContentView.swift in Sources */,
 				E867C4E09655C5AF25569C6B /* DataTimestampFormatting.swift in Sources */,
 				AC65C1250448AD4BFD7E7919 /* DepthApp.swift in Sources */,
 				C11893E533C74A67E2CEA185 /* DepthAuthService.swift in Sources */,
 				1EAD5ECB38956C0395E81458 /* DepthChartFieldView.swift in Sources */,
 				64BB6EC2B752CD639C86321D /* DepthChartShareButton.swift in Sources */,
+				0AE16FEB0CC82155EB87714A /* DepthChartsTab.swift in Sources */,
 				0F6FD5C287B8974874D6F67E /* DepthEnvironment.swift in Sources */,
 				72F2A4F9ED2F188C0493D2FA /* DepthError.swift in Sources */,
 				690F6FC9B14F8370801A8F6B /* DepthOverrideService.swift in Sources */,
@@ -632,6 +668,7 @@
 				37AE06330C1CC70E67900031 /* PlayerSeasonStats.swift in Sources */,
 				DEA6657C52F2D9ACB38F070D /* Position.swift in Sources */,
 				4C9A1C617022D0DB3F8125F1 /* ReadableText.swift in Sources */,
+				662A290C858ABB616CC4F769 /* RootTabView.swift in Sources */,
 				F9B69E26A9D64D62D14A4349 /* Roster.swift in Sources */,
 				B333D97107732F3B32800053 /* ScheduleDTO.swift in Sources */,
 				7DBE8842FD1DEC8D017AABB1 /* ScheduleMapper.swift in Sources */,
@@ -639,6 +676,7 @@
 				16168662B8CF4E7B450CA34B /* ScheduleViewModel.swift in Sources */,
 				BF92CF2CE4CF9FE16C7E3CE6 /* SettingsView.swift in Sources */,
 				603210A77A4D480A09C2F034 /* ShareCardView.swift in Sources */,
+				B41D7BCD75AAF30866913BE2 /* StartupTeam.swift in Sources */,
 				5AB8FFDF7A29877D1E98EC94 /* SupabaseDepthRepository.swift in Sources */,
 				A76DE210A4F5A111AEA3C45C /* Team.swift in Sources */,
 				FCB7419B6D19F100EBF99D11 /* TeamDetailView.swift in Sources */,
@@ -648,6 +686,7 @@
 				66F6BBAF1B3D78957CB02C09 /* TeamSchedule.swift in Sources */,
 				F24DC74F4E029AF45C2E80B7 /* TeamSnapshotDTO.swift in Sources */,
 				D448FF5EA6F5184AD7517AA3 /* TeamSnapshotMapper.swift in Sources */,
+				8B37305D22C2894A2F233F40 /* TeamSwitcherSheet.swift in Sources */,
 				2D9BA1094A1074B3FF3A9B9A /* UpdateGateViewModel.swift in Sources */,
 				B3C56DFCE68E85A8095083C5 /* UserPreferences.swift in Sources */,
 			);
@@ -663,6 +702,7 @@
 				5B9538595A885E3D730A7A12 /* DepthUITests.swift in Sources */,
 				CB4FD1096A9B377BFD07C517 /* PerformanceUITests.swift in Sources */,
 				D693C9DD2EB4D028D38891D4 /* ShareUITests.swift in Sources */,
+				0A476DD65C57C553CAA0A3AF /* UITestHelpers.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
