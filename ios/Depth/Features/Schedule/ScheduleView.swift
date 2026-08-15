@@ -37,7 +37,7 @@ struct ScheduleView: View {
             } description: {
                 Text("No regular-season schedule is available for this season.")
             } actions: {
-                if !viewModel.seasonOptions.isEmpty {
+                if viewModel.showsSeasonPicker {
                     seasonPicker
                 }
             }
@@ -52,6 +52,9 @@ struct ScheduleView: View {
                 Button("Retry") { Task { await viewModel.load() } }
                     .frame(minWidth: 44, minHeight: 44)
                     .accessibilityIdentifier("schedule-retry")
+                if viewModel.showsSeasonPicker {
+                    seasonPicker
+                }
             }
             .accessibilityIdentifier("schedule-error")
         }

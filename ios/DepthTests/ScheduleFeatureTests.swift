@@ -178,6 +178,31 @@ private func scheduleGame(
     #expect(await viewModel.schedule?.games[0].result == nil)
 }
 
+@Test func failedHistoricalLoadKeepsSeasonPickerVisibleAndCanRecover() async {
+    let current = testSchedule(season: 2025)
+    let repository = ScheduleRepositoryFake(
+        schedules: [
+            nil: .success(current),
+            2024: .failure(.offline),
+            2025: .success(current),
+        ]
+    )
+    let viewModel = await ScheduleViewModel(teamId: "bills", repository: repository)
+
+    await viewModel.load()
+    await viewModel.selectSeason(2024)
+
+    #expect(await viewModel.loadState == .failed(.offline))
+    #expect(await viewModel.selectedSeason == 2024)
+    #expect(await viewModel.showsSeasonPicker == true)
+
+    await viewModel.selectSeason(2025)
+
+    #expect(await viewModel.loadState == .loaded)
+    #expect(await viewModel.selectedSeason == 2025)
+    #expect(await viewModel.schedule?.season == 2025)
+}
+
 @Test func delayedOlderSeasonCannotOverwriteNewerSelection() async {
     let current = testSchedule(season: 2025)
     let older = testSchedule(season: 2024)

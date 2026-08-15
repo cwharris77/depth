@@ -33,6 +33,10 @@ final class ScheduleViewModel {
         return Array(stride(from: defaultSeason, through: TeamSchedule.earliestSeason, by: -1))
     }
 
+    var showsSeasonPicker: Bool {
+        !seasonOptions.isEmpty
+    }
+
     var isPastSeason: Bool {
         guard let defaultSeason, let selectedSeason else { return false }
         return selectedSeason < defaultSeason
