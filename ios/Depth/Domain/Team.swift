@@ -47,7 +47,8 @@ struct Uniform: Codable, Equatable, Identifiable {
 // The full team snapshot the native app caches and renders — team identity, every
 // depth-chart/special-teams player, and the uniform archive. Mirrors lib/types.ts's
 // TeamRoster, built from one projected Supabase query (SupabaseDepthRepository).
-struct TeamSnapshot: Equatable {
+// Codable so T5's cache layer can encode/decode it as one JSON payload per SwiftData row.
+struct TeamSnapshot: Equatable, Codable {
     let team: Team
     let players: [Player]
     let specialTeams: [SpecialSlot]

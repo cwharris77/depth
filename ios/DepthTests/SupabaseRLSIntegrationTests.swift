@@ -143,3 +143,30 @@ private enum LocalSupabase {
         _ = try await repository.teamSnapshot(teamId: "does-not-exist")
     }
 }
+
+// T5 additions to the repository seam — same public-read RLS shape as teamSnapshot.
+@Test func anonymousCanReadTeamList() async throws {
+    let repository = SupabaseDepthRepository(client: LocalSupabase.client(key: LocalSupabase.anonKey))
+    let teams = try await repository.teams()
+    #expect(teams.count == 32)
+    #expect(teams.contains { $0.id == "bills" })
+}
+
+@Test func anonymousCanReadAppConfig() async throws {
+    let repository = SupabaseDepthRepository(client: LocalSupabase.client(key: LocalSupabase.anonKey))
+    let config = try await repository.appConfig()
+    #expect(config.minimumSupportedBuild >= 1)
+}
+
+// app_config never grants UPDATE to anon at all (unlike teams, which grants it and
+// relies on RLS to filter the row out) — Postgres denies this at the privilege level
+// before RLS is even evaluated, so the failure mode here is a thrown error, not an
+// empty-array response.
+@Test func anonymousWriteToAppConfigIsDenied() async throws {
+    let client = LocalSupabase.client(key: LocalSupabase.anonKey)
+    await #expect(throws: (any Error).self) {
+        try await client.from("app_config")
+            .update(["minimum_supported_build": 999]).eq("id", value: true)
+            .execute()
+    }
+}

@@ -34,6 +34,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_config: {
+        Row: {
+          id: boolean
+          maintenance_message: string | null
+          minimum_supported_build: number
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          maintenance_message?: string | null
+          minimum_supported_build?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          maintenance_message?: string | null
+          minimum_supported_build?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       depth_chart_entries: {
         Row: {
           depth_rank: number

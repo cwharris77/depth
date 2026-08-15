@@ -1,10 +1,14 @@
 import Foundation
 
-// Mirrors the subset of lib/types.ts's Player that formation resolution touches
-// (id/position/depthRank/number/order). Bio/stat/photo fields join this struct when the
-// data layer (T4) maps real DTOs — adding them now would be speculative.
-struct Player: Codable, Hashable {
+// Mirrors the subset of lib/types.ts's Player that formation resolution and the T6
+// basic player-detail screen touch (id/name/position/depthRank/number/order/photoUrl).
+// `name` defaults to "" so the formation-parity fixtures (which only exercise ordering,
+// never display) don't need updating. Remaining bio/stat fields (age, college,
+// experience, height, weight, bio) join this struct when T8 ships full player profiles
+// — adding them now would be speculative ahead of that screen's real requirements.
+struct Player: Codable, Hashable, Identifiable {
     let id: String
+    let name: String
     let position: Position
     /// Always 1, 2, or 3 in real data (TS's `1 | 2 | 3` literal union) — kept as Int
     /// here since byDepthOrder does plain arithmetic on it.
@@ -13,13 +17,19 @@ struct Player: Codable, Hashable {
     /// Set only on players reordered by a user depth override — see lib/utils/depth-
     /// chart/depth-overrides.ts. Undefined (nil) keeps the default jersey-number tiebreak.
     let order: Int?
+    let photoUrl: String?
 
-    init(id: String, position: Position, depthRank: Int, number: Int, order: Int? = nil) {
+    init(
+        id: String, name: String = "", position: Position, depthRank: Int, number: Int,
+        order: Int? = nil, photoUrl: String? = nil
+    ) {
         self.id = id
+        self.name = name
         self.position = position
         self.depthRank = depthRank
         self.number = number
         self.order = order
+        self.photoUrl = photoUrl
     }
 }
 
