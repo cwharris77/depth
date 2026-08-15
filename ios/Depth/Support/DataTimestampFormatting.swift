@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 // Formats the on-device cache timestamps `CachingDepthRepository` already exposes
 // (`teamListCachedAt`, `TeamDetailViewModel.cachedAt`) into copy honest about what the
@@ -30,5 +31,18 @@ enum DataTimestamp {
         formatter.unitsStyle = .full
         let relative = formatter.localizedString(for: cachedAt, relativeTo: now)
         return "Saved on this device \(relative)"
+    }
+}
+
+/// Re-renders `savedOnDeviceLabel` every minute via `TimelineView` so the relative text
+/// ("2 hours ago") doesn't silently go stale while a screen stays on-screen (Greptile
+/// review on depth#366: a plain `Text` computed once never advances on its own).
+struct SavedOnDeviceLabel: View {
+    let cachedAt: Date?
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 60)) { context in
+            Text(DataTimestamp.savedOnDeviceLabel(cachedAt, now: context.date))
+        }
     }
 }

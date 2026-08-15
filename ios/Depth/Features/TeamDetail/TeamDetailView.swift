@@ -333,7 +333,7 @@ private struct SavedOnDeviceBanner: View {
     let cachedAt: Date
 
     var body: some View {
-        Text(DataTimestamp.savedOnDeviceLabel(cachedAt))
+        SavedOnDeviceLabel(cachedAt: cachedAt)
             .font(.footnote)
             .foregroundStyle(.secondary)
             .padding(.horizontal)

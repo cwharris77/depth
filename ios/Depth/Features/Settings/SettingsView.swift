@@ -60,7 +60,7 @@ struct SettingsView: View {
                 }
 
                 Section("Data") {
-                    Text(DataTimestamp.savedOnDeviceLabel(dataSavedAt))
+                    SavedOnDeviceLabel(cachedAt: dataSavedAt)
                         .accessibilityIdentifier("settings-data-saved-at")
                     Text(DataTimestamp.explanation)
                         .font(.footnote)
