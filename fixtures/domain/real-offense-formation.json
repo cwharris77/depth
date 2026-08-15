@@ -1,0 +1,1163 @@
+[
+  {
+    "description": "11 personnel, shotgun (1 RB, 1 TE, 3 WR)",
+    "alignment": "SHOTGUN",
+    "personnelCode": "11",
+    "expectedSlots": [
+      {
+        "id": "off-lt-0",
+        "position": "LT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true
+      },
+      {
+        "id": "off-lg-0",
+        "position": "LG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true
+      },
+      {
+        "id": "off-c-0",
+        "position": "C",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true
+      },
+      {
+        "id": "off-rg-0",
+        "position": "RG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true
+      },
+      {
+        "id": "off-rt-0",
+        "position": "RT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-0",
+        "position": "WR",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 10,
+        "y": 51,
+        "label": "WR",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-1",
+        "position": "WR",
+        "index": 1,
+        "group": null,
+        "preferredPosition": null,
+        "x": 90,
+        "y": 54,
+        "label": "WR",
+        "onLine": false
+      },
+      {
+        "id": "off-wr-2",
+        "position": "WR",
+        "index": 2,
+        "group": null,
+        "preferredPosition": null,
+        "x": 26,
+        "y": 54,
+        "label": "WR",
+        "onLine": false
+      },
+      {
+        "id": "off-te-0",
+        "position": "TE",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 71,
+        "y": 51,
+        "label": "TE",
+        "onLine": true
+      },
+      {
+        "id": "off-rb-0",
+        "position": "RB",
+        "index": 0,
+        "group": "RB",
+        "preferredPosition": null,
+        "x": 58,
+        "y": 70,
+        "label": "RB",
+        "onLine": false
+      },
+      {
+        "id": "off-qb-0",
+        "position": "QB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 68,
+        "label": "QB",
+        "onLine": false
+      }
+    ],
+    "isFallback": false
+  },
+  {
+    "description": "12 personnel, under center — 2nd TE wings off-line (a WR exists to flex)",
+    "alignment": "UNDER CENTER",
+    "personnelCode": "12",
+    "expectedSlots": [
+      {
+        "id": "off-lt-0",
+        "position": "LT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true
+      },
+      {
+        "id": "off-lg-0",
+        "position": "LG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true
+      },
+      {
+        "id": "off-c-0",
+        "position": "C",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true
+      },
+      {
+        "id": "off-rg-0",
+        "position": "RG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true
+      },
+      {
+        "id": "off-rt-0",
+        "position": "RT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-0",
+        "position": "WR",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 10,
+        "y": 51,
+        "label": "WR",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-1",
+        "position": "WR",
+        "index": 1,
+        "group": null,
+        "preferredPosition": null,
+        "x": 90,
+        "y": 54,
+        "label": "WR",
+        "onLine": false
+      },
+      {
+        "id": "off-te-0",
+        "position": "TE",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 71,
+        "y": 51,
+        "label": "TE",
+        "onLine": true
+      },
+      {
+        "id": "off-te-1",
+        "position": "TE",
+        "index": 1,
+        "group": null,
+        "preferredPosition": null,
+        "x": 76,
+        "y": 54,
+        "label": "TE",
+        "onLine": false
+      },
+      {
+        "id": "off-rb-0",
+        "position": "RB",
+        "index": 0,
+        "group": "RB",
+        "preferredPosition": null,
+        "x": 50,
+        "y": 76,
+        "label": "RB",
+        "onLine": false
+      },
+      {
+        "id": "off-qb-0",
+        "position": "QB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 56,
+        "label": "QB",
+        "onLine": false
+      }
+    ],
+    "isFallback": false
+  },
+  {
+    "description": "20 personnel, pistol — 2 RB, 0 TE, 3 WR, no in-line 2nd TE possible",
+    "alignment": "PISTOL",
+    "personnelCode": "20",
+    "expectedSlots": [
+      {
+        "id": "off-lt-0",
+        "position": "LT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true
+      },
+      {
+        "id": "off-lg-0",
+        "position": "LG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true
+      },
+      {
+        "id": "off-c-0",
+        "position": "C",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true
+      },
+      {
+        "id": "off-rg-0",
+        "position": "RG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true
+      },
+      {
+        "id": "off-rt-0",
+        "position": "RT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-0",
+        "position": "WR",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 10,
+        "y": 51,
+        "label": "WR",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-1",
+        "position": "WR",
+        "index": 1,
+        "group": null,
+        "preferredPosition": null,
+        "x": 90,
+        "y": 54,
+        "label": "WR",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-2",
+        "position": "WR",
+        "index": 2,
+        "group": null,
+        "preferredPosition": null,
+        "x": 26,
+        "y": 54,
+        "label": "WR",
+        "onLine": false
+      },
+      {
+        "id": "off-rb-0",
+        "position": "RB",
+        "index": 0,
+        "group": "RB",
+        "preferredPosition": null,
+        "x": 50,
+        "y": 76,
+        "label": "RB",
+        "onLine": false
+      },
+      {
+        "id": "off-rb-1",
+        "position": "RB",
+        "index": 1,
+        "group": "RB",
+        "preferredPosition": null,
+        "x": 42,
+        "y": 70,
+        "label": "RB",
+        "onLine": false
+      },
+      {
+        "id": "off-qb-0",
+        "position": "QB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 63,
+        "label": "QB",
+        "onLine": false
+      }
+    ],
+    "isFallback": false
+  },
+  {
+    "description": "02 personnel — 0 RB, 2 TE, both fit in-line since no WR flex constraint applies (wr=3)",
+    "alignment": "SHOTGUN",
+    "personnelCode": "02",
+    "expectedSlots": [
+      {
+        "id": "off-lt-0",
+        "position": "LT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true
+      },
+      {
+        "id": "off-lg-0",
+        "position": "LG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true
+      },
+      {
+        "id": "off-c-0",
+        "position": "C",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true
+      },
+      {
+        "id": "off-rg-0",
+        "position": "RG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true
+      },
+      {
+        "id": "off-rt-0",
+        "position": "RT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-0",
+        "position": "WR",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 10,
+        "y": 51,
+        "label": "WR",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-1",
+        "position": "WR",
+        "index": 1,
+        "group": null,
+        "preferredPosition": null,
+        "x": 90,
+        "y": 54,
+        "label": "WR",
+        "onLine": false
+      },
+      {
+        "id": "off-wr-2",
+        "position": "WR",
+        "index": 2,
+        "group": null,
+        "preferredPosition": null,
+        "x": 26,
+        "y": 54,
+        "label": "WR",
+        "onLine": false
+      },
+      {
+        "id": "off-te-0",
+        "position": "TE",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 71,
+        "y": 51,
+        "label": "TE",
+        "onLine": true
+      },
+      {
+        "id": "off-te-1",
+        "position": "TE",
+        "index": 1,
+        "group": null,
+        "preferredPosition": null,
+        "x": 76,
+        "y": 54,
+        "label": "TE",
+        "onLine": false
+      },
+      {
+        "id": "off-qb-0",
+        "position": "QB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 68,
+        "label": "QB",
+        "onLine": false
+      }
+    ],
+    "isFallback": false
+  },
+  {
+    "description": "03 personnel — 0 RB, 3 TE, 2nd TE in-line (wr=2, not <1), 3rd TE wings off",
+    "alignment": "UNDER CENTER",
+    "personnelCode": "03",
+    "expectedSlots": [
+      {
+        "id": "off-lt-0",
+        "position": "LT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true
+      },
+      {
+        "id": "off-lg-0",
+        "position": "LG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true
+      },
+      {
+        "id": "off-c-0",
+        "position": "C",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true
+      },
+      {
+        "id": "off-rg-0",
+        "position": "RG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true
+      },
+      {
+        "id": "off-rt-0",
+        "position": "RT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-0",
+        "position": "WR",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 10,
+        "y": 51,
+        "label": "WR",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-1",
+        "position": "WR",
+        "index": 1,
+        "group": null,
+        "preferredPosition": null,
+        "x": 90,
+        "y": 54,
+        "label": "WR",
+        "onLine": false
+      },
+      {
+        "id": "off-te-0",
+        "position": "TE",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 71,
+        "y": 51,
+        "label": "TE",
+        "onLine": true
+      },
+      {
+        "id": "off-te-1",
+        "position": "TE",
+        "index": 1,
+        "group": null,
+        "preferredPosition": null,
+        "x": 76,
+        "y": 54,
+        "label": "TE",
+        "onLine": false
+      },
+      {
+        "id": "off-te-2",
+        "position": "TE",
+        "index": 2,
+        "group": null,
+        "preferredPosition": null,
+        "x": 24,
+        "y": 54,
+        "label": "TE",
+        "onLine": false
+      },
+      {
+        "id": "off-qb-0",
+        "position": "QB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 56,
+        "label": "QB",
+        "onLine": false
+      }
+    ],
+    "isFallback": false
+  },
+  {
+    "description": "13 personnel — 1 RB, 3 TE, wr=1 so 2nd TE wings off-line (wr not < 1)",
+    "alignment": "SHOTGUN",
+    "personnelCode": "13",
+    "expectedSlots": [
+      {
+        "id": "off-lt-0",
+        "position": "LT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true
+      },
+      {
+        "id": "off-lg-0",
+        "position": "LG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true
+      },
+      {
+        "id": "off-c-0",
+        "position": "C",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true
+      },
+      {
+        "id": "off-rg-0",
+        "position": "RG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true
+      },
+      {
+        "id": "off-rt-0",
+        "position": "RT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-0",
+        "position": "WR",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 10,
+        "y": 51,
+        "label": "WR",
+        "onLine": true
+      },
+      {
+        "id": "off-te-0",
+        "position": "TE",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 71,
+        "y": 51,
+        "label": "TE",
+        "onLine": true
+      },
+      {
+        "id": "off-te-1",
+        "position": "TE",
+        "index": 1,
+        "group": null,
+        "preferredPosition": null,
+        "x": 76,
+        "y": 54,
+        "label": "TE",
+        "onLine": false
+      },
+      {
+        "id": "off-te-2",
+        "position": "TE",
+        "index": 2,
+        "group": null,
+        "preferredPosition": null,
+        "x": 24,
+        "y": 54,
+        "label": "TE",
+        "onLine": false
+      },
+      {
+        "id": "off-rb-0",
+        "position": "RB",
+        "index": 0,
+        "group": "RB",
+        "preferredPosition": null,
+        "x": 58,
+        "y": 70,
+        "label": "RB",
+        "onLine": false
+      },
+      {
+        "id": "off-qb-0",
+        "position": "QB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 68,
+        "label": "QB",
+        "onLine": false
+      }
+    ],
+    "isFallback": false
+  },
+  {
+    "description": "invalid personnel code (non-digit) falls back to generic OFFENSE_FORMATION",
+    "alignment": "SHOTGUN",
+    "personnelCode": "xx",
+    "expectedSlots": [
+      {
+        "id": "off-wr-0",
+        "position": "WR",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 88,
+        "y": 51,
+        "label": "WR",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-1",
+        "position": "WR",
+        "index": 1,
+        "group": null,
+        "preferredPosition": null,
+        "x": 12,
+        "y": 55,
+        "label": "WR",
+        "onLine": false
+      },
+      {
+        "id": "off-wr-2",
+        "position": "WR",
+        "index": 2,
+        "group": null,
+        "preferredPosition": null,
+        "x": 24,
+        "y": 56,
+        "label": "WR",
+        "onLine": false
+      },
+      {
+        "id": "off-te-0",
+        "position": "TE",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 74,
+        "y": 51,
+        "label": "TE",
+        "onLine": true
+      },
+      {
+        "id": "off-lt-0",
+        "position": "LT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true
+      },
+      {
+        "id": "off-lg-0",
+        "position": "LG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true
+      },
+      {
+        "id": "off-c-0",
+        "position": "C",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true
+      },
+      {
+        "id": "off-rg-0",
+        "position": "RG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true
+      },
+      {
+        "id": "off-rt-0",
+        "position": "RT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true
+      },
+      {
+        "id": "off-qb-0",
+        "position": "QB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 66,
+        "label": "QB",
+        "onLine": false
+      },
+      {
+        "id": "off-rb-0",
+        "position": "RB",
+        "index": 0,
+        "group": "RB",
+        "preferredPosition": "RB",
+        "x": 50,
+        "y": 78,
+        "label": "RB",
+        "onLine": false
+      }
+    ],
+    "isFallback": true
+  },
+  {
+    "description": "rb=3 exceeds the 2-RB cap, falls back to generic OFFENSE_FORMATION",
+    "alignment": "SHOTGUN",
+    "personnelCode": "30",
+    "expectedSlots": [
+      {
+        "id": "off-wr-0",
+        "position": "WR",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 88,
+        "y": 51,
+        "label": "WR",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-1",
+        "position": "WR",
+        "index": 1,
+        "group": null,
+        "preferredPosition": null,
+        "x": 12,
+        "y": 55,
+        "label": "WR",
+        "onLine": false
+      },
+      {
+        "id": "off-wr-2",
+        "position": "WR",
+        "index": 2,
+        "group": null,
+        "preferredPosition": null,
+        "x": 24,
+        "y": 56,
+        "label": "WR",
+        "onLine": false
+      },
+      {
+        "id": "off-te-0",
+        "position": "TE",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 74,
+        "y": 51,
+        "label": "TE",
+        "onLine": true
+      },
+      {
+        "id": "off-lt-0",
+        "position": "LT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true
+      },
+      {
+        "id": "off-lg-0",
+        "position": "LG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true
+      },
+      {
+        "id": "off-c-0",
+        "position": "C",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true
+      },
+      {
+        "id": "off-rg-0",
+        "position": "RG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true
+      },
+      {
+        "id": "off-rt-0",
+        "position": "RT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true
+      },
+      {
+        "id": "off-qb-0",
+        "position": "QB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 66,
+        "label": "QB",
+        "onLine": false
+      },
+      {
+        "id": "off-rb-0",
+        "position": "RB",
+        "index": 0,
+        "group": "RB",
+        "preferredPosition": "RB",
+        "x": 50,
+        "y": 78,
+        "label": "RB",
+        "onLine": false
+      }
+    ],
+    "isFallback": true
+  },
+  {
+    "description": "unrecognized alignment string falls back to the SHOTGUN QB depth",
+    "alignment": "WILDCAT",
+    "personnelCode": "11",
+    "expectedSlots": [
+      {
+        "id": "off-lt-0",
+        "position": "LT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true
+      },
+      {
+        "id": "off-lg-0",
+        "position": "LG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true
+      },
+      {
+        "id": "off-c-0",
+        "position": "C",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true
+      },
+      {
+        "id": "off-rg-0",
+        "position": "RG",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true
+      },
+      {
+        "id": "off-rt-0",
+        "position": "RT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-0",
+        "position": "WR",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 10,
+        "y": 51,
+        "label": "WR",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-1",
+        "position": "WR",
+        "index": 1,
+        "group": null,
+        "preferredPosition": null,
+        "x": 90,
+        "y": 54,
+        "label": "WR",
+        "onLine": false
+      },
+      {
+        "id": "off-wr-2",
+        "position": "WR",
+        "index": 2,
+        "group": null,
+        "preferredPosition": null,
+        "x": 26,
+        "y": 54,
+        "label": "WR",
+        "onLine": false
+      },
+      {
+        "id": "off-te-0",
+        "position": "TE",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 71,
+        "y": 51,
+        "label": "TE",
+        "onLine": true
+      },
+      {
+        "id": "off-rb-0",
+        "position": "RB",
+        "index": 0,
+        "group": "RB",
+        "preferredPosition": null,
+        "x": 50,
+        "y": 76,
+        "label": "RB",
+        "onLine": false
+      },
+      {
+        "id": "off-qb-0",
+        "position": "QB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 68,
+        "label": "QB",
+        "onLine": false
+      }
+    ],
+    "isFallback": false
+  }
+]
