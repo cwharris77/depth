@@ -48,12 +48,21 @@ final class PerformanceUITests: XCTestCase {
     /// isn't reset by `UI_TESTING_RESET_STATE` (that only clears the UserDefaults-backed
     /// last-team/last-unit prefs) — so the second, measured launch exercises the actual
     /// "warm cached content" scenario the spec's <1s budget targets. The threshold here
-    /// (5s) is far looser than that spec number on purpose: a full XCUITest
+    /// (15s) is far looser than that spec number on purpose: a full XCUITest
     /// `app.launch()` pays for simulator process spawn and XCUITest's own
     /// instrumentation attach on top of the app's warm-cache render — overhead the
-    /// spec's <1s number was never meant to include. 5s still catches an
-    /// order-of-magnitude regression without flaking on a loaded CI runner (see
-    /// `.superpowers/sdd/2026-08-14-native-ios-app/task-9b-performance-report.md`).
+    /// spec's <1s number was never meant to include — and `ios-ci.yml`'s GitHub-hosted
+    /// macOS runners are measurably slower than local dev hardware for this exact
+    /// interval. A real CI run (depth#371) measured the *app-internal*
+    /// `AppLaunchToFirstUsefulRender` signpost (`testAppLaunchSignpostMetric` above) at
+    /// 2.094s on CI vs 0.528s locally, and Apple's own `XCTApplicationLaunchMetric`
+    /// (`testColdLaunchPerformance`) at 2.459s CI vs 1.013s locally — a consistent ~2-2.4x
+    /// slowdown across every launch-related metric, not a regression isolated to this
+    /// flow, which is why the fix here is a wider budget rather than a code change. That
+    /// same CI run measured this flow-level interval (which stacks XCUITest's own launch
+    /// overhead on top of the app-internal number) at 6.44s; 15s keeps meaningful margin
+    /// over that single data point for shared-runner noise while still catching an
+    /// order-of-magnitude regression.
     func testWarmRelaunchReachesFirstUsefulRenderWithinBudget() throws {
         let app = XCUIApplication()
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
@@ -68,7 +77,7 @@ final class PerformanceUITests: XCTestCase {
         let elapsed = clock.now - start
 
         XCTAssertLessThan(
-            elapsed, .seconds(5),
+            elapsed, .seconds(15),
             "warm relaunch to first useful render should stay well under budget, with slack for XCUITest/CI overhead"
         )
     }

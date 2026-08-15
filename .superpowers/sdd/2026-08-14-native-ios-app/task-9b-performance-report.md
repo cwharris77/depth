@@ -71,14 +71,15 @@ harness overhead:
   still catches an order-of-magnitude regression (e.g., an accidental N+1 or a broken
   index) without turning CI red on a slow runner.
 - **Warm launch → first useful render**: spec says <1s for warm cached content. Asserted
-  **<5s** in the XCUITest (`testWarmRelaunchReachesFirstUsefulRenderWithinBudget`). A full
-  XCUITest `app.launch()` pays for simulator process spawn and XCUITest's own
-  instrumentation attach on top of the app's actual warm-cache render — overhead the
-  spec's <1s number was never meant to include. The custom signpost test
-  (`testAppLaunchSignpostMetric`) measured the *app-internal* interval at 0.528s in a
-  local run, which is the number that actually maps to the spec's <1s budget; the 5s
-  XCUITest-level assertion is a coarser, CI-safe backstop against a real regression
-  showing up as "the whole flow got much slower," not a claim that 5s is the real budget.
+  **<15s** in the XCUITest (`testWarmRelaunchReachesFirstUsefulRenderWithinBudget`) — see
+  "CI run update" below for why this started at 5s and was widened. A full XCUITest
+  `app.launch()` pays for simulator process spawn and XCUITest's own instrumentation
+  attach on top of the app's actual warm-cache render — overhead the spec's <1s number
+  was never meant to include. The custom signpost test (`testAppLaunchSignpostMetric`)
+  measures the *app-internal* interval, which is the number that actually maps to the
+  spec's <1s budget; the flow-level assertion is a coarser, CI-safe backstop against a
+  real regression showing up as "the whole flow got much slower," not a claim that its
+  threshold is the real budget.
 - **Cache transaction** (in-memory SwiftData, no network variance): asserted <500ms
   write / <200ms read — much closer to the spec's actual numbers, since this path has no
   external noise source.
@@ -96,6 +97,31 @@ the flow-level assertion is set at 5s rather than closer to 1s). No local reason
 believe these are flaky, but per the brief's caution about CI hardware being slower/
 different, the actual CI run on `ios-ci.yml`'s runner (see PR checks) is the real
 confirmation — flag any red run there rather than assuming these numbers transfer as-is.
+
+### CI run update (real CI hardware, not assumed)
+
+First push to PR #371 (commit `0b7ef1b`) failed both `ios-ci.yml` matrix legs — flagship
+(iPhone 17 Pro) and oldest-supported (iPhone SE 3rd gen) — on the same single test:
+`testWarmRelaunchReachesFirstUsefulRenderWithinBudget`, which measured 6.44s (flagship)
+and 5.78s (SE 3rd gen) against the initial 5s threshold. Before touching the number, the
+full job logs were pulled (`gh api repos/.../actions/jobs/<id>/logs`) to confirm this
+wasn't the T9A-style masked bug (a UI-test race or a below-the-fold element never
+rendering) rather than a real speed difference:
+
+- `testAppLaunchSignpostMetric` (the app-internal `AppLaunchToFirstUsefulRender`
+  signpost): **2.094s on CI** vs **0.528s** in the earlier local run.
+- `testColdLaunchPerformance` (Apple's own `XCTApplicationLaunchMetric`): **2.459s on
+  CI** vs **1.013s** locally.
+- `PerformanceMetricsTests` (network query + cache transaction, no XCUITest overhead):
+  passed comfortably on both CI legs (0.311s/0.003s measured — nowhere near their 6s/
+  500ms/200ms budgets).
+
+Every launch-related metric shows the same ~2-2.4x CI slowdown, not a regression
+isolated to one path — this is genuine CI hardware being slower than local dev hardware
+(the exact caveat the task brief called out and T9A independently hit), not a masked bug.
+The threshold was widened from 5s to **15s** (comment updated with the real observed
+numbers and reasoning) rather than guessed at; both observed CI failures (6.44s, 5.78s)
+now have >2x margin.
 
 ### Test evidence
 
