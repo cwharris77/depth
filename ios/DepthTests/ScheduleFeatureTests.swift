@@ -257,6 +257,8 @@ private actor ScheduleRepositoryFake: DepthRepository {
         return try result.get()
     }
 
+    func playerStats(playerId: String) async throws -> [PlayerSeasonStats] { [] }
+
     func appConfig() async throws -> AppConfig {
         AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)
     }
@@ -286,6 +288,8 @@ private actor DelayedScheduleRepository: DepthRepository {
             responseWaiters[season] = continuation
         }
     }
+
+    func playerStats(playerId: String) async throws -> [PlayerSeasonStats] { [] }
 
     func appConfig() async throws -> AppConfig {
         AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)

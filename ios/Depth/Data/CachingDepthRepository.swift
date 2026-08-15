@@ -74,6 +74,12 @@ actor CachingDepthRepository: DepthRepository {
         try await underlying.teamSchedule(teamId: teamId, season: season)
     }
 
+    /// Player stats are a separate on-demand read; snapshot-cache restructuring would
+    /// add stale, unused payload to every depth-chart launch.
+    func playerStats(playerId: String) async throws -> [PlayerSeasonStats] {
+        try await underlying.playerStats(playerId: playerId)
+    }
+
     static func isStale(_ cachedAt: Date, now: Date = Date()) -> Bool {
         now.timeIntervalSince(cachedAt) > staleAfter
     }
