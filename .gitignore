@@ -48,3 +48,4 @@ __pycache__/
 ios/**/xcuserdata/
 *.xcuserstate
 ios/DerivedData/
+ios/.local-service-role-key

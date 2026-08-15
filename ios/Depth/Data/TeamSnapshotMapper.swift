@@ -1,0 +1,73 @@
+import Foundation
+
+// DTO → domain mapping for the team-snapshot query. Every conversion is explicit and
+// fails loudly (DepthError.decoding) rather than silently coercing bad data — the
+// existing web `dbRosterSource` conflating "not found" with "unavailable" is exactly the
+// failure mode the design spec calls out to not reproduce here.
+enum TeamSnapshotMapper {
+    static func map(_ dto: TeamDTO) throws -> TeamSnapshot {
+        let team = Team(
+            id: dto.id, city: dto.city, name: dto.name, abbrev: dto.abbrev,
+            conference: dto.conference, division: dto.division,
+            colors: TeamColors(
+                primary: dto.colorPrimary, secondary: dto.colorSecondary, accent: dto.colorAccent,
+                uiAccent: dto.uiAccent, onAccent: dto.onAccent
+            ),
+            logo: dto.logoUrl, logoDark: dto.logoDarkUrl
+        )
+
+        // Depth-chart players first (real depthRank), then special-teams-only players
+        // get a nominal depthRank 3 — mirrors the web app's dbRosterSource assembly
+        // (fetchTeamRoster) exactly, including silently skipping a special-teams slot
+        // with no player and never duplicating a player already seated on the chart.
+        var players: [Player] = []
+        var seenPlayerIds = Set<String>()
+        for entry in dto.depthChartEntries {
+            let player = try mapPlayer(entry.player, depthRank: entry.depthRank)
+            players.append(player)
+            seenPlayerIds.insert(player.id)
+        }
+        for slot in dto.specialTeamsSlots {
+            guard let playerDTO = slot.player, !seenPlayerIds.contains(playerDTO.id) else { continue }
+            let player = try mapPlayer(playerDTO, depthRank: 3)
+            players.append(player)
+            seenPlayerIds.insert(player.id)
+        }
+
+        let specialTeams = dto.specialTeamsSlots.map { slot in
+            SpecialSlot(id: slot.id, playerId: slot.playerId, x: slot.x, y: slot.y, label: slot.label)
+        }
+
+        let uniforms = try dto.uniforms.map(mapUniform)
+
+        return TeamSnapshot(team: team, players: players, specialTeams: specialTeams, uniforms: uniforms)
+    }
+
+    static func mapPlayer(_ dto: PlayerDTO, depthRank: Int) throws -> Player {
+        guard let position = Position(rawValue: dto.position) else {
+            throw DepthError.decoding("player \(dto.id): unknown position \"\(dto.position)\"")
+        }
+        guard let number = dto.number else {
+            throw DepthError.decoding("player \(dto.id): missing jersey number")
+        }
+        guard (1...3).contains(depthRank) else {
+            throw DepthError.decoding("player \(dto.id): depthRank \(depthRank) out of range 1...3")
+        }
+        return Player(id: dto.id, position: position, depthRank: depthRank, number: number)
+    }
+
+    static func mapUniform(_ dto: UniformDTO) throws -> Uniform {
+        guard let kind = UniformKind(rawValue: dto.kind) else {
+            throw DepthError.decoding("uniform \(dto.id): unknown kind \"\(dto.kind)\"")
+        }
+        return Uniform(
+            id: dto.id, teamId: dto.teamId, kind: kind, name: dto.name,
+            yearStart: dto.yearStart, yearEnd: dto.yearEnd, isCurrent: dto.isCurrent,
+            colors: TeamColors(
+                primary: dto.colorPrimary, secondary: dto.colorSecondary, accent: dto.colorAccent,
+                uiAccent: dto.uiAccent, onAccent: dto.onAccent
+            ),
+            imagePath: dto.imagePath
+        )
+    }
+}

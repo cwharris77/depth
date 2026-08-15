@@ -25,7 +25,7 @@ struct Player: Codable, Hashable {
 
 // Mirrors lib/types.ts's SpecialSlot. Returners (KR/PR) are editorial cross-position
 // picks carried as explicit player references, not derived from Position.
-struct SpecialSlot: Codable {
+struct SpecialSlot: Codable, Equatable {
     let id: String
     let playerId: String?
     let x: Double
