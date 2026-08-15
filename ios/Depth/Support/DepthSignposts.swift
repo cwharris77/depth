@@ -20,6 +20,18 @@ enum DepthSignposts {
     /// load (`TeamListViewModel.load()`) — the earliest screen with real, user-visible
     /// content, and the gate every other screen (including the depth chart) renders
     /// behind on cold start.
+    ///
+    /// This closes when the data is ready, not when SwiftUI has finished committing the
+    /// resulting render pass — the same "data-ready" proxy `AppEventsRecorder`'s
+    /// `depthChartReached` event already uses for its own "reached" telemetry
+    /// (`TeamDetailViewModel.load()`). A render-accurate close would need a paint-
+    /// completion hook (e.g. `.onAppear`/`CADisplayLink` on the rendered `List`) with a
+    /// SwiftUI-lifecycle dependency this signpost's other two call sites (which are
+    /// pure `Data/` layer, no view access) don't have — out of scope for this task. The
+    /// data-to-paint gap this leaves is small on the actual "first team list" case; the
+    /// XCUITest suite's regression guard (`PerformanceUITests.swift`) verifies against
+    /// an actual rendered team row appearing, not just this signpost closing, so a
+    /// budget regression is still caught even where this interval alone would look fine.
     static let appLaunch: StaticString = "AppLaunchToFirstUsefulRender"
 
     /// Network query + JSON decode for one team's full snapshot

@@ -71,22 +71,34 @@ final class PerformanceMetricsTests: XCTestCase {
         // Same happens-after guarantee via `semaphore.wait()` as the network test above.
         nonisolated(unsafe) var writeElapsed: Duration = .zero
         nonisolated(unsafe) var readElapsed: Duration = .zero
+        nonisolated(unsafe) var thrown: Error?
+        nonisolated(unsafe) var readSnapshot: TeamSnapshot?
 
         measure(metrics: [XCTClockMetric()], options: oneShotOptions()) {
             let semaphore = DispatchSemaphore(value: 0)
             Task {
                 defer { semaphore.signal() }
-                let writeStart = clock.now
-                try? await store.saveTeamSnapshot(snapshot, teamId: "bills", cachedAt: Date())
-                writeElapsed = clock.now - writeStart
+                do {
+                    let writeStart = clock.now
+                    try await store.saveTeamSnapshot(snapshot, teamId: "bills", cachedAt: Date())
+                    writeElapsed = clock.now - writeStart
 
-                let readStart = clock.now
-                _ = try? await store.teamSnapshot(teamId: "bills")
-                readElapsed = clock.now - readStart
+                    let readStart = clock.now
+                    readSnapshot = try await store.teamSnapshot(teamId: "bills")
+                    readElapsed = clock.now - readStart
+                } catch {
+                    thrown = error
+                }
             }
             semaphore.wait()
         }
 
+        // Greptile P2 (PR #371): the original version swallowed both calls' errors with
+        // `try?` and discarded the read result, so a failed save/read/nil-cache-miss
+        // would still record a short duration and pass — asserting the round trip
+        // actually succeeded, not just that it was fast, closes that gap.
+        XCTAssertNil(thrown, "cache write/read round trip should succeed")
+        XCTAssertEqual(readSnapshot?.team.id, "bills", "the read should return the snapshot just written, not a cache miss")
         XCTAssertLessThan(writeElapsed, .milliseconds(500), "an in-memory SwiftData cache write should be near-instant")
         XCTAssertLessThan(
             readElapsed, .milliseconds(200),

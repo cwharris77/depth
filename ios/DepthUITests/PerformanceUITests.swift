@@ -19,6 +19,17 @@ final class PerformanceUITests: XCTestCase {
         return options
     }
 
+    /// `TeamListView`'s `.searchable` search field exists as soon as the
+    /// `NavigationStack` builds — including during the loading skeleton, before any
+    /// team data has arrived — so it isn't proof the list actually rendered (Greptile
+    /// P1, PR #371). A real team row (`team-row-<id>`, `TeamListView.swift`) only
+    /// exists once `TeamListViewModel.load()` reaches `.loaded` with a non-empty list,
+    /// making it the accurate "content rendered" signal for these tests.
+    private func waitForFirstTeamRow(in app: XCUIApplication, timeout: TimeInterval = 10) -> Bool {
+        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'team-row-'")).firstMatch
+            .waitForExistence(timeout: timeout)
+    }
+
     func testColdLaunchPerformance() throws {
         measure(metrics: [XCTApplicationLaunchMetric()], options: oneShotOptions()) {
             let app = XCUIApplication()
@@ -39,7 +50,7 @@ final class PerformanceUITests: XCTestCase {
             let app = XCUIApplication()
             app.launchArguments = ["UI_TESTING_RESET_STATE"]
             app.launch()
-            _ = app.searchFields.firstMatch.waitForExistence(timeout: 10)
+            _ = waitForFirstTeamRow(in: app)
         }
     }
 
@@ -67,13 +78,13 @@ final class PerformanceUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
         app.launch()
-        XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 10), "team list should load on the priming launch")
+        XCTAssertTrue(waitForFirstTeamRow(in: app), "team list should load on the priming launch")
         app.terminate()
 
         let clock = ContinuousClock()
         let start = clock.now
         app.launch()
-        XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 10), "team list should load on the warm relaunch")
+        XCTAssertTrue(waitForFirstTeamRow(in: app), "team list should load on the warm relaunch")
         let elapsed = clock.now - start
 
         XCTAssertLessThan(
