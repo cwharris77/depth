@@ -10,7 +10,13 @@ on:
     # Wednesday 13:00 UTC — an hour after the ESPN ingest (ingest-espn.yml, 12:00 UTC)
     # so the two runs don't interleave in ingestion_runs.
     - cron: '0 13 * * 3'
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      seasons:
+        description: 'Season range to backfill, e.g. 1999-2025. Empty = weekly run (ingest:nflverse current + previous, ingest:rosters current season only).'
+        type: string
+        required: false
+        default: ''
 
 # Never let two ingestions overlap (a slow run + the next schedule, or a manual
 # dispatch during a scheduled one).
@@ -21,7 +27,7 @@ concurrency:
 jobs:
   ingest:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -29,16 +35,29 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      - run: npm run ingest:nflverse
+      # Manual dispatch's `seasons` input backfills both this step and ingest:rosters
+      # below (shared range, no per-dataset granularity). Empty input (the scheduled
+      # weekly run) falls through to the plain command -- ingest:nflverse's default is
+      # current + previous season, ingest:rosters' default is current season only.
+      - run: |
+          if [ -n "$SEASONS" ]; then
+            npm run ingest:nflverse -- --seasons "$SEASONS"
+          else
+            npm run ingest:nflverse
+          fi
         env:
+          SEASONS: ${{ inputs.seasons }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
           STRICT: '1'
-      # Current season only (no --seasons flag) -- the one-time 1999-present backfill
-      # is a hand run, never part of this scheduled job (docs/superpowers/specs/2026-07-
-      # 07-phase-d-history-and-boards-design.md).
-      - run: npm run ingest:rosters
+      - run: |
+          if [ -n "$SEASONS" ]; then
+            npm run ingest:rosters -- --seasons "$SEASONS"
+          else
+            npm run ingest:rosters
+          fi
         env:
+          SEASONS: ${{ inputs.seasons }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
           STRICT: '1'

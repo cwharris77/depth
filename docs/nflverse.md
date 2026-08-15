@@ -180,6 +180,15 @@ Same as the ESPN ingest — `npm run db:types` reads **local** Postgres
 runs never overlap. Same two repo secrets as the ESPN workflow
 (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`).
 
+A full-range backfill (e.g. `1999-2025`) is a manual `workflow_dispatch` run with the
+`seasons` input, not a terminal command — from the Actions tab, "Run workflow" on
+`Ingest nflverse data` and fill in `seasons`, or `gh workflow run ingest-nflverse.yml -f
+seasons=1999-2025`. The input is passed as `--seasons` to both steps (`ingest:nflverse`
+and `ingest:rosters` share the range) with prod secrets already wired into the job — no
+`.env.local`, no prod vars on a local machine. Leaving `seasons` empty reproduces the
+scheduled weekly job exactly: `ingest:nflverse` refreshes the current + previous
+season, `ingest:rosters` the current season only.
+
 ## License posture
 
 nflverse's own code is MIT-licensed; the underlying NFL data is owned by the NFL/its
