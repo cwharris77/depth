@@ -78,7 +78,7 @@ struct SettingsView: View {
                         .accessibilityIdentifier("settings-data-explanation")
                 }
             }
-            .navigationTitle("Settings")
+            .navigationTitle("Account")
         }
         .sheet(isPresented: $showAuth) {
             AuthSheet(service: authService, sessionStore: sessionStore, events: events)
