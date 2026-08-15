@@ -16,6 +16,10 @@ final class TeamListViewModel {
 
     private(set) var loadState: LoadState = .loading
     private(set) var teams: [Team] = []
+    /// The on-device cache timestamp for the team list, surfaced by Settings' Data
+    /// section (task-8d brief). Only ever set after a successful load — a failed load
+    /// must not report a stale/guessed timestamp as if it were current.
+    private(set) var cachedAt: Date?
     var searchText: String = ""
 
     private let repository: CachingDepthRepository
@@ -39,6 +43,7 @@ final class TeamListViewModel {
         loadState = .loading
         do {
             teams = try await repository.teams()
+            cachedAt = await repository.teamListCachedAt()
             loadState = .loaded
         } catch let error as DepthError {
             loadState = .failed(error)

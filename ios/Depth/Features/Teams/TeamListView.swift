@@ -49,7 +49,8 @@ struct TeamListView: View {
                     ToolbarItem(placement: .topBarTrailing) {
                         AccountSettingsButton(
                             sessionStore: sessionStore,
-                            authService: authService
+                            authService: authService,
+                            dataSavedAt: viewModel.cachedAt
                         )
                     }
                 }

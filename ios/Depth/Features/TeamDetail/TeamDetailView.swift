@@ -207,6 +207,14 @@ struct TeamDetailView: View {
                         }
                         .padding(.horizontal)
                     }
+                    if !historical, let cachedAt = viewModel.cachedAt {
+                        // Explicit "Saved on this device" text is required in both fresh
+                        // and stale states (task-8d brief) — the stale banner below is
+                        // just the additional >24h "pull to refresh" nudge on top of it.
+                        // Historical rosters are on-demand reads with no cache row, so
+                        // this only ever renders for the live snapshot.
+                        SavedOnDeviceBanner(cachedAt: cachedAt)
+                    }
                     if !historical && viewModel.isStale {
                         StaleBanner()
                     }
@@ -318,6 +326,18 @@ extension Position {
         case .k, .p, .ls, .kr, .pr:
             .special
         }
+    }
+}
+
+private struct SavedOnDeviceBanner: View {
+    let cachedAt: Date
+
+    var body: some View {
+        SavedOnDeviceLabel(cachedAt: cachedAt)
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal)
+            .accessibilityIdentifier("saved-on-device-label")
     }
 }
 
