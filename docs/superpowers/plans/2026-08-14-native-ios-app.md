@@ -145,11 +145,28 @@ build alone.
   - Surfaced by: Architecture — browser auth and current deletion assurances are insufficient.
   - Files: `ios/Depth/Features/Auth/`, `Settings/`, `TeamDetail/`, `supabase/functions/`, tests.
   - Verify: auth/override/deletion UI, integration, cascade, and RLS suites pass.
-- [ ] **T8 (P1, human: ~4d / CC: ~1d)** — Version 1 parity — add schedule, history, profiles,
+- [x] **T8 (P1, human: ~4d / CC: ~1d)** — Version 1 parity — add schedule, history, profiles,
   settings, cleared uniforms, and local image/text sharing.
   - Surfaced by: Scope Challenge — consumer scope retained with milestone discipline.
   - Files: `ios/Depth/Features/`, `ios/DepthTests/`, `ios/DepthUITests/`.
   - Verify: version 1 parity checklist passes on production-shaped staging data.
+  - Shipped: depth#362 (schedule), depth#363 (complete player profiles), depth#364
+    (historical rosters), depth#366 (Settings/About + honest on-device data timestamps),
+    depth#367 (local image/text sharing via `ImageRenderer` + native share sheet),
+    depth#368 (privacy-minimal telemetry). Uniforms use the documented fallback and ship
+    no native uniform surface — Gate 0 (T1) still has uniform/headshot/logo data rights
+    unresolved, so this stays deferred to a later focused PR rather than shipping ahead
+    of a rights decision. Settings/About omits privacy-policy and support links — no
+    real production domain or support contact exists yet (also T1/Gate 0); the in-app
+    non-affiliation/fair-use disclaimer (Gate 0 item 9) is in place regardless. Crash
+    reporting is Apple-native only (TestFlight/App Store Connect's automatic collection,
+    zero code, zero dependency) rather than a third-party SDK; analytics is a new
+    `app_events` Supabase table recording five product metrics with a schema that
+    structurally cannot hold a user/device/session identifier — see
+    `docs/ios-privacy-telemetry.md` for the full App Privacy documentation, written
+    before any instrumentation shipped. Every implementation PR ran the full Staging
+    `xcodebuild ... test` suite (unit + XCUITest) on the booted iPhone 17 Pro simulator
+    and addressed Greptile's initial review before squash-merge.
 - [ ] **T9 (P1, human: ~3d / CC: ~6h)** — CI and release QA — add macOS build/test CI,
   performance metrics, archive-secret inspection, deterministic screenshot automation, and device
   matrix runs.
