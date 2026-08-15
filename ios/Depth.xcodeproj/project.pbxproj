@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		028DB6758D8847C5EBD21D3C /* ScheduleFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C89B84763FF4CDE45B5A7D9 /* ScheduleFeatureTests.swift */; };
+		0C5839F354A2C1DB41FB0D66 /* AccessibilityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15AED7FA002B19217B8B64B4 /* AccessibilityUITests.swift */; };
 		0CC455D8CA174BBB060DE8ED /* CachedSnapshotModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD58C5053B074511EA4E2608 /* CachedSnapshotModels.swift */; };
 		0F6FD5C287B8974874D6F67E /* DepthEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCEB2197DF04D84335401768 /* DepthEnvironment.swift */; };
 		16168662B8CF4E7B450CA34B /* ScheduleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FC6EE7ED8FF20B422D809B /* ScheduleViewModel.swift */; };
@@ -112,6 +113,7 @@
 		1134BC81FF92C3AF1A114845 /* DepthUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthUITests.swift; sourceTree = "<group>"; };
 		12541806712112F37DAC99FC /* Formations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formations.swift; sourceTree = "<group>"; };
 		12A1C43C94C87299E927B13F /* AuthSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSheet.swift; sourceTree = "<group>"; };
+		15AED7FA002B19217B8B64B4 /* AccessibilityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityUITests.swift; sourceTree = "<group>"; };
 		16777E464D29CE02F612C8FD /* TeamDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamDetailView.swift; sourceTree = "<group>"; };
 		1F8DBF3EB4D70F6DF2E44420 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
 		223FADA68FC13AD96EF5FB10 /* DepthApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthApp.swift; sourceTree = "<group>"; };
@@ -313,6 +315,7 @@
 		77DEE2A0C556DEDB6B3DD14B /* DepthUITests */ = {
 			isa = PBXGroup;
 			children = (
+				15AED7FA002B19217B8B64B4 /* AccessibilityUITests.swift */,
 				69C97D21FFB3852484D4E4F2 /* AppStoreScreenshotsUITests.swift */,
 				AFE9E3629D2A8EF20465A2F7 /* AuthUITests.swift */,
 				1134BC81FF92C3AF1A114845 /* DepthUITests.swift */,
@@ -654,6 +657,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0C5839F354A2C1DB41FB0D66 /* AccessibilityUITests.swift in Sources */,
 				C34BDFEA64ECB80BA1EE640C /* AppStoreScreenshotsUITests.swift in Sources */,
 				A1E1EFE3A8781B7BA2758DB4 /* AuthUITests.swift in Sources */,
 				5B9538595A885E3D730A7A12 /* DepthUITests.swift in Sources */,
