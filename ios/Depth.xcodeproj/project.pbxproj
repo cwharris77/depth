@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		028DB6758D8847C5EBD21D3C /* ScheduleFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C89B84763FF4CDE45B5A7D9 /* ScheduleFeatureTests.swift */; };
-		0C5839F354A2C1DB41FB0D66 /* AccessibilityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15AED7FA002B19217B8B64B4 /* AccessibilityUITests.swift */; };
 		0A476DD65C57C553CAA0A3AF /* UITestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A33972CBA3A43968B410F6 /* UITestHelpers.swift */; };
 		0AE16FEB0CC82155EB87714A /* DepthChartsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC28FD5A3D6B31E76BAA669 /* DepthChartsTab.swift */; };
+		0C5839F354A2C1DB41FB0D66 /* AccessibilityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15AED7FA002B19217B8B64B4 /* AccessibilityUITests.swift */; };
 		0CC455D8CA174BBB060DE8ED /* CachedSnapshotModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD58C5053B074511EA4E2608 /* CachedSnapshotModels.swift */; };
 		0F6FD5C287B8974874D6F67E /* DepthEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCEB2197DF04D84335401768 /* DepthEnvironment.swift */; };
 		16168662B8CF4E7B450CA34B /* ScheduleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FC6EE7ED8FF20B422D809B /* ScheduleViewModel.swift */; };
