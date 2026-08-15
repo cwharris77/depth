@@ -116,12 +116,14 @@ final class AccessibilityUITests: XCTestCase {
         let stats = app.otherElements["player-profile-stats"]
         XCTAssertTrue(stats.waitForExistence(timeout: 15), "the profile should resolve a stats state")
 
-        // A resolved-but-empty stats state is legitimate production data, so only assert
-        // the label contract when real season rows actually rendered.
+        // A starting QB in real production data always has season-stat rows, so this
+        // asserts directly rather than skipping — a silent skip here would let the
+        // spoken-label contract regress without ever failing the suite.
         let seasonRow = stats.otherElements.matching(NSPredicate(format: "label CONTAINS ' season, '")).firstMatch
-        guard seasonRow.waitForExistence(timeout: 10) else {
-            throw XCTSkip("no season stat rows available for this player in staging data")
-        }
+        XCTAssertTrue(
+            seasonRow.waitForExistence(timeout: 10),
+            "the starting QB should have at least one season-stat row in staging data"
+        )
 
         // Which columns appear depends on whichever position the field surfaced first,
         // so assert the shape rather than a specific stat: every segment after the
