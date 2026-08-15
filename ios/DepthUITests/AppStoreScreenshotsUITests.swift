@@ -65,7 +65,12 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         ).firstMatch
         XCTAssertTrue(editorEntry.waitForExistence(timeout: 10), "the Edit Order menu should list at least one position group")
         editorEntry.tap()
-        XCTAssertTrue(app.navigationBars.firstMatch.waitForExistence(timeout: 10), "the reorder sheet should present")
+        // `app.navigationBars.firstMatch` is already satisfied by the team-detail
+        // navigation bar underneath while the sheet is still presenting — wait for the
+        // sheet's own Save button instead ("Save" is unique to OverrideEditorSheet
+        // app-wide), which only exists once the editor is actually on screen (Greptile
+        // P1 on this PR's first review).
+        XCTAssertTrue(app.buttons["Save"].waitForExistence(timeout: 10), "the reorder sheet should present")
         attachScreenshot(name: "04-reorder-editing")
         let cancelButton = app.buttons["Cancel"]
         XCTAssertTrue(cancelButton.waitForExistence(timeout: 5))
@@ -76,6 +81,14 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         XCTAssertTrue(scheduleButton.waitForExistence(timeout: 10), "team detail should expose a Schedule destination")
         scheduleButton.tap()
         XCTAssertTrue(app.otherElements["schedule-content"].waitForExistence(timeout: 15), "the schedule should render production-shaped staging content")
+        // `schedule-content` is the outer scroll container and can exist before its
+        // LazyVGrid actually renders any game cards — wait for a real week card too,
+        // same pattern DepthUITests.swift's testOpenTeamSchedule uses (Greptile P1 on
+        // this PR's first review).
+        let weekCard = app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier BEGINSWITH 'schedule-week-'")
+        ).firstMatch
+        XCTAssertTrue(weekCard.waitForExistence(timeout: 10), "the schedule should render at least one weekly card")
         attachScreenshot(name: "05-schedule")
     }
 
