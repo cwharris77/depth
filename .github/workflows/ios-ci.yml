@@ -173,3 +173,39 @@ jobs:
             -configuration Staging \
             -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.device_id }}" \
             test
+
+  archive-secret-check:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      # Same pin as the `test` job above — see its comment for why.
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Select latest stable Xcode
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
+        with:
+          xcode-version: latest-stable
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project from project.yml
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Verify checked-in project matches project.yml
+        run: |
+          if ! git diff --exit-code -- ios/Depth.xcodeproj; then
+            echo "::error::ios/Depth.xcodeproj is out of sync with ios/project.yml — run 'xcodegen generate' in ios/ and commit the regenerated project."
+            exit 1
+          fi
+
+      - name: Matcher self-test
+        run: ios/scripts/inspect-archive-secrets.sh --self-test
+
+      # Builds an unsigned Release configuration for the simulator SDK and scans
+      # Info.plist + the compiled binary for any service-role-shaped Supabase secret —
+      # enforces the hard rule in AGENTS.md that no service-role key ever ships in the
+      # app bundle. See ios/scripts/inspect-archive-secrets.sh for the full rationale.
+      - name: Inspect built archive for leaked secrets
+        run: ios/scripts/inspect-archive-secrets.sh
