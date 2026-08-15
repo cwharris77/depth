@@ -19,9 +19,17 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         app.launchArguments = ["UI_TESTING_APPSTORE_SCREENSHOTS"]
         app.launch()
 
-        // 1. Team selector/search — "Every team. One clear depth chart."
+        // 1. Team selector/search — "Every team. One clear depth chart." The selector is
+        // no longer the app root (2026-08-15 navigation-parity spec); it is the switcher
+        // sheet, so this opens it explicitly. The five-shot sequence and its captions are
+        // otherwise unchanged.
+        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
+        let switcher = app.buttons["team-switcher-button"]
+        XCTAssertTrue(switcher.waitForExistence(timeout: 15), "the chart header should expose the team switcher")
+        switcher.tap()
+
         let searchField = app.searchFields.firstMatch
-        XCTAssertTrue(searchField.waitForExistence(timeout: 15), "search field should appear once the team list loads")
+        XCTAssertTrue(searchField.waitForExistence(timeout: 15), "the switcher sheet should offer team search")
         searchField.tap()
         searchField.typeText("Bills")
 
@@ -36,6 +44,15 @@ final class AppStoreScreenshotsUITests: XCTestCase {
 
         // 2. Team depth chart — "See every position at a glance."
         teamRow.tap()
+        // Selecting a team is a sheet dismiss over the previously-mounted chart, not a
+        // fresh push, so waiting on the unit picker/player slot alone doesn't prove the
+        // Bills chart is what's actually on screen — it proves *a* chart is. Wait for the
+        // switcher button to relabel for the Bills specifically first (see
+        // UITestHelpers.swift's `selectTeam` for the same reasoning).
+        XCTAssertTrue(
+            switcher.waitForLabel(containing: "Buffalo Bills"),
+            "the switcher button should relabel for the Buffalo Bills once the switch completes"
+        )
         let unitPicker = app.segmentedControls.firstMatch
         XCTAssertTrue(unitPicker.waitForExistence(timeout: 15), "depth chart should render a unit picker once the team snapshot loads")
         let playerSlot = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'player-slot-'")).firstMatch

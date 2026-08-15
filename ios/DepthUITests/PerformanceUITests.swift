@@ -19,14 +19,14 @@ final class PerformanceUITests: XCTestCase {
         return options
     }
 
-    /// `TeamListView`'s `.searchable` search field exists as soon as the
-    /// `NavigationStack` builds — including during the loading skeleton, before any
-    /// team data has arrived — so it isn't proof the list actually rendered (Greptile
-    /// P1, PR #371). A real team row (`team-row-<id>`, `TeamListView.swift`) only
-    /// exists once `TeamListViewModel.load()` reaches `.loaded` with a non-empty list,
-    /// making it the accurate "content rendered" signal for these tests.
-    private func waitForFirstTeamRow(in app: XCUIApplication, timeout: TimeInterval = 10) -> Bool {
-        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'team-row-'")).firstMatch
+    /// The launch destination is a depth chart as of the 2026-08-15 navigation-parity
+    /// change, so "first useful render" is measured against a rendered player slot
+    /// (`player-slot-*`, `DepthChartFieldView.swift`) rather than a team row. Both the
+    /// unit picker and the navigation bar exist before any snapshot data arrives, so
+    /// neither is proof the chart actually rendered (the same Greptile P1 that ruled out
+    /// `.searchable`'s search field in PR #371).
+    private func waitForDepthChart(in app: XCUIApplication, timeout: TimeInterval = 15) -> Bool {
+        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'player-slot-'")).firstMatch
             .waitForExistence(timeout: timeout)
     }
 
@@ -50,7 +50,7 @@ final class PerformanceUITests: XCTestCase {
             let app = XCUIApplication()
             app.launchArguments = ["UI_TESTING_RESET_STATE"]
             app.launch()
-            _ = waitForFirstTeamRow(in: app)
+            _ = waitForDepthChart(in: app)
         }
     }
 
@@ -74,17 +74,22 @@ final class PerformanceUITests: XCTestCase {
     /// overhead on top of the app-internal number) at 6.44s; 15s keeps meaningful margin
     /// over that single data point for shared-runner noise while still catching an
     /// order-of-magnitude regression.
+    ///
+    /// The measured interval now also covers startup-team resolution and the team
+    /// snapshot query, where it previously covered the lighter team-list query — re-run
+    /// `testAppLaunchSignpostMetric` on CI after this lands and widen the budget only if
+    /// a real CI number exceeds it, not preemptively.
     func testWarmRelaunchReachesFirstUsefulRenderWithinBudget() throws {
         let app = XCUIApplication()
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
         app.launch()
-        XCTAssertTrue(waitForFirstTeamRow(in: app), "team list should load on the priming launch")
+        XCTAssertTrue(waitForDepthChart(in: app), "depth chart should load on the priming launch")
         app.terminate()
 
         let clock = ContinuousClock()
         let start = clock.now
         app.launch()
-        XCTAssertTrue(waitForFirstTeamRow(in: app), "team list should load on the warm relaunch")
+        XCTAssertTrue(waitForDepthChart(in: app), "depth chart should load on the warm relaunch")
         let elapsed = clock.now - start
 
         XCTAssertLessThan(

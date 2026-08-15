@@ -1,29 +1,27 @@
 import XCTest
 
-// Critical-path UI journey for the T6 vertical slice (design spec's "TEAM JOURNEY":
-// team list → local search → team snapshot → position group → player detail). Runs
-// against Debug's real staging Supabase (ios/xcconfig/Debug.xcconfig), same as every
-// other Debug-config run — no seeded/mocked data.
+// Critical-path UI journey (design spec's "TEAM JOURNEY": launch chart → switch team via
+// search → team snapshot → position group → player detail). As of the 2026-08-15
+// navigation-parity spec the app launches straight into a depth chart rather than a team
+// list, so every journey opens the switcher sheet (`selectTeam`, UITestHelpers.swift)
+// instead of searching a root list. Runs against Debug's real staging Supabase
+// (ios/xcconfig/Debug.xcconfig), same as every other Debug-config run — no seeded/mocked
+// data.
 final class DepthUITests: XCTestCase {
     func testAppLaunches() throws {
         let app = XCUIApplication()
         app.launch()
     }
 
-    func testSearchTeamOpenChartAndPlayerDetail() throws {
+    func testLaunchesIntoAChartThenSwitchesTeamAndOpensPlayerDetail() throws {
         let app = XCUIApplication()
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
         app.launch()
 
-        let searchField = app.searchFields.firstMatch
-        XCTAssertTrue(searchField.waitForExistence(timeout: 10), "search field should appear once the team list loads")
+        // No stored preference → the default team's chart is the launch destination.
+        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
 
-        searchField.tap()
-        searchField.typeText("Bills")
-
-        let teamRow = app.buttons["team-row-bills"]
-        XCTAssertTrue(teamRow.waitForExistence(timeout: 10), "searching \"Bills\" should surface the Buffalo Bills row")
-        teamRow.tap()
+        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
 
         let unitPicker = app.segmentedControls.firstMatch
         XCTAssertTrue(unitPicker.waitForExistence(timeout: 10), "depth chart should render a unit picker once the team snapshot loads")
@@ -64,14 +62,8 @@ final class DepthUITests: XCTestCase {
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
         app.launch()
 
-        let searchField = app.searchFields.firstMatch
-        XCTAssertTrue(searchField.waitForExistence(timeout: 10), "search field should appear once the team list loads")
-        searchField.tap()
-        searchField.typeText("Bills")
-
-        let teamRow = app.buttons["team-row-bills"]
-        XCTAssertTrue(teamRow.waitForExistence(timeout: 10), "searching \"Bills\" should surface the Buffalo Bills row")
-        teamRow.tap()
+        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
+        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
 
         let scheduleButton = app.buttons["schedule-destination"]
         XCTAssertTrue(scheduleButton.waitForExistence(timeout: 10), "team detail should expose a Schedule destination")
@@ -91,14 +83,8 @@ final class DepthUITests: XCTestCase {
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
         app.launch()
 
-        let searchField = app.searchFields.firstMatch
-        XCTAssertTrue(searchField.waitForExistence(timeout: 10))
-        searchField.tap()
-        searchField.typeText("Seahawks")
-
-        let teamRow = app.buttons["team-row-seahawks"]
-        XCTAssertTrue(teamRow.waitForExistence(timeout: 10))
-        teamRow.tap()
+        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
+        app.selectTeam("seahawks", searching: "Seahawks", expectedDisplayName: "Seattle Seahawks")
 
         let historyButton = app.buttons["history-destination"]
         XCTAssertTrue(historyButton.waitForExistence(timeout: 10), "team detail should expose History")
@@ -127,5 +113,62 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(backToToday.waitForExistence(timeout: 5))
         backToToday.tap()
         XCTAssertFalse(seasonState.waitForExistence(timeout: 2))
+    }
+
+    /// Locked decisions #1/#2/#6/#7: the tab bar exists, all three tabs are reachable,
+    /// and each renders its own content.
+    func testTabBarReachesAllThreeDestinations() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launch()
+        XCTAssertTrue(app.waitForDepthChart(), "Depth Charts should be the launch tab")
+
+        let tabs = app.tabBars.firstMatch
+        XCTAssertTrue(tabs.waitForExistence(timeout: 10), "the app should present a bottom tab bar")
+
+        tabs.buttons["Compare"].tap()
+        // `.accessibilityElement(children: .combine)` on CompareView's
+        // ContentUnavailableView collapses its image+text children into one element, but
+        // SwiftUI infers that combined element's accessibility *type* from its content
+        // (StaticText here, not the generic Other type a plain container would report) —
+        // match by identifier across any type rather than assuming one.
+        XCTAssertTrue(
+            app.descendants(matching: .any).matching(
+                NSPredicate(format: "identifier == 'compare-placeholder'")
+            ).firstMatch.waitForExistence(timeout: 10),
+            "Compare should render its coming-soon placeholder"
+        )
+
+        tabs.buttons["Account"].tap()
+        XCTAssertTrue(
+            app.staticTexts["settings-about-name"].waitForExistence(timeout: 10),
+            "Account should render the settings content"
+        )
+
+        tabs.buttons["Depth Charts"].tap()
+        XCTAssertTrue(app.waitForDepthChart(), "returning to Depth Charts should show the chart again")
+    }
+
+    /// Locked decision #3 plus the spec's restoration requirement: the last-viewed team
+    /// is the launch destination on the next launch, with no list-then-push transition.
+    func testRelaunchRestoresTheLastViewedTeamAsTheLaunchDestination() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launch()
+        XCTAssertTrue(app.waitForDepthChart())
+        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+        app.terminate()
+
+        // No reset argument — this launch must inherit the stored preference.
+        app.launchArguments = []
+        app.launch()
+        XCTAssertTrue(app.waitForDepthChart(), "relaunch should open a chart directly")
+
+        let switcher = app.buttons["team-switcher-button"]
+        XCTAssertTrue(switcher.waitForExistence(timeout: 10))
+        XCTAssertTrue(
+            switcher.label.contains("Buffalo Bills"),
+            "relaunch should restore the last-viewed team, got \"\(switcher.label)\""
+        )
     }
 }
