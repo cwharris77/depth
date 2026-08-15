@@ -120,10 +120,16 @@ private enum LocalSupabase {
         email: "t7-owner-\(UUID().uuidString)@example.com",
         password: "test-password-123"
     )
-    let nonOwnerAuth = try await nonOwnerClient.auth.signUp(
-        email: "t7-non-owner-\(UUID().uuidString)@example.com",
-        password: "test-password-123"
-    )
+    let nonOwnerAuth: AuthResponse
+    do {
+        nonOwnerAuth = try await nonOwnerClient.auth.signUp(
+            email: "t7-non-owner-\(UUID().uuidString)@example.com",
+            password: "test-password-123"
+        )
+    } catch {
+        try? await serviceClient.auth.admin.deleteUser(id: ownerAuth.user.id)
+        throw error
+    }
 
     struct UpsertParams: Encodable {
         let pTeamId: String
@@ -153,7 +159,7 @@ private enum LocalSupabase {
     let valid = UpsertParams(
         pTeamId: "bills",
         pPosition: "QB",
-        pPlayerIds: ["player-a", "player-b"]
+        pPlayerIds: [" player-a ", "player-b"]
     )
     do {
         await #expect(throws: PostgrestError.self) {
