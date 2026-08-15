@@ -186,7 +186,8 @@ A full-range backfill (e.g. `1999-2025`) is a manual `workflow_dispatch` run wit
 seasons=1999-2025`. The input is passed as `--seasons` to both steps (`ingest:nflverse`
 and `ingest:rosters` share the range) with prod secrets already wired into the job — no
 `.env.local`, no prod vars on a local machine. Leaving `seasons` empty reproduces the
-scheduled weekly job exactly (current + previous season).
+scheduled weekly job exactly: `ingest:nflverse` refreshes the current + previous
+season, `ingest:rosters` the current season only.
 
 ## License posture
 

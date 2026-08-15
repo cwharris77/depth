@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       seasons:
-        description: 'Season range to backfill, e.g. 1999-2025. Empty = current + previous (weekly behavior).'
+        description: 'Season range to backfill, e.g. 1999-2025. Empty = weekly run (ingest:nflverse current + previous, ingest:rosters current season only).'
         type: string
         required: false
         default: ''
@@ -37,7 +37,8 @@ jobs:
       - run: npm ci
       # Manual dispatch's `seasons` input backfills both this step and ingest:rosters
       # below (shared range, no per-dataset granularity). Empty input (the scheduled
-      # weekly run) falls through to the plain command -- current + previous season.
+      # weekly run) falls through to the plain command -- ingest:nflverse's default is
+      # current + previous season, ingest:rosters' default is current season only.
       - run: |
           if [ -n "$SEASONS" ]; then
             npm run ingest:nflverse -- --seasons "$SEASONS"
