@@ -7,12 +7,11 @@ final class AuthUITests: XCTestCase {
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
         app.launch()
 
-        let settingsButton = app.buttons["settings-button"]
-        XCTAssertTrue(
-            settingsButton.waitForExistence(timeout: 10),
-            "settings should be reachable from the team list"
-        )
-        settingsButton.tap()
+        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
+
+        let accountTab = app.tabBars.buttons["Account"]
+        XCTAssertTrue(accountTab.waitForExistence(timeout: 10), "Account should be reachable from the tab bar")
+        accountTab.tap()
 
         XCTAssertTrue(
             app.staticTexts["settings-about-name"].waitForExistence(timeout: 10),

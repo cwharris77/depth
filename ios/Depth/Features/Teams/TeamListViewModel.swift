@@ -47,10 +47,6 @@ final class TeamListViewModel {
             teams = try await repository.teams()
             cachedAt = await repository.teamListCachedAt()
             loadState = .loaded
-            // Closes the app-launch signpost on the first screen with real, user-visible
-            // content — see DepthSignposts.appLaunch's doc comment for why this is the
-            // proxy for "first useful render" rather than the depth chart itself.
-            DepthSignposts.endAppLaunchIfNeeded()
         } catch let error as DepthError {
             loadState = .failed(error)
             events.record(.error(category: error.telemetryCategory))

@@ -8,7 +8,7 @@ import SwiftUI
 struct DepthApp: App {
     init() {
         // Opens the "app init → first useful render" signpost interval (Performance
-        // Review #5); closed by `TeamListViewModel.load()` on its first successful load.
+        // Review #5); closed by TeamDetailViewModel.load() on its first successful load.
         DepthSignposts.beginAppLaunch()
 
         // UI tests launch with this argument so every test starts from the same
@@ -20,15 +20,13 @@ struct DepthApp: App {
         }
 
         // App Store screenshot capture (task-9d-screenshots-brief.md) needs the same
-        // clean-slate starting state as UI_TESTING_RESET_STATE — screenshot #1 is the
-        // root team-selector/search screen itself, so restoring straight into a team
-        // (the naive reading of "pre-select team bills") would skip past it entirely.
-        // AppStoreScreenshotsUITests supplies the "bills" consistency by searching and
-        // tapping the Buffalo Bills row itself, same as the rest of the suite; every
-        // later screenshot in the sequence stays on that team because the NavigationStack
-        // push persists for the rest of the one launch. The signed-out half of
-        // "deterministic, signed-out state" is enforced in ContentView's `.task` (after
-        // session restore has a chance to run).
+        // clean-slate starting state as UI_TESTING_RESET_STATE: with no restored team,
+        // the Depth Charts tab opens on StartupTeam.defaultTeamId, so a screenshot run
+        // always starts from the same chart regardless of what a prior manual session
+        // left behind. AppStoreScreenshotsUITests then opens the team switcher and picks
+        // Buffalo Bills itself; that selection persists for the rest of the one launch.
+        // The signed-out half of "deterministic, signed-out state" is enforced in
+        // ContentView's `.task` (after session restore has a chance to run).
         if ProcessInfo.processInfo.arguments.contains("UI_TESTING_APPSTORE_SCREENSHOTS") {
             DepthEnvironment.preferences.lastTeamId = nil
             DepthEnvironment.preferences.lastUnit = nil

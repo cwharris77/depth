@@ -20,6 +20,10 @@ struct TeamDetailView: View {
     private let authService: any DepthAuthServicing
     private let overrideService: any DepthOverrideServicing
     private let events: any AppEventsRecording
+    /// Opens the team switcher. Required, not optional: `DepthChartsTab` is the only
+    /// place this view is constructed now that it is a tab's stack root rather than a
+    /// pushed destination, so an unset case would be dead code.
+    private let onOpenTeamSwitcher: () -> Void
     @State private var historyViewModel: HistoryViewModel
 
     init(
@@ -29,7 +33,8 @@ struct TeamDetailView: View {
         sessionStore: AuthSessionStore,
         authService: any DepthAuthServicing,
         overrideService: any DepthOverrideServicing,
-        events: any AppEventsRecording = NoOpAppEventsRecorder()
+        events: any AppEventsRecording = NoOpAppEventsRecorder(),
+        onOpenTeamSwitcher: @escaping () -> Void
     ) {
         _viewModel = State(initialValue: viewModel)
         self.repository = repository
@@ -38,13 +43,18 @@ struct TeamDetailView: View {
         self.authService = authService
         self.overrideService = overrideService
         self.events = events
+        self.onOpenTeamSwitcher = onOpenTeamSwitcher
         _unit = State(initialValue: preferences.lastUnit ?? .offense)
         _historyViewModel = State(initialValue: HistoryViewModel(teamId: viewModel.teamId, repository: repository))
     }
 
+    private var navigationTitleText: String {
+        viewModel.snapshot.map { "\($0.team.city) \($0.team.name)" } ?? "Team"
+    }
+
     var body: some View {
         content
-            .navigationTitle(viewModel.snapshot.map { "\($0.team.city) \($0.team.name)" } ?? "Team")
+            .navigationTitle(navigationTitleText)
             .navigationBarTitleDisplayMode(.inline)
             .task {
                 await viewModel.load()
@@ -68,6 +78,21 @@ struct TeamDetailView: View {
                 }
             }
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Button(action: onOpenTeamSwitcher) {
+                        HStack(spacing: 4) {
+                            Text(navigationTitleText)
+                                .font(.headline)
+                            Image(systemName: "chevron.down")
+                                .font(.caption2.weight(.bold))
+                        }
+                    }
+                    .frame(minHeight: 44)
+                    .accessibilityIdentifier("team-switcher-button")
+                    .accessibilityLabel("\(navigationTitleText), change team")
+                    .accessibilityHint("Opens the team switcher")
+                }
+
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button("History", systemImage: "clock.arrow.circlepath") { showHistory = true }
                         .frame(minWidth: 44, minHeight: 44)

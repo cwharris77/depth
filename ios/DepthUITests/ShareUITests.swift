@@ -9,14 +9,8 @@ final class ShareUITests: XCTestCase {
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
         app.launch()
 
-        let searchField = app.searchFields.firstMatch
-        XCTAssertTrue(searchField.waitForExistence(timeout: 10), "search field should appear once the team list loads")
-        searchField.tap()
-        searchField.typeText("Bills")
-
-        let teamRow = app.buttons["team-row-bills"]
-        XCTAssertTrue(teamRow.waitForExistence(timeout: 10), "searching \"Bills\" should surface the Buffalo Bills row")
-        teamRow.tap()
+        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
+        app.selectTeam("bills", searching: "Bills")
 
         let shareButton = app.buttons["share-depth-chart"]
         XCTAssertTrue(shareButton.waitForExistence(timeout: 10), "team detail should expose a Share entry point")
