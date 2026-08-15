@@ -281,3 +281,64 @@ enum LocalSupabase {
             .execute()
     }
 }
+
+// Task 8F: app_events is insert-only for clients (design spec Milestone 2B item 26,
+// docs/ios-privacy-telemetry.md). No SELECT grant exists for anon/authenticated at
+// all — same privilege-level (not RLS-level) denial shape as app_config's UPDATE case
+// above — so the only client-visible operation is a successful, unreadable insert.
+
+@Test func anonymousCanInsertAnAppEvent() async throws {
+    let client = LocalSupabase.client(key: LocalSupabase.anonKey)
+    try await client.from("app_events").insert(["event_name": "app_launch"]).execute()
+}
+
+// Greptile review on depth#368: an unrestricted INSERT grant would let a client set
+// `created_at` explicitly, forging a timestamp that corrupts time-based aggregate
+// analytics. The grant is column-restricted to event_name/error_category, so any
+// attempt to also set created_at (or id) must be denied at the privilege level.
+@Test func anonymousCannotForgeAnEventTimestamp() async throws {
+    let client = LocalSupabase.client(key: LocalSupabase.anonKey)
+    await #expect(throws: (any Error).self) {
+        try await client.from("app_events")
+            .insert(["event_name": "app_launch", "created_at": "2020-01-01T00:00:00Z"])
+            .execute()
+    }
+}
+
+@Test func anonymousCannotReadAppEvents() async throws {
+    let client = LocalSupabase.client(key: LocalSupabase.anonKey)
+    await #expect(throws: (any Error).self) {
+        try await client.from("app_events").select().execute()
+    }
+}
+
+@Test func insertingAnUnknownEventNameIsRejectedByTheCheckConstraint() async throws {
+    let client = LocalSupabase.client(key: LocalSupabase.anonKey)
+    await #expect(throws: (any Error).self) {
+        try await client.from("app_events").insert(["event_name": "not_a_real_event"]).execute()
+    }
+}
+
+@Test func insertingAnErrorCategoryWithoutTheErrorEventNameIsRejected() async throws {
+    let client = LocalSupabase.client(key: LocalSupabase.anonKey)
+    await #expect(throws: (any Error).self) {
+        try await client.from("app_events")
+            .insert(["event_name": "app_launch", "error_category": "offline"])
+            .execute()
+    }
+}
+
+@Test func serviceRoleCanInsertAndReadAppEvents() async throws {
+    let client = LocalSupabase.client(key: try LocalSupabase.serviceRoleKey())
+    try await client.from("app_events").insert(["event_name": "override_saved"]).execute()
+
+    struct Row: Decodable {
+        let eventName: String
+        enum CodingKeys: String, CodingKey { case eventName = "event_name" }
+    }
+    let rows: [Row] = try await client.from("app_events")
+        .select("event_name")
+        .eq("event_name", value: "override_saved")
+        .execute().value
+    #expect(!rows.isEmpty)
+}

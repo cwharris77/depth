@@ -55,6 +55,27 @@ export type Database = {
         }
         Relationships: []
       }
+      app_events: {
+        Row: {
+          created_at: string
+          error_category: string | null
+          event_name: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          error_category?: string | null
+          event_name: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          error_category?: string | null
+          event_name?: string
+          id?: string
+        }
+        Relationships: []
+      }
       depth_chart_entries: {
         Row: {
           depth_rank: number

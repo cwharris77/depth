@@ -23,9 +23,11 @@ final class TeamListViewModel {
     var searchText: String = ""
 
     private let repository: CachingDepthRepository
+    private let events: any AppEventsRecording
 
-    init(repository: CachingDepthRepository) {
+    init(repository: CachingDepthRepository, events: any AppEventsRecording = NoOpAppEventsRecorder()) {
         self.repository = repository
+        self.events = events
     }
 
     var filteredTeams: [Team] {
@@ -47,8 +49,10 @@ final class TeamListViewModel {
             loadState = .loaded
         } catch let error as DepthError {
             loadState = .failed(error)
+            events.record(.error(category: error.telemetryCategory))
         } catch {
             loadState = .failed(.server("\(error)"))
+            events.record(.error(category: "server"))
         }
     }
 }

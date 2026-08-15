@@ -38,6 +38,18 @@ enum DepthAuthError: Error, Equatable, Sendable {
         case .server: "Something went wrong. Try again."
         }
     }
+
+    /// Reuses `DepthError`'s telemetry vocabulary (design spec Milestone 2B item 26)
+    /// rather than adding auth-specific DB categories — coarse buckets, not an
+    /// exhaustive enumeration of every UI error case.
+    var telemetryCategory: String {
+        switch self {
+        case .invalidEmail, .invalidCode, .expiredCode, .rateLimited, .freshOtpRequired: "validation"
+        case .offline: "offline"
+        case .unauthenticated: "unauthenticated"
+        case .deletionFailed, .server: "server"
+        }
+    }
 }
 
 protocol DepthAuthServicing: Sendable {

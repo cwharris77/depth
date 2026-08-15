@@ -18,15 +18,18 @@ final class AuthFlowViewModel {
     @ObservationIgnored private let service: any DepthAuthServicing
     @ObservationIgnored private let sessionStore: AuthSessionStore
     @ObservationIgnored private let now: @Sendable () -> Date
+    @ObservationIgnored private let events: any AppEventsRecording
 
     init(
         service: any DepthAuthServicing,
         sessionStore: AuthSessionStore,
-        now: @escaping @Sendable () -> Date = Date.init
+        now: @escaping @Sendable () -> Date = Date.init,
+        events: any AppEventsRecording = NoOpAppEventsRecorder()
     ) {
         self.service = service
         self.sessionStore = sessionStore
         self.now = now
+        self.events = events
     }
 
     var normalizedEmail: String {
@@ -52,10 +55,13 @@ final class AuthFlowViewModel {
             try await service.sendEmailOtp(to: normalizedEmail, shouldCreateUser: shouldCreateUser)
             step = .code
             resendAvailableAt = now().addingTimeInterval(60)
+            events.record(.authStarted)
         } catch let authError as DepthAuthError {
             error = authError
+            events.record(.error(category: authError.telemetryCategory))
         } catch {
             self.error = .server
+            events.record(.error(category: "server"))
         }
     }
 
@@ -74,12 +80,15 @@ final class AuthFlowViewModel {
             let user = try await service.verifyEmailOtp(
                 email: normalizedEmail, code: normalizedCode)
             sessionStore.accept(user)
+            events.record(.authCompleted)
             return true
         } catch let authError as DepthAuthError {
             error = authError
+            events.record(.error(category: authError.telemetryCategory))
             return false
         } catch {
             self.error = .server
+            events.record(.error(category: "server"))
             return false
         }
     }
