@@ -245,13 +245,11 @@ private struct TeamRow: View {
     var body: some View {
         HStack(spacing: 12) {
             TeamBadge(team: team)
-            VStack(alignment: .leading) {
-                Text("\(team.city) \(team.name)")
-                    .font(.subheadline)
-                Text("\(team.conference) \(team.division)")
-                    .font(.caption)
-                    .foregroundStyle(DesignTokens.Colors.textMuted)
-            }
+            // DEP-238: city + name only — the division is already the section header above
+            // (a division has at most 4 teams, so it's always in view), so repeating it
+            // under every row was redundant. Matches web's NavSwitcher team rows.
+            Text("\(team.city) \(team.name)")
+                .font(.subheadline)
         }
         .padding(.vertical, 4)
         .accessibilityElement(children: .combine)
@@ -259,19 +257,16 @@ private struct TeamRow: View {
 }
 
 // Sized against the same scaled badge metric as `TeamRow`, so the list doesn't resize
-// under the user when real rows land (AGENTS.md's flash-then-jump rule).
+// under the user when real rows land (AGENTS.md's flash-then-jump rule). Single line,
+// matching the post-DEP-238 TeamRow (division subtitle removed).
 private struct TeamRowSkeleton: View {
     @ScaledMetric(relativeTo: .body) private var badgeSize: CGFloat = TeamBadge.baseSize
     @ScaledMetric(relativeTo: .body) private var titleHeight: CGFloat = 16
-    @ScaledMetric(relativeTo: .caption) private var subtitleHeight: CGFloat = 12
 
     var body: some View {
         HStack(spacing: 12) {
             Circle().fill(.gray).frame(width: badgeSize, height: badgeSize)
-            VStack(alignment: .leading, spacing: 8) {
-                RoundedRectangle(cornerRadius: 4).fill(.gray).frame(maxWidth: 140, maxHeight: titleHeight)
-                RoundedRectangle(cornerRadius: 4).fill(.gray).frame(maxWidth: 90, maxHeight: subtitleHeight)
-            }
+            RoundedRectangle(cornerRadius: 4).fill(.gray).frame(maxWidth: 140, maxHeight: titleHeight)
         }
         .padding(.vertical, 4)
     }
@@ -291,7 +286,11 @@ struct TeamBadge: View {
     var body: some View {
         ZStack {
             Circle().fill(Color(hex: team.colors.uiAccent))
-            if let url = team.logo.flatMap(URL.init(string:)) {
+            // DEP-239: prefer `logoDark` — the app forces an always-dark theme (and team
+            // badges sit on that dark bg), so the dark-optimized ESPN variant is the right
+            // asset; same reasoning as the player season-stats card using `logo_dark_url`.
+            // Falls back to the light `logo` for a team with no dark variant populated.
+            if let url = (team.logoDark ?? team.logo).flatMap(URL.init(string:)) {
                 AsyncImage(url: url) { phase in
                     if let image = phase.image {
                         image.resizable().scaledToFit().padding(6)
