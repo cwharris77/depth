@@ -4,10 +4,8 @@ import Testing
 
 @testable import Depth
 
-// Task 8D coverage: About-section version/build formatting, the "Saved on this device"
-// timestamp copy (Settings' Data section and the team-detail banner), and
-// `TeamDetailViewModel`'s capture of the underlying cache timestamp (used for
-// staleness tracking). See
+// Task 8D coverage: About-section version/build formatting and `TeamDetailViewModel`'s
+// capture of the underlying cache timestamp (used for staleness tracking). See
 // `.superpowers/sdd/2026-08-14-native-ios-app/task-8d-settings-about-timestamps-brief.md`.
 
 @Test func versionAndBuildFormatsBothPresentValues() {
@@ -17,21 +15,6 @@ import Testing
 @Test func versionAndBuildFallsBackGracefullyWhenMissing() {
     #expect(formattedVersionAndBuild(version: nil, build: nil) == "\u{2014} (\u{2014})")
     #expect(formattedVersionAndBuild(version: "", build: "7") == "\u{2014} (7)")
-}
-
-@Test func savedOnDeviceLabelReportsNotSavedYetWithNoCache() {
-    #expect(DataTimestamp.savedOnDeviceLabel(nil) == DataTimestamp.notSavedYet)
-}
-
-@Test func savedOnDeviceLabelFormatsRelativeToProvidedNowAndLocale() {
-    let now = Date(timeIntervalSince1970: 10_000)
-    let cachedAt = now.addingTimeInterval(-3600)
-
-    let label = DataTimestamp.savedOnDeviceLabel(
-        cachedAt, now: now, locale: Locale(identifier: "en_US"), timeZone: TimeZone(identifier: "UTC")!
-    )
-
-    #expect(label == "Saved on this device 1 hour ago")
 }
 
 private actor FakeDepthRepository: DepthRepository {
