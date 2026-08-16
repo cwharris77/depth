@@ -279,8 +279,8 @@ struct TeamDetailView: View {
 
     private enum TeamPage: String, CaseIterable {
         case roster
-        case stats
         case schedule
+        case stats
 
         var label: String { rawValue.uppercased() }
     }
