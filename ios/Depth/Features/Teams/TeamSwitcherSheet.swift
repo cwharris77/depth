@@ -27,9 +27,16 @@ struct TeamSwitcherSheet: View {
             .navigationTitle("Teams")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                        .frame(minWidth: 44, minHeight: 44)
+                // Top-trailing X, matching the web NavSwitcher's close and the player
+                // card's dismiss (Cooper's visual pass: replace the left "Cancel").
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                    .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityLabel("Close")
                 }
             }
         }

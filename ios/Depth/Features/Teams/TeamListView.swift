@@ -8,6 +8,15 @@ import SwiftUI
 // and DepthChartsTab owns which team is current. Selection is a callback, not a push.
 struct TeamListView: View {
     @State private var viewModel: TeamListViewModel
+    /// AFC/NFC picker, mirroring the web NavSwitcher's segmented control (which defaults
+    /// to the current team's conference). Only the selected conference's teams render,
+    /// grouped by division.
+    @State private var conference: String
+    /// The web seeds its picker once from the current team's conference (`useState`
+    /// initial value); native's conference is only known after the team list loads, so
+    /// this seeds once on first load and never again (a later refresh must not undo the
+    /// user's picker choice).
+    @State private var didSeedConference = false
 
     /// Highlighted with a checkmark so the sheet shows where you are, matching the web
     /// switcher's current-team affordance.
@@ -23,12 +32,32 @@ struct TeamListView: View {
         self.selectedTeamId = selectedTeamId
         self.onSelect = onSelect
         _viewModel = State(initialValue: TeamListViewModel(repository: repository, events: events))
+        // Default to AFC until the selected team's conference is known (the web's
+        // NavSwitcher defaults to `team?.conference ?? 'AFC'`).
+        _conference = State(initialValue: "AFC")
     }
 
     var body: some View {
         content
             .searchable(text: $viewModel.searchText, prompt: "Search teams")
             .task { await viewModel.load() }
+            .onChange(of: viewModel.loadState) { _, _ in
+                // Seed the picker from the selected team's conference, mirroring the web
+                // (which opens on the current team's conference). Exactly once — a later
+                // refresh must not undo the user's picker choice.
+                guard !didSeedConference,
+                    let team = viewModel.filteredTeams.first(where: { $0.id == selectedTeamId }),
+                    viewModel.filteredTeams.contains(where: { $0.conference == team.conference })
+                else { return }
+                didSeedConference = true
+                conference = team.conference
+            }
+    }
+
+    /// Whether the list is in search mode — the web hides the conference picker once
+    /// the user types and shows flat team (and player) results instead.
+    private var isSearching: Bool {
+        !viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     @ViewBuilder
@@ -64,30 +93,99 @@ struct TeamListView: View {
                     ContentUnavailableView.search(text: viewModel.searchText)
                 }
             } else {
-                List(viewModel.filteredTeams) { team in
-                    Button {
-                        onSelect(team.id)
-                    } label: {
-                        HStack {
-                            TeamRow(team: team)
-                            Spacer()
-                            if team.id == selectedTeamId {
-                                Image(systemName: "checkmark")
-                                    .foregroundStyle(.tint)
-                                    .accessibilityHidden(true)
-                            }
-                        }
+                VStack(spacing: 0) {
+                    if !isSearching {
+                        conferencePicker
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("team-row-\(team.id)")
-                    .listRowBackground(DesignTokens.Colors.surfaceCard2)
+                    teamList
                 }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden)
                 .background(DesignTokens.Colors.bg)
-                .refreshable { await viewModel.load() }
             }
         }
+    }
+
+    // Mirrors the web NavSwitcher's AFC/NFC SegmentedControl. Hidden while searching,
+    // same as the web.
+    private var conferencePicker: some View {
+        Picker("Conference", selection: $conference) {
+            Text("AFC").tag("AFC")
+            Text("NFC").tag("NFC")
+        }
+        .pickerStyle(.segmented)
+        .padding(.horizontal)
+        .padding(.top, DesignTokens.Spacing.sm)
+        .padding(.bottom, DesignTokens.Spacing.xs)
+        .accessibilityIdentifier("team-conference-picker")
+    }
+
+    @ViewBuilder
+    private var teamList: some View {
+        if isSearching {
+            // Flat, filtered by the search text across every team — no conference
+            // grouping (web's search results are a single flat list).
+            List(viewModel.filteredTeams) { team in
+                teamRow(team)
+            }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+        } else {
+            List {
+                ForEach(divisions, id: \.division) { division in
+                    Section(header: sectionHeader(divisionHeader(division.division))) {
+                        ForEach(division.teams) { team in
+                            teamRow(team)
+                        }
+                    }
+                }
+            }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .refreshable { await viewModel.load() }
+        }
+    }
+
+    // Web parity (components/NavSwitcher.tsx groupByDivision): the selected conference's
+    // teams, division in East/North/South/West order, teams sorted by city within a
+    // division.
+    private var divisions: [(division: String, teams: [Team])] {
+        let divisionOrder = ["East", "North", "South", "West"]
+        let confTeams = viewModel.filteredTeams.filter { $0.conference == conference }
+        return divisionOrder.compactMap { division in
+            let teams = confTeams
+                .filter { $0.division == division }
+                .sorted { $0.city.localizedCaseInsensitiveCompare($1.city) == .orderedAscending }
+            return teams.isEmpty ? nil : (division, teams)
+        }
+    }
+
+    private func divisionHeader(_ division: String) -> String {
+        "\(conference) \(division.uppercased())"
+    }
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.caption)
+            .foregroundStyle(DesignTokens.Colors.textMuted)
+            .accessibilityAddTraits(.isHeader)
+    }
+
+    private func teamRow(_ team: Team) -> some View {
+        Button {
+            onSelect(team.id)
+        } label: {
+            HStack {
+                TeamRow(team: team)
+                Spacer()
+                if team.id == selectedTeamId {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(.tint)
+                        .accessibilityHidden(true)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("team-row-\(team.id)")
+        .listRowBackground(DesignTokens.Colors.surfaceCard2)
     }
 }
 
