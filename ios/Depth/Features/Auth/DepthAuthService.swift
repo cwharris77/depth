@@ -74,7 +74,14 @@ actor SupabaseDepthAuthService: DepthAuthServicing {
         return AsyncStream { continuation in
             let task = Task {
                 for await (_, session) in changes {
-                    continuation.yield(session.flatMap { Self.depthUser($0.user) })
+                    // With emitLocalSessionAsInitialSession the stored session is emitted
+                    // before any refresh, so it may be expired — never treat an expired
+                    // session as a signed-in user (supabase-swift #822 guidance).
+                    if let session, session.isExpired {
+                        continuation.yield(nil)
+                    } else {
+                        continuation.yield(session.flatMap { Self.depthUser($0.user) })
+                    }
                 }
                 continuation.finish()
             }
