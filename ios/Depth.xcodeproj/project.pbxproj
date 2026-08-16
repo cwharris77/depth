@@ -28,6 +28,7 @@
 		3DF5F85D81A69F60999825AB /* FeaturedStarters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B89B6B59045A4D78F932026 /* FeaturedStarters.swift */; };
 		4C9A1C617022D0DB3F8125F1 /* ReadableText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3BA3372BC4904E43F19F9A /* ReadableText.swift */; };
 		4E18C9EB0333BA8628859332 /* HistoryFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D250B90FB2B6E6C1379C9B01 /* HistoryFeatureTests.swift */; };
+		4ED119479D984E9FD5F0BD3B /* CurrentTeamStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34803FD110C2C303B40AA906 /* CurrentTeamStore.swift */; };
 		4FFF76CE7A865150A0929EF3 /* NativeAuthIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78EB3744AA605C27F09EC8EB /* NativeAuthIntegrationTests.swift */; };
 		50BB531E17CF38D6FDF1C71D /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 0065E218A34DF99B5279CD03 /* Supabase */; };
 		52029FDEE87BA6779F4B144E /* StartupTeamTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954B921C7ED809C93EB75D81 /* StartupTeamTests.swift */; };
@@ -141,6 +142,7 @@
 		30A33C79C70F2F28FB91F680 /* TeamSnapshotMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSnapshotMapper.swift; sourceTree = "<group>"; };
 		324A96001AEB67B20E09794B /* SupabaseDepthRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseDepthRepository.swift; sourceTree = "<group>"; };
 		32CF7D3E3A42BD02111EB0D6 /* ShareCardContentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCardContentTests.swift; sourceTree = "<group>"; };
+		34803FD110C2C303B40AA906 /* CurrentTeamStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentTeamStore.swift; sourceTree = "<group>"; };
 		35C2DE91B6A232290671FD77 /* RecordingAppEventsRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingAppEventsRecorder.swift; sourceTree = "<group>"; };
 		35D6A549002DA47A8FDFBB04 /* FieldMarkings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldMarkings.swift; sourceTree = "<group>"; };
 		3757D55E58A34FC37F1E6C19 /* Roster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Roster.swift; sourceTree = "<group>"; };
@@ -426,6 +428,7 @@
 				50938E38F00E79484F436B49 /* AppBuildInfo.swift */,
 				E636B964C5DE055FDAD2CB44 /* AppEventsRecorder.swift */,
 				211666973EE0946E8D40C189 /* Card.swift */,
+				34803FD110C2C303B40AA906 /* CurrentTeamStore.swift */,
 				8B19D86049171F706874AFF7 /* DataTimestampFormatting.swift */,
 				FCEB2197DF04D84335401768 /* DepthEnvironment.swift */,
 				A0F9DA82B880B33391B6E216 /* DepthSignposts.swift */,
@@ -663,6 +666,7 @@
 				9BABC7039CA491D54D4B1F7F /* Card.swift in Sources */,
 				F0BAAFAD8DD63BF43C660855 /* CompareView.swift in Sources */,
 				8F38AC4DC5380D3CD035AD20 /* ContentView.swift in Sources */,
+				4ED119479D984E9FD5F0BD3B /* CurrentTeamStore.swift in Sources */,
 				E867C4E09655C5AF25569C6B /* DataTimestampFormatting.swift in Sources */,
 				AC65C1250448AD4BFD7E7919 /* DepthApp.swift in Sources */,
 				C11893E533C74A67E2CEA185 /* DepthAuthService.swift in Sources */,

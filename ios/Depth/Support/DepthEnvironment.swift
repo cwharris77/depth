@@ -58,4 +58,7 @@ enum DepthEnvironment {
         SupabaseDepthOverrideService(client: supabaseClient)
     static let appEvents: any AppEventsRecording = SupabaseAppEventsRecorder(client: supabaseClient)
     @MainActor static let authSessionStore = AuthSessionStore(service: authService)
+    /// The current team's accent, published by DepthChartsTab and read by the root tab
+    /// bar for its `.tint` — app chrome adopts team color (web parity: activeColors.uiAccent).
+    @MainActor static let currentTeamStore = CurrentTeamStore()
 }
