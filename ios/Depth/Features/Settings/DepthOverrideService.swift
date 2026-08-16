@@ -191,7 +191,7 @@ func applyingDepthOverrides(
         }
         ordered.append(contentsOf: remaining.values.sorted(by: byDepthOrder))
 
-        for (index, player) in rerankedPlayers(ordered).enumerated() {
+        for (_, player) in rerankedPlayers(ordered).enumerated() {
             playersById[player.id] = player
         }
     }
