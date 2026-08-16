@@ -290,6 +290,14 @@ Adjectives don't count; these boxes do.
 - [ ] Ingest/seed writes are idempotent upserts; provenance scoping respected
 - [ ] RLS untouched (or the PR is the auth phase and ships read policies)
 
+**iOS app (additionally)**
+- [ ] Targeted test runs only, never the full suite: `xcodebuild -project ios/Depth.xcodeproj
+      -scheme Depth -destination 'platform=iOS Simulator,id=…' test
+      -only-testing:<Suite>/<Test>` scoped to the suites the diff touches
+      (DepthTests for data/domain, DepthUITests/AccessibilityUITests/ShareUITests for
+      the flows changed). This is a pre-release app — the full run is minutes long and
+      not worth it on every change.
+
 **Design spec**
 - [ ] File is `../obsidian/Projects/depth/specs/YYYY-MM-DD-<slug>-design.md` — the
       vault, never this repo's `docs/`

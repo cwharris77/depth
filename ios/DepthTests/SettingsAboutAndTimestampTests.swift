@@ -40,6 +40,10 @@ private actor FakeDepthRepository: DepthRepository {
         throw DepthError.notFound
     }
 
+    func teamStats(teamId: String) async throws -> TeamStatsPage {
+        throw DepthError.notFound
+    }
+
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
 
     func appConfig() async throws -> AppConfig {

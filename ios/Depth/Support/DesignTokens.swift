@@ -10,22 +10,32 @@ import SwiftUI
 enum DesignTokens {
     enum Colors {
         static let bg = Color(hex: "#0a0e1a")
+        /// Matches web's `bgFilterbar` — season-chips row background on the Stats page.
+        static let bgFilterbar = Color(hex: "#0d1220")
         static let textPrimary = Color(hex: "#f0f4ff")
         static let textSecondary = Color(hex: "#dfe5f0")
         static let textMuted = Color(hex: "#A5ACAF")
         static let textFaint = Color(hex: "#7d848c")
+        /// Matches web's `textFaintest` — footer tickers and micro-rank labels.
+        static let textFaintest = Color(hex: "#5a616a")
         /// The app's own UI accent (link colors, focus rings, tab-bar tint) — never
         /// team-specific. Distinct from any team's `uiAccent`.
         static let accent = Color(hex: "#69BE28")
         static let onAccent = Color(hex: "#0a0e1a")
         static let danger = Color(hex: "#ff6b6b")
+        /// Matches web's `statusInjured` — injury status and negative point differential.
+        static let statusInjured = Color(hex: "#ef5350")
         static let surfaceCard = Color(hex: "#0f1623")
         static let surfaceCard2 = Color.white.opacity(0.03)
+        /// Matches web's `surfaceRaised` — faint raised fill (rows, subtle cards).
+        static let surfaceRaised = Color.white.opacity(0.05)
         /// Matches web's `surfaceChip` (`rgba(255,255,255,0.07)`) — pill/chip backgrounds
         /// like the team-switcher trigger.
         static let surfaceChip = Color.white.opacity(0.07)
         static let borderDefault = Color.white.opacity(0.08)
         static let borderSubtle = Color.white.opacity(0.06)
+        /// Matches web's `borderInput` — stronger hairlines, dashed "degraded" borders.
+        static let borderInput = Color.white.opacity(0.14)
         /// Used by the depth-chart field's yard lines.
         static let borderStrong = Color.white.opacity(0.10)
     }

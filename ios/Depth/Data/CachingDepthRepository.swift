@@ -15,6 +15,7 @@ actor CachingDepthRepository: DepthRepository {
 
     private var inFlightListFetch: Task<[Team], Error>?
     private var inFlightSnapshotFetches: [String: Task<TeamSnapshot, Error>] = [:]
+    private var inFlightStatsFetches: [String: Task<TeamStatsPage, Error>] = [:]
 
     init(underlying: DepthRepository, store: CachedSnapshotStore) {
         self.underlying = underlying
@@ -74,6 +75,44 @@ actor CachingDepthRepository: DepthRepository {
     /// the stable repository seam.
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
         try await underlying.teamSchedule(teamId: teamId, season: season)
+    }
+
+    // MARK: - Team stats (round-4 Stats page)
+
+    /// Round-4 spec's Data flow: cache-first, exactly like the snapshot — the Stats page
+    /// sits behind the team-detail header on the primary navigation path, so it earns the
+    /// same warm-cache budget as the depth chart instead of a fresh network read per
+    /// visit. The spec says to reuse the snapshot cache layer, so this is the same
+    /// cache-hit/background-refresh/retain-on-failure pattern as `teamSnapshot`, not the
+    /// network-first `appConfig` split.
+    func teamStats(teamId: String) async throws -> TeamStatsPage {
+        if let cached = try? await store.teamStats(teamId: teamId) {
+            refreshStatsInBackground(teamId: teamId)
+            return cached
+        }
+        return try await refreshStats(teamId: teamId)
+    }
+
+    func teamStatsCachedAt(teamId: String) async -> Date? {
+        try? await store.teamStatsCachedAt(teamId: teamId)
+    }
+
+    @discardableResult
+    private func refreshStats(teamId: String) async throws -> TeamStatsPage {
+        if let existing = inFlightStatsFetches[teamId] {
+            return try await existing.value
+        }
+        let task = Task { try await self.underlying.teamStats(teamId: teamId) }
+        inFlightStatsFetches[teamId] = task
+        defer { inFlightStatsFetches[teamId] = nil }
+        let page = try await task.value
+        try? await store.saveTeamStats(page, teamId: teamId, cachedAt: Date())
+        return page
+    }
+
+    private func refreshStatsInBackground(teamId: String) {
+        guard inFlightStatsFetches[teamId] == nil else { return }
+        Task { try? await self.refreshStats(teamId: teamId) }
     }
 
     /// Player stats are a separate on-demand read; snapshot-cache restructuring would
