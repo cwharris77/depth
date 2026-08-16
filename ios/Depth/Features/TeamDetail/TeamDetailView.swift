@@ -12,7 +12,10 @@ struct TeamDetailView: View {
     @State private var unit: Unit
     @State private var page: TeamPage = .roster
     @State private var selectedPlayer: Player?
-    @State private var selectedOverrideGroup: EditableOverrideGroup?
+    /// DEP-231: the app-level edit-mode toggle (web's `globalEditMode`). When on, every
+    /// position group's player card opens already in reorder mode. Lives in the overflow
+    /// menu; disabled (not hidden) while viewing a historical season.
+    @State private var editModeEnabled = false
     @State private var showHistory = false
     @State private var showUniformPicker = false
     @State private var selectedUniformID: String?
@@ -167,12 +170,14 @@ struct TeamDetailView: View {
                     // DEP-226: reorder/reset are wired only for the live roster — a
                     // historical season is read-only, matching web's readOnly prop
                     // omission. defaultDepthChart is the position's pre-override order,
-                    // which Reset restores to.
+                    // which Reset restores to. DEP-231: global edit mode gates whether the
+                    // card opens already reordering.
                     defaultDepthChart: defaultPlayers(for: position),
                     preferences: preferences,
                     isPositionCustom: editable ? confirmedOrders[position] != nil : false,
                     onReorder: editable ? { _, ids in reorderPosition(position, ids) } : nil,
-                    onResetPosition: editable ? { _ in resetPosition(position) } : nil
+                    onResetPosition: editable ? { _ in resetPosition(position) } : nil,
+                    globalEditMode: editable && editModeEnabled
                 )
                     .id(player.id)
                     // `.sheet()` content gets a fresh UITraitCollection rather than
@@ -199,29 +204,6 @@ struct TeamDetailView: View {
                     selectedUniformID = uniformID
                     preferences.setUniformSelection(uniformID, for: viewModel.teamId)
                 }
-            }
-            .sheet(item: $selectedOverrideGroup) { group in
-                let players = players(for: group.position)
-                OverrideEditorSheet(
-                    viewModel: OverrideEditorViewModel(
-                        teamId: viewModel.teamId,
-                        position: group.position.rawValue,
-                        playerIds: players.map(\.id),
-                        // DEP-219: local-first — always caches to UserPreferences,
-                        // mirrors to the server only when signed in.
-                        writer: LocalFirstOverrideWriter(
-                            preferences: preferences,
-                            remote: sessionStore.user != nil ? overrideService : nil
-                        ),
-                        events: events
-                    ),
-                    playerNames: Dictionary(
-                        uniqueKeysWithValues: players.map {
-                            ($0.id, $0.name.isEmpty ? "#\($0.number)" : $0.name)
-                        }
-                    ),
-                    onSaved: { confirmedOrders[group.position] = $0 }
-                )
             }
     }
 
@@ -318,15 +300,27 @@ struct TeamDetailView: View {
                 DepthChartShareButton(snapshot: snapshot)
             }
 
-            if !editableGroups.isEmpty {
-                Menu("Edit Depth Chart", systemImage: "arrow.up.arrow.down") {
-                    ForEach(editableGroups) { group in
-                        Button(group.position.rawValue) { beginEditing(group) }
-                            .accessibilityIdentifier("edit-depth-order-\(group.position.rawValue)")
-                    }
-                }
-                .accessibilityIdentifier("edit-depth-order")
+            // DEP-231: app-level edit-mode toggle, folded into the overflow menu instead of
+            // its own row (web's FieldHeaderMenu.tsx single checked "Edit depth chart"
+            // item). On puts every position group's card into reorder mode at once — no
+            // per-card Reorder taps needed; off exits all of them together. Disabled (not
+            // omitted) while viewing a past season, matching web's disabled + disabledReason.
+            // Previously this was a per-position submenu opening OverrideEditorSheet —
+            // DEP-226 gave the player card inline reorder, so the toggle now drives that
+            // instead and the standalone editor is gone.
+            Button {
+                editModeEnabled.toggle()
+            } label: {
+                // Web parity (FieldHeaderMenu's share item): the label stays constant and
+                // the leading glyph flips to a Check while active — no redundant
+                // "Done Editing" rename.
+                Label(
+                    "Edit Depth Chart",
+                    systemImage: editModeEnabled ? "checkmark" : "pencil"
+                )
             }
+            .disabled(historyViewModel.isHistorical)
+            .accessibilityIdentifier("edit-depth-order")
         } label: {
             // Icon-only — a "•••" overflow glyph is self-explanatory; a trailing
             // "More" label is redundant text (Cooper's round-5 feedback).
@@ -497,17 +491,6 @@ struct TeamDetailView: View {
         }
     }
 
-    private var editableGroups: [EditableOverrideGroup] {
-        guard !historyViewModel.isHistorical else { return [] }
-        guard let snapshot = displayedSnapshot else { return [] }
-        let positions = Set(snapshot.players.filter { $0.position.unit == unit }.map(\.position))
-        return
-            positions
-            .filter { players(for: $0).count > 1 }
-            .sorted { $0.rawValue < $1.rawValue }
-            .map { EditableOverrideGroup(position: $0) }
-    }
-
     private func players(for position: Position) -> [Player] {
         displayedSnapshot?.players.filter { $0.position == position }.sorted(by: byDepthOrder)
             ?? []
@@ -565,14 +548,13 @@ struct TeamDetailView: View {
 
     // DEP-219: no auth gate — reordering is local-first, matching web (which never
     // requires sign-in to enter edit mode; only cross-device sync needs an account).
-    private func beginEditing(_ group: EditableOverrideGroup) {
-        selectedOverrideGroup = group
-    }
 
     // DEP-226: player-card reorder writes through the same local-first writer as the
     // overflow-menu editor (DEP-219) — local cache always, server mirror fire-and-forget
     // when signed in. confirmedOrders updates immediately so the field behind the sheet
-    // re-renders the new order while the card stays open.
+    // re-renders the new order while the card stays open. DEP-231: the standalone
+    // OverrideEditorViewModel is gone, so the overrideSaved event it used to fire on
+    // save is recorded here instead — one per committed drop.
     private func reorderPosition(_ position: Position, _ orderedIds: [String]) {
         confirmedOrders[position] = orderedIds
         let writer = LocalFirstOverrideWriter(
@@ -586,6 +568,7 @@ struct TeamDetailView: View {
                 playerIds: orderedIds
             )
         }
+        events.record(.overrideSaved)
     }
 
     // DEP-226: reset restores the position's default order and drops the override —
@@ -599,25 +582,6 @@ struct TeamDetailView: View {
         )
         Task {
             try? await writer.clear(teamId: viewModel.teamId, position: position.rawValue)
-        }
-    }
-}
-
-private struct EditableOverrideGroup: Identifiable {
-    let position: Position
-    var id: String { position.rawValue }
-}
-
-extension Position {
-    fileprivate var unit: Unit {
-        switch self {
-        case .qb, .rb, .fb, .wr, .te, .lt, .lg, .c, .rg, .rt:
-            .offense
-        case .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb, .cb, .lcb,
-            .rcb, .nb, .s, .ss, .fs:
-            .defense
-        case .k, .p, .ls, .kr, .pr:
-            .special
         }
     }
 }

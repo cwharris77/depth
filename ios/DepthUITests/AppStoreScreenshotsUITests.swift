@@ -69,32 +69,31 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         closeButton.tap()
         XCTAssertFalse(closeButton.waitForExistence(timeout: 3), "dismissing should close the player detail sheet")
 
-        // 4. Personal reorder editing — "Make the chart yours." Reached signed-out via
-        // the screenshot-only bypass in TeamDetailView.beginEditing; the draft list
-        // renders with drag handles already active (`.editMode = .constant(.active)`
-        // in OverrideEditorSheet), so this captures the real reorder UI without ever
-        // calling Save. Edit Depth Chart lives inside the ••• overflow menu.
+        // 4. Personal reorder editing — "Make the chart yours." DEP-231 replaced the old
+        // per-position OverrideEditorSheet with an app-level "Edit Depth Chart" toggle
+        // (web's globalEditMode): toggling it on and opening a player card shows that
+        // card's position depth already in drag-to-reorder mode. Edit Depth Chart lives
+        // inside the ••• overflow menu.
         let overflow = app.buttons["depth-chart-overflow"]
         XCTAssertTrue(overflow.waitForExistence(timeout: 10), "team detail should expose the overflow menu")
         overflow.tap()
-        let editMenu = app.buttons["edit-depth-order"]
-        XCTAssertTrue(editMenu.waitForExistence(timeout: 5), "the overflow menu should expose Edit Depth Chart while unsaved overrides exist for this unit")
-        editMenu.tap()
-        let editorEntry = app.buttons.matching(
-            NSPredicate(format: "identifier BEGINSWITH 'edit-depth-order-'")
-        ).firstMatch
-        XCTAssertTrue(editorEntry.waitForExistence(timeout: 10), "the Edit Order menu should list at least one position group")
-        editorEntry.tap()
-        // `app.navigationBars.firstMatch` is already satisfied by the team-detail
-        // navigation bar underneath while the sheet is still presenting — wait for the
-        // sheet's own Save button instead ("Save" is unique to OverrideEditorSheet
-        // app-wide), which only exists once the editor is actually on screen (Greptile
-        // P1 on this PR's first review).
-        XCTAssertTrue(app.buttons["Save"].waitForExistence(timeout: 10), "the reorder sheet should present")
+        let editToggle = app.buttons["edit-depth-order"]
+        XCTAssertTrue(editToggle.waitForExistence(timeout: 5), "the overflow menu should expose the Edit Depth Chart toggle")
+        editToggle.tap()
+        // Dismiss the overflow menu, then open a filled position slot — the card is now
+        // already in reorder mode (grip-led rows), no per-card Reorder tap needed.
+        let editSlot = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'player-slot-'")).firstMatch
+        XCTAssertTrue(editSlot.waitForExistence(timeout: 15))
+        editSlot.tap()
+        XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 10), "player detail should present in edit mode")
+        XCTAssertTrue(
+            app.descendants(matching: .any).matching(
+                NSPredicate(format: "identifier BEGINSWITH 'player-profile-depth-reorder-row-'")
+            ).firstMatch.waitForExistence(timeout: 10),
+            "global edit mode should show the card already reordering"
+        )
         attachScreenshot(name: "04-reorder-editing")
-        let cancelButton = app.buttons["Cancel"]
-        XCTAssertTrue(cancelButton.waitForExistence(timeout: 5))
-        cancelButton.tap()
+        app.buttons["Close"].tap()
 
         // 5. Schedule — "Context beyond the lineup." Round-4 (DEP-217): Schedule is now the
         // middle page-switcher tab instead of a toolbar destination.

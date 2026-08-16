@@ -173,13 +173,15 @@ final class DepthUITests: XCTestCase {
         let seasonState = app.staticTexts["history-season-state"]
         XCTAssertTrue(seasonState.waitForExistence(timeout: 10))
         XCTAssertEqual(seasonState.label, "2013 season")
-        // Historical rosters are read-only: reopen the overflow menu and confirm it has
-        // no Edit Depth Chart entry (the pre-overflow toolbar rendered a bare
-        // `edit-depth-order` button in live mode and nothing at all here).
+        // Historical rosters are read-only: reopen the overflow menu and confirm the
+        // Edit Depth Chart toggle is present but disabled (DEP-231 — disabled, not
+        // hidden, matching web's disabledReason treatment).
         let overflow2 = app.buttons["depth-chart-overflow"]
         XCTAssertTrue(overflow2.waitForExistence(timeout: 5))
         overflow2.tap()
-        XCTAssertFalse(app.buttons["edit-depth-order"].exists, "historical rosters are read-only")
+        let editToggle = app.buttons["edit-depth-order"]
+        XCTAssertTrue(editToggle.waitForExistence(timeout: 5), "historical rosters still show the Edit toggle")
+        XCTAssertFalse(editToggle.isEnabled, "historical rosters are read-only — toggle disabled")
 
         // The popover must be dismissed before the QB interaction below: re-tapping the
         // anchor while its popover is open is a no-op, and the header sits inside the
