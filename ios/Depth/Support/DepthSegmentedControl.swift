@@ -45,6 +45,7 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
                                     lineWidth: 1
                                 )
                         }
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier(option.identifier)

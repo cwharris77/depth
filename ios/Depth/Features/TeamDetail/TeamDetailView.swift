@@ -299,6 +299,7 @@ struct TeamDetailView: View {
             onChange: { page = $0 },
             activeColor: teamAccentColor
         )
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("page-switcher")
         .padding(.horizontal)
         .padding(.vertical, 8)

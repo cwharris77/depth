@@ -53,8 +53,8 @@ final class AppStoreScreenshotsUITests: XCTestCase {
             switcher.waitForLabel(containing: "Buffalo Bills"),
             "the switcher button should relabel for the Buffalo Bills once the switch completes"
         )
-        let unitPicker = app.segmentedControls.firstMatch
-        XCTAssertTrue(unitPicker.waitForExistence(timeout: 15), "depth chart should render a unit picker once the team snapshot loads")
+        let unitTab = app.buttons["unit-tab-offense"]
+        XCTAssertTrue(unitTab.waitForExistence(timeout: 15), "depth chart should render the unit tab bar once the team snapshot loads")
         let playerSlot = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'player-slot-'")).firstMatch
         XCTAssertTrue(playerSlot.waitForExistence(timeout: 15), "at least one filled depth-chart slot should be tappable")
         attachScreenshot(name: "02-team-depth-chart")
@@ -96,10 +96,11 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         XCTAssertTrue(cancelButton.waitForExistence(timeout: 5))
         cancelButton.tap()
 
-        // 5. Schedule — "Context beyond the lineup."
-        let scheduleButton = app.buttons["schedule-destination"]
-        XCTAssertTrue(scheduleButton.waitForExistence(timeout: 10), "team detail should expose a Schedule destination")
-        scheduleButton.tap()
+        // 5. Schedule — "Context beyond the lineup." Round-4 (DEP-217): Schedule is now the
+        // middle page-switcher tab instead of a toolbar destination.
+        let scheduleTab = app.buttons["page-switcher-schedule"]
+        XCTAssertTrue(scheduleTab.waitForExistence(timeout: 10), "team detail should expose a Schedule page tab")
+        scheduleTab.tap()
         XCTAssertTrue(app.otherElements["schedule-content"].waitForExistence(timeout: 15), "the schedule should render production-shaped staging content")
         // `schedule-content` is the outer scroll container and can exist before its
         // LazyVGrid actually renders any game cards — wait for a real week card too,

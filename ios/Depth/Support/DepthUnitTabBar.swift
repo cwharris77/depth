@@ -29,16 +29,15 @@ struct DepthUnitTabBar: View {
             Text(label)
                 .font(.caption.weight(.bold))
                 .foregroundStyle(isActive ? DesignTokens.Colors.textPrimary : DesignTokens.Colors.textFaint)
-                .frame(maxWidth: .infinity)
-                .padding(.bottom, 10)
+                .frame(maxWidth: .infinity, minHeight: 44)
                 .overlay(alignment: .bottom) {
                     Rectangle()
                         .fill(isActive ? activeColor : Color.clear)
                         .frame(height: 2)
                 }
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .frame(minHeight: 44)
         .accessibilityIdentifier("unit-tab-\(unit.rawValue)")
     }
 }
