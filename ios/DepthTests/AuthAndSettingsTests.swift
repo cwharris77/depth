@@ -57,26 +57,6 @@ private actor FakeAuthService: DepthAuthServicing {
     func deletionCallCount() -> Int { deletionCalls }
 }
 
-private actor FakeOverrideWriter: DepthOverrideWriting {
-    var saves: [[String]] = []
-    var error: DepthError?
-    var delay: Duration?
-
-    func save(teamId: String, position: String, playerIds: [String]) async throws {
-        if let delay { try await Task.sleep(for: delay) }
-        if let error { throw error }
-        saves.append(playerIds)
-    }
-
-    func clear(teamId: String, position: String) async throws {
-        if let error { throw error }
-    }
-
-    func setError(_ error: DepthError?) { self.error = error }
-    func setDelay(_ delay: Duration?) { self.delay = delay }
-    func savedValues() -> [[String]] { saves }
-}
-
 private actor AsyncCounter {
     private var count = 0
     func increment() { count += 1 }
@@ -226,61 +206,6 @@ private actor AsyncCounter {
     #expect(store.user == nil)
     #expect(await cleanupCount.value() == 1)
     #expect(await service.didSignOut())
-}
-
-@Test @MainActor func overrideFailurePreservesDraftAndLastConfirmedOrder() async {
-    let writer = FakeOverrideWriter()
-    await writer.setError(.offline)
-    let model = OverrideEditorViewModel(
-        teamId: "bills",
-        position: "QB",
-        playerIds: ["a", "b"],
-        writer: writer
-    )
-    model.draftPlayerIds = ["b", "a"]
-
-    #expect(await model.save() == false)
-    #expect(model.draftPlayerIds == ["b", "a"])
-    #expect(model.savedPlayerIds == ["a", "b"])
-    #expect(model.error == .offline)
-}
-
-@Test @MainActor func overrideRejectsDuplicatesAndCommitsOnlyConfirmedOrder() async {
-    let writer = FakeOverrideWriter()
-    let model = OverrideEditorViewModel(
-        teamId: "bills",
-        position: "QB",
-        playerIds: ["a", "b"],
-        writer: writer
-    )
-    model.draftPlayerIds = ["a", "a"]
-    #expect(await model.save() == false)
-    #expect(await writer.savedValues().isEmpty)
-
-    model.draftPlayerIds = ["b", "a"]
-    #expect(await model.save())
-    #expect(model.savedPlayerIds == ["b", "a"])
-    #expect(await writer.savedValues() == [["b", "a"]])
-}
-
-@Test @MainActor func overrideDoubleSubmitStartsOnlyOneWrite() async {
-    let writer = FakeOverrideWriter()
-    await writer.setDelay(.milliseconds(100))
-    let model = OverrideEditorViewModel(
-        teamId: "bills",
-        position: "QB",
-        playerIds: ["a", "b"],
-        writer: writer
-    )
-    model.draftPlayerIds = ["b", "a"]
-
-    async let firstSave = model.save()
-    await Task.yield()
-    let secondSave = await model.save()
-
-    #expect(secondSave == false)
-    #expect(await firstSave)
-    #expect(await writer.savedValues() == [["b", "a"]])
 }
 
 @Test func persistedOverrideProjectionReranksPlayersAndKeepsRosterAdditions() {

@@ -138,6 +138,69 @@ final class PlayerCardReorderUITests: XCTestCase {
         )
     }
 
+    // DEP-231: the app-level Edit Depth Chart toggle (web's globalEditMode) opens any
+    // player card already in reorder mode — no per-card Reorder tap. Toggling off restores
+    // plain tap-to-switch rows, and the per-card Reorder pill returns.
+    func testGlobalEditModeToggleShowsDragHandlesImmediately() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launch()
+
+        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
+        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+
+        // Enable the app-level toggle from the overflow menu.
+        let overflow = app.buttons["depth-chart-overflow"]
+        XCTAssertTrue(overflow.waitForExistence(timeout: 10))
+        overflow.tap()
+        let editToggle = app.buttons["edit-depth-order"]
+        XCTAssertTrue(editToggle.waitForExistence(timeout: 5))
+        editToggle.tap()
+
+        // The menu dismisses; open a filled position slot.
+        let quarterback = app.buttons["player-slot-off-qb-0"]
+        XCTAssertTrue(quarterback.waitForExistence(timeout: 10))
+        quarterback.tap()
+        XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 5))
+
+        // Already reordering: grip-led rows present with no per-card Reorder tap, and the
+        // per-card pill is hidden as redundant.
+        let reorderRows = app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier BEGINSWITH 'player-profile-depth-reorder-row-'")
+        )
+        XCTAssertTrue(
+            reorderRows.firstMatch.waitForExistence(timeout: 5),
+            "global edit mode should show drag rows immediately"
+        )
+        XCTAssertFalse(
+            app.buttons["player-profile-depth-reorder-toggle"].exists,
+            "the per-card Reorder pill is redundant while the global toggle is on"
+        )
+        app.buttons["Close"].tap()
+
+        // Disable the toggle and reopen the card: plain tap-to-switch rows, per-card
+        // Reorder pill back.
+        let overflowAgain = app.buttons["depth-chart-overflow"]
+        XCTAssertTrue(overflowAgain.waitForExistence(timeout: 5))
+        overflowAgain.tap()
+        let editToggleAgain = app.buttons["edit-depth-order"]
+        XCTAssertTrue(editToggleAgain.waitForExistence(timeout: 5))
+        editToggleAgain.tap()
+
+        let qbAgain = app.buttons["player-slot-off-qb-0"]
+        XCTAssertTrue(qbAgain.waitForExistence(timeout: 10))
+        qbAgain.tap()
+        XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 5))
+        XCTAssertFalse(
+            reorderRows.firstMatch.exists,
+            "toggling global edit off should restore plain tap-to-switch rows"
+        )
+        XCTAssertTrue(
+            app.buttons["player-profile-depth-reorder-toggle"].waitForExistence(timeout: 5),
+            "the per-card Reorder pill returns once global mode is off"
+        )
+    }
+
     private func attachScreenshot(_ app: XCUIApplication, named name: String) {
         let attachment = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
         attachment.name = name
