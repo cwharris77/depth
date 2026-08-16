@@ -25,6 +25,8 @@ enum DesignTokens {
         static let danger = Color(hex: "#ff6b6b")
         /// Matches web's `statusInjured` — injury status and negative point differential.
         static let statusInjured = Color(hex: "#ef5350")
+        /// Matches web's `surfaceNavy` (`rgba(0,34,68,0.8)`) — the position-badge pill fill.
+        static let surfaceNavy = Color(red: 0 / 255, green: 34 / 255, blue: 68 / 255).opacity(0.8)
         static let surfaceCard = Color(hex: "#0f1623")
         static let surfaceCard2 = Color.white.opacity(0.03)
         /// Matches web's `surfaceRaised` — faint raised fill (rows, subtle cards).
