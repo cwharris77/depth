@@ -2,20 +2,30 @@ import SwiftUI
 
 // Native schedule destination. The view owns only its feature-local observable state;
 // every public read remains behind DepthRepository. A grid adapts to Dynamic Type and
-// screen width instead of relying on fixed card geometry.
+// screen width instead of relying on fixed card geometry. When `isEmbedded` (round-4
+// page switcher), the pushed-destination chrome is suppressed: the shared nav bar keeps
+// the team identity, and the view renders as just the content column.
 struct ScheduleView: View {
     @State private var viewModel: ScheduleViewModel
+    private let isEmbedded: Bool
 
-    init(teamId: String, repository: DepthRepository) {
+    init(teamId: String, repository: DepthRepository, isEmbedded: Bool = false) {
         _viewModel = State(initialValue: ScheduleViewModel(teamId: teamId, repository: repository))
+        self.isEmbedded = isEmbedded
     }
 
     var body: some View {
-        content
-            .navigationTitle("Schedule")
-            .navigationBarTitleDisplayMode(.inline)
-            .task { await viewModel.load() }
-            .refreshable { await viewModel.load() }
+        Group {
+            if isEmbedded {
+                content
+            } else {
+                content
+                    .navigationTitle("Schedule")
+                    .navigationBarTitleDisplayMode(.inline)
+            }
+        }
+        .task { await viewModel.load() }
+        .refreshable { await viewModel.load() }
     }
 
     @ViewBuilder

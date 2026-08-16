@@ -19,6 +19,12 @@ protocol DepthRepository: Sendable {
     /// Independent lazy profile read. It is intentionally excluded from team snapshots
     /// and cache persistence because opening a player is the only consumer.
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats]
+    /// The team's season-record page backing the Stats feature (round-4 header/stats
+    /// spec, locked decision #3): read-only reads of `team_stats` + `teams`, no schema
+    /// change. Cached like the snapshot (cache-first with background refresh), not
+    /// delegated like the schedule — the spec's Data flow says to reuse the snapshot
+    /// cache layer rather than inventing a second one.
+    func teamStats(teamId: String) async throws -> TeamStatsPage
     /// Cross-team player search for the switcher (2026-08-15 navigation-parity round 2:
     /// "search should work for players as well as teams"), mirroring web's
     /// `searchAllPlayers`. Searches every ingested team's players, not just the selected

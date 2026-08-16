@@ -69,8 +69,8 @@ final class AccessibilityUITests: XCTestCase {
         let app = launchApp(dynamicTypeSize: "accessibility5")
         openBillsDepthChart(app)
 
-        let unitPicker = app.segmentedControls.firstMatch
-        XCTAssertTrue(unitPicker.waitForExistence(timeout: 10), "unit picker should render at Accessibility XXXL")
+        let unitTab = app.buttons["unit-tab-offense"]
+        XCTAssertTrue(unitTab.waitForExistence(timeout: 10), "unit tab bar should render at Accessibility XXXL")
 
         let playerSlot = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'player-slot-'")).firstMatch
         XCTAssertTrue(playerSlot.waitForExistence(timeout: 10), "a filled slot should still render at Accessibility XXXL")

@@ -23,8 +23,8 @@ final class DepthUITests: XCTestCase {
 
         app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
 
-        let unitPicker = app.segmentedControls.firstMatch
-        XCTAssertTrue(unitPicker.waitForExistence(timeout: 10), "depth chart should render a unit picker once the team snapshot loads")
+        let unitTab = app.buttons["unit-tab-offense"]
+        XCTAssertTrue(unitTab.waitForExistence(timeout: 10), "depth chart should render the unit tab bar once the team snapshot loads")
 
         let playerSlot = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'player-slot-'")).firstMatch
         XCTAssertTrue(playerSlot.waitForExistence(timeout: 10), "at least one filled depth-chart slot should be tappable")
@@ -69,9 +69,11 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
         app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
 
-        let scheduleButton = app.buttons["schedule-destination"]
-        XCTAssertTrue(scheduleButton.waitForExistence(timeout: 10), "team detail should expose a Schedule destination")
-        scheduleButton.tap()
+        // Round-4 (DEP-217): Schedule is the middle tab of the ROSTER/SCHEDULE/STATS page
+        // switcher, no longer a toolbar destination.
+        let scheduleTab = app.buttons["page-switcher-schedule"]
+        XCTAssertTrue(scheduleTab.waitForExistence(timeout: 10), "team detail should expose a Schedule page tab")
+        scheduleTab.tap()
 
         let scheduleContent = app.otherElements["schedule-content"]
         XCTAssertTrue(scheduleContent.waitForExistence(timeout: 10), "the schedule should render production-shaped staging content")
@@ -80,6 +82,67 @@ final class DepthUITests: XCTestCase {
             NSPredicate(format: "identifier BEGINSWITH 'schedule-week-'")
         ).firstMatch
         XCTAssertTrue(weekCard.waitForExistence(timeout: 5), "the schedule should render at least one weekly card")
+    }
+
+    /// Round-4 (DEP-216/217): the ROSTER/SCHEDULE/STATS page switcher reaches all three
+    /// pages, each rendering its own content — the roster chart, the Stats record, and
+    /// the embedded schedule. Uses the Bills, a team with real ingested stats.
+    func testPageSwitcherReachesAllThreePages() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launch()
+
+        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
+        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+
+        let statsTab = app.buttons["page-switcher-stats"]
+        XCTAssertTrue(statsTab.waitForExistence(timeout: 10), "team detail should expose a Stats page tab")
+        statsTab.tap()
+        XCTAssertTrue(
+            app.scrollViews["stats-content"].waitForExistence(timeout: 15),
+            "the Stats page should render its record content"
+        )
+        XCTAssertTrue(
+            app.staticTexts["stats-record"].waitForExistence(timeout: 5),
+            "the Stats page should render the team's record"
+        )
+
+        let scheduleTab = app.buttons["page-switcher-schedule"]
+        XCTAssertTrue(scheduleTab.waitForExistence(timeout: 5), "the page switcher should still be reachable from Stats")
+        scheduleTab.tap()
+        XCTAssertTrue(
+            app.otherElements["schedule-content"].waitForExistence(timeout: 15),
+            "the schedule page should render once switched from Stats"
+        )
+
+        let rosterTab = app.buttons["page-switcher-roster"]
+        XCTAssertTrue(rosterTab.waitForExistence(timeout: 5))
+        rosterTab.tap()
+        XCTAssertTrue(
+            app.waitForDepthChart(),
+            "returning to Roster should render the depth chart again"
+        )
+    }
+
+    /// Round-4 (DEP-218): the underline unit tabs replace the stock capsule Picker, and
+    /// the spec's Testing section requires the 44pt tap target survive the restyle.
+    func testUnitTabsPreserveTapTargets() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launch()
+
+        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
+        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+
+        for identifier in ["unit-tab-offense", "unit-tab-defense", "unit-tab-special"] {
+            let tab = app.buttons[identifier]
+            XCTAssertTrue(tab.waitForExistence(timeout: 10), "\(identifier) should render")
+            XCTAssertTrue(tab.isHittable, "\(identifier) should be tappable")
+            XCTAssertGreaterThanOrEqual(
+                tab.frame.height, 44,
+                "\(identifier) must keep the 44-point minimum tap target"
+            )
+        }
     }
 
     func testOpenHistoricalRosterProfileAndReturnToToday() throws {

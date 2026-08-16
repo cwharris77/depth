@@ -193,6 +193,7 @@ private actor PlayerStatsRepositoryFake: DepthRepository {
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot { throw DepthError.notFound }
     func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot { throw DepthError.notFound }
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
+    func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
     func appConfig() async throws -> AppConfig { AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil) }
 
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] {
@@ -211,6 +212,7 @@ private actor DelayedPlayerStatsRepository: DepthRepository {
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot { throw DepthError.notFound }
     func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot { throw DepthError.notFound }
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
+    func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
     func appConfig() async throws -> AppConfig { AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil) }
 
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] {

@@ -101,6 +101,55 @@ actor CachedSnapshotStore {
         }
     }
 
+    // MARK: - Team stats (round-4 Stats page)
+
+    /// Same validity rules as `teamSnapshot` (version check + payload decode) so a stale
+    /// label and a value read never disagree about whether a page is cached.
+    func teamStats(teamId: String) throws -> TeamStatsPage? {
+        let signpostID = DepthSignposts.signposter.makeSignpostID()
+        let state = DepthSignposts.signposter.beginInterval(DepthSignposts.teamStatsCacheTransaction, id: signpostID)
+        defer { DepthSignposts.signposter.endInterval(DepthSignposts.teamStatsCacheTransaction, state) }
+        guard let row = try validStatsRow(teamId: teamId) else { return nil }
+        return try? JSONDecoder().decode(TeamStatsPage.self, from: row.payload)
+    }
+
+    func teamStatsCachedAt(teamId: String) throws -> Date? {
+        try validStatsRow(teamId: teamId)?.cachedAt
+    }
+
+    private func validStatsRow(teamId: String) throws -> CachedTeamStats? {
+        var descriptor = FetchDescriptor<CachedTeamStats>(predicate: #Predicate { $0.teamId == teamId })
+        descriptor.fetchLimit = 1
+        guard let row = try modelContext.fetch(descriptor).first else { return nil }
+        guard row.schemaVersion == depthCacheSchemaVersion,
+            (try? JSONDecoder().decode(TeamStatsPage.self, from: row.payload)) != nil
+        else {
+            modelContext.delete(row)
+            try modelContext.save()
+            return nil
+        }
+        return row
+    }
+
+    func saveTeamStats(_ page: TeamStatsPage, teamId: String, cachedAt: Date) throws {
+        let signpostID = DepthSignposts.signposter.makeSignpostID()
+        let state = DepthSignposts.signposter.beginInterval(DepthSignposts.teamStatsCacheTransaction, id: signpostID)
+        defer { DepthSignposts.signposter.endInterval(DepthSignposts.teamStatsCacheTransaction, state) }
+        let payload = try JSONEncoder().encode(page)
+        var descriptor = FetchDescriptor<CachedTeamStats>(predicate: #Predicate { $0.teamId == teamId })
+        descriptor.fetchLimit = 1
+        if let existing = try modelContext.fetch(descriptor).first {
+            existing.payload = payload
+            existing.schemaVersion = depthCacheSchemaVersion
+            existing.cachedAt = cachedAt
+        } else {
+            modelContext.insert(
+                CachedTeamStats(teamId: teamId, payload: payload, schemaVersion: depthCacheSchemaVersion, cachedAt: cachedAt)
+            )
+        }
+        try modelContext.save()
+    }
+
     func appConfig() throws -> AppConfig? {
         let key = CachedAppConfig.key
         var descriptor = FetchDescriptor<CachedAppConfig>(

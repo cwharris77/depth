@@ -103,8 +103,28 @@ final class CachedAppConfig {
     }
 }
 
+// Round-4 Stats page cache row (spec Data flow: reuse the snapshot cache layer rather
+// than inventing a second one). One JSON-encoded `TeamStatsPage` per team, mirroring
+// `CachedTeamSnapshot`'s payload-as-Data shape — the page is Codable and holds text/URLs
+// only, so it satisfies "no image blobs" and the same safe-schema-discard read path
+// (`schemaVersion` compare + trial decode) applies verbatim.
+@Model
+final class CachedTeamStats {
+    @Attribute(.unique) var teamId: String
+    var payload: Data
+    var schemaVersion: Int
+    var cachedAt: Date
+
+    init(teamId: String, payload: Data, schemaVersion: Int, cachedAt: Date) {
+        self.teamId = teamId
+        self.payload = payload
+        self.schemaVersion = schemaVersion
+        self.cachedAt = cachedAt
+    }
+}
+
 enum DepthCacheSchema {
     static var models: [any PersistentModel.Type] {
-        [CachedTeamListEntry.self, CachedTeamSnapshot.self, CachedAppConfig.self]
+        [CachedTeamListEntry.self, CachedTeamSnapshot.self, CachedTeamStats.self, CachedAppConfig.self]
     }
 }
