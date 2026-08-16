@@ -1,5 +1,4 @@
 import SwiftUI
-import UniformTypeIdentifiers
 
 // Complete native player profile. The sheet owns presentation and semantic layout only;
 // profile fields arrive in Player and its independent lazy stats state stays in the
@@ -596,17 +595,18 @@ private struct DepthRowContent: View {
 
 // DEP-226: drag-to-reorder row list for the position-depth section. SwiftUI's `.onMove`
 // only exists on ForEach inside a List, and a List can't nest inside the card's ScrollView
-// without introducing a nested scroll container — so reorder uses the classic onDrag/onDrop
-// delegate pattern instead: a per-row DropDelegate moves the draft live on dropEntered
-// (web's Reorder.Group behavior) and commits once on performDrop (web's single onReorder
-// per drop).
+// without introducing a nested scroll container — so reorder uses the modern
+// `.draggable`/`.dropDestination` pair instead. DEP-226's original `.onDrag`/`.onDrop`
+// never activated with a real finger inside the ScrollView (the scroll pan won the gesture
+// — UI tests passed only because XCUITest drives the drag interaction directly), so rows
+// were impossible to drag by hand. `.draggable`/`.dropDestination` use UIDragInteraction /
+// UIDropInteraction, which work inside scroll views; dropping on a target row reorders onto
+// it and commits once.
 private struct DepthReorderList: View {
     @Binding var players: [Player]
     let currentPlayerID: String
     let accent: Color
     let onCommit: ([Player]) -> Void
-
-    @State private var draggedPlayerID: String?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -632,19 +632,24 @@ private struct DepthReorderList: View {
                     "\(rankLabel(p.depthRank)), #\(p.number), \(p.name.isEmpty ? "#\(p.number)" : p.name)"
                 )
                 .accessibilityIdentifier("player-profile-depth-reorder-row-\(p.id)")
-                .onDrag {
-                    draggedPlayerID = p.id
-                    return NSItemProvider(object: p.id as NSString)
+                .draggable(p.id)
+                .dropDestination(for: String.self) { items, _ in
+                    // Drop on a target row: move the dragged player to that row's position
+                    // and commit once. No-op when dropped on itself.
+                    guard let draggedID = items.first,
+                          draggedID != p.id,
+                          let from = players.firstIndex(where: { $0.id == draggedID }),
+                          let to = players.firstIndex(where: { $0.id == p.id })
+                    else { return false }
+                    withAnimation(.snappy(duration: 0.2)) {
+                        players.move(
+                            fromOffsets: IndexSet(integer: from),
+                            toOffset: to > from ? to + 1 : to
+                        )
+                    }
+                    onCommit(players)
+                    return true
                 }
-                .onDrop(
-                    of: [.text],
-                    delegate: DepthRowDropDelegate(
-                        target: p,
-                        players: $players,
-                        draggedPlayerID: draggedPlayerID,
-                        onCommit: onCommit
-                    )
-                )
                 if p.id != players.last?.id {
                     Divider().overlay(DesignTokens.Colors.borderSubtle)
                 }
@@ -658,39 +663,6 @@ private struct DepthReorderList: View {
         case 2: "BACKUP"
         default: "RESERVE"
         }
-    }
-}
-
-// Per-row drop target: reorders the draft live while the drag hovers (dropEntered) and
-// commits the whole new order once on release (performDrop). Committing on the target row
-// — not on every move — keeps the write path at one LocalFirstOverrideWriter save per drop,
-// matching web's Reorder.Group onReorder firing once.
-private struct DepthRowDropDelegate: DropDelegate {
-    let target: Player
-    @Binding var players: [Player]
-    let draggedPlayerID: String?
-    let onCommit: ([Player]) -> Void
-
-    func dropUpdated(info: DropInfo) -> DropProposal? {
-        DropProposal(operation: .move)
-    }
-
-    func dropEntered(info: DropInfo) {
-        guard let draggedPlayerID,
-              let fromIndex = players.firstIndex(where: { $0.id == draggedPlayerID }),
-              let toIndex = players.firstIndex(where: { $0.id == target.id }),
-              fromIndex != toIndex else { return }
-        withAnimation(.snappy(duration: 0.2)) {
-            players.move(
-                fromOffsets: IndexSet(integer: fromIndex),
-                toOffset: toIndex > fromIndex ? toIndex + 1 : toIndex
-            )
-        }
-    }
-
-    func performDrop(info: DropInfo) -> Bool {
-        onCommit(players)
-        return true
     }
 }
 
