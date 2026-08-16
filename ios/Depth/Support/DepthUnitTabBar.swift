@@ -29,7 +29,10 @@ struct DepthUnitTabBar: View {
             Text(label)
                 .font(.caption.weight(.bold))
                 .foregroundStyle(isActive ? DesignTokens.Colors.textPrimary : DesignTokens.Colors.textFaint)
-                .frame(maxWidth: .infinity, minHeight: 44)
+                // DEP-230: hug the label's own width (web's TabBar.tsx is `flex gap-4`,
+                // no stretch) instead of evenly filling the row — that's what was
+                // spreading OFFENSE/DEFENSE/SPECIAL across the full screen width.
+                .frame(minHeight: 44)
                 .overlay(alignment: .bottom) {
                     Rectangle()
                         .fill(isActive ? activeColor : Color.clear)

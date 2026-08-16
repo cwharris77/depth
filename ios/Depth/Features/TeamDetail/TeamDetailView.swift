@@ -134,83 +134,20 @@ struct TeamDetailView: View {
                         .accessibilityHidden(true)
                 }
 
+                // DEP-229 correction: web (components/TeamPageHeader.tsx) keeps the team
+                // pill and the ROSTER/SCHEDULE/STATS switcher in one right-aligned group
+                // (`flex flex-1 ... justify-end`), never a separate full-width row. The
+                // leading Spacer pushes both right within the principal slot — brand mark
+                // (topBarLeading) anchors the left, this group anchors the right, mirroring
+                // web's single-row layout instead of native's original two-row split.
                 ToolbarItem(placement: .principal) {
-                    Button(action: onOpenTeamSwitcher) {
-                        HStack(spacing: 4) {
-                            // Explicit textPrimary so the title stays white instead of
-                            // inheriting the current team's accent tint (2026-08-15
-                            // visual-pass: "roster page text team-tinted"). The abbrev
-                            // pill matches web mobile and never overflows the toolbar.
-                            Text(navigationTitleAbbrev)
-                                .font(.headline)
-                                .foregroundStyle(DesignTokens.Colors.textPrimary)
-                                .lineLimit(1)
-                            Image(systemName: "chevron.down")
-                                .font(.caption2.weight(.bold))
-                                .foregroundStyle(DesignTokens.Colors.textPrimary)
-                        }
-                        // Web parity (components/TeamPageHeader.tsx): the switcher trigger
-                        // is a visible pill (surfaceChip fill + team-accent-tinted border),
-                        // not plain text, so it reads as tappable rather than as a title.
-                        .padding(.leading, 12)
-                        .padding(.trailing, 8)
-                        .padding(.vertical, 6)
-                        .background(Capsule().fill(DesignTokens.Colors.surfaceChip))
-                        .overlay {
-                            Capsule().strokeBorder(teamSwitcherBorderColor, lineWidth: 1)
-                        }
+                    HStack(spacing: 8) {
+                        Spacer(minLength: 0)
+                        teamSwitcherPill
+                        pageSwitcher
                     }
-                    .frame(minHeight: 44)
-                    .accessibilityIdentifier("team-switcher-button")
-                    .accessibilityLabel("\(navigationTitleText), change team")
-                    .accessibilityHint("Opens the team switcher")
                 }
 
-                // Web parity (components/FieldHeaderMenu.tsx): actions beyond the page
-                // switcher's tabs live behind a single ••• overflow menu instead of a
-                // row of bare icons whose meaning isn't obvious (2026-08-15 visual-pass
-                // rounds 1-3). Schedule is no longer a toolbar button — round-4 (DEP-217)
-                // made it the middle tab of the ROSTER/SCHEDULE/STATS page switcher.
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    Menu {
-                        // Live snapshot only — historical rosters carry no uniforms
-                        // (SupabaseDepthRepository.teamSeason returns uniforms: []).
-                        if !(displayedSnapshot?.uniforms.isEmpty ?? true) {
-                            Button {
-                                showUniformPicker = true
-                            } label: {
-                                Label("Choose Uniform", systemImage: "tshirt.fill")
-                            }
-                            .accessibilityIdentifier("choose-uniform")
-                        }
-
-                        Button("Seasons", systemImage: "clock.arrow.circlepath") {
-                            showHistory = true
-                        }
-                        .accessibilityIdentifier("history-destination")
-
-                        // Live snapshot only (design spec locked decision #10) —
-                        // historical rosters have no equivalent share-card visual
-                        // contract yet.
-                        if !historyViewModel.isHistorical, let snapshot = displayedSnapshot {
-                            DepthChartShareButton(snapshot: snapshot)
-                        }
-
-                        if !editableGroups.isEmpty {
-                            Menu("Edit Depth Chart", systemImage: "arrow.up.arrow.down") {
-                                ForEach(editableGroups) { group in
-                                    Button(group.position.rawValue) { beginEditing(group) }
-                                        .accessibilityIdentifier("edit-depth-order-\(group.position.rawValue)")
-                                }
-                            }
-                            .accessibilityIdentifier("edit-depth-order")
-                        }
-                    } label: {
-                        Label("More", systemImage: "ellipsis")
-                    }
-                    .frame(minWidth: 44, minHeight: 44)
-                    .accessibilityIdentifier("depth-chart-overflow")
-                }
             }
             .sheet(item: $selectedPlayer) { player in
                 PlayerDetailView(
@@ -269,12 +206,13 @@ struct TeamDetailView: View {
             }
     }
 
-    @ViewBuilder
+    // DEP-228: a plain VStack sizes each child to its "ideal" height rather than
+    // expanding it to fill available space, so the Stats page's own ScrollView (nested
+    // two levels down) was getting clipped instead of scrolling. maxHeight: .infinity
+    // here propagates the real available height down to it.
     private var content: some View {
-        VStack(spacing: 0) {
-            pageSwitcherRow
-            pageContent
-        }
+        pageContent
+            .frame(maxHeight: .infinity)
     }
 
     private enum TeamPage: String, CaseIterable {
@@ -285,12 +223,41 @@ struct TeamDetailView: View {
         var label: String { rawValue.uppercased() }
     }
 
+    /// Web parity (components/TeamPageHeader.tsx TEAM_ABBREV_PILL): the switcher trigger
+    /// is a visible pill (surfaceChip fill + team-accent-tinted border), not plain text.
+    private var teamSwitcherPill: some View {
+        Button(action: onOpenTeamSwitcher) {
+            HStack(spacing: 4) {
+                // Explicit textPrimary so the title stays white instead of inheriting
+                // the current team's accent tint (2026-08-15 visual-pass: "roster page
+                // text team-tinted").
+                Text(navigationTitleAbbrev)
+                    .font(.headline)
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    .lineLimit(1)
+                Image(systemName: "chevron.down")
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+            }
+            .padding(.leading, 12)
+            .padding(.trailing, 8)
+            .padding(.vertical, 6)
+            .background(Capsule().fill(DesignTokens.Colors.surfaceChip))
+            .overlay {
+                Capsule().strokeBorder(teamSwitcherBorderColor, lineWidth: 1)
+            }
+        }
+        .frame(minHeight: 44)
+        .accessibilityIdentifier("team-switcher-button")
+        .accessibilityLabel("\(navigationTitleText), change team")
+        .accessibilityHint("Opens the team switcher")
+    }
+
     /// Web parity (components/TeamPageHeader.tsx PAGE_TABS): the ROSTER/SCHEDULE/STATS
-    /// switcher replaces the old calendar button, so all three pages share one nav bar
-    /// and keep the team identity. Leading-aligned (recorded decision #7 — the brand
-    /// mark already lives in the nav bar, so web's right-aligned layout would leave an
-    /// unexplained gap on native).
-    private var pageSwitcherRow: some View {
+    /// switcher, compact/intrinsic-width (web: `SegmentedControl size="sm"`), sitting
+    /// inline next to the team pill — not a stretched, full-width standalone row
+    /// (DEP-229 correction; the original placement decision here was wrong).
+    private var pageSwitcher: some View {
         DepthSegmentedControl(
             options: TeamPage.allCases.map {
                 DepthSegmentedOption(value: $0, label: $0.label, identifier: "page-switcher-\($0.rawValue)")
@@ -301,12 +268,54 @@ struct TeamDetailView: View {
         )
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("page-switcher")
-        .padding(.horizontal)
-        .padding(.vertical, 8)
-        .background(DesignTokens.Colors.bg)
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(DesignTokens.Colors.borderDefault).frame(height: 1)
+    }
+
+    /// Web parity (components/FieldHeaderMenu.tsx): actions beyond the page switcher's
+    /// tabs live behind a single ••• overflow menu. DEP-230 correction: this used to
+    /// live in the nav-bar toolbar, a different row than the unit tabs it belongs
+    /// beside — web puts both in the same `justify-between` row directly above the
+    /// field. Schedule is not a menu item — round-4 (DEP-217) made it a page-switcher tab.
+    private var overflowMenu: some View {
+        Menu {
+            // Live snapshot only — historical rosters carry no uniforms
+            // (SupabaseDepthRepository.teamSeason returns uniforms: []).
+            if !(displayedSnapshot?.uniforms.isEmpty ?? true) {
+                Button {
+                    showUniformPicker = true
+                } label: {
+                    Label("Choose Uniform", systemImage: "tshirt.fill")
+                }
+                .accessibilityIdentifier("choose-uniform")
+            }
+
+            Button("Seasons", systemImage: "clock.arrow.circlepath") {
+                showHistory = true
+            }
+            .accessibilityIdentifier("history-destination")
+
+            // Live snapshot only (design spec locked decision #10) — historical
+            // rosters have no equivalent share-card visual contract yet.
+            if !historyViewModel.isHistorical, let snapshot = displayedSnapshot {
+                DepthChartShareButton(snapshot: snapshot)
+            }
+
+            if !editableGroups.isEmpty {
+                Menu("Edit Depth Chart", systemImage: "arrow.up.arrow.down") {
+                    ForEach(editableGroups) { group in
+                        Button(group.position.rawValue) { beginEditing(group) }
+                            .accessibilityIdentifier("edit-depth-order-\(group.position.rawValue)")
+                    }
+                }
+                .accessibilityIdentifier("edit-depth-order")
+            }
+        } label: {
+            // Icon-only — a "•••" overflow glyph is self-explanatory; a trailing
+            // "More" label is redundant text (Cooper's round-5 feedback).
+            Image(systemName: "ellipsis")
         }
+        .frame(minWidth: 44, minHeight: 44)
+        .accessibilityLabel("More")
+        .accessibilityIdentifier("depth-chart-overflow")
     }
 
     @ViewBuilder
@@ -417,11 +426,20 @@ struct TeamDetailView: View {
                         // table), this just surfaces that a background refresh didn't land.
                         RefreshFailedBanner()
                     }
-                    DepthUnitTabBar(
-                        selection: unit,
-                        onChange: { unit = $0 },
-                        activeColor: teamAccentColor
-                    )
+                    // DEP-230: unit tabs (left) + overflow menu (right) in one row,
+                    // matching web's FieldHeaderMenu.tsx `justify-between` — previously
+                    // the overflow menu lived in the nav-bar toolbar, a different row
+                    // entirely, and the tabs stretched full-width with no trailing
+                    // element to justify against.
+                    HStack {
+                        DepthUnitTabBar(
+                            selection: unit,
+                            onChange: { unit = $0 },
+                            activeColor: teamAccentColor
+                        )
+                        Spacer()
+                        overflowMenu
+                    }
                     .padding(.horizontal)
                     .overlay(alignment: .bottom) {
                         Rectangle().fill(DesignTokens.Colors.borderDefault).frame(height: 1)

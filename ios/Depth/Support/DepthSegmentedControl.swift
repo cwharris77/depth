@@ -1,9 +1,11 @@
 import SwiftUI
 
-// Literal port of web's `components/ui/SegmentedControl.tsx` (fill flavor, `md` size):
+// Literal port of web's `components/ui/SegmentedControl.tsx` (fill flavor, `sm` size):
 // a rounded-pill tab group on a `surfaceChip` track where the active segment fills with
 // the caller's color (the team's `uiAccent`), active text sits on `onAccent`, and the
 // active segment carries a `withAlpha(activeTextColor, 40)` border (web lines 74-78).
+// Compact/intrinsic-width, not stretched (DEP-229) — web's `size="sm" className="shrink-0"`
+// sits inline next to the team-switcher pill, never a full-width standalone row.
 // Used for the round-4 ROSTER/SCHEDULE/STATS page switcher. Generic over `Selection` so
 // any Hashable enum can drive it; each option carries its own accessibility identifier
 // (the page switcher uses `page-switcher-roster` etc.). Options are rendered uppercase
@@ -36,7 +38,23 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
                         .font(.caption.bold())
                         .tracking(0.3)
                         .foregroundStyle(isActive ? activeTextColor : DesignTokens.Colors.textMuted)
-                        .frame(maxWidth: .infinity, minHeight: 44)
+                        // Embedded in the nav bar's principal slot alongside the team
+                        // pill (DEP-229), there isn't always room for "SCHEDULE" at
+                        // full size — lineLimit + minimumScaleFactor shrinks it instead
+                        // of wrapping mid-word ("SCHED-ULE"), same safety valve the
+                        // team-switcher pill's abbrev already uses.
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                        // DEP-229: hug each label's own width (web: `SegmentedControl
+                        // size="sm"`, intrinsic-width, never stretched) instead of
+                        // evenly filling the parent — that's what made this control
+                        // stretch across the full screen as a standalone row.
+                        // Visual padding stays compact (6pt, not a 44pt-tall drawn
+                        // capsule) — the 44pt tap target moves to the Button's own
+                        // frame below instead, same "visual size / hit-slop" split
+                        // DEP-207's field dots already use.
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
                         .background(isActive ? activeColor : Color.clear, in: RoundedRectangle(cornerRadius: 12))
                         .overlay {
                             RoundedRectangle(cornerRadius: 12)
@@ -45,8 +63,9 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
                                     lineWidth: 1
                                 )
                         }
-                        .contentShape(Rectangle())
                 }
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
                 .buttonStyle(.plain)
                 .accessibilityIdentifier(option.identifier)
             }
