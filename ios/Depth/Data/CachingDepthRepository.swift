@@ -82,6 +82,11 @@ actor CachingDepthRepository: DepthRepository {
         try await underlying.playerStats(playerId: playerId, teamId: teamId)
     }
 
+    /// Cross-team search is a per-keystroke read; caching it would serve stale hits.
+    func searchPlayers(query: String) async throws -> [PlayerHit] {
+        try await underlying.searchPlayers(query: query)
+    }
+
     static func isStale(_ cachedAt: Date, now: Date = Date()) -> Bool {
         now.timeIntervalSince(cachedAt) > staleAfter
     }

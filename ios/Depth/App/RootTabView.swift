@@ -16,7 +16,7 @@ struct RootTabView: View {
 
     var body: some View {
         TabView {
-            Tab("Depth Charts", systemImage: "sportscourt") {
+            Tab("Depth Charts", systemImage: "figure.american.football") {
                 DepthChartsTab(
                     repository: DepthEnvironment.repository,
                     preferences: DepthEnvironment.preferences,

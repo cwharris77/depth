@@ -22,6 +22,11 @@ struct PlayerDetailView: View {
     // needs the width.
     @ScaledMetric(relativeTo: .title) private var scaledPhotoSize: CGFloat = 96
 
+    // The jersey-number watermark above the name (web PlayerCardHeader: `text-6xl
+    // font-black`, accent at 26% opacity, -0.03em tracking). Scales with .title so it
+    // grows at accessibility sizes the same way the portrait and vitals do.
+    @ScaledMetric(relativeTo: .title) private var scaledNumberSize: CGFloat = 48
+
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var photoSize: CGFloat { min(scaledPhotoSize, 140) }
@@ -88,7 +93,19 @@ struct PlayerDetailView: View {
     // single word, so the layout stacks instead — otherwise names break mid-word
     // ("DJ Moor / e"), which is the failure this switch exists to prevent.
     private var header: some View {
+        let accent = team.map { Color(hex: $0.colors.uiAccent) } ?? .accentColor
         let identity = VStack(alignment: .leading, spacing: 8) {
+            // Web parity (PlayerCardHeader): a large team-accent watermark number above
+            // the name — the most recognizable jersey identity, placed first per
+            // Cooper's visual pass ("make it a large team-colored number that appears
+            // above the name"). The `#12 · QB · Quarterback` line below stays.
+            Text("#\(player.number)")
+                .font(.system(size: scaledNumberSize, weight: .black))
+                .tracking(scaledNumberSize * -0.03)
+                .foregroundStyle(accent.opacity(0.26))
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+                .accessibilityHidden(true)
             Text(player.name.isEmpty ? "#\(player.number)" : player.name)
                 .font(.title.bold())
                 .accessibilityIdentifier("player-profile-name")
@@ -321,62 +338,65 @@ struct PlayerDetailView: View {
     }
 }
 
-// The table remains horizontally scrollable at Accessibility XXXL rather than truncating
-// numeric columns, so its column widths scale with the text (`@ScaledMetric`) instead of
-// clipping larger digits inside fixed frames. On-screen headers stay compact; the spoken
-// reading comes from `PlayerStatsAccessibility.rowLabel`, which pairs every value with
-// its column name — a row combined from the bare cells would announce unlabeled numbers.
+// Web parity (components/PlayerCardSeasonStats.tsx): the table's columns stretch to fill
+// the card's full width regardless of how many stats a position has — the old fixed-width
+// cells made the card narrower for a 1-column OL row than a 5-column QB row (2026-08-15
+// visual-pass round 3). SZN/TM stay fixed-width; the stat columns split the remaining
+// space equally. The former horizontal ScrollView (which existed so columns could grow at
+// Accessibility XXXL) is gone: flexed columns shrink gracefully like the web's grid, and
+// every value still arrives paired with its spoken column name via
+// `PlayerStatsAccessibility.rowLabel`.
 private struct PlayerStatsTable: View {
     let stats: [PlayerSeasonStats]
     let columns: [PlayerStatColumn]
 
-    @ScaledMetric(relativeTo: .footnote) private var seasonWidth: CGFloat = 44
-    @ScaledMetric(relativeTo: .footnote) private var teamWidth: CGFloat = 40
-    @ScaledMetric(relativeTo: .footnote) private var statWidth: CGFloat = 52
+    @ScaledMetric(relativeTo: .footnote) private var labelWidth: CGFloat = 44
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 16) {
-                    cell("SZN", width: seasonWidth, header: true)
-                    cell("TM", width: teamWidth, header: true)
-                    ForEach(columns, id: \.self) { column in
-                        cell(column.header, width: statWidth, header: true)
-                    }
-                }
-                // Each data row carries the full spoken label, so repeating the compact
-                // headers as their own VoiceOver stops is pure noise.
-                .accessibilityHidden(true)
-
-                ForEach(stats) { season in
-                    HStack(spacing: 16) {
-                        cell("\(season.season)", width: seasonWidth)
-                        cell(season.teamAbbrev ?? "—", width: teamWidth)
-                        ForEach(columns, id: \.self) { column in
-                            cell(column.value(for: season), width: statWidth)
-                        }
-                    }
-                    .padding(.vertical, 8)
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(
-                        PlayerStatsAccessibility.rowLabel(for: season, columns: columns)
-                    )
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 16) {
+                cell("SZN", header: true, fixed: true)
+                cell("TM", header: true, fixed: true)
+                ForEach(columns, id: \.self) { column in
+                    cell(column.header, header: true, fixed: false)
                 }
             }
-            .depthCard(dense: true)
+            // Each data row carries the full spoken label, so repeating the compact
+            // headers as their own VoiceOver stops is pure noise.
+            .accessibilityHidden(true)
+
+            ForEach(stats) { season in
+                HStack(spacing: 16) {
+                    cell("\(season.season)", fixed: true)
+                    cell(season.teamAbbrev ?? "—", fixed: true)
+                    ForEach(columns, id: \.self) { column in
+                        cell(column.value(for: season), fixed: false)
+                    }
+                }
+                .padding(.vertical, 8)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(
+                    PlayerStatsAccessibility.rowLabel(for: season, columns: columns)
+                )
+            }
         }
+        .frame(maxWidth: .infinity)
+        .depthCard(dense: true)
     }
 
-    private func cell(_ value: String, width: CGFloat, header: Bool = false) -> some View {
+    private func cell(_ value: String, header: Bool = false, fixed: Bool) -> some View {
         Text(value)
             .font(header ? .caption.bold() : .footnote.weight(.semibold))
             .foregroundStyle(header ? .secondary : .primary)
-            .frame(width: width, alignment: .leading)
+            .lineLimit(1)
+            .minimumScaleFactor(0.6)
+            .frame(maxWidth: fixed ? labelWidth : .infinity, alignment: .leading)
     }
 }
 
 // Sized against the same scaled metrics as the table it stands in for, so the section
-// doesn't resize when real rows land (AGENTS.md's flash-then-jump rule).
+// doesn't resize when real rows land (AGENTS.md's flash-then-jump rule). Matches the
+// table's layout: two fixed-width label cells, then one flexible cell per stat column.
 private struct PlayerStatsSkeleton: View {
     let columnCount: Int
 
@@ -386,11 +406,17 @@ private struct PlayerStatsSkeleton: View {
     var body: some View {
         VStack(spacing: 12) {
             ForEach(0..<2, id: \.self) { _ in
-                HStack(spacing: 8) {
-                    ForEach(0..<(columnCount + 2), id: \.self) { _ in
+                HStack(spacing: 16) {
+                    ForEach(0..<2, id: \.self) { _ in
                         RoundedRectangle(cornerRadius: 4)
                             .fill(.tertiary)
                             .frame(width: cellWidth, height: cellHeight)
+                    }
+                    ForEach(0..<columnCount, id: \.self) { _ in
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(.tertiary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: cellHeight)
                     }
                 }
             }

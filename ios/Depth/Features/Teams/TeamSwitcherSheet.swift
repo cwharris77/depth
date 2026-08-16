@@ -13,6 +13,7 @@ struct TeamSwitcherSheet: View {
     var events: any AppEventsRecording = NoOpAppEventsRecorder()
     let selectedTeamId: String
     let onSelect: (String) -> Void
+    var onSelectPlayer: ((PlayerHit) -> Void)? = nil
 
     var body: some View {
         NavigationStack {
@@ -22,6 +23,9 @@ struct TeamSwitcherSheet: View {
                 selectedTeamId: selectedTeamId
             ) { teamId in
                 onSelect(teamId)
+                dismiss()
+            } onSelectPlayer: { hit in
+                onSelectPlayer?(hit)
                 dismiss()
             }
             .navigationTitle("Teams")

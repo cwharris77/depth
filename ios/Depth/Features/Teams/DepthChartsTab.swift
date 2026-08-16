@@ -13,6 +13,10 @@ struct DepthChartsTab: View {
     /// preference (AGENTS.md invariant 6: stale input degrades, never throws).
     @State private var teamId: String
     @State private var showSwitcher = false
+    /// A player picked from the switcher's cross-team search. Setting it alongside
+    /// `teamId` lets the (recreated) TeamDetailView open that player's profile once its
+    /// snapshot resolves.
+    @State private var pendingPlayerID: String?
 
     private let repository: CachingDepthRepository
     private let preferences: UserPreferences
@@ -52,6 +56,7 @@ struct DepthChartsTab: View {
                 authService: authService,
                 overrideService: overrideService,
                 events: events,
+                requestedPlayerID: $pendingPlayerID,
                 onOpenTeamSwitcher: { showSwitcher = true }
             )
             // Rebuilds the whole team-detail subtree (view model, unit picker, history,
@@ -66,6 +71,11 @@ struct DepthChartsTab: View {
                 selectedTeamId: teamId
             ) { selected in
                 teamId = selected
+            } onSelectPlayer: { hit in
+                // Switch to the hit's team and hand its player to TeamDetailView (web's
+                // NavSwitcher does the same: jumping to the team and opening the card).
+                teamId = hit.team.id
+                pendingPlayerID = hit.id
             }
             // `.sheet()` content gets a fresh UITraitCollection rather than inheriting
             // ContentView's UI_TESTING_DYNAMIC_TYPE override — see that modifier's doc

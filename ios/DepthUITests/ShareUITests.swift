@@ -12,8 +12,14 @@ final class ShareUITests: XCTestCase {
         XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
         app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
 
+        // Share lives behind the ••• overflow menu (2026-08-15 visual-pass: the bare
+        // icon row was removed).
+        let overflow = app.buttons["depth-chart-overflow"]
+        XCTAssertTrue(overflow.waitForExistence(timeout: 10), "team detail should expose the overflow menu")
+        overflow.tap()
+
         let shareButton = app.buttons["share-depth-chart"]
-        XCTAssertTrue(shareButton.waitForExistence(timeout: 10), "team detail should expose a Share entry point")
+        XCTAssertTrue(shareButton.waitForExistence(timeout: 5), "the overflow menu should expose a Share entry point")
         shareButton.tap()
 
         let shareSheet = app.otherElements["ActivityListView"]
@@ -29,6 +35,8 @@ final class ShareUITests: XCTestCase {
         XCTAssertTrue(dismissRegion.waitForExistence(timeout: 5))
         dismissRegion.tap()
         XCTAssertFalse(shareSheet.waitForExistence(timeout: 3), "the share sheet should dismiss on cancel")
-        XCTAssertTrue(shareButton.waitForExistence(timeout: 5), "team detail should remain unchanged after cancelling the share sheet")
+        XCTAssertTrue(overflow.waitForExistence(timeout: 5), "team detail should remain unchanged after cancelling the share sheet")
+        overflow.tap()
+        XCTAssertTrue(shareButton.waitForExistence(timeout: 5), "Share should still be reachable in the overflow menu")
     }
 }

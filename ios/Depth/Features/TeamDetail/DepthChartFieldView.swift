@@ -20,7 +20,15 @@ import SwiftUI
 struct DepthChartFieldView: View {
     let snapshot: TeamSnapshot
     let unit: Unit
+    /// Overrides the dot fill/ring colors (web's kit selection recolors the field dots
+    /// with the chosen uniform's palette). Nil falls back to the team's own colors.
+    /// Declared before `onSelectPlayer` so callers keep the trailing-closure style.
+    var colors: TeamColors? = nil
     let onSelectPlayer: (Player) -> Void
+
+    private var dotColors: TeamColors {
+        colors ?? snapshot.team.colors
+    }
 
     private var slots: [RenderSlot] {
         let roster = Roster(players: snapshot.players, specialTeams: snapshot.specialTeams)
@@ -92,9 +100,9 @@ struct DepthChartFieldView: View {
     private func slotDot(label: String, number: Int?, dotSize: CGFloat) -> some View {
         VStack(spacing: 4) {
             Circle()
-                .fill(Color(hex: snapshot.team.colors.primary))
+                .fill(Color(hex: dotColors.primary))
                 .overlay {
-                    Circle().strokeBorder(Color(hex: snapshot.team.colors.secondary), lineWidth: 2)
+                    Circle().strokeBorder(Color(hex: dotColors.secondary), lineWidth: 2)
                 }
                 .overlay {
                     if let number {
@@ -103,11 +111,11 @@ struct DepthChartFieldView: View {
                         // same bug class already fixed for the season year elsewhere.
                         Text(verbatim: "\(number)")
                             .font(.caption.bold())
-                            .foregroundStyle(Color(hex: readableTextOn(snapshot.team.colors.primary)))
+                            .foregroundStyle(Color(hex: readableTextOn(dotColors.primary)))
                     } else {
                         Image(systemName: "questionmark")
                             .font(.caption2)
-                            .foregroundStyle(Color(hex: readableTextOn(snapshot.team.colors.primary)))
+                            .foregroundStyle(Color(hex: readableTextOn(dotColors.primary)))
                     }
                 }
                 .frame(width: dotSize, height: dotSize)

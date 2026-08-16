@@ -62,6 +62,10 @@ actor SupabaseDepthRepository: DepthRepository {
         "season, season_type, games, completions, attempts, passing_yards, passing_tds, passing_interceptions, carries, rushing_yards, rushing_tds, receptions, targets, receiving_yards, receiving_tds, def_tackles_solo, def_sacks, def_interceptions, fg_made, fg_att, teams(abbrev)"
     private static let historicalRosterSelect =
         "season, team_id, gsis_id, name, number, position, college, height, weight, depth_rank, player_order"
+    private static let playerSearchSelect = """
+        id, name, number, position, college, photo_url, \
+        teams(id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url)
+        """
 
     func teams() async throws -> [Team] {
         do {
@@ -215,6 +219,105 @@ actor SupabaseDepthRepository: DepthRepository {
         } catch {
             throw DepthError.server("\(error)")
         }
+    }
+
+    /// Web parity (searchAllPlayers): fan the normalized query across match kinds — name
+    /// substring, college substring, exact position, exact number, and colloquial
+    /// position groups ("OL", "secondary") — as separate queries, then merge by id and
+    /// rank name-prefix-first. Each match kind runs as its own ILIKE filter rather than
+    /// building one OR'd string, so user input never gets interpolated into PostgREST
+    /// filter syntax.
+    func searchPlayers(query: String) async throws -> [PlayerHit] {
+        guard let normalized = PlayerSearch.normalizePlayerSearchQuery(query) else { return [] }
+        let escaped = PlayerSearch.escapeLike(normalized)
+        let limit = 8
+
+        var searches: [Task<[PlayerSearchRowDTO], Error>] = [
+            Task { try await self.playersByName(escaped, limit: limit) },
+            Task { try await self.playersByCollege(escaped, limit: limit) },
+            Task { try await self.playersByPosition(escaped, limit: limit) },
+        ]
+        if let number = Int(normalized) {
+            searches.append(Task { try await self.playersByNumber(number, limit: limit) })
+        }
+        if let group = PlayerSearch.positionGroupPositions(normalized) {
+            searches.append(Task { try await self.playersByPositions(group, limit: limit) })
+        }
+
+        do {
+            // The Tasks are created up front so the queries already run in parallel;
+            // collecting sequentially just waits on each in turn.
+            var all: [[PlayerSearchRowDTO]] = []
+            for search in searches {
+                all.append(try await search.value)
+            }
+            var byID: [String: PlayerSearchRowDTO] = [:]
+            for rows in all {
+                for row in rows where byID[row.id] == nil {
+                    byID[row.id] = row
+                }
+            }
+            let hits = byID.values.compactMap(TeamSnapshotMapper.mapPlayerHit)
+            return Array(PlayerSearch.rankByNameMatch(hits, query: normalized).prefix(limit))
+        } catch let error as PostgrestError {
+            throw Self.mapPostgrestError(error)
+        } catch let error as DecodingError {
+            throw DepthError.decoding("\(error)")
+        } catch is URLError {
+            throw DepthError.offline
+        } catch {
+            throw DepthError.server("\(error)")
+        }
+    }
+
+    private func playersByName(_ pattern: String, limit: Int) async throws -> [PlayerSearchRowDTO] {
+        try await client
+            .from("players")
+            .select(Self.playerSearchSelect)
+            .ilike("name", pattern: "%\(pattern)%")
+            .limit(limit)
+            .execute()
+            .value
+    }
+
+    private func playersByCollege(_ pattern: String, limit: Int) async throws -> [PlayerSearchRowDTO] {
+        try await client
+            .from("players")
+            .select(Self.playerSearchSelect)
+            .ilike("college", pattern: "%\(pattern)%")
+            .limit(limit)
+            .execute()
+            .value
+    }
+
+    private func playersByPosition(_ pattern: String, limit: Int) async throws -> [PlayerSearchRowDTO] {
+        try await client
+            .from("players")
+            .select(Self.playerSearchSelect)
+            .ilike("position", pattern: pattern)
+            .limit(limit)
+            .execute()
+            .value
+    }
+
+    private func playersByNumber(_ number: Int, limit: Int) async throws -> [PlayerSearchRowDTO] {
+        try await client
+            .from("players")
+            .select(Self.playerSearchSelect)
+            .eq("number", value: number)
+            .limit(limit)
+            .execute()
+            .value
+    }
+
+    private func playersByPositions(_ positions: [Position], limit: Int) async throws -> [PlayerSearchRowDTO] {
+        try await client
+            .from("players")
+            .select(Self.playerSearchSelect)
+            .in("position", values: positions.map(\.rawValue))
+            .limit(limit)
+            .execute()
+            .value
     }
 
     func appConfig() async throws -> AppConfig {
