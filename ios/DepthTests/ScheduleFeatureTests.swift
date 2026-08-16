@@ -261,6 +261,8 @@ private actor ScheduleRepositoryFake: DepthRepository {
         return try result.get()
     }
 
+    func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
+
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
 
     func appConfig() async throws -> AppConfig {
@@ -296,6 +298,8 @@ private actor DelayedScheduleRepository: DepthRepository {
             responseWaiters[season] = continuation
         }
     }
+
+    func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
 
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
 

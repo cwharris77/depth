@@ -11,20 +11,24 @@ private actor FakeDepthRepository: DepthRepository {
     var teamsResult: Result<[Team], Error>
     var snapshotResults: [String: Result<TeamSnapshot, Error>]
     var seasonResults: [Int: Result<TeamSnapshot, Error>]
+    var statsResults: [String: Result<TeamStatsPage, Error>]
     var appConfigResult: Result<AppConfig, Error>
     private(set) var teamSnapshotCallCount: [String: Int] = [:]
     private(set) var teamsCallCount = 0
     private(set) var seasonCallCount = 0
+    private(set) var teamStatsCallCount: [String: Int] = [:]
 
     init(
         teamsResult: Result<[Team], Error> = .success([]),
         snapshotResults: [String: Result<TeamSnapshot, Error>] = [:],
         seasonResults: [Int: Result<TeamSnapshot, Error>] = [:],
+        statsResults: [String: Result<TeamStatsPage, Error>] = [:],
         appConfigResult: Result<AppConfig, Error> = .success(AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil))
     ) {
         self.teamsResult = teamsResult
         self.snapshotResults = snapshotResults
         self.seasonResults = seasonResults
+        self.statsResults = statsResults
         self.appConfigResult = appConfigResult
     }
 
@@ -49,6 +53,12 @@ private actor FakeDepthRepository: DepthRepository {
         throw DepthError.notFound
     }
 
+    func teamStats(teamId: String) async throws -> TeamStatsPage {
+        teamStatsCallCount[teamId, default: 0] += 1
+        guard let result = statsResults[teamId] else { throw DepthError.notFound }
+        return try result.get()
+    }
+
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
 
     func appConfig() async throws -> AppConfig {
@@ -59,8 +69,16 @@ private actor FakeDepthRepository: DepthRepository {
         snapshotResults[teamId] = result
     }
 
+    func setStatsResult(_ result: Result<TeamStatsPage, Error>, forTeam teamId: String) {
+        statsResults[teamId] = result
+    }
+
     func callCount(forTeam teamId: String) -> Int {
         teamSnapshotCallCount[teamId, default: 0]
+    }
+
+    func statsCallCount(forTeam teamId: String) -> Int {
+        teamStatsCallCount[teamId, default: 0]
     }
 
     func historyCallCount() -> Int { seasonCallCount }
@@ -86,6 +104,10 @@ private func team(id: String = "bills") -> Team {
 
 private func snapshot(teamId: String = "bills") -> TeamSnapshot {
     TeamSnapshot(team: team(id: teamId), players: [], specialTeams: [], uniforms: [])
+}
+
+private func statsPage(teamId: String = "bills") -> TeamStatsPage {
+    TeamStatsPage(team: team(id: teamId), seasons: [], upcomingSeason: nil, currentSeason: 2026)
 }
 
 @Test func teamSnapshotFetchesFromUnderlyingOnCacheMiss() async throws {
@@ -228,4 +250,57 @@ private func snapshot(teamId: String = "bills") -> TeamSnapshot {
     let store = CachedSnapshotStore(modelContainer: container)
     let cached = try await store.appConfig()
     #expect(cached == nil)
+}
+
+// MARK: - Team stats cache (round-4 Stats page)
+
+@Test func teamStatsFetchesFromUnderlyingOnCacheMiss() async throws {
+    let underlying = FakeDepthRepository(statsResults: ["bills": .success(statsPage())])
+    let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
+
+    let page = try await repository.teamStats(teamId: "bills")
+    #expect(page.team.id == "bills")
+    #expect(await underlying.statsCallCount(forTeam: "bills") == 1)
+}
+
+@Test func teamStatsReturnsCachedPageWithoutBlockingOnNetwork() async throws {
+    let underlying = FakeDepthRepository(statsResults: ["bills": .success(statsPage())])
+    let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
+
+    _ = try await repository.teamStats(teamId: "bills") // primes the cache
+    let cached = try await repository.teamStats(teamId: "bills")
+    #expect(cached.team.id == "bills")
+    #expect(await underlying.statsCallCount(forTeam: "bills") == 1, "a warm cache must not issue a second blocking fetch")
+}
+
+@Test func failedStatsBackgroundRefreshRetainsLastGoodPage() async throws {
+    let underlying = FakeDepthRepository(statsResults: ["bills": .success(statsPage())])
+    let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
+
+    _ = try await repository.teamStats(teamId: "bills") // primes the cache with a good page
+    await underlying.setStatsResult(.failure(DepthError.server("boom")), forTeam: "bills")
+
+    // Cache-hit path fires a background refresh; give it a moment to run and fail.
+    _ = try await repository.teamStats(teamId: "bills")
+    try await Task.sleep(nanoseconds: 200_000_000)
+
+    let stillCached = try await repository.teamStats(teamId: "bills")
+    #expect(stillCached.team.id == "bills", "a failed refresh must not clear the previously cached stats page")
+}
+
+@Test func incompatibleStatsSchemaVersionRowIsDiscardedAsCacheMiss() async throws {
+    let container = inMemoryContainer()
+    let context = ModelContext(container)
+    let payload = try JSONEncoder().encode(statsPage())
+    context.insert(CachedTeamStats(teamId: "bills", payload: payload, schemaVersion: depthCacheSchemaVersion + 1, cachedAt: Date()))
+    try context.save()
+
+    let store = CachedSnapshotStore(modelContainer: container)
+    let cached = try await store.teamStats(teamId: "bills")
+    #expect(cached == nil)
+
+    let underlying = FakeDepthRepository(statsResults: ["bills": .success(statsPage())])
+    let repository = CachingDepthRepository(underlying: underlying, store: store)
+    let result = try await repository.teamStats(teamId: "bills")
+    #expect(result.team.id == "bills", "a discarded incompatible row falls through to a real network fetch")
 }

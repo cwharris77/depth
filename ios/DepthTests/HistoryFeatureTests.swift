@@ -243,6 +243,7 @@ private actor HistoryRepositoryFake: DepthRepository {
         return try next.get()
     }
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
+    func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
     func appConfig() async throws -> AppConfig { AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil) }
 }
@@ -264,6 +265,7 @@ private actor DelayedHistoryRepository: DepthRepository {
         }
     }
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
+    func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
     func appConfig() async throws -> AppConfig { AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil) }
 
