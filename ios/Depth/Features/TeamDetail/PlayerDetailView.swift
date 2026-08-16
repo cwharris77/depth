@@ -16,7 +16,6 @@ struct PlayerDetailView: View {
     // The portrait is capped because past that it is the text, not the image, that
     // needs the width.
     @ScaledMetric(relativeTo: .title) private var scaledPhotoSize: CGFloat = 96
-    @ScaledMetric(relativeTo: .body) private var vitalColumnMinimum: CGFloat = 110
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -105,15 +104,31 @@ struct PlayerDetailView: View {
         .accessibilityElement(children: .contain)
     }
 
+    // Vitals render as the web StatGrid's one row of four equal columns (AGE / EXP /
+    // HT / WT): a single card, label above value, both centered, thin vertical dividers
+    // between columns. Replaces the old adaptive grid that wrapped to two rows and
+    // left-aligned everything (Cooper's visual pass: values should be centered and
+    // smaller so all four fit on one line).
     private var vitals: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: vitalColumnMinimum), spacing: 12)], spacing: 12) {
+        HStack(spacing: 0) {
             vital("Age", PlayerProfileDisplay.age(player.age))
+            divider
             vital("Experience", PlayerProfileDisplay.experience(player.experience))
+            divider
             vital("Height", PlayerProfileDisplay.height(player.height))
+            divider
             vital("Weight", PlayerProfileDisplay.weight(player.weight))
         }
+        .depthCard(dense: true)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("player-profile-vitals")
+    }
+
+    private var divider: some View {
+        Rectangle()
+            .fill(DesignTokens.Colors.borderDefault)
+            .frame(width: 1)
+            .padding(.vertical, 4)
     }
 
     private var statsSection: some View {
@@ -143,12 +158,16 @@ struct PlayerDetailView: View {
     }
 
     private func vital(_ label: String, _ value: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(label.uppercased()).font(.caption).foregroundStyle(DesignTokens.Colors.textMuted)
-            Text(value).font(.body.weight(.semibold))
+        VStack(alignment: .center, spacing: 2) {
+            Text(label.uppercased())
+                .font(.caption)
+                .tracking(0.5)
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+            Text(value)
+                .font(.subheadline.weight(.black))
+                .foregroundStyle(DesignTokens.Colors.textPrimary)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .depthCard(dense: true)
+        .frame(maxWidth: .infinity, alignment: .center)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(label), \(value)")
     }
