@@ -25,6 +25,7 @@ struct TeamDTO: Decodable {
     let depthChartEntries: [DepthChartEntryDTO]
     let specialTeamsSlots: [SpecialTeamsSlotDTO]
     let uniforms: [UniformDTO]
+    let teamFormations: [TeamFormationDTO]
 
     enum CodingKeys: String, CodingKey {
         case id, abbrev, city, name, conference, division
@@ -38,6 +39,7 @@ struct TeamDTO: Decodable {
         case depthChartEntries = "depth_chart_entries"
         case specialTeamsSlots = "special_teams_slots"
         case uniforms
+        case teamFormations = "team_formations"
     }
 }
 
@@ -228,4 +230,17 @@ struct UniformDTO: Decodable {
         case onAccent = "on_accent"
         case imagePath = "image_path"
     }
+}
+
+// A real per-team formation row (Phase E) — embedded via the team_id FK in the snapshot
+// query, same as uniforms. Columns mirror `team_formations`; team_id is omitted since the
+// enclosing teams row already scopes it (every column is single-word, so no CodingKeys
+// mapping needed).
+struct TeamFormationDTO: Decodable {
+    let season: Int
+    let rank: Int
+    let unit: String
+    let alignment: String
+    let personnel: String
+    let pct: Int
 }

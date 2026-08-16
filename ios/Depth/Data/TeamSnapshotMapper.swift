@@ -40,7 +40,10 @@ enum TeamSnapshotMapper {
 
         let uniforms = try dto.uniforms.map(mapUniform)
 
-        return TeamSnapshot(team: team, players: players, specialTeams: specialTeams, uniforms: uniforms)
+        return TeamSnapshot(
+            team: team, players: players, specialTeams: specialTeams,
+            uniforms: uniforms, formations: mapFormations(dto.teamFormations)
+        )
     }
 
     static func mapTeamListRow(_ dto: TeamListRowDTO) -> Team {
@@ -127,5 +130,24 @@ enum TeamSnapshotMapper {
             ),
             imagePath: dto.imagePath
         )
+    }
+
+    /// Maps real per-team formations, keeping only the latest ingested season — mirrors
+    /// web's `getTeamFormations` (the ingest writes per-season rows and the field renders
+    /// the most recent one). An unknown unit string (only offense/defense exist in the
+    /// data) is skipped rather than throwing, so one bad row never takes down the whole
+    /// snapshot (AGENTS.md invariant 6). Empty input yields an empty array, which the
+    /// field treats as "no real formation data → generic layout".
+    static func mapFormations(_ dtos: [TeamFormationDTO]) -> [TeamFormation] {
+        guard let latest = dtos.map(\.season).max() else { return [] }
+        return dtos
+            .filter { $0.season == latest }
+            .compactMap { dto in
+                guard let unit = Unit(rawValue: dto.unit) else { return nil }
+                return TeamFormation(
+                    season: dto.season, rank: dto.rank, unit: unit,
+                    alignment: dto.alignment, personnel: dto.personnel, pct: dto.pct
+                )
+            }
     }
 }

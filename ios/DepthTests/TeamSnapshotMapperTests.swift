@@ -17,14 +17,16 @@ private func player(
 private func team(
     depthChartEntries: [DepthChartEntryDTO] = [],
     specialTeamsSlots: [SpecialTeamsSlotDTO] = [],
-    uniforms: [UniformDTO] = []
+    uniforms: [UniformDTO] = [],
+    formations: [TeamFormationDTO] = []
 ) -> TeamDTO {
     TeamDTO(
         id: "bills", abbrev: "BUF", city: "Buffalo", name: "Bills",
         conference: "AFC", division: "East",
         colorPrimary: "#00338d", colorSecondary: "#d50a0a", colorAccent: "#d50a0a",
         uiAccent: "#d50a0a", onAccent: "#ffffff", logoUrl: nil, logoDarkUrl: nil,
-        depthChartEntries: depthChartEntries, specialTeamsSlots: specialTeamsSlots, uniforms: uniforms
+        depthChartEntries: depthChartEntries, specialTeamsSlots: specialTeamsSlots,
+        uniforms: uniforms, teamFormations: formations
     )
 }
 
@@ -136,4 +138,49 @@ private func team(
     #expect(throws: DepthError.self) {
         try TeamSnapshotMapper.map(dto)
     }
+}
+
+@Test func emptyFormationsMapToEmptyArray() throws {
+    let dto = team()
+    let snapshot = try TeamSnapshotMapper.map(dto)
+    #expect(snapshot.formations.isEmpty)
+}
+
+@Test func mapsRealFormationsForTheLatestSeasonOnly() throws {
+    let dto = team(formations: [
+        TeamFormationDTO(season: 2025, rank: 1, unit: "offense", alignment: "SHOTGUN", personnel: "11", pct: 60),
+        TeamFormationDTO(season: 2025, rank: 2, unit: "offense", alignment: "UNDER CENTER", personnel: "21", pct: 25),
+        TeamFormationDTO(season: 2025, rank: 1, unit: "defense", alignment: "Nickel", personnel: "4-2-5", pct: 55),
+        // An older season's rows are dropped — the field renders the latest ingested season.
+        TeamFormationDTO(season: 2024, rank: 1, unit: "offense", alignment: "SHOTGUN", personnel: "12", pct: 70),
+    ])
+    let snapshot = try TeamSnapshotMapper.map(dto)
+    #expect(snapshot.formations.count == 3)
+    #expect(snapshot.formations.allSatisfy { $0.season == 2025 })
+    #expect(snapshot.formations.first { $0.unit == .offense }?.alignment == "SHOTGUN")
+    #expect(snapshot.formations.first { $0.unit == .offense }?.personnel == "11")
+    #expect(snapshot.formations.first { $0.unit == .offense }?.rank == 1)
+    #expect(snapshot.formations.first { $0.unit == .defense }?.personnel == "4-2-5")
+}
+
+@Test func formationWithInvalidUnitIsSkippedNotThrown() throws {
+    let dto = team(formations: [
+        TeamFormationDTO(season: 2025, rank: 1, unit: "bogus", alignment: "X", personnel: "11", pct: 5),
+        TeamFormationDTO(season: 2025, rank: 1, unit: "offense", alignment: "SHOTGUN", personnel: "11", pct: 60),
+    ])
+    let snapshot = try TeamSnapshotMapper.map(dto)
+    #expect(snapshot.formations.count == 1)
+    #expect(snapshot.formations[0].unit == .offense)
+}
+
+@Test func mapsSpecialUnitAsAValidFormation() throws {
+    // `.special` is a valid Unit case (unlike web's `'offense'|'defense'` union), so it
+    // decodes fine and is carried through — it simply never affects the field (topFormationSlots
+    // returns nil for .special, and the footer gate matches the active unit).
+    let dto = team(formations: [
+        TeamFormationDTO(season: 2025, rank: 1, unit: "special", alignment: "X", personnel: "11", pct: 5),
+    ])
+    let snapshot = try TeamSnapshotMapper.map(dto)
+    #expect(snapshot.formations.count == 1)
+    #expect(snapshot.formations[0].unit == .special)
 }

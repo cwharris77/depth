@@ -419,3 +419,30 @@ func buildRealDefenseFormation(_ code: String) -> [FormationSlot] {
         )
     }
 }
+
+/// Returns the unit's top (lowest-`rank`) real formation from its team's formation data —
+/// the default pick, mirroring web's `topFormationFor` in lib/hooks/depth-chart/use-formations.ts.
+/// nil when the unit has no formation rows (special teams always, and any historical
+/// season, whose `formations` array is empty). Callers use this for the initial selection
+/// and the overflow-menu meta label.
+func topFormation(for unit: Unit, formations: [TeamFormation]) -> TeamFormation? {
+    formations
+        .filter { $0.unit == unit }
+        .min(by: { $0.rank < $1.rank })
+}
+
+/// Turns one specific `TeamFormation` into its render-ready real-formation slots — what
+/// lets the field show a team's actual FTN-charted alignment instead of the generic
+/// synthetic layout, for a user-chosen formation as well as the default (DEP-221). nil
+/// for special teams (no special-teams formation data, matching web), so `resolveUnit`
+/// falls back to the generic layout.
+func formationSlots(for unit: Unit, formation: TeamFormation) -> [FormationSlot]? {
+    switch unit {
+    case .offense:
+        return buildRealFormation(alignment: formation.alignment, code: formation.personnel)
+    case .defense:
+        return buildRealDefenseFormation(formation.personnel)
+    case .special:
+        return nil
+    }
+}
