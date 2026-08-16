@@ -58,7 +58,7 @@ final class SupabaseAppEventsRecorder: AppEventsRecording, Sendable {
                     case errorCategory = "error_category"
                 }
             }
-            try? await client.from("app_events")
+            _ = try? await client.from("app_events")
                 .insert(Payload(eventName: event.name, errorCategory: event.errorCategory))
                 .execute()
         }
