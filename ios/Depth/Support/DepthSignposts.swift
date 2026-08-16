@@ -41,6 +41,11 @@ enum DepthSignposts {
     /// leg between a network fetch and the value reaching the view model.
     static let teamSnapshotCacheTransaction: StaticString = "TeamSnapshotCacheTransaction"
 
+    /// Same cache-transaction budget for the round-4 Stats page
+    /// (`CachedSnapshotStore.teamStats`/`saveTeamStats`). Kept as its own interval so the
+    /// two features don't smear each other's measurements on the signpost track.
+    static let teamStatsCacheTransaction: StaticString = "TeamStatsCacheTransaction"
+
     /// App-launch signpost start/end happen in two different files (`DepthApp.init()`
     /// and `TeamDetailViewModel.load()`) that don't otherwise share state, so the
     /// in-flight `OSSignpostIntervalState` has to live somewhere both can reach. Actor
