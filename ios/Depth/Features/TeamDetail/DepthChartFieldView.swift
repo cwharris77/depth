@@ -24,6 +24,10 @@ struct DepthChartFieldView: View {
     /// with the chosen uniform's palette). Nil falls back to the team's own colors.
     /// Declared before `onSelectPlayer` so callers keep the trailing-closure style.
     var colors: TeamColors? = nil
+    /// The unit's selected real formation to render (web's active formation, owned by the
+    /// caller). Nil falls back to the generic synthetic layout — used when the unit has no
+    /// formation data, is special teams, or is a historical season.
+    var formation: TeamFormation? = nil
     let onSelectPlayer: (Player) -> Void
 
     private var dotColors: TeamColors {
@@ -32,7 +36,12 @@ struct DepthChartFieldView: View {
 
     private var slots: [RenderSlot] {
         let roster = Roster(players: snapshot.players, specialTeams: snapshot.specialTeams)
-        return resolveUnit(roster: roster, unit: unit)
+        // DEP-221: pass the caller's selected real formation (formationSlots builds its
+        // layout from the TeamFormation) so the field renders the team's actual FTN-charted
+        // alignment instead of the generic synthetic layout. nil (no data, special, or
+        // historical) falls back to the generic layout, matching web.
+        let real = formation.flatMap { formationSlots(for: unit, formation: $0) }
+        return resolveUnit(roster: roster, unit: unit, realFormation: real)
     }
 
     var body: some View {

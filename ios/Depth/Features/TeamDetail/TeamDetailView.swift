@@ -18,7 +18,13 @@ struct TeamDetailView: View {
     @State private var editModeEnabled = false
     @State private var showHistory = false
     @State private var showUniformPicker = false
+    @State private var showFormations = false
     @State private var selectedUniformID: String?
+    /// The user's chosen real formation for the active unit (web's `activeFormation`, an
+    /// ephemeral pick — not persisted, not in the URL). nil means "use the unit's top
+    /// formation as the default"; reset to nil on unit change so switching units always
+    /// starts at that unit's top (web's resetToTopForUnit).
+    @State private var selectedFormation: TeamFormation?
     @State private var confirmedOrders: [Position: [String]] = [:]
 
     private let preferences: UserPreferences
@@ -88,6 +94,38 @@ struct TeamDetailView: View {
         return uniform.colors
     }
 
+    /// The active unit's real formations from the displayed snapshot (empty for special
+    /// teams and every historical season).
+    private var currentUnitFormations: [TeamFormation] {
+        displayedSnapshot?.formations.filter { $0.unit == unit } ?? []
+    }
+
+    /// The unit's top (lowest-rank) formation from the displayed snapshot — the default
+    /// pick, mirroring web's `topFormationFor`.
+    private func defaultFormation(for unit: Unit) -> TeamFormation? {
+        topFormation(for: unit, formations: displayedSnapshot?.formations ?? [])
+    }
+
+    /// The formation currently rendering on the field: the user's pick when one is set,
+    /// otherwise the unit's top formation (web's `activeFormation`). nil for special
+    /// teams / no data / historical, which render the generic layout.
+    private var activeFormation: TeamFormation? {
+        selectedFormation ?? defaultFormation(for: unit)
+    }
+
+    /// The overflow menu's "Formations" row shows the current pick inline (web's
+    /// `formationsMeta`): offense reads "Shotgun 11", defense "Nickel (4-2-5)". nil when
+    /// the unit has no formation to pick (so the row is omitted, like Choose Uniform when
+    /// there are no uniforms).
+    private var formationsMeta: String? {
+        guard let f = activeFormation else { return nil }
+        switch unit {
+        case .offense: return "\(alignmentLabel(f.alignment)) \(f.personnel)"
+        case .defense: return "\(f.alignment) (\(f.personnel))"
+        case .special: return nil
+        }
+    }
+
     var body: some View {
         content
             .navigationTitle(navigationTitleText)
@@ -120,7 +158,12 @@ struct TeamDetailView: View {
                     await loadOverrides()
                 }
             }
-            .onChange(of: unit) { _, newValue in preferences.lastUnit = newValue }
+            .onChange(of: unit) { _, newValue in
+                preferences.lastUnit = newValue
+                // A formation pick is unit-specific — reset to the new unit's top rather
+                // than carrying a stale offense pick onto defense (web's resetToTopForUnit).
+                selectedFormation = nil
+            }
             .onChange(of: historyViewModel.selectedSeason) { _, _ in selectedPlayer = nil }
             .onChange(of: sessionStore.user) { _, user in
                 if user == nil {
@@ -204,6 +247,17 @@ struct TeamDetailView: View {
                     selectedUniformID = uniformID
                     preferences.setUniformSelection(uniformID, for: viewModel.teamId)
                 }
+            }
+            .sheet(isPresented: $showFormations) {
+                FormationsSheetView(
+                    unit: unit,
+                    formations: currentUnitFormations,
+                    activeFormation: activeFormation,
+                    accent: teamAccentColor,
+                    onSelect: { selectedFormation = $0; showFormations = false },
+                    onClose: { showFormations = false }
+                )
+                .presentationDetents([.medium, .large])
             }
     }
 
@@ -293,6 +347,26 @@ struct TeamDetailView: View {
                 showHistory = true
             }
             .accessibilityIdentifier("history-destination")
+
+            // Web parity (FieldHeaderMenu's "Formations" row): opens the Formations sheet
+            // for the active unit and shows the current pick inline. Omitted (like Choose
+            // Uniform when there are no uniforms) whenever the active unit has no real
+            // formation data — special teams, a unit the ingest judged insufficient, and
+            // every historical season (whose formations array is always empty).
+            if let formationsMeta {
+                Button {
+                    showFormations = true
+                } label: {
+                    HStack {
+                        Label("Formations", systemImage: "square.grid.2x2")
+                        Spacer()
+                        Text(formationsMeta)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+                .accessibilityIdentifier("choose-formation")
+            }
 
             // Live snapshot only (design spec locked decision #10) — historical
             // rosters have no equivalent share-card visual contract yet.
@@ -458,7 +532,12 @@ struct TeamDetailView: View {
                         Rectangle().fill(DesignTokens.Colors.borderDefault).frame(height: 1)
                     }
 
-                    DepthChartFieldView(snapshot: snapshot, unit: unit, colors: fieldColors) { player in
+                    DepthChartFieldView(
+                        snapshot: snapshot,
+                        unit: unit,
+                        colors: fieldColors,
+                        formation: activeFormation
+                    ) { player in
                         selectedPlayer = player
                     }
                     // The field is the screen's primary content, so it fills the
@@ -467,6 +546,18 @@ struct TeamDetailView: View {
                     // from the horizontal padding; only the vertical axis is sized here.
                     .containerRelativeFrame(.vertical)
                     .padding(.horizontal)
+
+                    // Mirrors web's FTNAttribution footer (components/FTNAttribution.tsx)
+                    // — FTN charting is CC-BY-SA 4.0, so attribution is the condition of
+                    // surfacing real formation data (docs/nflverse.md). Shown only when the
+                    // active unit has formation data on screen; a historical season never
+                    // does (its snapshot's formations array is always empty), so none here
+                    // (web: `!historicalMode && unitFormationsCount > 0`).
+                    if !historical && snapshot.formations.contains(where: { $0.unit == unit }) {
+                        FTNAttributionText()
+                            .padding(.top, 6)
+                            .padding(.horizontal)
+                    }
                 }
                 .padding(.vertical)
             }
@@ -602,5 +693,131 @@ private struct RefreshFailedBanner: View {
             .font(.footnote)
             .foregroundStyle(.secondary)
             .padding(.horizontal)
+    }
+}
+
+// Mirrors components/FTNAttribution.tsx — the CC-BY-SA 4.0 license-mandated attribution
+// for surfacing FTN formation data (docs/nflverse.md). Shared by the field footer and the
+// Formations sheet (web reuses one component across surfaces) so the string lives in one
+// place.
+private struct FTNAttributionText: View {
+    var body: some View {
+        Text("Formation data © FTN Data (CC-BY-SA 4.0)")
+            .font(.caption)
+            .foregroundStyle(DesignTokens.Colors.textFaint)
+            .frame(maxWidth: .infinity)
+    }
+}
+
+// Mirrors components/FormationsSheet.tsx — single-select list of the active unit's real
+// formations, opened from the ••• menu's "Formations" row. Rows are grouped by personnel
+// code (offense) or front name (defense), groups and rows ordered by share desc; the
+// active pick carries a check. Selection writes the ephemeral `selectedFormation` in
+// TeamDetailView (never persisted, matches web's locked decision).
+private struct FormationsSheetView: View {
+    let unit: Unit
+    let formations: [TeamFormation]
+    let activeFormation: TeamFormation?
+    let accent: Color
+    let onSelect: (TeamFormation) -> Void
+    let onClose: () -> Void
+
+    /// Offense reads "Shotgun 11", defense "Nickel (4-2-5)" — mirrors web's rowTitle.
+    private func title(_ f: TeamFormation) -> String {
+        unit == .offense
+            ? "\(alignmentLabel(f.alignment)) \(f.personnel)"
+            : "\(f.alignment) (\(f.personnel))"
+    }
+
+    /// Groups by the dimension the alignment label doesn't already carry (offense: the
+    /// RB/TE code, defense: the front name); groups and rows ordered by share desc —
+    /// mirrors web's groupedRows.
+    private var grouped: [(header: String, rows: [TeamFormation])] {
+        var order: [String] = []
+        var byKey: [String: [TeamFormation]] = [:]
+        for f in formations.sorted(by: { $0.pct > $1.pct }) {
+            let key = unit == .offense ? "\(f.personnel) personnel" : f.alignment
+            if byKey[key] == nil { order.append(key) }
+            byKey[key, default: []].append(f)
+        }
+        return order.map { (header: $0, rows: byKey[$0] ?? []) }
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(grouped.enumerated()), id: \.offset) { _, group in
+                        Text(group.header.uppercased())
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(DesignTokens.Colors.textFaint)
+                            .padding(.horizontal, 20)
+                            .padding(.top, 12)
+                            .padding(.bottom, 4)
+                        ForEach(group.rows, id: \.self) { f in
+                            row(f)
+                        }
+                    }
+                }
+                .padding(.bottom, 8)
+            }
+            .navigationTitle("Formations")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { onClose() }
+                }
+            }
+            // FTN charting is CC-BY-SA 4.0 — attribution is the condition of listing these
+            // rows (docs/nflverse.md). Shared with the field footer.
+            .safeAreaInset(edge: .bottom) {
+                FTNAttributionText()
+                    .padding(.top, 6)
+                    .padding(.bottom, 8)
+                    .padding(.horizontal)
+            }
+        }
+    }
+
+    private func row(_ f: TeamFormation) -> some View {
+        let isActive = f == activeFormation
+        return Button {
+            onSelect(f)
+        } label: {
+            HStack {
+                Text(title(f))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(isActive ? accent : DesignTokens.Colors.textPrimary)
+                    .lineLimit(1)
+                Spacer()
+                VStack(alignment: .trailing, spacing: 0) {
+                    // Two lines, not a bare "22%" — without a personnel/utilization
+                    // breakdown the number alone doesn't say what it's a share OF.
+                    Text(f.pct == 0 ? "<1%" : "\(f.pct)%")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    Text("of plays")
+                        .font(.caption2)
+                        .foregroundStyle(DesignTokens.Colors.textFaint)
+                }
+                if isActive {
+                    Image(systemName: "checkmark")
+                        .font(.subheadline.weight(.heavy))
+                        .foregroundStyle(accent)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isActive ? accent.opacity(0.15) : Color.clear)
+            )
+            .padding(.horizontal, 12)
+        }
+        .buttonStyle(.plain)
+        .frame(minWidth: 44, minHeight: 44)
+        .accessibilityIdentifier("formation-row")
+        .accessibilityLabel(title(f))
+        .accessibilityAddTraits(isActive ? .isSelected : [])
     }
 }

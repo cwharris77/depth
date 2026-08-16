@@ -156,3 +156,44 @@ private struct AlignmentLabelCase: Decodable {
         #expect(alignmentLabel(c.alignment) == c.expectedLabel)
     }
 }
+
+// --- topFormation / formationSlots (DEP-221) ---------------------------------------
+// Not parity fixtures — these helpers are native-only (web computes the top formation in
+// the useFormations hook, not shared pure functions). These unit tests pin the default-pick
+// and from-selected-formation contracts the field relies on.
+
+private func formation(
+    _ unit: Unit, _ rank: Int, alignment: String = "SHOTGUN", personnel: String = "11", pct: Int = 50
+) -> TeamFormation {
+    TeamFormation(season: 2025, rank: rank, unit: unit, alignment: alignment, personnel: personnel, pct: pct)
+}
+
+@Test func topFormationPicksTheUnitsLowestRank() {
+    let formations = [
+        formation(.offense, 2, alignment: "UNDER CENTER", personnel: "21", pct: 30),
+        formation(.offense, 1, personnel: "11", pct: 60),
+        formation(.defense, 1, alignment: "Nickel", personnel: "4-2-5", pct: 55),
+    ]
+    #expect(topFormation(for: .offense, formations: formations)?.personnel == "11")
+    #expect(topFormation(for: .defense, formations: formations)?.personnel == "4-2-5")
+}
+
+@Test func topFormationReturnsNilForEmptyOrWrongUnit() {
+    #expect(topFormation(for: .offense, formations: []) == nil)
+    #expect(topFormation(for: .offense, formations: [formation(.defense, 1)]) == nil)
+}
+
+@Test func formationSlotsBuildsTheUnitsRealLayout() {
+    let offense = formation(.offense, 1, personnel: "11")
+    let slots = formationSlots(for: .offense, formation: offense)
+    #expect(slots?.count == 11)
+    #expect(slots?.first?.id == "off-lt-0")
+    #expect(slots?.contains { $0.position == .wr } == true)
+
+    // A defense formation builds a real 11-man front, not the generic 3-4 base.
+    let defense = formation(.defense, 1, personnel: "4-2-5")
+    #expect(formationSlots(for: .defense, formation: defense)?.count == 11)
+
+    // Special teams has no real-formation slots.
+    #expect(formationSlots(for: .special, formation: offense) == nil)
+}
