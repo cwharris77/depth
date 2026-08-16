@@ -15,6 +15,7 @@ struct UserPreferences: Sendable {
         static let lastUnit = "preferences.lastUnit"
         static let uniformSelections = "preferences.uniformSelections"
         static let depthOverrides = "preferences.depthOverrides"
+        static let depthSeenReorderHint = "preferences.depthSeenReorderHint"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -102,6 +103,24 @@ struct UserPreferences: Sendable {
             store[teamId] = Dictionary(uniqueKeysWithValues: override.map { ($0.key.rawValue, $0.value) })
         }
         defaults.set(store, forKey: Key.depthOverrides)
+    }
+
+    // DEP-226: one-time reorder discoverability hint, literal port of web's
+    // seenReorderHint/markReorderHintSeen (lib/utils/depth-chart/depth-overrides.ts's
+    // STORAGE_KEY_DEPTH_SEEN_REORDER_HINT). Defaults to "seen" so the hint never shows
+    // where storage is unavailable.
+    var seenReorderHint: Bool {
+        defaults.bool(forKey: Key.depthSeenReorderHint)
+    }
+
+    func markReorderHintSeen() {
+        defaults.set(true, forKey: Key.depthSeenReorderHint)
+    }
+
+    /// Test-reset hook: restores the hint to its "unseen" default (UI_TESTING_RESET_STATE
+    /// wipes all override/reorder state so reorder UI tests start deterministic).
+    func clearReorderHint() {
+        defaults.removeObject(forKey: Key.depthSeenReorderHint)
     }
 
     private func decode(_ raw: [String: [String]]) -> [Position: [String]] {

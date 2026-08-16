@@ -5,6 +5,10 @@ import Supabase
 // auth.uid() and commits atomically, avoiding the web client's delete-then-insert gap.
 protocol DepthOverrideWriting: Sendable {
     func save(teamId: String, position: String, playerIds: [String]) async throws
+    /// Removes a position's custom order entirely (web's reset-to-default push: its PUT
+    /// clears the position out of the team override). Signed out, a no-op on the remote —
+    /// the local cache was already cleared by the caller.
+    func clear(teamId: String, position: String) async throws
 }
 
 protocol DepthOverrideServicing: DepthOverrideWriting {
@@ -113,6 +117,25 @@ actor SupabaseDepthOverrideService: DepthOverrideServicing {
         }
     }
 
+    func clear(teamId: String, position: String) async throws {
+        // Direct delete, not an RPC: the table's existing "own overrides" policy already
+        // scopes deletes to auth.uid(), so this can never remove another user's row
+        // (20260710120000_depth_overrides.sql).
+        do {
+            try await client.from("depth_overrides")
+                .delete()
+                .eq("team_id", value: teamId)
+                .eq("position", value: position)
+                .execute()
+        } catch is URLError {
+            throw DepthError.offline
+        } catch let error as PostgrestError {
+            throw Self.map(error)
+        } catch {
+            throw DepthError.server(error.localizedDescription)
+        }
+    }
+
     private static func map(_ error: PostgrestError) -> DepthError {
         let message = error.localizedDescription.lowercased()
         if message.contains("authentication") { return .unauthenticated }
@@ -139,6 +162,13 @@ struct LocalFirstOverrideWriter: DepthOverrideWriting {
         guard let remote else { return }
         try? await remote.save(teamId: teamId, position: position, playerIds: playerIds)
     }
+
+    func clear(teamId: String, position: String) async throws {
+        guard let resolvedPosition = Position(rawValue: position) else { return }
+        preferences.clearPositionOrder(teamId: teamId, position: resolvedPosition)
+        guard let remote else { return }
+        try? await remote.clear(teamId: teamId, position: position)
+    }
 }
 
 // Native equivalent of the web overlay projection: persisted ids come first, unknown ids
@@ -161,16 +191,8 @@ func applyingDepthOverrides(
         }
         ordered.append(contentsOf: remaining.values.sorted(by: byDepthOrder))
 
-        for (index, player) in ordered.enumerated() {
-            playersById[player.id] = Player(
-                id: player.id,
-                name: player.name,
-                position: player.position,
-                depthRank: min(index + 1, 3),
-                number: player.number,
-                order: index,
-                photoUrl: player.photoUrl
-            )
+        for (index, player) in rerankedPlayers(ordered).enumerated() {
+            playersById[player.id] = player
         }
     }
 
@@ -180,4 +202,36 @@ func applyingDepthOverrides(
         specialTeams: snapshot.specialTeams,
         uniforms: snapshot.uniforms
     )
+}
+
+// Literal port of web's statusForRank + rank-capping loop (lib/utils/depth-chart/
+// depth-overrides.ts's applyTeamOverride): reorder assignments preserve rookie/injured,
+// flip everything else to starter at rank 1 / backup at rank 2+, and cap depthRank at 3.
+// Mirrors the whole-player rebuild web does — `Player` is value-typed, so changing rank
+// means reconstructing with every field carried through (a partial rebuild silently drops
+// college/bio/vitals/status, which is what DEP-226's reorder UI surfaced).
+func rerankedPlayers(_ players: [Player]) -> [Player] {
+    players.enumerated().map { index, player in
+        Player(
+            id: player.id,
+            name: player.name,
+            position: player.position,
+            depthRank: min(index + 1, 3),
+            number: player.number,
+            order: index,
+            status: statusForRank(player.status, rank: index + 1),
+            age: player.age,
+            college: player.college,
+            experience: player.experience,
+            height: player.height,
+            weight: player.weight,
+            bio: player.bio,
+            photoUrl: player.photoUrl
+        )
+    }
+}
+
+private func statusForRank(_ previous: PlayerStatus, rank: Int) -> PlayerStatus {
+    if previous == .injured || previous == .rookie { return previous }
+    return rank == 1 ? .starter : .backup
 }
