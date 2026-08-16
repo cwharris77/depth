@@ -41,12 +41,18 @@ final class PlayerCardReorderUITests: XCTestCase {
         )
         XCTAssertGreaterThanOrEqual(rows.count, 2, "edit mode should show at least two reorder rows")
 
-        // Drag the first row onto the last: the drop delegate live-moves it, then the
-        // Done pill commits once. The position becomes CUSTOM.
+        // Drag the first row onto the last: the long-press pick-up then slow drag reorders
+        // one slot at a time; holding at the end makes the last crossing register before the
+        // lift. The Done pill commits once. The position becomes CUSTOM.
         let first = rows.firstMatch
         let last = rows.element(boundBy: rows.count - 1)
         attachScreenshot(app, named: "05-reorder-edit-mode")
-        first.press(forDuration: 0.4, thenDragTo: last)
+        first.press(
+            forDuration: 0.6,
+            thenDragTo: last,
+            withVelocity: .slow,
+            thenHoldForDuration: 0.5
+        )
 
         let done = app.buttons["player-profile-depth-reorder-toggle"]
         XCTAssertEqual(done.label, "Done")
@@ -121,7 +127,12 @@ final class PlayerCardReorderUITests: XCTestCase {
             NSPredicate(format: "identifier BEGINSWITH 'player-profile-depth-reorder-row-'")
         )
         XCTAssertGreaterThanOrEqual(rows.count, 2)
-        rows.firstMatch.press(forDuration: 0.4, thenDragTo: rows.element(boundBy: rows.count - 1))
+        rows.firstMatch.press(
+            forDuration: 0.6,
+            thenDragTo: rows.element(boundBy: rows.count - 1),
+            withVelocity: .slow,
+            thenHoldForDuration: 0.5
+        )
         app.buttons["player-profile-depth-reorder-toggle"].tap()
 
         let reset = app.buttons["player-profile-depth-reset"]

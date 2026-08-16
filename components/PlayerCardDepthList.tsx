@@ -11,7 +11,7 @@ import { markReorderHintSeen, seenReorderHint } from '@/lib/utils/depth-chart/de
 import type { Player, Position, TeamColors } from '@/lib/types';
 import { Reorder } from 'framer-motion';
 import { Check, GripVertical, RotateCcw } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Badge from '@/components/ui/Badge';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 
@@ -94,6 +94,20 @@ export default function PlayerCardDepthList({
   // is on. Turning the global toggle off drops back to local `editing` (false unless
   // the per-card toggle was independently used before the global one turned on).
   const effectiveEditing = editing || globalEditMode;
+
+  // DEP-226 reorder fix: framer's Reorder.Group fires `onReorder` on every item crossing
+  // mid-drag, and persisting each one straight to the override store corrupted the order
+  // (could drag down but never back up; a broken order lingered after exiting edit mode).
+  // Keep the drag order ephemeral here — the group reorders against `draftIds` with nothing
+  // persisted — and commit the real order to the store exactly once on drag end.
+  const [draftIds, setDraftIds] = useState<string[]>(() => depthChart.map((p) => p.id));
+  const isDraggingRef = useRef(false);
+  const playersById = useMemo(() => new Map(depthChart.map((p) => [p.id, p])), [depthChart]);
+  // Re-seed the draft from the rendered order whenever depthChart changes and we are not
+  // mid-drag (i.e. after a commit re-projects the roster) so the list stays in sync.
+  useEffect(() => {
+    if (!isDraggingRef.current) setDraftIds(depthChart.map((p) => p.id));
+  }, [depthChart]);
 
   const toggleEditing = () => {
     markReorderHintSeen();
@@ -194,29 +208,41 @@ export default function PlayerCardDepthList({
         {effectiveEditing && onReorder ? (
           <Reorder.Group
             axis="y"
-            values={depthChart.map((p) => p.id)}
-            onReorder={(ids) => onReorder(player.position, ids as string[])}
+            values={draftIds}
+            onReorder={setDraftIds}
             style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-            {depthChart.map((p, i) => (
-              <Reorder.Item
-                key={p.id}
-                value={p.id}
-                className="flex items-center gap-3 px-4 py-3"
-                style={{
-                  background: p.id === player.id ? `${accent}1a` : 'transparent',
-                  borderTop: i === 0 ? 'none' : `1px solid ${uiTokens.surfaceRaised}`,
-                  cursor: 'grab',
-                  touchAction: 'none',
-                }}>
-                <GripVertical size={16} color={uiTokens.textMuted} style={{ flexShrink: 0 }} />
-                <DepthRowContent
-                  p={p}
-                  isCurrent={p.id === player.id}
-                  accent={accent}
-                  colors={colors}
-                />
-              </Reorder.Item>
-            ))}
+            {draftIds.map((id) => {
+              const p = playersById.get(id);
+              if (!p) return null;
+              return (
+                <Reorder.Item
+                  key={id}
+                  value={id}
+                  onDragStart={() => {
+                    isDraggingRef.current = true;
+                  }}
+                  onDragEnd={() => {
+                    isDraggingRef.current = false;
+                    // Commit the final dropped order once, not every crossing.
+                    onReorder(player.position, draftIds);
+                  }}
+                  className="flex items-center gap-3 px-4 py-3"
+                  style={{
+                    background: id === player.id ? `${accent}1a` : 'transparent',
+                    borderTop: id === draftIds[0] ? 'none' : `1px solid ${uiTokens.surfaceRaised}`,
+                    cursor: 'grab',
+                    touchAction: 'none',
+                  }}>
+                  <GripVertical size={16} color={uiTokens.textMuted} style={{ flexShrink: 0 }} />
+                  <DepthRowContent
+                    p={p}
+                    isCurrent={id === player.id}
+                    accent={accent}
+                    colors={colors}
+                  />
+                </Reorder.Item>
+              );
+            })}
           </Reorder.Group>
         ) : (
           depthChart.map((p, i) => {

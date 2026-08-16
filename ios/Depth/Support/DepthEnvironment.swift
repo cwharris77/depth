@@ -15,7 +15,20 @@ enum DepthEnvironment {
         else {
             fatalError("Missing SUPABASE_URL/SUPABASE_PUBLISHABLE_KEY in Info.plist — check the active .xcconfig")
         }
-        return SupabaseClient(supabaseURL: url, supabaseKey: key)
+        return SupabaseClient(
+            supabaseURL: url,
+            supabaseKey: key,
+            // Opt in to emitting the locally stored session immediately as the initial
+            // session (supabase-swift #822). The legacy default refreshed the stored
+            // session before emitting it, which is the behavior Supabase is warning about
+            // here; sessionChanges() filters expired sessions, so an expired stored
+            // session is never surfaced as a signed-in user.
+            options: SupabaseClientOptions(
+                auth: SupabaseClientOptions.AuthOptions(
+                    emitLocalSessionAsInitialSession: true
+                )
+            )
+        )
     }()
 
     /// This cache is disposable — Supabase is always the source of truth (design spec's

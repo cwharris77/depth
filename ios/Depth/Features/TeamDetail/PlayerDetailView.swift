@@ -1,5 +1,4 @@
 import SwiftUI
-import UniformTypeIdentifiers
 
 // Complete native player profile. The sheet owns presentation and semantic layout only;
 // profile fields arrive in Player and its independent lazy stats state stays in the
@@ -596,59 +595,136 @@ private struct DepthRowContent: View {
 
 // DEP-226: drag-to-reorder row list for the position-depth section. SwiftUI's `.onMove`
 // only exists on ForEach inside a List, and a List can't nest inside the card's ScrollView
-// without introducing a nested scroll container — so reorder uses the classic onDrag/onDrop
-// delegate pattern instead: a per-row DropDelegate moves the draft live on dropEntered
-// (web's Reorder.Group behavior) and commits once on performDrop (web's single onReorder
-// per drop).
+// without introducing a nested scroll container. The earlier attempts (`.onDrag`/`.onDrop`,
+// then `.draggable`/`.dropDestination`) all failed with a real finger: inside a ScrollView
+// the scroll pan claims vertical drags, so the system drag interaction never starts by hand.
+// This version disambiguates the way every scrollable reorder does — the row is "picked up"
+// with a short long-press, then dragged with a DragGesture. Live reorder targets use row
+// frames frozen at pickup, so the finger maps to a slot without a feedback loop; the commit
+// fires once on release.
 private struct DepthReorderList: View {
     @Binding var players: [Player]
     let currentPlayerID: String
     let accent: Color
     let onCommit: ([Player]) -> Void
 
+    /// Row mid-Ys in the list's coordinate space, keyed by player id, collected via
+    /// `.onGeometryChange`. Frozen at pickup — the slot mapping below must not track the
+    /// live-reordered rows or the drag and the reorder would chase each other.
+    @State private var rowCenters: [String: CGFloat] = [:]
+    /// The id of the row currently being dragged, set by the long-press phase.
     @State private var draggedPlayerID: String?
+    /// Row mid-Ys in the frozen pickup order — a fixed ruler the finger maps onto. Frozen
+    /// so the slot mapping never chases the live-reordered rows (that caused the drag and
+    /// the reorder to fight: jittery, over-sensitive, had to overshoot to reach the ends).
+    @State private var frozenCenters: [CGFloat] = []
+    /// Drives the "lifted" row visual (scale + shadow) while dragging.
+    @State private var liftRow = false
+    /// Dead-zone around each slot boundary: the row reorders only once the finger crosses
+    /// a boundary past this margin, so a finger resting on a boundary doesn't flip-flop.
+    private let reorderHysteresis: CGFloat = 6
 
     var body: some View {
         VStack(spacing: 0) {
             ForEach(players) { p in
-                HStack(spacing: 12) {
-                    // Web parity (PlayerCardDepthList's edit rows): a grip glyph leads
-                    // each row while reordering; rows are no longer tap-to-switch.
-                    Image(systemName: "line.3.horizontal")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(DesignTokens.Colors.textMuted)
-                        .accessibilityHidden(true)
-                    DepthRowContent(
-                        player: p,
-                        isCurrent: p.id == currentPlayerID,
-                        accent: accent
-                    )
-                }
-                .padding(DesignTokens.Spacing.md)
-                .background(p.id == currentPlayerID ? accent.opacity(0.10) : .clear)
-                .contentShape(Rectangle())
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel(
-                    "\(rankLabel(p.depthRank)), #\(p.number), \(p.name.isEmpty ? "#\(p.number)" : p.name)"
-                )
-                .accessibilityIdentifier("player-profile-depth-reorder-row-\(p.id)")
-                .onDrag {
-                    draggedPlayerID = p.id
-                    return NSItemProvider(object: p.id as NSString)
-                }
-                .onDrop(
-                    of: [.text],
-                    delegate: DepthRowDropDelegate(
-                        target: p,
-                        players: $players,
-                        draggedPlayerID: draggedPlayerID,
-                        onCommit: onCommit
-                    )
-                )
+                row(p)
+                    .onGeometryChange(for: CGFloat.self) { proxy in
+                        proxy.frame(in: .named("depthReorderList")).midY
+                    } action: { midY in
+                        rowCenters[p.id] = midY
+                    }
                 if p.id != players.last?.id {
                     Divider().overlay(DesignTokens.Colors.borderSubtle)
                 }
             }
+        }
+        .coordinateSpace(name: "depthReorderList")
+    }
+
+    private func row(_ p: Player) -> some View {
+        HStack(spacing: 12) {
+            // Web parity (PlayerCardDepthList's edit rows): a grip glyph leads each row
+            // while reordering; rows are no longer tap-to-switch.
+            Image(systemName: "line.3.horizontal")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+                .accessibilityHidden(true)
+            DepthRowContent(
+                player: p,
+                isCurrent: p.id == currentPlayerID,
+                accent: accent
+            )
+        }
+        .padding(DesignTokens.Spacing.md)
+        .background(p.id == currentPlayerID ? accent.opacity(0.10) : .clear)
+        .contentShape(Rectangle())
+        .zIndex(draggedPlayerID == p.id ? 1 : 0)
+        .scaleEffect(draggedPlayerID == p.id && liftRow ? 1.03 : 1)
+        .shadow(color: draggedPlayerID == p.id && liftRow ? .black.opacity(0.18) : .clear, radius: 8, y: 3)
+        // Long-press pick-up = the ScrollView disambiguator: hold still briefly and the row
+        // lifts; without it a moving finger is indistinguishable from a scroll.
+        .gesture(
+            LongPressGesture(minimumDuration: 0.25)
+                .sequenced(before: DragGesture(minimumDistance: 0))
+                .onChanged { value in
+                    switch value {
+                    case .first(true):
+                        draggedPlayerID = p.id
+                        frozenCenters = players.map { rowCenters[$0.id] ?? 0 }
+                        withAnimation(.snappy(duration: 0.15)) { liftRow = true }
+                    case .second(true, let drag?):
+                        guard draggedPlayerID != nil else { return }
+                        updateSlot(fingerY: drag.startLocation.y + drag.translation.height)
+                    default:
+                        break
+                    }
+                }
+                .onEnded { _ in
+                    guard draggedPlayerID == p.id else { return }
+                    draggedPlayerID = nil
+                    liftRow = false
+                    onCommit(players)
+                }
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            "\(rankLabel(p.depthRank)), #\(p.number), \(p.name.isEmpty ? "#\(p.number)" : p.name)"
+        )
+        .accessibilityIdentifier("player-profile-depth-reorder-row-\(p.id)")
+    }
+
+    /// Moves the dragged player one slot at a time as the finger crosses the adjacent slot
+    /// boundary (with a small dead-zone). The ruler (`frozenCenters`) is fixed at pickup, so
+    /// `frozenCenters[from]` is the center of the slot the dragged row currently occupies —
+    /// moving one step keeps the mapping monotonic and lets the finger land exactly on any
+    /// middle slot.
+    private func updateSlot(fingerY: CGFloat) {
+        guard let draggedID = draggedPlayerID,
+              let from = players.firstIndex(where: { $0.id == draggedID }),
+              frozenCenters.count == players.count else { return }
+        // Moving down: cross the boundary below the current slot (with hysteresis).
+        if from + 1 < players.count {
+            let boundary = (frozenCenters[from] + frozenCenters[from + 1]) / 2
+            if fingerY > boundary + reorderHysteresis {
+                moveDragged(from: from, to: from + 1)
+                return
+            }
+        }
+        // Moving up: cross the boundary above the current slot (with hysteresis).
+        if from - 1 >= 0 {
+            let boundary = (frozenCenters[from - 1] + frozenCenters[from]) / 2
+            if fingerY < boundary - reorderHysteresis {
+                moveDragged(from: from, to: from - 1)
+            }
+        }
+    }
+
+    private func moveDragged(from: Int, to: Int) {
+        withAnimation(.snappy(duration: 0.15)) {
+            players.move(
+                fromOffsets: IndexSet(integer: from),
+                toOffset: to > from ? to + 1 : to
+            )
         }
     }
 
@@ -658,39 +734,6 @@ private struct DepthReorderList: View {
         case 2: "BACKUP"
         default: "RESERVE"
         }
-    }
-}
-
-// Per-row drop target: reorders the draft live while the drag hovers (dropEntered) and
-// commits the whole new order once on release (performDrop). Committing on the target row
-// — not on every move — keeps the write path at one LocalFirstOverrideWriter save per drop,
-// matching web's Reorder.Group onReorder firing once.
-private struct DepthRowDropDelegate: DropDelegate {
-    let target: Player
-    @Binding var players: [Player]
-    let draggedPlayerID: String?
-    let onCommit: ([Player]) -> Void
-
-    func dropUpdated(info: DropInfo) -> DropProposal? {
-        DropProposal(operation: .move)
-    }
-
-    func dropEntered(info: DropInfo) {
-        guard let draggedPlayerID,
-              let fromIndex = players.firstIndex(where: { $0.id == draggedPlayerID }),
-              let toIndex = players.firstIndex(where: { $0.id == target.id }),
-              fromIndex != toIndex else { return }
-        withAnimation(.snappy(duration: 0.2)) {
-            players.move(
-                fromOffsets: IndexSet(integer: fromIndex),
-                toOffset: toIndex > fromIndex ? toIndex + 1 : toIndex
-            )
-        }
-    }
-
-    func performDrop(info: DropInfo) -> Bool {
-        onCommit(players)
-        return true
     }
 }
 
