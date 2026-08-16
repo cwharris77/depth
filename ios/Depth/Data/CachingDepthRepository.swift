@@ -31,10 +31,6 @@ actor CachingDepthRepository: DepthRepository {
         return try await refreshTeamList()
     }
 
-    func teamListCachedAt() async -> Date? {
-        (try? await store.teamList())?.cachedAt
-    }
-
     @discardableResult
     private func refreshTeamList() async throws -> [Team] {
         if let existing = inFlightListFetch {
