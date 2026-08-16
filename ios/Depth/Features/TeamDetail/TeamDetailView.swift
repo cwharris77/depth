@@ -3,10 +3,14 @@ import SwiftUI
 // Team depth chart — offense/defense/special-teams sections over one cached/refreshed
 // `TeamSnapshot` (design spec Milestone 1 item 16). Restores the last-viewed section via
 // `UserPreferences.lastUnit` and persists it on change, same pattern as the last-team
-// restoration in DepthChartsTab.
+// restoration in DepthChartsTab. The header's ROSTER/SCHEDULE/STATS page switcher
+// (round-4, DEP-217) turns the pushed Schedule destination into a third tab and hosts
+// the new Stats page (DEP-216); Schedule's pushed-destination chrome is suppressed
+// through `isEmbedded`.
 struct TeamDetailView: View {
     @State private var viewModel: TeamDetailViewModel
     @State private var unit: Unit
+    @State private var page: TeamPage = .roster
     @State private var selectedPlayer: Player?
     @State private var selectedOverrideGroup: EditableOverrideGroup?
     @State private var pendingOverrideGroup: EditableOverrideGroup?
@@ -162,21 +166,12 @@ struct TeamDetailView: View {
                     .accessibilityHint("Opens the team switcher")
                 }
 
-                // Web parity (components/FieldHeaderMenu.tsx): actions beyond Schedule
-                // live behind a single ••• overflow menu instead of a row of bare icons
-                // whose meaning isn't obvious (2026-08-15 visual-pass rounds 1-3). Schedule
-                // stays a visible calendar button — the web keeps it as a visible sibling
-                // page/tab, and one recognizable icon reads fine where four did not.
+                // Web parity (components/FieldHeaderMenu.tsx): actions beyond the page
+                // switcher's tabs live behind a single ••• overflow menu instead of a
+                // row of bare icons whose meaning isn't obvious (2026-08-15 visual-pass
+                // rounds 1-3). Schedule is no longer a toolbar button — round-4 (DEP-217)
+                // made it the middle tab of the ROSTER/SCHEDULE/STATS page switcher.
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    NavigationLink {
-                        ScheduleView(teamId: viewModel.teamId, repository: repository)
-                    } label: {
-                        Label("Schedule", systemImage: "calendar")
-                    }
-                    .frame(minWidth: 44, minHeight: 44)
-                    .accessibilityLabel("Schedule")
-                    .accessibilityIdentifier("schedule-destination")
-
                     Menu {
                         // Live snapshot only — historical rosters carry no uniforms
                         // (SupabaseDepthRepository.teamSeason returns uniforms: []).
@@ -276,11 +271,66 @@ struct TeamDetailView: View {
 
     @ViewBuilder
     private var content: some View {
-        if historyViewModel.isHistorical {
-            historicalContent
-        } else {
-            currentContent
+        VStack(spacing: 0) {
+            pageSwitcherRow
+            pageContent
         }
+    }
+
+    private enum TeamPage: String, CaseIterable {
+        case roster
+        case stats
+        case schedule
+
+        var label: String { rawValue.uppercased() }
+    }
+
+    /// Web parity (components/TeamPageHeader.tsx PAGE_TABS): the ROSTER/SCHEDULE/STATS
+    /// switcher replaces the old calendar button, so all three pages share one nav bar
+    /// and keep the team identity. Leading-aligned (recorded decision #7 — the brand
+    /// mark already lives in the nav bar, so web's right-aligned layout would leave an
+    /// unexplained gap on native).
+    private var pageSwitcherRow: some View {
+        DepthSegmentedControl(
+            options: TeamPage.allCases.map {
+                DepthSegmentedOption(value: $0, label: $0.label, identifier: "page-switcher-\($0.rawValue)")
+            },
+            selection: page,
+            onChange: { page = $0 },
+            activeColor: teamAccentColor
+        )
+        .accessibilityIdentifier("page-switcher")
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+        .background(DesignTokens.Colors.bg)
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(DesignTokens.Colors.borderDefault).frame(height: 1)
+        }
+    }
+
+    @ViewBuilder
+    private var pageContent: some View {
+        switch page {
+        case .roster:
+            if historyViewModel.isHistorical {
+                historicalContent
+            } else {
+                currentContent
+            }
+        case .stats:
+            TeamStatsView(teamId: viewModel.teamId, repository: repository)
+        case .schedule:
+            ScheduleView(teamId: viewModel.teamId, repository: repository, isEmbedded: true)
+        }
+    }
+
+    /// Team- or kit-driven accent for the page switcher and unit tabs (web: `activeColors`
+    /// = the active kit's colors, else the team's). Falls back to the app's own accent
+    /// before a team resolves.
+    private var teamAccentColor: Color {
+        let colors = fieldColors ?? displayedSnapshot?.team.colors
+        guard let colors else { return DesignTokens.Colors.accent }
+        return Color(hex: colors.uiAccent)
     }
 
     @ViewBuilder
@@ -366,13 +416,15 @@ struct TeamDetailView: View {
                         // table), this just surfaces that a background refresh didn't land.
                         RefreshFailedBanner()
                     }
-                    Picker("Unit", selection: $unit) {
-                        Text("Offense").tag(Unit.offense)
-                        Text("Defense").tag(Unit.defense)
-                        Text("Special Teams").tag(Unit.special)
-                    }
-                    .pickerStyle(.segmented)
+                    DepthUnitTabBar(
+                        selection: unit,
+                        onChange: { unit = $0 },
+                        activeColor: teamAccentColor
+                    )
                     .padding(.horizontal)
+                    .overlay(alignment: .bottom) {
+                        Rectangle().fill(DesignTokens.Colors.borderDefault).frame(height: 1)
+                    }
 
                     DepthChartFieldView(snapshot: snapshot, unit: unit, colors: fieldColors) { player in
                         selectedPlayer = player
