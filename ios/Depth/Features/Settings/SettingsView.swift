@@ -29,59 +29,36 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Account") {
-                    if let user = sessionStore.user {
-                        LabeledContent("Email", value: user.email)
-                        Button("Sign Out") {
-                            Task { await signOut() }
+            ScrollView {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
+                    sectionLabel("Account")
+                    accountCard
+
+                    if let signOutError {
+                        sectionLabel("Sign out")
+                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+                            Text(signOutError.message)
+                                .font(.footnote)
+                                .foregroundStyle(DesignTokens.Colors.danger)
                         }
-                        Button("Delete Account", role: .destructive) {
-                            showDeletion = true
-                        }
-                    } else {
-                        Text(
-                            "Sign in only when you want to save private preferences or depth orders."
-                        )
-                        .foregroundStyle(.secondary)
-                        Button("Sign In") { showAuth = true }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .depthCard()
                     }
-                }
 
-                if let signOutError {
-                    Section { Text(signOutError.message).foregroundStyle(.red) }
-                }
+                    sectionLabel("About")
+                    aboutCard
 
-                Section("About") {
-                    LabeledContent("Name", value: AppBuildInfo.displayName)
-                        .accessibilityIdentifier("settings-about-name")
-                    LabeledContent("Version", value: AppBuildInfo.versionAndBuild)
-                        .accessibilityIdentifier("settings-about-version")
-                    Text(AppBuildInfo.nonAffiliationDisclaimer)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .accessibilityIdentifier("settings-about-disclaimer")
+                    sectionLabel("Data")
+                    dataCard
                 }
-
-                Section("Data") {
-                    if dataSavedAtLoading {
-                        SavedOnDeviceLabel(cachedAt: Date())
-                            .redacted(reason: .placeholder)
-                            .accessibilityHidden(true)
-                    } else {
-                        SavedOnDeviceLabel(cachedAt: dataSavedAt)
-                            .accessibilityIdentifier("settings-data-saved-at")
-                    }
-                    Text(DataTimestamp.explanation)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .accessibilityIdentifier("settings-data-explanation")
-                }
+                .padding(DesignTokens.Spacing.md)
             }
+            .background(DesignTokens.Colors.bg)
             .navigationTitle("Account")
         }
         .sheet(isPresented: $showAuth) {
             AuthSheet(service: authService, sessionStore: sessionStore, events: events)
+                .presentationBackground(DesignTokens.Colors.bg)
         }
         .sheet(isPresented: $showDeletion) {
             if let email = sessionStore.user?.email {
@@ -93,8 +70,73 @@ struct SettingsView: View {
                         clearPrivateData: clearPrivateData
                     )
                 )
+                .presentationBackground(DesignTokens.Colors.bg)
             }
         }
+    }
+
+    // Section headers read as muted captions above each card, matching web's
+    // section-label pattern rather than Form's built-in grouped headers.
+    private func sectionLabel(_ title: String) -> some View {
+        Text(title)
+            .font(.caption)
+            .foregroundStyle(DesignTokens.Colors.textMuted)
+    }
+
+    private var accountCard: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+            if let user = sessionStore.user {
+                LabeledContent("Email", value: user.email)
+                Button("Sign Out") {
+                    Task { await signOut() }
+                }
+                Button("Delete Account", role: .destructive) {
+                    showDeletion = true
+                }
+            } else {
+                Text(
+                    "Sign in only when you want to save private preferences or depth orders."
+                )
+                .foregroundStyle(DesignTokens.Colors.textSecondary)
+                Button("Sign In") { showAuth = true }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .depthCard()
+    }
+
+    private var aboutCard: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+            LabeledContent("Name", value: AppBuildInfo.displayName)
+                .accessibilityIdentifier("settings-about-name")
+            LabeledContent("Version", value: AppBuildInfo.versionAndBuild)
+                .accessibilityIdentifier("settings-about-version")
+            Text(AppBuildInfo.nonAffiliationDisclaimer)
+                .font(.footnote)
+                .foregroundStyle(DesignTokens.Colors.textSecondary)
+                .accessibilityIdentifier("settings-about-disclaimer")
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .depthCard()
+    }
+
+    private var dataCard: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+            if dataSavedAtLoading {
+                SavedOnDeviceLabel(cachedAt: Date())
+                    .redacted(reason: .placeholder)
+                    .accessibilityHidden(true)
+            } else {
+                SavedOnDeviceLabel(cachedAt: dataSavedAt)
+                    .accessibilityIdentifier("settings-data-saved-at")
+            }
+            Text(DataTimestamp.explanation)
+                .font(.footnote)
+                .foregroundStyle(DesignTokens.Colors.textSecondary)
+                .accessibilityIdentifier("settings-data-explanation")
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .depthCard()
     }
 
     private func signOut() async {
