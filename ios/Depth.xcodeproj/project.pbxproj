@@ -107,6 +107,7 @@
 		DC95DB2C72B7E87E9FE73999 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 025761971C890C088DEB466C /* AppConfig.swift */; };
 		DEA6657C52F2D9ACB38F070D /* Position.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F022703396305729D075AA5 /* Position.swift */; };
 		E29D241EC90A3F3EC123E26A /* PlayerSearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE16E2DA9E2543931C3B960 /* PlayerSearchTests.swift */; };
+		E6FE8547B35A824990B3FDED /* PlayerCardReorderUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B363F9AF5C0854305B6E670A /* PlayerCardReorderUITests.swift */; };
 		E887D4C51D6BCD5543FC9800 /* TeamStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C59A8DA266DD9C02DE5EE8C8 /* TeamStatsView.swift */; };
 		EA23E4310B915968F4523778 /* HistoricalRosterMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B86644C1AB56B9F8C429F7 /* HistoricalRosterMapper.swift */; };
 		EFF8B47F7B414593005AA116 /* HistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 902F5629F8D437E89953B681 /* HistoryViewModel.swift */; };
@@ -218,6 +219,7 @@
 		AE2CDFAE59D2F55DFD495B79 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		AFE9E3629D2A8EF20465A2F7 /* AuthUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthUITests.swift; sourceTree = "<group>"; };
 		B14888EF10F7F9A82139F0BD /* DepthChartFieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthChartFieldView.swift; sourceTree = "<group>"; };
+		B363F9AF5C0854305B6E670A /* PlayerCardReorderUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCardReorderUITests.swift; sourceTree = "<group>"; };
 		B6AEFA01C7AE1138FA0B9741 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		B8FF910E933BD5EBFA34FABB /* TeamListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamListView.swift; sourceTree = "<group>"; };
 		BBA198C4CAB3B2E7EFB862E6 /* TeamListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamListViewModel.swift; sourceTree = "<group>"; };
@@ -397,6 +399,7 @@
 				AFE9E3629D2A8EF20465A2F7 /* AuthUITests.swift */,
 				1134BC81FF92C3AF1A114845 /* DepthUITests.swift */,
 				4C20C08065BC045F4A9C3C2D /* PerformanceUITests.swift */,
+				B363F9AF5C0854305B6E670A /* PlayerCardReorderUITests.swift */,
 				E147E349DAED0C3DFF5A965C /* ShareUITests.swift */,
 				25A33972CBA3A43968B410F6 /* UITestHelpers.swift */,
 			);
@@ -793,6 +796,7 @@
 				A1E1EFE3A8781B7BA2758DB4 /* AuthUITests.swift in Sources */,
 				5B9538595A885E3D730A7A12 /* DepthUITests.swift in Sources */,
 				CB4FD1096A9B377BFD07C517 /* PerformanceUITests.swift in Sources */,
+				E6FE8547B35A824990B3FDED /* PlayerCardReorderUITests.swift in Sources */,
 				D693C9DD2EB4D028D38891D4 /* ShareUITests.swift in Sources */,
 				0A476DD65C57C553CAA0A3AF /* UITestHelpers.swift in Sources */,
 			);

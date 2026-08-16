@@ -156,12 +156,23 @@ struct TeamDetailView: View {
 
             }
             .sheet(item: $selectedPlayer) { player in
+                let editable = !historyViewModel.isHistorical
+                let position = player.position
                 PlayerDetailView(
                     player: player,
                     team: displayedSnapshot?.team,
                     repository: repository,
-                    depthChart: players(for: player.position),
-                    onSelectPlayer: { selectedPlayer = $0 }
+                    depthChart: players(for: position),
+                    onSelectPlayer: { selectedPlayer = $0 },
+                    // DEP-226: reorder/reset are wired only for the live roster — a
+                    // historical season is read-only, matching web's readOnly prop
+                    // omission. defaultDepthChart is the position's pre-override order,
+                    // which Reset restores to.
+                    defaultDepthChart: defaultPlayers(for: position),
+                    preferences: preferences,
+                    isPositionCustom: editable ? confirmedOrders[position] != nil : false,
+                    onReorder: editable ? { _, ids in reorderPosition(position, ids) } : nil,
+                    onResetPosition: editable ? { _ in resetPosition(position) } : nil
                 )
                     .id(player.id)
                     // `.sheet()` content gets a fresh UITraitCollection rather than
@@ -502,6 +513,13 @@ struct TeamDetailView: View {
             ?? []
     }
 
+    /// The position's default roster order, before any user override (web's
+    /// `getPlayersByPosition` on the un-overridden roster). Reset restores to this.
+    private func defaultPlayers(for position: Position) -> [Player] {
+        viewModel.snapshot?.players.filter { $0.position == position }.sorted(by: byDepthOrder)
+            ?? []
+    }
+
     private var displayedSnapshot: TeamSnapshot? {
         if historyViewModel.isHistorical {
             return historyViewModel.snapshot
@@ -549,6 +567,39 @@ struct TeamDetailView: View {
     // requires sign-in to enter edit mode; only cross-device sync needs an account).
     private func beginEditing(_ group: EditableOverrideGroup) {
         selectedOverrideGroup = group
+    }
+
+    // DEP-226: player-card reorder writes through the same local-first writer as the
+    // overflow-menu editor (DEP-219) — local cache always, server mirror fire-and-forget
+    // when signed in. confirmedOrders updates immediately so the field behind the sheet
+    // re-renders the new order while the card stays open.
+    private func reorderPosition(_ position: Position, _ orderedIds: [String]) {
+        confirmedOrders[position] = orderedIds
+        let writer = LocalFirstOverrideWriter(
+            preferences: preferences,
+            remote: sessionStore.user != nil ? overrideService : nil
+        )
+        Task {
+            try? await writer.save(
+                teamId: viewModel.teamId,
+                position: position.rawValue,
+                playerIds: orderedIds
+            )
+        }
+    }
+
+    // DEP-226: reset restores the position's default order and drops the override —
+    // locally always, mirrored to the server (row delete) when signed in, matching web's
+    // handleResetPosition (which pushes the position-less override through its PUT).
+    private func resetPosition(_ position: Position) {
+        confirmedOrders[position] = nil
+        let writer = LocalFirstOverrideWriter(
+            preferences: preferences,
+            remote: sessionStore.user != nil ? overrideService : nil
+        )
+        Task {
+            try? await writer.clear(teamId: viewModel.teamId, position: position.rawValue)
+        }
     }
 }
 

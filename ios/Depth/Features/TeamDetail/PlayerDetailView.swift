@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 // Complete native player profile. The sheet owns presentation and semantic layout only;
 // profile fields arrive in Player and its independent lazy stats state stays in the
@@ -12,7 +13,32 @@ struct PlayerDetailView: View {
     let depthChart: [Player]
     var onSelectPlayer: ((Player) -> Void)? = nil
 
+    // DEP-226: inline drag-to-reorder, mirroring web's PlayerCardDepthList. The card is a
+    // plain VStack inside a ScrollView (a `List` would nest scroll containers), so reorder
+    // uses `.onDrag`/`.onDrop` row delegates instead of `.onMove`. `defaultDepthChart` is
+    // the position's default roster order (pre-override) for Reset; `preferences` hosts the
+    // one-time hint. TeamDetailView passes `onReorder`/`onResetPosition` as nil in
+    // historical/shared-preview contexts, matching web's readOnly prop omission.
+    let defaultDepthChart: [Player]
+    let preferences: UserPreferences?
+    var isPositionCustom = false
+    var onReorder: ((Position, [String]) -> Void)? = nil
+    var onResetPosition: ((Position) -> Void)? = nil
+
     @State private var viewModel: PlayerProfileViewModel
+
+    // DEP-226: edit/hint state resets when the sheet re-presents a different player —
+    // the `.id(player.id)` on the sheet content gives this view a fresh identity per
+    // player, so @State below starts over each time (web resets the same state in a
+    // render-time prev-player comparison).
+    @State private var editing = false
+    @State private var showHint: Bool
+    @State private var positionIsCustom: Bool
+    /// The order the card renders. `depthChart` is a presentation-time prop that can't
+    /// update after a reorder (the sheet content closure doesn't re-run), so commits
+    /// write back here instead of relying on the prop.
+    @State private var displayOrder: [Player]
+    @State private var reorderDraft: [Player] = []
 
     @Environment(\.dismiss) private var dismiss
 
@@ -36,15 +62,30 @@ struct PlayerDetailView: View {
         team: Team?,
         repository: DepthRepository,
         depthChart: [Player],
-        onSelectPlayer: ((Player) -> Void)? = nil
+        onSelectPlayer: ((Player) -> Void)? = nil,
+        defaultDepthChart: [Player] = [],
+        preferences: UserPreferences? = nil,
+        isPositionCustom: Bool = false,
+        onReorder: ((Position, [String]) -> Void)? = nil,
+        onResetPosition: ((Position) -> Void)? = nil
     ) {
         self.player = player
         self.team = team
         self.depthChart = depthChart
         self.onSelectPlayer = onSelectPlayer
+        self.defaultDepthChart = defaultDepthChart.isEmpty ? depthChart : defaultDepthChart
+        self.preferences = preferences
+        self.isPositionCustom = isPositionCustom
+        self.onReorder = onReorder
+        self.onResetPosition = onResetPosition
         _viewModel = State(initialValue: PlayerProfileViewModel(
             playerID: player.id, teamID: team?.id, repository: repository
         ))
+        // The hint shows until the user has seen it once (web's localStorage flag); the
+        // reorder affordances only exist when a writer is wired up, so no hint without one.
+        _showHint = State(initialValue: onReorder != nil && preferences?.seenReorderHint == false)
+        _positionIsCustom = State(initialValue: isPositionCustom)
+        _displayOrder = State(initialValue: depthChart)
     }
 
     var body: some View {
@@ -124,7 +165,7 @@ struct PlayerDetailView: View {
             // semantic colors otherwise — this line had no color at all before (DEP-223).
             Text(player.status.rawValue.capitalized)
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(statusColor(player.status))
+                .foregroundStyle(playerStatusColor(player.status, accent: accent))
                 .accessibilityIdentifier("player-profile-status")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -227,7 +268,8 @@ struct PlayerDetailView: View {
 
     // Web parity (components/PlayerCardDepthList.tsx): the position's players in depth
     // order, STARTER/BACKUP/RESERVE rank labels, current player highlighted with the
-    // team accent + checkmark, others tappable to switch the card.
+    // team accent + checkmark, others tappable to switch the card. DEP-226 adds the
+    // card's own Reorder/Done toggle, one-time hint, CUSTOM tag, Reset, and drag rows.
     @ViewBuilder
     private var positionDepth: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -239,61 +281,157 @@ struct PlayerDetailView: View {
                 .font(.headline)
                 .accessibilityIdentifier("player-profile-depth-title")
 
-            if depthChart.count <= 1 {
+            if displayOrder.count <= 1 {
                 Text("No backups available")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 56)
                     .depthCard(dense: true)
             } else {
-                // DEP-225: padded: false + each row keeping its own padding lets the
-                // current-player row's highlight reach the card's rounded edges —
-                // depthCard's own outer padding was insetting every row away from
-                // them before.
-                VStack(spacing: 0) {
-                    ForEach(depthChart) { p in
-                        depthRow(p)
-                        if p.id != depthChart.last?.id {
-                            Divider().overlay(DesignTokens.Colors.borderSubtle)
+                depthHeader
+                if showHint && !editing {
+                    depthHint
+                }
+                if editing {
+                    DepthReorderList(
+                        players: $reorderDraft,
+                        currentPlayerID: player.id,
+                        accent: accent,
+                        onCommit: commitReorder
+                    )
+                    .depthCard(dense: true, padded: false)
+                } else {
+                    // DEP-225: padded: false + each row keeping its own padding lets the
+                    // current-player row's highlight reach the card's rounded edges —
+                    // depthCard's own outer padding was insetting every row away from
+                    // them before.
+                    VStack(spacing: 0) {
+                        ForEach(displayOrder) { p in
+                            depthRow(p)
+                            if p.id != displayOrder.last?.id {
+                                Divider().overlay(DesignTokens.Colors.borderSubtle)
+                            }
                         }
                     }
+                    .depthCard(dense: true, padded: false)
                 }
-                .depthCard(dense: true, padded: false)
             }
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("player-profile-depth")
     }
 
+    /// Web parity (PlayerCardDepthList's header row): CUSTOM tag on the left once the
+    /// position has a saved custom order, Reset + the Reorder/Done toggle on the right.
+    private var depthHeader: some View {
+        HStack(spacing: 8) {
+            if positionIsCustom {
+                customTag
+            }
+            Spacer()
+            if positionIsCustom, let onResetPosition {
+                Button {
+                    resetPosition(onResetPosition)
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.counterclockwise")
+                            .font(.caption2.weight(.bold))
+                        Text("Reset")
+                            .font(.caption.bold())
+                    }
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                }
+                .accessibilityIdentifier("player-profile-depth-reset")
+            }
+            if let onReorder {
+                Button {
+                    toggleEditing(onReorder)
+                } label: {
+                    HStack(spacing: 4) {
+                        if !editing {
+                            // Web parity: a grip glyph leads the "Reorder" label.
+                            Image(systemName: "line.3.horizontal")
+                                .font(.caption2.weight(.bold))
+                        }
+                        Text(editing ? "Done" : "Reorder")
+                            .font(.caption.bold())
+                    }
+                    .foregroundStyle(editing ? onAccent : accent)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    // Web parity (PlayerCardDepthList's toggle pill): accent fill +
+                    // onAccent text while editing, accent-tinted fill/border otherwise.
+                    .background(Capsule().fill(editing ? accent : accent.opacity(0.10)))
+                    .overlay {
+                        Capsule().strokeBorder(accent.opacity(0.33), lineWidth: 1)
+                    }
+                }
+                .accessibilityIdentifier("player-profile-depth-reorder-toggle")
+            }
+        }
+    }
+
+    // Web parity (Badge variant="tag"): accent text on a 10%-alpha accent fill with an
+    // accent-tinted border — the "CUSTOM" flag pill beside the Reorder toggle.
+    private var customTag: some View {
+        Text("CUSTOM")
+            .font(.caption.bold())
+            .foregroundStyle(accent)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(Capsule().fill(accent.opacity(0.10)))
+            .overlay {
+                Capsule().strokeBorder(accent.opacity(0.33), lineWidth: 1)
+            }
+            .accessibilityIdentifier("player-profile-depth-custom")
+    }
+
+    // Web parity (PlayerCardDepthList's first-use hint): shown once, before the first
+    // edit, while the card is not in reorder mode; marking it seen is what dismisses it.
+    private var depthHint: some View {
+        Text("Tip: tap Reorder to build your own depth chart — your order is saved on this device.")
+            .font(.caption)
+            .foregroundStyle(accent)
+            .accessibilityIdentifier("player-profile-depth-hint")
+    }
+
+    private func toggleEditing(_ onReorder: @escaping (Position, [String]) -> Void) {
+        // The hint is dismissed the first time the toggle is used, then never again
+        // (web's markReorderHintSeen + the one-time localStorage flag).
+        preferences?.markReorderHintSeen()
+        showHint = false
+        editing.toggle()
+        if editing {
+            reorderDraft = displayOrder
+        }
+    }
+
+    private func commitReorder(_ ordered: [Player]) {
+        let reranked = rerankedPlayers(ordered)
+        onReorder?(player.position, reranked.map(\.id))
+        displayOrder = reranked
+        reorderDraft = reranked
+        positionIsCustom = true
+    }
+
+    private func resetPosition(_ reset: (Position) -> Void) {
+        reset(player.position)
+        displayOrder = defaultDepthChart
+        reorderDraft = defaultDepthChart
+        positionIsCustom = false
+        editing = false
+    }
+
     private func depthRow(_ p: Player) -> some View {
         let isCurrent = p.id == player.id
-        let accent = team.map { Color(hex: $0.colors.uiAccent) } ?? .accentColor
         return Button {
             if !isCurrent { onSelectPlayer?(p) }
         } label: {
-            HStack(spacing: 12) {
-                Text(depthRankLabel(p.depthRank))
-                    .font(.caption.bold())
-                    .foregroundStyle(statusColor(p.status))
-                    .frame(minWidth: 64, alignment: .leading)
-                Text("#\(p.number)")
-                    .font(.footnote.bold())
-                    .foregroundStyle(DesignTokens.Colors.textMuted)
-                    .frame(minWidth: 28, alignment: .leading)
-                Text(p.name.isEmpty ? "#\(p.number)" : p.name)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(isCurrent ? accent : DesignTokens.Colors.textPrimary)
-                    .lineLimit(1)
-                Spacer()
-                if isCurrent {
-                    Image(systemName: "checkmark")
-                        .font(.footnote.bold())
-                        .foregroundStyle(accent)
-                        .accessibilityHidden(true)
-                }
-            }
-            .padding(DesignTokens.Spacing.md)
-            .contentShape(Rectangle())
+            depthRowContent(p, isCurrent: isCurrent)
+                .padding(DesignTokens.Spacing.md)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .background(isCurrent ? accent.opacity(0.10) : .clear)
@@ -305,6 +443,20 @@ struct PlayerDetailView: View {
         .accessibilityIdentifier("player-profile-depth-row-\(p.id)")
     }
 
+    /// The shared rank/number/name (+ checkmark for the current player) row content used
+    /// by both the tap-to-switch rows and the drag-to-reorder rows.
+    private func depthRowContent(_ p: Player, isCurrent: Bool) -> some View {
+        DepthRowContent(player: p, isCurrent: isCurrent, accent: accent)
+    }
+
+    private var accent: Color {
+        team.map { Color(hex: $0.colors.uiAccent) } ?? .accentColor
+    }
+
+    private var onAccent: Color {
+        (team?.colors.onAccent).map { Color(hex: $0) } ?? .white
+    }
+
     // Mirrors web PlayerCardDepthList.depthRankLabel: ranks are capped at 3, so
     // anything past 2 is "reserve" rather than a literal ordinal.
     private func depthRankLabel(_ rank: Int) -> String {
@@ -312,21 +464,6 @@ struct PlayerDetailView: View {
         case 1: "STARTER"
         case 2: "BACKUP"
         default: "RESERVE"
-        }
-    }
-
-    // Mirrors lib/utils/colors.ts statusColor: starter is team-driven (uiAccent), the
-    // rest are fixed semantic colors shared by every team.
-    private func statusColor(_ status: PlayerStatus) -> Color {
-        switch status {
-        case .starter:
-            team.map { Color(hex: $0.colors.uiAccent) } ?? .accentColor
-        case .backup:
-            Color(hex: "#A5ACAF")
-        case .rookie:
-            Color(hex: "#4fc3f7")
-        case .injured:
-            Color(hex: "#ef5350")
         }
     }
 
@@ -379,6 +516,158 @@ struct PlayerDetailView: View {
         Text("\(player.number)")
             .font(.title.bold())
             .foregroundStyle(color)
+    }
+}
+
+// Mirrors lib/utils/colors.ts statusColor: starter is team-driven (uiAccent), the
+// rest are fixed semantic colors shared by every team.
+private func playerStatusColor(_ status: PlayerStatus, accent: Color) -> Color {
+    switch status {
+    case .starter: accent
+    case .backup: Color(hex: "#A5ACAF")
+    case .rookie: Color(hex: "#4fc3f7")
+    case .injured: Color(hex: "#ef5350")
+    }
+}
+
+// The single rank/number/name (+ checkmark) row body shared by the tap-to-switch rows
+// (depthRow) and the drag-to-reorder rows (DepthReorderList) — mirrors web's
+// DepthRowContent.
+private struct DepthRowContent: View {
+    let player: Player
+    let isCurrent: Bool
+    let accent: Color
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Text(depthRankLabel(player.depthRank))
+                .font(.caption.bold())
+                .foregroundStyle(playerStatusColor(player.status, accent: accent))
+                .frame(minWidth: 64, alignment: .leading)
+            Text("#\(player.number)")
+                .font(.footnote.bold())
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+                .frame(minWidth: 28, alignment: .leading)
+            Text(player.name.isEmpty ? "#\(player.number)" : player.name)
+                .font(.subheadline.bold())
+                .foregroundStyle(isCurrent ? accent : DesignTokens.Colors.textPrimary)
+                .lineLimit(1)
+            Spacer()
+            if isCurrent {
+                Image(systemName: "checkmark")
+                    .font(.footnote.bold())
+                    .foregroundStyle(accent)
+                    .accessibilityHidden(true)
+            }
+        }
+    }
+
+    private func depthRankLabel(_ rank: Int) -> String {
+        switch rank {
+        case 1: "STARTER"
+        case 2: "BACKUP"
+        default: "RESERVE"
+        }
+    }
+}
+
+// DEP-226: drag-to-reorder row list for the position-depth section. SwiftUI's `.onMove`
+// only exists on ForEach inside a List, and a List can't nest inside the card's ScrollView
+// without introducing a nested scroll container — so reorder uses the classic onDrag/onDrop
+// delegate pattern instead: a per-row DropDelegate moves the draft live on dropEntered
+// (web's Reorder.Group behavior) and commits once on performDrop (web's single onReorder
+// per drop).
+private struct DepthReorderList: View {
+    @Binding var players: [Player]
+    let currentPlayerID: String
+    let accent: Color
+    let onCommit: ([Player]) -> Void
+
+    @State private var draggedPlayerID: String?
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ForEach(players) { p in
+                HStack(spacing: 12) {
+                    // Web parity (PlayerCardDepthList's edit rows): a grip glyph leads
+                    // each row while reordering; rows are no longer tap-to-switch.
+                    Image(systemName: "line.3.horizontal")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(DesignTokens.Colors.textMuted)
+                        .accessibilityHidden(true)
+                    DepthRowContent(
+                        player: p,
+                        isCurrent: p.id == currentPlayerID,
+                        accent: accent
+                    )
+                }
+                .padding(DesignTokens.Spacing.md)
+                .background(p.id == currentPlayerID ? accent.opacity(0.10) : .clear)
+                .contentShape(Rectangle())
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(
+                    "\(rankLabel(p.depthRank)), #\(p.number), \(p.name.isEmpty ? "#\(p.number)" : p.name)"
+                )
+                .accessibilityIdentifier("player-profile-depth-reorder-row-\(p.id)")
+                .onDrag {
+                    draggedPlayerID = p.id
+                    return NSItemProvider(object: p.id as NSString)
+                }
+                .onDrop(
+                    of: [.text],
+                    delegate: DepthRowDropDelegate(
+                        target: p,
+                        players: $players,
+                        draggedPlayerID: draggedPlayerID,
+                        onCommit: onCommit
+                    )
+                )
+                if p.id != players.last?.id {
+                    Divider().overlay(DesignTokens.Colors.borderSubtle)
+                }
+            }
+        }
+    }
+
+    private func rankLabel(_ rank: Int) -> String {
+        switch rank {
+        case 1: "STARTER"
+        case 2: "BACKUP"
+        default: "RESERVE"
+        }
+    }
+}
+
+// Per-row drop target: reorders the draft live while the drag hovers (dropEntered) and
+// commits the whole new order once on release (performDrop). Committing on the target row
+// — not on every move — keeps the write path at one LocalFirstOverrideWriter save per drop,
+// matching web's Reorder.Group onReorder firing once.
+private struct DepthRowDropDelegate: DropDelegate {
+    let target: Player
+    @Binding var players: [Player]
+    let draggedPlayerID: String?
+    let onCommit: ([Player]) -> Void
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
+    }
+
+    func dropEntered(info: DropInfo) {
+        guard let draggedPlayerID,
+              let fromIndex = players.firstIndex(where: { $0.id == draggedPlayerID }),
+              let toIndex = players.firstIndex(where: { $0.id == target.id }),
+              fromIndex != toIndex else { return }
+        withAnimation(.snappy(duration: 0.2)) {
+            players.move(
+                fromOffsets: IndexSet(integer: fromIndex),
+                toOffset: toIndex > fromIndex ? toIndex + 1 : toIndex
+            )
+        }
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        onCommit(players)
+        return true
     }
 }
 
