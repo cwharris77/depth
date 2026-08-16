@@ -24,6 +24,12 @@ struct PlayerDetailView: View {
     var isPositionCustom = false
     var onReorder: ((Position, [String]) -> Void)? = nil
     var onResetPosition: ((Position) -> Void)? = nil
+    /// DEP-231: app-level edit mode, driven by the overflow menu's single "Edit Depth
+    /// Chart" toggle (web's `globalEditMode`). When on, the position-depth list renders
+    /// already in reorder mode with no per-card "Reorder" tap; the per-card pill hides
+    /// since it would be redundant. Stable for this card's lifetime — the toggle lives in
+    /// the overflow menu behind the sheet, so it can't change while the card is open.
+    var globalEditMode = false
 
     @State private var viewModel: PlayerProfileViewModel
 
@@ -39,6 +45,11 @@ struct PlayerDetailView: View {
     /// write back here instead of relying on the prop.
     @State private var displayOrder: [Player]
     @State private var reorderDraft: [Player] = []
+
+    /// DEP-231: the global toggle wins over the card's own state (web's
+    /// `effectiveEditing = editing || globalEditMode`) — the list is in reorder mode if
+    /// either is on.
+    private var effectiveEditing: Bool { editing || globalEditMode }
 
     @Environment(\.dismiss) private var dismiss
 
@@ -67,7 +78,8 @@ struct PlayerDetailView: View {
         preferences: UserPreferences? = nil,
         isPositionCustom: Bool = false,
         onReorder: ((Position, [String]) -> Void)? = nil,
-        onResetPosition: ((Position) -> Void)? = nil
+        onResetPosition: ((Position) -> Void)? = nil,
+        globalEditMode: Bool = false
     ) {
         self.player = player
         self.team = team
@@ -78,6 +90,7 @@ struct PlayerDetailView: View {
         self.isPositionCustom = isPositionCustom
         self.onReorder = onReorder
         self.onResetPosition = onResetPosition
+        self.globalEditMode = globalEditMode
         _viewModel = State(initialValue: PlayerProfileViewModel(
             playerID: player.id, teamID: team?.id, repository: repository
         ))
@@ -86,6 +99,10 @@ struct PlayerDetailView: View {
         _showHint = State(initialValue: onReorder != nil && preferences?.seenReorderHint == false)
         _positionIsCustom = State(initialValue: isPositionCustom)
         _displayOrder = State(initialValue: depthChart)
+        // DEP-231: opening a card while the app-level toggle is on must show the list
+        // already reorderable — seed the drag draft from the rendered order up front
+        // (the per-card toggle would otherwise be the only thing that populated it).
+        _reorderDraft = State(initialValue: globalEditMode ? depthChart : [])
     }
 
     var body: some View {
@@ -289,10 +306,12 @@ struct PlayerDetailView: View {
                     .depthCard(dense: true)
             } else {
                 depthHeader
-                if showHint && !editing {
+                // DEP-231: no hint while reordering — a card opened in app-level edit
+                // mode is already reordering, so the discoverability copy would be moot.
+                if showHint && !effectiveEditing {
                     depthHint
                 }
-                if editing {
+                if effectiveEditing {
                     DepthReorderList(
                         players: $reorderDraft,
                         currentPlayerID: player.id,
@@ -345,7 +364,11 @@ struct PlayerDetailView: View {
                 }
                 .accessibilityIdentifier("player-profile-depth-reset")
             }
-            if let onReorder {
+            // DEP-231: the per-card Reorder/Done pill is hidden while the app-level toggle
+            // is on — that toggle is the only way in or out of edit mode for every group at
+            // once, so a per-card button here would be redundant (already editing) or
+            // misleadingly imply this one card can opt out on its own (web parity).
+            if let onReorder, !globalEditMode {
                 Button {
                     toggleEditing(onReorder)
                 } label: {
