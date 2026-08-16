@@ -70,6 +70,24 @@ struct TeamListRowDTO: Decodable {
     }
 }
 
+// A player-search row with its embedded team (DepthRepository.searchPlayers) — the
+// flat teams projection is reused, so a search hit can carry the full Team identity the
+// chart needs to switch to.
+struct PlayerSearchRowDTO: Decodable {
+    let id: String
+    let name: String
+    let number: Int?
+    let position: String
+    let college: String?
+    let photoUrl: String?
+    let teams: TeamListRowDTO?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, number, position, college, teams
+        case photoUrl = "photo_url"
+    }
+}
+
 // The public `app_config` singleton row.
 struct AppConfigDTO: Decodable {
     let minimumSupportedBuild: Int

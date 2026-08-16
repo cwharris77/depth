@@ -22,15 +22,18 @@ struct TeamListView: View {
     /// switcher's current-team affordance.
     private let selectedTeamId: String
     private let onSelect: (String) -> Void
+    private let onSelectPlayer: ((PlayerHit) -> Void)?
 
     init(
         repository: CachingDepthRepository,
         events: any AppEventsRecording = NoOpAppEventsRecorder(),
         selectedTeamId: String,
-        onSelect: @escaping (String) -> Void
+        onSelect: @escaping (String) -> Void,
+        onSelectPlayer: ((PlayerHit) -> Void)? = nil
     ) {
         self.selectedTeamId = selectedTeamId
         self.onSelect = onSelect
+        self.onSelectPlayer = onSelectPlayer
         _viewModel = State(initialValue: TeamListViewModel(repository: repository, events: events))
         // Default to AFC until the selected team's conference is known (the web's
         // NavSwitcher defaults to `team?.conference ?? 'AFC'`).
@@ -39,8 +42,9 @@ struct TeamListView: View {
 
     var body: some View {
         content
-            .searchable(text: $viewModel.searchText, prompt: "Search teams")
+            .searchable(text: $viewModel.searchText, prompt: "Search teams and players")
             .task { await viewModel.load() }
+            .task(id: viewModel.searchText) { await viewModel.searchPlayers() }
             .onChange(of: viewModel.loadState) { _, _ in
                 // Seed the picker from the selected team's conference, mirroring the web
                 // (which opens on the current team's conference). Exactly once — a later
@@ -86,7 +90,7 @@ struct TeamListView: View {
             }
 
         case .loaded:
-            if viewModel.filteredTeams.isEmpty {
+            if viewModel.filteredTeams.isEmpty && viewModel.playerHits.isEmpty {
                 if viewModel.searchText.isEmpty {
                     ContentUnavailableView("No Teams", systemImage: "sportscourt")
                 } else {
@@ -122,9 +126,23 @@ struct TeamListView: View {
     private var teamList: some View {
         if isSearching {
             // Flat, filtered by the search text across every team — no conference
-            // grouping (web's search results are a single flat list).
-            List(viewModel.filteredTeams) { team in
-                teamRow(team)
+            // grouping (web's search results are a single flat list). Player hits from
+            // any of the 32 teams sit in their own section below the team matches.
+            List {
+                if !viewModel.filteredTeams.isEmpty {
+                    Section(header: sectionHeader("Teams")) {
+                        ForEach(viewModel.filteredTeams) { team in
+                            teamRow(team)
+                        }
+                    }
+                }
+                if !viewModel.playerHits.isEmpty {
+                    Section(header: sectionHeader("Players")) {
+                        ForEach(viewModel.playerHits) { hit in
+                            playerRow(hit)
+                        }
+                    }
+                }
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
@@ -185,6 +203,38 @@ struct TeamListView: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("team-row-\(team.id)")
+        .listRowBackground(DesignTokens.Colors.surfaceCard2)
+    }
+
+    // Web NavSwitcher player-hit parity: a player badge in their team's accent, name,
+    // and the team they play for. Tapping switches to that team and opens the player.
+    private func playerRow(_ hit: PlayerHit) -> some View {
+        Button {
+            onSelectPlayer?(hit)
+        } label: {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle().fill(Color(hex: hit.team.colors.uiAccent))
+                    Text("\(hit.number)")
+                        .font(.caption.bold())
+                        .foregroundStyle(Color(hex: hit.team.colors.onAccent))
+                }
+                .frame(width: 36, height: 36)
+                .accessibilityHidden(true)
+                VStack(alignment: .leading) {
+                    Text(hit.name)
+                        .font(.subheadline)
+                    Text("\(hit.position.rawValue) · \(hit.team.city) \(hit.team.name)")
+                        .font(.caption)
+                        .foregroundStyle(DesignTokens.Colors.textMuted)
+                }
+                Spacer()
+            }
+            .padding(.vertical, 4)
+            .accessibilityElement(children: .combine)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("player-hit-\(hit.id)")
         .listRowBackground(DesignTokens.Colors.surfaceCard2)
     }
 }

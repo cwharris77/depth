@@ -73,9 +73,12 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         // the screenshot-only bypass in TeamDetailView.beginEditing; the draft list
         // renders with drag handles already active (`.editMode = .constant(.active)`
         // in OverrideEditorSheet), so this captures the real reorder UI without ever
-        // calling Save.
+        // calling Save. Edit Depth Chart lives inside the ••• overflow menu.
+        let overflow = app.buttons["depth-chart-overflow"]
+        XCTAssertTrue(overflow.waitForExistence(timeout: 10), "team detail should expose the overflow menu")
+        overflow.tap()
         let editMenu = app.buttons["edit-depth-order"]
-        XCTAssertTrue(editMenu.waitForExistence(timeout: 10), "team detail should expose Edit Order while unsaved overrides exist for this unit")
+        XCTAssertTrue(editMenu.waitForExistence(timeout: 5), "the overflow menu should expose Edit Depth Chart while unsaved overrides exist for this unit")
         editMenu.tap()
         let editorEntry = app.buttons.matching(
             NSPredicate(format: "identifier BEGINSWITH 'edit-depth-order-'")

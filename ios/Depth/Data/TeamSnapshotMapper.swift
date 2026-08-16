@@ -55,6 +55,26 @@ enum TeamSnapshotMapper {
         )
     }
 
+    /// A search hit skips (rather than throws) when its embedded team is null — a
+    /// dangling player.team_id can't happen FK-enforced, but web's toPlayerHit skips
+    /// rather than surfacing a hit with no team to jump to; an unknown position decodes
+    /// to nil the same way. Missing jersey number defaults to 0 (web's `?? 0`).
+    static func mapPlayerHit(_ dto: PlayerSearchRowDTO) -> PlayerHit? {
+        guard let team = dto.teams.map(mapTeamListRow),
+              let position = Position(rawValue: dto.position) else {
+            return nil
+        }
+        return PlayerHit(
+            id: dto.id,
+            name: dto.name,
+            number: dto.number ?? 0,
+            position: position,
+            college: dto.college,
+            photoUrl: dto.photoUrl,
+            team: team
+        )
+    }
+
     static func mapAppConfig(_ dto: AppConfigDTO) -> AppConfig {
         AppConfig(minimumSupportedBuild: dto.minimumSupportedBuild, maintenanceMessage: dto.maintenanceMessage)
     }

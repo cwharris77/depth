@@ -12,6 +12,8 @@ struct TeamDetailView: View {
     @State private var pendingOverrideGroup: EditableOverrideGroup?
     @State private var showAuth = false
     @State private var showHistory = false
+    @State private var showUniformPicker = false
+    @State private var selectedUniformID: String?
     @State private var confirmedOrders: [Position: [String]] = [:]
 
     private let preferences: UserPreferences
@@ -20,6 +22,9 @@ struct TeamDetailView: View {
     private let authService: any DepthAuthServicing
     private let overrideService: any DepthOverrideServicing
     private let events: any AppEventsRecording
+    /// A player to open once this team's snapshot resolves — set by DepthChartsTab when
+    /// a player is picked from the switcher's cross-team search. Cleared after present.
+    @Binding var requestedPlayerID: String?
     /// Opens the team switcher. Required, not optional: `DepthChartsTab` is the only
     /// place this view is constructed now that it is a tab's stack root rather than a
     /// pushed destination, so an unset case would be dead code.
@@ -34,6 +39,7 @@ struct TeamDetailView: View {
         authService: any DepthAuthServicing,
         overrideService: any DepthOverrideServicing,
         events: any AppEventsRecording = NoOpAppEventsRecorder(),
+        requestedPlayerID: Binding<String?> = .constant(nil),
         onOpenTeamSwitcher: @escaping () -> Void
     ) {
         _viewModel = State(initialValue: viewModel)
@@ -43,13 +49,34 @@ struct TeamDetailView: View {
         self.authService = authService
         self.overrideService = overrideService
         self.events = events
+        self._requestedPlayerID = requestedPlayerID
         self.onOpenTeamSwitcher = onOpenTeamSwitcher
         _unit = State(initialValue: preferences.lastUnit ?? .offense)
+        _selectedUniformID = State(initialValue: preferences.uniformSelection(for: viewModel.teamId))
         _historyViewModel = State(initialValue: HistoryViewModel(teamId: viewModel.teamId, repository: repository))
     }
 
     private var navigationTitleText: String {
         viewModel.snapshot.map { "\($0.team.city) \($0.team.name)" } ?? "Team"
+    }
+
+    /// Web-mobile parity (components/TeamPageHeader.tsx): the in-nav team identity is
+    /// the abbrev pill, not the full "City Name" — long names like "Washington
+    /// Commanders" overflow the inline toolbar otherwise (2026-08-15 visual-pass round
+    /// 3). The full display name stays on the accessibility label, so VoiceOver and the
+    /// team-switcher UI tests still hear/see the full name.
+    private var navigationTitleAbbrev: String {
+        viewModel.snapshot?.team.abbrev.uppercased() ?? "Team"
+    }
+
+    /// The selected uniform's palette recolors the field dots (web's kit selection);
+    /// nil keeps the team's own colors. Resolved from the persisted per-team uniform id.
+    private var fieldColors: TeamColors? {
+        guard let id = selectedUniformID,
+              let uniform = displayedSnapshot?.uniforms.first(where: { $0.id == id }) else {
+            return nil
+        }
+        return uniform.colors
     }
 
     var body: some View {
@@ -59,6 +86,14 @@ struct TeamDetailView: View {
             .task {
                 await viewModel.load()
                 await loadOverrides()
+                // A cross-team search pick arrives with the snapshot not yet loaded
+                // (the view is recreated via `.id(teamId)`); present once it resolves.
+                presentRequestedPlayer(requestedPlayerID)
+            }
+            .onChange(of: requestedPlayerID) { _, id in
+                // Also covers picking a player on the already-current team, where
+                // `.id(teamId)` doesn't change and `.task` won't re-run.
+                presentRequestedPlayer(id)
             }
             .refreshable {
                 if historyViewModel.isHistorical {
@@ -81,10 +116,17 @@ struct TeamDetailView: View {
                 ToolbarItem(placement: .principal) {
                     Button(action: onOpenTeamSwitcher) {
                         HStack(spacing: 4) {
-                            Text(navigationTitleText)
+                            // Explicit textPrimary so the title stays white instead of
+                            // inheriting the current team's accent tint (2026-08-15
+                            // visual-pass: "roster page text team-tinted"). The abbrev
+                            // pill matches web mobile and never overflows the toolbar.
+                            Text(navigationTitleAbbrev)
                                 .font(.headline)
+                                .foregroundStyle(DesignTokens.Colors.textPrimary)
+                                .lineLimit(1)
                             Image(systemName: "chevron.down")
                                 .font(.caption2.weight(.bold))
+                                .foregroundStyle(DesignTokens.Colors.textPrimary)
                         }
                     }
                     .frame(minHeight: 44)
@@ -93,11 +135,12 @@ struct TeamDetailView: View {
                     .accessibilityHint("Opens the team switcher")
                 }
 
+                // Web parity (components/FieldHeaderMenu.tsx): actions beyond Schedule
+                // live behind a single ••• overflow menu instead of a row of bare icons
+                // whose meaning isn't obvious (2026-08-15 visual-pass rounds 1-3). Schedule
+                // stays a visible calendar button — the web keeps it as a visible sibling
+                // page/tab, and one recognizable icon reads fine where four did not.
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    Button("History", systemImage: "clock.arrow.circlepath") { showHistory = true }
-                        .frame(minWidth: 44, minHeight: 44)
-                        .accessibilityIdentifier("history-destination")
-
                     NavigationLink {
                         ScheduleView(teamId: viewModel.teamId, repository: repository)
                     } label: {
@@ -107,21 +150,44 @@ struct TeamDetailView: View {
                     .accessibilityLabel("Schedule")
                     .accessibilityIdentifier("schedule-destination")
 
-                    if !editableGroups.isEmpty {
-                        Menu("Edit Order", systemImage: "arrow.up.arrow.down") {
-                            ForEach(editableGroups) { group in
-                                Button(group.position.rawValue) { beginEditing(group) }
-                                    .accessibilityIdentifier("edit-depth-order-\(group.position.rawValue)")
+                    Menu {
+                        // Live snapshot only — historical rosters carry no uniforms
+                        // (SupabaseDepthRepository.teamSeason returns uniforms: []).
+                        if !(displayedSnapshot?.uniforms.isEmpty ?? true) {
+                            Button {
+                                showUniformPicker = true
+                            } label: {
+                                Label("Choose Uniform", systemImage: "tshirt.fill")
                             }
+                            .accessibilityIdentifier("choose-uniform")
                         }
-                        .accessibilityIdentifier("edit-depth-order")
-                    }
 
-                    // Live snapshot only (design spec locked decision #10) — historical
-                    // rosters have no equivalent share-card visual contract yet.
-                    if !historyViewModel.isHistorical, let snapshot = displayedSnapshot {
-                        DepthChartShareButton(snapshot: snapshot)
+                        Button("Seasons", systemImage: "clock.arrow.circlepath") {
+                            showHistory = true
+                        }
+                        .accessibilityIdentifier("history-destination")
+
+                        // Live snapshot only (design spec locked decision #10) —
+                        // historical rosters have no equivalent share-card visual
+                        // contract yet.
+                        if !historyViewModel.isHistorical, let snapshot = displayedSnapshot {
+                            DepthChartShareButton(snapshot: snapshot)
+                        }
+
+                        if !editableGroups.isEmpty {
+                            Menu("Edit Depth Chart", systemImage: "arrow.up.arrow.down") {
+                                ForEach(editableGroups) { group in
+                                    Button(group.position.rawValue) { beginEditing(group) }
+                                        .accessibilityIdentifier("edit-depth-order-\(group.position.rawValue)")
+                                }
+                            }
+                            .accessibilityIdentifier("edit-depth-order")
+                        }
+                    } label: {
+                        Label("More", systemImage: "ellipsis")
                     }
+                    .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityIdentifier("depth-chart-overflow")
                 }
             }
             .sheet(item: $selectedPlayer) { player in
@@ -147,6 +213,15 @@ struct TeamDetailView: View {
                 ) { season in
                     showHistory = false
                     historyViewModel.selectImmediately(season)
+                }
+            }
+            .sheet(isPresented: $showUniformPicker) {
+                UniformPickerSheet(
+                    uniforms: displayedSnapshot?.uniforms ?? [],
+                    selectedID: selectedUniformID
+                ) { uniformID in
+                    selectedUniformID = uniformID
+                    preferences.setUniformSelection(uniformID, for: viewModel.teamId)
                 }
             }
             .sheet(isPresented: $showAuth, onDismiss: finishAuthentication) {
@@ -272,7 +347,7 @@ struct TeamDetailView: View {
                     .pickerStyle(.segmented)
                     .padding(.horizontal)
 
-                    DepthChartFieldView(snapshot: snapshot, unit: unit) { player in
+                    DepthChartFieldView(snapshot: snapshot, unit: unit, colors: fieldColors) { player in
                         selectedPlayer = player
                     }
                     // The field is the screen's primary content, so it fills the
@@ -336,6 +411,15 @@ struct TeamDetailView: View {
         if let orders = try? await overrideService.load(teamId: viewModel.teamId) {
             confirmedOrders = orders
         }
+    }
+
+    private func presentRequestedPlayer(_ id: String?) {
+        guard let id,
+              let player = displayedSnapshot?.players.first(where: { $0.id == id }) else {
+            return
+        }
+        selectedPlayer = player
+        requestedPlayerID = nil
     }
 
     private func beginEditing(_ group: EditableOverrideGroup) {
