@@ -21,6 +21,9 @@ enum DesignTokens {
         static let danger = Color(hex: "#ff6b6b")
         static let surfaceCard = Color(hex: "#0f1623")
         static let surfaceCard2 = Color.white.opacity(0.03)
+        /// Matches web's `surfaceChip` (`rgba(255,255,255,0.07)`) — pill/chip backgrounds
+        /// like the team-switcher trigger.
+        static let surfaceChip = Color.white.opacity(0.07)
         static let borderDefault = Color.white.opacity(0.08)
         static let borderSubtle = Color.white.opacity(0.06)
         /// Used by the depth-chart field's yard lines.

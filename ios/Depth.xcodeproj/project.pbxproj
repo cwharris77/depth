@@ -26,6 +26,7 @@
 		362F1B4B478C5684328409CA /* AuthSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12A1C43C94C87299E927B13F /* AuthSheet.swift */; };
 		37AE06330C1CC70E67900031 /* PlayerSeasonStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE10A985ED752B98C685C839 /* PlayerSeasonStats.swift */; };
 		395710372FD0077DB2AF33D5 /* DepthRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FCC4475C04D0057618A6FE /* DepthRepository.swift */; };
+		3BE0BC25CD2DC9ABA9525140 /* DepthBrandMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926872EFF68F2D404BCDB79B /* DepthBrandMark.swift */; };
 		3DF5F85D81A69F60999825AB /* FeaturedStarters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B89B6B59045A4D78F932026 /* FeaturedStarters.swift */; };
 		4C9A1C617022D0DB3F8125F1 /* ReadableText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3BA3372BC4904E43F19F9A /* ReadableText.swift */; };
 		4E18C9EB0333BA8628859332 /* HistoryFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D250B90FB2B6E6C1379C9B01 /* HistoryFeatureTests.swift */; };
@@ -180,6 +181,7 @@
 		902F5629F8D437E89953B681 /* HistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewModel.swift; sourceTree = "<group>"; };
 		909FC5E5EBC96FBAFD1AEDBE /* DesignTokensTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokensTests.swift; sourceTree = "<group>"; };
 		922288D41A6979441CB8E2EF /* DepthChartShareButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthChartShareButton.swift; sourceTree = "<group>"; };
+		926872EFF68F2D404BCDB79B /* DepthBrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthBrandMark.swift; sourceTree = "<group>"; };
 		954B921C7ED809C93EB75D81 /* StartupTeamTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTeamTests.swift; sourceTree = "<group>"; };
 		9F022703396305729D075AA5 /* Position.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Position.swift; sourceTree = "<group>"; };
 		A0DE3824F1EEDE104DC7FDFB /* CachedSnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedSnapshotStore.swift; sourceTree = "<group>"; };
@@ -436,6 +438,7 @@
 				E636B964C5DE055FDAD2CB44 /* AppEventsRecorder.swift */,
 				211666973EE0946E8D40C189 /* Card.swift */,
 				34803FD110C2C303B40AA906 /* CurrentTeamStore.swift */,
+				926872EFF68F2D404BCDB79B /* DepthBrandMark.swift */,
 				FCEB2197DF04D84335401768 /* DepthEnvironment.swift */,
 				A0F9DA82B880B33391B6E216 /* DepthSignposts.swift */,
 				797CCBB2827B3B2EC8DC53E2 /* DesignTokens.swift */,
@@ -676,6 +679,7 @@
 				4ED119479D984E9FD5F0BD3B /* CurrentTeamStore.swift in Sources */,
 				AC65C1250448AD4BFD7E7919 /* DepthApp.swift in Sources */,
 				C11893E533C74A67E2CEA185 /* DepthAuthService.swift in Sources */,
+				3BE0BC25CD2DC9ABA9525140 /* DepthBrandMark.swift in Sources */,
 				72B3BE2B76D243F3EFBA4849 /* DepthChartFieldLayout.swift in Sources */,
 				1EAD5ECB38956C0395E81458 /* DepthChartFieldView.swift in Sources */,
 				64BB6EC2B752CD639C86321D /* DepthChartShareButton.swift in Sources */,

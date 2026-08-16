@@ -69,6 +69,13 @@ struct TeamDetailView: View {
         viewModel.snapshot?.team.abbrev.uppercased() ?? "Team"
     }
 
+    /// Team-accent-tinted border for the switcher pill (web: `${colors.uiAccent}40`, a
+    /// ~25%-alpha team accent). Falls back to the app's own accent before a team resolves.
+    private var teamSwitcherBorderColor: Color {
+        let hex = viewModel.snapshot?.team.colors.uiAccent
+        return (hex.map(Color.init(hex:)) ?? DesignTokens.Colors.accent).opacity(0.25)
+    }
+
     /// The selected uniform's palette recolors the field dots (web's kit selection);
     /// nil keeps the team's own colors. Resolved from the persisted per-team uniform id.
     private var fieldColors: TeamColors? {
@@ -113,6 +120,16 @@ struct TeamDetailView: View {
                 }
             }
             .toolbar {
+                // Web parity (components/DepthMark.tsx): every page header carries the
+                // app's own brand mark alongside team chrome. Icon-only (no "depth"
+                // wordmark) — the toolbar's leading slot is far tighter than web's
+                // persistent header. Non-interactive here (web's version opens the nav
+                // drawer; native's equivalent destinations already live in the tab bar).
+                ToolbarItem(placement: .topBarLeading) {
+                    DepthBrandMark(size: 20, color: DesignTokens.Colors.accent)
+                        .accessibilityHidden(true)
+                }
+
                 ToolbarItem(placement: .principal) {
                     Button(action: onOpenTeamSwitcher) {
                         HStack(spacing: 4) {
@@ -127,6 +144,16 @@ struct TeamDetailView: View {
                             Image(systemName: "chevron.down")
                                 .font(.caption2.weight(.bold))
                                 .foregroundStyle(DesignTokens.Colors.textPrimary)
+                        }
+                        // Web parity (components/TeamPageHeader.tsx): the switcher trigger
+                        // is a visible pill (surfaceChip fill + team-accent-tinted border),
+                        // not plain text, so it reads as tappable rather than as a title.
+                        .padding(.leading, 12)
+                        .padding(.trailing, 8)
+                        .padding(.vertical, 6)
+                        .background(Capsule().fill(DesignTokens.Colors.surfaceChip))
+                        .overlay {
+                            Capsule().strokeBorder(teamSwitcherBorderColor, lineWidth: 1)
                         }
                     }
                     .frame(minHeight: 44)
