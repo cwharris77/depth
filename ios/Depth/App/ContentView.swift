@@ -15,6 +15,16 @@ struct ContentView: View {
                 RootTabView(sessionStore: authSessionStore)
             }
         }
+        // The app is always dark, same as the website (2026-08-15 visual-pass spec,
+        // locked decision #1: "Always dark, not adaptive"). Flipping the scheme here at
+        // the root is the load-bearing piece the per-screen token styling shipped on top
+        // of: without it, semantic .primary/.secondary text inside the dark-styled
+        // screens resolves against the light scheme and renders dark-on-dark (the
+        // unreadable player-detail sheet from Cooper's visual pass). The preference
+        // propagates into sheet presentations and turns every system surface (nav bars,
+        // tab bar, List backgrounds) dark, so the app reads as one dark theme matching
+        // the website instead of a light app with dark islands.
+        .preferredColorScheme(.dark)
         .task {
             DepthEnvironment.appEvents.record(.appLaunch)
             authSessionStore.start()
