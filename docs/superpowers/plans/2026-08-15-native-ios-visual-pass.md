@@ -1,6 +1,6 @@
 # Native iOS Visual Pass Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Apply the website's actual dark-theme tokens to the native iOS app (currently zero design tokens, zero shared UI primitives) and give the depth-chart field a real visual surface (gradient + markings) on top of its already-fixed geometry.
 
@@ -56,7 +56,7 @@ Tasks 3–7 touch disjoint files and can be worked in any order, or in parallel,
 - Consumes: nothing.
 - Produces: `enum DesignTokens` with nested `Colors`, `Spacing`, `Radius` enums (e.g. `DesignTokens.Colors.bg`, `DesignTokens.Spacing.md`, `DesignTokens.Radius.lg`) — every later task in this plan references these exact names. Also produces `View.depthCard(dense: Bool = false) -> some View`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `ios/DepthTests/DesignTokensTests.swift`:
 
@@ -95,7 +95,7 @@ import SwiftUI
 }
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 ```bash
 xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -destination 'platform=iOS Simulator,id=<SIM_ID>' -only-testing:DepthTests test
@@ -103,7 +103,7 @@ xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -de
 
 Expected: compile failure — `cannot find 'DesignTokens' in scope`.
 
-- [ ] **Step 3: Write `DesignTokens.swift`**
+- [x] **Step 3: Write `DesignTokens.swift`**
 
 ```swift
 import SwiftUI
@@ -155,7 +155,7 @@ enum DesignTokens {
 
 Note: this file depends on `Color(hex:)`, currently defined as a `private`-adjacent extension at the bottom of `ios/Depth/Features/Teams/TeamListView.swift`. Check its current accessibility level — if it's not already usable from `Support/`, widen its access level (e.g. remove any `fileprivate`/fold it into `internal`) rather than duplicating the hex-parsing logic in this new file. Do not copy-paste the parser.
 
-- [ ] **Step 4: Write `Card.swift`**
+- [x] **Step 4: Write `Card.swift`**
 
 ```swift
 import SwiftUI
@@ -187,7 +187,7 @@ extension View {
 }
 ```
 
-- [ ] **Step 5: Regenerate the Xcode project and run the tests**
+- [x] **Step 5: Regenerate the Xcode project and run the tests**
 
 ```bash
 cd ios && xcodegen generate && cd ..
@@ -196,11 +196,11 @@ xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -de
 
 Expected: PASS, all 5 new tests green.
 
-- [ ] **Step 6: Visual smoke check**
+- [x] **Step 6: Visual smoke check**
 
 This task adds no visible UI on its own (nothing calls `.depthCard()` yet), so there's nothing to screenshot — confirm the app still launches and looks unchanged from before this task (quick `xcrun simctl launch` + one screenshot is enough evidence for the report; a full diff isn't meaningful here since nothing visible changed).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add ios/Depth/Support/DesignTokens.swift ios/Depth/Support/Card.swift ios/DepthTests/DesignTokensTests.swift ios/Depth.xcodeproj
@@ -221,11 +221,11 @@ git commit -m "feat(ios): add design tokens and Card primitive"
 - Consumes: `DesignTokens.Colors.borderStrong` (Task 1), `readableTextOn(_:)` (existing, `ios/Depth/Domain/ReadableText.swift`), `DepthChartFieldLayout.compute(slots:fieldSize:)` (existing, from #378 — unchanged).
 - Produces: no new public interface — `DepthChartFieldView`'s existing `init(snapshot:unit:onSelectPlayer:)` signature is unchanged. `FieldMarkings` is a new private-to-the-feature `View`.
 
-- [ ] **Step 1: Read the current file first**
+- [x] **Step 1: Read the current file first**
 
 Read `ios/Depth/Features/TeamDetail/DepthChartFieldView.swift` as it exists on `main` right now (post-#378) — it already differs from what any earlier version of this plan may have described. In particular, `body` already computes `let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: proxy.size)` and positions dots via `layout.positions[slot.key]` with `layout.dotSize` — keep all of that. The only two things this task touches are (a) the `RoundedRectangle(cornerRadius: 16).fill(Color(hex: snapshot.team.colors.primary).opacity(0.15))` background line, and (b) `slotDot`'s `Circle().fill(Color(hex: snapshot.team.colors.uiAccent))` line plus its number/questionmark color.
 
-- [ ] **Step 2: Create `FieldMarkings.swift`**
+- [x] **Step 2: Create `FieldMarkings.swift`**
 
 Direct port of `components/FieldMarkings.tsx`'s SVG geometry (all coordinates are percentages of the field's bounds):
 
@@ -296,7 +296,7 @@ struct FieldMarkings: View {
 
 Note: `Color.white.opacity(0.12)` for the hash marks is a deliberate one-off (matches web's `surfaceChipHover`, which isn't in the Task 1 token table since it has no other native call site — per the spec, don't port the whole `surfaceChip*` family for this single use).
 
-- [ ] **Step 3: Patch `DepthChartFieldView.swift` — background and dot color only**
+- [x] **Step 3: Patch `DepthChartFieldView.swift` — background and dot color only**
 
 Do not rewrite this file wholesale. Make exactly these two surgical edits to the file as it exists post-#378:
 
@@ -373,7 +373,7 @@ Do not rewrite this file wholesale. Make exactly these two surgical edits to the
 
 Selection-state dot styling (a distinct look when a dot is the currently-selected player) does not exist in the current file at all — this task does not add it. If a future task wants that, it's new scope, not something this task quietly skipped.
 
-- [ ] **Step 4: Regenerate, build, and run the existing geometry tests**
+- [x] **Step 4: Regenerate, build, and run the existing geometry tests**
 
 ```bash
 cd ios && xcodegen generate && cd ..
@@ -382,7 +382,7 @@ xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -de
 
 Expected: PASS, unchanged — this task doesn't touch `DepthChartFieldLayout.swift` or its 6 existing unit tests (from #378) at all; this run just confirms the surgical edits above didn't accidentally disturb the geometry call sites.
 
-- [ ] **Step 5: Run the full existing DepthUITests suite**
+- [x] **Step 5: Run the full existing DepthUITests suite**
 
 ```bash
 xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -destination 'platform=iOS Simulator,id=<SIM_ID>' -only-testing:DepthUITests test
@@ -390,11 +390,11 @@ xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -de
 
 Expected: PASS. In particular confirm `AccessibilityUITests.testCriticalPathRemainsUsableAtAccessibilityXXXL`'s `XCTAssertGreaterThanOrEqual(playerSlot.frame.height, 44, ...)` assertion still passes — it should, since neither edit above touches the tap-target sizing #378 already fixed. If it fails on a full-suite run but passes when re-run in isolation (`-only-testing:DepthUITests/AccessibilityUITests`), that's the same simulator-contention flake seen repeatedly this session — not a real regression; note it in the report rather than chasing it.
 
-- [ ] **Step 6: Visual verification (mandatory per Global Constraints)**
+- [x] **Step 6: Visual verification (mandatory per Global Constraints)**
 
 Launch the app in the simulator, navigate to a team's Offense unit, and take a screenshot. Confirm: (a) a real green field with visible yard lines/hash marks/line-of-scrimmage, not a flat tinted rectangle; (b) dots read as team-primary-colored with a secondary-colored ring, not the old flat `uiAccent` fill; (c) still no overlapping dots and the field still fills the screen (#378's fix, unaffected by this task — confirm it's still true, don't just assume). Repeat for Defense and Special Teams units on at least one other team. Attach all screenshots to the task report.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add ios/Depth/Features/TeamDetail/FieldMarkings.swift ios/Depth/Features/TeamDetail/DepthChartFieldView.swift ios/Depth.xcodeproj
@@ -412,15 +412,15 @@ git commit -m "feat(ios): render the depth-chart field as a real field surface"
 **Interfaces:**
 - Consumes: `DesignTokens.Colors.*`, `.depthCard()` (Task 1). No signature changes to either file's existing `init`s.
 
-- [ ] **Step 1: Apply tokens to `TeamListView.swift`**
+- [x] **Step 1: Apply tokens to `TeamListView.swift`**
 
 Read the current file first. In the `.loaded` case's `List` (the team rows), wrap each row's content (currently `HStack { TeamRow(team: team); Spacer(); ... }`) with `.listRowBackground(DesignTokens.Colors.surfaceCard2)` and set `.scrollContentBackground(.hidden)` plus a `DesignTokens.Colors.bg` background on the `List` itself, so the switcher sheet reads as the app's dark surface rather than default `UITableView` gray. `TeamRow`'s text (`Text("\(team.city) \(team.name)")` / conference-division subtitle) moves onto the type scale: primary line `.subheadline`, secondary line `.caption`. `TeamRow`'s existing structure/spacing otherwise unchanged.
 
-- [ ] **Step 2: Apply tokens to `TeamSwitcherSheet.swift`**
+- [x] **Step 2: Apply tokens to `TeamSwitcherSheet.swift`**
 
 Read the current file first. Add `.presentationBackground(DesignTokens.Colors.bg)` to the sheet's outermost `NavigationStack` so the sheet's own chrome (nav bar, safe areas) matches the dark background rather than the system sheet default.
 
-- [ ] **Step 3: Build and run the full DepthUITests suite**
+- [x] **Step 3: Build and run the full DepthUITests suite**
 
 ```bash
 cd ios && xcodegen generate && cd ..
@@ -429,11 +429,11 @@ xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -de
 
 Expected: PASS — no identifiers moved, this is a styling-only change.
 
-- [ ] **Step 4: Visual verification**
+- [x] **Step 4: Visual verification**
 
 Open the team switcher sheet in the simulator, screenshot it. Confirm the dark background, card-styled rows, and legible text at the new type-scale sizes. Attach to the task report.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add ios/Depth/Features/Teams/TeamSwitcherSheet.swift ios/Depth/Features/Teams/TeamListView.swift
@@ -450,11 +450,11 @@ git commit -m "feat(ios): apply card styling to the team switcher sheet"
 **Interfaces:**
 - Consumes: `DesignTokens.Colors.accent` (Task 1). No signature change.
 
-- [ ] **Step 1: Add the tint**
+- [x] **Step 1: Add the tint**
 
 In `ios/Depth/App/RootTabView.swift`, add `.tint(DesignTokens.Colors.accent)` to the `TabView` in `body`. If SwiftUI's `TabView`/`Tab` API on this iOS version doesn't expose a way to also recolor the *unselected* tab icon/label away from its system default, ship the tint change alone — do not reach for private API or a UIKit `UITabBar.appearance()` bridge to force it; note the unselected-color gap explicitly in the task report as a known limitation rather than working around it.
 
-- [ ] **Step 2: Build and run the full DepthUITests suite**
+- [x] **Step 2: Build and run the full DepthUITests suite**
 
 ```bash
 cd ios && xcodegen generate && cd ..
@@ -463,11 +463,11 @@ xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -de
 
 Expected: PASS.
 
-- [ ] **Step 3: Visual verification**
+- [x] **Step 3: Visual verification**
 
 Screenshot the tab bar with each tab selected in turn, confirm the selected tab reads in the app's accent green rather than default iOS blue. Attach to the task report.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add ios/Depth/App/RootTabView.swift
@@ -486,15 +486,15 @@ git commit -m "feat(ios): tint the tab bar with the app accent color"
 **Interfaces:**
 - Consumes: `DesignTokens.Colors.*`, `.depthCard()` (Task 1). No signature change — `AccountTab.swift` (which constructs `SettingsView`) is untouched.
 
-- [ ] **Step 1: Move off `Form`'s default chrome**
+- [x] **Step 1: Move off `Form`'s default chrome**
 
 Read the current file first. Replace the `Form { ... }` with a `ScrollView { VStack(spacing: DesignTokens.Spacing.md) { ... } .padding(DesignTokens.Spacing.md) }`, with each `Section`'s content (Account, About, Data, and the conditional sign-out-error block) becoming its own labeled group wrapped in `.depthCard()`. Preserve every existing `.accessibilityIdentifier` on the inner elements (`settings-about-name`, `settings-about-version`, `settings-about-disclaimer`, `settings-data-saved-at`, `settings-data-explanation`) exactly as-is — only the outer container changes, not what's inside it. Section headers (previously `Section("Account")` etc.) become plain `Text("Account")` styled `.caption` + `DesignTokens.Colors.textMuted`, placed above each card, matching web's section-label pattern.
 
-- [ ] **Step 2: Set the screen and sheet backgrounds**
+- [x] **Step 2: Set the screen and sheet backgrounds**
 
 Add `DesignTokens.Colors.bg` as the `ScrollView`'s background and `.presentationBackground(DesignTokens.Colors.bg)` on each of the two `.sheet()`s this view presents (`AuthSheet`, `AccountDeletionSheet`) so they don't revert to system white/default when opened from this screen. (Those sheets' own internal content is out of scope for this task — only the presentation background.)
 
-- [ ] **Step 3: Build and run the affected tests**
+- [x] **Step 3: Build and run the affected tests**
 
 ```bash
 cd ios && xcodegen generate && cd ..
@@ -503,11 +503,11 @@ xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -de
 
 Expected: PASS. `AuthUITests.testAnonymousUserCanOpenNativeSignIn` in particular exercises most of this screen's identifiers end-to-end — if it fails, an identifier was dropped during the `Form` → `ScrollView` conversion; find and restore it rather than editing the test.
 
-- [ ] **Step 4: Visual verification**
+- [x] **Step 4: Visual verification**
 
 Screenshot the Account tab (both signed-out and, if feasible in the simulator, signed-in states) and confirm card-styled sections on the dark background. Attach to the task report.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add ios/Depth/Features/Settings/SettingsView.swift
@@ -524,11 +524,11 @@ git commit -m "feat(ios): apply card styling to the Account screen"
 **Interfaces:**
 - Consumes: `DesignTokens.Colors.*`, `.depthCard()` (Task 1). No signature change.
 
-- [ ] **Step 1: Apply card styling**
+- [x] **Step 1: Apply card styling**
 
 Read the current file first. Wrap the `ContentUnavailableView` in `.depthCard()` with some horizontal padding so it reads as an intentional card-based empty state rather than a bare system placeholder, and set `DesignTokens.Colors.bg` as the `NavigationStack`'s background. Keep the existing `.accessibilityElement(children: .combine)` / `.accessibilityIdentifier("compare-placeholder")` / `.navigationTitle("Compare")` exactly as they are — this task changes visual chrome only.
 
-- [ ] **Step 2: Build and run the full DepthUITests suite**
+- [x] **Step 2: Build and run the full DepthUITests suite**
 
 ```bash
 cd ios && xcodegen generate && cd ..
@@ -537,11 +537,11 @@ xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -de
 
 Expected: PASS — `DepthUITests.testTabBarReachesAllThreeDestinations` exercises this screen's identifier; confirm it still passes unchanged.
 
-- [ ] **Step 3: Visual verification**
+- [x] **Step 3: Visual verification**
 
 Screenshot the Compare tab, confirm the "coming soon" state now reads as an intentional card rather than a bare placeholder. Attach to the task report.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add ios/Depth/Features/Compare/CompareView.swift
@@ -558,15 +558,15 @@ git commit -m "feat(ios): apply card styling to the Compare placeholder"
 **Interfaces:**
 - Consumes: `DesignTokens.Colors.*`, `.depthCard()` (Task 1). No signature change.
 
-- [ ] **Step 1: Replace the two `.thinMaterial` backgrounds with `.depthCard()`**
+- [x] **Step 1: Replace the two `.thinMaterial` backgrounds with `.depthCard()`**
 
 Read the current file first. Two spots currently use `.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))`: the `vital(_:_:)` helper (vitals grid tiles) and `PlayerStatsTable`'s outer `VStack` (the stats table). Replace both with `.depthCard(dense: true)` — the tighter, secondary-surface variant, since these are nested inside the sheet's own content rather than being the sheet's primary surface. `PlayerStatsSkeleton` (the loading-state placeholder, sized against the same `@ScaledMetric`s as the real table per AGENTS.md's flash-then-jump rule) gets the same `.depthCard(dense: true)` treatment so it doesn't visibly resize once real content replaces it.
 
-- [ ] **Step 2: Apply the sheet's own background**
+- [x] **Step 2: Apply the sheet's own background**
 
 Add `.presentationBackground(DesignTokens.Colors.bg)` to the `NavigationStack` in `body`, and move the `header`/`vitals`/stats section title (`Text("Season Stats").font(.headline)`) and any other bare text in this file onto the type scale (`.headline` for the section title is already correct per the spec's table — leave it; check `labeledText`'s label `Text(label).font(.caption.bold())` and update to `.caption` per the scale if `.caption.bold()` isn't already equivalent).
 
-- [ ] **Step 3: Build and run the full DepthUITests suite**
+- [x] **Step 3: Build and run the full DepthUITests suite**
 
 ```bash
 cd ios && xcodegen generate && cd ..
@@ -575,11 +575,11 @@ xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging -de
 
 Expected: PASS — `DepthUITests.testLaunchesIntoAChartThenSwitchesTeamAndOpensPlayerDetail` and `AccessibilityUITests.testCriticalPathRemainsUsableAtAccessibilityXXXL` both open this sheet; confirm both still pass, including the accessibility-size assertions (this task must not touch the existing `@ScaledMetric`/`dynamicTypeSize.isAccessibilitySize` logic from T10 — verify none of it was accidentally altered).
 
-- [ ] **Step 4: Visual verification**
+- [x] **Step 4: Visual verification**
 
 Open a player detail sheet in the simulator, screenshot it. Confirm the vitals tiles and stats table read as cards on the dark background rather than default `.thinMaterial`. Attach to the task report.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add ios/Depth/Features/TeamDetail/PlayerDetailView.swift
@@ -596,11 +596,11 @@ git commit -m "feat(ios): apply card styling to the player detail sheet"
 - Modify: `../obsidian/Projects/depth/specs/2026-08-15-native-ios-visual-pass-design.md`
 - Modify: `../obsidian/Projects/depth/Tickets/Native depth chart field overlapping player dots and dead space.md` (DEP-207)
 
-- [ ] **Step 1: Check off this plan's completed tasks**
+- [x] **Step 1: Check off this plan's completed tasks**
 
-Tick every `- [ ]` completed in Tasks 1–7.
+Tick every `- [x]` completed in Tasks 1–7.
 
-- [ ] **Step 2: Update the vault spec's status**
+- [x] **Step 2: Update the vault spec's status**
 
 In the vault spec's header, replace `Implementation plan: \`depth/docs/superpowers/plans/<dated>-native-ios-visual-pass.md\` (to be written)` with the actual path, and update the Status line to record that it shipped and on what date.
 
@@ -608,7 +608,7 @@ In the vault spec's header, replace `Implementation plan: \`depth/docs/superpowe
 
 Already done — DEP-207 was closed 2026-08-15 by depth#378, with a resolution note added to the ticket and independently re-verified. Nothing to do here; kept as a checked step so the plan's history stays accurate rather than silently deleting it.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add -f .superpowers/sdd/2026-08-15-native-ios-visual-pass/progress.md
