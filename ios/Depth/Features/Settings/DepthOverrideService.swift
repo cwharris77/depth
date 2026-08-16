@@ -9,6 +9,9 @@ protocol DepthOverrideWriting: Sendable {
 
 protocol DepthOverrideServicing: DepthOverrideWriting {
     func load(teamId: String) async throws -> [Position: [String]]
+    /// Every team the signed-in user has a server-side override for (DEP-219's
+    /// sign-in merge — mirrors web's unfiltered `GET /api/overrides`).
+    func loadAll() async throws -> [String: [Position: [String]]]
 }
 
 actor SupabaseDepthOverrideService: DepthOverrideServicing {
@@ -39,6 +42,41 @@ actor SupabaseDepthOverrideService: DepthOverrideServicing {
                     Position(rawValue: row.position).map { ($0, row.playerIds) }
                 }
             )
+        } catch is URLError {
+            throw DepthError.offline
+        } catch let error as PostgrestError {
+            throw Self.map(error)
+        } catch {
+            throw DepthError.server(error.localizedDescription)
+        }
+    }
+
+    func loadAll() async throws -> [String: [Position: [String]]] {
+        struct Row: Decodable {
+            let teamId: String
+            let position: String
+            let playerIds: [String]
+
+            enum CodingKeys: String, CodingKey {
+                case teamId = "team_id"
+                case position
+                case playerIds = "player_ids"
+            }
+        }
+
+        do {
+            // No team_id filter — RLS already scopes rows to auth.uid() (AGENTS.md
+            // invariant 10), so this is every team the signed-in user has an override
+            // for, same as web's unfiltered GET /api/overrides.
+            let rows: [Row] = try await client.from("depth_overrides")
+                .select("team_id, position, player_ids")
+                .execute().value
+            var byTeam: [String: [Position: [String]]] = [:]
+            for row in rows {
+                guard let position = Position(rawValue: row.position) else { continue }
+                byTeam[row.teamId, default: [:]][position] = row.playerIds
+            }
+            return byTeam
         } catch is URLError {
             throw DepthError.offline
         } catch let error as PostgrestError {
@@ -83,6 +121,23 @@ actor SupabaseDepthOverrideService: DepthOverrideServicing {
             return .validation(error.localizedDescription)
         }
         return .server(error.localizedDescription)
+    }
+}
+
+// DEP-219: literal port of web's `pushTeamOverride` (lib/utils/depth-chart/overrides-sync.ts)
+// — every write hits the local cache first (always succeeds, no network dependency), then
+// mirrors to the server when signed in as fire-and-forget: a dropped request isn't
+// surfaced to the editor UI as a failure, matching web's catch-and-ignore. `remote: nil`
+// (signed out) skips the server leg entirely, same as web's `if (user)` guard.
+struct LocalFirstOverrideWriter: DepthOverrideWriting {
+    let preferences: UserPreferences
+    let remote: (any DepthOverrideWriting)?
+
+    func save(teamId: String, position: String, playerIds: [String]) async throws {
+        guard let resolvedPosition = Position(rawValue: position) else { return }
+        preferences.setPositionOrder(teamId: teamId, position: resolvedPosition, ids: playerIds)
+        guard let remote else { return }
+        try? await remote.save(teamId: teamId, position: position, playerIds: playerIds)
     }
 }
 
