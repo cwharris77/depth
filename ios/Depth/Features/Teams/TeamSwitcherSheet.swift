@@ -33,6 +33,7 @@ struct TeamSwitcherSheet: View {
                 }
             }
         }
+        .presentationBackground(DesignTokens.Colors.bg)
         .accessibilityIdentifier("team-switcher-sheet")
     }
 }
