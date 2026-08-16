@@ -44,11 +44,27 @@ struct DepthChartFieldView: View {
                 ForEach(slots, id: \.key) { slot in
                     slotView(slot, dotSize: layout.dotSize)
                         .position(layout.positions[slot.key] ?? .zero)
+                        // Web parity (components/PlayerDot.tsx): on-line players would
+                        // straddle the line of scrimmage, so push the drawn dot a
+                        // circle-radius (+ a hair) onto its own side — offense (y past 50)
+                        // down, defense (y before 50) up. Keeps the whole circle behind
+                        // the line. Applied at render time so the formation coordinates
+                        // and geometry layer stay untouched (Formations parity oracle).
+                        .offset(y: lineOffset(for: slot, dotSize: layout.dotSize))
                 }
             }
         }
         .dynamicTypeSize(...DynamicTypeSize.accessibility1)
         .accessibilityElement(children: .contain)
+    }
+
+    /// Verbatim web port of PlayerDot's line offset: `slot.onLine ? (slot.y >= 50 ? 18
+    /// : -18) : 0`, scaled from the web's fixed 30px dot to whatever the geometry layer
+    /// drew (`dotSize / 2 + 3` = circle radius + a hair, web's 15px + 3). Offense dots
+    /// (y ≥ 50, on their side of the line) shift down; defense dots shift up.
+    private func lineOffset(for slot: RenderSlot, dotSize: CGFloat) -> CGFloat {
+        guard slot.onLine == true else { return 0 }
+        return slot.y >= 50 ? dotSize / 2 + 3 : -(dotSize / 2 + 3)
     }
 
     @ViewBuilder
