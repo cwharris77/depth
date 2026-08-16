@@ -21,7 +21,6 @@ struct RootTabView: View {
                     repository: DepthEnvironment.repository,
                     preferences: DepthEnvironment.preferences,
                     sessionStore: sessionStore,
-                    authService: DepthEnvironment.authService,
                     overrideService: DepthEnvironment.overrideService,
                     events: DepthEnvironment.appEvents,
                     currentTeamStore: currentTeamStore

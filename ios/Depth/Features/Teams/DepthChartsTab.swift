@@ -21,7 +21,6 @@ struct DepthChartsTab: View {
     private let repository: CachingDepthRepository
     private let preferences: UserPreferences
     private let sessionStore: AuthSessionStore
-    private let authService: any DepthAuthServicing
     private let overrideService: any DepthOverrideServicing
     private let events: any AppEventsRecording
     /// Receives the current team's accent so the app chrome tints with it.
@@ -31,7 +30,6 @@ struct DepthChartsTab: View {
         repository: CachingDepthRepository,
         preferences: UserPreferences,
         sessionStore: AuthSessionStore,
-        authService: any DepthAuthServicing,
         overrideService: any DepthOverrideServicing,
         events: any AppEventsRecording = NoOpAppEventsRecorder(),
         currentTeamStore: CurrentTeamStore
@@ -39,7 +37,6 @@ struct DepthChartsTab: View {
         self.repository = repository
         self.preferences = preferences
         self.sessionStore = sessionStore
-        self.authService = authService
         self.overrideService = overrideService
         self.events = events
         self.currentTeamStore = currentTeamStore
@@ -53,7 +50,6 @@ struct DepthChartsTab: View {
                 repository: repository,
                 preferences: preferences,
                 sessionStore: sessionStore,
-                authService: authService,
                 overrideService: overrideService,
                 events: events,
                 requestedPlayerID: $pendingPlayerID,

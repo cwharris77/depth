@@ -13,8 +13,6 @@ struct TeamDetailView: View {
     @State private var page: TeamPage = .roster
     @State private var selectedPlayer: Player?
     @State private var selectedOverrideGroup: EditableOverrideGroup?
-    @State private var pendingOverrideGroup: EditableOverrideGroup?
-    @State private var showAuth = false
     @State private var showHistory = false
     @State private var showUniformPicker = false
     @State private var selectedUniformID: String?
@@ -23,7 +21,6 @@ struct TeamDetailView: View {
     private let preferences: UserPreferences
     private let repository: CachingDepthRepository
     private let sessionStore: AuthSessionStore
-    private let authService: any DepthAuthServicing
     private let overrideService: any DepthOverrideServicing
     private let events: any AppEventsRecording
     /// A player to open once this team's snapshot resolves — set by DepthChartsTab when
@@ -40,7 +37,6 @@ struct TeamDetailView: View {
         repository: CachingDepthRepository,
         preferences: UserPreferences,
         sessionStore: AuthSessionStore,
-        authService: any DepthAuthServicing,
         overrideService: any DepthOverrideServicing,
         events: any AppEventsRecording = NoOpAppEventsRecorder(),
         requestedPlayerID: Binding<String?> = .constant(nil),
@@ -50,7 +46,6 @@ struct TeamDetailView: View {
         self.repository = repository
         self.preferences = preferences
         self.sessionStore = sessionStore
-        self.authService = authService
         self.overrideService = overrideService
         self.events = events
         self._requestedPlayerID = requestedPlayerID
@@ -96,7 +91,15 @@ struct TeamDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .task {
                 await viewModel.load()
-                await loadOverrides()
+                // DEP-219: a cold launch already signed in never fires the
+                // sessionStore.user onChange below (it only sees transitions) — run
+                // the sign-in merge here too, matching web's effect (which re-runs on
+                // mount whenever `user` is already truthy, not just on a later change).
+                if sessionStore.user != nil {
+                    await mergeOverridesOnSignIn()
+                } else {
+                    await loadOverrides()
+                }
                 // A cross-team search pick arrives with the snapshot not yet loaded
                 // (the view is recreated via `.id(teamId)`); present once it resolves.
                 presentRequestedPlayer(requestedPlayerID)
@@ -118,9 +121,12 @@ struct TeamDetailView: View {
             .onChange(of: historyViewModel.selectedSeason) { _, _ in selectedPlayer = nil }
             .onChange(of: sessionStore.user) { _, user in
                 if user == nil {
-                    confirmedOrders = [:]
+                    // DEP-219: signing out doesn't erase local edits — web's
+                    // localStorage cache is unaffected by auth state, so the local
+                    // read replaces the old "clear everything" behavior.
+                    confirmedOrders = preferences.teamOverride(for: viewModel.teamId)
                 } else {
-                    Task { await loadOverrides() }
+                    Task { await mergeOverridesOnSignIn() }
                 }
             }
             .toolbar {
@@ -183,9 +189,6 @@ struct TeamDetailView: View {
                     preferences.setUniformSelection(uniformID, for: viewModel.teamId)
                 }
             }
-            .sheet(isPresented: $showAuth, onDismiss: finishAuthentication) {
-                AuthSheet(service: authService, sessionStore: sessionStore, events: events)
-            }
             .sheet(item: $selectedOverrideGroup) { group in
                 let players = players(for: group.position)
                 OverrideEditorSheet(
@@ -193,7 +196,12 @@ struct TeamDetailView: View {
                         teamId: viewModel.teamId,
                         position: group.position.rawValue,
                         playerIds: players.map(\.id),
-                        writer: overrideService,
+                        // DEP-219: local-first — always caches to UserPreferences,
+                        // mirrors to the server only when signed in.
+                        writer: LocalFirstOverrideWriter(
+                            preferences: preferences,
+                            remote: sessionStore.user != nil ? overrideService : nil
+                        ),
                         events: events
                     ),
                     playerNames: Dictionary(
@@ -501,14 +509,31 @@ struct TeamDetailView: View {
         return viewModel.snapshot.map { applyingDepthOverrides(to: $0, orders: confirmedOrders) }
     }
 
+    // DEP-219: local cache first, always — matches web's localStorage-first model
+    // (lib/hooks/overrides/use-team-override.ts). No account needed to read or write;
+    // the sign-in merge (mergeOverridesOnSignIn) is the only path that talks to the
+    // server, exactly like web's mergeOnSignIn is the only place `user` gates anything.
     private func loadOverrides() async {
-        guard sessionStore.user != nil else {
-            confirmedOrders = [:]
-            return
+        confirmedOrders = preferences.teamOverride(for: viewModel.teamId)
+    }
+
+    /// DEP-219 sign-in merge — literal port of web's `mergeOnSignIn`
+    /// (lib/utils/depth-chart/overrides-sync.ts): pull the server's overrides (server
+    /// wins per team, the durable cross-device truth), push up any team edited only on
+    /// this device, then reload the current team's order. Best-effort: a failed
+    /// network call leaves the local cache in charge; the next sign-in signal retries.
+    private func mergeOverridesOnSignIn() async {
+        guard let server = try? await overrideService.loadAll() else { return }
+        let plan = DepthOverrideMerge.plan(local: preferences.allOverrides(), server: server)
+        for teamId in plan.pushes {
+            for (position, ids) in preferences.teamOverride(for: teamId) {
+                try? await overrideService.save(teamId: teamId, position: position.rawValue, playerIds: ids)
+            }
         }
-        if let orders = try? await overrideService.load(teamId: viewModel.teamId) {
-            confirmedOrders = orders
+        for (teamId, override) in plan.pulls {
+            preferences.setTeamOverride(override, for: teamId)
         }
+        confirmedOrders = preferences.teamOverride(for: viewModel.teamId)
     }
 
     private func presentRequestedPlayer(_ id: String?) {
@@ -520,30 +545,10 @@ struct TeamDetailView: View {
         requestedPlayerID = nil
     }
 
+    // DEP-219: no auth gate — reordering is local-first, matching web (which never
+    // requires sign-in to enter edit mode; only cross-device sync needs an account).
     private func beginEditing(_ group: EditableOverrideGroup) {
-        // App Store screenshot capture (task-9d-screenshots-brief.md) needs to reach
-        // this sheet without a real authenticated session — "without exposing an email
-        // or test secret" rules out fabricating a real sign-in. The editor itself does
-        // nothing network-bound until Save is tapped (OverrideEditorViewModel loads its
-        // draft from the caller-supplied playerIds, not a fetch), so opening it here
-        // just previews the unsaved-drag reorder UI; a screenshot run never taps Save.
-        if sessionStore.user == nil && !isAppStoreScreenshotMode {
-            pendingOverrideGroup = group
-            showAuth = true
-        } else {
-            selectedOverrideGroup = group
-        }
-    }
-
-    private var isAppStoreScreenshotMode: Bool {
-        ProcessInfo.processInfo.arguments.contains("UI_TESTING_APPSTORE_SCREENSHOTS")
-    }
-
-    private func finishAuthentication() {
-        if sessionStore.user != nil {
-            selectedOverrideGroup = pendingOverrideGroup
-        }
-        pendingOverrideGroup = nil
+        selectedOverrideGroup = group
     }
 }
 

@@ -2,10 +2,10 @@ import XCTest
 
 // Deterministic App Store screenshot capture (task-9d-screenshots-brief.md). Not part of
 // the default `xcodebuild test` run — excluded via project.yml's scheme `skippedTests`
-// because it's a slow, human-triggered release-prep tool, not a correctness gate, and
-// because screenshot #4 deliberately previews the reorder editor via a screenshot-only
-// bypass rather than a real authenticated session (see TeamDetailView.beginEditing's
-// `isAppStoreScreenshotMode`). Run it explicitly:
+// because it's a slow, human-triggered release-prep tool, not a correctness gate.
+// Screenshot #4 opens the reorder editor directly — DEP-219 made editing local-first,
+// so no signed-in session (or screenshot-only bypass) is needed to reach it anymore.
+// Run it explicitly:
 //
 //   xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging \
 //     -destination 'platform=iOS Simulator,id=<a 6.9-inch simulator UDID>' \
