@@ -595,65 +595,121 @@ private struct DepthRowContent: View {
 
 // DEP-226: drag-to-reorder row list for the position-depth section. SwiftUI's `.onMove`
 // only exists on ForEach inside a List, and a List can't nest inside the card's ScrollView
-// without introducing a nested scroll container — so reorder uses the modern
-// `.draggable`/`.dropDestination` pair instead. DEP-226's original `.onDrag`/`.onDrop`
-// never activated with a real finger inside the ScrollView (the scroll pan won the gesture
-// — UI tests passed only because XCUITest drives the drag interaction directly), so rows
-// were impossible to drag by hand. `.draggable`/`.dropDestination` use UIDragInteraction /
-// UIDropInteraction, which work inside scroll views; dropping on a target row reorders onto
-// it and commits once.
+// without introducing a nested scroll container. The earlier attempts (`.onDrag`/`.onDrop`,
+// then `.draggable`/`.dropDestination`) all failed with a real finger: inside a ScrollView
+// the scroll pan claims vertical drags, so the system drag interaction never starts by hand.
+// This version disambiguates the way every scrollable reorder does — the row is "picked up"
+// with a short long-press, then dragged with a DragGesture. Live reorder targets use row
+// frames frozen at pickup, so the finger maps to a slot without a feedback loop; the commit
+// fires once on release.
 private struct DepthReorderList: View {
     @Binding var players: [Player]
     let currentPlayerID: String
     let accent: Color
     let onCommit: ([Player]) -> Void
 
+    /// Row mid-Ys in the list's coordinate space, keyed by player id, collected via
+    /// `.onGeometryChange`. Frozen at pickup — the slot mapping below must not track the
+    /// live-reordered rows or the drag and the reorder would chase each other.
+    @State private var rowCenters: [String: CGFloat] = [:]
+    /// The id of the row currently being dragged, set by the long-press phase.
+    @State private var draggedPlayerID: String?
+    /// Row centers frozen at pickup — the live mapping for the drag.
+    @State private var draftCentersFrozen: [String: CGFloat] = [:]
+    /// Drives the "lifted" row visual (scale + shadow) while dragging.
+    @State private var liftRow = false
+
     var body: some View {
         VStack(spacing: 0) {
             ForEach(players) { p in
-                HStack(spacing: 12) {
-                    // Web parity (PlayerCardDepthList's edit rows): a grip glyph leads
-                    // each row while reordering; rows are no longer tap-to-switch.
-                    Image(systemName: "line.3.horizontal")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(DesignTokens.Colors.textMuted)
-                        .accessibilityHidden(true)
-                    DepthRowContent(
-                        player: p,
-                        isCurrent: p.id == currentPlayerID,
-                        accent: accent
-                    )
-                }
-                .padding(DesignTokens.Spacing.md)
-                .background(p.id == currentPlayerID ? accent.opacity(0.10) : .clear)
-                .contentShape(Rectangle())
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel(
-                    "\(rankLabel(p.depthRank)), #\(p.number), \(p.name.isEmpty ? "#\(p.number)" : p.name)"
-                )
-                .accessibilityIdentifier("player-profile-depth-reorder-row-\(p.id)")
-                .draggable(p.id)
-                .dropDestination(for: String.self) { items, _ in
-                    // Drop on a target row: move the dragged player to that row's position
-                    // and commit once. No-op when dropped on itself.
-                    guard let draggedID = items.first,
-                          draggedID != p.id,
-                          let from = players.firstIndex(where: { $0.id == draggedID }),
-                          let to = players.firstIndex(where: { $0.id == p.id })
-                    else { return false }
-                    withAnimation(.snappy(duration: 0.2)) {
-                        players.move(
-                            fromOffsets: IndexSet(integer: from),
-                            toOffset: to > from ? to + 1 : to
-                        )
+                row(p)
+                    .onGeometryChange(for: CGFloat.self) { proxy in
+                        proxy.frame(in: .named("depthReorderList")).midY
+                    } action: { midY in
+                        rowCenters[p.id] = midY
                     }
-                    onCommit(players)
-                    return true
-                }
                 if p.id != players.last?.id {
                     Divider().overlay(DesignTokens.Colors.borderSubtle)
                 }
             }
+        }
+        .coordinateSpace(name: "depthReorderList")
+    }
+
+    private func row(_ p: Player) -> some View {
+        HStack(spacing: 12) {
+            // Web parity (PlayerCardDepthList's edit rows): a grip glyph leads each row
+            // while reordering; rows are no longer tap-to-switch.
+            Image(systemName: "line.3.horizontal")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+                .accessibilityHidden(true)
+            DepthRowContent(
+                player: p,
+                isCurrent: p.id == currentPlayerID,
+                accent: accent
+            )
+        }
+        .padding(DesignTokens.Spacing.md)
+        .background(p.id == currentPlayerID ? accent.opacity(0.10) : .clear)
+        .contentShape(Rectangle())
+        .zIndex(draggedPlayerID == p.id ? 1 : 0)
+        .scaleEffect(draggedPlayerID == p.id && liftRow ? 1.03 : 1)
+        .shadow(color: draggedPlayerID == p.id && liftRow ? .black.opacity(0.18) : .clear, radius: 8, y: 3)
+        // Long-press pick-up = the ScrollView disambiguator: hold still briefly and the row
+        // lifts; without it a moving finger is indistinguishable from a scroll.
+        .gesture(
+            LongPressGesture(minimumDuration: 0.25)
+                .sequenced(before: DragGesture(minimumDistance: 0))
+                .onChanged { value in
+                    switch value {
+                    case .first(true):
+                        draggedPlayerID = p.id
+                        draftCentersFrozen = rowCenters
+                        withAnimation(.snappy(duration: 0.15)) { liftRow = true }
+                    case .second(true, let drag?):
+                        guard draggedPlayerID != nil else { return }
+                        updateSlot(fingerY: drag.startLocation.y + drag.translation.height)
+                    default:
+                        break
+                    }
+                }
+                .onEnded { _ in
+                    guard draggedPlayerID == p.id else { return }
+                    draggedPlayerID = nil
+                    liftRow = false
+                    onCommit(players)
+                }
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            "\(rankLabel(p.depthRank)), #\(p.number), \(p.name.isEmpty ? "#\(p.number)" : p.name)"
+        )
+        .accessibilityIdentifier("player-profile-depth-reorder-row-\(p.id)")
+    }
+
+    /// Moves the dragged player to the slot whose frozen row center best matches the
+    /// finger's Y. Frozen centers make this monotonic as the finger travels — no feedback.
+    private func updateSlot(fingerY: CGFloat) {
+        guard let draggedID = draggedPlayerID,
+              let from = players.firstIndex(where: { $0.id == draggedID }) else { return }
+        // The player currently the closest (by its frozen center) to the finger.
+        var target = from
+        var bestDistance = CGFloat.greatestFiniteMagnitude
+        for (i, p) in players.enumerated() where p.id != draggedID {
+            guard let center = draftCentersFrozen[p.id] else { continue }
+            let distance = abs(fingerY - center)
+            if distance < bestDistance {
+                bestDistance = distance
+                target = i
+            }
+        }
+        guard target != from else { return }
+        withAnimation(.snappy(duration: 0.15)) {
+            players.move(
+                fromOffsets: IndexSet(integer: from),
+                toOffset: target > from ? target + 1 : target
+            )
         }
     }
 
