@@ -25,9 +25,14 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
 
     var body: some View {
         // Web `md` track: `rounded-2xl p-1 gap-1` — native hugging-content HStack on the
-        // `surfaceChip` track. Each segment is `rounded-xl px-2.5 py-1.5` in web; the
-        // 44pt min-height guarantees the spec's tap target (a stock capsule Picker
-        // provides the same by default, and the underline restyle must not regress it).
+        // `surfaceChip` track. Each segment is `rounded-xl px-2.5 py-1.5` in web. DEP-235:
+        // no 44pt min-height frame here — that inflated the Button's *layout box* (not
+        // just its hit area), so the track sized to 44pt while the drawn highlight capsule
+        // stayed ~24pt, leaving the "background extends way beyond the highlight" gap.
+        // This is web's compact `sm` size sitting inline with the team pill (which isn't
+        // 44pt either), so the tap target here is the capsule itself (a stock capsule
+        // Picker would be the same). The unit tabs keep the 44pt guarantee via their own
+        // control (DepthUnitTabBar).
         HStack(spacing: 4) {
             ForEach(options, id: \.value) { option in
                 let isActive = option.value == selection
@@ -49,10 +54,6 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
                         // size="sm"`, intrinsic-width, never stretched) instead of
                         // evenly filling the parent — that's what made this control
                         // stretch across the full screen as a standalone row.
-                        // Visual padding stays compact (6pt, not a 44pt-tall drawn
-                        // capsule) — the 44pt tap target moves to the Button's own
-                        // frame below instead, same "visual size / hit-slop" split
-                        // DEP-207's field dots already use.
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(isActive ? activeColor : Color.clear, in: RoundedRectangle(cornerRadius: 12))
@@ -64,7 +65,6 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
                                 )
                         }
                 }
-                .frame(minHeight: 44)
                 .contentShape(Rectangle())
                 .buttonStyle(.plain)
                 .accessibilityIdentifier(option.identifier)
