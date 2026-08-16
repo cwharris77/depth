@@ -38,5 +38,10 @@ struct RootTabView: View {
                 )
             }
         }
+        // Selected-tab tint from the app's own accent (2026-08-15 visual-pass). The
+        // unselected tab color is not controllable through SwiftUI's public TabView/Tab
+        // API on this iOS version without a UIKit appearance bridge — left at the system
+        // default deliberately rather than reaching for private API.
+        .tint(DesignTokens.Colors.accent)
     }
 }
