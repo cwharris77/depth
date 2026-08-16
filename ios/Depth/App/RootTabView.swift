@@ -11,6 +11,8 @@ import SwiftUI
 // state survives tab switches — standard SwiftUI practice.
 struct RootTabView: View {
     let sessionStore: AuthSessionStore
+    /// Published by DepthChartsTab; the team accent the chrome tints with.
+    let currentTeamStore: CurrentTeamStore
 
     var body: some View {
         TabView {
@@ -21,7 +23,8 @@ struct RootTabView: View {
                     sessionStore: sessionStore,
                     authService: DepthEnvironment.authService,
                     overrideService: DepthEnvironment.overrideService,
-                    events: DepthEnvironment.appEvents
+                    events: DepthEnvironment.appEvents,
+                    currentTeamStore: currentTeamStore
                 )
             }
 
@@ -38,10 +41,15 @@ struct RootTabView: View {
                 )
             }
         }
-        // Selected-tab tint from the app's own accent (2026-08-15 visual-pass). The
-        // unselected tab color is not controllable through SwiftUI's public TabView/Tab
-        // API on this iOS version without a UIKit appearance bridge — left at the system
-        // default deliberately rather than reaching for private API.
-        .tint(DesignTokens.Colors.accent)
+        // Selected-tab tint from the current team's uiAccent (visual-pass follow-up:
+        // "team colors aren't coming through the chrome"). DepthChartsTab publishes the
+        // active team's accent into CurrentTeamStore, so the nav title, toolbar icons,
+        // and tab bar adopt team color — the same theming the web applies via
+        // activeColors.uiAccent. Before a team resolves (fresh launch) the app falls
+        // back to its own accent, mirroring web's useLastAccent fallback. The unselected
+        // tab color is not controllable through SwiftUI's public TabView/Tab API on this
+        // iOS version without a UIKit appearance bridge — left at the system default
+        // deliberately rather than reaching for private API.
+        .tint(currentTeamStore.uiAccent.map(Color.init(hex:)) ?? DesignTokens.Colors.accent)
     }
 }
