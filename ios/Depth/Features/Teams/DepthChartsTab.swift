@@ -20,6 +20,8 @@ struct DepthChartsTab: View {
     private let authService: any DepthAuthServicing
     private let overrideService: any DepthOverrideServicing
     private let events: any AppEventsRecording
+    /// Receives the current team's accent so the app chrome tints with it.
+    private let currentTeamStore: CurrentTeamStore
 
     init(
         repository: CachingDepthRepository,
@@ -27,7 +29,8 @@ struct DepthChartsTab: View {
         sessionStore: AuthSessionStore,
         authService: any DepthAuthServicing,
         overrideService: any DepthOverrideServicing,
-        events: any AppEventsRecording = NoOpAppEventsRecorder()
+        events: any AppEventsRecording = NoOpAppEventsRecorder(),
+        currentTeamStore: CurrentTeamStore
     ) {
         self.repository = repository
         self.preferences = preferences
@@ -35,6 +38,7 @@ struct DepthChartsTab: View {
         self.authService = authService
         self.overrideService = overrideService
         self.events = events
+        self.currentTeamStore = currentTeamStore
         _teamId = State(initialValue: StartupTeam.resolve(lastTeamId: preferences.lastTeamId))
     }
 
@@ -80,6 +84,13 @@ struct DepthChartsTab: View {
         }
         .onChange(of: teamId, initial: true) { _, newValue in
             preferences.lastTeamId = newValue
+            // Publish the accent for the root chrome tint. Fires on first render
+            // (initial: true) and on every switch, so it also covers the stale-id
+            // correction in `.task` above. teams() is cached after the first load.
+            Task {
+                let teams = (try? await repository.teams()) ?? []
+                currentTeamStore.apply(teamId: newValue, from: teams)
+            }
         }
     }
 }

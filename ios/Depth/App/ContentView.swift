@@ -6,13 +6,14 @@ import SwiftUI
 struct ContentView: View {
     @State private var updateGate = UpdateGateViewModel(repository: DepthEnvironment.repository)
     @State private var authSessionStore = DepthEnvironment.authSessionStore
+    @State private var currentTeamStore = DepthEnvironment.currentTeamStore
 
     var body: some View {
         Group {
             if updateGate.isBlocked {
                 BlockingUpdateView()
             } else {
-                RootTabView(sessionStore: authSessionStore)
+                RootTabView(sessionStore: authSessionStore, currentTeamStore: currentTeamStore)
             }
         }
         // The app is always dark, same as the website (2026-08-15 visual-pass spec,
