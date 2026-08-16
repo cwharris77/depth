@@ -68,6 +68,10 @@ private actor FakeOverrideWriter: DepthOverrideWriting {
         saves.append(playerIds)
     }
 
+    func clear(teamId: String, position: String) async throws {
+        if let error { throw error }
+    }
+
     func setError(_ error: DepthError?) { self.error = error }
     func setDelay(_ delay: Duration?) { self.delay = delay }
     func savedValues() -> [[String]] { saves }
@@ -317,4 +321,49 @@ private actor AsyncCounter {
     #expect(quarterbacks.map(\.id) == ["b", "a", "new"])
     #expect(quarterbacks.map(\.depthRank) == [1, 2, 3])
     #expect(quarterbacks.map(\.order) == [0, 1, 2])
+}
+
+@Test func rerankedPlayersPreservesProfileFieldsAndStatus() {
+    // DEP-226: the projection must carry every profile field through the rebuild — a
+    // partial reconstruction silently wiped college/bio/vitals (the card opened from a
+    // team with a custom order showed them blank).
+    let college = Player(
+        id: "c", position: .qb, depthRank: 1, number: 7, status: .starter,
+        age: 24, college: "Georgia", experience: 2, height: "6'2\"", weight: 215,
+        bio: "Chip off the old block", photoUrl: "https://example.com/c.jpg"
+    )
+    let backup = Player(id: "b", position: .qb, depthRank: 2, number: 12, status: .backup)
+
+    let reranked = rerankedPlayers([backup, college])
+
+    #expect(reranked.map(\.id) == ["b", "c"])
+    #expect(reranked[0].status == .starter)
+    #expect(reranked[1].status == .backup)
+    #expect(reranked[1].college == "Georgia")
+    #expect(reranked[1].bio == "Chip off the old block")
+    #expect(reranked[1].age == 24)
+    #expect(reranked[1].height == "6'2\"")
+    #expect(reranked[1].weight == 215)
+    #expect(reranked[1].photoUrl == "https://example.com/c.jpg")
+}
+
+@Test func rerankedPlayersPreservesRookieAndInjuredStatus() {
+    // Web's statusForRank keeps rookie/injured regardless of the new rank.
+    let rookie = Player(id: "r", position: .qb, depthRank: 3, number: 15, status: .rookie)
+    let injured = Player(id: "i", position: .qb, depthRank: 2, number: 9, status: .injured)
+
+    let reranked = rerankedPlayers([rookie, injured])
+
+    #expect(reranked[0].status == .rookie)
+    #expect(reranked[1].status == .injured)
+}
+
+@Test func rerankedPlayersCapsRankAtThree() {
+    // Mirrors web: depthRank is capped 1..3, deeper slots read as "reserve".
+    let players = (0..<5).map { Player(id: "p\($0)", position: .qb, depthRank: $0 + 1, number: $0) }
+
+    let reranked = rerankedPlayers(players)
+
+    #expect(reranked.map(\.depthRank) == [1, 2, 3, 3, 3])
+    #expect(reranked.map(\.order) == [0, 1, 2, 3, 4])
 }

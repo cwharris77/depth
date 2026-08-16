@@ -13,10 +13,17 @@ struct DepthApp: App {
 
         // UI tests launch with this argument so every test starts from the same
         // anonymous, no-restored-team state instead of inheriting whatever a previous
-        // run/manual session left in UserDefaults.
+        // run/manual session left in UserDefaults. Depth overrides (DEP-219) and the
+        // one-time reorder hint (DEP-226) are part of that clean slate — without
+        // clearing them a leftover Bills QB override from an earlier run makes reorder
+        // tests non-deterministic.
         if ProcessInfo.processInfo.arguments.contains("UI_TESTING_RESET_STATE") {
             DepthEnvironment.preferences.lastTeamId = nil
             DepthEnvironment.preferences.lastUnit = nil
+            DepthEnvironment.preferences.clearReorderHint()
+            for teamId in DepthEnvironment.preferences.allOverrides().keys {
+                DepthEnvironment.preferences.clearTeamOverride(teamId: teamId)
+            }
         }
 
         // App Store screenshot capture (task-9d-screenshots-brief.md) needs the same

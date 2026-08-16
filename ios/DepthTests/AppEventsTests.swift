@@ -246,6 +246,9 @@ private actor FakeOverrideWriter: DepthOverrideWriting {
     func save(teamId: String, position: String, playerIds: [String]) async throws {
         if let error { throw error }
     }
+    func clear(teamId: String, position: String) async throws {
+        if let error { throw error }
+    }
     func setError(_ error: DepthError?) { self.error = error }
 }
 

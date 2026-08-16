@@ -7,6 +7,7 @@ import Testing
 // the server mirror as fire-and-forget.
 private actor FakeOverrideWriter: DepthOverrideWriting {
     private(set) var savedCalls: [(teamId: String, position: String, playerIds: [String])] = []
+    private(set) var clearedCalls: [(teamId: String, position: String)] = []
     private var error: DepthError?
 
     func setError(_ error: DepthError?) {
@@ -15,6 +16,11 @@ private actor FakeOverrideWriter: DepthOverrideWriting {
 
     func save(teamId: String, position: String, playerIds: [String]) async throws {
         savedCalls.append((teamId, position, playerIds))
+        if let error { throw error }
+    }
+
+    func clear(teamId: String, position: String) async throws {
+        clearedCalls.append((teamId, position))
         if let error { throw error }
     }
 }
@@ -60,5 +66,29 @@ struct LocalFirstOverrideWriterTests {
         try await writer.save(teamId: "giants", position: "QB", playerIds: ["p1"])
 
         #expect(preferences.teamOverride(for: "giants") == [.qb: ["p1"]])
+    }
+
+    @Test func clearRemovesLocalOrderAndMirrorsRemoteWhenSignedIn() async throws {
+        let preferences = freshPreferences()
+        preferences.setPositionOrder(teamId: "giants", position: .qb, ids: ["p1", "p2"])
+        let remote = FakeOverrideWriter()
+        let writer = LocalFirstOverrideWriter(preferences: preferences, remote: remote)
+
+        try await writer.clear(teamId: "giants", position: "QB")
+
+        #expect(preferences.teamOverride(for: "giants") == [:])
+        let calls = await remote.clearedCalls
+        #expect(calls.count == 1)
+        #expect(calls.first?.teamId == "giants")
+    }
+
+    @Test func clearWithNoRemoteStillClearsLocal() async throws {
+        let preferences = freshPreferences()
+        preferences.setPositionOrder(teamId: "giants", position: .qb, ids: ["p1", "p2"])
+        let writer = LocalFirstOverrideWriter(preferences: preferences, remote: nil)
+
+        try await writer.clear(teamId: "giants", position: "QB")
+
+        #expect(preferences.teamOverride(for: "giants") == [:])
     }
 }
