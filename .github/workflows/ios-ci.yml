@@ -1,10 +1,10 @@
 name: iOS CI
 
-# Builds and tests the native app (ios/) on every PR/push. Runs the full unit + UI
-# suite once, on a single current-flagship simulator. An older device leg was dropped:
-# simulator timing doesn't measure real-hardware performance, so the "oldest-supported"
-# leg added CI wall time without signal — run performance checks on a real device
-# instead. RLS/native-auth integration suites
+# Builds and tests the native app (ios/) on every PR/push. A PR runs a fast smoke set
+# (unit tests + the critical-path/reorder/auth UI journeys); the full unit + UI suite runs
+# only on pushes to main — the slow Accessibility/Performance/Share suites give PRs little
+# signal but dominate wall time. The one test leg runs on a single current-flagship
+# simulator. RLS/native-auth integration suites
 # (DepthTests/SupabaseRLSIntegrationTests, DepthTests/NativeAuthIntegrationTests) need a
 # local Supabase stack (`supabase start`, which needs Docker); GitHub-hosted macOS
 # runners can't run Docker (no nested virtualization), so those suites self-gate on a
@@ -145,6 +145,18 @@ jobs:
           xcrun simctl boot "$DEVICE_ID"
           echo "device_id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
 
+      # A PR gets a fast smoke set (unit + the critical-path/reorder/auth UI journeys);
+      # the slow Accessibility/Performance/Share suites add little per-PR signal but
+      # dominate wall time, so the full suite runs only on pushes to main. Empty on push.
+      - name: Determine test scope
+        id: scope
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "tests=-only-testing:DepthTests -only-testing:DepthUITests/DepthUITests -only-testing:DepthUITests/PlayerCardReorderUITests -only-testing:DepthUITests/AuthUITests" >> "$GITHUB_OUTPUT"
+          else
+            echo "tests=" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Run unit + UI tests (Staging config)
         run: |
           set -o pipefail
@@ -153,7 +165,7 @@ jobs:
             -scheme Depth \
             -configuration Staging \
             -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.device_id }}" \
-            test
+            test ${{ steps.scope.outputs.tests }}
 
   archive-secret-check:
     runs-on: macos-latest
