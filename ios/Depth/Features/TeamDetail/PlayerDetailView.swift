@@ -750,18 +750,23 @@ private struct PlayerStatsTable: View {
     let columns: [PlayerStatColumn]
     let accent: Color
 
-    @ScaledMetric(relativeTo: .footnote) private var labelWidth: CGFloat = 44
+    // DEP-234: the fixed SZN/TM cells only need ~30-36pt (a 4-digit year / 3-letter
+    // abbrev), and trimming them plus the row spacing frees ~44pt for the flexible stat
+    // columns — that's what lets a wide CMP/ATT pair like "312/489" render at full size
+    // instead of truncating. The value cells keep a 0.75 shrink floor (never illegibly
+    // tiny — truncate honestly rather than shrink to mush).
+    @ScaledMetric(relativeTo: .footnote) private var labelWidth: CGFloat = 36
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 16) {
+            HStack(spacing: 12) {
                 cell("SZN", header: true, fixed: true)
                 cell("TM", header: true, fixed: true)
                 ForEach(columns, id: \.self) { column in
                     cell(column.header, header: true, fixed: false)
                 }
             }
-            .padding(.horizontal, DesignTokens.Spacing.md)
+            .padding(.horizontal, 12)
             .padding(.vertical, 8)
             // Web parity (components/PlayerCardSeasonStats.tsx): a hairline separates
             // the header from data rows — missing before (DEP-227).
@@ -776,14 +781,14 @@ private struct PlayerStatsTable: View {
                 // Web parity: the most recent season (index 0 — `stats` arrives
                 // newest-first) is highlighted, its year colored accent (DEP-227).
                 let isCurrent = index == 0
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     cell("\(season.season)", fixed: true, valueColor: isCurrent ? accent : nil)
                     cell(season.teamAbbrev ?? "—", fixed: true)
                     ForEach(columns, id: \.self) { column in
                         cell(column.value(for: season), fixed: false)
                     }
                 }
-                .padding(.horizontal, DesignTokens.Spacing.md)
+                .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .background(isCurrent ? accent.opacity(0.05) : .clear)
                 .accessibilityElement(children: .ignore)
@@ -801,7 +806,7 @@ private struct PlayerStatsTable: View {
             .font(header ? .caption.bold() : .footnote.weight(.semibold))
             .foregroundStyle(valueColor ?? (header ? .secondary : .primary))
             .lineLimit(1)
-            .minimumScaleFactor(0.6)
+            .minimumScaleFactor(0.75)
             .frame(maxWidth: fixed ? labelWidth : .infinity, alignment: .leading)
     }
 }
@@ -812,13 +817,14 @@ private struct PlayerStatsTable: View {
 private struct PlayerStatsSkeleton: View {
     let columnCount: Int
 
-    @ScaledMetric(relativeTo: .footnote) private var cellWidth: CGFloat = 44
+    // Matches the table's tightened DEP-234 metrics (labelWidth 36, row spacing 12).
+    @ScaledMetric(relativeTo: .footnote) private var cellWidth: CGFloat = 36
     @ScaledMetric(relativeTo: .footnote) private var cellHeight: CGFloat = 14
 
     var body: some View {
         VStack(spacing: 12) {
             ForEach(0..<2, id: \.self) { _ in
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     ForEach(0..<2, id: \.self) { _ in
                         RoundedRectangle(cornerRadius: 4)
                             .fill(.tertiary)
