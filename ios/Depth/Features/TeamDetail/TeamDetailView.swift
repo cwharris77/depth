@@ -125,7 +125,13 @@ struct TeamDetailView: View {
                 }
             }
             .sheet(item: $selectedPlayer) { player in
-                PlayerDetailView(player: player, team: displayedSnapshot?.team, repository: repository)
+                PlayerDetailView(
+                    player: player,
+                    team: displayedSnapshot?.team,
+                    repository: repository,
+                    depthChart: players(for: player.position),
+                    onSelectPlayer: { selectedPlayer = $0 }
+                )
                     .id(player.id)
                     // `.sheet()` content gets a fresh UITraitCollection rather than
                     // inheriting ContentView's UI_TESTING_DYNAMIC_TYPE override — see

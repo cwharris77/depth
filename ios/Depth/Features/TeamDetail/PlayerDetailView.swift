@@ -6,6 +6,11 @@ import SwiftUI
 struct PlayerDetailView: View {
     let player: Player
     let team: Team?
+    /// Every player at `player`'s position, depth-ordered (web's `getPlayersByPosition`).
+    /// Drives the POSITION DEPTH section — tap another row to switch the card to that
+    /// player (web's `onSelectPlayer`).
+    let depthChart: [Player]
+    var onSelectPlayer: ((Player) -> Void)? = nil
 
     @State private var viewModel: PlayerProfileViewModel
 
@@ -21,9 +26,17 @@ struct PlayerDetailView: View {
 
     private var photoSize: CGFloat { min(scaledPhotoSize, 140) }
 
-    init(player: Player, team: Team?, repository: DepthRepository) {
+    init(
+        player: Player,
+        team: Team?,
+        repository: DepthRepository,
+        depthChart: [Player],
+        onSelectPlayer: ((Player) -> Void)? = nil
+    ) {
         self.player = player
         self.team = team
+        self.depthChart = depthChart
+        self.onSelectPlayer = onSelectPlayer
         _viewModel = State(initialValue: PlayerProfileViewModel(
             playerID: player.id, teamID: team?.id, repository: repository
         ))
@@ -41,6 +54,7 @@ struct PlayerDetailView: View {
                     if let bio = PlayerProfileDisplay.meaningful(player.bio) {
                         labeledText("Bio", value: bio)
                     }
+                    positionDepth
                     statsSection
                 }
                 .padding()
@@ -178,6 +192,103 @@ struct PlayerDetailView: View {
             Text(value).fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)
+    }
+
+    // Web parity (components/PlayerCardDepthList.tsx): the position's players in depth
+    // order, STARTER/BACKUP/RESERVE rank labels, current player highlighted with the
+    // team accent + checkmark, others tappable to switch the card.
+    @ViewBuilder
+    private var positionDepth: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Position Depth · \(player.position.rawValue)")
+                .font(.headline)
+                .accessibilityIdentifier("player-profile-depth-title")
+
+            if depthChart.count <= 1 {
+                Text("No backups available")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 56)
+                    .depthCard(dense: true)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(depthChart) { p in
+                        depthRow(p)
+                        if p.id != depthChart.last?.id {
+                            Divider().overlay(DesignTokens.Colors.borderSubtle)
+                        }
+                    }
+                }
+                .depthCard(dense: true)
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("player-profile-depth")
+    }
+
+    private func depthRow(_ p: Player) -> some View {
+        let isCurrent = p.id == player.id
+        let accent = team.map { Color(hex: $0.colors.uiAccent) } ?? .accentColor
+        return Button {
+            if !isCurrent { onSelectPlayer?(p) }
+        } label: {
+            HStack(spacing: 12) {
+                Text(depthRankLabel(p.depthRank))
+                    .font(.caption.bold())
+                    .foregroundStyle(statusColor(p.status))
+                    .frame(minWidth: 64, alignment: .leading)
+                Text("#\(p.number)")
+                    .font(.footnote.bold())
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+                    .frame(minWidth: 28, alignment: .leading)
+                Text(p.name.isEmpty ? "#\(p.number)" : p.name)
+                    .font(.subheadline.bold())
+                    .foregroundStyle(isCurrent ? accent : DesignTokens.Colors.textPrimary)
+                    .lineLimit(1)
+                Spacer()
+                if isCurrent {
+                    Image(systemName: "checkmark")
+                        .font(.footnote.bold())
+                        .foregroundStyle(accent)
+                        .accessibilityHidden(true)
+                }
+            }
+            .padding(DesignTokens.Spacing.md)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .background(isCurrent ? accent.opacity(0.10) : .clear)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            "\(depthRankLabel(p.depthRank)), #\(p.number), \(p.name.isEmpty ? "#\(p.number)" : p.name)"
+        )
+        .accessibilityAddTraits(isCurrent ? [.isSelected] : [.isButton])
+        .accessibilityIdentifier("player-profile-depth-row-\(p.id)")
+    }
+
+    // Mirrors web PlayerCardDepthList.depthRankLabel: ranks are capped at 3, so
+    // anything past 2 is "reserve" rather than a literal ordinal.
+    private func depthRankLabel(_ rank: Int) -> String {
+        switch rank {
+        case 1: "STARTER"
+        case 2: "BACKUP"
+        default: "RESERVE"
+        }
+    }
+
+    // Mirrors lib/utils/colors.ts statusColor: starter is team-driven (uiAccent), the
+    // rest are fixed semantic colors shared by every team.
+    private func statusColor(_ status: PlayerStatus) -> Color {
+        switch status {
+        case .starter:
+            team.map { Color(hex: $0.colors.uiAccent) } ?? .accentColor
+        case .backup:
+            Color(hex: "#A5ACAF")
+        case .rookie:
+            Color(hex: "#4fc3f7")
+        case .injured:
+            Color(hex: "#ef5350")
+        }
     }
 
     @ViewBuilder

@@ -51,6 +51,10 @@ final class DepthUITests: XCTestCase {
             app.otherElements["player-profile-vitals"].waitForExistence(timeout: 5),
             "profile should show age, experience, height, and weight"
         )
+        XCTAssertTrue(
+            app.otherElements["player-profile-depth"].waitForExistence(timeout: 5),
+            "profile should show the position depth list"
+        )
         XCTAssertTrue(app.otherElements["player-profile-stats"].waitForExistence(timeout: 10), "profile should resolve a stats state")
 
         closeButton.tap()
