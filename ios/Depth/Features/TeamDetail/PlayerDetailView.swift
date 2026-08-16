@@ -109,12 +109,22 @@ struct PlayerDetailView: View {
             Text(player.name.isEmpty ? "#\(player.number)" : player.name)
                 .font(.title.bold())
                 .accessibilityIdentifier("player-profile-name")
-            Text("#\(player.number) · \(player.position.rawValue) · \(player.position.fullName)")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .accessibilityIdentifier("player-profile-position")
+            // Web parity (components/PlayerCardHeader.tsx): position renders as a
+            // Badge pill, not plain text, and the number isn't repeated here — the
+            // watermark above already shows it (DEP-223).
+            HStack(spacing: 6) {
+                positionBadge(accent: accent)
+                Text(player.position.fullName)
+                    .font(.caption)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("player-profile-position")
+            // Web parity (Badge variant="status"): team accent when starter, fixed
+            // semantic colors otherwise — this line had no color at all before (DEP-223).
             Text(player.status.rawValue.capitalized)
                 .font(.subheadline.weight(.semibold))
+                .foregroundStyle(statusColor(player.status))
                 .accessibilityIdentifier("player-profile-status")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -170,7 +180,11 @@ struct PlayerDetailView: View {
             case .loading:
                 PlayerStatsSkeleton(columnCount: playerStatColumns(for: player.position).count)
             case .loaded:
-                PlayerStatsTable(stats: viewModel.stats, columns: playerStatColumns(for: player.position))
+                PlayerStatsTable(
+                    stats: viewModel.stats,
+                    columns: playerStatColumns(for: player.position),
+                    accent: team.map { Color(hex: $0.colors.uiAccent) } ?? .accentColor
+                )
             case .empty:
                 ContentUnavailableView("No stats available", systemImage: "chart.bar.xaxis")
                     .frame(maxWidth: .infinity)
@@ -217,7 +231,11 @@ struct PlayerDetailView: View {
     @ViewBuilder
     private var positionDepth: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Position Depth · \(player.position.rawValue)")
+            // DEP-225: dropped the repeated position — the header's badge (DEP-223)
+            // already shows it. Native-only divergence from web, which still repeats
+            // it in this title; don't "fix" this back to match web without checking
+            // that ticket first.
+            Text("Position Depth")
                 .font(.headline)
                 .accessibilityIdentifier("player-profile-depth-title")
 
@@ -228,6 +246,10 @@ struct PlayerDetailView: View {
                     .frame(maxWidth: .infinity, minHeight: 56)
                     .depthCard(dense: true)
             } else {
+                // DEP-225: padded: false + each row keeping its own padding lets the
+                // current-player row's highlight reach the card's rounded edges —
+                // depthCard's own outer padding was insetting every row away from
+                // them before.
                 VStack(spacing: 0) {
                     ForEach(depthChart) { p in
                         depthRow(p)
@@ -236,7 +258,7 @@ struct PlayerDetailView: View {
                         }
                     }
                 }
-                .depthCard(dense: true)
+                .depthCard(dense: true, padded: false)
             }
         }
         .accessibilityElement(children: .contain)
@@ -308,27 +330,49 @@ struct PlayerDetailView: View {
         }
     }
 
+    // Web parity (components/PlayerCardHeader.tsx's Avatar: fillColor={colors.primary},
+    // ringColor={accent}). Fill was accidentally the ring color with no ring at all
+    // before (DEP-224) — fill is the team's `primary`, ring is a 2px `uiAccent` border.
     @ViewBuilder
     private var photo: some View {
         let accent = team.map { Color(hex: $0.colors.uiAccent) } ?? .accentColor
-        let onAccent = team.map { Color(hex: $0.colors.onAccent) } ?? .white
+        let fill = team.map { Color(hex: $0.colors.primary) } ?? .accentColor
+        let onFillHex = team.map { readableTextOn($0.colors.primary) }
+        let onFill = onFillHex.map(Color.init(hex:)) ?? .white
         ZStack {
-            Circle().fill(accent)
+            Circle().fill(fill)
             if let url = player.photoUrl.flatMap(URL.init(string:)) {
                 AsyncImage(url: url) { phase in
                     if let image = phase.image {
                         image.resizable().scaledToFill()
                     } else {
-                        initials(onAccent)
+                        initials(onFill)
                     }
                 }
                 .clipShape(Circle())
             } else {
-                initials(onAccent)
+                initials(onFill)
             }
         }
         .frame(width: photoSize, height: photoSize)
+        .overlay {
+            Circle().strokeBorder(accent, lineWidth: 2)
+        }
         .accessibilityHidden(true)
+    }
+
+    // Web parity (components/ui/Badge.tsx default variant): surfaceNavy fill,
+    // accent-colored text + border, rounded-full (DEP-223).
+    private func positionBadge(accent: Color) -> some View {
+        Text(player.position.rawValue)
+            .font(.caption.bold())
+            .foregroundStyle(accent)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 2)
+            .background(DesignTokens.Colors.surfaceNavy, in: Capsule())
+            .overlay {
+                Capsule().strokeBorder(accent.opacity(0.40), lineWidth: 1)
+            }
     }
 
     private func initials(_ color: Color) -> some View {
@@ -349,6 +393,7 @@ struct PlayerDetailView: View {
 private struct PlayerStatsTable: View {
     let stats: [PlayerSeasonStats]
     let columns: [PlayerStatColumn]
+    let accent: Color
 
     @ScaledMetric(relativeTo: .footnote) private var labelWidth: CGFloat = 44
 
@@ -361,19 +406,31 @@ private struct PlayerStatsTable: View {
                     cell(column.header, header: true, fixed: false)
                 }
             }
+            .padding(.horizontal, DesignTokens.Spacing.md)
+            .padding(.vertical, 8)
+            // Web parity (components/PlayerCardSeasonStats.tsx): a hairline separates
+            // the header from data rows — missing before (DEP-227).
+            .overlay(alignment: .bottom) {
+                Rectangle().fill(DesignTokens.Colors.borderDefault).frame(height: 1)
+            }
             // Each data row carries the full spoken label, so repeating the compact
             // headers as their own VoiceOver stops is pure noise.
             .accessibilityHidden(true)
 
-            ForEach(stats) { season in
+            ForEach(Array(stats.enumerated()), id: \.element.id) { index, season in
+                // Web parity: the most recent season (index 0 — `stats` arrives
+                // newest-first) is highlighted, its year colored accent (DEP-227).
+                let isCurrent = index == 0
                 HStack(spacing: 16) {
-                    cell("\(season.season)", fixed: true)
+                    cell("\(season.season)", fixed: true, valueColor: isCurrent ? accent : nil)
                     cell(season.teamAbbrev ?? "—", fixed: true)
                     ForEach(columns, id: \.self) { column in
                         cell(column.value(for: season), fixed: false)
                     }
                 }
+                .padding(.horizontal, DesignTokens.Spacing.md)
                 .padding(.vertical, 8)
+                .background(isCurrent ? accent.opacity(0.05) : .clear)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(
                     PlayerStatsAccessibility.rowLabel(for: season, columns: columns)
@@ -381,13 +438,13 @@ private struct PlayerStatsTable: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .depthCard(dense: true)
+        .depthCard(dense: true, padded: false)
     }
 
-    private func cell(_ value: String, header: Bool = false, fixed: Bool) -> some View {
+    private func cell(_ value: String, header: Bool = false, fixed: Bool, valueColor: Color? = nil) -> some View {
         Text(value)
             .font(header ? .caption.bold() : .footnote.weight(.semibold))
-            .foregroundStyle(header ? .secondary : .primary)
+            .foregroundStyle(valueColor ?? (header ? .secondary : .primary))
             .lineLimit(1)
             .minimumScaleFactor(0.6)
             .frame(maxWidth: fixed ? labelWidth : .infinity, alignment: .leading)
