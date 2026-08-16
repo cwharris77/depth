@@ -21,7 +21,8 @@ actor SupabaseDepthRepository: DepthRepository {
         special_teams_slots(id, team_id, label, player_id, x, y, \
         player:players(id, team_id, name, number, position, status, age, college, experience, height, weight, bio, photo_url)), \
         uniforms(id, team_id, kind, name, year_start, year_end, is_current, \
-        color_primary, color_secondary, color_accent, ui_accent, on_accent, image_path)
+        color_primary, color_secondary, color_accent, ui_accent, on_accent, image_path), \
+        team_formations(season, rank, unit, alignment, personnel, pct)
         """
 
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot {
