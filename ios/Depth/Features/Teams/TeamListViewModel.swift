@@ -16,10 +16,15 @@ final class TeamListViewModel {
 
     private(set) var loadState: LoadState = .loading
     private(set) var teams: [Team] = []
+    private(set) var playerHits: [PlayerHit] = []
     var searchText: String = ""
 
     private let repository: CachingDepthRepository
     private let events: any AppEventsRecording
+    /// Monotonic id so a late search response from an earlier keystroke can never
+    /// overwrite the hits for the query the user is actually looking at (same
+    /// request-invalidation pattern as PlayerProfileViewModel).
+    private var searchRequestID = 0
 
     init(repository: CachingDepthRepository, events: any AppEventsRecording = NoOpAppEventsRecorder()) {
         self.repository = repository
@@ -47,6 +52,32 @@ final class TeamListViewModel {
             events.record(.error(category: error.telemetryCategory))
         } catch {
             loadState = .failed(.server("\(error)"))
+            events.record(.error(category: "server"))
+        }
+    }
+
+    /// Cross-team player search (web NavSwitcher parity): fires per keystroke and clears
+    /// on an empty query. A failed search surfaces as no player hits (the team results
+    /// above are unaffected) rather than blocking the switcher.
+    func searchPlayers() async {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else {
+            playerHits = []
+            return
+        }
+        searchRequestID += 1
+        let requestID = searchRequestID
+        do {
+            let hits = try await repository.searchPlayers(query: query)
+            guard requestID == searchRequestID else { return }
+            playerHits = hits
+        } catch let error as DepthError {
+            guard requestID == searchRequestID else { return }
+            playerHits = []
+            events.record(.error(category: error.telemetryCategory))
+        } catch {
+            guard requestID == searchRequestID else { return }
+            playerHits = []
             events.record(.error(category: "server"))
         }
     }

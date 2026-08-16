@@ -19,8 +19,18 @@ protocol DepthRepository: Sendable {
     /// Independent lazy profile read. It is intentionally excluded from team snapshots
     /// and cache persistence because opening a player is the only consumer.
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats]
+    /// Cross-team player search for the switcher (2026-08-15 navigation-parity round 2:
+    /// "search should work for players as well as teams"), mirroring web's
+    /// `searchAllPlayers`. Searches every ingested team's players, not just the selected
+    /// roster. A default no-op keeps test doubles honest until a real implementation
+    /// lands; only SupabaseDepthRepository overrides it.
+    func searchPlayers(query: String) async throws -> [PlayerHit]
     /// The public `app_config` singleton backing the update gate (design spec's
     /// "Database evolution and update gate"). Callers cache the last known value and
     /// fall back to it when this throws.
     func appConfig() async throws -> AppConfig
+}
+
+extension DepthRepository {
+    func searchPlayers(query: String) async throws -> [PlayerHit] { [] }
 }

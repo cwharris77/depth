@@ -90,8 +90,14 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
         app.selectTeam("seahawks", searching: "Seahawks", expectedDisplayName: "Seattle Seahawks")
 
+        // Seasons lives behind the ••• overflow menu (2026-08-15 visual-pass: the bare
+        // icon row was removed).
+        let overflow = app.buttons["depth-chart-overflow"]
+        XCTAssertTrue(overflow.waitForExistence(timeout: 10), "team detail should expose the overflow menu")
+        overflow.tap()
+
         let historyButton = app.buttons["history-destination"]
-        XCTAssertTrue(historyButton.waitForExistence(timeout: 10), "team detail should expose History")
+        XCTAssertTrue(historyButton.waitForExistence(timeout: 5), "the overflow menu should expose History")
         historyButton.tap()
 
         let season = app.buttons["history-season-2013"]
@@ -104,11 +110,27 @@ final class DepthUITests: XCTestCase {
         let seasonState = app.staticTexts["history-season-state"]
         XCTAssertTrue(seasonState.waitForExistence(timeout: 10))
         XCTAssertEqual(seasonState.label, "2013 season")
+        // Historical rosters are read-only: reopen the overflow menu and confirm it has
+        // no Edit Depth Chart entry (the pre-overflow toolbar rendered a bare
+        // `edit-depth-order` button in live mode and nothing at all here).
+        let overflow2 = app.buttons["depth-chart-overflow"]
+        XCTAssertTrue(overflow2.waitForExistence(timeout: 5))
+        overflow2.tap()
         XCTAssertFalse(app.buttons["edit-depth-order"].exists, "historical rosters are read-only")
 
+        // The popover must be dismissed before the QB interaction below: re-tapping the
+        // anchor while its popover is open is a no-op, and the header sits inside the
+        // popover's non-hittable region, but the field's QB slot is outside the popover,
+        // so a tap there is consumed by the popover dismissal.
         let quarterback = app.buttons["player-slot-off-qb-0"]
         XCTAssertTrue(quarterback.waitForExistence(timeout: 10), "the historical field should render its QB")
         quarterback.tap()
+        // First tap dismisses the popover; the second opens the player. If the popover
+        // was already gone (presentation behavior varies across iOS versions), the first
+        // tap already presented the sheet, so only tap again when it didn't.
+        if !app.scrollViews["player-profile-content"].waitForExistence(timeout: 2) {
+            quarterback.tap()
+        }
         XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["player-profile-name"].waitForExistence(timeout: 5))
         app.buttons["Close"].tap()
