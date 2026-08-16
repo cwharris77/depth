@@ -168,21 +168,20 @@ struct PlayerDetailView: View {
                 .accessibilityIdentifier("player-profile-name")
             // Web parity (components/PlayerCardHeader.tsx): position renders as a
             // Badge pill, not plain text, and the number isn't repeated here — the
-            // watermark above already shows it (DEP-223).
-            HStack(spacing: 6) {
-                positionBadge(accent: accent)
-                Text(player.position.fullName)
-                    .font(.caption)
-                    .foregroundStyle(DesignTokens.Colors.textMuted)
+            // watermark above already shows it (DEP-223). The position badge, full
+            // name, and the depth-chart-order status read as one unit — "QB ·
+            // Quarterback · Starter" on a single line (DEP-242). At accessibility
+            // sizes the row would overflow, so the status drops back to its own line
+            // there.
+            if dynamicTypeSize.isAccessibilitySize {
+                positionLabel(accent)
+                statusLabel(accent)
+            } else {
+                HStack(spacing: 6) {
+                    positionLabel(accent)
+                    statusLabel(accent)
+                }
             }
-            .accessibilityElement(children: .combine)
-            .accessibilityIdentifier("player-profile-position")
-            // Web parity (Badge variant="status"): team accent when starter, fixed
-            // semantic colors otherwise — this line had no color at all before (DEP-223).
-            Text(player.status.rawValue.capitalized)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(playerStatusColor(player.status, accent: accent))
-                .accessibilityIdentifier("player-profile-status")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -373,9 +372,9 @@ struct PlayerDetailView: View {
                 } label: {
                     HStack(spacing: 4) {
                         if !editing {
-                            // Web parity: a grip glyph leads the "Reorder" label.
-                            Image(systemName: "line.3.horizontal")
-                                .font(.caption2.weight(.bold))
+                            // Web parity: a grip glyph leads the "Reorder" label (DEP-241).
+                            SixDotGrip(color: accent)
+                                .accessibilityHidden(true)
                         }
                         Text(editing ? "Done" : "Reorder")
                             .font(.caption.bold())
@@ -534,6 +533,30 @@ struct PlayerDetailView: View {
             }
     }
 
+    // The combined "QB + Quarterback" group — kept as its own accessibility element
+    // (player-profile-position) even when the status sits beside it on the same line
+    // (DEP-242), because the status keeps its own element/identifier.
+    private func positionLabel(_ accent: Color) -> some View {
+        HStack(spacing: 6) {
+            positionBadge(accent: accent)
+            Text(player.position.fullName)
+                .font(.caption)
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("player-profile-position")
+    }
+
+    // Web parity (Badge variant="status"): team accent when starter, fixed semantic
+    // colors otherwise — this had no color at all before (DEP-223). Sits on the same
+    // line as the position at default sizes, its own line at accessibility sizes.
+    private func statusLabel(_ accent: Color) -> some View {
+        Text(player.status.rawValue.capitalized)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(playerStatusColor(player.status, accent: accent))
+            .accessibilityIdentifier("player-profile-status")
+    }
+
     private func initials(_ color: Color) -> some View {
         Text("\(player.number)")
             .font(.title.bold())
@@ -549,6 +572,29 @@ private func playerStatusColor(_ status: PlayerStatus, accent: Color) -> Color {
     case .backup: Color(hex: "#A5ACAF")
     case .rookie: Color(hex: "#4fc3f7")
     case .injured: Color(hex: "#ef5350")
+    }
+}
+
+// Web parity (lucide GripVertical, DEP-241): the six-dot vertical drag grip. SF Symbols
+// has no six-dot grip — line.3.horizontal is the hamburger and circle.grid.2x2 is four
+// dots — so this draws the 2x3 dot grid GripVertical depicts, the "drag me" affordance
+// web uses for both the Reorder toggle and the reorder rows.
+private struct SixDotGrip: View {
+    let color: Color
+
+    var body: some View {
+        VStack(spacing: 3) {
+            ForEach(0..<3, id: \.self) { _ in
+                HStack(spacing: 4) {
+                    dot
+                    dot
+                }
+            }
+        }
+    }
+
+    private var dot: some View {
+        Capsule().fill(color).frame(width: 3, height: 7)
     }
 }
 
@@ -644,10 +690,9 @@ private struct DepthReorderList: View {
     private func row(_ p: Player) -> some View {
         HStack(spacing: 12) {
             // Web parity (PlayerCardDepthList's edit rows): a grip glyph leads each row
-            // while reordering; rows are no longer tap-to-switch.
-            Image(systemName: "line.3.horizontal")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(DesignTokens.Colors.textMuted)
+            // while reordering — the six-dot drag grip, not a hamburger (DEP-241). Rows
+            // are no longer tap-to-switch.
+            SixDotGrip(color: DesignTokens.Colors.textMuted)
                 .accessibilityHidden(true)
             DepthRowContent(
                 player: p,
