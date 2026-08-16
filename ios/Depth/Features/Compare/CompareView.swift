@@ -13,6 +13,8 @@ struct CompareView: View {
             } description: {
                 Text("Side-by-side team comparison is coming soon.")
             }
+            .padding(.horizontal, DesignTokens.Spacing.md)
+            .depthCard()
             // Without combining, `.accessibilityIdentifier` lands on each of
             // ContentUnavailableView's internal subviews (image + two text elements)
             // individually rather than one queryable element — none of which is the
@@ -21,5 +23,6 @@ struct CompareView: View {
             .accessibilityIdentifier("compare-placeholder")
             .navigationTitle("Compare")
         }
+        .background(DesignTokens.Colors.bg)
     }
 }
