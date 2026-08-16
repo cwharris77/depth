@@ -48,14 +48,25 @@ struct PlayerDetailView: View {
             }
             .accessibilityIdentifier("player-profile-content")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") { dismiss() }
-                        .frame(minWidth: 44, minHeight: 44)
+                // Top-trailing X, matching the web PlayerCardHeader's close. An xmark is
+                // more discoverable than a "Close" text button, and mirrors the familiar
+                // swipe-down sheet affordance.
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                    .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityLabel("Close")
                 }
             }
         }
         .presentationBackground(DesignTokens.Colors.bg)
         .task { await viewModel.load() }
+        // Visible grabber so the swipe-to-dismiss gesture is discoverable, not just
+        // the X (web's player card is a right-hand drawer; native is a sheet).
+        .presentationDragIndicator(.visible)
         .presentationDetents([.large])
     }
 
