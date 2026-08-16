@@ -54,6 +54,7 @@ struct PlayerDetailView: View {
                 }
             }
         }
+        .presentationBackground(DesignTokens.Colors.bg)
         .task { await viewModel.load() }
         .presentationDetents([.large])
     }
@@ -132,12 +133,11 @@ struct PlayerDetailView: View {
 
     private func vital(_ label: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(label.uppercased()).font(.caption.bold()).foregroundStyle(.secondary)
+            Text(label.uppercased()).font(.caption).foregroundStyle(DesignTokens.Colors.textMuted)
             Text(value).font(.body.weight(.semibold))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .depthCard(dense: true)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(label), \(value)")
     }
@@ -222,8 +222,7 @@ private struct PlayerStatsTable: View {
                     )
                 }
             }
-            .padding(12)
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+            .depthCard(dense: true)
         }
     }
 
@@ -256,8 +255,7 @@ private struct PlayerStatsSkeleton: View {
             }
         }
         .frame(maxWidth: .infinity, minHeight: 72)
-        .padding(12)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .depthCard(dense: true)
         .redacted(reason: .placeholder)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Loading season stats")
