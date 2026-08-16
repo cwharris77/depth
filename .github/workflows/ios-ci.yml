@@ -1,8 +1,10 @@
 name: iOS CI
 
-# Builds and tests the native app (ios/) on every PR/push. Runs a small device matrix
-# (an oldest-supported-class simulator and the newest available flagship simulator) per
-# the native iOS plan's T9 requirement. RLS/native-auth integration suites
+# Builds and tests the native app (ios/) on every PR/push. Runs the full unit + UI
+# suite once, on a single current-flagship simulator. An older device leg was dropped:
+# simulator timing doesn't measure real-hardware performance, so the "oldest-supported"
+# leg added CI wall time without signal — run performance checks on a real device
+# instead. RLS/native-auth integration suites
 # (DepthTests/SupabaseRLSIntegrationTests, DepthTests/NativeAuthIntegrationTests) need a
 # local Supabase stack (`supabase start`, which needs Docker); GitHub-hosted macOS
 # runners can't run Docker (no nested virtualization), so those suites self-gate on a
@@ -32,7 +34,7 @@ jobs:
       matrix: ${{ steps.resolve.outputs.matrix }}
     steps:
       - id: resolve
-        name: Resolve device matrix from installed simulator device types
+        name: Resolve test device from installed simulator device types
         run: |
           set -euo pipefail
 
@@ -68,28 +70,9 @@ jobs:
             return 1
           }
 
-          # Oldest-supported-class approximation: the design spec's performance budgets
-          # target "iPhone XS/XR-class" devices, but those device types are no longer
-          # creatable against current iOS simulator runtimes. Fall through a list of the
-          # smallest/oldest device types that are still commonly creatable, oldest first.
-          OLD_DEVICE=""
-          for candidate in "iPhone SE (3rd generation)" "iPhone SE (2nd generation)" "iPhone 12 mini" "iPhone 13 mini" "iPhone 12"; do
-            if echo "$TYPES_JSON" | jq -e --arg c "$candidate" '.devicetypes | map(.name) | index($c)' >/dev/null \
-              && try_create "$candidate" >/dev/null; then
-              OLD_DEVICE="$candidate"
-              break
-            fi
-          done
-          if [ -z "$OLD_DEVICE" ]; then
-            echo "::error::No oldest-class candidate simulator device type is both installed and creatable against runtime $RUNTIME on this runner."
-            echo "$TYPES_JSON" | jq -r '.devicetypes[].name'
-            exit 1
-          fi
-
           # Current flagship: highest-numbered plain "iPhone N" or "iPhone N Pro" device
-          # type that's both installed and creatable (skips Plus/Max/mini/e variants,
-          # which aren't a meaningful second matrix leg alongside the oldest-class
-          # device above), trying candidates newest-first.
+          # type that's both installed and creatable (skips Plus/Max/mini/e variants),
+          # trying candidates newest-first.
           CANDIDATES=$(echo "$TYPES_JSON" | jq -r '
             [.devicetypes[]
               | select(.productFamily == "iPhone" and (.name | test("^iPhone [0-9]+( Pro)?$")))
@@ -111,14 +94,12 @@ jobs:
           fi
 
           MATRIX=$(jq -nc \
-            --arg old "$OLD_DEVICE" \
             --arg new "$NEW_DEVICE" \
             --arg runtime "$RUNTIME" \
             '{include: [
-              {label: "oldest-supported", device: $old, runtime: $runtime},
               {label: "current", device: $new, runtime: $runtime}
             ]}')
-          echo "Resolved device matrix: $MATRIX"
+          echo "Resolved test device: $MATRIX"
           echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
 
   test:
