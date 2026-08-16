@@ -80,8 +80,11 @@ struct TeamListView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("team-row-\(team.id)")
+                    .listRowBackground(DesignTokens.Colors.surfaceCard2)
                 }
                 .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .background(DesignTokens.Colors.bg)
                 .refreshable { await viewModel.load() }
             }
         }
@@ -96,10 +99,10 @@ private struct TeamRow: View {
             TeamBadge(team: team)
             VStack(alignment: .leading) {
                 Text("\(team.city) \(team.name)")
-                    .font(.body)
+                    .font(.subheadline)
                 Text("\(team.conference) \(team.division)")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
             }
         }
         .padding(.vertical, 4)
