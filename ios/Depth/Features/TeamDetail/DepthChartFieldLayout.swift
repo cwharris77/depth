@@ -37,11 +37,22 @@ struct DepthChartFieldLayout: Equatable {
         return rows
     }
 
-    static func compute(slots: [RenderSlot], fieldSize: CGSize) -> DepthChartFieldLayout {
+    /// `fillWidth` (offense, DEP-244): stretches the formation's horizontal extent so its
+    /// outermost slots sit a small margin from the field's left/right edges, whatever the
+    /// formation's natural spread. The uniform scale keeps relative spacing (and thus the
+    /// no-overlap guarantee) intact, and because it widens the offensive line's gaps, the
+    /// tightest-gap-driven dot size grows with it — offense dots read bigger and the WRs
+    /// reach the edges instead of a compact middle strip.
+    static func compute(
+        slots: [RenderSlot],
+        fieldSize: CGSize,
+        fillWidth: Bool = false
+    ) -> DepthChartFieldLayout {
         let width = fieldSize.width
         guard width > 0, fieldSize.height > 0, !slots.isEmpty else {
             return DepthChartFieldLayout(dotSize: maxDotSize, positions: [:])
         }
+        let slots = fillWidth ? fillingSlots(slots, width: width) : slots
 
         // Tightest same-row horizontal gap (in points) drives the dot size, clamped to
         // the safe range. The shoulder-to-shoulder offensive line (8% apart in the
@@ -89,5 +100,25 @@ struct DepthChartFieldLayout: Equatable {
         }
 
         return DepthChartFieldLayout(dotSize: dotSize, positions: centers)
+    }
+
+    /// Maps `[minX, maxX]` → `[marginPct, 100 - marginPct]`, keeping the largest dot
+    /// fully on-screen at the edges. No-op for a single-column slot set.
+    private static func fillingSlots(_ slots: [RenderSlot], width: CGFloat) -> [RenderSlot] {
+        let xs = slots.map(\.x)
+        guard let minX = xs.min(), let maxX = xs.max(), maxX > minX else { return slots }
+        // Margin (percent) that keeps the largest dot's radius fully inside the field.
+        let marginPct = (maxDotSize / 2) / width * 100 + 1
+        let scale = (100 - 2 * marginPct) / (maxX - minX)
+        return slots.map { slot in
+            RenderSlot(
+                key: slot.key,
+                x: marginPct + (slot.x - minX) * scale,
+                y: slot.y,
+                label: slot.label,
+                player: slot.player,
+                onLine: slot.onLine
+            )
+        }
     }
 }
