@@ -1,6 +1,19 @@
-<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-  <rect width="16" height="16" rx="3" fill="#0a0e1a" />
-  <rect x="2.5" y="4" width="11" height="2" rx="1" fill="#f0f4ff" />
-  <rect x="2.5" y="7" width="8" height="2" rx="1" fill="#f0f4ff" />
-  <rect x="2.5" y="10" width="5" height="2" rx="1" fill="#f0f4ff" />
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" rx="190" fill="#0A0E1A" />
+  <circle cx="270" cy="270" r="132" fill="#FF6500" />
+  <circle cx="270" cy="270" r="82" fill="#0A0E1A" />
+  <circle cx="270" cy="270" r="50" fill="#FF6500" />
+  <defs>
+    <clipPath id="marker-pole">
+      <path d="M190 405h160l-28 435q-2 22-24 22h-56q-22 0-24-22l-28-435Z" />
+    </clipPath>
+  </defs>
+  <g clip-path="url(#marker-pole)">
+    <rect x="160" y="405" width="220" height="470" fill="#FF6500" />
+    <rect x="160" y="490" width="220" height="52" fill="#FFFFFF" />
+    <rect x="160" y="610" width="220" height="52" fill="#FFFFFF" />
+  </g>
+  <rect x="420" y="415" width="410" height="96" rx="29" fill="#FFFFFF" />
+  <rect x="420" y="565" width="275" height="96" rx="29" fill="#FFFFFF" />
+  <rect x="420" y="715" width="155" height="96" rx="29" fill="#FFFFFF" />
 </svg>

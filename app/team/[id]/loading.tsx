@@ -20,7 +20,7 @@ export default function Loading() {
         className="px-5 pb-3"
         style={{ flex: '0 0 auto', paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
         <div className="flex items-center justify-between">
-          <DepthMark color={uiTokens.textMuted} />
+          <DepthMark />
           <div
             className="rounded-full"
             style={{ width: 140, height: 30, background: uiTokens.surfaceChip }}

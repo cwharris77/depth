@@ -71,7 +71,7 @@ export default function TeamPageHeader({
             in the persistent TeamRail, so the mark hides and the header leads with the
             team name + division instead (desktop multi-panel layout — TeamPageShell). */}
         <div className="xl:hidden">
-          <DepthMark color={colors.uiAccent} onClick={() => setDrawerOpen(true)} />
+          <DepthMark onClick={() => setDrawerOpen(true)} />
         </div>
         <div className="hidden min-w-0 flex-col gap-0.5 xl:flex">
           <span

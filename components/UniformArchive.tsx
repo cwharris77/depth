@@ -80,7 +80,7 @@ export default function UniformArchive({
           the persistent TeamRail (TeamPageShell above), so the mark hides — same pattern as
           TeamPageHeader. */}
         <div className="xl:hidden">
-          <DepthMark color={accent} onClick={() => setDrawerOpen(true)} />
+          <DepthMark onClick={() => setDrawerOpen(true)} />
         </div>
 
         <h1 className="mt-4 text-2xl font-bold">Uniform archive</h1>
