@@ -15,6 +15,12 @@ struct TeamStatsView: View {
 
     var body: some View {
         content
+            // The whole page surface is the app's navy-black bg, not just the scroll
+            // content's intrinsic height — otherwise a season with short content shows a
+            // visible seam where the content's background ends and the raw system dark
+            // bg takes over ("page cut off halfway to the bottom"). This also covers the
+            // loading/error states and the scroll bounce area.
+            .background(DesignTokens.Colors.bg)
             .task { await viewModel.load() }
             .refreshable { await viewModel.load() }
     }
@@ -83,7 +89,6 @@ struct TeamStatsView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(DesignTokens.Colors.bg)
             }
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("stats-content")
