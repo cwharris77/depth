@@ -111,6 +111,35 @@ struct DepthChartFieldLayoutTests {
         }
     }
 
+    @Test("offense with fillWidth spreads to the field edges and runs larger dots (DEP-244)")
+    func offenseFillWidthReachesEdges() {
+        let slots = offenseFormation.map {
+            RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+        }
+        let plain = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField)
+        let filled = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField, fillWidth: true)
+
+        // The outermost WR (off-wr-0 at x=88 / off-wr-2 at x=12 in the generic offense)
+        // should now sit a small margin in from the field edges rather than 12% in.
+        let wrKeys = slots.map(\.key).filter { $0.hasPrefix("off-wr") }
+        let edgeXs = wrKeys.compactMap { filled.positions[$0]?.x }.sorted()
+        let minEdge = edgeXs.first!
+        let maxEdge = edgeXs.last!
+        #expect(minEdge < 40, "leftmost WR should be pulled toward the left edge, got \(minEdge)")
+        #expect(maxEdge > iphoneField.width - 40, "rightmost WR should be pulled toward the right edge, got \(maxEdge)")
+
+        // Stretching widens the OL gaps, so the dot size grows too — visibly bigger.
+        #expect(filled.dotSize > plain.dotSize, "fillWidth should enlarge offensive dots")
+
+        // The no-touch guarantee still holds.
+        assertNoTouching(slots, layout: filled)
+
+        // Default fillWidth stays false, so existing offense geometry is unchanged.
+        let `default` = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField)
+        #expect(`default`.dotSize == plain.dotSize)
+        #expect(abs(plain.dotSize - 27.6) < 0.001)
+    }
+
     @Test("empty input yields a safe default layout")
     func emptyInputDefaults() {
         let layout = DepthChartFieldLayout.compute(slots: [], fieldSize: iphoneField)
