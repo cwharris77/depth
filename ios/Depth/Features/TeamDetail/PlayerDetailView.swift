@@ -578,14 +578,16 @@ private func playerStatusColor(_ status: PlayerStatus, accent: Color) -> Color {
 // Web parity (lucide GripVertical, DEP-241): the six-dot vertical drag grip. SF Symbols
 // has no six-dot grip — line.3.horizontal is the hamburger and circle.grid.2x2 is four
 // dots — so this draws the 2x3 dot grid GripVertical depicts, the "drag me" affordance
-// web uses for both the Reorder toggle and the reorder rows.
+// web uses for both the Reorder toggle and the reorder rows. Sized like web (toggle 12,
+// rows 16) so it reads as a small grip, not an oversized icon (DEP-241 follow-up).
 private struct SixDotGrip: View {
     let color: Color
+    var size: CGFloat = 12
 
     var body: some View {
-        VStack(spacing: 3) {
+        VStack(spacing: size * 0.2) {
             ForEach(0..<3, id: \.self) { _ in
-                HStack(spacing: 4) {
+                HStack(spacing: size * 0.24) {
                     dot
                     dot
                 }
@@ -594,7 +596,7 @@ private struct SixDotGrip: View {
     }
 
     private var dot: some View {
-        Capsule().fill(color).frame(width: 3, height: 7)
+        Circle().fill(color).frame(width: size * 0.2, height: size * 0.2)
     }
 }
 
@@ -690,9 +692,9 @@ private struct DepthReorderList: View {
     private func row(_ p: Player) -> some View {
         HStack(spacing: 12) {
             // Web parity (PlayerCardDepthList's edit rows): a grip glyph leads each row
-            // while reordering — the six-dot drag grip, not a hamburger (DEP-241). Rows
-            // are no longer tap-to-switch.
-            SixDotGrip(color: DesignTokens.Colors.textMuted)
+            // while reordering — the six-dot drag grip (size 16, matching web's row
+            // GripVertical), not a hamburger (DEP-241). Rows are no longer tap-to-switch.
+            SixDotGrip(color: DesignTokens.Colors.textMuted, size: 16)
                 .accessibilityHidden(true)
             DepthRowContent(
                 player: p,
