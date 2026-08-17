@@ -37,12 +37,10 @@ struct DepthChartFieldLayout: Equatable {
         return rows
     }
 
-    /// `fillWidth` (offense, DEP-244): stretches the formation's horizontal extent so its
-    /// outermost slots sit a small margin from the field's left/right edges, whatever the
-    /// formation's natural spread. The uniform scale keeps relative spacing (and thus the
-    /// no-overlap guarantee) intact, and because it widens the offensive line's gaps, the
-    /// tightest-gap-driven dot size grows with it — offense dots read bigger and the WRs
-    /// reach the edges instead of a compact middle strip.
+    /// `fillWidth` (offense, DEP-244): the offense always fills the field's full width —
+    /// the outermost wide receivers are pinned to the left/right edges while the line
+    /// keeps its real (tight) formation spacing, and the dots are sized as large as that
+    /// spacing allows.
     static func compute(
         slots: [RenderSlot],
         fieldSize: CGSize,
@@ -52,8 +50,22 @@ struct DepthChartFieldLayout: Equatable {
         guard width > 0, fieldSize.height > 0, !slots.isEmpty else {
             return DepthChartFieldLayout(dotSize: maxDotSize, positions: [:])
         }
-        let slots = fillWidth ? fillingSlots(slots, width: width) : slots
+        if fillWidth {
+            return fillingLayout(slots: slots, width: width, height: fieldSize.height)
+        }
+        return standardLayout(slots: slots, width: width, height: fieldSize.height)
+    }
 
+    /// The default layout: dot size driven by the tightest same-row gap (clamped) — the
+    /// largest dot that fits the formation's real spacing — every slot at its formation
+    /// coordinate, and any row too tight for the minimum dot size re-spread evenly around
+    /// its centroid (stretching the line only the minimum needed to avoid overlap, so the
+    /// dots stay as large as possible). This is the no-overlap guarantee at any width.
+    private static func standardLayout(
+        slots: [RenderSlot],
+        width: CGFloat,
+        height: CGFloat
+    ) -> DepthChartFieldLayout {
         // Tightest same-row horizontal gap (in points) drives the dot size, clamped to
         // the safe range. The shoulder-to-shoulder offensive line (8% apart in the
         // generic formation) is what forces the small end; the spread-out defense caps
@@ -71,7 +83,7 @@ struct DepthChartFieldLayout: Equatable {
         for slot in slots {
             centers[slot.key] = CGPoint(
                 x: width * slot.x / 100,
-                y: fieldSize.height * slot.y / 100
+                y: height * slot.y / 100
             )
         }
 
@@ -94,7 +106,7 @@ struct DepthChartFieldLayout: Equatable {
             for (i, slot) in row.sorted(by: { $0.x < $1.x }).enumerated() {
                 centers[slot.key] = CGPoint(
                     x: width * (startPct + spacingPct * CGFloat(i)) / 100,
-                    y: fieldSize.height * slot.y / 100
+                    y: height * slot.y / 100
                 )
             }
         }
@@ -102,23 +114,54 @@ struct DepthChartFieldLayout: Equatable {
         return DepthChartFieldLayout(dotSize: dotSize, positions: centers)
     }
 
-    /// Maps `[minX, maxX]` → `[marginPct, 100 - marginPct]`, keeping the largest dot
-    /// fully on-screen at the edges. No-op for a single-column slot set.
-    private static func fillingSlots(_ slots: [RenderSlot], width: CGFloat) -> [RenderSlot] {
-        let xs = slots.map(\.x)
-        guard let minX = xs.min(), let maxX = xs.max(), maxX > minX else { return slots }
+    private static func withX(_ slot: RenderSlot, _ x: Double) -> RenderSlot {
+        RenderSlot(key: slot.key, x: x, y: slot.y, label: slot.label, player: slot.player, onLine: slot.onLine)
+    }
+
+    /// The DEP-244 fill-width layout. Every slot keeps its original coordinate EXCEPT the
+    /// leftmost and rightmost wide receiver, which are pinned to the field's edges — the
+    /// line stays clustered at its real spacing (and the dots stay as large as that
+    /// spacing allows) while the WRs take the full width. The standard layout (and its
+    /// centroid re-spread) runs first; the edge WRs are then re-pinned so the re-spread
+    /// can't pull them back toward the line.
+    private static func fillingLayout(
+        slots: [RenderSlot],
+        width: CGFloat,
+        height: CGFloat
+    ) -> DepthChartFieldLayout {
         // Margin (percent) that keeps the largest dot's radius fully inside the field.
-        let marginPct = (maxDotSize / 2) / width * 100 + 1
-        let scale = (100 - 2 * marginPct) / (maxX - minX)
-        return slots.map { slot in
-            RenderSlot(
-                key: slot.key,
-                x: marginPct + (slot.x - minX) * scale,
-                y: slot.y,
-                label: slot.label,
-                player: slot.player,
-                onLine: slot.onLine
+        let marginPct = Double(maxDotSize / 2) / Double(width) * 100 + 1
+
+        // The wide receivers are the slots labelled "WR" (every offense formation labels
+        // its WR skill slots this way); they're the ones pinned to the field edges.
+        let wrs = slots.enumerated().filter { $0.element.label == "WR" }
+        let left = wrs.min { $0.element.x < $1.element.x }?.offset
+        let right = wrs.max { $0.element.x < $1.element.x }?.offset
+
+        var adjusted = slots
+        if let left {
+            adjusted[left] = withX(slots[left], marginPct)
+        }
+        if let right, right != left {
+            adjusted[right] = withX(slots[right], 100 - marginPct)
+        }
+
+        let base = standardLayout(slots: adjusted, width: width, height: height)
+
+        // Re-pin the edge WRs to the field edges after the standard layout's re-spread.
+        var positions = base.positions
+        if let left {
+            positions[slots[left].key] = CGPoint(
+                x: width * marginPct / 100,
+                y: height * slots[left].y / 100
             )
         }
+        if let right, right != left {
+            positions[slots[right].key] = CGPoint(
+                x: width * (100 - marginPct) / 100,
+                y: height * slots[right].y / 100
+            )
+        }
+        return DepthChartFieldLayout(dotSize: base.dotSize, positions: positions)
     }
 }
