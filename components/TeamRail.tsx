@@ -190,7 +190,7 @@ export default function TeamRail({
         borderRight: `1px solid ${uiTokens.borderDrawer}`,
       }}>
       <Link href="/" className="px-2 pb-4 w-fit" aria-label="Depth home">
-        <DepthMark color={accent} />
+        <DepthMark />
       </Link>
       <div className="pb-3">
         <Input

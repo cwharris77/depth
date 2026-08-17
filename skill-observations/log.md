@@ -227,3 +227,18 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 **Suggested improvement:** In the vitest-testing skill, document the pattern for testing a Next.js app-dir route handler: colocate `route.test.ts` next to `route.ts`; `vi.mock('@/lib/supabase/server', ...)` (and the data-access module, e.g. `@/lib/roster-source.db`) with a factory returning `vi.fn()`; build a chainable fake for the supabase query builder where the terminal method resolves the result object (an awaited `maybeSingle()` returns the result; an awaited terminal `.eq()` on a builder can just return the plain `{ data, error }` object); and prefer `npm test` / the local `./node_modules/.bin/vitest` over `npx vitest`.
 
 **Principle:** The test seam for a route handler is the module boundary at the DB client, not HTTP — when a handler's only external dependency is the client, mocking that one module makes the handler fully testable with zero network layer. And always prefer the repo's local binaries over `npx`, which can silently resolve a different version.
+
+### Observation 20: Visual-reference iteration needs a stable source artifact before implementation
+
+**Status:** OPEN
+**Date:** 2026-08-17
+**Session context:** DEP-57 logo redesign — iterating from an image reference through several generated SVG revisions before porting the approved mark into web, SwiftUI, and icon-generation code.
+**Skill:** design-shotgun
+**Type:** open-source
+**Phase/Area:** Reference-driven visual iteration and multi-platform handoff
+
+**Issue:** The first visual reference was not the intended source, which led to several plausible but wrong SVG revisions: a collar between the target and pole, a seamless joint, and equal-length bars. The correction became easy only after the user supplied the right reference and the visual differences were stated explicitly: detached target, detached pole, two pole stripes, and long/medium/short bars. The design work also exposed that an image-generation tool may be unavailable or unable to route through the project's model proxy, so an SVG-first fallback is valuable.
+
+**Suggested improvement:** For image-led design work, require a reference-confirmation checkpoint before implementation: identify the source image, summarize its defining geometry, and show one source-faithful SVG render at multiple target sizes before touching production code. Keep the approved SVG as the canonical handoff artifact, then derive web, native, and raster assets from it rather than recreating geometry separately.
+
+**Principle:** A visual reference is a specification only after its defining geometry has been confirmed; the canonical vector artifact should be approved first, then all platform implementations should be generated or ported from that one source.

@@ -182,7 +182,7 @@ struct TeamDetailView: View {
                 // persistent header. Non-interactive here (web's version opens the nav
                 // drawer; native's equivalent destinations already live in the tab bar).
                 ToolbarItem(placement: .topBarLeading) {
-                    DepthBrandMark(size: 20, color: DesignTokens.Colors.accent)
+                    DepthBrandMark(size: 20)
                         .accessibilityHidden(true)
                 }
 
