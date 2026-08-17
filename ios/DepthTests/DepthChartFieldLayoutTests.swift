@@ -119,17 +119,20 @@ struct DepthChartFieldLayoutTests {
         let plain = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField)
         let filled = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField, fillWidth: true)
 
-        // The outermost WR (off-wr-0 at x=88 / off-wr-2 at x=12 in the generic offense)
-        // should now sit a small margin in from the field edges rather than 12% in.
-        let wrKeys = slots.map(\.key).filter { $0.hasPrefix("off-wr") }
-        let edgeXs = wrKeys.compactMap { filled.positions[$0]?.x }.sorted()
-        let minEdge = edgeXs.first!
-        let maxEdge = edgeXs.last!
-        #expect(minEdge < 40, "leftmost WR should be pulled toward the left edge, got \(minEdge)")
-        #expect(maxEdge > iphoneField.width - 40, "rightmost WR should be pulled toward the right edge, got \(maxEdge)")
+        // The outermost WRs (flanker off-wr-1 at x=12, split end off-wr-0 at x=88) are
+        // pinned to the field edges — the offense takes the full width.
+        let leftWR = filled.positions["off-wr-1"]?.x ?? .zero
+        let rightWR = filled.positions["off-wr-0"]?.x ?? .zero
+        #expect(leftWR < 40, "leftmost WR should be pinned to the left edge, got \(leftWR)")
+        #expect(rightWR > iphoneField.width - 40, "rightmost WR should be pinned to the right edge, got \(rightWR)")
 
-        // Stretching widens the OL gaps, so the dot size grows too — visibly bigger.
-        #expect(filled.dotSize > plain.dotSize, "fillWidth should enlarge offensive dots")
+        // The line keeps its real (clustered) spacing — the center is unchanged and the
+        // dots stay as large as that spacing allows (same as plain, since the line isn't
+        // re-spread at this width).
+        let centerFilled = filled.positions["off-c-0"]?.x ?? .zero
+        let centerPlain = plain.positions["off-c-0"]?.x ?? .zero
+        #expect(abs(centerFilled - centerPlain) < 2, "the offensive line should keep its original spacing")
+        #expect(filled.dotSize == plain.dotSize, "dots stay as large as the real line spacing allows")
 
         // The no-touch guarantee still holds.
         assertNoTouching(slots, layout: filled)
@@ -138,6 +141,30 @@ struct DepthChartFieldLayoutTests {
         let `default` = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField)
         #expect(`default`.dotSize == plain.dotSize)
         #expect(abs(plain.dotSize - 27.6) < 0.001)
+    }
+
+    @Test("real Shotgun 11 fills the field width too (DEP-244, Raiders case)")
+    func realShotgun11FillsWidth() {
+        let formation = buildRealFormation(alignment: "SHOTGUN", code: "11")
+        let slots = formation.map {
+            RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+        }
+        let filled = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField, fillWidth: true)
+
+        // The split end (off-wr-0, left) and flanker (off-wr-1, right) reach the field
+        // edges — the first DEP-244 pass got this wrong because the tight on-line row
+        // (TE 5% from RT) was re-spread around its centroid and pulled the split end back in.
+        let leftWR = filled.positions["off-wr-0"]?.x ?? .zero
+        let rightWR = filled.positions["off-wr-1"]?.x ?? .zero
+        #expect(leftWR < 40, "split end should be near the left edge, got \(leftWR)")
+        #expect(rightWR > iphoneField.width - 40, "flanker should be near the right edge, got \(rightWR)")
+
+        // Dots stay as large as the real (clustered) line spacing allows — within the
+        // safe range, not the max: the RT/TE gap is tight, so offense stays at the floor.
+        #expect(filled.dotSize >= DepthChartFieldLayout.minDotSize)
+        #expect(filled.dotSize <= DepthChartFieldLayout.maxDotSize)
+
+        assertNoTouching(slots, layout: filled)
     }
 
     @Test("empty input yields a safe default layout")
