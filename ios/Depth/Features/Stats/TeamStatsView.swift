@@ -368,15 +368,21 @@ private struct NextGameCard: View {
             }
             Spacer()
             if let opponent = game.opponent {
-                Text(opponent.abbrev.uppercased())
-                    .font(.caption2.weight(.black))
-                    .foregroundStyle(Color(hex: readableTextOn(opponent.colors.primary)))
-                    .frame(width: 28, height: 28)
-                    .background(Color(hex: opponent.colors.primary))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 8)
-                            .strokeBorder(Color(hex: opponent.colors.secondary), lineWidth: 1)
-                    }
+                // Team icon (logo) instead of the plain color square; the abbrev tile
+                // remains the fallback for a team with no logo URL.
+                if (opponent.logoDark ?? opponent.logo) != nil {
+                    TeamIconView(team: opponent, size: 32)
+                } else {
+                    Text(opponent.abbrev.uppercased())
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(Color(hex: readableTextOn(opponent.colors.primary)))
+                        .frame(width: 28, height: 28)
+                        .background(Color(hex: opponent.colors.primary))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 8)
+                                .strokeBorder(Color(hex: opponent.colors.secondary), lineWidth: 1)
+                        }
+                }
             }
         }
         .padding(.horizontal, 14)

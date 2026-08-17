@@ -121,10 +121,15 @@ private struct ScheduleGameCard: View {
                     .font(.title3.bold())
                     .foregroundStyle(.secondary)
             } else {
-                Text(opponentLabel)
-                    .font(.title3.bold())
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: 6) {
+                    if let opponent = game.opponent {
+                        TeamIconView(team: opponent, size: 24)
+                    }
+                    Text(opponentLabel)
+                        .font(.title3.bold())
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
 
                 Text(game.isHome ? "HOME" : "AWAY")
                     .font(.caption.bold())
