@@ -19,16 +19,15 @@ const COACHMARK_TIMEOUT_MS = 4000;
 // wordmark). Also rendered non-interactively in app/team/[id]/loading.tsx's skeleton so the
 // real header doesn't jump in at a different size once data loads.
 //
-// Sizing: the wordmark span's color is always the fixed `colors.textMuted` chrome token used
-// everywhere it's rendered; only the logo mark's color varies (team/brand accent), so it's the
-// one prop here.
+// Sizing: the wordmark span uses the fixed `colors.textMuted` chrome token everywhere;
+// the mark itself carries the fixed orange/white brand palette.
 //
 // First-load coachmark: shown once per visitor, gated by lib/utils/nav-drawer-coachmark.ts's
 // localStorage flag (set the instant the mark shows, not on dismiss — so navigating away
 // before it dismisses still counts as "shown"). Only wired up when this is acting as the nav
 // trigger (`onClick` set) — the non-interactive renders (loading skeleton, sign-in page) never
 // show it. Dismissed by any click on the trigger or automatically after ~4s.
-export default function DepthMark({ color, onClick }: { color: string; onClick?: () => void }) {
+export default function DepthMark({ onClick }: { onClick?: () => void }) {
   const [showCoachmark, setShowCoachmark] = useState(false);
 
   // Legitimate effect, not a lazy-init candidate: DepthMark renders inside a server-rendered
@@ -50,7 +49,7 @@ export default function DepthMark({ color, onClick }: { color: string; onClick?:
 
   const content = (
     <>
-      <Logo size={26} color={color} />
+      <Logo size={26} />
       <span className="text-base font-bold tracking-widest" style={{ color: colors.textMuted }}>
         depth
       </span>

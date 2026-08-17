@@ -21,7 +21,7 @@ export default function Loading() {
       }}>
       <div className="mx-auto xl:max-w-2xl xl:pt-10">
         <div className="flex items-center justify-between xl:hidden">
-          <DepthMark color={uiTokens.textMuted} />
+          <DepthMark />
         </div>
 
         <div className="mt-5 flex items-center gap-3">

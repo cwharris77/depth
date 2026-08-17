@@ -46,7 +46,7 @@ export default async function SignInPage({
           href="/"
           aria-label="Depth home"
           className={`mx-auto mb-8 flex w-fit items-center ${MARK_WORDMARK_GAP}`}>
-          <Logo size={36} color={uiTokens.accent} />
+          <Logo size={36} />
           <span className="text-xl font-bold tracking-widest" style={{ color: uiTokens.textMuted }}>
             depth
           </span>
