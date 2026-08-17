@@ -44,6 +44,10 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: NO
+        # Cooper's Apple Developer Team ID — needed to sign on-device/test builds. It's a
+        # public identifier (not a credential), so it's safe to commit; XcodeGen keeps the
+        # regenerated project in sync with this, so the CI project-sync check stays green.
+        DEVELOPMENT_TEAM: 63JZBB528Q
     dependencies:
       - package: Supabase
         product: Supabase
