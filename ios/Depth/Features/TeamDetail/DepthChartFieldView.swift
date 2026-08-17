@@ -46,7 +46,13 @@ struct DepthChartFieldView: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: proxy.size)
+            // DEP-244: the offense always fills the field's full width (and its dots run
+            // larger) whatever formation is active; defense/special keep their spread.
+            let layout = DepthChartFieldLayout.compute(
+                slots: slots,
+                fieldSize: proxy.size,
+                fillWidth: unit == .offense
+            )
             ZStack {
                 LinearGradient(
                     colors: [Color(hex: "#1e3d10"), Color(hex: "#2d5a1b"), Color(hex: "#1e3d10")],
