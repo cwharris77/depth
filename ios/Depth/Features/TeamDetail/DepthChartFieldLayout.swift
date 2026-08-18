@@ -23,6 +23,21 @@ struct DepthChartFieldLayout: Equatable {
     /// Max y spread (percent of field height) that still counts as one row.
     static let rowTolerancePct: CGFloat = 3
 
+    /// Web parity (components/PlayerDot.tsx `LABEL_VISIBILITY`): whether a unit's player
+    /// names render under each dot at a given field width. Offense (OL shoulder-to-
+    /// shoulder) packs tightest so it needs the most room; defense mid; special teams
+    /// (~5 dots spread the full field) never collide so names are always on. Web keys
+    /// this off viewport width (`min-[720px]`/`min-[520px]`); native keys it off the
+    /// field's own width, which tracks the device width (screen minus horizontal
+    /// padding), so the same thresholds land on the same breakpoints.
+    static func showsNames(unit: Unit, fieldWidth: CGFloat) -> Bool {
+        switch unit {
+        case .offense: return fieldWidth >= 720
+        case .defense: return fieldWidth >= 520
+        case .special: return true
+        }
+    }
+
     /// Groups slots into rows by y proximity (percent coordinates, greedy on sorted y).
     /// Shared by `compute` and the geometry tests so "same row" has one definition.
     static func rows(in slots: [RenderSlot]) -> [[RenderSlot]] {
