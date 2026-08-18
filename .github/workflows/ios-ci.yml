@@ -138,6 +138,21 @@ jobs:
             exit 1
           fi
 
+      # The whole app is rebuilt from scratch on every PR otherwise — a cold
+      # `xcodebuild test` dominates wall time (~10-15 min of the ~13-17 min job).
+      # Cache DerivedData so an unchanged codebase resumes from the prior build
+      # instead of recompiling everything. Keyed on the iOS sources + this workflow
+      # (so a project.yml / xcodegen change invalidates it); on a source change we
+      # fall back to the most recent cache and save a fresh one, so sequential
+      # small PRs stay incremental.
+      - name: Restore DerivedData cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ios/DerivedData
+          key: ${{ runner.os }}-ios-deriveddata-${{ hashFiles('ios/**', '.github/workflows/ios-ci.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-ios-deriveddata-
+
       - name: Boot ${{ matrix.label }} simulator (${{ matrix.device }})
         id: sim
         run: |
@@ -172,6 +187,7 @@ jobs:
             -scheme Depth \
             -configuration Staging \
             -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.device_id }}" \
+            -derivedDataPath ios/DerivedData \
             test ${{ steps.scope.outputs.tests }}
 
   archive-secret-check:
