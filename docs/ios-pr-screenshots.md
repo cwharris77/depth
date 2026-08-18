@@ -31,16 +31,35 @@ tokens) makes the test fail loudly so nobody silently gets zero screenshots.
 
 ## Running it
 
+### Easy path — `ios/scripts/screenshot-check.sh`
+
+A wrapper that does everything: builds the current worktree's app, boots a disposable
+simulator, runs the capture test, exports the PNGs, and shuts the sim down. Uses a
+worktree-local `ios/.derivedData` (gitignored) so parallel worktrees don't collide.
+
+```sh
+# Capture the depth-chart field (default) from the current code:
+ios/scripts/screenshot-check.sh
+
+# Capture field + uniform:
+ios/scripts/screenshot-check.sh -t field,uniform
+
+# Capture "before" from main + "after" from your branch (before/after pair):
+ios/scripts/screenshot-check.sh --base main -t field,uniform
+```
+
+Output: `ios/.pr-screenshots/after/<target>.png` (and `before/` when `--base` given) —
+gitignored, never committed. See the script's `-h` for all flags.
+
+### Raw `xcodebuild` path
+
 The capture test is **excluded from the default `Depth` scheme** (same `skippedTests`
 treatment as `AppStoreScreenshotsUITests`) so it never runs in `ios-ci.yml`. It also can't
 be reached by `-only-testing` against that scheme — `-only-testing` can't override a
 scheme-level skip. So the repo has a dedicated **`Depth-PRScreenshots` scheme** (no skip)
 that both the workflow and local runs target.
 
-Locally:
-
 ```sh
-# Pass the targets as an env var (xcodebuild propagates it to the test runner).
 cd ios && xcodegen generate && cd ..
 
 SCREENSHOT_TARGETS="field,uniform" \
@@ -84,12 +103,11 @@ On a PR, the repo owner or a collaborator writes a comment:
 - `/ios-screenshots field,uniform` — captures those two
 
 The workflow passes the targets to the test runner as a `SCREENSHOT_TARGETS` process
-environment variable (which `xcodebuild test` propagates reliably). To run locally with
-specific targets, set the same env var:
+environment variable (which `xcodebuild test` propagates reliably).
 
-The workflow checks out the PR head's merge ref, generates the project, boots a
-**disposable** current-flagship iPhone simulator on a GitHub-hosted `macos-latest` runner
-(zero local RAM), runs `Depth-PRScreenshots` with `-only-testing`, exports the PNGs, and:
+The workflow captures **before** (the PR's base branch) then **after** (the PR head) —
+sequential on the same GitHub-hosted `macos-latest` runner, booting one **disposable**
+current-flagship iPhone simulator for both — and:
 
 1. Uploads them as a `pr-ios-screenshots` workflow artifact (30-day retention), and
 2. Posts a PR comment linking to the workflow run + artifact.
