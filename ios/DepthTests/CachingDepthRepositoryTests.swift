@@ -14,11 +14,13 @@ private actor FakeDepthRepository: DepthRepository {
     var statsResults: [String: Result<TeamStatsPage, Error>]
     var scheduleResults: [String: Result<TeamSchedule, Error>]
     var appConfigResult: Result<AppConfig, Error>
+    var uniformsResult: Result<[UniformListing], Error>
     private(set) var teamSnapshotCallCount: [String: Int] = [:]
     private(set) var teamsCallCount = 0
     private(set) var seasonCallCount = 0
     private(set) var teamStatsCallCount: [String: Int] = [:]
     private(set) var scheduleCallCount: [String: Int] = [:]
+    private(set) var uniformsCallCount = 0
 
     init(
         teamsResult: Result<[Team], Error> = .success([]),
@@ -26,7 +28,8 @@ private actor FakeDepthRepository: DepthRepository {
         seasonResults: [Int: Result<TeamSnapshot, Error>] = [:],
         statsResults: [String: Result<TeamStatsPage, Error>] = [:],
         scheduleResults: [String: Result<TeamSchedule, Error>] = [:],
-        appConfigResult: Result<AppConfig, Error> = .success(AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil))
+        appConfigResult: Result<AppConfig, Error> = .success(AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)),
+        uniformsResult: Result<[UniformListing], Error> = .success([])
     ) {
         self.teamsResult = teamsResult
         self.snapshotResults = snapshotResults
@@ -34,6 +37,7 @@ private actor FakeDepthRepository: DepthRepository {
         self.statsResults = statsResults
         self.scheduleResults = scheduleResults
         self.appConfigResult = appConfigResult
+        self.uniformsResult = uniformsResult
     }
 
     func teams() async throws -> [Team] {
@@ -70,6 +74,11 @@ private actor FakeDepthRepository: DepthRepository {
 
     func appConfig() async throws -> AppConfig {
         try appConfigResult.get()
+    }
+
+    func listUniforms() async throws -> [UniformListing] {
+        uniformsCallCount += 1
+        return try uniformsResult.get()
     }
 
     func setSnapshotResult(_ result: Result<TeamSnapshot, Error>, forTeam teamId: String) {
@@ -392,4 +401,38 @@ private func schedule(season: Int = 2026) -> TeamSchedule {
     let concrete = try await repository.teamSchedule(teamId: "bills", season: 2026)
     #expect(concrete.season == 2026)
     #expect(await underlying.scheduleCallCount(teamId: "bills", season: 2026) == 0, "the resolved concrete season should be warm after a nil-season fetch")
+}
+
+// MARK: - Uniform archive list cache
+
+private func uniformListing(id: String = "bills-home") -> UniformListing {
+    UniformListing(
+        id: id, teamId: "bills", teamName: "Buffalo Bills", conference: "AFC",
+        division: "East", kind: .home, name: "Home", yearStart: 2025, yearEnd: nil,
+        isCurrent: true,
+        colors: TeamColors(
+            primary: "#00338D", secondary: "#C60C30", accent: "#D50A0A",
+            uiAccent: "#4D8BFF", onAccent: "#0a0e1a"
+        ),
+        imagePath: "https://depth-ashen.vercel.app/uniforms/bills-home.webp"
+    )
+}
+
+@Test func uniformListFetchesFromUnderlyingOnCacheMiss() async throws {
+    let underlying = FakeDepthRepository(uniformsResult: .success([uniformListing()]))
+    let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
+
+    let result = try await repository.listUniforms()
+    #expect(result.count == 1)
+    #expect(await underlying.uniformsCallCount == 1)
+}
+
+@Test func uniformListReturnsCachedValueWithoutRefetch() async throws {
+    let underlying = FakeDepthRepository(uniformsResult: .success([uniformListing()]))
+    let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
+
+    _ = try await repository.listUniforms() // primes the cache
+    let cached = try await repository.listUniforms()
+    #expect(cached.count == 1)
+    #expect(await underlying.uniformsCallCount == 1, "a warm uniform list must not refetch")
 }

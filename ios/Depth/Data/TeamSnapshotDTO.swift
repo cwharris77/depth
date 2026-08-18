@@ -232,6 +232,40 @@ struct UniformDTO: Decodable {
     }
 }
 
+// A flat uniform row for the archive's listUniforms read (mirrors lib/roster-source.db.ts
+// listUniforms: one `uniforms` row, joined with team conference/division in code). The
+// archive is the only consumer; it never needs the player/depth-chart embeds the snapshot
+// query carries, so a flat projection keeps the payload bounded to kit metadata.
+struct UniformListingRowDTO: Decodable {
+    let id: String
+    let teamId: String
+    let kind: String
+    let name: String
+    let yearStart: Int?
+    let yearEnd: Int?
+    let isCurrent: Bool
+    let colorPrimary: String
+    let colorSecondary: String
+    let colorAccent: String
+    let uiAccent: String
+    let onAccent: String
+    let imagePath: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, kind, name
+        case teamId = "team_id"
+        case yearStart = "year_start"
+        case yearEnd = "year_end"
+        case isCurrent = "is_current"
+        case colorPrimary = "color_primary"
+        case colorSecondary = "color_secondary"
+        case colorAccent = "color_accent"
+        case uiAccent = "ui_accent"
+        case onAccent = "on_accent"
+        case imagePath = "image_path"
+    }
+}
+
 // A real per-team formation row (Phase E) — embedded via the team_id FK in the snapshot
 // query, same as uniforms. Columns mirror `team_formations`; team_id is omitted since the
 // enclosing teams row already scopes it (every column is single-word, so no CodingKeys

@@ -70,6 +70,9 @@ actor SupabaseDepthRepository: DepthRepository {
         teams(id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url)
         """
 
+    private static let uniformListingSelect =
+        "id, team_id, kind, name, year_start, year_end, is_current, color_primary, color_secondary, color_accent, ui_accent, on_accent, image_path"
+
     func teams() async throws -> [Team] {
         do {
             let rows: [TeamListRowDTO] = try await client
@@ -79,6 +82,43 @@ actor SupabaseDepthRepository: DepthRepository {
                 .execute()
                 .value
             return rows.map(TeamSnapshotMapper.mapTeamListRow)
+        } catch let error as PostgrestError {
+            throw Self.mapPostgrestError(error)
+        } catch let error as DecodingError {
+            throw DepthError.decoding("\(error)")
+        } catch is URLError {
+            throw DepthError.offline
+        } catch {
+            throw DepthError.server("\(error)")
+        }
+    }
+
+    func listUniforms() async throws -> [UniformListing] {
+        do {
+            async let teamsResult: [TeamListRowDTO] = client
+                .from("teams")
+                .select(Self.teamListSelect)
+                .order("city")
+                .execute()
+                .value
+            async let uniformRows: [UniformListingRowDTO] = client
+                .from("uniforms")
+                .select(Self.uniformListingSelect)
+                .order("team_id")
+                .execute()
+                .value
+            let (teamRows, uniRows) = try await (teamsResult, uniformRows)
+            let teamsById = Dictionary(uniqueKeysWithValues: teamRows.map { ($0.id, $0) })
+            // Dangling team refs are skipped (untrusted input degrades), matching web's
+            // listUniforms flatMap skip (invariant 6).
+            var listings: [UniformListing] = []
+            for row in uniRows {
+                guard let team = teamsById[row.teamId] else { continue }
+                listings.append(try TeamSnapshotMapper.mapUniformListing(row, team: TeamSnapshotMapper.mapTeamListRow(team)))
+            }
+            return listings
+        } catch let error as DepthError {
+            throw error
         } catch let error as PostgrestError {
             throw Self.mapPostgrestError(error)
         } catch let error as DecodingError {

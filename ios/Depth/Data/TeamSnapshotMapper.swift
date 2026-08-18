@@ -132,6 +132,27 @@ enum TeamSnapshotMapper {
         )
     }
 
+    /// The archive's flat kit listing (mirrors web's listUniforms): a uniform row joined
+    /// with its team's conference/division. A dangling team reference (invariant 6 —
+    /// never possible FK-enforced, but the remote read is untrusted) is skipped, not
+    /// thrown, exactly like web's `flatMap` skip. An unknown kind throws so one bad row
+    /// can't surface a wrongly-labeled kit.
+    static func mapUniformListing(_ dto: UniformListingRowDTO, team: Team) throws -> UniformListing {
+        guard let kind = UniformKind(rawValue: dto.kind) else {
+            throw DepthError.decoding("uniform listing \(dto.id): unknown kind \"\(dto.kind)\"")
+        }
+        return UniformListing(
+            id: dto.id, teamId: team.id, teamName: "\(team.city) \(team.name)",
+            conference: team.conference, division: team.division, kind: kind, name: dto.name,
+            yearStart: dto.yearStart, yearEnd: dto.yearEnd, isCurrent: dto.isCurrent,
+            colors: TeamColors(
+                primary: dto.colorPrimary, secondary: dto.colorSecondary, accent: dto.colorAccent,
+                uiAccent: dto.uiAccent, onAccent: dto.onAccent
+            ),
+            imagePath: dto.imagePath
+        )
+    }
+
     /// Maps real per-team formations, keeping only the latest ingested season — mirrors
     /// web's `getTeamFormations` (the ingest writes per-season rows and the field renders
     /// the most recent one). An unknown unit string (only offense/defense exist in the

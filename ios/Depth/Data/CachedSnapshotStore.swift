@@ -246,4 +246,45 @@ actor CachedSnapshotStore {
         }
         try modelContext.save()
     }
+
+    // MARK: - Uniform archive list
+
+    /// Reads the cached all-32-kits list. Same safe-schema-discard shape as the snapshot
+    /// caches: a version mismatch or an undecodable payload discards the row and returns
+    /// nil (a one-time refetch, not a crash).
+    func uniformList() throws -> [UniformListing]? {
+        let key = CachedUniformList.key
+        var descriptor = FetchDescriptor<CachedUniformList>(
+            predicate: #Predicate { $0.cacheKey == key }
+        )
+        descriptor.fetchLimit = 1
+        guard let row = try modelContext.fetch(descriptor).first else { return nil }
+        guard row.schemaVersion == depthCacheSchemaVersion,
+            let payload = try? JSONDecoder().decode([UniformListing].self, from: row.payload)
+        else {
+            modelContext.delete(row)
+            try modelContext.save()
+            return nil
+        }
+        return payload
+    }
+
+    func saveUniformList(_ listings: [UniformListing], cachedAt: Date) throws {
+        let key = CachedUniformList.key
+        var descriptor = FetchDescriptor<CachedUniformList>(
+            predicate: #Predicate { $0.cacheKey == key }
+        )
+        descriptor.fetchLimit = 1
+        guard let data = try? JSONEncoder().encode(listings) else { return }
+        if let existing = try modelContext.fetch(descriptor).first {
+            existing.payload = data
+            existing.schemaVersion = depthCacheSchemaVersion
+            existing.cachedAt = cachedAt
+        } else {
+            modelContext.insert(
+                CachedUniformList(cacheKey: key, payload: data, schemaVersion: depthCacheSchemaVersion, cachedAt: cachedAt)
+            )
+        }
+        try modelContext.save()
+    }
 }
