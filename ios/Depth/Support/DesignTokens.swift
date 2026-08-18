@@ -48,6 +48,14 @@ enum DesignTokens {
         static let borderStrong = Color.white.opacity(0.10)
         /// Matches web's `borderDrawer` — the Uniforms tab's division-header hairline.
         static let borderDrawer = Color(hex: "#222b3d")
+        /// Native-only (DEP-259) — no web tokens.ts counterpart. Shared redacted-skeleton
+        /// placeholder fill, replacing system `.tertiary`/`.gray` (two different greys
+        /// used across the app's loading states with no single source of truth).
+        static let surfacePlaceholder = Color.white.opacity(0.12)
+        /// Native-only (DEP-259) — no web tokens.ts counterpart. Rookie status color
+        /// (player detail sheet's status label / depth-row rank). Carries forward the
+        /// pre-token literal `#4fc3f7` exactly, same pattern as `statusWin` (DEP-264).
+        static let statusRookie = Color(hex: "#4fc3f7")
     }
 
     /// 8-point spacing scale (design-pass item 29's explicit requirement).
