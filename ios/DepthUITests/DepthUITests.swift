@@ -4,9 +4,9 @@ import XCTest
 // search → team snapshot → position group → player detail). As of the 2026-08-15
 // navigation-parity spec the app launches straight into a depth chart rather than a team
 // list, so every journey opens the switcher sheet (`selectTeam`, UITestHelpers.swift)
-// instead of searching a root list. Runs against Debug's real staging Supabase
-// (ios/xcconfig/Debug.xcconfig), same as every other Debug-config run — no seeded/mocked
-// data.
+// instead of searching a root list. Runs against the production Supabase project
+// (ios/xcconfig/Debug.xcconfig — all configs point at it, there is no dedicated staging),
+// same as every other Debug-config run — no seeded/mocked data.
 final class DepthUITests: XCTestCase {
     func testAppLaunches() throws {
         let app = XCUIApplication()
@@ -76,7 +76,7 @@ final class DepthUITests: XCTestCase {
         scheduleTab.tap()
 
         let scheduleContent = app.otherElements["schedule-content"]
-        XCTAssertTrue(scheduleContent.waitForExistence(timeout: 10), "the schedule should render production-shaped staging content")
+        XCTAssertTrue(scheduleContent.waitForExistence(timeout: 10), "the schedule should render production content")
 
         let weekCard = app.descendants(matching: .any).matching(
             NSPredicate(format: "identifier BEGINSWITH 'schedule-week-'")
