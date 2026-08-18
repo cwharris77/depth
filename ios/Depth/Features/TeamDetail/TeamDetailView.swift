@@ -562,6 +562,7 @@ struct TeamDetailView: View {
                 }
                 .padding(.vertical)
             }
+            .scrollIndicators(.hidden)
     }
 
     private func historyUnavailable(title: String, description: String, retry: Bool = false) -> some View {
@@ -762,6 +763,7 @@ private struct FormationsSheetView: View {
                 }
                 .padding(.bottom, 8)
             }
+            .scrollIndicators(.hidden)
             .navigationTitle("Formations")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

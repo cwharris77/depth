@@ -87,6 +87,7 @@ struct ScheduleView: View {
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("schedule-content")
         }
+        .scrollIndicators(.hidden)
     }
 
     private var seasonPicker: some View {

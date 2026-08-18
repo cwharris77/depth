@@ -41,6 +41,7 @@ struct UniformPickerSheet: View {
                     "\(uniform.name), \(description(for: uniform))\(uniform.id == selectedID ? ", selected" : "")"
                 )
             }
+            .scrollIndicators(.hidden)
             .navigationTitle("Choose Uniform")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

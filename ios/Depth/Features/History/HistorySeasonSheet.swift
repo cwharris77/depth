@@ -27,6 +27,7 @@ struct HistorySeasonSheet: View {
                 .accessibilityIdentifier("history-season-\(season.year)")
                 .accessibilityLabel("\(label(for: season))\(season == selectedSeason ? ", selected" : "")")
             }
+            .scrollIndicators(.hidden)
             .navigationTitle("Seasons")
             .navigationBarTitleDisplayMode(.inline)
             // DEP-245: once a past season is selected, the sheet's current-season row is

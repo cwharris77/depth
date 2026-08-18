@@ -22,6 +22,7 @@ struct AccountDeletionSheet: View {
                     EmptyView()
                 }
             }
+            .scrollIndicators(.hidden)
             .navigationTitle("Delete Account")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

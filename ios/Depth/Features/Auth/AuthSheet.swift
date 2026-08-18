@@ -23,6 +23,7 @@ struct AuthSheet: View {
                     codeSection
                 }
             }
+            .scrollIndicators(.hidden)
             .navigationTitle("Sign In")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
