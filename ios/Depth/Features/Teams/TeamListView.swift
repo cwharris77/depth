@@ -272,9 +272,12 @@ private struct TeamRowSkeleton: View {
     }
 }
 
-/// Colored initials badge — the app never caches team logo images (design spec: "no
-/// image blobs"), so `logo`/`logoDark` are opportunistic `AsyncImage` loads with this as
-/// the fallback while loading or when the URL is nil/fails.
+/// Colored initials badge with the team logo layered on when available. The app never
+/// bundles logo artwork and the SwiftData snapshot cache stays text/URL-only (design
+/// spec: "no image blobs") — fetched logos land in TeamLogoCache (a URLCache), so an
+/// already-seen logo renders instantly instead of flashing initials (DEP-247);
+/// `logo`/`logoDark` stay opportunistic with these initials as the first-load or
+/// URL-nil fallback.
 struct TeamBadge: View {
     /// Shared with `TeamRowSkeleton` so the placeholder and the real row scale together.
     static let baseSize: CGFloat = 36
@@ -291,12 +294,10 @@ struct TeamBadge: View {
             // asset; same reasoning as the player season-stats card using `logo_dark_url`.
             // Falls back to the light `logo` for a team with no dark variant populated.
             if let url = (team.logoDark ?? team.logo).flatMap(URL.init(string:)) {
-                AsyncImage(url: url) { phase in
-                    if let image = phase.image {
-                        image.resizable().scaledToFit().padding(6)
-                    } else {
-                        initials
-                    }
+                CachedTeamLogo(url: url) {
+                    initials
+                } content: { image in
+                    image.resizable().scaledToFit().padding(6)
                 }
             } else {
                 initials
