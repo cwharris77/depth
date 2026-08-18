@@ -33,6 +33,7 @@ targets:
       - path: Depth/Support
       - path: Depth/Assets.xcassets
       - path: Depth/LaunchScreen.storyboard
+      - path: Depth/LaunchMark.png
     info:
       path: Depth/Info.plist
       properties:
