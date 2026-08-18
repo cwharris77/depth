@@ -554,7 +554,7 @@ struct TeamDetailView: View {
                     // (web: `!historicalMode && unitFormationsCount > 0`).
                     if !historical && snapshot.formations.contains(where: { $0.unit == unit }) {
                         FTNAttributionText()
-                            .padding(.top, 6)
+                            .padding(.top, DesignTokens.Spacing.sm)
                             .padding(.horizontal)
                     }
                 }
@@ -743,23 +743,23 @@ private struct FormationsSheetView: View {
         return order.map { (header: $0, rows: byKey[$0] ?? []) }
     }
 
+    // DEP-261: a real List, matching UniformPickerSheet/HistorySeasonSheet — the two
+    // other picker sheets opened from the same ••• menu — instead of a ScrollView +
+    // hand-rolled card-highlight row. Section headers give header/row alignment for
+    // free (both siblings rely on the same default List section inset).
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    ForEach(Array(grouped.enumerated()), id: \.offset) { _, group in
-                        Text(group.header.uppercased())
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(DesignTokens.Colors.textFaint)
-                            .padding(.horizontal, 20)
-                            .padding(.top, 12)
-                            .padding(.bottom, 4)
+            List {
+                ForEach(grouped, id: \.header) { group in
+                    Section {
                         ForEach(group.rows, id: \.self) { f in
                             row(f)
                         }
+                    } header: {
+                        Text(group.header.uppercased())
+                            .textCase(nil)
                     }
                 }
-                .padding(.bottom, 8)
             }
             .scrollIndicators(.hidden)
             .navigationTitle("Formations")
@@ -773,8 +773,8 @@ private struct FormationsSheetView: View {
             // rows (docs/nflverse.md). Shared with the field footer.
             .safeAreaInset(edge: .bottom) {
                 FTNAttributionText()
-                    .padding(.top, 6)
-                    .padding(.bottom, 8)
+                    .padding(.top, DesignTokens.Spacing.sm)
+                    .padding(.bottom, DesignTokens.Spacing.sm)
                     .padding(.horizontal)
             }
         }
@@ -807,16 +807,8 @@ private struct FormationsSheetView: View {
                         .foregroundStyle(accent)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isActive ? accent.opacity(0.15) : Color.clear)
-            )
-            .padding(.horizontal, 12)
         }
-        .buttonStyle(.plain)
-        .frame(minWidth: 44, minHeight: 44)
+        .frame(minHeight: 44)
         .accessibilityIdentifier("formation-row")
         .accessibilityLabel(title(f))
         .accessibilityAddTraits(isActive ? .isSelected : [])
