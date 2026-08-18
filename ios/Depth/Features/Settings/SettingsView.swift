@@ -41,6 +41,7 @@ struct SettingsView: View {
                 }
                 .padding(DesignTokens.Spacing.md)
             }
+            .scrollIndicators(.hidden)
             .background(DesignTokens.Colors.bg)
             .navigationTitle("Account")
         }

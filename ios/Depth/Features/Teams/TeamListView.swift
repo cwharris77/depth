@@ -75,6 +75,7 @@ struct TeamListView: View {
                 TeamRowSkeleton().accessibilityHidden(true)
             }
             .listStyle(.plain)
+            .scrollIndicators(.hidden)
             .redacted(reason: .placeholder)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("Loading teams")
@@ -145,6 +146,7 @@ struct TeamListView: View {
                 }
             }
             .listStyle(.plain)
+            .scrollIndicators(.hidden)
             .scrollContentBackground(.hidden)
         } else {
             List {
@@ -157,6 +159,7 @@ struct TeamListView: View {
                 }
             }
             .listStyle(.plain)
+            .scrollIndicators(.hidden)
             .scrollContentBackground(.hidden)
             .refreshable { await viewModel.load() }
         }

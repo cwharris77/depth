@@ -110,6 +110,7 @@ struct TeamStatsView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .scrollIndicators(.hidden)
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("stats-content")
         }
