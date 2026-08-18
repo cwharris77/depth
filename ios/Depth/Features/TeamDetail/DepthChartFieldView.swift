@@ -16,7 +16,11 @@ import SwiftUI
 // On top of #378's geometry, the field now renders a real green surface — gradient +
 // yard-line/hash-mark/end-zone markings (FieldMarkings) — in place of the old flat
 // team-tinted rect, and dots fill `primary` with a `secondary` ring (web's PlayerDot
-// semantics) instead of a flat `uiAccent` fill (2026-08-15 visual-pass).
+// semantics) instead of a flat `uiAccent` fill (2026-08-15 visual-pass). Each filled
+// dot also carries the player's last name under the position tag (DEP-250) at web's
+// per-unit breakpoints (DepthChartFieldLayout.showsNames — offense highest threshold,
+// defense mid, special always), sized against the field's height so packed rows stay
+// readable without colliding.
 struct DepthChartFieldView: View {
     let snapshot: TeamSnapshot
     let unit: Unit
@@ -53,6 +57,10 @@ struct DepthChartFieldView: View {
                 fieldSize: proxy.size,
                 fillWidth: unit == .offense
             )
+            // DEP-250: per-unit name-label visibility (web's PlayerDot LABEL_VISIBILITY)
+            // — names render under each dot only when the unit's layout has room for
+            // them (offense highest threshold, defense mid, special always).
+            let showsNames = DepthChartFieldLayout.showsNames(unit: unit, fieldWidth: proxy.size.width)
             ZStack {
                 LinearGradient(
                     colors: [Color(hex: "#1e3d10"), Color(hex: "#2d5a1b"), Color(hex: "#1e3d10")],
@@ -65,15 +73,20 @@ struct DepthChartFieldView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 16))
 
                 ForEach(slots, id: \.key) { slot in
-                    slotView(slot, dotSize: layout.dotSize)
-                        .position(layout.positions[slot.key] ?? .zero)
-                        // Web parity (components/PlayerDot.tsx): on-line players would
-                        // straddle the line of scrimmage, so push the drawn dot a
-                        // circle-radius (+ a hair) onto its own side — offense (y past 50)
-                        // down, defense (y before 50) up. Keeps the whole circle behind
-                        // the line. Applied at render time so the formation coordinates
-                        // and geometry layer stay untouched (Formations parity oracle).
-                        .offset(y: lineOffset(for: slot, dotSize: layout.dotSize))
+                    slotView(
+                        slot,
+                        dotSize: layout.dotSize,
+                        showsNames: showsNames,
+                        fieldHeight: proxy.size.height
+                    )
+                    .position(layout.positions[slot.key] ?? .zero)
+                    // Web parity (components/PlayerDot.tsx): on-line players would
+                    // straddle the line of scrimmage, so push the drawn dot a
+                    // circle-radius (+ a hair) onto its own side — offense (y past 50)
+                    // down, defense (y before 50) up. Keeps the whole circle behind
+                    // the line. Applied at render time so the formation coordinates
+                    // and geometry layer stay untouched (Formations parity oracle).
+                    .offset(y: lineOffset(for: slot, dotSize: layout.dotSize))
                 }
             }
         }
@@ -91,12 +104,24 @@ struct DepthChartFieldView: View {
     }
 
     @ViewBuilder
-    private func slotView(_ slot: RenderSlot, dotSize: CGFloat) -> some View {
+    private func slotView(
+        _ slot: RenderSlot,
+        dotSize: CGFloat,
+        showsNames: Bool,
+        fieldHeight: CGFloat
+    ) -> some View {
         if let player = slot.player {
             Button {
                 onSelectPlayer(player)
             } label: {
-                slotDot(label: slot.label, number: player.number, dotSize: dotSize)
+                slotDot(
+                    label: slot.label,
+                    number: player.number,
+                    dotSize: dotSize,
+                    playerName: player.name,
+                    showsName: showsNames,
+                    fieldHeight: fieldHeight
+                )
                     // The visual dot shrinks with the geometry (DEP-207); the hit area
                     // stays at the 44-point minimum, mirroring the web's 30px dot +
                     // 44px hit-slop (components/PlayerDot.tsx).
@@ -107,12 +132,26 @@ struct DepthChartFieldView: View {
             .accessibilityHint("Opens player detail")
             .accessibilityIdentifier("player-slot-\(slot.key)")
         } else {
-            slotDot(label: slot.label, number: nil, dotSize: dotSize)
-                .accessibilityLabel("\(slot.label), unfilled")
+            slotDot(
+                label: slot.label,
+                number: nil,
+                dotSize: dotSize,
+                playerName: nil,
+                showsName: false,
+                fieldHeight: fieldHeight
+            )
+            .accessibilityLabel("\(slot.label), unfilled")
         }
     }
 
-    private func slotDot(label: String, number: Int?, dotSize: CGFloat) -> some View {
+    private func slotDot(
+        label: String,
+        number: Int?,
+        dotSize: CGFloat,
+        playerName: String?,
+        showsName: Bool,
+        fieldHeight: CGFloat
+    ) -> some View {
         VStack(spacing: 4) {
             Circle()
                 .fill(Color(hex: dotColors.primary))
@@ -137,6 +176,27 @@ struct DepthChartFieldView: View {
             Text(label)
                 .font(.caption2.weight(.semibold))
                 .foregroundStyle(.secondary)
+
+            // DEP-250: web's PlayerDot name row — the player's last name under the
+            // position tag, shown only when the unit's layout has room (see
+            // DepthChartFieldLayout.showsNames). Bold white (textPrimary), size clamped
+            // to the field's height, wraps instead of truncating so long names like
+            // "Smith-Njigba" stay readable.
+            if showsName, let playerName, !playerName.isEmpty {
+                Text(verbatim: formatLastName(playerName))
+                    .font(.system(size: nameFontSize(fieldHeight: fieldHeight), weight: .bold))
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 72)
+            }
         }
+    }
+
+    /// Web parity (components/PlayerDot.tsx): the name size is clamped to the field's
+    /// height (`clamp(7px, 1.3dvh, 9px)` — dvh proxies to the field's own height here)
+    /// so labels shrink ahead of colliding when the field's available height shrinks
+    /// (short/landscape or split-screen viewports), while staying ≥7pt readable.
+    private func nameFontSize(fieldHeight: CGFloat) -> CGFloat {
+        min(9, max(7, fieldHeight * 1.3 / 100))
     }
 }

@@ -173,4 +173,25 @@ struct DepthChartFieldLayoutTests {
         #expect(layout.dotSize == DepthChartFieldLayout.maxDotSize)
         #expect(layout.positions.isEmpty)
     }
+
+    @Test("name labels follow web's LABEL_VISIBILITY breakpoints per unit (DEP-250)")
+    func nameLabelVisibility() {
+        // Special teams (~5 dots spread the full field) never collide — names always
+        // on, even at narrow widths.
+        #expect(DepthChartFieldLayout.showsNames(unit: .special, fieldWidth: 320))
+        #expect(DepthChartFieldLayout.showsNames(unit: .special, fieldWidth: 1000))
+
+        // Defense mid: off on a portrait phone, on once the field passes ~520pt
+        // (landscape phones, iPads).
+        #expect(!DepthChartFieldLayout.showsNames(unit: .defense, fieldWidth: 370))
+        #expect(!DepthChartFieldLayout.showsNames(unit: .defense, fieldWidth: 519))
+        #expect(DepthChartFieldLayout.showsNames(unit: .defense, fieldWidth: 520))
+        #expect(DepthChartFieldLayout.showsNames(unit: .defense, fieldWidth: 600))
+
+        // Offense packs tightest (OL shoulder-to-shoulder) — the highest threshold:
+        // still off where defense is on, on once the field passes ~720pt (iPad widths).
+        #expect(!DepthChartFieldLayout.showsNames(unit: .offense, fieldWidth: 719))
+        #expect(DepthChartFieldLayout.showsNames(unit: .offense, fieldWidth: 720))
+        #expect(DepthChartFieldLayout.showsNames(unit: .offense, fieldWidth: 800))
+    }
 }
