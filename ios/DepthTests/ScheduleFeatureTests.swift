@@ -226,6 +226,40 @@ private func scheduleGame(
     #expect(await viewModel.schedule?.season == 2023)
 }
 
+// DEP-254: the view already tracks whether a past season is selected and exposes
+// selectSeason(_:) — the "Back to current" button's contract is that isPastSeason flips
+// true once a past season is chosen and that selecting defaultSeason is the one-tap
+// return, the same path the picker itself uses.
+@Test func backToCurrentReturnsToTheDefaultSeason() async {
+    let current = testSchedule(season: 2025)
+    let past = testSchedule(season: 2024)
+    let repository = ScheduleRepositoryFake(
+        schedules: [nil: .success(current), 2024: .success(past), 2025: .success(current)]
+    )
+    let viewModel = await ScheduleViewModel(teamId: "bills", repository: repository)
+
+    await viewModel.load()
+    #expect(await viewModel.selectedSeason == 2025)
+    #expect(await viewModel.isPastSeason == false)
+
+    guard let defaultSeason = await viewModel.defaultSeason else {
+        Issue.record("defaultSeason should resolve from the first load")
+        return
+    }
+
+    await viewModel.selectSeason(2024)
+    #expect(await viewModel.isPastSeason == true)
+    #expect(await viewModel.schedule?.season == 2024)
+
+    // The button calls exactly this: selectSeason(defaultSeason) — same path the picker
+    // uses, so it refetches that year's schedule.
+    await viewModel.selectSeason(defaultSeason)
+
+    #expect(await viewModel.selectedSeason == defaultSeason)
+    #expect(await viewModel.isPastSeason == false)
+    #expect(await viewModel.schedule?.season == 2025)
+}
+
 private func testSchedule(season: Int) -> TeamSchedule {
     TeamSchedule(
         season: season,

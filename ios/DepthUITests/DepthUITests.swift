@@ -285,6 +285,52 @@ final class DepthUITests: XCTestCase {
         XCTAssertFalse(seasonState.waitForExistence(timeout: 2), "Back to current should leave the past season")
     }
 
+    /// DEP-254: the Schedule tab's season picker has no other one-tap way back to the
+    /// current season — a past row selected means reopening the picker to re-tap current.
+    /// The "Back to current" affordance appears only while a past season is selected and
+    /// returns to the current season (defaultSeason) on tap, mirroring DEP-245.
+    func testBackToCurrentFromSchedulePage() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launch()
+
+        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
+        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+
+        let scheduleTab = app.buttons["page-switcher-schedule"]
+        XCTAssertTrue(scheduleTab.waitForExistence(timeout: 10))
+        scheduleTab.tap()
+        XCTAssertTrue(app.otherElements["schedule-content"].waitForExistence(timeout: 15))
+
+        // Current season -> no escape shown.
+        let backToCurrent = app.buttons["schedule-back-to-current"]
+        XCTAssertFalse(backToCurrent.waitForExistence(timeout: 2), "current season should not offer Back to current")
+
+        // Open the menu picker and select a past season (a year before the current one).
+        let picker = app.buttons["schedule-season-picker"]
+        XCTAssertTrue(picker.waitForExistence(timeout: 5), "the schedule should expose its season picker")
+        picker.tap()
+        // Menu picker items surface as buttons labeled with the 4-digit season year; the
+        // first row is the current season (newest), later rows are past seasons.
+        let yearButtons = app.buttons.matching(
+            NSPredicate(format: "label MATCHES %@", "\\d{4}")
+        ).allElementsBoundByIndex
+        XCTAssertGreaterThanOrEqual(yearButtons.count, 2, "the picker should offer a current and at least one past season")
+        // Pick the oldest season so isPastSeason is unambiguously true.
+        yearButtons.last?.tap()
+        XCTAssertTrue(backToCurrent.waitForExistence(timeout: 5), "a past season should offer Back to current")
+
+        // Screenshot the historical state before returning to current.
+        let attachment = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+        attachment.name = "schedule-past-season-with-back-to-current"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+
+        backToCurrent.tap()
+        XCTAssertFalse(backToCurrent.waitForExistence(timeout: 2), "Back to current should hide once on the current season")
+    }
+
+
     /// Locked decisions #1/#2/#6/#7: the tab bar exists, all three tabs are reachable,
     /// and each renders its own content.
     func testTabBarReachesAllThreeDestinations() throws {
