@@ -196,6 +196,14 @@ jobs:
           name: test-products
           path: ios/DerivedData/Build/Products
 
+      # actions/download-artifact writes files tagged com.apple.quarantine (they arrived
+      # over HTTPS) — Gatekeeper then does a full recursive codesign re-verification of
+      # the .app bundle the first time the simulator installs it, a cost a locally-built
+      # .app never pays. Observed as a multi-minute silent stall between xcodebuild
+      # starting and the first test case actually running. Strip it before testing.
+      - name: Clear quarantine attribute on downloaded build products
+        run: xattr -cr ios/DerivedData/Build/Products
+
       - name: Boot ${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].label }} simulator (${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].device }})
         id: sim
         env:
