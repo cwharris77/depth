@@ -15,12 +15,10 @@ struct TeamStatsView: View {
 
     var body: some View {
         content
-            // The whole page surface is the app's navy-black bg, not just the scroll
-            // content's intrinsic height — otherwise a season with short content shows a
-            // visible seam where the content's background ends and the raw system dark
-            // bg takes over ("page cut off halfway to the bottom"). This also covers the
-            // loading/error states and the scroll bounce area.
-            .background(DesignTokens.Colors.bg)
+            // DEP-236: the roster and schedule pages paint no explicit background, so they
+            // render on the system dark bg (pure black under the app's forced dark scheme);
+            // the stats page must match, or it reads as a slightly-navy island between the
+            // other two pages. No explicit background here = the same surface they use.
             .task { await viewModel.load() }
             .refreshable { await viewModel.load() }
     }
@@ -76,6 +74,11 @@ struct TeamStatsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     seasonChipsRow
+                    // DEP-236: the roster and schedule pages start their content 16pt
+                    // below the scroll top (`.padding(.vertical)` / `.padding()`); this
+                    // page's first element is the chips bar, so it needs the same 16pt
+                    // inset or it sits flush against the page switcher above.
+                    .padding(.top, 16)
                     // DEP-245: a past season's chip has no other way back — the current
                     // season is just another chip to re-tap. Mirrors the roster's
                     // historical header ("2013 season" + "Back to today"): a season-state
