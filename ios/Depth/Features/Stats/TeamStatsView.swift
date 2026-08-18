@@ -94,8 +94,8 @@ struct TeamStatsView: View {
                                 viewModel.backToCurrentSeason()
                             }
                         }
-                        .padding(.horizontal)
-                        .padding(.top, 12)
+                        .padding(.horizontal, DesignTokens.Spacing.md)
+                        .padding(.top, DesignTokens.Spacing.sm)
                     }
                     teamNameBlock(page.team)
                     if let active = viewModel.selectedSeasonStats {
@@ -132,7 +132,11 @@ struct TeamStatsView: View {
         }
         .background(DesignTokens.Colors.bgFilterbar)
         .overlay(alignment: .bottom) {
-            Rectangle().fill(DesignTokens.Colors.borderStrong).frame(height: 1)
+            // DEP-265: same borderInput token as the hero-section separators below — one
+            // hairline convention for every in-page "section separator" role. This one
+            // stays full-bleed (no horizontal inset) since it's the edge-to-edge bottom
+            // edge of the scrolling chip bar, not an inset content divider.
+            Rectangle().fill(DesignTokens.Colors.borderInput).frame(height: 1)
         }
     }
 
@@ -153,30 +157,37 @@ struct TeamStatsView: View {
     }
 
     private func teamNameBlock(_ team: Team) -> some View {
-        Text(verbatim: "\(team.city.uppercased()) \(team.name.uppercased())")
-            .font(.caption.weight(.bold))
-            .tracking(1)
-            .foregroundStyle(DesignTokens.Colors.textFaint)
-            .padding(.horizontal, 20)
-            .padding(.top, 18)
+        StatsEyebrow(text: "\(team.city.uppercased()) \(team.name.uppercased())")
+            .padding(.horizontal, DesignTokens.Spacing.md)
+            .padding(.top, DesignTokens.Spacing.md)
+    }
+
+    /// Shared "hero section" container (DEP-265): horizontal inset + bottom hairline +
+    /// fixed bottom spacing, used by both `heroRecord` and `degradedUpcomingHero` — they
+    /// used to repeat this chrome and had drifted (bottom padding 18 vs 22, borderInput
+    /// vs a wider inset). One container, one value, applied to both.
+    private func heroSection(@ViewBuilder content: () -> some View) -> some View {
+        content()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, DesignTokens.Spacing.md)
+            .padding(.bottom, DesignTokens.Spacing.lg)
+            .overlay(alignment: .bottom) {
+                Rectangle()
+                    .fill(DesignTokens.Colors.borderInput)
+                    .frame(height: 1)
+                    .padding(.horizontal, DesignTokens.Spacing.md)
+            }
     }
 
     /// Web's hero record (lines 413-443). Phase-1 has no streak/ranks/playoff-seed data,
     /// so the right column of the web hero is absent and the record stands alone.
     private func heroRecord(_ stats: TeamSeasonStats) -> some View {
-        Text(verbatim: record(stats))
-            .font(.largeTitle.bold())
-            .accessibilityIdentifier("stats-record")
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 20)
-            .padding(.top, 8)
-            .padding(.bottom, 18)
-            .overlay(alignment: .bottom) {
-                Rectangle()
-                    .fill(DesignTokens.Colors.borderInput)
-                    .frame(height: 1)
-                    .padding(.horizontal, 20)
-            }
+        heroSection {
+            Text(verbatim: record(stats))
+                .font(.largeTitle.bold())
+                .accessibilityIdentifier("stats-record")
+                .padding(.top, DesignTokens.Spacing.sm)
+        }
     }
 
     /// Web's breakdown table (lines 446-517): HOME/ROAD · DIV/CONF · PTS FOR/PTS AGAINST
@@ -190,20 +201,32 @@ struct TeamStatsView: View {
             hairline(DesignTokens.Colors.borderStrong)
             statRow(left: ("PTS FOR", String(stats.pointsFor)), right: ("PTS AGAINST", String(stats.pointsAgainst)))
             hairline(DesignTokens.Colors.borderStrong)
-            HStack {
-                statCell(label: "DIFF", value: diffLabel(stats.pointDifferential), valueColor: diffColor(stats.pointDifferential))
-                Color.clear.frame(width: 24)
-                Color.clear
-            }
+            // DEP-265: DIFF has no right-hand stat, so it runs through the same
+            // statRow/statCell two-column path (right: nil) instead of a hand-rolled
+            // phantom-spacer HStack.
+            statRow(
+                left: ("DIFF", diffLabel(stats.pointDifferential)),
+                right: nil,
+                leftColor: diffColor(stats.pointDifferential)
+            )
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 6)
+        .padding(.horizontal, DesignTokens.Spacing.md)
+        .padding(.top, DesignTokens.Spacing.sm)
     }
 
-    private func statRow(left: (label: String, value: String), right: (label: String, value: String)) -> some View {
-        HStack(spacing: 24) {
-            statCell(label: left.label, value: left.value)
-            statCell(label: right.label, value: right.value)
+    private func statRow(
+        left: (label: String, value: String),
+        right: (label: String, value: String)?,
+        leftColor: Color = DesignTokens.Colors.textPrimary,
+        rightColor: Color = DesignTokens.Colors.textPrimary
+    ) -> some View {
+        HStack(spacing: DesignTokens.Spacing.lg) {
+            statCell(label: left.label, value: left.value, valueColor: leftColor)
+            if let right {
+                statCell(label: right.label, value: right.value, valueColor: rightColor)
+            } else {
+                Color.clear
+            }
         }
     }
 
@@ -218,7 +241,7 @@ struct TeamStatsView: View {
                 .foregroundStyle(valueColor)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 9)
+        .padding(.vertical, DesignTokens.Spacing.sm)
     }
 
     private func hairline(_ color: Color) -> some View {
@@ -228,42 +251,32 @@ struct TeamStatsView: View {
     /// Web's footer ticker (lines 519-524): `"{season} SEASON · {games} GAMES PLAYED"`.
     private func footerTicker(_ stats: TeamSeasonStats) -> some View {
         let games = stats.overallWins + stats.overallLosses + stats.overallTies
-        return Text(verbatim: "\(stats.season) SEASON · \(games) GAMES PLAYED")
-            .font(.caption2)
-            .tracking(0.6)
-            .foregroundStyle(DesignTokens.Colors.textFaintest)
+        return StatsEyebrow(text: "\(stats.season) SEASON · \(games) GAMES PLAYED")
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 20)
-            .padding(.top, 14)
-            .padding(.bottom, 22)
+            .padding(.horizontal, DesignTokens.Spacing.md)
+            .padding(.top, DesignTokens.Spacing.md)
+            .padding(.bottom, DesignTokens.Spacing.lg)
             .accessibilityIdentifier("stats-games-played")
     }
 
     /// Web's degraded upcoming-season hero (lines 526-534): a real chip exists but no
     /// games are played yet, so degrade instead of faking a 0-0 record (invariant 6).
     private func degradedUpcomingHero(_ upcoming: Int) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(verbatim: "\(upcoming) season upcoming")
-                .font(.title.bold())
-                .padding(.top, 8)
-                .padding(.bottom, 4)
-            Text("No games played yet this season")
-                .font(.caption)
-                .foregroundStyle(DesignTokens.Colors.textFaint)
-            Text(verbatim: "\(upcoming) SEASON · NOT YET STARTED")
-                .font(.caption2)
-                .tracking(0.6)
-                .foregroundStyle(DesignTokens.Colors.textFaintest)
-                .padding(.top, 14)
-                .padding(.bottom, 22)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 20)
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(DesignTokens.Colors.borderInput)
-                .frame(height: 1)
-                .padding(.horizontal, 20)
+        heroSection {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(verbatim: "\(upcoming) season upcoming")
+                    .font(.title.bold())
+                    .padding(.top, DesignTokens.Spacing.sm)
+                    .padding(.bottom, DesignTokens.Spacing.xs)
+                Text("No games played yet this season")
+                    .font(.caption)
+                    .foregroundStyle(DesignTokens.Colors.textFaint)
+                Text(verbatim: "\(upcoming) SEASON · NOT YET STARTED")
+                    .font(.caption2)
+                    .tracking(0.6)
+                    .foregroundStyle(DesignTokens.Colors.textFaintest)
+                    .padding(.top, DesignTokens.Spacing.md)
+            }
         }
     }
 
@@ -291,8 +304,23 @@ struct TeamStatsView: View {
     }
 }
 
-/// Web's NEXT GAME card (lines 545-578): `surfaceRaised` fill, `accent33` border, the
-/// week/opponent/date line on the left and an opponent-abbrev color tile on the right.
+/// DEP-265: the one eyebrow style shared by the team-name block, the NEXT GAME card, and
+/// the footer ticker — caption2.bold, tracking 0.8, textMuted.
+private struct StatsEyebrow: View {
+    let text: String
+
+    var body: some View {
+        Text(verbatim: text)
+            .font(.caption2.bold())
+            .tracking(0.8)
+            .foregroundStyle(DesignTokens.Colors.textMuted)
+    }
+}
+
+/// Web's NEXT GAME card (lines 545-578): `depthCard()` fill/radius with an added
+/// accent-tinted border overlay (web parity — a plain `depthCard()` alone would drop the
+/// "this card is special" cue), the week/opponent/date line on the left and an
+/// opponent-abbrev color tile on the right.
 private struct NextGameCard: View {
     let game: ScheduleGame
     let accent: Color
@@ -300,10 +328,7 @@ private struct NextGameCard: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(verbatim: "NEXT GAME · WEEK \(game.week)")
-                    .font(.caption2.bold())
-                    .tracking(0.8)
-                    .foregroundStyle(DesignTokens.Colors.textMuted)
+                StatsEyebrow(text: "NEXT GAME · WEEK \(game.week)")
                 HStack(spacing: 4) {
                     Text(verbatim: opponentLabel)
                         .font(.subheadline.weight(.heavy))
@@ -335,14 +360,13 @@ private struct NextGameCard: View {
                 }
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(DesignTokens.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: 16))
+        .depthCard()
         .overlay {
-            RoundedRectangle(cornerRadius: 16).strokeBorder(accent.opacity(0.20), lineWidth: 1)
+            RoundedRectangle(cornerRadius: DesignTokens.Radius.lg)
+                .strokeBorder(accent.opacity(0.20), lineWidth: 1)
         }
-        .padding(.horizontal, 18)
-        .padding(.top, 14)
+        .padding(.horizontal, DesignTokens.Spacing.md)
+        .padding(.top, DesignTokens.Spacing.md)
         .accessibilityIdentifier("stats-next-game")
     }
 
