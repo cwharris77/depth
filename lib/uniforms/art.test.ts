@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { renderUniformThumbSVG, uniformArtURL, UNIFORM_ART_BASE_URL } from '@/lib/uniforms/art';
+import {
+  renderUniformThumbSVG,
+  uniformArtURL,
+  uniformArtFullURL,
+  UNIFORM_ART_BASE_URL,
+} from '@/lib/uniforms/art';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
 import type { TeamColors } from '@/lib/types';
 
@@ -74,5 +79,37 @@ describe('renderUniformThumbSVG', () => {
     const svg = renderUniformThumbSVG(seahawksRivalries, 'seahawks-rivalries-2025');
     expect(svg).toContain('viewBox="20 372 560 452"');
     expect(svg).toContain('fill="#C6D3DC"');
+  });
+});
+
+describe('uniformArtFullURL', () => {
+  it('derives the full-mannequin URL from a kit id, distinct from the jersey crop', () => {
+    expect(uniformArtFullURL('bengals-color-rush')).toBe(
+      'https://depth-ashen.vercel.app/uniforms/bengals-color-rush-full.webp'
+    );
+    expect(uniformArtFullURL('bengals-color-rush')).not.toBe(uniformArtURL('bengals-color-rush'));
+  });
+});
+
+describe('renderUniformThumbSVG full variant', () => {
+  it('renders the full mannequin (helmet + jersey + pants) via viewBox', () => {
+    const svg = renderUniformThumbSVG(
+      seahawksRivalries,
+      'seahawks-rivalries-2025',
+      getTeamUniformDefinition('seahawks'),
+      'full'
+    );
+    expect(svg).toContain('viewBox="20 45 560 1535"');
+  });
+
+  it('still swaps the web-only font stack in the full variant', () => {
+    const svg = renderUniformThumbSVG(
+      seahawksRivalries,
+      'seahawks-rivalries-2025',
+      getTeamUniformDefinition('seahawks'),
+      'full'
+    );
+    expect(svg).not.toContain('var(--font-anton)');
+    expect(svg).toContain('font-family:Helvetica, sans-serif');
   });
 });
