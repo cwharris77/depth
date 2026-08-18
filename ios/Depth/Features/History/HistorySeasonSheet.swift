@@ -18,7 +18,12 @@ struct HistorySeasonSheet: View {
                         Text(label(for: season))
                         Spacer()
                         if season == selectedSeason {
+                            // DEP-268: accent-tinted, matching UniformPickerSheet's
+                            // selected-row checkmark — the default tint reads as
+                            // system blue, a different "selected" color than the
+                            // sheet's sibling.
                             Image(systemName: "checkmark")
+                                .foregroundStyle(DesignTokens.Colors.accent)
                                 .accessibilityLabel("Selected")
                         }
                     }
@@ -26,7 +31,10 @@ struct HistorySeasonSheet: View {
                 .frame(minHeight: 44)
                 .accessibilityIdentifier("history-season-\(season.year)")
                 .accessibilityLabel("\(label(for: season))\(season == selectedSeason ? ", selected" : "")")
+                .listRowBackground(DesignTokens.Colors.surfaceCard2)
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
             .navigationTitle("Seasons")
             .navigationBarTitleDisplayMode(.inline)
@@ -46,6 +54,7 @@ struct HistorySeasonSheet: View {
                 }
             }
         }
+        .presentationBackground(DesignTokens.Colors.bg)
     }
 
     private var isPastSeasonSelected: Bool {
