@@ -65,6 +65,7 @@
 		7C5132BAE9E0A0D27086FBD3 /* FormationsParityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62ABB8FA352722CEF133910 /* FormationsParityTests.swift */; };
 		7DA6D56AE84232942CE0AED1 /* FieldMarkings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D6A549002DA47A8FDFBB04 /* FieldMarkings.swift */; };
 		7DBE8842FD1DEC8D017AABB1 /* ScheduleMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD908EA6E702771824EF1659 /* ScheduleMapper.swift */; };
+		83C996BDD22497000B07DF86 /* TeamBadgeOverride.swift in Sources */ = {isa = PBXBuildFile; fileRef = 029EE2AA6BD3B9939AFE7FB2 /* TeamBadgeOverride.swift */; };
 		8776168F92D68DF063EB6EAB /* TeamStatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F7DAE880E2A1C8391F040A /* TeamStatsViewModel.swift */; };
 		88BE6ACCCEDA76C1CBB97025 /* FixtureLoading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29F97862C18E5EAD7104430A /* FixtureLoading.swift */; };
 		899F1EE1BC16BAD58D80C106 /* AppEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50B9DB06DE3CBD6B5F61C84 /* AppEventsTests.swift */; };
@@ -115,6 +116,7 @@
 		E6FE8547B35A824990B3FDED /* PlayerCardReorderUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B363F9AF5C0854305B6E670A /* PlayerCardReorderUITests.swift */; };
 		E887D4C51D6BCD5543FC9800 /* TeamStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C59A8DA266DD9C02DE5EE8C8 /* TeamStatsView.swift */; };
 		EA23E4310B915968F4523778 /* HistoricalRosterMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B86644C1AB56B9F8C429F7 /* HistoricalRosterMapper.swift */; };
+		EF9A3D25D909DD0A636F700A /* TeamBadgeOverrideTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E31B257CD5D651A625B3440A /* TeamBadgeOverrideTests.swift */; };
 		EFF8B47F7B414593005AA116 /* HistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 902F5629F8D437E89953B681 /* HistoryViewModel.swift */; };
 		F0BAAFAD8DD63BF43C660855 /* CompareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F77173A1C2A8C8107538608F /* CompareView.swift */; };
 		F24DC74F4E029AF45C2E80B7 /* TeamSnapshotDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C4D96EE256B7056FA88238F /* TeamSnapshotDTO.swift */; };
@@ -145,6 +147,7 @@
 
 /* Begin PBXFileReference section */
 		025761971C890C088DEB466C /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		029EE2AA6BD3B9939AFE7FB2 /* TeamBadgeOverride.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamBadgeOverride.swift; sourceTree = "<group>"; };
 		06AB46EC302CCCD06C89EE95 /* DepthUnitTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthUnitTabBar.swift; sourceTree = "<group>"; };
 		072943B467B53094FAEA39E2 /* NameFormatTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameFormatTests.swift; sourceTree = "<group>"; };
 		0B4CCC7EF85474CB7B8269A1 /* TeamStatsDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamStatsDTO.swift; sourceTree = "<group>"; };
@@ -253,6 +256,7 @@
 		E147E349DAED0C3DFF5A965C /* ShareUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareUITests.swift; sourceTree = "<group>"; };
 		E235B4DBA71FCAE9FC954FF4 /* AuthSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSessionStore.swift; sourceTree = "<group>"; };
 		E2B86BB6DD9B066ECA8E654F /* SettingsAboutAndTimestampTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAboutAndTimestampTests.swift; sourceTree = "<group>"; };
+		E31B257CD5D651A625B3440A /* TeamBadgeOverrideTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamBadgeOverrideTests.swift; sourceTree = "<group>"; };
 		E372B1C3FDDFC4260939314C /* DepthChartFieldLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthChartFieldLayoutTests.swift; sourceTree = "<group>"; };
 		E5A218C128DC97B0923883AE /* Depth.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Depth.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E5AB202504F3965C8C62D5F8 /* AccountTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountTab.swift; sourceTree = "<group>"; };
@@ -457,6 +461,7 @@
 				954B921C7ED809C93EB75D81 /* StartupTeamTests.swift */,
 				CDCEEFA1B9C29B9B8CBAB6D9 /* StatsFeatureTests.swift */,
 				6552F9CA65DF43159FA618D0 /* SupabaseRLSIntegrationTests.swift */,
+				E31B257CD5D651A625B3440A /* TeamBadgeOverrideTests.swift */,
 				D6B0E4B57352C5955BDE8DCB /* TeamLogoCacheTests.swift */,
 				46B2552D4A053BA192766213 /* TeamSnapshotMapperTests.swift */,
 				44DD0C5F4F909F2A6EF1C1F1 /* TeamStatsMapperTests.swift */,
@@ -554,6 +559,7 @@
 			isa = PBXGroup;
 			children = (
 				DCC28FD5A3D6B31E76BAA669 /* DepthChartsTab.swift */,
+				029EE2AA6BD3B9939AFE7FB2 /* TeamBadgeOverride.swift */,
 				B8FF910E933BD5EBFA34FABB /* TeamListView.swift */,
 				BBA198C4CAB3B2E7EFB862E6 /* TeamListViewModel.swift */,
 				286DAC04287DC13BCB6A3936 /* TeamSwitcherSheet.swift */,
@@ -720,6 +726,7 @@
 				52029FDEE87BA6779F4B144E /* StartupTeamTests.swift in Sources */,
 				58C2D73E667A8BEADD147D96 /* StatsFeatureTests.swift in Sources */,
 				A71200F26409705F92CA14E8 /* SupabaseRLSIntegrationTests.swift in Sources */,
+				EF9A3D25D909DD0A636F700A /* TeamBadgeOverrideTests.swift in Sources */,
 				ADDFA39DCBC8FBDE54C5DD9D /* TeamLogoCacheTests.swift in Sources */,
 				549264E5E1E69E023D91CD6A /* TeamSnapshotMapperTests.swift in Sources */,
 				5A99B02FB1618D720580A9C1 /* TeamStatsMapperTests.swift in Sources */,
@@ -790,6 +797,7 @@
 				B41D7BCD75AAF30866913BE2 /* StartupTeam.swift in Sources */,
 				5AB8FFDF7A29877D1E98EC94 /* SupabaseDepthRepository.swift in Sources */,
 				A76DE210A4F5A111AEA3C45C /* Team.swift in Sources */,
+				83C996BDD22497000B07DF86 /* TeamBadgeOverride.swift in Sources */,
 				FCB7419B6D19F100EBF99D11 /* TeamDetailView.swift in Sources */,
 				D028D091F525E2DDCA7ED6CD /* TeamDetailViewModel.swift in Sources */,
 				F93D1A06E551689D53504A86 /* TeamIconView.swift in Sources */,
