@@ -3,10 +3,10 @@ import SwiftUI
 // Account settings surface shared by anonymous and authenticated users. Sign-in is a
 // sheet rather than a navigation replacement, preserving public browsing continuity.
 // The About section satisfies design spec Gate 0 item 9 (in-app non-affiliation
-// disclaimer). Privacy/support entry points are explicitly out of scope here — see
-// `.superpowers/sdd/2026-08-14-native-ios-app/task-8d-settings-about-timestamps-brief.md`:
-// no real production domain/support contact exists yet (T1/Gate 0 is still open), and
-// guessing a placeholder URL/email is worse than omitting the row.
+// disclaimer) and DEP-160's Apple requirement that the privacy policy be reachable from
+// within the app — the row links to the live production /privacy page
+// (AppBuildInfo.privacyPolicyURL) via the system browser. A support contact remains a
+// future Gate 0 item; no placeholder email is invented here.
 struct SettingsView: View {
     @Bindable var sessionStore: AuthSessionStore
 
@@ -99,6 +99,10 @@ struct SettingsView: View {
                 .accessibilityIdentifier("settings-about-name")
             LabeledContent("Version", value: AppBuildInfo.versionAndBuild)
                 .accessibilityIdentifier("settings-about-version")
+            if let url = AppBuildInfo.privacyPolicyURL {
+                Link("Privacy Policy", destination: url)
+                    .accessibilityIdentifier("settings-about-privacy")
+            }
             Text(AppBuildInfo.nonAffiliationDisclaimer)
                 .font(.footnote)
                 .foregroundStyle(DesignTokens.Colors.textSecondary)

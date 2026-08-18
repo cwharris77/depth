@@ -80,10 +80,23 @@ would be.
 
 ### Intended App Privacy answers (App Store Connect)
 
-To be entered once T1/Gate 0 reaches the App Store Connect record (this doc is the
-source of truth for what to enter, not a live declaration yet):
+DEP-160: the app record now exists, so these are the nutrition-label answers to enter.
+This doc is the source of truth for what to enter. The full label covers three data
+types (only the third lives in this doc's table — the other two are account-feature
+data in Supabase, documented here so the label is accurate as a whole):
 
-- **Data type:** Usage Data → Product Interaction.
+| Data type (category) | Collected when | Linked to identity | Tracking | Purpose |
+| --- | --- | --- | --- | --- |
+| Contact Info → Email Address | User signs in (account created via Supabase Auth email OTP) | Yes — the email is the account | No | App functionality (sign-in) |
+| User Content → depth-chart overrides, saved/shared boards, favorite team | User saves an override, a board, or a preference while signed in | Yes — tied to the account (`auth.uid()`-scoped rows) | No | App functionality (core saved-boards feature) |
+| Usage Data → Product Interaction | Each of the six `app_events` fires | No — the table has no column capable of linking an event to a person or device | No | Analytics (internal product metrics only) |
+
+Notes for the "Data Not Collected" screen: **no** third-party advertising/analytics/crash
+SDK is shipped. Crash reporting is Apple-native only (see above) and is not declared as
+developer-collected data. Supabase is backend infrastructure, not a separate label entry —
+the data it stores is the rows above.
+
+The Product Interaction answers (from the analytics table only):
 - **Linked to the user's identity:** No — the table has no column capable of linking an
   event to a person or device.
 - **Used for tracking (cross-app/cross-site):** No.

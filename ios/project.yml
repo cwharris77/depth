@@ -36,7 +36,11 @@ targets:
       path: Depth/Info.plist
       properties:
         CFBundleDisplayName: Depth
-        UILaunchScreen: {}
+        # Native launch screen: a solid #0A0E1A background (LaunchBackground in
+        # Assets.xcassets) so launch blends straight into the always-dark app UI instead
+        # of flashing the system default. Deliberately no logo/splash image (DEP-160).
+        UILaunchScreen:
+          UIColorName: LaunchBackground
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         SUPABASE_URL: $(SUPABASE_URL)
