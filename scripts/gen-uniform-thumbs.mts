@@ -37,6 +37,14 @@ dotenv.config({ path: '.env.local' });
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT_DIR = join(ROOT, 'public', 'uniforms');
+// The two raster variants each kit is committed as: the jersey crop the picker rows use,
+// and the full mannequin (helmet -> cleats) the uniform archive uses. The archive's
+// figure is `variant="full"`, so pointing it at the square jersey crop stretches it —
+// the -full raster is the fix for that (see components/UniformArchive.tsx).
+const VARIANTS = {
+  jersey: { suffix: '', variant: 'jersey' as const },
+  full: { suffix: '-full', variant: 'full' as const },
+} as const;
 
 type UniformRow = {
   id: string;
@@ -99,12 +107,19 @@ function buildRowsFromSeed(): UniformRow[] {
 async function writeRows(rows: UniformRow[]) {
   mkdirSync(OUT_DIR, { recursive: true });
   for (const row of rows) {
-    const svg = renderUniformThumbSVG(row.colors, row.id, getTeamUniformDefinition(row.team_id));
-    const outPath = join(OUT_DIR, `${row.id}.webp`);
-    await sharp(Buffer.from(svg)).webp({ quality: 90 }).toFile(outPath);
-    console.log(`wrote ${outPath}`);
+    for (const { suffix, variant } of Object.values(VARIANTS)) {
+      const svg = renderUniformThumbSVG(
+        row.colors,
+        row.id,
+        getTeamUniformDefinition(row.team_id),
+        variant
+      );
+      const outPath = join(OUT_DIR, `${row.id}${suffix}.webp`);
+      await sharp(Buffer.from(svg)).webp({ quality: 90 }).toFile(outPath);
+      console.log(`wrote ${outPath}`);
+    }
   }
-  console.log(`\n${rows.length} uniform thumbnails -> ${OUT_DIR}`);
+  console.log(`\n${rows.length} uniform rasters (jersey + full) -> ${OUT_DIR}`);
 }
 
 async function main() {

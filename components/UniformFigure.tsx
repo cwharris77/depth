@@ -5,6 +5,11 @@ import { variantSpec, type UniformVariant } from '@/lib/uniforms/figure';
 import { resolveUniformModel, type ResolvedUniformStyle } from '@/lib/uniforms/model';
 import type { TeamUniformDefinition, UniformSurface } from '@/lib/uniforms/teams/types';
 
+// The raster variants the prerender pipeline (lib/uniforms/art.tsx) and the live renderer
+// share: 'jersey' (picker swatch) or 'full' (archive mannequin). Re-exported so art.tsx
+// stays the single authority on which variant name means which artifact.
+export type UniformArtVariant = Extract<UniformVariant, 'jersey' | 'full'>;
+
 // The generated vector uniform. Colors/striping/layout are facts (not copyrightable), so every
 // kit is drawn from its TeamColors — zero external image assets. Team modules may additionally
 // supply a helmet decal path; those are team marks reproduced for identification, and each starts
@@ -143,7 +148,7 @@ export default function UniformFigure({
   definition,
 }: {
   colors: TeamColors;
-  variant?: UniformVariant;
+  variant?: UniformArtVariant;
   size?: number;
   imagePath?: string;
   title?: string;
