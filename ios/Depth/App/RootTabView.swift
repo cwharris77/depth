@@ -28,7 +28,7 @@ struct RootTabView: View {
             }
 
             Tab("Compare", systemImage: "rectangle.split.2x1") {
-                CompareView()
+                CompareView(repository: DepthEnvironment.repository)
             }
 
             Tab("Account", systemImage: "person.crop.circle") {

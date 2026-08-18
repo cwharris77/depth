@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		028DB6758D8847C5EBD21D3C /* ScheduleFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C89B84763FF4CDE45B5A7D9 /* ScheduleFeatureTests.swift */; };
+		03F357FEC081C3772FD3D851 /* CompareViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1A58C48C2A6DDA57820C9D /* CompareViewModel.swift */; };
 		09BD2BFEAB3286C0B9A21C00 /* TeamStatsDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B4CCC7EF85474CB7B8269A1 /* TeamStatsDTO.swift */; };
 		0A476DD65C57C553CAA0A3AF /* UITestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A33972CBA3A43968B410F6 /* UITestHelpers.swift */; };
 		0AE16FEB0CC82155EB87714A /* DepthChartsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC28FD5A3D6B31E76BAA669 /* DepthChartsTab.swift */; };
@@ -32,6 +33,7 @@
 		37AE06330C1CC70E67900031 /* PlayerSeasonStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE10A985ED752B98C685C839 /* PlayerSeasonStats.swift */; };
 		395710372FD0077DB2AF33D5 /* DepthRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FCC4475C04D0057618A6FE /* DepthRepository.swift */; };
 		3BE0BC25CD2DC9ABA9525140 /* DepthBrandMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926872EFF68F2D404BCDB79B /* DepthBrandMark.swift */; };
+		3D26828AF35B868C462D6227 /* CompareFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 659DD65EABE16BCA1D1426D5 /* CompareFeatureTests.swift */; };
 		3DF5F85D81A69F60999825AB /* FeaturedStarters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B89B6B59045A4D78F932026 /* FeaturedStarters.swift */; };
 		4C9A1C617022D0DB3F8125F1 /* ReadableText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3BA3372BC4904E43F19F9A /* ReadableText.swift */; };
 		4E18C9EB0333BA8628859332 /* HistoryFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D250B90FB2B6E6C1379C9B01 /* HistoryFeatureTests.swift */; };
@@ -125,6 +127,7 @@
 		F93D1A06E551689D53504A86 /* TeamIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F250C793481162ED79D64BB6 /* TeamIconView.swift */; };
 		F9B69E26A9D64D62D14A4349 /* Roster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3757D55E58A34FC37F1E6C19 /* Roster.swift */; };
 		FCB7419B6D19F100EBF99D11 /* TeamDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16777E464D29CE02F612C8FD /* TeamDetailView.swift */; };
+		FEFD2588F9DE49DDE62D400D /* Compare.swift in Sources */ = {isa = PBXBuildFile; fileRef = D75D2F2565A301BDEDD22E1B /* Compare.swift */; };
 		FF338B862BDF1825AA91B360 /* TeamListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8FF910E933BD5EBFA34FABB /* TeamListView.swift */; };
 /* End PBXBuildFile section */
 
@@ -192,6 +195,7 @@
 		5E7327B7FE220C00C465A0C5 /* PlayerProfileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfileTests.swift; sourceTree = "<group>"; };
 		64ECA11ED67DB4F54B0E5CCF /* HistorySeasonSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistorySeasonSheet.swift; sourceTree = "<group>"; };
 		6552F9CA65DF43159FA618D0 /* SupabaseRLSIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseRLSIntegrationTests.swift; sourceTree = "<group>"; };
+		659DD65EABE16BCA1D1426D5 /* CompareFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareFeatureTests.swift; sourceTree = "<group>"; };
 		67F2F20D10A0081AA2EF11B8 /* ScheduleDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleDTO.swift; sourceTree = "<group>"; };
 		69C97D21FFB3852484D4E4F2 /* AppStoreScreenshotsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreScreenshotsUITests.swift; sourceTree = "<group>"; };
 		711E5714B12927E639FF1AFD /* DepthOverrideMerge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthOverrideMerge.swift; sourceTree = "<group>"; };
@@ -214,6 +218,7 @@
 		922288D41A6979441CB8E2EF /* DepthChartShareButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthChartShareButton.swift; sourceTree = "<group>"; };
 		926872EFF68F2D404BCDB79B /* DepthBrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthBrandMark.swift; sourceTree = "<group>"; };
 		954B921C7ED809C93EB75D81 /* StartupTeamTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTeamTests.swift; sourceTree = "<group>"; };
+		9A1A58C48C2A6DDA57820C9D /* CompareViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareViewModel.swift; sourceTree = "<group>"; };
 		9F022703396305729D075AA5 /* Position.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Position.swift; sourceTree = "<group>"; };
 		A0DE3824F1EEDE104DC7FDFB /* CachedSnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedSnapshotStore.swift; sourceTree = "<group>"; };
 		A0F9DA82B880B33391B6E216 /* DepthSignposts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthSignposts.swift; sourceTree = "<group>"; };
@@ -248,6 +253,7 @@
 		D250B90FB2B6E6C1379C9B01 /* HistoryFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryFeatureTests.swift; sourceTree = "<group>"; };
 		D4B86644C1AB56B9F8C429F7 /* HistoricalRosterMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoricalRosterMapper.swift; sourceTree = "<group>"; };
 		D6B0E4B57352C5955BDE8DCB /* TeamLogoCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamLogoCacheTests.swift; sourceTree = "<group>"; };
+		D75D2F2565A301BDEDD22E1B /* Compare.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Compare.swift; sourceTree = "<group>"; };
 		D8FC6EE7ED8FF20B422D809B /* ScheduleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleViewModel.swift; sourceTree = "<group>"; };
 		DCC28FD5A3D6B31E76BAA669 /* DepthChartsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthChartsTab.swift; sourceTree = "<group>"; };
 		DE6C33A0D7CAEFAEEEE07D8A /* StartupTeam.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTeam.swift; sourceTree = "<group>"; };
@@ -323,6 +329,7 @@
 			children = (
 				AB35D08E30FEA6E565452307 /* .gitkeep */,
 				025761971C890C088DEB466C /* AppConfig.swift */,
+				D75D2F2565A301BDEDD22E1B /* Compare.swift */,
 				711E5714B12927E639FF1AFD /* DepthOverrideMerge.swift */,
 				3B89B6B59045A4D78F932026 /* FeaturedStarters.swift */,
 				12541806712112F37DAC99FC /* Formations.swift */,
@@ -357,6 +364,7 @@
 			isa = PBXGroup;
 			children = (
 				F77173A1C2A8C8107538608F /* CompareView.swift */,
+				9A1A58C48C2A6DDA57820C9D /* CompareViewModel.swift */,
 			);
 			path = Compare;
 			sourceTree = "<group>";
@@ -441,6 +449,7 @@
 				A50B9DB06DE3CBD6B5F61C84 /* AppEventsTests.swift */,
 				E67531979ED38F349577206E /* AuthAndSettingsTests.swift */,
 				ADAF14C6ADEF3A0B809897F9 /* CachingDepthRepositoryTests.swift */,
+				659DD65EABE16BCA1D1426D5 /* CompareFeatureTests.swift */,
 				E372B1C3FDDFC4260939314C /* DepthChartFieldLayoutTests.swift */,
 				8853CE0D389E576E83A733BB /* DepthOverrideMergeTests.swift */,
 				7971C7A65ECC4B94913325CD /* DepthTests.swift */,
@@ -706,6 +715,7 @@
 				899F1EE1BC16BAD58D80C106 /* AppEventsTests.swift in Sources */,
 				5DF288F4FE20EF2FEE2C3358 /* AuthAndSettingsTests.swift in Sources */,
 				A8BC97475680BFF262BD9ACB /* CachingDepthRepositoryTests.swift in Sources */,
+				3D26828AF35B868C462D6227 /* CompareFeatureTests.swift in Sources */,
 				BC722D8E91C6C886838011CF /* DepthChartFieldLayoutTests.swift in Sources */,
 				28BF18B10DB865B898B2F878 /* DepthOverrideMergeTests.swift in Sources */,
 				A33FB64445E73B74A1AA7011 /* DepthTests.swift in Sources */,
@@ -751,7 +761,9 @@
 				6885D42C0072D1BB6A3C8A0E /* CachedSnapshotStore.swift in Sources */,
 				B04373D05283099BC265E21C /* CachingDepthRepository.swift in Sources */,
 				9BABC7039CA491D54D4B1F7F /* Card.swift in Sources */,
+				FEFD2588F9DE49DDE62D400D /* Compare.swift in Sources */,
 				F0BAAFAD8DD63BF43C660855 /* CompareView.swift in Sources */,
+				03F357FEC081C3772FD3D851 /* CompareViewModel.swift in Sources */,
 				8F38AC4DC5380D3CD035AD20 /* ContentView.swift in Sources */,
 				4ED119479D984E9FD5F0BD3B /* CurrentTeamStore.swift in Sources */,
 				AC65C1250448AD4BFD7E7919 /* DepthApp.swift in Sources */,

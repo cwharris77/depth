@@ -343,16 +343,16 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(tabs.waitForExistence(timeout: 10), "the app should present a bottom tab bar")
 
         tabs.buttons["Compare"].tap()
-        // `.accessibilityElement(children: .combine)` on CompareView's
-        // ContentUnavailableView collapses its image+text children into one element, but
-        // SwiftUI infers that combined element's accessibility *type* from its content
-        // (StaticText here, not the generic Other type a plain container would report) —
-        // match by identifier across any type rather than assuming one.
+        // DEP-258: the real compare UI renders the two team-slot pickers + the
+        // Matchup/By-position switcher, plus the "Pick two teams to compare" prompt
+        // (no teams picked on a fresh launch — the placeholder "coming soon" is gone).
         XCTAssertTrue(
-            app.descendants(matching: .any).matching(
-                NSPredicate(format: "identifier == 'compare-placeholder'")
-            ).firstMatch.waitForExistence(timeout: 10),
-            "Compare should render its coming-soon placeholder"
+            app.scrollViews["compare-content"].waitForExistence(timeout: 10),
+            "Compare should render its team-slot picker content"
+        )
+        XCTAssertTrue(
+            app.staticTexts["Pick two teams to compare"].waitForExistence(timeout: 5),
+            "Compare should prompt to pick two teams on first load"
         )
 
         tabs.buttons["Account"].tap()
