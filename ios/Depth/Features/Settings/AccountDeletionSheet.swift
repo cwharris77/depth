@@ -2,6 +2,10 @@ import SwiftUI
 
 // Destructive account flow with an explicit warning followed by fresh email verification.
 // Dismissal remains available after any failure because the session is intentionally kept.
+// Card-based surface (DEP-269): ScrollView + depthCard() like SettingsView, replacing the
+// stock Form's grouped-background treatment so both screens in the account flow share one
+// card system. Full-height presentation is kept as-is — the typed-confirmation field makes
+// full height safe, and detent parity with AuthSheet is deferred to DEP-257.
 struct AccountDeletionSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: AccountDeletionViewModel
@@ -12,17 +16,34 @@ struct AccountDeletionSheet: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                switch viewModel.step {
-                case .warning:
-                    warning
-                case .code, .deleting:
-                    codeEntry
-                case .completed:
-                    EmptyView()
+            ScrollView {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
+                    switch viewModel.step {
+                    case .warning:
+                        warningCard
+                    case .code, .deleting:
+                        codeEntryCard
+                    case .completed:
+                        EmptyView()
+                    }
+
+                    if let error = viewModel.error {
+                        // Same standalone error-card treatment SettingsView uses for its
+                        // sign-out error — below the flow card, danger-colored footnote.
+                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+                            Text(error.message)
+                                .font(.footnote)
+                                .foregroundStyle(DesignTokens.Colors.danger)
+                                .accessibilityIdentifier("delete-error")
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .depthCard()
+                    }
                 }
+                .padding(DesignTokens.Spacing.md)
             }
             .scrollIndicators(.hidden)
+            .background(DesignTokens.Colors.bg)
             .navigationTitle("Delete Account")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -34,36 +55,44 @@ struct AccountDeletionSheet: View {
         .interactiveDismissDisabled(viewModel.step == .deleting)
     }
 
-    private var warning: some View {
-        Section {
+    private var warningCard: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             Text(
                 "This permanently deletes your account, preferences, saved depth orders, and shared boards. This can't be undone."
             )
+            .foregroundStyle(DesignTokens.Colors.textPrimary)
             Button("Continue", role: .destructive) {
                 Task { await viewModel.requestFreshCode() }
             }
             .disabled(viewModel.isSubmitting)
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
             .accessibilityIdentifier("delete-request-code")
-        } footer: {
-            inlineError
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .depthCard()
     }
 
-    private var codeEntry: some View {
-        Section {
+    private var codeEntryCard: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             Text("Enter the new six-digit code sent to your verified email.")
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(DesignTokens.Colors.textSecondary)
             TextField("Code", text: $viewModel.code)
                 .textContentType(.oneTimeCode)
                 .keyboardType(.numberPad)
                 .accessibilityIdentifier("delete-code")
+                .padding(DesignTokens.Spacing.md)
+                .background(
+                    RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
+                        .fill(DesignTokens.Colors.surfaceRaised)
+                )
             Button("Delete My Account", role: .destructive) {
                 Task {
                     if await viewModel.confirmDeletion() { dismiss() }
                 }
             }
             .disabled(viewModel.isSubmitting)
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
             .accessibilityIdentifier("delete-confirm")
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 if viewModel.canResend(at: context.date) {
@@ -71,27 +100,21 @@ struct AccountDeletionSheet: View {
                         Task { await viewModel.requestFreshCode() }
                     }
                     .disabled(viewModel.isSubmitting)
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                 } else if let availableAt = viewModel.resendAvailableAt {
                     Text(
                         "Send a new code in \(max(1, Int(availableAt.timeIntervalSince(context.date).rounded(.up))))s"
                     )
-                    .foregroundStyle(.secondary)
+                    .font(.footnote)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
                 }
             }
             if viewModel.step == .deleting {
                 ProgressView("Deleting…")
+                    .tint(DesignTokens.Colors.accent)
             }
-        } footer: {
-            inlineError
         }
-    }
-
-    @ViewBuilder
-    private var inlineError: some View {
-        if let error = viewModel.error {
-            Text(error.message)
-                .foregroundStyle(.red)
-                .accessibilityIdentifier("delete-error")
-        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .depthCard()
     }
 }

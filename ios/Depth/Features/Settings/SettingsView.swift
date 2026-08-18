@@ -76,18 +76,23 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             if let user = sessionStore.user {
                 LabeledContent("Email", value: user.email)
+                // DEP-269: 44pt hit target on every account action — Sign Out / Delete
+                // Account / Sign In were plain buttons at intrinsic label height.
                 Button("Sign Out") {
                     Task { await signOut() }
                 }
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                 Button("Delete Account", role: .destructive) {
                     showDeletion = true
                 }
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
             } else {
                 Text(
                     "Sign in only when you want to save private preferences or depth orders."
                 )
                 .foregroundStyle(DesignTokens.Colors.textSecondary)
                 Button("Sign In") { showAuth = true }
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
