@@ -16,6 +16,10 @@ name: iOS PR Screenshots
 # The default (no target list) is `field` — the depth-chart field surface, the app's
 # signature screen.
 #
+# Timeline: captures the BEFORE set from the PR's base branch, then the AFTER set from
+# the PR head — same runner, same simulator, sequential — so you can spot regressions the
+# same way /pr-screenshots does on web.
+#
 # See docs/ios-pr-screenshots.md for the full local workflow (same machinery, run by
 # hand) and the comment-trigger reference.
 
@@ -29,16 +33,13 @@ permissions:
 
 jobs:
   capture:
-    # Only react to our own trigger word on PRs, and only by humans/agents that can
-    # create comments. `issue_comment` fires for both issues and PRs; `pull_request`
-    # number is only populated for PRs. Public-repo abuse guard: on a public repo any
-    # passerby can comment, so restrict to the repo owner + collaborators — a comment
-    # from someone else must not farm our (unlimited) macOS build minutes.
+    # Only react to our own trigger word on PRs. `issue_comment` fires for both issues
+    # and PRs; `pull_request` number is only populated for PRs.
     if: |
       github.event.issue.pull_request &&
       startsWith(github.event.comment.body, '/ios-screenshots')
     runs-on: macos-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
       # Hard public-repo guard: only the repo owner (~cwharris77) or a collaborator may
       # trigger this job. Unauthorized commenters FAIL this first step, which aborts the
@@ -65,7 +66,7 @@ jobs:
               core.setFailed(`"${login}" is not a collaborator of ${owner}/${repo}; /ios-screenshots is owner/collaborator-only.`);
             }
 
-      - name: Parse requested targets from comment
+      - name: Parse requested targets + resolve PR base SHA from comment
         id: targets
         env:
           BODY: ${{ github.event.comment.body }}
@@ -78,14 +79,17 @@ jobs:
             echo "targets=$REST" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Check out the PR head
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      # `issue_comment` does NOT carry github.event.pull_request (only `issue`), so the
+      # PR's base SHA must come from the API keyed on the issue number.
+      - name: Resolve PR base SHA via API
+        id: base
+        uses: actions/github-script@v7
         with:
-          # Piined to SHAs, not mutable tags — an upstream tag move would otherwise
-          # silently change what runs with this job's inherited token (same rationale as
-          # ios-ci.yml).
-          ref: refs/pull/${{ github.event.issue.number }}/merge
-          fetch-depth: 0
+          script: |
+            const pr = context.issue.number;
+            const { data } = await github.rest.pulls.get({ owner: context.repo.owner, repo: context.repo.repo, pull_number: pr });
+            core.setOutput('base_sha', data.base.sha);
+            core.setOutput('head_sha', data.head.sha);
 
       - name: Select latest stable Xcode
         uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
@@ -94,10 +98,6 @@ jobs:
 
       - name: Install xcodegen
         run: brew install xcodegen
-
-      - name: Generate Xcode project from project.yml
-        working-directory: ios
-        run: xcodegen generate
 
       - name: Resolve current-flagship disposable simulator (via ios-ci.yml's resolve)
         id: sim
@@ -124,11 +124,20 @@ jobs:
           xcrun simctl boot "$DEVICE"
           echo "device_id=$DEVICE" >> "$GITHUB_OUTPUT"
 
-      - name: Run PR screenshot capture (Staging config)
+      # ---- BEFORE: the PR's BASE branch, sequential, same runner/sim.
+      - name: Checkout base for before-capture
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          ref: ${{ steps.base.outputs.base_sha }}
+          fetch-depth: 0
+
+      - name: Generate Xcode project from project.yml (base)
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Run PR screenshot capture (base / before)
         working-directory: ios
         env:
-          # Reaches the test runner via process env (the reliable path through
-          # `xcodebuild test`) — the test reads SCREENSHOT_TARGETS from env before args.
           SCREENSHOT_TARGETS: ${{ steps.targets.outputs.targets }}
         run: |
           set -o pipefail
@@ -138,24 +147,69 @@ jobs:
             -configuration Staging \
             -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.device_id }}" \
             -only-testing:DepthUITests/PRScreenshotsUITests \
-            -resultBundlePath /tmp/pr-ios-screenshots.xcresult \
+            -resultBundlePath /tmp/pr-ios-screenshots-before.xcresult \
             test
 
-      - name: Export captured PNGs
+      - name: Export BEFORE PNGs
         run: |
           set -euo pipefail
-          mkdir -p /tmp/pr-ios-shots
+          mkdir -p /tmp/pr-ios-shots/before
           xcrun xcresulttool export attachments \
-            --path /tmp/pr-ios-screenshots.xcresult \
-            --output-path /tmp/pr-ios-shots
-          echo "--- exported attachments ---"
+            --path /tmp/pr-ios-screenshots-before.xcresult \
+            --output-path /tmp/pr-ios-shots/before || \
+          xcrun xcresulttool get test-results attachments \
+            --path /tmp/pr-ios-screenshots-before.xcresult \
+            --output-path /tmp/pr-ios-shots/before
           find /tmp/pr-ios-shots -type f | sort
 
-      - name: Upload screenshot artifact
+      # ---- AFTER: the PR HEAD (the head ref), same runner/sim.
+      - name: Checkout PR head for after-capture
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          # Use the stable PR head ref (always fetchable, points at the branch's head
+          # commit — not a synthetic merge).
+          ref: refs/pull/${{ github.event.issue.number }}/head
+          fetch-depth: 0
+
+      - name: Generate Xcode project from project.yml (head)
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Run PR screenshot capture (head / after)
+        working-directory: ios
+        env:
+          SCREENSHOT_TARGETS: ${{ steps.targets.outputs.targets }}
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project Depth.xcodeproj \
+            -scheme Depth-PRScreenshots \
+            -configuration Staging \
+            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.device_id }}" \
+            -only-testing:DepthUITests/PRScreenshotsUITests \
+            -resultBundlePath /tmp/pr-ios-screenshots-after.xcresult \
+            test
+
+      - name: Export AFTER PNGs
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pr-ios-shots/after
+          xcrun xcresulttool export attachments \
+            --path /tmp/pr-ios-screenshots-after.xcresult \
+            --output-path /tmp/pr-ios-shots/after || \
+          xcrun xcresulttool get test-results attachments \
+            --path /tmp/pr-ios-screenshots-after.xcresult \
+            --output-path /tmp/pr-ios-shots/after
+          find /tmp/pr-ios-shots -type f | sort
+
+      - name: Upload screenshot artifacts (before + after)
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pr-ios-screenshots
-          path: /tmp/pr-ios-shots/**/*.png
+          # Both before/ and after/ (empty after/ tolerance: its absence is fine)
+          path: |
+            /tmp/pr-ios-shots/before/**/*.png
+            /tmp/pr-ios-shots/after/**/*.png
           retention-days: 30
 
       - name: Post PR comment with artifact link
@@ -171,10 +225,11 @@ jobs:
               issue_number: pr,
               body:
                 `## iOS PR screenshots — \`${targets}\`\n\n` +
-                `Captured from this PR's build on a GitHub-hosted runner ` +
-                `(no local RAM/Simulator use). Download the PNGs from the workflow artifact:\n\n` +
+                `Captured on a GitHub-hosted runner (no local RAM/Simulator use). ` +
+                `**Before** = base branch, **After** = this PR's head; compare the ` +
+                `${targets.split(',').length} target(s) for rendering regressions.\n\n` +
                 `- **Workflow run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId}\n` +
-                `- **Artifact:** **pr-ios-screenshots**\n` +
+                `- **Artifact:** **pr-ios-screenshots** (before/ + after/)\n` +
                 `\n_Targets: \`${targets}\`. Assert each screen renders as intended before merging._\n`
             });
         env:
