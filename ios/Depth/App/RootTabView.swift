@@ -3,9 +3,11 @@ import SwiftUI
 // The app's root navigation surface (2026-08-15 navigation-parity spec, locked decisions
 // #1 and #2). The web's global nav is a left hamburger drawer; native uses a bottom tab
 // bar instead — same function, fewer taps, and hidden navigation is discouraged on iOS.
-// Three tabs only: Uniform archive is deliberately absent (blocked on Gate 0 data
-// rights, no native implementation), because a tab leading to an unshippable feature is
-// a dead end, not parity.
+// Four tabs: Depth Charts, Compare, Uniforms, Account. The uniform archive was
+// deliberately absent in the navigation-parity spec (blocked on Gate 0 data rights, no
+// native implementation); it is added here now that the native archive tab exists — the
+// data rights question was Cooper's call to unblock, and the repository's listUniforms
+// read ships the all-32-kits archive with no per-team snapshot dependency.
 //
 // Each tab owns its own NavigationStack (inside its tab view) so per-tab navigation
 // state survives tab switches — standard SwiftUI practice.
@@ -29,6 +31,10 @@ struct RootTabView: View {
 
             Tab("Compare", systemImage: "rectangle.split.2x1") {
                 CompareView(repository: DepthEnvironment.repository)
+            }
+
+            Tab("Uniforms", systemImage: "tshirt") {
+                UniformsTab(repository: DepthEnvironment.repository)
             }
 
             Tab("Account", systemImage: "person.crop.circle") {

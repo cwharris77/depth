@@ -19,6 +19,7 @@ import Foundation
 //   playerStats()    straight delegate — separate on-demand read; snapshot-cache
 //                    restructuring would add stale payload to every depth-chart launch
 //   searchPlayers()  straight delegate — per-keystroke read; caching would serve stale hits
+//   listUniforms()   cache-first + background refresh (uniform archive is stable, ~105 rows)
 //   appConfig()      network-first, cache-fallback — a stale cached minimum build is
 //                    exactly wrong for the update gate
 actor CachingDepthRepository: DepthRepository {
@@ -40,6 +41,7 @@ actor CachingDepthRepository: DepthRepository {
     private var inFlightSnapshotFetches: [String: Task<TeamSnapshot, Error>] = [:]
     private var inFlightStatsFetches: [String: Task<TeamStatsPage, Error>] = [:]
     private var inFlightScheduleFetches: [String: Task<TeamSchedule, Error>] = [:]
+    private var inFlightUniformListFetch: Task<[UniformListing], Error>?
 
     init(underlying: DepthRepository, store: CachedSnapshotStore) {
         self.underlying = underlying
@@ -194,6 +196,35 @@ actor CachingDepthRepository: DepthRepository {
     /// Cross-team search is a per-keystroke read; caching it would serve stale hits.
     func searchPlayers(query: String) async throws -> [PlayerHit] {
         try await underlying.searchPlayers(query: query)
+    }
+
+    // MARK: - Uniform archive list
+
+    /// Cache-first exactly like the team list — the all-32-kits read is stable and small.
+    func listUniforms() async throws -> [UniformListing] {
+        if let cached = try? await store.uniformList() {
+            refreshUniformListInBackground()
+            return cached
+        }
+        return try await refreshUniformList()
+    }
+
+    @discardableResult
+    private func refreshUniformList() async throws -> [UniformListing] {
+        if let existing = inFlightUniformListFetch {
+            return try await existing.value
+        }
+        let task = Task { try await self.underlying.listUniforms() }
+        inFlightUniformListFetch = task
+        defer { inFlightUniformListFetch = nil }
+        let listings = try await task.value
+        try? await store.saveUniformList(listings, cachedAt: Date())
+        return listings
+    }
+
+    private func refreshUniformListInBackground() {
+        guard inFlightUniformListFetch == nil else { return }
+        Task { try? await self.refreshUniformList() }
     }
 
     static func isStale(_ cachedAt: Date, now: Date = Date()) -> Bool {

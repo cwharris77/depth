@@ -143,6 +143,27 @@ final class CachedTeamSchedule {
     }
 }
 
+// Uniform-archive list cache row. The archive's all-32-kits read is stable and small
+// (~105 rows of kit metadata), so it earns a cache-first row like the team list — one
+// JSON-encoded `[UniformListing]` payload, same safe-schema-discard shape as the other
+// cached payloads. Never crosses into Features/.
+@Model
+final class CachedUniformList {
+    @Attribute(.unique) var cacheKey: String
+    var payload: Data
+    var schemaVersion: Int
+    var cachedAt: Date
+
+    init(cacheKey: String, payload: Data, schemaVersion: Int, cachedAt: Date) {
+        self.cacheKey = cacheKey
+        self.payload = payload
+        self.schemaVersion = schemaVersion
+        self.cachedAt = cachedAt
+    }
+
+    static let key = "uniforms"
+}
+
 /// Schedule cache row key. A nil `season` (the Schedule feature's "latest season" read)
 /// uses a `default` sentinel so it gets its own row distinct from any concrete season.
 func scheduleCacheKey(teamId: String, season: Int?) -> String {
@@ -151,6 +172,9 @@ func scheduleCacheKey(teamId: String, season: Int?) -> String {
 
 enum DepthCacheSchema {
     static var models: [any PersistentModel.Type] {
-        [CachedTeamListEntry.self, CachedTeamSnapshot.self, CachedTeamStats.self, CachedTeamSchedule.self, CachedAppConfig.self]
+        [
+            CachedTeamListEntry.self, CachedTeamSnapshot.self, CachedTeamStats.self,
+            CachedTeamSchedule.self, CachedUniformList.self, CachedAppConfig.self,
+        ]
     }
 }
