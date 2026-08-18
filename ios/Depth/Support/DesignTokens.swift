@@ -46,6 +46,8 @@ enum DesignTokens {
         static let borderInput = Color.white.opacity(0.14)
         /// Used by the depth-chart field's yard lines.
         static let borderStrong = Color.white.opacity(0.10)
+        /// Matches web's `borderDrawer` — the Uniforms tab's division-header hairline.
+        static let borderDrawer = Color(hex: "#222b3d")
     }
 
     /// 8-point spacing scale (design-pass item 29's explicit requirement).

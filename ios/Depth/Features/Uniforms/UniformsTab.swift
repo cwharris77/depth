@@ -27,19 +27,24 @@ struct UniformsTab: View {
     private var content: some View {
         switch viewModel.loadState {
         case .loading:
-            ProgressView()
+            ProgressView("Loading uniforms…")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .accessibilityIdentifier("uniforms-loading")
         case .failed(let error):
             ContentUnavailableView {
                 Label("Couldn't load uniforms", systemImage: "exclamationmark.triangle")
             } description: {
-                Text(error.localizedDescription)
+                Text(error.recoveryDescription)
             } actions: {
                 Button("Retry") { Task { await viewModel.load() } }
+                    .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityIdentifier("uniforms-retry")
             }
+            .accessibilityIdentifier("uniforms-error")
         case .loaded:
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
+                    kitCountSummary
                     filterBar
                     archiveList
                     attribution
@@ -48,6 +53,15 @@ struct UniformsTab: View {
                 .padding(.top, DesignTokens.Spacing.sm)
             }
         }
+    }
+
+    /// Web's "{kits.length} kits · 32 teams" summary (UniformArchive.tsx:88-89) above the
+    /// filter bar. The team count is the league size, not a filtered count — matching web.
+    private var kitCountSummary: some View {
+        let kitCount = viewModel.groups.flatMap(\.teams).flatMap(\.kits).count
+        return Text("\(kitCount) kits · 32 teams")
+            .font(.caption)
+            .foregroundStyle(DesignTokens.Colors.textFaint)
     }
 
     /// The horizontally-scrollable filter bar: kind chips, then Current-only toggle and
@@ -86,7 +100,7 @@ struct UniformsTab: View {
                     .font(.caption)
                     .foregroundStyle(DesignTokens.Colors.textSecondary)
                     .padding(.horizontal, 12)
-                    .padding(.vertical, 7)
+                    .frame(minHeight: 44)
                     .background(DesignTokens.Colors.surfaceChip, in: Capsule())
                 }
             }
@@ -114,8 +128,13 @@ struct UniformsTab: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             Text("\(group.conference) \(group.division.uppercased())")
                 .font(.footnote.bold())
-                .tracking(0.2)
+                // Web: tracking-[0.2em] on a ~13pt footnote ≈ 2pt.
+                .tracking(2)
                 .foregroundStyle(DesignTokens.Colors.textFaint)
+                .padding(.bottom, DesignTokens.Spacing.xs)
+                .overlay(alignment: .bottom) {
+                    Rectangle().fill(DesignTokens.Colors.borderDrawer).frame(height: 1)
+                }
 
             ForEach(group.teams, id: \.teamId) { team in
                 teamRow(team)
@@ -146,7 +165,14 @@ struct UniformsTab: View {
                     .font(.subheadline.bold())
                     .foregroundStyle(DesignTokens.Colors.textPrimary)
 
-                HStack(alignment: .top, spacing: DesignTokens.Spacing.md) {
+                // DEP-267: web wraps with `flex flex-wrap`; a fixed HStack clipped a
+                // team's later kits off-screen once it had 5+ (throwback/alternate/color
+                // rush). An adaptive-column grid wraps to a new row instead.
+                LazyVGrid(
+                    columns: [GridItem(.adaptive(minimum: 56), spacing: DesignTokens.Spacing.md)],
+                    alignment: .leading,
+                    spacing: DesignTokens.Spacing.md
+                ) {
                     ForEach(team.kits) { kit in
                         KitFigure(kit: kit, teamName: team.teamName)
                     }
@@ -158,7 +184,11 @@ struct UniformsTab: View {
 
     private var attribution: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-            Text("Uniform figures are original artwork; team marks are reproduced for identification only.")
+            // DEP-267: matches web's full first paragraph (UniformArchive.tsx:216-229) —
+            // native was missing the CC BY 3.0 template credit, a licensing surface.
+            Text(
+                "Uniform figures are original artwork; team marks are reproduced for identification only. Proportions modeled on the NFL uniform template by JohnnySeoul, used under CC BY 3.0 (modified)."
+            )
             Text("All kits shown here are drawn SVG references, not official NFL-owned images. For a more detailed uniform archive, see Gridiron Uniforms.")
         }
         .font(.caption2)
@@ -178,10 +208,12 @@ private struct FilterChip: View {
     var body: some View {
         Button(action: action) {
             Text(label)
-                .font(.caption)
+                // DEP-267: emphasize the active label, matching Compare's position
+                // chips — the two hand-rolled pills previously disagreed.
+                .font(isActive ? .caption.weight(.semibold) : .caption)
                 .foregroundStyle(isActive ? DesignTokens.Colors.onAccent : DesignTokens.Colors.textSecondary)
                 .padding(.horizontal, 12)
-                .padding(.vertical, 7)
+                .frame(minHeight: 44)
                 .background(
                     isActive ? DesignTokens.Colors.accent : DesignTokens.Colors.surfaceChip,
                     in: Capsule()
