@@ -25,6 +25,10 @@ final class AuthUITests: XCTestCase {
             app.staticTexts["settings-about-disclaimer"].waitForExistence(timeout: 10),
             "About should show the non-affiliation disclaimer"
         )
+        XCTAssertTrue(
+            app.buttons["settings-about-privacy"].waitForExistence(timeout: 10),
+            "About should link to the privacy policy (DEP-160 — reachable from within the app)"
+        )
 
         let signInButton = app.buttons["Sign In"]
         XCTAssertTrue(

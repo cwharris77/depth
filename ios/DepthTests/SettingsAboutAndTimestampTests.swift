@@ -17,6 +17,15 @@ import Testing
     #expect(formattedVersionAndBuild(version: "", build: "7") == "\u{2014} (7)")
 }
 
+// DEP-160: the About card's privacy-policy link must point at the live production
+// /privacy page on the retained static site (verified 200), not a placeholder host.
+@Test func privacyPolicyURLPointsAtProductionStaticSite() {
+    let url = AppBuildInfo.privacyPolicyURL
+    #expect(url?.scheme == "https")
+    #expect(url?.host == "depth-ashen.vercel.app")
+    #expect(url?.path == "/privacy")
+}
+
 private actor FakeDepthRepository: DepthRepository {
     var teamsResult: Result<[Team], Error>
     var snapshotResults: [String: Result<TeamSnapshot, Error>] = [:]
