@@ -206,6 +206,85 @@ final class DepthUITests: XCTestCase {
         XCTAssertFalse(seasonState.waitForExistence(timeout: 2))
     }
 
+    /// DEP-245: the Seasons sheet itself offers a one-tap "Back to current" while a past
+    /// season is selected, so a user who scrolled deep into the 1999→present list never
+    /// has to scroll back to the current-season row. Reuses the 2013 selection so the
+    /// sheet is verified from a genuinely historical state.
+    func testBackToCurrentFromSeasonsSheet() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launch()
+
+        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
+        app.selectTeam("seahawks", searching: "Seahawks", expectedDisplayName: "Seattle Seahawks")
+
+        let overflow = app.buttons["depth-chart-overflow"]
+        XCTAssertTrue(overflow.waitForExistence(timeout: 10), "team detail should expose the overflow menu")
+        overflow.tap()
+        app.buttons["history-destination"].tap()
+
+        let season = app.buttons["history-season-2013"]
+        for _ in 0..<4 where !season.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(season.waitForExistence(timeout: 5), "2013 should be available in the season picker")
+        season.tap()
+
+        let seasonState = app.staticTexts["history-season-state"]
+        XCTAssertTrue(seasonState.waitForExistence(timeout: 10))
+        XCTAssertEqual(seasonState.label, "2013 season")
+
+        // Reopen the sheet while 2013 is still the active historical season.
+        let overflow2 = app.buttons["depth-chart-overflow"]
+        XCTAssertTrue(overflow2.waitForExistence(timeout: 5))
+        overflow2.tap()
+        app.buttons["history-destination"].tap()
+
+        let backToCurrent = app.buttons["history-season-back-to-current"]
+        XCTAssertTrue(
+            backToCurrent.waitForExistence(timeout: 5),
+            "the Seasons sheet should offer Back to current while a past season is selected"
+        )
+        backToCurrent.tap()
+
+        XCTAssertFalse(backToCurrent.waitForExistence(timeout: 2), "the sheet should dismiss on Back to current")
+        XCTAssertFalse(seasonState.waitForExistence(timeout: 2), "Back to current should leave the historical roster")
+    }
+
+    /// DEP-245: the Stats page's season chips have no other way back to the current
+    /// season — a past chip selected means scrolling to re-tap the current chip. The
+    /// "Back to current" affordance appears only while a past season is selected and
+    /// returns to the current/upcoming tab on tap.
+    func testBackToCurrentFromStatsPage() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launch()
+
+        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
+        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+
+        let statsTab = app.buttons["page-switcher-stats"]
+        XCTAssertTrue(statsTab.waitForExistence(timeout: 10))
+        statsTab.tap()
+        XCTAssertTrue(app.scrollViews["stats-content"].waitForExistence(timeout: 15))
+
+        // Every team has at least current + prior seasons ingested; select the second
+        // chip (the year before the newest) so a completed past season is active.
+        let chips = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'stats-season-'"))
+        XCTAssertGreaterThanOrEqual(chips.count, 2, "the stats page should offer more than one season chip")
+        chips.element(boundBy: 1).tap()
+
+        let seasonState = app.staticTexts["stats-season-state"]
+        XCTAssertTrue(seasonState.waitForExistence(timeout: 5), "a past season should show its season-state line")
+
+        let backToCurrent = app.buttons["stats-back-to-current"]
+        XCTAssertTrue(backToCurrent.waitForExistence(timeout: 5), "a past season should offer Back to current")
+        backToCurrent.tap()
+
+        XCTAssertFalse(backToCurrent.waitForExistence(timeout: 2), "Back to current should hide once on the current season")
+        XCTAssertFalse(seasonState.waitForExistence(timeout: 2), "Back to current should leave the past season")
+    }
+
     /// Locked decisions #1/#2/#6/#7: the tab bar exists, all three tabs are reachable,
     /// and each renders its own content.
     func testTabBarReachesAllThreeDestinations() throws {

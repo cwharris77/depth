@@ -233,7 +233,8 @@ struct TeamDetailView: View {
             .sheet(isPresented: $showHistory) {
                 HistorySeasonSheet(
                     seasons: historyViewModel.seasons,
-                    selectedSeason: historyViewModel.selectedSeason
+                    selectedSeason: historyViewModel.selectedSeason,
+                    currentSeason: historyViewModel.currentSeason
                 ) { season in
                     showHistory = false
                     historyViewModel.selectImmediately(season)
