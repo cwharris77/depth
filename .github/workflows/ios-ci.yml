@@ -3,7 +3,12 @@ name: iOS CI
 # Builds and tests the native app (ios/) on every PR/push. A PR runs a fast smoke set
 # (unit tests + the flagship journey + reorder/auth UI suites); the full unit + UI suite
 # runs only on pushes to main — the slow UI journeys (Accessibility/Performance/Share and
-# the extra DepthUITests journeys) give PRs little signal but dominate wall time. The one
+# the extra DepthUITests journeys) give PRs little signal but dominate wall time. Build
+# and test are split into separate jobs: `build-for-testing` compiles once, then `test`
+# fans out DepthTests and DepthUITests into two parallel legs against the prebuilt
+# products (`test-without-building`) instead of running them serialized in one
+# `xcodebuild test` invocation — this is the dominant wall-time lever since UI tests
+# relaunch the app per-test and previously always ran after unit tests finished. The one
 # test leg runs on a single current-flagship simulator. The "Staging" configuration is
 # DEBUG_BUILD_SETTINGS: all of Debug/Staging/Release point at the single production
 # Supabase project (jiqoaqmzmvtovimnmbzl, see ios/xcconfig/Staging.xcconfig's DEP-40 Lane B
@@ -106,13 +111,9 @@ jobs:
           echo "Resolved test device: $MATRIX"
           echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
 
-  test:
-    needs: resolve-devices
+  build-for-testing:
     runs-on: macos-latest
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.resolve-devices.outputs.matrix) }}
+    timeout-minutes: 25
     steps:
       # Pinned to commit SHAs, not mutable tags — an upstream tag move would otherwise
       # silently change what runs with this job's inherited token and checked-out
@@ -138,13 +139,12 @@ jobs:
             exit 1
           fi
 
-      # The whole app is rebuilt from scratch on every PR otherwise — a cold
-      # `xcodebuild test` dominates wall time (~10-15 min of the ~13-17 min job).
-      # Cache DerivedData so an unchanged codebase resumes from the prior build
-      # instead of recompiling everything. Keyed on the iOS sources + this workflow
-      # (so a project.yml / xcodegen change invalidates it); on a source change we
-      # fall back to the most recent cache and save a fresh one, so sequential
-      # small PRs stay incremental.
+      # The whole app is rebuilt from scratch on every PR otherwise — a cold build
+      # dominates wall time. Cache DerivedData so an unchanged codebase resumes from
+      # the prior build instead of recompiling everything. Keyed on the iOS sources +
+      # this workflow (so a project.yml / xcodegen change invalidates it); on a source
+      # change we fall back to the most recent cache and save a fresh one, so
+      # sequential small PRs stay incremental.
       - name: Restore DerivedData cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -153,14 +153,53 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-ios-deriveddata-
 
-      - name: Boot ${{ matrix.label }} simulator (${{ matrix.device }})
+      # Compiled once here, no simulator needed (generic destination) — `test` fans
+      # this out into parallel unit/UI legs via `test-without-building` instead of
+      # every leg repeating this compile serially.
+      - name: Build for testing (Staging config)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project ios/Depth.xcodeproj \
+            -scheme Depth \
+            -configuration Staging \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath ios/DerivedData \
+            build-for-testing
+
+      - name: Upload build products
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-products
+          path: ios/DerivedData/Build/Products
+          retention-days: 1
+
+  test:
+    needs: [resolve-devices, build-for-testing]
+    runs-on: macos-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        leg: [unit, ui]
+    steps:
+      - name: Download build products
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: test-products
+          path: ios/DerivedData/Build/Products
+
+      - name: Boot ${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].label }} simulator (${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].device }})
         id: sim
+        env:
+          DEVICE: ${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].device }}
+          RUNTIME: ${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].runtime }}
         run: |
           set -euo pipefail
           # Device/runtime pair was already validated as creatable in resolve-devices —
           # reuse it directly instead of re-resolving the runtime on this separate
           # runner (which could in principle pick up a different image/runtime set).
-          DEVICE_ID=$(xcrun simctl create "ci-${{ matrix.label }}" "${{ matrix.device }}" "${{ matrix.runtime }}")
+          DEVICE_ID=$(xcrun simctl create "ci-${{ matrix.leg }}" "$DEVICE" "$RUNTIME")
           xcrun simctl boot "$DEVICE_ID"
           echo "device_id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
 
@@ -169,26 +208,30 @@ jobs:
       # journeys (schedule, page-switcher, unit-tab tap targets, history, tab bar,
       # relaunch-restore) each relaunch the app against production and dominate wall time
       # while adding little per-PR signal — they, like Accessibility/Performance/Share, run
-      # only on pushes to main. Empty on push.
+      # only on pushes to main.
       - name: Determine test scope
         id: scope
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "tests=-only-testing:DepthTests -only-testing:DepthUITests/DepthUITests/testAppLaunches -only-testing:DepthUITests/DepthUITests/testLaunchesIntoAChartThenSwitchesTeamAndOpensPlayerDetail -only-testing:DepthUITests/PlayerCardReorderUITests -only-testing:DepthUITests/AuthUITests" >> "$GITHUB_OUTPUT"
+          if [ "${{ matrix.leg }}" = "unit" ]; then
+            echo "tests=-only-testing:DepthTests" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "tests=-only-testing:DepthUITests/DepthUITests/testAppLaunches -only-testing:DepthUITests/DepthUITests/testLaunchesIntoAChartThenSwitchesTeamAndOpensPlayerDetail -only-testing:DepthUITests/PlayerCardReorderUITests -only-testing:DepthUITests/AuthUITests" >> "$GITHUB_OUTPUT"
           else
-            echo "tests=" >> "$GITHUB_OUTPUT"
+            echo "tests=-only-testing:DepthUITests" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Run unit + UI tests (Staging config)
+      - name: Run ${{ matrix.leg }} tests (Staging config)
         run: |
           set -o pipefail
+          XCTESTRUN=$(find ios/DerivedData/Build/Products -maxdepth 1 -name '*.xctestrun' | head -n1)
+          if [ -z "$XCTESTRUN" ]; then
+            echo "::error::No .xctestrun file found in downloaded build products."
+            exit 1
+          fi
           xcodebuild \
-            -project ios/Depth.xcodeproj \
-            -scheme Depth \
-            -configuration Staging \
+            -xctestrun "$XCTESTRUN" \
             -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.device_id }}" \
-            -derivedDataPath ios/DerivedData \
-            test ${{ steps.scope.outputs.tests }}
+            test-without-building ${{ steps.scope.outputs.tests }}
 
   archive-secret-check:
     runs-on: macos-latest
