@@ -10,6 +10,7 @@ import {
   type UniformFilters,
 } from '@/lib/uniforms/filter';
 import UniformFigure, { UniformFigureDefs } from './UniformFigure';
+import { uniformArtFullURL } from '@/lib/uniforms/art';
 import DepthMark from './DepthMark';
 import NavDrawer from './NavDrawer';
 import TeamPageShell from './TeamPageShell';
@@ -176,7 +177,11 @@ export default function UniformArchive({
                                 colors={k.colors}
                                 variant="full"
                                 size={54}
-                                imagePath={k.imagePath}
+                                // Every row is backfilled to a -full artifact (DEP-220
+                                // only produced the jersey crop, which stretches at this
+                                // variant); a future kit with no artifact yet keeps the
+                                // inline full-mannequin SVG fallback via the falsy path.
+                                imagePath={k.imagePath ? uniformArtFullURL(k.id) : undefined}
                                 title={`${t.teamName} ${k.name}`}
                                 sharedDefs
                                 kitId={k.id}
