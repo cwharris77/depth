@@ -76,6 +76,26 @@ struct TeamStatsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     seasonChipsRow
+                    // DEP-245: a past season's chip has no other way back — the current
+                    // season is just another chip to re-tap. Mirrors the roster's
+                    // historical header ("2013 season" + "Back to today"): a season-state
+                    // line with a one-tap escape, shown only while a past season is
+                    // selected.
+                    if viewModel.isViewingPastSeason, let year = viewModel.selectedSeason {
+                        HStack {
+                            Text(verbatim: "\(year) season")
+                                .font(.headline)
+                                .accessibilityIdentifier("stats-season-state")
+                            Spacer()
+                            Button("Back to current") {
+                                viewModel.backToCurrentSeason()
+                            }
+                            .frame(minWidth: 44, minHeight: 44)
+                            .accessibilityIdentifier("stats-back-to-current")
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 12)
+                    }
                     teamNameBlock(page.team)
                     if let active = viewModel.selectedSeasonStats {
                         heroRecord(active)
