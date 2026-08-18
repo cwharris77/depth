@@ -121,6 +121,7 @@ struct PlayerDetailView: View {
                 }
                 .padding()
             }
+            .scrollIndicators(.hidden)
             .accessibilityIdentifier("player-profile-content")
             .toolbar {
                 // Top-trailing X, matching the web PlayerCardHeader's close. An xmark is
