@@ -204,7 +204,14 @@ jobs:
       - name: Clear quarantine attribute on downloaded build products
         run: xattr -cr ios/DerivedData/Build/Products
 
-      - name: Boot ${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].label }} simulator (${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].device }})
+      # The UI leg boots a second simulator clone and runs with
+      # -parallelize-tests-among-destinations so Xcode splits DepthUITests'/AuthUITests'/
+      # PlayerCardReorderUITests' classes across both instead of running them serially on
+      # one — each class launches its own isolated app+local-storage instance, so there's
+      # no shared-state race even though every simulator hits the same production
+      # Supabase project. The unit leg stays single-destination; DepthTests isn't the
+      # wall-time bottleneck.
+      - name: Boot ${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].label }} simulator(s) (${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].device }})
         id: sim
         env:
           DEVICE: ${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].device }}
@@ -214,9 +221,15 @@ jobs:
           # Device/runtime pair was already validated as creatable in resolve-devices —
           # reuse it directly instead of re-resolving the runtime on this separate
           # runner (which could in principle pick up a different image/runtime set).
-          DEVICE_ID=$(xcrun simctl create "ci-${{ matrix.leg }}" "$DEVICE" "$RUNTIME")
-          xcrun simctl boot "$DEVICE_ID"
-          echo "device_id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
+          DEVICE_ID_1=$(xcrun simctl create "ci-${{ matrix.leg }}-1" "$DEVICE" "$RUNTIME")
+          xcrun simctl boot "$DEVICE_ID_1"
+          echo "device_id_1=$DEVICE_ID_1" >> "$GITHUB_OUTPUT"
+
+          if [ "${{ matrix.leg }}" = "ui" ]; then
+            DEVICE_ID_2=$(xcrun simctl create "ci-${{ matrix.leg }}-2" "$DEVICE" "$RUNTIME")
+            xcrun simctl boot "$DEVICE_ID_2"
+            echo "device_id_2=$DEVICE_ID_2" >> "$GITHUB_OUTPUT"
+          fi
 
       # A PR gets a fast smoke set: the unit tests plus the single flagship
       # chart→team→player journey, the reorder suite, and auth. The other DepthUITests
@@ -236,6 +249,9 @@ jobs:
           fi
 
       - name: Run ${{ matrix.leg }} tests (Staging config)
+        env:
+          DEVICE_ID_1: ${{ steps.sim.outputs.device_id_1 }}
+          DEVICE_ID_2: ${{ steps.sim.outputs.device_id_2 }}
         run: |
           set -o pipefail
           XCTESTRUN=$(find ios/DerivedData/Build/Products -maxdepth 1 -name '*.xctestrun' | head -n1)
@@ -243,9 +259,18 @@ jobs:
             echo "::error::No .xctestrun file found in downloaded build products."
             exit 1
           fi
+
+          DESTINATION_ARGS=(-destination "platform=iOS Simulator,id=$DEVICE_ID_1")
+          PARALLEL_ARGS=()
+          if [ "${{ matrix.leg }}" = "ui" ]; then
+            DESTINATION_ARGS+=(-destination "platform=iOS Simulator,id=$DEVICE_ID_2")
+            PARALLEL_ARGS=(-parallel-testing-enabled YES -parallelize-tests-among-destinations -maximum-concurrent-test-simulator-destinations 2)
+          fi
+
           xcodebuild \
             -xctestrun "$XCTESTRUN" \
-            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.device_id }}" \
+            "${DESTINATION_ARGS[@]}" \
+            "${PARALLEL_ARGS[@]}" \
             test-without-building ${{ steps.scope.outputs.tests }}
 
   archive-secret-check:
