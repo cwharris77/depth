@@ -3,12 +3,11 @@ import SwiftUI
 // The team switcher (2026-08-15 navigation-parity spec, locked decisions #4 and #5) —
 // the native equivalent of the web's NavSwitcher: tapping the team name in the
 // navigation bar opens this sheet, picking a team swaps the chart underneath and
-// dismisses. It is deliberately thin: all list/search/empty/error behavior comes from
-// TeamListView unchanged, so there is no second search or list implementation to keep
-// in sync.
+// dismisses. It is deliberately thin: all list/search/empty/error behavior and the sheet
+// chrome come from TeamListView / TeamListPickerSheet unchanged, so there is no second
+// search or list implementation to keep in sync. All it owns is "dismiss after picking",
+// which CompareView deliberately does not do.
 struct TeamSwitcherSheet: View {
-    @Environment(\.dismiss) private var dismiss
-
     let repository: CachingDepthRepository
     var events: any AppEventsRecording = NoOpAppEventsRecorder()
     let selectedTeamId: String
@@ -16,35 +15,15 @@ struct TeamSwitcherSheet: View {
     var onSelectPlayer: ((PlayerHit) -> Void)? = nil
 
     var body: some View {
-        NavigationStack {
-            TeamListView(
-                repository: repository,
-                events: events,
-                selectedTeamId: selectedTeamId
-            ) { teamId in
-                onSelect(teamId)
-                dismiss()
-            } onSelectPlayer: { hit in
-                onSelectPlayer?(hit)
-                dismiss()
-            }
-            .navigationTitle("Teams")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                // Top-trailing X, matching the web NavSwitcher's close and the player
-                // card's dismiss (Cooper's visual pass: replace the left "Cancel").
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                    }
-                    .frame(minWidth: 44, minHeight: 44)
-                    .accessibilityLabel("Close")
-                }
-            }
+        TeamListPickerSheet(
+            repository: repository,
+            events: events,
+            title: "Teams",
+            selectedTeamId: selectedTeamId
+        ) { teamId in
+            onSelect(teamId)
+        } onSelectPlayer: { hit in
+            onSelectPlayer?(hit)
         }
-        .presentationBackground(DesignTokens.Colors.bg)
-        .accessibilityIdentifier("team-switcher-sheet")
     }
 }
