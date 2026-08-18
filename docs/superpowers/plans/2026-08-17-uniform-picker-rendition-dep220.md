@@ -35,7 +35,7 @@
 - `uniformArtURL(id: string): string` — `https://depth-ashen.vercel.app/uniforms/<id>.webp`.
 - `renderUniformThumbSVG(colors, kitId, definition): string` — SSR of `UniformFigure` (`variant='jersey'`, `size=560`) via `renderToStaticMarkup`, with the Anton `var(--font-anton)` stack replaced by a rasterizer-safe `Helvetica, sans-serif` (librsvg/sharp can't resolve the CSS var; the swap is what makes the raster deterministic across machines).
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Create `lib/uniforms/art.test.ts`:
 - `uniformArtURL('bengals-color-rush')` → `'https://depth-ashen.vercel.app/uniforms/bengals-color-rush.webp'`.
@@ -46,19 +46,19 @@ Create `lib/uniforms/art.test.ts`:
   - two calls return identical strings (determinism).
 - `renderUniformThumbSVG` with no definition (generic kit) still renders without throwing and contains the jersey surface.
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run `npm test -- lib/uniforms/art.test.ts`. Expected: FAIL — `lib/uniforms/art.tsx` does not exist.
 
-- [ ] **Step 3: Implement the module**
+- [x] **Step 3: Implement the module**
 
 Create `lib/uniforms/art.tsx` with the two exports and a role-and-constraint header. `renderUniformThumbSVG` renders `<UniformFigure colors kitId definition variant="jersey" size={560} />` and performs the single deterministic `font-family` replacement before returning.
 
-- [ ] **Step 4: Run and verify GREEN**
+- [x] **Step 4: Run and verify GREEN**
 
 `npm test -- lib/uniforms/art.test.ts`. Expected: pass.
 
-- [ ] **Step 5: Format and commit**
+- [x] **Step 5: Format and commit**
 
 ```bash
 npx prettier --write lib/uniforms/art.tsx lib/uniforms/art.test.ts
@@ -79,17 +79,17 @@ git commit -m "feat(uniforms): add deterministic thumbnail art module"
 - For each row: `renderUniformThumbSVG(rowColors, row.id, getTeamUniformDefinition(row.team_id))` → sharp `.webp()` → `public/uniforms/<id>.webp` (mkdir -p first).
 - Prints a per-file line + total count; exits non-zero if any render fails.
 
-- [ ] **Step 1: Implement the script**
+- [x] **Step 1: Implement the script**
 
 Follow the header-comment style of `scripts/gen-icons.mts` and the env handling of `scripts/ingest-espn.mts` (`getSupabaseUrl`/`getSupabaseSecretKey` live in `scripts/ingest-espn.mts` or a shared helper — reuse, don't duplicate).
 
-- [ ] **Step 2: Add the npm script**
+- [x] **Step 2: Add the npm script**
 
 ```json
 "gen:uniform-thumbs": "tsx scripts/gen-uniform-thumbs.mts"
 ```
 
-- [ ] **Step 3: Run the generator and inspect output**
+- [x] **Step 3: Run the generator and inspect output**
 
 ```bash
 npm run gen:uniform-thumbs
@@ -97,7 +97,7 @@ npm run gen:uniform-thumbs
 
 Verify: one file per DB row under `public/uniforms/`, and visually spot-check at least `seahawks-home`, `bengals-color-rush`, `bills-rivalries-2025` (a team with a definition, a curated kit, and the generic-render path). Convert a couple to PNG if the inspection tool needs it.
 
-- [ ] **Step 4: Format and commit**
+- [x] **Step 4: Format and commit**
 
 ```bash
 npx prettier --write scripts/gen-uniform-thumbs.mts package.json
@@ -118,15 +118,15 @@ git commit -m "feat(uniforms): generate jersey thumbnails for every kit"
 - Future curated seeds emit `image_path = uniformArtURL('${teamId}-${slug}')` unless `data.ts` explicitly sets `imagePath`.
 - A one-time idempotent migration sets `image_path = 'https://depth-ashen.vercel.app/uniforms/' || id || '.webp'` for every existing row (curated + espn home + retired home snapshots).
 
-- [ ] **Step 1: Update seed-sql**
+- [x] **Step 1: Update seed-sql**
 
 In `rowValues`, change `image_path: u.imagePath ?? null` to `image_path: u.imagePath ?? uniformArtURL(\`${u.teamId}-${u.slug}\`)`.
 
-- [ ] **Step 2: Extend the seed test**
+- [x] **Step 2: Extend the seed test**
 
 In `uniform-seed-gen.test.ts`, add: every emitted row contains its derived `image_path` URL matching `uniformArtURL`, and no row emits `NULL` for `image_path`.
 
-- [ ] **Step 3: Add the backfill migration**
+- [x] **Step 3: Add the backfill migration**
 
 Create `<ts>_backfill_uniform_image_paths.sql` — plain idempotent UPDATE (no schema change, so `db:types` regeneration is NOT needed):
 
@@ -137,7 +137,7 @@ set image_path = 'https://depth-ashen.vercel.app/uniforms/' || id || '.webp',
 where image_path is null;
 ```
 
-- [ ] **Step 4: Run tests and commit**
+- [x] **Step 4: Run tests and commit**
 
 ```bash
 npm test -- lib/__tests__/uniform-seed-gen.test.ts lib/uniforms/art.test.ts
@@ -153,7 +153,7 @@ git commit -m "feat(uniforms): persist thumbnail URL on uniform rows"
 **Files:**
 - Modify: `ios/Depth/Features/TeamDetail/UniformPickerSheet.swift`
 
-- [ ] **Step 1: Add the leading thumbnail**
+- [x] **Step 1: Add the leading thumbnail**
 
 In the row `HStack`, before the text `VStack`, render when `uniform.imagePath` resolves to a URL:
 
@@ -171,7 +171,7 @@ AsyncImage(url: url) { phase in
 
 Rows without an `imagePath` keep today's text-only layout (no empty box — same degrade, don't fake rule as the web's JerseySwatch fallback).
 
-- [ ] **Step 2: Regenerate the Xcode project and run the targeted tests**
+- [x] **Step 2: Regenerate the Xcode project and run the targeted tests**
 
 ```bash
 cd ios && xcodegen generate && cd ..
@@ -179,7 +179,7 @@ cd ios && xcodegen generate && cd ..
 
 Run `xcodebuild test -project ios/Depth.xcodeproj -scheme Depth -destination 'platform=iOS Simulator,id=…' -only-testing:DepthTests/TeamSnapshotMapperTests` (the suite that touches Uniform mapping) plus `DepthUITests/DepthUITests` if it exercises the picker.
 
-- [ ] **Step 3: Format and commit**
+- [x] **Step 3: Format and commit**
 
 ```bash
 git add ios/Depth/Features/TeamDetail/UniformPickerSheet.swift ios/Depth.xcodeproj/project.pbxproj
@@ -193,7 +193,7 @@ git commit -m "feat(ios): show uniform thumbnails in the picker"
 **Files:**
 - Verify: every file changed in Tasks 1–4
 
-- [ ] **Step 1: Scope and quality gate**
+- [x] **Step 1: Scope and quality gate**
 
 ```bash
 git status --short
@@ -206,14 +206,14 @@ npm test
 
 Record test counts. Require no unrelated files, no whitespace errors, exit 0 everywhere.
 
-- [ ] **Step 2: Screenshot-verify the picker for ≥1 team with multiple kits**
+- [x] **Step 2: Screenshot-verify the picker for ≥1 team with multiple kits**
 
 Serve `public/uniforms/` on a local port (e.g. `python3 -m http.server 8787 -d public`), build the app to a simulator, and capture the `Choose Uniform` sheet for a multi-kit team (Bills or Bengals). Because the hosted DB's `image_path` is still NULL until the migration lands on merge, verification either (a) uses a Debug-only `UI_TESTING_UNIFORM_ART_BASE_URL` launch-argument hook that rewrites each uniform's image URL to `<base>/<id>.webp` for the screenshot, or (b) is completed post-merge against prod — record which. The generated WebP itself is already the exact pixel content the row will render, so the screenshot is confirming the row layout, frame sizing, and corner clipping.
 
-- [ ] **Step 3: Update README status line if the uniform-archive status is now stale**
+- [x] **Step 3: Update README status line if the uniform-archive status is now stale**
 
 Read the current uniform-archive status line; change it only if a statement becomes factually wrong.
 
-- [ ] **Step 4: Commit closeout docs (if any) and open the PR**
+- [x] **Step 4: Commit closeout docs (if any) and open the PR**
 
 `gh pr create` with the house What/Why/Verification shape; squash-merge once green.
