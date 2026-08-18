@@ -107,7 +107,7 @@ struct PlayerDetailView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
                     header
                     vitals
                     if let college = PlayerProfileDisplay.meaningful(player.college) {
@@ -151,8 +151,8 @@ struct PlayerDetailView: View {
     // single word, so the layout stacks instead — otherwise names break mid-word
     // ("DJ Moor / e"), which is the failure this switch exists to prevent.
     private var header: some View {
-        let accent = team.map { Color(hex: $0.colors.uiAccent) } ?? .accentColor
-        let identity = VStack(alignment: .leading, spacing: 8) {
+        let accent = team.map { Color(hex: $0.colors.uiAccent) } ?? DesignTokens.Colors.accent
+        let identity = VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             // Web parity (PlayerCardHeader): a large team-accent watermark number above
             // the name — the most recognizable jersey identity, placed first per
             // Cooper's visual pass ("make it a large team-colored number that appears
@@ -188,12 +188,12 @@ struct PlayerDetailView: View {
 
         return Group {
             if dynamicTypeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
                     photo
                     identity
                 }
             } else {
-                HStack(alignment: .top, spacing: 16) {
+                HStack(alignment: .top, spacing: DesignTokens.Spacing.md) {
                     photo
                     identity
                 }
@@ -230,7 +230,7 @@ struct PlayerDetailView: View {
     }
 
     private var statsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             Text("Season Stats")
                 .font(.headline)
             switch viewModel.statsState {
@@ -240,15 +240,15 @@ struct PlayerDetailView: View {
                 PlayerStatsTable(
                     stats: viewModel.stats,
                     columns: playerStatColumns(for: player.position),
-                    accent: team.map { Color(hex: $0.colors.uiAccent) } ?? .accentColor
+                    accent: team.map { Color(hex: $0.colors.uiAccent) } ?? DesignTokens.Colors.accent
                 )
             case .empty:
                 ContentUnavailableView("No stats available", systemImage: "chart.bar.xaxis")
                     .frame(maxWidth: .infinity)
             case .failed(let error):
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
                     Text(error.recoveryDescription)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(DesignTokens.Colors.textMuted)
                     Button("Retry") { Task { await viewModel.retry() } }
                         .frame(minWidth: 44, minHeight: 44)
                         .accessibilityIdentifier("player-profile-stats-retry")
@@ -274,10 +274,18 @@ struct PlayerDetailView: View {
         .accessibilityLabel("\(label), \(value)")
     }
 
+    // DEP-259: unified onto the vitals eyebrow pattern (caption + tracking + textMuted
+    // uppercase) — College/Bio previously used a second, different "field label" style
+    // (`.caption.bold()` + `.secondary` title-case) in the same sheet.
     private func labeledText(_ label: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(label).font(.caption.bold()).foregroundStyle(.secondary)
-            Text(value).fixedSize(horizontal: false, vertical: true)
+            Text(label.uppercased())
+                .font(.caption)
+                .tracking(0.5)
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+            Text(value)
+                .foregroundStyle(DesignTokens.Colors.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)
     }
@@ -288,7 +296,7 @@ struct PlayerDetailView: View {
     // card's own Reorder/Done toggle, one-time hint, CUSTOM tag, Reset, and drag rows.
     @ViewBuilder
     private var positionDepth: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             // DEP-225: dropped the repeated position — the header's badge (DEP-223)
             // already shows it. Native-only divergence from web, which still repeats
             // it in this title; don't "fix" this back to match web without checking
@@ -300,7 +308,7 @@ struct PlayerDetailView: View {
             if displayOrder.count <= 1 {
                 Text("No backups available")
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
                     .frame(maxWidth: .infinity, minHeight: 56)
                     .depthCard(dense: true)
             } else {
@@ -342,7 +350,7 @@ struct PlayerDetailView: View {
     /// Web parity (PlayerCardDepthList's header row): CUSTOM tag on the left once the
     /// position has a saved custom order, Reset + the Reorder/Done toggle on the right.
     private var depthHeader: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: DesignTokens.Spacing.sm) {
             if positionIsCustom {
                 customTag
             }
@@ -360,6 +368,11 @@ struct PlayerDetailView: View {
                     .foregroundStyle(DesignTokens.Colors.textMuted)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
+                    // DEP-259: 44pt hit target without inflating the pill's small visual
+                    // size — same visual-size/hit-slop split the field's player dots use
+                    // (DepthChartFieldView.swift), frame added after the pill's own chrome.
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
                 }
                 .accessibilityIdentifier("player-profile-depth-reset")
             }
@@ -389,6 +402,9 @@ struct PlayerDetailView: View {
                     .overlay {
                         Capsule().strokeBorder(accent.opacity(0.33), lineWidth: 1)
                     }
+                    // DEP-259: see the Reset button's identical comment above.
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
                 }
                 .accessibilityIdentifier("player-profile-depth-reorder-toggle")
             }
@@ -472,11 +488,11 @@ struct PlayerDetailView: View {
     }
 
     private var accent: Color {
-        team.map { Color(hex: $0.colors.uiAccent) } ?? .accentColor
+        team.map { Color(hex: $0.colors.uiAccent) } ?? DesignTokens.Colors.accent
     }
 
     private var onAccent: Color {
-        (team?.colors.onAccent).map { Color(hex: $0) } ?? .white
+        (team?.colors.onAccent).map { Color(hex: $0) } ?? DesignTokens.Colors.onAccent
     }
 
     // Mirrors web PlayerCardDepthList.depthRankLabel: ranks are capped at 3, so
@@ -494,10 +510,10 @@ struct PlayerDetailView: View {
     // before (DEP-224) — fill is the team's `primary`, ring is a 2px `uiAccent` border.
     @ViewBuilder
     private var photo: some View {
-        let accent = team.map { Color(hex: $0.colors.uiAccent) } ?? .accentColor
-        let fill = team.map { Color(hex: $0.colors.primary) } ?? .accentColor
+        let accent = team.map { Color(hex: $0.colors.uiAccent) } ?? DesignTokens.Colors.accent
+        let fill = team.map { Color(hex: $0.colors.primary) } ?? DesignTokens.Colors.accent
         let onFillHex = team.map { readableTextOn($0.colors.primary) }
-        let onFill = onFillHex.map(Color.init(hex:)) ?? .white
+        let onFill = onFillHex.map(Color.init(hex:)) ?? DesignTokens.Colors.onAccent
         ZStack {
             Circle().fill(fill)
             if let url = player.photoUrl.flatMap(URL.init(string:)) {
@@ -570,9 +586,9 @@ struct PlayerDetailView: View {
 private func playerStatusColor(_ status: PlayerStatus, accent: Color) -> Color {
     switch status {
     case .starter: accent
-    case .backup: Color(hex: "#A5ACAF")
-    case .rookie: Color(hex: "#4fc3f7")
-    case .injured: Color(hex: "#ef5350")
+    case .backup: DesignTokens.Colors.textMuted
+    case .rookie: DesignTokens.Colors.statusRookie
+    case .injured: DesignTokens.Colors.statusInjured
     }
 }
 
@@ -610,7 +626,7 @@ private struct DepthRowContent: View {
     let accent: Color
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: DesignTokens.Spacing.sm) {
             Text(depthRankLabel(player.depthRank))
                 .font(.caption.bold())
                 .foregroundStyle(playerStatusColor(player.status, accent: accent))
@@ -691,7 +707,7 @@ private struct DepthReorderList: View {
     }
 
     private func row(_ p: Player) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: DesignTokens.Spacing.sm) {
             // Web parity (PlayerCardDepthList's edit rows): a grip glyph leads each row
             // while reordering — the six-dot drag grip (size 16, matching web's row
             // GripVertical), not a hamburger (DEP-241). Rows are no longer tap-to-switch.
@@ -807,15 +823,15 @@ private struct PlayerStatsTable: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 12) {
+            HStack(spacing: DesignTokens.Spacing.sm) {
                 cell("SZN", header: true, fixed: true)
                 cell("TM", header: true, fixed: true)
                 ForEach(columns, id: \.self) { column in
                     cell(column.header, header: true, fixed: false)
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, DesignTokens.Spacing.sm)
+            .padding(.vertical, DesignTokens.Spacing.sm)
             // Web parity (components/PlayerCardSeasonStats.tsx): a hairline separates
             // the header from data rows — missing before (DEP-227).
             .overlay(alignment: .bottom) {
@@ -829,15 +845,15 @@ private struct PlayerStatsTable: View {
                 // Web parity: the most recent season (index 0 — `stats` arrives
                 // newest-first) is highlighted, its year colored accent (DEP-227).
                 let isCurrent = index == 0
-                HStack(spacing: 12) {
+                HStack(spacing: DesignTokens.Spacing.sm) {
                     cell("\(season.season)", fixed: true, valueColor: isCurrent ? accent : nil)
                     cell(season.teamAbbrev ?? "—", fixed: true)
                     ForEach(columns, id: \.self) { column in
                         cell(column.value(for: season), fixed: false)
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, DesignTokens.Spacing.sm)
+                .padding(.vertical, DesignTokens.Spacing.sm)
                 .background(isCurrent ? accent.opacity(0.05) : .clear)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(
@@ -852,7 +868,7 @@ private struct PlayerStatsTable: View {
     private func cell(_ value: String, header: Bool = false, fixed: Bool, valueColor: Color? = nil) -> some View {
         Text(value)
             .font(header ? .caption.bold() : .footnote.weight(.semibold))
-            .foregroundStyle(valueColor ?? (header ? .secondary : .primary))
+            .foregroundStyle(valueColor ?? (header ? DesignTokens.Colors.textMuted : DesignTokens.Colors.textPrimary))
             .lineLimit(1)
             .minimumScaleFactor(0.75)
             .frame(maxWidth: fixed ? labelWidth : .infinity, alignment: .leading)
@@ -870,17 +886,17 @@ private struct PlayerStatsSkeleton: View {
     @ScaledMetric(relativeTo: .footnote) private var cellHeight: CGFloat = 14
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: DesignTokens.Spacing.sm) {
             ForEach(0..<2, id: \.self) { _ in
-                HStack(spacing: 12) {
+                HStack(spacing: DesignTokens.Spacing.sm) {
                     ForEach(0..<2, id: \.self) { _ in
                         RoundedRectangle(cornerRadius: 4)
-                            .fill(.tertiary)
+                            .fill(DesignTokens.Colors.surfacePlaceholder)
                             .frame(width: cellWidth, height: cellHeight)
                     }
                     ForEach(0..<columnCount, id: \.self) { _ in
                         RoundedRectangle(cornerRadius: 4)
-                            .fill(.tertiary)
+                            .fill(DesignTokens.Colors.surfacePlaceholder)
                             .frame(maxWidth: .infinity)
                             .frame(height: cellHeight)
                     }

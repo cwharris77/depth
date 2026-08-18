@@ -34,6 +34,14 @@ struct DepthChartFieldView: View {
     var formation: TeamFormation? = nil
     let onSelectPlayer: (Player) -> Void
 
+    // DEP-259: nameFontSize's 7-9pt clamp was a plain `.system(size:)` literal that never
+    // grew with Dynamic Type — the field's only text ignoring accessibility settings.
+    // Scaling the clamp's own bounds (not the computed size directly, since it's also
+    // field-height-driven) keeps the field-height-based shrink behavior while letting the
+    // label grow at larger text sizes, same as every other label on the field.
+    @ScaledMetric(relativeTo: .caption2) private var minNameFontSize: CGFloat = 7
+    @ScaledMetric(relativeTo: .caption2) private var maxNameFontSize: CGFloat = 9
+
     private var dotColors: TeamColors {
         colors ?? snapshot.team.colors
     }
@@ -198,8 +206,10 @@ struct DepthChartFieldView: View {
     /// Web parity (components/PlayerDot.tsx): the name size is clamped to the field's
     /// height (`clamp(7px, 1.3dvh, 9px)` — dvh proxies to the field's own height here)
     /// so labels shrink ahead of colliding when the field's available height shrinks
-    /// (short/landscape or split-screen viewports), while staying ≥7pt readable.
+    /// (short/landscape or split-screen viewports), while staying ≥7pt readable. The
+    /// 7/9 bounds are Dynamic-Type-scaled (DEP-259) so the field-height clamp still
+    /// applies, but the whole range grows at larger accessibility text sizes.
     private func nameFontSize(fieldHeight: CGFloat) -> CGFloat {
-        min(9, max(7, fieldHeight * 1.3 / 100))
+        min(maxNameFontSize, max(minNameFontSize, fieldHeight * 1.3 / 100))
     }
 }
