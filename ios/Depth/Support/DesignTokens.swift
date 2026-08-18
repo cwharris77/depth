@@ -31,8 +31,12 @@ enum DesignTokens {
         /// distinct color rather than the team accent, matching the DIFF-positive value
         /// on the Stats page (DesignTokens.Colors.statusWin replaces uiAccent there too).
         static let statusWin = Color(hex: "#30D158")
+        /// The bare navy hue behind web's `surfaceNavy` (`rgba(0,34,68,0.8)`), surfaced so
+        /// callers that need the same navy at a different opacity (the depth-chart field's
+        /// end zones draw it at 0.3) don't re-declare the RGB literal (DEP-260).
+        static let navy = Color(red: 0 / 255, green: 34 / 255, blue: 68 / 255)
         /// Matches web's `surfaceNavy` (`rgba(0,34,68,0.8)`) — the position-badge pill fill.
-        static let surfaceNavy = Color(red: 0 / 255, green: 34 / 255, blue: 68 / 255).opacity(0.8)
+        static let surfaceNavy = navy.opacity(0.8)
         static let surfaceCard = Color(hex: "#0f1623")
         static let surfaceCard2 = Color.white.opacity(0.03)
         /// Matches web's `surfaceRaised` — faint raised fill (rows, subtle cards).
@@ -46,6 +50,21 @@ enum DesignTokens {
         static let borderInput = Color.white.opacity(0.14)
         /// Used by the depth-chart field's yard lines.
         static let borderStrong = Color.white.opacity(0.10)
+        /// Field-surface group (DEP-260): native-only tokens, no web tokens.ts
+        /// counterpart — the grass hexes live inline in web's
+        /// `DepthChartFieldSurface.tsx` and the LOS blue in `FieldMarkings.tsx`.
+        /// Carried forward verbatim from the pre-token field; named so the field's
+        /// palette can be themed centrally.
+
+        /// Field grass gradient stops (`DepthChartFieldSurface.tsx`'s
+        /// `linear-gradient(180deg, #1e3d10 0%, #2d5a1b 40%, #2d5a1b 60%, #1e3d10 100%)`).
+        static let surfaceField1 = Color(hex: "#1e3d10")
+        static let surfaceField2 = Color(hex: "#2d5a1b")
+        /// Solid LOS blue, matching TV broadcast overlays (`FieldMarkings.tsx`).
+        static let fieldLineOfScrimmage = Color(hex: "#2d6fe0")
+        /// Hash-mark strokes, distinct from `borderStrong`'s 0.10 — field lines at
+        /// 0.12 white (`FieldMarkings.tsx`'s `surfaceChipHover`).
+        static let fieldHashMark = Color.white.opacity(0.12)
         /// Matches web's `borderDrawer` — the Uniforms tab's division-header hairline.
         static let borderDrawer = Color(hex: "#222b3d")
         /// Native-only (DEP-259) — no web tokens.ts counterpart. Shared redacted-skeleton
@@ -69,7 +88,9 @@ enum DesignTokens {
 
     enum Radius {
         static let sm: CGFloat = 12
-        /// Matches web's `Card.tsx` (`rounded-3xl`).
+        /// Matches web's `Card.tsx` (`rounded-3xl`). Also the depth-chart field's and
+        /// uniform-thumbnail's corner radius, preserved exactly with a name (DEP-260).
+        static let md: CGFloat = 16
         static let lg: CGFloat = 24
         static let full: CGFloat = 999
     }

@@ -126,7 +126,7 @@ private struct UniformThumbnailView: View {
             }
             .frame(width: 48, height: 64)
             .background(DesignTokens.Colors.surfaceRaised)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.sm, style: .continuous))
             .accessibilityHidden(true)
         }
     }

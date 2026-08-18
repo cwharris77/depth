@@ -71,14 +71,18 @@ struct DepthChartFieldView: View {
             let showsNames = DepthChartFieldLayout.showsNames(unit: unit, fieldWidth: proxy.size.width)
             ZStack {
                 LinearGradient(
-                    colors: [Color(hex: "#1e3d10"), Color(hex: "#2d5a1b"), Color(hex: "#1e3d10")],
+                    colors: [
+                        DesignTokens.Colors.surfaceField1,
+                        DesignTokens.Colors.surfaceField2,
+                        DesignTokens.Colors.surfaceField1,
+                    ],
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
 
                 FieldMarkings()
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
 
                 ForEach(slots, id: \.key) { slot in
                     slotView(
