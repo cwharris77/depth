@@ -73,21 +73,21 @@ struct ScheduleView: View {
     private func scheduleContent(_ schedule: TeamSchedule) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                HStack {
+                VStack(alignment: .leading, spacing: 4) {
                     seasonPicker
-                    Spacer()
                     // DEP-254: the picker's past-season rows have no other one-tap way
-                    // back — current is just the top row to re-tap. Mirrors DEP-245's
+                    // back — current is just another chip to re-tap. Mirrors DEP-245's
                     // "Back to current" on the Stats chips and Seasons sheet (and the
                     // roster's history-back-to-today): shown only while a past season is
                     // selected, wired to the same selectSeason(defaultSeason) path the
                     // picker itself uses.
                     if viewModel.isPastSeason, let defaultSeason = viewModel.defaultSeason {
-                        Button("Back to current") {
-                            Task { await viewModel.selectSeason(defaultSeason) }
+                        HStack {
+                            Spacer()
+                            BackToCurrentSeasonButton(identifier: "schedule-back-to-current") {
+                                Task { await viewModel.selectSeason(defaultSeason) }
+                            }
                         }
-                        .frame(minWidth: 44, minHeight: 44)
-                        .accessibilityIdentifier("schedule-back-to-current")
                     }
                 }
                 LazyVGrid(
@@ -107,20 +107,14 @@ struct ScheduleView: View {
     }
 
     private var seasonPicker: some View {
-        Picker(
-            "Season",
-            selection: Binding(
-                get: { viewModel.selectedSeason ?? TeamSchedule.earliestSeason },
-                set: { season in Task { await viewModel.selectSeason(season) } }
-            )
-        ) {
-            ForEach(viewModel.seasonOptions, id: \.self) { season in
-                Text(verbatim: "\(season)").tag(season)
-            }
+        SeasonChipRow(
+            items: viewModel.seasonOptions.reversed().map { SeasonChipItem(season: $0) },
+            selectedSeason: viewModel.selectedSeason,
+            accent: DesignTokens.Colors.accent,
+            identifierPrefix: "schedule"
+        ) { season in
+            Task { await viewModel.selectSeason(season) }
         }
-        .pickerStyle(.menu)
-        .frame(minHeight: 44)
-        .accessibilityIdentifier("schedule-season-picker")
     }
 }
 

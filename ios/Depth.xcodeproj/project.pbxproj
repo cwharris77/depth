@@ -107,6 +107,7 @@
 		BF92CF2CE4CF9FE16C7E3CE6 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC02FC1D8BC116C2D077870D /* SettingsView.swift */; };
 		C11893E533C74A67E2CEA185 /* DepthAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C97FD1B3B972D4063D8A72A2 /* DepthAuthService.swift */; };
 		C29CA74EE10ADF12470ADC46 /* DepthSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D355B51AA402BF658DDF63C /* DepthSegmentedControl.swift */; };
+		A1B2C3D4E5F60718293A4B5C /* SeasonChipRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C4B3A2918706F5E4D3C2B1A /* SeasonChipRow.swift */; };
 		C34BDFEA64ECB80BA1EE640C /* AppStoreScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69C97D21FFB3852484D4E4F2 /* AppStoreScreenshotsUITests.swift */; };
 		C8CCEA1A7BCF1B48488ABFC3 /* AuthSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E235B4DBA71FCAE9FC954FF4 /* AuthSessionStore.swift */; };
 		CB4FD1096A9B377BFD07C517 /* PerformanceUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C20C08065BC045F4A9C3C2D /* PerformanceUITests.swift */; };
@@ -215,6 +216,7 @@
 		797CCBB2827B3B2EC8DC53E2 /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
 		7C4D96EE256B7056FA88238F /* TeamSnapshotDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSnapshotDTO.swift; sourceTree = "<group>"; };
 		7D355B51AA402BF658DDF63C /* DepthSegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthSegmentedControl.swift; sourceTree = "<group>"; };
+		5C4B3A2918706F5E4D3C2B1A /* SeasonChipRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonChipRow.swift; sourceTree = "<group>"; };
 		81C2EA6E8FFCA933708611EF /* UniformPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniformPickerSheet.swift; sourceTree = "<group>"; };
 		88314A701F47D93C3F85CFC9 /* Staging.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Staging.xcconfig; sourceTree = "<group>"; };
 		8853CE0D389E576E83A733BB /* DepthOverrideMergeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthOverrideMergeTests.swift; sourceTree = "<group>"; };
@@ -527,6 +529,7 @@
 				A0F9DA82B880B33391B6E216 /* DepthSignposts.swift */,
 				06AB46EC302CCCD06C89EE95 /* DepthUnitTabBar.swift */,
 				797CCBB2827B3B2EC8DC53E2 /* DesignTokens.swift */,
+				5C4B3A2918706F5E4D3C2B1A /* SeasonChipRow.swift */,
 				F250C793481162ED79D64BB6 /* TeamIconView.swift */,
 				9149D725F0D8E31CEA618D40 /* TeamLogoCache.swift */,
 			);
@@ -803,6 +806,7 @@
 				BC786357DAB17986863FF90E /* DepthSignposts.swift in Sources */,
 				6A57B746F3F2CBE5A0C99B04 /* DepthUnitTabBar.swift in Sources */,
 				2A0CA573F4323A695A83E7E9 /* DesignTokens.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5C /* SeasonChipRow.swift in Sources */,
 				3DF5F85D81A69F60999825AB /* FeaturedStarters.swift in Sources */,
 				7DA6D56AE84232942CE0AED1 /* FieldMarkings.swift in Sources */,
 				8EEDDBFFF4D3D9EE186A3638 /* FormationSlot.swift in Sources */,
