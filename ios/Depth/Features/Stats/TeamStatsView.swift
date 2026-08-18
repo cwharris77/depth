@@ -90,11 +90,9 @@ struct TeamStatsView: View {
                                 .font(.headline)
                                 .accessibilityIdentifier("stats-season-state")
                             Spacer()
-                            Button("Back to current") {
+                            BackToCurrentSeasonButton(identifier: "stats-back-to-current") {
                                 viewModel.backToCurrentSeason()
                             }
-                            .frame(minWidth: 44, minHeight: 44)
-                            .accessibilityIdentifier("stats-back-to-current")
                         }
                         .padding(.horizontal)
                         .padding(.top, 12)
@@ -124,45 +122,34 @@ struct TeamStatsView: View {
     /// accent "latest" dot (unless a real upcoming row carries the UPCOMING badge
     /// instead); the synthetic upcoming chip renders dashed during the off-season.
     private var seasonChipsRow: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 6) {
-                ForEach(viewModel.seasons.reversed(), id: \.season) { stats in
-                    let isSelected = stats.season == viewModel.selectedSeason
-                    let isLatest = stats.season == viewModel.seasons.first?.season
-                    let isUpcomingRow = viewModel.upcomingSeasonHasRealRow
-                        && stats.season == viewModel.upcomingSeason
-                    SeasonChip(
-                        label: String(stats.season),
-                        isSelected: isSelected,
-                        accent: uiAccent,
-                        leading: isLatest && !isUpcomingRow ? .latestDot : nil,
-                        trailing: isUpcomingRow ? .upcomingBadge : nil
-                    ) {
-                        viewModel.selectSeason(stats.season)
-                    }
-                    .accessibilityIdentifier("stats-season-\(stats.season)")
-                }
-                if viewModel.hasUpcomingChip, let upcoming = viewModel.upcomingSeason {
-                    SeasonChip(
-                        label: String(upcoming),
-                        isSelected: upcoming == viewModel.selectedSeason,
-                        accent: uiAccent,
-                        leading: nil,
-                        trailing: .upcomingBadge,
-                        dashed: true
-                    ) {
-                        viewModel.selectSeason(upcoming)
-                    }
-                    .accessibilityIdentifier("stats-season-\(upcoming)")
-                }
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 10)
+        SeasonChipRow(
+            items: seasonChipItems,
+            selectedSeason: viewModel.selectedSeason,
+            accent: uiAccent,
+            identifierPrefix: "stats"
+        ) { season in
+            viewModel.selectSeason(season)
         }
         .background(DesignTokens.Colors.bgFilterbar)
         .overlay(alignment: .bottom) {
             Rectangle().fill(DesignTokens.Colors.borderStrong).frame(height: 1)
         }
+    }
+
+    private var seasonChipItems: [SeasonChipItem] {
+        var items = viewModel.seasons.reversed().map { stats -> SeasonChipItem in
+            let isLatest = stats.season == viewModel.seasons.first?.season
+            let isUpcomingRow = viewModel.upcomingSeasonHasRealRow && stats.season == viewModel.upcomingSeason
+            return SeasonChipItem(
+                season: stats.season,
+                leading: isLatest && !isUpcomingRow ? .latestDot : nil,
+                trailing: isUpcomingRow ? .upcomingBadge : nil
+            )
+        }
+        if viewModel.hasUpcomingChip, let upcoming = viewModel.upcomingSeason {
+            items.append(SeasonChipItem(season: upcoming, trailing: .upcomingBadge, dashed: true))
+        }
+        return items
     }
 
     private func teamNameBlock(_ team: Team) -> some View {
@@ -297,73 +284,6 @@ struct TeamStatsView: View {
 
     private func diffColor(_ diff: Int) -> Color {
         diff > 0 ? uiAccent : diff < 0 ? DesignTokens.Colors.statusInjured : DesignTokens.Colors.textMuted
-    }
-}
-
-/// A single season switcher chip (web lines 354-373 real rows, 381-396 synthetic chip).
-/// `leading`/`trailing` are the optional latest-dot and UPCOMING badge decorations.
-private struct SeasonChip: View {
-    enum Decoration {
-        case latestDot
-        case upcomingBadge
-    }
-
-    let label: String
-    let isSelected: Bool
-    let accent: Color
-    let leading: Decoration?
-    let trailing: Decoration?
-    var dashed: Bool = false
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                if leading == .latestDot {
-                    Circle()
-                        .fill(isSelected ? DesignTokens.Colors.bg : accent)
-                        .frame(width: 6, height: 6)
-                }
-                Text(label)
-                    .font(.caption.bold())
-                if trailing == .upcomingBadge {
-                    UpcomingBadge(isSelected: isSelected, accent: accent)
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(isSelected ? accent : Color.clear, in: RoundedRectangle(cornerRadius: 3))
-            .overlay {
-                RoundedRectangle(cornerRadius: 3)
-                    .strokeBorder(
-                        isSelected ? accent : DesignTokens.Colors.borderInput,
-                        style: StrokeStyle(lineWidth: 1, dash: dashed ? [3] : [])
-                    )
-            }
-            .foregroundStyle(isSelected ? DesignTokens.Colors.bg : DesignTokens.Colors.textMuted)
-        }
-        .buttonStyle(.plain)
-        .frame(minHeight: 44)
-    }
-}
-
-/// Web's `UpcomingBadge` (lines 73-85) — selected inverts to the app bg with a `bg55`
-/// border; unselected is accent text on `accent1a` with an `accent55` border.
-private struct UpcomingBadge: View {
-    let isSelected: Bool
-    let accent: Color
-
-    var body: some View {
-        Text("UPCOMING")
-            .font(.caption2.bold())
-            .tracking(0.4)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 1)
-            .foregroundStyle(isSelected ? DesignTokens.Colors.bg : accent)
-            .background(isSelected ? DesignTokens.Colors.bg.opacity(0.33) : accent.opacity(0.10))
-            .overlay {
-                Capsule().strokeBorder(isSelected ? DesignTokens.Colors.bg.opacity(0.55) : accent.opacity(0.55), lineWidth: 1)
-            }
     }
 }
 

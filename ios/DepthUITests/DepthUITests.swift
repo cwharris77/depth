@@ -306,18 +306,12 @@ final class DepthUITests: XCTestCase {
         let backToCurrent = app.buttons["schedule-back-to-current"]
         XCTAssertFalse(backToCurrent.waitForExistence(timeout: 2), "current season should not offer Back to current")
 
-        // Open the menu picker and select a past season (a year before the current one).
-        let picker = app.buttons["schedule-season-picker"]
-        XCTAssertTrue(picker.waitForExistence(timeout: 5), "the schedule should expose its season picker")
-        picker.tap()
-        // Menu picker items surface as buttons labeled with the 4-digit season year; the
-        // first row is the current season (newest), later rows are past seasons.
-        let yearButtons = app.buttons.matching(
-            NSPredicate(format: "label MATCHES %@", "\\d{4}")
-        ).allElementsBoundByIndex
-        XCTAssertGreaterThanOrEqual(yearButtons.count, 2, "the picker should offer a current and at least one past season")
-        // Pick the oldest season so isPastSeason is unambiguously true.
-        yearButtons.last?.tap()
+        // DEP-263: the schedule season picker is now the same chip row Stats uses —
+        // select the oldest chip directly (chips are ascending oldest-to-newest, left
+        // to right) so isPastSeason is unambiguously true.
+        let chips = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'schedule-season-'"))
+        XCTAssertGreaterThanOrEqual(chips.count, 2, "the schedule should offer a current and at least one past season")
+        chips.element(boundBy: 0).tap()
         XCTAssertTrue(backToCurrent.waitForExistence(timeout: 5), "a past season should offer Back to current")
 
         // Screenshot the historical state before returning to current.
