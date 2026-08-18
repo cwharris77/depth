@@ -24,11 +24,11 @@ struct FieldMarkings: View {
 
                 // End zones.
                 Rectangle()
-                    .fill(Color(red: 0, green: 34 / 255, blue: 68 / 255).opacity(0.3))
+                    .fill(DesignTokens.Colors.navy.opacity(0.3))
                     .frame(width: w, height: h * 0.06)
                     .position(x: w / 2, y: h * 0.03)
                 Rectangle()
-                    .fill(Color(red: 0, green: 34 / 255, blue: 68 / 255).opacity(0.3))
+                    .fill(DesignTokens.Colors.navy.opacity(0.3))
                     .frame(width: w, height: h * 0.06)
                     .position(x: w / 2, y: h * 0.97)
 
@@ -39,7 +39,7 @@ struct FieldMarkings: View {
                     path.move(to: CGPoint(x: 0, y: y))
                     path.addLine(to: CGPoint(x: w, y: y))
                 }
-                .stroke(Color(hex: "#2d6fe0"), lineWidth: h * 0.006)
+                .stroke(DesignTokens.Colors.fieldLineOfScrimmage, lineWidth: h * 0.006)
 
                 // Hash marks — two columns, one per side of the field.
                 ForEach([15, 25, 35, 45, 55, 65, 75, 85], id: \.self) { yPercent in
@@ -48,12 +48,12 @@ struct FieldMarkings: View {
                         path.move(to: CGPoint(x: w * 0.32, y: y))
                         path.addLine(to: CGPoint(x: w * 0.35, y: y))
                     }
-                    .stroke(Color.white.opacity(0.12), lineWidth: h * 0.004)
+                    .stroke(DesignTokens.Colors.fieldHashMark, lineWidth: h * 0.004)
                     Path { path in
                         path.move(to: CGPoint(x: w * 0.65, y: y))
                         path.addLine(to: CGPoint(x: w * 0.68, y: y))
                     }
-                    .stroke(Color.white.opacity(0.12), lineWidth: h * 0.004)
+                    .stroke(DesignTokens.Colors.fieldHashMark, lineWidth: h * 0.004)
                 }
             }
         }
