@@ -91,8 +91,8 @@ struct ScheduleView: View {
                     }
                 }
                 LazyVGrid(
-                    columns: [GridItem(.adaptive(minimum: 144, maximum: 260), spacing: 12)],
-                    spacing: 12
+                    columns: [GridItem(.adaptive(minimum: 144, maximum: 260), spacing: DesignTokens.Spacing.sm)],
+                    spacing: DesignTokens.Spacing.sm
                 ) {
                     ForEach(schedule.games) { game in
                         ScheduleGameCard(game: game, isPastSeason: viewModel.isPastSeason)
@@ -124,27 +124,33 @@ private struct ScheduleGameCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Week \(game.week)")
-                .font(.headline)
+            // Eyebrow + title hierarchy matches the Stats page's NEXT GAME card
+            // (TeamStatsView.swift's NextGameCard): caption2.bold eyebrow, subheadline
+            // .heavy title.
+            Text("WEEK \(game.week)")
+                .font(.caption2.bold())
+                .tracking(0.8)
+                .foregroundStyle(DesignTokens.Colors.textMuted)
 
             if game.isBye {
                 Text("BYE")
                     .font(.title3.bold())
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
             } else {
                 HStack(spacing: 6) {
                     if let opponent = game.opponent {
-                        TeamIconView(team: opponent, size: 24)
+                        TeamIconView(team: opponent)
                     }
                     Text(opponentLabel)
-                        .font(.title3.bold())
+                        .font(.subheadline.weight(.heavy))
+                        .foregroundStyle(DesignTokens.Colors.textPrimary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
                 Text(game.isHome ? "HOME" : "AWAY")
                     .font(.caption.bold())
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
 
                 Text(detailLabel)
                     .font(.subheadline.weight(.semibold))
@@ -153,8 +159,7 @@ private struct ScheduleGameCard: View {
             }
         }
         .frame(maxWidth: .infinity, minHeight: 112, alignment: .leading)
-        .padding()
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .depthCard()
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityIdentifier("schedule-week-\(game.week)")
@@ -184,10 +189,10 @@ private struct ScheduleGameCard: View {
 
     private var resultColor: Color {
         switch game.result {
-        case .win: .green
-        case .loss: .red
-        case .tie: .orange
-        case nil: .secondary
+        case .win: DesignTokens.Colors.statusWin
+        case .loss: DesignTokens.Colors.statusInjured
+        case .tie: DesignTokens.Colors.textMuted
+        case nil: DesignTokens.Colors.textMuted
         }
     }
 
