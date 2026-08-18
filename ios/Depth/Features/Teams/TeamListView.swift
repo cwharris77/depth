@@ -216,14 +216,9 @@ struct TeamListView: View {
             onSelectPlayer?(hit)
         } label: {
             HStack(spacing: 12) {
-                ZStack {
-                    Circle().fill(Color(hex: hit.team.colors.uiAccent))
-                    Text("\(hit.number)")
-                        .font(.caption.bold())
-                        .foregroundStyle(Color(hex: hit.team.colors.onAccent))
-                }
-                .frame(width: 36, height: 36)
-                .accessibilityHidden(true)
+                playerHitAvatar(hit)
+                    .frame(width: 36, height: 36)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading) {
                     Text(hit.name)
                         .font(.subheadline)
@@ -239,6 +234,37 @@ struct TeamListView: View {
         .buttonStyle(.plain)
         .accessibilityIdentifier("player-hit-\(hit.id)")
         .listRowBackground(DesignTokens.Colors.surfaceCard2)
+    }
+
+    // Real headshot when available (PlayerDetailView's `photo` pattern); falls back to
+    // the jersey-number-on-team-accent badge, matching this row's prior always-shown
+    // treatment, rather than web NavSwitcher's neutral silhouette fallback — a jersey
+    // number is more informative in a dense search-result list.
+    @ViewBuilder
+    private func playerHitAvatar(_ hit: PlayerHit) -> some View {
+        let accent = Color(hex: hit.team.colors.uiAccent)
+        let onAccent = Color(hex: hit.team.colors.onAccent)
+        ZStack {
+            Circle().fill(accent)
+            if let url = hit.photoUrl.flatMap(URL.init(string:)) {
+                AsyncImage(url: url) { phase in
+                    if let image = phase.image {
+                        image.resizable().scaledToFill()
+                    } else {
+                        numberBadge(hit.number, color: onAccent)
+                    }
+                }
+                .clipShape(Circle())
+            } else {
+                numberBadge(hit.number, color: onAccent)
+            }
+        }
+    }
+
+    private func numberBadge(_ number: Int, color: Color) -> some View {
+        Text("\(number)")
+            .font(.caption.bold())
+            .foregroundStyle(color)
     }
 }
 
