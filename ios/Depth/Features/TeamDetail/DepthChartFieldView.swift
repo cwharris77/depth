@@ -173,9 +173,12 @@ struct DepthChartFieldView: View {
                     }
                 }
                 .frame(width: dotSize, height: dotSize)
+            // Web parity (components/PlayerDot.tsx): the position tag renders in the
+            // app's muted gray (textMuted), not the system `.secondary` gray, so the
+            // field matches the web app's label color exactly.
             Text(label)
                 .font(.caption2.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(DesignTokens.Colors.textMuted)
 
             // DEP-250: web's PlayerDot name row — the player's last name under the
             // position tag, shown only when the unit's layout has room (see
