@@ -48,6 +48,11 @@ targets:
           - UIInterfaceOrientationPortrait
         SUPABASE_URL: $(SUPABASE_URL)
         SUPABASE_PUBLISHABLE_KEY: $(SUPABASE_PUBLISHABLE_KEY)
+        # DEP-220 UI-test screenshot harness: the Debug-only UI_TESTING_UNIFORM_ART_BASE_URL
+        # override fetches the prerendered uniform thumbs from a local python http.server.
+        # ATS permits this loopback cleartext; remote cleartext stays blocked.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
     settings:
       base:
         GENERATE_INFOPLIST_FILE: NO
