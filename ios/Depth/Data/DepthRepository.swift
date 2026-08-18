@@ -31,6 +31,11 @@ protocol DepthRepository: Sendable {
     /// roster. A default no-op keeps test doubles honest until a real implementation
     /// lands; only SupabaseDepthRepository overrides it.
     func searchPlayers(query: String) async throws -> [PlayerHit]
+    /// All 32 teams' kits as flat listings for the uniform archive (mirrors web's
+    /// `listUniforms`). One query joins uniform rows with team conference/division in
+    /// code — kit metadata only, no player/depth-chart embeds, so the payload stays
+    /// bounded. Cache-first like the team list (stable, ~105 rows).
+    func listUniforms() async throws -> [UniformListing]
     /// The public `app_config` singleton backing the update gate (design spec's
     /// "Database evolution and update gate"). Callers cache the last known value and
     /// fall back to it when this throws.
@@ -39,4 +44,5 @@ protocol DepthRepository: Sendable {
 
 extension DepthRepository {
     func searchPlayers(query: String) async throws -> [PlayerHit] { [] }
+    func listUniforms() async throws -> [UniformListing] { [] }
 }
