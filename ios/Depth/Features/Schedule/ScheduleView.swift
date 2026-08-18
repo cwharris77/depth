@@ -73,7 +73,23 @@ struct ScheduleView: View {
     private func scheduleContent(_ schedule: TeamSchedule) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                seasonPicker
+                HStack {
+                    seasonPicker
+                    Spacer()
+                    // DEP-254: the picker's past-season rows have no other one-tap way
+                    // back — current is just the top row to re-tap. Mirrors DEP-245's
+                    // "Back to current" on the Stats chips and Seasons sheet (and the
+                    // roster's history-back-to-today): shown only while a past season is
+                    // selected, wired to the same selectSeason(defaultSeason) path the
+                    // picker itself uses.
+                    if viewModel.isPastSeason, let defaultSeason = viewModel.defaultSeason {
+                        Button("Back to current") {
+                            Task { await viewModel.selectSeason(defaultSeason) }
+                        }
+                        .frame(minWidth: 44, minHeight: 44)
+                        .accessibilityIdentifier("schedule-back-to-current")
+                    }
+                }
                 LazyVGrid(
                     columns: [GridItem(.adaptive(minimum: 144, maximum: 260), spacing: 12)],
                     spacing: 12
