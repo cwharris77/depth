@@ -48,4 +48,7 @@ __pycache__/
 ios/**/xcuserdata/
 *.xcuserstate
 ios/DerivedData/
+ios/.derivedData/
+ios/.pr-screenshots/
+ios/.pr-screenshots.xcresult
 ios/.local-service-role-key
