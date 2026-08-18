@@ -282,8 +282,12 @@ struct TeamStatsView: View {
         diff > 0 ? "+\(diff)" : String(diff)
     }
 
+    /// DEP-264: matches ScheduleGameCard's win/loss/tie colors — a positive DIFF is the
+    /// same `statusWin` green as a schedule-card win, not the team accent.
     private func diffColor(_ diff: Int) -> Color {
-        diff > 0 ? uiAccent : diff < 0 ? DesignTokens.Colors.statusInjured : DesignTokens.Colors.textMuted
+        diff > 0
+            ? DesignTokens.Colors.statusWin
+            : diff < 0 ? DesignTokens.Colors.statusInjured : DesignTokens.Colors.textMuted
     }
 }
 
@@ -315,7 +319,9 @@ private struct NextGameCard: View {
                 // Team icon (logo) instead of the plain color square; the abbrev tile
                 // remains the fallback for a team with no logo URL.
                 if (opponent.logoDark ?? opponent.logo) != nil {
-                    TeamIconView(team: opponent, size: 32)
+                    // DEP-264: TeamIconView's default size (28), matching the schedule
+                    // game card's opponent icon.
+                    TeamIconView(team: opponent)
                 } else {
                     Text(opponent.abbrev.uppercased())
                         .font(.caption2.weight(.black))
