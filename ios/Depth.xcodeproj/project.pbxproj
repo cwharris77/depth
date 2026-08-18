@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		014A48739825608FC24A6EF1 /* PRScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D492C36C54AC9057D4D5A12 /* PRScreenshotsUITests.swift */; };
 		025FDF15E52586C788266B6A /* UniformsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3673307E51066FAF204F5421 /* UniformsTab.swift */; };
 		028DB6758D8847C5EBD21D3C /* ScheduleFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C89B84763FF4CDE45B5A7D9 /* ScheduleFeatureTests.swift */; };
 		03F357FEC081C3772FD3D851 /* CompareViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1A58C48C2A6DDA57820C9D /* CompareViewModel.swift */; };
@@ -197,6 +198,7 @@
 		48FA4E18037077277DE72192 /* Team.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Team.swift; sourceTree = "<group>"; };
 		4A43E560AF96AAD2A6546726 /* TeamStatsMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamStatsMapper.swift; sourceTree = "<group>"; };
 		4C20C08065BC045F4A9C3C2D /* PerformanceUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceUITests.swift; sourceTree = "<group>"; };
+		4D492C36C54AC9057D4D5A12 /* PRScreenshotsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PRScreenshotsUITests.swift; sourceTree = "<group>"; };
 		4E08CA3C995029A6BAC0AB0E /* DepthUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DepthUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F264CCAAD3DD2BD01CFF1D9 /* CachingDepthRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingDepthRepository.swift; sourceTree = "<group>"; };
 		50938E38F00E79484F436B49 /* AppBuildInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBuildInfo.swift; sourceTree = "<group>"; };
@@ -437,6 +439,7 @@
 				1134BC81FF92C3AF1A114845 /* DepthUITests.swift */,
 				4C20C08065BC045F4A9C3C2D /* PerformanceUITests.swift */,
 				B363F9AF5C0854305B6E670A /* PlayerCardReorderUITests.swift */,
+				4D492C36C54AC9057D4D5A12 /* PRScreenshotsUITests.swift */,
 				E147E349DAED0C3DFF5A965C /* ShareUITests.swift */,
 				25A33972CBA3A43968B410F6 /* UITestHelpers.swift */,
 			);
@@ -867,6 +870,7 @@
 				C34BDFEA64ECB80BA1EE640C /* AppStoreScreenshotsUITests.swift in Sources */,
 				A1E1EFE3A8781B7BA2758DB4 /* AuthUITests.swift in Sources */,
 				5B9538595A885E3D730A7A12 /* DepthUITests.swift in Sources */,
+				014A48739825608FC24A6EF1 /* PRScreenshotsUITests.swift in Sources */,
 				CB4FD1096A9B377BFD07C517 /* PerformanceUITests.swift in Sources */,
 				E6FE8547B35A824990B3FDED /* PlayerCardReorderUITests.swift in Sources */,
 				D693C9DD2EB4D028D38891D4 /* ShareUITests.swift in Sources */,

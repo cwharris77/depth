@@ -21,34 +21,6 @@
                ReferencedContainer = "container:Depth.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "NO"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
-            buildForAnalyzing = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "8A7EE9588675E74B9C5AE163"
-               BuildableName = "DepthTests.xctest"
-               BlueprintName = "DepthTests"
-               ReferencedContainer = "container:Depth.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "NO"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
-            buildForAnalyzing = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "3B434A68ECA5BC763E8833C0"
-               BuildableName = "DepthUITests.xctest"
-               BlueprintName = "DepthUITests"
-               ReferencedContainer = "container:Depth.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -72,30 +44,11 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "8A7EE9588675E74B9C5AE163"
-               BuildableName = "DepthTests.xctest"
-               BlueprintName = "DepthTests"
-               ReferencedContainer = "container:Depth.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
                BlueprintIdentifier = "3B434A68ECA5BC763E8833C0"
                BuildableName = "DepthUITests.xctest"
                BlueprintName = "DepthUITests"
                ReferencedContainer = "container:Depth.xcodeproj">
             </BuildableReference>
-            <SkippedTests>
-               <Test
-                  Identifier = "AppStoreScreenshotsUITests">
-               </Test>
-               <Test
-                  Identifier = "PRScreenshotsUITests">
-               </Test>
-            </SkippedTests>
          </TestableReference>
       </Testables>
       <CommandLineArguments>

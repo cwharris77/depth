@@ -111,5 +111,27 @@ schemes:
           # docs/ios-appstore-screenshots.md for the documented local workflow.
           skippedTests:
             - AppStoreScreenshotsUITests
+            # PRScreenshotsUITests is likewise an agent-triggered on-demand capture tool
+            # (docs/ios-pr-screenshots.md), not a correctness gate — same skip rationale.
+            # It IS runnable, via the dedicated Depth-PRScreenshots scheme below (adding
+            # it to this skippedTests only keeps it out of the default `test` action).
+            - PRScreenshotsUITests
+    archive:
+      config: Release
+
+  # Dedicated scheme for the agent-triggered PR screenshot capture. It includes the
+  # DepthUITests target WITHOUT the AppStore/PR screenshot skips, so the workflow (and
+  # local runs) can invoke it with `-only-testing:DepthUITests/PRScreenshotsUITests` —
+  # which cannot override a scheme-level skip. See docs/ios-pr-screenshots.md.
+  Depth-PRScreenshots:
+    build:
+      targets:
+        Depth: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - DepthUITests
     archive:
       config: Release
