@@ -275,12 +275,13 @@ private struct TeamRowSkeleton: View {
     }
 }
 
-/// Colored initials badge with the team logo layered on when available. The app never
-/// bundles logo artwork and the SwiftData snapshot cache stays text/URL-only (design
-/// spec: "no image blobs") — fetched logos land in TeamLogoCache (a URLCache), so an
-/// already-seen logo renders instantly instead of flashing initials (DEP-247);
-/// `logo`/`logoDark` stay opportunistic with these initials as the first-load or
-/// URL-nil fallback.
+/// Colored initials badge with the team logo layered on when available. Fill defaults to
+/// `colors.primary` with a `colors.secondary` ring (web NavSwitcher parity, DEP-237); teams
+/// whose logo blends into their own primary carry a pinned override via `TeamBadgeOverride`.
+/// The app never bundles logo artwork and the SwiftData snapshot cache stays text/URL-only
+/// (design spec: "no image blobs") — fetched logos land in TeamLogoCache (a URLCache), so an
+/// already-seen logo renders instantly instead of flashing initials (DEP-247); `logo`/
+/// `logoDark` stay opportunistic with these initials as the first-load or URL-nil fallback.
 struct TeamBadge: View {
     /// Shared with `TeamRowSkeleton` so the placeholder and the real row scale together.
     static let baseSize: CGFloat = 36
@@ -290,30 +291,36 @@ struct TeamBadge: View {
     @ScaledMetric(relativeTo: .body) private var size: CGFloat = TeamBadge.baseSize
 
     var body: some View {
+        let backgroundColor = Color(hex: TeamBadgeOverride.backgroundColorHex(for: team))
+        let ringColor = Color(hex: TeamBadgeOverride.ringColorHex(for: team))
+        let onBackground = Color(hex: readableTextOn(TeamBadgeOverride.backgroundColorHex(for: team)))
         ZStack {
-            Circle().fill(Color(hex: team.colors.uiAccent))
+            Circle().fill(backgroundColor)
             // DEP-239: prefer `logoDark` — the app forces an always-dark theme (and team
             // badges sit on that dark bg), so the dark-optimized ESPN variant is the right
             // asset; same reasoning as the player season-stats card using `logo_dark_url`.
             // Falls back to the light `logo` for a team with no dark variant populated.
             if let url = (team.logoDark ?? team.logo).flatMap(URL.init(string:)) {
                 CachedTeamLogo(url: url) {
-                    initials
+                    initials(onBackground)
                 } content: { image in
                     image.resizable().scaledToFit().padding(6)
                 }
             } else {
-                initials
+                initials(onBackground)
             }
         }
         .frame(width: size, height: size)
+        .overlay {
+            Circle().strokeBorder(ringColor, lineWidth: 2)
+        }
         .accessibilityHidden(true)
     }
 
-    private var initials: some View {
+    private func initials(_ color: Color) -> some View {
         Text(team.abbrev)
             .font(.caption2.bold())
-            .foregroundStyle(Color(hex: team.colors.onAccent))
+            .foregroundStyle(color)
     }
 }
 
