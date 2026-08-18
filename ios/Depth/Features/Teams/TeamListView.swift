@@ -75,6 +75,11 @@ struct TeamListView: View {
                 TeamRowSkeleton().accessibilityHidden(true)
             }
             .listStyle(.plain)
+            // DEP-262: the loaded branches set `.scrollContentBackground(.hidden)` +
+            // `.background(bg)`; without them a `.plain` List paints pure black, flashing
+            // against the sheet's navy as content lands.
+            .scrollContentBackground(.hidden)
+            .background(DesignTokens.Colors.bg)
             .scrollIndicators(.hidden)
             .redacted(reason: .placeholder)
             .accessibilityElement(children: .ignore)
@@ -88,6 +93,8 @@ struct TeamListView: View {
                 Text(error.recoveryDescription)
             } actions: {
                 Button("Retry") { Task { await viewModel.load() } }
+                    .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityIdentifier("teams-retry")
             }
 
         case .loaded:
@@ -109,17 +116,33 @@ struct TeamListView: View {
         }
     }
 
-    // Mirrors the web NavSwitcher's AFC/NFC SegmentedControl. Hidden while searching,
-    // same as the web.
+    // Mirrors the web NavSwitcher's AFC/NFC SegmentedControl — rendered with native's
+    // port of that same web component (DepthSegmentedControl), not a stock
+    // UISegmentedControl that paints a different pill than every other switcher.
+    // Hidden while searching, same as the web.
     private var conferencePicker: some View {
-        Picker("Conference", selection: $conference) {
-            Text("AFC").tag("AFC")
-            Text("NFC").tag("NFC")
-        }
-        .pickerStyle(.segmented)
+        DepthSegmentedControl(
+            options: [
+                DepthSegmentedOption(value: "AFC", label: "AFC", identifier: "team-conference-afc"),
+                DepthSegmentedOption(value: "NFC", label: "NFC", identifier: "team-conference-nfc"),
+            ],
+            selection: conference,
+            onChange: { conference = $0 },
+            // DEP-262 locked decision: the conference picker is not team-scoped, so it
+            // tints with the app accent (fixed green) rather than the current team's
+            // accent — matching how the other non-team-scoped DepthSegmentedControls
+            // (unit tabs, compare tabs) behave, and staying consistent regardless of
+            // which team is selected.
+            activeColor: DesignTokens.Colors.accent,
+            // Web parity: the NavSwitcher conference picker is `fullWidth` (a standalone
+            // bar over the division list), same as the Matchup/By-position and page
+            // switchers.
+            fullWidth: true
+        )
         .padding(.horizontal)
         .padding(.top, DesignTokens.Spacing.sm)
         .padding(.bottom, DesignTokens.Spacing.xs)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("team-conference-picker")
     }
 
@@ -131,14 +154,14 @@ struct TeamListView: View {
             // any of the 32 teams sit in their own section below the team matches.
             List {
                 if !viewModel.filteredTeams.isEmpty {
-                    Section(header: sectionHeader("Teams")) {
+                    Section(header: sectionHeader("TEAMS")) {
                         ForEach(viewModel.filteredTeams) { team in
                             teamRow(team)
                         }
                     }
                 }
                 if !viewModel.playerHits.isEmpty {
-                    Section(header: sectionHeader("Players")) {
+                    Section(header: sectionHeader("PLAYERS")) {
                         ForEach(viewModel.playerHits) { hit in
                             playerRow(hit)
                         }
@@ -205,33 +228,48 @@ struct TeamListView: View {
             }
         }
         .buttonStyle(.plain)
+        // DEP-262: row height is content-derived (36pt badge + vertical padding), which
+        // shrinks under 44pt at small Dynamic Type — enforce the minimum here, matching
+        // the 44pt guarantee the team-switcher pill in TeamDetailView keeps.
+        .frame(minHeight: 44)
         .accessibilityIdentifier("team-row-\(team.id)")
         .listRowBackground(DesignTokens.Colors.surfaceCard2)
     }
 
     // Web NavSwitcher player-hit parity: a player badge in their team's accent, name,
     // and the team they play for. Tapping switches to that team and opens the player.
+    @ViewBuilder
     private func playerRow(_ hit: PlayerHit) -> some View {
-        Button {
-            onSelectPlayer?(hit)
-        } label: {
-            HStack(spacing: 12) {
-                playerHitAvatar(hit)
-                    .frame(width: 36, height: 36)
-                    .accessibilityHidden(true)
-                VStack(alignment: .leading) {
-                    Text(hit.name)
-                        .font(.subheadline)
-                    Text("\(hit.position.rawValue) · \(hit.team.city) \(hit.team.name)")
-                        .font(.caption)
-                        .foregroundStyle(DesignTokens.Colors.textMuted)
-                }
-                Spacer()
+        // DEP-262: with no `onSelectPlayer` handler (CompareView renders TeamListView
+        // without one), the old code wrapped every row in a Button that did nothing —
+        // a tappable-but-dead hit. Render the row non-interactive instead.
+        let label = HStack(spacing: DesignTokens.Spacing.sm) {
+            playerHitAvatar(hit)
+            VStack(alignment: .leading) {
+                Text(hit.name)
+                    .font(.subheadline)
+                Text("\(hit.position.rawValue) · \(hit.team.city) \(hit.team.name)")
+                    .font(.caption)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
             }
-            .padding(.vertical, 4)
-            .accessibilityElement(children: .combine)
+            Spacer()
         }
-        .buttonStyle(.plain)
+        .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+
+        Group {
+            if let onSelectPlayer {
+                Button {
+                    onSelectPlayer(hit)
+                } label: {
+                    label
+                }
+                .buttonStyle(.plain)
+            } else {
+                label
+            }
+        }
+        .frame(minHeight: 44)
         .accessibilityIdentifier("player-hit-\(hit.id)")
         .listRowBackground(DesignTokens.Colors.surfaceCard2)
     }
@@ -259,7 +297,16 @@ struct TeamListView: View {
                 numberBadge(hit.number, color: onAccent)
             }
         }
+        // DEP-262: matches the team badge's @ScaledMetric (same base size), so the two
+        // row types scale together at large Dynamic Type instead of the player-hit badge
+        // staying fixed at 36pt while every team badge grows.
+        .frame(width: playerBadgeSize, height: playerBadgeSize)
+        .accessibilityHidden(true)
     }
+
+    /// The player-hit avatar's scaled diameter — the same `TeamBadge.baseSize` scaling
+    /// the team rows use, so the two row types stay in step at large type.
+    @ScaledMetric(relativeTo: .body) private var playerBadgeSize: CGFloat = TeamBadge.baseSize
 
     private func numberBadge(_ number: Int, color: Color) -> some View {
         Text("\(number)")
@@ -272,7 +319,7 @@ private struct TeamRow: View {
     let team: Team
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: DesignTokens.Spacing.sm) {
             TeamBadge(team: team)
             // DEP-238: city + name only — the division is already the section header above
             // (a division has at most 4 teams, so it's always in view), so repeating it
@@ -293,9 +340,11 @@ private struct TeamRowSkeleton: View {
     @ScaledMetric(relativeTo: .body) private var titleHeight: CGFloat = 16
 
     var body: some View {
-        HStack(spacing: 12) {
-            Circle().fill(.gray).frame(width: badgeSize, height: badgeSize)
-            RoundedRectangle(cornerRadius: 4).fill(.gray).frame(maxWidth: 140, maxHeight: titleHeight)
+        HStack(spacing: DesignTokens.Spacing.sm) {
+            Circle().fill(DesignTokens.Colors.surfacePlaceholder).frame(width: badgeSize, height: badgeSize)
+            RoundedRectangle(cornerRadius: 4)
+                .fill(DesignTokens.Colors.surfacePlaceholder)
+                .frame(maxWidth: 140, maxHeight: titleHeight)
         }
         .padding(.vertical, 4)
     }
@@ -304,13 +353,15 @@ private struct TeamRowSkeleton: View {
 /// Colored initials badge with the team logo layered on when available. Fill defaults to
 /// `colors.primary` with a `colors.secondary` ring (web NavSwitcher parity, DEP-237); teams
 /// whose logo blends into their own primary carry a pinned override via `TeamBadgeOverride`.
-/// The app never bundles logo artwork and the SwiftData snapshot cache stays text/URL-only
-/// (design spec: "no image blobs") — fetched logos land in TeamLogoCache (a URLCache), so an
-/// already-seen logo renders instantly instead of flashing initials (DEP-247); `logo`/
-/// `logoDark` stay opportunistic with these initials as the first-load or URL-nil fallback.
+/// DEP-262: the logo itself is composed through `TeamIconView` (the shared "which URL +
+/// how to render a team logo" rule), not re-implemented here — this badge supplies only
+/// the ring + initials fallback that TeamIconView does not own.
 struct TeamBadge: View {
     /// Shared with `TeamRowSkeleton` so the placeholder and the real row scale together.
     static let baseSize: CGFloat = 36
+    /// DEP-262: the logo's inset inside the circle, carried over from the old
+    /// `.padding(6)` on the logo content so it keeps its gap from the ring.
+    private static let logoInset: CGFloat = 6
 
     let team: Team
 
@@ -322,15 +373,13 @@ struct TeamBadge: View {
         let onBackground = Color(hex: readableTextOn(TeamBadgeOverride.backgroundColorHex(for: team)))
         ZStack {
             Circle().fill(backgroundColor)
-            // DEP-239: prefer `logoDark` — the app forces an always-dark theme (and team
-            // badges sit on that dark bg), so the dark-optimized ESPN variant is the right
-            // asset; same reasoning as the player season-stats card using `logo_dark_url`.
-            // Falls back to the light `logo` for a team with no dark variant populated.
-            if let url = (team.logoDark ?? team.logo).flatMap(URL.init(string:)) {
-                CachedTeamLogo(url: url) {
+            if (team.logoDark ?? team.logo).flatMap(URL.init(string:)) != nil {
+                // DEP-262: the logo renders through TeamIconView (the shared "which URL +
+                // how to render a team logo" rule); the smaller frame keeps the old 6pt
+                // inset from the ring. Its placeholder shows the initials below while the
+                // first fetch completes instead of flashing an empty circle (DEP-247).
+                TeamIconView(team: team, size: size - 2 * Self.logoInset) {
                     initials(onBackground)
-                } content: { image in
-                    image.resizable().scaledToFit().padding(6)
                 }
             } else {
                 initials(onBackground)
