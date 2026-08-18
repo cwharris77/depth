@@ -25,34 +25,18 @@ struct CompareView: View {
             .task { await viewModel.load() }
             .refreshable { await viewModel.load() }
             .sheet(isPresented: pickerPresented) {
-                NavigationStack {
-                    TeamListView(
-                        repository: repository,
-                        selectedTeamId: currentTeamId ?? ""
-                    ) { teamId in
+                TeamListPickerSheet(
+                    repository: repository,
+                    title: "Pick a team",
+                    selectedTeamId: currentTeamId ?? "",
+                    onSelectTeam: { teamId in
                         if let slot = viewModel.pickingSlot {
                             Task { await viewModel.pickTeam(teamId, into: slot) }
                         }
                         viewModel.endPicking()
-                    }
-                    .navigationTitle("Pick a team")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button { viewModel.endPicking() } label: {
-                                Image(systemName: "xmark")
-                            }
-                            .frame(minWidth: 44, minHeight: 44)
-                            .accessibilityLabel("Close")
-                        }
-                    }
-                    .presentationBackground(DesignTokens.Colors.bg)
-                    // `.sheet()` content gets a fresh UITraitCollection rather than
-                    // inheriting ContentView's UI_TESTING_DYNAMIC_TYPE override — see
-                    // that modifier's doc comment. Re-applied here so the picker's
-                    // team-row scaling reflects the accessibility size in tests.
-                    .modifier(UITestingDynamicTypeOverride())
-                }
+                    },
+                    dismissOnSelect: false
+                )
             }
     }
 
