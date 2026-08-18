@@ -1,4 +1,5 @@
 import { UNIFORMS } from './data';
+import { uniformArtURL } from './art';
 
 // Turns the hand-curated archive (data.ts) into an append-only SQL seed migration. The
 // emitted upsert is idempotent (ON CONFLICT (id) DO UPDATE) and guarded by
@@ -52,7 +53,10 @@ function rowValues(u: (typeof UNIFORMS)[number]): string {
     color_accent: u.colors.accent,
     ui_accent: u.colors.uiAccent,
     on_accent: u.colors.onAccent,
-    image_path: u.imagePath ?? null,
+    // Deterministic artifact URL (DEP-220): every curated kit's thumb lives at
+    // UNIFORM_ART_BASE_URL/<teamId>-<slug>.webp. data.ts's explicit imagePath override
+    // (if ever set) wins over the derived default.
+    image_path: u.imagePath ?? uniformArtURL(`${u.teamId}-${u.slug}`),
   };
   return `  (${COLUMNS.map((c) => sqlVal(record[c])).join(', ')})`;
 }

@@ -16,6 +16,7 @@
     "check:uniform-releases": "tsx scripts/check-uniform-releases.mts",
     "preview:bypass-url": "tsx scripts/vercel-preview-url.mts",
     "gen:uniform-seed": "tsx scripts/gen-uniform-seed.mts",
+    "gen:uniform-thumbs": "tsx scripts/gen-uniform-thumbs.mts",
     "gen:team-seed": "tsx scripts/gen-team-seed.mts",
     "gen:icons": "tsx scripts/gen-icons.mts",
     "db:types": "supabase gen types typescript --local > lib/database.types.ts",
