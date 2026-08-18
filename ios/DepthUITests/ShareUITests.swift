@@ -1,7 +1,7 @@
 import XCTest
 
 // Task 8E live journey: open a team, share the depth chart, and confirm the native
-// share sheet presents on real production-shaped staging data. Cancelling must leave
+// share sheet presents on real production data. Cancelling must leave
 // the team-detail screen unchanged (QA plan's "cancellation" case).
 final class ShareUITests: XCTestCase {
     func testShareDepthChartPresentsTheNativeShareSheet() throws {

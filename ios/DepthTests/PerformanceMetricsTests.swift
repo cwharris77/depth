@@ -12,15 +12,15 @@ final class PerformanceMetricsTests: XCTestCase {
     private func oneShotOptions() -> XCTMeasureOptions {
         // A real network round trip (the first test) shouldn't run the default 10x —
         // one measured iteration is enough to catch a regression without hammering
-        // staging Supabase or tripling this suite's CI runtime.
+        // the production Supabase project or tripling this suite's CI runtime.
         let options = XCTMeasureOptions()
         options.iterationCount = 1
         return options
     }
 
-    /// Real network hit against the same staging Supabase project every other test in
+    /// Real network hit against the same production Supabase project every other test in
     /// this target and `DepthUITests` already exercises (Debug's `.xcconfig` bakes the
-    /// staging URL/key into the hosted app's Info.plist that `DepthEnvironment` reads).
+    /// production URL/key into the hosted app's Info.plist that `DepthEnvironment` reads).
     /// Budget is intentionally looser than the design spec's 3s "constrained
     /// networking" ceiling — shared macOS CI runners add non-deterministic
     /// scheduling/network noise on top of the real request; 6s still catches an
@@ -50,7 +50,7 @@ final class PerformanceMetricsTests: XCTestCase {
             elapsed = clock.now - start
         }
 
-        XCTAssertNil(thrown, "team snapshot fetch should succeed against staging")
+        XCTAssertNil(thrown, "team snapshot fetch should succeed against production")
         XCTAssertLessThan(
             elapsed, .seconds(6),
             "team snapshot query+decode should stay well under the constrained-network 3s budget, with slack for CI noise"

@@ -1,10 +1,14 @@
 name: iOS CI
 
 # Builds and tests the native app (ios/) on every PR/push. A PR runs a fast smoke set
-# (unit tests + the critical-path/reorder/auth UI journeys); the full unit + UI suite runs
-# only on pushes to main — the slow Accessibility/Performance/Share suites give PRs little
-# signal but dominate wall time. The one test leg runs on a single current-flagship
-# simulator. RLS/native-auth integration suites
+# (unit tests + the flagship journey + reorder/auth UI suites); the full unit + UI suite
+# runs only on pushes to main — the slow UI journeys (Accessibility/Performance/Share and
+# the extra DepthUITests journeys) give PRs little signal but dominate wall time. The one
+# test leg runs on a single current-flagship simulator. The "Staging" configuration is
+# DEBUG_BUILD_SETTINGS: all of Debug/Staging/Release point at the single production
+# Supabase project (jiqoaqmzmvtovimnmbzl, see ios/xcconfig/Staging.xcconfig's DEP-40 Lane B
+# TODO) — there is no dedicated staging project, so every UI journey here reads/writes the
+# real production dataset. RLS/native-auth integration suites
 # (DepthTests/SupabaseRLSIntegrationTests, DepthTests/NativeAuthIntegrationTests) need a
 # local Supabase stack (`supabase start`, which needs Docker); GitHub-hosted macOS
 # runners can't run Docker (no nested virtualization), so those suites self-gate on a
@@ -145,14 +149,17 @@ jobs:
           xcrun simctl boot "$DEVICE_ID"
           echo "device_id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
 
-      # A PR gets a fast smoke set (unit + the critical-path/reorder/auth UI journeys);
-      # the slow Accessibility/Performance/Share suites add little per-PR signal but
-      # dominate wall time, so the full suite runs only on pushes to main. Empty on push.
+      # A PR gets a fast smoke set: the unit tests plus the single flagship
+      # chart→team→player journey, the reorder suite, and auth. The other DepthUITests
+      # journeys (schedule, page-switcher, unit-tab tap targets, history, tab bar,
+      # relaunch-restore) each relaunch the app against production and dominate wall time
+      # while adding little per-PR signal — they, like Accessibility/Performance/Share, run
+      # only on pushes to main. Empty on push.
       - name: Determine test scope
         id: scope
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "tests=-only-testing:DepthTests -only-testing:DepthUITests/DepthUITests -only-testing:DepthUITests/PlayerCardReorderUITests -only-testing:DepthUITests/AuthUITests" >> "$GITHUB_OUTPUT"
+            echo "tests=-only-testing:DepthTests -only-testing:DepthUITests/DepthUITests/testAppLaunches -only-testing:DepthUITests/DepthUITests/testLaunchesIntoAChartThenSwitchesTeamAndOpensPlayerDetail -only-testing:DepthUITests/PlayerCardReorderUITests -only-testing:DepthUITests/AuthUITests" >> "$GITHUB_OUTPUT"
           else
             echo "tests=" >> "$GITHUB_OUTPUT"
           fi

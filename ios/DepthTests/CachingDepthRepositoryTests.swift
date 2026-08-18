@@ -12,23 +12,27 @@ private actor FakeDepthRepository: DepthRepository {
     var snapshotResults: [String: Result<TeamSnapshot, Error>]
     var seasonResults: [Int: Result<TeamSnapshot, Error>]
     var statsResults: [String: Result<TeamStatsPage, Error>]
+    var scheduleResults: [String: Result<TeamSchedule, Error>]
     var appConfigResult: Result<AppConfig, Error>
     private(set) var teamSnapshotCallCount: [String: Int] = [:]
     private(set) var teamsCallCount = 0
     private(set) var seasonCallCount = 0
     private(set) var teamStatsCallCount: [String: Int] = [:]
+    private(set) var scheduleCallCount: [String: Int] = [:]
 
     init(
         teamsResult: Result<[Team], Error> = .success([]),
         snapshotResults: [String: Result<TeamSnapshot, Error>] = [:],
         seasonResults: [Int: Result<TeamSnapshot, Error>] = [:],
         statsResults: [String: Result<TeamStatsPage, Error>] = [:],
+        scheduleResults: [String: Result<TeamSchedule, Error>] = [:],
         appConfigResult: Result<AppConfig, Error> = .success(AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil))
     ) {
         self.teamsResult = teamsResult
         self.snapshotResults = snapshotResults
         self.seasonResults = seasonResults
         self.statsResults = statsResults
+        self.scheduleResults = scheduleResults
         self.appConfigResult = appConfigResult
     }
 
@@ -50,7 +54,10 @@ private actor FakeDepthRepository: DepthRepository {
     }
 
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
-        throw DepthError.notFound
+        let key = scheduleCacheKey(teamId: teamId, season: season)
+        scheduleCallCount[key, default: 0] += 1
+        guard let result = scheduleResults[key] else { throw DepthError.notFound }
+        return try result.get()
     }
 
     func teamStats(teamId: String) async throws -> TeamStatsPage {
@@ -73,12 +80,20 @@ private actor FakeDepthRepository: DepthRepository {
         statsResults[teamId] = result
     }
 
+    func setScheduleResult(_ result: Result<TeamSchedule, Error>, teamId: String, season: Int?) {
+        scheduleResults[scheduleCacheKey(teamId: teamId, season: season)] = result
+    }
+
     func callCount(forTeam teamId: String) -> Int {
         teamSnapshotCallCount[teamId, default: 0]
     }
 
     func statsCallCount(forTeam teamId: String) -> Int {
         teamStatsCallCount[teamId, default: 0]
+    }
+
+    func scheduleCallCount(teamId: String, season: Int?) -> Int {
+        scheduleCallCount[scheduleCacheKey(teamId: teamId, season: season), default: 0]
     }
 
     func historyCallCount() -> Int { seasonCallCount }
@@ -108,6 +123,18 @@ private func snapshot(teamId: String = "bills") -> TeamSnapshot {
 
 private func statsPage(teamId: String = "bills") -> TeamStatsPage {
     TeamStatsPage(team: team(id: teamId), seasons: [], upcomingSeason: nil, currentSeason: 2026)
+}
+
+private func schedule(season: Int = 2026) -> TeamSchedule {
+    TeamSchedule(
+        season: season,
+        games: [
+            ScheduleGame(
+                week: 1, isBye: false, date: "2026-09-13", isHome: true,
+                opponent: team(id: "jets"), teamScore: 24, opponentScore: 17, result: .win
+            )
+        ]
+    )
 }
 
 @Test func teamSnapshotFetchesFromUnderlyingOnCacheMiss() async throws {
@@ -303,4 +330,66 @@ private func statsPage(teamId: String = "bills") -> TeamStatsPage {
     let repository = CachingDepthRepository(underlying: underlying, store: store)
     let result = try await repository.teamStats(teamId: "bills")
     #expect(result.team.id == "bills", "a discarded incompatible row falls through to a real network fetch")
+}
+
+// MARK: - Team schedule cache (DEP-248)
+
+@Test func teamScheduleFetchesFromUnderlyingOnCacheMiss() async throws {
+    let underlying = FakeDepthRepository(scheduleResults: [
+        scheduleCacheKey(teamId: "bills", season: nil): .success(schedule())
+    ])
+    let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
+
+    let result = try await repository.teamSchedule(teamId: "bills", season: nil)
+    #expect(result.season == 2026)
+    #expect(await underlying.scheduleCallCount(teamId: "bills", season: nil) == 1)
+}
+
+@Test func teamScheduleReturnsCachedValueWithinTTLWithoutBlocking() async throws {
+    let underlying = FakeDepthRepository(scheduleResults: [
+        scheduleCacheKey(teamId: "bills", season: nil): .success(schedule())
+    ])
+    let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
+
+    _ = try await repository.teamSchedule(teamId: "bills", season: nil) // primes the cache
+    let cached = try await repository.teamSchedule(teamId: "bills", season: nil)
+    #expect(cached.season == 2026)
+    #expect(await underlying.scheduleCallCount(teamId: "bills", season: nil) == 1, "a warm cache within TTL must not issue a blocking fetch")
+}
+
+@Test func expiredTeamScheduleTTLGoesNetworkFirst() async throws {
+    let store = inMemoryStore()
+    try await store.saveTeamSchedule(schedule(), teamId: "bills", season: nil, cachedAt: Date().addingTimeInterval(-CachingDepthRepository.scheduleTTL - 1))
+    let underlying = FakeDepthRepository(scheduleResults: [
+        scheduleCacheKey(teamId: "bills", season: nil): .success(schedule(season: 2026))
+    ])
+    let repository = CachingDepthRepository(underlying: underlying, store: store)
+
+    let result = try await repository.teamSchedule(teamId: "bills", season: nil)
+    #expect(result.season == 2026)
+    #expect(await underlying.scheduleCallCount(teamId: "bills", season: nil) == 1, "an expired schedule must refresh from the network, not serve the stale week")
+}
+
+@Test func expiredTeamScheduleFallsBackToCacheWhenNetworkFails() async throws {
+    let store = inMemoryStore()
+    try await store.saveTeamSchedule(schedule(), teamId: "bills", season: nil, cachedAt: Date().addingTimeInterval(-CachingDepthRepository.scheduleTTL - 1))
+    let underlying = FakeDepthRepository(scheduleResults: [
+        scheduleCacheKey(teamId: "bills", season: nil): .failure(DepthError.offline)
+    ])
+    let repository = CachingDepthRepository(underlying: underlying, store: store)
+
+    let result = try await repository.teamSchedule(teamId: "bills", season: nil)
+    #expect(result.season == 2026, "a failed refresh must retain the last good schedule")
+}
+
+@Test func defaultSeasonFetchPrimesConcreteSeasonRow() async throws {
+    let underlying = FakeDepthRepository(scheduleResults: [
+        scheduleCacheKey(teamId: "bills", season: nil): .success(schedule(season: 2026))
+    ])
+    let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
+
+    _ = try await repository.teamSchedule(teamId: "bills", season: nil) // primes default + 2026
+    let concrete = try await repository.teamSchedule(teamId: "bills", season: 2026)
+    #expect(concrete.season == 2026)
+    #expect(await underlying.scheduleCallCount(teamId: "bills", season: 2026) == 0, "the resolved concrete season should be warm after a nil-season fetch")
 }

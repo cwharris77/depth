@@ -6,6 +6,21 @@ import Foundation
 // what `DepthEnvironment` hands to Features/, so views get cache-first reads through the
 // same repository call they'd make anyway, plus the extra cache-age accessors Features
 // needs for stale labels — all without ever touching SwiftData or Supabase directly.
+//
+// DEP-248 read-path audit (which surfaces cache, which delegate, and why):
+//   teams()          cache-first + background refresh (team list is stable, 32 rows)
+//   teamSnapshot()   cache-first + background refresh (depth chart is the launch surface)
+//   teamStats()      cache-first + background refresh (same primary-nav budget as snapshot)
+//   teamSchedule()   TTL-bounded: cache-first within scheduleTTL, network-first beyond —
+//                    scores finalize on a different cadence than rosters, so never serve
+//                    a stale week
+//   teamSeason()     straight delegate — historical rosters are immutable, unpersisted
+//                    on-demand reads; caching dozens of rarely-opened seasons isn't worth it
+//   playerStats()    straight delegate — separate on-demand read; snapshot-cache
+//                    restructuring would add stale payload to every depth-chart launch
+//   searchPlayers()  straight delegate — per-keystroke read; caching would serve stale hits
+//   appConfig()      network-first, cache-fallback — a stale cached minimum build is
+//                    exactly wrong for the update gate
 actor CachingDepthRepository: DepthRepository {
     private let underlying: DepthRepository
     private let store: CachedSnapshotStore
@@ -13,9 +28,18 @@ actor CachingDepthRepository: DepthRepository {
     /// 24-hour stale label threshold (design spec's "Data and state contract").
     static let staleAfter: TimeInterval = 24 * 3600
 
+    /// DEP-248 schedule TTL. Schedules finalize on a different cadence than rosters
+    /// (weekly game results, not the snapshot's lineup updates), so the schedule cache
+    /// is deliberately TTL-bounded rather than the snapshot's serve-any-age pattern:
+    /// within this window a revisit is a cache hit (instant), beyond it the read goes
+    /// network-first so a week-old schedule is never served. 12h keeps same-day revisits
+    /// instant while capping staleness at half a slate.
+    static let scheduleTTL: TimeInterval = 12 * 3600
+
     private var inFlightListFetch: Task<[Team], Error>?
     private var inFlightSnapshotFetches: [String: Task<TeamSnapshot, Error>] = [:]
     private var inFlightStatsFetches: [String: Task<TeamStatsPage, Error>] = [:]
+    private var inFlightScheduleFetches: [String: Task<TeamSchedule, Error>] = [:]
 
     init(underlying: DepthRepository, store: CachedSnapshotStore) {
         self.underlying = underlying
@@ -70,11 +94,57 @@ actor CachingDepthRepository: DepthRepository {
         try await underlying.teamSeason(teamId: teamId, season: season)
     }
 
-    /// Schedule reads are intentionally not folded into T5's snapshot cache: schedules
-    /// update on a different cadence and this focused feature only needs delegation at
-    /// the stable repository seam.
+    /// DEP-248: schedules now earn a TTL-bounded cache (their own SwiftData rows, not
+    /// the snapshot payload). Within `scheduleTTL` a revisit is a cache hit with a
+    /// background refresh (same cache-first shape as `teamSnapshot`/`teamStats`); beyond
+    /// the TTL the read goes network-first so a stale week of results is never served,
+    /// falling back to the last good row if the refresh fails (retain-on-failure).
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
-        try await underlying.teamSchedule(teamId: teamId, season: season)
+        if let cached = try? await store.teamSchedule(teamId: teamId, season: season),
+            let cachedAt = try? await store.teamScheduleCachedAt(teamId: teamId, season: season),
+            !isScheduleExpired(cachedAt)
+        {
+            refreshScheduleInBackground(teamId: teamId, season: season)
+            return cached
+        }
+        do {
+            return try await refreshSchedule(teamId: teamId, season: season)
+        } catch {
+            if let cached = try? await store.teamSchedule(teamId: teamId, season: season) {
+                return cached
+            }
+            throw error
+        }
+    }
+
+    private func isScheduleExpired(_ cachedAt: Date, now: Date = Date()) -> Bool {
+        now.timeIntervalSince(cachedAt) > Self.scheduleTTL
+    }
+
+    @discardableResult
+    private func refreshSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        let dedupKey = scheduleCacheKey(teamId: teamId, season: season)
+        if let existing = inFlightScheduleFetches[dedupKey] {
+            return try await existing.value
+        }
+        let task = Task { try await self.underlying.teamSchedule(teamId: teamId, season: season) }
+        inFlightScheduleFetches[dedupKey] = task
+        defer { inFlightScheduleFetches[dedupKey] = nil }
+        let schedule = try await task.value
+        if let season {
+            try? await store.saveTeamSchedule(schedule, teamId: teamId, season: season, cachedAt: Date())
+        } else {
+            // Prime the nil/default row AND the resolved concrete-season row so both the
+            // first-visit path and a later explicit-season read are warm.
+            try? await store.saveDefaultSeasonSchedule(schedule, teamId: teamId, cachedAt: Date())
+        }
+        return schedule
+    }
+
+    private func refreshScheduleInBackground(teamId: String, season: Int?) {
+        let dedupKey = scheduleCacheKey(teamId: teamId, season: season)
+        guard inFlightScheduleFetches[dedupKey] == nil else { return }
+        Task { try? await self.refreshSchedule(teamId: teamId, season: season) }
     }
 
     // MARK: - Team stats (round-4 Stats page)

@@ -46,6 +46,10 @@ enum DepthSignposts {
     /// two features don't smear each other's measurements on the signpost track.
     static let teamStatsCacheTransaction: StaticString = "TeamStatsCacheTransaction"
 
+    /// SwiftData cache transaction for a team schedule read or write (DEP-248) — same
+    /// budget as the snapshot/stats cache transactions.
+    static let teamScheduleCacheTransaction: StaticString = "TeamScheduleCacheTransaction"
+
     /// App-launch signpost start/end happen in two different files (`DepthApp.init()`
     /// and `TeamDetailViewModel.load()`) that don't otherwise share state, so the
     /// in-flight `OSSignpostIntervalState` has to live somewhere both can reach. Actor

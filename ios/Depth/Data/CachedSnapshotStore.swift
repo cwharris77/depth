@@ -150,6 +150,68 @@ actor CachedSnapshotStore {
         try modelContext.save()
     }
 
+    // MARK: - Team schedule (DEP-248)
+
+    /// Same validity rules as `teamStats` (version check + payload decode). `season` is
+    /// folded into the row key so the current/default read (nil) and any historical
+    /// season are separate cache entries.
+    func teamSchedule(teamId: String, season: Int?) throws -> TeamSchedule? {
+        let signpostID = DepthSignposts.signposter.makeSignpostID()
+        let state = DepthSignposts.signposter.beginInterval(DepthSignposts.teamScheduleCacheTransaction, id: signpostID)
+        defer { DepthSignposts.signposter.endInterval(DepthSignposts.teamScheduleCacheTransaction, state) }
+        guard let row = try validScheduleRow(cacheKey: scheduleCacheKey(teamId: teamId, season: season)) else { return nil }
+        return try? JSONDecoder().decode(TeamSchedule.self, from: row.payload)
+    }
+
+    func teamScheduleCachedAt(teamId: String, season: Int?) throws -> Date? {
+        try validScheduleRow(cacheKey: scheduleCacheKey(teamId: teamId, season: season))?.cachedAt
+    }
+
+    private func validScheduleRow(cacheKey: String) throws -> CachedTeamSchedule? {
+        var descriptor = FetchDescriptor<CachedTeamSchedule>(predicate: #Predicate { $0.cacheKey == cacheKey })
+        descriptor.fetchLimit = 1
+        guard let row = try modelContext.fetch(descriptor).first else { return nil }
+        guard row.schemaVersion == depthCacheSchemaVersion,
+            (try? JSONDecoder().decode(TeamSchedule.self, from: row.payload)) != nil
+        else {
+            modelContext.delete(row)
+            try modelContext.save()
+            return nil
+        }
+        return row
+    }
+
+    func saveTeamSchedule(_ schedule: TeamSchedule, teamId: String, season: Int?, cachedAt: Date) throws {
+        let signpostID = DepthSignposts.signposter.makeSignpostID()
+        let state = DepthSignposts.signposter.beginInterval(DepthSignposts.teamScheduleCacheTransaction, id: signpostID)
+        defer { DepthSignposts.signposter.endInterval(DepthSignposts.teamScheduleCacheTransaction, state) }
+        let payload = try JSONEncoder().encode(schedule)
+        try upsertScheduleRow(cacheKey: scheduleCacheKey(teamId: teamId, season: season), payload: payload, cachedAt: cachedAt)
+    }
+
+    /// The current-season (nil) read also primes a row under the resolved concrete
+    /// season, so a later `teamSchedule(teamId, season: N)` is warm too.
+    func saveDefaultSeasonSchedule(_ schedule: TeamSchedule, teamId: String, cachedAt: Date) throws {
+        let payload = try JSONEncoder().encode(schedule)
+        try upsertScheduleRow(cacheKey: scheduleCacheKey(teamId: teamId, season: nil), payload: payload, cachedAt: cachedAt)
+        try upsertScheduleRow(cacheKey: scheduleCacheKey(teamId: teamId, season: schedule.season), payload: payload, cachedAt: cachedAt)
+    }
+
+    private func upsertScheduleRow(cacheKey: String, payload: Data, cachedAt: Date) throws {
+        var descriptor = FetchDescriptor<CachedTeamSchedule>(predicate: #Predicate { $0.cacheKey == cacheKey })
+        descriptor.fetchLimit = 1
+        if let existing = try modelContext.fetch(descriptor).first {
+            existing.payload = payload
+            existing.schemaVersion = depthCacheSchemaVersion
+            existing.cachedAt = cachedAt
+        } else {
+            modelContext.insert(
+                CachedTeamSchedule(cacheKey: cacheKey, payload: payload, schemaVersion: depthCacheSchemaVersion, cachedAt: cachedAt)
+            )
+        }
+        try modelContext.save()
+    }
+
     func appConfig() throws -> AppConfig? {
         let key = CachedAppConfig.key
         var descriptor = FetchDescriptor<CachedAppConfig>(

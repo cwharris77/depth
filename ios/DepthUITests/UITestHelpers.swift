@@ -40,7 +40,7 @@ extension XCUIApplication {
         searchField.typeText(query)
 
         let teamRow = buttons["team-row-\(teamId)"]
-        // The switcher fetches the 32-team list from staging on a fresh launch (no
+        // The switcher fetches the 32-team list from production on a fresh launch (no
         // cache with UI_TESTING_RESET_STATE), so the row can lag well past the other
         // waits on a cold run.
         XCTAssertTrue(teamRow.waitForExistence(timeout: 20), "searching \"\(query)\" should surface the \(teamId) row", file: file, line: line)

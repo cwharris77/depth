@@ -3,8 +3,8 @@ import XCTest
 // DEP-226: the player card's Position Depth section owns its reorder UI — Reorder/Done
 // toggle, one-time hint, CUSTOM tag + Reset once a custom order exists, and
 // drag-to-reorder rows. All writes go through the DEP-219 local-first override cache, so
-// the order survives a relaunch with no account. Runs against Debug's real staging
-// Supabase like every other Debug-config UI test.
+// the order survives a relaunch with no account. Runs against the production Supabase
+// project (Debug/Staging/Release all point at it) like every other Debug-config UI test.
 final class PlayerCardReorderUITests: XCTestCase {
     func testPlayerCardReorderPersistsAcrossRelaunch() throws {
         let app = XCUIApplication()
