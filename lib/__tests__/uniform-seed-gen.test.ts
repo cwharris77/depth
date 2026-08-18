@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateCuratedSeedSql } from '@/lib/uniforms/seed-sql';
+import { uniformArtURL } from '@/lib/uniforms/art';
 import { UNIFORMS } from '@/lib/uniforms/data';
 
 // The generated seed migration must be source-guarded: it can only ever write/rewrite
@@ -22,5 +23,15 @@ describe('uniform seed generator', () => {
     for (const u of UNIFORMS) {
       expect(sql).toContain(`('${u.teamId}-${u.slug}', '${u.teamId}',`);
     }
+  });
+
+  it("derives every row's image_path from its id (DEP-220 artifact URL)", () => {
+    for (const u of UNIFORMS) {
+      expect(sql).toContain(uniformArtURL(`${u.teamId}-${u.slug}`));
+    }
+    // Every curated row must carry the URL; a NULL image_path would leave the picker
+    // without a thumbnail for a kit whose WebP is always generated.
+    const urls = (sql.match(/https:\/\/depth-ashen\.vercel\.app\/uniforms\//g) ?? []).length;
+    expect(urls).toBe(UNIFORMS.length);
   });
 });
