@@ -1,0 +1,181 @@
+name: iOS PR Screenshots
+
+# Agent-triggered on-demand preview capture for iOS PRs — the native analog of checking
+# the Vercel build. An agent (or Cooper) triggers it with a PR comment:
+#
+#   /ios-screenshots
+#   /ios-screenshots field,uniform
+#
+# It builds the PR's app on a GitHub-hosted macOS runner (NOT your Mac — zero local RAM
+# hit, and the repo is public so build minutes are unlimited), boots a disposable
+# simulator, drives the app to the requested screens via PRScreenshotsUITests, and uploads
+# the PNGs as a workflow artifact + posts a PR comment linking to them. The agent then
+# reads the PNGs like they'd read a Vercel preview — no shared local simulator pool, no
+# booted-sim RAM contention between parallel worktrees.
+#
+# The default (no target list) is `field` — the depth-chart field surface, the app's
+# signature screen.
+#
+# See docs/ios-pr-screenshots.md for the full local workflow (same machinery, run by
+# hand) and the comment-trigger reference.
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write # post the artifact-link comment on the PR
+
+jobs:
+  capture:
+    # Only react to our own trigger word on PRs, and only by humans/agents that can
+    # create comments. `issue_comment` fires for both issues and PRs; `pull_request`
+    # number is only populated for PRs. Public-repo abuse guard: on a public repo any
+    # passerby can comment, so restrict to the repo owner + collaborators — a comment
+    # from someone else must not farm our (unlimited) macOS build minutes.
+    if: |
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/ios-screenshots')
+    runs-on: macos-latest
+    timeout-minutes: 25
+    steps:
+      # Hard public-repo guard: only the repo owner (~cwharris77) or a collaborator may
+      # trigger this job. Unauthorized commenters FAIL this first step, which aborts the
+      # whole job before any macOS build/minutes are spent — without needing `if:` sprawl
+      # on every later step. `checkCollaborator` 404s for non-collaborators (and bots).
+      - name: Gate on commenter being owner/collaborator
+        id: authz
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const login = context.payload.comment.user.login;
+            if (login === owner) { return; } // owner is always allowed — nothing to do
+            let ok = false;
+            try {
+              const { data } = await github.rest.repos.checkCollaborator({
+                owner, repo, username: login,
+              });
+              ok = Boolean(data?.permission);
+            } catch (e) {
+              if (e.status !== 404) throw e; // transient API error → fail loudly, not silently allow
+            }
+            if (!ok) {
+              core.setFailed(`"${login}" is not a collaborator of ${owner}/${repo}; /ios-screenshots is owner/collaborator-only.`);
+            }
+
+      - name: Parse requested targets from comment
+        id: targets
+        env:
+          BODY: ${{ github.event.comment.body }}
+        run: |
+          # /ios-screenshots [t1,t2,...] — second, space-separated arg is the CSV list.
+          REST=$(printf '%s' "$BODY" | sed -E 's#^/ios-screenshots[[:space:]]*##; s#[[:space:]]+$##')
+          if [ -z "$REST" ]; then
+            echo "targets=field" >> "$GITHUB_OUTPUT"
+          else
+            echo "targets=$REST" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out the PR head
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          # Piined to SHAs, not mutable tags — an upstream tag move would otherwise
+          # silently change what runs with this job's inherited token (same rationale as
+          # ios-ci.yml).
+          ref: refs/pull/${{ github.event.issue.number }}/merge
+          fetch-depth: 0
+
+      - name: Select latest stable Xcode
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
+        with:
+          xcode-version: latest-stable
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project from project.yml
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Resolve current-flagship disposable simulator (via ios-ci.yml's resolve)
+        id: sim
+        run: |
+          set -euo pipefail
+          TYPES_JSON=$(xcrun simctl list devicetypes -j)
+          RUNTIME=$(xcrun simctl list runtimes -j \
+            | jq -r '[.runtimes[] | select(.platform == "iOS" and .isAvailable)] | sort_by(.version) | last | .identifier')
+          CANDIDATES=$(echo "$TYPES_JSON" | jq -r '
+            [.devicetypes[]
+              | select(.productFamily == "iPhone" and (.name | test("^iPhone [0-9]+( Pro)?$")))
+              | {name, num: (.name | capture("^iPhone (?<n>[0-9]+)") | .n | tonumber)}]
+            | sort_by(-.num) | .[].name
+          ')
+          DEVICE=""
+          while IFS= read -r candidate; do
+            [ -z "$candidate" ] && continue
+            if DEVID=$(xcrun simctl create "prshot-$$-$RANDOM" "$candidate" "$RUNTIME" 2>/dev/null); then
+              DEVICE="$DEVID"
+              break
+            fi
+          done <<< "$CANDIDATES"
+          [ -z "$DEVICE" ] && { echo "::error::no creatable flagship simulator"; exit 1; }
+          xcrun simctl boot "$DEVICE"
+          echo "device_id=$DEVICE" >> "$GITHUB_OUTPUT"
+
+      - name: Run PR screenshot capture (Staging config)
+        working-directory: ios
+        env:
+          # Reaches the test runner via process env (the reliable path through
+          # `xcodebuild test`) — the test reads SCREENSHOT_TARGETS from env before args.
+          SCREENSHOT_TARGETS: ${{ steps.targets.outputs.targets }}
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project Depth.xcodeproj \
+            -scheme Depth-PRScreenshots \
+            -configuration Staging \
+            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.device_id }}" \
+            -only-testing:DepthUITests/PRScreenshotsUITests \
+            -resultBundlePath /tmp/pr-ios-screenshots.xcresult \
+            test
+
+      - name: Export captured PNGs
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pr-ios-shots
+          xcrun xcresulttool export attachments \
+            --path /tmp/pr-ios-screenshots.xcresult \
+            --output-path /tmp/pr-ios-shots
+          echo "--- exported attachments ---"
+          find /tmp/pr-ios-shots -type f | sort
+
+      - name: Upload screenshot artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pr-ios-screenshots
+          path: /tmp/pr-ios-shots/**/*.png
+          retention-days: 30
+
+      - name: Post PR comment with artifact link
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.issue.number;
+            const runId = context.runId;
+            const targets = process.env.DEPTH_SHOT_TARGETS || 'field';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr,
+              body:
+                `## iOS PR screenshots — \`${targets}\`\n\n` +
+                `Captured from this PR's build on a GitHub-hosted runner ` +
+                `(no local RAM/Simulator use). Download the PNGs from the workflow artifact:\n\n` +
+                `- **Workflow run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId}\n` +
+                `- **Artifact:** **pr-ios-screenshots**\n` +
+                `\n_Targets: \`${targets}\`. Assert each screen renders as intended before merging._\n`
+            });
+        env:
+          DEPTH_SHOT_TARGETS: ${{ steps.targets.outputs.targets }}
