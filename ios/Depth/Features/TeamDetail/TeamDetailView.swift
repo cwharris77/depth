@@ -68,22 +68,6 @@ struct TeamDetailView: View {
         viewModel.snapshot.map { "\($0.team.city) \($0.team.name)" } ?? "Team"
     }
 
-    /// Web-mobile parity (components/TeamPageHeader.tsx): the in-nav team identity is
-    /// the abbrev pill, not the full "City Name" — long names like "Washington
-    /// Commanders" overflow the inline toolbar otherwise (2026-08-15 visual-pass round
-    /// 3). The full display name stays on the accessibility label, so VoiceOver and the
-    /// team-switcher UI tests still hear/see the full name.
-    private var navigationTitleAbbrev: String {
-        viewModel.snapshot?.team.abbrev.uppercased() ?? "Team"
-    }
-
-    /// Team-accent-tinted border for the switcher pill (web: `${colors.uiAccent}40`, a
-    /// ~25%-alpha team accent). Falls back to the app's own accent before a team resolves.
-    private var teamSwitcherBorderColor: Color {
-        let hex = viewModel.snapshot?.team.colors.uiAccent
-        return (hex.map(Color.init(hex:)) ?? DesignTokens.Colors.accent).opacity(0.25)
-    }
-
     /// The selected uniform's palette recolors the field dots (web's kit selection);
     /// nil keeps the team's own colors. Resolved from the persisted per-team uniform id.
     private var fieldColors: TeamColors? {
@@ -128,7 +112,10 @@ struct TeamDetailView: View {
 
     var body: some View {
         content
-            .navigationTitle(navigationTitleText)
+            // DEP-236: the team identity lives in the switcher pill (full "City Name"),
+            // so the centered inline title would be a redundant second copy of the same
+            // text. The bar keeps the inline layout for its toolbar items.
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .task {
                 await viewModel.load()
@@ -176,30 +163,21 @@ struct TeamDetailView: View {
                 }
             }
             .toolbar {
-                // Web parity (components/DepthMark.tsx): every page header carries the
-                // app's own brand mark alongside team chrome. Icon-only (no "depth"
-                // wordmark) — the toolbar's leading slot is far tighter than web's
-                // persistent header. Non-interactive here (web's version opens the nav
-                // drawer; native's equivalent destinations already live in the tab bar).
+                // DEP-236 + Cooper's flexbox: the nav bar is two independent edges. The
+                // logo anchors far left, untouched (web DepthMark parity); the team pill
+                // anchors far right, pushed by a leading Spacer, so it never shares a
+                // group with the logo. The ROSTER/SCHEDULE/STATS switcher is content-level
+                // sub-navigation and no longer lives here at all (see `content`).
                 ToolbarItem(placement: .topBarLeading) {
                     DepthBrandMark(size: 20)
                         .accessibilityHidden(true)
                 }
-
-                // DEP-229 correction: web (components/TeamPageHeader.tsx) keeps the team
-                // pill and the ROSTER/SCHEDULE/STATS switcher in one right-aligned group
-                // (`flex flex-1 ... justify-end`), never a separate full-width row. The
-                // leading Spacer pushes both right within the principal slot — brand mark
-                // (topBarLeading) anchors the left, this group anchors the right, mirroring
-                // web's single-row layout instead of native's original two-row split.
                 ToolbarItem(placement: .principal) {
                     HStack(spacing: 8) {
                         Spacer(minLength: 0)
                         teamSwitcherPill
-                        pageSwitcher
                     }
                 }
-
             }
             .sheet(item: $selectedPlayer) { player in
                 let editable = !historyViewModel.isHistorical
@@ -266,9 +244,22 @@ struct TeamDetailView: View {
     // expanding it to fill available space, so the Stats page's own ScrollView (nested
     // two levels down) was getting clipped instead of scrolling. maxHeight: .infinity
     // here propagates the real available height down to it.
+    //
+    // DEP-236: the ROSTER/SCHEDULE/STATS switcher is content-level sub-navigation, so it
+    // now lives here — pinned above the page content, switching between all three pages
+    // (web's TeamPageHeader PAGE_TABS stays sticky while content scrolls under it). It no
+    // longer shares the nav bar with the team pill, which frees the trailing slot for the
+    // account affordance (DEP-252) and room for the pill's full team name (DEP-222).
     private var content: some View {
-        pageContent
-            .frame(maxHeight: .infinity)
+        VStack(spacing: 0) {
+            pageSwitcher
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
+            pageContent
+                .frame(maxHeight: .infinity)
+        }
+        .frame(maxHeight: .infinity)
     }
 
     private enum TeamPage: String, CaseIterable {
@@ -279,28 +270,32 @@ struct TeamDetailView: View {
         var label: String { rawValue.uppercased() }
     }
 
-    /// Web parity (components/TeamPageHeader.tsx TEAM_ABBREV_PILL): the switcher trigger
-    /// is a visible pill (surfaceChip fill + team-accent-tinted border), not plain text.
+    /// DEP-236/222: the switcher trigger is a team-fill pill — `colors.primary`
+    /// background with a `colors.secondary` ring (web's TeamBadge vocabulary, DEP-237)
+    /// and the full "City Name", since the page switcher left the nav bar and there's
+    /// room again. Text is readableTextOn(primary) (web: `readableTextOn(team.colors.primary)`).
     private var teamSwitcherPill: some View {
-        Button(action: onOpenTeamSwitcher) {
+        let colors = viewModel.snapshot?.team.colors
+        let fill = (colors?.primary).map(Color.init(hex:)) ?? DesignTokens.Colors.surfaceChip
+        let ring = (colors?.secondary).map(Color.init(hex:)) ?? DesignTokens.Colors.accent
+        let textColor = (colors?.primary).map { Color(hex: readableTextOn($0)) } ?? DesignTokens.Colors.textPrimary
+        return Button(action: onOpenTeamSwitcher) {
             HStack(spacing: 4) {
-                // Explicit textPrimary so the title stays white instead of inheriting
-                // the current team's accent tint (2026-08-15 visual-pass: "roster page
-                // text team-tinted").
-                Text(navigationTitleAbbrev)
+                Text(navigationTitleText)
                     .font(.headline)
-                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    .foregroundStyle(textColor)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.7)
                 Image(systemName: "chevron.down")
                     .font(.caption2.weight(.bold))
-                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    .foregroundStyle(textColor)
             }
             .padding(.leading, 12)
             .padding(.trailing, 8)
             .padding(.vertical, 6)
-            .background(Capsule().fill(DesignTokens.Colors.surfaceChip))
+            .background(Capsule().fill(fill))
             .overlay {
-                Capsule().strokeBorder(teamSwitcherBorderColor, lineWidth: 1)
+                Capsule().strokeBorder(ring, lineWidth: 1)
             }
         }
         .frame(minHeight: 44)
@@ -310,9 +305,11 @@ struct TeamDetailView: View {
     }
 
     /// Web parity (components/TeamPageHeader.tsx PAGE_TABS): the ROSTER/SCHEDULE/STATS
-    /// switcher, compact/intrinsic-width (web: `SegmentedControl size="sm"`), sitting
-    /// inline next to the team pill — not a stretched, full-width standalone row
-    /// (DEP-229 correction; the original placement decision here was wrong).
+    /// switcher. DEP-236 moved it out of the nav bar into the page body (`content`) as a
+    /// full-width bar — content-level sub-navigation rendered as a distinct layer between
+    /// the nav bar and the page, so it can't be mistaken for a second picker beside the
+    /// unit tabs (web's `SegmentedControl size="sm"` sits in the header row; native has no
+    /// row to spare, so the bar carries `fullWidth`).
     private var pageSwitcher: some View {
         DepthSegmentedControl(
             options: TeamPage.allCases.map {
@@ -320,7 +317,8 @@ struct TeamDetailView: View {
             },
             selection: page,
             onChange: { page = $0 },
-            activeColor: teamAccentColor
+            activeColor: teamAccentColor,
+            fullWidth: true
         )
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("page-switcher")

@@ -4,9 +4,10 @@ import SwiftUI
 // a rounded-pill tab group on a `surfaceChip` track where the active segment fills with
 // the caller's color (the team's `uiAccent`), active text sits on `onAccent`, and the
 // active segment carries a `withAlpha(activeTextColor, 40)` border (web lines 74-78).
-// Compact/intrinsic-width, not stretched (DEP-229) — web's `size="sm" className="shrink-0"`
-// sits inline next to the team-switcher pill, never a full-width standalone row.
-// Used for the round-4 ROSTER/SCHEDULE/STATS page switcher. Generic over `Selection` so
+// Two widths, matching web's `fullWidth` (DEP-236): default hugs content — the compact
+// `size="sm"` that once sat inline next to the team pill (DEP-229) — and `fullWidth:
+// true` stretches the track and splits options evenly for a standalone page bar.
+// Used for the ROSTER/SCHEDULE/STATS page switcher. Generic over `Selection` so
 // any Hashable enum can drive it; each option carries its own accessibility identifier
 // (the page switcher uses `page-switcher-roster` etc.). Options are rendered uppercase
 // by the caller (web upper-cases in `TeamPageHeader`).
@@ -22,6 +23,11 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
     let onChange: (Selection) -> Void
     var activeColor: Color = DesignTokens.Colors.accent
     var activeTextColor: Color = DesignTokens.Colors.onAccent
+    /// Web parity (components/ui/SegmentedControl.tsx `fullWidth`): true stretches the
+    /// track full-width and splits the options evenly (web: `w-full` + `flex-1
+    /// text-center`), for a standalone bar (DEP-236 page switcher); false hugs content
+    /// (the old inline-with-the-pill usage).
+    var fullWidth: Bool = false
 
     var body: some View {
         // Web `md` track: `rounded-2xl p-1 gap-1` — native hugging-content HStack on the
@@ -43,19 +49,11 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
                         .font(.caption.bold())
                         .tracking(0.3)
                         .foregroundStyle(isActive ? activeTextColor : DesignTokens.Colors.textMuted)
-                        // Embedded in the nav bar's principal slot alongside the team
-                        // pill (DEP-229), there isn't always room for "SCHEDULE" at
-                        // full size — lineLimit + minimumScaleFactor shrinks it instead
-                        // of wrapping mid-word ("SCHED-ULE"), same safety valve the
-                        // team-switcher pill's abbrev already uses.
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
-                        // DEP-229: hug each label's own width (web: `SegmentedControl
-                        // size="sm"`, intrinsic-width, never stretched) instead of
-                        // evenly filling the parent — that's what made this control
-                        // stretch across the full screen as a standalone row.
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
+                        .frame(maxWidth: fullWidth ? .infinity : nil)
                         .background(isActive ? activeColor : Color.clear, in: RoundedRectangle(cornerRadius: 12))
                         .overlay {
                             RoundedRectangle(cornerRadius: 12)
@@ -70,6 +68,7 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
                 .accessibilityIdentifier(option.identifier)
             }
         }
+        .frame(maxWidth: fullWidth ? .infinity : nil)
         .padding(4)
         .background(DesignTokens.Colors.surfaceChip, in: RoundedRectangle(cornerRadius: 16))
     }
