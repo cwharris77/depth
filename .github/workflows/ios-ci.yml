@@ -183,6 +183,13 @@ jobs:
       matrix:
         leg: [unit, ui]
     steps:
+      # DepthTests/FixtureLoading.swift reads fixtures/domain/*.json off disk via a
+      # #filePath-relative walk-up baked into the test binary at compile time, not as
+      # bundled test resources — this job needs the repo checked out at the same
+      # conventional runner path build-for-testing used, or FormationsParityTests fails
+      # with the fixture files missing (not a flake — every run without this fails).
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
       - name: Download build products
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
