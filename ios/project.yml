@@ -32,15 +32,17 @@ targets:
       - path: Depth/Features
       - path: Depth/Support
       - path: Depth/Assets.xcassets
+      - path: Depth/LaunchScreen.storyboard
     info:
       path: Depth/Info.plist
       properties:
         CFBundleDisplayName: Depth
-        # Native launch screen: a solid #0A0E1A background (LaunchBackground in
-        # Assets.xcassets) so launch blends straight into the always-dark app UI instead
-        # of flashing the system default. Deliberately no logo/splash image (DEP-160).
-        UILaunchScreen:
-          UIColorName: LaunchBackground
+        # Native launch screen (DEP-160): a launch storyboard — the #0A0E1A background
+        # (LaunchBackground color set) with the depth mark centered on it. Storyboard
+        # rather than UILaunchScreen.UIImageName: the plist image key does not render on
+        # current iOS (verified on the iOS 26 simulator), while the storyboard's image
+        # view loads the same asset through the normal image-loading path.
+        UILaunchStoryboardName: LaunchScreen
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         SUPABASE_URL: $(SUPABASE_URL)

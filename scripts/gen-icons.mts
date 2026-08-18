@@ -6,6 +6,9 @@
 //   public/icon-512.png            — manifest, purpose "any"
 //   public/icon-maskable-512.png   — manifest, purpose "maskable" (safe-zone inset)
 //   app/apple-icon.png (180)       — iOS home screen (Next injects the <link>)
+//   ios/Depth/Assets.xcassets/LaunchMark.imageset/  — native launch-screen mark
+//                                 (1x/2x/3x, transparent bg — the launch storyboard's
+//                                 centered UIImageView loads it over LaunchBackground)
 //
 // The mark uses a 1024-unit source grid so the app icon and in-app marks share exact
 // proportions at both 16px and App Store sizes.
@@ -62,6 +65,13 @@ function maskableIcon(size: number): string {
   </svg>`;
 }
 
+// Launch-screen mark: the mark alone on a transparent background (no tile) so it sits
+// directly on the #0A0E1A LaunchBackground. Rendered at 1x/2x/3x so the launch
+// storyboard's centered UIImageView (fixed 180pt) stays crisp on every device scale.
+function launchMark(size: number): string {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">${mark}</svg>`;
+}
+
 async function write(svg: string, size: number, outPath: string) {
   await sharp(Buffer.from(svg)).resize(size, size).png().toFile(outPath);
   console.log(`wrote ${outPath} (${size}x${size})`);
@@ -71,3 +81,8 @@ await write(anyIcon(192), 192, join(root, 'public/icon-192.png'));
 await write(anyIcon(512), 512, join(root, 'public/icon-512.png'));
 await write(maskableIcon(512), 512, join(root, 'public/icon-maskable-512.png'));
 await write(appleIcon(180), 180, join(root, 'app/apple-icon.png'));
+
+const launchDir = join(root, 'ios/Depth/Assets.xcassets/LaunchMark.imageset');
+await write(launchMark(180), 180, join(launchDir, 'LaunchMark.png'));
+await write(launchMark(360), 360, join(launchDir, 'LaunchMark@2x.png'));
+await write(launchMark(540), 540, join(launchDir, 'LaunchMark@3x.png'));
