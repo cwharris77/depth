@@ -6,7 +6,8 @@ import XCTest
 // where layout regressions actually show up: a fixed-width frame or a fixed-size font
 // still passes a default-size run and only clips once the content size category grows.
 //
-// Runs against Debug's real staging Supabase, same as every other Debug-config run.
+// Runs against the production Supabase project (Debug/Staging/Release all point at it),
+// same as every other Debug-config run.
 final class AccessibilityUITests: XCTestCase {
     // Drives ContentView's UI_TESTING_DYNAMIC_TYPE override rather than
     // `-UIPreferredContentSizeCategoryName`, which is silently inert here — see the
@@ -126,7 +127,7 @@ final class AccessibilityUITests: XCTestCase {
         let seasonRow = stats.otherElements.matching(NSPredicate(format: "label CONTAINS ' season, '")).firstMatch
         XCTAssertTrue(
             seasonRow.waitForExistence(timeout: 10),
-            "the starting QB should have at least one season-stat row in staging data"
+            "the starting QB should have at least one season-stat row in production data"
         )
 
         // Which columns appear depends on whichever position the field surfaced first,

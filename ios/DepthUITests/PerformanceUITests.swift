@@ -2,8 +2,8 @@ import XCTest
 
 // XCUITest performance coverage for design spec Performance Review #5/#6: launch and
 // first-useful-render budgets, measured against the real running app driven from a
-// separate process (same real staging Supabase data as `DepthUITests.swift`, not a
-// mock). `XCTApplicationLaunchMetric` is Apple's standard warm-launch metric; the custom
+// separate process (same production Supabase data as `DepthUITests.swift` — every config
+// points at the single project, not a mock). `XCTApplicationLaunchMetric` is Apple's standard warm-launch metric; the custom
 // `XCTOSSignpostMetric` targets the app-init → team-list-loaded interval this task adds
 // (`ios/Depth/Support/DepthSignposts.swift`'s `appLaunch`/`subsystem`/`category` —
 // duplicated here as literal strings since a UI test process can't `@testable import

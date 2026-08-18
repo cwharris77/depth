@@ -100,7 +100,7 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         let scheduleTab = app.buttons["page-switcher-schedule"]
         XCTAssertTrue(scheduleTab.waitForExistence(timeout: 10), "team detail should expose a Schedule page tab")
         scheduleTab.tap()
-        XCTAssertTrue(app.otherElements["schedule-content"].waitForExistence(timeout: 15), "the schedule should render production-shaped staging content")
+        XCTAssertTrue(app.otherElements["schedule-content"].waitForExistence(timeout: 15), "the schedule should render production content")
         // `schedule-content` is the outer scroll container and can exist before its
         // LazyVGrid actually renders any game cards — wait for a real week card too,
         // same pattern DepthUITests.swift's testOpenTeamSchedule uses (Greptile P1 on

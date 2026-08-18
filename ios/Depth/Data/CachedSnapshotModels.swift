@@ -123,8 +123,34 @@ final class CachedTeamStats {
     }
 }
 
+// DEP-248 Schedule cache row. Keyed by a `cacheKey` that folds the season into the key
+// (`"\(teamId)|\(season)"`, with a sentinel for the "default/latest season" read — the
+// Schedule feature's first fetch uses season == nil, so that nil-default path needs its
+// own row or revisits would miss). Mirrors `CachedTeamStats`' payload-as-Data + safe
+// schema-discard shape.
+@Model
+final class CachedTeamSchedule {
+    @Attribute(.unique) var cacheKey: String
+    var payload: Data
+    var schemaVersion: Int
+    var cachedAt: Date
+
+    init(cacheKey: String, payload: Data, schemaVersion: Int, cachedAt: Date) {
+        self.cacheKey = cacheKey
+        self.payload = payload
+        self.schemaVersion = schemaVersion
+        self.cachedAt = cachedAt
+    }
+}
+
+/// Schedule cache row key. A nil `season` (the Schedule feature's "latest season" read)
+/// uses a `default` sentinel so it gets its own row distinct from any concrete season.
+func scheduleCacheKey(teamId: String, season: Int?) -> String {
+    season.map { "\(teamId)|\($0)" } ?? "\(teamId)|default"
+}
+
 enum DepthCacheSchema {
     static var models: [any PersistentModel.Type] {
-        [CachedTeamListEntry.self, CachedTeamSnapshot.self, CachedTeamStats.self, CachedAppConfig.self]
+        [CachedTeamListEntry.self, CachedTeamSnapshot.self, CachedTeamStats.self, CachedTeamSchedule.self, CachedAppConfig.self]
     }
 }
