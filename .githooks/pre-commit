@@ -8,6 +8,14 @@ if [ -n "$staged" ]; then
   echo "$staged" | xargs git add
 fi
 
-# Run linting and type checking
-npm run lint || exit 1
-npm run typecheck || exit 1
+# The web lint/typecheck gates only apply when the commit touches web sources.
+# An iOS-only change (everything staged under ios/) is SwiftUI — the web gates can't
+# pass meaningfully on it and force the commit to need node_modules in the worktree.
+# Skip them when every staged file lives under ios/.
+outside_ios=$(git diff --cached --name-only --diff-filter=ACM | grep -v '^ios/' || true)
+
+if [ -n "$outside_ios" ]; then
+  # Run linting and type checking
+  npm run lint || exit 1
+  npm run typecheck || exit 1
+fi
