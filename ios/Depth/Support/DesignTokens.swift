@@ -93,6 +93,13 @@ enum DesignTokens {
         static let md: CGFloat = 16
         static let lg: CGFloat = 24
         static let xl: CGFloat = 32
+        /// Cooper review (DEP-252): the horizontal inset used to align page-level
+        /// content to the screen edge — same value as `md`, named separately so call
+        /// sites read as "screen margin" rather than an arbitrary spacing choice. Use
+        /// this (not a raw `.padding(.horizontal)`, which silently relies on SwiftUI's
+        /// default) anywhere content needs to line up with the screen edge the way
+        /// `TeamDetailView`'s toolbar and page switcher now both explicitly do.
+        static let screenMargin: CGFloat = md
     }
 
     enum Radius {

@@ -9,9 +9,11 @@ final class AuthUITests: XCTestCase {
 
         XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
 
-        let accountTab = app.tabBars.buttons["Account"]
-        XCTAssertTrue(accountTab.waitForExistence(timeout: 10), "Account should be reachable from the tab bar")
-        accountTab.tap()
+        // DEP-252: Account moved out of the tab bar into a nav-bar trailing icon that
+        // opens the settings content as a sheet.
+        let accountButton = app.buttons["account-button"]
+        XCTAssertTrue(accountButton.waitForExistence(timeout: 10), "Account should be reachable from the nav bar")
+        accountButton.tap()
 
         XCTAssertTrue(
             app.staticTexts["settings-about-name"].waitForExistence(timeout: 10),

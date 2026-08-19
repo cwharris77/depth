@@ -8,6 +8,7 @@ import SwiftUI
 // drift. A new tab in the root TabView, after Depth Charts and before Compare.
 struct UniformsTab: View {
     @State private var viewModel: UniformArchiveViewModel
+    @State private var showAccount = false
 
     init(repository: DepthRepository) {
         _viewModel = State(initialValue: UniformArchiveViewModel(repository: repository))
@@ -19,6 +20,20 @@ struct UniformsTab: View {
                 .navigationTitle("Uniforms")
                 .navigationBarTitleDisplayMode(.inline)
                 .background(DesignTokens.Colors.bg)
+                // DEP-252/DEP-277 (Cooper review): shared app-wide top nav — see
+                // `depthTopNavToolbar`. No team pill on this screen.
+                .toolbar {
+                    depthTopNavToolbar(teamPill: { EmptyView() }) {
+                        showAccount = true
+                    }
+                }
+                .sheet(isPresented: $showAccount) {
+                    SettingsView(
+                        sessionStore: DepthEnvironment.authSessionStore,
+                        authService: DepthEnvironment.authService,
+                        events: DepthEnvironment.appEvents
+                    )
+                }
         }
         .task { await viewModel.load() }
     }
