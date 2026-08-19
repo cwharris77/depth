@@ -14,11 +14,23 @@ struct ScheduleView: View {
     /// here instead — same store the tab tint and Stats read, so a kit pick on the
     /// roster page is reflected here without a page reload.
     private let currentTeamStore: CurrentTeamStore
+    /// DEP-280: web parity — tapping a played/upcoming game card opens the compare view
+    /// for this team and that game's opponent (components/TeamScheduleView.tsx's card
+    /// `Link` into `/compare`). nil is a no-op tap (used by nothing today, but keeps the
+    /// callback optional rather than forcing every call site to supply one).
+    private let onSelectOpponent: ((Team) -> Void)?
 
-    init(teamId: String, repository: DepthRepository, currentTeamStore: CurrentTeamStore, isEmbedded: Bool = false) {
+    init(
+        teamId: String,
+        repository: DepthRepository,
+        currentTeamStore: CurrentTeamStore,
+        isEmbedded: Bool = false,
+        onSelectOpponent: ((Team) -> Void)? = nil
+    ) {
         _viewModel = State(initialValue: ScheduleViewModel(teamId: teamId, repository: repository))
         self.currentTeamStore = currentTeamStore
         self.isEmbedded = isEmbedded
+        self.onSelectOpponent = onSelectOpponent
     }
 
     /// Falls back to the app's own accent before any team has resolved a color this
@@ -106,7 +118,11 @@ struct ScheduleView: View {
                     spacing: DesignTokens.Spacing.sm
                 ) {
                     ForEach(schedule.games) { game in
-                        ScheduleGameCard(game: game, isPastSeason: viewModel.isPastSeason)
+                        ScheduleGameCard(
+                            game: game,
+                            isPastSeason: viewModel.isPastSeason,
+                            onSelectOpponent: onSelectOpponent
+                        )
                     }
                 }
             }
@@ -131,8 +147,34 @@ struct ScheduleView: View {
 private struct ScheduleGameCard: View {
     let game: ScheduleGame
     let isPastSeason: Bool
+    /// DEP-280: nil (no compare destination available) for bye weeks and — matching
+    /// web's TeamScheduleView.tsx guard comment ("Historical seasons have no
+    /// compare-page destination yet, DEP-198") — a past season's games, even though
+    /// this callback itself is compare-capable; `isTappable` folds both conditions in.
+    let onSelectOpponent: ((Team) -> Void)?
+
+    /// Web parity: the card is a `Link` into `/compare` only when there's a resolved
+    /// opponent and the season isn't historical (TeamScheduleView.tsx's `!opp ||
+    /// isPastSeason` guard flips to render a plain, non-interactive div instead).
+    private var isTappable: Bool {
+        !game.isBye && game.opponent != nil && !isPastSeason && onSelectOpponent != nil
+    }
 
     var body: some View {
+        if isTappable, let opponent = game.opponent {
+            Button {
+                onSelectOpponent?(opponent)
+            } label: {
+                cardContent
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Opens the matchup comparison")
+        } else {
+            cardContent
+        }
+    }
+
+    private var cardContent: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Eyebrow + title hierarchy matches the Stats page's NEXT GAME card
             // (TeamStatsView.swift's NextGameCard): caption2.bold eyebrow, subheadline

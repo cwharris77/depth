@@ -19,10 +19,22 @@ import SwiftUI
 struct CompareView: View {
     @State private var viewModel: CompareViewModel
     private let repository: CachingDepthRepository
+    /// DEP-280: true when this instance was pushed from a schedule-card tap rather than
+    /// opened as the Compare tab's root — gates the "Back to schedule" control below,
+    /// mirroring web's `scheduleTeam` prop (present only when `?from=schedule`).
+    private let enteredFromSchedule: Bool
+    /// Pops this pushed instance back to the schedule page it was opened from. Only
+    /// meaningful (and only read) when `enteredFromSchedule` is true.
+    @Environment(\.dismiss) private var dismiss
 
-    init(repository: CachingDepthRepository) {
+    init(
+        repository: CachingDepthRepository,
+        preselectedTeamIds: (a: String, b: String)? = nil,
+        enteredFromSchedule: Bool = false
+    ) {
         self.repository = repository
-        _viewModel = State(initialValue: CompareViewModel(repository: repository))
+        self.enteredFromSchedule = enteredFromSchedule
+        _viewModel = State(initialValue: CompareViewModel(repository: repository, preselectedTeamIds: preselectedTeamIds))
     }
 
     var body: some View {
@@ -92,6 +104,10 @@ struct CompareView: View {
     private var compareContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
+                if enteredFromSchedule {
+                    backToScheduleButton
+                }
+
                 teamSlotRow
 
                 tabSwitcher
@@ -104,6 +120,32 @@ struct CompareView: View {
         }
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("compare-content")
+    }
+
+    /// DEP-280: web parity (components/CompareView.tsx's schedule-origin "Back to
+    /// schedule" link, `surfaceInput` pill with an ArrowLeft icon). Native has no
+    /// `surfaceInput` token, so this reuses the `surfaceChip` pill vocabulary
+    /// `teamSwitcherPill`/`customOrderChip` already establish elsewhere. `dismiss()`
+    /// pops this pushed instance off DepthChartsTab's NavigationStack, landing back on
+    /// the schedule page the card was tapped from (TeamDetailView's `page` state is
+    /// untouched by the push, so it's still showing Schedule).
+    private var backToScheduleButton: some View {
+        Button {
+            dismiss()
+        } label: {
+            HStack(spacing: DesignTokens.Spacing.xs) {
+                Image(systemName: "arrow.left")
+                    .font(.caption2.weight(.bold))
+                Text("Back to schedule")
+                    .font(.caption.weight(.semibold))
+            }
+            .foregroundStyle(DesignTokens.Colors.textSecondary)
+            .padding(.horizontal, DesignTokens.Spacing.sm + 4)
+            .padding(.vertical, DesignTokens.Spacing.xs)
+            .background(DesignTokens.Colors.surfaceChip, in: Capsule())
+        }
+        .frame(minHeight: 44)
+        .accessibilityIdentifier("compare-back-to-schedule")
     }
 
     private var teamSlotRow: some View {

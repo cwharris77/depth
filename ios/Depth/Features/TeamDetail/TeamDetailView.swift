@@ -39,6 +39,11 @@ struct TeamDetailView: View {
     /// place this view is constructed now that it is a tab's stack root rather than a
     /// pushed destination, so an unset case would be dead code.
     private let onOpenTeamSwitcher: () -> Void
+    /// DEP-280: bubbles a schedule-card tap up to DepthChartsTab, which owns the
+    /// NavigationStack that pushes Compare — TeamDetailView has no push destination of
+    /// its own (it's the stack root). Carries this team's id and the tapped game's
+    /// opponent id, matching web's `?a=<teamId>&b=<opponentId>` compare-link params.
+    private let onOpenCompare: (String, String) -> Void
     @State private var historyViewModel: HistoryViewModel
     /// DEP-278 follow-up: refined with the resolved kit color (`resolvedUiAccentHex`)
     /// whenever it changes, so Stats/Schedule (which read this same store) follow a
@@ -54,7 +59,8 @@ struct TeamDetailView: View {
         events: any AppEventsRecording = NoOpAppEventsRecorder(),
         requestedPlayerID: Binding<String?> = .constant(nil),
         currentTeamStore: CurrentTeamStore,
-        onOpenTeamSwitcher: @escaping () -> Void
+        onOpenTeamSwitcher: @escaping () -> Void,
+        onOpenCompare: @escaping (String, String) -> Void = { _, _ in }
     ) {
         _viewModel = State(initialValue: viewModel)
         self.repository = repository
@@ -65,6 +71,7 @@ struct TeamDetailView: View {
         self._requestedPlayerID = requestedPlayerID
         self.currentTeamStore = currentTeamStore
         self.onOpenTeamSwitcher = onOpenTeamSwitcher
+        self.onOpenCompare = onOpenCompare
         _unit = State(initialValue: preferences.lastUnit ?? .offense)
         _selectedUniformID = State(initialValue: preferences.uniformSelection(for: viewModel.teamId))
         _historyViewModel = State(initialValue: HistoryViewModel(teamId: viewModel.teamId, repository: repository))
@@ -471,7 +478,10 @@ struct TeamDetailView: View {
                 teamId: viewModel.teamId,
                 repository: repository,
                 currentTeamStore: currentTeamStore,
-                isEmbedded: true
+                isEmbedded: true,
+                onSelectOpponent: { opponent in
+                    onOpenCompare(viewModel.teamId, opponent.id)
+                }
             )
         }
     }

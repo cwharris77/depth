@@ -17,6 +17,10 @@ struct DepthChartsTab: View {
     /// `teamId` lets the (recreated) TeamDetailView open that player's profile once its
     /// snapshot resolves.
     @State private var pendingPlayerID: String?
+    /// DEP-280: set by a schedule-card tap (bubbled up through TeamDetailView), driving
+    /// the `.navigationDestination(item:)` push below. This tab owns the NavigationStack
+    /// TeamDetailView (the stack root) has none of its own, so the push lives here.
+    @State private var compareRequest: ScheduleCompareRequest?
 
     private let repository: CachingDepthRepository
     private let preferences: UserPreferences
@@ -54,12 +58,27 @@ struct DepthChartsTab: View {
                 events: events,
                 requestedPlayerID: $pendingPlayerID,
                 currentTeamStore: currentTeamStore,
-                onOpenTeamSwitcher: { showSwitcher = true }
+                onOpenTeamSwitcher: { showSwitcher = true },
+                onOpenCompare: { teamAId, teamBId in
+                    compareRequest = ScheduleCompareRequest(teamAId: teamAId, teamBId: teamBId)
+                }
             )
             // Rebuilds the whole team-detail subtree (view model, unit picker, history,
             // overrides) when the switcher picks a different team — the SwiftUI
             // key-reset idiom, rather than mutating a view model in place.
             .id(teamId)
+            // DEP-280: push Compare pre-populated with the schedule card's two teams.
+            // A plain `.navigationDestination(item:)` push (not a sheet) so the pushed
+            // Compare screen gets a normal system back affordance for free, in addition
+            // to the explicit "Back to schedule" control CompareView renders when
+            // `enteredFromSchedule` — see that view's comment for why both exist.
+            .navigationDestination(item: $compareRequest) { request in
+                CompareView(
+                    repository: repository,
+                    preselectedTeamIds: (a: request.teamAId, b: request.teamBId),
+                    enteredFromSchedule: true
+                )
+            }
         }
         .sheet(isPresented: $showSwitcher) {
             TeamSwitcherSheet(
@@ -100,4 +119,15 @@ struct DepthChartsTab: View {
             }
         }
     }
+}
+
+/// DEP-280: the `.navigationDestination(item:)` payload for a schedule-card-initiated
+/// compare push. `Identifiable` (not just `Equatable`) because `navigationDestination
+/// (item:)` requires it; `id` combines both team ids so two different matchups are
+/// treated as distinct pushes (relevant if a future compare screen ever lets you pick a
+/// different game while it's still on screen — today a new tap always pops first).
+private struct ScheduleCompareRequest: Identifiable, Hashable {
+    let teamAId: String
+    let teamBId: String
+    var id: String { "\(teamAId)-\(teamBId)" }
 }
