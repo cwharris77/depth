@@ -251,10 +251,12 @@ final class DepthUITests: XCTestCase {
         XCTAssertFalse(seasonState.waitForExistence(timeout: 2), "Back to current should leave the historical roster")
     }
 
-    /// DEP-245: the Stats page's season chips have no other way back to the current
-    /// season — a past chip selected means scrolling to re-tap the current chip. The
-    /// "Back to current" affordance appears only while a past season is selected and
-    /// returns to the current/upcoming tab on tap.
+    /// DEP-278 follow-up: the Stats page's season chip row stopped scaling once
+    /// team_stats ingest landed seasons back to 1999 (~25+ entries no longer fit a
+    /// swipeable strip), so it moved behind a trigger + SeasonPickerSheet — the same
+    /// sheet shape as History's HistorySeasonSheet, generalized off HistorySeason to a
+    /// plain Int season. "Back to current" now lives in the sheet's toolbar rather than
+    /// a second on-page button.
     func testBackToCurrentFromStatsPage() throws {
         let app = XCUIApplication()
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
@@ -268,27 +270,34 @@ final class DepthUITests: XCTestCase {
         statsTab.tap()
         XCTAssertTrue(app.scrollViews["stats-content"].waitForExistence(timeout: 15))
 
+        let trigger = app.buttons["stats-season-trigger"]
+        XCTAssertTrue(trigger.waitForExistence(timeout: 10))
+        trigger.tap()
+
         // Every team has at least current + prior seasons ingested; select the second
-        // chip (the year before the newest) so a completed past season is active.
-        let chips = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'stats-season-'"))
-        XCTAssertGreaterThanOrEqual(chips.count, 2, "the stats page should offer more than one season chip")
-        chips.element(boundBy: 1).tap()
+        // row (the year before the newest, top of the list) so a completed past season
+        // is active.
+        // Regex, not BEGINSWITH: the trigger ("stats-season-trigger") and toolbar button
+        // ("stats-season-back-to-current") share the same "stats-season-" prefix as the
+        // numbered rows.
+        let rows = app.buttons.matching(NSPredicate(format: "identifier MATCHES 'stats-season-[0-9]+'"))
+        XCTAssertGreaterThanOrEqual(rows.count, 2, "the stats picker should offer more than one season row")
+        rows.element(boundBy: 1).tap()
 
         let seasonState = app.staticTexts["stats-season-state"]
         XCTAssertTrue(seasonState.waitForExistence(timeout: 5), "a past season should show its season-state line")
 
-        let backToCurrent = app.buttons["stats-back-to-current"]
-        XCTAssertTrue(backToCurrent.waitForExistence(timeout: 5), "a past season should offer Back to current")
+        trigger.tap()
+        let backToCurrent = app.buttons["stats-season-back-to-current"]
+        XCTAssertTrue(backToCurrent.waitForExistence(timeout: 5), "a past season should offer Back to current in the sheet toolbar")
         backToCurrent.tap()
 
-        XCTAssertFalse(backToCurrent.waitForExistence(timeout: 2), "Back to current should hide once on the current season")
         XCTAssertFalse(seasonState.waitForExistence(timeout: 2), "Back to current should leave the past season")
     }
 
-    /// DEP-254: the Schedule tab's season picker has no other one-tap way back to the
-    /// current season — a past row selected means reopening the picker to re-tap current.
-    /// The "Back to current" affordance appears only while a past season is selected and
-    /// returns to the current season (defaultSeason) on tap, mirroring DEP-245.
+    /// DEP-278 follow-up: same trigger + SeasonPickerSheet conversion as Stats, applied
+    /// to Schedule — replacing the flat chip row DEP-263 originally promoted out of
+    /// Stats. "Back to current" now lives in the sheet's toolbar.
     func testBackToCurrentFromSchedulePage() throws {
         let app = XCUIApplication()
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
@@ -302,17 +311,22 @@ final class DepthUITests: XCTestCase {
         scheduleTab.tap()
         XCTAssertTrue(app.otherElements["schedule-content"].waitForExistence(timeout: 15))
 
-        // Current season -> no escape shown.
-        let backToCurrent = app.buttons["schedule-back-to-current"]
-        XCTAssertFalse(backToCurrent.waitForExistence(timeout: 2), "current season should not offer Back to current")
+        let trigger = app.buttons["schedule-season-trigger"]
+        XCTAssertTrue(trigger.waitForExistence(timeout: 10))
+        trigger.tap()
 
-        // DEP-263: the schedule season picker is now the same chip row Stats uses —
-        // select the oldest chip directly (chips are ascending oldest-to-newest, left
-        // to right) so isPastSeason is unambiguously true.
-        let chips = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'schedule-season-'"))
-        XCTAssertGreaterThanOrEqual(chips.count, 2, "the schedule should offer a current and at least one past season")
-        chips.element(boundBy: 0).tap()
-        XCTAssertTrue(backToCurrent.waitForExistence(timeout: 5), "a past season should offer Back to current")
+        // Rows are newest-first; select the last row (oldest) so isPastSeason is
+        // unambiguously true.
+        // Regex, not BEGINSWITH: the trigger ("schedule-season-trigger") and toolbar
+        // button ("schedule-season-back-to-current") share the same "schedule-season-"
+        // prefix as the numbered rows.
+        let rows = app.buttons.matching(NSPredicate(format: "identifier MATCHES 'schedule-season-[0-9]+'"))
+        XCTAssertGreaterThanOrEqual(rows.count, 2, "the schedule picker should offer a current and at least one past season")
+        rows.element(boundBy: rows.count - 1).tap()
+
+        trigger.tap()
+        let backToCurrent = app.buttons["schedule-season-back-to-current"]
+        XCTAssertTrue(backToCurrent.waitForExistence(timeout: 5), "a past season should offer Back to current in the sheet toolbar")
 
         // Screenshot the historical state before returning to current.
         let attachment = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
@@ -321,7 +335,7 @@ final class DepthUITests: XCTestCase {
         add(attachment)
 
         backToCurrent.tap()
-        XCTAssertFalse(backToCurrent.waitForExistence(timeout: 2), "Back to current should hide once on the current season")
+        XCTAssertFalse(app.buttons["schedule-season-back-to-current"].waitForExistence(timeout: 2), "Back to current should hide once on the current season")
     }
 
 

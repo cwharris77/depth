@@ -7,6 +7,7 @@ import SwiftUI
 // the team identity, and the view renders as just the content column.
 struct ScheduleView: View {
     @State private var viewModel: ScheduleViewModel
+    @State private var showSeasonPicker = false
     private let isEmbedded: Bool
 
     init(teamId: String, repository: DepthRepository, isEmbedded: Bool = false) {
@@ -26,6 +27,20 @@ struct ScheduleView: View {
         }
         .task { await viewModel.load() }
         .refreshable { await viewModel.load() }
+        .sheet(isPresented: $showSeasonPicker) {
+            if let defaultSeason = viewModel.defaultSeason, let selectedSeason = viewModel.selectedSeason {
+                SeasonPickerSheet(
+                    items: viewModel.seasonOptions.map { SeasonPickerItem(season: $0) },
+                    selectedSeason: selectedSeason,
+                    currentSeason: defaultSeason,
+                    accent: DesignTokens.Colors.accent,
+                    identifierPrefix: "schedule"
+                ) { season in
+                    showSeasonPicker = false
+                    Task { await viewModel.selectSeason(season) }
+                }
+            }
+        }
     }
 
     @ViewBuilder
@@ -73,23 +88,7 @@ struct ScheduleView: View {
     private func scheduleContent(_ schedule: TeamSchedule) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                VStack(alignment: .leading, spacing: 4) {
-                    seasonPicker
-                    // DEP-254: the picker's past-season rows have no other one-tap way
-                    // back — current is just another chip to re-tap. Mirrors DEP-245's
-                    // "Back to current" on the Stats chips and Seasons sheet (and the
-                    // roster's history-back-to-today): shown only while a past season is
-                    // selected, wired to the same selectSeason(defaultSeason) path the
-                    // picker itself uses.
-                    if viewModel.isPastSeason, let defaultSeason = viewModel.defaultSeason {
-                        HStack {
-                            Spacer()
-                            BackToCurrentSeasonButton(identifier: "schedule-back-to-current") {
-                                Task { await viewModel.selectSeason(defaultSeason) }
-                            }
-                        }
-                    }
-                }
+                seasonPicker
                 LazyVGrid(
                     columns: [GridItem(.adaptive(minimum: 144, maximum: 260), spacing: DesignTokens.Spacing.sm)],
                     spacing: DesignTokens.Spacing.sm
@@ -107,14 +106,20 @@ struct ScheduleView: View {
     }
 
     private var seasonPicker: some View {
-        SeasonChipRow(
-            items: viewModel.seasonOptions.reversed().map { SeasonChipItem(season: $0) },
-            selectedSeason: viewModel.selectedSeason,
-            accent: DesignTokens.Colors.accent,
-            identifierPrefix: "schedule"
-        ) { season in
-            Task { await viewModel.selectSeason(season) }
+        Button {
+            showSeasonPicker = true
+        } label: {
+            HStack(spacing: 4) {
+                Text(viewModel.selectedSeason.map { "\($0) SEASON" } ?? "SEASON")
+                    .font(.caption.bold())
+                    .tracking(0.1)
+                Image(systemName: "chevron.down")
+                    .font(.caption2.bold())
+            }
+            .foregroundStyle(DesignTokens.Colors.textFaint)
         }
+        .frame(minHeight: 44)
+        .accessibilityIdentifier("schedule-season-trigger")
     }
 }
 
