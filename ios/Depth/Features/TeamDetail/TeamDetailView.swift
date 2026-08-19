@@ -187,33 +187,12 @@ struct TeamDetailView: View {
                     Task { await mergeOverridesOnSignIn() }
                 }
             }
+            // DEP-236/DEP-252/DEP-277 (Cooper review): the shared app-wide top nav —
+            // see `depthTopNavToolbar` for why this isn't hand-rolled per screen anymore.
+            // The team pill is this screen's contribution to the "conditional" half.
             .toolbar {
-                // DEP-236 + Cooper's flexbox: the nav bar is two independent edges. The
-                // logo anchors far left, untouched (web DepthMark parity); the team pill
-                // anchors far right via the trailing slot so it never shares a group with
-                // the logo. The ROSTER/SCHEDULE/STATS switcher is content-level
-                // sub-navigation and no longer lives here at all (see `content`).
-                ToolbarItem(placement: .topBarLeading) {
-                    DepthBrandMark(size: 20)
-                        .accessibilityHidden(true)
-                }
-                // DEP-252: the account affordance — a personal setting, not a content
-                // section — moved out of the tab bar into the trailing slot DEP-236
-                // freed. Ordered before the team pill so it reads left of it within the
-                // trailing group.
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showAccount = true
-                    } label: {
-                        Image(systemName: "person.crop.circle")
-                            .frame(minWidth: 44, minHeight: 44)
-                            .contentShape(Rectangle())
-                    }
-                    .accessibilityLabel("Account")
-                    .accessibilityIdentifier("account-button")
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    teamSwitcherPill
+                depthTopNavToolbar(teamPill: { teamSwitcherPill }) {
+                    showAccount = true
                 }
             }
             .sheet(item: $selectedPlayer) { player in
@@ -301,7 +280,7 @@ struct TeamDetailView: View {
     private var content: some View {
         VStack(spacing: 0) {
             pageSwitcher
-                .padding(.horizontal)
+                .padding(.horizontal, DesignTokens.Spacing.screenMargin)
                 .padding(.top, 8)
                 .padding(.bottom, 4)
             pageContent

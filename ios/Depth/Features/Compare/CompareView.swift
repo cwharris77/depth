@@ -26,27 +26,51 @@ struct CompareView: View {
     }
 
     var body: some View {
-        content
-            .navigationTitle("Compare")
-            .navigationBarTitleDisplayMode(.inline)
-            .background(DesignTokens.Colors.bg)
-            .task { await viewModel.load() }
-            .refreshable { await viewModel.load() }
-            .sheet(isPresented: pickerPresented) {
-                TeamListPickerSheet(
-                    repository: repository,
-                    title: "Pick a team",
-                    selectedTeamId: currentTeamId ?? "",
-                    onSelectTeam: { teamId in
-                        if let slot = viewModel.pickingSlot {
-                            Task { await viewModel.pickTeam(teamId, into: slot) }
-                        }
-                        viewModel.endPicking()
-                    },
-                    dismissOnSelect: false
-                )
-            }
+        // Cooper review (DEP-252/DEP-277): RootTabView's Compare tab instantiates this
+        // view directly with no ambient NavigationStack (unlike DepthChartsTab/
+        // UniformsTab, which each wrap themselves) — so `.navigationTitle` and the
+        // shared top-nav toolbar below were silent no-ops until this was added.
+        NavigationStack {
+            content
+                .navigationTitle("Compare")
+                .navigationBarTitleDisplayMode(.inline)
+                .background(DesignTokens.Colors.bg)
+                .task { await viewModel.load() }
+                .refreshable { await viewModel.load() }
+                .toolbar {
+                    depthTopNavToolbar(teamPill: { EmptyView() }) {
+                        showAccount = true
+                    }
+                }
+                .sheet(isPresented: pickerPresented) {
+                    TeamListPickerSheet(
+                        repository: repository,
+                        title: "Pick a team",
+                        selectedTeamId: currentTeamId ?? "",
+                        onSelectTeam: { teamId in
+                            if let slot = viewModel.pickingSlot {
+                                Task { await viewModel.pickTeam(teamId, into: slot) }
+                            }
+                            viewModel.endPicking()
+                        },
+                        dismissOnSelect: false
+                    )
+                }
+                .sheet(isPresented: $showAccount) {
+                    // Matches TeamDetailView's account sheet exactly (DEP-252) — same
+                    // SettingsView, same three dependencies, just sourced from
+                    // DepthEnvironment directly since CompareView (unlike
+                    // TeamDetailView) doesn't already thread sessionStore/events in.
+                    SettingsView(
+                        sessionStore: DepthEnvironment.authSessionStore,
+                        authService: DepthEnvironment.authService,
+                        events: DepthEnvironment.appEvents
+                    )
+                }
+        }
     }
+
+    @State private var showAccount = false
 
     /// The sheet presents when a slot is mid-pick (`pickingSlot != nil`).
     private var pickerPresented: Binding<Bool> {

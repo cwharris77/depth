@@ -27,6 +27,10 @@ struct SettingsView: View {
     @State private var showAuth = false
     @State private var showDeletion = false
     @State private var signOutError: DepthAuthError?
+    // DEP-252 (Cooper review): Account moved from a full tab to a sheet, so it needs an
+    // explicit close affordance now — a tab never had this problem (switching tabs was
+    // the exit), a modal sheet does.
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
@@ -47,6 +51,19 @@ struct SettingsView: View {
             .scrollIndicators(.hidden)
             .background(DesignTokens.Colors.bg)
             .navigationTitle("Account")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .frame(minWidth: 44, minHeight: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel("Close")
+                    .accessibilityIdentifier("account-close-button")
+                }
+            }
         }
         .tint(DesignTokens.Colors.accent)
         .sheet(isPresented: $showAuth) {
