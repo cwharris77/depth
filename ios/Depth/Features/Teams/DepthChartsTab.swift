@@ -53,6 +53,7 @@ struct DepthChartsTab: View {
                 overrideService: overrideService,
                 events: events,
                 requestedPlayerID: $pendingPlayerID,
+                currentTeamStore: currentTeamStore,
                 onOpenTeamSwitcher: { showSwitcher = true }
             )
             // Rebuilds the whole team-detail subtree (view model, unit picker, history,

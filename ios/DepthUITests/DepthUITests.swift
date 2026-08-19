@@ -338,6 +338,65 @@ final class DepthUITests: XCTestCase {
         XCTAssertFalse(app.buttons["schedule-season-back-to-current"].waitForExistence(timeout: 2), "Back to current should hide once on the current season")
     }
 
+    /// DEP-278 follow-up: Stats and Schedule fetch no uniform data of their own
+    /// (invariant 5), so their accent comes from `CurrentTeamStore` — refined by
+    /// TeamDetailView whenever the roster page resolves a picked kit. Picking a
+    /// non-default uniform on the roster should be reflected the moment Stats/Schedule
+    /// next render, with no separate refetch. XCUITest can't assert a SwiftUI
+    /// `foregroundStyle` color directly, so this attaches before/after screenshots for
+    /// visual confirmation (same approach as PRScreenshotsUITests) alongside asserting
+    /// the functional flow — kit picked, sheet dismissed, both pages still render —
+    /// completes without regressing.
+    func testKitPickFollowsOntoScheduleAndStats() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launch()
+
+        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
+        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+
+        let statsTab = app.buttons["page-switcher-stats"]
+        XCTAssertTrue(statsTab.waitForExistence(timeout: 10))
+        statsTab.tap()
+        XCTAssertTrue(app.scrollViews["stats-content"].waitForExistence(timeout: 15))
+        let statsBefore = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+        statsBefore.name = "stats-before-kit-pick"
+        statsBefore.lifetime = .keepAlways
+        add(statsBefore)
+
+        // Back to the roster to pick a kit.
+        app.buttons["page-switcher-roster"].tap()
+        let overflow = app.buttons["depth-chart-overflow"]
+        XCTAssertTrue(overflow.waitForExistence(timeout: 10), "team detail should expose the overflow menu")
+        overflow.tap()
+        let chooseUniform = app.buttons["choose-uniform"]
+        XCTAssertTrue(chooseUniform.waitForExistence(timeout: 5), "the Bills should have uniforms to pick from")
+        chooseUniform.tap()
+        XCTAssertTrue(app.otherElements["uniform-picker-sheet"].waitForExistence(timeout: 10))
+
+        // Row 0 is the team's current/home kit (nothing pre-checked on a fresh reset
+        // state); row 1 is a genuinely different kit, so its color should differ from
+        // the base team accent seen in `statsBefore`.
+        let uniformRows = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'uniform-'"))
+        XCTAssertGreaterThanOrEqual(uniformRows.count, 2, "the Bills should offer more than one uniform to distinguish a kit pick")
+        uniformRows.element(boundBy: 1).tap()
+        XCTAssertFalse(app.otherElements["uniform-picker-sheet"].waitForExistence(timeout: 5), "picking a uniform should dismiss the sheet")
+
+        statsTab.tap()
+        XCTAssertTrue(app.scrollViews["stats-content"].waitForExistence(timeout: 15), "Stats should still render after a kit pick")
+        let statsAfter = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+        statsAfter.name = "stats-after-kit-pick"
+        statsAfter.lifetime = .keepAlways
+        add(statsAfter)
+
+        let scheduleTab = app.buttons["page-switcher-schedule"]
+        scheduleTab.tap()
+        XCTAssertTrue(app.otherElements["schedule-content"].waitForExistence(timeout: 15), "Schedule should still render after a kit pick")
+        let scheduleAfter = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+        scheduleAfter.name = "schedule-after-kit-pick"
+        scheduleAfter.lifetime = .keepAlways
+        add(scheduleAfter)
+    }
 
     /// Locked decisions #1/#2/#6/#7: the tab bar exists, all three tabs are reachable,
     /// and each renders its own content.

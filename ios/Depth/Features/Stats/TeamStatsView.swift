@@ -9,9 +9,14 @@ import SwiftUI
 struct TeamStatsView: View {
     @State private var viewModel: TeamStatsViewModel
     @State private var showSeasonPicker = false
+    /// DEP-278 follow-up: Stats fetches no uniform data of its own (lightweight read,
+    /// invariant 5), so it reads the kit-resolved accent TeamDetailView publishes here
+    /// instead — same store the tab tint and Schedule read.
+    private let currentTeamStore: CurrentTeamStore
 
-    init(teamId: String, repository: DepthRepository) {
+    init(teamId: String, repository: DepthRepository, currentTeamStore: CurrentTeamStore) {
         _viewModel = State(initialValue: TeamStatsViewModel(teamId: teamId, repository: repository))
+        self.currentTeamStore = currentTeamStore
     }
 
     var body: some View {
@@ -38,11 +43,15 @@ struct TeamStatsView: View {
             }
     }
 
-    /// The accent that drives chips, DIFF, and the next-game card border. Web uses the
-    /// active kit's `uiAccent` (useKitColors); native's Stats page doesn't know the
-    /// uniform selection, so it falls back to the team's curated `uiAccent` — the same
-    /// value web uses when no kit has been picked this session.
+    /// The accent that drives chips, DIFF (positive), and the next-game card border.
+    /// `currentTeamStore` carries the kit-resolved color once TeamDetailView publishes
+    /// it (DEP-278 follow-up, web parity: `useKitColors`); falls back to this page's
+    /// own team read while that hasn't happened yet (e.g. Stats opened before the
+    /// roster page's snapshot has loaded for this team).
     private var uiAccent: Color {
+        if let hex = currentTeamStore.uiAccent {
+            return Color(hex: hex)
+        }
         guard let page = viewModel.page else { return DesignTokens.Colors.accent }
         return Color(hex: page.team.colors.uiAccent)
     }
