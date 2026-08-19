@@ -10,8 +10,6 @@ import SwiftUI
 enum DesignTokens {
     enum Colors {
         static let bg = Color(hex: "#15161a")
-        /// Matches web's `bgFilterbar` — season-chips row background on the Stats page.
-        static let bgFilterbar = Color(hex: "#181a20")
         static let textPrimary = Color(hex: "#f0f4ff")
         static let textSecondary = Color(hex: "#dfe5f0")
         static let textMuted = Color(hex: "#A5ACAF")
