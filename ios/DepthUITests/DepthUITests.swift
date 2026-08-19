@@ -505,8 +505,15 @@ final class DepthUITests: XCTestCase {
         app.buttons["compare-tab-position"].tap()
         let positionRow = app.scrollViews["compare-position-row"]
         XCTAssertTrue(positionRow.waitForExistence(timeout: 10), "the position chip row should render")
+        // DEP-252/DEP-277: chips built with `.frame(minHeight: 44)` can report back as
+        // 43.99999999999997 through XCUITest's point↔pixel (3x) frame conversion — a
+        // float-precision artifact, not an undersized chip. `>= 44` started failing on
+        // that rounding noise once Compare picked up a real NavigationStack (one more
+        // layout pass in the coordinate chain makes the rounding land under 44 more
+        // often); a small epsilon tolerates the conversion noise without loosening the
+        // real 44pt touch-target intent.
         XCTAssertTrue(
-            positionRow.buttons.allElementsBoundByIndex.contains { $0.frame.height >= 44 },
+            positionRow.buttons.allElementsBoundByIndex.contains { $0.frame.height >= 44 - 0.01 },
             "position chips must meet the 44pt touch minimum"
         )
 
