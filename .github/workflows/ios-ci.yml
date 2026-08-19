@@ -1,15 +1,21 @@
 name: iOS CI
 
-# Builds and tests the native app (ios/) on every PR/push. A PR runs a fast smoke set
-# (unit tests + the flagship journey + reorder/auth UI suites); the full unit + UI suite
-# runs only on pushes to main — the slow UI journeys (Accessibility/Performance/Share and
-# the extra DepthUITests journeys) give PRs little signal but dominate wall time. Build
-# and test are split into separate jobs: `build-for-testing` compiles once, then `test`
-# fans out DepthTests and DepthUITests into two parallel legs against the prebuilt
-# products (`test-without-building`) instead of running them serialized in one
-# `xcodebuild test` invocation — this is the dominant wall-time lever since UI tests
-# relaunch the app per-test and previously always ran after unit tests finished. The one
-# test leg runs on a single current-flagship simulator. The "Staging" configuration is
+# Builds and tests the native app (ios/) on every PR/push, plus a nightly full-suite run.
+# A PR (and a plain push to main) runs a fast smoke set (unit tests + the flagship
+# journey + reorder/auth UI suites); the full unit + UI suite runs only on the nightly
+# schedule — the slow UI journeys (Accessibility/Performance/Share and the extra
+# DepthUITests journeys) give PRs little signal but dominate wall time. Full suite used
+# to run on every push to main instead of nightly, but on a day with several PRs merging
+# back to back, `concurrency.cancel-in-progress` below kills each run's `ui` leg the
+# moment the next push lands — most of those ~20-30min runs never got to finish, pure
+# wasted compute. A nightly cron always runs to completion since nothing else contends
+# for the same concurrency group at that hour. Build and test are split into separate
+# jobs: `build-for-testing` compiles once, then `test` fans out DepthTests and
+# DepthUITests into two parallel legs against the prebuilt products
+# (`test-without-building`) instead of running them serialized in one `xcodebuild test`
+# invocation — this is the dominant wall-time lever since UI tests relaunch the app
+# per-test and previously always ran after unit tests finished. The one test leg runs on
+# a single current-flagship simulator. The "Staging" configuration is
 # DEBUG_BUILD_SETTINGS: all of Debug/Staging/Release point at the single production
 # Supabase project (jiqoaqmzmvtovimnmbzl, see ios/xcconfig/Staging.xcconfig's DEP-40 Lane B
 # TODO) — there is no dedicated staging project, so every UI journey here reads/writes the
@@ -31,6 +37,11 @@ on:
     paths:
       - 'ios/**'
       - '.github/workflows/ios-ci.yml'
+  # Full DepthUITests suite, once a day — see the header comment above for why this
+  # isn't on every push. Path filters don't apply to schedule triggers, so this always
+  # runs regardless of whether ios/ changed that day; harmless, it's one run.
+  schedule:
+    - cron: '0 8 * * *'
 
 concurrency:
   group: ios-ci-${{ github.ref }}
@@ -177,14 +188,14 @@ jobs:
   test:
     needs: [resolve-devices, build-for-testing]
     runs-on: macos-latest
-    # push-to-main runs the full DepthUITests target, not the trimmed PR smoke set —
-    # 15 minutes flat was too tight for it and was killing every push run's `ui` leg
-    # mid-suite (confirmed: job duration exactly matched a 15-min timeout, no
-    # intervening push, log was mid-PerformanceUITests when canceled). 30 matches the
-    # original pre-split single job's budget, now that build is a separate job with
-    # its own 25-minute allowance. Kept at 15 for pull_request — the smoke set finishes
-    # in ~11m, and a hung PR run should fail fast for the author, not eat 30 minutes.
-    timeout-minutes: ${{ github.event_name == 'push' && 30 || 15 }}
+    # Only the nightly schedule run tests the full DepthUITests target — 15 minutes
+    # flat was too tight for that (confirmed: a push-triggered full-suite run was
+    # killed exactly at the 15-min mark mid-PerformanceUITests, back when full suite
+    # ran on every push). 30 matches the original pre-split single job's budget, now
+    # that build is a separate job with its own 25-minute allowance. Kept at 15 for
+    # pull_request/push — the smoke set finishes in ~11m, and a hung run should fail
+    # fast, not eat 30 minutes.
+    timeout-minutes: ${{ github.event_name == 'schedule' && 30 || 15 }}
     strategy:
       fail-fast: false
       matrix:
@@ -225,21 +236,22 @@ jobs:
           xcrun simctl boot "$DEVICE_ID"
           echo "device_id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
 
-      # A PR gets a fast smoke set: the unit tests plus the single flagship
-      # chart→team→player journey, the reorder suite, and auth. The other DepthUITests
-      # journeys (schedule, page-switcher, unit-tab tap targets, history, tab bar,
-      # relaunch-restore) each relaunch the app against production and dominate wall time
-      # while adding little per-PR signal — they, like Accessibility/Performance/Share, run
-      # only on pushes to main.
+      # A PR and a plain push to main both get a fast smoke set: the unit tests plus the
+      # single flagship chart→team→player journey, the reorder suite, and auth. The
+      # other DepthUITests journeys (schedule, page-switcher, unit-tab tap targets,
+      # history, tab bar, relaunch-restore) each relaunch the app against production and
+      # dominate wall time while adding little per-push signal — they, like
+      # Accessibility/Performance/Share, run only on the nightly schedule (see the
+      # header comment for why not on every push).
       - name: Determine test scope
         id: scope
         run: |
           if [ "${{ matrix.leg }}" = "unit" ]; then
             echo "tests=-only-testing:DepthTests" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "tests=-only-testing:DepthUITests/DepthUITests/testAppLaunches -only-testing:DepthUITests/DepthUITests/testLaunchesIntoAChartThenSwitchesTeamAndOpensPlayerDetail -only-testing:DepthUITests/PlayerCardReorderUITests -only-testing:DepthUITests/AuthUITests" >> "$GITHUB_OUTPUT"
-          else
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
             echo "tests=-only-testing:DepthUITests" >> "$GITHUB_OUTPUT"
+          else
+            echo "tests=-only-testing:DepthUITests/DepthUITests/testAppLaunches -only-testing:DepthUITests/DepthUITests/testLaunchesIntoAChartThenSwitchesTeamAndOpensPlayerDetail -only-testing:DepthUITests/PlayerCardReorderUITests -only-testing:DepthUITests/AuthUITests" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run ${{ matrix.leg }} tests (Staging config)
