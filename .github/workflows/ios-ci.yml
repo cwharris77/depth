@@ -177,7 +177,13 @@ jobs:
   test:
     needs: [resolve-devices, build-for-testing]
     runs-on: macos-latest
-    timeout-minutes: 15
+    # PR runs stay well under this on the trimmed smoke set, but push-to-main runs the
+    # full DepthUITests target — 15 minutes was too tight and was killing every push
+    # run's `ui` leg mid-suite (confirmed: job duration exactly matched a 15-min
+    # timeout, no intervening push, log was mid-PerformanceUITests when canceled).
+    # Matches the original pre-split single job's budget now that build is a separate
+    # job with its own 25-minute allowance.
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
