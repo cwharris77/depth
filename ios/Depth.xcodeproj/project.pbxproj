@@ -31,6 +31,7 @@
 		2B8FA98AF2CFBDE2514DF50E /* PlayerProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42A711DE2216F626464157F5 /* PlayerProfileViewModel.swift */; };
 		2CD5499E287B63E6296D6740 /* LocalFirstOverrideWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D8DE9E56E02C75ECDEBB8D /* LocalFirstOverrideWriterTests.swift */; };
 		2D9BA1094A1074B3FF3A9B9A /* UpdateGateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EF23A4738905D53A9740E41 /* UpdateGateViewModel.swift */; };
+		2F42DE35421AF81749E5CE75 /* URLErrorOfflineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE00D91918FC8ECB279A4098 /* URLErrorOfflineTests.swift */; };
 		32FAA8533AADB16AE7ED4855 /* DesignTokensTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909FC5E5EBC96FBAFD1AEDBE /* DesignTokensTests.swift */; };
 		33C42687B66E7D2A4E70816B /* TeamListPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10E7D3B04967C0DFBDBEED5 /* TeamListPickerSheet.swift */; };
 		362F1B4B478C5684328409CA /* AuthSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12A1C43C94C87299E927B13F /* AuthSheet.swift */; };
@@ -293,6 +294,7 @@
 		F9152627F4CAC783C2C1E5E6 /* AccountDeletionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDeletionViewModel.swift; sourceTree = "<group>"; };
 		FCDC4EF2FDB8D9CC070628C2 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		FCEB2197DF04D84335401768 /* DepthEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthEnvironment.swift; sourceTree = "<group>"; };
+		FE00D91918FC8ECB279A4098 /* URLErrorOfflineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLErrorOfflineTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -504,6 +506,7 @@
 				46B2552D4A053BA192766213 /* TeamSnapshotMapperTests.swift */,
 				44DD0C5F4F909F2A6EF1C1F1 /* TeamStatsMapperTests.swift */,
 				024C498B597CE26F3EB1EDB3 /* UniformArchiveTests.swift */,
+				FE00D91918FC8ECB279A4098 /* URLErrorOfflineTests.swift */,
 			);
 			path = DepthTests;
 			sourceTree = "<group>";
@@ -772,6 +775,7 @@
 				ADDFA39DCBC8FBDE54C5DD9D /* TeamLogoCacheTests.swift in Sources */,
 				549264E5E1E69E023D91CD6A /* TeamSnapshotMapperTests.swift in Sources */,
 				5A99B02FB1618D720580A9C1 /* TeamStatsMapperTests.swift in Sources */,
+				2F42DE35421AF81749E5CE75 /* URLErrorOfflineTests.swift in Sources */,
 				F97239B4E27EA3AF15080E7F /* UniformArchiveTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -157,7 +157,9 @@ actor SupabaseDepthAuthService: DepthAuthServicing {
 
     private static func map(_ error: Error) -> DepthAuthError {
         if let depthError = error as? DepthAuthError { return depthError }
-        if error is URLError { return .offline }
+        if let urlError = error as? URLError, urlError.isNetworkUnavailable {
+            return .offline
+        }
         if let authError = error as? AuthError, authError == .sessionMissing {
             return .unauthenticated
         }
