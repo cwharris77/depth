@@ -6,6 +6,11 @@ import SwiftUI
 private struct DepthCard: ViewModifier {
     let dense: Bool
     let padded: Bool
+    /// Overrides the default corner radius. Web's `CompareView` cards are `rounded-2xl`
+    /// (16pt = `Radius.md`), not the `Radius.lg` (24) this modifier defaults to, so
+    /// Compare passes `.md` to keep web parity while still composing the one card
+    /// treatment (DEP-266).
+    let radius: CGFloat
 
     @ViewBuilder
     func body(content: Content) -> some View {
@@ -18,10 +23,10 @@ private struct DepthCard: ViewModifier {
         }
         .background(dense ? DesignTokens.Colors.surfaceCard2 : DesignTokens.Colors.surfaceCard)
         .overlay {
-            RoundedRectangle(cornerRadius: DesignTokens.Radius.lg)
+            RoundedRectangle(cornerRadius: radius)
                 .strokeBorder(DesignTokens.Colors.borderDefault, lineWidth: 1)
         }
-        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.lg))
+        .clipShape(RoundedRectangle(cornerRadius: radius))
     }
 }
 
@@ -36,7 +41,10 @@ extension View {
     /// `clipShape` below ever runs, so the highlight can't reach the card's rounded
     /// edges. Callers using `padded: false` must apply matching padding to every row
     /// themselves (leading/trailing at minimum) or content will touch the card's edges.
-    func depthCard(dense: Bool = false, padded: Bool = true) -> some View {
-        modifier(DepthCard(dense: dense, padded: padded))
+    ///
+    /// `radius` overrides the default `Radius.lg` (24); pass `DesignTokens.Radius.md`
+    /// (16) for surfaces that must match web's `rounded-2xl` cards (DEP-266's Compare).
+    func depthCard(dense: Bool = false, padded: Bool = true, radius: CGFloat = DesignTokens.Radius.lg) -> some View {
+        modifier(DepthCard(dense: dense, padded: padded, radius: radius))
     }
 }
