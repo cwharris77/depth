@@ -5,7 +5,7 @@ import Foundation
 // app background as whichever reads better on an arbitrary brand color. Used by the
 // share card (Task 8E) to paint text on a team's primary, which — unlike uiAccent — is
 // only curated to read on `DARK_BG`, not on itself.
-let darkBackgroundHex = "#0a0e1a"
+let darkBackgroundHex = "#15161a"
 private let lightTextHex = "#ffffff"
 
 private func channel(_ value: Double) -> Double {

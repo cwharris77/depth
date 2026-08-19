@@ -18,7 +18,7 @@ import Testing
 }
 
 @Test func readableTextOnPicksDarkTextOnALightBackgroundAndWhiteOnADarkOne() {
-    #expect(readableTextOn("#ffffff") == "#0a0e1a")
+    #expect(readableTextOn("#ffffff") == "#15161a")
     #expect(readableTextOn("#002244") == "#ffffff")
 }
 
