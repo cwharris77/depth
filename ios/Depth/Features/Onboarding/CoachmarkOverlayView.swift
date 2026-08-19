@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // DEP-251 first-run tutorial, screen two of two: the active coachmark step rendered as
 // a dimmed spotlight cut out around the real control plus a callout bubble explaining
@@ -8,37 +9,39 @@ import SwiftUI
 // tag anywhere in the tree into a screen rect and hands it here alongside the root's own
 // GeometryProxy.
 //
-// `.bottomTabs` and `.teamPill` have no *reliable* tracked anchor — TabView doesn't
-// expose a per-tab frame through the public SwiftUI API, and (measured directly:
-// `.coachmarkAnchor` tagging the team pill's toolbar item never resolved a rect at
-// runtime) `anchorPreference`/`.overlayPreferenceValue` do not reliably bubble a
-// `ToolbarItem`'s content up through the enclosing view's preference tree the way
-// regular body content does. Both steps fall back to a fixed band computed from the
-// proxy's own geometry instead — spotlighting the general nav-bar/tab-bar region rather
-// than the exact control, same trade-off, same reasoning.
+// `.bottomTabs` has no tracked target — SwiftUI's TabView doesn't expose a per-tab frame
+// through the public API — so that step's rect is computed directly from the overlay's
+// GeometryProxy (a fixed band at the screen's bottom) instead of a lookup.
+//
+// The proxy here comes from `.coachmarkOverlay`'s `GeometryReader`, which wraps
+// `RootTabView` — and measured directly, `proxy.size` is the TabView's *content* area,
+// already shrunk to exclude the floating tab bar's own reserved band (iOS 26: ~96pt on
+// an iPhone 17 Pro) rather than the full screen. `.bottomTabs`' band starts exactly
+// where that reservation begins (`proxy.size.height`) and runs to the screen's real
+// bottom edge, which `proxy` itself can't report (its own frame stops short of it) — so
+// this step alone reads `UIScreen.main.bounds` for that one number.
 struct CoachmarkOverlayView: View {
     let controller: OnboardingController
     let anchors: [CoachmarkID: CGRect]
     let proxy: GeometryProxy
+    /// The bubble's own measured size (DEP-251 placement audit) — `bubble(for:around:)`
+    /// positions itself by its center via `.position()`, so placing it a fixed distance
+    /// *below* a target requires knowing its own height; a hardcoded clearance instead
+    /// of this (the original "+100") undershoots for any bubble taller than ~200pt and
+    /// the bubble ends up overlapping the very target it's introducing (measured
+    /// directly on the `.teamPill` step). Defaults to a plausible size so the first frame
+    /// (before the `GeometryReader` below reports the real one) is already close.
+    @State private var bubbleSize = CGSize(width: 320, height: 200)
 
     private var targetRect: CGRect? {
         guard let step = controller.currentStep else { return nil }
         switch step.id {
         case .bottomTabs:
-            let barHeight: CGFloat = 49 + proxy.safeAreaInsets.bottom
+            let screenHeight = UIScreen.main.bounds.height
+            let barTop = proxy.size.height
             return CGRect(
-                x: 0, y: proxy.size.height - barHeight,
-                width: proxy.size.width, height: barHeight
-            )
-        case .teamPill:
-            // Prefer a real anchor if one ever resolves (harmless to keep the tag in
-            // TeamDetailView); otherwise a band over the toolbar's trailing half,
-            // where the pill always renders (DEP-236: it owns the trailing slot).
-            if let anchor = anchors[.teamPill] { return anchor }
-            let navBarHeight: CGFloat = 44
-            return CGRect(
-                x: proxy.size.width * 0.42, y: proxy.safeAreaInsets.top,
-                width: proxy.size.width * 0.58 - 16, height: navBarHeight
+                x: 0, y: barTop,
+                width: proxy.size.width, height: max(screenHeight - barTop, 49)
             )
         default:
             return anchors[step.id]
@@ -92,9 +95,11 @@ struct CoachmarkOverlayView: View {
             max(rect.midX, bubbleWidth / 2 + DesignTokens.Spacing.md),
             proxy.size.width - bubbleWidth / 2 - DesignTokens.Spacing.md
         )
+        let spacing: CGFloat = 24
+        let halfHeight = bubbleSize.height / 2
         let bubbleY = showsBelow
-            ? min(rect.maxY + 100, proxy.size.height - 100)
-            : max(rect.minY - 100, 100)
+            ? min(rect.maxY + spacing + halfHeight, proxy.size.height - halfHeight)
+            : max(rect.minY - spacing - halfHeight, halfHeight)
 
         return VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             HStack {
@@ -133,6 +138,13 @@ struct CoachmarkOverlayView: View {
         .overlay(
             RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
                 .strokeBorder(DesignTokens.Colors.borderDefault, lineWidth: 1)
+        )
+        .background(
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { bubbleSize = proxy.size }
+                    .onChange(of: proxy.size) { _, newSize in bubbleSize = newSize }
+            }
         )
         .position(x: bubbleX, y: bubbleY)
         .accessibilityElement(children: .contain)
