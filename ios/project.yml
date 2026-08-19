@@ -123,6 +123,15 @@ schemes:
   # DepthUITests target WITHOUT the AppStore/PR screenshot skips, so the workflow (and
   # local runs) can invoke it with `-only-testing:DepthUITests/PRScreenshotsUITests` —
   # which cannot override a scheme-level skip. See docs/ios-pr-screenshots.md.
+  #
+  # Target propagation: SCREENSHOT_TARGETS is injected INTO THE SCHEME as a TestAction
+  # EnvironmentVariable rather than passed to `xcodebuild`'s process env — the XCUITest
+  # runner does not inherit xcodebuild's shell environment, and reading
+  # ProcessInfo.processInfo.environment in the runner comes up empty (DEP-280). Scheme
+  # TestAction env vars DO reach the runner. The value below is the deterministic
+  # `field` default (keeps plain `xcodegen generate` reproducible for CI's sync check);
+  # the script/workflow sed the regenerated scheme's SCREENSHOT_TARGETS to the requested
+  # targets before each capture.
   Depth-PRScreenshots:
     build:
       targets:
@@ -133,6 +142,8 @@ schemes:
       config: Debug
       targets:
         - DepthUITests
+      environmentVariables:
+        SCREENSHOT_TARGETS: field
     archive:
       config: Release
 

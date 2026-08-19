@@ -57,10 +57,14 @@ final class PRScreenshotsUITests: XCTestCase {
         }
 
         // `uniform` — the uniform picker sheet. DEP-260 changes the thumbnail corner
-        // radius (8→12), so capture the sheet containing the thumbnails.
+        // radius (8→12), so capture the sheet containing the thumbnails. "Choose
+        // Uniform" lives inside the ••• overflow menu (DEP-230), so open it first.
         if requested.contains("uniform") {
+            let overflow = app.buttons["depth-chart-overflow"]
+            XCTAssertTrue(overflow.waitForExistence(timeout: 15), "team detail should expose the overflow menu")
+            overflow.tap()
             let chooseUniform = app.buttons["choose-uniform"]
-            XCTAssertTrue(chooseUniform.waitForExistence(timeout: 15), "the chart toolbar should expose the uniform picker")
+            XCTAssertTrue(chooseUniform.waitForExistence(timeout: 15), "the overflow menu should expose the uniform picker")
             chooseUniform.tap()
             XCTAssertTrue(app.otherElements["uniform-picker-sheet"].waitForExistence(timeout: 10), "the uniform picker sheet should present")
             attachScreenshot(name: "uniform")
@@ -88,12 +92,11 @@ final class PRScreenshotsUITests: XCTestCase {
         }
     }
 
-    /// Resolves the requested screenshot targets from, in order: the
-    /// `SCREENSHOT_TARGETS` process-environment variable (the reliable path through
-    /// `xcodebuild test`, which propagates the caller's env to the test runner) then a
-    /// `SCREENSHOT_TARGETS=` launch argument. Unknown tokens are ignored; empty/missing
-    /// input falls back to the documented default `field` so a fresh run never silently
-    /// captures nothing.
+    /// Resolves the requested screenshot targets from the `SCREENSHOT_TARGETS` scheme
+    /// TestAction environment variable (the transport that reliably reaches the runner —
+    /// see project.yml's Depth-PRScreenshots note) or a `SCREENSHOT_TARGETS=` launch
+    /// argument. Unknown tokens are ignored; empty/missing input falls back to the
+    /// documented default `field` so a fresh run never silently captures nothing.
     private static func requestedTargets() -> Set<String> {
         let args = ProcessInfo.processInfo.arguments
         let raw: String
