@@ -19,6 +19,9 @@ struct TeamDetailView: View {
     @State private var showHistory = false
     @State private var showUniformPicker = false
     @State private var showFormations = false
+    /// DEP-252: Account moved out of the tab bar (a personal affordance, not a content
+    /// section) into the nav-bar trailing slot DEP-236 freed.
+    @State private var showAccount = false
     @State private var selectedUniformID: String?
     /// The user's chosen real formation for the active unit (web's `activeFormation`, an
     /// ephemeral pick — not persisted, not in the URL). nil means "use the unit's top
@@ -191,18 +194,12 @@ struct TeamDetailView: View {
                     Task { await mergeOverridesOnSignIn() }
                 }
             }
+            // DEP-236/DEP-252/DEP-277 (Cooper review): the shared app-wide top nav —
+            // see `depthTopNavToolbar` for why this isn't hand-rolled per screen anymore.
+            // The team pill is this screen's contribution to the "conditional" half.
             .toolbar {
-                // DEP-236 + Cooper's flexbox: the nav bar is two independent edges. The
-                // logo anchors far left, untouched (web DepthMark parity); the team pill
-                // anchors far right via the trailing slot so it never shares a group with
-                // the logo. The ROSTER/SCHEDULE/STATS switcher is content-level
-                // sub-navigation and no longer lives here at all (see `content`).
-                ToolbarItem(placement: .topBarLeading) {
-                    DepthBrandMark(size: 20)
-                        .accessibilityHidden(true)
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    teamSwitcherPill
+                depthTopNavToolbar(teamPill: { teamSwitcherPill }) {
+                    showAccount = true
                 }
             }
             .sheet(item: $selectedPlayer) { player in
@@ -233,6 +230,17 @@ struct TeamDetailView: View {
                     // `PlayerDetailView`'s accessibility-size header stacking (T10) is
                     // actually driven by the override in both real use and tests.
                     .modifier(UITestingDynamicTypeOverride())
+            }
+            .sheet(isPresented: $showAccount) {
+                // DEP-252: SettingsView's content is unchanged from its old tab-bar
+                // home (AccountTab) — it just stops being always-reachable and becomes
+                // a sheet again, opened from the nav-bar icon instead.
+                SettingsView(
+                    sessionStore: sessionStore,
+                    authService: DepthEnvironment.authService,
+                    events: events
+                )
+                .modifier(UITestingDynamicTypeOverride())
             }
             .sheet(isPresented: $showHistory) {
                 HistorySeasonSheet(
@@ -279,7 +287,7 @@ struct TeamDetailView: View {
     private var content: some View {
         VStack(spacing: 0) {
             pageSwitcher
-                .padding(.horizontal)
+                .padding(.horizontal, DesignTokens.Spacing.screenMargin)
                 .padding(.top, 8)
                 .padding(.bottom, 4)
             pageContent
