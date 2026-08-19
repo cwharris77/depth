@@ -107,6 +107,41 @@ final class AccessibilityUITests: XCTestCase {
         add(attachment)
     }
 
+    // DEP-273: the team switcher must stay dismissible while its search field is active.
+    // SwiftUI's inline `.searchable` takes over the whole nav bar when focused — hiding
+    // any nav-bar toolbar item — so the sheet previously had no way to actually close
+    // mid-search (the system search cancel only clears the field). The dismiss is now a
+    // persistent top-trailing overlay on the sheet content, which stays visible and
+    // hittable at every search state.
+    func testSwitcherStaysDismissibleWhileSearchIsActive() throws {
+        let app = launchApp()
+        XCTAssertTrue(app.waitForDepthChart(timeout: 15), "the app should launch straight into a depth chart")
+        let switcher = app.buttons["team-switcher-button"]
+        XCTAssertTrue(switcher.waitForExistence(timeout: 15), "the depth chart header should expose the team switcher")
+        switcher.tap()
+
+        let close = app.buttons["Close"]
+        XCTAssertTrue(close.waitForExistence(timeout: 15), "the switcher sheet should offer its Close button")
+        XCTAssertTrue(close.isHittable, "the Close button should be hittable before search is active")
+
+        let searchField = app.searchFields.firstMatch
+        XCTAssertTrue(searchField.waitForExistence(timeout: 15), "the switcher sheet should offer team search")
+        searchField.tap()
+        searchField.typeText("Bills")
+
+        // The bug: once search activates, XCUITest can no longer find a dismiss control
+        // (no row selection happens, so the sheet had no exit). Close must remain present
+        // and hittable in the search state.
+        XCTAssertTrue(close.waitForExistence(timeout: 5), "Close must remain reachable while the search field is active")
+        XCTAssertTrue(close.isHittable, "Close must remain tappable while the search field is active")
+
+        close.tap()
+        XCTAssertFalse(
+            app.otherElements["team-switcher-sheet"].waitForExistence(timeout: 3),
+            "tapping Close while search is active should dismiss the switcher sheet"
+        )
+    }
+
     // Regression guard for the stat table's spoken reading: a row combined from its raw
     // cells announces bare numbers, so every value must arrive paired with its column's
     // spoken name (PlayerStatsAccessibility.rowLabel).
