@@ -259,10 +259,13 @@ private struct KitFigure: View {
     }
 }
 
-/// The leading full-mannequin thumbnail, kept with a surfaced slot so rows don't shift
-/// while loading (AGENTS.md #16). The mannequin viewBox is ~2.7:1 tall, so a 56-wide
-/// tile is ~151 tall; object-fit scaled-to-fit keeps the whole figure visible.
-private struct UniformThumb: View {
+/// The full-mannequin thumbnail (helmet → cleats), kept with a surfaced slot so rows
+/// don't shift while loading (AGENTS.md #16). The mannequin viewBox is ~2.7:1 tall, so
+/// a 56-wide tile is ~151 tall; object-fit scaled-to-fit keeps the whole figure visible.
+/// Internal (not private): DEP-256 reuses this same jersey-art component in
+/// UniformPickerSheet's carousel for drop-in parity with the archive, rather than
+/// re-implementing jersey rendering there.
+struct UniformThumb: View {
     let url: URL?
     let size: CGFloat
 
