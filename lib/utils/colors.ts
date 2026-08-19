@@ -1,8 +1,18 @@
 import { colors as uiTokens } from '@/components/ui/tokens';
-import type { PlayerStatus, TeamColors } from '@/lib/types';
+import type { Conference, PlayerStatus, TeamColors } from '@/lib/types';
 
 // The dark app background. uiAccent values are curated to read against this.
 export const DARK_BG = uiTokens.bg;
+
+// The NFL's own shield brand colors (brandcolorcode.com/nfl-national-football-league),
+// reused for the AFC/NFC conference picker. Unlike the app-wide `accent` token (DEP-272),
+// which had to stay neutral, this control's whole job is to distinguish the two
+// conferences, so the real broadcast/bracket-graphic red/blue is the right fit rather
+// than a neutral pick.
+export const CONFERENCE_COLORS: Record<Conference, string> = {
+  AFC: '#D50A0A',
+  NFC: '#013369',
+};
 
 // Convert a 6-digit (or 3-digit short) hex color to an rgba() string at the
 // given percentage opacity. Short hex (#RGB) is expanded first.
