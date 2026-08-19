@@ -6,7 +6,7 @@ import Observation
 @Observable
 @MainActor
 final class AuthFlowViewModel {
-    enum Step: Equatable { case email, code }
+    enum Step: Equatable { case email, code, success }
 
     var email = ""
     var code = ""
@@ -80,6 +80,7 @@ final class AuthFlowViewModel {
             let user = try await service.verifyEmailOtp(
                 email: normalizedEmail, code: normalizedCode)
             sessionStore.accept(user)
+            step = .success
             events.record(.authCompleted)
             return true
         } catch let authError as DepthAuthError {

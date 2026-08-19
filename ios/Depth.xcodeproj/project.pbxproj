@@ -46,6 +46,7 @@
 		4FFF76CE7A865150A0929EF3 /* NativeAuthIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78EB3744AA605C27F09EC8EB /* NativeAuthIntegrationTests.swift */; };
 		50BB531E17CF38D6FDF1C71D /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 0065E218A34DF99B5279CD03 /* Supabase */; };
 		52029FDEE87BA6779F4B144E /* StartupTeamTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954B921C7ED809C93EB75D81 /* StartupTeamTests.swift */; };
+		53D105EED7259E9FD48173C0 /* OtpCodeField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D61960D55F895BDE166B659 /* OtpCodeField.swift */; };
 		549264E5E1E69E023D91CD6A /* TeamSnapshotMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B2552D4A053BA192766213 /* TeamSnapshotMapperTests.swift */; };
 		56464A6066B659D24A8B44C9 /* UniformListing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B564462941A2C403AA7E112 /* UniformListing.swift */; };
 		56E5EA20BF5D3575B61B2355 /* NameFormatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 072943B467B53094FAEA39E2 /* NameFormatTests.swift */; };
@@ -204,6 +205,7 @@
 		4F264CCAAD3DD2BD01CFF1D9 /* CachingDepthRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingDepthRepository.swift; sourceTree = "<group>"; };
 		50938E38F00E79484F436B49 /* AppBuildInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBuildInfo.swift; sourceTree = "<group>"; };
 		541B596A222BBAA528EB2458 /* FormationSlot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormationSlot.swift; sourceTree = "<group>"; };
+		5D61960D55F895BDE166B659 /* OtpCodeField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OtpCodeField.swift; sourceTree = "<group>"; };
 		5DC2684A5931092EB633E74B /* TeamStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamStats.swift; sourceTree = "<group>"; };
 		5E7327B7FE220C00C465A0C5 /* PlayerProfileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfileTests.swift; sourceTree = "<group>"; };
 		64ECA11ED67DB4F54B0E5CCF /* HistorySeasonSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistorySeasonSheet.swift; sourceTree = "<group>"; };
@@ -372,6 +374,7 @@
 				E235B4DBA71FCAE9FC954FF4 /* AuthSessionStore.swift */,
 				12A1C43C94C87299E927B13F /* AuthSheet.swift */,
 				C97FD1B3B972D4063D8A72A2 /* DepthAuthService.swift */,
+				5D61960D55F895BDE166B659 /* OtpCodeField.swift */,
 			);
 			path = Auth;
 			sourceTree = "<group>";
@@ -821,6 +824,7 @@
 				6906FAA57C5B9DC926729482 /* HistorySeasonSheet.swift in Sources */,
 				EFF8B47F7B414593005AA116 /* HistoryViewModel.swift in Sources */,
 				91106CA5B3104205E5DC31AE /* NameFormat.swift in Sources */,
+				53D105EED7259E9FD48173C0 /* OtpCodeField.swift in Sources */,
 				CF41F37C9326B8476CE36B8D /* Player.swift in Sources */,
 				164B2254852E6C1428CD8181 /* PlayerDetailView.swift in Sources */,
 				165B8462111535F8104EAC3E /* PlayerHit.swift in Sources */,
