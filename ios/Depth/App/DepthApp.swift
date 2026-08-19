@@ -24,6 +24,17 @@ struct DepthApp: App {
             for teamId in DepthEnvironment.preferences.allOverrides().keys {
                 DepthEnvironment.preferences.clearTeamOverride(teamId: teamId)
             }
+            // DEP-251: mark the first-run tutorial already seen so the welcome screen
+            // doesn't intercept every other UI test's launch — only
+            // UI_TESTING_SHOW_ONBOARDING (below) opts back into seeing it.
+            DepthEnvironment.preferences.markOnboardingSeen()
+        }
+
+        // DEP-251 onboarding UI tests: the one launch argument that puts the app back
+        // into its genuine "never seen the tutorial" state, isolated from the blanket
+        // "seen" default UI_TESTING_RESET_STATE sets above.
+        if ProcessInfo.processInfo.arguments.contains("UI_TESTING_SHOW_ONBOARDING") {
+            DepthEnvironment.preferences.clearOnboardingSeen()
         }
 
         // App Store screenshot capture (task-9d-screenshots-brief.md) needs the same

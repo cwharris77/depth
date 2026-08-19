@@ -234,11 +234,17 @@ struct TeamDetailView: View {
             .sheet(isPresented: $showAccount) {
                 // DEP-252: SettingsView's content is unchanged from its old tab-bar
                 // home (AccountTab) — it just stops being always-reachable and becomes
-                // a sheet again, opened from the nav-bar icon instead.
+                // a sheet again, opened from the nav-bar icon instead. `onboarding` reads
+                // the same shared instance ContentView owns (DEP-251's "Take the Tour"
+                // row needs it to replay the coachmark sequence) — TeamDetailView has no
+                // reason to receive its own copy threaded down through RootTabView when
+                // every other screen-level singleton here (`authService`, `events`) is
+                // already read straight from `DepthEnvironment`.
                 SettingsView(
                     sessionStore: sessionStore,
                     authService: DepthEnvironment.authService,
-                    events: events
+                    events: events,
+                    onboarding: DepthEnvironment.onboarding
                 )
                 .modifier(UITestingDynamicTypeOverride())
             }
@@ -336,6 +342,8 @@ struct TeamDetailView: View {
         .accessibilityIdentifier("team-switcher-button")
         .accessibilityLabel("\(navigationTitleText), change team")
         .accessibilityHint("Opens the team switcher")
+        // DEP-251: first-run tutorial's first coachmark target.
+        .coachmarkAnchor(.teamPill)
     }
 
     /// Web parity (components/TeamPageHeader.tsx PAGE_TABS): the ROSTER/SCHEDULE/STATS
@@ -468,6 +476,8 @@ struct TeamDetailView: View {
         }
         .accessibilityLabel("More")
         .accessibilityIdentifier("depth-chart-overflow")
+        // DEP-251: first-run tutorial's overflow-menu coachmark target.
+        .coachmarkAnchor(.overflowMenu)
     }
 
     @ViewBuilder

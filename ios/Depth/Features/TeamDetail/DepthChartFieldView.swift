@@ -46,6 +46,13 @@ struct DepthChartFieldView: View {
         colors ?? snapshot.team.colors
     }
 
+    /// DEP-251: the one slot the "tap any player" coachmark points at. See the
+    /// `.coachmarkTarget` call site in `body` for why it's "whichever renders first"
+    /// rather than a fixed position.
+    private var firstFilledSlotKey: String? {
+        slots.first(where: { $0.player != nil })?.key
+    }
+
     private var slots: [RenderSlot] {
         let roster = Roster(players: snapshot.players, specialTeams: snapshot.specialTeams)
         // DEP-221: pass the caller's selected real formation (formationSlots builds its
@@ -91,6 +98,17 @@ struct DepthChartFieldView: View {
                         showsNames: showsNames,
                         fieldHeight: proxy.size.height
                     )
+                    // DEP-251: first-run tutorial's "tap any player" coachmark points at
+                    // whichever filled slot renders first — the field has no single
+                    // fixed "the QB dot", so the first resolved player stands in for
+                    // "any dot" rather than hard-coding a position that may be missing
+                    // on some team/unit. Tagged *before* `.position()` deliberately:
+                    // `.position()` makes a view accept/report whatever size its parent
+                    // proposes (here, the whole field's `ZStack`) rather than its own
+                    // small content size, so an anchor read after `.position()` resolves
+                    // to that inflated frame (measured directly: a "player dot" ring
+                    // that covered the entire field) instead of the ~44pt dot.
+                    .coachmarkTarget(if: slot.key == firstFilledSlotKey, id: .playerDot)
                     .position(layout.positions[slot.key] ?? .zero)
                     // Web parity (components/PlayerDot.tsx): on-line players would
                     // straddle the line of scrimmage, so push the drawn dot a
