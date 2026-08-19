@@ -135,3 +135,23 @@ schemes:
         - DepthUITests
     archive:
       config: Release
+
+  # Local running/archiving against the Staging config (prod Supabase, see
+  # xcconfig/Staging.xcconfig). This is the scheme to run on a physical device —
+  # Debug shares the simulator's localhost-backed Supabase (127.0.0.1) which is the
+  # device itself on hardware, so a phone build must use Staging to reach the hosted
+  # DB. Originally a hand-created scheme (not in project.yml) that was silently
+  # dropped on xcodegen regenerate; declared here so it's reproducible.
+  Depth Stage:
+    build:
+      targets:
+        Depth: all
+    run:
+      config: Staging
+    test:
+      config: Staging
+      targets:
+        - DepthTests
+        - DepthUITests
+    archive:
+      config: Staging

@@ -46,8 +46,8 @@ actor SupabaseDepthRepository: DepthRepository {
             throw Self.mapPostgrestError(error)
         } catch let error as DecodingError {
             throw DepthError.decoding("\(error)")
-        } catch is URLError {
-            throw DepthError.offline
+        } catch let error as URLError {
+            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server("\(error)")
         } catch {
             throw DepthError.server("\(error)")
         }
@@ -86,8 +86,8 @@ actor SupabaseDepthRepository: DepthRepository {
             throw Self.mapPostgrestError(error)
         } catch let error as DecodingError {
             throw DepthError.decoding("\(error)")
-        } catch is URLError {
-            throw DepthError.offline
+        } catch let error as URLError {
+            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server("\(error)")
         } catch {
             throw DepthError.server("\(error)")
         }
@@ -123,8 +123,8 @@ actor SupabaseDepthRepository: DepthRepository {
             throw Self.mapPostgrestError(error)
         } catch let error as DecodingError {
             throw DepthError.decoding("\(error)")
-        } catch is URLError {
-            throw DepthError.offline
+        } catch let error as URLError {
+            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server("\(error)")
         } catch {
             throw DepthError.server("\(error)")
         }
@@ -175,8 +175,8 @@ actor SupabaseDepthRepository: DepthRepository {
             throw Self.mapPostgrestError(error)
         } catch let error as DecodingError {
             throw DepthError.decoding("\(error)")
-        } catch is URLError {
-            throw DepthError.offline
+        } catch let error as URLError {
+            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server("\(error)")
         } catch {
             throw DepthError.server("\(error)")
         }
@@ -211,8 +211,8 @@ actor SupabaseDepthRepository: DepthRepository {
             throw Self.mapPostgrestError(error)
         } catch let error as DecodingError {
             throw DepthError.decoding("\(error)")
-        } catch is URLError {
-            throw DepthError.offline
+        } catch let error as URLError {
+            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server("\(error)")
         } catch {
             throw DepthError.server("\(error)")
         }
@@ -247,8 +247,8 @@ actor SupabaseDepthRepository: DepthRepository {
             throw Self.mapPostgrestError(error)
         } catch let error as DecodingError {
             throw DepthError.decoding("\(error)")
-        } catch is URLError {
-            throw DepthError.offline
+        } catch let error as URLError {
+            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server("\(error)")
         } catch {
             throw DepthError.server("\(error)")
         }
@@ -293,8 +293,8 @@ actor SupabaseDepthRepository: DepthRepository {
             throw Self.mapPostgrestError(error)
         } catch let error as DecodingError {
             throw DepthError.decoding("\(error)")
-        } catch is URLError {
-            throw DepthError.offline
+        } catch let error as URLError {
+            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server("\(error)")
         } catch {
             throw DepthError.server("\(error)")
         }
@@ -342,8 +342,8 @@ actor SupabaseDepthRepository: DepthRepository {
             throw Self.mapPostgrestError(error)
         } catch let error as DecodingError {
             throw DepthError.decoding("\(error)")
-        } catch is URLError {
-            throw DepthError.offline
+        } catch let error as URLError {
+            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server("\(error)")
         } catch {
             throw DepthError.server("\(error)")
         }
@@ -412,8 +412,8 @@ actor SupabaseDepthRepository: DepthRepository {
             throw Self.mapPostgrestError(error)
         } catch let error as DecodingError {
             throw DepthError.decoding("\(error)")
-        } catch is URLError {
-            throw DepthError.offline
+        } catch let error as URLError {
+            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server("\(error)")
         } catch {
             throw DepthError.server("\(error)")
         }
