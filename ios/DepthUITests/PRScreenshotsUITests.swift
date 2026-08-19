@@ -81,6 +81,9 @@ final class PRScreenshotsUITests: XCTestCase {
         }
 
         if requested.isEmpty {
+            // `field` is the documented default (PRScreenshotsUITests.requestedTargets
+            // returns ["field"] for empty/missing input), so this is unreachable — kept
+            // as a defensive tripwire in case the default ever changes.
             XCTFail("No recognized PR screenshot target requested — pass SCREENSHOT_TARGETS=field,uniform,player")
         }
     }
@@ -88,9 +91,9 @@ final class PRScreenshotsUITests: XCTestCase {
     /// Resolves the requested screenshot targets from, in order: the
     /// `SCREENSHOT_TARGETS` process-environment variable (the reliable path through
     /// `xcodebuild test`, which propagates the caller's env to the test runner) then a
-    /// `SCREENSHOT_TARGETS=` launch argument. Unknown tokens are ignored with a note;
-    /// empty/missing → empty set (the test then fails loudly so nobody silently gets
-    /// zero screenshots).
+    /// `SCREENSHOT_TARGETS=` launch argument. Unknown tokens are ignored; empty/missing
+    /// input falls back to the documented default `field` so a fresh run never silently
+    /// captures nothing.
     private static func requestedTargets() -> Set<String> {
         let args = ProcessInfo.processInfo.arguments
         let raw: String
@@ -101,7 +104,12 @@ final class PRScreenshotsUITests: XCTestCase {
         }
         let valid: Set<String> = ["field", "uniform", "player"]
         let tokens = raw.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
-        return Set(tokens).intersection(valid)
+        let requested = Set(tokens).intersection(valid)
+        // `field` is the documented default (empty/missing env, or no valid token →
+        // field) so a bare `/ios-screenshots` or a runner that fails to forward
+        // SCREENSHOT_TARGETS never silently captures nothing.
+        if requested.isEmpty { return ["field"] }
+        return requested
     }
 
     /// Same full-framebuffer capture as AppStoreScreenshotsUITests.attachScreenshot —
