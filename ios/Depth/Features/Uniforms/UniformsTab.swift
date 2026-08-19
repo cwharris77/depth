@@ -259,15 +259,18 @@ private struct KitFigure: View {
     }
 }
 
-/// The full-mannequin thumbnail (helmet → cleats), kept with a surfaced slot so rows
-/// don't shift while loading (AGENTS.md #16). The mannequin viewBox is ~2.7:1 tall, so
-/// a 56-wide tile is ~151 tall; object-fit scaled-to-fit keeps the whole figure visible.
-/// Internal (not private): DEP-256 reuses this same jersey-art component in
-/// UniformPickerSheet's carousel for drop-in parity with the archive, rather than
-/// re-implementing jersey rendering there.
+/// A uniform-art thumbnail (either the full mannequin or the plain jersey crop), kept
+/// with a surfaced slot so rows don't shift while loading (AGENTS.md #16). The two
+/// rasters have different aspect ratios (mannequin ~2.7:1 tall, jersey crop ~0.81:1 —
+/// see lib/uniforms/art.tsx's `jersey`/`full` viewBoxes), so `heightMultiplier` picks
+/// the right frame for whichever URL variant the caller passed; object-fit scaled-to-fit
+/// keeps the whole figure visible either way. Internal (not private): DEP-256 reuses
+/// this same component in UniformPickerSheet's carousel for drop-in parity with the
+/// archive, rather than re-implementing jersey rendering there.
 struct UniformThumb: View {
     let url: URL?
     let size: CGFloat
+    var heightMultiplier: CGFloat = 2.7
 
     var body: some View {
         AsyncImage(url: url) { phase in
@@ -278,7 +281,7 @@ struct UniformThumb: View {
                 Color.clear
             }
         }
-        .frame(width: size, height: size * 2.7)
+        .frame(width: size, height: size * heightMultiplier)
         .accessibilityHidden(true)
     }
 }

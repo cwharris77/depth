@@ -6,15 +6,20 @@ import SwiftUI
 // rather than a hand-rolled drag gesture: the platform already has a swipeable-carousel
 // primitive, so reimplementing framer-motion's drag/snap math here would just be
 // distribution-inflation over a built-in (see gstack ethos, "search before building").
-// Selecting persists the choice per team (UserPreferences.setUniformSelection) and
-// recolors the field dots via DepthChartFieldView's colors override — same as before,
-// now fired on every page change instead of only on row tap, so paging live-previews
-// the recolor exactly like web's drag-driven `onSelect`.
+// `onSelect` fires on every page change (swipe settle or dot tap) so the field
+// live-previews each kit's colors while browsing — but it's a preview signal only.
+// The caller (TeamDetailView) holds the live-previewed id separately from the
+// committed one and only persists it (UserPreferences.setUniformSelection) when this
+// sheet is dismissed, whichever way that happens (X button or swipe-down). Web commits
+// on every drag settle instead, which is the bug this deliberately avoids: browsing
+// through kits shouldn't overwrite the saved pick until you actually close the picker.
 //
-// DEP-256 acceptance target: the card art reuses UniformsTab's `UniformThumb` (the
-// archive's full-mannequin jersey renderer) rather than the old 3:4 imagePath crop —
-// drop-in parity with the archive screen instead of a second jersey-rendering
-// implementation.
+// DEP-256 acceptance target: the card art reuses UniformsTab's `UniformThumb`, pointed
+// at the plain jersey crop (`UniformArt.jerseyURL`, not the archive's full-mannequin
+// `-full` raster) — the picker shows just the jersey, matching web's UniformSheet swatch,
+// while sharing the same thumbnail component as the archive instead of a second
+// jersey-rendering implementation. Each card's caption is the kit kind only (Home/Away/
+// etc.) — no year range, since an undated kit has nothing meaningful to show there.
 struct UniformPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -64,9 +69,8 @@ struct UniformPickerSheet: View {
         }
         .presentationBackground(DesignTokens.Colors.bg)
         .accessibilityIdentifier("uniform-picker-sheet")
-        // Fire on every page change (swipe settle or dot tap) so the field recolors
-        // live while browsing, mirroring web's drag-driven onSelect — not just on a
-        // final confirm tap.
+        // Preview-only signal on every page change — see the header comment. The
+        // caller decides whether/when this becomes the committed selection.
         .onChange(of: currentIndex) { _, newIndex in
             guard uniforms.indices.contains(newIndex) else { return }
             onSelect(uniforms[newIndex].id)
@@ -74,15 +78,15 @@ struct UniformPickerSheet: View {
     }
 
     private func card(for uniform: Uniform) -> some View {
-        VStack(spacing: DesignTokens.Spacing.md) {
-            UniformThumb(url: UniformArt.fullURL(for: uniform.id), size: 120)
-                .padding(.top, DesignTokens.Spacing.lg)
+        VStack(spacing: DesignTokens.Spacing.sm) {
+            UniformThumb(url: UniformArt.jerseyURL(for: uniform.id), size: 140, heightMultiplier: 0.81)
+                .padding(.top, DesignTokens.Spacing.md)
 
             VStack(spacing: DesignTokens.Spacing.xs) {
                 Text(uniform.name)
                     .font(.title3.bold())
                     .foregroundStyle(DesignTokens.Colors.textPrimary)
-                Text(description(for: uniform))
+                Text(uniform.kind.displayName)
                     .font(.footnote)
                     .foregroundStyle(DesignTokens.Colors.textMuted)
             }
@@ -102,30 +106,36 @@ struct UniformPickerSheet: View {
                 .overlay(Capsule().strokeBorder(DesignTokens.Colors.accent.opacity(0.4), lineWidth: 1))
                 .accessibilityHidden(true)
             }
-
-            Spacer(minLength: 0)
         }
         .padding(.horizontal, DesignTokens.Spacing.lg)
+        .padding(.bottom, DesignTokens.Spacing.md)
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .ignore)
         .accessibilityIdentifier("uniform-\(uniform.id)")
         .accessibilityLabel(
-            "\(uniform.name), \(description(for: uniform))\(uniform.id == selectedID ? ", selected" : "")"
+            "\(uniform.name), \(uniform.kind.displayName)\(uniform.id == selectedID ? ", selected" : "")"
         )
     }
 
     /// Accent-tinted page dots (web's UniformSheet.tsx page-dot row): the active dot is
     /// a wider capsule, the rest are small circles. Tapping a dot jumps directly to that
-    /// page, matching web's tappable dots.
+    /// page, matching web's tappable dots. Sized and tinted up from web's row (8pt
+    /// circles, `textFaint` instead of the barely-visible `textFaintest`, plus a soft
+    /// accent glow on the active pill) — the 6pt/`textFaintest` original read as flat,
+    /// low-contrast specks against the dark background.
     private var pageDots: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             ForEach(Array(uniforms.enumerated()), id: \.element.id) { index, uniform in
                 Button {
                     currentIndex = index
                 } label: {
                     Capsule()
-                        .fill(index == currentIndex ? DesignTokens.Colors.accent : DesignTokens.Colors.textFaintest)
-                        .frame(width: index == currentIndex ? 20 : 6, height: 6)
+                        .fill(index == currentIndex ? DesignTokens.Colors.accent : DesignTokens.Colors.textFaint)
+                        .frame(width: index == currentIndex ? 24 : 8, height: 8)
+                        .shadow(
+                            color: index == currentIndex ? DesignTokens.Colors.accent.opacity(0.6) : .clear,
+                            radius: 4
+                        )
                 }
                 .frame(minWidth: 44, minHeight: 44)
                 .contentShape(Rectangle())
@@ -134,19 +144,6 @@ struct UniformPickerSheet: View {
             }
         }
         .animation(.easeOut(duration: 0.2), value: currentIndex)
-    }
-
-    private func description(for uniform: Uniform) -> String {
-        let kind = uniform.kind.displayName
-        let years: String
-        if let start = uniform.yearStart, let end = uniform.yearEnd {
-            years = start == end ? "\(start)" : "\(start)–\(end)"
-        } else if let start = uniform.yearStart {
-            years = "\(start)"
-        } else {
-            years = "—"
-        }
-        return "\(kind) · \(years)"
     }
 }
 
