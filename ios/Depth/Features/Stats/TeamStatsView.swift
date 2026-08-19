@@ -8,6 +8,7 @@ import SwiftUI
 // refetch. Owns a feature-local `TeamStatsViewModel` and loads lazily on first visit.
 struct TeamStatsView: View {
     @State private var viewModel: TeamStatsViewModel
+    @State private var showSeasonPicker = false
 
     init(teamId: String, repository: DepthRepository) {
         _viewModel = State(initialValue: TeamStatsViewModel(teamId: teamId, repository: repository))
@@ -21,6 +22,20 @@ struct TeamStatsView: View {
             // other two pages. No explicit background here = the same surface they use.
             .task { await viewModel.load() }
             .refreshable { await viewModel.load() }
+            .sheet(isPresented: $showSeasonPicker) {
+                if let selectedSeason = viewModel.selectedSeason, let currentSeason = viewModel.currentSeason {
+                    SeasonPickerSheet(
+                        items: seasonPickerItems,
+                        selectedSeason: selectedSeason,
+                        currentSeason: currentSeason,
+                        accent: uiAccent,
+                        identifierPrefix: "stats"
+                    ) { season in
+                        showSeasonPicker = false
+                        viewModel.selectSeason(season)
+                    }
+                }
+            }
     }
 
     /// The accent that drives chips, DIFF, and the next-game card border. Web uses the
@@ -73,29 +88,23 @@ struct TeamStatsView: View {
         } else {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    seasonChipsRow
-                    // DEP-236: the roster and schedule pages start their content 16pt
-                    // below the scroll top (`.padding(.vertical)` / `.padding()`); this
-                    // page's first element is the chips bar, so it needs the same 16pt
-                    // inset or it sits flush against the page switcher above.
-                    .padding(.top, 16)
-                    // DEP-245: a past season's chip has no other way back — the current
-                    // season is just another chip to re-tap. Mirrors the roster's
-                    // historical header ("2013 season" + "Back to today"): a season-state
-                    // line with a one-tap escape, shown only while a past season is
-                    // selected.
+                    seasonPickerTrigger
+                        // DEP-236: the roster and schedule pages start their content 16pt
+                        // below the scroll top (`.padding(.vertical)` / `.padding()`);
+                        // this page's first element is the trigger row, so it needs the
+                        // same 16pt inset or it sits flush against the page switcher above.
+                        .padding(.top, 16)
+                    // A season-state line, shown only while a past season is selected —
+                    // the trigger button alone doesn't make clear you're off the current
+                    // season. "Back to current" itself now lives in the sheet's toolbar
+                    // (SeasonPickerSheet), reachable from any scroll position in the long
+                    // 1999→present list, rather than a second on-page button here.
                     if viewModel.isViewingPastSeason, let year = viewModel.selectedSeason {
-                        HStack {
-                            Text(verbatim: "\(year) season")
-                                .font(.headline)
-                                .accessibilityIdentifier("stats-season-state")
-                            Spacer()
-                            BackToCurrentSeasonButton(identifier: "stats-back-to-current") {
-                                viewModel.backToCurrentSeason()
-                            }
-                        }
-                        .padding(.horizontal, DesignTokens.Spacing.md)
-                        .padding(.top, DesignTokens.Spacing.sm)
+                        Text(verbatim: "\(year) season")
+                            .font(.headline)
+                            .accessibilityIdentifier("stats-season-state")
+                            .padding(.horizontal, DesignTokens.Spacing.md)
+                            .padding(.top, DesignTokens.Spacing.sm)
                     }
                     teamNameBlock(page.team)
                     if let active = viewModel.selectedSeasonStats {
@@ -117,41 +126,37 @@ struct TeamStatsView: View {
         }
     }
 
-    /// Web's season switcher (lines 338-397): real rows reversed back to ascending
-    /// display order, newest first on the right; the current-season chip carries the
-    /// accent "latest" dot (unless a real upcoming row carries the UPCOMING badge
-    /// instead); the synthetic upcoming chip renders dashed during the off-season.
-    private var seasonChipsRow: some View {
-        SeasonChipRow(
-            items: seasonChipItems,
-            selectedSeason: viewModel.selectedSeason,
-            accent: uiAccent,
-            identifierPrefix: "stats"
-        ) { season in
-            viewModel.selectSeason(season)
+    /// Opens the season-picker sheet. Replaced the old horizontally-scrolling chip row —
+    /// that pattern stopped scaling once team_stats ingest landed seasons back to 1999
+    /// (~25+ entries no longer fit a swipeable strip).
+    private var seasonPickerTrigger: some View {
+        Button {
+            showSeasonPicker = true
+        } label: {
+            HStack(spacing: 4) {
+                Text(viewModel.selectedSeason.map { "\($0) SEASON" } ?? "SEASON")
+                    .font(.caption.bold())
+                    .tracking(0.1)
+                Image(systemName: "chevron.down")
+                    .font(.caption2.bold())
+            }
+            .foregroundStyle(uiAccent)
         }
-        .background(DesignTokens.Colors.bgFilterbar)
-        .overlay(alignment: .bottom) {
-            // DEP-265: same borderInput token as the hero-section separators below — one
-            // hairline convention for every in-page "section separator" role. This one
-            // stays full-bleed (no horizontal inset) since it's the edge-to-edge bottom
-            // edge of the scrolling chip bar, not an inset content divider.
-            Rectangle().fill(DesignTokens.Colors.borderInput).frame(height: 1)
-        }
+        .padding(.horizontal, DesignTokens.Spacing.md)
+        .frame(minHeight: 44)
+        .accessibilityIdentifier("stats-season-trigger")
     }
 
-    private var seasonChipItems: [SeasonChipItem] {
-        var items = viewModel.seasons.reversed().map { stats -> SeasonChipItem in
-            let isLatest = stats.season == viewModel.seasons.first?.season
-            let isUpcomingRow = viewModel.upcomingSeasonHasRealRow && stats.season == viewModel.upcomingSeason
-            return SeasonChipItem(
-                season: stats.season,
-                leading: isLatest && !isUpcomingRow ? .latestDot : nil,
-                trailing: isUpcomingRow ? .upcomingBadge : nil
-            )
-        }
+    private var seasonPickerItems: [SeasonPickerItem] {
+        var items: [SeasonPickerItem] = []
         if viewModel.hasUpcomingChip, let upcoming = viewModel.upcomingSeason {
-            items.append(SeasonChipItem(season: upcoming, trailing: .upcomingBadge, dashed: true))
+            items.append(SeasonPickerItem(season: upcoming, isUpcoming: true))
+        }
+        items += viewModel.seasons.map { stats in
+            SeasonPickerItem(
+                season: stats.season,
+                isUpcoming: viewModel.upcomingSeasonHasRealRow && stats.season == viewModel.upcomingSeason
+            )
         }
         return items
     }
