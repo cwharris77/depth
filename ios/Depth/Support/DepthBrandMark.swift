@@ -57,3 +57,25 @@ struct DepthBrandMark: View {
         ))
     }
 }
+
+extension View {
+    /// DEP-277: the app-wide top-left brand mark. A pure identity/decoration element
+    /// (web parity: components/DepthMark.tsx, non-interactive there too) — never a
+    /// navigation control, so `.allowsHitTesting(false)` is explicit rather than relying
+    /// on the mark carrying no `Button`/`onTapGesture` of its own. That distinction
+    /// matters here: a `.topBarLeading` toolbar item can still register taps through
+    /// iOS's leading-edge/back-button-adjacent hit region even without an explicit
+    /// handler, which is what made the un-wrapped mark tappable before this fix.
+    /// One call site per top-level screen (DepthChartsTab/TeamDetailView, CompareView,
+    /// UniformsTab, SettingsView/AccountTab) keeps the placement, size, and
+    /// non-interactivity identical everywhere rather than four hand-rolled copies.
+    func depthBrandMarkToolbar() -> some View {
+        toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                DepthBrandMark(size: 28)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+            }
+        }
+    }
+}

@@ -184,16 +184,16 @@ struct TeamDetailView: View {
                     Task { await mergeOverridesOnSignIn() }
                 }
             }
+            // DEP-236 + Cooper's flexbox: the nav bar is two independent edges. The
+            // logo anchors far left, untouched (web DepthMark parity); the team pill
+            // anchors far right via the trailing slot so it never shares a group with
+            // the logo. The ROSTER/SCHEDULE/STATS switcher is content-level
+            // sub-navigation and no longer lives here at all (see `content`).
+            // DEP-277: the brand mark itself now comes from the shared
+            // `depthBrandMarkToolbar()` modifier (non-tappable, size 28) so every
+            // top-level screen renders it identically.
+            .depthBrandMarkToolbar()
             .toolbar {
-                // DEP-236 + Cooper's flexbox: the nav bar is two independent edges. The
-                // logo anchors far left, untouched (web DepthMark parity); the team pill
-                // anchors far right via the trailing slot so it never shares a group with
-                // the logo. The ROSTER/SCHEDULE/STATS switcher is content-level
-                // sub-navigation and no longer lives here at all (see `content`).
-                ToolbarItem(placement: .topBarLeading) {
-                    DepthBrandMark(size: 20)
-                        .accessibilityHidden(true)
-                }
                 ToolbarItem(placement: .topBarTrailing) {
                     teamSwitcherPill
                 }

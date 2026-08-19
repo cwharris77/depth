@@ -26,26 +26,39 @@ struct CompareView: View {
     }
 
     var body: some View {
-        content
-            .navigationTitle("Compare")
-            .navigationBarTitleDisplayMode(.inline)
-            .background(DesignTokens.Colors.bg)
-            .task { await viewModel.load() }
-            .refreshable { await viewModel.load() }
-            .sheet(isPresented: pickerPresented) {
-                TeamListPickerSheet(
-                    repository: repository,
-                    title: "Pick a team",
-                    selectedTeamId: currentTeamId ?? "",
-                    onSelectTeam: { teamId in
-                        if let slot = viewModel.pickingSlot {
-                            Task { await viewModel.pickTeam(teamId, into: slot) }
-                        }
-                        viewModel.endPicking()
-                    },
-                    dismissOnSelect: false
-                )
-            }
+        // DEP-277: CompareView previously rendered its `.navigationTitle` with no
+        // `NavigationStack` ancestor (RootTabView's Tab hosts it bare), so the nav bar
+        // — and with it, the brand mark's only mounting point — never actually
+        // appeared. Wrapping here, matching UniformsTab/SettingsView's own-stack
+        // pattern, is what makes the brand mark (and the title) show up at all.
+        //
+        // `.sheet`/`.task`/`.refreshable` sit *outside* the `NavigationStack`, matching
+        // DepthChartsTab's own `NavigationStack { … }.sheet(...)` shape, rather than
+        // nested inside `content` within it — keeps the one sheet-presentation pattern
+        // used app-wide instead of a second, Compare-only shape.
+        NavigationStack {
+            content
+                .navigationTitle("Compare")
+                .navigationBarTitleDisplayMode(.inline)
+                .background(DesignTokens.Colors.bg)
+                .depthBrandMarkToolbar()
+        }
+        .task { await viewModel.load() }
+        .refreshable { await viewModel.load() }
+        .sheet(isPresented: pickerPresented) {
+            TeamListPickerSheet(
+                repository: repository,
+                title: "Pick a team",
+                selectedTeamId: currentTeamId ?? "",
+                onSelectTeam: { teamId in
+                    if let slot = viewModel.pickingSlot {
+                        Task { await viewModel.pickTeam(teamId, into: slot) }
+                    }
+                    viewModel.endPicking()
+                },
+                dismissOnSelect: false
+            )
+        }
     }
 
     /// The sheet presents when a slot is mid-pick (`pickingSlot != nil`).

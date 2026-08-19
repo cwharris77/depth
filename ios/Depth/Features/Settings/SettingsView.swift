@@ -47,6 +47,9 @@ struct SettingsView: View {
             .scrollIndicators(.hidden)
             .background(DesignTokens.Colors.bg)
             .navigationTitle("Account")
+            // DEP-277: app-wide brand mark, same placement/size as every other
+            // top-level screen.
+            .depthBrandMarkToolbar()
         }
         .tint(DesignTokens.Colors.accent)
         .sheet(isPresented: $showAuth) {

@@ -19,6 +19,9 @@ struct UniformsTab: View {
                 .navigationTitle("Uniforms")
                 .navigationBarTitleDisplayMode(.inline)
                 .background(DesignTokens.Colors.bg)
+                // DEP-277: app-wide brand mark, same placement/size as every other
+                // top-level screen.
+                .depthBrandMarkToolbar()
         }
         .task { await viewModel.load() }
     }
