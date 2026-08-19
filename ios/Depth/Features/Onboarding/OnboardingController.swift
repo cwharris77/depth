@@ -134,7 +134,10 @@ struct CoachmarkStep: Identifiable {
         CoachmarkStep(
             id: .bottomTabs,
             title: "Explore the app",
-            message: "Switch between Depth Charts, Compare, Uniforms, and your Account down here."
+            // DEP-252: Account moved out of the tab bar into a nav-bar icon, so this
+            // step no longer mentions it — the tab bar is Depth Charts/Compare/Uniforms
+            // only now.
+            message: "Switch between Depth Charts, Compare, and Uniforms down here."
         ),
     ]
 }

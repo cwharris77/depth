@@ -105,7 +105,9 @@ struct OnboardingControllerTests {
         let preferences = freshPreferences()
         preferences.markOnboardingSeen()
         let controller = OnboardingController(preferences: preferences)
-        controller.activeTab = .account // Settings' "Take the Tour" is reached from here
+        // DEP-252: Account is a sheet now, not a tab — "Take the Tour" can be reached
+        // from any tab's Settings sheet, so simulate being on a non-Depth-Charts tab.
+        controller.activeTab = .uniforms
 
         controller.replay()
 
