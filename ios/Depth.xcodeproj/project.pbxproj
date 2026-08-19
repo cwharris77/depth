@@ -84,7 +84,6 @@
 		91106CA5B3104205E5DC31AE /* NameFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCF617758D4C50F929F0399 /* NameFormat.swift */; };
 		913C59E5B68043454060E5B3 /* TeamStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DC2684A5931092EB633E74B /* TeamStats.swift */; };
 		96EE9CC19DC42FC68DEB9F90 /* TeamListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA198C4CAB3B2E7EFB862E6 /* TeamListViewModel.swift */; };
-		96FB4B9FB4B2264E46677EB4 /* AccountTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5AB202504F3965C8C62D5F8 /* AccountTab.swift */; };
 		9BABC7039CA491D54D4B1F7F /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211666973EE0946E8D40C189 /* Card.swift */; };
 		9F60A5FF883ED001520157AC /* SettingsAboutAndTimestampTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B86BB6DD9B066ECA8E654F /* SettingsAboutAndTimestampTests.swift */; };
 		A1E1EFE3A8781B7BA2758DB4 /* AuthUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFE9E3629D2A8EF20465A2F7 /* AuthUITests.swift */; };
@@ -281,7 +280,6 @@
 		E31B257CD5D651A625B3440A /* TeamBadgeOverrideTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamBadgeOverrideTests.swift; sourceTree = "<group>"; };
 		E372B1C3FDDFC4260939314C /* DepthChartFieldLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthChartFieldLayoutTests.swift; sourceTree = "<group>"; };
 		E5A218C128DC97B0923883AE /* Depth.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Depth.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		E5AB202504F3965C8C62D5F8 /* AccountTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountTab.swift; sourceTree = "<group>"; };
 		E636B964C5DE055FDAD2CB44 /* AppEventsRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEventsRecorder.swift; sourceTree = "<group>"; };
 		E67531979ED38F349577206E /* AuthAndSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthAndSettingsTests.swift; sourceTree = "<group>"; };
 		E6CB4D73E208BE9903C44E15 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -465,7 +463,6 @@
 			children = (
 				750C8A0A5BB67EDAFD2A1A97 /* AccountDeletionSheet.swift */,
 				F9152627F4CAC783C2C1E5E6 /* AccountDeletionViewModel.swift */,
-				E5AB202504F3965C8C62D5F8 /* AccountTab.swift */,
 				718497F1FE3079352CB07880 /* DepthOverrideService.swift */,
 				BC02FC1D8BC116C2D077870D /* SettingsView.swift */,
 			);
@@ -782,7 +779,6 @@
 			files = (
 				F73EBF610767D6026A6A9852 /* AccountDeletionSheet.swift in Sources */,
 				BDC16651BCF7C07924F4DEC1 /* AccountDeletionViewModel.swift in Sources */,
-				96FB4B9FB4B2264E46677EB4 /* AccountTab.swift in Sources */,
 				D9183133755E8C0F9EE05612 /* AppBuildInfo.swift in Sources */,
 				DC95DB2C72B7E87E9FE73999 /* AppConfig.swift in Sources */,
 				B7EC527E571B84DCDB819672 /* AppEventsRecorder.swift in Sources */,

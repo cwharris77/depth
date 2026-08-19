@@ -398,8 +398,10 @@ final class DepthUITests: XCTestCase {
         add(scheduleAfter)
     }
 
-    /// Locked decisions #1/#2/#6/#7: the tab bar exists, all three tabs are reachable,
-    /// and each renders its own content.
+    /// Locked decisions #1/#2/#6/#7, updated by DEP-252: the tab bar exists and its two
+    /// content tabs (Depth Charts, Compare) plus the Uniforms tab are reachable. Account
+    /// is no longer a tab — it's a nav-bar trailing icon on the team page, covered
+    /// separately below.
     func testTabBarReachesAllThreeDestinations() throws {
         let app = XCUIApplication()
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
@@ -422,14 +424,24 @@ final class DepthUITests: XCTestCase {
             "Compare should prompt to pick two teams on first load"
         )
 
-        tabs.buttons["Account"].tap()
+        tabs.buttons["Uniforms"].tap()
         XCTAssertTrue(
-            app.staticTexts["settings-about-name"].waitForExistence(timeout: 10),
-            "Account should render the settings content"
+            app.navigationBars["Uniforms"].waitForExistence(timeout: 10),
+            "Uniforms should render its own content"
         )
 
         tabs.buttons["Depth Charts"].tap()
         XCTAssertTrue(app.waitForDepthChart(), "returning to Depth Charts should show the chart again")
+
+        // DEP-252: Account is now a nav-bar trailing icon on the team page, opening the
+        // settings content as a sheet rather than switching tabs.
+        let accountButton = app.buttons["account-button"]
+        XCTAssertTrue(accountButton.waitForExistence(timeout: 10), "Account should be reachable from the nav bar")
+        accountButton.tap()
+        XCTAssertTrue(
+            app.staticTexts["settings-about-name"].waitForExistence(timeout: 10),
+            "Account should render the settings content"
+        )
     }
 
     /// Locked decision #3 plus the spec's restoration requirement: the last-viewed team
