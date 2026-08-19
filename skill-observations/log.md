@@ -100,23 +100,13 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 
 ### Observation 11: "Which season is current" has two legitimate definitions in one codebase — a picker's top row must match its page's default view
 
-**Status:** OPEN
+**Status:** ACTIONED (2026-08-19) — Applied to `implement-spec` (Step 4: added the "derive 'current' from the page's own default, not a sibling's definition" rule), staged at `skill-updates/2026-08-19/implement-spec/` (scheduled review). Note: a prior interactive session had already drafted this same change on 2026-08-18 but staged it rebased only on the then-live file, which dropped Observation 12/13's still-unlived 2026-08-14 changes; today's staged version consolidates all three so nothing is lost when installed.
 **Date:** 2026-08-10
 **Session context:** depth past-season schedule view — wiring a SeasonSheet season picker onto the SCHEDULE tab. The roster page computes `currentSeason = isOffseason ? upcomingSeason : upcomingSeason - 1` ("the season whose roster is live"), but the schedule page's default view is `getTeamSchedule(id)`'s latest-season-present, which during the off-season is the *upcoming* season (already scheduled) and in January is still the in-progress season. Using the roster page's definition for the schedule picker would have produced a top row ("2025 · Current") that disagreed with the view actually on screen (2026), making the picker's active-row check read as wrong seconds after opening it.
 
 **Suggested improvement:** When adding a season/state picker to a page that already has a default view, derive the picker's "current" row from that page's own default (here `schedule.season`), not from a sibling page's definition — even when both pages are in the same app and the sibling's constant is already server-computed. Note the divergence in a comment at the point of choice, because the two definitions are both "right" and only one agrees with the page.
 
 **Principle:** A "current" or "active" label has to mean the same thing as the view it annotates; reusing a sibling surface's definition because it shares a name is how an indicator ends up tracking a different notion of "today" than the content below it.
-
-### Observation 12: A spec that defers a feature usually leaves the pattern for it in an older sibling — check the app's established precedent before designing the deferred feature
-
-**Status:** ACTIONED (2026-08-14) — Applied to `implement-spec` (step 1: added a rule to search the app for an already-shipped sibling pattern before designing a spec-deferred feature; also folded in Observation 13's "quoted line ranges drift, re-locate by string not line number" rule in the same edit) (scheduled review)
-**Date:** 2026-08-10
-**Session context:** depth past-season schedule view. The 2026-07-17 team-schedule spec locked "v1 shows the latest season only; a season switcher is a later add" and the depth chart's Phase D1 spec (an *older* feature) had already shipped the season-picker pattern: `SeasonSheet` + `BottomSheet` + `?season=` URL + client hook + API route + `ApplySeasonFromQuery`. Every design question the new ticket raised (URL vs local state, flat list vs decade grouping, "back to today" semantics) was already answered by that precedent, so the whole feature reused existing seams instead of inventing new ones — SeasonSheet, BottomSheet, ApplySeasonFromQuery, the use-team-season hook shape, and the history API route shape were all copied/mirrored verbatim.
-
-**Suggested improvement:** In implement-spec (or any "implement this deferred feature" workflow), add a first step: when a spec's Out-of-scope/future-work list names the feature you're about to build, search the app for an existing implementation of that same interaction on a different surface before making design decisions. Deferred features are usually deferred precisely because a sibling shipped first with the pattern.
-
-**Principle:** "Deferred" and "never built" are different facts — a feature deferred by one spec may already exist in an older sibling's scope, and the cheapest correct design is the one that copies the sibling's proven seams rather than re-deriving the decisions from scratch.
 
 ### Observation 13: A ticket's quoted code references are a snapshot that drifts
 
@@ -135,51 +125,6 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 
 ## 2026-08-12
 
-### Observation 14: `cacheLife()` throws when a `'use cache'` function runs under vitest
-
-**Status:** ACTIONED (2026-08-14) — Applied to `vitest-testing` (new "depth-specific gotchas" section) (scheduled review)
-**Date:** 2026-08-12
-**Session context:** Hardening the public player-search endpoint (depth repo). Evaluated adding Next's `'use cache'` to a DB-read function and planned a unit test that would call it with a mocked supabase client.
-**Skill:** vitest-testing
-**Type:** open-source
-**Phase/Area:** Mocking modules that use Next Cache Components
-
-**Issue:** `cacheLife()` from `next/cache` throws `E887` ("only available with cacheComponents config") unless `process.env.__NEXT_USE_CACHE` is set, and then throws `E818` ("can only be called inside a use cache function") because vitest has no cache work-unit store. So any function carrying `'use cache'` + `cacheLife()` cannot be invoked under vitest without `vi.mock('next/cache', () => ({ cacheLife: () => {} }))` — and even neutralized, the caching behavior itself is unobservable in a unit test. Existing live-DB tests in this repo that call such functions would hit the same throw the moment env vars are present (they're skipped today). I chose an in-module TTL cache instead, precisely so the "DB not hit twice" contract could be asserted.
-
-**Suggested improvement:** When a ticket asks for caching a DB read AND for tests proving "repeated calls stop hitting the DB", prefer a hand-rolled in-memory TTL cache (observable, testable) over `'use cache'`, or `vi.mock('next/cache')` in any test that must invoke a cached function. Consider noting in the project's vitest-testing skill that `'use cache'` functions cannot be exercised under vitest.
-
-**Principle:** A framework caching primitive that is invisible outside the framework's runtime is not unit-testable. Pick testability at the cache layer (an in-memory structure you own), or accept the framework behavior as an integration-only guarantee and say so in the test file.
-
-### Observation 15: A module-scoped cache leaks across tests in the same file
-
-**Status:** ACTIONED (2026-08-14) — Applied to `vitest-testing` (new "depth-specific gotchas" section) (scheduled review)
-**Date:** 2026-08-12
-**Session context:** Writing unit tests for searchAllPlayers' new module-scoped result cache in the depth repo. The TTL-expiry test failed confusingly until I realized an earlier test had already cached the same key.
-**Skill:** vitest-testing
-**Type:** internal
-**Phase/Area:** Isolation of module-level mutable state
-
-**Issue:** Module-level mutable state (a `Map` cache, a singleton client) persists across `it()` blocks within one test file. The first test cached `8:geno`; the TTL test then read that entry as a fresh hit under `vi.setSystemTime(0)` — `Date.now()` at 0 minus the entry's large real-time `at` is always within the window, so the refetch never fired. Working around it with "unique query strings per test" is fragile: a reorder or a shared fixture silently re-breaks it.
-
-**Suggested improvement:** For tests of module-cached behavior, isolate per test with `vi.resetModules()` + a dynamic `await import(...)` in `beforeEach` — a fresh module instance means a fresh cache. Hoisted `vi.hoisted` mock state survives `resetModules`, so recording mocks keep working.
-
-**Principle:** Module-level mutable state is shared state across the tests in a file. Tests of code that owns it must isolate by fresh module instance, not by carefully-crafted inputs that happen to avoid the collision.
-
-### Observation 16: Mocking a module doesn't bypass a real guard that reads env vars before the mocked call
-
-**Status:** ACTIONED (2026-08-14) — Applied to `vitest-testing` (new "depth-specific gotchas" section) (scheduled review)
-**Date:** 2026-08-12
-**Session context:** In the depth repo, mocking `@supabase/supabase-js` so searchAllPlayers runs against a recording fake client in vitest. Tests failed with the real "Missing SUPABASE_URL" error.
-**Skill:** vitest-testing
-**Type:** internal
-**Phase/Area:** Mocking factory/guard code
-
-**Issue:** `supabase()` in lib/roster-source.db.ts throws when the SUPABASE env vars are absent — before `createClient` is ever called. `vi.mock('@supabase/supabase-js')` only replaces the imported module; it cannot bypass a pre-mock guard in the code under test. The mock looked like it should have worked (the error even mentions the env var), and the actual missing piece was stubbing the two vars so the guard passes into the mocked path.
-
-**Suggested improvement:** When the code under test guards on env vars (or other ambient state) before reaching the mocked call, stub that state too: `vi.stubEnv` in `beforeAll`, `vi.unstubAllEnvs` in `afterAll`. Note that vitest gives each test file its own worker, so the stubs don't disturb sibling files' skip logic.
-
-**Principle:** A mock replaces a dependency, not the code around its call site. If the path to the mocked call passes through a guard over process state, the test must satisfy that guard or the real path — and its real error — still runs.
-
 ## 2026-08-12
 
 ### Observation 17: A formal ticket with locked acceptance criteria is itself the scope confirmation for a multi-file refactor
@@ -197,40 +142,9 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 
 **Principle:** The "wait for confirmation" guardrail exists to catch scope-creep risk in underspecified requests, not to gate every edit. A scoped ticket is the artifact that resolves the ambiguity — the confirmation step degrades to "document the judgment calls taken," which keeps the guardrail's protection without serializing the whole task on a pause.
 
-### Observation 18: Testing a module-scoped singleton store needs vi.resetModules + dynamic import, not a React render
-
-**Status:** ACTIONED (2026-08-14) — Applied to `vitest-testing` (new "depth-specific gotchas" section) (scheduled review)
-**Date:** 2026-08-12
-**Session context:** Hardening the depth repo's use-user auth singleton (lib/use-user.ts) and adding the ticket-mandated tests for it — the store is module-scoped (useSyncExternalStore), and vitest keeps one module instance per file, so state leaked across `it` blocks.
-
-**Skill:** vitest-testing
-**Type:** open-source
-**Phase/Area:** Mocking / test isolation for module-scoped state
-
-**Issue:** The unit under test holds state at module scope (started flag, current state, an auth generation counter) and is consumed through a React hook. The repo has no @testing-library/react or react-test-renderer, and rendering through useSyncExternalStore under react-dom/server reads only the *server* snapshot, so the async state transitions could not be observed by rendering at all. Two techniques made the tests clean and are easy to miss: (1) exporting the store's own `subscribe`/`getSnapshot` interface from the hook module so tests drive the store directly instead of through React — which also required a header-comment note that those exports are the store's interface, not React's; (2) `vi.resetModules()` in `beforeEach` followed by a per-test `await import()` of the module, so the singleton's module state (and the `vi.mock`-ed supabase client harness) is fresh for every test. Without the reset, the second test ran against the first test's `started === true` and the mock auth harness silently never engaged.
-
-**Suggested improvement:** In the vitest-testing skill, add a "Module-scoped state (singletons, caches, external stores)" subsection under Mocking: for a module-scoped store, reset it between tests with `vi.resetModules()` + dynamic import (the `vi.mock` factory survives the reset and re-applies), and prefer exposing/using the store's subscribe/getSnapshot contract as the testable surface rather than forcing a React render — SSR render cannot observe store updates because useSyncExternalStore uses getServerSnapshot off the client.
-
-**Principle:** Test isolation is a property of the module registry, not of assertions — module-scoped state is shared state, and resetting it requires re-importing the module, not just clearing mocks. And when a React hook is a thin wrapper over a store, the store's own subscription interface is the right seam to test: it avoids a DOM/testing-library dependency and is the exact contract React binds to.
-
-### Observation 19: Unit-testing Next.js app-dir route handlers by mocking the supabase client module
-
-**Status:** ACTIONED (2026-08-14) — Applied to `vitest-testing` (new "depth-specific gotchas" section) (scheduled review)
-**Date:** 2026-08-12
-**Session context:** depth — fixing four API routes that threw or swallowed DB errors (ticket "fix route handlers that throw or swallow errors"). First route-handler tests this repo has had; all prior tests live under lib/.
-**Skill:** vitest-testing
-**Type:** internal
-**Phase/Area:** Testing Next.js route handlers under vitest
-
-**Issue:** Writing `route.test.ts` files for `app/api/**` had three friction points that cost time to work out. (1) `npx vitest` resolved a different vitest from the npx cache and failed with "Cannot find module 'vitest/config'" — the repo's own config needs the local install. (2) The supabase client modules were hard to mock because they pull in `next/headers` and `next/cache` at module scope — but `vi.mock` of the whole module sidesteps loading them entirely, so the route under test only needs `next/server` (which works fine in vitest's node env). (3) Uncertainty whether colocated `route.test.ts` files under `app/` would be treated as routes or picked up by vitest — neither happens: the app router only recognizes its special file names, and vitest's default glob catches `**/*.test.ts`. A full `next build` (118 pages) succeeded with the four test files present, confirming no conflict.
-
-**Suggested improvement:** In the vitest-testing skill, document the pattern for testing a Next.js app-dir route handler: colocate `route.test.ts` next to `route.ts`; `vi.mock('@/lib/supabase/server', ...)` (and the data-access module, e.g. `@/lib/roster-source.db`) with a factory returning `vi.fn()`; build a chainable fake for the supabase query builder where the terminal method resolves the result object (an awaited `maybeSingle()` returns the result; an awaited terminal `.eq()` on a builder can just return the plain `{ data, error }` object); and prefer `npm test` / the local `./node_modules/.bin/vitest` over `npx vitest`.
-
-**Principle:** The test seam for a route handler is the module boundary at the DB client, not HTTP — when a handler's only external dependency is the client, mocking that one module makes the handler fully testable with zero network layer. And always prefer the repo's local binaries over `npx`, which can silently resolve a different version.
-
 ### Observation 20: Visual-reference iteration needs a stable source artifact before implementation
 
-**Status:** OPEN
+**Status:** ACTIONED (2026-08-19) — `design-shotgun` is a read-only third-party plugin skill (symlinked, gstack-synced), so this was routed to a companion `design-shotgun-extras` skill instead per weekly-review.md's system-skill policy. A prior interactive session had already drafted and staged the full companion skill on 2026-08-18 at `~/.claude/skill-updates/2026-08-18/design-shotgun-extras/` (global skill, correctly staged outside this repo) — content verified against this observation and found complete; re-staging was unnecessary (scheduled review)
 **Date:** 2026-08-17
 **Session context:** DEP-57 logo redesign — iterating from an image reference through several generated SVG revisions before porting the approved mark into web, SwiftUI, and icon-generation code.
 **Skill:** design-shotgun
