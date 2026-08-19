@@ -7,15 +7,15 @@ import SwiftUI
 // test failing. Not exhaustive color-by-color; spot-checks the values most likely to be
 // "close but wrong" (transcription errors) rather than re-deriving every hex.
 @Test func backgroundTokenMatchesWebTokensTs() {
-    #expect(DesignTokens.Colors.bg == Color(hex: "#0a0e1a"))
+    #expect(DesignTokens.Colors.bg == Color(hex: "#15161a"))
 }
 
 @Test func accentTokenMatchesWebTokensTs() {
-    #expect(DesignTokens.Colors.accent == Color(hex: "#69BE28"))
+    #expect(DesignTokens.Colors.accent == Color(hex: "#6E8CAE"))
 }
 
 @Test func surfaceCardTokenMatchesWebTokensTs() {
-    #expect(DesignTokens.Colors.surfaceCard == Color(hex: "#0f1623"))
+    #expect(DesignTokens.Colors.surfaceCard == Color(hex: "#1a1e23"))
 }
 
 @Test func spacingScaleIsAnEightPointFamily() {

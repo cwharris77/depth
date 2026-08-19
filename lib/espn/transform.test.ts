@@ -73,7 +73,7 @@ describe('toTeamColors', () => {
     // matching the dot ring — never invented or lightened.
     expect(c.uiAccent.toLowerCase()).toBe('#69be28');
     // onAccent is just legible text painted on that accent (light green → dark).
-    expect(c.onAccent.toLowerCase()).toBe('#0a0e1a');
+    expect(c.onAccent.toLowerCase()).toBe('#15161a');
   });
 
   it('uses the primary as the accent for teams whose secondary is black or white', () => {

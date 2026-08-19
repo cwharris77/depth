@@ -20,8 +20,8 @@ export default function FieldMarkings() {
         />
       ))}
       {/* end zones */}
-      <rect x="0" y="0" width="100" height="6" fill="rgba(0,34,68,0.3)" />
-      <rect x="0" y="94" width="100" height="6" fill="rgba(0,34,68,0.3)" />
+      <rect x="0" y="0" width="100" height="6" fill="rgba(30,32,38,0.3)" />
+      <rect x="0" y="94" width="100" height="6" fill="rgba(30,32,38,0.3)" />
       {/* line of scrimmage — solid blue, matching TV broadcast overlays */}
       <line x1="0" y1="50" x2="100" y2="50" stroke="#2d6fe0" strokeWidth="0.6" />
       {/* hash marks */}
