@@ -40,6 +40,10 @@ struct TeamDetailView: View {
     /// pushed destination, so an unset case would be dead code.
     private let onOpenTeamSwitcher: () -> Void
     @State private var historyViewModel: HistoryViewModel
+    /// DEP-278 follow-up: refined with the resolved kit color (`resolvedUiAccentHex`)
+    /// whenever it changes, so Stats/Schedule (which read this same store) follow a
+    /// picked kit the way the roster field and tab tint already do.
+    private let currentTeamStore: CurrentTeamStore
 
     init(
         viewModel: TeamDetailViewModel,
@@ -49,6 +53,7 @@ struct TeamDetailView: View {
         overrideService: any DepthOverrideServicing,
         events: any AppEventsRecording = NoOpAppEventsRecorder(),
         requestedPlayerID: Binding<String?> = .constant(nil),
+        currentTeamStore: CurrentTeamStore,
         onOpenTeamSwitcher: @escaping () -> Void
     ) {
         _viewModel = State(initialValue: viewModel)
@@ -58,6 +63,7 @@ struct TeamDetailView: View {
         self.overrideService = overrideService
         self.events = events
         self._requestedPlayerID = requestedPlayerID
+        self.currentTeamStore = currentTeamStore
         self.onOpenTeamSwitcher = onOpenTeamSwitcher
         _unit = State(initialValue: preferences.lastUnit ?? .offense)
         _selectedUniformID = State(initialValue: preferences.uniformSelection(for: viewModel.teamId))
@@ -66,6 +72,13 @@ struct TeamDetailView: View {
 
     private var navigationTitleText: String {
         viewModel.snapshot.map { "\($0.team.city) \($0.team.name)" } ?? "Team"
+    }
+
+    /// DEP-278 follow-up: the color published into `currentTeamStore` — the picked
+    /// kit's `uiAccent` when one is resolved, else the team's own. nil only before the
+    /// snapshot has loaded at all, matching `fieldColors`'s own gating.
+    private var resolvedUiAccentHex: String? {
+        (fieldColors ?? displayedSnapshot?.team.colors)?.uiAccent
     }
 
     /// The selected uniform's palette recolors the field dots (web's kit selection);
@@ -136,6 +149,15 @@ struct TeamDetailView: View {
                 // Also covers picking a player on the already-current team, where
                 // `.id(teamId)` doesn't change and `.task` won't re-run.
                 presentRequestedPlayer(id)
+            }
+            // DEP-278 follow-up: publish the resolved accent (kit pick, or the team's
+            // own once the snapshot loads) so Stats/Schedule — which read this same
+            // store — follow a kit switch the same render pass the field does.
+            // `initial: true` covers the very first resolution, not just later changes.
+            .onChange(of: resolvedUiAccentHex, initial: true) { _, hex in
+                if let hex {
+                    currentTeamStore.refine(uiAccent: hex)
+                }
             }
             .refreshable {
                 if historyViewModel.isHistorical {
@@ -446,9 +468,14 @@ struct TeamDetailView: View {
                 currentContent
             }
         case .stats:
-            TeamStatsView(teamId: viewModel.teamId, repository: repository)
+            TeamStatsView(teamId: viewModel.teamId, repository: repository, currentTeamStore: currentTeamStore)
         case .schedule:
-            ScheduleView(teamId: viewModel.teamId, repository: repository, isEmbedded: true)
+            ScheduleView(
+                teamId: viewModel.teamId,
+                repository: repository,
+                currentTeamStore: currentTeamStore,
+                isEmbedded: true
+            )
         }
     }
 
