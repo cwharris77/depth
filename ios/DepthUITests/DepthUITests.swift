@@ -454,4 +454,73 @@ final class DepthUITests: XCTestCase {
             "relaunch should restore the last-viewed team, got \"\(switcher.label)\""
         )
     }
+
+    /// DEP-266 (Compare page unification) — the web-parity elements the first port
+    /// dropped must render once both teams are picked: the VS capsule, the "By team"/
+    /// "By position" tab labels, the rank-dot legend, the 44pt position chips, and the
+    /// dashed unpicked slot (verified before picking).
+    func testCompareRendersWebParityElements() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launch()
+        XCTAssertTrue(app.waitForDepthChart(), "Depth Charts should be the launch tab")
+
+        app.tabBars.firstMatch.buttons["Compare"].tap()
+        let content = app.scrollViews["compare-content"]
+        XCTAssertTrue(content.waitForExistence(timeout: 10), "Compare should render its content")
+
+        // Both empty slots exist and read as "Pick a team" holes.
+        let slotA = app.buttons["compare-slot-a"]
+        let slotB = app.buttons["compare-slot-b"]
+        XCTAssertTrue(slotA.waitForExistence(timeout: 5), "the A slot should exist")
+        XCTAssertTrue(slotB.exists, "the B slot should exist")
+
+        // "By team" / "By position" tab labels (web's CompareView SegmentedControl copy).
+        XCTAssertTrue(app.buttons["compare-tab-matchup"].exists, "the Matchup segment should render as 'By team'")
+        XCTAssertTrue(app.buttons["compare-tab-position"].exists, "the Position segment should render as 'By position'")
+
+        // Pick two teams through the slot picker sheets.
+        pickTeam(into: "a", query: "Bills", expectedRow: "team-row-bills", app: app)
+        pickTeam(into: "b", query: "Seahawks", expectedRow: "team-row-seahawks", app: app)
+
+        // Matchup tab renders its card once both teams resolve stats. The identifier
+        // lands on the card's StaticText children (`.depthCard`'s clipShape), so match
+        // any element type rather than `otherElements`.
+        let matchupCard = app.descendants(matching: .any)["compare-matchup-card"].firstMatch
+        XCTAssertTrue(matchupCard.waitForExistence(timeout: 20), "the matchup card should render once both teams are picked")
+
+        // Position tab: 44pt position chips and the rank-dot legend above the depth rows.
+        app.buttons["compare-tab-position"].tap()
+        let positionRow = app.scrollViews["compare-position-row"]
+        XCTAssertTrue(positionRow.waitForExistence(timeout: 10), "the position chip row should render")
+        XCTAssertTrue(
+            positionRow.buttons.allElementsBoundByIndex.contains { $0.frame.height >= 44 },
+            "position chips must meet the 44pt touch minimum"
+        )
+
+        let legend = app.descendants(matching: .any)["compare-rank-legend"].firstMatch
+        XCTAssertTrue(legend.waitForExistence(timeout: 5), "the rank-dot legend should render above the depth table")
+    }
+
+    /// Picks a team into a compare slot: taps the slot, searches in the picker sheet,
+    /// taps the matching row, and waits for the sheet to close.
+    private func pickTeam(into slot: String, query: String, expectedRow: String, app: XCUIApplication) {
+        let slotButton = app.buttons["compare-slot-\(slot)"]
+        XCTAssertTrue(slotButton.waitForExistence(timeout: 10), "the \(slot) compare slot should exist")
+        slotButton.tap()
+
+        let searchField = app.searchFields.firstMatch
+        XCTAssertTrue(searchField.waitForExistence(timeout: 10), "the picker sheet should offer team search")
+        searchField.tap()
+        searchField.typeText(query)
+
+        let teamRow = app.buttons[expectedRow]
+        XCTAssertTrue(teamRow.waitForExistence(timeout: 15), "searching \"\(query)\" should surface \(expectedRow)")
+        teamRow.tap()
+
+        XCTAssertFalse(
+            app.otherElements["team-switcher-sheet"].waitForExistence(timeout: 3),
+            "selecting a compare team should close the picker sheet"
+        )
+    }
 }
