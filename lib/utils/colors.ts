@@ -2,7 +2,7 @@ import { colors as uiTokens } from '@/components/ui/tokens';
 import type { PlayerStatus, TeamColors } from '@/lib/types';
 
 // The dark app background. uiAccent values are curated to read against this.
-export const DARK_BG = '#0a0e1a';
+export const DARK_BG = uiTokens.bg;
 
 // Convert a 6-digit (or 3-digit short) hex color to an rgba() string at the
 // given percentage opacity. Short hex (#RGB) is expanded first.

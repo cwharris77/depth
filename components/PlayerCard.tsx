@@ -162,7 +162,7 @@ export default function PlayerCard({
                 key={key}
                 className="flex flex-col items-center rounded-xl px-4 py-2"
                 style={{
-                  background: 'rgba(0,34,68,0.5)',
+                  background: 'rgba(30,32,38,0.5)',
                   border: `1px solid ${accent}33`,
                   minWidth: 64,
                 }}>

@@ -107,7 +107,7 @@ describe('rosterForOgImage', () => {
 
 describe('readableTextOn', () => {
   it('returns dark text on a light background and white on a dark one', () => {
-    expect(readableTextOn('#ffffff')).toBe('#0a0e1a');
+    expect(readableTextOn('#ffffff')).toBe('#15161a');
     expect(readableTextOn('#002244')).toBe('#ffffff');
   });
 
