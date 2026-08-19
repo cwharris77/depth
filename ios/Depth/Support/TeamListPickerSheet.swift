@@ -37,18 +37,31 @@ struct TeamListPickerSheet: View {
             }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
-            // Top-trailing X, matching the web NavSwitcher's close and the player card's
-            // dismiss (Cooper's visual pass: replace the left "Cancel").
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                    }
-                    .frame(minWidth: 44, minHeight: 44)
-                    .accessibilityLabel("Close")
+            // DEP-273: the sheet must stay dismissible even while TeamListView's search
+            // field is active. SwiftUI's inline `.searchable` takes over the entire nav
+            // bar when focused — hiding *any* nav-bar toolbar item (trailing, leading, and
+            // cancellation placements all disappear; verified empirically). So the close
+            // X can't live in the nav-bar toolbar if it must survive search. It renders
+            // here as a persistent top-trailing overlay on the sheet's content area
+            // instead — always visible and tappable at every search state, and it reads
+            // the same as the nav-bar X because the navigation bar title sits right above
+            // it. The search field's own system Cancel (which only clears text) no longer
+            // has to double as the only dismiss-shaped control.
+            .overlay(alignment: .topTrailing) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(DesignTokens.Colors.textPrimary)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Close")
+                .padding(.top, 6)
+                .padding(.trailing, 4)
+                .zIndex(1)
             }
         }
         .presentationBackground(DesignTokens.Colors.bg)
