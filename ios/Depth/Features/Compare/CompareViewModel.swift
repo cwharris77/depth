@@ -46,12 +46,18 @@ final class CompareViewModel {
     private(set) var pickingSlot: Slot?
 
     private let repository: DepthRepository
+    /// DEP-280: the two team ids to auto-populate both slots with once teams load —
+    /// set when Compare is pushed from a schedule-card tap (web's `?a=&b=` query
+    /// params auto-populating both slots on navigation). nil for the tab-root
+    /// instance, which opens with both slots empty as before.
+    private let preselectedTeamIds: (a: String, b: String)?
     private var allTeams: [Team] = []
     private var statsPages: [String: TeamStatsPage] = [:]
     private var snapshots: [String: TeamSnapshot] = [:]
 
-    init(repository: DepthRepository) {
+    init(repository: DepthRepository, preselectedTeamIds: (a: String, b: String)? = nil) {
         self.repository = repository
+        self.preselectedTeamIds = preselectedTeamIds
     }
 
     var teams: [Team] { allTeams }
@@ -123,6 +129,14 @@ final class CompareViewModel {
         do {
             allTeams = try await repository.teams()
             loadState = .loaded
+            // DEP-280: apply the schedule-card preselection once teams are known —
+            // mirrors web's compare page resolving both a/b query params unconditionally
+            // on load. Re-running on `.refreshable` just re-picks the same two teams
+            // (pickTeam is idempotent per side), so no extra guard is needed.
+            if let preselectedTeamIds {
+                await pickTeam(preselectedTeamIds.a, into: .a)
+                await pickTeam(preselectedTeamIds.b, into: .b)
+            }
         } catch let error as DepthError {
             loadState = .failed(error)
         } catch {
