@@ -17,6 +17,14 @@ struct TeamListView: View {
     /// this seeds once on first load and never again (a later refresh must not undo the
     /// user's picker choice).
     @State private var didSeedConference = false
+    /// DEP-273 follow-up: the sheet's overlay close X (TeamListPickerSheet) is
+    /// positioned assuming the nav bar's title band is present above the conference
+    /// picker. `.searchable` collapses that title band the moment the search field is
+    /// focused — before any text is typed, so `isSearching` alone doesn't catch it —
+    /// and the picker (still shown; search results only replace it once there's text)
+    /// slides up into the space the title used to occupy, back under the fixed X.
+    /// Tracking focus lets `content` reserve that same clearance itself while focused.
+    @FocusState private var isSearchFieldFocused: Bool
 
     /// Highlighted with a checkmark so the sheet shows where you are, matching the web
     /// switcher's current-team affordance.
@@ -43,6 +51,7 @@ struct TeamListView: View {
     var body: some View {
         content
             .searchable(text: $viewModel.searchText, prompt: "Search teams and players")
+            .searchFocused($isSearchFieldFocused)
             .task { await viewModel.load() }
             .task(id: viewModel.searchText) { await viewModel.searchPlayers() }
             .onChange(of: viewModel.loadState) { _, _ in
@@ -107,6 +116,14 @@ struct TeamListView: View {
             } else {
                 VStack(spacing: 0) {
                     if !isSearching {
+                        // Reserve the same clearance the nav-bar title band would
+                        // otherwise give the sheet's overlay close X — the title
+                        // collapses the instant the search field is focused (before
+                        // any text lands and hides the picker below), so without this
+                        // the picker slides up under the fixed-position X.
+                        if isSearchFieldFocused {
+                            Color.clear.frame(height: 44)
+                        }
                         conferencePicker
                     }
                     teamList

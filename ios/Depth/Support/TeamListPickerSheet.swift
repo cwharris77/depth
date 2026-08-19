@@ -37,19 +37,36 @@ struct TeamListPickerSheet: View {
             }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
-            // Top-trailing X, matching the web NavSwitcher's close and the player card's
-            // dismiss (Cooper's visual pass: replace the left "Cancel").
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                    }
-                    .frame(minWidth: 44, minHeight: 44)
-                    .accessibilityLabel("Close")
-                }
+        }
+        // DEP-273: the sheet must stay dismissible even while TeamListView's search field
+        // is active. SwiftUI's inline `.searchable` takes over the entire nav bar when
+        // focused — hiding *any* nav-bar toolbar item (trailing, leading, and cancellation
+        // placements all disappear; verified empirically) and floating the search field to
+        // a bottom pill instead. So the close X can't live in the nav-bar toolbar if it
+        // must survive search. It renders as a persistent top-trailing overlay instead —
+        // always visible and tappable at every search state. Anchored to the
+        // NavigationStack itself (not to TeamListView's content) so it sits in the
+        // nav-bar's own band, above the conference picker, rather than overlapping the
+        // picker's top row — the picker's AFC/NFC fill color read as if it were the X's
+        // own tint when the two collided there.
+        .overlay(alignment: .topTrailing) {
+            // A neutral scrim behind the glyph so it stays legible over whatever content
+            // scrolls beneath it, independent of the current team's color.
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    .frame(width: 32, height: 32)
+                    .background(DesignTokens.Colors.surfaceChip, in: Circle())
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Close")
+            .padding(.trailing, 4)
+            .zIndex(1)
         }
         .presentationBackground(DesignTokens.Colors.bg)
         // `.sheet()` content gets a fresh UITraitCollection rather than inheriting
