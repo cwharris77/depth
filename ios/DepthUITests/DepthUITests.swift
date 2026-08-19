@@ -374,13 +374,32 @@ final class DepthUITests: XCTestCase {
         chooseUniform.tap()
         XCTAssertTrue(app.otherElements["uniform-picker-sheet"].waitForExistence(timeout: 10))
 
-        // Row 0 is the team's current/home kit (nothing pre-checked on a fresh reset
-        // state); row 1 is a genuinely different kit, so its color should differ from
-        // the base team accent seen in `statsBefore`.
-        let uniformRows = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'uniform-'"))
-        XCTAssertGreaterThanOrEqual(uniformRows.count, 2, "the Bills should offer more than one uniform to distinguish a kit pick")
-        uniformRows.element(boundBy: 1).tap()
-        XCTAssertFalse(app.otherElements["uniform-picker-sheet"].waitForExistence(timeout: 5), "picking a uniform should dismiss the sheet")
+        // DEP-256 visual evidence: capture the carousel's first card (the deterministic
+        // opening page — see UniformPickerSheet's `init`, which seeds `currentIndex`
+        // from `selectedID`) before interacting with it.
+        let carouselCard0 = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+        carouselCard0.name = "uniform-picker-carousel-card-0"
+        carouselCard0.lifetime = .keepAlways
+        add(carouselCard0)
+
+        // Card 0 is the team's current/home kit (nothing pre-checked on a fresh reset
+        // state); card 1 is a genuinely different kit, so its color should differ from
+        // the base team accent seen in `statsBefore`. DEP-256: the picker is now a
+        // swipeable carousel, so selection happens via the page dots (a real swipe
+        // gesture isn't reliably drivable in XCUITest) rather than a row tap, and no
+        // longer auto-dismisses the sheet — the sheet stays open so you can keep
+        // paging and previewing the recolor live, closed explicitly via the X button.
+        let pageDots = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'uniform-dot-'"))
+        XCTAssertGreaterThanOrEqual(pageDots.count, 2, "the Bills should offer more than one uniform to distinguish a kit pick")
+        pageDots.element(boundBy: 1).tap()
+
+        let carouselCard1 = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+        carouselCard1.name = "uniform-picker-carousel-card-1"
+        carouselCard1.lifetime = .keepAlways
+        add(carouselCard1)
+
+        app.buttons["Close"].tap()
+        XCTAssertFalse(app.otherElements["uniform-picker-sheet"].waitForExistence(timeout: 5), "closing the picker should dismiss the sheet")
 
         statsTab.tap()
         XCTAssertTrue(app.scrollViews["stats-content"].waitForExistence(timeout: 15), "Stats should still render after a kit pick")

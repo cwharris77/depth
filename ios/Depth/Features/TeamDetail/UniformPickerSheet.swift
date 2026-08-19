@@ -1,9 +1,25 @@
 import SwiftUI
 
-// Native counterpart to the web UniformSheet: one deterministic VoiceOver row per
-// uniform, with the currently-selected one checked. Selecting persists the choice per
-// team (UserPreferences.setUniformSelection) and recolors the field dots via
-// DepthChartFieldView's colors override.
+// Native counterpart to the web UniformSheet (components/UniformSheet.tsx): a
+// horizontal swipeable carousel — one full-width card per uniform — replacing the old
+// vertical row list (DEP-256). Paging is native SwiftUI (`TabView` + `.page` style)
+// rather than a hand-rolled drag gesture: the platform already has a swipeable-carousel
+// primitive, so reimplementing framer-motion's drag/snap math here would just be
+// distribution-inflation over a built-in (see gstack ethos, "search before building").
+// `onSelect` fires on every page change (swipe settle or dot tap) so the field
+// live-previews each kit's colors while browsing — but it's a preview signal only.
+// The caller (TeamDetailView) holds the live-previewed id separately from the
+// committed one and only persists it (UserPreferences.setUniformSelection) when this
+// sheet is dismissed, whichever way that happens (X button or swipe-down). Web commits
+// on every drag settle instead, which is the bug this deliberately avoids: browsing
+// through kits shouldn't overwrite the saved pick until you actually close the picker.
+//
+// DEP-256 acceptance target: the card art reuses UniformsTab's `UniformThumb`, pointed
+// at the plain jersey crop (`UniformArt.jerseyURL`, not the archive's full-mannequin
+// `-full` raster) — the picker shows just the jersey, matching web's UniformSheet swatch,
+// while sharing the same thumbnail component as the archive instead of a second
+// jersey-rendering implementation. Each card's caption is the kit kind only (Home/Away/
+// etc.) — no year range, since an undated kit has nothing meaningful to show there.
 struct UniformPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -11,37 +27,32 @@ struct UniformPickerSheet: View {
     let selectedID: String?
     let onSelect: (String) -> Void
 
+    @State private var currentIndex: Int
+
+    init(uniforms: [Uniform], selectedID: String?, onSelect: @escaping (String) -> Void) {
+        self.uniforms = uniforms
+        self.selectedID = selectedID
+        self.onSelect = onSelect
+        let startIndex = selectedID.flatMap { id in uniforms.firstIndex(where: { $0.id == id }) } ?? 0
+        _currentIndex = State(initialValue: startIndex)
+    }
+
     var body: some View {
         NavigationStack {
-            List(uniforms) { uniform in
-                Button {
-                    onSelect(uniform.id)
-                    dismiss()
-                } label: {
-                    HStack(spacing: 12) {
-                        UniformThumbnailView(uniform: uniform, artURL: artURL(for: uniform))
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(uniform.name)
-                                .font(.headline)
-                            Text(description(for: uniform))
-                                .font(.footnote)
-                                .foregroundStyle(DesignTokens.Colors.textMuted)
-                        }
-                        Spacer()
-                        if uniform.id == selectedID {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(DesignTokens.Colors.accent)
-                                .accessibilityLabel("Selected")
-                        }
+            VStack(spacing: 0) {
+                TabView(selection: $currentIndex) {
+                    ForEach(Array(uniforms.enumerated()), id: \.element.id) { index, uniform in
+                        card(for: uniform)
+                            .tag(index)
                     }
                 }
-                .frame(minHeight: 44)
-                .accessibilityIdentifier("uniform-\(uniform.id)")
-                .accessibilityLabel(
-                    "\(uniform.name), \(description(for: uniform))\(uniform.id == selectedID ? ", selected" : "")"
-                )
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                // Page dots below are the accent-tinted equivalent (UniformSheet.tsx's
+                // custom dot row); the system page dots don't take the team accent.
+
+                pageDots
+                    .padding(.bottom, DesignTokens.Spacing.md)
             }
-            .scrollIndicators(.hidden)
             .navigationTitle("Choose Uniform")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -58,42 +69,81 @@ struct UniformPickerSheet: View {
         }
         .presentationBackground(DesignTokens.Colors.bg)
         .accessibilityIdentifier("uniform-picker-sheet")
+        // Preview-only signal on every page change — see the header comment. The
+        // caller decides whether/when this becomes the committed selection.
+        .onChange(of: currentIndex) { _, newIndex in
+            guard uniforms.indices.contains(newIndex) else { return }
+            onSelect(uniforms[newIndex].id)
+        }
     }
 
-    // DEP-220: each row renders its prerendered WebP thumbnail (the shared UniformFigure
-    // jersey crop, committed under public/uniforms). Rows whose image_path is still NULL
-    // degrade to today's text-only layout — no empty placeholder box. The image is hidden
-    // from VoiceOver because the row label already names the kit.
-    private func artURL(for uniform: Uniform) -> URL? {
-        if let imagePath = uniform.imagePath, let url = URL(string: imagePath) {
-            return url
+    private func card(for uniform: Uniform) -> some View {
+        VStack(spacing: DesignTokens.Spacing.sm) {
+            UniformThumb(url: UniformArt.jerseyURL(for: uniform.id), size: 140, heightMultiplier: 0.81)
+                .padding(.top, DesignTokens.Spacing.md)
+
+            VStack(spacing: DesignTokens.Spacing.xs) {
+                Text(uniform.name)
+                    .font(.title3.bold())
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                Text(uniform.kind.displayName)
+                    .font(.footnote)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+            }
+            .multilineTextAlignment(.center)
+
+            if uniform.id == selectedID {
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark")
+                        .font(.caption.weight(.bold))
+                    Text("Active")
+                        .font(.caption.weight(.bold))
+                }
+                .foregroundStyle(DesignTokens.Colors.accent)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(DesignTokens.Colors.accent.opacity(0.12), in: Capsule())
+                .overlay(Capsule().strokeBorder(DesignTokens.Colors.accent.opacity(0.4), lineWidth: 1))
+                .accessibilityHidden(true)
+            }
         }
-        #if DEBUG
-        // UI-testing hook (same convention as DepthApp's UI_TESTING_RESET_STATE): reroute
-        // every uniform's image URL to a local artifact server so DEP-220 rows can be
-        // screenshot-verified before the image_path backfill migration lands. Example:
-        //   xcodebuild ... test  (then feed launch-arguments = ["UI_TESTING_UNIFORM_ART_BASE_URL=http://127.0.0.1:8787/uniforms"])
-        // with `python3 -m http.server 8787 -d public` running in the repo.
-        if let base = ProcessInfo.processInfo.arguments.first(where: {
-            $0.hasPrefix("UI_TESTING_UNIFORM_ART_BASE_URL=")
-        })?.dropFirst("UI_TESTING_UNIFORM_ART_BASE_URL=".count), !base.isEmpty {
-            return URL(string: base.hasSuffix("/") ? "\(base)\(uniform.id).webp" : "\(base)/\(uniform.id).webp")
-        }
-        #endif
-        return nil
+        .padding(.horizontal, DesignTokens.Spacing.lg)
+        .padding(.bottom, DesignTokens.Spacing.md)
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .ignore)
+        .accessibilityIdentifier("uniform-\(uniform.id)")
+        .accessibilityLabel(
+            "\(uniform.name), \(uniform.kind.displayName)\(uniform.id == selectedID ? ", selected" : "")"
+        )
     }
 
-    private func description(for uniform: Uniform) -> String {
-        let kind = uniform.kind.displayName
-        let years: String
-        if let start = uniform.yearStart, let end = uniform.yearEnd {
-            years = start == end ? "\(start)" : "\(start)–\(end)"
-        } else if let start = uniform.yearStart {
-            years = "\(start)"
-        } else {
-            years = "—"
+    /// Accent-tinted page dots (web's UniformSheet.tsx page-dot row): the active dot is
+    /// a wider capsule, the rest are small circles. Tapping a dot jumps directly to that
+    /// page, matching web's tappable dots. Sized and tinted up from web's row (8pt
+    /// circles, `textFaint` instead of the barely-visible `textFaintest`, plus a soft
+    /// accent glow on the active pill) — the 6pt/`textFaintest` original read as flat,
+    /// low-contrast specks against the dark background.
+    private var pageDots: some View {
+        HStack(spacing: 8) {
+            ForEach(Array(uniforms.enumerated()), id: \.element.id) { index, uniform in
+                Button {
+                    currentIndex = index
+                } label: {
+                    Capsule()
+                        .fill(index == currentIndex ? DesignTokens.Colors.accent : DesignTokens.Colors.textFaint)
+                        .frame(width: index == currentIndex ? 24 : 8, height: 8)
+                        .shadow(
+                            color: index == currentIndex ? DesignTokens.Colors.accent.opacity(0.6) : .clear,
+                            radius: 4
+                        )
+                }
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
+                .accessibilityLabel("Select \(uniform.name)")
+                .accessibilityIdentifier("uniform-dot-\(uniform.id)")
+            }
         }
-        return "\(kind) · \(years)"
+        .animation(.easeOut(duration: 0.2), value: currentIndex)
     }
 }
 
@@ -105,29 +155,6 @@ extension UniformKind {
         case .throwback: "Throwback"
         case .colorRush: "Color Rush"
         case .alternate: "Alternate"
-        }
-    }
-}
-
-// The leading 3:4 jersey thumbnail. object-cover semantics (scaledToFill within the fixed
-// frame, then clipped) match the web picker's JerseySwatch box; while loading, the frame
-// keeps its slot with the surface fill so rows don't shift. artURL is nil (no image_path
-// yet) → renders nothing and the row stays the text-only layout.
-private struct UniformThumbnailView: View {
-    let uniform: Uniform
-    let artURL: URL?
-
-    var body: some View {
-        if let artURL {
-            AsyncImage(url: artURL) { phase in
-                if let image = phase.image {
-                    image.resizable().scaledToFill()
-                }
-            }
-            .frame(width: 48, height: 64)
-            .background(DesignTokens.Colors.surfaceRaised)
-            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.sm, style: .continuous))
-            .accessibilityHidden(true)
         }
     }
 }

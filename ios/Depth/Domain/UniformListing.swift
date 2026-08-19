@@ -1,10 +1,15 @@
 import Foundation
 
-// Mirrors lib/uniforms/art.tsx's UNIFORM_ART_BASE_URL and uniformArtFullURL. The archive
-// shows the `-full` mannequin raster (helmet → cleats), distinct from the picker's
-// jersey crop on the same base — the same two kinds of artifact the web generator emits.
+// Mirrors lib/uniforms/art.tsx's UNIFORM_ART_BASE_URL, uniformArtURL, and
+// uniformArtFullURL. The archive shows the `-full` mannequin raster (helmet → cleats);
+// the picker shows the plain jersey crop (`<id>.webp`) — the same two kinds of artifact
+// the web generator emits.
 enum UniformArt {
     static let baseURL = "https://depth-ashen.vercel.app/uniforms"
+
+    static func jerseyURL(for id: String) -> URL? {
+        URL(string: "\(baseURL)/\(id).webp")
+    }
 
     static func fullURL(for id: String) -> URL? {
         URL(string: "\(baseURL)/\(id)-full.webp")
