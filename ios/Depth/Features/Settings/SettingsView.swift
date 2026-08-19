@@ -7,6 +7,16 @@ import SwiftUI
 // within the app — the row links to the live production /privacy page
 // (AppBuildInfo.privacyPolicyURL) via the system browser. A support contact remains a
 // future Gate 0 item; no placeholder email is invented here.
+//
+// Layout (DEP-257 design pass): three visually distinct tiers instead of one uniform
+// stack of look-alike cards — a bare identity header (no card chrome, mirrors web's
+// AccountView.tsx avatar+"Signed in as" treatment), a routine-actions card (Sign Out),
+// a separately red-tinted danger card (Delete Account, matching web's danger-zone
+// treatment so a permanently destructive action never reads at the same weight as a
+// routine one), and an About card with the privacy link as a real disclosure row and
+// the disclaimer demoted to footer text below the card rather than crammed inside it.
+// Tight spacing within each card, generous spacing between tiers, so the grouping is
+// visible at a glance rather than one repeated gap value flattening everything.
 struct SettingsView: View {
     @Bindable var sessionStore: AuthSessionStore
 
@@ -21,23 +31,16 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
-                    sectionLabel("Account")
-                    accountCard
-
-                    if let signOutError {
-                        sectionLabel("Sign out")
-                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-                            Text(signOutError.message)
-                                .font(.footnote)
-                                .foregroundStyle(DesignTokens.Colors.danger)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .depthCard()
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
+                    if let user = sessionStore.user {
+                        identityHeader(email: user.email)
+                        settingsTier
+                        dangerTier
+                    } else {
+                        signInPrompt
                     }
 
-                    sectionLabel("About")
-                    aboutCard
+                    aboutTier
                 }
                 .padding(DesignTokens.Spacing.md)
             }
@@ -45,6 +48,7 @@ struct SettingsView: View {
             .background(DesignTokens.Colors.bg)
             .navigationTitle("Account")
         }
+        .tint(DesignTokens.Colors.accent)
         .sheet(isPresented: $showAuth) {
             AuthSheet(service: authService, sessionStore: sessionStore, events: events)
                 .presentationBackground(DesignTokens.Colors.bg)
@@ -64,58 +68,148 @@ struct SettingsView: View {
         }
     }
 
-    // Section headers read as muted captions above each card, matching web's
-    // section-label pattern rather than Form's built-in grouped headers.
-    private func sectionLabel(_ title: String) -> some View {
-        Text(title)
-            .font(.caption)
-            .foregroundStyle(DesignTokens.Colors.textMuted)
+    // Bare identity anchor — no card, matching web's un-boxed header row. The avatar
+    // reuses AuthSheet's success-circle tint/border treatment (accent 14%-fill,
+    // accent 30%-stroke) so the two identity moments in the account flow read as one
+    // system.
+    private func identityHeader(email: String) -> some View {
+        HStack(spacing: DesignTokens.Spacing.md) {
+            ZStack {
+                Circle()
+                    .fill(DesignTokens.Colors.accent.opacity(0.14))
+                Circle()
+                    .strokeBorder(DesignTokens.Colors.accent.opacity(0.3), lineWidth: 1)
+                Text(String(email.prefix(1)).uppercased())
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(DesignTokens.Colors.accent)
+            }
+            .frame(width: 48, height: 48)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("SIGNED IN AS")
+                    .font(.caption2.weight(.bold))
+                    .tracking(0.8)
+                    .foregroundStyle(DesignTokens.Colors.textFaint)
+                Text(email)
+                    .font(.body.weight(.bold))
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 
-    private var accountCard: some View {
+    // No card wrapper — mirrors web's bare "Sign in" heading + copy + button rather
+    // than boxing the page's primary call-to-action.
+    private var signInPrompt: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            if let user = sessionStore.user {
-                LabeledContent("Email", value: user.email)
-                // DEP-269: 44pt hit target on every account action — Sign Out / Delete
-                // Account / Sign In were plain buttons at intrinsic label height.
+            Text("Sign in")
+                .font(.title2.bold())
+                .foregroundStyle(DesignTokens.Colors.textPrimary)
+            Text("Sign in only when you want to save private preferences or depth orders.")
+                .foregroundStyle(DesignTokens.Colors.textSecondary)
+            Button {
+                showAuth = true
+            } label: {
+                Text("Sign In")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(DesignTokens.Colors.accent)
+            .foregroundStyle(DesignTokens.Colors.onAccent)
+            .frame(minHeight: 44)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var settingsTier: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+            sectionLabel("Settings", tint: DesignTokens.Colors.accent)
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+                // DEP-269: 44pt hit target on every account action.
                 Button("Sign Out") {
                     Task { await signOut() }
                 }
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                Button("Delete Account", role: .destructive) {
-                    showDeletion = true
-                }
-                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-            } else {
-                Text(
-                    "Sign in only when you want to save private preferences or depth orders."
-                )
-                .foregroundStyle(DesignTokens.Colors.textSecondary)
-                Button("Sign In") { showAuth = true }
-                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .depthCard()
+
+            if let signOutError {
+                errorChip(signOutError.message, identifier: "settings-sign-out-error")
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .depthCard()
     }
 
-    private var aboutCard: some View {
+    private var dangerTier: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            LabeledContent("Name", value: AppBuildInfo.displayName)
-                .accessibilityIdentifier("settings-about-name")
-            LabeledContent("Version", value: AppBuildInfo.versionAndBuild)
-                .accessibilityIdentifier("settings-about-version")
-            if let url = AppBuildInfo.privacyPolicyURL {
-                Link("Privacy Policy", destination: url)
-                    .accessibilityIdentifier("settings-about-privacy")
+            sectionLabel("Danger Zone", tint: DesignTokens.Colors.danger)
+            Button("Delete Account", role: .destructive) {
+                showDeletion = true
             }
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .depthCard()
+        }
+    }
+
+    private var aboutTier: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+            sectionLabel("About", tint: DesignTokens.Colors.textMuted)
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+                LabeledContent("Name", value: AppBuildInfo.displayName)
+                    .accessibilityIdentifier("settings-about-name")
+                Divider().overlay(DesignTokens.Colors.borderSubtle)
+                LabeledContent("Version", value: AppBuildInfo.versionAndBuild)
+                    .accessibilityIdentifier("settings-about-version")
+                if let url = AppBuildInfo.privacyPolicyURL {
+                    Divider().overlay(DesignTokens.Colors.borderSubtle)
+                    Link(destination: url) {
+                        HStack {
+                            Text("Privacy Policy")
+                                .foregroundStyle(DesignTokens.Colors.textPrimary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(DesignTokens.Colors.textFaint)
+                        }
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                    }
+                    .accessibilityIdentifier("settings-about-privacy")
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .depthCard()
+
             Text(AppBuildInfo.nonAffiliationDisclaimer)
                 .font(.footnote)
-                .foregroundStyle(DesignTokens.Colors.textSecondary)
+                .foregroundStyle(DesignTokens.Colors.textFaint)
+                .padding(.top, DesignTokens.Spacing.sm)
                 .accessibilityIdentifier("settings-about-disclaimer")
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .depthCard()
+    }
+
+    private func sectionLabel(_ title: String, tint: Color) -> some View {
+        Text(title.uppercased())
+            .font(.caption.weight(.bold))
+            .tracking(0.6)
+            .foregroundStyle(tint)
+    }
+
+    private func errorChip(_ message: String, identifier: String) -> some View {
+        Text(message)
+            .font(.footnote)
+            .foregroundStyle(DesignTokens.Colors.danger)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(DesignTokens.Spacing.md)
+            .background(DesignTokens.Colors.danger.opacity(0.1))
+            .overlay(
+                RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
+                    .strokeBorder(DesignTokens.Colors.danger.opacity(0.3), lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
+            .accessibilityIdentifier(identifier)
     }
 
     private func signOut() async {
