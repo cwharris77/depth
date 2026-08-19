@@ -9,10 +9,22 @@ struct ScheduleView: View {
     @State private var viewModel: ScheduleViewModel
     @State private var showSeasonPicker = false
     private let isEmbedded: Bool
+    /// DEP-278 follow-up: Schedule fetches no team/uniform data of its own (lightweight
+    /// read, invariant 5), so it reads the kit-resolved accent TeamDetailView publishes
+    /// here instead — same store the tab tint and Stats read, so a kit pick on the
+    /// roster page is reflected here without a page reload.
+    private let currentTeamStore: CurrentTeamStore
 
-    init(teamId: String, repository: DepthRepository, isEmbedded: Bool = false) {
+    init(teamId: String, repository: DepthRepository, currentTeamStore: CurrentTeamStore, isEmbedded: Bool = false) {
         _viewModel = State(initialValue: ScheduleViewModel(teamId: teamId, repository: repository))
+        self.currentTeamStore = currentTeamStore
         self.isEmbedded = isEmbedded
+    }
+
+    /// Falls back to the app's own accent before any team has resolved a color this
+    /// session, mirroring RootTabView's identical fallback for the same store.
+    private var uiAccent: Color {
+        currentTeamStore.uiAccent.map(Color.init(hex:)) ?? DesignTokens.Colors.accent
     }
 
     var body: some View {
@@ -33,7 +45,7 @@ struct ScheduleView: View {
                     items: viewModel.seasonOptions.map { SeasonPickerItem(season: $0) },
                     selectedSeason: selectedSeason,
                     currentSeason: defaultSeason,
-                    accent: DesignTokens.Colors.accent,
+                    accent: uiAccent,
                     identifierPrefix: "schedule"
                 ) { season in
                     showSeasonPicker = false
@@ -106,20 +118,13 @@ struct ScheduleView: View {
     }
 
     private var seasonPicker: some View {
-        Button {
+        SeasonPickerTrigger(
+            season: viewModel.selectedSeason,
+            accent: uiAccent,
+            identifier: "schedule-season-trigger"
+        ) {
             showSeasonPicker = true
-        } label: {
-            HStack(spacing: 4) {
-                Text(viewModel.selectedSeason.map { "\($0) SEASON" } ?? "SEASON")
-                    .font(.caption.bold())
-                    .tracking(0.1)
-                Image(systemName: "chevron.down")
-                    .font(.caption2.bold())
-            }
-            .foregroundStyle(DesignTokens.Colors.textFaint)
         }
-        .frame(minHeight: 44)
-        .accessibilityIdentifier("schedule-season-trigger")
     }
 }
 

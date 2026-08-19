@@ -9,9 +9,14 @@ import SwiftUI
 struct TeamStatsView: View {
     @State private var viewModel: TeamStatsViewModel
     @State private var showSeasonPicker = false
+    /// DEP-278 follow-up: Stats fetches no uniform data of its own (lightweight read,
+    /// invariant 5), so it reads the kit-resolved accent TeamDetailView publishes here
+    /// instead — same store the tab tint and Schedule read.
+    private let currentTeamStore: CurrentTeamStore
 
-    init(teamId: String, repository: DepthRepository) {
+    init(teamId: String, repository: DepthRepository, currentTeamStore: CurrentTeamStore) {
         _viewModel = State(initialValue: TeamStatsViewModel(teamId: teamId, repository: repository))
+        self.currentTeamStore = currentTeamStore
     }
 
     var body: some View {
@@ -38,11 +43,15 @@ struct TeamStatsView: View {
             }
     }
 
-    /// The accent that drives chips, DIFF, and the next-game card border. Web uses the
-    /// active kit's `uiAccent` (useKitColors); native's Stats page doesn't know the
-    /// uniform selection, so it falls back to the team's curated `uiAccent` — the same
-    /// value web uses when no kit has been picked this session.
+    /// The accent that drives chips, DIFF (positive), and the next-game card border.
+    /// `currentTeamStore` carries the kit-resolved color once TeamDetailView publishes
+    /// it (DEP-278 follow-up, web parity: `useKitColors`); falls back to this page's
+    /// own team read while that hasn't happened yet (e.g. Stats opened before the
+    /// roster page's snapshot has loaded for this team).
     private var uiAccent: Color {
+        if let hex = currentTeamStore.uiAccent {
+            return Color(hex: hex)
+        }
         guard let page = viewModel.page else { return DesignTokens.Colors.accent }
         return Color(hex: page.team.colors.uiAccent)
     }
@@ -130,21 +139,14 @@ struct TeamStatsView: View {
     /// that pattern stopped scaling once team_stats ingest landed seasons back to 1999
     /// (~25+ entries no longer fit a swipeable strip).
     private var seasonPickerTrigger: some View {
-        Button {
+        SeasonPickerTrigger(
+            season: viewModel.selectedSeason,
+            accent: uiAccent,
+            identifier: "stats-season-trigger"
+        ) {
             showSeasonPicker = true
-        } label: {
-            HStack(spacing: 4) {
-                Text(viewModel.selectedSeason.map { "\($0) SEASON" } ?? "SEASON")
-                    .font(.caption.bold())
-                    .tracking(0.1)
-                Image(systemName: "chevron.down")
-                    .font(.caption2.bold())
-            }
-            .foregroundStyle(uiAccent)
         }
         .padding(.horizontal, DesignTokens.Spacing.md)
-        .frame(minHeight: 44)
-        .accessibilityIdentifier("stats-season-trigger")
     }
 
     private var seasonPickerItems: [SeasonPickerItem] {
