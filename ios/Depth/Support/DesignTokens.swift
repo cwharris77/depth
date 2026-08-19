@@ -79,6 +79,13 @@ enum DesignTokens {
         /// (player detail sheet's status label / depth-row rank). Carries forward the
         /// pre-token literal `#4fc3f7` exactly, same pattern as `statusWin` (DEP-264).
         static let statusRookie = Color(hex: "#4fc3f7")
+        /// Matches web's `CONFERENCE_COLORS` (`lib/utils/colors.ts`) — the NFL's own
+        /// shield brand colors (brandcolorcode.com/nfl-national-football-league), used for
+        /// the AFC/NFC conference picker. Unlike `accent` (DEP-272), which had to stay
+        /// neutral, this control's job is to distinguish the two conferences, so the real
+        /// broadcast/bracket-graphic red/blue is the right fit.
+        static let conferenceAFC = Color(hex: "#D50A0A")
+        static let conferenceNFC = Color(hex: "#013369")
     }
 
     /// 8-point spacing scale (design-pass item 29's explicit requirement).

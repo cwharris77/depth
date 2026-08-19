@@ -5,7 +5,7 @@ import IconButton from '@/components/ui/IconButton';
 import SectionLabel from '@/components/ui/SectionLabel';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
-import { readableTextOn } from '@/lib/utils/colors';
+import { CONFERENCE_COLORS, readableTextOn } from '@/lib/utils/colors';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { PlayerHit } from '@/lib/utils/search/search';
 import type { Conference, Player } from '@/lib/types';
@@ -378,11 +378,13 @@ export default function NavSwitcher({
         </div>
       )}
 
-      {/* Only meaningful for idle browsing — hidden once you're searching. */}
+      {/* Only meaningful for idle browsing — hidden once you're searching. Colored by
+          the real NFL conference red/blue (CONFERENCE_COLORS) rather than the neutral
+          `flat` fill other non-team-scoped switchers use — this control's job is to
+          distinguish AFC from NFC, so the real broadcast/bracket colors are the point. */}
       {!searching && (
         <div className="px-5 pb-3">
           <SegmentedControl
-            flat
             fullWidth
             options={[
               { value: 'AFC', label: 'AFC' },
@@ -390,6 +392,8 @@ export default function NavSwitcher({
             ]}
             value={conference}
             onChange={(v) => setConference(v as Conference)}
+            activeColor={CONFERENCE_COLORS[conference]}
+            activeTextColor={readableTextOn(CONFERENCE_COLORS[conference])}
           />
         </div>
       )}

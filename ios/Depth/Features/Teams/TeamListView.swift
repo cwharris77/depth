@@ -128,12 +128,12 @@ struct TeamListView: View {
             ],
             selection: conference,
             onChange: { conference = $0 },
-            // DEP-262 locked decision: the conference picker is not team-scoped, so it
-            // tints with the app accent (fixed green) rather than the current team's
-            // accent — matching how the other non-team-scoped DepthSegmentedControls
-            // (unit tabs, compare tabs) behave, and staying consistent regardless of
-            // which team is selected.
-            activeColor: DesignTokens.Colors.accent,
+            // Superseded DEP-262's "app accent, not team-scoped" locked decision: the
+            // conference picker's job is literally to distinguish AFC from NFC, so it
+            // tints with the real NFL conference colors instead — matching web's
+            // `CONFERENCE_COLORS`.
+            activeColor: conference == "AFC" ? DesignTokens.Colors.conferenceAFC : DesignTokens.Colors.conferenceNFC,
+            activeTextColor: Color(hex: readableTextOn(conference == "AFC" ? "#D50A0A" : "#013369")),
             // Web parity: the NavSwitcher conference picker is `fullWidth` (a standalone
             // bar over the division list), same as the Matchup/By-position and page
             // switchers.
