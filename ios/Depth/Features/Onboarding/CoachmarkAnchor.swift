@@ -1,14 +1,23 @@
 import SwiftUI
 
 // Coachmark target registry for the first-run tutorial (DEP-251). A view that a
-// coachmark step should point at tags itself with `.coachmarkAnchor(_:)`; the anchor
-// bubbles up through SwiftUI's preference system to a single overlay mounted at
-// ContentView's root (`.coachmarkOverlay`), which resolves every registered anchor to a
-// screen rect once its own GeometryProxy is available. This is the standard SwiftUI
-// pattern for "point at this real view living several layers down the tree" UI — no
-// manual frame plumbing through every intermediate view, and it degrades safely (the
-// overlay just has no rect for that step) if the target view isn't currently mounted
-// (a different tab, a closed sheet).
+// coachmark step should point at tags itself with `.coachmarkAnchor(_:)`; the target's
+// on-screen frame bubbles up through SwiftUI's preference system to a single overlay
+// mounted at ContentView's root (`.coachmarkOverlay`), which hands the resolved rects
+// (plus its own GeometryProxy, needed for the anchor-less `.bottomTabs` step) to
+// `content`. This degrades safely (the overlay just has no rect for that step) if the
+// target view isn't currently mounted (a different tab, a closed sheet).
+//
+// DEP-251 follow-up (placement audit): this used to read each target's frame via
+// `anchorPreference(value: .bounds)` + `proxy[anchor]`, the textbook SwiftUI pattern for
+// this — but measured directly, every real target (`.teamPill`'s toolbar item,
+// `.overflowMenu` and `.playerDot` inside TeamDetailView's `ScrollView`) resolved to a
+// rect nowhere near the actual control; only the coordinates were free of any scroll
+// offset or intervening layout, as if resolved before the surrounding content laid out.
+// Reporting each target's `GeometryReader`-read `.global` frame through a plain `CGRect`
+// preference instead — same "tag once, resolve at the root" shape, an equally standard
+// SwiftUI idiom for this exact case — measured correctly in every case tried, including
+// through the `ScrollView` and the `NavigationStack`-hosted toolbar item.
 //
 // `.bottomTabs` deliberately has no case here — SwiftUI's TabView doesn't expose a
 // per-tab frame through the public API, so that step's rect is computed directly from
@@ -21,26 +30,27 @@ enum CoachmarkID: CaseIterable {
     case bottomTabs
 }
 
-private struct CoachmarkAnchorKey: PreferenceKey {
-    // A computed (not stored) static var sidesteps the "nonisolated global shared
-    // mutable state" Swift 6 concurrency error PreferenceKey's usual `static var = [:]`
-    // pattern trips on here — `Anchor<CGRect>` isn't Sendable, so a stored default
-    // would need explicit isolation; an empty dictionary literal computed fresh each
-    // access needs none.
-    static var defaultValue: [CoachmarkID: Anchor<CGRect>] { [:] }
-    static func reduce(value: inout [CoachmarkID: Anchor<CGRect>], nextValue: () -> [CoachmarkID: Anchor<CGRect>]) {
+private struct CoachmarkFrameKey: PreferenceKey {
+    static var defaultValue: [CoachmarkID: CGRect] { [:] }
+    static func reduce(value: inout [CoachmarkID: CGRect], nextValue: () -> [CoachmarkID: CGRect]) {
         // Last-write-wins: only one live instance of each target should exist at a
         // time (e.g. the first player dot on the currently displayed field), but if
-        // more than one ever registers the same id, a newer anchor replacing an older
+        // more than one ever registers the same id, a newer frame replacing an older
         // one is a safe default rather than silently keeping a stale rect.
         value.merge(nextValue()) { _, new in new }
     }
 }
 
 extension View {
-    /// Registers this view as the on-screen target for the given coachmark step.
+    /// Registers this view as the on-screen target for the given coachmark step,
+    /// reporting its live `.global`-space frame (see the file header for why `.global`
+    /// over an anchor preference).
     func coachmarkAnchor(_ id: CoachmarkID) -> some View {
-        anchorPreference(key: CoachmarkAnchorKey.self, value: .bounds) { [id: $0] }
+        background(
+            GeometryReader { proxy in
+                Color.clear.preference(key: CoachmarkFrameKey.self, value: [id: proxy.frame(in: .global)])
+            }
+        )
     }
 
     /// Registers this view as the coachmark target only when `condition` holds — for a
@@ -55,16 +65,15 @@ extension View {
         }
     }
 
-    /// Mounted once at the root: resolves every anchor registered anywhere in the
-    /// subtree below into a screen-space `CGRect` and hands the result (plus the
-    /// root's own GeometryProxy, needed for the anchor-less `.bottomTabs` step) to
-    /// `content`.
+    /// Mounted once at the root: hands every registered target's screen-space `CGRect`
+    /// (plus the root's own GeometryProxy, needed for the anchor-less `.bottomTabs`
+    /// step) to `content`.
     func coachmarkOverlay<Overlay: View>(
         @ViewBuilder content: @escaping ([CoachmarkID: CGRect], GeometryProxy) -> Overlay
     ) -> some View {
-        overlayPreferenceValue(CoachmarkAnchorKey.self) { anchors in
+        overlayPreferenceValue(CoachmarkFrameKey.self) { frames in
             GeometryReader { proxy in
-                content(anchors.mapValues { proxy[$0] }, proxy)
+                content(frames, proxy)
             }
         }
     }
