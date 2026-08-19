@@ -42,11 +42,6 @@ struct TeamListView: View {
 
     var body: some View {
         content
-            // DEP-273: the sheet's dismiss (TeamListPickerSheet) renders as a persistent
-            // top-trailing overlay, not a nav-bar toolbar item — because an inline
-            // `.searchable` takes over the whole nav bar when focused and would hide any
-            // toolbar dismiss. Keeping the search inline (not a drawer) matches the web's
-            // NavSwitcher UX; the overlay X stays reachable at every search state.
             .searchable(text: $viewModel.searchText, prompt: "Search teams and players")
             .task { await viewModel.load() }
             .task(id: viewModel.searchText) { await viewModel.searchPlayers() }
@@ -176,13 +171,6 @@ struct TeamListView: View {
             .listStyle(.plain)
             .scrollIndicators(.hidden)
             .scrollContentBackground(.hidden)
-            // DEP-273: SwiftUI's default List separator draws below *every* row regardless
-            // of whether a next row exists, so a search that narrows to one team or player
-            // leaves a stray trailing bar with nothing below it to separate from. The rows
-            // already carry their own `surfaceCard2` background, so a baked-in system
-            // separator is redundant — hide it and let the row background read as the
-            // between-rows rule, matching the app's other lists' explicit-divider language.
-            .listRowSeparator(.hidden)
         } else {
             List {
                 ForEach(divisions, id: \.division) { division in
