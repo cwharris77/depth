@@ -1,5 +1,11 @@
 #include "Base.xcconfig"
 
+// Points Debug builds/tests at the local Supabase CLI instance (`supabase start`,
+// see docs/espn.md) instead of prod — DEP-270. PUBLISHABLE_KEY is Supabase's
+// deterministic local-dev demo key: derived from config.toml's project_id "depth"
+// plus the CLI's default JWT secret, so it's the same value on every machine
+// running `supabase start` against this repo (confirmed stable across restarts via
+// `supabase status`), not a per-developer secret.
 // "/$()/" breaks up "//" so xcconfig's line-comment parser doesn't truncate the URL.
-SUPABASE_URL = https:/$()/jiqoaqmzmvtovimnmbzl.supabase.co
-SUPABASE_PUBLISHABLE_KEY = sb_publishable_JPsqvaeJbAGnX1JzkUGBqA_riP7wR9u
+SUPABASE_URL = http:/$()/127.0.0.1:54321
+SUPABASE_PUBLISHABLE_KEY = sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH
