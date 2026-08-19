@@ -92,6 +92,14 @@ capture_one() {
 
   echo "Building + running PRScreenshotsUITests ($CONFIG, targets: $TARGETS)…" >&2
   ( cd "$wt/ios" && xcodegen generate ) >/dev/null 2>&1
+  # Bake the requested targets into the scheme's TestAction env var (the only channel
+  # that reliably reaches the XCUITest runner — see project.yml's Depth-PRScreenshots
+  # note). The scheme ships with SCREENSHOT_TARGETS=field for CI reproducibility; patch
+  # it to the actual targets here so field/uniform/player all resolve in the runner.
+  ( cd "$wt/ios" && \
+    perl -0777 -pi -e \
+      's#(<EnvironmentVariable\s+key = "SCREENSHOT_TARGETS"\s+value = ")[^"]*(")#${1}'"$TARGETS"'${2}#' \
+      Depth.xcodeproj/xcshareddata/xcschemes/Depth-PRScreenshots.xcscheme )
   rm -rf "$rbund"
   # run from the worktree root so the ios/ paths resolve
   ( cd "$wt" && \

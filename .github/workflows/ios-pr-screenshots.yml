@@ -133,7 +133,17 @@ jobs:
 
       - name: Generate Xcode project from project.yml (base)
         working-directory: ios
-        run: xcodegen generate
+        run: |
+          xcodegen generate
+          # Bake the requested targets into the scheme's TestAction env var — the only
+          # channel that reliably reaches the XCUITest runner (project.yml's
+          # Depth-PRScreenshots note). The scheme ships with SCREENSHOT_TARGETS=field for
+          # CI reproducibility; patch it to the actual targets so field/uniform/player
+          # all resolve in the runner.
+          perl -0777 -pi -e \
+            's#(<EnvironmentVariable\s+key = "SCREENSHOT_TARGETS"\s+value = ")[^"]*(")#$1${{ steps.targets.outputs.targets }}${2}#' \
+            Depth.xcodeproj/xcshareddata/xcschemes/Depth-PRScreenshots.xcscheme
+          grep 'SCREENSHOT_TARGETS' Depth.xcodeproj/xcshareddata/xcschemes/Depth-PRScreenshots.xcscheme
 
       - name: Run PR screenshot capture (base / before)
         working-directory: ios
@@ -173,7 +183,14 @@ jobs:
 
       - name: Generate Xcode project from project.yml (head)
         working-directory: ios
-        run: xcodegen generate
+        run: |
+          xcodegen generate
+          # Same target-baking perl patch as the base capture (see the base generate
+          # step note).
+          perl -0777 -pi -e \
+            's#(<EnvironmentVariable\s+key = "SCREENSHOT_TARGETS"\s+value = ")[^"]*(")#$1${{ steps.targets.outputs.targets }}${2}#' \
+            Depth.xcodeproj/xcshareddata/xcschemes/Depth-PRScreenshots.xcscheme
+          grep 'SCREENSHOT_TARGETS' Depth.xcodeproj/xcshareddata/xcschemes/Depth-PRScreenshots.xcscheme
 
       - name: Run PR screenshot capture (head / after)
         working-directory: ios
