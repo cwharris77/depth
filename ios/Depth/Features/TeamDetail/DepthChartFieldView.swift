@@ -143,7 +143,11 @@ struct DepthChartFieldView: View {
             .accessibilityLabel("\(slot.label), \(player.name.isEmpty ? "number \(player.number)" : player.name)")
             .accessibilityHint("Opens player detail")
             .accessibilityIdentifier("player-slot-\(slot.key)")
-        } else {
+        } else if unit == .special {
+            // Web parity gap, deliberately kept: special-team returners are the one case
+            // where "no player" is a real, documented state (KR/PR "unfilled by policy",
+            // see HistoricalRosterMapper) rather than a resolution gap — showing a mark
+            // here is intentional, not a stand-in for a missing player.
             slotDot(
                 label: slot.label,
                 number: nil,
@@ -153,6 +157,13 @@ struct DepthChartFieldView: View {
                 fieldHeight: fieldHeight
             )
             .accessibilityLabel("\(slot.label), unfilled")
+        } else {
+            // Offense/defense: an unresolved slot is a data/formation gap, not a real
+            // "no player" state, so it renders nothing — matching web's DepthChartFieldSurface
+            // (`if (!player) return null`). A "?" placeholder here would look exactly like a
+            // real player circle but do nothing when tapped, which reads as a broken dot
+            // rather than an empty one.
+            EmptyView()
         }
     }
 
