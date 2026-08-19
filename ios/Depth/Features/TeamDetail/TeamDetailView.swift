@@ -187,18 +187,15 @@ struct TeamDetailView: View {
             .toolbar {
                 // DEP-236 + Cooper's flexbox: the nav bar is two independent edges. The
                 // logo anchors far left, untouched (web DepthMark parity); the team pill
-                // anchors far right, pushed by a leading Spacer, so it never shares a
-                // group with the logo. The ROSTER/SCHEDULE/STATS switcher is content-level
+                // anchors far right via the trailing slot so it never shares a group with
+                // the logo. The ROSTER/SCHEDULE/STATS switcher is content-level
                 // sub-navigation and no longer lives here at all (see `content`).
                 ToolbarItem(placement: .topBarLeading) {
                     DepthBrandMark(size: 20)
                         .accessibilityHidden(true)
                 }
-                ToolbarItem(placement: .principal) {
-                    HStack(spacing: 8) {
-                        Spacer(minLength: 0)
-                        teamSwitcherPill
-                    }
+                ToolbarItem(placement: .topBarTrailing) {
+                    teamSwitcherPill
                 }
             }
             .sheet(item: $selectedPlayer) { player in
