@@ -52,6 +52,56 @@ migrations are the schema's source of truth, and generating from local means any
 can regenerate without hosted project access. Commit the regenerated file in the same
 PR as the migration that changed the schema.
 
+`db:types` (and the other local-Postgres commands below) assume a local Supabase
+stack is already up — start it first with `supabase start`; there's no auto-start
+wired into the script.
+
+## Running the app against local Supabase
+
+By default `.env.local.example`'s `SUPABASE_URL`/`SUPABASE_PUBLISHABLE_KEY` point at
+the hosted prod project (`jiqoaqmzmvtovimnmbzl`), so `npm run dev` reads/writes prod
+data unless you point it elsewhere. To run `next dev` fully against a local Supabase
+instance instead (no prod credentials, no risk of a local test touching hosted data):
+
+```bash
+supabase start   # first run pulls Docker images; can take a few minutes
+```
+
+This applies every migration in `supabase/migrations/` and then auto-seeds from
+`supabase/config.toml`'s `[db.seed] sql_paths` — `seed.sql`, `seed-nflverse.sql`,
+`seed-roster-history.sql` in that order (the file's comment explains the FK
+ordering: `seed.sql`'s teams/players must load before the other two, which
+reference them). All three run automatically on both `supabase start` and
+`supabase db reset` — no manual combining or separate step needed.
+
+`supabase start` prints an API URL and keys block, e.g.:
+
+```
+API URL: http://127.0.0.1:54321
+anon key: eyJhbGciOi...
+```
+
+(`supabase status` reprints the same block later.) Copy the local `anon key` — it's
+what `SUPABASE_PUBLISHABLE_KEY`/`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` expect, despite
+the CLI's older "anon key" label. Then in `.env.local`, uncomment the "Local Supabase"
+block in `.env.local.example` (or hand-edit) so it overrides the prod defaults:
+
+```bash
+SUPABASE_URL=http://127.0.0.1:54321
+SUPABASE_PUBLISHABLE_KEY=<anon key from `supabase start`/`supabase status`>
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<same anon key>
+```
+
+Restart `npm run dev` after editing `.env.local` (Next.js only reads env files at
+startup). `SUPABASE_SECRET_KEY` (for `npm run ingest:espn`) has a local equivalent too
+— `supabase status` prints a `service_role key` — but ingesting against local Postgres
+means overwriting your local seed data with a live ESPN pull, which is rarely what you
+want; the checked-in seed files already give you a full local dataset.
+
+Stop the stack with `supabase stop` when done (`supabase stop --no-backup` also drops
+the local DB volume, forcing a fresh `supabase start` re-seed next time).
+
 ## Regenerate
 
 ```bash
@@ -110,7 +160,9 @@ See `.env.local.example`:
 
 - `SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY` — used by the app (`dbRosterSource`) for reads.
   Safe to commit (the example file's values are this project's real anon/publishable
-  key and URL — anon key is public-safe by design).
+  key and URL — anon key is public-safe by design). To read/write local Postgres
+  instead of prod, override these with the local Supabase URL/key — see "Running the
+  app against local Supabase" above.
 - `SUPABASE_SECRET_KEY` — used only by `scripts/ingest-espn.mts` for writes.
   Secret. Never commit; put the real value in your local `.env.local` (gitignored).
 
