@@ -112,8 +112,15 @@ The workflow captures **before** (the PR's base branch) then **after** (the PR h
 sequential on the same GitHub-hosted `macos-latest` runner, booting one **disposable**
 current-flagship iPhone simulator for both — and:
 
-1. Uploads them as a `pr-ios-screenshots` workflow artifact (30-day retention), and
-2. Posts a PR comment linking to the workflow run + artifact.
+1. Uploads the full-res PNGs as a `pr-ios-screenshots` workflow artifact (30-day retention), and
+2. Uploads width-500 JPEG previews to Cloudinary and posts a PR comment that embeds them
+   inline as `![before](...)` / `![after](...)` markdown (external image URLs render in
+   comments; data-URI images do not). Same unsigned-preset upload as the web
+   `/pr-screenshots` skill, under a `pr-ios-screenshots/<repo>/<pr>` folder.
+
+Cloudinary env vars `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_UPLOAD_PRESET` (the non-secret
+unsigned preset from `/setup-pr-screenshots`) must exist as repo secrets for the inline
+embed to work; the artifact download is still posted if they're absent.
 
 Why the dedicated scheme rather than editing the default one: the default scheme's
 `skippedTests` can't be overridden by `-only-testing` (documented friction in
