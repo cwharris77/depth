@@ -74,4 +74,8 @@ enum DepthEnvironment {
     /// The current team's accent, published by DepthChartsTab and read by the root tab
     /// bar for its `.tint` — app chrome adopts team color (web parity: activeColors.uiAccent).
     @MainActor static let currentTeamStore = CurrentTeamStore()
+    /// DEP-251 first-run tutorial state — owns the welcome/coachmark sequence, shared
+    /// between ContentView (mounts the overlay + fires the first-launch trigger) and
+    /// SettingsView ("Take the tour" row).
+    @MainActor static let onboarding = OnboardingController(preferences: preferences)
 }

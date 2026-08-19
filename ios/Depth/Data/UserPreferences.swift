@@ -16,6 +16,7 @@ struct UserPreferences: Sendable {
         static let uniformSelections = "preferences.uniformSelections"
         static let depthOverrides = "preferences.depthOverrides"
         static let depthSeenReorderHint = "preferences.depthSeenReorderHint"
+        static let seenOnboarding = "preferences.seenOnboarding"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -121,6 +122,27 @@ struct UserPreferences: Sendable {
     /// wipes all override/reorder state so reorder UI tests start deterministic).
     func clearReorderHint() {
         defaults.removeObject(forKey: Key.depthSeenReorderHint)
+    }
+
+    // DEP-251: first-run tutorial "seen" flag, same one-time-hint pattern as
+    // seenReorderHint above. OnboardingController checks this once at launch
+    // (startIfNeeded) and sets it the moment the welcome/coachmark flow is skipped or
+    // finished — never on every intermediate step — so a user who backgrounds the app
+    // mid-tour doesn't see it silently reset. Settings' "Take the tour" row bypasses this
+    // flag entirely (OnboardingController.replay()), it only gates the automatic
+    // first-launch trigger.
+    var hasSeenOnboarding: Bool {
+        defaults.bool(forKey: Key.seenOnboarding)
+    }
+
+    func markOnboardingSeen() {
+        defaults.set(true, forKey: Key.seenOnboarding)
+    }
+
+    /// Test-reset hook, same convention as `clearReorderHint()` — UI_TESTING_RESET_STATE
+    /// restores this to its "unseen" default so onboarding UI tests start deterministic.
+    func clearOnboardingSeen() {
+        defaults.removeObject(forKey: Key.seenOnboarding)
     }
 
     private func decode(_ raw: [String: [String]]) -> [Position: [String]] {

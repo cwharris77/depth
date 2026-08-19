@@ -23,6 +23,9 @@ struct SettingsView: View {
     let authService: any DepthAuthServicing
     var events: any AppEventsRecording = NoOpAppEventsRecorder()
     var clearPrivateData: @Sendable () async -> Void = {}
+    /// DEP-251: drives the "Take the tour" row below — replays the first-run welcome +
+    /// coachmark sequence on demand, independent of whether it's already been seen.
+    let onboarding: OnboardingController
 
     @State private var showAuth = false
     @State private var showDeletion = false
@@ -179,6 +182,25 @@ struct SettingsView: View {
                 Divider().overlay(DesignTokens.Colors.borderSubtle)
                 LabeledContent("Version", value: AppBuildInfo.versionAndBuild)
                     .accessibilityIdentifier("settings-about-version")
+                Divider().overlay(DesignTokens.Colors.borderSubtle)
+                // DEP-251: replays the first-run welcome + coachmark sequence — the
+                // ticket's "replayable from Settings" requirement. Independent of the
+                // persisted "seen" flag; this always starts the flow from the top.
+                Button {
+                    onboarding.replay()
+                } label: {
+                    HStack {
+                        Text("Take the Tour")
+                            .foregroundStyle(DesignTokens.Colors.textPrimary)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(DesignTokens.Colors.textFaint)
+                    }
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
+                }
+                .accessibilityIdentifier("settings-take-the-tour")
                 if let url = AppBuildInfo.privacyPolicyURL {
                     Divider().overlay(DesignTokens.Colors.borderSubtle)
                     Link(destination: url) {
