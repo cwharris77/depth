@@ -14,6 +14,24 @@ configFiles:
   Staging: xcconfig/Staging.xcconfig
   Release: xcconfig/Release.xcconfig
 
+# Xcode 26.6's "Update to recommended settings" proposal (DEP-246), applied
+# here instead of via Xcode's "Perform Changes" button so it survives the
+# next `xcodegen generate` rather than getting silently wiped by it.
+attributes:
+  LastUpgradeCheck: '2660'
+
+settings:
+  base:
+    # Cooper's Apple Developer Team ID at the project level so DepthTests/
+    # DepthUITests inherit it too, not just the Depth app target (which
+    # already sets it below). Public identifier, safe to commit.
+    DEVELOPMENT_TEAM: 63JZBB528Q
+    # No Run Script build phases exist in this project, so sandboxing has
+    # nothing to break; no .xcstrings catalog exists yet, so symbol
+    # generation is a no-op until one is added.
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    STRING_CATALOG_GENERATE_SYMBOLS: YES
+
 packages:
   # Exact pin, not `from:` — a reviewed version per the design spec, not an
   # up-to-next-major range that could silently pick up an unreviewed release.
