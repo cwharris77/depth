@@ -177,13 +177,14 @@ jobs:
   test:
     needs: [resolve-devices, build-for-testing]
     runs-on: macos-latest
-    # PR runs stay well under this on the trimmed smoke set, but push-to-main runs the
-    # full DepthUITests target — 15 minutes was too tight and was killing every push
-    # run's `ui` leg mid-suite (confirmed: job duration exactly matched a 15-min
-    # timeout, no intervening push, log was mid-PerformanceUITests when canceled).
-    # Matches the original pre-split single job's budget now that build is a separate
-    # job with its own 25-minute allowance.
-    timeout-minutes: 30
+    # push-to-main runs the full DepthUITests target, not the trimmed PR smoke set —
+    # 15 minutes flat was too tight for it and was killing every push run's `ui` leg
+    # mid-suite (confirmed: job duration exactly matched a 15-min timeout, no
+    # intervening push, log was mid-PerformanceUITests when canceled). 30 matches the
+    # original pre-split single job's budget, now that build is a separate job with
+    # its own 25-minute allowance. Kept at 15 for pull_request — the smoke set finishes
+    # in ~11m, and a hung PR run should fail fast for the author, not eat 30 minutes.
+    timeout-minutes: ${{ github.event_name == 'push' && 30 || 15 }}
     strategy:
       fail-fast: false
       matrix:
