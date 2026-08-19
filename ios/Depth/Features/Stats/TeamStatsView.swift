@@ -139,21 +139,14 @@ struct TeamStatsView: View {
     /// that pattern stopped scaling once team_stats ingest landed seasons back to 1999
     /// (~25+ entries no longer fit a swipeable strip).
     private var seasonPickerTrigger: some View {
-        Button {
+        SeasonPickerTrigger(
+            season: viewModel.selectedSeason,
+            accent: uiAccent,
+            identifier: "stats-season-trigger"
+        ) {
             showSeasonPicker = true
-        } label: {
-            HStack(spacing: 4) {
-                Text(viewModel.selectedSeason.map { "\($0) SEASON" } ?? "SEASON")
-                    .font(.caption.bold())
-                    .tracking(0.1)
-                Image(systemName: "chevron.down")
-                    .font(.caption2.bold())
-            }
-            .foregroundStyle(uiAccent)
         }
         .padding(.horizontal, DesignTokens.Spacing.md)
-        .frame(minHeight: 44)
-        .accessibilityIdentifier("stats-season-trigger")
     }
 
     private var seasonPickerItems: [SeasonPickerItem] {

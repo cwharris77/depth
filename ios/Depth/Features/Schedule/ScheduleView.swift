@@ -118,20 +118,13 @@ struct ScheduleView: View {
     }
 
     private var seasonPicker: some View {
-        Button {
+        SeasonPickerTrigger(
+            season: viewModel.selectedSeason,
+            accent: uiAccent,
+            identifier: "schedule-season-trigger"
+        ) {
             showSeasonPicker = true
-        } label: {
-            HStack(spacing: 4) {
-                Text(viewModel.selectedSeason.map { "\($0) SEASON" } ?? "SEASON")
-                    .font(.caption.bold())
-                    .tracking(0.1)
-                Image(systemName: "chevron.down")
-                    .font(.caption2.bold())
-            }
-            .foregroundStyle(uiAccent)
         }
-        .frame(minHeight: 44)
-        .accessibilityIdentifier("schedule-season-trigger")
     }
 }
 
