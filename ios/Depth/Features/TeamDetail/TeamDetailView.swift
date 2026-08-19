@@ -23,6 +23,13 @@ struct TeamDetailView: View {
     /// section) into the nav-bar trailing slot DEP-236 freed.
     @State private var showAccount = false
     @State private var selectedUniformID: String?
+    /// The kit currently being live-previewed while the picker is open (DEP-256 follow-
+    /// up): swiping the carousel recolors the field via this, not `selectedUniformID`,
+    /// so browsing kits never touches the persisted pick. Committed into
+    /// `selectedUniformID` (and `UserPreferences`) only when the sheet's `onDismiss`
+    /// fires — the bug this avoids is web's UniformSheet, which persists on every drag
+    /// settle instead of on close.
+    @State private var previewUniformID: String?
     /// The user's chosen real formation for the active unit (web's `activeFormation`, an
     /// ephemeral pick — not persisted, not in the URL). nil means "use the unit's top
     /// formation as the default"; reset to nil on unit change so switching units always
@@ -92,9 +99,11 @@ struct TeamDetailView: View {
     }
 
     /// The selected uniform's palette recolors the field dots (web's kit selection);
-    /// nil keeps the team's own colors. Resolved from the persisted per-team uniform id.
+    /// nil keeps the team's own colors. Prefers the live-previewed kit (while the picker
+    /// is open) over the committed/persisted one, so swiping the carousel recolors the
+    /// field immediately without touching the saved pick.
     private var fieldColors: TeamColors? {
-        guard let id = selectedUniformID,
+        guard let id = previewUniformID ?? selectedUniformID,
               let uniform = displayedSnapshot?.uniforms.first(where: { $0.id == id }) else {
             return nil
         }
@@ -258,14 +267,29 @@ struct TeamDetailView: View {
                     historyViewModel.selectImmediately(season)
                 }
             }
-            .sheet(isPresented: $showUniformPicker) {
+            .sheet(
+                isPresented: $showUniformPicker,
+                onDismiss: {
+                    // Commit exactly once, however the sheet closed (X button or
+                    // swipe-down) — see `previewUniformID`'s doc comment.
+                    if let previewUniformID {
+                        selectedUniformID = previewUniformID
+                        preferences.setUniformSelection(previewUniformID, for: viewModel.teamId)
+                    }
+                    previewUniformID = nil
+                }
+            ) {
                 UniformPickerSheet(
                     uniforms: displayedSnapshot?.uniforms ?? [],
                     selectedID: selectedUniformID
                 ) { uniformID in
-                    selectedUniformID = uniformID
-                    preferences.setUniformSelection(uniformID, for: viewModel.teamId)
+                    previewUniformID = uniformID
                 }
+                // Jersey-only cards are short — a full-height sheet left a wall of empty
+                // space below the page dots. `.medium` keeps the picker compact like
+                // FormationsSheetView below; still draggable up to `.large` for a11y
+                // text-size growth.
+                .presentationDetents([.medium, .large])
             }
             .sheet(isPresented: $showFormations) {
                 FormationsSheetView(
