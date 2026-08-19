@@ -102,6 +102,14 @@ want; the checked-in seed files already give you a full local dataset.
 Stop the stack with `supabase stop` when done (`supabase stop --no-backup` also drops
 the local DB volume, forcing a fresh `supabase start` re-seed next time).
 
+**iOS**: unlike web, native Debug builds/tests point at local Supabase by default —
+`ios/xcconfig/Debug.xcconfig` bakes in `http://127.0.0.1:54321` and the CLI's
+deterministic local publishable key (same value on every machine, derived from
+`supabase/config.toml`'s `project_id` + the CLI's default JWT secret — not a
+per-developer secret). Run `supabase start` before building/testing the app in
+Xcode/Simulator, same as web. `ios/xcconfig/Staging.xcconfig` still points at prod
+(`TODO(DEP-40 Lane B)`) until a hosted staging Supabase project exists.
+
 ## Regenerate
 
 ```bash
