@@ -102,8 +102,11 @@ On a PR, the repo owner or a collaborator writes a comment:
 - `/ios-screenshots` — captures the default `field` target
 - `/ios-screenshots field,uniform` — captures those two
 
-The workflow passes the targets to the test runner as a `SCREENSHOT_TARGETS` process
-environment variable (which `xcodebuild test` propagates reliably).
+The workflow passes the targets to the test runner by baking `SCREENSHOT_TARGETS` into the
+scheme's TestAction environment variable (via `xcodegen generate` + a `perl` patch on the
+generated `Depth-PRScreenshots.xcscheme`) — the only channel that reliably reaches the
+XCUITest runner. Passing it as a plain process env var to `xcodebuild test` does NOT
+reach the runner (DEP-280), so the scheme env is the transport.
 
 The workflow captures **before** (the PR's base branch) then **after** (the PR head) —
 sequential on the same GitHub-hosted `macos-latest` runner, booting one **disposable**
