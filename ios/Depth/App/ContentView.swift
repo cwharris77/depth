@@ -7,14 +7,42 @@ struct ContentView: View {
     @State private var updateGate = UpdateGateViewModel(repository: DepthEnvironment.repository)
     @State private var authSessionStore = DepthEnvironment.authSessionStore
     @State private var currentTeamStore = DepthEnvironment.currentTeamStore
+    /// DEP-251 first-run tutorial: owns the welcome/coachmark sequence. Mounted here
+    /// (not lower in the tree) because the coachmark overlay has to sit above every
+    /// tab's content, and the welcome screen has to cover the whole app, not just one
+    /// tab's stack.
+    @State private var onboarding = DepthEnvironment.onboarding
+    /// Mirrors `onboarding.phase == .welcome`, synced by the `.onChange` below. A
+    /// `Binding` computed directly from an `@Observable` property doesn't reliably
+    /// re-trigger `.fullScreenCover`'s presentation (its `get` closure runs outside the
+    /// tracked-property access SwiftUI's observation needs to know to re-render this
+    /// view when `phase` changes) — a real `@State` bool kept in sync via `.onChange`
+    /// is the reliable pattern.
+    @State private var isWelcomeShowing = false
 
     var body: some View {
         Group {
             if updateGate.isBlocked {
                 BlockingUpdateView()
             } else {
-                RootTabView(sessionStore: authSessionStore, currentTeamStore: currentTeamStore)
+                RootTabView(sessionStore: authSessionStore, currentTeamStore: currentTeamStore, onboarding: onboarding)
+                    // Mounted at the tab-bar's own level (not further up, past
+                    // `.preferredColorScheme`/`.task` below) so `.coachmarkAnchor` tags
+                    // registered anywhere inside any tab's content still resolve —
+                    // SwiftUI preferences only bubble up through the view tree they're
+                    // attached to, and BlockingUpdateView's branch above never mounts
+                    // any tagged view anyway.
+                    .coachmarkOverlay { anchors, proxy in
+                        CoachmarkOverlayView(controller: onboarding, anchors: anchors, proxy: proxy)
+                    }
             }
+        }
+        .fullScreenCover(isPresented: $isWelcomeShowing) {
+            WelcomeView(controller: onboarding)
+                .modifier(UITestingDynamicTypeOverride())
+        }
+        .onChange(of: onboarding.phase, initial: true) { _, phase in
+            isWelcomeShowing = phase == .welcome
         }
         // The app is always dark, same as the website (2026-08-15 visual-pass spec,
         // locked decision #1: "Always dark, not adaptive"). Flipping the scheme here at
@@ -39,6 +67,13 @@ struct ContentView: View {
                 try? await authSessionStore.signOut()
             }
             await updateGate.check()
+            // DEP-251: fires after the update gate resolves so a blocked build never
+            // shows the welcome screen underneath/behind BlockingUpdateView. No-op on
+            // every launch after the first (or once the tutorial's been skipped or
+            // finished) — see OnboardingController.startIfNeeded.
+            if !updateGate.isBlocked {
+                onboarding.startIfNeeded()
+            }
         }
         .modifier(UITestingDynamicTypeOverride())
     }

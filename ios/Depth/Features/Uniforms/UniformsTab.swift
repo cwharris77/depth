@@ -31,7 +31,8 @@ struct UniformsTab: View {
                     SettingsView(
                         sessionStore: DepthEnvironment.authSessionStore,
                         authService: DepthEnvironment.authService,
-                        events: DepthEnvironment.appEvents
+                        events: DepthEnvironment.appEvents,
+                        onboarding: DepthEnvironment.onboarding
                     )
                 }
         }
