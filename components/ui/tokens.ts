@@ -7,38 +7,44 @@
 // tokens/colors.css in the Depth Design System (claude.ai/design project df062d5f), which was
 // reverse-extracted from this same codebase — code here remains the ground truth.
 export const colors = {
-  bg: '#0a0e1a',
-  bgFilterbar: '#0d1220',
-  bgDrawer: '#0d1320',
+  // DEP-272: bg/accent and every navy-derived surface below used to resolve to the
+  // Seahawks' literal brand hexes (#0a0e1a was Seahawks onAccent, #69BE28 is Seahawks
+  // uiAccent, and the old navy surfaces were Seahawks primary #002244) despite this
+  // palette being documented as app-wide/never-team-specific. Replaced with a neutral
+  // charcoal + muted steel-blue pair (Cooper's pick, DEP-272) that isn't any of the 32
+  // teams' uiAccent — see the ticket for the contrast/collision evidence.
+  bg: '#15161a',
+  bgFilterbar: '#181a20',
+  bgDrawer: '#191b22',
   textPrimary: '#f0f4ff',
   textSecondary: '#dfe5f0',
   textMuted: '#A5ACAF',
   textFaint: '#7d848c',
   textFaintest: '#5a616a',
-  accent: '#69BE28',
-  onAccent: '#0a0e1a',
+  accent: '#6E8CAE',
+  onAccent: '#15161a',
   danger: '#ff6b6b',
   dangerOn: '#2a0e0e',
-  surfaceCard: '#0f1623',
+  surfaceCard: '#1a1e23',
   surfaceCard2: 'rgba(255,255,255,0.03)',
-  panelGradient: 'linear-gradient(180deg, #0f1a2e 0%, #0a0e1a 100%)',
+  panelGradient: 'linear-gradient(180deg, #1c1e24 0%, #15161a 100%)',
   surfaceRaised: 'rgba(255,255,255,0.05)', // faint raised fill (rows, subtle cards)
   surfaceInput: 'rgba(255,255,255,0.06)',
   surfaceChip: 'rgba(255,255,255,0.07)',
   surfaceChipHover: 'rgba(255,255,255,0.12)',
-  surfaceNavy: 'rgba(0,34,68,0.8)',
-  surfaceMenu: '#161c2c', // opaque popover/menu background (field overflow menu)
+  surfaceNavy: 'rgba(30,32,38,0.8)', // neutral slate — no longer literally navy, name kept to avoid a call-site rename
+  surfaceMenu: '#212434', // opaque popover/menu background (field overflow menu)
   borderSubtle: 'rgba(255,255,255,0.06)',
   borderDefault: 'rgba(255,255,255,0.08)',
   borderStrong: 'rgba(255,255,255,0.10)', // heavier hairline (menu edge, dividers)
   borderInput: 'rgba(255,255,255,0.14)',
-  borderDrawer: '#222b3d',
+  borderDrawer: '#2d333d',
   statusBackup: '#A5ACAF',
   statusRookie: '#4fc3f7',
   statusInjured: '#ef5350',
   scrim: 'rgba(0,0,0,0.6)',
   scrimLight: 'rgba(0,0,0,0.5)',
-  focusRing: 'rgba(105,190,40,0.3)',
+  focusRing: 'rgba(110,140,174,0.3)',
   shadowThumb: '0 1px 2px rgba(0,0,0,0.35), 0 1px 1px rgba(0,0,0,0.2)', // Toggle's raised thumb
 } as const;
 
