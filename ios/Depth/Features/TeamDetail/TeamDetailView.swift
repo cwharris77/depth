@@ -324,6 +324,30 @@ struct TeamDetailView: View {
         .accessibilityIdentifier("page-switcher")
     }
 
+    /// Web parity (components/ui/ActionChip.tsx as used by FieldHeader.tsx): an
+    /// accent-outlined pill, same visual language as `teamSwitcherPill`'s ring treatment
+    /// but team-accent rather than team-primary since this is an interactive control, not
+    /// a brand surface (AGENTS.md invariant 4).
+    private var customOrderChip: some View {
+        Button(action: resetAllOverrides) {
+            HStack(spacing: 6) {
+                Image(systemName: "arrow.counterclockwise")
+                    .font(.caption2.weight(.bold))
+                Text("Custom order · Reset all")
+                    .font(.caption.weight(.semibold))
+            }
+            .foregroundStyle(teamAccentColor)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Capsule().fill(teamAccentColor.opacity(0.12)))
+            .overlay {
+                Capsule().strokeBorder(teamAccentColor.opacity(0.4), lineWidth: 1)
+            }
+        }
+        .frame(minHeight: 44)
+        .accessibilityIdentifier("custom-order-reset-all")
+    }
+
     /// Web parity (components/FieldHeaderMenu.tsx): actions beyond the page switcher's
     /// tabs live behind a single ••• overflow menu. DEP-230 correction: this used to
     /// live in the nav-bar toolbar, a different row than the unit tabs it belongs
@@ -398,8 +422,16 @@ struct TeamDetailView: View {
             // Icon-only — a "•••" overflow glyph is self-explanatory; a trailing
             // "More" label is redundant text (Cooper's round-5 feedback).
             Image(systemName: "ellipsis")
+                // `.frame(minWidth:minHeight:)` alone pads the *layout* box, not the
+                // hit-testable one — a bare icon with no fill only registers taps on
+                // its glyph, well under the 44pt minimum (the touch-target bug). This
+                // is the same fix PlayerDot already carries for the field dots
+                // (DepthChartFieldView's `.frame` + `.contentShape` pair) — apply it
+                // here too so every tap inside the 44×44 box, not just the glyph
+                // itself, opens the menu.
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
         }
-        .frame(minWidth: 44, minHeight: 44)
         .accessibilityLabel("More")
         .accessibilityIdentifier("depth-chart-overflow")
     }
@@ -529,6 +561,15 @@ struct TeamDetailView: View {
                     .padding(.horizontal)
                     .overlay(alignment: .bottom) {
                         Rectangle().fill(DesignTokens.Colors.borderDefault).frame(height: 1)
+                    }
+
+                    // Web parity (FieldHeader.tsx's "Custom order · Reset all" chip): tells
+                    // the user this team's depth is their own edited order, with one-tap
+                    // revert. Hidden for a past season, same as web (neither order is
+                    // theirs to reset).
+                    if !historical && !confirmedOrders.isEmpty {
+                        customOrderChip
+                            .padding(.horizontal)
                     }
 
                     DepthChartFieldView(
@@ -673,6 +714,17 @@ struct TeamDetailView: View {
         )
         Task {
             try? await writer.clear(teamId: viewModel.teamId, position: position.rawValue)
+        }
+    }
+
+    // Web parity (FieldHeader.tsx's "Custom order · Reset all" chip / handleResetTeam):
+    // clears every overridden position at once. Reuses resetPosition per-position rather
+    // than a bulk server call — DepthOverrideWriting only exposes a per-position clear,
+    // and this keeps the local/remote sync path identical to the single-position Reset
+    // button in PlayerDetailView.
+    private func resetAllOverrides() {
+        for position in Array(confirmedOrders.keys) {
+            resetPosition(position)
         }
     }
 }
