@@ -46,8 +46,8 @@ actor SupabaseDepthOverrideService: DepthOverrideServicing {
                     Position(rawValue: row.position).map { ($0, row.playerIds) }
                 }
             )
-        } catch is URLError {
-            throw DepthError.offline
+        } catch let error as URLError {
+            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server(error.localizedDescription)
         } catch let error as PostgrestError {
             throw Self.map(error)
         } catch {
@@ -81,8 +81,8 @@ actor SupabaseDepthOverrideService: DepthOverrideServicing {
                 byTeam[row.teamId, default: [:]][position] = row.playerIds
             }
             return byTeam
-        } catch is URLError {
-            throw DepthError.offline
+        } catch let error as URLError {
+            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server(error.localizedDescription)
         } catch let error as PostgrestError {
             throw Self.map(error)
         } catch {
@@ -108,8 +108,8 @@ actor SupabaseDepthOverrideService: DepthOverrideServicing {
                 "upsert_depth_override_group",
                 params: Parameters(teamId: teamId, position: position, playerIds: playerIds)
             ).execute()
-        } catch is URLError {
-            throw DepthError.offline
+        } catch let error as URLError {
+            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server(error.localizedDescription)
         } catch let error as PostgrestError {
             throw Self.map(error)
         } catch {
@@ -127,8 +127,8 @@ actor SupabaseDepthOverrideService: DepthOverrideServicing {
                 .eq("team_id", value: teamId)
                 .eq("position", value: position)
                 .execute()
-        } catch is URLError {
-            throw DepthError.offline
+        } catch let error as URLError {
+            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server(error.localizedDescription)
         } catch let error as PostgrestError {
             throw Self.map(error)
         } catch {

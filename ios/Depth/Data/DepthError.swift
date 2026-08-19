@@ -13,6 +13,23 @@ enum DepthError: Error, Equatable {
     case decoding(String)
 }
 
+// A URLError from the Supabase client is only a real "offline" condition for a few
+// codes — the internet connection itself is gone (airplane mode, Wi-Fi with no service,
+// cellular data disabled). Everything else (wrong address, connection refused, ATS
+// block, timeout, task cancelled) means the user IS online but the request couldn't
+// complete against that server — a server error, never a claim that their internet is
+// down. This is the single source of truth for every service's URLError mapping.
+extension URLError {
+    var isNetworkUnavailable: Bool {
+        switch code {
+        case .notConnectedToInternet, .networkConnectionLost, .dataNotAllowed:
+            return true
+        default:
+            return false
+        }
+    }
+}
+
 // One mapper producing user-facing recovery copy per case (design spec's "Data and
 // state contract": "One mapper produces specific user recovery states"). Never surfaces
 // the raw associated-value diagnostic string to users — that's for os.Logger only.
