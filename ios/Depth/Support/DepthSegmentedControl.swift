@@ -54,9 +54,9 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .frame(maxWidth: fullWidth ? .infinity : nil)
-                        .background(isActive ? activeColor : Color.clear, in: RoundedRectangle(cornerRadius: 12))
+                        .background(isActive ? activeColor : Color.clear, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
                         .overlay {
-                            RoundedRectangle(cornerRadius: 12)
+                            RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
                                 .strokeBorder(
                                     isActive ? activeTextColor.opacity(0.40) : Color.clear,
                                     lineWidth: 1
@@ -70,6 +70,6 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
         }
         .frame(maxWidth: fullWidth ? .infinity : nil)
         .padding(4)
-        .background(DesignTokens.Colors.surfaceChip, in: RoundedRectangle(cornerRadius: 16))
+        .background(DesignTokens.Colors.surfaceChip, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
     }
 }
