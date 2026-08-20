@@ -26,9 +26,10 @@ settings:
     # DepthUITests inherit it too, not just the Depth app target (which
     # already sets it below). Public identifier, safe to commit.
     DEVELOPMENT_TEAM: 63JZBB528Q
-    # No Run Script build phases exist in this project, so sandboxing has
-    # nothing to break; no .xcstrings catalog exists yet, so symbol
-    # generation is a no-op until one is added.
+    # The Depth target's build-number Run Script phase only touches files under
+    # SRCROOT/TARGET_BUILD_DIR and invokes git/PlistBuddy, both compatible with
+    # sandboxing; no .xcstrings catalog exists yet, so symbol generation is a
+    # no-op until one is added.
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     STRING_CATALOG_GENERATE_SYMBOLS: YES
 
@@ -56,7 +57,11 @@ targets:
     info:
       path: Depth/Info.plist
       properties:
-        CFBundleDisplayName: Depth
+        CFBundleDisplayName: The Sticks
+        CFBundleShortVersionString: '1.0'
+        # Baseline for Debug/Staging runs; the archive-only postbuildScripts phase below
+        # overwrites this with the git commit count for every App Store/TestFlight build.
+        CFBundleVersion: '1'
         # Native launch screen (DEP-160): a launch storyboard — the #0A0E1A background
         # (LaunchBackground color set) with the depth mark centered on it. Storyboard
         # rather than UILaunchScreen.UIImageName: the plist image key does not render on
@@ -83,6 +88,18 @@ targets:
         # public identifier (not a credential), so it's safe to commit; XcodeGen keeps the
         # regenerated project in sync with this, so the CI project-sync check stays green.
         DEVELOPMENT_TEAM: 63JZBB528Q
+    postbuildScripts:
+      # Auto-bumps CFBundleVersion for App Store/TestFlight uploads so it never has to be
+      # hand-edited in project.yml again. `runOnlyWhenInstalling` ties this to Archive
+      # builds only (Debug/Staging runs skip it); git commit count is monotonic and unique
+      # per commit, so every archive from a new commit gets a higher build number.
+      - name: Auto-increment build number (archive only)
+        runOnlyWhenInstalling: true
+        basedOnDependencyAnalysis: false
+        script: |
+          set -e
+          buildNumber=$(git -C "${SRCROOT}" rev-list --count HEAD)
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $buildNumber" "${TARGET_BUILD_DIR}/${INFOPLIST_PATH}"
     dependencies:
       - package: Supabase
         product: Supabase
