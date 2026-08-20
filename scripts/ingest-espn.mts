@@ -20,9 +20,15 @@ import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/utils/env';
 dotenv.config({ path: '.env.local' });
 import { toCoach, toDepthChartRows, toTeamRoster, type Coach } from '@/lib/espn/transform';
 import { buildSeedSql, type SeedEntry } from '@/lib/espn/seed-sql';
-import { parseStandings, parseTeamStats, type EspnStandings } from '@/lib/espn/standings';
+import {
+  parseStandings,
+  parseTeamStats,
+  ESPN_TEAM_STATS_SEASONS_MIN,
+  type EspnStandings,
+} from '@/lib/espn/standings';
 import { reconcileHomeUniforms } from '@/lib/uniforms/reconcile-db';
 import { TEAMS } from '@/lib/teams/index';
+import { parseSeasonsArg } from '@/lib/nflverse/seasons-arg';
 import type { EspnDepthcharts, EspnRoster, EspnTeamInfo } from '@/lib/espn/types';
 import type { TeamRoster, TeamStats } from '@/lib/types';
 import type { Database } from '@/lib/database.types';
@@ -51,6 +57,23 @@ async function getJson<T>(url: string, attempts = 3): Promise<T> {
     }
   }
   throw lastError;
+}
+
+// A full --seasons backfill can be 20+ standings calls (2002-latest); firing them all
+// via one Promise.all hits ESPN's unofficial API with that many near-simultaneous
+// requests, risking throttling mid-backfill (2026-08-19-espn-full-history-team-stats-
+// design.md). Chunk into small concurrent batches instead -- still fast, far gentler.
+const STANDINGS_FETCH_CHUNK_SIZE = 4;
+async function fetchStandingsInChunks(seasons: number[]): Promise<EspnStandings[]> {
+  const results: EspnStandings[] = [];
+  for (let i = 0; i < seasons.length; i += STANDINGS_FETCH_CHUNK_SIZE) {
+    const chunk = seasons.slice(i, i + STANDINGS_FETCH_CHUNK_SIZE);
+    const chunkResults = await Promise.all(
+      chunk.map((y) => getJson<EspnStandings>(`${STANDINGS}&season=${y}`))
+    );
+    results.push(...chunkResults);
+  }
+  return results;
 }
 
 async function espnTeamIndex(): Promise<Map<string, EspnTeamInfo>> {
@@ -88,20 +111,35 @@ async function main() {
   const divisions = parseStandings(standingsJson);
 
   // Multi-season team stats (docs/superpowers/specs/2026-07-14-multi-season-team-stats-
-  // design.md): the unparameterized fetch's own entries tell us the latest season `Y`
-  // (embedded per-division, not the top-level document field -- see standings.ts), then
-  // two more explicit `?season=` fetches cover the prior two years. All three merge into
+  // design.md, extended by 2026-08-19-espn-full-history-team-stats-design.md): the
+  // unparameterized fetch's own entries tell us the latest season `Y` (embedded
+  // per-division, not the top-level document field -- see standings.ts). Unflagged runs
+  // (the daily job) then fetch just the prior season -- this + last season, narrowed
+  // from the original 3-season default now that the job runs daily instead of weekly
+  // (2026-08-19-espn-full-history-team-stats-design.md). A `--seasons` backfill instead
+  // fetches every OTHER season in the requested range (the unparameterized call already
+  // covers the latest one) in small chunks, not one giant Promise.all. All merge into
   // one ESPN-team-id -> TeamStats[] map.
   const currentSeasonStats = parseTeamStats(standingsJson);
   const latestSeason = [...currentSeasonStats.values()][0]?.season ?? null;
-  const priorSeasonsJson =
+
+  const seasonsArg = parseSeasonsArg(process.argv.slice(2));
+  if (seasonsArg !== null) {
+    const outOfRange = seasonsArg.filter((s) => s < ESPN_TEAM_STATS_SEASONS_MIN);
+    if (outOfRange.length) {
+      throw new Error(
+        `--seasons includes years before ${ESPN_TEAM_STATS_SEASONS_MIN} (ESPN's verified floor): ${outOfRange.join(', ')}`
+      );
+    }
+  }
+
+  const priorSeasons =
     latestSeason === null
       ? []
-      : await Promise.all(
-          [latestSeason - 1, latestSeason - 2].map((y) =>
-            getJson<EspnStandings>(`${STANDINGS}&season=${y}`)
-          )
-        );
+      : seasonsArg !== null
+        ? seasonsArg.filter((y) => y !== latestSeason)
+        : [latestSeason - 1];
+  const priorSeasonsJson = await fetchStandingsInChunks(priorSeasons);
   const teamStatsByEspnId = new Map<string, TeamStats[]>();
   for (const seasonMap of [currentSeasonStats, ...priorSeasonsJson.map(parseTeamStats)]) {
     for (const [id, stats] of seasonMap) {

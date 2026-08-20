@@ -27,7 +27,7 @@ scaffolding with their own specs.
   knownPlayerIds, opts?)`: pure join + numeric coercion (`''` -> `null`, else
   `Number(...)`, `NaN` -> `null`). A stats row whose `gsis_id` has no crosswalk match is
   always **skipped and counted** rather than guessed. With `opts.requireCurrentRoster`
-  (default `true`, the weekly job's behavior), a row whose crosswalked `espn_id` isn't
+  (default `true`, the daily job's behavior), a row whose crosswalked `espn_id` isn't
   in `knownPlayerIds` (not on a current roster) is skipped too; a `--seasons` backfill
   run passes `requireCurrentRoster: false` to accept any crosswalk match regardless of
   `players` membership (vault spec
@@ -65,7 +65,7 @@ scaffolding with their own specs.
   older rows aren't counted as skipped (skipped means malformed, not out-of-range).
 - `lib/nflverse/seasons-arg.ts` — `parseSeasonsArg(argv)`: pure parse of the `--seasons`
   CLI flag (`--seasons 1999-2025` a range, `--seasons 2013` one year, no flag -> `null`
-  meaning "the weekly job's default"). Shared by `scripts/ingest-nflverse-rosters.mts`
+  meaning "the daily job's default"). Shared by `scripts/ingest-nflverse-rosters.mts`
   and `scripts/ingest-nflverse.mts`'s games/schedules step.
 - `lib/schedule.ts` — `resolveSchedule(games, teamId)` (regular-season, this-team's
   perspective: home/away, opponent id, W/L/T or null-when-upcoming, ordered by week, BYE
@@ -74,7 +74,7 @@ scaffolding with their own specs.
 - `scripts/ingest-nflverse.mts` — fetches `players.csv` once, then `stats_player_reg_
   <season>.csv` for each season in scope, transforms, and upserts `player_stats`
   (`onConflict: player_id,season,season_type`). With no flag: **current + previous
-  season only**, current-roster gate (`requireCurrentRoster: true`, the weekly job's
+  season only**, current-roster gate (`requireCurrentRoster: true`, the daily job's
   behavior). `npm run ingest:nflverse -- --seasons 1999-2025` widens this to every
   season in the range with `requireCurrentRoster: false` (see the identity note below).
   Then `ingestGames` fetches `nfldata/data/games.csv` (one file, all seasons 1999+) and
@@ -104,7 +104,7 @@ scaffolding with their own specs.
   `../obsidian/Projects/depth/specs/2026-08-13-player-stats-historic-identity-design.md`):
   the FK is dropped (`player_stats_player_id_fkey`) — `player_id` stays an ESPN id, just
   no longer required to exist in `players` — and `toPlayerStatsRows` takes a
-  `requireCurrentRoster` option so the weekly job's current-roster gate stays intact
+  `requireCurrentRoster` option so the daily job's current-roster gate stays intact
   while a `--seasons` backfill run widens it to "any crosswalk match." Games and
   schedules never had this FK (they reference `teams`, not `players`), so they backfilled
   cleanly from the start.
@@ -173,12 +173,12 @@ Same as the ESPN ingest — `npm run db:types` reads **local** Postgres
 
 ## Scheduling (GitHub Actions)
 
-`.github/workflows/ingest-nflverse.yml` mirrors `ingest-espn.yml`: weekly
-(`cron: '0 13 * * 3'`, an hour after the ESPN ingest so the two runs don't interleave in
-`ingestion_runs`), `workflow_dispatch` for manual runs, `STRICT=1` so a partial run
-(some season failed to write) turns the workflow red, and a `concurrency` group so two
-runs never overlap. Same two repo secrets as the ESPN workflow
-(`SUPABASE_URL`, `SUPABASE_SECRET_KEY`).
+`.github/workflows/ingest-nflverse.yml` mirrors `ingest-espn.yml`: daily
+(`cron: '0 21 * * *'`, 1pm PT — an hour after the ESPN ingest's Noon PT so the two runs
+don't interleave in `ingestion_runs`), `workflow_dispatch` for manual runs, `STRICT=1`
+so a partial run (some season failed to write) turns the workflow red, and a
+`concurrency` group so two runs never overlap. Same two repo secrets as the ESPN
+workflow (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`).
 
 A full-range backfill (e.g. `1999-2025`) is a manual `workflow_dispatch` run with the
 `seasons` input, not a terminal command — from the Actions tab, "Run workflow" on
@@ -186,7 +186,7 @@ A full-range backfill (e.g. `1999-2025`) is a manual `workflow_dispatch` run wit
 seasons=1999-2025`. The input is passed as `--seasons` to both steps (`ingest:nflverse`
 and `ingest:rosters` share the range) with prod secrets already wired into the job — no
 `.env.local`, no prod vars on a local machine. Leaving `seasons` empty reproduces the
-scheduled weekly job exactly: `ingest:nflverse` refreshes the current + previous
+scheduled daily job exactly: `ingest:nflverse` refreshes the current + previous
 season, `ingest:rosters` the current season only.
 
 ## License posture

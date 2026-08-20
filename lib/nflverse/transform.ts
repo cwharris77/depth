@@ -2,7 +2,7 @@
 // Pure: no fetch, no DB. Joins each row's gsis_id (nflverse's key) to our players.id
 // (ESPN athlete id) via the crosswalk built in crosswalk.ts, and drops -- with a
 // count, never a guess -- rows whose gsis_id has no crosswalk match at all. With
-// `requireCurrentRoster` (default true, the weekly job's behavior), a crosswalk match
+// `requireCurrentRoster` (default true, the daily job's behavior), a crosswalk match
 // still isn't enough -- the resolved ESPN id must also be in `knownPlayerIds`
 // (`players`, current-roster-scoped). A `--seasons` historic backfill passes
 // `requireCurrentRoster: false` to accept any crosswalk match regardless of `players`
