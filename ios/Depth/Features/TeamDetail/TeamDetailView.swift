@@ -935,6 +935,9 @@ private struct FormationsSheetView: View {
                         .foregroundStyle(accent)
                 }
             }
+            // DEP-281: without this, the trailing Spacer between the formation name
+            // and the pct/checkmark trailing content doesn't register taps.
+            .contentShape(Rectangle())
         }
         .frame(minHeight: 44)
         .accessibilityIdentifier("formation-row")

@@ -90,6 +90,9 @@ struct SeasonPickerSheet: View {
                                 .accessibilityLabel("Selected")
                         }
                     }
+                    // DEP-281: without this, the trailing Spacer between the season
+                    // label and the selected checkmark doesn't register taps.
+                    .contentShape(Rectangle())
                 }
                 .frame(minHeight: 44)
                 .accessibilityIdentifier("\(identifierPrefix)-season-\(item.season)")
