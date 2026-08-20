@@ -52,6 +52,7 @@ targets:
       - path: Depth/Assets.xcassets
       - path: Depth/LaunchScreen.storyboard
       - path: Depth/LaunchMark.png
+      - path: Depth/PrivacyInfo.xcprivacy
     info:
       path: Depth/Info.plist
       properties:
@@ -66,6 +67,10 @@ targets:
           - UIInterfaceOrientationPortrait
         SUPABASE_URL: $(SUPABASE_URL)
         SUPABASE_PUBLISHABLE_KEY: $(SUPABASE_PUBLISHABLE_KEY)
+        # App Store export-compliance question: Depth only uses standard HTTPS (Supabase),
+        # no custom/proprietary encryption, so it's exempt. Setting this avoids the manual
+        # "does your app use encryption" prompt on every App Store Connect upload.
+        ITSAppUsesNonExemptEncryption: false
         # DEP-220 UI-test screenshot harness: the Debug-only UI_TESTING_UNIFORM_ART_BASE_URL
         # override fetches the prerendered uniform thumbs from a local python http.server.
         # ATS permits this loopback cleartext; remote cleartext stays blocked.

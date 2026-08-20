@@ -20,6 +20,26 @@ enum AppBuildInfo {
 
     static var privacyPolicyURL: URL? { URL(string: privacyPolicyURLString) }
 
+    /// The support/feedback contact address — previously an unfilled Gate 0 item (no
+    /// placeholder was invented before a real address existed). Also published on the
+    /// production `/support` page for App Store Connect's Support URL field.
+    static let supportEmail = "cwharris365@gmail.com"
+
+    /// `mailto:` link pre-filled with a subject carrying the version/build, so a report
+    /// sent from the About card always identifies which build it came from without the
+    /// user having to type it. Body is left blank rather than pre-filled with a template
+    /// — most people just start typing over an empty body but tend to leave scaffolding
+    /// untouched, which produces useless reports.
+    static var feedbackMailtoURL: URL? {
+        var components = URLComponents()
+        components.scheme = "mailto"
+        components.path = supportEmail
+        components.queryItems = [
+            URLQueryItem(name: "subject", value: "Depth feedback (\(versionAndBuild))")
+        ]
+        return components.url
+    }
+
     /// Reads the live bundle's version/build. A production `Bundle.main` always has both
     /// keys (Xcode fills them from the target's marketing/build-number settings), but a
     /// missing value still degrades to "—" rather than crashing or showing "nil".
