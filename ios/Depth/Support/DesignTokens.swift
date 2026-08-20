@@ -102,6 +102,25 @@ enum DesignTokens {
         static let screenMargin: CGFloat = md
     }
 
+    /// DEP-276 app-wide radius audit. The ticket's motivating instance
+    /// (`SeasonChipRow.swift:81`, `cornerRadius: 3` on the Stats page's season-chip
+    /// header) no longer exists — DEP-278 replaced that flat chip row with
+    /// `SeasonPickerTrigger`/`SeasonPickerSheet` (`Support/SeasonPicker.swift`), a
+    /// `Capsule()`/`.buttonStyle(.glass)` control with no bare radius literal.
+    ///
+    /// The audit (every `cornerRadius:`/`RoundedRectangle(cornerRadius:)` literal
+    /// under `ios/Depth`, excluding `ShareCardMetrics`'s web-pixel-parity constants
+    /// and `DepthBrandMark`'s fixed logo path, both intentionally outside this scale)
+    /// found 8 more. Two matched an existing step exactly and are snapped here as a
+    /// mechanical DRY fix (`DepthSegmentedControl.swift`'s 12→`sm` and 16→`md`, no new
+    /// token, no design decision). The remaining 6 don't fit `sm`/`md`/`lg`/`full` and
+    /// need a new named step each — per the ticket's escalation boundary (radius-
+    /// hierarchy naming is a design-system decision, not a mechanical fix), those are
+    /// proposed in the PR body pending Cooper's sign-off rather than added here
+    /// speculatively (YAGNI, per this enum's header comment above):
+    /// - skeleton placeholder cells (`PlayerDetailView.swift`, `TeamListView.swift`) — 4pt
+    /// - small icon-badge stroke (`TeamStatsView.swift`'s opponent-abbrev badge) — 8pt
+    /// - decorative accent rail (`UniformsTab.swift`'s per-team gradient bar) — 2pt
     enum Radius {
         static let sm: CGFloat = 12
         /// Matches web's `Card.tsx` (`rounded-3xl`). Also the depth-chart field's and
