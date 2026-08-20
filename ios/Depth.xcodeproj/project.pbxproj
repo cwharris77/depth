@@ -90,6 +90,8 @@
 		91106CA5B3104205E5DC31AE /* NameFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCF617758D4C50F929F0399 /* NameFormat.swift */; };
 		913C59E5B68043454060E5B3 /* TeamStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DC2684A5931092EB633E74B /* TeamStats.swift */; };
 		96EE9CC19DC42FC68DEB9F90 /* TeamListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA198C4CAB3B2E7EFB862E6 /* TeamListViewModel.swift */; };
+		96FB4B9FB4B2264E46677EB4 /* AccountTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5AB202504F3965C8C62D5F8 /* AccountTab.swift */; };
+		9909E89DE38E775D5969B145 /* UniformFilterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5797D0C01507D900A35C148 /* UniformFilterSheet.swift */; };
 		9BABC7039CA491D54D4B1F7F /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211666973EE0946E8D40C189 /* Card.swift */; };
 		9F60A5FF883ED001520157AC /* SettingsAboutAndTimestampTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B86BB6DD9B066ECA8E654F /* SettingsAboutAndTimestampTests.swift */; };
 		A068F82187295FE530D6A4D1 /* DepthTopNavToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B91457A1E9A955B7EC8EBEF /* DepthTopNavToolbar.swift */; };
@@ -263,6 +265,7 @@
 		AFE9E3629D2A8EF20465A2F7 /* AuthUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthUITests.swift; sourceTree = "<group>"; };
 		B14888EF10F7F9A82139F0BD /* DepthChartFieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthChartFieldView.swift; sourceTree = "<group>"; };
 		B363F9AF5C0854305B6E670A /* PlayerCardReorderUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCardReorderUITests.swift; sourceTree = "<group>"; };
+		B5797D0C01507D900A35C148 /* UniformFilterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniformFilterSheet.swift; sourceTree = "<group>"; };
 		B6AEFA01C7AE1138FA0B9741 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		B8FF910E933BD5EBFA34FABB /* TeamListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamListView.swift; sourceTree = "<group>"; };
 		BBA198C4CAB3B2E7EFB862E6 /* TeamListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamListViewModel.swift; sourceTree = "<group>"; };
@@ -468,6 +471,7 @@
 			isa = PBXGroup;
 			children = (
 				17204145C78040EBF5A20FDC /* UniformArchiveViewModel.swift */,
+				B5797D0C01507D900A35C148 /* UniformFilterSheet.swift */,
 				3673307E51066FAF204F5421 /* UniformsTab.swift */,
 			);
 			path = Uniforms;
@@ -893,6 +897,7 @@
 				8776168F92D68DF063EB6EAB /* TeamStatsViewModel.swift in Sources */,
 				8B37305D22C2894A2F233F40 /* TeamSwitcherSheet.swift in Sources */,
 				13C435D8467AB04645A9546A /* UniformArchiveViewModel.swift in Sources */,
+				9909E89DE38E775D5969B145 /* UniformFilterSheet.swift in Sources */,
 				56464A6066B659D24A8B44C9 /* UniformListing.swift in Sources */,
 				F5D79DA9FCE1AA9F62AF18EB /* UniformPickerSheet.swift in Sources */,
 				025FDF15E52586C788266B6A /* UniformsTab.swift in Sources */,
