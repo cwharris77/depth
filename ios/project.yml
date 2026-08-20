@@ -26,10 +26,10 @@ settings:
     # DepthUITests inherit it too, not just the Depth app target (which
     # already sets it below). Public identifier, safe to commit.
     DEVELOPMENT_TEAM: 63JZBB528Q
-    # The Depth target's build-number Run Script phase only touches files under
-    # SRCROOT/TARGET_BUILD_DIR and invokes git/PlistBuddy, both compatible with
-    # sandboxing; no .xcstrings catalog exists yet, so symbol generation is a
-    # no-op until one is added.
+    # DepthTests/DepthUITests have no Run Script build phases, so this project-level
+    # YES has nothing to break for them; the Depth app target overrides it to NO (see
+    # its own comment) because its build-number script needs full filesystem access.
+    # No .xcstrings catalog exists yet, so symbol generation is a no-op until one is added.
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     STRING_CATALOG_GENERATE_SYMBOLS: YES
 
@@ -88,6 +88,13 @@ targets:
         # public identifier (not a credential), so it's safe to commit; XcodeGen keeps the
         # regenerated project in sync with this, so the CI project-sync check stays green.
         DEVELOPMENT_TEAM: 63JZBB528Q
+        # Overrides the project-level YES for this target only. On Archive builds,
+        # BUILT_PRODUCTS_DIR/Depth.app is a symlink into the install location, and
+        # sandbox-exec resolves through it to a path the build-number script's declared
+        # outputFiles never covers — denying the write even though it's declared. The
+        # script only touches local build-time files, not the shipped app, so disabling
+        # sandboxing here has no product-security effect.
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
     postbuildScripts:
       # Auto-bumps CFBundleVersion for App Store/TestFlight uploads so it never has to be
       # hand-edited in project.yml again. `runOnlyWhenInstalling` ties this to Archive
@@ -99,7 +106,12 @@ targets:
         script: |
           set -e
           buildNumber=$(git -C "${SRCROOT}" rev-list --count HEAD)
-          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $buildNumber" "${TARGET_BUILD_DIR}/${INFOPLIST_PATH}"
+          # BUILT_PRODUCTS_DIR, not TARGET_BUILD_DIR: on Archive builds TARGET_BUILD_DIR
+          # points at the install destination, which the processed Info.plist hasn't been
+          # copied to yet at this point in the build phase order (that happens later, in
+          # the Install step) — BUILT_PRODUCTS_DIR is where "Process Info.plist File"
+          # actually wrote it.
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $buildNumber" "${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}"
     dependencies:
       - package: Supabase
         product: Supabase

@@ -791,7 +791,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 			shellPath = /bin/sh;
-			shellScript = "set -e\nbuildNumber=$(git -C \"${SRCROOT}\" rev-list --count HEAD)\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $buildNumber\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n";
+			shellScript = "set -e\nbuildNumber=$(git -C \"${SRCROOT}\" rev-list --count HEAD)\n# BUILT_PRODUCTS_DIR, not TARGET_BUILD_DIR: on Archive builds TARGET_BUILD_DIR\n# points at the install destination, which the processed Info.plist hasn't been\n# copied to yet at this point in the build phase order (that happens later, in\n# the Install step) — BUILT_PRODUCTS_DIR is where \"Process Info.plist File\"\n# actually wrote it.\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $buildNumber\" \"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1051,6 +1051,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = 63JZBB528Q;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Depth/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1067,6 +1068,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = 63JZBB528Q;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Depth/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1266,6 +1268,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = 63JZBB528Q;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Depth/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
