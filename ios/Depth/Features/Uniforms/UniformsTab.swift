@@ -1,14 +1,23 @@
 import SwiftUI
 
 // Tab for the uniform archive (port of the web `/uniforms` page). Mirrors the web's
-// structure: a horizontally-scrollable kind/era/current filter bar, then kits grouped
-// conference → division → team, each kit's full-mannequin WebP thumbnail with its name
-// and years, and the attribution footer. Filters and grouping are pure logic in
-// UniformListing.swift (same rules as lib/uniforms/filter.ts) so the two clients can't
-// drift. A new tab in the root TabView, after Depth Charts and before Compare.
+// structure: kits grouped conference → division → team, each kit's full-mannequin WebP
+// thumbnail with its name and years, and the attribution footer. Filters and grouping
+// are pure logic in UniformListing.swift (same rules as lib/uniforms/filter.ts) so the
+// two clients can't drift. A new tab in the root TabView, after Depth Charts and before
+// Compare.
+//
+// DEP-271: unlike web (which keeps its filter bar inline — a wide viewport has room for
+// scrolling chips + a dropdown), the phone-native surface puts kind/era/current-only
+// filters behind a Filters button that opens UniformFilterSheet, badged with the
+// active-filter count. Lives on the page next to `kitCountSummary` (Cooper review:
+// not in the shared `depthTopNavToolbar` — that's global chrome, filtering is this
+// screen's own content control). See UniformFilterSheet's header for the full design
+// reasoning.
 struct UniformsTab: View {
     @State private var viewModel: UniformArchiveViewModel
     @State private var showAccount = false
+    @State private var showFilterSheet = false
 
     init(repository: DepthRepository) {
         _viewModel = State(initialValue: UniformArchiveViewModel(repository: repository))
@@ -21,7 +30,8 @@ struct UniformsTab: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .background(DesignTokens.Colors.bg)
                 // DEP-252/DEP-277 (Cooper review): shared app-wide top nav — see
-                // `depthTopNavToolbar`. No team pill on this screen.
+                // `depthTopNavToolbar`. No team pill on this screen; the Filters
+                // button lives on the page instead (see `kitCountSummary`).
                 .toolbar {
                     depthTopNavToolbar(teamPill: { EmptyView() }) {
                         showAccount = true
@@ -37,6 +47,53 @@ struct UniformsTab: View {
                 }
         }
         .task { await viewModel.load() }
+        // DEP-271: filters are a live binding into the sheet, so toggling a row there
+        // updates `archiveList` behind it immediately — no separate "Apply" step.
+        .sheet(isPresented: $showFilterSheet) {
+            UniformFilterSheet(
+                filters: Binding(
+                    get: { viewModel.filters },
+                    set: { viewModel.filters = $0 }
+                ),
+                eraOptions: viewModel.eraOptions
+            )
+        }
+    }
+
+    /// The single entry point into filtering (DEP-271), replacing the old scrolling
+    /// chip row + era dropdown. A pill matching the app's chip vocabulary (active fill =
+    /// accent, same as the removed `FilterChip`) rather than a bare toolbar glyph, since
+    /// this is page content, not chrome. The count badge is the only remaining
+    /// always-visible signal of an active filter, so it must never silently disappear
+    /// while a filter is set.
+    private var filterButton: some View {
+        let isActive = viewModel.activeFilterCount > 0
+        return Button {
+            showFilterSheet = true
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "line.3.horizontal.decrease")
+                Text("Filters")
+                if isActive {
+                    Text("\(viewModel.activeFilterCount)")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(isActive ? DesignTokens.Colors.accent : .clear)
+                        .frame(minWidth: 16, minHeight: 16)
+                        .background(DesignTokens.Colors.onAccent, in: Circle())
+                }
+            }
+            .font(isActive ? .caption.weight(.semibold) : .caption)
+            .foregroundStyle(isActive ? DesignTokens.Colors.onAccent : DesignTokens.Colors.textSecondary)
+            .padding(.horizontal, 12)
+            .frame(minHeight: 44)
+            .background(
+                isActive ? DesignTokens.Colors.accent : DesignTokens.Colors.surfaceChip,
+                in: Capsule()
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("uniforms-filter-button")
+        .accessibilityLabel(isActive ? "Filters, \(viewModel.activeFilterCount) active" : "Filters")
     }
 
     @ViewBuilder
@@ -60,8 +117,7 @@ struct UniformsTab: View {
         case .loaded:
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
-                    kitCountSummary
-                    filterBar
+                    summaryRow
                     archiveList
                     attribution
                 }
@@ -71,56 +127,18 @@ struct UniformsTab: View {
         }
     }
 
-    /// Web's "{kits.length} kits · 32 teams" summary (UniformArchive.tsx:88-89) above the
-    /// filter bar. The team count is the league size, not a filtered count — matching web.
-    private var kitCountSummary: some View {
-        let kitCount = viewModel.groups.flatMap(\.teams).flatMap(\.kits).count
-        return Text("\(kitCount) kits · 32 teams")
-            .font(.caption)
-            .foregroundStyle(DesignTokens.Colors.textFaint)
-    }
-
-    /// The horizontally-scrollable filter bar: kind chips, then Current-only toggle and
-    /// era menu — mirroring web's one-scrollable-row filter bar.
-    private var filterBar: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: DesignTokens.Spacing.sm) {
-                ForEach(UniformArchiveKindOption.allCases) { option in
-                    FilterChip(
-                        label: option.label,
-                        isActive: viewModel.filters.kind == option.kind,
-                        action: { viewModel.setKind(option.kind) }
-                    )
-                }
-
-                Rectangle()
-                    .fill(DesignTokens.Colors.borderStrong)
-                    .frame(width: 1, height: 20)
-
-                FilterChip(
-                    label: "Current only",
-                    isActive: viewModel.filters.currentOnly,
-                    action: { viewModel.toggleCurrentOnly() }
-                )
-
-                Menu {
-                    Button("All eras") { viewModel.setEra(nil) }
-                    ForEach(viewModel.eraOptions, id: \.self) { era in
-                        Button(era) { viewModel.setEra(era) }
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Text(viewModel.filters.era ?? "All eras")
-                        Image(systemName: "chevron.down")
-                    }
-                    .font(.caption)
-                    .foregroundStyle(DesignTokens.Colors.textSecondary)
-                    .padding(.horizontal, 12)
-                    .frame(minHeight: 44)
-                    .background(DesignTokens.Colors.surfaceChip, in: Capsule())
-                }
-            }
-            .padding(.vertical, DesignTokens.Spacing.xs)
+    /// Web's "{kits.length} kits · 32 teams" summary (UniformArchive.tsx:88-89) plus the
+    /// DEP-271 Filters entry point, on one row at the top of the scroll content — a
+    /// page-level control (Cooper review), not global chrome. The team count is the
+    /// league size, not a filtered count — matching web.
+    private var summaryRow: some View {
+        HStack {
+            let kitCount = viewModel.groups.flatMap(\.teams).flatMap(\.kits).count
+            Text("\(kitCount) kits · 32 teams")
+                .font(.caption)
+                .foregroundStyle(DesignTokens.Colors.textFaint)
+            Spacer()
+            filterButton
         }
     }
 
@@ -210,33 +228,6 @@ struct UniformsTab: View {
         .font(.caption2)
         .foregroundStyle(DesignTokens.Colors.textFaintest)
         .padding(.top, DesignTokens.Spacing.sm)
-    }
-}
-
-/// One filter pill in the horizontal archive filter bar — the native FillPill
-/// equivalent. Active state is filled with the app accent (web's FilterPill active
-/// treatmenut, active fill = accent, text on onAccent).
-private struct FilterChip: View {
-    let label: String
-    let isActive: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(label)
-                // DEP-267: emphasize the active label, matching Compare's position
-                // chips — the two hand-rolled pills previously disagreed.
-                .font(isActive ? .caption.weight(.semibold) : .caption)
-                .foregroundStyle(isActive ? DesignTokens.Colors.onAccent : DesignTokens.Colors.textSecondary)
-                .padding(.horizontal, 12)
-                .frame(minHeight: 44)
-                .background(
-                    isActive ? DesignTokens.Colors.accent : DesignTokens.Colors.surfaceChip,
-                    in: Capsule()
-                )
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(isActive ? .isSelected : [])
     }
 }
 

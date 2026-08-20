@@ -37,6 +37,15 @@ final class UniformArchiveViewModel {
 
     var kitCount: Int { listings.count }
 
+    /// Count of non-default filters currently applied. Drives the Filters button's
+    /// badge (DEP-271) — now that kind/era/current-only live behind a sheet instead of
+    /// a visible chip row, this is the only surface showing that a filter is active.
+    var activeFilterCount: Int {
+        [filters.kind != nil, filters.era != nil, filters.currentOnly]
+            .filter { $0 }
+            .count
+    }
+
     func load() async {
         loadState = .loading
         do {
@@ -47,18 +56,6 @@ final class UniformArchiveViewModel {
         } catch {
             loadState = .failed(.server("\(error)"))
         }
-    }
-
-    func setKind(_ kind: UniformKind?) {
-        filters.kind = kind
-    }
-
-    func setEra(_ era: String?) {
-        filters.era = era
-    }
-
-    func toggleCurrentOnly() {
-        filters.currentOnly.toggle()
     }
 
     private func matches(_ kit: UniformListing) -> Bool {
