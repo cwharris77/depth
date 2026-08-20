@@ -10,11 +10,18 @@ struct DepthBrandMark: View {
     var body: some View {
         Canvas { context, _ in
             context.scaleBy(x: scale, y: scale)
+            // Canvas can't punch a real transparent hole for the ring's donut cutout, so
+            // this fakes it by painting both the full-frame backdrop and the cutout the
+            // same color as whatever the mark sits on — DesignTokens.Colors.bg, not a
+            // second hardcoded hex, so the two can't drift out of sync with each other
+            // again (they previously did: this was `#0A0E1A`, a stale value from before
+            // the app's bg token moved to `#15161a`, leaving a visibly mismatched square
+            // patch behind the mark in the nav bar).
             let frame = CGRect(x: 0, y: 0, width: 1024, height: 1024)
-            context.fill(Path(frame), with: .color(Color(hex: "#0A0E1A")))
+            context.fill(Path(frame), with: .color(DesignTokens.Colors.bg))
 
             context.fill(circle(center: CGPoint(x: 270, y: 270), radius: 132), with: .color(Color(hex: "#FF6500")))
-            context.fill(circle(center: CGPoint(x: 270, y: 270), radius: 82), with: .color(Color(hex: "#0A0E1A")))
+            context.fill(circle(center: CGPoint(x: 270, y: 270), radius: 82), with: .color(DesignTokens.Colors.bg))
             context.fill(circle(center: CGPoint(x: 270, y: 270), radius: 50), with: .color(Color(hex: "#FF6500")))
 
             var pole = Path()

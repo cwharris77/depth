@@ -272,6 +272,7 @@ final class DepthUITests: XCTestCase {
 
         let trigger = app.buttons["stats-season-trigger"]
         XCTAssertTrue(trigger.waitForExistence(timeout: 10))
+        let currentLabel = trigger.label
         trigger.tap()
 
         // Every team has at least current + prior seasons ingested; select the second
@@ -282,17 +283,29 @@ final class DepthUITests: XCTestCase {
         // numbered rows.
         let rows = app.buttons.matching(NSPredicate(format: "identifier MATCHES 'stats-season-[0-9]+'"))
         XCTAssertGreaterThanOrEqual(rows.count, 2, "the stats picker should offer more than one season row")
-        rows.element(boundBy: 1).tap()
+        let pastRow = rows.element(boundBy: 1)
+        // Row label is "<year>" (or "<year>, selected") — strip the suffix so we can
+        // check the trigger relabels to that same year below.
+        let pastYear = pastRow.label.components(separatedBy: ",").first ?? pastRow.label
+        pastRow.tap()
 
-        let seasonState = app.staticTexts["stats-season-state"]
-        XCTAssertTrue(seasonState.waitForExistence(timeout: 5), "a past season should show its season-state line")
+        // The trigger itself is the only on-screen season indicator (DEP-282 removed the
+        // redundant "<year> season" line that just repeated the trigger's own label) — a
+        // past season relabels the trigger to the picked year.
+        XCTAssertTrue(
+            trigger.waitForLabel(containing: pastYear),
+            "selecting a past season should relabel the trigger to that season"
+        )
 
         trigger.tap()
         let backToCurrent = app.buttons["stats-season-back-to-current"]
         XCTAssertTrue(backToCurrent.waitForExistence(timeout: 5), "a past season should offer Back to current in the sheet toolbar")
         backToCurrent.tap()
 
-        XCTAssertFalse(seasonState.waitForExistence(timeout: 2), "Back to current should leave the past season")
+        XCTAssertTrue(
+            trigger.waitForLabel(containing: currentLabel),
+            "Back to current should relabel the trigger back to the current season"
+        )
     }
 
     /// DEP-278 follow-up: same trigger + SeasonPickerSheet conversion as Stats, applied

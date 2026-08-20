@@ -149,6 +149,11 @@ struct TeamDetailView: View {
             // text. The bar keeps the inline layout for its toolbar items.
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
+            // Compare and Uniforms both set this explicitly (CompareView.swift,
+            // UniformsTab.swift) — this screen (DepthChartsTab's root, the app's actual
+            // launch screen) never did, so it fell through to the system default
+            // (plain black in dark mode) instead of the app's dark-navy bg token.
+            .background(DesignTokens.Colors.bg)
             .task {
                 await viewModel.load()
                 // DEP-219: a cold launch already signed in never fires the
