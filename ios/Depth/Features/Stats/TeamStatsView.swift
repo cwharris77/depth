@@ -103,18 +103,6 @@ struct TeamStatsView: View {
                         // this page's first element is the trigger row, so it needs the
                         // same 16pt inset or it sits flush against the page switcher above.
                         .padding(.top, 16)
-                    // A season-state line, shown only while a past season is selected —
-                    // the trigger button alone doesn't make clear you're off the current
-                    // season. "Back to current" itself now lives in the sheet's toolbar
-                    // (SeasonPickerSheet), reachable from any scroll position in the long
-                    // 1999→present list, rather than a second on-page button here.
-                    if viewModel.isViewingPastSeason, let year = viewModel.selectedSeason {
-                        Text(verbatim: "\(year) season")
-                            .font(.headline)
-                            .accessibilityIdentifier("stats-season-state")
-                            .padding(.horizontal, DesignTokens.Spacing.md)
-                            .padding(.top, DesignTokens.Spacing.sm)
-                    }
                     teamNameBlock(page.team)
                     if let active = viewModel.selectedSeasonStats {
                         heroRecord(active)

@@ -24,17 +24,27 @@ func depthTopNavToolbar<TeamPill: View>(
     @ViewBuilder teamPill: @escaping () -> TeamPill,
     onAccountTap: @escaping () -> Void
 ) -> some ToolbarContent {
-    ToolbarItem(placement: .topBarLeading) {
-        DepthBrandMark(size: 28)
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
-    }
     if #available(iOS 26.0, *) {
+        // Both items need `.sharedBackgroundVisibility(.hidden)` on 26+, not just the
+        // trailing group — the leading brand mark was missing it, so Liquid Glass left
+        // its own default circular backdrop showing behind the mark (a visible ring the
+        // mark's own drawing never accounted for).
+        ToolbarItem(placement: .topBarLeading) {
+            DepthBrandMark(size: 28)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+        }
+        .sharedBackgroundVisibility(.hidden)
         ToolbarItem(placement: .topBarTrailing) {
             DepthTopNavTrailingGroup(teamPill: teamPill, onAccountTap: onAccountTap)
         }
         .sharedBackgroundVisibility(.hidden)
     } else {
+        ToolbarItem(placement: .topBarLeading) {
+            DepthBrandMark(size: 28)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+        }
         ToolbarItem(placement: .topBarTrailing) {
             DepthTopNavTrailingGroup(teamPill: teamPill, onAccountTap: onAccountTap)
         }
