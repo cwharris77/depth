@@ -98,3 +98,44 @@ clipping, stale data, placeholder artifacts, simulator chrome, personal informat
 unlicensed assets, and inconsistent status-bar time (design spec item 38).
 
 The exported PNGs are a release artifact, not source — never commit them to this repo.
+
+## Framing for App Store Connect
+
+The raw captures above are correct-resolution but plain — no device bezel, no marketing
+caption. `frameit` (part of the `fastlane` gem, Bundler-scoped to `ios/` via `Gemfile`/
+`Gemfile.lock` — not a system-wide gem install) adds both, reading the five captions
+straight from this doc's table.
+
+One-time setup:
+```
+brew install imagemagick   # frameit's rendering dependency
+cd ios && bundle install   # installs fastlane into ios/vendor/bundle (gitignored)
+bundle exec fastlane frameit download_frames   # caches device bezels in ~/.frameit/
+```
+
+Then, after exporting the PNGs above into `ios/fastlane/screenshots/en-US/` (rename each
+export to drop `xcresulttool`'s manifest suffix, so the file is exactly
+`01-team-search.png` etc. — `ios/fastlane/screenshots/Framefile.json`'s `filter` keys
+match on that base name):
+```
+cd ios && bundle exec fastlane frameit path:./fastlane/screenshots
+```
+
+This writes `<name>_framed.png` next to each raw capture — those are the files to
+upload to App Store Connect, not the raw ones. Two things to know about the setup:
+
+- **Font is not committed.** `Framefile.json` points at `./SFNS.ttf` inside the
+  screenshots folder, but that file is gitignored — copy it once per machine from the
+  OS (`cp /System/Library/Fonts/SFNS.ttf ios/fastlane/screenshots/SFNS.ttf`). It's
+  Apple's own system font (matches the app's SwiftUI default), and Apple's font
+  license permits *referencing* the system copy but not redistributing the file — so
+  it's copied locally, never checked in. A relative path is required here, not an
+  absolute one — `frameit`'s Ruby path-joining silently mangles a leading `/` by
+  concatenating it onto the screenshots directory instead of treating it as rooted.
+- **`ios/fastlane/screenshots/background.png` and `Framefile.json` are the only
+  committed files** in that folder — they're the reusable frame background and caption
+  config, not per-run output. Everything under `en-US/` (raw + `_framed` captures) and
+  the copied font are gitignored, same as the `.xcresult`-exported PNGs above.
+
+`bundle exec fastlane frameit` (not a bare `fastlane frameit`) matters — it resolves
+against `ios/Gemfile.lock`'s pinned fastlane version rather than whatever's on `$PATH`.
