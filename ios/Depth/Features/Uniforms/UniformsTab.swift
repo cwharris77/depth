@@ -9,8 +9,11 @@ import SwiftUI
 //
 // DEP-271: unlike web (which keeps its filter bar inline — a wide viewport has room for
 // scrolling chips + a dropdown), the phone-native surface puts kind/era/current-only
-// filters behind a toolbar Filters button that opens UniformFilterSheet, badged with the
-// active-filter count. See that file's header for the full design reasoning.
+// filters behind a Filters button that opens UniformFilterSheet, badged with the
+// active-filter count. Lives on the page next to `kitCountSummary` (Cooper review:
+// not in the shared `depthTopNavToolbar` — that's global chrome, filtering is this
+// screen's own content control). See UniformFilterSheet's header for the full design
+// reasoning.
 struct UniformsTab: View {
     @State private var viewModel: UniformArchiveViewModel
     @State private var showAccount = false
@@ -27,10 +30,10 @@ struct UniformsTab: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .background(DesignTokens.Colors.bg)
                 // DEP-252/DEP-277 (Cooper review): shared app-wide top nav — see
-                // `depthTopNavToolbar`. DEP-271 uses the teamPill slot for the Filters
-                // button, this screen's contribution to the "conditional" half.
+                // `depthTopNavToolbar`. No team pill on this screen; the Filters
+                // button lives on the page instead (see `kitCountSummary`).
                 .toolbar {
-                    depthTopNavToolbar(teamPill: { filterButton }) {
+                    depthTopNavToolbar(teamPill: { EmptyView() }) {
                         showAccount = true
                     }
                 }
@@ -58,33 +61,39 @@ struct UniformsTab: View {
     }
 
     /// The single entry point into filtering (DEP-271), replacing the old scrolling
-    /// chip row + era dropdown. The badge is the only remaining always-visible signal
-    /// of an active filter, so it must never silently disappear while a filter is set.
+    /// chip row + era dropdown. A pill matching the app's chip vocabulary (active fill =
+    /// accent, same as the removed `FilterChip`) rather than a bare toolbar glyph, since
+    /// this is page content, not chrome. The count badge is the only remaining
+    /// always-visible signal of an active filter, so it must never silently disappear
+    /// while a filter is set.
     private var filterButton: some View {
-        Button {
+        let isActive = viewModel.activeFilterCount > 0
+        return Button {
             showFilterSheet = true
         } label: {
-            Image(systemName: "line.3.horizontal.decrease.circle")
-                .symbolVariant(viewModel.activeFilterCount > 0 ? .fill : .none)
-                .overlay(alignment: .topTrailing) {
-                    if viewModel.activeFilterCount > 0 {
-                        Text("\(viewModel.activeFilterCount)")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(DesignTokens.Colors.onAccent)
-                            .frame(minWidth: 14, minHeight: 14)
-                            .background(DesignTokens.Colors.accent, in: Circle())
-                            .offset(x: 8, y: -8)
-                            .accessibilityHidden(true)
-                    }
+            HStack(spacing: 4) {
+                Image(systemName: "line.3.horizontal.decrease")
+                Text("Filters")
+                if isActive {
+                    Text("\(viewModel.activeFilterCount)")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(isActive ? DesignTokens.Colors.accent : .clear)
+                        .frame(minWidth: 16, minHeight: 16)
+                        .background(DesignTokens.Colors.onAccent, in: Circle())
                 }
+            }
+            .font(isActive ? .caption.weight(.semibold) : .caption)
+            .foregroundStyle(isActive ? DesignTokens.Colors.onAccent : DesignTokens.Colors.textSecondary)
+            .padding(.horizontal, 12)
+            .frame(minHeight: 44)
+            .background(
+                isActive ? DesignTokens.Colors.accent : DesignTokens.Colors.surfaceChip,
+                in: Capsule()
+            )
         }
-        .frame(minWidth: 44, minHeight: 44)
+        .buttonStyle(.plain)
         .accessibilityIdentifier("uniforms-filter-button")
-        .accessibilityLabel(
-            viewModel.activeFilterCount > 0
-                ? "Filters, \(viewModel.activeFilterCount) active"
-                : "Filters"
-        )
+        .accessibilityLabel(isActive ? "Filters, \(viewModel.activeFilterCount) active" : "Filters")
     }
 
     @ViewBuilder
@@ -108,7 +117,7 @@ struct UniformsTab: View {
         case .loaded:
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
-                    kitCountSummary
+                    summaryRow
                     archiveList
                     attribution
                 }
@@ -118,15 +127,19 @@ struct UniformsTab: View {
         }
     }
 
-    /// Web's "{kits.length} kits · 32 teams" summary (UniformArchive.tsx:88-89), now the
-    /// top of the scroll content since the filter bar (DEP-271) moved into a sheet
-    /// behind the toolbar's Filters button. The team count is the league size, not a
-    /// filtered count — matching web.
-    private var kitCountSummary: some View {
-        let kitCount = viewModel.groups.flatMap(\.teams).flatMap(\.kits).count
-        return Text("\(kitCount) kits · 32 teams")
-            .font(.caption)
-            .foregroundStyle(DesignTokens.Colors.textFaint)
+    /// Web's "{kits.length} kits · 32 teams" summary (UniformArchive.tsx:88-89) plus the
+    /// DEP-271 Filters entry point, on one row at the top of the scroll content — a
+    /// page-level control (Cooper review), not global chrome. The team count is the
+    /// league size, not a filtered count — matching web.
+    private var summaryRow: some View {
+        HStack {
+            let kitCount = viewModel.groups.flatMap(\.teams).flatMap(\.kits).count
+            Text("\(kitCount) kits · 32 teams")
+                .font(.caption)
+                .foregroundStyle(DesignTokens.Colors.textFaint)
+            Spacer()
+            filterButton
+        }
     }
 
     @ViewBuilder
