@@ -30,7 +30,7 @@ func depthTopNavToolbar<TeamPill: View>(
         // its own default circular backdrop showing behind the mark (a visible ring the
         // mark's own drawing never accounted for).
         ToolbarItem(placement: .topBarLeading) {
-            DepthBrandMark(size: 28)
+            DepthBrandMark(size: 36)
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
         }
@@ -41,7 +41,7 @@ func depthTopNavToolbar<TeamPill: View>(
         .sharedBackgroundVisibility(.hidden)
     } else {
         ToolbarItem(placement: .topBarLeading) {
-            DepthBrandMark(size: 28)
+            DepthBrandMark(size: 36)
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
         }
