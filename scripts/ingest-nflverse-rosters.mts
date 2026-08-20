@@ -2,10 +2,10 @@
 // pure lib/nflverse pipeline (position mapping + usage-based depth heuristic,
 // docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-design.md), and upserts
 // `roster_history`. Run by hand for the one-time 1999-present backfill, or by the
-// weekly job (current season only, no --seasons flag). Never part of `next build`.
+// daily job (current season only, no --seasons flag). Never part of `next build`.
 //
 // Usage:
-//   npm run ingest:rosters                    # current season only (weekly job)
+//   npm run ingest:rosters                    # current season only (daily job)
 //   npm run ingest:rosters -- --seasons 1999-2025
 // Requires SUPABASE_URL + SUPABASE_SECRET_KEY in the environment (secret key
 // bypasses RLS-equivalent restrictions for writes; never expose it client-side).
@@ -15,7 +15,7 @@
 // instead of touching the DB (no Supabase creds needed) -- mirrors ingest-espn.mts's
 // SEED_OUT mode. roster_history has no FK to `players` (nflverse-keyed by gsis_id), so
 // unlike gen:nflverse-seed this needs no other seed file loaded first. Current season
-// only, same as the weekly job -- the --seasons backfill flag isn't meaningful for a
+// only, same as the daily job -- the --seasons backfill flag isn't meaningful for a
 // local dev seed. `supabase db reset` then restores it offline.
 
 import dotenv from 'dotenv';
@@ -75,7 +75,7 @@ async function main() {
   const failures: { season: number | string; message: string }[] = [];
 
   // --seasons isn't meaningful in SEED_OUT mode (locked decision: seed data stays
-  // current-season-only, same as the weekly job's default).
+  // current-season-only, same as the daily job's default).
   let seasons = seedOut ? null : parseSeasonsArg(process.argv.slice(2));
   if (seasons === null) {
     // Weekly job: gate on the STATS file, not the roster file. nflverse publishes a new

@@ -136,9 +136,10 @@ leave the DB one run stale.
   division for every team in one call. `parseStandings` (`lib/espn/standings.ts`) maps
   each ESPN team id → `{conference, division}`; the ingest writes these, so conf/div is
   ESPN-sourced, not hand-curated. `lib/teams/league.ts` is now just an identity seed
-  (id/city/name/abbrev) the ingest loops over. The same fetch (plus two explicit
-  `?season=` calls for the two prior years) also carries each team's win/loss/points
-  record; `parseTeamStats` turns that into the `team_stats` rows the ingest writes.
+  (id/city/name/abbrev) the ingest loops over. The same fetch (plus one explicit
+  `?season=` call for the prior year, unflagged -- this + last season) also carries
+  each team's win/loss/points record; `parseTeamStats` turns that into the `team_stats`
+  rows the ingest writes. A `--seasons` backfill widens the range (see Scheduling below).
 - A KR/PR/K/P/LS can be a player ranked outside the normal top-3-per-position cap
   (e.g. a low-depth-chart WR who's still the primary punt returner) — `toTeamRoster`
   adds them to `players` anyway via a bio-position fallback, so `specialTeams` never
@@ -180,10 +181,24 @@ Ingestion runs on a schedule via `.github/workflows/ingest-espn.yml`, which just
 `npm run ingest:espn` verbatim — no separate copy of the logic. It's still not part of
 `next build`; a failed ingestion leaves the DB one run stale, never blocks a deploy.
 
-- **Cadence:** weekly, `cron: '0 12 * * 3'` (Wednesday 12:00 UTC / 07:00 ET, after the
-  Tue/Wed waiver + practice-squad churn settles). Adjust the cron to change it.
+- **Cadence:** daily, `cron: '0 20 * * *'` (Noon PT — PST; cron doesn't shift for DST,
+  so this lands around 1pm during PDT). Adjust the cron to change it.
 - **Manual runs:** the workflow also has `workflow_dispatch`, so you can trigger it
   on demand from the repo's Actions tab (or `gh workflow run ingest-espn.yml`).
+- **`team_stats` backfill:** with no `seasons` input, `ingest:espn` writes `team_stats`
+  (win/loss record, points for/against, streak, playoff seed) for just the current
+  season + the prior season (this + last season), same as always. A full-range backfill
+  (e.g. `2002-2025` — the
+  verified floor of ESPN's `standings?season=YYYY` endpoint) is a manual
+  `workflow_dispatch` run with the `seasons` input, not a terminal command — from the
+  Actions tab, "Run workflow" on `Ingest ESPN data` and fill in `seasons`, or
+  `gh workflow run ingest-espn.yml -f seasons=2002-2025`. The input is passed as
+  `--seasons` to `ingest:espn` (parsed by the same `parseSeasonsArg` the nflverse
+  scripts use — `--seasons 2013` for a single year works too), fetched in small chunks
+  rather than one giant burst of standings calls, with prod secrets already wired into
+  the job. Rosters/depthcharts/coaches are unaffected by `seasons` — they're always
+  current-only, `team_stats` is the only part that backfills. See
+  `2026-08-19-espn-full-history-team-stats-design.md` (vault) for the full design.
 - **Failure = red run:** the workflow sets `STRICT=1`, which makes the script exit
   non-zero on a **partial** run (some teams failed to write), not just a total failure.
   So a half-stale ingestion turns the run red and fires GitHub's built-in failure
