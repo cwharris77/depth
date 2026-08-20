@@ -568,6 +568,31 @@ type TeamStatsPageTeamRow = TeamRow & {
 };
 const TEAM_STATS_PAGE_TEAM_SELECT = `${TEAM_SELECT}, coach_name, coach_experience`;
 
+// League-wide rank queries (team_stats/team_season_stats, all 32 teams × every season,
+// unscoped by team_id) can cross PostgREST's default 1000-row cap once historic seasons
+// are backfilled (2026-08-19-espn-full-history-team-stats-design.md) -- a plain unbounded
+// select would then silently truncate to a subset of teams/seasons and produce wrong
+// ranks with no error. Page through with .range() instead so the full set always loads
+// regardless of the project's max-rows setting.
+const RANK_QUERY_PAGE_SIZE = 500;
+
+async function fetchAllRankRows<T>(
+  page: (
+    from: number,
+    to: number
+  ) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>
+): Promise<T[]> {
+  const rows: T[] = [];
+  for (let from = 0; ; from += RANK_QUERY_PAGE_SIZE) {
+    const { data, error } = await page(from, from + RANK_QUERY_PAGE_SIZE - 1);
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) break;
+    rows.push(...data);
+    if (data.length < RANK_QUERY_PAGE_SIZE) break;
+  }
+  return rows;
+}
+
 async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undefined> {
   'use cache';
   cacheLife('ingest');
@@ -577,9 +602,9 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
     { data: teamRow, error: teamError },
     { data: statsRows, error: statsError },
     { data: coachRows, error: coachError },
-    { data: rankRows, error: rankError },
+    rankRows,
     { data: nflverseStatsRows, error: nflverseStatsError },
-    { data: nflverseRankRows, error: nflverseRankError },
+    nflverseRankRows,
   ] = await Promise.all([
     client
       .from(tables.teams)
@@ -597,26 +622,24 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
       .select(TEAM_COACH_SEASONS_SELECT)
       .eq('team_id', teamId)
       .returns<TeamCoachSeasonRow[]>(),
-    client.from(tables.teamStats).select(TEAM_STATS_RANK_SELECT).returns<TeamStatsRankRow[]>(),
+    fetchAllRankRows<TeamStatsRankRow>((from, to) =>
+      client.from(tables.teamStats).select(TEAM_STATS_RANK_SELECT).range(from, to)
+    ),
     client
       .from(tables.teamSeasonStats)
       .select(TEAM_SEASON_STATS_VALUE_SELECT)
       .eq('team_id', teamId)
       .order('season', { ascending: false })
       .returns<TeamSeasonStatsValueRow[]>(),
-    client
-      .from(tables.teamSeasonStats)
-      .select(TEAM_SEASON_STATS_RANK_SELECT)
-      .returns<TeamSeasonStatsRankRow[]>(),
+    fetchAllRankRows<TeamSeasonStatsRankRow>((from, to) =>
+      client.from(tables.teamSeasonStats).select(TEAM_SEASON_STATS_RANK_SELECT).range(from, to)
+    ),
   ]);
   if (teamError) throw new Error(`teams query failed: ${teamError.message}`);
   if (statsError) throw new Error(`team_stats query failed: ${statsError.message}`);
   if (coachError) throw new Error(`team_coach_seasons query failed: ${coachError.message}`);
-  if (rankError) throw new Error(`team_stats rank query failed: ${rankError.message}`);
   if (nflverseStatsError)
     throw new Error(`team_season_stats query failed: ${nflverseStatsError.message}`);
-  if (nflverseRankError)
-    throw new Error(`team_season_stats rank query failed: ${nflverseRankError.message}`);
   if (!teamRow) return undefined;
 
   const { upcomingSeason, isOffseason } = await getNflSeasonState();
@@ -630,7 +653,7 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
   const seasons = (statsRows ?? []).map((row) => toTeamStats(row, coachBySeason, nflverseBySeason));
   return {
     team: toTeam(teamRow),
-    leagueRanksBySeason: buildLeagueRanks(teamId, rankRows ?? [], nflverseRankRows ?? []),
+    leagueRanksBySeason: buildLeagueRanks(teamId, rankRows, nflverseRankRows),
     // `coach_experience === 0` is ESPN's live signal for "hired, but hasn't coached a
     // season for this team yet" — see TeamStatsPage.incomingCoach doc comment.
     incomingCoach:

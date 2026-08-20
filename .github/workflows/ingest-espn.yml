@@ -1,15 +1,22 @@
 name: Ingest ESPN data
 
 # Recurring ESPN ingestion (rosters, depth charts, coaches, and multi-season team
-# stats). Wraps `npm run ingest:espn` (see docs/espn.md) on a weekly schedule, plus a
+# stats). Wraps `npm run ingest:espn` (see docs/espn.md) on a daily schedule, plus a
 # manual trigger. STRICT=1 so a partial run turns the workflow red instead of
 # silently going green with half-stale data.
 
 on:
   schedule:
-    # Wednesday 12:00 UTC (07:00 ET) — after Tue/Wed waiver + practice-squad settling.
-    - cron: '0 12 * * 3'
-  workflow_dispatch: {}
+    # Noon PT daily (PST; cron is fixed UTC, so this drifts to ~1pm during PDT --
+    # acceptable for a daily refresh, not worth a DST-aware cron for this).
+    - cron: '0 20 * * *'
+  workflow_dispatch:
+    inputs:
+      seasons:
+        description: 'Season range to backfill team_stats, e.g. 2002-2025. Empty = daily run (this + last season).'
+        type: string
+        required: false
+        default: ''
 
 # Never let two ingestions overlap (a slow run + the next schedule, or a manual
 # dispatch during a scheduled one).
@@ -20,7 +27,10 @@ concurrency:
 jobs:
   ingest:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Sized for a full --seasons backfill (chunked standings fetches across 20+ seasons
+    # plus retries), not just the unflagged daily run -- matches ingest-nflverse.yml's
+    # timeout for the same reason.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -28,8 +38,16 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      - run: npm run ingest:espn
+      # Manual dispatch's `seasons` input backfills team_stats; empty input (the
+      # scheduled daily run) falls through to the plain command -- this + last season.
+      - run: |
+          if [ -n "$SEASONS" ]; then
+            npm run ingest:espn -- --seasons "$SEASONS"
+          else
+            npm run ingest:espn
+          fi
         env:
+          SEASONS: ${{ inputs.seasons }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
           STRICT: '1'

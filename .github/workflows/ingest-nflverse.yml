@@ -1,19 +1,21 @@
 name: Ingest nflverse data
 
 # Recurring nflverse ingestion (player season stats). Wraps `npm run ingest:nflverse`
-# (see docs/nflverse.md) on a weekly schedule, plus a manual trigger. STRICT=1 so a
+# (see docs/nflverse.md) on a daily schedule, plus a manual trigger. STRICT=1 so a
 # partial run (a season failed to write) turns the workflow red instead of silently
 # going green with half-stale data.
 
 on:
   schedule:
-    # Wednesday 13:00 UTC — an hour after the ESPN ingest (ingest-espn.yml, 12:00 UTC)
-    # so the two runs don't interleave in ingestion_runs.
-    - cron: '0 13 * * 3'
+    # 1pm PT daily (21:00 UTC) — an hour after the ESPN ingest (ingest-espn.yml, Noon
+    # PT / 20:00 UTC) so the two runs don't interleave in ingestion_runs. Cron is fixed
+    # UTC, so both this and ESPN's cron drift together with DST -- the 1-hour stagger
+    # between them holds regardless.
+    - cron: '0 21 * * *'
   workflow_dispatch:
     inputs:
       seasons:
-        description: 'Season range to backfill, e.g. 1999-2025. Empty = weekly run (ingest:nflverse current + previous, ingest:rosters current season only).'
+        description: 'Season range to backfill, e.g. 1999-2025. Empty = daily run (ingest:nflverse current + previous, ingest:rosters current season only).'
         type: string
         required: false
         default: ''
@@ -37,7 +39,7 @@ jobs:
       - run: npm ci
       # Manual dispatch's `seasons` input backfills both this step and ingest:rosters
       # below (shared range, no per-dataset granularity). Empty input (the scheduled
-      # weekly run) falls through to the plain command -- ingest:nflverse's default is
+      # daily run) falls through to the plain command -- ingest:nflverse's default is
       # current + previous season, ingest:rosters' default is current season only.
       - run: |
           if [ -n "$SEASONS" ]; then

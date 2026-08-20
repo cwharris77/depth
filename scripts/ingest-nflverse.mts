@@ -4,7 +4,7 @@
 // part of `next build`.
 //
 // Usage:
-//   npm run ingest:nflverse                     # weekly job: player_stats current +
+//   npm run ingest:nflverse                     # daily job: player_stats current +
 //                                                # previous season, games/schedules
 //                                                # current + previous season
 //   npm run ingest:nflverse -- --seasons 1999-2025
@@ -20,7 +20,7 @@
 // which fetches + transforms exactly the same way but writes a committed seed script
 // instead of touching the DB (no Supabase creds needed) -- mirrors ingest-espn.mts's
 // SEED_OUT mode. Always current + previous season / latest formations season only, same
-// as the weekly job; the --seasons backfill flag isn't meaningful for a local dev seed.
+// as the daily job; the --seasons backfill flag isn't meaningful for a local dev seed.
 // player_stats FKs to `players`, which this mode can't query live -- it instead reads
 // the already-committed ESPN seed (supabase/seed.sql) for known player ids, so run
 // `npm run gen:espn-seed` first. `supabase db reset` then restores nflverse data
@@ -102,7 +102,7 @@ async function getText(url: string, attempts = 3): Promise<string> {
 // (the per-team-season anchor) then games -- schedules first so the games' composite FKs
 // resolve. `supabase === null` (SEED_OUT mode) skips the writes and only returns the
 // computed rows. Idempotent upserts (conflict on the PKs), so a rerun is always safe.
-// `minSeason` is undefined for the weekly job (current + previous, the default inside
+// `minSeason` is undefined for the daily job (current + previous, the default inside
 // toScheduleAndGameRows) or an explicit floor for a --seasons backfill run.
 async function ingestGames(
   supabase: SupabaseClient<Database> | null,
@@ -273,7 +273,7 @@ async function ingestFormations(
 // and parse (parseCsv + toTeamStatsRows) are separate calls so that a fetch failure
 // and a parse failure can never abort or corrupt one another (two-phase pipeline).
 // `seasons` is the complete list of season years to backfill (1999-2025 for a full
-// backfill, [latest, latest-1] for the weekly job). Idempotent upsert on (team_id,
+// backfill, [latest, latest-1] for the daily job). Idempotent upsert on (team_id,
 // season). SKIP_TEAM_STATS env var skips this step entirely for faster dev iteration.
 async function ingestTeamStats(
   supabase: SupabaseClient<Database> | null,
@@ -447,7 +447,7 @@ async function main() {
   // Team season stats: backfill full --seasons range (FKs to teams, not players, so
   // no identity problem) or latest + previous with no flag. The --seasons scoping
   // is shared with games/schedules: gamesSeasons is set above from --seasons (or null
-  // for the weekly job's default), and teamStatsSeasons follows the same rule.
+  // for the daily job's default), and teamStatsSeasons follows the same rule.
   const teamStatsSeasons =
     gamesSeasons ?? (latestSeason === null ? [] : [latestSeason, latestSeason - 1]);
   const teamStatsResult = await ingestTeamStats(supabase, teamStatsSeasons);

@@ -28,6 +28,13 @@ function kids<T>(children: T[] | { items?: T[] } | undefined): T[] {
   return children?.items ?? [];
 }
 
+// Verified live 2026-07-14 (2026-07-14-multi-season-team-stats-design.md) and again
+// 2026-08-19: ?season=YYYY returns the same shape back to at least this year. Also
+// happens to be the year the current 8-division/4-team alignment took effect, so no
+// division-structure edge case exists at this floor (2026-08-19-espn-full-history-
+// team-stats-design.md).
+export const ESPN_TEAM_STATS_SEASONS_MIN = 2002;
+
 const DIVISIONS: Division[] = ['North', 'South', 'East', 'West'];
 
 // "AFC West" / "National Football Conference West" → the Division enum value (last word).

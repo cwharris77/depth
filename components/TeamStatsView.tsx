@@ -1,9 +1,12 @@
 'use client';
 
 // Season-record view for the team stats page (docs/superpowers/specs/2026-07-14-
-// multi-season-team-stats-design.md). A client component so the season switcher can hold
+// multi-season-team-stats-design.md, season count extended by 2026-08-19-espn-full-
+// history-team-stats-design.md). A client component so the season switcher can hold
 // local state; it receives one team's already-resolved data as a prop (invariant 5) —
-// `seasons` is small (current + up to two prior years), never a fan-out of all-32 data.
+// `seasons` is still just this one team's rows (never a fan-out of all-32 data), but can
+// now be 20+ long after a full ESPN backfill, which is why the switcher is a bottom sheet
+// (TeamStatsSeasonSheet) instead of the original horizontal chip row.
 import SectionLabel from '@/components/ui/SectionLabel';
 import Tooltip from '@/components/ui/Tooltip';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
@@ -13,10 +16,14 @@ import { postseasonRoundLabel } from '@/lib/utils/schedule/schedule';
 import type { TeamMeta, TeamStatsRanks } from '@/lib/roster-source';
 import type { Leader, RosterLeaders, TeamScheduleGame, TeamStats } from '@/lib/types';
 import { useKitColors } from '@/lib/hooks/use-kit-colors';
+import { ChevronDown, History } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
+import BottomSheet from './BottomSheet';
 import StatsPanel from './StatsPanel';
 import TeamPageHeader from './TeamPageHeader';
 import TeamPageShell from './TeamPageShell';
+import TeamStatsSeasonSheet, { type TeamStatsSeasonEntry } from './TeamStatsSeasonSheet';
+import UpcomingBadge from './UpcomingBadge';
 
 interface Props {
   team: TeamMeta;
@@ -64,23 +71,6 @@ function CoachBadge({ name, meta, uiAccent }: { name: string; meta: string; uiAc
         {meta}
       </div>
     </div>
-  );
-}
-
-// Shared "UPCOMING" pill for the season switcher — used both by the synthetic
-// upcoming-season chip and by a real season chip when ingest has already landed a
-// team_stats row for that year (a stub row created ahead of kickoff).
-function UpcomingBadge({ selected, uiAccent }: { selected: boolean; uiAccent: string }) {
-  return (
-    <span
-      className="inline-block rounded-full px-1.5 py-[1px] text-[8px] font-bold tracking-[0.04em]"
-      style={{
-        color: selected ? uiTokens.bg : uiAccent,
-        background: selected ? `${uiTokens.bg}33` : `${uiAccent}1a`,
-        border: `1px solid ${selected ? `${uiTokens.bg}55` : `${uiAccent}55`}`,
-      }}>
-      UPCOMING
-    </span>
   );
 }
 
@@ -200,6 +190,7 @@ export default function TeamStatsView({
   postseasonGames,
 }: Props) {
   const [index, setIndex] = useState(seasons.length > 0 ? 0 : -1);
+  const [seasonSheetOpen, setSeasonSheetOpen] = useState(false);
   // Picks up whichever kit is active on the roster page for this team (lib/hooks/use-kit-colors.ts)
   // instead of always showing the default team colors — falls back to team.colors when
   // nothing was ever picked this session.
@@ -253,6 +244,32 @@ export default function TeamStatsView({
   const minIndex = hasUpcomingChip ? (hasIncomingCoach ? -2 : -1) : hasIncomingCoach ? -1 : 0;
   const clampedIndex = Math.min(Math.max(index, minIndex), seasons.length - 1);
   const active = clampedIndex >= 0 ? seasons[clampedIndex] : null;
+
+  // Season sheet entries (2026-08-19-espn-full-history-team-stats-design.md): the chip
+  // row's newest-first ordering, now as sheet rows instead of horizontally-scrolling
+  // buttons — a full ESPN backfill can put 20+ real seasons on this team, past what a
+  // chip row scales to. Upcoming chip first (chronologically newest), then real seasons
+  // newest-to-oldest; a real row for the upcoming season carries the badge instead of a
+  // separate synthetic entry, same rule the old chip row used.
+  const seasonEntries: TeamStatsSeasonEntry[] = [
+    ...(hasUpcomingChip && upcomingSeason !== undefined
+      ? [{ index: -1, label: String(upcomingSeason), upcoming: true }]
+      : []),
+    ...seasons.map((s, i) => ({
+      index: i,
+      label: String(s.season),
+      upcoming: upcomingSeasonHasRealRow && s.season === upcomingSeason,
+    })),
+  ];
+  // Index -2 (incoming coach, no season attached yet) has no reachable UI trigger today
+  // (same as the pre-dropdown chip row -- no chip ever set index to -2 either), so 'NEW'
+  // is a defensive fallback, not a real label anyone sees.
+  const activeSeasonLabel =
+    clampedIndex === -1 && upcomingSeason !== undefined
+      ? String(upcomingSeason)
+      : active
+        ? String(active.season)
+        : 'NEW';
 
   // Leaders for the selected season tab (falls back to null for the upcoming-season/
   // incoming-coach chips, which have no season stats yet — invariant 6).
@@ -330,70 +347,37 @@ export default function TeamStatsView({
 
   return (
     <TeamPageShell {...shellProps}>
-      <div style={{ minHeight: '100dvh', background: uiTokens.bg, color: uiTokens.textPrimary }}>
+      <div
+        className="relative"
+        style={{ minHeight: '100dvh', background: uiTokens.bg, color: uiTokens.textPrimary }}>
         {header}
 
-        {/* Season switcher — no prev/next arrows: desktop is wide enough to show every
-          season at once, and mobile relies on the horizontal swipe affordance. */}
+        {/* Season picker trigger — a dropdown/sheet instead of the old horizontal chip
+          row, which stopped scaling once a full ESPN backfill can put 20+ real seasons
+          on one team (2026-08-19-espn-full-history-team-stats-design.md). Same visual
+          language as the SCHEDULE tab's season picker trigger (History icon, label,
+          chevron). */}
         <div
-          className="flex items-center gap-1.5 px-2.5 py-2.5 overflow-x-auto hide-scrollbar"
+          className="flex items-center gap-2 px-2.5 py-2.5"
           style={{
             borderBottom: `1px solid ${uiTokens.borderStrong}`,
             background: uiTokens.bgFilterbar,
           }}>
-          {[...seasons]
-            .map((s, i) => ({ s, i }))
-            .reverse()
-            .map(({ s, i }) => {
-              const isSelected = i === clampedIndex;
-              const isLatest = i === 0;
-              // A real row for the upcoming season (ingest stub landed early) carries
-              // the UPCOMING badge instead of the plain "latest" dot — it isn't the
-              // completed current season, even though it's the newest row on file.
-              const isUpcomingRow = upcomingSeasonHasRealRow && s.season === upcomingSeason;
-              return (
-                <button
-                  key={s.season}
-                  type="button"
-                  onClick={() => setIndex(i)}
-                  className="shrink-0 flex items-center gap-1.5 rounded-[3px] px-3 py-1.5 text-xs font-bold"
-                  style={{
-                    background: isSelected ? uiAccent : 'transparent',
-                    color: isSelected ? uiTokens.bg : uiTokens.textMuted,
-                    border: `1px solid ${isSelected ? uiAccent : uiTokens.borderInput}`,
-                  }}>
-                  {isLatest && !isUpcomingRow && (
-                    <span
-                      className="inline-block h-1.5 w-1.5 rounded-full"
-                      style={{ background: isSelected ? uiTokens.bg : uiAccent }}
-                    />
-                  )}
-                  {s.season}
-                  {isUpcomingRow && <UpcomingBadge selected={isSelected} uiAccent={uiAccent} />}
-                </button>
-              );
-            })}
-          {/* Upcoming season chip — shown for ALL teams during the off-season, not just
-            new-coach teams (Stats & Analytics P2), unless a real season row for that
-            year already exists above (then that row carries the badge instead — see
-            isUpcomingRow). Uses the same badge pattern as the schedule page's HOME/AWAY
-            badge. */}
-          {hasUpcomingChip && (
-            <button
-              type="button"
-              onClick={() => setIndex(-1)}
-              className="shrink-0 flex items-center gap-1.5 rounded-[3px] px-3 py-1.5 text-xs font-bold"
-              style={{
-                background: clampedIndex === -1 ? uiAccent : 'transparent',
-                color: clampedIndex === -1 ? uiTokens.bg : uiTokens.textMuted,
-                border: `1px dashed ${clampedIndex === -1 ? uiAccent : uiTokens.borderInput}`,
-              }}>
-              {upcomingSeason}
-              {(clampedIndex === -1 || !hasIncomingCoach) && (
-                <UpcomingBadge selected={clampedIndex === -1} uiAccent={uiAccent} />
-              )}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setSeasonSheetOpen(true)}
+            aria-label="Choose season"
+            className="flex items-center gap-1.5 rounded-md px-1.5 py-1"
+            style={{ touchAction: 'manipulation' }}>
+            <History size={12} color={uiTokens.textFaint} />
+            <span
+              className="font-bold tracking-[0.1em]"
+              style={{ color: uiTokens.textPrimary, fontSize: typeScale.caption }}>
+              {activeSeasonLabel}
+            </span>
+            <ChevronDown size={12} color={uiTokens.textFaint} />
+          </button>
+          {clampedIndex === -1 && <UpcomingBadge selected={false} uiAccent={uiAccent} />}
         </div>
 
         {/* Team + coach — see coachBadge's derivation above for the season-scoped
@@ -663,6 +647,19 @@ export default function TeamStatsView({
             />
           </div>
         )}
+
+        <BottomSheet isOpen={seasonSheetOpen} onClose={() => setSeasonSheetOpen(false)}>
+          <TeamStatsSeasonSheet
+            entries={seasonEntries}
+            activeIndex={clampedIndex}
+            accent={uiAccent}
+            onSelect={(i) => {
+              setIndex(i);
+              setSeasonSheetOpen(false);
+            }}
+            onClose={() => setSeasonSheetOpen(false)}
+          />
+        </BottomSheet>
       </div>
     </TeamPageShell>
   );
