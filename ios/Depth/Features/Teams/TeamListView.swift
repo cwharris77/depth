@@ -243,6 +243,10 @@ struct TeamListView: View {
                         .accessibilityHidden(true)
                 }
             }
+            // DEP-281: without this, the Spacer's transparent stretch between the team
+            // name and the trailing checkmark doesn't register taps — only the badge
+            // and text (the drawn content) did, leaving most of the visual row dead.
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         // DEP-262: row height is content-derived (36pt badge + vertical padding), which
@@ -279,7 +283,9 @@ struct TeamListView: View {
                 Button {
                     onSelectPlayer(hit)
                 } label: {
-                    label
+                    // DEP-281: same fix as teamRow above — the trailing Spacer needs an
+                    // explicit hit shape or taps past the avatar/text don't register.
+                    label.contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             } else {

@@ -27,6 +27,10 @@ struct HistorySeasonSheet: View {
                                 .accessibilityLabel("Selected")
                         }
                     }
+                    // DEP-281: without this, the trailing Spacer's transparent space
+                    // between the label and the selected checkmark doesn't register
+                    // taps — only the drawn Text/Image content did.
+                    .contentShape(Rectangle())
                 }
                 .frame(minHeight: 44)
                 .accessibilityIdentifier("history-season-\(season.year)")
