@@ -58,6 +58,14 @@ targets:
       path: Depth/Info.plist
       properties:
         CFBundleDisplayName: The Sticks
+        # Overrides xcodegen's default `$(PRODUCT_NAME)` reference (which resolves to the
+        # Xcode target name, "Depth" — untouched by the CFBundleDisplayName rename).
+        # ITMS-90129 checks both keys for App Store name-uniqueness, so leaving this
+        # unset kept triggering "bundle name or display name already taken" even after
+        # the display name was fixed (rejected build 481). Set as a plist literal rather
+        # than via PRODUCT_NAME so the built .app filename/executable stay "Depth.app" —
+        # only the two user-facing name keys change.
+        CFBundleName: The Sticks
         CFBundleShortVersionString: '1.0'
         # Baseline for Debug/Staging runs; the archive-only postbuildScripts phase below
         # overwrites this with the git commit count for every App Store/TestFlight build.
