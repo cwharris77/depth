@@ -1,0 +1,34 @@
+{
+  "device_frame_version": "latest",
+  "default": {
+    "background": "./background.png",
+    "title": {
+      "font": "./SFNS.ttf",
+      "color": "#f0f4ff"
+    },
+    "padding": 100,
+    "show_complete_frame": false
+  },
+  "data": [
+    {
+      "filter": "01-team-search",
+      "title": { "text": "Every team. One clear depth chart." }
+    },
+    {
+      "filter": "02-team-depth-chart",
+      "title": { "text": "See every position at a glance." }
+    },
+    {
+      "filter": "03-player-detail",
+      "title": { "text": "Know who's next." }
+    },
+    {
+      "filter": "04-reorder-editing",
+      "title": { "text": "Make the chart yours." }
+    },
+    {
+      "filter": "05-schedule",
+      "title": { "text": "Context beyond the lineup." }
+    }
+  ]
+}

@@ -52,3 +52,11 @@ ios/.derivedData/
 ios/.pr-screenshots/
 ios/.pr-screenshots.xcresult
 ios/.local-service-role-key
+ios/vendor/bundle/
+# frameit raw captures + framed output are release artifacts, never source (same
+# rationale as ios/.pr-screenshots/ above) — but background.png IS committed, it's the
+# reusable frame background, not a per-run output.
+ios/fastlane/screenshots/en-US/
+ios/fastlane/screenshots/*.ttf
+ios/fastlane/README.md
+ios/fastlane/report.xml

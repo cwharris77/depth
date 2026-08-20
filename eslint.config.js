@@ -25,6 +25,10 @@ export default [
       'supabase/.temp',
       '.claude/worktrees',
       '.worktrees',
+      // Bundler-vendored Ruby gems (fastlane, for App Store screenshot framing) ship
+      // their own bundled JS assets (rdoc templates, etc.) — not ours to lint, and
+      // gitignored regardless.
+      'ios/vendor',
     ],
   },
   js.configs.recommended,
