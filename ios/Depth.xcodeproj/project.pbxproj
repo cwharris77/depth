@@ -697,6 +697,7 @@
 				8EE7A32A534DF9CA003AB3C0 /* Sources */,
 				0F0B279054F81F6D49419F4F /* Resources */,
 				8E39931D20D873ED816E523C /* Frameworks */,
+				77DDEAABC15525893EA13167 /* Auto-increment build number (archive only) */,
 			);
 			buildRules = (
 			);
@@ -771,6 +772,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		77DDEAABC15525893EA13167 /* Auto-increment build number (archive only) */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Auto-increment build number (archive only)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nbuildNumber=$(git -C \"${SRCROOT}\" rev-list --count HEAD)\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $buildNumber\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		5ACA526188BA530E42E7D5DD /* Sources */ = {
