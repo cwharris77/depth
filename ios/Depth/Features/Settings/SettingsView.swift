@@ -5,8 +5,10 @@ import SwiftUI
 // The About section satisfies design spec Gate 0 item 9 (in-app non-affiliation
 // disclaimer) and DEP-160's Apple requirement that the privacy policy be reachable from
 // within the app — the row links to the live production /privacy page
-// (AppBuildInfo.privacyPolicyURL) via the system browser. A support contact remains a
-// future Gate 0 item; no placeholder email is invented here.
+// (AppBuildInfo.privacyPolicyURL) via the system browser. A "Send Feedback" row opens a
+// pre-addressed mailto (AppBuildInfo.feedbackMailtoURL) — the app's only feedback
+// channel, since there's no in-app form or analytics dashboard to otherwise surface
+// user-reported issues.
 //
 // Layout (DEP-257 design pass): three visually distinct tiers instead of one uniform
 // stack of look-alike cards — a bare identity header (no card chrome, mirrors web's
@@ -186,7 +188,13 @@ struct SettingsView: View {
                 // DEP-251: replays the first-run welcome + coachmark sequence — the
                 // ticket's "replayable from Settings" requirement. Independent of the
                 // persisted "seen" flag; this always starts the flow from the top.
+                // Dismissing this sheet first (rather than leaving TeamDetailView's
+                // `showAccount` stale) matters: the coachmark targets live on the roster
+                // page underneath this sheet, and leaving `showAccount` true here caused
+                // Settings to resurface mid-tour once the welcome cover's own dismissal
+                // reconciled — reading as the tour "exiting" right after the first step.
                 Button {
+                    dismiss()
                     onboarding.replay()
                 } label: {
                     HStack {
@@ -201,6 +209,22 @@ struct SettingsView: View {
                     .contentShape(Rectangle())
                 }
                 .accessibilityIdentifier("settings-take-the-tour")
+                if let url = AppBuildInfo.feedbackMailtoURL {
+                    Divider().overlay(DesignTokens.Colors.borderSubtle)
+                    Link(destination: url) {
+                        HStack {
+                            Text("Send Feedback")
+                                .foregroundStyle(DesignTokens.Colors.textPrimary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(DesignTokens.Colors.textFaint)
+                        }
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                    }
+                    .accessibilityIdentifier("settings-about-feedback")
+                }
                 if let url = AppBuildInfo.privacyPolicyURL {
                     Divider().overlay(DesignTokens.Colors.borderSubtle)
                     Link(destination: url) {
