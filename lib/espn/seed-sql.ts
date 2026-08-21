@@ -90,26 +90,12 @@ export function buildSeedSql(entries: SeedEntry[]): string {
       });
     }
 
+    // playoff_seed only, mirroring writeTeamStats' narrowed live upsert after the DEP-146
+    // re-own -- the record columns are nflverse's now (buildTeamRecordsSeedSql).
     for (const s of stats) {
       teamStats.push({
         team_id: team.id,
         season: s.season,
-        overall_wins: s.overallWins,
-        overall_losses: s.overallLosses,
-        overall_ties: s.overallTies,
-        win_percent: s.winPercent,
-        home_wins: s.homeWins,
-        home_losses: s.homeLosses,
-        road_wins: s.roadWins,
-        road_losses: s.roadLosses,
-        division_wins: s.divisionWins,
-        division_losses: s.divisionLosses,
-        conference_wins: s.conferenceWins,
-        conference_losses: s.conferenceLosses,
-        points_for: s.pointsFor,
-        points_against: s.pointsAgainst,
-        point_differential: s.pointDifferential,
-        streak: s.streak,
         playoff_seed: s.playoffSeed,
       });
     }
@@ -195,27 +181,7 @@ export function buildSeedSql(entries: SeedEntry[]): string {
     ),
     insertStatement(
       tables.teamStats,
-      [
-        'team_id',
-        'season',
-        'overall_wins',
-        'overall_losses',
-        'overall_ties',
-        'win_percent',
-        'home_wins',
-        'home_losses',
-        'road_wins',
-        'road_losses',
-        'division_wins',
-        'division_losses',
-        'conference_wins',
-        'conference_losses',
-        'points_for',
-        'points_against',
-        'point_differential',
-        'streak',
-        'playoff_seed',
-      ],
+      ['team_id', 'season', 'playoff_seed'],
       teamStats,
       'team_id,season'
     ),

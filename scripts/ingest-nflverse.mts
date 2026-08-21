@@ -38,6 +38,7 @@ import { buildCrosswalk } from '@/lib/nflverse/crosswalk';
 import { toPlayerStatsRows, type PlayerStatsInsert } from '@/lib/nflverse/transform';
 import { toScheduleAndGameRows, type GameInsert, type ScheduleInsert } from '@/lib/nflverse/games';
 import { toTeamStatsRows, type TeamStatsInsert } from '@/lib/nflverse/team-stats';
+import { toTeamRecords, type TeamAlignment, type TeamRecordInsert } from '@/lib/nflverse/records';
 import { FormationAccumulator, type ParticipationRow } from '@/lib/nflverse/participation';
 import { DefenseFormationAccumulator } from '@/lib/nflverse/defense-participation';
 import { resolveTeamCode } from '@/lib/nflverse/team-codes';
@@ -49,6 +50,7 @@ import {
   buildPlayerStatsSeedSql,
   buildSchedulesAndGamesSeedSql,
   buildTeamFormationsSeedSql,
+  buildTeamRecordsSeedSql,
   buildTeamStatsSeedSql,
   type UnitFormationTally,
 } from '@/lib/nflverse/seed-sql';
@@ -141,6 +143,56 @@ async function ingestGames(
     return { schedules, games, skipped, failure: null };
   } catch (e) {
     return { schedules: [], games: [], skipped: 0, failure: (e as Error).message };
+  }
+}
+
+// Season W-L records into `team_stats` -- the DEP-146 re-own (Decisions.md 2026-08-14:
+// nflverse owns stats/history, so the record leaves ESPN's standings aggregate). Consumes
+// the games this run just computed, so it must follow ingestGames.
+//
+// Column-scoped upsert: this writes only the record columns, never `playoff_seed`, which
+// stays ESPN-owned (scripts/ingest-espn.mts). PostgREST's on-conflict update touches only
+// the columns present in the payload, so the two ingests share the row without either
+// clobbering the other -- the reason this needed no schema change.
+//
+// Conference/division come from `teams` (ESPN-owned identity data) for the div/conf
+// splits. SEED_OUT mode has no DB to read them from and lib/teams/league.ts is
+// identity-only by design, so a seed run zeroes those two splits -- every other column is
+// still exact. Local-dev fixture only; the live path always has the real alignments.
+async function ingestTeamRecords(
+  supabase: SupabaseClient<Database> | null,
+  games: GameInsert[]
+): Promise<{ rows: TeamRecordInsert[]; failure: string | null }> {
+  try {
+    const alignments = new Map<string, TeamAlignment>();
+    if (supabase) {
+      const { data, error } = await supabase.from('teams').select('id, conference, division');
+      if (error) throw new Error(`teams query failed: ${error.message}`);
+      for (const t of data ?? []) {
+        if (t.conference && t.division) {
+          alignments.set(t.id, { conference: t.conference, division: t.division });
+        }
+      }
+    } else {
+      console.log('records: SEED_OUT mode, division/conference splits zeroed (no teams table)');
+    }
+
+    const rows = toTeamRecords(games, alignments);
+
+    if (supabase && rows.length) {
+      for (let i = 0; i < rows.length; i += UPSERT_CHUNK) {
+        const chunk = rows.slice(i, i + UPSERT_CHUNK);
+        const { error } = await supabase
+          .from('team_stats')
+          .upsert(chunk, { onConflict: 'team_id,season' });
+        if (error) throw new Error(`team_stats upsert: ${error.message}`);
+      }
+    }
+
+    console.log(`records: ${supabase ? 'wrote' : 'computed'} ${rows.length} team-season records`);
+    return { rows, failure: null };
+  } catch (e) {
+    return { rows: [], failure: (e as Error).message };
   }
 }
 
@@ -430,6 +482,10 @@ async function main() {
   if (gamesResult.failure) failures.push({ season: 'games', message: gamesResult.failure });
   skipped += gamesResult.skipped;
 
+  // Season records, derived from the games just ingested (DEP-146 re-own).
+  const recordsResult = await ingestTeamRecords(supabase, gamesResult.games);
+  if (recordsResult.failure) failures.push({ season: 'records', message: recordsResult.failure });
+
   // Formations depend on this run's games (coverage denominator), so it runs after
   // ingestGames. Live mode queries the DB (may carry more history than this run wrote);
   // SEED_OUT mode reuses the games this same run just computed in-memory.
@@ -468,6 +524,7 @@ async function main() {
       buildSchedulesAndGamesSeedSql(gamesResult.schedules, gamesResult.games),
       buildTeamFormationsSeedSql(formationsResult.tallies),
       buildTeamStatsSeedSql(teamStatsResult.rows),
+      buildTeamRecordsSeedSql(recordsResult.rows),
     ];
     writeFileSync(seedOut, parts.filter(Boolean).join('\n') + '\n');
     console.log(
@@ -489,7 +546,8 @@ async function main() {
     gamesResult.games.length +
     gamesResult.schedules.length +
     formationsResult.tallies.length +
-    teamStatsResult.rows.length;
+    teamStatsResult.rows.length +
+    recordsResult.rows.length;
   const status = failures.length === 0 ? 'success' : totalWritten > 0 ? 'partial' : 'failure';
 
   const { error: runError } = await supabase.from('ingestion_runs').insert({
