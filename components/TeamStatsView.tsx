@@ -339,6 +339,7 @@ export default function TeamStatsView({
   const diffLabel = diff > 0 ? `+${diff}` : String(diff);
   const diffColor = diff > 0 ? uiAccent : diff < 0 ? uiTokens.statusInjured : uiTokens.textMuted;
   const gamesPlayed = active ? active.overallWins + active.overallLosses + active.overallTies : 0;
+  const gamesPlayedLabel = `${gamesPlayed} GAME${gamesPlayed === 1 ? '' : 'S'} PLAYED`;
   // Stub/upcoming team_stats rows can exist before a season starts. With every team at
   // 0 games and 0 points, ranking those rows makes everyone look "first" at stats that
   // have not happened yet, so rank context starts only after a real game is recorded.
@@ -504,7 +505,7 @@ export default function TeamStatsView({
             <div
               className="px-5 pb-[22px] pt-3.5 tracking-[0.06em]"
               style={{ color: uiTokens.textFaintest, fontSize: typeScale.caption }}>
-              {active.season} SEASON · {gamesPlayed} GAMES PLAYED
+              {active.season} SEASON · {gamesPlayedLabel}
             </div>
           </>
         ) : clampedIndex === -1 && upcomingSeason ? (

@@ -243,10 +243,11 @@ struct TeamStatsView: View {
         Rectangle().fill(color).frame(height: 1)
     }
 
-    /// Web's footer ticker (lines 519-524): `"{season} SEASON · {games} GAMES PLAYED"`.
+    /// Web's footer ticker (lines 519-524): `"{season} SEASON · {games} GAME(S) PLAYED"`.
     private func footerTicker(_ stats: TeamSeasonStats) -> some View {
         let games = stats.overallWins + stats.overallLosses + stats.overallTies
-        return StatsEyebrow(text: "\(stats.season) SEASON · \(games) GAMES PLAYED")
+        let gamesLabel = "\(games) GAME\(games == 1 ? "" : "S") PLAYED"
+        return StatsEyebrow(text: "\(stats.season) SEASON · \(gamesLabel)")
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, DesignTokens.Spacing.md)
             .padding(.top, DesignTokens.Spacing.md)
