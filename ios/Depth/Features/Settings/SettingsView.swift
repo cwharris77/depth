@@ -182,7 +182,7 @@ struct SettingsView: View {
                 LabeledContent("Name", value: AppBuildInfo.displayName)
                     .accessibilityIdentifier("settings-about-name")
                 Divider().overlay(DesignTokens.Colors.borderSubtle)
-                LabeledContent("Version", value: AppBuildInfo.versionAndBuild)
+                LabeledContent("Version", value: AppBuildInfo.version)
                     .accessibilityIdentifier("settings-about-version")
                 Divider().overlay(DesignTokens.Colors.borderSubtle)
                 // DEP-251: replays the first-run welcome + coachmark sequence — the

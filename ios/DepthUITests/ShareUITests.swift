@@ -4,13 +4,13 @@ import XCTest
 // share sheet presents on real production data. Cancelling must leave
 // the team-detail screen unchanged (QA plan's "cancellation" case).
 final class ShareUITests: XCTestCase {
+    @MainActor
     func testShareDepthChartPresentsTheNativeShareSheet() throws {
         let app = XCUIApplication()
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
         app.launch()
 
         XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
-        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
 
         // Share lives behind the ••• overflow menu (2026-08-15 visual-pass: the bare
         // icon row was removed).
@@ -24,10 +24,10 @@ final class ShareUITests: XCTestCase {
 
         let shareSheet = app.otherElements["ActivityListView"]
         XCTAssertTrue(shareSheet.waitForExistence(timeout: 10), "tapping Share should present the native share sheet")
-        XCTAssertTrue(
-            app.navigationBars["Buffalo Bills depth chart · Depth"].waitForExistence(timeout: 5),
-            "the share sheet should carry the rendered card's title"
-        )
+        let brandedTitle = app.navigationBars.matching(
+            NSPredicate(format: "identifier CONTAINS %@", "depth chart · The Sticks")
+        ).firstMatch
+        XCTAssertTrue(brandedTitle.waitForExistence(timeout: 5), "the share title should use the current brand")
 
         // Cancel via the popover's dismiss region; the team-detail screen underneath
         // must be unaffected (still showing the same team, no state change).

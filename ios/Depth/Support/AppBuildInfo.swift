@@ -9,12 +9,12 @@ enum AppBuildInfo {
     /// Reads the live bundle's CFBundleDisplayName rather than a literal — a hardcoded
     /// string here silently went stale during the "The Sticks" rename (caught in QA:
     /// this row kept showing "Depth" even after the bundle's Info.plist was fixed).
-    /// Falls back to CFBundleName, then "Depth", for the same reason versionAndBuild
+    /// Falls back to CFBundleName, then "The Sticks", for the same reason versionAndBuild
     /// degrades rather than crashing on a missing key.
     static var displayName: String {
         (Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String)
             ?? (Bundle.main.infoDictionary?["CFBundleName"] as? String)
-            ?? "Depth"
+            ?? "The Sticks"
     }
 
     static let nonAffiliationDisclaimer =
@@ -49,9 +49,20 @@ enum AppBuildInfo {
         return components.url
     }
 
-    /// Reads the live bundle's version/build. A production `Bundle.main` always has both
-    /// keys (Xcode fills them from the target's marketing/build-number settings), but a
-    /// missing value still degrades to "—" rather than crashing or showing "nil".
+    /// Customer-facing marketing version shown in Settings. The build number stays out
+    /// of the visible About card, while `versionAndBuild` below retains it for support
+    /// email diagnostics and update-gate troubleshooting.
+    static var version: String {
+        guard
+            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+            !version.isEmpty
+        else { return "\u{2014}" }
+        return version
+    }
+
+    /// Diagnostic version/build used in support email subjects. A production
+    /// `Bundle.main` always has both keys, but a missing value still degrades to "—"
+    /// rather than crashing or showing "nil".
     static var versionAndBuild: String {
         formattedVersionAndBuild(
             version: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
