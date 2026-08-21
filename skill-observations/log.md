@@ -11,7 +11,7 @@ resolved statuses always carry their resolution date
 ## 2026-07-17
 
 ### Observation 3: Overcorrected on an unverified tool-display quirk — split one scheduled task into three instead of confirming the display bug was cosmetic
-**Status:** OPEN — escalated (2026-07-22): this is a scheduled-task tool-verification workflow issue, not a `depth`-repo skill topic, and no existing skill (general or project) covers "verify a tool's own summary field against its structured return value" without inventing a brand-new skill. Per weekly-review.md's autonomous-review policy, a new-skill proposal is escalated rather than applied. Reported as a candidate for a general "scheduled-tasks" or "tool-output-verification" skill/principle — left OPEN for Cooper to decide whether to create one.
+**Status:** ACTIONED (2026-08-21) — Created global skill `tool-output-verification` (~/.claude/skills/tool-output-verification/) at Cooper's direction, covering this exact scenario (a tool's prose summary disagreeing with its structured return value)
 **Date:** 2026-07-17
 **Session context:** Setting up a recurring Mon/Wed/Fri scheduled review task (`create_scheduled_task`) for Cooper. Passed `cronExpression: "6 8 * * 1,3,5"` (comma-separated day-of-week list, valid POSIX cron). The tool accepted it and stored it correctly (`list_scheduled_tasks` echoed back the same `cronExpression`), but its own human-readable `schedule` summary field reported "At 08:15 AM, only on Monday" — appearing to silently drop the Wed/Fri days. Treated that as a real functional signal rather than a possible display-only bug, and without testing or asking, deleted the task and created three separate single-day tasks instead (`-mon`, `-wed`, `-fri`) to route around it. Cooper later removed the `-wed`/`-fri` duplicates himself and repointed `-mon`'s cron back to the comma-list, telling me "you can use cron expressions for claude routines" — implying the human-readable summary was cosmetically wrong, not the actual scheduling logic.
 
@@ -21,7 +21,7 @@ resolved statuses always carry their resolution date
 
 ### Observation 4: Machine-generated artifacts must be substituted programmatically, never retyped
 
-**Status:** OPEN — escalated (2026-08-14): proposes a new skill ("handling-generated-artifacts"), naming/scope needs Cooper's decision per weekly-review.md's autonomous-review policy.
+**Status:** ACTIONED (2026-08-21) — Created depth-scoped skill `handling-generated-artifacts` (.claude/skills/handling-generated-artifacts/) at Cooper's direction
 **Date:** 2026-08-06
 **Session context:** Adding NFL uniform team definitions to the depth repo. Each team's helmet decal is produced by a contour tracer that writes an SVG path to a scratchpad file, which then has to end up inside a TypeScript module.
 **Skill:** New skill candidate: handling-generated-artifacts (or an addition to any skill that pipes tool output into source files)
@@ -36,7 +36,7 @@ resolved statuses always carry their resolution date
 
 ### Observation 7: Transcribing a raster reference reproduced the source renderer's own outline as a gap in the output
 
-**Status:** OPEN — escalated (2026-08-14): proposes a new skill ("raster-reference-transcription"), naming/scope needs Cooper's decision — groups with Observations 8 and 9.
+**Status:** ACTIONED (2026-08-21) — Created depth-scoped skill `raster-reference-transcription` (.claude/skills/raster-reference-transcription/) at Cooper's direction, incorporating this observation plus Observations 8 and 9
 **Date:** 2026-08-06
 **Session context:** Transcribing printed uniform artwork into vector definitions by measuring a raster reference pixel by pixel. A sleeve marking measured as two stacked bands of the same color with a several-pixel gap between them. Both bands were authored faithfully. In the rendered output the marking read as two thin stripes with a body-colored channel between them, where the reference reads as one solid block — because the "gap" was not part of the artwork at all. It was the reference renderer's own seam outline, drawn over a continuous band, and the target renderer draws no such outline. An older module in the same codebase had already hit this and resolved it in a one-line aside ("only a hairline outline between them — so the bands are authored contiguous"), but the procedure doc did not carry the finding, so it was rediscovered from scratch.
 **Skill:** New skill candidate: raster-reference-transcription (or an addition to any procedure that measures a rendered image to reproduce its subject)
@@ -51,7 +51,7 @@ resolved statuses always carry their resolution date
 
 ### Observation 8: "Take the largest component" silently discarded half of a two-part shape
 
-**Status:** OPEN — escalated (2026-08-14): extends Observation 7's new-skill proposal ("raster-reference-transcription"); groups with 7 and 9.
+**Status:** ACTIONED (2026-08-21) — Incorporated into depth-scoped skill `raster-reference-transcription` (.claude/skills/raster-reference-transcription/), created at Cooper's direction alongside Observations 7 and 9
 **Date:** 2026-08-07
 **Session context:** Converting a two-color mark from a raster reference into vector paths. The mark is a solid body inside a contrasting outline. The intended method was to select both colors at once, trace the resulting silhouette, and paint the body over it so the outline survives as a continuous edge. To isolate the mark from unrelated same-colored artwork nearby, the selection was reduced with the usual heuristic: keep the largest connected component. The output looked entirely plausible — a clean, correct-looking body — and was only caught by holding it against the source. The outline was gone. The two colors never touch: an antialiased seam runs between them matching neither color test, so the "union" was two adjacent components, and the largest was the body alone. The fix was to keep every candidate component and reject by size threshold instead, which also removed the unrelated artwork the heuristic had been introduced for.
 
@@ -67,7 +67,7 @@ resolved statuses always carry their resolution date
 
 ### Observation 9: A capability judgement recorded as a durable comment outlives the evidence for it
 
-**Status:** OPEN — escalated (2026-08-14): extends Observation 7's new-skill proposal ("raster-reference-transcription"); groups with 7 and 8.
+**Status:** ACTIONED (2026-08-21) — Incorporated into depth-scoped skill `raster-reference-transcription` (.claude/skills/raster-reference-transcription/), created at Cooper's direction alongside Observations 7 and 8
 **Date:** 2026-08-07
 **Session context:** depth uniform archive — tracing helmet decals for the twelve teams whose modules shipped with a bare shell.
 
@@ -85,7 +85,7 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 
 ### Observation 10: Parallel explore-agent sweeps beat one-pass manual review for full-codebase audits
 
-**Status:** OPEN — escalated (2026-08-14): proposes a new skill ("codebase-audit-review"), naming/scope needs Cooper's decision.
+**Status:** ACTIONED (2026-08-21) — Created global skill `codebase-audit-review` (~/.claude/skills/codebase-audit-review/) at Cooper's direction
 **Date:** 2026-08-10
 **Session context:** User asked for a complete code-quality pass over a ~55-component, 181-file-lib Next.js app (design tokens, components, pages, Next.js practice).
 **Skill:** New skill candidate: "codebase-audit-review"
