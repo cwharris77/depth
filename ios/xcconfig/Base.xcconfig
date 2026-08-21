@@ -3,4 +3,9 @@ TARGETED_DEVICE_FAMILY = 1
 SWIFT_VERSION = 6.0
 CODE_SIGN_STYLE = Automatic
 DEVELOPMENT_TEAM = 63JZBB528Q
-PRODUCT_BUNDLE_IDENTIFIER = com.cwharris.depth
+
+// Release identity defaults. Debug/Staging override these three values so their apps
+// install beside TestFlight instead of replacing it, while sharing the same target.
+APP_BUNDLE_IDENTIFIER = com.cwharris.depth
+APP_DISPLAY_NAME = The Sticks
+APP_ICON_NAME = AppIcon
