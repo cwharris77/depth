@@ -1,5 +1,10 @@
 #include "Base.xcconfig"
 
+// Device-installable build that can live beside the App Store/TestFlight app.
+APP_BUNDLE_IDENTIFIER = com.cwharris.depth.staging
+APP_DISPLAY_NAME = The Sticks Beta
+APP_ICON_NAME = AppIconStage
+
 // TODO(DEP-40 Lane B): points at production until a dedicated staging Supabase project
 // exists. Swap this URL/key once Lane B provisions persistent staging.
 SUPABASE_URL = https:/$()/jiqoaqmzmvtovimnmbzl.supabase.co

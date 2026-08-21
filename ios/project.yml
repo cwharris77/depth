@@ -57,15 +57,12 @@ targets:
     info:
       path: Depth/Info.plist
       properties:
-        CFBundleDisplayName: The Sticks
-        # Overrides xcodegen's default `$(PRODUCT_NAME)` reference (which resolves to the
-        # Xcode target name, "Depth" — untouched by the CFBundleDisplayName rename).
-        # ITMS-90129 checks both keys for App Store name-uniqueness, so leaving this
-        # unset kept triggering "bundle name or display name already taken" even after
-        # the display name was fixed (rejected build 481). Set as a plist literal rather
-        # than via PRODUCT_NAME so the built .app filename/executable stay "Depth.app" —
-        # only the two user-facing name keys change.
-        CFBundleName: The Sticks
+        CFBundleDisplayName: $(APP_DISPLAY_NAME)
+        # Overrides xcodegen's default `$(PRODUCT_NAME)` reference (the Xcode target name,
+        # "Depth") with a configuration-driven display name. Keeping both plist keys on
+        # APP_DISPLAY_NAME preserves App Store name-uniqueness while letting Dev/Stage be
+        # unmistakable on-device; the built app and executable remain "Depth.app".
+        CFBundleName: $(APP_DISPLAY_NAME)
         CFBundleShortVersionString: '1.0'
         # Baseline for Debug/Staging runs; the archive-only postbuildScripts phase below
         # overwrites this with the git commit count for every App Store/TestFlight build.
@@ -92,6 +89,8 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: NO
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_IDENTIFIER)
+        ASSETCATALOG_COMPILER_APPICON_NAME: $(APP_ICON_NAME)
         # Cooper's Apple Developer Team ID — needed to sign on-device/test builds. It's a
         # public identifier (not a credential), so it's safe to commit; XcodeGen keeps the
         # regenerated project in sync with this, so the CI project-sync check stays green.
@@ -132,6 +131,7 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_IDENTIFIER).tests
     dependencies:
       - target: Depth
       - package: Supabase
@@ -145,6 +145,7 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_IDENTIFIER).uitests
     dependencies:
       - target: Depth
 
@@ -178,6 +179,27 @@ schemes:
             - PRScreenshotsUITests
     archive:
       config: Release
+
+  # Discoverable local-development alias. The canonical Depth scheme keeps the same
+  # Debug actions for CI; this name makes the installed identity explicit in Xcode.
+  Depth Dev:
+    build:
+      targets:
+        Depth: all
+        DepthTests: [test]
+        DepthUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - DepthTests
+        - name: DepthUITests
+          skippedTests:
+            - AppStoreScreenshotsUITests
+            - PRScreenshotsUITests
+    archive:
+      config: Debug
 
   # Dedicated scheme for the agent-triggered PR screenshot capture. It includes the
   # DepthUITests target WITHOUT the AppStore/PR screenshot skips, so the workflow (and

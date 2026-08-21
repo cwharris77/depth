@@ -1040,6 +1040,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER).uitests";
 				SDKROOT = iphoneos;
 				TEST_TARGET_NAME = Depth;
 			};
@@ -1048,7 +1049,7 @@
 		3412EB4E08C8AED5D2D8A5FE /* Staging */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "$(APP_ICON_NAME)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = 63JZBB528Q;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -1058,6 +1059,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER)";
 				SDKROOT = iphoneos;
 			};
 			name = Staging;
@@ -1065,7 +1067,7 @@
 		3BC087ADFAF8DBC070076F3F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "$(APP_ICON_NAME)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = 63JZBB528Q;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -1075,6 +1077,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER)";
 				SDKROOT = iphoneos;
 			};
 			name = Release;
@@ -1089,6 +1092,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER).uitests";
 				SDKROOT = iphoneos;
 				TEST_TARGET_NAME = Depth;
 			};
@@ -1227,6 +1231,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER).tests";
 				SDKROOT = iphoneos;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Depth.app/Depth";
 			};
@@ -1242,6 +1247,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER).tests";
 				SDKROOT = iphoneos;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Depth.app/Depth";
 			};
@@ -1257,6 +1263,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER).tests";
 				SDKROOT = iphoneos;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Depth.app/Depth";
 			};
@@ -1265,7 +1272,7 @@
 		F8DC7DAC461AC78FF59C8487 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "$(APP_ICON_NAME)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = 63JZBB528Q;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -1275,6 +1282,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER)";
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -1289,6 +1297,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER).uitests";
 				SDKROOT = iphoneos;
 				TEST_TARGET_NAME = Depth;
 			};
