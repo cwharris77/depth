@@ -98,16 +98,6 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 
 **Principle:** When a deliverable is too big for one context, parallel subagents with per-layer scope and a verification mandate give better coverage than a sequential manual pass — but the orchestrator must spot-check the highest-claim findings and instruct agents to separate verified negatives from genuine findings, or the report mixes noise and hallucination and the orchestration adds nothing.
 
-### Observation 11: "Which season is current" has two legitimate definitions in one codebase — a picker's top row must match its page's default view
-
-**Status:** ACTIONED (2026-08-19) — Applied to `implement-spec` (Step 4: added the "derive 'current' from the page's own default, not a sibling's definition" rule), staged at `skill-updates/2026-08-19/implement-spec/` (scheduled review). Note: a prior interactive session had already drafted this same change on 2026-08-18 but staged it rebased only on the then-live file, which dropped Observation 12/13's still-unlived 2026-08-14 changes; today's staged version consolidates all three so nothing is lost when installed.
-**Date:** 2026-08-10
-**Session context:** depth past-season schedule view — wiring a SeasonSheet season picker onto the SCHEDULE tab. The roster page computes `currentSeason = isOffseason ? upcomingSeason : upcomingSeason - 1` ("the season whose roster is live"), but the schedule page's default view is `getTeamSchedule(id)`'s latest-season-present, which during the off-season is the *upcoming* season (already scheduled) and in January is still the in-progress season. Using the roster page's definition for the schedule picker would have produced a top row ("2025 · Current") that disagreed with the view actually on screen (2026), making the picker's active-row check read as wrong seconds after opening it.
-
-**Suggested improvement:** When adding a season/state picker to a page that already has a default view, derive the picker's "current" row from that page's own default (here `schedule.season`), not from a sibling page's definition — even when both pages are in the same app and the sibling's constant is already server-computed. Note the divergence in a comment at the point of choice, because the two definitions are both "right" and only one agrees with the page.
-
-**Principle:** A "current" or "active" label has to mean the same thing as the view it annotates; reusing a sibling surface's definition because it shares a name is how an indicator ends up tracking a different notion of "today" than the content below it.
-
 ### Observation 13: A ticket's quoted code references are a snapshot that drifts
 
 **Status:** OPEN — escalated (2026-08-14): proposes a new skill ("ticket-execution"), naming/scope needs Cooper's decision. Note: the stale-quote-reference part of this observation's suggested improvement was folded into `implement-spec`'s step 1 as an additive fix during this review (see Observation 12's ACTIONED note above) — this observation stays OPEN because the new-skill proposal itself is still undecided.
@@ -129,7 +119,7 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 
 ### Observation 17: A formal ticket with locked acceptance criteria is itself the scope confirmation for a multi-file refactor
 
-**Status:** OPEN
+**Status:** ACTIONED (2026-08-21) — Applied to `implement-spec` (added a note under Overview: a formal ticket with locked decisions and explicit Acceptance/Done-when is itself the scope confirmation for CLAUDE.md's multi-file-refactor pause; document judgment calls in the PR/commit body instead), staged at `skill-updates/2026-08-21/implement-spec/` (scheduled review)
 **Date:** 2026-08-12
 **Session context:** Implementing "Align primitive variant vocabularies" end-to-end — a 14-file UI-primitives rename (prop + value renames across Button/IconButton/Badge, Card's padding prop removed, a new shared vocabulary module).
 **Skill:** General agent-workflow guidance (also relevant to any skill that gates edits on scope confirmation)
@@ -141,18 +131,3 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 **Suggested improvement:** Treat a formal ticket whose acceptance criteria and done-when are explicit as the confirmation itself: restate the planned design decisions in the final report and commit rather than pausing pre-edit. Reserve the blocking pause for genuinely underspecified asks (no acceptance criteria, or a mapping choice that changes visible behavior). Where a ticket's wording leaves real latitude, state the chosen interpretation explicitly in the commit body so the reviewer can veto cheaply.
 
 **Principle:** The "wait for confirmation" guardrail exists to catch scope-creep risk in underspecified requests, not to gate every edit. A scoped ticket is the artifact that resolves the ambiguity — the confirmation step degrades to "document the judgment calls taken," which keeps the guardrail's protection without serializing the whole task on a pause.
-
-### Observation 20: Visual-reference iteration needs a stable source artifact before implementation
-
-**Status:** ACTIONED (2026-08-19) — `design-shotgun` is a read-only third-party plugin skill (symlinked, gstack-synced), so this was routed to a companion `design-shotgun-extras` skill instead per weekly-review.md's system-skill policy. A prior interactive session had already drafted and staged the full companion skill on 2026-08-18 at `~/.claude/skill-updates/2026-08-18/design-shotgun-extras/` (global skill, correctly staged outside this repo) — content verified against this observation and found complete; re-staging was unnecessary (scheduled review)
-**Date:** 2026-08-17
-**Session context:** DEP-57 logo redesign — iterating from an image reference through several generated SVG revisions before porting the approved mark into web, SwiftUI, and icon-generation code.
-**Skill:** design-shotgun
-**Type:** open-source
-**Phase/Area:** Reference-driven visual iteration and multi-platform handoff
-
-**Issue:** The first visual reference was not the intended source, which led to several plausible but wrong SVG revisions: a collar between the target and pole, a seamless joint, and equal-length bars. The correction became easy only after the user supplied the right reference and the visual differences were stated explicitly: detached target, detached pole, two pole stripes, and long/medium/short bars. The design work also exposed that an image-generation tool may be unavailable or unable to route through the project's model proxy, so an SVG-first fallback is valuable.
-
-**Suggested improvement:** For image-led design work, require a reference-confirmation checkpoint before implementation: identify the source image, summarize its defining geometry, and show one source-faithful SVG render at multiple target sizes before touching production code. Keep the approved SVG as the canonical handoff artifact, then derive web, native, and raster assets from it rather than recreating geometry separately.
-
-**Principle:** A visual reference is a specification only after its defining geometry has been confirmed; the canonical vector artifact should be approved first, then all platform implementations should be generated or ported from that one source.
