@@ -43,6 +43,7 @@ import { DefenseFormationAccumulator } from '@/lib/nflverse/defense-participatio
 import { resolveTeamCode } from '@/lib/nflverse/team-codes';
 import { parseSeasonsArg } from '@/lib/nflverse/seasons-arg';
 import { SEASONS_MIN } from '@/lib/nflverse/roster-history';
+import { notifyRevalidate } from '@/lib/utils/ingest/notify-revalidate';
 import {
   extractPlayerIds,
   buildPlayerStatsSeedSql,
@@ -514,6 +515,10 @@ async function main() {
     },
   });
   if (runError) throw new Error(`failed to record ingestion_runs: ${runError.message}`);
+
+  if (status === 'success') {
+    await notifyRevalidate(['ingest:nflverse']);
+  }
 
   console.log(
     `\nWrote ${rowsWritten} player-stat rows across ${seasons.length} season(s), ` +
