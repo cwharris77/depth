@@ -18,6 +18,9 @@ struct DepthSegmentedOption<Selection: Hashable> {
 }
 
 struct DepthSegmentedControl<Selection: Hashable>: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Namespace private var selectionNamespace
+
     let options: [DepthSegmentedOption<Selection>]
     let selection: Selection
     let onChange: (Selection) -> Void
@@ -31,19 +34,17 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
 
     var body: some View {
         // Web `md` track: `rounded-2xl p-1 gap-1` — native hugging-content HStack on the
-        // `surfaceChip` track. Each segment is `rounded-xl px-2.5 py-1.5` in web. DEP-235:
-        // no 44pt min-height frame here — that inflated the Button's *layout box* (not
-        // just its hit area), so the track sized to 44pt while the drawn highlight capsule
-        // stayed ~24pt, leaving the "background extends way beyond the highlight" gap.
-        // This is web's compact `sm` size sitting inline with the team pill (which isn't
-        // 44pt either), so the tap target here is the capsule itself (a stock capsule
-        // Picker would be the same). The unit tabs keep the 44pt guarantee via their own
-        // control (DepthUnitTabBar).
+        // `surfaceChip` track. The track and each button stay 44pt tall for the native
+        // touch target, while the selected surface is inset to 36pt so it reads as a
+        // highlight inside the control instead of a second oversized button. The selected
+        // surface moves as one piece between options, preserving spatial continuity.
         HStack(spacing: 4) {
             ForEach(options, id: \.value) { option in
                 let isActive = option.value == selection
                 Button {
-                    onChange(option.value)
+                    withAnimation(reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection) {
+                        onChange(option.value)
+                    }
                 } label: {
                     Text(option.label)
                         .font(.caption.bold())
@@ -52,16 +53,8 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                         .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .frame(maxWidth: fullWidth ? .infinity : nil)
-                        .background(isActive ? activeColor : Color.clear, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
-                                .strokeBorder(
-                                    isActive ? activeTextColor.opacity(0.40) : Color.clear,
-                                    lineWidth: 1
-                                )
-                        }
+                        .frame(maxWidth: fullWidth ? .infinity : nil, minHeight: 44)
+                        .background { selectionSurface(isActive: isActive) }
                 }
                 .contentShape(Rectangle())
                 .buttonStyle(.plain)
@@ -69,7 +62,30 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
             }
         }
         .frame(maxWidth: fullWidth ? .infinity : nil)
-        .padding(4)
+        .padding(.horizontal, 4)
         .background(DesignTokens.Colors.surfaceChip, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
+        .sensoryFeedback(.selection, trigger: selection)
+    }
+
+    @ViewBuilder
+    private func selectionSurface(isActive: Bool) -> some View {
+        if isActive {
+            if reduceMotion {
+                selectionShape.transition(.opacity)
+            } else {
+                selectionShape
+                    .matchedGeometryEffect(id: "segmented-selection", in: selectionNamespace)
+            }
+        }
+    }
+
+    private var selectionShape: some View {
+        RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
+            .fill(activeColor)
+            .overlay {
+                RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
+                    .strokeBorder(activeTextColor.opacity(0.40), lineWidth: 1)
+            }
+            .padding(.vertical, 4)
     }
 }
