@@ -6,7 +6,16 @@ import Foundation
 // App Store listing). The production site (depth-ashen.vercel.app) hosts the /privacy
 // page; verified live before wiring the link here.
 enum AppBuildInfo {
-    static let displayName = "Depth"
+    /// Reads the live bundle's CFBundleDisplayName rather than a literal — a hardcoded
+    /// string here silently went stale during the "The Sticks" rename (caught in QA:
+    /// this row kept showing "Depth" even after the bundle's Info.plist was fixed).
+    /// Falls back to CFBundleName, then "Depth", for the same reason versionAndBuild
+    /// degrades rather than crashing on a missing key.
+    static var displayName: String {
+        (Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String)
+            ?? (Bundle.main.infoDictionary?["CFBundleName"] as? String)
+            ?? "Depth"
+    }
 
     static let nonAffiliationDisclaimer =
         "This app is not endorsed by or affiliated with the National Football League. "
@@ -35,7 +44,7 @@ enum AppBuildInfo {
         components.scheme = "mailto"
         components.path = supportEmail
         components.queryItems = [
-            URLQueryItem(name: "subject", value: "Depth feedback (\(versionAndBuild))")
+            URLQueryItem(name: "subject", value: "\(displayName) feedback (\(versionAndBuild))")
         ]
         return components.url
     }
