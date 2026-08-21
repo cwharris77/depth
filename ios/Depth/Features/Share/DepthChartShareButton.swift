@@ -12,7 +12,7 @@ struct DepthChartShareButton: View {
     @Environment(\.displayScale) private var displayScale
 
     private var shareTitle: String {
-        "\(snapshot.team.city) \(snapshot.team.name) depth chart · Depth"
+        "\(snapshot.team.city) \(snapshot.team.name) depth chart · \(AppBuildInfo.displayName)"
     }
 
     private var renderedImage: Image? {
