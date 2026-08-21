@@ -10,7 +10,11 @@ import Foundation
 // DEP-248 read-path audit (which surfaces cache, which delegate, and why):
 //   teams()          cache-first + background refresh (team list is stable, 32 rows)
 //   teamSnapshot()   cache-first + background refresh (depth chart is the launch surface)
-//   teamStats()      cache-first + background refresh (same primary-nav budget as snapshot)
+//   teamStats()      TTL-bounded, same as teamSchedule() (originally serve-any-age like
+//                    the snapshot — fixed after a live QA pass caught a stale W-L record
+//                    being served indefinitely; stats carries the same "scores finalize
+//                    on a different cadence than rosters" problem schedule already
+//                    accounted for, so it earns the same statsTTL treatment)
 //   teamSchedule()   TTL-bounded: cache-first within scheduleTTL, network-first beyond —
 //                    scores finalize on a different cadence than rosters, so never serve
 //                    a stale week
@@ -36,6 +40,11 @@ actor CachingDepthRepository: DepthRepository {
     /// network-first so a week-old schedule is never served. 12h keeps same-day revisits
     /// instant while capping staleness at half a slate.
     static let scheduleTTL: TimeInterval = 12 * 3600
+
+    /// Same window and same reasoning as `scheduleTTL` — team stats (W-L record, PF/PA)
+    /// is score data, not roster data, so it gets the schedule's TTL-bounded treatment
+    /// instead of the snapshot's serve-any-age one.
+    static let statsTTL: TimeInterval = 12 * 3600
 
     private var inFlightListFetch: Task<[Team], Error>?
     private var inFlightSnapshotFetches: [String: Task<TeamSnapshot, Error>] = [:]
@@ -151,22 +160,35 @@ actor CachingDepthRepository: DepthRepository {
 
     // MARK: - Team stats (round-4 Stats page)
 
-    /// Round-4 spec's Data flow: cache-first, exactly like the snapshot — the Stats page
-    /// sits behind the team-detail header on the primary navigation path, so it earns the
-    /// same warm-cache budget as the depth chart instead of a fresh network read per
-    /// visit. The spec says to reuse the snapshot cache layer, so this is the same
-    /// cache-hit/background-refresh/retain-on-failure pattern as `teamSnapshot`, not the
-    /// network-first `appConfig` split.
+    /// TTL-bounded, same shape as `teamSchedule` (§ note above this class's DEP-248
+    /// audit): within `statsTTL` a revisit is a cache hit with a background refresh;
+    /// beyond it the read goes network-first so a stale W-L record/PF/PA is never served
+    /// indefinitely, falling back to the last good row if the refresh fails
+    /// (retain-on-failure).
     func teamStats(teamId: String) async throws -> TeamStatsPage {
-        if let cached = try? await store.teamStats(teamId: teamId) {
+        if let cached = try? await store.teamStats(teamId: teamId),
+            let cachedAt = try? await store.teamStatsCachedAt(teamId: teamId),
+            !isStatsExpired(cachedAt)
+        {
             refreshStatsInBackground(teamId: teamId)
             return cached
         }
-        return try await refreshStats(teamId: teamId)
+        do {
+            return try await refreshStats(teamId: teamId)
+        } catch {
+            if let cached = try? await store.teamStats(teamId: teamId) {
+                return cached
+            }
+            throw error
+        }
     }
 
     func teamStatsCachedAt(teamId: String) async -> Date? {
         try? await store.teamStatsCachedAt(teamId: teamId)
+    }
+
+    private func isStatsExpired(_ cachedAt: Date, now: Date = Date()) -> Bool {
+        now.timeIntervalSince(cachedAt) > Self.statsTTL
     }
 
     @discardableResult
