@@ -17,7 +17,7 @@ struct WelcomeView: View {
             DepthBrandMark(size: 72)
 
             VStack(spacing: DesignTokens.Spacing.sm) {
-                Text("Welcome to Depth")
+                Text("Welcome to \(AppBuildInfo.displayName)")
                     .font(.largeTitle.bold())
                     .foregroundStyle(DesignTokens.Colors.textPrimary)
                     .multilineTextAlignment(.center)
