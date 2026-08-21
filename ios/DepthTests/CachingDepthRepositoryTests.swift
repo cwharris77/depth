@@ -341,6 +341,34 @@ private func schedule(season: Int = 2026) -> TeamSchedule {
     #expect(result.team.id == "bills", "a discarded incompatible row falls through to a real network fetch")
 }
 
+// Regression coverage for the stale-record bug caught in a live QA pass: a team's W-L
+// record/PF/PA visibly changed between two app launches with no indication either
+// reading was stale, because teamStats originally served a cached page of any age
+// (same pattern as teamSnapshot). These three tests mirror the teamSchedule TTL tests
+// above exactly — teamStats now gets the identical TTL-bounded treatment, since a
+// team's record is score data with the same "finalizes on a different cadence than
+// rosters" staleness problem as a schedule.
+@Test func expiredTeamStatsTTLGoesNetworkFirst() async throws {
+    let store = inMemoryStore()
+    try await store.saveTeamStats(statsPage(), teamId: "bills", cachedAt: Date().addingTimeInterval(-CachingDepthRepository.statsTTL - 1))
+    let underlying = FakeDepthRepository(statsResults: ["bills": .success(statsPage())])
+    let repository = CachingDepthRepository(underlying: underlying, store: store)
+
+    let result = try await repository.teamStats(teamId: "bills")
+    #expect(result.team.id == "bills")
+    #expect(await underlying.statsCallCount(forTeam: "bills") == 1, "an expired stats page must refresh from the network, not serve the stale record")
+}
+
+@Test func expiredTeamStatsFallsBackToCacheWhenNetworkFails() async throws {
+    let store = inMemoryStore()
+    try await store.saveTeamStats(statsPage(), teamId: "bills", cachedAt: Date().addingTimeInterval(-CachingDepthRepository.statsTTL - 1))
+    let underlying = FakeDepthRepository(statsResults: ["bills": .failure(DepthError.offline)])
+    let repository = CachingDepthRepository(underlying: underlying, store: store)
+
+    let result = try await repository.teamStats(teamId: "bills")
+    #expect(result.team.id == "bills", "an expired page whose refresh fails must still fall back to the last good cached page")
+}
+
 // MARK: - Team schedule cache (DEP-248)
 
 @Test func teamScheduleFetchesFromUnderlyingOnCacheMiss() async throws {
