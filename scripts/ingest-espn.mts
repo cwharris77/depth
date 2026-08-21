@@ -27,6 +27,7 @@ import {
   type EspnStandings,
 } from '@/lib/espn/standings';
 import { reconcileHomeUniforms } from '@/lib/uniforms/reconcile-db';
+import { notifyRevalidate } from '@/lib/utils/ingest/notify-revalidate';
 import { TEAMS } from '@/lib/teams/index';
 import { parseSeasonsArg } from '@/lib/nflverse/seasons-arg';
 import type { EspnDepthcharts, EspnRoster, EspnTeamInfo } from '@/lib/espn/types';
@@ -262,6 +263,10 @@ async function main() {
     errors: errors.length ? errors : null,
   });
   if (runError) throw new Error(`failed to record ingestion_runs: ${runError.message}`);
+
+  if (status === 'success') {
+    await notifyRevalidate(['ingest:espn']);
+  }
 
   console.log(`\nWrote ${teamsWritten} teams. Status: ${status}`);
   if (errors.length) {

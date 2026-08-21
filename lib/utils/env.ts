@@ -30,3 +30,9 @@ export function getSupabaseAnonKey(): string {
 export function getSupabaseSecretKey(): string {
   return requireEnv('SUPABASE_SECRET_KEY', process.env.SUPABASE_SECRET_KEY);
 }
+
+// Gates app/api/ingest/revalidate/route.ts (2026-08-20-ingest-cache-revalidation-design.md)
+// — the ingest scripts' Bearer token, checked against this on every revalidate call.
+export function getIngestRevalidateSecret(): string {
+  return requireEnv('INGEST_REVALIDATE_SECRET', process.env.INGEST_REVALIDATE_SECRET);
+}

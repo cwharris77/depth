@@ -50,4 +50,10 @@ jobs:
           SEASONS: ${{ inputs.seasons }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          # Last step on a successful run POSTs to app/api/ingest/revalidate so the
+          # deployed app doesn't wait out the `ingest` cacheLife profile's 6h window
+          # (2026-08-20-ingest-cache-revalidation-design.md). Missing either var is a
+          # silent no-op (notify-revalidate.ts), never a failed run.
+          APP_URL: ${{ secrets.APP_URL }}
+          INGEST_REVALIDATE_SECRET: ${{ secrets.INGEST_REVALIDATE_SECRET }}
           STRICT: '1'
