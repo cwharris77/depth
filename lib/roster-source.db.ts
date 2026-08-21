@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { cacheLife } from 'next/cache';
+import { cacheLife, cacheTag } from 'next/cache';
 import { tables } from '@/lib/supabase/tables';
 import type { Database } from '@/lib/database.types';
 import { getSupabaseUrl, getSupabaseAnonKey } from '@/lib/utils/env';
@@ -359,6 +359,7 @@ export function orderUniforms(rows: UniformRow[]): Uniform[] {
 async function fetchTeamRoster(teamId: string): Promise<TeamRoster | undefined> {
   'use cache';
   cacheLife('ingest');
+  cacheTag('ingest:espn');
   const client = supabase();
 
   // All four reads key off teamId, so fire them together — the teams row is not a
@@ -525,6 +526,7 @@ export async function getTeamSeason(
 ): Promise<TeamRoster | undefined> {
   'use cache';
   cacheLife('ingest');
+  cacheTag('ingest:nflverse');
   const client = supabase();
 
   const [
@@ -596,6 +598,7 @@ async function fetchAllRankRows<T>(
 async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undefined> {
   'use cache';
   cacheLife('ingest');
+  cacheTag('ingest:espn', 'ingest:nflverse');
   const client = supabase();
 
   const [
@@ -895,6 +898,7 @@ async function resolveEspnId(
 export async function getPlayerStats(playerId: string): Promise<PlayerSeasonStats[]> {
   'use cache';
   cacheLife('ingest');
+  cacheTag('ingest:nflverse');
   const client = supabase();
   const espnId = await resolveEspnId(client, playerId);
   if (!espnId) return [];
@@ -939,6 +943,7 @@ function toTeamFormation(row: TeamFormationRow): TeamFormation {
 export async function getTeamFormations(teamId: string): Promise<TeamFormation[]> {
   'use cache';
   cacheLife('ingest');
+  cacheTag('ingest:nflverse');
   const client = supabase();
   const { data, error } = await client
     .from(tables.teamFormations)
@@ -970,6 +975,7 @@ export async function getPlayerStatsForRoster(
 ): Promise<Map<string, PlayerSeasonStats[]>> {
   'use cache';
   cacheLife('ingest');
+  cacheTag('ingest:nflverse');
   const byPlayer = new Map<string, PlayerSeasonStats[]>();
   if (playerIds.length === 0) return byPlayer;
   const client = supabase();
@@ -1041,6 +1047,7 @@ async function fetchTeamMetaMap(): Promise<Map<string, Team>> {
 async function fetchTeamGames(teamId: string, season: number): Promise<Game[]> {
   'use cache';
   cacheLife('ingest');
+  cacheTag('ingest:nflverse');
   const client = supabase();
   const [home, away] = await Promise.all([
     client
@@ -1066,6 +1073,7 @@ async function fetchTeamGames(teamId: string, season: number): Promise<Game[]> {
 async function latestSeasonForTeam(teamId: string): Promise<number | null> {
   'use cache';
   cacheLife('ingest');
+  cacheTag('ingest:nflverse');
   const client = supabase();
   const [home, away] = await Promise.all([
     client
@@ -1174,6 +1182,7 @@ export async function getRosterLeaders(
 ): Promise<RosterLeaders | null> {
   'use cache';
   cacheLife('ingest');
+  cacheTag('ingest:espn', 'ingest:nflverse');
   try {
     const client = supabase();
     const { data: playerRows, error: playerError } = await client
@@ -1221,6 +1230,7 @@ export async function getNextGame(teamId: string): Promise<TeamScheduleGame | nu
 async function fetchAllTeamMeta(): Promise<TeamRow[]> {
   'use cache';
   cacheLife('ingest');
+  cacheTag('ingest:espn');
   const client = supabase();
   const { data, error } = await client.from(tables.teams).select(TEAM_SELECT).returns<TeamRow[]>();
   if (error) throw new Error(`teams query failed: ${error.message}`);
