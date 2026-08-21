@@ -8,6 +8,8 @@ import SwiftUI
 // the new Stats page (DEP-216); Schedule's pushed-destination chrome is suppressed
 // through `isEmbedded`.
 struct TeamDetailView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     @State private var viewModel: TeamDetailViewModel
     @State private var unit: Unit
     @State private var page: TeamPage = .roster
@@ -302,7 +304,7 @@ struct TeamDetailView: View {
                     formations: currentUnitFormations,
                     activeFormation: activeFormation,
                     accent: teamAccentColor,
-                    onSelect: { selectedFormation = $0; showFormations = false },
+                    onSelect: selectFormation,
                     onClose: { showFormations = false }
                 )
                 .presentationDetents([.medium, .large])
@@ -327,6 +329,8 @@ struct TeamDetailView: View {
                 .padding(.bottom, 4)
             pageContent
                 .frame(maxHeight: .infinity)
+                .id(page)
+                .transition(.opacity)
         }
         .frame(maxHeight: .infinity)
     }
@@ -757,6 +761,15 @@ struct TeamDetailView: View {
         }
         selectedPlayer = player
         requestedPlayerID = nil
+    }
+
+    /// The sheet delegates its state change here to keep the main SwiftUI body small
+    /// enough for the compiler while preserving the field's formation-settle animation.
+    private func selectFormation(_ formation: TeamFormation) {
+        withAnimation(reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.formation) {
+            selectedFormation = formation
+        }
+        showFormations = false
     }
 
     // DEP-219: no auth gate — reordering is local-first, matching web (which never

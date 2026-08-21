@@ -22,6 +22,8 @@ import SwiftUI
 // defense mid, special always), sized against the field's height so packed rows stay
 // readable without colliding.
 struct DepthChartFieldView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     let snapshot: TeamSnapshot
     let unit: Unit
     /// Overrides the dot fill/ring colors (web's kit selection recolors the field dots
@@ -91,33 +93,45 @@ struct DepthChartFieldView: View {
                 FieldMarkings()
                     .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
 
-                ForEach(slots, id: \.key) { slot in
-                    slotView(
-                        slot,
-                        dotSize: layout.dotSize,
-                        showsNames: showsNames,
-                        fieldHeight: proxy.size.height
-                    )
-                    // DEP-251: first-run tutorial's "tap any player" coachmark points at
-                    // whichever filled slot renders first — the field has no single
-                    // fixed "the QB dot", so the first resolved player stands in for
-                    // "any dot" rather than hard-coding a position that may be missing
-                    // on some team/unit. Tagged *before* `.position()` deliberately:
-                    // `.position()` makes a view accept/report whatever size its parent
-                    // proposes (here, the whole field's `ZStack`) rather than its own
-                    // small content size, so an anchor read after `.position()` resolves
-                    // to that inflated frame (measured directly: a "player dot" ring
-                    // that covered the entire field) instead of the ~44pt dot.
-                    .coachmarkTarget(if: slot.key == firstFilledSlotKey, id: .playerDot)
-                    .position(layout.positions[slot.key] ?? .zero)
-                    // Web parity (components/PlayerDot.tsx): on-line players would
-                    // straddle the line of scrimmage, so push the drawn dot a
-                    // circle-radius (+ a hair) onto its own side — offense (y past 50)
-                    // down, defense (y before 50) up. Keeps the whole circle behind
-                    // the line. Applied at render time so the formation coordinates
-                    // and geometry layer stay untouched (Formations parity oracle).
-                    .offset(y: lineOffset(for: slot, dotSize: layout.dotSize))
+                ZStack {
+                    ForEach(slots, id: \.key) { slot in
+                        slotView(
+                            slot,
+                            dotSize: layout.dotSize,
+                            showsNames: showsNames,
+                            fieldHeight: proxy.size.height
+                        )
+                        // DEP-251: first-run tutorial's "tap any player" coachmark points at
+                        // whichever filled slot renders first — the field has no single
+                        // fixed "the QB dot", so the first resolved player stands in for
+                        // "any dot" rather than hard-coding a position that may be missing
+                        // on some team/unit. Tagged *before* `.position()` deliberately:
+                        // `.position()` makes a view accept/report whatever size its parent
+                        // proposes (here, the whole field's `ZStack`) rather than its own
+                        // small content size, so an anchor read after `.position()` resolves
+                        // to that inflated frame (measured directly: a "player dot" ring
+                        // that covered the entire field) instead of the ~44pt dot.
+                        .coachmarkTarget(if: slot.key == firstFilledSlotKey, id: .playerDot)
+                        .position(layout.positions[slot.key] ?? .zero)
+                        // Web parity (components/PlayerDot.tsx): on-line players would
+                        // straddle the line of scrimmage, so push the drawn dot a
+                        // circle-radius (+ a hair) onto its own side — offense (y past 50)
+                        // down, defense (y before 50) up. Keeps the whole circle behind
+                        // the line. Applied at render time so the formation coordinates
+                        // and geometry layer stay untouched (Formations parity oracle).
+                        .offset(y: lineOffset(for: slot, dotSize: layout.dotSize))
+                    }
                 }
+                .id(unit)
+                .transition(.opacity)
+                .animation(
+                    reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.formation,
+                    value: formation
+                )
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
+                    .strokeBorder(DesignTokens.Colors.borderStrong, lineWidth: 1)
             }
         }
         .dynamicTypeSize(...DynamicTypeSize.accessibility1)
@@ -161,6 +175,7 @@ struct DepthChartFieldView: View {
             .accessibilityLabel("\(slot.label), \(player.name.isEmpty ? "number \(player.number)" : player.name)")
             .accessibilityHint("Opens player detail")
             .accessibilityIdentifier("player-slot-\(slot.key)")
+            .buttonStyle(FieldPlayerButtonStyle())
         } else if unit == .special {
             // Web parity gap, deliberately kept: special-team returners are the one case
             // where "no player" is a real, documented state (KR/PR "unfilled by policy",
@@ -244,5 +259,19 @@ struct DepthChartFieldView: View {
     /// applies, but the whole range grows at larger accessibility text sizes.
     private func nameFontSize(fieldHeight: CGFloat) -> CGFloat {
         min(maxNameFontSize, max(minNameFontSize, fieldHeight * 1.3 / 100))
+    }
+}
+
+/// Field-specific press feedback. Only the touched player moves, so the response reads
+/// as direct manipulation without making the whole formation bounce or delaying the
+/// system sheet transition that follows the tap.
+private struct FieldPlayerButtonStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.92 : 1)
+            .brightness(configuration.isPressed ? 0.08 : 0)
+            .animation(DesignTokens.Motion.feedback, value: configuration.isPressed)
     }
 }

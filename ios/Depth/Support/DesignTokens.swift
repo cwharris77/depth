@@ -129,4 +129,14 @@ enum DesignTokens {
         static let lg: CGFloat = 24
         static let full: CGFloat = 999
     }
+
+    /// Native motion vocabulary for state changes that recur across the app. Motion is
+    /// deliberately restrained: selection should feel immediate, formation changes get
+    /// enough time to explain where players moved, and Reduce Motion callers retain a
+    /// short crossfade instead of losing state feedback entirely.
+    enum Motion {
+        static let feedback = Animation.easeOut(duration: 0.12)
+        static let selection = Animation.snappy(duration: 0.24, extraBounce: 0)
+        static let formation = Animation.smooth(duration: 0.36)
+    }
 }

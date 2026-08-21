@@ -9,6 +9,9 @@ import SwiftUI
 // `UNIT_LABELS` uppercased ("SPECIAL", not "Special Teams"). 44pt min-height preserves
 // the tap target the stock capsule `Picker` used to provide.
 struct DepthUnitTabBar: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Namespace private var selectionNamespace
+
     let selection: Unit
     let onChange: (Unit) -> Void
     var activeColor: Color = DesignTokens.Colors.accent
@@ -19,12 +22,15 @@ struct DepthUnitTabBar: View {
             unitTab(.defense, label: "DEFENSE")
             unitTab(.special, label: "SPECIAL")
         }
+        .sensoryFeedback(.selection, trigger: selection)
     }
 
     private func unitTab(_ unit: Unit, label: String) -> some View {
         let isActive = unit == selection
         return Button {
-            onChange(unit)
+            withAnimation(reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection) {
+                onChange(unit)
+            }
         } label: {
             Text(label)
                 .font(.caption.weight(.bold))
@@ -34,13 +40,24 @@ struct DepthUnitTabBar: View {
                 // spreading OFFENSE/DEFENSE/SPECIAL across the full screen width.
                 .frame(minHeight: 44)
                 .overlay(alignment: .bottom) {
-                    Rectangle()
-                        .fill(isActive ? activeColor : Color.clear)
-                        .frame(height: 2)
+                    if isActive {
+                        if reduceMotion {
+                            selectionIndicator.transition(.opacity)
+                        } else {
+                            selectionIndicator
+                                .matchedGeometryEffect(id: "unit-selection", in: selectionNamespace)
+                        }
+                    }
                 }
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("unit-tab-\(unit.rawValue)")
+    }
+
+    private var selectionIndicator: some View {
+        Capsule()
+            .fill(activeColor)
+            .frame(height: 2)
     }
 }
