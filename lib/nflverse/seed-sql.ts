@@ -17,6 +17,7 @@ import type { RosterHistoryInsert } from './roster-history';
 import type { FormationTally } from './participation';
 import type { DefenseFormationTally } from './defense-participation';
 import type { TeamStatsInsert } from './team-stats';
+import type { TeamRecordInsert } from './records';
 
 export type UnitFormationTally =
   (FormationTally & { unit: 'offense' }) | (DefenseFormationTally & { unit: 'defense' });
@@ -265,6 +266,39 @@ export function buildTeamStatsSeedSql(rows: TeamStatsInsert[]): string {
       'fg_missed_distance',
       'fg_blocked_distance',
       'gwfg_distance_list',
+    ],
+    rows,
+    'team_id,season'
+  );
+}
+
+// The record half of `team_stats` (DEP-146 re-own: nflverse owns W-L, ESPN keeps only
+// playoff_seed). Deliberately omits playoff_seed so this insert can't clobber the column
+// the ESPN seed writes for the same row -- the seed mirrors the live path's column-scoped
+// upsert. Note the division/conference splits are zeroed in seed output: SEED_OUT mode has
+// no `teams` table to read alignments from (see ingestTeamRecords).
+export function buildTeamRecordsSeedSql(rows: TeamRecordInsert[]): string {
+  return insertStatement(
+    tables.teamStats,
+    [
+      'team_id',
+      'season',
+      'overall_wins',
+      'overall_losses',
+      'overall_ties',
+      'win_percent',
+      'home_wins',
+      'home_losses',
+      'road_wins',
+      'road_losses',
+      'division_wins',
+      'division_losses',
+      'conference_wins',
+      'conference_losses',
+      'points_for',
+      'points_against',
+      'point_differential',
+      'streak',
     ],
     rows,
     'team_id,season'

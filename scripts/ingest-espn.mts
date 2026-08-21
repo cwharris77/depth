@@ -375,10 +375,21 @@ async function writeTeam(
 // team_stats is one row per (team, season) -- multi-season stats page,
 // docs/superpowers/specs/2026-07-14-multi-season-team-stats-design.md. An empty array
 // means this team had no complete entry for any of the three fetched seasons this run
-// (bye-week gap, mid-season expansion) -- skip entirely rather than write a partial row;
-// whatever rows already exist from a prior run are left untouched. A single season
-// missing from `stats` (but others present) simply isn't in the array -- same partial
-// skip, now per-row instead of per-team.
+// (bye-week gap, mid-season expansion) -- skip entirely; whatever rows already exist from
+// a prior run are left untouched. A single season missing from `stats` (but others
+// present) simply isn't in the array -- same skip, per-row instead of per-team.
+//
+// DEP-146 re-own (Decisions.md 2026-08-14): this writes ONLY `playoff_seed` now. Every
+// W-L column moved to nflverse, computed REG-only from game rows
+// (lib/nflverse/records.ts), because ESPN's standings endpoint aggregates whatever season
+// type is currently live -- through August it reported *preseason* games as the season
+// record (DEP-200). Playoff seed has no nflverse equivalent, so it stays here.
+//
+// The narrow column list is load-bearing, not tidiness: PostgREST's on-conflict update
+// only touches columns present in the payload, so writing the record columns here would
+// clobber nflverse's REG-only values on the next ESPN run. `parseTeamStats` still parses
+// the full stat block -- harmless, and it keeps the required-field guard that decides
+// whether ESPN had a usable entry for this team at all.
 async function writeTeamStats(
   supabase: SupabaseClient<Database>,
   teamId: string,
@@ -389,22 +400,6 @@ async function writeTeamStats(
     stats.map((s) => ({
       team_id: teamId,
       season: s.season,
-      overall_wins: s.overallWins,
-      overall_losses: s.overallLosses,
-      overall_ties: s.overallTies,
-      win_percent: s.winPercent,
-      home_wins: s.homeWins,
-      home_losses: s.homeLosses,
-      road_wins: s.roadWins,
-      road_losses: s.roadLosses,
-      division_wins: s.divisionWins,
-      division_losses: s.divisionLosses,
-      conference_wins: s.conferenceWins,
-      conference_losses: s.conferenceLosses,
-      points_for: s.pointsFor,
-      points_against: s.pointsAgainst,
-      point_differential: s.pointDifferential,
-      streak: s.streak,
       playoff_seed: s.playoffSeed,
       updated_at: new Date().toISOString(),
     })),

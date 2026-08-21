@@ -84,6 +84,15 @@ export function nextGame(schedule: ResolvedScheduleGame[]): ResolvedScheduleGame
   return schedule.find((g) => !g.isBye && g.result === null) ?? null;
 }
 
+// The four nflverse postseason round codes. An explicit allowlist rather than "anything
+// that isn't REG": preseason rows carry `game_type = 'PRE'`, which the old negated filter
+// swept in as a postseason game (it would have rendered under POSTSEASON with a raw "PRE"
+// round label, since postseasonRoundLabel degrades an unknown code to itself). Latent
+// today — nflverse's games.csv carries no preseason rows at all (verified: only REG/WC/
+// DIV/CON/SB, 1999-2026) — but DEP-204 is scoped to ingest preseason from ESPN as `PRE`,
+// and this is the filter it would have walked straight into.
+const POSTSEASON_GAME_TYPES = new Set(['WC', 'DIV', 'CON', 'SB']);
+
 // A team's postseason games for one season, from that team's perspective, sorted by round
 // order (week ascends WC -> DIV -> CON -> SB in nflverse's numbering, so a plain week sort
 // suffices). No bye-filling here — a missed round is just an absent row, not a placeholder
@@ -91,7 +100,7 @@ export function nextGame(schedule: ResolvedScheduleGame[]): ResolvedScheduleGame
 export function resolvePostseason(games: Game[], teamId: string): ResolvedScheduleGame[] {
   const mine = games.filter(
     (g) =>
-      g.gameType !== 'REG' &&
+      POSTSEASON_GAME_TYPES.has(g.gameType) &&
       g.week !== null &&
       (g.homeTeamId === teamId || g.awayTeamId === teamId)
   );
