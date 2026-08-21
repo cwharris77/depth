@@ -138,8 +138,17 @@ leave the DB one run stale.
   ESPN-sourced, not hand-curated. `lib/teams/league.ts` is now just an identity seed
   (id/city/name/abbrev) the ingest loops over. The same fetch (plus one explicit
   `?season=` call for the prior year, unflagged -- this + last season) also carries
-  each team's win/loss/points record; `parseTeamStats` turns that into the `team_stats`
-  rows the ingest writes. A `--seasons` backfill widens the range (see Scheduling below).
+  each team's win/loss/points record, which `parseTeamStats` still parses in full --
+  but as of the DEP-146 re-own the ingest writes only **`playoff_seed`** from it. Every
+  W-L column in `team_stats` is nflverse's now, computed REG-only from game rows
+  (`lib/nflverse/records.ts`). Reason: this endpoint aggregates whatever season type is
+  currently live, with no way to tell from the response which it was, so through August
+  it reports *preseason* games as the season record (DEP-200 -- observed 2026-08-21,
+  every team carrying a preseason W-L weeks before Week 1). Playoff seed has no nflverse
+  equivalent, so it stays here. The two ingests share each `team_stats` row via
+  column-scoped upserts: PostgREST's on-conflict update only touches columns present in
+  the payload, so neither clobbers the other's. A `--seasons` backfill widens the range
+  (see Scheduling below).
 - A KR/PR/K/P/LS can be a player ranked outside the normal top-3-per-position cap
   (e.g. a low-depth-chart WR who's still the primary punt returner) — `toTeamRoster`
   adds them to `players` anyway via a bio-position fallback, so `specialTeams` never

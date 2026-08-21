@@ -153,6 +153,17 @@ describe('resolvePostseason', () => {
     expect(resolved).toEqual([]);
   });
 
+  // Guards the filter against the DEP-204 preseason ingest: 'PRE' is not REG, so a
+  // negated filter treated it as a postseason round and would have rendered it under
+  // POSTSEASON labelled "PRE".
+  it('excludes preseason games, not just regular-season ones', () => {
+    const resolved = resolvePostseason(
+      [game({ week: 1, gameType: 'PRE', homeTeamId: 'seahawks', awayTeamId: 'cowboys' })],
+      'seahawks'
+    );
+    expect(resolved).toEqual([]);
+  });
+
   it('sorts multiple postseason games by round order (week ascending)', () => {
     const resolved = resolvePostseason(
       [

@@ -63,6 +63,21 @@ scaffolding with their own specs.
   previous), same rule as the player-stats ingest; an explicit `minSeason` (the
   `--seasons` backfill flag, below) keeps every season from there on instead. Dropped
   older rows aren't counted as skipped (skipped means malformed, not out-of-range).
+- `lib/nflverse/records.ts` — `toTeamRecords(games, alignments)`: pure transform of the
+  same `games` rows above into the record columns of `team_stats` (overall W/L/T, win
+  percentage, home/road, division/conference, points for/against, differential, streak).
+  **REG-only** — this is the DEP-146 re-own that moved the season record off ESPN's
+  standings endpoint, which aggregates whatever season type is currently live and so
+  reported *preseason* games as the season record through August (DEP-200). Only played
+  games (both scores non-null) contribute to the totals, but a scheduled-but-unstarted
+  season still emits a real `0-0` row — that's what overwrites a stale preseason row from
+  the pre-re-own ingest. `alignments` (each team's conference/division, from the
+  ESPN-owned `teams` table) is needed only for the division/conference splits; an unknown
+  team degrades to zeroed splits rather than a guess. Verified as a like-for-like swap:
+  it reproduces ESPN's own standings exactly for all 32 teams across 2022/2024/2025,
+  including the 2022 tie teams (ties count as half a win, matching ESPN's `winpercent`).
+  `playoff_seed` is **not** written here — it has no nflverse equivalent and stays
+  ESPN-owned, so the two ingests share the row via column-scoped upserts.
 - `lib/nflverse/seasons-arg.ts` — `parseSeasonsArg(argv)`: pure parse of the `--seasons`
   CLI flag (`--seasons 1999-2025` a range, `--seasons 2013` one year, no flag -> `null`
   meaning "the daily job's default"). Shared by `scripts/ingest-nflverse-rosters.mts`
