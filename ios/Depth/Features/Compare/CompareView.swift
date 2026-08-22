@@ -17,6 +17,8 @@ import SwiftUI
 // "By team"/"By position" tab copy. Web cards are `rounded-2xl` (16pt), so Compare passes
 // `radius: .md` to `depthCard` to keep exact parity rather than the app-wide 24pt.
 struct CompareView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     @State private var viewModel: CompareViewModel
     private let repository: CachingDepthRepository
     /// DEP-280: true when this instance was pushed from a schedule-card tap rather than
@@ -138,6 +140,12 @@ struct CompareView: View {
                 tabSwitcher
 
                 tabContent
+                    .id(viewModel.tab)
+                    .transition(.opacity)
+                    .animation(
+                        reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection,
+                        value: viewModel.tab
+                    )
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, DesignTokens.Spacing.md)

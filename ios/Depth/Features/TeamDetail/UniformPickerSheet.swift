@@ -22,6 +22,7 @@ import SwiftUI
 // etc.) — no year range, since an undated kit has nothing meaningful to show there.
 struct UniformPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let uniforms: [Uniform]
     let selectedID: String?
@@ -143,7 +144,7 @@ struct UniformPickerSheet: View {
                 .accessibilityIdentifier("uniform-dot-\(uniform.id)")
             }
         }
-        .animation(.easeOut(duration: 0.2), value: currentIndex)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: currentIndex)
     }
 }
 

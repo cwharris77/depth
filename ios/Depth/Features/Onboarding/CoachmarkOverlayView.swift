@@ -21,6 +21,8 @@ import UIKit
 // bottom edge, which `proxy` itself can't report (its own frame stops short of it) — so
 // this step alone reads `UIScreen.main.bounds` for that one number.
 struct CoachmarkOverlayView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     let controller: OnboardingController
     let anchors: [CoachmarkID: CGRect]
     let proxy: GeometryProxy
@@ -57,7 +59,10 @@ struct CoachmarkOverlayView: View {
             }
             .ignoresSafeArea()
             .transition(.opacity)
-            .animation(.easeInOut(duration: 0.2), value: controller.phase)
+            .animation(
+                reduceMotion ? DesignTokens.Motion.feedback : .easeInOut(duration: 0.2),
+                value: controller.phase
+            )
         }
     }
 

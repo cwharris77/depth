@@ -7,21 +7,25 @@ final class AuthUITests: XCTestCase {
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
         app.launch()
 
-        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
-
         // DEP-252: Account moved out of the tab bar into a nav-bar trailing icon that
-        // opens the settings content as a sheet.
+        // opens the settings content as a sheet. This journey deliberately waits on the
+        // account affordance itself rather than a live roster response; Settings remains
+        // reachable when the public-data request is slow or offline.
         let accountButton = app.buttons["account-button"]
         XCTAssertTrue(accountButton.waitForExistence(timeout: 10), "Account should be reachable from the nav bar")
         accountButton.tap()
 
+        let appName = app.staticTexts["settings-about-name"]
+        XCTAssertTrue(appName.waitForExistence(timeout: 10), "About should show the app display name")
         XCTAssertTrue(
-            app.staticTexts["settings-about-name"].waitForExistence(timeout: 10),
-            "About should show the app display name"
+            appName.label.contains("The Sticks"),
+            "About should use the current customer-facing brand"
         )
-        XCTAssertTrue(
-            app.staticTexts["settings-about-version"].waitForExistence(timeout: 10),
-            "About should show version/build"
+        let version = app.staticTexts["settings-about-version"]
+        XCTAssertTrue(version.waitForExistence(timeout: 10), "About should show the app version")
+        XCTAssertFalse(
+            version.label.contains("("),
+            "About should hide the internal build number from customers"
         )
         XCTAssertTrue(
             app.staticTexts["settings-about-disclaimer"].waitForExistence(timeout: 10),
