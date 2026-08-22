@@ -81,9 +81,8 @@ targets:
         # no custom/proprietary encryption, so it's exempt. Setting this avoids the manual
         # "does your app use encryption" prompt on every App Store Connect upload.
         ITSAppUsesNonExemptEncryption: false
-        # DEP-220 UI-test screenshot harness: the Debug-only UI_TESTING_UNIFORM_ART_BASE_URL
-        # override fetches the prerendered uniform thumbs from a local python http.server.
-        # ATS permits this loopback cleartext; remote cleartext stays blocked.
+        # Local-networking allowance for Debug builds: Debug.xcconfig points Supabase at
+        # http://127.0.0.1:54321 (`supabase start`). Remote cleartext stays blocked.
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
     settings:
