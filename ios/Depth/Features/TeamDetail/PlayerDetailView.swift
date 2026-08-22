@@ -668,6 +668,8 @@ private struct DepthRowContent: View {
 // frames frozen at pickup, so the finger maps to a slot without a feedback loop; the commit
 // fires once on release.
 private struct DepthReorderList: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     @Binding var players: [Player]
     let currentPlayerID: String
     let accent: Color
@@ -685,6 +687,11 @@ private struct DepthReorderList: View {
     @State private var frozenCenters: [CGFloat] = []
     /// Drives the "lifted" row visual (scale + shadow) while dragging.
     @State private var liftRow = false
+    /// Separate counters map the custom gesture's two meaningful physical moments to
+    /// haptics: pickup gets one medium impact, and each crossed rank gets one selection
+    /// tick. Release stays silent so a short reorder never becomes a three-buzz action.
+    @State private var pickupFeedbackCount = 0
+    @State private var rankFeedbackCount = 0
     /// Dead-zone around each slot boundary: the row reorders only once the finger crosses
     /// a boundary past this margin, so a finger resting on a boundary doesn't flip-flop.
     private let reorderHysteresis: CGFloat = 6
@@ -704,6 +711,8 @@ private struct DepthReorderList: View {
             }
         }
         .coordinateSpace(name: "depthReorderList")
+        .sensoryFeedback(.impact(weight: .medium), trigger: pickupFeedbackCount)
+        .sensoryFeedback(.selection, trigger: rankFeedbackCount)
     }
 
     private func row(_ p: Player) -> some View {
@@ -723,7 +732,7 @@ private struct DepthReorderList: View {
         .background(p.id == currentPlayerID ? accent.opacity(0.10) : .clear)
         .contentShape(Rectangle())
         .zIndex(draggedPlayerID == p.id ? 1 : 0)
-        .scaleEffect(draggedPlayerID == p.id && liftRow ? 1.03 : 1)
+        .scaleEffect(draggedPlayerID == p.id && liftRow && !reduceMotion ? 1.03 : 1)
         .shadow(color: draggedPlayerID == p.id && liftRow ? .black.opacity(0.18) : .clear, radius: 8, y: 3)
         // Long-press pick-up = the ScrollView disambiguator: hold still briefly and the row
         // lifts; without it a moving finger is indistinguishable from a scroll.
@@ -733,9 +742,13 @@ private struct DepthReorderList: View {
                 .onChanged { value in
                     switch value {
                     case .first(true):
+                        guard draggedPlayerID == nil else { return }
                         draggedPlayerID = p.id
                         frozenCenters = players.map { rowCenters[$0.id] ?? 0 }
-                        withAnimation(.snappy(duration: 0.15)) { liftRow = true }
+                        pickupFeedbackCount += 1
+                        withAnimation(reduceMotion ? nil : .snappy(duration: 0.15)) {
+                            liftRow = true
+                        }
                     case .second(true, let drag?):
                         guard draggedPlayerID != nil else { return }
                         updateSlot(fingerY: drag.startLocation.y + drag.translation.height)
@@ -784,12 +797,13 @@ private struct DepthReorderList: View {
     }
 
     private func moveDragged(from: Int, to: Int) {
-        withAnimation(.snappy(duration: 0.15)) {
+        withAnimation(reduceMotion ? nil : .snappy(duration: 0.15)) {
             players.move(
                 fromOffsets: IndexSet(integer: from),
                 toOffset: to > from ? to + 1 : to
             )
         }
+        rankFeedbackCount += 1
     }
 
     private func rankLabel(_ rank: Int) -> String {

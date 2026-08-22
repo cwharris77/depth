@@ -11,7 +11,7 @@ struct BlockingUpdateView: View {
             ContentUnavailableView {
                 Label("Update Required", systemImage: "arrow.down.circle")
             } description: {
-                Text("A newer version of Depth is required to continue.")
+                Text("A newer version of The Sticks is required to continue.")
                     .foregroundStyle(DesignTokens.Colors.textSecondary)
             } actions: {
                 Button("Update") {
