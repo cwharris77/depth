@@ -18,6 +18,8 @@ struct TeamDetailView: View {
     /// position group's player card opens already in reorder mode. Lives in the overflow
     /// menu; disabled (not hidden) while viewing a historical season.
     @State private var editModeEnabled = false
+    /// THROWAWAY PROTOTYPE: the A/B name treatment chosen in Settings › Beta Testing.
+    @AppStorage(FieldNameMode.storageKey) private var fieldNameMode: FieldNameMode = .callouts
     @State private var showHistory = false
     @State private var showUniformPicker = false
     @State private var showFormations = false
@@ -661,7 +663,8 @@ struct TeamDetailView: View {
                         snapshot: snapshot,
                         unit: unit,
                         colors: fieldColors,
-                        formation: activeFormation
+                        formation: activeFormation,
+                        nameMode: fieldNameMode
                     ) { player in
                         selectedPlayer = player
                     }
