@@ -11,6 +11,31 @@ import Foundation
 // The 44-point tap target is the view's job (.frame(minWidth: 44, minHeight: 44) +
 // .contentShape), matching the web's 30px visual dot with a 44px hit-slop; this type
 // only decides what's actually drawn.
+/// THROWAWAY PROTOTYPE, per Cooper 2026-08-23: the three name treatments being A/B'd on
+/// top of the (settled) bigger uniform dots. The geometry is identical in all three — only
+/// what happens to the names differs, which is the whole point of the comparison.
+enum FieldNameMode: String, CaseIterable, Identifiable, Sendable {
+    /// Names under the dot wherever one fits, and a leader-line callout for the rest.
+    case callouts
+    /// Names under the dot wherever one fits; a name with no room is simply not drawn.
+    case inlineOnly
+    /// No names anywhere — jersey number and position tag only, as the field shipped.
+    case off
+
+    var id: String { rawValue }
+
+    /// The one defaults key Settings writes and the field reads.
+    static let storageKey = "betaFieldNameMode"
+
+    var title: String {
+        switch self {
+        case .callouts: return "Names + Leader Lines"
+        case .inlineOnly: return "Names Where They Fit"
+        case .off: return "No Names"
+        }
+    }
+}
+
 struct DepthChartFieldLayout: Equatable {
     /// Visual dot diameter in points.
     let dotSize: CGFloat
@@ -23,6 +48,16 @@ struct DepthChartFieldLayout: Equatable {
     /// currently asserts dot size is *derived* from the tightest gap (27.6pt for the
     /// generic on-line row), which this file no longer does.
     let nameCallouts: [String: CGPoint]
+    /// Slots whose name must NOT render under the dot. In the leader-line variant that is
+    /// exactly the callout set, so this stays empty and `nameCallouts` answers it; the
+    /// other two variants draw no callouts and use this instead — either the slots with no
+    /// room (`inlineOnly`) or every slot (`off`).
+    var crowdedKeys: Set<String> = []
+
+    /// Whether this slot's name renders under its own dot.
+    func showsInlineName(_ key: String) -> Bool {
+        nameCallouts[key] == nil && !crowdedKeys.contains(key)
+    }
 
     static let minDotSize: CGFloat = 26
     /// THROWAWAY PROTOTYPE, per Cooper 2026-08-23: 32 rather than 36. At 36 the six-man
@@ -79,7 +114,8 @@ struct DepthChartFieldLayout: Equatable {
     static func compute(
         slots: [RenderSlot],
         fieldSize: CGSize,
-        fillWidth: Bool = false
+        fillWidth: Bool = false,
+        nameMode: FieldNameMode = .callouts
     ) -> DepthChartFieldLayout {
         let width = fieldSize.width
         guard width > 0, fieldSize.height > 0, !slots.isEmpty else {
@@ -88,6 +124,28 @@ struct DepthChartFieldLayout: Equatable {
         let base = fillWidth
             ? fillingLayout(slots: slots, width: width, height: fieldSize.height)
             : standardLayout(slots: slots, width: width, height: fieldSize.height)
+        // Only the leader-line variant draws callouts. The other two want the same
+        // geometry with no callout points at all — and because a slot renders its name
+        // inline exactly when it has NO callout, `inlineOnly` needs the crowded slots
+        // marked some other way, which is `crowdedKeys` below.
+        guard nameMode == .callouts else {
+            return DepthChartFieldLayout(
+                dotSize: base.dotSize,
+                positions: base.positions,
+                nameCallouts: [:],
+                crowdedKeys: nameMode == .inlineOnly
+                    ? Set(
+                        calloutsForCrowdedNames(
+                            positions: base.positions,
+                            slots: slots,
+                            dotSize: base.dotSize,
+                            width: width,
+                            height: fieldSize.height
+                        ).keys
+                    )
+                    : Set(slots.map(\.key))
+            )
+        }
         return DepthChartFieldLayout(
             dotSize: base.dotSize,
             positions: base.positions,

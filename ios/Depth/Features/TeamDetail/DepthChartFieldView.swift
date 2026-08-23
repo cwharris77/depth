@@ -36,6 +36,8 @@ struct DepthChartFieldView: View {
     /// caller). Nil falls back to the generic synthetic layout — used when the unit has no
     /// formation data, is special teams, or is a historical season.
     var formation: TeamFormation? = nil
+    /// THROWAWAY PROTOTYPE: which of the three name treatments to draw (A/B comparison).
+    var nameMode: FieldNameMode = .callouts
     let onSelectPlayer: (Player) -> Void
 
     // DEP-259: nameFontSize's 7-9pt clamp was a plain `.system(size:)` literal that never
@@ -74,7 +76,8 @@ struct DepthChartFieldView: View {
             let layout = DepthChartFieldLayout.compute(
                 slots: slots,
                 fieldSize: proxy.size,
-                fillWidth: unit == .offense
+                fillWidth: unit == .offense,
+                nameMode: nameMode
             )
             ZStack {
                 LinearGradient(
@@ -132,7 +135,7 @@ struct DepthChartFieldView: View {
                         slotView(
                             slot,
                             dotSize: layout.dotSize,
-                            showsName: layout.nameCallouts[slot.key] == nil,
+                            showsName: layout.showsInlineName(slot.key),
                             fieldHeight: proxy.size.height
                         )
                         // DEP-251: first-run tutorial's "tap any player" coachmark points at
