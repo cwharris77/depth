@@ -1,0 +1,403 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-22T00:00:00Z",
+  "title": "Design System: depth",
+  "extensions": {
+    "colorMeta": {
+      "bg": {
+        "role": "neutral",
+        "displayName": "Chrome Ground",
+        "canonical": "#15161a",
+        "tonalRamp": [
+          "#090b10",
+          "#26292f",
+          "#44484e",
+          "#60636a",
+          "#7d8088",
+          "#a1a5ac",
+          "#caced6",
+          "#eaeff7"
+        ]
+      },
+      "bg-page": {
+        "role": "neutral",
+        "displayName": "Page Ground",
+        "canonical": "#0a0e1a"
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Steel Blue",
+        "canonical": "#6E8CAE",
+        "tonalRamp": [
+          "#000b21",
+          "#112a43",
+          "#304a64",
+          "#4b6682",
+          "#6783a0",
+          "#8ba8c6",
+          "#b3d1f1",
+          "#d3f2ff"
+        ]
+      },
+      "on-accent": {
+        "role": "primary",
+        "displayName": "On Accent",
+        "canonical": "#15161a"
+      },
+      "text-primary": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "canonical": "#f0f4ff",
+        "tonalRamp": [
+          "#080b12",
+          "#252930",
+          "#434850",
+          "#5e646c",
+          "#7b8189",
+          "#9fa5ae",
+          "#c8ced8",
+          "#e9eff9"
+        ]
+      },
+      "text-secondary": {
+        "role": "neutral",
+        "displayName": "Soft Paper",
+        "canonical": "#dfe5f0"
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Muted Silver",
+        "canonical": "#A5ACAF",
+        "tonalRamp": [
+          "#080c0e",
+          "#25292c",
+          "#44484c",
+          "#5f6467",
+          "#7c8185",
+          "#a0a5a9",
+          "#c9ced2",
+          "#eaeff3"
+        ]
+      },
+      "text-faint": {
+        "role": "neutral",
+        "displayName": "Faint Gray",
+        "canonical": "#7d848c"
+      },
+      "text-faintest": {
+        "role": "neutral",
+        "displayName": "Faintest Gray",
+        "canonical": "#5a616a"
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Danger Red",
+        "canonical": "#ff6b6b",
+        "tonalRamp": [
+          "#360000",
+          "#620000",
+          "#8a0314",
+          "#ac3031",
+          "#ce514d",
+          "#f97770",
+          "#ffa198",
+          "#ffc2b8"
+        ]
+      },
+      "danger-on": {
+        "role": "tertiary",
+        "displayName": "Danger On",
+        "canonical": "#2a0e0e"
+      },
+      "surface-card": {
+        "role": "neutral",
+        "displayName": "Surface Card",
+        "canonical": "#1a1e23"
+      },
+      "surface-card-dense": {
+        "role": "neutral",
+        "displayName": "Surface Card Dense",
+        "canonical": "rgba(255,255,255,0.03)"
+      },
+      "surface-raised": {
+        "role": "neutral",
+        "displayName": "Surface Raised",
+        "canonical": "rgba(255,255,255,0.05)"
+      },
+      "surface-input": {
+        "role": "neutral",
+        "displayName": "Surface Input",
+        "canonical": "rgba(255,255,255,0.06)"
+      },
+      "surface-chip": {
+        "role": "neutral",
+        "displayName": "Surface Chip",
+        "canonical": "rgba(255,255,255,0.07)"
+      },
+      "surface-chip-hover": {
+        "role": "neutral",
+        "displayName": "Surface Chip Hover",
+        "canonical": "rgba(255,255,255,0.12)"
+      },
+      "surface-navy": {
+        "role": "neutral",
+        "displayName": "Surface Navy",
+        "canonical": "rgba(30,32,38,0.8)"
+      },
+      "surface-menu": {
+        "role": "neutral",
+        "displayName": "Surface Menu",
+        "canonical": "#212434"
+      },
+      "field-green": {
+        "role": "tertiary",
+        "displayName": "Field Green",
+        "canonical": "#2d5a1b",
+        "tonalRamp": [
+          "#001400",
+          "#003600",
+          "#155700",
+          "#357426",
+          "#539344",
+          "#77b868",
+          "#9fe390",
+          "#bfffb0"
+        ]
+      },
+      "field-green-deep": {
+        "role": "tertiary",
+        "displayName": "Field Green Deep",
+        "canonical": "#1e3d10"
+      },
+      "scrimmage-blue": {
+        "role": "tertiary",
+        "displayName": "Scrimmage Blue",
+        "canonical": "#2d6fe0"
+      },
+      "status-rookie": {
+        "role": "tertiary",
+        "displayName": "Rookie Blue",
+        "canonical": "#4fc3f7"
+      },
+      "status-injured": {
+        "role": "tertiary",
+        "displayName": "Injured Red",
+        "canonical": "#ef5350"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Ghost Jersey Numeral",
+        "purpose": "Giant translucent jersey number watermark behind the player identity in PlayerCardHeader. Used only here."
+      },
+      "headline": {
+        "displayName": "Player Name",
+        "purpose": "Player name in the card header. High weight for impact at a moderate size."
+      },
+      "body": {
+        "displayName": "Chrome Body",
+        "purpose": "Standard chrome text — menu items, pills, coachmarks, chip labels."
+      },
+      "label": {
+        "displayName": "Chrome Label",
+        "purpose": "Default small UI labels — tabs, tooltips, active chip text."
+      },
+      "caption": {
+        "displayName": "Chrome Caption",
+        "purpose": "Section labels, stat headers, menu meta text."
+      },
+      "micro": {
+        "displayName": "Chrome Micro",
+        "purpose": "Smallest text — overlines, compact micro-labels."
+      }
+    },
+    "shadows": [
+      {
+        "name": "dot-rest",
+        "value": "0 2px 8px rgba(0,0,0,0.5)",
+        "purpose": "Player dots resting on the field — establishes physical distance from the green surface."
+      },
+      {
+        "name": "dot-selected",
+        "value": "0 0 0 3px rgba(110,140,174,0.4)",
+        "purpose": "Halo around selected player dot. Actual color is team uiAccent at 40%; value shown is chrome accent approximation."
+      },
+      {
+        "name": "thumb",
+        "value": "0 1px 2px rgba(0,0,0,0.35), 0 1px 1px rgba(0,0,0,0.2)",
+        "purpose": "Toggle thumb — subtle lift to communicate draggable affordance."
+      },
+      {
+        "name": "focus-ring",
+        "value": "0 0 0 3px rgba(110,140,174,0.3)",
+        "purpose": "Keyboard focus indicator on inputs and interactive elements — accent-tinted glow."
+      }
+    ],
+    "motion": [
+      {
+        "name": "spring-sheet",
+        "value": "spring(360, 38)",
+        "purpose": "Bottom sheet and modal panel spring transition via Framer Motion."
+      },
+      {
+        "name": "spring-dot",
+        "value": "spring(400, 28)",
+        "purpose": "Player dot selection scale spring — 1× to 1.18×."
+      },
+      {
+        "name": "ease-standard",
+        "value": "150ms ease-out",
+        "purpose": "Input focus border/glow transition, toggle track and thumb transition."
+      }
+    ],
+    "breakpoints": [
+      { "name": "content-labels", "value": "480px" },
+      { "name": "defense-labels", "value": "520px" },
+      { "name": "offense-labels", "value": "720px" },
+      { "name": "desktop-shell", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary action button — Steel Blue fill, on-accent text. Rare in this UI; used for true CTAs.",
+      "html": "<button class=\"ds-btn-primary\">SAVE CHANGES</button>",
+      "css": ".ds-btn-primary { background: #6E8CAE; color: #15161a; font-family: 'Geist Sans', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 12px 20px; border-radius: 12px; border: none; cursor: pointer; transition: opacity 150ms ease-out; } .ds-btn-primary:hover { opacity: 0.9; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(110,140,174,0.3); } .ds-btn-primary:active { opacity: 0.8; } .ds-btn-primary:disabled { opacity: 0.6; cursor: default; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Neutral alternative — translucent fill with hairline border. For cancel or secondary actions.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { background: rgba(255,255,255,0.06); color: #dfe5f0; font-family: 'Geist Sans', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14); cursor: pointer; transition: opacity 150ms ease-out; } .ds-btn-secondary:hover { opacity: 0.85; } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(110,140,174,0.3); } .ds-btn-secondary:active { opacity: 0.75; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Quiet borderless button — for close actions and tertiary controls. Sits on its surface without decoration.",
+      "html": "<button class=\"ds-btn-ghost\">Close</button>",
+      "css": ".ds-btn-ghost { background: transparent; color: #A5ACAF; font-family: 'Geist Sans', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 12px 20px; border-radius: 12px; border: none; cursor: pointer; transition: opacity 150ms ease-out; } .ds-btn-ghost:hover { opacity: 0.7; } .ds-btn-ghost:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(110,140,174,0.3); }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Single-style text input — translucent fill, hairline border, glow focus ring. Used everywhere.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search players...\" />",
+      "css": ".ds-input { background: rgba(255,255,255,0.06); color: #f0f4ff; font-family: 'Geist Sans', Arial, sans-serif; font-size: 16px; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14); outline: none; width: 100%; transition: border-color 150ms ease-out, box-shadow 150ms ease-out; } .ds-input::placeholder { color: #7d848c; } .ds-input:focus { border-color: #6E8CAE; box-shadow: 0 0 0 3px rgba(110,140,174,0.3); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Generic surface panel — settings, nested lists, content containers. Flat, no shadow.",
+      "html": "<div class=\"ds-card\"><p style=\"margin:0;color:#f0f4ff;font-size:12px;\">Card content</p></div>",
+      "css": ".ds-card { background: #1a1e23; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 16px; }"
+    },
+    {
+      "name": "Filter Pill (Active)",
+      "kind": "chip",
+      "refersTo": "chip-active",
+      "description": "Active filter chip — accent fill, on-accent text. Selected state for filtering.",
+      "html": "<button class=\"ds-chip-active\">Current</button>",
+      "css": ".ds-chip-active { background: #6E8CAE; color: #15161a; font-family: 'Geist Sans', Arial, sans-serif; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 9999px; border: none; cursor: pointer; white-space: nowrap; }"
+    },
+    {
+      "name": "Filter Pill (Inactive)",
+      "kind": "chip",
+      "refersTo": "chip-inactive",
+      "description": "Inactive filter chip — translucent fill, secondary text. Default resting state.",
+      "html": "<button class=\"ds-chip-inactive\">Throwback</button>",
+      "css": ".ds-chip-inactive { background: rgba(255,255,255,0.07); color: #dfe5f0; font-family: 'Geist Sans', Arial, sans-serif; font-size: 12px; font-weight: 400; padding: 6px 12px; border-radius: 9999px; border: none; cursor: pointer; white-space: nowrap; transition: background 150ms ease-out; } .ds-chip-inactive:hover { background: rgba(255,255,255,0.12); }"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "custom",
+      "refersTo": "segmented-control",
+      "description": "Pill-tab group for switching modes. Translucent track, active segment fills with accent.",
+      "html": "<div class=\"ds-seg-track\"><button class=\"ds-seg-item ds-seg-active\">Roster</button><button class=\"ds-seg-item\">Schedule</button><button class=\"ds-seg-item\">Stats</button></div>",
+      "css": ".ds-seg-track { display: flex; gap: 4px; background: rgba(255,255,255,0.07); border-radius: 16px; padding: 4px; width: fit-content; } .ds-seg-item { font-family: 'Geist Sans', Arial, sans-serif; font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 12px; border: none; background: transparent; color: #dfe5f0; cursor: pointer; transition: background 150ms ease-out, color 150ms ease-out; } .ds-seg-active { background: #6E8CAE; color: #15161a; } .ds-seg-item:not(.ds-seg-active):hover { background: rgba(255,255,255,0.05); }"
+    },
+    {
+      "name": "Toggle",
+      "kind": "input",
+      "refersTo": "toggle",
+      "description": "Switch control for boolean settings. Accent fill when on, navy when off. Thumb slides with spring ease.",
+      "html": "<div class=\"ds-toggle\" tabindex=\"0\" role=\"switch\" aria-checked=\"true\"><div class=\"ds-toggle-thumb\"></div></div>",
+      "css": ".ds-toggle { width: 40px; height: 24px; border-radius: 9999px; background: #6E8CAE; position: relative; cursor: pointer; transition: background 150ms ease-out; } .ds-toggle[aria-checked=\"false\"] { background: rgba(30,32,38,0.8); } .ds-toggle:focus-visible { box-shadow: 0 0 0 3px rgba(110,140,174,0.3); } .ds-toggle-thumb { width: 20px; height: 20px; border-radius: 9999px; background: #fff; position: absolute; top: 2px; left: 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.35), 0 1px 1px rgba(0,0,0,0.2); transition: transform 150ms ease-out; } .ds-toggle[aria-checked=\"false\"] .ds-toggle-thumb { transform: translateX(-16px); }"
+    },
+    {
+      "name": "Position Badge",
+      "kind": "chip",
+      "refersTo": "badge-position",
+      "description": "Small pill identifying a player's position code. Accent fill, bold text.",
+      "html": "<span class=\"ds-badge-position\">WR</span>",
+      "css": ".ds-badge-position { display: inline-block; background: #6E8CAE; color: #15161a; font-family: 'Geist Sans', Arial, sans-serif; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 9999px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Broadcast Booth",
+    "overview": "depth's visual language is a dark broadcast control room. The chrome stays quiet and consistent — charcoal surfaces, translucent white-alpha fills, hairline borders — so team color is always the loudest thing on screen. Every surface is built from a small set of translucent layers stacked on a near-black ground; depth comes from alpha values, not from paint or drop shadows.\n\nThe system is compact and instrument-panel dense. Text is small by design (the entire UI chrome type scale spans 9–13 px), borders are white alpha at 6–14%, and controls are pill-shaped with tight radii. The goal is to vanish: the field, the roster, the team identity — those are the content. The interface is a frame that earns its darkness by never competing with what it holds.\n\nMobile-first is the structural reality. The full layout is a single column with bottom-sheet navigation; only at the xl breakpoint (1280 px) does the page expand into a viewport-height three-column grid.",
+    "keyCharacteristics": [
+      "Two-tier color system: team brand colors for identity surfaces, curated legible accents for interactive content",
+      "Translucent white-alpha surfaces and hairline borders instead of solid fills and drop shadows",
+      "Compact micro type scale (9–13 px) with generous touch targets (44 pt minimum)",
+      "Pill-shaped controls with fill-based state changes, never bouncy or decorative",
+      "Dark-first with WCAG-AA-tested contrast on every curated color pair",
+      "The field itself is the visual anchor: a green gradient with white-alpha yard lines and a blue scrimmage line"
+    ],
+    "rules": [
+      {
+        "name": "The Two-Voice Rule",
+        "body": "Team brand colors speak on identity surfaces; curated legible accents speak on everything that must be read on dark. Never swap their jobs.",
+        "section": "colors"
+      },
+      {
+        "name": "The Translucency Rule",
+        "body": "Depth on flat chrome comes from white-alpha fills layered on the charcoal ground (3% to 14% to navy 80%), not from solid color steps or drop shadows.",
+        "section": "colors"
+      },
+      {
+        "name": "The Five-Step Rule",
+        "body": "Every chrome label at or below 13 px takes one of the five scale steps (micro / caption / label / body / title). Same-purpose text always uses the same token.",
+        "section": "typography"
+      },
+      {
+        "name": "The Hairline Rule",
+        "body": "Borders are always white alpha at 1 px. Emphasis is encoded in opacity (6% to 14%), never in width or color.",
+        "section": "shapes"
+      },
+      {
+        "name": "Shadow Means Floating",
+        "body": "A shadow is never decoration. It appears only on elements that are physically above another surface. Chrome surfaces at rest are always flat.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use the Five-Step Type Scale for all chrome labels (micro 9 / caption 10 / label 11 / body 12 / title 13 px). Same-purpose text, same step.",
+      "Do route team-color-dependent text and interactive elements through curated uiAccent/onAccent, never raw brand hexes (Two-Voice Rule).",
+      "Do compose every UI surface from components/ui/ primitives. Extend with a prop before forking a new component.",
+      "Do use fill-based state changes for active/selected states — accent fill + on-accent text.",
+      "Do use white-alpha borders at 1 px to differentiate surfaces. Emphasis via opacity (6% to 14%), never width (Hairline Rule).",
+      "Do use the shared Intent vocabulary (primary / secondary / ghost / danger) across all component variant props.",
+      "Do use the z-index scale (dot 10, dotSelected 20, popover 30, backdrop 40, panel 50). Never hardcode a z-index value.",
+      "Do use skeletons sized to eventual content while data loads; never let a component render its post-load shape from data that hasn't arrived."
+    ],
+    "donts": [
+      "Don't use generic 3-column white-card grids, centered-everything layouts, decorative blobs, or icon-in-colored-circle rows.",
+      "Don't style text, dots, or interactive elements with primary (raw team brand color) when uiAccent is the curated legible alternative.",
+      "Don't hand-edit team colors in the database or seed files — they are machine-owned by the weekly ESPN ingest.",
+      "Don't invent z-index values at the call site. Add a new tier to the scale instead.",
+      "Don't use arbitrary font sizes outside the five-step type scale for chrome text.",
+      "Don't add drop shadows to chrome surfaces. Shadows appear only on physically floating elements.",
+      "Don't hand-roll a styled button or div group when a components/ui/ primitive covers the use case.",
+      "Don't commit without running npm run format. Prettier is the only style authority.",
+      "Don't delete curated archive rows. Retirement is a flag, never a delete.",
+      "Don't enable RLS on a new table without shipping a read policy in the same migration."
+    ]
+  }
+}
