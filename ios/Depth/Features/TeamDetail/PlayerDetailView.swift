@@ -738,7 +738,12 @@ private struct DepthReorderList: View {
         // lifts; without it a moving finger is indistinguishable from a scroll.
         .gesture(
             LongPressGesture(minimumDuration: 0.25)
-                .sequenced(before: DragGesture(minimumDistance: 0))
+                .sequenced(
+                    before: DragGesture(
+                        minimumDistance: 0,
+                        coordinateSpace: .named("depthReorderList")
+                    )
+                )
                 .onChanged { value in
                     switch value {
                     case .first(true):
@@ -751,7 +756,7 @@ private struct DepthReorderList: View {
                         }
                     case .second(true, let drag?):
                         guard draggedPlayerID != nil else { return }
-                        updateSlot(fingerY: drag.startLocation.y + drag.translation.height)
+                        updateSlot(fingerY: drag.location.y)
                     default:
                         break
                     }

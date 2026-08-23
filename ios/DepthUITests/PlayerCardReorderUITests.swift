@@ -45,13 +45,20 @@ final class PlayerCardReorderUITests: XCTestCase {
         // one slot at a time; holding at the end makes the last crossing register before the
         // lift. The Done pill commits once. The position becomes CUSTOM.
         let first = rows.firstMatch
-        let last = rows.element(boundBy: rows.count - 1)
+        let lastIndex = rows.count - 1
+        let last = rows.element(boundBy: lastIndex)
+        let draggedRowID = first.identifier
         attachScreenshot(app, named: "05-reorder-edit-mode")
         first.press(
             forDuration: 0.6,
             thenDragTo: last,
             withVelocity: .slow,
             thenHoldForDuration: 0.5
+        )
+        XCTAssertEqual(
+            rows.element(boundBy: lastIndex).identifier,
+            draggedRowID,
+            "a slow drag to the final slot should leave the dragged player there deterministically"
         )
 
         let done = app.buttons["player-profile-depth-reorder-toggle"]
@@ -209,6 +216,52 @@ final class PlayerCardReorderUITests: XCTestCase {
         XCTAssertTrue(
             app.buttons["player-profile-depth-reorder-toggle"].waitForExistence(timeout: 5),
             "the per-card Reorder pill returns once global mode is off"
+        )
+    }
+
+    // DEP-291: projecting a saved player order must keep the team's formation data.
+    // Otherwise the field silently falls back to its generic layout and the overflow
+    // menu loses the active Formations row as soon as a drag commits.
+    func testPlayerReorderPreservesActiveFormation() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launch()
+
+        XCTAssertTrue(app.waitForDepthChart())
+        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+
+        let overflow = app.buttons["depth-chart-overflow"]
+        XCTAssertTrue(overflow.waitForExistence(timeout: 10))
+        overflow.tap()
+        XCTAssertTrue(
+            app.buttons["choose-formation"].waitForExistence(timeout: 5),
+            "the live Bills chart should start with an active computed formation"
+        )
+        app.buttons["edit-depth-order"].tap()
+
+        let quarterback = app.buttons["player-slot-off-qb-0"]
+        XCTAssertTrue(quarterback.waitForExistence(timeout: 10))
+        quarterback.tap()
+        XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 5))
+
+        let rows = app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier BEGINSWITH 'player-profile-depth-reorder-row-'")
+        )
+        XCTAssertGreaterThanOrEqual(rows.count, 2)
+        rows.firstMatch.press(
+            forDuration: 0.6,
+            thenDragTo: rows.element(boundBy: rows.count - 1),
+            withVelocity: .slow,
+            thenHoldForDuration: 0.5
+        )
+        app.buttons["Close"].tap()
+
+        XCTAssertTrue(overflow.waitForExistence(timeout: 5))
+        overflow.tap()
+        attachScreenshot(app, named: "07-formation-after-reorder")
+        XCTAssertTrue(
+            app.buttons["choose-formation"].waitForExistence(timeout: 5),
+            "reordering players should preserve the active computed formation"
         )
     }
 
