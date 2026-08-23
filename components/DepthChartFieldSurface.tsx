@@ -43,14 +43,14 @@ export default function DepthChartFieldSurface({
 }: Props) {
   return (
     <div
-      className="px-3 flex flex-col"
+      className="px-3 flex flex-col xl:justify-center"
       style={{
         flex: '1 1 0',
         minHeight: 0,
         paddingBottom: 'max(env(safe-area-inset-bottom), 8px)',
       }}>
       <div
-        className="relative w-full rounded-2xl overflow-hidden"
+        className="relative w-full rounded-2xl overflow-hidden xl:max-h-[min(640px,72dvh)]"
         style={{
           flex: '1 1 0',
           minHeight: 0,
@@ -186,7 +186,8 @@ export default function DepthChartFieldSurface({
           on screen -- not only once a formation is picked, since the default pick
           is the team's top formation and the field renders FTN-sourced layouts
           from first paint. Historical seasons have no formation data, so none
-          here. */}
+          here. xl centers the capped field + attribution as a group (justify-center
+          above); below xl the field still fills the leftover column height. */}
       {!historicalMode && unitFormationsCount > 0 && <FTNAttribution className="pt-1.5" />}
     </div>
   );
