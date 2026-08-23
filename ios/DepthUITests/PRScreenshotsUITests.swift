@@ -56,6 +56,20 @@ final class PRScreenshotsUITests: XCTestCase {
             attachScreenshot(name: "field")
         }
 
+        // `teams` — a flat team-search result so separator changes can be reviewed in
+        // the surface they affect instead of inferred from an unrelated field capture.
+        if requested.contains("teams") {
+            let switcher = app.buttons["team-switcher-button"]
+            XCTAssertTrue(switcher.waitForExistence(timeout: 15), "the header should expose the team switcher")
+            switcher.tap()
+            let searchField = app.searchFields.firstMatch
+            XCTAssertTrue(searchField.waitForExistence(timeout: 10), "the switcher should offer team search")
+            searchField.tap()
+            searchField.typeText(teamQuery)
+            XCTAssertTrue(app.buttons["team-row-\(teamId)"].waitForExistence(timeout: 20), "team search should surface the Bills row")
+            attachScreenshot(name: "teams")
+        }
+
         // `uniform` — the uniform picker sheet. DEP-260 changes the thumbnail corner
         // radius (8→12), so capture the sheet containing the thumbnails. "Choose
         // Uniform" lives inside the ••• overflow menu (DEP-230), so open it first.
@@ -88,7 +102,7 @@ final class PRScreenshotsUITests: XCTestCase {
             // `field` is the documented default (PRScreenshotsUITests.requestedTargets
             // returns ["field"] for empty/missing input), so this is unreachable — kept
             // as a defensive tripwire in case the default ever changes.
-            XCTFail("No recognized PR screenshot target requested — pass SCREENSHOT_TARGETS=field,uniform,player")
+            XCTFail("No recognized PR screenshot target requested — pass SCREENSHOT_TARGETS=field,teams,uniform,player")
         }
     }
 
@@ -105,7 +119,7 @@ final class PRScreenshotsUITests: XCTestCase {
         } else {
             raw = ProcessInfo.processInfo.environment["SCREENSHOT_TARGETS"] ?? ""
         }
-        let valid: Set<String> = ["field", "uniform", "player"]
+        let valid: Set<String> = ["field", "teams", "uniform", "player"]
         let tokens = raw.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         let requested = Set(tokens).intersection(valid)
         // `field` is the documented default (empty/missing env, or no valid token →
