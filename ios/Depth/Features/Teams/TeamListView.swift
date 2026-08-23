@@ -1,5 +1,11 @@
 import SwiftUI
 
+enum TeamSearchRowPresentation {
+    static func showsSeparator(after index: Int, count: Int) -> Bool {
+        index + 1 < count
+    }
+}
+
 // The searchable 32-team list. This used to be the app's root screen; as of the
 // 2026-08-15 navigation-parity spec (locked decision #5) it is the *content of the team
 // switcher sheet* instead — "the list stops being a place you are and becomes a control
@@ -172,8 +178,15 @@ struct TeamListView: View {
             List {
                 if !viewModel.filteredTeams.isEmpty {
                     Section(header: sectionHeader("TEAMS")) {
-                        ForEach(viewModel.filteredTeams) { team in
+                        ForEach(Array(viewModel.filteredTeams.enumerated()), id: \.element.id) { index, team in
                             teamRow(team)
+                                .listRowSeparator(
+                                    TeamSearchRowPresentation.showsSeparator(
+                                        after: index,
+                                        count: viewModel.filteredTeams.count
+                                    ) ? .visible : .hidden,
+                                    edges: .bottom
+                                )
                         }
                     }
                 }
