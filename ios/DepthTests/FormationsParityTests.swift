@@ -115,6 +115,10 @@ private struct DefenseFormationCase: Decodable {
     }
 }
 
+@Test func realDefenseFormationFallsBackWhenDBCountExceedsSlotCapacity() {
+    #expect(buildRealDefenseFormation("1-1-9") == baseDefense)
+}
+
 // --- resolve-unit.json ----------------------------------------------------------------
 
 private struct ResolveUnitCase: Decodable {
