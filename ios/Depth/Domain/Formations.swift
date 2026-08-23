@@ -408,7 +408,7 @@ func buildRealDefenseFormation(_ code: String) -> [FormationSlot] {
           let lb = Int(parts[1]), parts[1].allSatisfy({ $0.isNumber }), !parts[1].isEmpty,
           let db = Int(parts[2]), parts[2].allSatisfy({ $0.isNumber }), !parts[2].isEmpty
     else { return baseDefense }
-    guard dl + lb + db == 11 else { return baseDefense }
+    guard dl + lb + db == 11, db <= dbSlots.count else { return baseDefense }
 
     let slots = buildDlSlots(dl) + buildLbSlots(lb) + buildDbSlots(db)
     return slots.map { s in

@@ -1150,5 +1150,133 @@
       }
     ],
     "isFallback": true
+  },
+  {
+    "description": "DB count exceeds 8-slot capacity — falls back to BASE_DEFENSE",
+    "code": "1-1-9",
+    "expectedSlots": [
+      {
+        "id": "def-ss-0",
+        "position": "SS",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false
+      },
+      {
+        "id": "def-fs-0",
+        "position": "FS",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false
+      },
+      {
+        "id": "def-lcb-0",
+        "position": "LCB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false
+      },
+      {
+        "id": "def-rcb-0",
+        "position": "RCB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false
+      },
+      {
+        "id": "def-wlb-0",
+        "position": "WLB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 22,
+        "y": 37,
+        "label": "WLB",
+        "onLine": false
+      },
+      {
+        "id": "def-lilb-0",
+        "position": "LILB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 42,
+        "y": 37,
+        "label": "LILB",
+        "onLine": false
+      },
+      {
+        "id": "def-rilb-0",
+        "position": "RILB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 58,
+        "y": 37,
+        "label": "RILB",
+        "onLine": false
+      },
+      {
+        "id": "def-slb-0",
+        "position": "SLB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 78,
+        "y": 37,
+        "label": "SLB",
+        "onLine": false
+      },
+      {
+        "id": "def-lde-0",
+        "position": "LDE",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 26,
+        "y": 49,
+        "label": "LDE",
+        "onLine": true
+      },
+      {
+        "id": "def-nt-0",
+        "position": "NT",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 50,
+        "y": 49,
+        "label": "NT",
+        "onLine": true
+      },
+      {
+        "id": "def-rde-0",
+        "position": "RDE",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "x": 74,
+        "y": 49,
+        "label": "RDE",
+        "onLine": true
+      }
+    ],
+    "isFallback": true
   }
 ]

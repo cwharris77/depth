@@ -228,6 +228,10 @@ const defenseFormationCases: { description: string; code: string }[] = [
   { description: 'quarter: 7 DBs — adds the 7th fixed (generic CB) slot', code: '4-0-7' },
   { description: 'counts do not sum to 11 — falls back to BASE_DEFENSE', code: '4-4-4' },
   { description: 'malformed code — falls back to BASE_DEFENSE', code: 'not-a-code' },
+  {
+    description: 'DB count exceeds 8-slot capacity — falls back to BASE_DEFENSE',
+    code: '1-1-9',
+  },
 ];
 
 write(
