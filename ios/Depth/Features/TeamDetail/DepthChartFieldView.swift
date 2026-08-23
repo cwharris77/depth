@@ -4,23 +4,25 @@ import SwiftUI
 // shared `resolveUnit` domain logic (T3) unchanged — this view's only job is turning
 // `RenderSlot` percentages into an on-screen layout and a tap target per slot.
 //
-// Dot geometry comes from `DepthChartFieldLayout` (DEP-207): the tightest same-row gap
-// decides the drawn dot size so neighbouring dots never touch, and rows that can't fit
-// at the minimum size are re-spread around their centroid. The *visual* dot shrinks, but
-// the *tap target* stays at the 44-point minimum via `.frame(minWidth:minHeight:)` +
-// `.contentShape` — the same 30px-visual/44px-hit-slop contract the web uses. The field's
-// text is still capped at `.accessibility1`: positioned slots can't reflow, so a scaled
-// glyph would merge the offensive line into one shape, and the full content stays
-// reachable at any size through each slot's VoiceOver label.
+// Dot geometry comes from `DepthChartFieldLayout` (DEP-207): every slot targets one
+// uniform dot size, and any cluster of adjacent same-row slots too tight for that size
+// is re-spread around its own centroid. The *visual* dot shrinks only for a still-too-
+// tight cluster after re-spread; the *tap target* stays at the 44-point minimum via
+// `.frame(minWidth:minHeight:)` + `.contentShape` — the same 30px-visual/44px-hit-slop
+// contract the web uses. The field's text is still capped at `.accessibility1`:
+// positioned slots can't reflow, so a scaled glyph would merge the offensive line into
+// one shape, and the full content stays reachable at any size through each slot's
+// VoiceOver label.
 //
 // On top of #378's geometry, the field now renders a real green surface — gradient +
 // yard-line/hash-mark/end-zone markings (FieldMarkings) — in place of the old flat
 // team-tinted rect, and dots fill `primary` with a `secondary` ring (web's PlayerDot
-// semantics) instead of a flat `uiAccent` fill (2026-08-15 visual-pass). Each filled
-// dot also carries the player's last name under the position tag (DEP-250) at web's
-// per-unit breakpoints (DepthChartFieldLayout.showsNames — offense highest threshold,
-// defense mid, special always), sized against the field's height so packed rows stay
-// readable without colliding.
+// semantics) instead of a flat `uiAccent` fill (2026-08-15 visual-pass). Each filled dot
+// also carries the player's last name under the position tag (DEP-250) — THROWAWAY
+// PROTOTYPE, not landed: a slot the layout put in `nameCallouts` (still too tight for a
+// name under the dot after the uniform-size stretch) instead gets its name via a leader
+// line into the field's free space, replacing the old per-unit width-breakpoint gate
+// (DepthChartFieldLayout.showsNames, still defined/tested but no longer consulted here).
 struct DepthChartFieldView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -74,10 +76,6 @@ struct DepthChartFieldView: View {
                 fieldSize: proxy.size,
                 fillWidth: unit == .offense
             )
-            // DEP-250: per-unit name-label visibility (web's PlayerDot LABEL_VISIBILITY)
-            // — names render under each dot only when the unit's layout has room for
-            // them (offense highest threshold, defense mid, special always).
-            let showsNames = DepthChartFieldLayout.showsNames(unit: unit, fieldWidth: proxy.size.width)
             ZStack {
                 LinearGradient(
                     colors: [
@@ -94,11 +92,47 @@ struct DepthChartFieldView: View {
                     .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
 
                 ZStack {
+                    // THROWAWAY PROTOTYPE: leader lines + name tags for slots the layout
+                    // routed through `nameCallouts` (a row too tight for a name under the
+                    // dot even at the uniform size). Drawn first so dots layer on top.
+                    ForEach(Array(layout.nameCallouts.keys), id: \.self) { key in
+                        if let dot = layout.positions[key], let callout = layout.nameCallouts[key],
+                            let name = slots.first(where: { $0.key == key })?.player?.name, !name.isEmpty
+                        {
+                            // THROWAWAY PROTOTYPE, per Cooper 2026-08-23: a leader line to a
+                            // dot deep in the formation used to be drawn straight through
+                            // every dot between the two. It's now broken around them — the
+                            // line is only stroked where it isn't passing over another dot,
+                            // so it reads as running behind the formation instead of
+                            // striking through it.
+                            leaderLine(
+                                from: callout,
+                                to: dot,
+                                avoiding: key,
+                                layout: layout
+                            )
+                            .stroke(Color.white.opacity(0.3), lineWidth: 1)
+
+                            Text(verbatim: formatLastName(name))
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundStyle(DesignTokens.Colors.textPrimary)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.black.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .strokeBorder(Color.white.opacity(0.16))
+                                )
+                                .fixedSize()
+                                .position(callout)
+                        }
+                    }
+
                     ForEach(slots, id: \.key) { slot in
                         slotView(
                             slot,
                             dotSize: layout.dotSize,
-                            showsNames: showsNames,
+                            showsName: layout.nameCallouts[slot.key] == nil,
                             fieldHeight: proxy.size.height
                         )
                         // DEP-251: first-run tutorial's "tap any player" coachmark points at
@@ -129,6 +163,11 @@ struct DepthChartFieldView: View {
                     value: formation
                 )
             }
+            // THROWAWAY PROTOTYPE, per Cooper 2026-08-22: a name near the field's edge
+            // (a pinned WR, an outer callout tag) can still run past the card's rounded
+            // corner despite the wider margin above — clip so it's cropped at the field
+            // boundary instead of visibly bleeding onto the surrounding screen.
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
             .overlay {
                 RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
                     .strokeBorder(DesignTokens.Colors.borderStrong, lineWidth: 1)
@@ -142,16 +181,62 @@ struct DepthChartFieldView: View {
     /// : -18) : 0`, scaled from the web's fixed 30px dot to whatever the geometry layer
     /// drew (`dotSize / 2 + 3` = circle radius + a hair, web's 15px + 3). Offense dots
     /// (y ≥ 50, on their side of the line) shift down; defense dots shift up.
+    /// The visible parts of a leader line: the segment from a callout tag to its dot, minus
+    /// the stretches where it would cross any OTHER dot (plus a small clearance, so the line
+    /// visibly stops short rather than kissing the dot's edge). Walks the segment and emits
+    /// the runs that stay clear — a straight line can pass over several dots on the way in.
+    private func leaderLine(
+        from callout: CGPoint,
+        to dot: CGPoint,
+        avoiding key: String,
+        layout: DepthChartFieldLayout
+    ) -> Path {
+        let clearance = layout.dotSize / 2 + 5
+        let blockers = slots.compactMap { slot -> CGPoint? in
+            guard slot.key != key, let p = layout.positions[slot.key] else { return nil }
+            return CGPoint(x: p.x, y: p.y + lineOffset(for: slot, dotSize: layout.dotSize))
+        }
+
+        let steps = 60
+        var path = Path()
+        var runStart: CGPoint?
+        var previous: CGPoint?
+        for step in 0...steps {
+            let t = CGFloat(step) / CGFloat(steps)
+            let point = CGPoint(
+                x: callout.x + (dot.x - callout.x) * t,
+                y: callout.y + (dot.y - callout.y) * t
+            )
+            let blocked = blockers.contains { hypot(point.x - $0.x, point.y - $0.y) < clearance }
+            if blocked {
+                if let start = runStart, let end = previous {
+                    path.move(to: start)
+                    path.addLine(to: end)
+                }
+                runStart = nil
+            } else if runStart == nil {
+                runStart = point
+            }
+            previous = point
+        }
+        if let start = runStart, let end = previous {
+            path.move(to: start)
+            path.addLine(to: end)
+        }
+        return path
+    }
+
     private func lineOffset(for slot: RenderSlot, dotSize: CGFloat) -> CGFloat {
-        guard slot.onLine == true else { return 0 }
-        return slot.y >= 50 ? dotSize / 2 + 3 : -(dotSize / 2 + 3)
+        // Shared with the geometry layer so the collision math and the drawn dot can't
+        // disagree about where an on-line slot actually sits.
+        DepthChartFieldLayout.lineOffset(y: slot.y, onLine: slot.onLine, dotSize: dotSize)
     }
 
     @ViewBuilder
     private func slotView(
         _ slot: RenderSlot,
         dotSize: CGFloat,
-        showsNames: Bool,
+        showsName: Bool,
         fieldHeight: CGFloat
     ) -> some View {
         if let player = slot.player {
@@ -163,7 +248,7 @@ struct DepthChartFieldView: View {
                     number: player.number,
                     dotSize: dotSize,
                     playerName: player.name,
-                    showsName: showsNames,
+                    showsName: showsName,
                     fieldHeight: fieldHeight
                 )
                     // The visual dot shrinks with the geometry (DEP-207); the hit area
@@ -208,47 +293,57 @@ struct DepthChartFieldView: View {
         showsName: Bool,
         fieldHeight: CGFloat
     ) -> some View {
-        VStack(spacing: 4) {
-            Circle()
-                .fill(Color(hex: dotColors.primary))
-                .overlay {
-                    Circle().strokeBorder(Color(hex: dotColors.secondary), lineWidth: 2)
+        // THROWAWAY PROTOTYPE, per Cooper 2026-08-23: the dot is its own fixed-size view
+        // and the label block hangs BELOW it in an overlay, rather than all three sharing
+        // one centered VStack. In the stack version the whole stack was centered on the
+        // slot's position, so the circle's real y depended on whether a name happened to
+        // render under it — a dot visibly shifted when its name moved to a callout, and
+        // the layout's collision math could not predict where anything actually landed.
+        // Now the circle sits exactly on the computed position and the label occupies the
+        // rectangle DepthChartFieldLayout reserves for it (labelTopGap/labelBlockHeight).
+        Circle()
+            .fill(Color(hex: dotColors.primary))
+            .overlay {
+                Circle().strokeBorder(Color(hex: dotColors.secondary), lineWidth: 2)
+            }
+            .overlay {
+                if let number {
+                    // Verbatim: a jersey number is an identifier, not a quantity —
+                    // LocalizedStringKey interpolation would group it ("1,000"), the
+                    // same bug class already fixed for the season year elsewhere.
+                    Text(verbatim: "\(number)")
+                        .font(.caption.bold())
+                        .foregroundStyle(Color(hex: readableTextOn(dotColors.primary)))
+                } else {
+                    Image(systemName: "questionmark")
+                        .font(.caption2)
+                        .foregroundStyle(Color(hex: readableTextOn(dotColors.primary)))
                 }
-                .overlay {
-                    if let number {
-                        // Verbatim: a jersey number is an identifier, not a quantity —
-                        // LocalizedStringKey interpolation would group it ("1,000"), the
-                        // same bug class already fixed for the season year elsewhere.
-                        Text(verbatim: "\(number)")
-                            .font(.caption.bold())
-                            .foregroundStyle(Color(hex: readableTextOn(dotColors.primary)))
-                    } else {
-                        Image(systemName: "questionmark")
-                            .font(.caption2)
-                            .foregroundStyle(Color(hex: readableTextOn(dotColors.primary)))
+            }
+            .frame(width: dotSize, height: dotSize)
+            .overlay(alignment: .top) {
+                VStack(spacing: 2) {
+                    // Web parity (components/PlayerDot.tsx): the position tag renders in
+                    // the app's muted gray (textMuted), not the system `.secondary` gray,
+                    // so the field matches the web app's label color exactly.
+                    Text(label)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(DesignTokens.Colors.textMuted)
+
+                    // DEP-250: web's PlayerDot name row — the player's last name under the
+                    // position tag, rendered here only when the layout found room for it;
+                    // otherwise the name is drawn as a leader-line callout instead.
+                    if showsName, let playerName, !playerName.isEmpty {
+                        Text(verbatim: formatLastName(playerName))
+                            .font(.system(size: nameFontSize(fieldHeight: fieldHeight), weight: .bold))
+                            .foregroundStyle(DesignTokens.Colors.textPrimary)
+                            .lineLimit(1)
+                            .fixedSize()
                     }
                 }
-                .frame(width: dotSize, height: dotSize)
-            // Web parity (components/PlayerDot.tsx): the position tag renders in the
-            // app's muted gray (textMuted), not the system `.secondary` gray, so the
-            // field matches the web app's label color exactly.
-            Text(label)
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(DesignTokens.Colors.textMuted)
-
-            // DEP-250: web's PlayerDot name row — the player's last name under the
-            // position tag, shown only when the unit's layout has room (see
-            // DepthChartFieldLayout.showsNames). Bold white (textPrimary), size clamped
-            // to the field's height, wraps instead of truncating so long names like
-            // "Smith-Njigba" stay readable.
-            if showsName, let playerName, !playerName.isEmpty {
-                Text(verbatim: formatLastName(playerName))
-                    .font(.system(size: nameFontSize(fieldHeight: fieldHeight), weight: .bold))
-                    .foregroundStyle(DesignTokens.Colors.textPrimary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 72)
+                .frame(height: DepthChartFieldLayout.labelBlockHeight, alignment: .top)
+                .offset(y: dotSize + DepthChartFieldLayout.labelTopGap)
             }
-        }
     }
 
     /// Web parity (components/PlayerDot.tsx): the name size is clamped to the field's
