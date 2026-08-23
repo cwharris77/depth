@@ -513,7 +513,7 @@ export function buildRealDefenseFormation(code: string): FormationSlot[] {
   const dl = Number(m[1]);
   const lb = Number(m[2]);
   const db = Number(m[3]);
-  if (dl + lb + db !== 11) return BASE_DEFENSE;
+  if (dl + lb + db !== 11 || db > DB_SLOTS.length) return BASE_DEFENSE;
 
   return [...buildDlSlots(dl), ...buildLbSlots(lb), ...buildDbSlots(db)].map((s) => ({
     ...s,

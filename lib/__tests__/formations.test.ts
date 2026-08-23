@@ -326,6 +326,10 @@ describe('buildRealDefenseFormation — real per-team defensive fronts', () => {
     expect(buildRealDefenseFormation('4-2-4')).toBe(BASE_DEFENSE);
   });
 
+  it('falls back instead of dropping a player when the DB count exceeds its slot capacity', () => {
+    expect(buildRealDefenseFormation('1-1-9')).toBe(BASE_DEFENSE);
+  });
+
   it('assigns unique per-position indices (e.g. two DT slots are index 0 and 1)', () => {
     const slots = buildRealDefenseFormation('4-3-4'); // 2 DE + 2 DT
     const dts = slots.filter((s) => s.position === 'DT');
