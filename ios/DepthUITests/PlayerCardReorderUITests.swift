@@ -45,13 +45,20 @@ final class PlayerCardReorderUITests: XCTestCase {
         // one slot at a time; holding at the end makes the last crossing register before the
         // lift. The Done pill commits once. The position becomes CUSTOM.
         let first = rows.firstMatch
-        let last = rows.element(boundBy: rows.count - 1)
+        let lastIndex = rows.count - 1
+        let last = rows.element(boundBy: lastIndex)
+        let draggedRowID = first.identifier
         attachScreenshot(app, named: "05-reorder-edit-mode")
         first.press(
             forDuration: 0.6,
             thenDragTo: last,
             withVelocity: .slow,
             thenHoldForDuration: 0.5
+        )
+        XCTAssertEqual(
+            rows.element(boundBy: lastIndex).identifier,
+            draggedRowID,
+            "a slow drag to the final slot should leave the dragged player there deterministically"
         )
 
         let done = app.buttons["player-profile-depth-reorder-toggle"]
