@@ -12,11 +12,11 @@
 # worktrees on the same Mac don't pile up sims and exhaust RAM.
 #
 # Usage:
-#   ios/scripts/screenshot-check.sh [-t field,uniform,player] [--base main] \
+#   ios/scripts/screenshot-check.sh [-t field,teams,uniform,player] [--base main] \
 #       [-d <derivedDataDir>] [-s <sim-device-type>] [-c <config>]
 #
 # Flags:
-#   -t <csv>       Targets to capture (field, uniform, player). Default: field
+#   -t <csv>       Targets to capture (field, teams, uniform, player). Default: field
 #   --base <ref>   Capture "before" from this base ref via a temp worktree (e.g. main).
 #   -d <path>      DerivedData dir. Default: ios/.derivedData (gitignored, worktree-local)
 #   -s <type>      Simulator device type e.g. "iPhone 17 Pro Max". Default: auto-pick a
