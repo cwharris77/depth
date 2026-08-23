@@ -37,6 +37,14 @@ private let jete = UniformListing(
     imagePath: "https://depth-ashen.vercel.app/uniforms/jets-home.webp"
 )
 
+@Suite("Uniform artwork retry policy")
+struct UniformArtworkRetryPolicyTests {
+    @Test func retriesTheFirstFailureOnly() {
+        #expect(UniformArtworkRetryPolicy.shouldRetry(after: 0))
+        #expect(!UniformArtworkRetryPolicy.shouldRetry(after: 1))
+    }
+}
+
 @Suite("UniformArchive eraBucket")
 struct EraBucketTests {
     @Test func nilYearIsUndated() {

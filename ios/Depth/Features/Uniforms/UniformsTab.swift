@@ -274,20 +274,40 @@ private struct KitFigure: View {
 /// keeps the whole figure visible either way. Internal (not private): DEP-256 reuses
 /// this same component in UniformPickerSheet's carousel for drop-in parity with the
 /// archive, rather than re-implementing jersey rendering there.
+enum UniformArtworkRetryPolicy {
+    static func shouldRetry(after failures: Int) -> Bool {
+        failures < 1
+    }
+}
+
 struct UniformThumb: View {
     let url: URL?
     let size: CGFloat
     var heightMultiplier: CGFloat = 2.7
+    @State private var failureCount = 0
 
     var body: some View {
         AsyncImage(url: url) { phase in
-            if let image = phase.image {
+            switch phase {
+            case .success(let image):
                 image.resizable().scaledToFit()
-            } else {
+            case .failure:
+                Color.clear
+                    .task(id: failureCount) {
+                        guard UniformArtworkRetryPolicy.shouldRetry(after: failureCount) else {
+                            return
+                        }
+                        try? await Task.sleep(for: .milliseconds(200))
+                        guard !Task.isCancelled else { return }
+                        failureCount += 1
+                    }
+            default:
                 // Reserve the slot so the row doesn't reflow once image loads (#16).
                 Color.clear
             }
         }
+        .id("\(url?.absoluteString ?? "none")-\(failureCount)")
+        .onChange(of: url) { _, _ in failureCount = 0 }
         .frame(width: size, height: size * heightMultiplier)
         .accessibilityHidden(true)
     }
