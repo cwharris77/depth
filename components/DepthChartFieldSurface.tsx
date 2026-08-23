@@ -54,10 +54,48 @@ export default function DepthChartFieldSurface({
         style={{
           flex: '1 1 0',
           minHeight: 0,
-          background: 'linear-gradient(180deg, #1e3d10 0%, #2d5a1b 40%, #2d5a1b 60%, #1e3d10 100%)',
+          // Alternating darker/lighter green stripes — 10 horizontal bands give a
+          // subtle yard-line-zone texture without cluttering with actual yard numbers.
+          background: `repeating-linear-gradient(
+            180deg,
+            #1b3510 0%,
+            #1b3510 10%,
+            #224415 10%,
+            #224415 20%
+          )`,
           boxShadow: `inset 0 0 60px ${uiTokens.scrimLight}, 0 4px 32px ${uiTokens.scrim}`,
         }}>
         <FieldMarkings />
+
+        {/* Zone labels — subtle, uppercase, left-aligned markers that give the
+            pitch a tactical-board feel. Only shown on wider screens where they
+            won't collide with player dots. */}
+        <div
+          className="absolute inset-0 pointer-events-none hidden lg:block"
+          style={{ padding: '0 6px' }}>
+          {[
+            { label: 'RED ZONE', top: '5%' },
+            { label: 'OWN 20', top: '18%' },
+            { label: 'MIDFIELD', top: '48%' },
+            { label: 'OPP 20', top: '78%' },
+            { label: 'RED ZONE', top: '92%' },
+          ].map((z) => (
+            <div
+              key={z.label}
+              className="absolute font-semibold"
+              style={{
+                left: 4,
+                top: z.top,
+                transform: 'translateY(-50%)',
+                color: uiTokens.textFaint,
+                letterSpacing: '0.08em',
+                fontSize: 'clamp(5px, 0.9dvh, 7px)',
+                opacity: 0.5,
+              }}>
+              {z.label}
+            </div>
+          ))}
+        </div>
 
         {activeUnit === 'special' && (
           <>
