@@ -200,7 +200,8 @@ func applyingDepthOverrides(
         team: snapshot.team,
         players: snapshot.players.compactMap { playersById[$0.id] },
         specialTeams: snapshot.specialTeams,
-        uniforms: snapshot.uniforms
+        uniforms: snapshot.uniforms,
+        formations: snapshot.formations
     )
 }
 

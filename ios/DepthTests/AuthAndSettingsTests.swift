@@ -216,6 +216,14 @@ private actor AsyncCounter {
         uiAccent: "#FFFFFF",
         onAccent: "#000000"
     )
+    let formation = TeamFormation(
+        season: 2025,
+        rank: 1,
+        unit: .offense,
+        alignment: "SHOTGUN",
+        personnel: "11",
+        pct: 64
+    )
     let snapshot = TeamSnapshot(
         team: Team(
             id: "test",
@@ -234,7 +242,8 @@ private actor AsyncCounter {
             Player(id: "new", position: .qb, depthRank: 3, number: 30),
         ],
         specialTeams: [],
-        uniforms: []
+        uniforms: [],
+        formations: [formation]
     )
 
     let projected = applyingDepthOverrides(
@@ -246,6 +255,7 @@ private actor AsyncCounter {
     #expect(quarterbacks.map(\.id) == ["b", "a", "new"])
     #expect(quarterbacks.map(\.depthRank) == [1, 2, 3])
     #expect(quarterbacks.map(\.order) == [0, 1, 2])
+    #expect(projected.formations == [formation])
 }
 
 @Test func rerankedPlayersPreservesProfileFieldsAndStatus() {
