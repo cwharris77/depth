@@ -38,6 +38,9 @@ struct DepthChartFieldView: View {
     var formation: TeamFormation? = nil
     /// THROWAWAY PROTOTYPE: which of the three name treatments to draw (A/B comparison).
     var nameMode: FieldNameMode = .callouts
+    /// DEP-309: active full-team edit mode gently wiggles only the existing solid player
+    /// dots. Labels, hit targets, field geometry, and empty special-team slots stay put.
+    var isEditing = false
     let onSelectPlayer: (Player) -> Void
 
     // DEP-259: nameFontSize's 7-9pt clamp was a plain `.system(size:)` literal that never
@@ -131,9 +134,10 @@ struct DepthChartFieldView: View {
                         }
                     }
 
-                    ForEach(slots, id: \.key) { slot in
+                    ForEach(Array(slots.enumerated()), id: \.element.key) { index, slot in
                         slotView(
                             slot,
+                            index: index,
                             dotSize: layout.dotSize,
                             showsName: layout.showsInlineName(slot.key),
                             fieldHeight: proxy.size.height
@@ -238,6 +242,7 @@ struct DepthChartFieldView: View {
     @ViewBuilder
     private func slotView(
         _ slot: RenderSlot,
+        index: Int,
         dotSize: CGFloat,
         showsName: Bool,
         fieldHeight: CGFloat
@@ -249,6 +254,7 @@ struct DepthChartFieldView: View {
                 slotDot(
                     label: slot.label,
                     number: player.number,
+                    wiggleIndex: index,
                     dotSize: dotSize,
                     playerName: player.name,
                     showsName: showsName,
@@ -272,6 +278,7 @@ struct DepthChartFieldView: View {
             slotDot(
                 label: slot.label,
                 number: nil,
+                wiggleIndex: nil,
                 dotSize: dotSize,
                 playerName: nil,
                 showsName: false,
@@ -291,6 +298,7 @@ struct DepthChartFieldView: View {
     private func slotDot(
         label: String,
         number: Int?,
+        wiggleIndex: Int?,
         dotSize: CGFloat,
         playerName: String?,
         showsName: Bool,
@@ -324,6 +332,10 @@ struct DepthChartFieldView: View {
                 }
             }
             .frame(width: dotSize, height: dotSize)
+            .modifier(PlayerDotWiggleModifier(
+                isEditing: isEditing && wiggleIndex != nil,
+                index: wiggleIndex ?? 0
+            ))
             .overlay(alignment: .top) {
                 VStack(spacing: 2) {
                     // Web parity (components/PlayerDot.tsx): the position tag renders in
@@ -371,5 +383,52 @@ private struct FieldPlayerButtonStyle: ButtonStyle {
             .scaleEffect(configuration.isPressed && !reduceMotion ? 0.92 : 1)
             .brightness(configuration.isPressed ? 0.08 : 0)
             .animation(DesignTokens.Motion.feedback, value: configuration.isPressed)
+    }
+}
+
+// The rotation is applied before slotDot adds its position/name label overlay, so the
+// circle has the familiar Home Screen jiggle without making text wobble or moving the
+// 44-point Button hit target. Each modifier owns its tiny animation phase; the tested
+// policy decides whether it runs and supplies the stable stagger.
+private struct PlayerDotWiggleModifier: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isAtPositiveAngle = false
+
+    let isEditing: Bool
+    let index: Int
+
+    private var motion: PlayerDotWiggleMotion? {
+        PlayerDotWigglePolicy.motion(
+            isEditing: isEditing,
+            reduceMotion: reduceMotion
+                || ProcessInfo.processInfo.arguments.contains("UI_TESTING_REDUCE_MOTION"),
+            index: index
+        )
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .rotationEffect(
+                .degrees(motion.map { isAtPositiveAngle ? $0.angle : -$0.angle } ?? 0),
+                anchor: .bottom
+            )
+            .onAppear { updateAnimation() }
+            .onChange(of: isEditing) { _, _ in updateAnimation() }
+            .onChange(of: reduceMotion) { _, _ in updateAnimation() }
+    }
+
+    private func updateAnimation() {
+        guard let motion else {
+            isAtPositiveAngle = false
+            return
+        }
+        isAtPositiveAngle = false
+        withAnimation(
+            .easeInOut(duration: motion.duration)
+                .delay(motion.delay)
+                .repeatForever(autoreverses: true)
+        ) {
+            isAtPositiveAngle = true
+        }
     }
 }

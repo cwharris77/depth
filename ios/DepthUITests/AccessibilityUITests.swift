@@ -12,11 +12,17 @@ final class AccessibilityUITests: XCTestCase {
     // Drives ContentView's UI_TESTING_DYNAMIC_TYPE override rather than
     // `-UIPreferredContentSizeCategoryName`, which is silently inert here — see the
     // comment on `ContentView.uiTestingDynamicTypeSize`.
-    private func launchApp(dynamicTypeSize: String? = nil) -> XCUIApplication {
+    private func launchApp(
+        dynamicTypeSize: String? = nil,
+        reduceMotion: Bool = false
+    ) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
         if let dynamicTypeSize {
             app.launchArguments += ["UI_TESTING_DYNAMIC_TYPE", dynamicTypeSize]
+        }
+        if reduceMotion {
+            app.launchArguments.append("UI_TESTING_REDUCE_MOTION")
         }
         app.launch()
         return app
@@ -96,6 +102,36 @@ final class AccessibilityUITests: XCTestCase {
         close.tap()
 
         attachScreenshot(app, named: "depth-chart-accessibility-xxxl")
+    }
+
+    func testEditModeRemainsUsableWithReduceMotion() throws {
+        let app = launchApp(reduceMotion: true)
+        openBillsDepthChart(app)
+
+        let overflow = app.buttons["depth-chart-overflow"]
+        XCTAssertTrue(overflow.waitForExistence(timeout: 10))
+        overflow.tap()
+
+        let edit = app.buttons["edit-depth-order"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 5))
+        edit.tap()
+
+        let editing = app.buttons["depth-chart-editing-active"]
+        XCTAssertTrue(editing.waitForExistence(timeout: 5))
+        XCTAssertEqual(editing.value as? String, "Motion reduced")
+
+        let quarterback = app.buttons["player-slot-off-qb-0"]
+        XCTAssertTrue(quarterback.waitForExistence(timeout: 10))
+        quarterback.tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any).matching(
+                NSPredicate(format: "identifier BEGINSWITH 'player-profile-depth-reorder-row-'")
+            ).firstMatch.waitForExistence(timeout: 10),
+            "Reduce Motion must not disable editing or reordering"
+        )
+
+        app.buttons["Close"].tap()
+        attachScreenshot(app, named: "depth-chart-editing-reduce-motion")
     }
 
     // Assertions can prove elements exist and stay hittable; only an image shows whether
