@@ -19,6 +19,10 @@ import {
   buildMatchupMetrics,
   type TeamMatchupMetricsRow,
 } from '@/lib/utils/compare/matchup-metrics';
+import {
+  buildRecentParticipation,
+  type PlayerRecentSnapsRow,
+} from '@/lib/utils/compare/recent-participation';
 import type { Player, TeamRoster, FormationSlot } from '@/lib/types';
 
 const outDir = join(dirname(fileURLToPath(import.meta.url)), 'domain');
@@ -404,6 +408,94 @@ write(
   matchupMetricsCases.map((c) => ({
     ...c,
     expected: buildMatchupMetrics(c.input),
+  }))
+);
+
+// --- recent-participation.json — buildRecentParticipation (DEP-313) ----------------
+
+const currentParticipationRow: PlayerRecentSnapsRow = {
+  team_id: 'chiefs',
+  season: 2025,
+  player_id: 'z-player',
+  window_start_week: 15,
+  window_end_week: 17,
+  window_game_ids: ['g15', 'g16', 'g17'],
+  games: 3,
+  offense_snaps: 180,
+  offense_pct: 1,
+  defense_snaps: 0,
+  defense_pct: 0,
+  special_teams_snaps: 0,
+  special_teams_pct: null,
+  source: 'nflverse-pfr',
+  updated_at: '2026-01-05T12:00:00.000Z',
+};
+
+const previousParticipationRow: PlayerRecentSnapsRow = {
+  ...currentParticipationRow,
+  team_id: 'bills',
+  season: 2024,
+  player_id: 'previous-only',
+  window_start_week: 16,
+  window_end_week: 18,
+  window_game_ids: ['p16', 'p17', 'p18'],
+  offense_snaps: 0,
+  offense_pct: null,
+  defense_snaps: 165,
+  defense_pct: 0.92,
+  special_teams_snaps: 12,
+  special_teams_pct: 0,
+  updated_at: '2025-01-06T12:00:00.000Z',
+};
+
+const recentParticipationCases: { description: string; rows: PlayerRecentSnapsRow[] }[] = [
+  {
+    description:
+      'current season wins before timestamp, then latest window excludes stale players and sorts ids',
+    rows: [
+      {
+        ...currentParticipationRow,
+        season: 2024,
+        player_id: 'newer-previous-season',
+        updated_at: '2026-08-24T12:00:00.000Z',
+      },
+      {
+        ...currentParticipationRow,
+        player_id: 'stale-player',
+        updated_at: '2026-01-04T12:00:00.000Z',
+      },
+      currentParticipationRow,
+      {
+        ...currentParticipationRow,
+        player_id: 'a-player',
+        offense_snaps: 0,
+        offense_pct: null,
+        defense_snaps: 21,
+        defense_pct: 0,
+        special_teams_snaps: 14,
+        special_teams_pct: 0.5,
+      },
+    ],
+  },
+  {
+    description: 'previous-season-only data remains available when the current season has no rows',
+    rows: [
+      {
+        ...previousParticipationRow,
+        player_id: 'stale-previous-player',
+        updated_at: '2025-01-05T12:00:00.000Z',
+      },
+      previousParticipationRow,
+    ],
+  },
+];
+
+write(
+  'recent-participation',
+  recentParticipationCases.map((testCase) => ({
+    description: testCase.description,
+    input: testCase.rows,
+    expected: buildRecentParticipation(testCase.rows),
   }))
 );
 

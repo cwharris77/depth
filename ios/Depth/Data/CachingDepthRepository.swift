@@ -22,6 +22,8 @@ import Foundation
 //                    on-demand reads; caching dozens of rarely-opened seasons isn't worth it
 //   playerStats()    straight delegate — separate on-demand read; snapshot-cache
 //                    restructuring would add stale payload to every depth-chart launch
+//   recentParticipation() straight delegate — bounded live Compare evidence; no cache,
+//                    TTL, or in-flight state belongs in this decorator
 //   searchPlayers()  straight delegate — per-keystroke read; caching would serve stale hits
 //   listUniforms()   cache-first + background refresh (uniform archive is stable, ~105 rows)
 //   appConfig()      network-first, cache-fallback — a stale cached minimum build is
@@ -213,6 +215,12 @@ actor CachingDepthRepository: DepthRepository {
     /// add stale, unused payload to every depth-chart launch.
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] {
         try await underlying.playerStats(playerId: playerId, teamId: teamId)
+    }
+
+    /// The database query is already season-bounded, and Compare needs the newest
+    /// ingest window. Delegate directly without adding SwiftData, TTL, or dedup state.
+    func recentParticipation(teamId: String) async throws -> RecentParticipation? {
+        try await underlying.recentParticipation(teamId: teamId)
     }
 
     /// Cross-team search is a per-keystroke read; caching it would serve stale hits.

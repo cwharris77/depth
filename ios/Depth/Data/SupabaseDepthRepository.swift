@@ -60,6 +60,8 @@ actor SupabaseDepthRepository: DepthRepository {
         "season, overall_wins, overall_losses, overall_ties, home_wins, home_losses, road_wins, road_losses, division_wins, division_losses, conference_wins, conference_losses, points_for, points_against, point_differential"
     private static let teamMatchupMetricsSelect =
         "season, updated_at, games, attempts, carries, sacks_suffered, passing_epa, rushing_epa, passing_interceptions, fumbles_lost_total, def_sacks, def_qb_hits, def_interceptions, def_fumbles, def_fumbles_forced, fg_made, fg_att, pt_att, pt_net_yards, punt_returns, punt_return_yards, kickoff_returns, kickoff_return_yards, special_teams_tds"
+    private static let recentParticipationSelect =
+        "team_id, season, player_id, window_start_week, window_end_week, window_game_ids, games, offense_snaps, offense_pct, defense_snaps, defense_pct, special_teams_snaps, special_teams_pct, source, updated_at"
     private static let scheduleSelect = "team_id, season"
     private static let gameSelect =
         "game_id, season, game_type, week, gameday, home_team_id, away_team_id, home_score, away_score"
@@ -254,6 +256,34 @@ actor SupabaseDepthRepository: DepthRepository {
                 rows: rows,
                 matchupRows: matchupRows
             )
+        } catch let error as DepthError {
+            throw error
+        } catch let error as PostgrestError {
+            throw Self.mapPostgrestError(error)
+        } catch let error as DecodingError {
+            throw DepthError.decoding("\(error)")
+        } catch let error as URLError {
+            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server("\(error)")
+        } catch {
+            throw DepthError.server("\(error)")
+        }
+    }
+
+    /// Mirrors web's bounded player_recent_snaps read: only the current source season
+    /// and its predecessor cross the wire, then the pure mapper selects one complete
+    /// winning ingest window and excludes stale rows.
+    func recentParticipation(teamId: String) async throws -> RecentParticipation? {
+        let state = TeamStatsMapper.nflSeasonState()
+        let currentSeason = state.isOffseason ? state.upcomingSeason : state.upcomingSeason - 1
+        do {
+            let rows: [RecentParticipationDTO] = try await client
+                .from("player_recent_snaps")
+                .select(Self.recentParticipationSelect)
+                .eq("team_id", value: teamId)
+                .in("season", values: [currentSeason, currentSeason - 1])
+                .execute()
+                .value
+            return try RecentParticipationMapper.map(rows)
         } catch let error as DepthError {
             throw error
         } catch let error as PostgrestError {
