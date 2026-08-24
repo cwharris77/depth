@@ -17,7 +17,7 @@ struct TeamDetailView: View {
     /// DEP-231: the app-level edit-mode toggle (web's `globalEditMode`). When on, every
     /// position group's player card opens already in reorder mode. Lives in the overflow
     /// menu; disabled (not hidden) while viewing a historical season.
-    @State private var editModeEnabled = false
+    @State private var editMode = DepthChartEditMode()
     /// THROWAWAY PROTOTYPE: the A/B name treatment chosen in Settings › Beta Testing.
     @AppStorage(FieldNameMode.storageKey) private var fieldNameMode: FieldNameMode = .callouts
     @State private var showHistory = false
@@ -197,11 +197,21 @@ struct TeamDetailView: View {
             }
             .onChange(of: unit) { _, newValue in
                 preferences.lastUnit = newValue
+                editMode.exitForContextChange()
                 // A formation pick is unit-specific — reset to the new unit's top rather
                 // than carrying a stale offense pick onto defense (web's resetToTopForUnit).
                 selectedFormation = nil
             }
-            .onChange(of: historyViewModel.selectedSeason) { _, _ in selectedPlayer = nil }
+            .onChange(of: page) { _, _ in
+                editMode.exitForContextChange()
+            }
+            .onChange(of: historyViewModel.selectedSeason) { _, _ in
+                selectedPlayer = nil
+                editMode.exitForContextChange()
+            }
+            .onDisappear {
+                editMode.exitForContextChange()
+            }
             .onChange(of: sessionStore.user) { _, user in
                 if user == nil {
                     // DEP-219: signing out doesn't erase local edits — web's
@@ -239,7 +249,7 @@ struct TeamDetailView: View {
                     isPositionCustom: editable ? confirmedOrders[position] != nil : false,
                     onReorder: editable ? { _, ids in reorderPosition(position, ids) } : nil,
                     onResetPosition: editable ? { _ in resetPosition(position) } : nil,
-                    globalEditMode: editable && editModeEnabled
+                    globalEditMode: editable && editMode.isActive
                 )
                     .id(player.id)
                     // `.sheet()` content gets a fresh UITraitCollection rather than
@@ -425,6 +435,48 @@ struct TeamDetailView: View {
         .accessibilityIdentifier("custom-order-reset-all")
     }
 
+    private var editingChip: some View {
+        Button {
+            editMode.exitForContextChange()
+        } label: {
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(teamAccentColor)
+                    .frame(width: 6, height: 6)
+                Text("Editing")
+                    .font(.caption.weight(.semibold))
+            }
+            .foregroundStyle(teamAccentColor)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Capsule().fill(teamAccentColor.opacity(0.12)))
+            .overlay {
+                Capsule().strokeBorder(teamAccentColor.opacity(0.4), lineWidth: 1)
+            }
+        }
+        .frame(minHeight: 44)
+        .accessibilityIdentifier("depth-chart-editing-active")
+        .accessibilityLabel("Editing depth chart")
+        .accessibilityValue(isMotionReduced ? "Motion reduced" : "Player dots moving")
+        .accessibilityHint("Exits edit mode without discarding saved changes")
+    }
+
+    private var isMotionReduced: Bool {
+        reduceMotion || ProcessInfo.processInfo.arguments.contains("UI_TESTING_REDUCE_MOTION")
+    }
+
+    private var editStatusRow: some View {
+        HStack {
+            if !confirmedOrders.isEmpty {
+                customOrderChip
+            }
+            Spacer()
+            if editMode.isActive {
+                editingChip
+            }
+        }
+    }
+
     /// Web parity (components/FieldHeaderMenu.tsx): actions beyond the page switcher's
     /// tabs live behind a single ••• overflow menu. DEP-230 correction: this used to
     /// live in the nav-bar toolbar, a different row than the unit tabs it belongs
@@ -483,14 +535,14 @@ struct TeamDetailView: View {
             // DEP-226 gave the player card inline reorder, so the toggle now drives that
             // instead and the standalone editor is gone.
             Button {
-                editModeEnabled.toggle()
+                editMode.toggle()
             } label: {
                 // Web parity (FieldHeaderMenu's share item): the label stays constant and
                 // the leading glyph flips to a Check while active — no redundant
                 // "Done Editing" rename.
                 Label(
                     "Edit Depth Chart",
-                    systemImage: editModeEnabled ? "checkmark" : "pencil"
+                    systemImage: editMode.isActive ? "checkmark" : "pencil"
                 )
             }
             .disabled(historyViewModel.isHistorical)
@@ -654,8 +706,8 @@ struct TeamDetailView: View {
                     // the user this team's depth is their own edited order, with one-tap
                     // revert. Hidden for a past season, same as web (neither order is
                     // theirs to reset).
-                    if !historical && !confirmedOrders.isEmpty {
-                        customOrderChip
+                    if !historical && (!confirmedOrders.isEmpty || editMode.isActive) {
+                        editStatusRow
                             .padding(.horizontal)
                     }
 
@@ -664,7 +716,8 @@ struct TeamDetailView: View {
                         unit: unit,
                         colors: fieldColors,
                         formation: activeFormation,
-                        nameMode: fieldNameMode
+                        nameMode: fieldNameMode,
+                        isEditing: editMode.isActive
                     ) { player in
                         selectedPlayer = player
                     }
@@ -964,5 +1017,43 @@ private struct FormationsSheetView: View {
         .accessibilityIdentifier("formation-row")
         .accessibilityLabel(title(f))
         .accessibilityAddTraits(isActive ? .isSelected : [])
+    }
+}
+
+// DEP-309: the team-detail screen owns one temporary edit session. Keeping the state in
+// a small value type makes the entry/exit contract testable without widening it into an
+// app-level store; saved player orders continue to live in UserPreferences.
+struct DepthChartEditMode: Equatable {
+    private(set) var isActive = false
+
+    mutating func toggle() {
+        isActive.toggle()
+    }
+
+    mutating func exitForContextChange() {
+        isActive = false
+    }
+}
+
+struct PlayerDotWiggleMotion: Equatable {
+    let angle: Double
+    let delay: Double
+    let duration: Double
+}
+
+// DEP-309: a deterministic stagger keeps the dots from moving as one rigid formation.
+// Reduce Motion removes the effect entirely while leaving edit state and controls intact.
+enum PlayerDotWigglePolicy {
+    static func motion(
+        isEditing: Bool,
+        reduceMotion: Bool,
+        index: Int
+    ) -> PlayerDotWiggleMotion? {
+        guard isEditing, !reduceMotion else { return nil }
+        return PlayerDotWiggleMotion(
+            angle: index.isMultiple(of: 2) ? 1.35 : -1.35,
+            delay: Double(index % 4) * 0.035,
+            duration: 0.23
+        )
     }
 }
