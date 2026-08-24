@@ -68,15 +68,14 @@ struct DepthChartsTab: View {
             // key-reset idiom, rather than mutating a view model in place.
             .id(teamId)
             // DEP-280: push Compare pre-populated with the schedule card's two teams.
-            // A plain `.navigationDestination(item:)` push (not a sheet) so the pushed
-            // Compare screen gets a normal system back affordance for free, in addition
-            // to the explicit "Back to schedule" control CompareView renders when
-            // `enteredFromSchedule` — see that view's comment for why both exist.
+            // A plain `.navigationDestination(item:)` push (not a sheet), so the pushed
+            // Compare screen gets the system back chevron + edge-swipe pop — the only
+            // back affordance (2026-08-23: the web-parity "Back to schedule" pill was
+            // removed as a duplicate; see DEP-325, the navigation-affordance audit).
             .navigationDestination(item: $compareRequest) { request in
                 CompareView(
                     repository: repository,
-                    preselectedTeamIds: (a: request.teamAId, b: request.teamBId),
-                    enteredFromSchedule: true
+                    preselectedTeamIds: (a: request.teamAId, b: request.teamBId)
                 )
             }
         }
