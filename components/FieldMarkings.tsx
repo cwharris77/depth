@@ -1,5 +1,10 @@
 import { colors as uiTokens } from '@/components/ui/tokens';
 
+// Ten-yard increments, mirrored the way real fields paint them: count up from each
+// goal line (10…40), with midfield left to the blue line-of-scrimmage line. Values
+// are percentages of the 100-unit viewBox, matching the yard lines every 10%.
+const YARD_NUMBERS = [10, 20, 30, 40, 60, 70, 80, 90];
+
 export default function FieldMarkings() {
   return (
     <svg
@@ -19,6 +24,41 @@ export default function FieldMarkings() {
           strokeWidth="0.4"
         />
       ))}
+      {/* Yard numbers on both sidelines, hidden below lg like the dot labels so the
+          mobile field stays dot-only. textFaint at 50% keeps them legible at this
+          size while staying quieter than any chrome text; rotated to read from the
+          near sideline like painted numbers. */}
+      {YARD_NUMBERS.map((y) => {
+        const n = y < 50 ? y / 10 : (100 - y) / 10;
+        return (
+          <g key={y} className="hidden lg:block">
+            <text
+              x="5"
+              y={y}
+              dominantBaseline="central"
+              textAnchor="middle"
+              fill={uiTokens.textFaint}
+              fontSize="4"
+              fontWeight="bold"
+              opacity="0.5"
+              transform={`rotate(-90 5 ${y})`}>
+              {n}
+            </text>
+            <text
+              x="95"
+              y={y}
+              dominantBaseline="central"
+              textAnchor="middle"
+              fill={uiTokens.textFaint}
+              fontSize="4"
+              fontWeight="bold"
+              opacity="0.5"
+              transform={`rotate(-90 95 ${y})`}>
+              {n}
+            </text>
+          </g>
+        );
+      })}
       {/* end zones */}
       <rect x="0" y="0" width="100" height="6" fill="rgba(30,32,38,0.3)" />
       <rect x="0" y="94" width="100" height="6" fill="rgba(30,32,38,0.3)" />
