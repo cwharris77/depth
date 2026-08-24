@@ -916,7 +916,7 @@ git diff --check origin/main...HEAD
 
 Confirm no Compare UI changed; neither `TeamSnapshot` nor `TeamStatsPage` gained participation; raw rows are not stored/returned; only dedicated methods query the table; attribution is present; unrelated work is unstaged.
 
-- [ ] **Step 6: Complete and commit documentation**
+- [x] **Step 6: Complete and commit documentation**
 
 Check completed steps in this plan, then run:
 
@@ -925,6 +925,6 @@ git add docs/nflverse.md docs/superpowers/plans/2026-08-24-player-recent-snaps.m
 git commit -m "docs(nflverse): document recent snap summaries"
 ```
 
-- [ ] **Step 7: Open the ready pull request without merging**
+- [x] **Step 7: Open the ready pull request without merging**
 
 Push `codex/dep-313-snap-participation` and open a ready PR titled `feat(compare): ingest recent player participation`. Link DEP-313; summarize last-good storage; list TypeScript, native, and database checks; state that Compare UI is intentionally unchanged. Stop for review. Squash merge only after checks and review feedback are clear.
