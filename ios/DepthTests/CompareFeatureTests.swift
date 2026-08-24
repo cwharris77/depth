@@ -43,7 +43,8 @@ private func statsPage(team: Team, wins: Int) -> TeamStatsPage {
                 season: 2025, overallWins: wins, overallLosses: 17 - wins, overallTies: 0,
                 homeWins: 4, homeLosses: 4, roadWins: wins - 4, roadLosses: 5,
                 divisionWins: 2, divisionLosses: 3, conferenceWins: 5, conferenceLosses: 5,
-                pointsFor: 402, pointsAgainst: 291, pointDifferential: 111
+                pointsFor: 402, pointsAgainst: 291, pointDifferential: 111,
+                matchupMetrics: nil
             )
         ],
         upcomingSeason: nil,

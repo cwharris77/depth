@@ -88,6 +88,16 @@ describe('toTeamStatsRows', () => {
     expect(rows[0].passing_epa).toBeNull();
   });
 
+  it('stamps rows with the successful ingest time when provided', () => {
+    const { rows } = toTeamStatsRows(
+      [{ team: 'KC', season: '2024', season_type: 'REG' }],
+      resolveCode,
+      { updatedAt: '2026-08-23T12:00:00.000Z' }
+    );
+
+    expect(rows[0].updated_at).toBe('2026-08-23T12:00:00.000Z');
+  });
+
   it('resolves historic relocation codes (OAK -> raiders)', () => {
     const historicResolve = (code: string) => {
       const codes: Record<string, string> = { OAK: 'raiders', KC: 'chiefs' };

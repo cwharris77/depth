@@ -1,8 +1,7 @@
-// Drift guard for fixtures/domain/*.json — the cross-language contract Swift's
-// DepthTests/FormationsParityTests.swift is verified against (2026-08-14 native iOS
-// design spec, Milestone 1 step 13). Each fixture case carries its own input; this test
+// Drift guard for fixtures/domain/*.json — the cross-language contracts Swift's
+// DepthTests verifies against. Each fixture case carries its own input; this test
 // re-derives the expected output from that input against the *live* TS implementation,
-// so an uncommitted formations.ts/roster.ts change that forgot to regenerate fixtures
+// so a changed pure implementation that forgot to regenerate fixtures
 // (`npx tsx fixtures/generate.mts`) fails here instead of silently diverging from Swift.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -16,6 +15,10 @@ import {
   alignmentLabel,
 } from '@/lib/utils/depth-chart/formations';
 import { getPlayersByPosition } from '@/lib/utils/roster/roster';
+import {
+  buildMatchupMetrics,
+  type TeamMatchupMetricsRow,
+} from '@/lib/utils/compare/matchup-metrics';
 import type { Player, TeamRoster, FormationSlot, Position } from '@/lib/types';
 
 const fixturesDir = join(process.cwd(), 'fixtures/domain');
@@ -172,6 +175,19 @@ describe('domain fixtures parity (drift guard)', () => {
     const cases = load<{ alignment: string; expectedLabel: string }[]>('alignment-label');
     for (const c of cases) {
       expect(alignmentLabel(c.alignment)).toBe(c.expectedLabel);
+    }
+  });
+
+  it('matchup-metrics.json matches buildMatchupMetrics', () => {
+    const cases = load<
+      {
+        description: string;
+        input: TeamMatchupMetricsRow;
+        expected: ReturnType<typeof buildMatchupMetrics>;
+      }[]
+    >('matchup-metrics');
+    for (const c of cases) {
+      expect(buildMatchupMetrics(c.input), c.description).toEqual(c.expected);
     }
   });
 });
