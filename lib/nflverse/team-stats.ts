@@ -8,6 +8,7 @@ export interface TeamStatsInsert {
   team_id: string;
   season: number;
   season_type: string;
+  updated_at?: string;
   games: number | null;
 
   completions: number | null;
@@ -300,7 +301,8 @@ const DISTANCE_LIST_COLUMNS = [
 
 export function toTeamStatsRows(
   csvRows: Record<string, string>[],
-  resolveCode: (code: string) => string | null = resolveTeamCode
+  resolveCode: (code: string) => string | null = resolveTeamCode,
+  options: { updatedAt?: string } = {}
 ): { rows: TeamStatsInsert[]; skipped: number } {
   const rows: TeamStatsInsert[] = [];
   let skipped = 0;
@@ -342,6 +344,7 @@ export function toTeamStatsRows(
       team_id: teamId,
       season,
       season_type: seasonType,
+      ...(options.updatedAt ? { updated_at: options.updatedAt } : {}),
       ...numeric,
       ...distanceLists,
     });

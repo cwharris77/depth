@@ -330,7 +330,8 @@ async function ingestFormations(
 // season). SKIP_TEAM_STATS env var skips this step entirely for faster dev iteration.
 async function ingestTeamStats(
   supabase: SupabaseClient<Database> | null,
-  seasons: number[]
+  seasons: number[],
+  updatedAt: string
 ): Promise<{
   rows: TeamStatsInsert[];
   skipped: number;
@@ -349,7 +350,7 @@ async function ingestTeamStats(
     try {
       const csvText = await getText(assetUrl(TEAM_STATS_TAG, `${TEAM_STATS_PREFIX}${season}.csv`));
       const parsed = parseCsv(csvText);
-      const { rows, skipped: seasonSkipped } = toTeamStatsRows(parsed);
+      const { rows, skipped: seasonSkipped } = toTeamStatsRows(parsed, undefined, { updatedAt });
       skipped += seasonSkipped;
 
       if (supabase && rows.length) {
@@ -507,7 +508,7 @@ async function main() {
   // for the daily job's default), and teamStatsSeasons follows the same rule.
   const teamStatsSeasons =
     gamesSeasons ?? (latestSeason === null ? [] : [latestSeason, latestSeason - 1]);
-  const teamStatsResult = await ingestTeamStats(supabase, teamStatsSeasons);
+  const teamStatsResult = await ingestTeamStats(supabase, teamStatsSeasons, startedAt);
   for (const f of teamStatsResult.failures) failures.push({ season: f.season, message: f.message });
   skipped += teamStatsResult.skipped;
 

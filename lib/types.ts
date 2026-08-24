@@ -188,6 +188,49 @@ export interface TeamStats {
   // lag behind ESPN team_stats, so a season can lack passing/rushing values.
   passingYards?: number;
   rushingYards?: number;
+  // Bounded nflverse evidence for DEP-312's Compare lenses. Raw counts remain
+  // available beside derived rates so every displayed value is auditable; the whole
+  // object is absent when the season has no nflverse row.
+  matchupMetrics?: TeamMatchupMetrics;
+}
+
+export interface TeamMatchupMetrics {
+  source: 'nflverse';
+  season: number;
+  updatedAt: string;
+  games?: number;
+  passingEpa?: number;
+  rushingEpa?: number;
+  passAttempts?: number;
+  rushAttempts?: number;
+  sacksSuffered?: number;
+  offensiveEpa?: number;
+  offensivePlays?: number;
+  offensiveEpaPerPlay?: number;
+  passingInterceptions?: number;
+  fumblesLost?: number;
+  giveaways?: number;
+  defensiveSacks?: number;
+  quarterbackHits?: number;
+  quarterbackHitsPerGame?: number;
+  defensiveInterceptions?: number;
+  defensiveFumbleRecoveries?: number;
+  defensiveFumblesForced?: number;
+  defensiveTakeaways?: number;
+  defensiveTakeawaysPerGame?: number;
+  fieldGoalsMade?: number;
+  fieldGoalsAttempted?: number;
+  fieldGoalPercentage?: number;
+  puntAttempts?: number;
+  netPuntYards?: number;
+  netPuntYardsPerAttempt?: number;
+  puntReturns?: number;
+  puntReturnYards?: number;
+  puntReturnYardsPerAttempt?: number;
+  kickoffReturns?: number;
+  kickoffReturnYards?: number;
+  kickoffReturnYardsPerAttempt?: number;
+  specialTeamsTouchdowns?: number;
 }
 
 // A kit's category. `home` rows are ESPN-owned (machine-managed); every other kind is

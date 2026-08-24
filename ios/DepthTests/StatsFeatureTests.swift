@@ -27,7 +27,8 @@ private func statsSeason(_ season: Int) -> TeamSeasonStats {
         roadWins: 5, roadLosses: 2,
         divisionWins: 3, divisionLosses: 1,
         conferenceWins: 8, conferenceLosses: 4,
-        pointsFor: 402, pointsAgainst: 291, pointDifferential: 111
+        pointsFor: 402, pointsAgainst: 291, pointDifferential: 111,
+        matchupMetrics: nil
     )
 }
 

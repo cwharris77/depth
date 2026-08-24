@@ -44,3 +44,60 @@ struct TeamStatsRowDTO: Decodable {
         case pointDifferential = "point_differential"
     }
 }
+
+// Exact PostgREST projection for DEP-312's bounded team_season_stats read. This is a
+// deliberately small subset of the wide nflverse row: only raw values consumed by the
+// approved Compare lenses plus season/freshness provenance.
+struct TeamMatchupMetricsDTO: Decodable {
+    let season: Int
+    let updatedAt: String
+    let games: Int?
+    let attempts: Int?
+    let carries: Int?
+    let sacksSuffered: Int?
+    let passingEPA: Double?
+    let rushingEPA: Double?
+    let passingInterceptions: Int?
+    let fumblesLostTotal: Int?
+    let defensiveSacks: Double?
+    let quarterbackHits: Int?
+    let defensiveInterceptions: Int?
+    let defensiveFumbleRecoveries: Int?
+    let defensiveFumblesForced: Int?
+    let fieldGoalsMade: Int?
+    let fieldGoalsAttempted: Int?
+    let puntAttempts: Int?
+    let netPuntYards: Int?
+    let puntReturns: Int?
+    let puntReturnYards: Int?
+    let kickoffReturns: Int?
+    let kickoffReturnYards: Int?
+    let specialTeamsTouchdowns: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case season
+        case updatedAt = "updated_at"
+        case games
+        case attempts
+        case carries
+        case sacksSuffered = "sacks_suffered"
+        case passingEPA = "passing_epa"
+        case rushingEPA = "rushing_epa"
+        case passingInterceptions = "passing_interceptions"
+        case fumblesLostTotal = "fumbles_lost_total"
+        case defensiveSacks = "def_sacks"
+        case quarterbackHits = "def_qb_hits"
+        case defensiveInterceptions = "def_interceptions"
+        case defensiveFumbleRecoveries = "def_fumbles"
+        case defensiveFumblesForced = "def_fumbles_forced"
+        case fieldGoalsMade = "fg_made"
+        case fieldGoalsAttempted = "fg_att"
+        case puntAttempts = "pt_att"
+        case netPuntYards = "pt_net_yards"
+        case puntReturns = "punt_returns"
+        case puntReturnYards = "punt_return_yards"
+        case kickoffReturns = "kickoff_returns"
+        case kickoffReturnYards = "kickoff_return_yards"
+        case specialTeamsTouchdowns = "special_teams_tds"
+    }
+}

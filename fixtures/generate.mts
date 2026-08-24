@@ -1,9 +1,8 @@
 // Generates the cross-language domain fixtures under fixtures/domain/*.json by calling
-// the real TypeScript implementation (lib/utils/depth-chart/formations.ts,
-// lib/utils/roster/roster.ts) — the TS side is the oracle (2026-08-14 native iOS design
-// spec, Milestone 1 step 13). Swift's DepthTests loads the same JSON and must match
-// exactly. Re-run this (`npx tsx fixtures/generate.mts`) whenever formations.ts/roster.ts
-// changes, and commit the regenerated JSON alongside the code change.
+// the real TypeScript implementations for formations, roster ordering, and Compare
+// metrics — the TS side is the oracle. Swift's DepthTests loads the same JSON and must
+// match exactly. Re-run this (`npx tsx fixtures/generate.mts`) whenever one of those pure
+// implementations changes, and commit the regenerated JSON alongside the code change.
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -16,6 +15,10 @@ import {
   alignmentLabel,
 } from '@/lib/utils/depth-chart/formations';
 import { getPlayersByPosition } from '@/lib/utils/roster/roster';
+import {
+  buildMatchupMetrics,
+  type TeamMatchupMetricsRow,
+} from '@/lib/utils/compare/matchup-metrics';
 import type { Player, TeamRoster, FormationSlot } from '@/lib/types';
 
 const outDir = join(dirname(fileURLToPath(import.meta.url)), 'domain');
@@ -331,6 +334,77 @@ const alignmentInputs = ['SHOTGUN', 'UNDER CENTER', 'PISTOL', 'WILDCAT'];
 write(
   'alignment-label',
   alignmentInputs.map((a) => ({ alignment: a, expectedLabel: alignmentLabel(a) }))
+);
+
+// --- matchup-metrics.json — buildMatchupMetrics (DEP-312) ---------------------------
+
+const matchupMetricsCases: { description: string; input: TeamMatchupMetricsRow }[] = [
+  {
+    description: 'complete row keeps raw inputs and derives every auditable rate',
+    input: {
+      season: 2025,
+      updated_at: '2026-08-23T12:00:00.000Z',
+      games: 17,
+      attempts: 500,
+      carries: 425,
+      sacks_suffered: 25,
+      passing_epa: 72,
+      rushing_epa: 23,
+      passing_interceptions: 10,
+      fumbles_lost_total: 7,
+      def_sacks: 42,
+      def_qb_hits: 96,
+      def_interceptions: 16,
+      def_fumbles: 9,
+      def_fumbles_forced: 12,
+      fg_made: 30,
+      fg_att: 36,
+      pt_att: 68,
+      pt_net_yards: 2788,
+      punt_returns: 34,
+      punt_return_yards: 374,
+      kickoff_returns: 24,
+      kickoff_return_yards: 600,
+      special_teams_tds: 2,
+    },
+  },
+  {
+    description: 'partial row omits rates whose source values are missing or zero-count',
+    input: {
+      season: 2025,
+      updated_at: '2026-08-23T12:00:00.000Z',
+      games: null,
+      attempts: 500,
+      carries: null,
+      sacks_suffered: 25,
+      passing_epa: 72,
+      rushing_epa: null,
+      passing_interceptions: 10,
+      fumbles_lost_total: null,
+      def_sacks: 42,
+      def_qb_hits: 96,
+      def_interceptions: 16,
+      def_fumbles: null,
+      def_fumbles_forced: 12,
+      fg_made: 0,
+      fg_att: null,
+      pt_att: 0,
+      pt_net_yards: 0,
+      punt_returns: null,
+      punt_return_yards: null,
+      kickoff_returns: null,
+      kickoff_return_yards: null,
+      special_teams_tds: null,
+    },
+  },
+];
+
+write(
+  'matchup-metrics',
+  matchupMetricsCases.map((c) => ({
+    ...c,
+    expected: buildMatchupMetrics(c.input),
+  }))
 );
 
 console.log('done.');
