@@ -61,6 +61,8 @@ struct SeasonPickerItem: Identifiable {
 }
 
 struct SeasonPickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
     /// Newest season first, matching both callers' natural query/stride order.
     let items: [SeasonPickerItem]
     let selectedSeason: Int
@@ -71,7 +73,7 @@ struct SeasonPickerSheet: View {
 
     var body: some View {
         NavigationStack {
-            List(items) { item in
+            List(Array(items.enumerated()), id: \.element.id) { index, item in
                 Button {
                     onSelect(item.season)
                 } label: {
@@ -97,19 +99,46 @@ struct SeasonPickerSheet: View {
                 .frame(minHeight: 44)
                 .accessibilityIdentifier("\(identifierPrefix)-season-\(item.season)")
                 .accessibilityLabel("\(item.season)\(item.season == selectedSeason ? ", selected" : "")")
-                .listRowBackground(DesignTokens.Colors.surfaceCard2)
+                // Rounded top corners on the first row and bottom corners on the last —
+                // interior rows stay square so they read as one continuous card, not a
+                // stack of separately-rounded pills. Softens the flat edges that used to
+                // butt straight into the sheet's own top/bottom padding.
+                .listRowBackground(
+                    UnevenRoundedRectangle(
+                        topLeadingRadius: index == 0 ? DesignTokens.Radius.sm : 0,
+                        bottomLeadingRadius: index == items.count - 1 ? DesignTokens.Radius.sm : 0,
+                        bottomTrailingRadius: index == items.count - 1 ? DesignTokens.Radius.sm : 0,
+                        topTrailingRadius: index == 0 ? DesignTokens.Radius.sm : 0
+                    )
+                    .fill(DesignTokens.Colors.surfaceCard2)
+                )
+                // Plain-style List draws a separator above the first row and below the
+                // last by default (unlike a Section's interior rows) — hide those two
+                // edges so the row's own surfaceCard2 background reads as the divider,
+                // matching TeamListView's TeamSearchRowPresentation treatment.
+                .listRowSeparator(index == 0 ? .hidden : .visible, edges: .top)
+                .listRowSeparator(
+                    TeamSearchRowPresentation.showsSeparator(after: index, count: items.count) ? .visible : .hidden,
+                    edges: .bottom
+                )
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
+            // A plain List reserves its own top/bottom content margin by default — with
+            // no row background there, it read as a flat strip of the sheet's plain `bg`
+            // wedged between the nav bar and the first card. Zeroing it lets the rounded
+            // first/last row sit flush against the chrome instead.
+            .contentMargins(.top, 0, for: .scrollContent)
+            .contentMargins(.bottom, 0, for: .scrollContent)
             .navigationTitle("Seasons")
             .navigationBarTitleDisplayMode(.inline)
-            // Mirrors HistorySeasonSheet's DEP-245 escape hatch: once a past season is
-            // selected, the current row can be scrolled far out of view in a long
-            // 1999→present list, so pin a one-tap way back in the toolbar.
             .toolbar {
+                // Mirrors HistorySeasonSheet's DEP-245 escape hatch: once a past season is
+                // selected, the current row can be scrolled far out of view in a long
+                // 1999→present list, so pin a one-tap way back in the toolbar.
                 if selectedSeason != currentSeason {
-                    ToolbarItem(placement: .topBarTrailing) {
+                    ToolbarItem(placement: .topBarLeading) {
                         Button("Back to current") {
                             onSelect(currentSeason)
                         }
@@ -118,8 +147,25 @@ struct SeasonPickerSheet: View {
                         .accessibilityIdentifier("\(identifierPrefix)-season-back-to-current")
                     }
                 }
+                // Top-trailing X, matching every other picker sheet in the app
+                // (TeamListPickerSheet, UniformFilterSheet, UniformPickerSheet,
+                // PlayerDetailView) — this sheet was missing it.
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    }
+                    .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityLabel("Close")
+                    .accessibilityIdentifier("\(identifierPrefix)-season-close")
+                }
             }
         }
         .presentationBackground(DesignTokens.Colors.bg)
+        // Visible grabber so the swipe-to-dismiss gesture is discoverable, matching
+        // PlayerDetailView's convention — not just the X.
+        .presentationDragIndicator(.visible)
     }
 }

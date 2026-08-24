@@ -132,6 +132,7 @@ struct PlayerDetailView: View {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
+                            .foregroundStyle(DesignTokens.Colors.textPrimary)
                     }
                     .frame(minWidth: 44, minHeight: 44)
                     .accessibilityLabel("Close")
