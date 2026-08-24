@@ -16,6 +16,16 @@ function game(over: Partial<GameInsert> = {}): GameInsert {
     away_team_id: '49ers',
     home_score: 24,
     away_score: 17,
+    location: null,
+    away_moneyline: null,
+    home_moneyline: null,
+    spread_line: null,
+    away_spread_odds: null,
+    home_spread_odds: null,
+    total_line: null,
+    under_odds: null,
+    over_odds: null,
+    market_updated_at: null,
     ...over,
   };
 }

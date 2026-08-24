@@ -66,7 +66,7 @@ actor SupabaseDepthRepository: DepthRepository {
         "team_id, season, player_id, window_start_week, window_end_week, window_game_ids, games, offense_snaps, offense_pct, defense_snaps, defense_pct, special_teams_snaps, special_teams_pct, source, updated_at"
     private static let scheduleSelect = "team_id, season"
     private static let gameSelect =
-        "game_id, season, game_type, week, gameday, home_team_id, away_team_id, home_score, away_score"
+        "game_id, season, game_type, week, gameday, home_team_id, away_team_id, home_score, away_score, location, away_moneyline, home_moneyline, spread_line, away_spread_odds, home_spread_odds, total_line, under_odds, over_odds, market_updated_at"
     private static let playerStatsSelect =
         "season, season_type, games, completions, attempts, passing_yards, passing_tds, passing_interceptions, carries, rushing_yards, rushing_tds, receptions, targets, receiving_yards, receiving_tds, def_tackles_solo, def_sacks, def_interceptions, fg_made, fg_att, teams(abbrev)"
     private static let historicalRosterSelect =

@@ -15,6 +15,15 @@ function row(over: Record<string, string>): Record<string, string> {
     away_score: '',
     home_team: 'SEA',
     home_score: '',
+    location: 'Home',
+    away_moneyline: '',
+    home_moneyline: '',
+    spread_line: '',
+    away_spread_odds: '',
+    home_spread_odds: '',
+    total_line: '',
+    under_odds: '',
+    over_odds: '',
     ...over,
   };
 }
@@ -35,6 +44,16 @@ describe('toScheduleAndGameRows', () => {
         away_team_id: 'rams',
         home_score: null,
         away_score: null,
+        location: 'Home',
+        away_moneyline: null,
+        home_moneyline: null,
+        spread_line: null,
+        away_spread_odds: null,
+        home_spread_odds: null,
+        total_line: null,
+        under_odds: null,
+        over_odds: null,
+        market_updated_at: null,
       },
     ]);
     expect(schedules).toEqual([
@@ -50,6 +69,87 @@ describe('toScheduleAndGameRows', () => {
     );
     expect(games[0].home_score).toBe(27);
     expect(games[0].away_score).toBe(13);
+  });
+
+  it('retains posted pregame market fields with their observation time', () => {
+    const { games } = toScheduleAndGameRows(
+      [
+        row({
+          away_moneyline: '+154',
+          home_moneyline: '-185',
+          spread_line: '3.5',
+          away_spread_odds: '-110',
+          home_spread_odds: '-110',
+          total_line: '45.5',
+          under_odds: '-105',
+          over_odds: '-115',
+        }),
+      ],
+      resolveTeamCode,
+      undefined,
+      '2026-08-24T20:00:00.000Z'
+    );
+
+    expect(games[0]).toMatchObject({
+      away_moneyline: 154,
+      home_moneyline: -185,
+      spread_line: 3.5,
+      away_spread_odds: -110,
+      home_spread_odds: -110,
+      total_line: 45.5,
+      under_odds: -105,
+      over_odds: -115,
+      market_updated_at: '2026-08-24T20:00:00.000Z',
+    });
+  });
+
+  it('preserves neutral-site designation for the designated home and away teams', () => {
+    const { games } = toScheduleAndGameRows(
+      [row({ location: 'Neutral', spread_line: '0' })],
+      resolveTeamCode,
+      undefined,
+      '2026-08-24T20:00:00.000Z'
+    );
+
+    expect(games[0].location).toBe('Neutral');
+    expect(games[0].spread_line).toBe(0);
+  });
+
+  it('degrades malformed market numbers to null without dropping the game', () => {
+    const { games, skipped } = toScheduleAndGameRows(
+      [row({ home_moneyline: 'favorite', spread_line: 'three', total_line: 'NaN' })],
+      resolveTeamCode,
+      undefined,
+      '2026-08-24T20:00:00.000Z'
+    );
+
+    expect(skipped).toBe(0);
+    expect(games[0]).toMatchObject({
+      home_moneyline: null,
+      spread_line: null,
+      total_line: null,
+      market_updated_at: null,
+    });
+  });
+
+  it('replaces a moved line and its observation time on the next transform', () => {
+    const first = toScheduleAndGameRows(
+      [row({ spread_line: '2.5' })],
+      resolveTeamCode,
+      undefined,
+      '2026-08-24T18:00:00.000Z'
+    ).games[0];
+    const moved = toScheduleAndGameRows(
+      [row({ spread_line: '3.5' })],
+      resolveTeamCode,
+      undefined,
+      '2026-08-24T20:00:00.000Z'
+    ).games[0];
+
+    expect(first.spread_line).toBe(2.5);
+    expect(first.market_updated_at).toBe('2026-08-24T18:00:00.000Z');
+    expect(moved.spread_line).toBe(3.5);
+    expect(moved.market_updated_at).toBe('2026-08-24T20:00:00.000Z');
   });
 
   it('dedupes a team-season across its many games', () => {

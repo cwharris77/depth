@@ -33,7 +33,8 @@ enum ScheduleMapper {
                 opponent: opponent,
                 teamScore: teamScore,
                 opponentScore: opponentScore,
-                result: outcome(teamScore: teamScore, opponentScore: opponentScore)
+                result: outcome(teamScore: teamScore, opponentScore: opponentScore),
+                market: mapMarket(game, isHome: isHome)
             )
         }
 
@@ -61,5 +62,56 @@ enum ScheduleMapper {
         if teamScore > opponentScore { return .win }
         if teamScore < opponentScore { return .loss }
         return .tie
+    }
+
+    private static func mapMarket(_ game: GameDTO, isHome: Bool) -> ScheduleGameMarket? {
+        let values = [
+            game.awayMoneyline, game.homeMoneyline, game.spreadLine,
+            game.awaySpreadOdds, game.homeSpreadOdds, game.totalLine,
+            game.underOdds, game.overOdds,
+        ]
+        guard values.contains(where: { $0 != nil }) else { return nil }
+
+        let teamMoneyline = isHome ? game.homeMoneyline : game.awayMoneyline
+        let opponentMoneyline = isHome ? game.awayMoneyline : game.homeMoneyline
+        let favoriteTeamId: String? = if let spread = game.spreadLine, spread != 0 {
+            spread > 0 ? game.homeTeamId : game.awayTeamId
+        } else {
+            nil
+        }
+        let teamSpread: Double? = if let spread = game.spreadLine {
+            spread == 0 ? 0 : (isHome ? -spread : spread)
+        } else {
+            nil
+        }
+
+        return ScheduleGameMarket(
+            teamMoneyline: teamMoneyline,
+            opponentMoneyline: opponentMoneyline,
+            teamSpread: teamSpread,
+            teamSpreadOdds: isHome ? game.homeSpreadOdds : game.awaySpreadOdds,
+            opponentSpreadOdds: isHome ? game.awaySpreadOdds : game.homeSpreadOdds,
+            totalLine: game.totalLine,
+            underOdds: game.underOdds,
+            overOdds: game.overOdds,
+            impliedWinProbability: vigFreeProbability(teamMoneyline, opponentMoneyline),
+            favoriteTeamId: favoriteTeamId,
+            isPickEm: game.spreadLine == 0,
+            isNeutralSite: game.location?.lowercased() == "neutral",
+            source: .nflverse,
+            updatedAt: game.marketUpdatedAt
+        )
+    }
+
+    private static func vigFreeProbability(_ teamOdds: Double?, _ opponentOdds: Double?) -> Double? {
+        guard let team = americanOddsProbability(teamOdds),
+              let opponent = americanOddsProbability(opponentOdds)
+        else { return nil }
+        return team / (team + opponent)
+    }
+
+    private static func americanOddsProbability(_ odds: Double?) -> Double? {
+        guard let odds, odds.isFinite, odds != 0 else { return nil }
+        return odds < 0 ? -odds / (-odds + 100) : 100 / (odds + 100)
     }
 }

@@ -191,6 +191,30 @@ private func recentParticipation() -> RecentParticipation {
 }
 
 @Suite struct CachingDepthRepositoryTests {
+    @Test func teamScheduleCacheWrittenBeforeMarketStillDecodes() throws {
+        let data = Data(
+            """
+            {
+              "season": 2026,
+              "games": [{
+                "week": 1,
+                "isBye": false,
+                "date": "2026-09-13",
+                "isHome": true,
+                "opponent": null,
+                "teamScore": null,
+                "opponentScore": null,
+                "result": null
+              }]
+            }
+            """.utf8
+        )
+
+        let cached = try JSONDecoder().decode(TeamSchedule.self, from: data)
+
+        #expect(cached.games[0].market == nil)
+    }
+
     @Test func recentParticipationDelegatesDirectlyWithoutEnteringTheCache() async throws {
         let expected = recentParticipation()
         let underlying = FakeDepthRepository(recentParticipationResult: expected)

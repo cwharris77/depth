@@ -20,7 +20,11 @@ The field experience. Depth-chart data exists elsewhere; depth renders the roste
 
 ## Operating Context
 
-- Weekly data rhythm: unofficial ESPN APIs ingested by a scheduled GitHub Action (Wed 12:00 UTC) into Supabase Postgres; all reads go through the `RosterSource` seam (`lib/roster-source.ts`). A failed ingest means one week stale, never a blocked deploy.
+- Data rhythm: unofficial ESPN APIs are ingested weekly (Wed 12:00 UTC), while nflverse
+  stats, schedules, and market lines are ingested daily. Both scheduled GitHub Actions
+  write Supabase Postgres; the app reads through its server-side data layer
+  (`lib/roster-source.db.ts`). A failed ingest can leave source data stale but never
+  blocks a deploy.
 - Uniform-archive curation is a measured craft workflow: reference images (internal-only, never committed or redistributed), 1–3 teams per pass, every hex cites its source (`docs/uniform-model-brief.md`).
 - Specs and roadmap live in the Obsidian vault (`../obsidian/Projects/depth/`); implementation plans live in this repo (`docs/superpowers/plans/`). Never write specs into this repo's `docs/`.
 - Multi-surface parity process (vault spec, 2026-08-20): a feature request with no named target defaults to all three surfaces — iOS, desktop web, mobile web — each built per its own convention.
