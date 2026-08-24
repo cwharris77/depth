@@ -175,6 +175,16 @@ final class PlayerCardReorderUITests: XCTestCase {
         XCTAssertTrue(editToggle.waitForExistence(timeout: 5))
         editToggle.tap()
 
+        let editingChip = app.buttons["depth-chart-editing-active"]
+        XCTAssertTrue(
+            editingChip.waitForExistence(timeout: 5),
+            "active full-team editing should stay visible outside the overflow menu"
+        )
+        let activeAttachment = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+        activeAttachment.name = "depth-chart-editing-active"
+        activeAttachment.lifetime = .keepAlways
+        add(activeAttachment)
+
         // The menu dismisses; open a filled position slot.
         let quarterback = app.buttons["player-slot-off-qb-0"]
         XCTAssertTrue(quarterback.waitForExistence(timeout: 10))
@@ -196,14 +206,10 @@ final class PlayerCardReorderUITests: XCTestCase {
         )
         app.buttons["Close"].tap()
 
-        // Disable the toggle and reopen the card: plain tap-to-switch rows, per-card
-        // Reorder pill back.
-        let overflowAgain = app.buttons["depth-chart-overflow"]
-        XCTAssertTrue(overflowAgain.waitForExistence(timeout: 5))
-        overflowAgain.tap()
-        let editToggleAgain = app.buttons["edit-depth-order"]
-        XCTAssertTrue(editToggleAgain.waitForExistence(timeout: 5))
-        editToggleAgain.tap()
+        // The persistent Editing chip is the direct exit action. Reopen the card after
+        // tapping it: plain tap-to-switch rows, per-card Reorder pill back.
+        editingChip.tap()
+        XCTAssertFalse(editingChip.exists, "explicit exit should remove the active-mode chip")
 
         let qbAgain = app.buttons["player-slot-off-qb-0"]
         XCTAssertTrue(qbAgain.waitForExistence(timeout: 10))
@@ -217,6 +223,66 @@ final class PlayerCardReorderUITests: XCTestCase {
             app.buttons["player-profile-depth-reorder-toggle"].waitForExistence(timeout: 5),
             "the per-card Reorder pill returns once global mode is off"
         )
+    }
+
+    func testContextChangesExitGlobalEditMode() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launch()
+
+        XCTAssertTrue(app.waitForDepthChart())
+        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+
+        let editingChip = app.buttons["depth-chart-editing-active"]
+        func enterEditing() {
+            let overflow = app.buttons["depth-chart-overflow"]
+            XCTAssertTrue(overflow.waitForExistence(timeout: 10))
+            overflow.tap()
+            let edit = app.buttons["edit-depth-order"]
+            XCTAssertTrue(edit.waitForExistence(timeout: 5))
+            edit.tap()
+            XCTAssertTrue(editingChip.waitForExistence(timeout: 5))
+        }
+        func assertEditingEnded(_ context: String) {
+            XCTAssertFalse(
+                editingChip.waitForExistence(timeout: 1),
+                "\(context) should save the current order and exit edit mode"
+            )
+        }
+
+        enterEditing()
+        app.buttons["unit-tab-defense"].tap()
+        assertEditingEnded("changing units")
+
+        enterEditing()
+        app.buttons["page-switcher-schedule"].tap()
+        assertEditingEnded("leaving the roster page")
+        app.buttons["page-switcher-roster"].tap()
+        XCTAssertTrue(app.buttons["depth-chart-overflow"].waitForExistence(timeout: 10))
+
+        enterEditing()
+        app.tabBars.firstMatch.buttons["Compare"].tap()
+        app.tabBars.firstMatch.buttons["Depth Charts"].tap()
+        XCTAssertTrue(app.buttons["depth-chart-overflow"].waitForExistence(timeout: 10))
+        assertEditingEnded("leaving the Depth Charts tab")
+
+        enterEditing()
+        app.selectTeam("seahawks", searching: "Seahawks", expectedDisplayName: "Seattle Seahawks")
+        assertEditingEnded("switching teams")
+
+        enterEditing()
+        app.buttons["depth-chart-overflow"].tap()
+        let history = app.buttons["history-destination"]
+        XCTAssertTrue(history.waitForExistence(timeout: 5))
+        history.tap()
+        let season = app.buttons["history-season-2013"]
+        for _ in 0..<4 where !season.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(season.waitForExistence(timeout: 5))
+        season.tap()
+        XCTAssertTrue(app.staticTexts["history-season-state"].waitForExistence(timeout: 10))
+        assertEditingEnded("entering a historical roster")
     }
 
     // DEP-291: projecting a saved player order must keep the team's formation data.
