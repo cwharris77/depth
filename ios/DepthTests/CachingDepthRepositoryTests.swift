@@ -13,6 +13,7 @@ private actor FakeDepthRepository: DepthRepository {
     var seasonResults: [Int: Result<TeamSnapshot, Error>]
     var statsResults: [String: Result<TeamStatsPage, Error>]
     var scheduleResults: [String: Result<TeamSchedule, Error>]
+    var recentParticipationResult: RecentParticipation?
     var appConfigResult: Result<AppConfig, Error>
     var uniformsResult: Result<[UniformListing], Error>
     private(set) var teamSnapshotCallCount: [String: Int] = [:]
@@ -20,6 +21,7 @@ private actor FakeDepthRepository: DepthRepository {
     private(set) var seasonCallCount = 0
     private(set) var teamStatsCallCount: [String: Int] = [:]
     private(set) var scheduleCallCount: [String: Int] = [:]
+    private(set) var recentParticipationCallCount = 0
     private(set) var uniformsCallCount = 0
 
     init(
@@ -28,6 +30,7 @@ private actor FakeDepthRepository: DepthRepository {
         seasonResults: [Int: Result<TeamSnapshot, Error>] = [:],
         statsResults: [String: Result<TeamStatsPage, Error>] = [:],
         scheduleResults: [String: Result<TeamSchedule, Error>] = [:],
+        recentParticipationResult: RecentParticipation? = nil,
         appConfigResult: Result<AppConfig, Error> = .success(AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)),
         uniformsResult: Result<[UniformListing], Error> = .success([])
     ) {
@@ -36,6 +39,7 @@ private actor FakeDepthRepository: DepthRepository {
         self.seasonResults = seasonResults
         self.statsResults = statsResults
         self.scheduleResults = scheduleResults
+        self.recentParticipationResult = recentParticipationResult
         self.appConfigResult = appConfigResult
         self.uniformsResult = uniformsResult
     }
@@ -71,6 +75,11 @@ private actor FakeDepthRepository: DepthRepository {
     }
 
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
+
+    func recentParticipation(teamId: String) async throws -> RecentParticipation? {
+        recentParticipationCallCount += 1
+        return recentParticipationResult
+    }
 
     func appConfig() async throws -> AppConfig {
         try appConfigResult.get()
@@ -146,6 +155,19 @@ private func schedule(season: Int = 2026) -> TeamSchedule {
     )
 }
 
+private func recentParticipation() -> RecentParticipation {
+    RecentParticipation(
+        teamId: "bills",
+        season: 2025,
+        windowStartWeek: 15,
+        windowEndWeek: 17,
+        gameIds: ["g15", "g16", "g17"],
+        source: "nflverse / Pro Football Reference",
+        updatedAt: "2026-01-05T12:00:00.000Z",
+        players: []
+    )
+}
+
 @Test func teamSnapshotFetchesFromUnderlyingOnCacheMiss() async throws {
     let underlying = FakeDepthRepository(snapshotResults: ["bills": .success(snapshot())])
     let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
@@ -166,6 +188,19 @@ private func schedule(season: Int = 2026) -> TeamSchedule {
     #expect(first == historical)
     #expect(second == historical)
     #expect(await underlying.historyCallCount() == 2)
+}
+
+@Suite struct CachingDepthRepositoryTests {
+    @Test func recentParticipationDelegatesDirectlyWithoutEnteringTheCache() async throws {
+        let expected = recentParticipation()
+        let underlying = FakeDepthRepository(recentParticipationResult: expected)
+        let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
+
+        let result = try await repository.recentParticipation(teamId: "bills")
+
+        #expect(result == expected)
+        #expect(await underlying.recentParticipationCallCount == 1)
+    }
 }
 
 @Test func teamSnapshotReturnsCachedValueWithoutBlockingOnNetwork() async throws {

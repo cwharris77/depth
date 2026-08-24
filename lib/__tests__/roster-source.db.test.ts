@@ -53,6 +53,16 @@ maybeDescribe('dbRosterSource (live Supabase project)', () => {
     expect(await dbRosterSource.getTeam('not-a-real-team')).toBeUndefined();
   });
 
+  it('returns a bounded participation summary when snap data is seeded', async () => {
+    const summary = await dbRosterSource.recentParticipation('chiefs');
+    if (!summary) return;
+    expect(summary.teamId).toBe('chiefs');
+    expect(summary.gameIds.length).toBeGreaterThanOrEqual(1);
+    expect(summary.gameIds.length).toBeLessThanOrEqual(3);
+    expect(summary.players.length).toBeGreaterThan(0);
+    expect(summary.source).toBe('nflverse / Pro Football Reference');
+  });
+
   it('assembles a full roster for an ingested team (seahawks)', async () => {
     const roster = await dbRosterSource.getTeam('seahawks');
     if (!roster) throw new Error('expected a roster for seahawks');
