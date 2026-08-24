@@ -369,6 +369,36 @@ export interface Game {
   awayTeamId: string;
   homeScore: number | null;
   awayScore: number | null;
+  location: string | null;
+  homeMoneyline: number | null;
+  awayMoneyline: number | null;
+  spreadLine: number | null;
+  homeSpreadOdds: number | null;
+  awaySpreadOdds: number | null;
+  totalLine: number | null;
+  underOdds: number | null;
+  overOdds: number | null;
+  marketUpdatedAt: string | null;
+}
+
+// A game's nflverse market snapshot oriented to one team. `teamSpread` uses the
+// conventional display sign (favorite negative, underdog positive), while source and
+// freshness stay explicit so this cannot be mistaken for Depth's forecast model.
+export interface TeamGameMarket {
+  teamMoneyline: number | null;
+  opponentMoneyline: number | null;
+  teamSpread: number | null;
+  teamSpreadOdds: number | null;
+  opponentSpreadOdds: number | null;
+  totalLine: number | null;
+  underOdds: number | null;
+  overOdds: number | null;
+  impliedWinProbability: number | null;
+  favoriteTeamId: string | null;
+  isPickEm: boolean;
+  isNeutralSite: boolean;
+  source: 'nflverse';
+  updatedAt: string | null;
 }
 
 // The opponent identity a schedule/next-game card renders (colored code chip). Resolved
@@ -393,6 +423,7 @@ export interface TeamScheduleGame {
   teamScore: number | null;
   oppScore: number | null;
   result: 'W' | 'L' | 'T' | null;
+  market?: TeamGameMarket;
 }
 
 export interface TeamSchedule {

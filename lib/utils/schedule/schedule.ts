@@ -6,7 +6,8 @@
 // below, for the stats page's postseason section. A bye week is derived (nflverse
 // has no bye row): any REG week with no game is the team's bye.
 
-import type { Game } from '@/lib/types';
+import type { Game, TeamGameMarket } from '@/lib/types';
+import { orientGameMarket } from '@/lib/utils/compare/market-lines';
 
 // Pure-layer schedule entry: opponent is an id (the DB layer resolves it to abbrev/colors
 // for the UI's TeamScheduleGame). `result` is null for an upcoming game or a bye.
@@ -20,6 +21,7 @@ export interface ResolvedScheduleGame {
   teamScore: number | null;
   oppScore: number | null;
   result: 'W' | 'L' | 'T' | null;
+  market?: TeamGameMarket;
 }
 
 function outcome(teamScore: number | null, oppScore: number | null): 'W' | 'L' | 'T' | null {
@@ -51,6 +53,7 @@ export function resolveSchedule(games: Game[], teamId: string): ResolvedSchedule
       teamScore,
       oppScore,
       result: outcome(teamScore, oppScore),
+      market: orientGameMarket(g, teamId),
     });
   }
 

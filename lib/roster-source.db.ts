@@ -1061,11 +1061,21 @@ type GameRow = Pick<
   | 'away_team_id'
   | 'home_score'
   | 'away_score'
+  | 'location'
+  | 'away_moneyline'
+  | 'home_moneyline'
+  | 'spread_line'
+  | 'away_spread_odds'
+  | 'home_spread_odds'
+  | 'total_line'
+  | 'under_odds'
+  | 'over_odds'
+  | 'market_updated_at'
 >;
 const GAME_SELECT =
-  'game_id, season, game_type, week, gameday, gametime, home_team_id, away_team_id, home_score, away_score';
+  'game_id, season, game_type, week, gameday, gametime, home_team_id, away_team_id, home_score, away_score, location, away_moneyline, home_moneyline, spread_line, away_spread_odds, home_spread_odds, total_line, under_odds, over_odds, market_updated_at';
 
-function toGame(row: GameRow): Game {
+export function toGame(row: GameRow): Game {
   return {
     gameId: row.game_id,
     season: row.season,
@@ -1077,6 +1087,16 @@ function toGame(row: GameRow): Game {
     awayTeamId: row.away_team_id,
     homeScore: row.home_score,
     awayScore: row.away_score,
+    location: row.location,
+    homeMoneyline: row.home_moneyline,
+    awayMoneyline: row.away_moneyline,
+    spreadLine: row.spread_line,
+    homeSpreadOdds: row.home_spread_odds,
+    awaySpreadOdds: row.away_spread_odds,
+    totalLine: row.total_line,
+    underOdds: row.under_odds,
+    overOdds: row.over_odds,
+    marketUpdatedAt: row.market_updated_at,
   };
 }
 
@@ -1167,6 +1187,7 @@ function toScheduleGame(
     teamScore: resolved.teamScore,
     oppScore: resolved.oppScore,
     result: resolved.result,
+    market: resolved.market,
   };
 }
 

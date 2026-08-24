@@ -26,12 +26,26 @@ private func scheduleGame(
     awayTeamId: String,
     homeScore: Int? = nil,
     awayScore: Int? = nil,
-    gameday: String? = "2025-09-07"
+    gameday: String? = "2025-09-07",
+    location: String? = "Home",
+    awayMoneyline: Double? = nil,
+    homeMoneyline: Double? = nil,
+    spreadLine: Double? = nil,
+    awaySpreadOdds: Double? = nil,
+    homeSpreadOdds: Double? = nil,
+    totalLine: Double? = nil,
+    underOdds: Double? = nil,
+    overOdds: Double? = nil,
+    marketUpdatedAt: String? = nil
 ) -> GameDTO {
     GameDTO(
         gameId: id, season: 2025, gameType: gameType, week: week, gameday: gameday,
         homeTeamId: homeTeamId, awayTeamId: awayTeamId, homeScore: homeScore,
-        awayScore: awayScore
+        awayScore: awayScore, location: location, awayMoneyline: awayMoneyline,
+        homeMoneyline: homeMoneyline, spreadLine: spreadLine,
+        awaySpreadOdds: awaySpreadOdds, homeSpreadOdds: homeSpreadOdds,
+        totalLine: totalLine, underOdds: underOdds, overOdds: overOdds,
+        marketUpdatedAt: marketUpdatedAt
     )
 }
 
@@ -54,6 +68,7 @@ private func scheduleGame(
     #expect(result.games[0].teamScore == 24)
     #expect(result.games[0].opponentScore == 17)
     #expect(result.games[0].result == .win)
+    #expect(result.games[0].market == nil)
 }
 
 @Test func decodesScheduleAndGameDTOsFromSnakeCasePayloads() throws {
@@ -64,7 +79,11 @@ private func scheduleGame(
     {
       "game_id": "2025_01_BUF_NYJ", "season": 2025, "game_type": "REG", "week": 1,
       "gameday": "2025-09-07", "home_team_id": "bills", "away_team_id": "jets",
-      "home_score": 20, "away_score": 20
+      "home_score": 20, "away_score": 20, "location": "Neutral",
+      "away_moneyline": 110, "home_moneyline": -130, "spread_line": 2.5,
+      "away_spread_odds": -108, "home_spread_odds": -112, "total_line": 44.5,
+      "under_odds": -105, "over_odds": -115,
+      "market_updated_at": "2026-08-24T20:00:00.000Z"
     }
     """.utf8)
 
@@ -79,6 +98,64 @@ private func scheduleGame(
     #expect(game.awayTeamId == "jets")
     #expect(game.homeScore == 20)
     #expect(game.awayScore == 20)
+    #expect(game.location == "Neutral")
+    #expect(game.awayMoneyline == 110)
+    #expect(game.homeMoneyline == -130)
+    #expect(game.spreadLine == 2.5)
+    #expect(game.marketUpdatedAt == "2026-08-24T20:00:00.000Z")
+}
+
+@Test func mapsMarketFromSelectedAwayTeamsPerspectiveAndRemovesVig() throws {
+    let result = try ScheduleMapper.map(
+        schedule: ScheduleDTO(teamId: "bills", season: 2025),
+        games: [
+            scheduleGame(
+                id: "market", week: 1, homeTeamId: "jets", awayTeamId: "bills",
+                location: "Neutral", awayMoneyline: 110, homeMoneyline: -130,
+                spreadLine: 2.5, awaySpreadOdds: -108, homeSpreadOdds: -112,
+                totalLine: 44.5, underOdds: -105, overOdds: -115,
+                marketUpdatedAt: "2026-08-24T20:00:00.000Z"
+            ),
+        ],
+        teamsById: ["jets": scheduleTeam(id: "jets", abbrev: "NYJ")]
+    )
+
+    let market = try #require(result.games[0].market)
+    #expect(market.teamMoneyline == 110)
+    #expect(market.opponentMoneyline == -130)
+    #expect(market.teamSpread == 2.5)
+    #expect(market.teamSpreadOdds == -108)
+    #expect(market.opponentSpreadOdds == -112)
+    #expect(market.totalLine == 44.5)
+    #expect(market.underOdds == -105)
+    #expect(market.overOdds == -115)
+    #expect(abs(try #require(market.impliedWinProbability) - 0.457256) < 0.000001)
+    #expect(market.favoriteTeamId == "jets")
+    #expect(market.isPickEm == false)
+    #expect(market.isNeutralSite == true)
+    #expect(market.source == .nflverse)
+    #expect(market.updatedAt == "2026-08-24T20:00:00.000Z")
+}
+
+@Test func mapsPickEmWithoutFavoriteAndMissingSideWithoutProbability() throws {
+    let result = try ScheduleMapper.map(
+        schedule: ScheduleDTO(teamId: "bills", season: 2025),
+        games: [
+            scheduleGame(
+                id: "pick-em", week: 1, homeTeamId: "bills", awayTeamId: "jets",
+                homeMoneyline: -110, spreadLine: 0, awaySpreadOdds: -110,
+                homeSpreadOdds: -110, totalLine: 42.5,
+                marketUpdatedAt: "2026-08-24T20:00:00.000Z"
+            ),
+        ],
+        teamsById: ["jets": scheduleTeam(id: "jets", abbrev: "NYJ")]
+    )
+
+    let market = try #require(result.games[0].market)
+    #expect(market.teamSpread == 0)
+    #expect(market.favoriteTeamId == nil)
+    #expect(market.isPickEm == true)
+    #expect(market.impliedWinProbability == nil)
 }
 
 @Test func mapsHomeTieFromSelectedTeamsPerspective() throws {

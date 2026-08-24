@@ -26,4 +26,11 @@ The product roadmap lives in the Obsidian vault — [`Projects/depth/Roadmap.md`
 
 ## Data
 
-Roster data lives in Supabase Postgres and is read at build/request time through the `RosterSource` seam (`lib/roster-source.ts`). The app uses the Postgres-backed `dbRosterSource` (`lib/roster-source.db.ts`); a weekly GitHub Action ingests fresh ESPN data — see [`docs/espn.md`](docs/espn.md). The bundled static registry in `lib/teams/` remains as the `staticRosterSource` used in tests and as a point-in-time fixture.
+Roster, schedule, and stats data live in Supabase Postgres and are read at build/request
+time through the server-side data layer. Roster reads use the `RosterSource` seam
+(`lib/roster-source.ts`); its Postgres implementation and the bounded schedule/stat
+readers live in `lib/roster-source.db.ts`. Scheduled GitHub Actions ingest weekly ESPN
+identity/roster data and daily nflverse stats, schedules, and market lines. See
+[`docs/espn.md`](docs/espn.md) and [`docs/nflverse.md`](docs/nflverse.md). The bundled
+static registry in `lib/teams/` remains as the `staticRosterSource` used in tests and as
+a point-in-time fixture.
