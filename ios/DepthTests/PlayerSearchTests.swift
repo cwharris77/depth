@@ -12,8 +12,14 @@ private func teamDTO(
     TeamListRowDTO(
         id: id, abbrev: abbrev, city: city, name: name,
         conference: "AFC", division: "East",
-        colorPrimary: "#00338d", colorSecondary: "#d50a0a", colorAccent: "#d50a0a",
-        uiAccent: "#d50a0a", onAccent: "#ffffff", logoUrl: nil, logoDarkUrl: nil
+        logoUrl: nil, logoDarkUrl: nil,
+        uniforms: [
+            TeamColorUniformDTO(
+                kind: "home", isCurrent: true,
+                colorPrimary: "#00338d", colorSecondary: "#d50a0a", colorAccent: "#d50a0a",
+                uiAccent: "#d50a0a", onAccent: "#ffffff"
+            ),
+        ]
     )
 }
 

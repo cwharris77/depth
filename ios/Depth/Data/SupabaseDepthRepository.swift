@@ -15,7 +15,7 @@ actor SupabaseDepthRepository: DepthRepository {
 
     private static let teamSnapshotSelect = """
         id, abbrev, city, name, conference, division, \
-        color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url, \
+        logo_url, logo_dark_url, \
         depth_chart_entries(team_id, position, depth_rank, player_id, \
         player:players(id, team_id, name, number, position, status, age, college, experience, height, weight, bio, photo_url)), \
         special_teams_slots(id, team_id, label, player_id, x, y, \
@@ -53,8 +53,10 @@ actor SupabaseDepthRepository: DepthRepository {
         }
     }
 
-    private static let teamListSelect =
-        "id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url"
+    private static let teamListSelect = """
+        id, abbrev, city, name, conference, division, logo_url, logo_dark_url, \
+        uniforms(kind, is_current, color_primary, color_secondary, color_accent, ui_accent, on_accent)
+        """
 
     private static let teamStatsSelect =
         "season, overall_wins, overall_losses, overall_ties, home_wins, home_losses, road_wins, road_losses, division_wins, division_losses, conference_wins, conference_losses, points_for, points_against, point_differential"
@@ -71,7 +73,8 @@ actor SupabaseDepthRepository: DepthRepository {
         "season, team_id, gsis_id, name, number, position, college, height, weight, depth_rank, player_order"
     private static let playerSearchSelect = """
         id, name, number, position, college, photo_url, \
-        teams(id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url)
+        teams(id, abbrev, city, name, conference, division, logo_url, logo_dark_url, \
+        uniforms(kind, is_current, color_primary, color_secondary, color_accent, ui_accent, on_accent))
         """
 
     private static let uniformListingSelect =
