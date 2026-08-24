@@ -253,5 +253,12 @@ describe('UniformFigure', () => {
         kitId: 'team-with-hyphen-rivalries-2025',
       })
     ).toContain('data-layer-id="hyphenated-rivalries-layer"');
+
+    expect(
+      renderFigure({
+        definition: hyphenatedDefinition,
+        kitId: 'team-with-hyphen-rivalries-2025-2025',
+      })
+    ).toContain('data-layer-id="hyphenated-rivalries-layer"');
   });
 });

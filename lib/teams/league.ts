@@ -1,10 +1,11 @@
 import type { TeamRosterSeed } from '../types';
 import { buildTeam, pl } from './_build';
 
-// Minimal build-time seed for the ESPN ingestion: id/city/name/abbrev only. Everything
-// that describes a team live — colors, conference/division, rosters — is sourced from
-// ESPN at ingest time (scripts/ingest-espn.mts), NOT from here. This file just supplies
-// the 32 team identities (our slug id ↔ ESPN abbrev) the ingestion loops over.
+// Minimal build-time seed for the ESPN ingestion: only id/city/name/abbrev are live
+// inputs. Conference/division, rosters, and identity colors are sourced from ESPN at
+// ingest time (scripts/ingest-espn.mts); jersey colors are curated in lib/uniforms/data.ts.
+// This file supplies the 32 team identities (our slug id ↔ ESPN abbrev) the ingest loops
+// over, while the remaining fields persist as test fixtures only.
 //
 // The per-player entries below are stale point-in-time placeholders, NOT a live fallback.
 // The app renders live rosters from the DB (dbRosterSource); there is no hand-authored

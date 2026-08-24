@@ -63,7 +63,7 @@ maybeDescribe('dbRosterSource (live Supabase project)', () => {
   it('lists every kit flattened with team identity', async () => {
     const kits = await dbRosterSource.listUniforms();
     expect(kits.length).toBeGreaterThan(72); // 72 curated + 32 home
-    const creamsicle = kits.find((k) => k.id === 'buccaneers-creamsicle');
+    const creamsicle = kits.find((k) => k.id === 'buccaneers-creamsicle-1976');
     expect(creamsicle).toBeDefined();
     expect(creamsicle).toMatchObject({
       teamId: 'buccaneers',

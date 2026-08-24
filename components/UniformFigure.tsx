@@ -155,8 +155,9 @@ export default function UniformFigure({
   // Reference <UniformFigureDefs>'s sprite via <use> instead of inlining path data — see Geo
   // above. Only pass this when the caller has mounted <UniformFigureDefs/> once on the page.
   sharedDefs?: boolean;
-  // `${teamId}-${slug}` (a Uniform row's id). The definition's team id is stripped before model
-  // resolution; omitted or unmatched kits retain the team's defaults.
+  // `${teamId}-${slug}-${yearStart}` (a Uniform row's id). The definition's team id and
+  // start-year suffix are stripped before model resolution; omitted or unmatched kits retain
+  // the team's defaults.
   kitId?: string;
   definition?: TeamUniformDefinition;
 }) {
@@ -177,7 +178,11 @@ export default function UniformFigure({
   }
 
   const kitPrefix = definition ? `${definition.teamId}-` : '';
-  const kitSlug = kitId?.startsWith(kitPrefix) ? kitId.slice(kitPrefix.length) : (kitId ?? '');
+  const rawKitSlug = kitId?.startsWith(kitPrefix) ? kitId.slice(kitPrefix.length) : (kitId ?? '');
+  // Try the exact slug first so legacy ids whose geometry key itself ends in a year
+  // (`rivalries-2025`) keep working. New ids add one final era year, which is stripped only
+  // when the exact value is not a registered geometry key.
+  const kitSlug = definition?.kits[rawKitSlug] ? rawKitSlug : rawKitSlug.replace(/-\d{4}$/, '');
   const model = resolveUniformModel(definition, kitSlug, colors);
   const pantsLayers = model.layers.filter((layer) =>
     ['pants', 'leg-left', 'leg-right'].includes(layer.surface)

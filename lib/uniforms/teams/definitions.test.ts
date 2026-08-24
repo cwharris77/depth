@@ -13,14 +13,12 @@ import { getAllTeamUniformDefinitions, getTeamUniformDefinition } from '@/lib/un
 
 const SEMANTIC_COLORS = new Set<ColorRef>(['primary', 'secondary', 'accent', 'readable-on-body']);
 const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/;
-// The home kit's palette comes from ESPN via toTeamColors, which sets accent = secondary — so a
-// home render has no third token and `accent` can never be wolf grey. Mirroring that here keeps
-// this suite honest: a curated palette with a distinct accent would pass while the live page
-// painted the shoulder band green. Curated archive rows (away, below) do carry a real accent.
+// This mirrors the current curated Seahawks home palette. Keeping wolf grey as the third token
+// protects the shoulder band from accidentally resolving to action green.
 const SEAHAWKS_COLORS: TeamColors = {
-  primary: '#002a5c',
+  primary: '#002244',
   secondary: '#69BE28',
-  accent: '#69BE28',
+  accent: '#A5ACAF',
   uiAccent: '#69BE28',
   onAccent: '#0a0e1a',
 };
@@ -102,9 +100,9 @@ describe('team uniform definitions', () => {
 
     const model = resolveUniformModel(definition, 'home', SEAHAWKS_COLORS);
     expect(model).toMatchObject({
-      helmetColor: '#002a5c',
-      jerseyColor: '#002a5c',
-      pantsColor: '#002a5c',
+      helmetColor: '#002244',
+      jerseyColor: '#002244',
+      pantsColor: '#002244',
     });
     // Wolf grey must survive as a literal: resolving it from `accent` would silently paint the
     // band and the number the same action green as the sleeve cap on every home render.

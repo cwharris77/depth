@@ -22,7 +22,7 @@ const kit: UniformListing = {
   teamName: 'Prototype Keys',
   conference: 'AFC',
   division: 'East',
-  id: 'constructor-home',
+  id: 'constructor-home-2025',
   kind: 'home',
   name: 'Home',
   colors,

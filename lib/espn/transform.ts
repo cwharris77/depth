@@ -62,7 +62,9 @@ function isNeutral(hexColor: string): boolean {
   return v === '#000000' || v === '#ffffff';
 }
 
-export function toTeamColors(espn: EspnTeamInfo): TeamColors {
+// ESPN exposes team identity colors, not per-jersey palettes. Keep this transform scoped
+// to the machine-owned brand_colors table; uniforms are curated independently.
+export function toBrandColors(espn: EspnTeamInfo): TeamColors {
   const primary = hex(espn.color, '#000000');
   const secondary = hex(espn.alternateColor, '#ffffff');
   // The UI accent is the team's real secondary — the pop color (Seahawks green), which
@@ -262,7 +264,7 @@ export function toTeamRoster(args: {
   return {
     team: {
       ...meta,
-      colors: toTeamColors(teamInfo),
+      colors: toBrandColors(teamInfo),
       logo: logos[0]?.href,
       logoDark: logos.find((l) => l.rel?.includes('dark'))?.href ?? logos[1]?.href,
     },

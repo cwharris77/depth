@@ -42,17 +42,18 @@ refactor (see §6).
 
 1. **All roster reads go through the `RosterSource` seam** (`lib/roster-source.ts`).
    Routes and components never query Supabase or import a registry directly.
-2. **`lib/teams/` is a build-time seed and test fixture, not data.** `league.ts` is an
-   identity seed (id/city/name/abbrev) the ingest loops over. Colors, conf/div, and
-   rosters all come from ESPN at ingest time. Two doc PRs (#42, #46) exist because
-   this keeps getting misread.
-3. **`teams.colors` is machine-owned.** The weekly ingest overwrites it wholesale.
-   Never hand-patch team colors in the DB or the seed; fix `lib/espn/transform.ts`.
-4. **Two color systems, different jobs.** `primary/secondary/accent` are brand-true —
-   large controlled surfaces only (field tint, header, OG cards). `uiAccent/onAccent`
-   are curated/derived to read on the dark bg `#0a0e1a` — text, dots, rings, stat
-   accents. PR #25 was a bug from mixing these up. Every curated color pair must pass
-   the WCAG-AA contrast test (`lib/__tests__/uniforms.test.ts` pattern, `lib/utils/colors.ts`).
+2. **`lib/teams/` is a build-time seed and test fixture, not live data.** `league.ts`
+   supplies the identity seed (id/city/name/abbrev) the ingest loops over. Conference,
+   division, rosters, and ESPN brand colors are ingested; jersey palettes come only from
+   the curated uniforms archive.
+3. **`brand_colors` is machine-owned.** The weekly ingest overwrites ESPN's identity
+   colors there. Never use those rows for a jersey or app chrome while a current uniform
+   exists; never hand-patch them.
+4. **Uniform colors have two jobs.** `primary/secondary/accent` are the exact palette
+   consumed by the selected kit's geometry and controlled surfaces. `uiAccent/onAccent`
+   are curated to read on the dark bg `#0a0e1a` — text, dots, rings, and stat accents.
+   Every curated color pair must pass the WCAG-AA contrast test
+   (`lib/__tests__/uniforms.test.ts` pattern, `lib/utils/colors.ts`).
 5. **A team page ships one team's data.** Client components receive a resolved
    `TeamRoster` prop; importing all-32 data into a client bundle is a regression.
 6. **Untrusted input degrades, never throws.** Share params decode to `null` on any
@@ -64,9 +65,8 @@ refactor (see §6).
 8. **`lib/database.types.ts` is generated** (`npm run db:types`, reads *local*
    Postgres). Never hand-edit it; regenerate after every migration and commit it in
    the same PR.
-9. **Curated data is append-only and provenance-scoped.** The uniforms archive never
-   deletes a kit. Where machine-written and hand-curated rows share a table, each
-   writer touches only its own `source` rows.
+9. **Uniforms are fully curated and append-only.** The archive never deletes a kit;
+   retire one with `year_end` + `is_current=false`. ESPN never writes this table.
 10. **RLS is on for every table** (Phase C). The base tables carry a permissive
     `"public read"` policy so `dbRosterSource` reads them with the anon key; per-user
     tables are owner-only. Writes rely on the service-role ingest bypassing RLS. Never
@@ -170,7 +170,7 @@ Each is named for what it looks like in a diff. The rule prevents it.
 2. **The wrong color knob.** You style text/dots with `primary` (unreadable navy on a
    dark bg) or paint a header with `uiAccent`. *Rule: uiAccent/onAccent for anything
    that must be legible on `#0a0e1a`; primary/secondary for brand surfaces; never
-   invent a hex — brand hexes come from a named source and get a comment citing it.*
+   invent a hex — uniform hexes come from a named source and get a comment citing it.*
 3. **Hand-editing `lib/database.types.ts`.** It typechecks, then the next
    regeneration silently reverts your change. *Rule: only `npm run db:types` writes
    that file; migration and regenerated types land in the same PR.*
@@ -178,9 +178,9 @@ Each is named for what it looks like in a diff. The rule prevents it.
    Supabase client to "just fetch one thing". *Rule: app code depends on
    `RosterSource` only; `lib/teams` may be imported by the ingest script and tests,
    nothing else.*
-5. **"Fixing" `league.ts`.** You update a team's colors or division in the seed and
-   expect the app to change. *Rule: the seed is identity-only; live values come from
-   ESPN — change the transform or wait for ingest.*
+5. **"Fixing" `league.ts`.** You update a team's colors or division in the fixture and
+   expect the app to change. *Rule: current jersey colors come from `uniforms`; ESPN
+   identity colors live in `brand_colors`; conference/division come from ESPN ingest.*
 6. **Coupling ingest to build.** You add `ingest:espn` to CI/`next build` "so data is
    fresh". *Rule: ESPN is an unofficial API; ingestion failures must never block a
    deploy (invariant 7).*
@@ -319,7 +319,7 @@ operating manual (architecture, conventions, parity mechanisms). Quality-bar sum
 **Curated data (kits, seeds)**
 - [ ] Every hex cites its source in a comment (teamcolorcodes / GUD / TruColor / press release)
 - [ ] Contrast tests pass for every new row (uiAccent vs `#0a0e1a`, onAccent vs uiAccent ≥ 4.5)
-- [ ] Append-only respected; ids follow `${teamId}-${slug}`
+- [ ] Append-only respected; ids follow `${teamId}-${slug}-${yearStart}`
 
 **Ingest / script change**
 - [ ] Pure transform logic stays in `lib/espn/` with tests; the script stays I/O glue

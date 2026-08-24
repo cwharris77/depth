@@ -17,7 +17,7 @@ import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
 // Kept as one module so the seed generator and the generator script can't drift apart.
 export const UNIFORM_ART_BASE_URL = 'https://depth-ashen.vercel.app/uniforms';
 
-// A uniform row's id is its stable `${teamId}-${slug}` slug, so the artifact name is
+// A uniform row's id is its stable `${teamId}-${slug}-${yearStart}` slug, so the artifact name is
 // fully determined by the row. Rows without an artifact (a future kit whose WebP hasn't
 // been generated yet) simply keep the text-only fallback — degrade, don't fake.
 export function uniformArtURL(id: string): string {

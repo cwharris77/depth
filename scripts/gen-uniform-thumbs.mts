@@ -1,15 +1,9 @@
 // Generates the prerendered uniform thumbnails for the native iOS picker (DEP-220) from
 // the exact rows that picker renders. The hosted `uniforms` table is the authoritative
-// source when credentials exist: it covers every row kind uniformly — `source='espn'`
-// home rows, `source='curated'` kits, and reconcile-retired `-home-<year>` snapshots —
-// all with the DB's real kit colors. Without credentials it falls back to the committed
-// in-repo sources (scripts/gen-uniform-seed.mts's data.ts + lib/teams/league.ts), which
-// cover every currently-seeded row; the fallback matches the web's own "home colors come
-// from teams, kits come from the archive" split, so the only divergence is a home kit
-// whose colors moved since the last committed snapshot (regenerate against the DB at
-// release to pin).
+// source when credentials exist. Without credentials it falls back to data.ts, the same
+// complete curated archive the migration seeds. Both paths cover every row kind uniformly.
 //
-// Outputs: `public/uniforms/<id>.webp` per row (the id IS the `<teamId>-<slug>` slug),
+// Outputs: `public/uniforms/<id>.webp` per row (id = `<teamId>-<slug>-<yearStart>`),
 // deterministically rendered from the shared UniformFigure jersey crop (the same SVG the
 // web picker's JerseySwatch fallback renders) and rasterized with sharp. Committed to the
 // repo like the `gen:icons` rasters and served at UNIFORM_ART_BASE_URL; the DB's
@@ -30,7 +24,6 @@ import { renderUniformThumbSVG } from '@/lib/uniforms/art';
 import { UNIFORMS } from '@/lib/uniforms/data';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
 import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/utils/env';
-import { LEAGUE } from '@/lib/teams/league';
 import type { TeamColors } from '@/lib/types';
 
 dotenv.config({ path: '.env.local' });
@@ -85,23 +78,14 @@ async function buildRowsFromDb(): Promise<UniformRow[]> {
   }));
 }
 
-// Seed mode (no credentials): curated kits from the committed archive (the same rows the
-// seed migrations emit) plus one `${team}-home` row per team from league.ts's identity
-// colors. Cannot reproduce reconcile-retired `-home-<year>` snapshots — those only come
-// from the live rows.
+// Seed mode (no credentials): the complete curated archive, using the same deterministic
+// ids as the seed migration.
 function buildRowsFromSeed(): UniformRow[] {
-  const rows: UniformRow[] = [];
-  for (const kit of UNIFORMS) {
-    rows.push({ id: `${kit.teamId}-${kit.slug}`, team_id: kit.teamId, colors: kit.colors });
-  }
-  for (const roster of LEAGUE) {
-    rows.push({
-      id: `${roster.team.id}-home`,
-      team_id: roster.team.id,
-      colors: roster.team.colors,
-    });
-  }
-  return rows.sort((a, b) => a.id.localeCompare(b.id));
+  return UNIFORMS.map((kit) => ({
+    id: `${kit.teamId}-${kit.slug}-${kit.yearStart}`,
+    team_id: kit.teamId,
+    colors: kit.colors,
+  })).sort((a, b) => a.id.localeCompare(b.id));
 }
 
 async function writeRows(rows: UniformRow[]) {

@@ -16,7 +16,7 @@ function u(partial: Partial<Uniform>): Uniform {
     teamId: 't',
     kind: 'home',
     name: 'X',
-    yearStart: null,
+    yearStart: 2020,
     yearEnd: null,
     isCurrent: false,
     colors: COLORS,
@@ -25,10 +25,6 @@ function u(partial: Partial<Uniform>): Uniform {
 }
 
 describe('formatUniformYears', () => {
-  it('shows Current for the open-ended Home kit', () => {
-    expect(formatUniformYears(u({ yearStart: null, yearEnd: null }))).toBe('Current');
-  });
-
   it('shows a closed range for a retired kit', () => {
     expect(formatUniformYears(u({ yearStart: 1976, yearEnd: 2001 }))).toBe('1976–2001');
   });
@@ -45,9 +41,5 @@ describe('formatUniformYears', () => {
 
   it('shows a single year when start equals end', () => {
     expect(formatUniformYears(u({ yearStart: 1994, yearEnd: 1994 }))).toBe('1994');
-  });
-
-  it('shows Through when only an end year is known', () => {
-    expect(formatUniformYears(u({ yearStart: null, yearEnd: 1975 }))).toBe('Through 1975');
   });
 });
