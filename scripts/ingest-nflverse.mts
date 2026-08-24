@@ -34,7 +34,7 @@ import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/utils/env';
 dotenv.config({ path: '.env.local' });
 import { parseCsv, parseCsvStream } from '@/lib/nflverse/csv';
 import { assetUrl, latestAvailableSeason } from '@/lib/nflverse/assets';
-import { buildCrosswalk } from '@/lib/nflverse/crosswalk';
+import { buildCrosswalk, buildPfrCrosswalk } from '@/lib/nflverse/crosswalk';
 import { toPlayerStatsRows, type PlayerStatsInsert } from '@/lib/nflverse/transform';
 import { toScheduleAndGameRows, type GameInsert, type ScheduleInsert } from '@/lib/nflverse/games';
 import { toTeamStatsRows, type TeamStatsInsert } from '@/lib/nflverse/team-stats';
@@ -44,6 +44,8 @@ import { DefenseFormationAccumulator } from '@/lib/nflverse/defense-participatio
 import { resolveTeamCode } from '@/lib/nflverse/team-codes';
 import { parseSeasonsArg } from '@/lib/nflverse/seasons-arg';
 import { SEASONS_MIN } from '@/lib/nflverse/roster-history';
+import { ingestRecentSnapSeason } from '@/lib/nflverse/snap-counts-ingest';
+import type { RecentSnapSummaryInsert, SnapCountsDiagnostics } from '@/lib/nflverse/snap-counts';
 import { notifyRevalidate } from '@/lib/utils/ingest/notify-revalidate';
 import {
   extractPlayerIds,
@@ -52,6 +54,7 @@ import {
   buildTeamFormationsSeedSql,
   buildTeamRecordsSeedSql,
   buildTeamStatsSeedSql,
+  buildRecentSnapSummariesSeedSql,
   type UnitFormationTally,
 } from '@/lib/nflverse/seed-sql';
 import type { Database } from '@/lib/database.types';
@@ -79,9 +82,19 @@ const PARTICIPATION_PREFIX = 'pbp_participation_';
 // Asset naming mirrors the player-stats convention: stats_team_reg_<season>.csv.
 const TEAM_STATS_TAG = 'stats_team';
 const TEAM_STATS_PREFIX = 'stats_team_reg_';
+const SNAP_COUNTS_TAG = 'snap_counts';
+const SNAP_COUNTS_PREFIX = 'snap_counts_';
 // SEED_OUT mode has no live `players` table to query -- it reads known player ids from
 // this already-committed file instead (see the header comment above).
 const ESPN_SEED_PATH = 'supabase/seed.sql';
+
+interface RecentSnapsIngestResult {
+  rows: RecentSnapSummaryInsert[];
+  rowsWritten: number;
+  seasons: number[];
+  diagnosticsBySeason: Record<number, SnapCountsDiagnostics>;
+  failures: { season: number | string; message: string }[];
+}
 
 // nflverse's CSV assets are stable, but a GitHub release download can blip like any
 // other network call -- retry a few times with backoff rather than failing the whole
@@ -369,6 +382,64 @@ async function ingestTeamStats(
   return { rows: allRows, skipped, failures };
 }
 
+// Snap-count freshness is intentionally independent from the broad --seasons backfill:
+// the consumer needs only the latest two available seasons, and each season is an atomic
+// fetch/transform/upsert attempt. A failed attempt never clears the last good rows.
+async function ingestRecentSnaps(
+  supabase: SupabaseClient<Database> | null,
+  pfrCrosswalk: ReadonlyMap<string, string>,
+  startedAt: string
+): Promise<RecentSnapsIngestResult> {
+  const latestSeason = await latestAvailableSeason(SNAP_COUNTS_TAG, SNAP_COUNTS_PREFIX);
+  if (latestSeason === null) {
+    return {
+      rows: [],
+      rowsWritten: 0,
+      seasons: [],
+      diagnosticsBySeason: {},
+      failures: [{ season: 'latest', message: 'no available snap_counts season found' }],
+    };
+  }
+
+  const seasons = [latestSeason, latestSeason - 1];
+  const rows: RecentSnapSummaryInsert[] = [];
+  let rowsWritten = 0;
+  const diagnosticsBySeason: Record<number, SnapCountsDiagnostics> = {};
+  const failures: { season: number | string; message: string }[] = [];
+
+  for (const season of seasons) {
+    try {
+      const result = await ingestRecentSnapSeason({
+        season,
+        fetchCsv: () => getText(assetUrl(SNAP_COUNTS_TAG, `${SNAP_COUNTS_PREFIX}${season}.csv`)),
+        pfrToEspn: pfrCrosswalk,
+        resolveTeam: resolveTeamCode,
+        updatedAt: startedAt,
+        upsert: supabase
+          ? async (seasonRows) => {
+              const { error } = await supabase
+                .from('player_recent_snaps')
+                .upsert(seasonRows, { onConflict: 'team_id,season,player_id' });
+              if (error) throw new Error(`player_recent_snaps upsert: ${error.message}`);
+            }
+          : undefined,
+      });
+      rows.push(...result.rows);
+      rowsWritten += result.rowsWritten;
+      diagnosticsBySeason[season] = result.diagnostics;
+      console.log(
+        `snap-counts ${season}: ${supabase ? 'wrote' : 'computed'} ${result.rows.length} rows, ` +
+          `${result.diagnostics.malformedRows} malformed, ` +
+          `${result.diagnostics.unresolvedRows} unresolved`
+      );
+    } catch (e) {
+      failures.push({ season, message: (e as Error).message });
+    }
+  }
+
+  return { rows, rowsWritten, seasons, diagnosticsBySeason, failures };
+}
+
 // PostgREST caps an unranged select at 1000 rows (Supabase's default db-max-rows) --
 // `players` already exceeds that (2184+ rows across 32 rosters), so a plain
 // `.select('id')` silently returned only the first page and starved knownPlayerIds
@@ -412,8 +483,12 @@ async function main() {
   }
 
   const playersCsv = await getText(assetUrl(PLAYERS_TAG, PLAYERS_FILE));
-  const crosswalk = buildCrosswalk(parseCsv(playersCsv));
-  console.log(`crosswalk: ${crosswalk.size} gsis_id -> espn_id mappings`);
+  const playerRows = parseCsv(playersCsv);
+  const crosswalk = buildCrosswalk(playerRows);
+  const pfrCrosswalk = buildPfrCrosswalk(playerRows);
+  console.log(
+    `crosswalk: ${crosswalk.size} gsis_id and ${pfrCrosswalk.size} pfr_id -> espn_id mappings`
+  );
 
   let knownPlayerIds: Set<string>;
   if (supabase) {
@@ -512,6 +587,11 @@ async function main() {
   for (const f of teamStatsResult.failures) failures.push({ season: f.season, message: f.message });
   skipped += teamStatsResult.skipped;
 
+  // Recent snap summaries discover their own latest source season and always ingest
+  // exactly that season plus the previous one, regardless of --seasons.
+  const recentSnapsResult = await ingestRecentSnaps(supabase, pfrCrosswalk, startedAt);
+  failures.push(...recentSnapsResult.failures);
+
   // Seed mode: dump everything computed above to SQL and stop -- no DB writes (already
   // skipped throughout), no ingestion_runs row.
   if (seedOut) {
@@ -526,12 +606,14 @@ async function main() {
       buildTeamFormationsSeedSql(formationsResult.tallies),
       buildTeamStatsSeedSql(teamStatsResult.rows),
       buildTeamRecordsSeedSql(recordsResult.rows),
+      buildRecentSnapSummariesSeedSql(recentSnapsResult.rows),
     ];
     writeFileSync(seedOut, parts.filter(Boolean).join('\n') + '\n');
     console.log(
       `\nWrote seed: ${allStatsRows.length} player-stat rows, ${gamesResult.games.length} games, ` +
         `${gamesResult.schedules.length} schedules, ${formationsResult.tallies.length} formation rows, ` +
-        `${teamStatsResult.rows.length} team-stats rows -> ${seedOut}`
+        `${teamStatsResult.rows.length} team-stats rows, ${recentSnapsResult.rows.length} recent-snap rows ` +
+        `across seasons ${recentSnapsResult.seasons.join(', ')} -> ${seedOut}`
     );
     if (failures.length) {
       console.log('Errors/skips:');
@@ -548,7 +630,8 @@ async function main() {
     gamesResult.schedules.length +
     formationsResult.tallies.length +
     teamStatsResult.rows.length +
-    recordsResult.rows.length;
+    recordsResult.rows.length +
+    recentSnapsResult.rowsWritten;
   const status = failures.length === 0 ? 'success' : totalWritten > 0 ? 'partial' : 'failure';
 
   const { error: runError } = await supabase.from('ingestion_runs').insert({
@@ -569,6 +652,16 @@ async function main() {
       team_stats_seasons: teamStatsSeasons,
       team_stats_rows: teamStatsResult.rows.length,
       team_stats_skipped: teamStatsResult.skipped,
+      snap_counts: {
+        seasons: recentSnapsResult.seasons,
+        rows_written: recentSnapsResult.rowsWritten,
+        by_season: Object.fromEntries(
+          Object.entries(recentSnapsResult.diagnosticsBySeason).map(([season, diagnostics]) => [
+            season,
+            { ...diagnostics },
+          ])
+        ),
+      },
       skipped,
       failures,
     },
@@ -583,7 +676,9 @@ async function main() {
     `\nWrote ${rowsWritten} player-stat rows across ${seasons.length} season(s), ` +
       `${gamesResult.games.length} games, ${gamesResult.schedules.length} schedules, ` +
       `${formationsResult.tallies.length} formation rows, ` +
-      `${teamStatsResult.rows.length} team-stats rows across ${teamStatsSeasons.length} season(s). ` +
+      `${teamStatsResult.rows.length} team-stats rows across ${teamStatsSeasons.length} season(s), ` +
+      `${recentSnapsResult.rowsWritten} recent-snap rows across seasons ` +
+      `${recentSnapsResult.seasons.join(', ')}. ` +
       `Status: ${status}`
   );
   if (failures.length) {

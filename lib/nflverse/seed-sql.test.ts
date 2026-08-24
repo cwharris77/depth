@@ -6,12 +6,47 @@ import {
   buildTeamFormationsSeedSql,
   buildRosterHistorySeedSql,
   buildTeamStatsSeedSql,
+  buildRecentSnapSummariesSeedSql,
   type UnitFormationTally,
 } from './seed-sql';
 import type { PlayerStatsInsert } from './transform';
 import type { ScheduleInsert, GameInsert } from './games';
 import type { RosterHistoryInsert } from './roster-history';
 import type { TeamStatsInsert } from './team-stats';
+import type { RecentSnapSummaryInsert } from './snap-counts';
+
+function recentSnapRow(): RecentSnapSummaryInsert {
+  return {
+    team_id: 'sea',
+    season: 2025,
+    player_id: 'p1',
+    window_start_week: 15,
+    window_end_week: 17,
+    window_game_ids: ['2025_15_SEA_LA', '2025_16_SEA_CHI', '2025_17_SEA_SF'],
+    games: 3,
+    offense_snaps: 180,
+    offense_pct: 0.9,
+    defense_snaps: 0,
+    defense_pct: 0,
+    special_teams_snaps: 5,
+    special_teams_pct: 0.08,
+    source: 'nflverse-pfr',
+  };
+}
+
+describe('buildRecentSnapSummariesSeedSql', () => {
+  it('emits deterministic rows without an ingestion timestamp', () => {
+    const sql = buildRecentSnapSummariesSeedSql([recentSnapRow()]);
+    expect(sql).toContain('insert into player_recent_snaps');
+    expect(sql).toContain('on conflict (team_id,season,player_id) do nothing;');
+    expect(sql).not.toContain('updated_at');
+    expect(buildRecentSnapSummariesSeedSql([recentSnapRow()])).toBe(sql);
+  });
+
+  it('returns empty SQL for no rows', () => {
+    expect(buildRecentSnapSummariesSeedSql([])).toBe('');
+  });
+});
 
 describe('extractPlayerIds', () => {
   it('pulls ids out of a real insertStatement-shaped players block', () => {
