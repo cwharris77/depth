@@ -1,9 +1,23 @@
 import { colors as uiTokens } from '@/components/ui/tokens';
 
-// Ten-yard increments, mirrored the way real fields paint them: count up from each
-// goal line (10…40), with midfield left to the blue line-of-scrimmage line. Values
-// are percentages of the 100-unit viewBox, matching the yard lines every 10%.
-const YARD_NUMBERS = [10, 20, 30, 40, 60, 70, 80, 90];
+// Ten-yard increments painted the way real fields paint them: two-digit numbers
+// 10-20-30-40-50 counting up from each goal line, with the 50 at midfield, each
+// carrying a small directional arrow toward its nearer goal line (real fields paint
+// the same arrow so a number reads unambiguously without checking which yard line
+// it sits on -- see the reference photo this replaces the digit-split gap hack with).
+// y values are percentages of the 100-unit viewBox, matching the yard lines every 10%.
+const YARD_NUMBERS = [10, 20, 30, 40, 50, 60, 70, 80, 90];
+
+// Solid filled triangle, tip pointing toward the near goal line (`dir`), planted just
+// past the number on that side. x/y are viewBox units; the arrow is drawn in the
+// field's actual (unrotated) up/down axis, which is also the reading direction of the
+// rotated yard numbers next to it, so it lines up with the number regardless of which
+// sideline column it's attached to.
+function GoalArrow({ x, y, dir }: { x: number; y: number; dir: 'up' | 'down' }) {
+  const tipY = dir === 'up' ? y - 1.8 : y + 1.8;
+  const baseY = dir === 'up' ? y - 0.3 : y + 0.3;
+  return <polygon points={`${x - 1.1},${baseY} ${x + 1.1},${baseY} ${x},${tipY}`} fill="#fff" />;
+}
 
 export default function FieldMarkings() {
   return (
@@ -25,11 +39,16 @@ export default function FieldMarkings() {
         />
       ))}
       {/* Yard numbers on both sidelines, hidden below lg like the dot labels so the
-          mobile field stays dot-only. textFaint at 50% keeps them legible at this
-          size while staying quieter than any chrome text; rotated to read from the
-          near sideline like painted numbers. */}
+          mobile field stays dot-only. Each column rotates 180° from the other so the
+          two rows mirror each other, each reading from its own sideline the way real
+          fields paint them. White like real field paint, solid (no artificial digit
+          gap) with a small arrow beside each number pointing toward its nearer goal
+          line -- 50 gets no arrow, matching the reference photo. Sized down from
+          real-field proportions so the digits never reach the dot labels inboard. */}
       {YARD_NUMBERS.map((y) => {
-        const n = y < 50 ? y / 10 : (100 - y) / 10;
+        const n = y <= 50 ? y : 100 - y;
+        const dir: 'up' | 'down' | null = y < 50 ? 'up' : y > 50 ? 'down' : null;
+        const arrowY = dir === 'up' ? y - 2.8 : y + 2.8;
         return (
           <g key={y} className="hidden lg:block">
             <text
@@ -37,25 +56,25 @@ export default function FieldMarkings() {
               y={y}
               dominantBaseline="central"
               textAnchor="middle"
-              fill={uiTokens.textFaint}
+              fill="#fff"
               fontSize="4"
               fontWeight="bold"
-              opacity="0.5"
-              transform={`rotate(-90 5 ${y})`}>
+              transform={`rotate(90 5 ${y})`}>
               {n}
             </text>
+            {dir && <GoalArrow x={5} y={arrowY} dir={dir} />}
             <text
               x="95"
               y={y}
               dominantBaseline="central"
               textAnchor="middle"
-              fill={uiTokens.textFaint}
+              fill="#fff"
               fontSize="4"
               fontWeight="bold"
-              opacity="0.5"
               transform={`rotate(-90 95 ${y})`}>
               {n}
             </text>
+            {dir && <GoalArrow x={95} y={arrowY} dir={dir} />}
           </g>
         );
       })}
