@@ -1,6 +1,7 @@
 import type { Database } from '@/lib/database.types';
 
 export const tables = {
+  brandColors: 'brand_colors',
   depthChartEntries: 'depth_chart_entries',
   depthOverrides: 'depth_overrides',
   games: 'games',

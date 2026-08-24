@@ -76,6 +76,44 @@ export type Database = {
         }
         Relationships: []
       }
+      brand_colors: {
+        Row: {
+          color_accent: string | null
+          color_primary: string | null
+          color_secondary: string | null
+          on_accent: string | null
+          team_id: string
+          ui_accent: string | null
+          updated_at: string
+        }
+        Insert: {
+          color_accent?: string | null
+          color_primary?: string | null
+          color_secondary?: string | null
+          on_accent?: string | null
+          team_id: string
+          ui_accent?: string | null
+          updated_at?: string
+        }
+        Update: {
+          color_accent?: string | null
+          color_primary?: string | null
+          color_secondary?: string | null
+          on_accent?: string | null
+          team_id?: string
+          ui_accent?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_colors_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       depth_chart_entries: {
         Row: {
           depth_rank: number
@@ -1114,9 +1152,6 @@ export type Database = {
           coach_espn_id: string | null
           coach_experience: number | null
           coach_name: string | null
-          color_accent: string | null
-          color_primary: string | null
-          color_secondary: string | null
           conference: string
           division: string
           espn_id: string | null
@@ -1124,9 +1159,6 @@ export type Database = {
           logo_dark_url: string | null
           logo_url: string | null
           name: string
-          on_accent: string | null
-          pending_home_colors: Json | null
-          ui_accent: string | null
           updated_at: string
         }
         Insert: {
@@ -1135,9 +1167,6 @@ export type Database = {
           coach_espn_id?: string | null
           coach_experience?: number | null
           coach_name?: string | null
-          color_accent?: string | null
-          color_primary?: string | null
-          color_secondary?: string | null
           conference: string
           division: string
           espn_id?: string | null
@@ -1145,9 +1174,6 @@ export type Database = {
           logo_dark_url?: string | null
           logo_url?: string | null
           name: string
-          on_accent?: string | null
-          pending_home_colors?: Json | null
-          ui_accent?: string | null
           updated_at?: string
         }
         Update: {
@@ -1156,9 +1182,6 @@ export type Database = {
           coach_espn_id?: string | null
           coach_experience?: number | null
           coach_name?: string | null
-          color_accent?: string | null
-          color_primary?: string | null
-          color_secondary?: string | null
           conference?: string
           division?: string
           espn_id?: string | null
@@ -1166,9 +1189,6 @@ export type Database = {
           logo_dark_url?: string | null
           logo_url?: string | null
           name?: string
-          on_accent?: string | null
-          pending_home_colors?: Json | null
-          ui_accent?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1205,12 +1225,11 @@ export type Database = {
           kind: string
           name: string
           on_accent: string
-          source: string
           team_id: string
           ui_accent: string
           updated_at: string
           year_end: number | null
-          year_start: number | null
+          year_start: number
         }
         Insert: {
           color_accent: string
@@ -1222,12 +1241,11 @@ export type Database = {
           kind: string
           name: string
           on_accent: string
-          source: string
           team_id: string
           ui_accent: string
           updated_at?: string
           year_end?: number | null
-          year_start?: number | null
+          year_start: number
         }
         Update: {
           color_accent?: string
@@ -1239,12 +1257,11 @@ export type Database = {
           kind?: string
           name?: string
           on_accent?: string
-          source?: string
           team_id?: string
           ui_accent?: string
           updated_at?: string
           year_end?: number | null
-          year_start?: number | null
+          year_start?: number
         }
         Relationships: [
           {

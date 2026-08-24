@@ -13,6 +13,7 @@ describe('tables', () => {
 
   it('tables const has entries for every Database public table', () => {
     const expectedKeys = [
+      'brand_colors',
       'depth_chart_entries',
       'depth_overrides',
       'games',

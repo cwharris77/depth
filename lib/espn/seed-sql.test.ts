@@ -81,18 +81,36 @@ function stats(over: Partial<TeamStats> = {}): TeamStats {
 }
 
 describe('buildSeedSql', () => {
-  it('emits teams, players, depth, special-teams, and team_stats inserts in FK order', () => {
+  it('emits teams, brand colors, players, depth, special-teams, and team_stats in FK order', () => {
     const sql = buildSeedSql([{ roster: roster(), coach: coach(), stats: [stats()] }]);
     const iTeams = sql.indexOf('insert into teams');
+    const iBrandColors = sql.indexOf('insert into brand_colors');
     const iPlayers = sql.indexOf('insert into players');
     const iDepth = sql.indexOf('insert into depth_chart_entries');
     const iSpecial = sql.indexOf('insert into special_teams_slots');
     const iStats = sql.indexOf('insert into team_stats');
     expect(iTeams).toBeGreaterThanOrEqual(0);
-    expect(iTeams).toBeLessThan(iPlayers);
+    expect(iTeams).toBeLessThan(iBrandColors);
+    expect(iBrandColors).toBeLessThan(iPlayers);
     expect(iPlayers).toBeLessThan(iDepth);
     expect(iDepth).toBeLessThan(iSpecial);
     expect(iSpecial).toBeLessThan(iStats);
+  });
+
+  it('stores ESPN colors only in brand_colors', () => {
+    const sql = buildSeedSql([{ roster: roster(), coach: coach(), stats: [] }]);
+    const teamsBlock = sql.slice(
+      sql.indexOf('insert into teams'),
+      sql.indexOf('insert into brand_colors')
+    );
+    const brandBlock = sql.slice(
+      sql.indexOf('insert into brand_colors'),
+      sql.indexOf('insert into players')
+    );
+
+    expect(teamsBlock).not.toContain('color_primary');
+    expect(brandBlock).toContain('color_primary');
+    expect(brandBlock).toContain("'#001'");
   });
 
   it('writes coach_name/coach_experience onto the teams row', () => {

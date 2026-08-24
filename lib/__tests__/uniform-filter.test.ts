@@ -17,7 +17,7 @@ const kit = (over: Partial<UniformListing>): UniformListing => ({
     uiAccent: '#5B9BFF',
     onAccent: '#0a0e1a',
   },
-  yearStart: null,
+  yearStart: 2020,
   yearEnd: null,
   isCurrent: true,
   ...over,
@@ -28,20 +28,17 @@ describe('eraBucket', () => {
     expect(eraBucket(1976)).toBe('1970s');
     expect(eraBucket(2009)).toBe('2000s');
   });
-  it('maps a null year to Undated', () => {
-    expect(eraBucket(null)).toBe('Undated');
-  });
 });
 
 describe('eraOptions', () => {
-  it('returns distinct buckets sorted with Undated last', () => {
+  it('returns distinct buckets sorted by decade', () => {
     const kits = [
       kit({ yearStart: 1976 }),
-      kit({ yearStart: null }),
+      kit({ yearStart: 2020 }),
       kit({ yearStart: 1995 }),
       kit({ yearStart: 1976 }),
     ];
-    expect(eraOptions(kits)).toEqual(['1970s', '1990s', 'Undated']);
+    expect(eraOptions(kits)).toEqual(['1970s', '1990s', '2020s']);
   });
 });
 
@@ -102,13 +99,18 @@ describe('groupByDivision', () => {
   });
   it('orders each team home, away, then the rest by name', () => {
     const kits = [
-      kit({ id: 'x-throw', kind: 'throwback', name: 'Zebra' }),
-      kit({ id: 'x-away', kind: 'away', name: 'Away' }),
-      kit({ id: 'x-alt', kind: 'alternate', name: 'Alpha' }),
-      kit({ id: 'x-home', kind: 'home', name: 'Home' }),
+      kit({ id: 'x-throw-1976', kind: 'throwback', name: 'Zebra' }),
+      kit({ id: 'x-away-2025', kind: 'away', name: 'Away' }),
+      kit({ id: 'x-alt-2025', kind: 'alternate', name: 'Alpha' }),
+      kit({ id: 'x-home-2025', kind: 'home', name: 'Home' }),
     ];
     const [group] = groupByDivision(kits);
-    expect(group.teams[0].kits.map((k) => k.id)).toEqual(['x-home', 'x-away', 'x-alt', 'x-throw']);
+    expect(group.teams[0].kits.map((k) => k.id)).toEqual([
+      'x-home-2025',
+      'x-away-2025',
+      'x-alt-2025',
+      'x-throw-1976',
+    ]);
   });
   it('returns an empty array for no kits', () => {
     expect(groupByDivision([])).toEqual([]);

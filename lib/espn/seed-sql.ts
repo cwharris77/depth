@@ -25,6 +25,7 @@ export interface SeedEntry {
 // timestamps.
 export function buildSeedSql(entries: SeedEntry[]): string {
   const teams: Record<string, Val>[] = [];
+  const brandColors: Record<string, Val>[] = [];
   const players: Record<string, Val>[] = [];
   const depth: Record<string, Val>[] = [];
   const special: Record<string, Val>[] = [];
@@ -40,16 +41,19 @@ export function buildSeedSql(entries: SeedEntry[]): string {
       name: team.name,
       conference: team.conference,
       division: team.division,
-      color_primary: team.colors.primary,
-      color_secondary: team.colors.secondary,
-      color_accent: team.colors.accent,
-      ui_accent: team.colors.uiAccent,
-      on_accent: team.colors.onAccent,
       logo_url: team.logo ?? null,
       logo_dark_url: team.logoDark ?? null,
       coach_name: coach?.name ?? null,
       coach_espn_id: coach?.espnId ?? null,
       coach_experience: coach?.experience ?? null,
+    });
+    brandColors.push({
+      team_id: team.id,
+      color_primary: team.colors.primary,
+      color_secondary: team.colors.secondary,
+      color_accent: team.colors.accent,
+      ui_accent: team.colors.uiAccent,
+      on_accent: team.colors.onAccent,
     });
 
     for (const p of roosterPlayers) {
@@ -115,11 +119,6 @@ export function buildSeedSql(entries: SeedEntry[]): string {
         'name',
         'conference',
         'division',
-        'color_primary',
-        'color_secondary',
-        'color_accent',
-        'ui_accent',
-        'on_accent',
         'logo_url',
         'logo_dark_url',
         'coach_name',
@@ -135,17 +134,19 @@ export function buildSeedSql(entries: SeedEntry[]): string {
         'name',
         'conference',
         'division',
-        'color_primary',
-        'color_secondary',
-        'color_accent',
-        'ui_accent',
-        'on_accent',
         'logo_url',
         'logo_dark_url',
         'coach_name',
         'coach_espn_id',
         'coach_experience',
       ]
+    ),
+    insertStatement(
+      tables.brandColors,
+      ['team_id', 'color_primary', 'color_secondary', 'color_accent', 'ui_accent', 'on_accent'],
+      brandColors,
+      'team_id',
+      ['color_primary', 'color_secondary', 'color_accent', 'ui_accent', 'on_accent']
     ),
     insertStatement(
       tables.players,

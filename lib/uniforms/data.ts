@@ -1,30 +1,25 @@
 import type { TeamColors, UniformKind } from '../types';
 
-// Hand-curated uniform archive (roadmap Phase 7). No structured uniform source exists
-// (see Data Sources.md in the vault), so this file IS the source of truth for every
-// `source='curated'` kit: a human reads a reference/press release, records the brand hexes,
-// curates a dark-UI-legible uiAccent/onAccent, and appends a row here. The seed generator
-// turns these into an append-only SQL migration. APPEND-ONLY — never delete a kit.
+// Hand-curated uniform archive (roadmap Phase 7). This file is the sole jersey-color
+// authority: hexes come from teamcolorcodes.com, while kit patterns and era boundaries come
+// from GUD (gridiron-uniforms.com). The seed generator turns these rows into an append-only
+// SQL migration. APPEND-ONLY — never delete a kit; retire it with yearEnd + isCurrent.
 //
-// What lives here: every kit EXCEPT each team's current home. The `kind='home'` rows are
-// ESPN-owned (machine-managed) and are NOT authored here — they are backfilled from
-// team.colors and maintained by the drift reconciler (PR-B). Away, throwbacks, color rush,
-// and alternates all live here.
-//
-// colors.primary/secondary/accent are brand-true (the real kit). uiAccent/onAccent are
-// curated to read on the dark app background (#0a0e1a) — enforced by
-// lib/__tests__/uniforms.test.ts. The row id is `${teamId}-${slug}`.
+// colors.primary/secondary/accent are the exact curated palette consumed by each team's
+// geometry definition. uiAccent/onAccent are curated to read on the dark app background
+// (#0a0e1a) — enforced by lib/__tests__/uniforms.test.ts. The row id is
+// `${teamId}-${slug}-${yearStart}`.
 //
 // year_start/year_end describe the kit's primary era; is_current marks whether it's in a
-// team's active rotation today (a reintroduced throwback keeps its historical year_end
-// AND is_current: true).
+// team's active rotation today. The database invariant requires isCurrent exactly when
+// yearEnd is null.
 
 export interface UniformSeed {
   teamId: string;
   slug: string;
   kind: UniformKind;
   name: string;
-  yearStart: number | null;
+  yearStart: number;
   yearEnd: number | null;
   isCurrent: boolean;
   colors: TeamColors;
@@ -32,6 +27,522 @@ export interface UniformSeed {
 }
 
 export const UNIFORMS: UniformSeed[] = [
+  // Current home kits. Era starts/patterns: each team's GUD archive. Jersey hexes:
+  // teamcolorcodes.com's NFL HEX table; #FFFFFF/#000000 are the listed neutral kit colors.
+  // uiAccent/onAccent are the established dark-UI pair and are contrast-tested below.
+  {
+    teamId: 'ravens',
+    slug: 'home',
+    kind: 'home',
+    name: 'Baltimore Ravens Home 1996–present',
+    yearStart: 1996,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#241773',
+      secondary: '#000000',
+      accent: '#9E7C0C',
+      uiAccent: '#9F8CFF',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'bengals',
+    slug: 'home',
+    kind: 'home',
+    name: 'Cincinnati Bengals Home 2021–present',
+    yearStart: 2021,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#FB4F14',
+      secondary: '#000000',
+      accent: '#000000',
+      uiAccent: '#FF6A33',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'browns',
+    slug: 'home',
+    kind: 'home',
+    name: 'Cleveland Browns Home 2020–present',
+    yearStart: 2020,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#311D00',
+      secondary: '#FF3C00',
+      accent: '#FF3C00',
+      uiAccent: '#FF6A33',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'steelers',
+    slug: 'home',
+    kind: 'home',
+    name: 'Pittsburgh Steelers Home 1997–present',
+    yearStart: 1997,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#FFB612',
+      secondary: '#101820',
+      accent: '#101820',
+      uiAccent: '#FFB612',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'bills',
+    slug: 'home',
+    kind: 'home',
+    name: 'Buffalo Bills Home 2011–present',
+    yearStart: 2011,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#00338D',
+      secondary: '#C60C30',
+      accent: '#C60C30',
+      uiAccent: '#5B9BFF',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'dolphins',
+    slug: 'home',
+    kind: 'home',
+    name: 'Miami Dolphins Home 2018–present',
+    yearStart: 2018,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#008E97',
+      secondary: '#FC4C02',
+      accent: '#FC4C02',
+      uiAccent: '#2DD4D4',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'patriots',
+    slug: 'home',
+    kind: 'home',
+    name: 'New England Patriots Home 2020–present',
+    yearStart: 2020,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#002244',
+      secondary: '#C60C30',
+      accent: '#B0B7BC',
+      uiAccent: '#C8CDD6',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'jets',
+    slug: 'home',
+    kind: 'home',
+    name: 'New York Jets Home 2024–present',
+    yearStart: 2024,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#125740',
+      secondary: '#FFFFFF',
+      accent: '#FFFFFF',
+      uiAccent: '#4CC38A',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'texans',
+    slug: 'home',
+    kind: 'home',
+    name: 'Houston Texans Home 2024–present',
+    yearStart: 2024,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#03202F',
+      secondary: '#A71930',
+      accent: '#A71930',
+      uiAccent: '#5B9BFF',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'colts',
+    slug: 'home',
+    kind: 'home',
+    name: 'Indianapolis Colts Home 2004–present',
+    yearStart: 2004,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#002C5F',
+      secondary: '#A2AAAD',
+      accent: '#A2AAAD',
+      uiAccent: '#5B9BFF',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'jaguars',
+    slug: 'home',
+    kind: 'home',
+    name: 'Jacksonville Jaguars Home 2018–present',
+    yearStart: 2018,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#006778',
+      secondary: '#D7A22A',
+      accent: '#D7A22A',
+      uiAccent: '#2DD4D4',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'titans',
+    slug: 'home',
+    kind: 'home',
+    name: 'Tennessee Titans Home 2018–present',
+    yearStart: 2018,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#0C2340',
+      secondary: '#4B92DB',
+      accent: '#4B92DB',
+      uiAccent: '#5BA8E8',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'broncos',
+    slug: 'home',
+    kind: 'home',
+    name: 'Denver Broncos Home 2024–present',
+    yearStart: 2024,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#FB4F14',
+      secondary: '#002244',
+      accent: '#002244',
+      uiAccent: '#FF6A33',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'chiefs',
+    slug: 'home',
+    kind: 'home',
+    name: 'Kansas City Chiefs Home 1963–present',
+    yearStart: 1963,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#E31837',
+      secondary: '#FFB81C',
+      accent: '#FFB81C',
+      uiAccent: '#FF4D5E',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'raiders',
+    slug: 'home',
+    kind: 'home',
+    name: 'Las Vegas Raiders Home 1963–present',
+    yearStart: 1963,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#000000',
+      secondary: '#A5ACAF',
+      accent: '#A5ACAF',
+      uiAccent: '#C8CDD6',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'chargers',
+    slug: 'home',
+    kind: 'home',
+    name: 'Los Angeles Chargers Home 2020–present',
+    yearStart: 2020,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#0080C6',
+      secondary: '#FFC20E',
+      accent: '#FFC20E',
+      uiAccent: '#36A7E0',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'bears',
+    slug: 'home',
+    kind: 'home',
+    name: 'Chicago Bears Home 1984–present',
+    yearStart: 1984,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#0B162A',
+      secondary: '#C83803',
+      accent: '#C83803',
+      uiAccent: '#FF6A33',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'lions',
+    slug: 'home',
+    kind: 'home',
+    name: 'Detroit Lions Home 2024–present',
+    yearStart: 2024,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#0076B6',
+      secondary: '#B0B7BC',
+      accent: '#B0B7BC',
+      uiAccent: '#36A7E0',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'packers',
+    slug: 'home',
+    kind: 'home',
+    name: 'Green Bay Packers Home 1959–present',
+    yearStart: 1959,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#203731',
+      secondary: '#FFB612',
+      accent: '#FFB612',
+      uiAccent: '#FFB612',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'vikings',
+    slug: 'home',
+    kind: 'home',
+    name: 'Minnesota Vikings Home 2013–present',
+    yearStart: 2013,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#4F2683',
+      secondary: '#FFC62F',
+      accent: '#FFC62F',
+      uiAccent: '#FFC62F',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'cowboys',
+    slug: 'home',
+    kind: 'home',
+    name: 'Dallas Cowboys Home 1964–present',
+    yearStart: 1964,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#003594',
+      secondary: '#869397',
+      accent: '#869397',
+      uiAccent: '#5B9BFF',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'giants',
+    slug: 'home',
+    kind: 'home',
+    name: 'New York Giants Home 2000–present',
+    yearStart: 2000,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#0B2265',
+      secondary: '#A71930',
+      accent: '#A71930',
+      uiAccent: '#5B9BFF',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'eagles',
+    slug: 'home',
+    kind: 'home',
+    name: 'Philadelphia Eagles Home 1996–present',
+    yearStart: 1996,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#004C54',
+      secondary: '#A5ACAF',
+      accent: '#A5ACAF',
+      uiAccent: '#2FA3A3',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'commanders',
+    slug: 'home',
+    kind: 'home',
+    name: 'Washington Commanders Home 2022–present',
+    yearStart: 2022,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#5A1414',
+      secondary: '#FFB612',
+      accent: '#FFB612',
+      uiAccent: '#FFB612',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'falcons',
+    slug: 'home',
+    kind: 'home',
+    name: 'Atlanta Falcons Home 2020–present',
+    yearStart: 2020,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#A71930',
+      secondary: '#000000',
+      accent: '#000000',
+      uiAccent: '#FF4D5E',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'panthers',
+    slug: 'home',
+    kind: 'home',
+    name: 'Carolina Panthers Home 2012–present',
+    yearStart: 2012,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#0085CA',
+      secondary: '#101820',
+      accent: '#101820',
+      uiAccent: '#36A7E0',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'saints',
+    slug: 'home',
+    kind: 'home',
+    name: 'New Orleans Saints Home 2002–present',
+    yearStart: 2002,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#D3BC8D',
+      secondary: '#101820',
+      accent: '#101820',
+      uiAccent: '#E2CC9A',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'buccaneers',
+    slug: 'home',
+    kind: 'home',
+    name: 'Tampa Bay Buccaneers Home 2020–present',
+    yearStart: 2020,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#D50A0A',
+      secondary: '#34302B',
+      accent: '#FF7900',
+      uiAccent: '#FF4D4D',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'cardinals',
+    slug: 'home',
+    kind: 'home',
+    name: 'Arizona Cardinals Home 2023–present',
+    yearStart: 2023,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#97233F',
+      secondary: '#000000',
+      accent: '#FFB612',
+      uiAccent: '#FF4D6A',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'rams',
+    slug: 'home',
+    kind: 'home',
+    name: 'Los Angeles Rams Home 2020–present',
+    yearStart: 2020,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#003594',
+      secondary: '#FFA300',
+      accent: '#FFA300',
+      uiAccent: '#FFC20E',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: '49ers',
+    slug: 'home',
+    kind: 'home',
+    name: 'San Francisco 49ers Home 2022–present',
+    yearStart: 2022,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#AA0000',
+      secondary: '#B3995D',
+      accent: '#B3995D',
+      uiAccent: '#FF4D4D',
+      onAccent: '#0a0e1a',
+    },
+  },
+  {
+    teamId: 'seahawks',
+    slug: 'home',
+    kind: 'home',
+    name: 'Seattle Seahawks Home 2012–present',
+    yearStart: 2012,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#002244',
+      secondary: '#69BE28',
+      accent: '#A5ACAF',
+      uiAccent: '#69BE28',
+      onAccent: '#0a0e1a',
+    },
+  },
+
   // Seahawks 1976–2001 royal/green/silver original — a retired throwback (not in the
   // current rotation). Hexes: teamcolorcodes historical Seahawks. uiAccent brightens the
   // era's green so it reads on the dark UI (the royal #003087 is far too dark).
@@ -61,7 +572,7 @@ export const UNIFORMS: UniformSeed[] = [
     kind: 'throwback',
     name: 'Creamsicle',
     yearStart: 1976,
-    yearEnd: 1996,
+    yearEnd: null,
     isCurrent: true,
     colors: {
       primary: '#FF8200',
@@ -81,7 +592,7 @@ export const UNIFORMS: UniformSeed[] = [
     kind: 'throwback',
     name: 'Kelly Green',
     yearStart: 1987,
-    yearEnd: 1995,
+    yearEnd: null,
     isCurrent: true,
     colors: {
       primary: '#046A38',
@@ -121,7 +632,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2012,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -137,7 +648,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2011,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -153,7 +664,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2018,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -169,7 +680,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2020,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -185,7 +696,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2024,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -201,7 +712,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2023,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -217,7 +728,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2020,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -233,7 +744,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2022,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -253,7 +764,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 1996,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -269,7 +780,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2021,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -285,7 +796,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2020,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -301,7 +812,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 1997,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -317,7 +828,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2024,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -333,7 +844,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2004,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -349,7 +860,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2018,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -365,7 +876,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2018,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -381,7 +892,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2024,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -397,7 +908,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 1963,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -413,7 +924,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 1963,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -429,7 +940,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2020,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -445,7 +956,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 1964,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -461,7 +972,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2000,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -477,7 +988,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 1996,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -493,7 +1004,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2022,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -509,7 +1020,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 1984,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -525,7 +1036,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2024,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -541,7 +1052,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 1959,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -557,7 +1068,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2013,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -573,7 +1084,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2020,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -589,7 +1100,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2012,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -605,7 +1116,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2002,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -621,7 +1132,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: null,
+    yearStart: 2020,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -658,7 +1169,7 @@ export const UNIFORMS: UniformSeed[] = [
     kind: 'throwback',
     name: 'Oilers Throwback',
     yearStart: 1960,
-    yearEnd: 1996,
+    yearEnd: null,
     isCurrent: true,
     colors: {
       primary: '#4B92DB',
@@ -674,7 +1185,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'orange-alternate',
     kind: 'alternate',
     name: 'Orange Alternate',
-    yearStart: null,
+    yearStart: 2005,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -691,7 +1202,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'color-rush',
     kind: 'color-rush',
     name: 'Color Rush',
-    yearStart: null,
+    yearStart: 2022,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -709,7 +1220,7 @@ export const UNIFORMS: UniformSeed[] = [
     kind: 'throwback',
     name: 'Teal Throwback',
     yearStart: 1995,
-    yearEnd: 2012,
+    yearEnd: null,
     isCurrent: true,
     colors: {
       primary: '#006778',
@@ -726,7 +1237,7 @@ export const UNIFORMS: UniformSeed[] = [
     kind: 'throwback',
     name: '70s Burgundy',
     yearStart: 1972,
-    yearEnd: 1977,
+    yearEnd: null,
     isCurrent: true,
     colors: {
       primary: '#5A1414',
@@ -932,7 +1443,7 @@ export const UNIFORMS: UniformSeed[] = [
     kind: 'throwback',
     name: '1972 Throwback',
     yearStart: 1966,
-    yearEnd: 1996,
+    yearEnd: null,
     isCurrent: true,
     colors: {
       primary: '#008E97',
@@ -949,7 +1460,7 @@ export const UNIFORMS: UniformSeed[] = [
     kind: 'throwback',
     name: 'Pat Patriot',
     yearStart: 1961,
-    yearEnd: 1992,
+    yearEnd: null,
     isCurrent: true,
     colors: {
       primary: '#C8102E',
@@ -965,7 +1476,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'black-alt',
     kind: 'alternate',
     name: 'Black Alternate',
-    yearStart: null,
+    yearStart: 2024,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -984,7 +1495,7 @@ export const UNIFORMS: UniformSeed[] = [
     name: 'Bumblebee',
     yearStart: 1933,
     yearEnd: 1934,
-    isCurrent: true,
+    isCurrent: false,
     colors: {
       primary: '#101820',
       secondary: '#FFB612',
@@ -1000,7 +1511,7 @@ export const UNIFORMS: UniformSeed[] = [
     kind: 'throwback',
     name: '1946 Throwback',
     yearStart: 1946,
-    yearEnd: 1946,
+    yearEnd: null,
     isCurrent: true,
     colors: {
       primary: '#FFFFFF',
@@ -1016,7 +1527,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'orange-alt',
     kind: 'alternate',
     name: 'Orange Alternate',
-    yearStart: null,
+    yearStart: 2021,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -1052,7 +1563,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'black-alt',
     kind: 'alternate',
     name: 'Black Alternate',
-    yearStart: null,
+    yearStart: 2004,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -1069,7 +1580,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'battle-red',
     kind: 'alternate',
     name: 'Battle Red',
-    yearStart: null,
+    yearStart: 2024,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -1086,7 +1597,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'black-alt',
     kind: 'alternate',
     name: 'Black Alternate',
-    yearStart: null,
+    yearStart: 2018,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -1103,7 +1614,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'navy-alt',
     kind: 'alternate',
     name: 'Navy Alternate',
-    yearStart: null,
+    yearStart: 2018,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -1120,7 +1631,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'orange-alt',
     kind: 'alternate',
     name: 'Orange Alternate',
-    yearStart: null,
+    yearStart: 2024,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -1138,7 +1649,7 @@ export const UNIFORMS: UniformSeed[] = [
     kind: 'throwback',
     name: '1980s Throwback',
     yearStart: 1980,
-    yearEnd: 1999,
+    yearEnd: null,
     isCurrent: true,
     colors: {
       primary: '#0B2265',
@@ -1154,7 +1665,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'black-alt',
     kind: 'alternate',
     name: 'Black Alternate',
-    yearStart: null,
+    yearStart: 2003,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -1171,9 +1682,9 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'gridiron-gray',
     kind: 'alternate',
     name: 'Gridiron Gray',
-    yearStart: null,
-    yearEnd: null,
-    isCurrent: true,
+    yearStart: 2017,
+    yearEnd: 2023,
+    isCurrent: false,
     colors: {
       primary: '#B0B7BC',
       secondary: '#0076B6',
@@ -1188,7 +1699,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'winter-warrior',
     kind: 'alternate',
     name: 'Winter Warrior',
-    yearStart: null,
+    yearStart: 2024,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -1205,7 +1716,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'winter-warning',
     kind: 'alternate',
     name: 'Winter Warning',
-    yearStart: null,
+    yearStart: 2025,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -1222,9 +1733,9 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'red-alt',
     kind: 'alternate',
     name: 'Red Alternate',
-    yearStart: null,
-    yearEnd: null,
-    isCurrent: true,
+    yearStart: 2020,
+    yearEnd: 2022,
+    isCurrent: false,
     colors: {
       primary: '#A71930',
       secondary: '#000000',
@@ -1239,7 +1750,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'black-alt',
     kind: 'alternate',
     name: 'Black Alternate',
-    yearStart: null,
+    yearStart: 2012,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -1256,7 +1767,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'black-alt',
     kind: 'alternate',
     name: 'Black Alternate',
-    yearStart: null,
+    yearStart: 2023,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -1273,7 +1784,7 @@ export const UNIFORMS: UniformSeed[] = [
     slug: 'bone',
     kind: 'alternate',
     name: 'Bone',
-    yearStart: null,
+    yearStart: 2020,
     yearEnd: null,
     isCurrent: true,
     colors: {

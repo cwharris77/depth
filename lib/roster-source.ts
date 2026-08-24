@@ -38,7 +38,7 @@ export interface UniformListing {
   kind: UniformKind;
   name: string;
   colors: TeamColors;
-  yearStart: number | null;
+  yearStart: number;
   yearEnd: number | null;
   isCurrent: boolean;
   imagePath?: string;

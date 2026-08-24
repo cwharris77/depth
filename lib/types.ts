@@ -132,7 +132,8 @@ export interface RenderSlot {
 }
 
 export interface TeamColors {
-  // Brand-true colors. Safe for large, controlled-contrast areas (field tint, header).
+  // Shared palette shape. App read models fill it from the selected uniform; ESPN uses
+  // the same shape transiently before writing identity colors to brand_colors.
   primary: string;
   secondary: string;
   accent: string;
@@ -233,20 +234,18 @@ export interface TeamMatchupMetrics {
   specialTeamsTouchdowns?: number;
 }
 
-// A kit's category. `home` rows are ESPN-owned (machine-managed); every other kind is
-// hand-curated in lib/uniforms/data.ts. Not a required set per team — only `home` is
-// guaranteed; a team has whatever kits it actually wears.
+// A kit's UI category. Every row is curated in lib/uniforms/data.ts. Not a required set
+// per team — only `home` is guaranteed; a team has whatever kits it actually wears.
 export type UniformKind = 'home' | 'away' | 'throwback' | 'color-rush' | 'alternate';
 
-// A named kit in a team's uniform archive (roadmap Phase 7). Every kit is a stored row now,
-// including the current home (kind='home', backfilled from team.colors). yearEnd null →
-// still in the active rotation. isCurrent marks active kits apart from retired throwbacks.
+// A named kit in a team's uniform archive (roadmap Phase 7). yearEnd null and isCurrent
+// true identify the current kit; the database enforces that those states agree.
 export interface Uniform {
   id: string;
   teamId: string;
   kind: UniformKind;
   name: string;
-  yearStart: number | null;
+  yearStart: number;
   yearEnd: number | null;
   isCurrent: boolean;
   colors: TeamColors;

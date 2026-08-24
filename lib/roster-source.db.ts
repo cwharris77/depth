@@ -58,24 +58,11 @@ function supabase() {
 }
 
 type Tables = Database['public']['Tables'];
-const TEAM_SELECT =
-  'id, abbrev, city, name, conference, division, color_primary, color_secondary, color_accent, ui_accent, on_accent, logo_url, logo_dark_url';
+const TEAM_SELECT = 'id, abbrev, city, name, conference, division, logo_url, logo_dark_url';
 
 type TeamRow = Pick<
   Tables['teams']['Row'],
-  | 'id'
-  | 'abbrev'
-  | 'city'
-  | 'name'
-  | 'conference'
-  | 'division'
-  | 'color_primary'
-  | 'color_secondary'
-  | 'color_accent'
-  | 'ui_accent'
-  | 'on_accent'
-  | 'logo_url'
-  | 'logo_dark_url'
+  'id' | 'abbrev' | 'city' | 'name' | 'conference' | 'division' | 'logo_url' | 'logo_dark_url'
 >;
 type PlayerRow = Pick<
   Tables['players']['Row'],
@@ -305,12 +292,15 @@ function toTeam(row: TeamRow): Team {
     abbrev: row.abbrev,
     conference: row.conference as Team['conference'],
     division: row.division as Team['division'],
+    // A current uniform normally replaces this immediately via withHomeColors. Keep a
+    // neutral degraded value for incomplete local data; brand_colors is intentionally not
+    // part of the jersey/chrome read path.
     colors: {
-      primary: row.color_primary ?? '#333333',
-      secondary: row.color_secondary ?? '#666666',
-      accent: row.color_accent ?? row.color_secondary ?? '#666666',
-      uiAccent: row.ui_accent ?? '#4CC3FF',
-      onAccent: row.on_accent ?? '#0a0e1a',
+      primary: '#333333',
+      secondary: '#666666',
+      accent: '#666666',
+      uiAccent: '#4CC3FF',
+      onAccent: '#0a0e1a',
     },
     logo: row.logo_url ?? undefined,
     logoDark: row.logo_dark_url ?? undefined,
@@ -359,10 +349,9 @@ function toUniform(row: UniformRow): Uniform {
   };
 }
 
-// The current home row is the source of truth for a team's default look (PR-B pins it, and
-// teams.colors can lag it by a pull or diverge during a hold). Overlay it onto team.colors
-// so the OG image, team grid, and field all agree.
-function withHomeColors(team: Team, rows: UniformRow[]): Team {
+// The curated current home row is the source of truth for a team's default look. Resolve it
+// by is_current so retired home snapshots never recolor app chrome.
+export function withHomeColors(team: Team, rows: UniformRow[]): Team {
   const home = rows.find((u) => u.kind === 'home' && u.is_current);
   return home ? { ...team, colors: uniformColors(home) } : team;
 }
@@ -636,6 +625,7 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
     rankRows,
     { data: nflverseStatsRows, error: nflverseStatsError },
     nflverseRankRows,
+    { data: homeRow, error: homeError },
   ] = await Promise.all([
     client
       .from(tables.teams)
@@ -665,12 +655,20 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
     fetchAllRankRows<TeamSeasonStatsRankRow>((from, to) =>
       client.from(tables.teamSeasonStats).select(TEAM_SEASON_STATS_RANK_SELECT).range(from, to)
     ),
+    client
+      .from(tables.uniforms)
+      .select(UNIFORM_SELECT)
+      .eq('team_id', teamId)
+      .eq('kind', 'home')
+      .eq('is_current', true)
+      .maybeSingle<UniformRow>(),
   ]);
   if (teamError) throw new Error(`teams query failed: ${teamError.message}`);
   if (statsError) throw new Error(`team_stats query failed: ${statsError.message}`);
   if (coachError) throw new Error(`team_coach_seasons query failed: ${coachError.message}`);
   if (nflverseStatsError)
     throw new Error(`team_season_stats query failed: ${nflverseStatsError.message}`);
+  if (homeError) throw new Error(`home uniforms query failed: ${homeError.message}`);
   if (!teamRow) return undefined;
 
   const { upcomingSeason, isOffseason } = await getNflSeasonState();
@@ -683,7 +681,7 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
   const nflverseBySeason = new Map((nflverseStatsRows ?? []).map((row) => [row.season, row]));
   const seasons = (statsRows ?? []).map((row) => toTeamStats(row, coachBySeason, nflverseBySeason));
   return {
-    team: toTeam(teamRow),
+    team: withHomeColors(toTeam(teamRow), homeRow ? [homeRow] : []),
     leagueRanksBySeason: buildLeagueRanks(teamId, rankRows, nflverseRankRows),
     // `coach_experience === 0` is ESPN's live signal for "hired, but hasn't coached a
     // season for this team yet" — see TeamStatsPage.incomingCoach doc comment.
