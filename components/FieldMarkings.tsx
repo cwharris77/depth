@@ -1,9 +1,9 @@
 import { colors as uiTokens } from '@/components/ui/tokens';
 
-// Ten-yard increments, mirrored the way real fields paint them: count up from each
-// goal line (10…40), with midfield left to the blue line-of-scrimmage line. Values
+// Ten-yard increments painted the way real fields paint them: two-digit numbers
+// 10-20-30-40-50 counting up from each goal line, with the 50 at midfield. y values
 // are percentages of the 100-unit viewBox, matching the yard lines every 10%.
-const YARD_NUMBERS = [10, 20, 30, 40, 60, 70, 80, 90];
+const YARD_NUMBERS = [10, 20, 30, 40, 50, 60, 70, 80, 90];
 
 export default function FieldMarkings() {
   return (
@@ -25,11 +25,13 @@ export default function FieldMarkings() {
         />
       ))}
       {/* Yard numbers on both sidelines, hidden below lg like the dot labels so the
-          mobile field stays dot-only. textFaint at 50% keeps them legible at this
-          size while staying quieter than any chrome text; rotated to read from the
-          near sideline like painted numbers. */}
+          mobile field stays dot-only. Each column rotates 180° from the other so the
+          two rows mirror each other, each reading from its own sideline the way real
+          fields paint them. textFaint at 50% keeps them legible at this size while
+          staying quieter than any chrome text; sized down from real-field proportions
+          so the digits never reach the dot labels inboard. */}
       {YARD_NUMBERS.map((y) => {
-        const n = y < 50 ? y / 10 : (100 - y) / 10;
+        const n = y <= 50 ? y : 100 - y;
         return (
           <g key={y} className="hidden lg:block">
             <text
@@ -41,7 +43,7 @@ export default function FieldMarkings() {
               fontSize="4"
               fontWeight="bold"
               opacity="0.5"
-              transform={`rotate(-90 5 ${y})`}>
+              transform={`rotate(90 5 ${y})`}>
               {n}
             </text>
             <text
