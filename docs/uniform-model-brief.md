@@ -18,30 +18,25 @@ Reference images are internal-only: never committed to this repo and never redis
 Non-negotiable, and it goes first. This has caught a bug on most teams.
 
 ```bash
-curl -s "http://127.0.0.1:54321/rest/v1/uniforms?team_id=eq.<team>&select=id,kind,name,color_primary,color_secondary,color_accent" \
+curl -s "http://127.0.0.1:54321/rest/v1/uniforms?team_id=eq.<team>&select=id,kind,name,year_start,year_end,is_current,color_primary,color_secondary,color_accent" \
   -H "apikey: <local anon key from 'supabase status'>" | python3 -m json.tool
 ```
 
-Three traps live here:
+The `uniforms` row is the sole runtime palette. ESPN identity colors live separately in
+`brand_colors` and are irrelevant to jersey construction. Check three things before
+authoring:
 
-**1. `accent` always equals `secondary` on the `home` kit.** `toTeamColors` in `lib/espn/transform.ts` literally sets `accent: secondary` — ESPN supplies only two colors, so a synthesized home row has no third token. Any construction color that is neither body nor trim must be a **literal hex with a cited source**. This silently painted Seattle's wolf-grey shoulder band green and Arizona's white shoulder bars black. Curated archive rows (away/throwback/alternate, from `lib/uniforms/data.ts`) *do* carry three real colors — only the home row collapses.
+1. Query the exact kit row, including `year_start`/`year_end` and `is_current`; do not
+   infer the current kit from its slug or from a team identity color.
+2. Treat `primary`, `secondary`, and `accent` as semantic inputs to that team's existing
+   definition, not universal body/trim slots. Confirm how the selected slug maps them in
+   `definition.kits[slug]`.
+3. Note any construction color no semantic token supplies. Use a literal hex for it and
+   cite the source in the definition.
 
-**2. A kit's `primary` is often not its jersey color.** Where `alternateColor` is neutral black, `isNeutral()` keeps `primary` as the team's pop color while the real jersey is black — and the generic model paints helmet, jersey *and* pants from `primary`. A full 32-team sweep found exactly four: **bengals, steelers, falcons, saints**. Read that sweep as scoped to **ESPN-synthesized home rows**, which is all it covered. Curated rows in `data.ts` fail the same way for a different reason: a curator may set `primary` to an era's *identity* color rather than its jersey color. Denver's Orange Crush stores `#001489` royal — the helmet and the era's identity — while the jersey is orange, making it a fifth case. So the rule is not "only these four"; it is **check every kit, and treat `primary` as an assertion to verify against the figure rather than a fact.** Fix in the definition (`jerseyColor: 'secondary'`), never by patching `teams.colors` — that is machine-owned and the weekly ingest overwrites it (invariant 3).
-
-**3. The stored home row can be stale, and a later correction is not always a safe re-color.** `lib/uniforms/reconcile.ts` pins a home row until a change is confirmed on two consecutive runs, so a home palette can sit disagreeing with `teams.colors` indefinitely. Cross-check it before authoring:
-
-```bash
-# every team whose home uniform row disagrees with its teams.color_primary
-curl -s ".../teams?select=id,color_primary" -H "apikey: $K" > /tmp/t.json
-curl -s ".../uniforms?kind=eq.home&select=team_id,color_primary" -H "apikey: $K" > /tmp/u.json
-# join on id and print the mismatches
-```
-
-Most disagreements are shade drift and harmless. Three are categorical — **broncos, steelers, titans** — where the stored primary is a different color entirely from what ESPN now reports. Denver stores orange against a navy team primary, which is why its `home` and `orange-alt` both render orange and why the reference's navy jersey has no kit to hold it.
-
-**The dangerous part is what happens when such a row is corrected.** A palette flip re-colors a kit safely only if the construction is symmetric in those tokens. Denver's is not: the orange jersey wears white-over-navy on the shoulder and the navy jersey wears orange-over-white — the *order* inverts, not just the colors. Promote that home row and the kit renders the wedge upside-down with its collar and numeral keyline on the wrong colors, silently. When you author against a palette you know to be stale, say so in the module header, name the figure to re-measure against, and say which assignments will not survive.
-
-Note which colors the kit needs that no token supplies. Those become literals.
+The archive is append-only. Correct a palette in `lib/uniforms/data.ts`; end an era with
+`yearEnd` and `isCurrent: false`, then append its successor. Never patch a hosted row or
+derive a replacement from `brand_colors`.
 
 ## Step 2 — Read the reference and identify the kits
 
@@ -50,7 +45,6 @@ Open the composite and map each combo to a depth kit slug. Watch for:
 - **Kits absent from the 2025 composite** (Chicago's orange alternate, Atlanta's red alternate, Jacksonville's black alternate, Detroit's gridiron-gray). Those must be *inferred* by recoloring measured construction — say so in the module header and treat as provisional.
 - **Kits with identical stored palettes** that differ only in construction (Minnesota's away vs Winter Warrior). The definition expresses the difference via `helmetColor`/`pantsColor`.
 - **Two kits that are genuinely the same uniform.** Los Angeles' `home` and `powder-blue` store the same palette but for `accent`, and the reference draws exactly one powder-blue jersey — so they are not a bug to route around, they are two rows describing one look. Don't force them apart. Share the construction and let the difference be which token each reaches a color through: `home` takes white as a literal, `powder-blue` takes it from `accent`, and the two render identically because they should. Confirm that in the browser rather than asserting it.
-- **Stale data**: Tennessee stores navy but the 2025 reference is light blue. That is a data decision, not a definition fix — surface it, don't paper over it. See Step 1 trap 3: Tennessee is one of three teams whose home row disagrees categorically with `teams.colors`, so this is likely the same stale-home-row cause rather than its own oddity.
 - **A jersey in the reference with no kit to hold it** is the same signal read from the other end. Denver's navy jersey and Los Angeles' gold and navy alternates all appear on the 2025 sheets with no row to render them. Record them in the module header as candidates; adding rows is a data decision.
 
 ## Step 3 — Locate the figures
@@ -274,7 +268,7 @@ Never `db push` to the linked prod project as part of this work — that is Coop
 ## Done means
 
 - [ ] Runtime palette checked before authoring; literals used where no token exists, each citing a source
-- [ ] Home row cross-checked against `teams.color_primary`; any drift, and which token assignments would not survive it, recorded in the header
+- [ ] Exact uniform row checked; semantic token assignments match that kit's curated palette
 - [ ] Every kit's `primary` verified against its figure rather than assumed to be the jersey color
 - [ ] Figure cropped and *looked at* before authoring, not only sampled
 - [ ] Every path derived from a measurement recorded in a comment, not eyeballed

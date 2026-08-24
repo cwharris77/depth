@@ -1,7 +1,7 @@
 # ESPN data ingestion (Postgres-backed)
 
-Rosters, depth order, photos, team colors/logos, coaches, and multi-season team stats
-are ingested from ESPN's unofficial API into Postgres (Supabase project
+Rosters, depth order, photos, team brand colors/logos, coaches, and multi-season team
+stats are ingested from ESPN's unofficial API into Postgres (Supabase project
 `jiqoaqmzmvtovimnmbzl`). The app reads
 from the DB at request/build time via `dbRosterSource` (`lib/roster-source.db.ts`) —
 there is no committed generated-data file anymore (that was the prior static-file
@@ -18,16 +18,18 @@ plan; this repo now ingests into a real database instead).
   also carries each team's win/loss/points record, parsed into `TeamStats[]` per ESPN
   team id.
 - `lib/teams/league.ts` — a build-time identity seed (id/city/name/abbrev + placeholder
-  rosters used only as test fixtures) the ingest loops over. Everything live (colors,
-  conf/div, rosters) comes from ESPN, not here.
+  rosters used only as test fixtures) the ingest loops over. Live conference/division,
+  rosters, and identity colors come from ESPN; jersey colors come from `uniforms`.
 - `lib/espn/transform.ts` — pure functions joining the two ESPN endpoints (site roster
   for bios/photos, core depthcharts for position + rank) into our `TeamRoster` shape.
-  Also exports `toDepthChartRows`, which re-ranks a position group 1..3 after ESPN's
+  `toBrandColors` preserves ESPN's identity palette for `brand_colors`. The module also
+  exports `toDepthChartRows`, which re-ranks a position group 1..3 after ESPN's
   key-collapse (e.g. `lde`+`rde` both map to `DE`, each independently ranked) so the
   DB's `(team_id, position, depth_rank)` unique constraint never collides.
 - `scripts/ingest-espn.mts` — fetches all 32 teams, runs each through the transform,
-  and upserts into `teams` (including coach fields), `players`, `depth_chart_entries`,
-  `special_teams_slots`, and `team_stats` (one row per team per season). Writes one
+  and upserts into `teams` (including coach fields), `brand_colors`, `players`,
+  `depth_chart_entries`, `special_teams_slots`, and `team_stats` (one row per team per
+  season). Writes one
   `ingestion_runs` row per full run (`started_at`/`finished_at`/`status`/
   `teams_written`/`errors`).
 - `lib/roster-source.db.ts` — `dbRosterSource`, a `RosterSource` implementation that
@@ -154,10 +156,9 @@ leave the DB one run stale.
   adds them to `players` anyway via a bio-position fallback, so `specialTeams` never
   references a player missing from the roster (and the DB's
   `special_teams_slots.player_id` foreign key never breaks).
-- `uiAccent`/`onAccent` are derived from ESPN's own colors, not hand-curated:
-  `toTeamColors` uses the real `secondary` as the accent, falls back to `primary` when
-  the secondary is a neutral black/white (8 teams), with one override (Ravens → official
-  gold, since both ESPN colors are too dark). `onAccent = readableTextOn(uiAccent)`.
+- `brand_colors` stores ESPN's palette and the derived `uiAccent`/`onAccent` pair for
+  possible identity surfaces. The current app does not read it for jerseys or chrome;
+  those colors resolve from the current curated `uniforms` row.
 - The ingest retries each fetch a few times with backoff — ESPN's unofficial API blips
   intermittently (a roster can 404 on one call, 200 the next), which would otherwise skip
   a team for the whole run.
@@ -239,8 +240,9 @@ GitHub Actions was chosen because it reuses the existing script with zero logic 
 **RLS is enabled on every table** (Phase C complete). Writes are unaffected throughout: the
 ESPN ingest writes with the service-role key, which bypasses RLS.
 
-- **Public base tables** — `teams`, `players`, `depth_chart_entries`, `special_teams_slots`,
-  `uniforms` have a permissive `"public read"` policy (`select to anon, authenticated`), so
+- **Public base tables** — `teams`, `brand_colors`, `players`, `depth_chart_entries`,
+  `special_teams_slots`, `uniforms` have a permissive `"public read"` policy
+  (`select to anon, authenticated`), so
   `dbRosterSource` keeps reading them with the anon key. Enabling RLS **closed** the prior gap
   where the anon key could also write/delete them — there are no write policies, so anon writes
   are now denied. `ingestion_runs` is operational-only: RLS on, **no read policy**, so anon sees

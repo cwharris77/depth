@@ -2,20 +2,16 @@ import { describe, it, expect } from 'vitest';
 import { UNIFORMS } from '@/lib/uniforms/data';
 import { contrastRatio, DARK_BG } from '@/lib/utils/colors';
 
-// The uniform archive is hand-curated (no structured source exists), so unlike the
-// ESPN-derived team colors, we CAN and DO enforce strict dark-UI legibility on every
-// kit's curated accent here — this kills the "every 5th throwback looks broken" bug at
-// author time.
+// Uniforms are the curated jersey authority, so every kit must carry complete era data
+// and a dark-UI-legible accent before the seed can reach Postgres.
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const AA = 4.5;
-// Curated rows may be any kind EXCEPT home — home rows are ESPN-owned and never authored
-// in data.ts (they are backfilled + maintained by the reconciler).
-const CURATED_KINDS = ['away', 'throwback', 'color-rush', 'alternate'];
+const CURATED_KINDS = ['home', 'away', 'throwback', 'color-rush', 'alternate'];
 
 describe('uniform seed — dark-UI contrast', () => {
   for (const u of UNIFORMS) {
-    const id = `${u.teamId}-${u.slug}`;
+    const id = `${u.teamId}-${u.slug}-${u.yearStart}`;
 
     it(`${id}: uiAccent reads on the dark app background`, () => {
       expect(contrastRatio(u.colors.uiAccent, DARK_BG)).toBeGreaterThanOrEqual(AA);
@@ -28,13 +24,26 @@ describe('uniform seed — dark-UI contrast', () => {
 });
 
 describe('uniform seed — integrity', () => {
-  it('ids (`${teamId}-${slug}`) are unique', () => {
-    const ids = UNIFORMS.map((u) => `${u.teamId}-${u.slug}`);
+  it('ids (`${teamId}-${slug}-${yearStart}`) are unique', () => {
+    const ids = UNIFORMS.map((u) => `${u.teamId}-${u.slug}-${u.yearStart}`);
     expect(new Set(ids).size).toBe(ids.length);
   });
 
+  it('contains one current home kit for every team', () => {
+    const homes = UNIFORMS.filter((u) => u.kind === 'home' && u.isCurrent);
+    expect(homes).toHaveLength(32);
+    expect(new Set(homes.map((u) => u.teamId)).size).toBe(32);
+  });
+
+  it('keeps the Broncos current home palette orange-first', () => {
+    const broncosHome = UNIFORMS.find(
+      (u) => u.teamId === 'broncos' && u.kind === 'home' && u.isCurrent
+    );
+    expect(broncosHome?.colors).toMatchObject({ primary: '#FB4F14', secondary: '#002244' });
+  });
+
   for (const u of UNIFORMS) {
-    const id = `${u.teamId}-${u.slug}`;
+    const id = `${u.teamId}-${u.slug}-${u.yearStart}`;
 
     it(`${id}: teamId and slug are non-empty`, () => {
       expect(u.teamId).toBeTruthy();
@@ -49,12 +58,17 @@ describe('uniform seed — integrity', () => {
     });
 
     it(`${id}: year_end is not before year_start when both are set`, () => {
-      if (u.yearStart !== null && u.yearEnd !== null) {
+      expect(u.yearStart).not.toBeNull();
+      if (u.yearEnd !== null) {
         expect(u.yearEnd).toBeGreaterThanOrEqual(u.yearStart);
       }
     });
 
-    it(`${id}: kind is a curated kind (never home)`, () => {
+    it(`${id}: is_current agrees with an open-ended era`, () => {
+      expect(u.isCurrent).toBe(u.yearEnd === null);
+    });
+
+    it(`${id}: kind is a curated uniform kind`, () => {
       expect(CURATED_KINDS).toContain(u.kind);
     });
   }

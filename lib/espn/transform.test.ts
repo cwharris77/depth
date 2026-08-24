@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import roster from './fixtures/roster-sea.json';
 import depthcharts from './fixtures/depthchart-sea.json';
-import { parseAthleteId, toCoach, toDepthChartRows, toTeamColors, toTeamRoster } from './transform';
+import {
+  parseAthleteId,
+  toBrandColors,
+  toCoach,
+  toDepthChartRows,
+  toTeamRoster,
+} from './transform';
 import type { Player } from '../types';
 import type { EspnRoster, EspnDepthcharts, EspnTeamInfo } from './types';
 import type { Team, TeamColors } from '../types';
@@ -64,9 +70,9 @@ describe('toCoach', () => {
   });
 });
 
-describe('toTeamColors', () => {
+describe('toBrandColors', () => {
   it('uses the real ESPN brand colors, with the secondary as the UI accent', () => {
-    const c = toTeamColors(TEAM_INFO);
+    const c = toBrandColors(TEAM_INFO);
     expect(c.primary.toLowerCase()).toBe('#002a5c');
     expect(c.secondary.toLowerCase()).toBe('#69be28');
     // The accent is the team's real secondary (the pop color) — Seahawks green,
@@ -93,8 +99,8 @@ describe('toTeamColors', () => {
       alternateColor: 'ffffff',
       logos: [],
     };
-    expect(toTeamColors(falcons).uiAccent.toLowerCase()).toBe('#a71930');
-    expect(toTeamColors(cardinals).uiAccent.toLowerCase()).toBe('#a40227');
+    expect(toBrandColors(falcons).uiAccent.toLowerCase()).toBe('#a71930');
+    expect(toBrandColors(cardinals).uiAccent.toLowerCase()).toBe('#a40227');
   });
 
   it('overrides the Ravens accent to official gold (purple + black both fail on the dark UI)', () => {
@@ -105,7 +111,7 @@ describe('toTeamColors', () => {
       alternateColor: '000000',
       logos: [],
     };
-    expect(toTeamColors(ravens).uiAccent.toLowerCase()).toBe('#9e7c0c');
+    expect(toBrandColors(ravens).uiAccent.toLowerCase()).toBe('#9e7c0c');
   });
 });
 

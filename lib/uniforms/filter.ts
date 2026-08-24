@@ -12,17 +12,14 @@ export interface UniformFilters {
   currentOnly: boolean;
 }
 
-export function eraBucket(yearStart: number | null): string {
-  if (yearStart === null) return 'Undated';
+export function eraBucket(yearStart: number): string {
   return `${Math.floor(yearStart / 10) * 10}s`;
 }
 
-// Distinct buckets present, decades ascending, 'Undated' last.
+// Distinct buckets present, decades ascending.
 export function eraOptions(kits: UniformListing[]): string[] {
   const buckets = new Set(kits.map((k) => eraBucket(k.yearStart)));
-  const undated = buckets.delete('Undated');
-  const decades = Array.from(buckets).sort();
-  return undated ? [...decades, 'Undated'] : decades;
+  return Array.from(buckets).sort();
 }
 
 export function matchesFilters(kit: UniformListing, f: UniformFilters): boolean {
