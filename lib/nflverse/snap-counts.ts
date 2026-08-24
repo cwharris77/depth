@@ -173,9 +173,19 @@ export function toRecentSnapSummaries(
     if (count === 2) duplicateKeys.add(key);
   }
 
+  const conflictingGameKeys = new Set<string>();
+  const weeksByGame = new Map<string, number>();
+  for (const row of candidates) {
+    const gameKey = `${row.season}|${row.teamId}|${row.gameId}`;
+    const week = weeksByGame.get(gameKey);
+    if (week === undefined) weeksByGame.set(gameKey, row.week);
+    else if (week !== row.week) conflictingGameKeys.add(gameKey);
+  }
+
   const validRows = candidates.filter((row) => {
-    const key = `${row.season}|${row.teamId}|${row.gameId}|${row.pfrPlayerId}`;
-    return !duplicateKeys.has(key);
+    const sourceKey = `${row.season}|${row.teamId}|${row.gameId}|${row.pfrPlayerId}`;
+    const gameKey = `${row.season}|${row.teamId}|${row.gameId}`;
+    return !duplicateKeys.has(sourceKey) && !conflictingGameKeys.has(gameKey);
   });
   diagnostics.malformedRows += candidates.length - validRows.length;
   diagnostics.validRows = validRows.length;

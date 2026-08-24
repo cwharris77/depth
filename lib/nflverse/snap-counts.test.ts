@@ -231,4 +231,24 @@ describe('toRecentSnapSummaries', () => {
       toRecentSnapSummaries(rows, pfrToEspn, resolveTeam)
     );
   });
+
+  it('rejects every row for a game whose players report conflicting weeks', () => {
+    const rows = [
+      snapRow({ game_id: '2025_01_KC_LAC', week: '1' }),
+      snapRow({ game_id: '2025_01_KC_LAC', week: '5', pfr_player_id: 'RiceRa00' }),
+      snapRow({ game_id: '2025_02_KC_PHI', week: '2' }),
+      snapRow({ game_id: '2025_03_KC_NYG', week: '3' }),
+      snapRow({ game_id: '2025_04_KC_DAL', week: '4' }),
+    ];
+
+    const result = toRecentSnapSummaries(rows, pfrToEspn, resolveTeam);
+    expect(result).toEqual(toRecentSnapSummaries([...rows].reverse(), pfrToEspn, resolveTeam));
+    expect(result.rows).toEqual([
+      expect.objectContaining({
+        player_id: '3139477',
+        window_game_ids: ['2025_02_KC_PHI', '2025_03_KC_NYG', '2025_04_KC_DAL'],
+      }),
+    ]);
+    expect(result.diagnostics).toMatchObject({ validRows: 3, malformedRows: 2, selectedGames: 3 });
+  });
 });
