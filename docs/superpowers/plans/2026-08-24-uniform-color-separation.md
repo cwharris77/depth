@@ -7,7 +7,7 @@
 **Goal:** Make `uniforms` the sole, fully-curated authority for every jersey's exact GUD-sourced hexes; stop the ESPN brand-vs-jersey confusion and the reconcile machinery that manufactures home colors from ESPN; move ESPN brand colors into a separate `brand_colors` table; keep chrome tied to the current jersey via `withHomeColors`.
 
 **Locked model (from the spec):**
-- Two domains, two tables, no overlap: `uniforms` (fully curated, GUD hexes, `source` dropped) and `brand_colors` (ESPN-sourced, written each ingest, not read by uniforms/chrome while a current kit exists).
+- Two domains, two tables, no overlap: `uniforms` (fully curated — hexes from teamcolorcodes, patterns/era years from GUD, `source` dropped) and `brand_colors` (ESPN-sourced, written each ingest, not read by uniforms/chrome while a current kit exists).
 - `uniforms` id: `{teamId}-{slug}-{yearStart}` (deterministic; id stable across a kit's life; ending a kit = set `year_end` + `is_current=false`).
 - Current-ness = workflow-kept `is_current` boolean; `year_end IS NULL` as backstop; `is_current = true ⟺ year_end IS NULL`.
 - `kind` stays (UI grouping/ordering label). `source` column dropped.
@@ -20,7 +20,7 @@
 
 - Do not modify uniform *geometry* definitions (`lib/uniforms/teams/*.ts`) — only palette/sourcing change. The Broncos-jersey rework (`lib/uniforms/teams/broncos.ts:17`) is out of scope here.
 - Do not add dependencies.
-- Every curated hex cites its source in a comment (GUD / teamcolorcodes), per the repo convention.
+- Every curated hex cites its source in a comment (teamcolorcodes) and every era-year range cites GUD, per the repo convention.
 - Append-only curation discipline (`AGENTS.md` invariant 9): never delete a kit row; retire via `year_end`/`is_current`.
 - Do not write to the hosted DB outside a committed migration (AGENTS.md §6).
 - Run Prettier only on files changed by this plan.
@@ -76,8 +76,8 @@
 - Edit: `lib/uniforms/seed-sql.ts` (id now `{teamId}-{slug}-{yearStart}`, drop `source` from the emitted columns)
 
 **Steps:**
-- [ ] Add the 32 current uniform rows to `data.ts` (`kind` per row, `source` removed from the shape, populated `yearStart`/`yearEnd`, raw GUD hexes + source comments).
-- [ ] Verify/update every existing curated row's hexes against GUD (all kinds, not just home).
+- [ ] Add the 32 current uniform rows to `data.ts` (`kind` per row, `source` removed from the shape, populated `yearStart`/`yearEnd`, hexes from `teamcolorcodes.com` + era years from GUD, source comments).
+- [ ] Verify/update every existing curated row's hexes against `teamcolorcodes.com` and era years against GUD (all kinds, not just home).
 - [ ] Update `seed-sql.ts` id derivation to `{teamId}-{slug}-{yearStart}` and drop `source` from COLUMNS.
 - [ ] Regenerate the seed migration via `npm run gen:uniform-seed`.
 - [ ] Regenerate rasters via `npm run gen:uniform-thumbs` (id-derived artifact URLs change).
