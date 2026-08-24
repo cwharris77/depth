@@ -46,6 +46,23 @@ describe('buildRecentSnapSummariesSeedSql', () => {
   it('returns empty SQL for no rows', () => {
     expect(buildRecentSnapSummariesSeedSql([])).toBe('');
   });
+
+  it('serializes adversarial game ids as escaped text-array elements', () => {
+    const row = recentSnapRow();
+    row.window_game_ids = [
+      "game'quote",
+      'game,comma',
+      'game{brace}',
+      String.raw`game\slash`,
+      "game'); drop table teams; --",
+    ];
+
+    const sql = buildRecentSnapSummariesSeedSql([row]);
+
+    expect(sql).toContain(
+      String.raw`array[E'game''quote', E'game,comma', E'game{brace}', E'game\\slash', E'game''); drop table teams; --']::text[]`
+    );
+  });
 });
 
 describe('extractPlayerIds', () => {

@@ -8,7 +8,7 @@
 
 **Tech Stack:** TypeScript 5, Vitest 4, Supabase Postgres/PostgREST, nflverse CSV releases, Swift 6, Supabase Swift, Swift Testing, xcodegen
 
-**Spec:** `../obsidian/Projects/depth/specs/2026-08-23-player-recent-snaps-design.md`
+**Spec:** [`Projects/depth/specs/2026-08-23-player-recent-snaps-design.md`](../../../../obsidian/Projects/depth/specs/2026-08-23-player-recent-snaps-design.md)
 
 ## Global Constraints
 

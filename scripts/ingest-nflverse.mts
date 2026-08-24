@@ -27,7 +27,7 @@
 // offline, so contributors don't have to run the live ingest after every reset.
 
 import dotenv from 'dotenv';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/utils/env';
 
@@ -44,8 +44,9 @@ import { DefenseFormationAccumulator } from '@/lib/nflverse/defense-participatio
 import { resolveTeamCode } from '@/lib/nflverse/team-codes';
 import { parseSeasonsArg } from '@/lib/nflverse/seasons-arg';
 import { SEASONS_MIN } from '@/lib/nflverse/roster-history';
-import { ingestRecentSnapSeason } from '@/lib/nflverse/snap-counts-ingest';
+import { ingestRecentSnapSeason, ingestRecentSnapSeasons } from '@/lib/nflverse/snap-counts-ingest';
 import type { RecentSnapSummaryInsert, SnapCountsDiagnostics } from '@/lib/nflverse/snap-counts';
+import { writeNflverseSeedFile } from '@/lib/nflverse/seed-output';
 import { notifyRevalidate } from '@/lib/utils/ingest/notify-revalidate';
 import {
   extractPlayerIds,
@@ -402,42 +403,38 @@ async function ingestRecentSnaps(
   }
 
   const seasons = [latestSeason, latestSeason - 1];
-  const rows: RecentSnapSummaryInsert[] = [];
-  let rowsWritten = 0;
-  const diagnosticsBySeason: Record<number, SnapCountsDiagnostics> = {};
-  const failures: { season: number | string; message: string }[] = [];
+  const result = await ingestRecentSnapSeasons(seasons, (season) =>
+    ingestRecentSnapSeason({
+      season,
+      fetchCsv: () => getText(assetUrl(SNAP_COUNTS_TAG, `${SNAP_COUNTS_PREFIX}${season}.csv`)),
+      pfrToEspn: pfrCrosswalk,
+      resolveTeam: resolveTeamCode,
+      updatedAt: startedAt,
+      upsert: supabase
+        ? async (seasonRows) => {
+            const { error } = await supabase
+              .from('player_recent_snaps')
+              .upsert(seasonRows, { onConflict: 'team_id,season,player_id' });
+            if (error) throw new Error(`player_recent_snaps upsert: ${error.message}`);
+          }
+        : undefined,
+    })
+  );
 
+  const failedSeasons = new Set(result.failures.map((failure) => failure.season));
   for (const season of seasons) {
-    try {
-      const result = await ingestRecentSnapSeason({
-        season,
-        fetchCsv: () => getText(assetUrl(SNAP_COUNTS_TAG, `${SNAP_COUNTS_PREFIX}${season}.csv`)),
-        pfrToEspn: pfrCrosswalk,
-        resolveTeam: resolveTeamCode,
-        updatedAt: startedAt,
-        upsert: supabase
-          ? async (seasonRows) => {
-              const { error } = await supabase
-                .from('player_recent_snaps')
-                .upsert(seasonRows, { onConflict: 'team_id,season,player_id' });
-              if (error) throw new Error(`player_recent_snaps upsert: ${error.message}`);
-            }
-          : undefined,
-      });
-      rows.push(...result.rows);
-      rowsWritten += result.rowsWritten;
-      diagnosticsBySeason[season] = result.diagnostics;
-      console.log(
-        `snap-counts ${season}: ${supabase ? 'wrote' : 'computed'} ${result.rows.length} rows, ` +
-          `${result.diagnostics.malformedRows} malformed, ` +
-          `${result.diagnostics.unresolvedRows} unresolved`
-      );
-    } catch (e) {
-      failures.push({ season, message: (e as Error).message });
-    }
+    const diagnostics = result.diagnosticsBySeason[season];
+    if (!diagnostics || failedSeasons.has(season)) continue;
+    console.log(
+      `snap-counts ${season}: ${supabase ? 'wrote' : 'computed'} ${diagnostics.summaries} rows, ` +
+        `${diagnostics.malformedRows} malformed, ${diagnostics.unresolvedRows} unresolved`
+    );
   }
 
-  return { rows, rowsWritten, seasons, diagnosticsBySeason, failures };
+  return {
+    ...result,
+    seasons,
+  };
 }
 
 // PostgREST caps an unranged select at 1000 rows (Supabase's default db-max-rows) --
@@ -608,7 +605,11 @@ async function main() {
       buildTeamRecordsSeedSql(recordsResult.rows),
       buildRecentSnapSummariesSeedSql(recentSnapsResult.rows),
     ];
-    writeFileSync(seedOut, parts.filter(Boolean).join('\n') + '\n');
+    writeNflverseSeedFile(
+      seedOut,
+      parts.filter(Boolean).join('\n') + '\n',
+      recentSnapsResult.failures
+    );
     console.log(
       `\nWrote seed: ${allStatsRows.length} player-stat rows, ${gamesResult.games.length} games, ` +
         `${gamesResult.schedules.length} schedules, ${formationsResult.tallies.length} formation rows, ` +

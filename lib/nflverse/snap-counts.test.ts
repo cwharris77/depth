@@ -155,6 +155,17 @@ describe('toRecentSnapSummaries', () => {
     });
   });
 
+  it('rejects rows when a required unit column is absent', () => {
+    const row = snapRow();
+    delete row.defense_snaps;
+    delete row.defense_pct;
+
+    const result = toRecentSnapSummaries([row], pfrToEspn, resolveTeam);
+
+    expect(result.rows).toEqual([]);
+    expect(result.diagnostics).toMatchObject({ validRows: 0, malformedRows: 1, summaries: 0 });
+  });
+
   it.each([
     ['blank', ''],
     ['non-finite', 'Infinity'],
@@ -183,6 +194,17 @@ describe('toRecentSnapSummaries', () => {
   it('rejects every duplicate source row before aggregation', () => {
     const result = toRecentSnapSummaries(
       [snapRow({ offense_snaps: '60' }), snapRow({ offense_snaps: '40' })],
+      pfrToEspn,
+      resolveTeam
+    );
+
+    expect(result.rows).toEqual([]);
+    expect(result.diagnostics).toMatchObject({ validRows: 0, malformedRows: 2, selectedGames: 0 });
+  });
+
+  it('rejects every duplicate source row when one copy has invalid unit values', () => {
+    const result = toRecentSnapSummaries(
+      [snapRow({ offense_snaps: '60' }), snapRow({ offense_snaps: '-1' })],
       pfrToEspn,
       resolveTeam
     );

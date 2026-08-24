@@ -39,13 +39,19 @@ interface SnapUnit {
   pct: number | null;
 }
 
-interface ValidSnapRow {
+interface CandidateSnapRow {
   gameId: string;
   season: number;
   week: number;
   teamId: string;
   pfrPlayerId: string;
   playerId: string | null;
+  offense: SnapUnit | null;
+  defense: SnapUnit | null;
+  specialTeams: SnapUnit | null;
+}
+
+interface ValidSnapRow extends CandidateSnapRow {
   offense: SnapUnit;
   defense: SnapUnit;
   specialTeams: SnapUnit;
@@ -68,8 +74,9 @@ function parseUnit(
   countValue: string | undefined,
   percentageValue: string | undefined
 ): SnapUnit | null {
-  const count = countValue?.trim() ?? '';
-  const percentage = percentageValue?.trim() ?? '';
+  if (countValue === undefined || percentageValue === undefined) return null;
+  const count = countValue.trim();
+  const percentage = percentageValue.trim();
   if (!count && !percentage) return { snaps: 0, pct: 0 };
 
   const snaps = parseInteger(count, 0);
@@ -91,6 +98,10 @@ function addUnit(left: SnapUnit, right: SnapUnit): SnapUnit {
     snaps: left.snaps + right.snaps,
     pct: left.pct === null || right.pct === null ? null : left.pct + right.pct,
   };
+}
+
+function hasValidUnits(row: CandidateSnapRow): row is ValidSnapRow {
+  return row.offense !== null && row.defense !== null && row.specialTeams !== null;
 }
 
 function emptyPlayerGameSnaps(): PlayerGameSnaps {
@@ -123,7 +134,7 @@ export function toRecentSnapSummaries(
     selectedGames: 0,
     summaries: 0,
   };
-  const candidates: ValidSnapRow[] = [];
+  const candidates: CandidateSnapRow[] = [];
 
   for (const row of csvRows) {
     const gameId = row.game_id?.trim();
@@ -136,20 +147,14 @@ export function toRecentSnapSummaries(
     const specialTeams = parseUnit(row.st_snaps, row.st_pct);
     const teamId = teamCode ? resolveTeam(teamCode) : null;
 
-    if (
-      !gameId ||
-      !pfrPlayerId ||
-      season === null ||
-      week === null ||
-      !teamId ||
-      !offense ||
-      !defense ||
-      !specialTeams
-    ) {
+    if (!gameId || !pfrPlayerId || season === null || week === null || !teamId) {
       diagnostics.malformedRows++;
       continue;
     }
-    if (row.game_type?.trim() !== 'REG') continue;
+    if (row.game_type?.trim() !== 'REG') {
+      if (!offense || !defense || !specialTeams) diagnostics.malformedRows++;
+      continue;
+    }
 
     candidates.push({
       gameId,
@@ -175,17 +180,17 @@ export function toRecentSnapSummaries(
 
   const conflictingGameKeys = new Set<string>();
   const weeksByGame = new Map<string, number>();
-  for (const row of candidates) {
+  for (const row of candidates.filter(hasValidUnits)) {
     const gameKey = `${row.season}|${row.teamId}|${row.gameId}`;
     const week = weeksByGame.get(gameKey);
     if (week === undefined) weeksByGame.set(gameKey, row.week);
     else if (week !== row.week) conflictingGameKeys.add(gameKey);
   }
 
-  const validRows = candidates.filter((row) => {
+  const validRows = candidates.filter((row): row is ValidSnapRow => {
     const sourceKey = `${row.season}|${row.teamId}|${row.gameId}|${row.pfrPlayerId}`;
     const gameKey = `${row.season}|${row.teamId}|${row.gameId}`;
-    return !duplicateKeys.has(sourceKey) && !conflictingGameKeys.has(gameKey);
+    return hasValidUnits(row) && !duplicateKeys.has(sourceKey) && !conflictingGameKeys.has(gameKey);
   });
   diagnostics.malformedRows += candidates.length - validRows.length;
   diagnostics.validRows = validRows.length;

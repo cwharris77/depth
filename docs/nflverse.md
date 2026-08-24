@@ -152,7 +152,7 @@ scaffolding with their own specs.
 
 ## Recent player snap summaries (DEP-313)
 
-The approved design is [`Projects/depth/specs/2026-08-23-player-recent-snaps-design.md`](../obsidian/Projects/depth/specs/2026-08-23-player-recent-snaps-design.md).
+The approved design is [`Projects/depth/specs/2026-08-23-player-recent-snaps-design.md`](../../obsidian/Projects/depth/specs/2026-08-23-player-recent-snaps-design.md).
 
 - **Source and cadence:** nflverse publishes the Pro Football Reference snap-count data
   under the `snap_counts` release tag as `snap_counts_<season>.csv`, giving the full
