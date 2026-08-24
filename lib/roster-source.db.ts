@@ -11,6 +11,7 @@ import type {
   UniformListing,
 } from '@/lib/roster-source';
 import { type LeaderEntry, rosterLeaders } from '@/lib/utils/roster/roster-leaders';
+import { buildMatchupMetrics } from '@/lib/utils/compare/matchup-metrics';
 import { resolvePostseason, resolveSchedule } from '@/lib/utils/schedule/schedule';
 import { getNflSeasonState } from '@/lib/utils/team/nfl-season';
 import {
@@ -157,9 +158,35 @@ const TEAM_SEASON_STATS_RANK_SELECT = 'team_id, season, passing_yards, rushing_y
 
 type TeamSeasonStatsValueRow = Pick<
   Tables['team_season_stats']['Row'],
-  'season' | 'passing_yards' | 'rushing_yards'
+  | 'season'
+  | 'passing_yards'
+  | 'rushing_yards'
+  | 'updated_at'
+  | 'games'
+  | 'attempts'
+  | 'carries'
+  | 'sacks_suffered'
+  | 'passing_epa'
+  | 'rushing_epa'
+  | 'passing_interceptions'
+  | 'fumbles_lost_total'
+  | 'def_sacks'
+  | 'def_qb_hits'
+  | 'def_interceptions'
+  | 'def_fumbles'
+  | 'def_fumbles_forced'
+  | 'fg_made'
+  | 'fg_att'
+  | 'pt_att'
+  | 'pt_net_yards'
+  | 'punt_returns'
+  | 'punt_return_yards'
+  | 'kickoff_returns'
+  | 'kickoff_return_yards'
+  | 'special_teams_tds'
 >;
-const TEAM_SEASON_STATS_VALUE_SELECT = 'season, passing_yards, rushing_yards';
+const TEAM_SEASON_STATS_VALUE_SELECT =
+  'season, passing_yards, rushing_yards, updated_at, games, attempts, carries, sacks_suffered, passing_epa, rushing_epa, passing_interceptions, fumbles_lost_total, def_sacks, def_qb_hits, def_interceptions, def_fumbles, def_fumbles_forced, fg_made, fg_att, pt_att, pt_net_yards, punt_returns, punt_return_yards, kickoff_returns, kickoff_return_yards, special_teams_tds';
 
 type TeamCoachSeasonRow = Pick<
   Tables['team_coach_seasons']['Row'],
@@ -207,6 +234,7 @@ function toTeamStats(
     playoffSeed: row.playoff_seed ?? 0,
     passingYards: nflverse?.passing_yards ?? undefined,
     rushingYards: nflverse?.rushing_yards ?? undefined,
+    matchupMetrics: buildMatchupMetrics(nflverse),
   };
 }
 

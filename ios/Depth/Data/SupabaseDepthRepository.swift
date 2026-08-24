@@ -58,6 +58,8 @@ actor SupabaseDepthRepository: DepthRepository {
 
     private static let teamStatsSelect =
         "season, overall_wins, overall_losses, overall_ties, home_wins, home_losses, road_wins, road_losses, division_wins, division_losses, conference_wins, conference_losses, points_for, points_against, point_differential"
+    private static let teamMatchupMetricsSelect =
+        "season, updated_at, games, attempts, carries, sacks_suffered, passing_epa, rushing_epa, passing_interceptions, fumbles_lost_total, def_sacks, def_qb_hits, def_interceptions, def_fumbles, def_fumbles_forced, fg_made, fg_att, pt_att, pt_net_yards, punt_returns, punt_return_yards, kickoff_returns, kickoff_return_yards, special_teams_tds"
     private static let scheduleSelect = "team_id, season"
     private static let gameSelect =
         "game_id, season, game_type, week, gameday, home_team_id, away_team_id, home_score, away_score"
@@ -218,29 +220,40 @@ actor SupabaseDepthRepository: DepthRepository {
         }
     }
 
-    /// Round-4 Stats page (spec locked decision #3): two phase-1 reads, mirroring web's
-    /// `fetchTeamStatsPage` minus the out-of-scope coach/rank/nflverse queries — team
-    /// identity via the flat team select, plus that team's `team_stats` rows newest-first.
+    /// Stats/Compare data contract: team identity, season records, and DEP-312's bounded
+    /// nflverse matchup projection are fetched concurrently through the repository seam.
     /// An unknown team id surfaces as `.notFound` (the `.single()` PGRST116 path); an
     /// empty `team_stats` result is a valid page (web's "no stats available yet" / 0-0
     /// states), not an error.
     func teamStats(teamId: String) async throws -> TeamStatsPage {
         do {
-            let team: TeamListRowDTO = try await client
+            async let teamResult: TeamListRowDTO = client
                 .from("teams")
                 .select(Self.teamListSelect)
                 .eq("id", value: teamId)
                 .single()
                 .execute()
                 .value
-            let rows: [TeamStatsRowDTO] = try await client
+            async let statsResult: [TeamStatsRowDTO] = client
                 .from("team_stats")
                 .select(Self.teamStatsSelect)
                 .eq("team_id", value: teamId)
                 .order("season", ascending: false)
                 .execute()
                 .value
-            return TeamStatsMapper.map(team: TeamSnapshotMapper.mapTeamListRow(team), rows: rows)
+            async let matchupResult: [TeamMatchupMetricsDTO] = client
+                .from("team_season_stats")
+                .select(Self.teamMatchupMetricsSelect)
+                .eq("team_id", value: teamId)
+                .order("season", ascending: false)
+                .execute()
+                .value
+            let (team, rows, matchupRows) = try await (teamResult, statsResult, matchupResult)
+            return TeamStatsMapper.map(
+                team: TeamSnapshotMapper.mapTeamListRow(team),
+                rows: rows,
+                matchupRows: matchupRows
+            )
         } catch let error as DepthError {
             throw error
         } catch let error as PostgrestError {

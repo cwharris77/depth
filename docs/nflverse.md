@@ -102,7 +102,13 @@ scaffolding with their own specs.
   scoping — full backfill with the flag, latest+previous by default. The `stats_team`
   release tag (asset `stats_team_reg_<season>.csv`) mirrors the player-stats naming;
   `team_season_stats` FKs to `teams` (not `players`), so historic backfill works
-  cleanly regardless of player identity. Writes one `ingestion_runs` row
+  cleanly regardless of player identity. Each successful refresh stamps the affected
+  rows' `updated_at` with that ingest run's start time, including conflict updates.
+  Compare reads a bounded projection of these rows alongside `team_stats`: source
+  inputs plus derived offense, turnover, pressure, kicking, punting, and return rates.
+  Nullable nflverse values remain unavailable rather than being coerced to zero, and
+  the raw inputs travel with every derived rate so the UI can explain its evidence.
+  Writes one `ingestion_runs` row
   (`source: 'nflverse'`) whose `errors` jsonb carries `{ seasons, player_stats_rows,
   games_min_season, games_written, schedules_written, formations_season,
   formations_written, team_stats_seasons, team_stats_rows, team_stats_skipped, skipped,
