@@ -150,6 +150,55 @@ scaffolding with their own specs.
   player-change), renders a "LAST SEASONS" row per season with a non-null `statLine`.
   Loading and error both render nothing.
 
+## Recent player snap summaries (DEP-313)
+
+The approved design is
+`../obsidian/Projects/depth/specs/2026-08-23-player-recent-snaps-design.md`.
+
+- **Source and cadence:** nflverse publishes the Pro Football Reference snap-count data
+  under the `snap_counts` release tag as `snap_counts_<season>.csv`, giving the full
+  release path `snap_counts/snap_counts_<season>.csv`. Each run discovers the latest
+  available snap-count season and processes exactly that season plus its predecessor.
+  This selection is independent of `--seasons`; a broad stats backfill does not widen
+  the bounded participation window.
+- **Identity and windowing:** `players.csv` supplies the only permitted
+  `pfr_id -> espn_id` mapping. Names are never used as a fallback. Valid rows without a
+  mapping are omitted and counted as `unresolvedRows`. The transform keeps each team's
+  latest three unique `REG` games, ordered by week and game id. A bye has no source game
+  and consumes no slot; an early-season team can therefore have a one- or two-game
+  window. A player absent from one of the selected games receives zero for that game's
+  units, so percentages are averaged over the team's full window rather than only the
+  player's appearances.
+- **Storage and reads:** `player_recent_snaps` stores one summary row per
+  `(team_id, season, player_id)`; raw game rows are never stored or returned. Every row
+  written by a run shares its `ingestion_runs.started_at` timestamp. Web and native
+  repositories query only the current NFL source season and its predecessor, then
+  return the greatest available season and greatest complete shared timestamp. The
+  public source attribution is `nflverse / Pro Football Reference`.
+- **Diagnostics:** `ingestion_runs.errors.snap_counts` contains `seasons`,
+  `rows_written`, and `by_season`. Each successful `by_season[season]` entry records
+  `fetchedRows`, `validRows`, `malformedRows`, `unresolvedRows`, `selectedTeams`,
+  `selectedGames`, and `summaries`. Fetch, zero-summary transform, and upsert errors are
+  also recorded in the run-wide `errors.failures` list with their season and message.
+- **Last-good behavior:** each season is fetched, transformed, and upserted atomically
+  without a delete or replace step. A failed fetch, empty transform, or failed upsert
+  writes no rows for that attempt, records the failure, continues with the other
+  season, and leaves previously stored summaries available.
+
+Regenerate the committed local seed after refreshing the ESPN identity seed, then
+restore all configured seeds through the normal reset:
+
+```bash
+npm run gen:espn-seed
+npm run gen:nflverse-seed
+supabase db reset
+```
+
+`gen:nflverse-seed` adds the current and previous recent-snap summaries to
+`supabase/seed-nflverse.sql` without a generated timestamp; Postgres supplies one when
+the reset loads the rows. Repository responses still return the normalized
+`nflverse / Pro Football Reference` attribution.
+
 ## Investigation note: silent 2025 ingestion gap (2026-07-25)
 
 nflverse renamed the player-stats release tag from `player_stats` to `stats_player`
