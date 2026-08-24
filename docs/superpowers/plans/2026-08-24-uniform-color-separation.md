@@ -1,4 +1,4 @@
-# Uniform Color Separation — Curate `uniforms`, add `brand_colors`, remove drift (DEP-…)
+# Uniform Color Separation — Curate `uniforms`, add `brand_colors`, remove drift
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -41,12 +41,14 @@
 
 ### Task 2: DB — `uniforms` id shape + `source` drop + data-integrity backfill + indexes
 
+**Sequencing note:** this task depends on Task 4 (curated `data.ts` + regenerated seed) landing first, so the `year_start`/`year_end` backfill values line up with the curated rows. Execute Task 4 before this one.
+
 **Files:**
 - Create: `supabase/migrations/<stamp>_uniforms_curated_integrity.sql`
 - Edit: `lib/database.types.ts`
 
 **Steps:**
-- [ ] Backfill `year_start`/`year_end` on rows currently missing them (source: the row's own name/era + the curated data.ts after Task 4 lands; do this migration after Task 4's seed so values line up).
+- [ ] Backfill `year_start`/`year_end` on rows currently missing them (source: the curated data.ts after Task 4 lands).
 - [ ] Add `NOT NULL` on `year_start`.
 - [ ] Re-issue ids that don't match `{teamId}-{slug}-{yearStart}` (UPDATE id where malformed; preserve `image_path` pointing at the new id's artifact URL).
 - [ ] Drop the `source` column.
