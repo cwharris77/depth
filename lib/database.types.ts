@@ -278,6 +278,68 @@ export type Database = {
         }
         Relationships: []
       }
+      player_recent_snaps: {
+        Row: {
+          defense_pct: number | null
+          defense_snaps: number
+          games: number
+          offense_pct: number | null
+          offense_snaps: number
+          player_id: string
+          season: number
+          source: string
+          special_teams_pct: number | null
+          special_teams_snaps: number
+          team_id: string
+          updated_at: string
+          window_end_week: number
+          window_game_ids: string[]
+          window_start_week: number
+        }
+        Insert: {
+          defense_pct?: number | null
+          defense_snaps: number
+          games: number
+          offense_pct?: number | null
+          offense_snaps: number
+          player_id: string
+          season: number
+          source: string
+          special_teams_pct?: number | null
+          special_teams_snaps: number
+          team_id: string
+          updated_at?: string
+          window_end_week: number
+          window_game_ids: string[]
+          window_start_week: number
+        }
+        Update: {
+          defense_pct?: number | null
+          defense_snaps?: number
+          games?: number
+          offense_pct?: number | null
+          offense_snaps?: number
+          player_id?: string
+          season?: number
+          source?: string
+          special_teams_pct?: number | null
+          special_teams_snaps?: number
+          team_id?: string
+          updated_at?: string
+          window_end_week?: number
+          window_game_ids?: string[]
+          window_start_week?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_recent_snaps_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       player_stats: {
         Row: {
           attempts: number | null

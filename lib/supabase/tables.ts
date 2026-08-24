@@ -6,6 +6,7 @@ export const tables = {
   depthOverrides: 'depth_overrides',
   games: 'games',
   ingestionRuns: 'ingestion_runs',
+  playerRecentSnaps: 'player_recent_snaps',
   playerStats: 'player_stats',
   players: 'players',
   rosterHistory: 'roster_history',
