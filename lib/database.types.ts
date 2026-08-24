@@ -190,41 +190,71 @@ export type Database = {
       }
       games: {
         Row: {
+          away_moneyline: number | null
           away_score: number | null
+          away_spread_odds: number | null
           away_team_id: string
           game_id: string
           game_type: string
           gameday: string | null
           gametime: string | null
+          home_moneyline: number | null
           home_score: number | null
+          home_spread_odds: number | null
           home_team_id: string
+          location: string | null
+          market_updated_at: string | null
+          over_odds: number | null
           season: number
+          spread_line: number | null
+          total_line: number | null
+          under_odds: number | null
           updated_at: string
           week: number | null
         }
         Insert: {
+          away_moneyline?: number | null
           away_score?: number | null
+          away_spread_odds?: number | null
           away_team_id: string
           game_id: string
           game_type: string
           gameday?: string | null
           gametime?: string | null
+          home_moneyline?: number | null
           home_score?: number | null
+          home_spread_odds?: number | null
           home_team_id: string
+          location?: string | null
+          market_updated_at?: string | null
+          over_odds?: number | null
           season: number
+          spread_line?: number | null
+          total_line?: number | null
+          under_odds?: number | null
           updated_at?: string
           week?: number | null
         }
         Update: {
+          away_moneyline?: number | null
           away_score?: number | null
+          away_spread_odds?: number | null
           away_team_id?: string
           game_id?: string
           game_type?: string
           gameday?: string | null
           gametime?: string | null
+          home_moneyline?: number | null
           home_score?: number | null
+          home_spread_odds?: number | null
           home_team_id?: string
+          location?: string | null
+          market_updated_at?: string | null
+          over_odds?: number | null
           season?: number
+          spread_line?: number | null
+          total_line?: number | null
+          under_odds?: number | null
           updated_at?: string
           week?: number | null
         }
