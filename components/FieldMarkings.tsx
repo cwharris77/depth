@@ -27,36 +27,36 @@ export default function FieldMarkings() {
       {/* Yard numbers on both sidelines, hidden below lg like the dot labels so the
           mobile field stays dot-only. Each column rotates 180° from the other so the
           two rows mirror each other, each reading from its own sideline the way real
-          fields paint them. White like real field paint; offset 3.5 units off its yard
-          line toward the near goal line (digit half-height is 2, so ~1.5 units of
-          visible gap) instead of straddling the line; sized down from real-field
-          proportions so the digits never reach the dot labels inboard. The 50 stays
-          centered at midfield — our blue line-of-scrimmage overlay runs there. */}
+          fields paint them. White like real field paint. Centered on its yard line
+          with wide letter-spacing so the line passes BETWEEN the digits — "2 | 0" —
+          with clear space either side, matching real-field paint. Sized down from
+          real-field proportions so the digits never reach the dot labels inboard. */}
       {YARD_NUMBERS.map((y) => {
         const n = y <= 50 ? y : 100 - y;
-        const anchorY = y < 50 ? y - 3.5 : y > 50 ? y + 3.5 : y;
         return (
           <g key={y} className="hidden lg:block">
             <text
               x="5"
-              y={anchorY}
+              y={y}
               dominantBaseline="central"
               textAnchor="middle"
               fill="#fff"
               fontSize="4"
               fontWeight="bold"
-              transform={`rotate(90 5 ${anchorY})`}>
+              letterSpacing="3"
+              transform={`rotate(90 5 ${y})`}>
               {n}
             </text>
             <text
               x="95"
-              y={anchorY}
+              y={y}
               dominantBaseline="central"
               textAnchor="middle"
               fill="#fff"
               fontSize="4"
               fontWeight="bold"
-              transform={`rotate(-90 95 ${anchorY})`}>
+              letterSpacing="3"
+              transform={`rotate(-90 95 ${y})`}>
               {n}
             </text>
           </g>

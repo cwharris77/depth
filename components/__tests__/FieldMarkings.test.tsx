@@ -22,19 +22,17 @@ describe('FieldMarkings', () => {
     }
   });
 
-  it('offsets each number off its yard line with a visible gap', () => {
+  it('splits digits around the yard line with a visible gap (2 | 0)', () => {
     const { container } = render(<FieldMarkings />);
-    // Numbers anchor 3.5 units off their line (toward the near goal line), except the
-    // 50 which stays centered at midfield under the blue line-of-scrimmage overlay.
-    // Assert no number's anchor lands exactly on a yard line.
-    const ys = Array.from(container.querySelectorAll('text')).map((t) =>
-      Number(t.getAttribute('y'))
-    );
-    for (const y of ys) {
-      const nearestLine = Math.round(y / 10) * 10;
-      if (nearestLine !== 50) expect(Math.abs(y - nearestLine)).toBeCloseTo(3.5, 5);
+    // Numbers anchor centered ON their yard line; wide letter-spacing opens the gap
+    // so the line passes between the digits ("2 | 0") with clear space either side.
+    const texts = Array.from(container.querySelectorAll('text'));
+    for (const t of texts) {
+      expect(Number(t.getAttribute('y')) % 10).toBe(0);
+      expect(Number(t.getAttribute('letter-spacing'))).toBeGreaterThanOrEqual(3);
     }
-    expect(ys.filter((y) => y === 50)).toHaveLength(2);
+    // The two 50s sit exactly at midfield, under the blue line-of-scrimmage overlay.
+    expect(texts.filter((t) => t.getAttribute('y') === '50')).toHaveLength(2);
   });
 
   it('hides the numbers below the lg breakpoint (mobile dot-only field)', () => {
