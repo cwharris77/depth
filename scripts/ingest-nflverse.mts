@@ -123,7 +123,8 @@ async function getText(url: string, attempts = 3): Promise<string> {
 // toScheduleAndGameRows) or an explicit floor for a --seasons backfill run.
 async function ingestGames(
   supabase: SupabaseClient<Database> | null,
-  minSeason?: number
+  minSeason: number | undefined,
+  marketUpdatedAt: string
 ): Promise<{
   schedules: ScheduleInsert[];
   games: GameInsert[];
@@ -135,7 +136,8 @@ async function ingestGames(
     const { games, schedules, skipped } = toScheduleAndGameRows(
       parseCsv(csv),
       resolveTeamCode,
-      minSeason
+      minSeason,
+      marketUpdatedAt
     );
 
     if (supabase) {
@@ -551,7 +553,7 @@ async function main() {
   }
 
   // Schedules + games (nflverse nfldata/games.csv), a second dataset in the same run.
-  const gamesResult = await ingestGames(supabase, gamesMinSeason);
+  const gamesResult = await ingestGames(supabase, gamesMinSeason, startedAt);
   if (gamesResult.failure) failures.push({ season: 'games', message: gamesResult.failure });
   skipped += gamesResult.skipped;
 

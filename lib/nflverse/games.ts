@@ -30,6 +30,16 @@ export interface GameInsert {
   away_team_id: string;
   home_score: number | null;
   away_score: number | null;
+  location: string | null;
+  away_moneyline: number | null;
+  home_moneyline: number | null;
+  spread_line: number | null;
+  away_spread_odds: number | null;
+  home_spread_odds: number | null;
+  total_line: number | null;
+  under_odds: number | null;
+  over_odds: number | null;
+  market_updated_at: string | null;
 }
 
 // '' -> null (nflverse's blank-cell convention, e.g. an unplayed game's score or a
@@ -41,6 +51,15 @@ function nullableInt(value: string | undefined): number | null {
   return Number.isInteger(n) ? n : null;
 }
 
+// Market spreads and totals may be half-points, while American odds are normally
+// integers. Preserve either as finite numbers and degrade malformed source cells to
+// null so one bad line never drops the schedule row.
+function nullableNumber(value: string | undefined): number | null {
+  if (value === undefined || value.trim() === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
 function nullableText(value: string | undefined): string | null {
   const v = value?.trim();
   return v ? v : null;
@@ -49,7 +68,8 @@ function nullableText(value: string | undefined): string | null {
 export function toScheduleAndGameRows(
   csvRows: Record<string, string>[],
   resolveCode: (code: string) => string | null,
-  minSeason?: number
+  minSeason?: number,
+  marketUpdatedAt?: string
 ): { games: GameInsert[]; schedules: ScheduleInsert[]; skipped: number } {
   const parsed: GameInsert[] = [];
   let skipped = 0;
@@ -72,6 +92,18 @@ export function toScheduleAndGameRows(
       continue;
     }
 
+    const market = {
+      away_moneyline: nullableNumber(row.away_moneyline),
+      home_moneyline: nullableNumber(row.home_moneyline),
+      spread_line: nullableNumber(row.spread_line),
+      away_spread_odds: nullableNumber(row.away_spread_odds),
+      home_spread_odds: nullableNumber(row.home_spread_odds),
+      total_line: nullableNumber(row.total_line),
+      under_odds: nullableNumber(row.under_odds),
+      over_odds: nullableNumber(row.over_odds),
+    };
+    const hasMarket = Object.values(market).some((value) => value !== null);
+
     parsed.push({
       game_id: row.game_id.trim(),
       season,
@@ -83,6 +115,12 @@ export function toScheduleAndGameRows(
       away_team_id: awayId,
       home_score: nullableInt(row.home_score),
       away_score: nullableInt(row.away_score),
+      location: nullableText(row.location),
+      ...market,
+      // nflverse exposes the current observed line, not a bookmaker timestamp. This
+      // records when Depth observed a posted market row so consumers can identify stale
+      // data without claiming a more precise source time than exists.
+      market_updated_at: hasMarket ? (marketUpdatedAt ?? null) : null,
     });
   }
 

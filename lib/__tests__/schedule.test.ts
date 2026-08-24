@@ -21,6 +21,16 @@ function game(over: Partial<Game>): Game {
     awayTeamId: 'rams',
     homeScore: null,
     awayScore: null,
+    location: 'Home',
+    homeMoneyline: null,
+    awayMoneyline: null,
+    spreadLine: null,
+    homeSpreadOdds: null,
+    awaySpreadOdds: null,
+    totalLine: null,
+    underOdds: null,
+    overOdds: null,
+    marketUpdatedAt: null,
     ...over,
   };
 }
@@ -65,6 +75,40 @@ describe('resolveSchedule', () => {
     const [g] = resolveSchedule([game({ homeScore: null, awayScore: null })], 'seahawks');
     expect(g.result).toBeNull();
     expect(g.isBye).toBe(false);
+  });
+
+  it('carries the market snapshot from the selected team’s perspective', () => {
+    const [g] = resolveSchedule(
+      [
+        game({
+          homeTeamId: 'rams',
+          awayTeamId: 'seahawks',
+          location: 'Neutral',
+          homeMoneyline: -130,
+          awayMoneyline: 110,
+          spreadLine: 2.5,
+          homeSpreadOdds: -112,
+          awaySpreadOdds: -108,
+          totalLine: 44.5,
+          underOdds: -105,
+          overOdds: -115,
+          marketUpdatedAt: '2026-08-24T20:00:00.000Z',
+        }),
+      ],
+      'seahawks'
+    );
+
+    expect(g.market).toMatchObject({
+      teamMoneyline: 110,
+      opponentMoneyline: -130,
+      teamSpread: 2.5,
+      teamSpreadOdds: -108,
+      opponentSpreadOdds: -112,
+      totalLine: 44.5,
+      isNeutralSite: true,
+      source: 'nflverse',
+      updatedAt: '2026-08-24T20:00:00.000Z',
+    });
   });
 
   it('inserts a bye for a missing regular-season week', () => {

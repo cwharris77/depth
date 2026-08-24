@@ -148,11 +148,25 @@ describe('buildSchedulesAndGamesSeedSql', () => {
         away_team_id: 'sea',
         home_score: 20,
         away_score: 17,
+        location: 'Neutral',
+        away_moneyline: 154,
+        home_moneyline: -185,
+        spread_line: 3.5,
+        away_spread_odds: -110,
+        home_spread_odds: -110,
+        total_line: 45.5,
+        under_odds: -105,
+        over_odds: -115,
+        market_updated_at: '2026-08-24T20:00:00.000Z',
       },
     ];
     const sql = buildSchedulesAndGamesSeedSql(schedules, games);
     expect(sql.indexOf('insert into schedules')).toBeLessThan(sql.indexOf('insert into games'));
     expect(sql).toContain("'2025_01_SEA_SF'");
+    expect(sql).toContain(
+      'location, away_moneyline, home_moneyline, spread_line, away_spread_odds, home_spread_odds, total_line, under_odds, over_odds, market_updated_at'
+    );
+    expect(sql).toContain("'Neutral', 154, -185, 3.5, -110, -110, 45.5, -105, -115");
   });
 
   it('omits either insert when its rows are empty', () => {

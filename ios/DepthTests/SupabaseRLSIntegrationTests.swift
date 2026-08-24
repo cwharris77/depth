@@ -102,6 +102,19 @@ enum LocalSupabase {
     #expect(!snapshot.players.isEmpty)
 }
 
+@Test(.enabled(if: LocalSupabase.isReachable)) func anonymousCanReadNflverseMarketSchedule() async throws {
+    let repository = SupabaseDepthRepository(client: LocalSupabase.client(key: LocalSupabase.anonKey))
+    let schedule = try await repository.teamSchedule(teamId: "bills", season: 2025)
+    let market = try #require(schedule.games.first(where: { $0.week == 1 })?.market)
+
+    #expect(market.teamMoneyline == 110)
+    #expect(market.opponentMoneyline == -130)
+    #expect(market.teamSpread == 1.5)
+    #expect(market.totalLine == 50.5)
+    #expect(market.source == .nflverse)
+    #expect(market.updatedAt != nil)
+}
+
 // RLS denies an UPDATE by row-filtering, not by throwing: with no USING policy the row
 // simply isn't visible to update, so PostgREST returns 200 with zero affected rows —
 // the same shape as a real "no rows matched the WHERE clause" update. Asserting on the

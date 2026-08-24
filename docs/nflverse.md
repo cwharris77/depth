@@ -63,6 +63,18 @@ scaffolding with their own specs.
   previous), same rule as the player-stats ingest; an explicit `minSeason` (the
   `--seasons` backfill flag, below) keeps every season from there on instead. Dropped
   older rows aren't counted as skipped (skipped means malformed, not out-of-range).
+- The same games transform persists nflverse's current pregame market snapshot on the
+  shared game row: venue `location`, home/away moneylines, the home-oriented spread and
+  side prices, total and over/under prices, plus `market_updated_at`. The source does not
+  publish bookmaker timestamps or line history, so `market_updated_at` is when Depth
+  observed at least one valid market value during ingestion. A later ingest replaces the
+  snapshot in place; blank or malformed cells remain `null` without dropping the game.
+  `lib/utils/compare/market-lines.ts` is the sole perspective adapter: it converts the raw
+  home-oriented spread to the selected team's conventional signed spread, identifies
+  pick'em/neutral-site games, and normalizes both American moneylines into a two-sided
+  vig-free implied probability. Missing either moneyline leaves that probability
+  unavailable. This source probability remains explicitly `nflverse` market evidence,
+  not the DEP-316 Depth forecast.
 - `lib/nflverse/records.ts` — `toTeamRecords(games, alignments)`: pure transform of the
   same `games` rows above into the record columns of `team_stats` (overall W/L/T, win
   percentage, home/road, division/conference, points for/against, differential, streak).
@@ -94,7 +106,9 @@ scaffolding with their own specs.
   season in the range with `requireCurrentRoster: false` (see the identity note below).
   Then `ingestGames` fetches `nfldata/data/games.csv` (one file, all seasons 1999+) and
   upserts **schedules first, then games** (chunked) — the games' composite FKs require
-  the schedule rows to exist. With no flag, games/schedules also scope to the two most
+  the schedule rows to exist. Every posted market snapshot in the batch receives the
+  ingestion run's `started_at` as its observation timestamp. With no flag,
+  games/schedules also scope to the two most
   recent seasons (`toScheduleAndGameRows`, see above); `--seasons` backfills the full
   range instead (parsed the same way as `ingest:rosters`, see `parseSeasonsArg` above) —
   `player_stats` follows the identical range (`gamesSeasons`, shared between the two
