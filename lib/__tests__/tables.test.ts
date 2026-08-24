@@ -18,6 +18,7 @@ describe('tables', () => {
       'depth_overrides',
       'games',
       'ingestion_runs',
+      'player_recent_snaps',
       'player_stats',
       'players',
       'roster_history',

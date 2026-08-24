@@ -6,13 +6,11 @@ import Foundation
 // failure mode the design spec calls out to not reproduce here.
 enum TeamSnapshotMapper {
     static func map(_ dto: TeamDTO) throws -> TeamSnapshot {
+        let uniforms = try dto.uniforms.map(mapUniform)
         let team = Team(
             id: dto.id, city: dto.city, name: dto.name, abbrev: dto.abbrev,
             conference: dto.conference, division: dto.division,
-            colors: TeamColors(
-                primary: dto.colorPrimary, secondary: dto.colorSecondary, accent: dto.colorAccent,
-                uiAccent: dto.uiAccent, onAccent: dto.onAccent
-            ),
+            colors: currentHomeColors(uniforms),
             logo: dto.logoUrl, logoDark: dto.logoDarkUrl
         )
 
@@ -38,8 +36,6 @@ enum TeamSnapshotMapper {
             SpecialSlot(id: slot.id, playerId: slot.playerId, x: slot.x, y: slot.y, label: slot.label)
         }
 
-        let uniforms = try dto.uniforms.map(mapUniform)
-
         return TeamSnapshot(
             team: team, players: players, specialTeams: specialTeams,
             uniforms: uniforms, formations: mapFormations(dto.teamFormations)
@@ -50,11 +46,27 @@ enum TeamSnapshotMapper {
         Team(
             id: dto.id, city: dto.city, name: dto.name, abbrev: dto.abbrev,
             conference: dto.conference, division: dto.division,
-            colors: TeamColors(
-                primary: dto.colorPrimary, secondary: dto.colorSecondary, accent: dto.colorAccent,
-                uiAccent: dto.uiAccent, onAccent: dto.onAccent
-            ),
+            colors: currentHomeColors(dto.uniforms),
             logo: dto.logoUrl, logoDark: dto.logoDarkUrl
+        )
+    }
+
+    private static let neutralTeamColors = TeamColors(
+        primary: "#333333", secondary: "#666666", accent: "#666666",
+        uiAccent: "#4CC3FF", onAccent: "#0a0e1a"
+    )
+
+    private static func currentHomeColors(_ uniforms: [Uniform]) -> TeamColors {
+        uniforms.first(where: { $0.kind == .home && $0.isCurrent })?.colors ?? neutralTeamColors
+    }
+
+    private static func currentHomeColors(_ uniforms: [TeamColorUniformDTO]) -> TeamColors {
+        guard let home = uniforms.first(where: { $0.kind == "home" && $0.isCurrent }) else {
+            return neutralTeamColors
+        }
+        return TeamColors(
+            primary: home.colorPrimary, secondary: home.colorSecondary, accent: home.colorAccent,
+            uiAccent: home.uiAccent, onAccent: home.onAccent
         )
     }
 

@@ -25,6 +25,10 @@ protocol DepthRepository: Sendable {
     /// not delegated like the schedule — the Stats data flow reuses the snapshot cache
     /// layer rather than inventing a second one.
     func teamStats(teamId: String) async throws -> TeamStatsPage
+    /// DEP-313's bounded player participation evidence. This is a live, read-only
+    /// current/previous-season query kept separate from TeamStatsPage and TeamSnapshot;
+    /// a default nil keeps unrelated focused test doubles source-compatible.
+    func recentParticipation(teamId: String) async throws -> RecentParticipation?
     /// Cross-team player search for the switcher (2026-08-15 navigation-parity round 2:
     /// "search should work for players as well as teams"), mirroring web's
     /// `searchAllPlayers`. Searches every ingested team's players, not just the selected
@@ -43,6 +47,7 @@ protocol DepthRepository: Sendable {
 }
 
 extension DepthRepository {
+    func recentParticipation(teamId: String) async throws -> RecentParticipation? { nil }
     func searchPlayers(query: String) async throws -> [PlayerHit] { [] }
     func listUniforms() async throws -> [UniformListing] { [] }
 }

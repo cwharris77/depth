@@ -3,17 +3,26 @@
 // lib/nflverse/seed-sql.ts) builds its rows, then calls insertStatement() here for the
 // actual escaping/serialization -- one place owns "how does untrusted ingested text
 // become a safe SQL literal", never duplicated per source.
-export type Val = string | number | boolean | number[] | null | undefined;
+export type Val = string | number | boolean | number[] | string[] | null | undefined;
+
+function sqlTextArrayElement(value: string): string {
+  return `E'${value.replace(/\\/g, '\\\\').replace(/'/g, "''")}'`;
+}
 
 // SQL literal for a single value. Strings are single-quote-escaped; null/undefined ->
-// NULL. number[] (Postgres int[]) serialized as '{1,2,3}'. Untrusted ingested text
-// (player names with apostrophes, etc.) must never break the script.
+// NULL. number[] (Postgres int[]) preserves its existing '{1,2,3}' representation;
+// string[] uses an ARRAY constructor so commas/braces never become array syntax, with
+// quotes and backslashes escaped per element. Untrusted ingested text must never break
+// the script.
 export function sqlValue(v: Val): string {
   if (v === null || v === undefined) return 'null';
   if (typeof v === 'number') return Number.isFinite(v) ? String(v) : 'null';
   if (typeof v === 'boolean') return v ? 'true' : 'false';
   if (Array.isArray(v)) {
     if (v.length === 0) return "'{}'";
+    if (typeof v[0] === 'string') {
+      return `array[${(v as string[]).map(sqlTextArrayElement).join(', ')}]::text[]`;
+    }
     return `'{${v.join(',')}}'`;
   }
   return `'${v.replace(/'/g, "''")}'`;

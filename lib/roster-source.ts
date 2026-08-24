@@ -1,6 +1,7 @@
 import type {
   Conference,
   Division,
+  RecentParticipation,
   Team,
   TeamColors,
   TeamRoster,
@@ -84,6 +85,8 @@ export interface RosterSource {
   getTeam(id: string): Promise<TeamRoster | undefined>;
   // Coach + season record for one team, or undefined for an unknown id.
   getTeamStats(id: string): Promise<TeamStatsPage | undefined>;
+  // Latest complete recent-snap window for one team, or undefined when unavailable.
+  recentParticipation(id: string): Promise<RecentParticipation | undefined>;
   // Every kit for every team (home + curated), flattened with team identity, for the
   // uniform archive. No player data. Dangling team refs are skipped.
   listUniforms(): Promise<UniformListing[]>;

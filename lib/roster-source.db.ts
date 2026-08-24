@@ -12,6 +12,10 @@ import type {
 } from '@/lib/roster-source';
 import { type LeaderEntry, rosterLeaders } from '@/lib/utils/roster/roster-leaders';
 import { buildMatchupMetrics } from '@/lib/utils/compare/matchup-metrics';
+import {
+  buildRecentParticipation,
+  type PlayerRecentSnapsRow,
+} from '@/lib/utils/compare/recent-participation';
 import { resolvePostseason, resolveSchedule } from '@/lib/utils/schedule/schedule';
 import { getNflSeasonState } from '@/lib/utils/team/nfl-season';
 import {
@@ -29,6 +33,7 @@ import type {
   RosterLeaders,
   PlayerStatus,
   Position,
+  RecentParticipation,
   SpecialSlot,
   Team,
   TeamColors,
@@ -699,6 +704,28 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
   };
 }
 
+const PLAYER_RECENT_SNAPS_SELECT =
+  'team_id, season, player_id, window_start_week, window_end_week, window_game_ids, games, offense_snaps, offense_pct, defense_snaps, defense_pct, special_teams_snaps, special_teams_pct, source, updated_at';
+
+// Recent participation is deliberately bounded to the current source season and its
+// predecessor. The pure mapper then chooses one complete ingest window, while this
+// helper owns only the cached Postgres read.
+async function fetchRecentParticipation(teamId: string): Promise<RecentParticipation | undefined> {
+  'use cache';
+  cacheLife('ingest');
+  cacheTag('ingest:nflverse');
+  const { upcomingSeason, isOffseason } = await getNflSeasonState();
+  const currentSeason = isOffseason ? upcomingSeason : upcomingSeason - 1;
+  const { data, error } = await supabase()
+    .from(tables.playerRecentSnaps)
+    .select(PLAYER_RECENT_SNAPS_SELECT)
+    .eq('team_id', teamId)
+    .in('season', [currentSeason, currentSeason - 1])
+    .returns<PlayerRecentSnapsRow[]>();
+  if (error) throw new Error(`player_recent_snaps query failed: ${error.message}`);
+  return buildRecentParticipation(data ?? []);
+}
+
 type PlayerSearchRow = Pick<
   Tables['players']['Row'],
   'id' | 'name' | 'number' | 'position' | 'photo_url' | 'college'
@@ -1314,6 +1341,13 @@ export const dbRosterSource: RosterSource = {
   async getTeamStats(id: string): Promise<TeamStatsPage | undefined> {
     try {
       return await fetchTeamStatsPage(id);
+    } catch {
+      return undefined;
+    }
+  },
+  async recentParticipation(id: string): Promise<RecentParticipation | undefined> {
+    try {
+      return await fetchRecentParticipation(id);
     } catch {
       return undefined;
     }

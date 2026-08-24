@@ -18,6 +18,7 @@ import type { FormationTally } from './participation';
 import type { DefenseFormationTally } from './defense-participation';
 import type { TeamStatsInsert } from './team-stats';
 import type { TeamRecordInsert } from './records';
+import type { RecentSnapSummaryInsert } from './snap-counts';
 
 export type UnitFormationTally =
   (FormationTally & { unit: 'offense' }) | (DefenseFormationTally & { unit: 'defense' });
@@ -69,6 +70,30 @@ export function buildPlayerStatsSeedSql(rows: PlayerStatsInsert[]): string {
     ],
     rows,
     'player_id,season,season_type'
+  );
+}
+
+export function buildRecentSnapSummariesSeedSql(rows: RecentSnapSummaryInsert[]): string {
+  return insertStatement(
+    tables.playerRecentSnaps,
+    [
+      'team_id',
+      'season',
+      'player_id',
+      'window_start_week',
+      'window_end_week',
+      'window_game_ids',
+      'games',
+      'offense_snaps',
+      'offense_pct',
+      'defense_snaps',
+      'defense_pct',
+      'special_teams_snaps',
+      'special_teams_pct',
+      'source',
+    ],
+    rows,
+    'team_id,season,player_id'
   );
 }
 

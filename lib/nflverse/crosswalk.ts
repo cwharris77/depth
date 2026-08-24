@@ -1,16 +1,25 @@
-// Joins nflverse's player-stats rows (keyed by gsis_id) to our players table (keyed
-// by ESPN athlete id) via nflverse's own id crosswalk (players.csv). Name-matching is
-// where silent data corruption comes from -- a row with no espn_id just isn't in the
-// map, and transform.ts counts it as a skip rather than guessing.
+// Builds nflverse's GSIS- and PFR-to-ESPN identity crosswalks from players.csv.
+// Name-matching is where silent data corruption comes from, so a row with no ESPN id
+// is absent from the map and each caller can count or skip it rather than guessing.
 
-export function buildCrosswalk(playersCsvRows: Record<string, string>[]): Map<string, string> {
+function buildIdCrosswalk(
+  rows: Record<string, string>[],
+  sourceColumn: 'gsis_id' | 'pfr_id'
+): Map<string, string> {
   const map = new Map<string, string>();
-  for (const row of playersCsvRows) {
-    const gsisId = row.gsis_id?.trim();
+  for (const row of rows) {
+    const sourceId = row[sourceColumn]?.trim();
     const espnId = row.espn_id?.trim();
-    if (!gsisId || !espnId) continue;
-    if (map.has(gsisId)) continue; // first row for a gsis_id wins
-    map.set(gsisId, espnId);
+    if (!sourceId || !espnId || map.has(sourceId)) continue;
+    map.set(sourceId, espnId);
   }
   return map;
+}
+
+export function buildCrosswalk(rows: Record<string, string>[]): Map<string, string> {
+  return buildIdCrosswalk(rows, 'gsis_id');
+}
+
+export function buildPfrCrosswalk(rows: Record<string, string>[]): Map<string, string> {
+  return buildIdCrosswalk(rows, 'pfr_id');
 }

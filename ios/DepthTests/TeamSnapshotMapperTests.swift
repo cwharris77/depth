@@ -23,20 +23,32 @@ private func team(
     TeamDTO(
         id: "bills", abbrev: "BUF", city: "Buffalo", name: "Bills",
         conference: "AFC", division: "East",
-        colorPrimary: "#00338d", colorSecondary: "#d50a0a", colorAccent: "#d50a0a",
-        uiAccent: "#d50a0a", onAccent: "#ffffff", logoUrl: nil, logoDarkUrl: nil,
+        logoUrl: nil, logoDarkUrl: nil,
         depthChartEntries: depthChartEntries, specialTeamsSlots: specialTeamsSlots,
         uniforms: uniforms, teamFormations: formations
     )
 }
 
-@Test func mapsTeamIdentityAndColors() throws {
-    let dto = team()
+@Test func mapsTeamIdentityAndColorsFromCurrentHomeUniform() throws {
+    let dto = team(uniforms: [
+        UniformDTO(
+            id: "bills-home-2002", teamId: "bills", kind: "home", name: "Retired Home",
+            yearStart: 2002, yearEnd: 2010, isCurrent: false,
+            colorPrimary: "#111111", colorSecondary: "#222222", colorAccent: "#333333",
+            uiAccent: "#444444", onAccent: "#ffffff", imagePath: nil
+        ),
+        UniformDTO(
+            id: "bills-home-2011", teamId: "bills", kind: "home", name: "Current Home",
+            yearStart: 2011, yearEnd: nil, isCurrent: true,
+            colorPrimary: "#00338D", colorSecondary: "#C60C30", colorAccent: "#C60C30",
+            uiAccent: "#5B9BFF", onAccent: "#0a0e1a", imagePath: nil
+        ),
+    ])
     let snapshot = try TeamSnapshotMapper.map(dto)
     #expect(snapshot.team.id == "bills")
     #expect(snapshot.team.abbrev == "BUF")
-    #expect(snapshot.team.colors.primary == "#00338d")
-    #expect(snapshot.team.colors.onAccent == "#ffffff")
+    #expect(snapshot.team.colors.primary == "#00338D")
+    #expect(snapshot.team.colors.onAccent == "#0a0e1a")
 }
 
 @Test func mapsDepthChartPlayerWithRealDepthRank() throws {

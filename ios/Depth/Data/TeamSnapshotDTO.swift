@@ -15,11 +15,6 @@ struct TeamDTO: Decodable {
     let name: String
     let conference: String
     let division: String
-    let colorPrimary: String
-    let colorSecondary: String
-    let colorAccent: String
-    let uiAccent: String
-    let onAccent: String
     let logoUrl: String?
     let logoDarkUrl: String?
     let depthChartEntries: [DepthChartEntryDTO]
@@ -29,11 +24,6 @@ struct TeamDTO: Decodable {
 
     enum CodingKeys: String, CodingKey {
         case id, abbrev, city, name, conference, division
-        case colorPrimary = "color_primary"
-        case colorSecondary = "color_secondary"
-        case colorAccent = "color_accent"
-        case uiAccent = "ui_accent"
-        case onAccent = "on_accent"
         case logoUrl = "logo_url"
         case logoDarkUrl = "logo_dark_url"
         case depthChartEntries = "depth_chart_entries"
@@ -43,8 +33,30 @@ struct TeamDTO: Decodable {
     }
 }
 
+struct TeamColorUniformDTO: Decodable {
+    let kind: String
+    let isCurrent: Bool
+    let colorPrimary: String
+    let colorSecondary: String
+    let colorAccent: String
+    let uiAccent: String
+    let onAccent: String
+
+    enum CodingKeys: String, CodingKey {
+        case kind
+        case isCurrent = "is_current"
+        case colorPrimary = "color_primary"
+        case colorSecondary = "color_secondary"
+        case colorAccent = "color_accent"
+        case uiAccent = "ui_accent"
+        case onAccent = "on_accent"
+    }
+}
+
 // Flat team-only projection for the 32-team list (DepthRepository.teams()) — no nested
-// depth-chart/uniform embeds, so a `TeamDTO` (which requires them) can't be reused here.
+// depth-chart embeds, so a `TeamDTO` (which requires them) can't be reused here. The
+// bounded uniform projection supplies the current home colors after teams.color_* was
+// split into brand_colors; historical kits carry only seven small scalar fields here.
 struct TeamListRowDTO: Decodable {
     let id: String
     let abbrev: String
@@ -52,23 +64,15 @@ struct TeamListRowDTO: Decodable {
     let name: String
     let conference: String
     let division: String
-    let colorPrimary: String
-    let colorSecondary: String
-    let colorAccent: String
-    let uiAccent: String
-    let onAccent: String
     let logoUrl: String?
     let logoDarkUrl: String?
+    let uniforms: [TeamColorUniformDTO]
 
     enum CodingKeys: String, CodingKey {
         case id, abbrev, city, name, conference, division
-        case colorPrimary = "color_primary"
-        case colorSecondary = "color_secondary"
-        case colorAccent = "color_accent"
-        case uiAccent = "ui_accent"
-        case onAccent = "on_accent"
         case logoUrl = "logo_url"
         case logoDarkUrl = "logo_dark_url"
+        case uniforms
     }
 }
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildCrosswalk } from './crosswalk';
+import { buildCrosswalk, buildPfrCrosswalk } from './crosswalk';
 
 describe('buildCrosswalk', () => {
   it('maps gsis_id to espn_id for rows with both', () => {
@@ -32,5 +32,23 @@ describe('buildCrosswalk', () => {
       { gsis_id: '00-0033873', espn_id: 'second' },
     ]);
     expect(map.get('00-0033873')).toBe('first');
+  });
+});
+
+describe('buildPfrCrosswalk', () => {
+  it('maps pfr_id to espn_id without using names', () => {
+    const map = buildPfrCrosswalk([
+      { pfr_id: 'MahoPa00', espn_id: '3139477', display_name: 'Patrick Mahomes' },
+      { pfr_id: '', espn_id: '4241479', display_name: 'Ignored' },
+    ]);
+    expect(map).toEqual(new Map([['MahoPa00', '3139477']]));
+  });
+
+  it('keeps the first ESPN id for a duplicate PFR id', () => {
+    const map = buildPfrCrosswalk([
+      { pfr_id: 'MahoPa00', espn_id: 'first' },
+      { pfr_id: 'MahoPa00', espn_id: 'second' },
+    ]);
+    expect(map.get('MahoPa00')).toBe('first');
   });
 });

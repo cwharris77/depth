@@ -234,6 +234,29 @@ export interface TeamMatchupMetrics {
   specialTeamsTouchdowns?: number;
 }
 
+export interface ParticipationUnit {
+  snaps: number;
+  percentage?: number;
+}
+
+export interface PlayerRecentParticipation {
+  playerId: string;
+  offense: ParticipationUnit;
+  defense: ParticipationUnit;
+  specialTeams: ParticipationUnit;
+}
+
+export interface RecentParticipation {
+  teamId: string;
+  season: number;
+  windowStartWeek: number;
+  windowEndWeek: number;
+  gameIds: string[];
+  source: 'nflverse / Pro Football Reference';
+  updatedAt: string;
+  players: PlayerRecentParticipation[];
+}
+
 // A kit's UI category. Every row is curated in lib/uniforms/data.ts. Not a required set
 // per team — only `home` is guaranteed; a team has whatever kits it actually wears.
 export type UniformKind = 'home' | 'away' | 'throwback' | 'color-rush' | 'alternate';

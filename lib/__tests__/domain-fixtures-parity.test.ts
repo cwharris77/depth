@@ -19,6 +19,10 @@ import {
   buildMatchupMetrics,
   type TeamMatchupMetricsRow,
 } from '@/lib/utils/compare/matchup-metrics';
+import {
+  buildRecentParticipation,
+  type PlayerRecentSnapsRow,
+} from '@/lib/utils/compare/recent-participation';
 import type { Player, TeamRoster, FormationSlot, Position } from '@/lib/types';
 
 const fixturesDir = join(process.cwd(), 'fixtures/domain');
@@ -188,6 +192,19 @@ describe('domain fixtures parity (drift guard)', () => {
     >('matchup-metrics');
     for (const c of cases) {
       expect(buildMatchupMetrics(c.input), c.description).toEqual(c.expected);
+    }
+  });
+
+  it('recent-participation.json matches buildRecentParticipation', () => {
+    const cases = load<
+      {
+        description: string;
+        input: PlayerRecentSnapsRow[];
+        expected: ReturnType<typeof buildRecentParticipation>;
+      }[]
+    >('recent-participation');
+    for (const c of cases) {
+      expect(buildRecentParticipation(c.input), c.description).toEqual(c.expected);
     }
   });
 });

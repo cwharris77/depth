@@ -1,0 +1,178 @@
+[
+  {
+    "description": "current season wins before timestamp, then latest window excludes stale players and sorts ids",
+    "input": [
+      {
+        "team_id": "chiefs",
+        "season": 2024,
+        "player_id": "newer-previous-season",
+        "window_start_week": 15,
+        "window_end_week": 17,
+        "window_game_ids": ["g15", "g16", "g17"],
+        "games": 3,
+        "offense_snaps": 180,
+        "offense_pct": 1,
+        "defense_snaps": 0,
+        "defense_pct": 0,
+        "special_teams_snaps": 0,
+        "special_teams_pct": null,
+        "source": "nflverse-pfr",
+        "updated_at": "2026-08-24T12:00:00.000Z"
+      },
+      {
+        "team_id": "chiefs",
+        "season": 2025,
+        "player_id": "stale-player",
+        "window_start_week": 15,
+        "window_end_week": 17,
+        "window_game_ids": ["g15", "g16", "g17"],
+        "games": 3,
+        "offense_snaps": 180,
+        "offense_pct": 1,
+        "defense_snaps": 0,
+        "defense_pct": 0,
+        "special_teams_snaps": 0,
+        "special_teams_pct": null,
+        "source": "nflverse-pfr",
+        "updated_at": "2026-01-04T12:00:00.000Z"
+      },
+      {
+        "team_id": "chiefs",
+        "season": 2025,
+        "player_id": "z-player",
+        "window_start_week": 15,
+        "window_end_week": 17,
+        "window_game_ids": ["g15", "g16", "g17"],
+        "games": 3,
+        "offense_snaps": 180,
+        "offense_pct": 1,
+        "defense_snaps": 0,
+        "defense_pct": 0,
+        "special_teams_snaps": 0,
+        "special_teams_pct": null,
+        "source": "nflverse-pfr",
+        "updated_at": "2026-01-05T12:00:00.000Z"
+      },
+      {
+        "team_id": "chiefs",
+        "season": 2025,
+        "player_id": "a-player",
+        "window_start_week": 15,
+        "window_end_week": 17,
+        "window_game_ids": ["g15", "g16", "g17"],
+        "games": 3,
+        "offense_snaps": 0,
+        "offense_pct": null,
+        "defense_snaps": 21,
+        "defense_pct": 0,
+        "special_teams_snaps": 14,
+        "special_teams_pct": 0.5,
+        "source": "nflverse-pfr",
+        "updated_at": "2026-01-05T12:00:00.000Z"
+      }
+    ],
+    "expected": {
+      "teamId": "chiefs",
+      "season": 2025,
+      "windowStartWeek": 15,
+      "windowEndWeek": 17,
+      "gameIds": ["g15", "g16", "g17"],
+      "source": "nflverse / Pro Football Reference",
+      "updatedAt": "2026-01-05T12:00:00.000Z",
+      "players": [
+        {
+          "playerId": "a-player",
+          "offense": {
+            "snaps": 0
+          },
+          "defense": {
+            "snaps": 21,
+            "percentage": 0
+          },
+          "specialTeams": {
+            "snaps": 14,
+            "percentage": 0.5
+          }
+        },
+        {
+          "playerId": "z-player",
+          "offense": {
+            "snaps": 180,
+            "percentage": 1
+          },
+          "defense": {
+            "snaps": 0,
+            "percentage": 0
+          },
+          "specialTeams": {
+            "snaps": 0
+          }
+        }
+      ]
+    }
+  },
+  {
+    "description": "previous-season-only data remains available when the current season has no rows",
+    "input": [
+      {
+        "team_id": "bills",
+        "season": 2024,
+        "player_id": "stale-previous-player",
+        "window_start_week": 16,
+        "window_end_week": 18,
+        "window_game_ids": ["p16", "p17", "p18"],
+        "games": 3,
+        "offense_snaps": 0,
+        "offense_pct": null,
+        "defense_snaps": 165,
+        "defense_pct": 0.92,
+        "special_teams_snaps": 12,
+        "special_teams_pct": 0,
+        "source": "nflverse-pfr",
+        "updated_at": "2025-01-05T12:00:00.000Z"
+      },
+      {
+        "team_id": "bills",
+        "season": 2024,
+        "player_id": "previous-only",
+        "window_start_week": 16,
+        "window_end_week": 18,
+        "window_game_ids": ["p16", "p17", "p18"],
+        "games": 3,
+        "offense_snaps": 0,
+        "offense_pct": null,
+        "defense_snaps": 165,
+        "defense_pct": 0.92,
+        "special_teams_snaps": 12,
+        "special_teams_pct": 0,
+        "source": "nflverse-pfr",
+        "updated_at": "2025-01-06T12:00:00.000Z"
+      }
+    ],
+    "expected": {
+      "teamId": "bills",
+      "season": 2024,
+      "windowStartWeek": 16,
+      "windowEndWeek": 18,
+      "gameIds": ["p16", "p17", "p18"],
+      "source": "nflverse / Pro Football Reference",
+      "updatedAt": "2025-01-06T12:00:00.000Z",
+      "players": [
+        {
+          "playerId": "previous-only",
+          "offense": {
+            "snaps": 0
+          },
+          "defense": {
+            "snaps": 165,
+            "percentage": 0.92
+          },
+          "specialTeams": {
+            "snaps": 12,
+            "percentage": 0
+          }
+        }
+      ]
+    }
+  }
+]
