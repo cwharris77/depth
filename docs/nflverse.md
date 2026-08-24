@@ -53,7 +53,8 @@ scaffolding with their own specs.
   `fg_blocked_distance`, `gwfg_distance_list`) into `int[]`. Fetch and parse are
   separate calls in the ingest script — a fetch failure never corrupts a parse, and
   vice versa. Unresolvable/non-REG rows are skipped and counted.
-- `lib/nflverse/games.ts` — `toScheduleAndGameRows(rows, resolveCode, minSeason?)`: pure
+- `lib/nflverse/games.ts` — `toScheduleAndGameRows(rows, resolveCode, minSeason?,
+  marketUpdatedAt?)`: pure
   transform of `nfldata/games.csv` into `games` rows (one per shared game) + `schedules`
   rows (the distinct `(team_id, season)` set the games imply). A row with an unresolvable
   team code or a non-numeric season is **skipped and counted**. `'' -> null` for blank
@@ -94,10 +95,15 @@ scaffolding with their own specs.
   CLI flag (`--seasons 1999-2025` a range, `--seasons 2013` one year, no flag -> `null`
   meaning "the daily job's default"). Shared by `scripts/ingest-nflverse-rosters.mts`
   and `scripts/ingest-nflverse.mts`'s games/schedules step.
-- `lib/schedule.ts` — `resolveSchedule(games, teamId)` (regular-season, this-team's
+- `lib/utils/schedule/schedule.ts` — `resolveSchedule(games, teamId)` (regular-season,
+  this-team's
   perspective: home/away, opponent id, W/L/T or null-when-upcoming, ordered by week, BYE
   weeks derived from missing weeks) and `nextGame(schedule)` (earliest unplayed). Pure;
-  the read layer enriches opponent ids into team metadata for the UI.
+  the read layer enriches opponent ids into team metadata for the UI and attaches the
+  optional, team-oriented `TeamGameMarket`. The same nullable contract reaches native as
+  `ScheduleGameMarket`; its optional field keeps older SwiftData cache payloads decodable.
+  DEP-315 carries this evidence through both schedule repositories without adding a new
+  presentation surface.
 - `scripts/ingest-nflverse.mts` — fetches `players.csv` once, then `stats_player_reg_
   <season>.csv` for each season in scope, transforms, and upserts `player_stats`
   (`onConflict: player_id,season,season_type`). With no flag: **current + previous

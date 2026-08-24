@@ -156,9 +156,10 @@ refactor (see §6).
   `npm run preview:bypass-url -- <preview-url>` and navigate to the printed URL first.
   It appends `x-vercel-protection-bypass` and `x-vercel-set-bypass-cookie=1` so Vercel
   sets the bypass cookie; later same-domain navigation can use the normal preview URL.
-- **Docs move with behavior.** A PR that changes data flow updates `docs/espn.md`; a
-  PR that ships/kills a roadmap item updates README's status table and, when relevant,
-  the vault specs index (`../obsidian/Projects/depth/specs/2026-07-07-roadmap-specs-index.md`).
+- **Docs move with behavior.** A PR that changes data flow updates the matching source
+  guide (`docs/espn.md` or `docs/nflverse.md`); a PR that ships/kills a roadmap item
+  updates README's status table and, when relevant, the vault specs index
+  (`../obsidian/Projects/depth/specs/2026-07-07-roadmap-specs-index.md`).
 
 ## 4. Mistakes you will make here unless you follow these rules
 
