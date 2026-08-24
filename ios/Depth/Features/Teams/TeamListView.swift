@@ -205,8 +205,15 @@ struct TeamListView: View {
             List {
                 ForEach(divisions, id: \.division) { division in
                     Section(header: sectionHeader(divisionHeader(division.division))) {
-                        ForEach(division.teams) { team in
+                        ForEach(Array(division.teams.enumerated()), id: \.element.id) { index, team in
                             teamRow(team)
+                                .listRowSeparator(
+                                    TeamSearchRowPresentation.showsSeparator(
+                                        after: index,
+                                        count: division.teams.count
+                                    ) ? .visible : .hidden,
+                                    edges: .bottom
+                                )
                         }
                     }
                 }
