@@ -16,6 +16,25 @@ describe('FieldMarkings', () => {
     expect(texts.filter((t) => t === '50').length).toBe(2);
     // 9 ten-yard increments x 2 sidelines.
     expect(texts).toHaveLength(18);
+    // Painted white, like real field paint (not a chrome grey).
+    for (const t of container.querySelectorAll('text')) {
+      expect(t.getAttribute('fill')).toBe('#fff');
+    }
+  });
+
+  it('offsets each number off its yard line with a visible gap', () => {
+    const { container } = render(<FieldMarkings />);
+    // Numbers anchor 3.5 units off their line (toward the near goal line), except the
+    // 50 which stays centered at midfield under the blue line-of-scrimmage overlay.
+    // Assert no number's anchor lands exactly on a yard line.
+    const ys = Array.from(container.querySelectorAll('text')).map((t) =>
+      Number(t.getAttribute('y'))
+    );
+    for (const y of ys) {
+      const nearestLine = Math.round(y / 10) * 10;
+      if (nearestLine !== 50) expect(Math.abs(y - nearestLine)).toBeCloseTo(3.5, 5);
+    }
+    expect(ys.filter((y) => y === 50)).toHaveLength(2);
   });
 
   it('hides the numbers below the lg breakpoint (mobile dot-only field)', () => {

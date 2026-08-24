@@ -83,10 +83,10 @@ export default function DepthChartFieldSurface({
               key={z.label}
               className="absolute font-semibold"
               style={{
-                // Inboard of FieldMarkings' painted yard numbers (x≈3–7), which own
-                // the sideline margin at lg+; MIDFIELD is gone entirely — the painted
-                // 50 at midfield says it.
-                left: 11,
+                // Inboard of FieldMarkings' painted yard numbers (viewBox x 3-7,
+                // ~25-58px at a 836px field), which own the sideline margin at lg+;
+                // MIDFIELD is gone entirely — the painted 50 at midfield says it.
+                left: '9%',
                 top: z.top,
                 transform: 'translateY(-50%)',
                 color: uiTokens.textFaint,

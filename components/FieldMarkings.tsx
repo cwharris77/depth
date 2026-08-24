@@ -27,35 +27,36 @@ export default function FieldMarkings() {
       {/* Yard numbers on both sidelines, hidden below lg like the dot labels so the
           mobile field stays dot-only. Each column rotates 180° from the other so the
           two rows mirror each other, each reading from its own sideline the way real
-          fields paint them. textFaint at 50% keeps them legible at this size while
-          staying quieter than any chrome text; sized down from real-field proportions
-          so the digits never reach the dot labels inboard. */}
+          fields paint them. White like real field paint; offset 3.5 units off its yard
+          line toward the near goal line (digit half-height is 2, so ~1.5 units of
+          visible gap) instead of straddling the line; sized down from real-field
+          proportions so the digits never reach the dot labels inboard. The 50 stays
+          centered at midfield — our blue line-of-scrimmage overlay runs there. */}
       {YARD_NUMBERS.map((y) => {
         const n = y <= 50 ? y : 100 - y;
+        const anchorY = y < 50 ? y - 3.5 : y > 50 ? y + 3.5 : y;
         return (
           <g key={y} className="hidden lg:block">
             <text
               x="5"
-              y={y}
+              y={anchorY}
               dominantBaseline="central"
               textAnchor="middle"
-              fill={uiTokens.textFaint}
+              fill="#fff"
               fontSize="4"
               fontWeight="bold"
-              opacity="0.5"
-              transform={`rotate(90 5 ${y})`}>
+              transform={`rotate(90 5 ${anchorY})`}>
               {n}
             </text>
             <text
               x="95"
-              y={y}
+              y={anchorY}
               dominantBaseline="central"
               textAnchor="middle"
-              fill={uiTokens.textFaint}
+              fill="#fff"
               fontSize="4"
               fontWeight="bold"
-              opacity="0.5"
-              transform={`rotate(-90 95 ${y})`}>
+              transform={`rotate(-90 95 ${anchorY})`}>
               {n}
             </text>
           </g>
