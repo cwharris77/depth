@@ -67,7 +67,8 @@ struct CompareView: View {
                         sessionStore: DepthEnvironment.authSessionStore,
                         authService: DepthEnvironment.authService,
                         events: DepthEnvironment.appEvents,
-                        onboarding: DepthEnvironment.onboarding
+                        onboarding: DepthEnvironment.onboarding,
+                        settingsStore: DepthEnvironment.userSettingsStore
                     )
                 }
         }
