@@ -124,6 +124,7 @@ capture_one() {
   # Every sim is fully deleted before returning (not just at script EXIT) so a second
   # capture_one — or the script's caller — never inherits a leaked booted sim.
   cleanup
+  trap - EXIT
   echo "Captured → $out" >&2
   find "$out" -maxdepth 1 -name '*.png' -exec echo "  {}" \;
 }
