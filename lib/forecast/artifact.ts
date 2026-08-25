@@ -2,7 +2,7 @@
 // declined or unrequested promotion never even opens the artifact path, preserving any prior file.
 
 import fs from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { basename, dirname, resolve } from 'node:path';
 import { TEAM_FEATURE_NAMES } from './contracts';
 import { renderModelCard, stableJson, type ForecastEvaluationReport } from './evaluation';
 import type { ForecastPreprocessor } from './preprocessing';
@@ -109,15 +109,55 @@ function resolvedOutputPaths(options: WriteEvaluationOutputsOptions): {
   modelCardPath: string;
   artifactPath: string;
 } {
-  const paths = {
-    reportPath: resolve(options.reportPath),
-    modelCardPath: resolve(options.modelCardPath),
-    artifactPath: resolve(options.artifactPath),
+  const outputs = {
+    reportPath: canonicalOutput(options.reportPath),
+    modelCardPath: canonicalOutput(options.modelCardPath),
+    artifactPath: canonicalOutput(options.artifactPath),
   };
-  if (new Set(Object.values(paths)).size !== 3) {
+  const canonicalPaths = Object.values(outputs).map((output) => output.path);
+  const existingIdentities = Object.values(outputs).flatMap((output) =>
+    output.identity === null ? [] : [output.identity]
+  );
+  if (
+    new Set(canonicalPaths).size !== canonicalPaths.length ||
+    new Set(existingIdentities).size !== existingIdentities.length
+  ) {
     throw new Error('Forecast report, model card, and artifact paths must be pairwise distinct');
   }
-  return paths;
+  return {
+    reportPath: outputs.reportPath.path,
+    modelCardPath: outputs.modelCardPath.path,
+    artifactPath: outputs.artifactPath.path,
+  };
+}
+
+function canonicalOutput(inputPath: string): { path: string; identity: string | null } {
+  const suffix: string[] = [];
+  let ancestor = resolve(inputPath);
+  let canonicalPath: string;
+
+  while (true) {
+    try {
+      canonicalPath = resolve(fs.realpathSync.native(ancestor), ...suffix);
+      break;
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code !== 'ENOENT' && code !== 'ENOTDIR') throw error;
+      const parent = dirname(ancestor);
+      if (parent === ancestor) throw error;
+      suffix.unshift(basename(ancestor));
+      ancestor = parent;
+    }
+  }
+
+  try {
+    const target = fs.statSync(canonicalPath, { bigint: true });
+    return { path: canonicalPath, identity: `${target.dev}:${target.ino}` };
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code !== 'ENOENT' && code !== 'ENOTDIR') throw error;
+    return { path: canonicalPath, identity: null };
+  }
 }
 
 function writeArtifact(path: string, bytes: string): boolean {
