@@ -244,22 +244,40 @@ describe('paired week-block bootstrap', () => {
 });
 
 describe('promotion gate', () => {
-  it('fails a 0.99% improvement and passes the 1.00% boundary', () => {
+  it('fails a 0.99% relative log-loss improvement', () => {
     const below = evaluatePromotionGate({
       metrics: gateMetrics({ candidatePooledLogLoss: 0.49505 }),
-      bootstrap: PASSING_BOOTSTRAP,
-    });
-    const boundary = evaluatePromotionGate({
-      metrics: gateMetrics({ candidatePooledLogLoss: 0.495 }),
       bootstrap: PASSING_BOOTSTRAP,
     });
 
     expect(below.relativeLogLossImprovement).toBeCloseTo(0.0099, 12);
     expect(below.checks.relativeLogLoss).toBe(false);
     expect(below.promoted).toBe(false);
-    expect(boundary.relativeLogLossImprovement).toBeCloseTo(0.01, 12);
-    expect(boundary.checks.relativeLogLoss).toBe(true);
-    expect(boundary.promoted).toBe(true);
+  });
+
+  it('applies the 1e-12 tolerance at the relative log-loss boundary', () => {
+    const withinTolerance = evaluatePromotionGate({
+      metrics: gateMetrics({
+        marketPooledLogLoss: 1,
+        candidatePooledLogLoss: 0.9900000000005,
+      }),
+      bootstrap: PASSING_BOOTSTRAP,
+    });
+    const outsideTolerance = evaluatePromotionGate({
+      metrics: gateMetrics({
+        marketPooledLogLoss: 1,
+        candidatePooledLogLoss: 0.9900000000015,
+      }),
+      bootstrap: PASSING_BOOTSTRAP,
+    });
+
+    expect(withinTolerance.relativeLogLossImprovement).toBeLessThan(0.01);
+    expect(0.01 - withinTolerance.relativeLogLossImprovement).toBeLessThan(1e-12);
+    expect(withinTolerance.checks.relativeLogLoss).toBe(true);
+    expect(withinTolerance.promoted).toBe(true);
+    expect(0.01 - outsideTolerance.relativeLogLossImprovement).toBeGreaterThan(1e-12);
+    expect(outsideTolerance.checks.relativeLogLoss).toBe(false);
+    expect(outsideTolerance.promoted).toBe(false);
   });
 
   it('requires a bootstrap upper bound strictly below zero', () => {
@@ -278,20 +296,40 @@ describe('promotion gate', () => {
     expect(belowZero.promoted).toBe(true);
   });
 
-  it('fails worse Brier or calibration even with better log loss', () => {
-    const worseBrier = evaluatePromotionGate({
-      metrics: gateMetrics({ candidateBrier: 0.2 + 2e-12 }),
+  it('applies the 1e-12 tolerance to Brier and ECE comparisons', () => {
+    const brierWithinValue = 0.2 + 0.5e-12;
+    const brierOutsideValue = 0.2 + 1.5e-12;
+    const calibrationWithinValue = 0.1 + 0.5e-12;
+    const calibrationOutsideValue = 0.1 + 1.5e-12;
+    const brierWithin = evaluatePromotionGate({
+      metrics: gateMetrics({ candidateBrier: brierWithinValue }),
       bootstrap: PASSING_BOOTSTRAP,
     });
-    const worseCalibration = evaluatePromotionGate({
-      metrics: gateMetrics({ candidateCalibrationError: 0.1 + 2e-12 }),
+    const brierOutside = evaluatePromotionGate({
+      metrics: gateMetrics({ candidateBrier: brierOutsideValue }),
+      bootstrap: PASSING_BOOTSTRAP,
+    });
+    const calibrationWithin = evaluatePromotionGate({
+      metrics: gateMetrics({ candidateCalibrationError: calibrationWithinValue }),
+      bootstrap: PASSING_BOOTSTRAP,
+    });
+    const calibrationOutside = evaluatePromotionGate({
+      metrics: gateMetrics({ candidateCalibrationError: calibrationOutsideValue }),
       bootstrap: PASSING_BOOTSTRAP,
     });
 
-    expect(worseBrier.checks.brier).toBe(false);
-    expect(worseBrier.promoted).toBe(false);
-    expect(worseCalibration.checks.calibration).toBe(false);
-    expect(worseCalibration.promoted).toBe(false);
+    expect(brierWithinValue - 0.2).toBeLessThan(1e-12);
+    expect(brierOutsideValue - 0.2).toBeGreaterThan(1e-12);
+    expect(calibrationWithinValue - 0.1).toBeLessThan(1e-12);
+    expect(calibrationOutsideValue - 0.1).toBeGreaterThan(1e-12);
+    expect(brierWithin.checks.brier).toBe(true);
+    expect(brierWithin.promoted).toBe(true);
+    expect(brierOutside.checks.brier).toBe(false);
+    expect(brierOutside.promoted).toBe(false);
+    expect(calibrationWithin.checks.calibration).toBe(true);
+    expect(calibrationWithin.promoted).toBe(true);
+    expect(calibrationOutside.checks.calibration).toBe(false);
+    expect(calibrationOutside.promoted).toBe(false);
   });
 
   it('fails with one season log-loss win and passes with two', () => {
