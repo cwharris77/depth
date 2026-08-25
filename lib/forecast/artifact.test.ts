@@ -1,5 +1,15 @@
 import fs from 'node:fs';
-import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import {
+  link as createHardLink,
+  mkdir,
+  mkdtemp,
+  readFile,
+  realpath,
+  rm,
+  stat,
+  symlink,
+  writeFile,
+} from 'node:fs/promises';
 import { syncBuiltinESMExports } from 'node:module';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
@@ -178,6 +188,12 @@ function normalizedAlias(path: string): string {
   return `${dirname(path)}/alias-segment/../${basename(path)}`;
 }
 
+async function canonicalTemporaryArtifactPath(path: string): Promise<string> {
+  const outputDirectory = dirname(path);
+  const temporaryRoot = dirname(outputDirectory);
+  return join(await realpath(temporaryRoot), basename(outputDirectory), basename(path));
+}
+
 describe('guarded evaluation outputs', () => {
   it.each([
     {
@@ -230,6 +246,95 @@ describe('guarded evaluation outputs', () => {
     ).toThrow(/pairwise distinct/i);
     expect(await readFile(sharedPath, 'utf8')).toBe('sentinel');
     expect(await missing(testCase.untouchedPath(paths))).toBe(true);
+  });
+
+  it('rejects a report path through a symlinked artifact ancestor before writing', async () => {
+    const paths = await outputPaths();
+    const directory = dirname(dirname(paths.artifactPath));
+    const realDirectory = join(directory, 'real-output');
+    const linkedDirectory = join(directory, 'linked-output');
+    const artifactPath = join(realDirectory, 'model.json');
+    const reportPath = join(linkedDirectory, 'model.json');
+    await mkdir(realDirectory, { recursive: true });
+    await symlink(realDirectory, linkedDirectory, 'dir');
+    await writeFile(artifactPath, 'sentinel');
+
+    expect(() =>
+      writeEvaluationOutputs(evaluationReport(false), {
+        reportPath,
+        modelCardPath: paths.modelCardPath,
+        artifactPath,
+        promote: false,
+      })
+    ).toThrow(/pairwise distinct/i);
+    expect(await readFile(artifactPath, 'utf8')).toBe('sentinel');
+    expect(await missing(paths.modelCardPath)).toBe(true);
+  });
+
+  it('rejects a model-card path through a symlinked artifact ancestor before writing', async () => {
+    const paths = await outputPaths();
+    const directory = dirname(dirname(paths.artifactPath));
+    const realDirectory = join(directory, 'real-output');
+    const linkedDirectory = join(directory, 'linked-output');
+    const artifactPath = join(realDirectory, 'model.json');
+    const modelCardPath = join(linkedDirectory, 'model.json');
+    await mkdir(realDirectory, { recursive: true });
+    await symlink(realDirectory, linkedDirectory, 'dir');
+    await writeFile(artifactPath, 'sentinel');
+
+    expect(() =>
+      writeEvaluationOutputs(evaluationReport(true), {
+        reportPath: paths.reportPath,
+        modelCardPath,
+        artifactPath,
+        promote: false,
+      })
+    ).toThrow(/pairwise distinct/i);
+    expect(await readFile(artifactPath, 'utf8')).toBe('sentinel');
+    expect(await missing(paths.reportPath)).toBe(true);
+  });
+
+  it('rejects nonexistent suffixes beneath symlinked ancestors before creating them', async () => {
+    const paths = await outputPaths();
+    const directory = dirname(dirname(paths.artifactPath));
+    const realDirectory = join(directory, 'real-output');
+    const linkedDirectory = join(directory, 'linked-output');
+    const artifactPath = join(realDirectory, 'future', 'nested', 'model.json');
+    const reportPath = join(linkedDirectory, 'future', 'nested', 'model.json');
+    await mkdir(realDirectory, { recursive: true });
+    await symlink(realDirectory, linkedDirectory, 'dir');
+
+    expect(() =>
+      writeEvaluationOutputs(evaluationReport(false), {
+        reportPath,
+        modelCardPath: paths.modelCardPath,
+        artifactPath,
+        promote: false,
+      })
+    ).toThrow(/pairwise distinct/i);
+    expect(await missing(join(realDirectory, 'future'))).toBe(true);
+    expect(await missing(paths.modelCardPath)).toBe(true);
+  });
+
+  it('rejects existing hard-linked output files before writing', async ({ skip }) => {
+    const paths = await outputPaths();
+    await mkdir(dirname(paths.reportPath), { recursive: true });
+    await mkdir(dirname(paths.artifactPath), { recursive: true });
+    await writeFile(paths.artifactPath, 'sentinel');
+    try {
+      await createHardLink(paths.artifactPath, paths.reportPath);
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === 'EPERM' || code === 'ENOTSUP') skip();
+      throw error;
+    }
+
+    expect(() =>
+      writeEvaluationOutputs(evaluationReport(false), { ...paths, promote: false })
+    ).toThrow(/pairwise distinct/i);
+    expect(await readFile(paths.artifactPath, 'utf8')).toBe('sentinel');
+    expect(await readFile(paths.reportPath, 'utf8')).toBe('sentinel');
+    expect(await missing(paths.modelCardPath)).toBe(true);
   });
 
   it('writes report and card but never touches a declined artifact', async () => {
@@ -313,7 +418,7 @@ describe('guarded evaluation outputs', () => {
   it('preserves different artifact bytes created by a competing writer', async () => {
     const paths = await outputPaths();
     competingCreate.armed = true;
-    competingCreate.artifactPath = paths.artifactPath;
+    competingCreate.artifactPath = await canonicalTemporaryArtifactPath(paths.artifactPath);
     competingCreate.bytes = 'competing artifact bytes';
     interceptCompetingCreate();
 
@@ -330,7 +435,9 @@ describe('guarded evaluation outputs', () => {
     const expectedBytes = await readFile(seedPaths.artifactPath, 'utf8');
     const competingPaths = await outputPaths();
     competingCreate.armed = true;
-    competingCreate.artifactPath = competingPaths.artifactPath;
+    competingCreate.artifactPath = await canonicalTemporaryArtifactPath(
+      competingPaths.artifactPath
+    );
     competingCreate.bytes = expectedBytes;
     interceptCompetingCreate();
 
