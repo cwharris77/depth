@@ -17,12 +17,14 @@ import SwiftUI
 // On top of #378's geometry, the field now renders a real green surface — gradient +
 // yard-line/hash-mark/end-zone markings (FieldMarkings) — in place of the old flat
 // team-tinted rect, and dots fill `primary` with a `secondary` ring (web's PlayerDot
-// semantics) instead of a flat `uiAccent` fill (2026-08-15 visual-pass). Each filled dot
-// also carries the player's last name under the position tag (DEP-250) — THROWAWAY
-// PROTOTYPE, not landed: a slot the layout put in `nameCallouts` (still too tight for a
-// name under the dot after the uniform-size stretch) instead gets its name via a leader
-// line into the field's free space, replacing the old per-unit width-breakpoint gate
-// (DepthChartFieldLayout.showsNames, still defined/tested but no longer consulted here).
+// semantics) instead of a flat `uiAccent` fill (2026-08-15 visual-pass). DEP-250: each
+// filled dot also carries the player's last name under the position tag. A slot the
+// layout put in `nameCallouts` (a row too tight for a name under the dot even at the
+// uniform size) instead gets its name via a leader line into the field's free space,
+// replacing the old per-unit width-breakpoint gate (DepthChartFieldLayout.showsNames,
+// still defined/tested but no longer consulted here). The chosen presentation style
+// (DEP-323, Settings › Settings) decides whether those leader lines draw, whether a name
+// with no room is simply hidden, or whether names are skipped entirely.
 struct DepthChartFieldView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -36,7 +38,7 @@ struct DepthChartFieldView: View {
     /// caller). Nil falls back to the generic synthetic layout — used when the unit has no
     /// formation data, is special teams, or is a historical season.
     var formation: TeamFormation? = nil
-    /// THROWAWAY PROTOTYPE: which of the three name treatments to draw (A/B comparison).
+    /// DEP-323: which of the three name-presentation styles to draw (chosen in Settings).
     var nameMode: FieldNameMode = .callouts
     /// DEP-309: active full-team edit mode gently wiggles only the existing solid player
     /// dots. Labels, hit targets, field geometry, and empty special-team slots stay put.
