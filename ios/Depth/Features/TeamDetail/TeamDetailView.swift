@@ -735,22 +735,26 @@ struct TeamDetailView: View {
                     // from the horizontal padding; only the vertical axis is sized here.
                     .containerRelativeFrame(.vertical)
                     .padding(.horizontal)
-
-                    // Mirrors web's FTNAttribution footer (components/FTNAttribution.tsx)
-                    // — FTN charting is CC-BY-SA 4.0, so attribution is the condition of
-                    // surfacing real formation data (docs/nflverse.md). Shown only when the
-                    // active unit has formation data on screen; a historical season never
-                    // does (its snapshot's formations array is always empty), so none here
-                    // (web: `!historicalMode && unitFormationsCount > 0`).
-                    if !historical && snapshot.formations.contains(where: { $0.unit == unit }) {
-                        FTNAttributionText()
-                            .padding(.top, DesignTokens.Spacing.sm)
-                            .padding(.horizontal)
-                    }
                 }
                 .padding(.vertical)
             }
             .scrollIndicators(.hidden)
+            // Mirrors web's FTNAttribution footer (components/FTNAttribution.tsx) — FTN
+            // charting is CC-BY-SA 4.0, so attribution is the condition of surfacing real
+            // formation data (docs/nflverse.md). Shown only when the active unit has
+            // formation data on screen; a historical season never does (its snapshot's
+            // formations array is always empty), so none here (web:
+            // `!historicalMode && unitFormationsCount > 0`).
+            //
+            // A bottom safe-area inset, not the last row of the scrolling VStack: as inline
+            // content it scrolled off with the field (and anything presented over the screen
+            // could cover it), which a license-mandated notice can't afford. The inset pins
+            // it to the screen bottom and reserves the space so the field never draws over it.
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                if !historical && snapshot.formations.contains(where: { $0.unit == unit }) {
+                    FTNAttributionText()
+                }
+            }
     }
 
     private func historyUnavailable(title: String, description: String, retry: Bool = false) -> some View {
@@ -913,12 +917,25 @@ private struct RefreshFailedBanner: View {
 // for surfacing FTN formation data (docs/nflverse.md). Shared by the field footer and the
 // Formations sheet (web reuses one component across surfaces) so the string lives in one
 // place.
+//
+// It carries its own footer chrome (padding + opaque bar) because both call sites mount it
+// through `.safeAreaInset(edge: .bottom)`: an inset reserves space but does NOT clip the
+// scroll content behind it, so a transparent attribution let list rows scroll through the
+// text (the reported bug — the Formations sheet's last row rendering on top of it). The
+// `.bar` material also keeps it legible over either surface's background, since the sheet
+// uses the system grouped background and the field uses DesignTokens.Colors.bg.
 private struct FTNAttributionText: View {
     var body: some View {
         Text("Formation data © FTN Data (CC-BY-SA 4.0)")
             .font(.caption)
             .foregroundStyle(DesignTokens.Colors.textFaint)
             .frame(maxWidth: .infinity)
+            .padding(.vertical, DesignTokens.Spacing.sm)
+            .padding(.horizontal, DesignTokens.Spacing.screenMargin)
+            .background(.bar)
+            .overlay(alignment: .top) {
+                Rectangle().fill(DesignTokens.Colors.borderDefault).frame(height: 1)
+            }
     }
 }
 
@@ -983,12 +1000,10 @@ private struct FormationsSheetView: View {
                 }
             }
             // FTN charting is CC-BY-SA 4.0 — attribution is the condition of listing these
-            // rows (docs/nflverse.md). Shared with the field footer.
-            .safeAreaInset(edge: .bottom) {
+            // rows (docs/nflverse.md). Shared with the field footer, which owns the footer
+            // chrome that keeps scrolled rows from showing through it.
+            .safeAreaInset(edge: .bottom, spacing: 0) {
                 FTNAttributionText()
-                    .padding(.top, DesignTokens.Spacing.sm)
-                    .padding(.bottom, DesignTokens.Spacing.sm)
-                    .padding(.horizontal)
             }
         }
     }
