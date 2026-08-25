@@ -1,16 +1,47 @@
+import fs from 'node:fs';
 import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { syncBuiltinESMExports } from 'node:module';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { DEVELOPMENT_SEASONS, HOLDOUT_SEASONS, TEAM_FEATURE_NAMES } from './contracts';
 import { MODEL_FEATURE_NAMES } from './preprocessing';
 import type { ForecastEvaluationReport } from './evaluation';
 import { stableJson } from './evaluation';
+
+const competingCreate = {
+  armed: false,
+  artifactPath: '',
+  bytes: '',
+};
+const originalWriteFileSync = fs.writeFileSync;
+
+function interceptCompetingCreate(): void {
+  fs.writeFileSync = ((path, data, options) => {
+    if (
+      competingCreate.armed &&
+      String(path) === competingCreate.artifactPath &&
+      typeof options === 'object' &&
+      options?.flag === 'wx'
+    ) {
+      competingCreate.armed = false;
+      originalWriteFileSync(path, competingCreate.bytes, 'utf8');
+    }
+    return originalWriteFileSync(path, data, options);
+  }) as typeof fs.writeFileSync;
+  syncBuiltinESMExports();
+}
+
 import { writeEvaluationOutputs } from './artifact';
 
 const temporaryDirectories: string[] = [];
 
 afterEach(async () => {
+  fs.writeFileSync = originalWriteFileSync;
+  syncBuiltinESMExports();
+  competingCreate.armed = false;
+  competingCreate.artifactPath = '';
+  competingCreate.bytes = '';
   await Promise.all(
     temporaryDirectories.splice(0).map((directory) => rm(directory, { recursive: true }))
   );
@@ -143,7 +174,64 @@ async function missing(path: string): Promise<boolean> {
   }
 }
 
+function normalizedAlias(path: string): string {
+  return `${dirname(path)}/alias-segment/../${basename(path)}`;
+}
+
 describe('guarded evaluation outputs', () => {
+  it.each([
+    {
+      name: 'report and artifact',
+      alias(paths: Awaited<ReturnType<typeof outputPaths>>) {
+        return { ...paths, reportPath: normalizedAlias(paths.artifactPath) };
+      },
+      sharedPath(paths: Awaited<ReturnType<typeof outputPaths>>) {
+        return paths.artifactPath;
+      },
+      untouchedPath(paths: Awaited<ReturnType<typeof outputPaths>>) {
+        return paths.modelCardPath;
+      },
+    },
+    {
+      name: 'model card and artifact',
+      alias(paths: Awaited<ReturnType<typeof outputPaths>>) {
+        return { ...paths, modelCardPath: normalizedAlias(paths.artifactPath) };
+      },
+      sharedPath(paths: Awaited<ReturnType<typeof outputPaths>>) {
+        return paths.artifactPath;
+      },
+      untouchedPath(paths: Awaited<ReturnType<typeof outputPaths>>) {
+        return paths.reportPath;
+      },
+    },
+    {
+      name: 'report and model card',
+      alias(paths: Awaited<ReturnType<typeof outputPaths>>) {
+        return { ...paths, modelCardPath: normalizedAlias(paths.reportPath) };
+      },
+      sharedPath(paths: Awaited<ReturnType<typeof outputPaths>>) {
+        return paths.reportPath;
+      },
+      untouchedPath(paths: Awaited<ReturnType<typeof outputPaths>>) {
+        return paths.artifactPath;
+      },
+    },
+  ])('rejects canonical $name aliases before writing anything', async (testCase) => {
+    const paths = await outputPaths();
+    const sharedPath = testCase.sharedPath(paths);
+    await mkdir(dirname(sharedPath), { recursive: true });
+    await writeFile(sharedPath, 'sentinel');
+
+    expect(() =>
+      writeEvaluationOutputs(evaluationReport(false), {
+        ...testCase.alias(paths),
+        promote: false,
+      })
+    ).toThrow(/pairwise distinct/i);
+    expect(await readFile(sharedPath, 'utf8')).toBe('sentinel');
+    expect(await missing(testCase.untouchedPath(paths))).toBe(true);
+  });
+
   it('writes report and card but never touches a declined artifact', async () => {
     const paths = await outputPaths();
     await mkdir(dirname(paths.artifactPath), { recursive: true });
@@ -220,5 +308,35 @@ describe('guarded evaluation outputs', () => {
       /refusing to overwrite/i
     );
     expect(await readFile(paths.artifactPath, 'utf8')).toBe('different artifact bytes');
+  });
+
+  it('preserves different artifact bytes created by a competing writer', async () => {
+    const paths = await outputPaths();
+    competingCreate.armed = true;
+    competingCreate.artifactPath = paths.artifactPath;
+    competingCreate.bytes = 'competing artifact bytes';
+    interceptCompetingCreate();
+
+    expect(() =>
+      writeEvaluationOutputs(evaluationReport(true), { ...paths, promote: true })
+    ).toThrow(/refusing to overwrite/i);
+    expect(await readFile(paths.artifactPath, 'utf8')).toBe('competing artifact bytes');
+  });
+
+  it('accepts identical artifact bytes created by a competing writer', async () => {
+    const seedPaths = await outputPaths();
+    const report = evaluationReport(true);
+    writeEvaluationOutputs(report, { ...seedPaths, promote: true });
+    const expectedBytes = await readFile(seedPaths.artifactPath, 'utf8');
+    const competingPaths = await outputPaths();
+    competingCreate.armed = true;
+    competingCreate.artifactPath = competingPaths.artifactPath;
+    competingCreate.bytes = expectedBytes;
+    interceptCompetingCreate();
+
+    const result = writeEvaluationOutputs(report, { ...competingPaths, promote: true });
+
+    expect(result.artifactWritten).toBe(false);
+    expect(await readFile(competingPaths.artifactPath, 'utf8')).toBe(expectedBytes);
   });
 });
