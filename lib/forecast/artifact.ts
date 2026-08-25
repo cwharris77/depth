@@ -1,8 +1,8 @@
 // Serializes deterministic evaluation evidence and guards the only artifact promotion path. A
 // declined or unrequested promotion never even opens the artifact path, preserving any prior file.
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+import fs from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { TEAM_FEATURE_NAMES } from './contracts';
 import { renderModelCard, stableJson, type ForecastEvaluationReport } from './evaluation';
 import type { ForecastPreprocessor } from './preprocessing';
@@ -100,27 +100,52 @@ function modelArtifact(report: ForecastEvaluationReport): ForecastModelArtifact 
 }
 
 function writeText(path: string, bytes: string): void {
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, bytes, 'utf8');
+  fs.mkdirSync(dirname(path), { recursive: true });
+  fs.writeFileSync(path, bytes, 'utf8');
+}
+
+function resolvedOutputPaths(options: WriteEvaluationOutputsOptions): {
+  reportPath: string;
+  modelCardPath: string;
+  artifactPath: string;
+} {
+  const paths = {
+    reportPath: resolve(options.reportPath),
+    modelCardPath: resolve(options.modelCardPath),
+    artifactPath: resolve(options.artifactPath),
+  };
+  if (new Set(Object.values(paths)).size !== 3) {
+    throw new Error('Forecast report, model card, and artifact paths must be pairwise distinct');
+  }
+  return paths;
+}
+
+function writeArtifact(path: string, bytes: string): boolean {
+  fs.mkdirSync(dirname(path), { recursive: true });
+  try {
+    fs.writeFileSync(path, bytes, { encoding: 'utf8', flag: 'wx' });
+    return true;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+    if (fs.readFileSync(path, 'utf8') !== bytes) {
+      throw new Error(`Refusing to overwrite different forecast artifact ${path}`, {
+        cause: error,
+      });
+    }
+    return false;
+  }
 }
 
 export function writeEvaluationOutputs(
   report: ForecastEvaluationReport,
   options: WriteEvaluationOutputsOptions
 ): { artifactWritten: boolean } {
-  writeText(options.reportPath, stableJson(report));
-  writeText(options.modelCardPath, renderModelCard(report));
+  const paths = resolvedOutputPaths(options);
+  writeText(paths.reportPath, stableJson(report));
+  writeText(paths.modelCardPath, renderModelCard(report));
 
   if (!options.promote || !promotionPassed(report)) return { artifactWritten: false };
 
   const bytes = stableJson(modelArtifact(report));
-  if (existsSync(options.artifactPath)) {
-    if (readFileSync(options.artifactPath, 'utf8') !== bytes) {
-      throw new Error(`Refusing to overwrite different forecast artifact ${options.artifactPath}`);
-    }
-    return { artifactWritten: false };
-  }
-
-  writeText(options.artifactPath, bytes);
-  return { artifactWritten: true };
+  return { artifactWritten: writeArtifact(paths.artifactPath, bytes) };
 }
