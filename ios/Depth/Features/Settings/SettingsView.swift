@@ -29,8 +29,9 @@ struct SettingsView: View {
     /// coachmark sequence on demand, independent of whether it's already been seen.
     let onboarding: OnboardingController
 
-    /// THROWAWAY PROTOTYPE: shared with TeamDetailView through the same defaults key, so
-    /// the field picks the tester's choice up immediately.
+    /// DEP-323: the user's chosen name-presentation style, shared with TeamDetailView
+    /// through the same defaults key so the field picks it up immediately. Persisted via
+    /// AppStorage (UserDefaults), so the choice survives relaunch.
     @AppStorage(FieldNameMode.storageKey) private var fieldNameMode: FieldNameMode = .callouts
 
     @State private var showAuth = false
@@ -51,11 +52,10 @@ struct SettingsView: View {
                         dangerTier
                     } else {
                         signInPrompt
+                        // The name-presentation preference is a local, account-independent
+                        // choice, so it stays reachable whether or not the user is signed in.
+                        settingsTier
                     }
-
-                    // THROWAWAY PROTOTYPE: shown to signed-in and anonymous testers alike —
-                    // the variant being tested has nothing to do with having an account.
-                    betaTestingTier
 
                     aboutTier
                 }
@@ -158,32 +158,9 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             sectionLabel("Settings", tint: DesignTokens.Colors.accent)
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-                // DEP-269: 44pt hit target on every account action.
-                Button("Sign Out") {
-                    Task { await signOut() }
-                }
-                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .depthCard()
-
-            if let signOutError {
-                errorChip(signOutError.message, identifier: "settings-sign-out-error")
-            }
-        }
-    }
-
-    /// THROWAWAY PROTOTYPE, per Cooper 2026-08-23: the A/B switch for the phone-field name
-    /// treatments. Lives in Settings rather than the field's overflow menu because a tester
-    /// picks a variant once and then uses the app normally — it isn't a per-view action.
-    /// Remove this tier along with the rest of the experiment once a variant is chosen.
-    private var betaTestingTier: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            sectionLabel("Beta Testing", tint: DesignTokens.Colors.accent)
-            VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
                 // A menu picker rather than DepthSegmentedControl: three labels this long
                 // do not fit a segmented track at phone width, and shortening them to fit
-                // ("Lines"/"Fit"/"Off") would leave testers guessing what they picked.
+                // ("Lines"/"Fit"/"Off") would leave users guessing what they picked.
                 Picker("Player Names", selection: $fieldNameMode) {
                     ForEach(FieldNameMode.allCases) { mode in
                         Text(mode.title).tag(mode)
@@ -194,13 +171,28 @@ struct SettingsView: View {
                 .accessibilityIdentifier("settings-field-name-mode")
 
                 Text(
-                    "Which names show on the depth chart. All three keep the same, larger dots."
+                    "How player names appear on the depth chart. Names under the dot are "
+                        + "easiest to read; leader lines keep every name on screen when the "
+                        + "field gets crowded."
                 )
                 .font(.caption)
                 .foregroundStyle(DesignTokens.Colors.textMuted)
+
+                if sessionStore.user != nil {
+                    Divider().overlay(DesignTokens.Colors.borderSubtle)
+                    // DEP-269: 44pt hit target on every account action.
+                    Button("Sign Out") {
+                        Task { await signOut() }
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .depthCard()
+
+            if let signOutError {
+                errorChip(signOutError.message, identifier: "settings-sign-out-error")
+            }
         }
     }
 

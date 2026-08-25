@@ -18,7 +18,8 @@ struct TeamDetailView: View {
     /// position group's player card opens already in reorder mode. Lives in the overflow
     /// menu; disabled (not hidden) while viewing a historical season.
     @State private var editMode = DepthChartEditMode()
-    /// THROWAWAY PROTOTYPE: the A/B name treatment chosen in Settings › Beta Testing.
+    /// DEP-323: the name-presentation style chosen in Settings. Shared with SettingsView
+    /// through the same defaults key.
     @AppStorage(FieldNameMode.storageKey) private var fieldNameMode: FieldNameMode = .callouts
     @State private var showHistory = false
     @State private var showUniformPicker = false
