@@ -484,6 +484,28 @@ struct TeamDetailView: View {
     /// field. Schedule is not a menu item — round-4 (DEP-217) made it a page-switcher tab.
     private var overflowMenu: some View {
         Menu {
+            // DEP-231: app-level edit-mode toggle, folded into the overflow menu instead of
+            // its own row (web's FieldHeaderMenu.tsx single checked "Edit depth chart"
+            // item). Puts every position group's card into reorder mode at once — no
+            // per-card Reorder taps needed; off exits all of them together. Disabled (not
+            // omitted) while viewing a past season, matching web's disabled + disabledReason.
+            // Previously this was a per-position submenu opening OverrideEditorSheet —
+            // DEP-226 gave the player card inline reorder, so the toggle now drives that
+            // instead and the standalone editor is gone.
+            Button {
+                editMode.toggle()
+            } label: {
+                // Web parity (FieldHeaderMenu's share item): the label stays constant and
+                // the leading glyph flips to a Check while active — no redundant
+                // "Done Editing" rename.
+                Label(
+                    "Edit Depth Chart",
+                    systemImage: editMode.isActive ? "checkmark" : "pencil"
+                )
+            }
+            .disabled(historyViewModel.isHistorical)
+            .accessibilityIdentifier("edit-depth-order")
+
             // Live snapshot only — historical rosters carry no uniforms
             // (SupabaseDepthRepository.teamSeason returns uniforms: []).
             if !(displayedSnapshot?.uniforms.isEmpty ?? true) {
@@ -494,11 +516,6 @@ struct TeamDetailView: View {
                 }
                 .accessibilityIdentifier("choose-uniform")
             }
-
-            Button("Seasons", systemImage: "clock.arrow.circlepath") {
-                showHistory = true
-            }
-            .accessibilityIdentifier("history-destination")
 
             // Web parity (FieldHeaderMenu's "Formations" row): opens the Formations sheet
             // for the active unit and shows the current pick inline. Omitted (like Choose
@@ -520,33 +537,16 @@ struct TeamDetailView: View {
                 .accessibilityIdentifier("choose-formation")
             }
 
+            Button("Seasons", systemImage: "clock.arrow.circlepath") {
+                showHistory = true
+            }
+            .accessibilityIdentifier("history-destination")
+
             // Live snapshot only (design spec locked decision #10) — historical
             // rosters have no equivalent share-card visual contract yet.
             if !historyViewModel.isHistorical, let snapshot = displayedSnapshot {
                 DepthChartShareButton(snapshot: snapshot)
             }
-
-            // DEP-231: app-level edit-mode toggle, folded into the overflow menu instead of
-            // its own row (web's FieldHeaderMenu.tsx single checked "Edit depth chart"
-            // item). On puts every position group's card into reorder mode at once — no
-            // per-card Reorder taps needed; off exits all of them together. Disabled (not
-            // omitted) while viewing a past season, matching web's disabled + disabledReason.
-            // Previously this was a per-position submenu opening OverrideEditorSheet —
-            // DEP-226 gave the player card inline reorder, so the toggle now drives that
-            // instead and the standalone editor is gone.
-            Button {
-                editMode.toggle()
-            } label: {
-                // Web parity (FieldHeaderMenu's share item): the label stays constant and
-                // the leading glyph flips to a Check while active — no redundant
-                // "Done Editing" rename.
-                Label(
-                    "Edit Depth Chart",
-                    systemImage: editMode.isActive ? "checkmark" : "pencil"
-                )
-            }
-            .disabled(historyViewModel.isHistorical)
-            .accessibilityIdentifier("edit-depth-order")
         } label: {
             // Icon-only — a "•••" overflow glyph is self-explanatory; a trailing
             // "More" label is redundant text (Cooper's round-5 feedback).
