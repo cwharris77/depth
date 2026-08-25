@@ -12,11 +12,12 @@
 # worktrees on the same Mac don't pile up sims and exhaust RAM.
 #
 # Usage:
-#   ios/scripts/screenshot-check.sh [-t field,teams,uniform,player] [--base main] \
+#   ios/scripts/screenshot-check.sh [-t field,field-footer,formations,teams,uniform,player] [--base main] \
 #       [-d <derivedDataDir>] [-s <sim-device-type>] [-c <config>]
 #
 # Flags:
-#   -t <csv>       Targets to capture (field, teams, uniform, player). Default: field
+#   -t <csv>       Targets to capture (field, field-footer, formations, teams, uniform,
+#                  player). Default: field
 #   --base <ref>   Capture "before" from this base ref via a temp worktree (e.g. main).
 #   -d <path>      DerivedData dir. Default: ios/.derivedData (gitignored, worktree-local)
 #   -s <type>      Simulator device type e.g. "iPhone 17 Pro Max". Default: auto-pick a
@@ -95,7 +96,7 @@ capture_one() {
   # Bake the requested targets into the scheme's TestAction env var (the only channel
   # that reliably reaches the XCUITest runner — see project.yml's Depth-PRScreenshots
   # note). The scheme ships with SCREENSHOT_TARGETS=field for CI reproducibility; patch
-  # it to the actual targets here so field/uniform/player all resolve in the runner.
+  # it to the actual targets here so every requested surface resolves in the runner.
   ( cd "$wt/ios" && \
     perl -0777 -pi -e \
       's#(<EnvironmentVariable\s+key = "SCREENSHOT_TARGETS"\s+value = ")[^"]*(")#${1}'"$TARGETS"'${2}#' \
