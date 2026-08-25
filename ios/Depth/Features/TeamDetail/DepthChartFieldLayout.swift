@@ -275,6 +275,19 @@ struct DepthChartFieldLayout: Equatable {
             let others = zip(named, allDots).filter { $0.0.key != slot.key }.map { $0.1 }
             let firstRing = dotSize / 2 + 16
 
+            // A slot's position tag ("WR", "LT", …) always renders directly under its own
+            // dot regardless of whether the NAME goes inline or to a callout (slotDot draws
+            // it unconditionally, see DepthChartFieldView) — a callout landing in that zone
+            // visually collides with the tag it's meant to sit clear of. Shipped bug: an
+            // on-line receiver's callout name landed directly under its own position tag.
+            // Reserve that zone so candidates skip over it too, not just other dots/labels.
+            let ownLabelZone = CGRect(
+                x: dot.x - nameMinWidth / 2,
+                y: dot.y + dotSize / 2 + labelTopGap,
+                width: nameMinWidth,
+                height: labelBlockHeight
+            )
+
             var best: CGPoint?
             search: for ring in 0..<8 {
                 for direction in [away, -away] {
@@ -288,6 +301,7 @@ struct DepthChartFieldLayout: Equatable {
                             others.contains { $0.intersects(padded) }
                             || placedLabels.contains { $0.intersects(padded) }
                             || placedTags.contains { $0.intersects(padded) }
+                            || ownLabelZone.intersects(padded)
                         if !blocked {
                             best = CGPoint(x: x, y: y)
                             break search
