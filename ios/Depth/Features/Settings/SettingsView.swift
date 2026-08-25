@@ -10,6 +10,13 @@ import SwiftUI
 // channel, since there's no in-app form or analytics dashboard to otherwise surface
 // user-reported issues.
 //
+// DEP-319: the Settings card also carries the favorite-team picker and the
+// "open this team when I start the app" toggle, mirroring web's AccountView (the picker
+// is where the web puts favorites — the settings surface, not a per-team control). Both
+// are account-gated by RLS (rows surface only while signed in; signing out hides them
+// entirely, like web's signed-out sign-in prompt), setting a favorite opts into
+// auto-opening, and the toggle row appears only once a favorite is set.
+//
 // Layout (DEP-257 design pass): three visually distinct tiers instead of one uniform
 // stack of look-alike cards — a bare identity header (no card chrome, mirrors web's
 // AccountView.tsx avatar+"Signed in as" treatment), a routine-actions card (Sign Out),
@@ -34,6 +41,14 @@ struct SettingsView: View {
     /// AppStorage (UserDefaults), so the choice survives relaunch.
     @AppStorage(FieldNameMode.storageKey) private var fieldNameMode: FieldNameMode = .callouts
 
+    // DEP-319: favorite-team + start-on-favorite state for this sheet, backed by the
+    // shared user_settings row. Injected (not read from DepthEnvironment) so the sheet
+    // is testable and the three call sites (TeamDetailView, CompareView, UniformsTab)
+    // share one store instance.
+    private let settingsStore: UserSettingsStore
+    /// The 32-team list driving the favorite picker, loaded once when the sheet appears.
+    @State private var teams: [Team] = []
+
     @State private var showAuth = false
     @State private var showDeletion = false
     @State private var signOutError: DepthAuthError?
@@ -41,6 +56,22 @@ struct SettingsView: View {
     // explicit close affordance now — a tab never had this problem (switching tabs was
     // the exit), a modal sheet does.
     @Environment(\.dismiss) private var dismiss
+
+    init(
+        sessionStore: AuthSessionStore,
+        authService: any DepthAuthServicing,
+        events: any AppEventsRecording = NoOpAppEventsRecorder(),
+        clearPrivateData: @escaping @Sendable () async -> Void = {},
+        onboarding: OnboardingController,
+        settingsStore: UserSettingsStore
+    ) {
+        self.sessionStore = sessionStore
+        self.authService = authService
+        self.events = events
+        self.clearPrivateData = clearPrivateData
+        self.onboarding = onboarding
+        self.settingsStore = settingsStore
+    }
 
     var body: some View {
         NavigationStack {
@@ -80,6 +111,14 @@ struct SettingsView: View {
             }
         }
         .tint(DesignTokens.Colors.accent)
+        .task {
+            // DEP-319: refresh the favorite/toggle from the server row on every sheet
+            // presentation (idempotent; remote is nil while signed out, so this is a
+            // no-op there) and resolve the 32-team list for the picker once.
+            await settingsStore.load()
+            guard let teams = try? await DepthEnvironment.repository.teams() else { return }
+            self.teams = teams
+        }
         .sheet(isPresented: $showAuth) {
             AuthSheet(service: authService, sessionStore: sessionStore, events: events)
                 .presentationBackground(DesignTokens.Colors.bg)
@@ -158,6 +197,27 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             sectionLabel("Settings", tint: DesignTokens.Colors.accent)
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+                if sessionStore.user != nil {
+                    // DEP-319: favorite-team picker, mirroring web's AccountView select.
+                    // Rendered only while signed in — settingsTier itself is shown to both
+                    // signed-in and signed-out visitors (DEP-323 promoted Player Names to
+                    // always-visible), but the favorite row is still RLS-gated, so it needs
+                    // its own explicit guard here rather than inheriting one from the tier.
+                    favoriteTeamPicker
+                    if let favoriteTeamId = settingsStore.favoriteTeamId, !favoriteTeamId.isEmpty {
+                        Divider().overlay(DesignTokens.Colors.borderSubtle)
+                        startOnFavoriteToggle
+                    }
+                    if let updateError = settingsStore.updateError {
+                        Divider().overlay(DesignTokens.Colors.borderSubtle)
+                        Text(updateError)
+                            .font(.footnote)
+                            .foregroundStyle(DesignTokens.Colors.textMuted)
+                            .accessibilityIdentifier("settings-favorite-update-error")
+                    }
+                    Divider().overlay(DesignTokens.Colors.borderSubtle)
+                }
+
                 // A menu picker rather than DepthSegmentedControl: three labels this long
                 // do not fit a segmented track at phone width, and shortening them to fit
                 // ("Lines"/"Fit"/"Off") would leave users guessing what they picked.
@@ -194,6 +254,67 @@ struct SettingsView: View {
                 errorChip(signOutError.message, identifier: "settings-sign-out-error")
             }
         }
+    }
+
+    // DEP-319: mirrors web's favorite-team select (components/AccountView.tsx) — the
+    // menu lists "No favorite" plus every team, alphabetized like the sign-in page's
+    // options list. Renders a redacted placeholder while the row is still loading so it
+    // never flashes the wrong value before the server read lands.
+    private var favoriteTeamPicker: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+            Text("Favorite Team")
+                .font(.caption2.weight(.bold))
+                .tracking(0.6)
+                .foregroundStyle(DesignTokens.Colors.textFaint)
+            if settingsStore.isLoading {
+                RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
+                    .fill(DesignTokens.Colors.surfacePlaceholder)
+                    .frame(height: 44)
+                    .redacted(reason: .placeholder)
+                    .accessibilityHidden(true)
+                    .accessibilityIdentifier("settings-favorite-loading")
+            } else {
+                Picker("Favorite Team", selection: favoriteTeamSelection) {
+                    Text("No favorite").tag(String?.none)
+                    ForEach(teams, id: \.id) { team in
+                        Text("\(team.city) \(team.name)").tag(String?.some(team.id))
+                    }
+                }
+                .pickerStyle(.menu)
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .accessibilityIdentifier("settings-favorite-team")
+            }
+            Text("Your favorite opens automatically when you start the app.")
+                .font(.caption)
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+        }
+    }
+
+    private var favoriteTeamSelection: Binding<String?> {
+        Binding(
+            get: { settingsStore.favoriteTeamId },
+            set: { settingsStore.selectTeam($0) }
+        )
+    }
+
+    // DEP-319: the "open this team when I start the app" toggle. Shown only once a
+    // favorite is set (web parity) and only consulted by startup resolution when one is.
+    private var startOnFavoriteToggle: some View {
+        Toggle(isOn: startOnFavoriteBinding) {
+            Text("Open this team when I start the app")
+                .font(.body)
+                .foregroundStyle(DesignTokens.Colors.textPrimary)
+        }
+        .tint(DesignTokens.Colors.accent)
+        .frame(minHeight: 44)
+        .accessibilityIdentifier("settings-start-on-favorite")
+    }
+
+    private var startOnFavoriteBinding: Binding<Bool> {
+        Binding(
+            get: { settingsStore.startOnFavorite },
+            set: { settingsStore.setStartOnFavorite($0) }
+        )
     }
 
     private var dangerTier: some View {

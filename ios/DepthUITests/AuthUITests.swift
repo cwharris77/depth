@@ -53,4 +53,32 @@ final class AuthUITests: XCTestCase {
         )
         XCTAssertTrue(app.buttons["auth-send-code"].waitForExistence(timeout: 15))
     }
+
+    @MainActor
+    func testSignedOutSettingsHideTheFavoriteControls() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launch()
+
+        let accountButton = app.buttons["account-button"]
+        XCTAssertTrue(accountButton.waitForExistence(timeout: 15), "Account should be reachable from the nav bar")
+        accountButton.tap()
+
+        // DEP-319: the favorite picker + start-on-favorite toggle are account-gated by
+        // RLS (the user_settings row is scoped to auth.uid()), so a signed-out visitor
+        // must never see them — matching web, where the signed-out surface is the
+        // sign-in prompt only. A `.menu` Picker surfaces as either a button or a picker
+        // element depending on the SDK's role mapping, so check both.
+        let favoritePickerButton = app.buttons["settings-favorite-team"]
+        let favoritePickerElement = app.pickers["settings-favorite-team"]
+        XCTAssertFalse(
+            favoritePickerButton.waitForExistence(timeout: 2) || favoritePickerElement.waitForExistence(timeout: 2),
+            "the favorite team picker should not render for a signed-out visitor"
+        )
+        let startOnFavoriteToggle = app.switches["settings-start-on-favorite"]
+        XCTAssertFalse(
+            startOnFavoriteToggle.waitForExistence(timeout: 2),
+            "the start-on-favorite toggle should not render for a signed-out visitor"
+        )
+    }
 }

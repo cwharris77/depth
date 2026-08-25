@@ -47,7 +47,8 @@ struct RootTabView: View {
                     sessionStore: sessionStore,
                     overrideService: DepthEnvironment.overrideService,
                     events: DepthEnvironment.appEvents,
-                    currentTeamStore: currentTeamStore
+                    currentTeamStore: currentTeamStore,
+                    userSettingsStore: DepthEnvironment.userSettingsStore
                 )
             }
 
