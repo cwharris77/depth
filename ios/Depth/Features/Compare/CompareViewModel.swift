@@ -42,6 +42,21 @@ final class CompareViewModel {
     private(set) var statsB: TeamSeasonStats?
     private(set) var tab: Tab = .matchup
     private(set) var position: Position = .qb
+
+    // MARK: - DEP-311: room-picker state
+
+    /// The unit lens currently selected in the position picker (Offense / Defense / Special
+    /// Teams). Independent of `selectedRoom`/`position`: switching units never resets which
+    /// room or role is chosen for that unit, so the user can hop lenses to compare across
+    /// units without re-picking.
+    private(set) var selectedUnit: Unit = .offense
+    /// The room currently selected within `selectedUnit`. nil until the user picks a room —
+    /// there is no "default" room, unlike the old always-active position chip row.
+    private(set) var selectedRoom: CompareRoom?
+
+    /// `true` while the user is inside the exact-role panel of the two-step picker (a room is
+    /// selected). Drives the step label ("1 OF 2 · ROOM" → "2 OF 2 · POSITION").
+    var hasSelectedRoom: Bool { selectedRoom != nil }
     /// A team-picker sheet is targeting this slot, or nil when closed.
     private(set) var pickingSlot: Slot?
 
@@ -187,5 +202,42 @@ final class CompareViewModel {
 
     func selectPosition(_ position: Position) {
         self.position = position
+        // Keep the room picker coherent with an externally-chosen position (e.g. the
+        // matchup tab's deepest-room teaser jumps straight to a role): align the unit lens
+        // and selected room so the exact-role panel shows that position is active.
+        if let room = CompareMatchRooms.room(of: position) {
+            selectedUnit = room.unit
+            selectedRoom = room
+        }
+    }
+
+    // MARK: - DEP-311: room picker
+
+    /// Moves the unit lens and keeps the previously-selected position for that unit if it's
+    /// still valid, per DEP-311 task 3. When the newly-selected unit's room has no matching
+    /// role for the current position, don't invent one — leave position untouched.
+    func selectUnit(_ unit: Unit) {
+        guard unit != selectedUnit else { return }
+        selectedUnit = unit
+        // Task 3: preserve selection when moving lenses while valid. `position` remains the
+        // single source of truth; a position that maps into the new unit is still valid, so
+        // leave it alone. A position that doesn't (e.g. .qb → .defense) is simply left until
+        // the user picks a room in the new unit — see selectRoom.
+        if let room = CompareMatchRooms.room(of: position), room.unit == unit {
+            selectedRoom = room
+        } else {
+            // The previous room belonged to the old unit; a room's positions only select once
+            // the user picks that room in the new unit.
+            selectedRoom = nil
+        }
+    }
+
+    /// Selects a room in the current unit and, per DEP-311 task 3, chooses its FIRST position
+    /// only now — not before the user acts. Resets the exact role to the room's first
+    /// position so the "View matchup"-ready state is deterministic.
+    func selectRoom(_ room: CompareRoom) {
+        guard room.unit == selectedUnit else { return }
+        selectedRoom = room
+        position = room.positions[0]
     }
 }
