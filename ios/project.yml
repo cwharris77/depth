@@ -228,6 +228,29 @@ schemes:
     archive:
       config: Release
 
+  # Dedicated scheme for the deterministic App Store screenshot capture (T9D,
+  # docs/ios-appstore-screenshots.md). The default Depth scheme skips
+  # AppStoreScreenshotsUITests via `skippedTests` so `xcodebuild test` (and ios-ci.yml)
+  # never run it — and `-only-testing` at invocation time cannot override a scheme-level
+  # skip, so running it used to require regenerating project.yml without the skip. This
+  # scheme includes the full DepthUITests target with NO skip, so
+  # `ios/scripts/capture-appstore-screenshots.sh` (and manual runs) can invoke it with
+  # `-only-testing:DepthUITests/AppStoreScreenshotsUITests` straight from a clean
+  # checkout. Runs under Staging (real prod data — no dedicated staging seed exists,
+  # per xcconfig/Staging.xcconfig's TODO(DEP-40 Lane B)).
+  Depth-AppStoreScreenshots:
+    build:
+      targets:
+        Depth: all
+    run:
+      config: Staging
+    test:
+      config: Staging
+      targets:
+        - DepthUITests
+    archive:
+      config: Release
+
   # Local running/archiving against the Staging config (prod Supabase, see
   # xcconfig/Staging.xcconfig). This is the scheme to run on a physical device —
   # Debug shares the simulator's localhost-backed Supabase (127.0.0.1) which is the
