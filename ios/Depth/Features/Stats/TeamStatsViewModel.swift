@@ -71,7 +71,7 @@ final class TeamStatsViewModel {
     /// past selection even when it is the initial tab, because "current" is the upcoming
     /// chip (`isViewingCurrentOrUpcomingSeason`).
     var isViewingPastSeason: Bool {
-        guard let selectedSeason else { return false }
+        guard selectedSeason != nil else { return false }
         return !isViewingCurrentOrUpcomingSeason
     }
 
