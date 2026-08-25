@@ -1,22 +1,37 @@
 import XCTest
 
-// Deterministic App Store screenshot capture (task-9d-screenshots-brief.md). Not part of
-// the default `xcodebuild test` run — excluded via project.yml's scheme `skippedTests`
-// because it's a slow, human-triggered release-prep tool, not a correctness gate.
-// Screenshot #4 opens the reorder editor directly — DEP-219 made editing local-first,
-// so no signed-in session (or screenshot-only bypass) is needed to reach it anymore.
-// Run it explicitly:
+// Deterministic App Store screenshot capture (task-9d-screenshots-brief.md, DEP-162
+// blocker). Not part of the default `xcodebuild test` run — excluded via project.yml's
+// scheme `skippedTests` because it's a slow, human-triggered release-prep tool, not a
+// correctness gate. Screenshot #4 opens the reorder editor directly — DEP-219 made
+// editing local-first, so no signed-in session (or screenshot-only bypass) is needed to
+// reach it anymore. Run it via the one-command capture script (which boots a disposable
+// 6.9-inch simulator, normalizes the status bar, runs the test against the dedicated
+// Depth-AppStoreScreenshots scheme — no project.yml editing needed — and exports the
+// PNGs):
 //
-//   xcodebuild -project ios/Depth.xcodeproj -scheme Depth -configuration Staging \
+//   ios/scripts/capture-appstore-screenshots.sh
+//
+// Or by hand against the dedicated scheme (the default Depth scheme's scheme-level
+// `skippedTests` cannot be overridden by `-only-testing` at the command line):
+//
+//   xcodebuild -project ios/Depth.xcodeproj -scheme Depth-AppStoreScreenshots \
+//     -configuration Staging \
 //     -destination 'platform=iOS Simulator,id=<a 6.9-inch simulator UDID>' \
-//     -only-testing:DepthUITests/AppStoreScreenshotsUITests test
+//     -only-testing:DepthUITests/AppStoreScreenshotsUITests \
+//     -resultBundlePath /tmp/depth-screenshots.xcresult test
 //
-// See docs/ios-appstore-screenshots.md for the full local workflow, the simulator/
-// resolution requirement, and how to export the captured PNGs from the .xcresult.
+// See docs/ios-appstore-screenshots.md for the full workflow.
 final class AppStoreScreenshotsUITests: XCTestCase {
     func testCaptureAppStoreScreenshotSequence() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_APPSTORE_SCREENSHOTS"]
+        // UI_TESTING_APPSTORE_SCREENSHOTS drives the deterministic app state (clean
+        // team/unit, onboarding seen, forced sign-out). UI_TESTING_REDUCE_MOTION settles
+        // the volatile UI for the duration of the mode — the same launch-argument
+        // convention the accessibility suite uses — so the edit-mode dot wiggle (DEP-309)
+        // and button press-scale are still/static in every capture instead of mid-animation
+        // at an arbitrary frame.
+        app.launchArguments = ["UI_TESTING_APPSTORE_SCREENSHOTS", "UI_TESTING_REDUCE_MOTION"]
         app.launch()
 
         // 1. Team selector/search — "Every team. One clear depth chart." The selector is
