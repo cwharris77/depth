@@ -253,8 +253,9 @@ describe('deterministic evaluation outputs', () => {
     expect(card).toMatch(/2012.+2022/);
     expect(card).toMatch(/2023.+2025/);
     expect(card).toMatch(/updated|refresh/i);
-    expect(card).toMatch(/informational and entertainment purposes only/i);
-    expect(card).toMatch(/not betting advice/i);
+    expect(card.replace(/\s+/g, ' ')).toContain(
+      'For informational and entertainment purposes. Depth does not accept wagers or provide betting services.'
+    );
   });
 });
 
