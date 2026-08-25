@@ -3,7 +3,7 @@ import XCTest
 // Agent-triggered depth-chart surface capture for "check the PR build" on iOS — the
 // native analog of /pr-screenshots on web. An agent (or Cooper) runs this with a
 // SCREENSHOT_TARGETS launch argument naming which screens to capture as decision-support
-// PNGs (e.g. `field,uniform` after a tokenization/radius change like DEP-260), then the
+// PNGs (e.g. `field,field-footer,formations` after an attribution layout change), then the
 // caller exports the .xcresult attachments and views them — without the agent needing a
 // booted Simulator or (on GitHub Actions) any local RAM.
 //
@@ -56,6 +56,38 @@ final class PRScreenshotsUITests: XCTestCase {
             attachScreenshot(name: "field")
         }
 
+        // `formations` — the formations picker scrolled to its final row, proving the
+        // attribution follows every formation instead of hovering over the sheet.
+        if requested.contains("formations") {
+            let overflow = app.buttons["depth-chart-overflow"]
+            XCTAssertTrue(overflow.waitForExistence(timeout: 15), "team detail should expose the overflow menu")
+            overflow.tap()
+            let chooseFormation = app.buttons["choose-formation"]
+            XCTAssertTrue(chooseFormation.waitForExistence(timeout: 15), "the overflow menu should expose formations")
+            chooseFormation.tap()
+
+            let attribution = app.staticTexts["formations-attribution"]
+            for _ in 0..<12 where !isVisible(attribution, in: app) {
+                app.swipeUp()
+            }
+            XCTAssertTrue(isVisible(attribution, in: app), "the attribution should follow every formation row")
+            attachScreenshot(name: "formations")
+
+            let done = app.buttons["Done"]
+            if done.waitForExistence(timeout: 5) { done.tap() }
+        }
+
+        // `field-footer` — the team page scrolled just below the field, showing the
+        // attribution in the content stack rather than pinned to the viewport.
+        if requested.contains("field-footer") {
+            let attribution = app.staticTexts["field-attribution"]
+            for _ in 0..<4 where !isVisible(attribution, in: app) {
+                app.swipeUp()
+            }
+            XCTAssertTrue(isVisible(attribution, in: app), "the attribution should appear beneath the field")
+            attachScreenshot(name: "field-footer")
+        }
+
         // `teams` — a flat team-search result so separator changes can be reviewed in
         // the surface they affect instead of inferred from an unrelated field capture.
         if requested.contains("teams") {
@@ -102,7 +134,7 @@ final class PRScreenshotsUITests: XCTestCase {
             // `field` is the documented default (PRScreenshotsUITests.requestedTargets
             // returns ["field"] for empty/missing input), so this is unreachable — kept
             // as a defensive tripwire in case the default ever changes.
-            XCTFail("No recognized PR screenshot target requested — pass SCREENSHOT_TARGETS=field,teams,uniform,player")
+            XCTFail("No recognized PR screenshot target requested — pass SCREENSHOT_TARGETS=field,field-footer,formations,teams,uniform,player")
         }
     }
 
@@ -119,7 +151,7 @@ final class PRScreenshotsUITests: XCTestCase {
         } else {
             raw = ProcessInfo.processInfo.environment["SCREENSHOT_TARGETS"] ?? ""
         }
-        let valid: Set<String> = ["field", "teams", "uniform", "player"]
+        let valid: Set<String> = ["field", "field-footer", "formations", "teams", "uniform", "player"]
         let tokens = raw.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         let requested = Set(tokens).intersection(valid)
         // `field` is the documented default (empty/missing env, or no valid token →
@@ -137,5 +169,11 @@ final class PRScreenshotsUITests: XCTestCase {
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    private func isVisible(_ element: XCUIElement, in app: XCUIApplication) -> Bool {
+        element.exists
+            && !element.frame.isEmpty
+            && element.frame.intersects(app.windows.firstMatch.frame)
     }
 }
