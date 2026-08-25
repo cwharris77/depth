@@ -675,7 +675,13 @@ struct TeamDetailView: View {
                         }
                         .padding(.horizontal)
                     }
-                    if !historical && viewModel.isStale {
+                    // DEP-326: cache-first reads (CachingDepthRepository.teamSnapshot) already
+                    // kick off a background refresh on every visit, so a stale cache while
+                    // online resolves itself silently within moments — telling the user
+                    // "showing saved data, pull to refresh" in that case just describes an
+                    // implementation detail they can't act on. The banner only earns its
+                    // place when there's genuinely no network to refresh from.
+                    if !historical && viewModel.isStale && DepthEnvironment.networkMonitor.isOffline {
                         StaleBanner()
                     }
                     if !historical, case .failed = viewModel.loadState {
@@ -880,9 +886,12 @@ struct TeamDetailView: View {
     }
 }
 
+// Only ever shown while genuinely offline (see the call site) — "pull to refresh" would be
+// bad advice with no connection to refresh from, so the copy tells the user what will
+// actually fix it instead.
 private struct StaleBanner: View {
     var body: some View {
-        Label("Showing saved data — pull to refresh", systemImage: "clock.arrow.circlepath")
+        Label("You're offline — showing saved data. Reconnect to refresh.", systemImage: "wifi.slash")
             .font(.footnote)
             .foregroundStyle(.secondary)
             .padding(.horizontal)

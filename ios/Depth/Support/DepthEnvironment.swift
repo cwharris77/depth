@@ -78,4 +78,7 @@ enum DepthEnvironment {
     /// between ContentView (mounts the overlay + fires the first-launch trigger) and
     /// SettingsView ("Take the tour" row).
     @MainActor static let onboarding = OnboardingController(preferences: preferences)
+    /// Live reachability, shared app-wide so the stale-data banner can tell "offline" apart
+    /// from "online but just hasn't refreshed yet" (see NetworkMonitor's header comment).
+    @MainActor static let networkMonitor = NetworkMonitor()
 }
