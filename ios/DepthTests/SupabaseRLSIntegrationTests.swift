@@ -263,6 +263,48 @@ enum LocalSupabase {
     try await serviceClient.auth.admin.deleteUser(id: nonOwnerAuth.user.id)
 }
 
+// Regression for the favorite-team settings row never surviving restart: an earlier
+// version of SupabaseUserSettingsService.update wrote a fresh random UUID as `user_id`
+// instead of the signed-in user's own id, which the "own settings" RLS policy
+// (auth.uid() = user_id) silently rejects as a normal PostgrestError — surfacing as
+// UserSettingsStore's "will sync when back online" hint even while online — and even a
+// theoretical successful write would land under a row the real user's id could never
+// read back. This proves a real signed-in write both succeeds and round-trips through
+// a *second*, freshly-constructed service instance (simulating an app restart).
+@Test(.enabled(if: LocalSupabase.isReachable)) func favoriteSettingsSurviveARestartWhenSignedIn() async throws {
+    let serviceClient = LocalSupabase.client(key: try LocalSupabase.serviceRoleKey())
+    let ownerClient = LocalSupabase.client(key: LocalSupabase.anonKey)
+    let ownerAuth = try await ownerClient.auth.signUp(
+        email: "t7-settings-owner-\(UUID().uuidString)@example.com",
+        password: "test-password-123"
+    )
+
+    do {
+        try await SupabaseUserSettingsService(client: ownerClient)
+            .update(.favorite("bills", startOnFavorite: true))
+
+        // A fresh service instance against the same authenticated client stands in for
+        // the next app launch reading the row back.
+        let restarted = try await SupabaseUserSettingsService(client: ownerClient).settings()
+        #expect(restarted.favoriteTeamId == "bills")
+        #expect(restarted.startOnFavorite == true)
+
+        struct SettingsRow: Decodable, Equatable { let userId: UUID
+            enum CodingKeys: String, CodingKey { case userId = "user_id" }
+        }
+        let serviceRows: [SettingsRow] = try await serviceClient.from("user_settings")
+            .select("user_id")
+            .eq("user_id", value: ownerAuth.user.id)
+            .execute().value
+        #expect(serviceRows == [SettingsRow(userId: ownerAuth.user.id)])
+    } catch {
+        try? await serviceClient.auth.admin.deleteUser(id: ownerAuth.user.id)
+        throw error
+    }
+
+    try await serviceClient.auth.admin.deleteUser(id: ownerAuth.user.id)
+}
+
 // Service-role actor — bypasses RLS entirely (used only by ingestion, never the app).
 @Test(.enabled(if: LocalSupabase.isReachable)) func serviceRoleCanReadAndWrite() async throws {
     let client = LocalSupabase.client(key: try LocalSupabase.serviceRoleKey())
