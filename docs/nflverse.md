@@ -218,6 +218,34 @@ supabase db reset
 the reset loads the rows. Repository responses still return the normalized
 `nflverse / Pro Football Reference` attribution.
 
+## Matchup forecast evaluation
+
+DEP-316 evaluates the matchup forecast from repository-owned nflverse source files without reading
+Supabase or any client payload. The normal command reuses exact bytes from
+`.cache/matchup-forecast/sources`; `--refresh` refetches `nfldata/data/games.csv` plus the
+`stats_team_week_2011.csv` through `stats_team_week_2025.csv` release assets before evaluation:
+
+```bash
+npm run train:forecast
+npm run train:forecast -- --refresh
+```
+
+The pipeline audits source schemas and identities, builds chronological examples, then splits
+development (2012–2022) from the untouched holdout (2023–2025) before preprocessing or fitting.
+The evaluation JSON defaults to `.cache/matchup-forecast/evaluation.json`; the deterministic model
+card defaults to `docs/matchup-forecast-model-card.md`. Both omit timestamps and recursively sort
+JSON object keys so identical source hashes, code, and configuration produce identical bytes.
+
+Artifact writing is a separate, explicit action:
+
+```bash
+npm run train:forecast -- --promote
+```
+
+`models/matchup-forecast-v1.json` is written only when `--promote` is present and every locked gate
+passes. A declined evaluation leaves any existing artifact untouched. No database, repository
+payload, web client, or native client integration begins until that artifact has been promoted.
+
 ## Investigation note: silent 2025 ingestion gap (2026-07-25)
 
 nflverse renamed the player-stats release tag from `player_stats` to `stats_player`
