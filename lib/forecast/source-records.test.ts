@@ -152,6 +152,32 @@ describe('parseForecastGames', () => {
     expect(parsed.games[1]?.marketHomeProbability).toBeNull();
   });
 
+  it('normalizes every official nflverse postseason game type', () => {
+    const parsed = parseForecastGames(
+      gameRows([
+        gameLine({ game_id: 'wild-card', game_type: 'WC' }),
+        gameLine({ game_id: 'divisional', game_type: 'DIV' }),
+        gameLine({ game_id: 'conference', game_type: 'CON' }),
+        gameLine({ game_id: 'super-bowl', game_type: 'SB' }),
+      ])
+    );
+
+    expect(parsed.malformedGames).toBe(0);
+    expect(parsed.games.map(({ gameId, seasonType }) => ({ gameId, seasonType }))).toEqual([
+      { gameId: 'conference', seasonType: 'POST' },
+      { gameId: 'divisional', seasonType: 'POST' },
+      { gameId: 'super-bowl', seasonType: 'POST' },
+      { gameId: 'wild-card', seasonType: 'POST' },
+    ]);
+  });
+
+  it('rejects an unknown nflverse game type', () => {
+    const parsed = parseForecastGames(gameRows([gameLine({ game_type: 'PRE' })]));
+
+    expect(parsed.games).toEqual([]);
+    expect(parsed.malformedGames).toBe(1);
+  });
+
   it('counts unknown teams and malformed required game fields without guessing', () => {
     const parsed = parseForecastGames(
       gameRows([

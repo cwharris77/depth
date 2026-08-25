@@ -132,6 +132,18 @@ function seasonType(value: string | undefined): 'REG' | 'POST' | null {
   return parsed === 'REG' || parsed === 'POST' ? parsed : null;
 }
 
+function gameSeasonType(value: string | undefined): 'REG' | 'POST' | null {
+  const parsed = text(value);
+  if (parsed === 'REG') return 'REG';
+  return parsed === 'POST' ||
+    parsed === 'WC' ||
+    parsed === 'DIV' ||
+    parsed === 'CON' ||
+    parsed === 'SB'
+    ? 'POST'
+    : null;
+}
+
 function missingFields(rows: Record<string, string>[], fields: readonly string[]): string[] {
   const headers = new Set(Object.keys(rows[0] ?? {}));
   return fields.filter((field) => !headers.has(field));
@@ -145,7 +157,7 @@ export function parseForecastGames(rows: Record<string, string>[]): ParsedForeca
     const season = finiteInteger(row.season);
     const week = finiteInteger(row.week);
     const gameId = text(row.game_id);
-    const gameSeasonType = seasonType(row.game_type);
+    const parsedSeasonType = gameSeasonType(row.game_type);
     const gameday = text(row.gameday);
     const gametime = text(row.gametime);
     const location = text(row.location);
@@ -167,7 +179,7 @@ export function parseForecastGames(rows: Record<string, string>[]): ParsedForeca
       season === null ||
       week === null ||
       !gameId ||
-      !gameSeasonType ||
+      !parsedSeasonType ||
       !gameday ||
       !gametime ||
       !homeTeamId ||
@@ -188,7 +200,7 @@ export function parseForecastGames(rows: Record<string, string>[]): ParsedForeca
       gameId,
       season,
       week,
-      seasonType: gameSeasonType,
+      seasonType: parsedSeasonType,
       kickoffKey: `${gameday}T${gametime}`,
       homeTeamId,
       awayTeamId,
