@@ -1,4 +1,91 @@
-<h2>Your Depth sign-in code</h2>
-<p>Enter this code in Depth:</p>
-<p style="font-size: 24px; font-weight: 700; letter-spacing: 0.2em">{{ .Token }}</p>
-<p>This code expires soon. If you did not request it, you can ignore this email.</p>
+<!--
+  The Sticks (depth) sign-in code email. Colors mirror the app's dark UI-chrome tokens
+  (components/ui/tokens.ts: bg #15161a, accent #6E8CAE, textPrimary/textMuted) rather than
+  any team's brand colors — this is app chrome, not a team surface (AGENTS.md invariant 4).
+  Table-based layout + inline styles for email-client compatibility (Outlook desktop has no
+  CSS box model support outside tables). The logo mark mirrors components/Logo.tsx as an inline
+  SVG data URI; Outlook desktop (Windows) doesn't render SVG and falls back to the alt text.
+-->
+<table
+  role="presentation"
+  width="100%"
+  cellpadding="0"
+  cellspacing="0"
+  style="background-color: #0b0c0f; padding: 32px 16px">
+  <tr>
+    <td align="center">
+      <table
+        role="presentation"
+        width="100%"
+        cellpadding="0"
+        cellspacing="0"
+        style="max-width: 420px; background-color: #15161a; border-radius: 16px; overflow: hidden">
+        <tr>
+          <td style="padding: 40px 32px 8px; text-align: center">
+            <img
+              src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201024%201024'%20width='40'%20height='40'%3E%3Ccircle%20cx='270'%20cy='270'%20r='132'%20fill='%23FF6500'/%3E%3Ccircle%20cx='270'%20cy='270'%20r='82'%20fill='%2315161a'/%3E%3Ccircle%20cx='270'%20cy='270'%20r='50'%20fill='%23FF6500'/%3E%3Cdefs%3E%3CclipPath%20id='p'%3E%3Cpath%20d='M190%20405h160l-28%20435q-2%2022-24%2022h-56q-22%200-24-22l-28-435Z'/%3E%3C/clipPath%3E%3C/defs%3E%3Cg%20clip-path='url(%23p)'%3E%3Crect%20x='160'%20y='405'%20width='220'%20height='470'%20fill='%23FF6500'/%3E%3Crect%20x='160'%20y='490'%20width='220'%20height='52'%20fill='%23FFFFFF'/%3E%3Crect%20x='160'%20y='610'%20width='220'%20height='52'%20fill='%23FFFFFF'/%3E%3C/g%3E%3Crect%20x='420'%20y='415'%20width='410'%20height='96'%20rx='29'%20fill='%23FFFFFF'/%3E%3Crect%20x='420'%20y='565'%20width='275'%20height='96'%20rx='29'%20fill='%23FFFFFF'/%3E%3Crect%20x='420'%20y='715'%20width='155'%20height='96'%20rx='29'%20fill='%23FFFFFF'/%3E%3C/svg%3E"
+              width="40"
+              height="40"
+              alt="The Sticks"
+              style="display: block; margin: 0 auto" />
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 32px 0; text-align: center">
+            <h2
+              style="
+                margin: 0;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-size: 20px;
+                font-weight: 700;
+                color: #f0f4ff;
+              ">
+              Your sign-in code for The Sticks
+            </h2>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 12px 32px 0; text-align: center">
+            <p
+              style="
+                margin: 0;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-size: 14px;
+                color: #dfe5f0;
+              ">
+              Enter this code in The Sticks:
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 24px 32px; text-align: center">
+            <span
+              style="
+                display: inline-block;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-size: 32px;
+                font-weight: 700;
+                letter-spacing: 0.2em;
+                color: #6e8cae;
+              ">
+              {{ .Token }}
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 0 32px 40px; text-align: center">
+            <p
+              style="
+                margin: 0;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-size: 13px;
+                color: #a5acaf;
+              ">
+              This code expires soon. If you did not request it, you can ignore this email.
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
