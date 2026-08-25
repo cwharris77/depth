@@ -122,12 +122,17 @@ actor SupabaseUserSettingsService: UserSettingsServicing {
     }
 
     func update(_ patch: UserSettingsPatch) async throws {
-        // user_id + updated_at ride along so the upsert creates a row when none exists
-        // yet (the first favorite ever set) and touches updated_at on every write, like
-        // web's PUT. Only patch.columns carry real values; on_conflict=user_id merges,
-        // leaving every other column untouched — the partial-upsert contract.
+        // user_id must be the signed-in user's own id — the "own settings" RLS policy
+        // rejects any insert/update where user_id != auth.uid() (20260709120000_user_
+        // settings.sql). A random UUID here would fail that check silently as a normal
+        // PostgrestError (misread as "offline"), and even a successful write would land
+        // in a row the next read (scoped to the real auth.uid()) could never find.
+        guard let userId = client.auth.currentUser?.id else { throw DepthError.unauthenticated }
+        // updated_at rides along so every write touches it, like web's PUT. Only
+        // patch.columns carry real values; on_conflict=user_id merges, leaving every
+        // other column untouched — the partial-upsert contract.
         var payload: [String: String] = [
-            "user_id": UUID().uuidString,
+            "user_id": userId.uuidString,
             "updated_at": ISO8601DateFormatter().string(from: Date()),
         ]
         for (column, value) in patch.columns {
