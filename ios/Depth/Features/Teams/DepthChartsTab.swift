@@ -7,10 +7,11 @@ import SwiftUI
 // depth chart"), and it removes the visible list-then-push transition the old
 // `TeamListView.restoreLastTeamIfNeeded()` produced on relaunch.
 struct DepthChartsTab: View {
-    /// Resolved before first render from `UserPreferences.lastTeamId` — optimistically,
-    /// without waiting on the team list, so the snapshot fetch starts immediately. The
-    /// `.task` below re-resolves once the live ids are known and corrects a stale
-    /// preference (AGENTS.md invariant 6: stale input degrades, never throws).
+    /// Resolved before first render from the user settings (favorite, if opted in) and
+    /// `UserPreferences.lastTeamId` — optimistically, without waiting on the team list,
+    /// so the snapshot fetch starts immediately. The `.task` below re-resolves once the
+    /// live ids are known and corrects a stale preference (AGENTS.md invariant 6: stale
+    /// input degrades, never throws).
     @State private var teamId: String
     @State private var showSwitcher = false
     /// A player picked from the switcher's cross-team search. Setting it alongside
@@ -29,6 +30,8 @@ struct DepthChartsTab: View {
     private let events: any AppEventsRecording
     /// Receives the current team's accent so the app chrome tints with it.
     private let currentTeamStore: CurrentTeamStore
+    /// DEP-319: favorite/start-on-favorite state read at launch for the favorite tier.
+    private let userSettingsStore: UserSettingsStore
 
     init(
         repository: CachingDepthRepository,
@@ -36,7 +39,8 @@ struct DepthChartsTab: View {
         sessionStore: AuthSessionStore,
         overrideService: any DepthOverrideServicing,
         events: any AppEventsRecording = NoOpAppEventsRecorder(),
-        currentTeamStore: CurrentTeamStore
+        currentTeamStore: CurrentTeamStore,
+        userSettingsStore: UserSettingsStore
     ) {
         self.repository = repository
         self.preferences = preferences
@@ -44,7 +48,12 @@ struct DepthChartsTab: View {
         self.overrideService = overrideService
         self.events = events
         self.currentTeamStore = currentTeamStore
-        _teamId = State(initialValue: StartupTeam.resolve(lastTeamId: preferences.lastTeamId))
+        self.userSettingsStore = userSettingsStore
+        _teamId = State(initialValue: StartupTeam.resolve(
+            favoriteTeamId: userSettingsStore.favoriteTeamId,
+            startOnFavorite: userSettingsStore.startOnFavorite,
+            lastTeamId: preferences.lastTeamId
+        ))
     }
 
     var body: some View {
@@ -100,12 +109,20 @@ struct DepthChartsTab: View {
             .modifier(UITestingDynamicTypeOverride())
         }
         .task {
-            // A stale `lastTeamId` (team removed or renamed between releases) would
-            // otherwise strand the user on a permanently failing chart. Correcting it
-            // here — after the cached/refreshed list arrives — is the only place the
+            // A stale `lastTeamId`/favorite (team removed or renamed between releases)
+            // would otherwise strand the user on a permanently failing chart. Correcting
+            // it here — after the cached/refreshed list arrives — is the only place the
             // live ids are known, and it is a no-op in the overwhelmingly common case.
+            // DEP-319: the favorite tier applies once the settings row has resolved
+            // (load() is a no-op while signed out, so favorites only win when one exists).
+            await userSettingsStore.load()
             guard let teams = try? await repository.teams() else { return }
-            teamId = StartupTeam.resolve(lastTeamId: teamId, validIds: teams.map(\.id))
+            teamId = StartupTeam.resolve(
+                favoriteTeamId: userSettingsStore.favoriteTeamId,
+                startOnFavorite: userSettingsStore.startOnFavorite,
+                lastTeamId: teamId,
+                validIds: teams.map(\.id)
+            )
         }
         .onChange(of: teamId, initial: true) { _, newValue in
             preferences.lastTeamId = newValue

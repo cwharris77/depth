@@ -71,6 +71,13 @@ enum DepthEnvironment {
         SupabaseDepthOverrideService(client: supabaseClient)
     static let appEvents: any AppEventsRecording = SupabaseAppEventsRecorder(client: supabaseClient)
     @MainActor static let authSessionStore = AuthSessionStore(service: authService)
+    /// DEP-319: shared favorite/start-on-favorite state. Backed by the user_settings row
+    /// (RLS-scoped to auth.uid()); reads/writes are gated on the live session so a stale
+    /// favorite never applies after a sign-out.
+    @MainActor static let userSettingsStore: UserSettingsStore = {
+        let remote: (any UserSettingsServicing)? = SupabaseUserSettingsService(client: supabaseClient)
+        return UserSettingsStore(remote: remote, sessionStore: authSessionStore)
+    }()
     /// The current team's accent, published by DepthChartsTab and read by the root tab
     /// bar for its `.tint` — app chrome adopts team color (web parity: activeColors.uiAccent).
     @MainActor static let currentTeamStore = CurrentTeamStore()

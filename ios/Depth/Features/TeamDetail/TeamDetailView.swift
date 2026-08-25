@@ -273,7 +273,8 @@ struct TeamDetailView: View {
                     sessionStore: sessionStore,
                     authService: DepthEnvironment.authService,
                     events: events,
-                    onboarding: DepthEnvironment.onboarding
+                    onboarding: DepthEnvironment.onboarding,
+                    settingsStore: DepthEnvironment.userSettingsStore
                 )
                 .modifier(UITestingDynamicTypeOverride())
             }
