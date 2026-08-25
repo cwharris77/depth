@@ -41,6 +41,7 @@ yarn-error.log*
 next-env.d.ts
 .gstack/
 /.worktrees/
+/.cache/matchup-forecast/
 .env*.local
 __pycache__/
 
