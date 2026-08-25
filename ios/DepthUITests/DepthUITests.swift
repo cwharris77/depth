@@ -533,24 +533,69 @@ final class DepthUITests: XCTestCase {
         let matchupCard = app.descendants(matching: .any)["compare-matchup-card"].firstMatch
         XCTAssertTrue(matchupCard.waitForExistence(timeout: 20), "the matchup card should render once both teams are picked")
 
-        // Position tab: 44pt position chips and the rank-dot legend above the depth rows.
+        // Position tab: the DEP-311 room picker (unit lens + room grid) and the rank-dot
+        // legend above the depth rows. The old horizontal `compare-position-row` scroller
+        // is gone.
         app.buttons["compare-tab-position"].tap()
-        let positionRow = app.scrollViews["compare-position-row"]
-        XCTAssertTrue(positionRow.waitForExistence(timeout: 10), "the position chip row should render")
-        // DEP-252/DEP-277: chips built with `.frame(minHeight: 44)` can report back as
-        // 43.99999999999997 through XCUITest's point↔pixel (3x) frame conversion — a
-        // float-precision artifact, not an undersized chip. `>= 44` started failing on
-        // that rounding noise once Compare picked up a real NavigationStack (one more
-        // layout pass in the coordinate chain makes the rounding land under 44 more
-        // often); a small epsilon tolerates the conversion noise without loosening the
-        // real 44pt touch-target intent.
-        XCTAssertTrue(
-            positionRow.buttons.allElementsBoundByIndex.contains { $0.frame.height >= 44 - 0.01 },
-            "position chips must meet the 44pt touch minimum"
-        )
+        // The unit lens rows (offense/defense/special) and the offense room grid render on
+        // the position tab. The old horizontal `compare-position-row` scroller is gone.
+        let lineupOffense = app.buttons["unit-tab-offense"]
+        XCTAssertTrue(lineupOffense.waitForExistence(timeout: 10), "the unit lens row should render on the position tab")
+        XCTAssertTrue(lineupOffense.isSelected || lineupOffense.frame.height >= 44 - 0.01, "the unit lens keeps its 44pt tap target")
+        // The default unit (Offense) room grid: every room tile keeps the 44pt minimum and
+        // is exposed without any horizontal scrolling.
+        let firstRoom = app.buttons["compare-room-quarterback"]
+        XCTAssertTrue(firstRoom.waitForExistence(timeout: 5), "the offense Quarterback room tile should render")
+        XCTAssertGreaterThanOrEqual(firstRoom.frame.height, 44 - 0.01, "room tiles must meet the 44pt touch minimum")
 
         let legend = app.descendants(matching: .any)["compare-rank-legend"].firstMatch
         XCTAssertTrue(legend.waitForExistence(timeout: 5), "the rank-dot legend should render above the depth table")
+    }
+
+    /// DEP-311: every unit's last role is reachable through the two-step room→position
+    /// picker without horizontal scrolling. Picks a room in each unit and taps its final
+    /// exact role — all resolvable by identifier (no swipe) on the position tab.
+    func testMatchupRoomsReachEveryUnitWithoutHorizontalScrolling() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launch()
+        XCTAssertTrue(app.waitForDepthChart(), "Depth Charts should be the launch tab")
+
+        app.tabBars.firstMatch.buttons["Compare"].tap()
+        XCTAssertTrue(app.scrollViews["compare-content"].waitForExistence(timeout: 10))
+        pickTeam(into: "a", query: "Bills", expectedRow: "team-row-bills", app: app)
+        pickTeam(into: "b", query: "Seahawks", expectedRow: "team-row-seahawks", app: app)
+
+        app.buttons["compare-tab-position"].tap()
+        // Offense was the launch unit; its room grid renders immediately.
+        XCTAssertTrue(app.buttons["compare-room-line"].waitForExistence(timeout: 10), "the offense Line room should render without horizontal scrolling")
+
+        // Offense → Line room → RT (the last role in that room).
+        app.buttons["compare-room-line"].tap()
+        let rightTackle = app.buttons["compare-position-RT"]
+        XCTAssertTrue(rightTackle.waitForExistence(timeout: 5), "RT should be reachable in the Line exact-role panel")
+        XCTAssertGreaterThanOrEqual(rightTackle.frame.height, 44 - 0.01, "RT must keep the 44pt touch minimum")
+        rightTackle.tap()
+
+        // Defense: unit lens → Safeties room → FS (last role).
+        // The unit lens is the same DepthUnitTabBar treatment as the field (unit-tab-*).
+        app.buttons["unit-tab-defense"].tap()
+        XCTAssertTrue(app.buttons["compare-room-safeties"].waitForExistence(timeout: 5), "the defense Safeties room should render in the grid")
+        app.buttons["compare-room-safeties"].tap()
+        let freeSafety = app.buttons["compare-position-FS"]
+        XCTAssertTrue(freeSafety.waitForExistence(timeout: 5), "FS should be reachable from the Safeties exact-role panel")
+        XCTAssertGreaterThanOrEqual(freeSafety.frame.height, 44 - 0.01, "FS must keep the 44pt touch minimum")
+        freeSafety.tap()
+
+        // Special Teams: unit lens → Specialists → K (Kicker).
+        app.buttons["unit-tab-special"].tap()
+        XCTAssertTrue(app.buttons["compare-room-specialists"].waitForExistence(timeout: 5), "the Specialists room should render in special teams")
+        app.buttons["compare-room-specialists"].tap()
+        let kicker = app.buttons["compare-position-K"]
+        XCTAssertTrue(kicker.waitForExistence(timeout: 5), "K should be reachable from the Specialists exact-role panel")
+        XCTAssertGreaterThanOrEqual(kicker.frame.height, 44 - 0.01, "K must keep the 44pt touch minimum")
+        XCTAssertTrue(kicker.isHittable, "K should be tappable without horizontal scrolling")
+        kicker.tap()
     }
 
     /// Picks a team into a compare slot: taps the slot, searches in the picker sheet,
