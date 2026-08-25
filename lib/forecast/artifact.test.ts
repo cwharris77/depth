@@ -316,6 +316,46 @@ describe('guarded evaluation outputs', () => {
     expect(await missing(paths.modelCardPath)).toBe(true);
   });
 
+  it('rejects a dangling report-file symlink to the artifact before creating it', async () => {
+    const paths = await outputPaths();
+    await mkdir(dirname(paths.reportPath), { recursive: true });
+    await mkdir(dirname(paths.artifactPath), { recursive: true });
+    await symlink(paths.artifactPath, paths.reportPath, 'file');
+
+    expect(() =>
+      writeEvaluationOutputs(evaluationReport(false), { ...paths, promote: false })
+    ).toThrow(/symbolic link/i);
+    expect(await missing(paths.artifactPath)).toBe(true);
+    expect(await missing(paths.modelCardPath)).toBe(true);
+  });
+
+  it('rejects a dangling model-card-file symlink to the artifact before creating it', async () => {
+    const paths = await outputPaths();
+    await mkdir(dirname(paths.modelCardPath), { recursive: true });
+    await mkdir(dirname(paths.artifactPath), { recursive: true });
+    await symlink(paths.artifactPath, paths.modelCardPath, 'file');
+
+    expect(() =>
+      writeEvaluationOutputs(evaluationReport(true), { ...paths, promote: false })
+    ).toThrow(/symbolic link/i);
+    expect(await missing(paths.artifactPath)).toBe(true);
+    expect(await missing(paths.reportPath)).toBe(true);
+  });
+
+  it('rejects a final output symlink to an existing artifact without truncating it', async () => {
+    const paths = await outputPaths();
+    await mkdir(dirname(paths.reportPath), { recursive: true });
+    await mkdir(dirname(paths.artifactPath), { recursive: true });
+    await writeFile(paths.artifactPath, 'sentinel');
+    await symlink(paths.artifactPath, paths.reportPath, 'file');
+
+    expect(() =>
+      writeEvaluationOutputs(evaluationReport(false), { ...paths, promote: false })
+    ).toThrow(/symbolic link/i);
+    expect(await readFile(paths.artifactPath, 'utf8')).toBe('sentinel');
+    expect(await missing(paths.modelCardPath)).toBe(true);
+  });
+
   it('rejects existing hard-linked output files before writing', async ({ skip }) => {
     const paths = await outputPaths();
     await mkdir(dirname(paths.reportPath), { recursive: true });

@@ -109,10 +109,17 @@ function resolvedOutputPaths(options: WriteEvaluationOutputsOptions): {
   modelCardPath: string;
   artifactPath: string;
 } {
+  const requestedPaths = {
+    reportPath: resolve(options.reportPath),
+    modelCardPath: resolve(options.modelCardPath),
+    artifactPath: resolve(options.artifactPath),
+  };
+  for (const path of Object.values(requestedPaths)) assertFinalPathIsNotSymlink(path);
+
   const outputs = {
-    reportPath: canonicalOutput(options.reportPath),
-    modelCardPath: canonicalOutput(options.modelCardPath),
-    artifactPath: canonicalOutput(options.artifactPath),
+    reportPath: canonicalOutput(requestedPaths.reportPath),
+    modelCardPath: canonicalOutput(requestedPaths.modelCardPath),
+    artifactPath: canonicalOutput(requestedPaths.artifactPath),
   };
   const canonicalPaths = Object.values(outputs).map((output) => output.path);
   const existingIdentities = Object.values(outputs).flatMap((output) =>
@@ -129,6 +136,18 @@ function resolvedOutputPaths(options: WriteEvaluationOutputsOptions): {
     modelCardPath: outputs.modelCardPath.path,
     artifactPath: outputs.artifactPath.path,
   };
+}
+
+function assertFinalPathIsNotSymlink(path: string): void {
+  try {
+    if (fs.lstatSync(path).isSymbolicLink()) {
+      throw new Error(`Forecast output path cannot be a symbolic link: ${path}`);
+    }
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === 'ENOENT' || code === 'ENOTDIR') return;
+    throw error;
+  }
 }
 
 function canonicalOutput(inputPath: string): { path: string; identity: string | null } {
