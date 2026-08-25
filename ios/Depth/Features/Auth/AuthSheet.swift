@@ -47,7 +47,7 @@ struct AuthSheet: View {
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.large])
     }
 
     private var emailCard: some View {
