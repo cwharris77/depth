@@ -23,6 +23,7 @@
 		165B8462111535F8104EAC3E /* PlayerHit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A35742201EFBCBE63AB585 /* PlayerHit.swift */; };
 		1710638BC3FA5FAD1EB88880 /* PlayerProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7327B7FE220C00C465A0C5 /* PlayerProfileTests.swift */; };
 		17A2F54F4BEC004A37AFB2AF /* TeamLogoCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9149D725F0D8E31CEA618D40 /* TeamLogoCache.swift */; };
+		1E8765E566DE5866EF53BB33 /* FormationAttributionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D5CEA9E4551B2004154E97F /* FormationAttributionUITests.swift */; };
 		1EAD5ECB38956C0395E81458 /* DepthChartFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14888EF10F7F9A82139F0BD /* DepthChartFieldView.swift */; };
 		28BE2E5939AE5607BB4CC133 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4163276566B599870A6F754E /* Assets.xcassets */; };
 		28BF18B10DB865B898B2F878 /* DepthOverrideMergeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8853CE0D389E576E83A733BB /* DepthOverrideMergeTests.swift */; };
@@ -245,6 +246,7 @@
 		797CCBB2827B3B2EC8DC53E2 /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
 		7C4D96EE256B7056FA88238F /* TeamSnapshotDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSnapshotDTO.swift; sourceTree = "<group>"; };
 		7D355B51AA402BF658DDF63C /* DepthSegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthSegmentedControl.swift; sourceTree = "<group>"; };
+		7D5CEA9E4551B2004154E97F /* FormationAttributionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormationAttributionUITests.swift; sourceTree = "<group>"; };
 		81C2EA6E8FFCA933708611EF /* UniformPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniformPickerSheet.swift; sourceTree = "<group>"; };
 		88314A701F47D93C3F85CFC9 /* Staging.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Staging.xcconfig; sourceTree = "<group>"; };
 		8853CE0D389E576E83A733BB /* DepthOverrideMergeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthOverrideMergeTests.swift; sourceTree = "<group>"; };
@@ -481,6 +483,7 @@
 				69C97D21FFB3852484D4E4F2 /* AppStoreScreenshotsUITests.swift */,
 				AFE9E3629D2A8EF20465A2F7 /* AuthUITests.swift */,
 				1134BC81FF92C3AF1A114845 /* DepthUITests.swift */,
+				7D5CEA9E4551B2004154E97F /* FormationAttributionUITests.swift */,
 				4C20C08065BC045F4A9C3C2D /* PerformanceUITests.swift */,
 				B363F9AF5C0854305B6E670A /* PlayerCardReorderUITests.swift */,
 				4D492C36C54AC9057D4D5A12 /* PRScreenshotsUITests.swift */,
@@ -977,6 +980,7 @@
 				C34BDFEA64ECB80BA1EE640C /* AppStoreScreenshotsUITests.swift in Sources */,
 				A1E1EFE3A8781B7BA2758DB4 /* AuthUITests.swift in Sources */,
 				5B9538595A885E3D730A7A12 /* DepthUITests.swift in Sources */,
+				1E8765E566DE5866EF53BB33 /* FormationAttributionUITests.swift in Sources */,
 				014A48739825608FC24A6EF1 /* PRScreenshotsUITests.swift in Sources */,
 				CB4FD1096A9B377BFD07C517 /* PerformanceUITests.swift in Sources */,
 				E6FE8547B35A824990B3FDED /* PlayerCardReorderUITests.swift in Sources */,

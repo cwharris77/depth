@@ -23,11 +23,14 @@ App Store sequence uses.
 | Target | Screen the agent edited |
 | --- | --- |
 | `field` | The depth-chart field surface (grass gradient, yard lines, end zones, LOS, hash marks) — the app's signature screen. The default. |
+| `field-footer` | The team page scrolled below the field, including the inline FTN attribution. |
+| `formations` | The formations sheet scrolled through every formation to its attribution footer. |
+| `teams` | A filtered team-search result. |
 | `uniform` | The uniform picker sheet (thumbnail corner radius, kit list). |
 | `player` | A player detail sheet (opened from a filled depth-chart slot). |
 
-Anything not in `{field, uniform, player}` is ignored; requesting nothing (or only unknown
-tokens) makes the test fail loudly so nobody silently gets zero screenshots.
+Anything outside the documented targets is ignored. Requesting nothing (or only unknown
+tokens) falls back to `field` so a capture never silently produces zero screenshots.
 
 ## Running it
 
@@ -41,11 +44,11 @@ worktree-local `ios/.derivedData` (gitignored) so parallel worktrees don't colli
 # Capture the depth-chart field (default) from the current code:
 ios/scripts/screenshot-check.sh
 
-# Capture field + uniform:
-ios/scripts/screenshot-check.sh -t field,uniform
+# Capture the field and both attribution placements:
+ios/scripts/screenshot-check.sh -t field,field-footer,formations
 
 # Capture "before" from main + "after" from your branch (before/after pair):
-ios/scripts/screenshot-check.sh --base main -t field,uniform
+ios/scripts/screenshot-check.sh --base main -t field,field-footer,formations
 ```
 
 Output: `ios/.pr-screenshots/after/<target>.png` (and `before/` when `--base` given) —
