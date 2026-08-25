@@ -59,5 +59,8 @@ ios/vendor/bundle/
 # reusable frame background, not a per-run output.
 ios/fastlane/screenshots/en-US/
 ios/fastlane/screenshots/*.ttf
+# App Store screenshot captures are release artifacts, never source (docs/ios-appstore-screenshots.md)
+/Screenshots/
+
 ios/fastlane/README.md
 ios/fastlane/report.xml

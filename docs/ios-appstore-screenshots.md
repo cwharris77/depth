@@ -29,56 +29,87 @@ It runs against **Staging**, which (per `ios/xcconfig/Staging.xcconfig`'s
 is no separate staging seed to stand up for this, so "stable staging seed" means picking
 one already-stable team rather than fabricating fixture data.
 
-### Screenshot #4 — the judgment call
+### Screenshot #4 — how reorder editing is reached signed-out
 
-The reorder editor (`OverrideEditorSheet`) is normally gated on a real signed-in session
-(`TeamDetailView.beginEditing`) because saving an override requires one. The design
-spec's launch-mode requirement explicitly rules out fabricating a session ("without
-exposing an email or test secret"), and there's no existing signed-out preview of this
-UI. `OverrideEditorViewModel` itself does no network I/O until `save()` is called — its
-draft list is populated from the caller-supplied `playerIds`, not a fetch — so
-`UI_TESTING_APPSTORE_SCREENSHOTS` adds a narrow bypass
-(`TeamDetailView.isAppStoreScreenshotMode`) that skips the sign-in gate only under this
-launch argument, opening the real reorder sheet in its authentic unsaved-drag-preview
-state (`.editMode = .constant(.active)`, drag handles already live). The test never taps
-Save. This is scoped to be inert outside screenshot mode: the sign-in gate is untouched
-for every other launch configuration.
+The original T9D implementation needed a judgment call here: the old per-position
+`OverrideEditorSheet` was gated on a real signed-in session, and the design spec's
+launch-mode requirement explicitly rules out fabricating a session ("without exposing an
+email or test secret"), so the capture added a narrow `isAppStoreScreenshotMode` bypass
+to open the sheet's authentic unsaved-drag-preview state. That bypass is **gone now**:
+DEP-219 made depth-chart editing local-first (no sign-in needed to reorder — only
+cross-device sync needs an account, matching web's `localStorage` model), and DEP-231
+replaced the standalone editor with an app-level "Edit Depth Chart" toggle. Screenshot #4
+today opens a real player card already in reorder mode via that toggle — genuinely
+reachable signed-out, no launch-argument special-casing in the app.
 
 ## Running it
 
-1. Boot a currently-accepted 6.9-inch simulator. As of this writing that's the
-   **iPhone 17 Pro Max** (1320×2868 px @3x, matching Apple's published 6.9-inch
-   requirement) — re-check `xcrun simctl list devicetypes -j` and Apple's current
-   screenshot-spec page before every real submission, since Apple periodically retires
-   the oldest accepted size class and simulator naming shifts with each generation.
-2. Optionally normalize the status bar before capturing (XCUITest can't call `simctl`
-   from inside the app process — this has to happen from the host shell beforehand):
-   ```
-   xcrun simctl status_bar <device-udid> override \
-     --time "9:41" --batteryState charged --batteryLevel 100 \
-     --cellularBars 4 --wifiBars 3
-   ```
-   Clear it afterward with `xcrun simctl status_bar <device-udid> clear`.
-3. Run the test standalone. It's excluded from the default `xcodebuild test` run via
-   `ios/project.yml`'s scheme-level `skippedTests` (so `ios-ci.yml` and a plain `test`
-   invocation both skip it) — but `-only-testing` at the command line cannot override a
-   scheme-level skip, so running it directly needs that skip temporarily removed:
-   ```
-   # In ios/project.yml, replace the `DepthUITests` entry under schemes.Depth.test.targets
-   # with the plain `- DepthUITests` form (no skippedTests), then:
-   cd ios && xcodegen generate
+**One command** — `ios/scripts/capture-appstore-screenshots.sh` wraps the whole pipeline
+(see its header for the full contract): it resolves the newest 6.9-inch "iPhone N Pro
+Max"-class simulator, boots a **disposable** instance, normalizes the status bar, runs
+the capture test against the dedicated `Depth-AppStoreScreenshots` scheme (which carries
+no `skippedTests`, so no `project.yml` editing is ever needed), exports the PNGs, verifies
+them (exactly five, 1320×2868, no alpha), and tears the simulator down:
 
-   xcodebuild -project Depth.xcodeproj -scheme Depth -configuration Staging \
-     -destination 'platform=iOS Simulator,id=<device-udid>' \
-     -only-testing:DepthUITests/AppStoreScreenshotsUITests \
-     -resultBundlePath /tmp/depth-screenshots.xcresult \
-     test
+```
+ios/scripts/capture-appstore-screenshots.sh
+```
 
-   # Revert project.yml back to the skippedTests form and `xcodegen generate` again
-   # before committing anything — the checked-in project must match the skipped form.
-   ```
+Output lands raw (unframed, no alpha) in a deterministic, gitignored directory:
+
+```
+Screenshots/<device>/01-team-search.png
+Screenshots/<device>/02-team-depth-chart.png
+Screenshots/<device>/03-player-detail.png
+Screenshots/<device>/04-reorder-editing.png
+Screenshots/<device>/05-schedule.png
+```
+
+where `<device>` is the resolved simulator type slug (e.g. `iPhone-17-Pro-Max`).
+
+The script normalizes the status bar itself (`xcrun simctl status_bar override --time
+"9:41" …`) because the XCUITest process runs inside the simulator and can't call
+`simctl` — that's how every capture shares the same time/signals without a manual pre-
+step. Note the override is best-effort across iOS versions: on some recent simulators it
+no longer alters the captured framebuffer, so the set stays consistent because all five
+captures land within the same minute (the run takes ~40s) — inspect screenshot #1 vs #5
+and re-run if the clock rolled over mid-run. It also settles animations for the mode:
+`AppStoreScreenshotsUITests` launches with the existing `UI_TESTING_REDUCE_MOTION`
+argument so the edit-mode dot wiggle and button press-scale are static in the captures.
+
+### Running by hand (no script)
+
+To run the test alone, use the dedicated scheme — the default `Depth` scheme's
+scheme-level `skippedTests` cannot be overridden by `-only-testing` at the command line:
+
+```
+xcrun simctl status_bar <device-udid> override \
+  --time "9:41" --batteryState charged --batteryLevel 100 \
+  --cellularBars 4 --wifiBars 3
+
+xcodebuild -project ios/Depth.xcodeproj -scheme Depth-AppStoreScreenshots \
+  -configuration Staging \
+  -destination 'platform=iOS Simulator,id=<a 6.9-inch simulator UDID>' \
+  -only-testing:DepthUITests/AppStoreScreenshotsUITests \
+  -resultBundlePath /tmp/depth-screenshots.xcresult \
+  test
+
+xcrun simctl status_bar <device-udid> clear
+```
+
+As of this writing the currently-accepted 6.9-inch simulator is the **iPhone 17 Pro Max**
+(1320×2868 px @3x, matching Apple's published 6.9-inch requirement) — re-check
+`xcrun simctl list devicetypes -j` and Apple's current screenshot-spec page before every
+real submission, since Apple periodically retires the oldest accepted size class and
+simulator naming shifts with each generation. The capture script refuses to emit a PNG
+that isn't exactly 1320×2868, so a non-6.9-inch pick fails loudly instead of quietly
+producing unusable files.
 
 ## Extracting the PNGs
+
+When you run via the script, the five screenshots are already written to
+`Screenshots/<device>/<index>-<name>.png` — nothing further to extract. The steps below
+are only for the by-hand path above.
 
 The five screenshots land as `XCTAttachment`s (`.keepAlways`) inside the `.xcresult`
 bundle, not as loose files. Export them with `xcresulttool`:
@@ -93,9 +124,10 @@ xcrun xcresulttool get test-results attachments \
 subcommand, use `xcrun xcresulttool export attachments --legacy` instead — check
 `xcrun xcresulttool --help` for what's available on the toolchain you're running.) Each
 attachment is exported with its `name` as the filename prefix (`01-team-search...png`,
-etc.) alongside a manifest — inspect every image at full size before upload for
-clipping, stale data, placeholder artifacts, simulator chrome, personal information,
-unlicensed assets, and inconsistent status-bar time (design spec item 38).
+etc.) alongside a manifest — rename each export to drop the `xcresulttool` suffix (so the
+file is exactly `01-team-search.png` etc.) and inspect every image at full size before
+upload for clipping, stale data, placeholder artifacts, simulator chrome, personal
+information, unlicensed assets, and inconsistent status-bar time (design spec item 38).
 
 The exported PNGs are a release artifact, not source — never commit them to this repo.
 
