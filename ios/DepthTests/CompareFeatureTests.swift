@@ -95,6 +95,67 @@ private actor CompareRepositoryFake: DepthRepository {
     #expect(COMPARE_POSITIONS.map(\.rawValue).joined(separator: ",") == expected)
 }
 
+// MARK: - DEP-311: exhaustive position → unit/room mapping
+
+@Test func matchupRoomMapIsExhaustiveAndUnambiguous() {
+    // Every COMPARE_POSITIONS value maps to exactly one room, and no position is duplicated
+    // across rooms. Fails on a missing or repeated position (DEP-311 done-when).
+    let mapped = CompareMatchRooms.rooms.flatMap(\.positions)
+    #expect(
+        Set(mapped) == Set(COMPARE_POSITIONS),
+        "every compare position must appear in exactly one room"
+    )
+    #expect(
+        mapped.count == COMPARE_POSITIONS.count,
+        "each compare position must map to exactly one room (got \(mapped.count) mapped entries)"
+    )
+    // ORDER preserved within each room, so the picker's exact-role grid reads in
+    // COMPARE_POSITIONS display order.
+    for room in CompareMatchRooms.rooms {
+        #expect(
+            room.positions == COMPARE_POSITIONS.filter { room.positions.contains($0) },
+            "room \(room.id) positions should stay in COMPARE_POSITIONS order"
+        )
+    }
+}
+
+@Test func compareRoomGroupsMatchTheLockedContract() {
+    // DEP-311 task 1 locked the exact group membership; pin each room by its raw codes so
+    // a mis-grouped position is caught loudly.
+    func codes(_ room: CompareRoom) -> String {
+        room.positions.map(\.rawValue).joined(separator: ",")
+    }
+    #expect(codes(CompareMatchRooms.rooms.first { $0.id == "quarterback" }!) == "QB")
+    #expect(codes(CompareMatchRooms.rooms.first { $0.id == "backfield" }!) == "RB,FB")
+    #expect(codes(CompareMatchRooms.rooms.first { $0.id == "receivers" }!) == "WR,TE")
+    #expect(codes(CompareMatchRooms.rooms.first { $0.id == "line" }!) == "LT,LG,C,RG,RT")
+    #expect(codes(CompareMatchRooms.rooms.first { $0.id == "front" }!) == "DE,LDE,RDE,DT,NT")
+    #expect(codes(CompareMatchRooms.rooms.first { $0.id == "linebackers" }!) == "LB,WLB,LILB,RILB,SLB")
+    #expect(codes(CompareMatchRooms.rooms.first { $0.id == "corners" }!) == "CB,LCB,RCB,NB")
+    #expect(codes(CompareMatchRooms.rooms.first { $0.id == "safeties" }!) == "S,SS,FS")
+    #expect(codes(CompareMatchRooms.rooms.first { $0.id == "specialists" }!) == "K,P")
+    // LS/KR/PR are editorial slots, never depth rooms.
+    for special in [Position.ls, .kr, .pr] {
+        #expect(CompareMatchRooms.room(of: special) == nil)
+    }
+}
+
+@Test func compareRoomUnitsAreExclusive() {
+    // Each room's unit is the single unit that maps to those positions.
+    #expect(CompareMatchRooms.rooms(in: .offense).count == 4)
+    #expect(CompareMatchRooms.rooms(in: .defense).count == 4)
+    #expect(CompareMatchRooms.rooms(in: .special).count == 1)
+    // Every position in an offense room belongs to offense, etc.
+    for unit in [Unit.offense, .defense, .special] {
+        for room in CompareMatchRooms.rooms(in: unit) {
+            #expect(
+                CompareMatchRooms.room(of: room.positions[0])?.unit == unit,
+                "\(room.id) positions should sit under unit \(unit.rawValue)"
+            )
+        }
+    }
+}
+
 @Test func deepestRoomPicksTheMostCombinedDepth() {
     let a = (0..<3).map { comparePlayer(id: "a\($0)", name: "P\($0)", position: .wr, rank: $0 + 1, number: $0 + 1) }
     let b = (0..<1).map { comparePlayer(id: "b\($0)", name: "P\($0)", position: .wr, rank: $0 + 1, number: $0 + 1) }
@@ -239,4 +300,74 @@ private actor CompareRepositoryFake: DepthRepository {
     #expect(await viewModel.tab == .position)
     await viewModel.selectPosition(.wr)
     #expect(await viewModel.position == .wr)
+}
+
+// MARK: - DEP-311: room picker state machine
+
+@Test func roomSelectionChoosesFirstPositionAndPreservesSelection() async {
+    let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
+    let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
+    let repo = CompareRepositoryFake(
+        teams: [hawks, niners],
+        snapshots: [hawks.id: compareSnapshot(team: hawks, qbCount: 1), niners.id: compareSnapshot(team: niners, qbCount: 3)],
+        stats: [hawks.id: statsPage(team: hawks, wins: 12), niners.id: statsPage(team: niners, wins: 9)]
+    )
+    let viewModel = await CompareViewModel(repository: repo)
+    await viewModel.load()
+    await viewModel.pickTeam("seahawks", into: .a)
+    await viewModel.pickTeam("49ers", into: .b)
+
+    // No room selected until the user acts.
+    #expect(await viewModel.hasSelectedRoom == false)
+    #expect(await viewModel.selectedUnit == .offense)
+
+    // Pick the Receivers room → its FIRST position (WR) becomes the selection, and the
+    // selected room is set.
+    let receivers = CompareMatchRooms.rooms.first { $0.id == "receivers" }!
+    await viewModel.selectRoom(receivers)
+    #expect(await viewModel.hasSelectedRoom == true)
+    #expect(await viewModel.selectedRoom == receivers)
+    #expect(await viewModel.position == .wr)
+
+    // Move the exact role to TE, then switch lenses; TE is still valid within the same room
+    // (still offense), so the selection is preserved.
+    await viewModel.selectPosition(.te)
+    #expect(await viewModel.position == .te)
+    let backfield = CompareMatchRooms.rooms.first { $0.id == "backfield" }!
+    await viewModel.selectRoom(backfield)
+    #expect(await viewModel.selectedRoom == backfield)
+    #expect(await viewModel.position == .rb, "selecting a new room should pick its first position")
+
+    // A brand-new unit with no valid role for the current position leaves position alone and
+    // clears the room — the user must explicitly pick a room in the new unit (DEP-311 task 3).
+    await viewModel.selectUnit(.special)
+    #expect(await viewModel.selectedUnit == .special)
+    #expect(await viewModel.hasSelectedRoom == false)
+    #expect(await viewModel.position == .rb, "an invalid role across units is preserved, not reset")
+}
+
+@Test func switchingLensPreservesValidSelection() async {
+    let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
+    let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
+    let repo = CompareRepositoryFake(
+        teams: [hawks, niners],
+        snapshots: [hawks.id: compareSnapshot(team: hawks, qbCount: 1), niners.id: compareSnapshot(team: niners, qbCount: 3)],
+        stats: [hawks.id: statsPage(team: hawks, wins: 12), niners.id: statsPage(team: niners, wins: 9)]
+    )
+    let viewModel = await CompareViewModel(repository: repo)
+    await viewModel.load()
+    await viewModel.pickTeam("seahawks", into: .a)
+    await viewModel.pickTeam("49ers", into: .b)
+
+    // Pick offense WR, then jump to defense; the WR position doesn't belong to any defense
+    // room, so no room is auto-selected but the position is preserved until a room is picked.
+    await viewModel.selectPosition(.wr)
+    await viewModel.selectUnit(.defense)
+    #expect(await viewModel.selectedUnit == .defense)
+    #expect(await viewModel.hasSelectedRoom == false)
+
+    // Now pick the Linebackers room — resolves to its FIRST position (LB).
+    let lbs = CompareMatchRooms.rooms.first { $0.id == "linebackers" }!
+    await viewModel.selectRoom(lbs)
+    #expect(await viewModel.position == .lb)
 }

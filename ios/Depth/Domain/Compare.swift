@@ -14,6 +14,57 @@ let COMPARE_POSITIONS: [Position] = [
     .cb, .lcb, .rcb, .nb, .s, .ss, .fs, .k, .p,
 ]
 
+// MARK: - DEP-311: position → unit/room mapping
+
+/// A football room in the two-step position picker: a grouped set of exact roster positions
+/// within a single unit. DEP-298 locked "choose a room, then the exact role" over the long
+/// horizontal chip row; this is the pure model behind that interaction. Every room belongs to
+/// exactly one unit and owns its display name/detail and its positions in `COMPARE_POSITIONS`
+/// order, so the picker can lay out around aligned grids instead of a scroll strip.
+struct CompareRoom: Hashable, Identifiable {
+    /// Stable identifier used to key the picker's grid and the selected-room comparison.
+    let id: String
+    /// Display name, e.g. "Linebackers".
+    let name: String
+    /// One-line descriptor of the room's contents, e.g. "Inside · outside".
+    let detail: String
+    let unit: Unit
+    /// The exact roster positions in this room, in `COMPARE_POSITIONS` display order.
+    let positions: [Position]
+}
+
+/// The pure, exhaustive catalog mapping every `COMPARE_POSITIONS` value to exactly one unit
+/// and room (DEP-311 task 1). Position groups mirror web's editorial depth groupings; a value
+/// missing from `rooms` or duplicated across two rooms is a maintenance error caught by
+/// `compareMatchupMapIsExhaustive`. ESPECIALLY does NOT carry `LS`/`KR`/`PR`, which are not
+/// depth groups (same editorial reason `COMPARE_POSITIONS` omits them).
+enum CompareMatchRooms {
+    static let rooms: [CompareRoom] = [
+        // Offense (QB / RB / FB / WR / TE / LT / LG / C / RG / RT)
+        CompareRoom(id: "quarterback", name: "Quarterback", detail: "Signal caller", unit: .offense, positions: [.qb]),
+        CompareRoom(id: "backfield", name: "Backfield", detail: "Running · fullback", unit: .offense, positions: [.rb, .fb]),
+        CompareRoom(id: "receivers", name: "Receivers", detail: "Wide · tight end", unit: .offense, positions: [.wr, .te]),
+        CompareRoom(id: "line", name: "Line", detail: "Tackles · guards · center", unit: .offense, positions: [.lt, .lg, .c, .rg, .rt]),
+        // Defense (17 positions)
+        CompareRoom(id: "front", name: "Front", detail: "Ends · tackles · nose", unit: .defense, positions: [.de, .lde, .rde, .dt, .nt]),
+        CompareRoom(id: "linebackers", name: "Linebackers", detail: "Inside · outside", unit: .defense, positions: [.lb, .wlb, .lilb, .rilb, .slb]),
+        CompareRoom(id: "corners", name: "Corners", detail: "Outside · nickel", unit: .defense, positions: [.cb, .lcb, .rcb, .nb]),
+        CompareRoom(id: "safeties", name: "Safeties", detail: "Free · strong", unit: .defense, positions: [.s, .ss, .fs]),
+        // Special Teams (2 specialists)
+        CompareRoom(id: "specialists", name: "Specialists", detail: "Kicker · punter", unit: .special, positions: [.k, .p]),
+    ]
+
+    /// The rooms belonging to a unit, in display order.
+    static func rooms(in unit: Unit) -> [CompareRoom] {
+        rooms.filter { $0.unit == unit }
+    }
+
+    /// The single room a position maps to, or nil if the position isn't a compare position.
+    static func room(of position: Position) -> CompareRoom? {
+        rooms.first { $0.positions.contains(position) }
+    }
+}
+
 /// The "deepest room" teaser (web's reunification spec) needs one comparable
 /// position, not the full list — picks whichever position has the most combined
 /// depth across both sides (max(a, b) per position, tie → earliest position in

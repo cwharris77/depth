@@ -423,14 +423,15 @@ private struct DeepestRoomTeaser: View {
 
 // MARK: - Position tab
 
-/// Web's `PositionDepth` (components/CompareView.tsx): the position chip row plus the
-/// rank-aligned depth table (or the prompt/same-team/empty states).
+/// Web's `PositionDepth` (components/CompareView.tsx): the two-step room→role position
+/// picker (DEP-311, replacing the horizontal chip row) plus the rank-aligned depth table
+/// (or the prompt/same-team/empty states).
 private struct PositionDepthSection: View {
     let viewModel: CompareViewModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            positionChipRow
+            RoomPositionPicker(viewModel: viewModel)
 
             if !viewModel.bothPicked {
                 ComparePrompt(pickedCount: viewModel.pickedCount, copy: "Their depth at the selected position lines up side by side, rank for rank.")
@@ -450,35 +451,185 @@ private struct PositionDepthSection: View {
             }
         }
     }
+}
 
-    private var positionChipRow: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: DesignTokens.Spacing.sm) {
-                ForEach(COMPARE_POSITIONS, id: \.self) { pos in
-                    let isActive = pos == viewModel.position
-                    Button {
-                        viewModel.selectPosition(pos)
-                    } label: {
-                        Text(pos.rawValue)
-                            .font(.caption.weight(isActive ? .semibold : .regular))
-                            .foregroundStyle(isActive ? DesignTokens.Colors.onAccent : DesignTokens.Colors.textSecondary)
-                            // DEP-266: chips were ~22-30pt (footnote + thin padding),
-                            // below the 44pt minimum every other touch control keeps.
-                            // Frame on the label first (the DepthUnitTabBar pattern) so
-                            // the capsule background below covers the full hit area.
-                            .frame(minHeight: 44)
-                            .padding(.horizontal, DesignTokens.Spacing.sm + 4)
-                            .background(isActive ? DesignTokens.Colors.accent : DesignTokens.Colors.surfaceChip, in: Capsule())
-                            .contentShape(Capsule())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("compare-position-\(pos.rawValue)")
+/// The DEP-311 two-step position picker that replaces the old horizontal chip scroller: a
+/// balanced unit→room grid followed by an exact-role panel, with a "1 OF 2 · ROOM" /
+/// "2 OF 2 · POSITION" progress label. All 29 `COMPARE_POSITIONS` values stay reachable with
+/// no horizontal scrolling; every interactive tile keeps a 44pt minimum tap target, selected
+/// state is never color-only, and VoiceOver labels come from `Position.fullName`.
+private struct RoomPositionPicker: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    let viewModel: CompareViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+            // Unit lens — "Choose a unit" drives the room grid (step 1 of 2). Styled as a
+            // segmented unit switcher reusing the depth-chart field's unit tab treatment.
+            unitLensRow
+
+            // Step 1: the balanced room grid is always present (DEP-298 refined.html keeps
+            // the `.rooms` grid with the active `.room` highlighted while the selection
+            // panel sits below it — not a grid-or-panel either/or). Picking a room fills
+            // it with accent + a thicker border and reveals step 2 beneath.
+            roomGrid
+
+            if let room = viewModel.selectedRoom {
+                // Step 2: the exact-role panel for the selected room.
+                exactRolePanel(room)
+            }
+        }
+        // NB: no `.accessibilityIdentifier` on this container — DepthUnitTabBar's buttons
+        // carry their own `unit-tab-*` ids, and a container-level identifier on the VStack
+        // overrode those (probed under DEP-311), leaving every lens unreachable by id.
+        .animation(reduceMotion ? nil : DesignTokens.Motion.selection, value: viewModel.selectedRoom)
+    }
+
+    // MARK: Unit lens
+
+    /// A segmented unit lens (Offense / Defense / Special Teams) above the room grid. Uses
+    /// the depth-chart field's `DepthUnitTabBar` treatment — underline active indicator plus
+    /// a 44pt min-height — so the app's unit vocabulary reads the same way. Switching units
+    /// never clears a selected position that's still valid (DEP-311 task 3).
+    private var unitLensRow: some View {
+        DepthUnitTabBar(
+            selection: viewModel.selectedUnit,
+            onChange: { unit in viewModel.selectUnit(unit) }
+        )
+    }
+
+    // MARK: Step 1 — room grid
+
+    /// The balanced aligned room grid for the selected unit (step 1 of 2). Two columns on the
+    /// phone width the design locked (DEP-298 refined.html `.rooms` is `1fr 1fr`), which keeps
+    /// every room tile ≥ ~44pt tall without horizontal scrolling. Left-aligned name + detail
+    /// with a trailing position count, matching the locked refined tile.
+    private var roomGrid: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+            stepProgress("1 OF 2 · ROOM")
+            LazyVGrid(
+                columns: [GridItem(.flexible(), spacing: DesignTokens.Spacing.sm), GridItem(.flexible())],
+                spacing: DesignTokens.Spacing.sm
+            ) {
+                ForEach(CompareMatchRooms.rooms(in: viewModel.selectedUnit), id: \.id) { room in
+                    roomTile(room)
                 }
             }
-            .padding(.vertical, 2)
         }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("compare-position-row")
+    }
+
+    private func roomTile(_ room: CompareRoom) -> some View {
+        let isActive = room == viewModel.selectedRoom
+        return Button {
+            withAnimation(reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection) {
+                viewModel.selectRoom(room)
+            }
+        } label: {
+            HStack(spacing: DesignTokens.Spacing.sm) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(room.name)
+                        .font(.footnote.weight(.bold))
+                        .foregroundStyle(isActive ? DesignTokens.Colors.onAccent : DesignTokens.Colors.textPrimary)
+                    Text(room.detail)
+                        .font(.caption)
+                        .foregroundStyle(isActive ? DesignTokens.Colors.onAccent.opacity(0.7) : DesignTokens.Colors.textFaint)
+                }
+                Spacer(minLength: 0)
+                Text("\(room.positions.count)")
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(isActive ? DesignTokens.Colors.onAccent.opacity(0.7) : DesignTokens.Colors.textFaint)
+            }
+            .padding(.horizontal, DesignTokens.Spacing.md)
+            .padding(.vertical, DesignTokens.Spacing.md)
+            .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
+            .background(isActive ? DesignTokens.Colors.accent : DesignTokens.Colors.surfaceCard2, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
+            .overlay {
+                RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
+                    .strokeBorder(
+                        isActive ? DesignTokens.Colors.onAccent.opacity(0.40) : DesignTokens.Colors.borderDefault,
+                        lineWidth: isActive ? 2 : 1
+                    )
+            }
+            .contentShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(room.name)
+        .accessibilityAddTraits(isActive ? [.isSelected] : [.isButton])
+        .accessibilityIdentifier("compare-room-\(room.id)")
+    }
+
+    // MARK: Step 2 — exact-role panel
+
+    /// The exact-role selection panel (step 2 of 2), shown once a room is picked. A compact
+    /// grid of every exact `Position` in the room; each tile is ≥ 44pt, marks selection with a
+    /// fill + checkmark (never color alone), and is VoiceOver-labeled with `Position.fullName`.
+    private func exactRolePanel(_ room: CompareRoom) -> some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+            stepProgress("2 OF 2 · POSITION")
+            LazyVGrid(
+                columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())],
+                spacing: DesignTokens.Spacing.sm
+            ) {
+                ForEach(room.positions, id: \.self) { pos in
+                    roleTile(pos)
+                }
+            }
+        }
+        .padding(.vertical, DesignTokens.Spacing.sm)
+        .padding(.horizontal, DesignTokens.Spacing.sm)
+        .background(DesignTokens.Colors.surfaceCard2, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
+        .animation(reduceMotion ? nil : DesignTokens.Motion.selection, value: viewModel.position)
+        .accessibilityIdentifier("compare-exact-role-panel")
+    }
+
+    private func roleTile(_ pos: Position) -> some View {
+        let isSelected = pos == viewModel.position
+        return Button {
+            viewModel.selectPosition(pos)
+        } label: {
+            HStack(spacing: DesignTokens.Spacing.xs) {
+                Text(pos.rawValue)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(isSelected ? DesignTokens.Colors.onAccent : DesignTokens.Colors.textPrimary)
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(DesignTokens.Colors.onAccent)
+                        .accessibilityHidden(true)
+                }
+            }
+            .padding(.horizontal, DesignTokens.Spacing.xs)
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .background(
+                isSelected ? DesignTokens.Colors.accent : DesignTokens.Colors.surfaceChip,
+                in: RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
+            )
+            .overlay {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
+                        .strokeBorder(DesignTokens.Colors.onAccent.opacity(0.40), lineWidth: 1)
+                }
+            }
+            .contentShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(pos.fullName)
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [.isButton])
+        .accessibilityIdentifier("compare-position-\(pos.rawValue)")
+    }
+
+    // MARK: Helper
+
+    /// The two-step progress label ("1 OF 2 · ROOM" / "2 OF 2 · POSITION") that announces
+    /// which half of the picker the user is in.
+    private func stepProgress(_ text: String) -> some View {
+        Text(text)
+            .font(.caption2.weight(.black))
+            .tracking(0.6)
+            .foregroundStyle(DesignTokens.Colors.textFaint)
     }
 }
 
