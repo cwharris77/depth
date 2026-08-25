@@ -11,9 +11,9 @@ import Foundation
 // The 44-point tap target is the view's job (.frame(minWidth: 44, minHeight: 44) +
 // .contentShape), matching the web's 30px visual dot with a 44px hit-slop; this type
 // only decides what's actually drawn.
-/// THROWAWAY PROTOTYPE, per Cooper 2026-08-23: the three name treatments being A/B'd on
-/// top of the (settled) bigger uniform dots. The geometry is identical in all three — only
-/// what happens to the names differs, which is the whole point of the comparison.
+/// The three name-presentation styles selectable in Settings › Settings (DEP-323) and
+/// drawn by DepthChartFieldView. The geometry is identical in all three — only what
+/// happens to the names differs, so a switch is purely a presentation choice.
 enum FieldNameMode: String, CaseIterable, Identifiable, Sendable {
     /// Names under the dot wherever one fits, and a leader-line callout for the rest.
     case callouts
@@ -24,7 +24,9 @@ enum FieldNameMode: String, CaseIterable, Identifiable, Sendable {
 
     var id: String { rawValue }
 
-    /// The one defaults key Settings writes and the field reads.
+    /// The one defaults key Settings writes and the field reads. The value predates
+    /// DEP-323 (it started as the beta experiment's key); it is kept as-is so a user's
+    /// existing choice survives promotion to a permanent setting.
     static let storageKey = "betaFieldNameMode"
 
     var title: String {

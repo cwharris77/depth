@@ -302,3 +302,39 @@ private actor AsyncCounter {
     #expect(reranked.map(\.depthRank) == [1, 2, 3, 3, 3])
     #expect(reranked.map(\.order) == [0, 1, 2, 3, 4])
 }
+
+// DEP-323: the field-name presentation is a permanent, persisted preference. The same
+// defaults key must survive a relaunch so a user's chosen style isn't lost, and every
+// style must round-trip through the storage the Settings picker and the field share.
+// Uses an isolated UserDefaults suite (same pattern as LocalFirstOverrideWriterTests) so
+// the test never touches the app's real storage.
+struct FieldNameModePreferenceTests {
+    @Test func selectedStylePersistsAcrossStorageRecreation() {
+        let suiteName = "FieldNameModePreferenceTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+
+        // A user picks "No Names"; the picker writes through the shared AppStorage key.
+        defaults.set(FieldNameMode.off.rawValue, forKey: FieldNameMode.storageKey)
+        // Relaunch: a brand-new defaults handle reads back exactly what was stored —
+        // same suite, same persisted plist.
+        let relaunched = UserDefaults(suiteName: suiteName)!
+        #expect(FieldNameMode(rawValue: relaunched.string(forKey: FieldNameMode.storageKey) ?? "") == .off)
+
+        // Every style round-trips, not just one.
+        for mode in FieldNameMode.allCases {
+            relaunched.set(mode.rawValue, forKey: FieldNameMode.storageKey)
+            let reread = UserDefaults(suiteName: suiteName)!
+            #expect(FieldNameMode(rawValue: reread.string(forKey: FieldNameMode.storageKey) ?? "") == mode)
+        }
+
+        defaults.removePersistentDomain(forName: suiteName)
+    }
+
+    @Test func storageKeyValueIsStableSoExistingChoicesSurvivePromotion() {
+        // The key was born as the beta experiment's key ("betaFieldNameMode"); DEP-323
+        // promotes the control without renaming it so a tester's existing stored value
+        // keeps applying. If this ever changes, existing users silently reset to the
+        // default (.callouts) — a migration would be required first.
+        #expect(FieldNameMode.storageKey == "betaFieldNameMode")
+    }
+}
