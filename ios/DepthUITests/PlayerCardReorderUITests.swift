@@ -8,11 +8,7 @@ import XCTest
 final class PlayerCardReorderUITests: XCTestCase {
     func testPlayerCardReorderPersistsAcrossRelaunch() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
-        app.launch()
-
-        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
-        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
 
         let quarterback = app.buttons["player-slot-off-qb-0"]
         XCTAssertTrue(quarterback.waitForExistence(timeout: 10), "the Bills field should render its QB")
@@ -112,11 +108,7 @@ final class PlayerCardReorderUITests: XCTestCase {
     // (clears the local cache + mirrors a row delete to the server when signed in).
     func testResetRestoresDefaultOrderAndDropsTheOverride() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
-        app.launch()
-
-        XCTAssertTrue(app.waitForDepthChart())
-        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
 
         let quarterback = app.buttons["player-slot-off-qb-0"]
         XCTAssertTrue(quarterback.waitForExistence(timeout: 10))
@@ -161,11 +153,7 @@ final class PlayerCardReorderUITests: XCTestCase {
     // plain tap-to-switch rows, and the per-card Reorder pill returns.
     func testGlobalEditModeToggleShowsDragHandlesImmediately() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
-        app.launch()
-
-        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
-        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
 
         // Enable the app-level toggle from the overflow menu.
         let overflow = app.buttons["depth-chart-overflow"]
@@ -227,11 +215,7 @@ final class PlayerCardReorderUITests: XCTestCase {
 
     func testContextChangesExitGlobalEditMode() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
-        app.launch()
-
-        XCTAssertTrue(app.waitForDepthChart())
-        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
 
         let editingChip = app.buttons["depth-chart-editing-active"]
         func enterEditing() {
@@ -290,11 +274,7 @@ final class PlayerCardReorderUITests: XCTestCase {
     // menu loses the active Formations row as soon as a drag commits.
     func testPlayerReorderPreservesActiveFormation() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
-        app.launch()
-
-        XCTAssertTrue(app.waitForDepthChart())
-        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
 
         let overflow = app.buttons["depth-chart-overflow"]
         XCTAssertTrue(overflow.waitForExistence(timeout: 10))

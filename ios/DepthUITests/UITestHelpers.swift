@@ -15,10 +15,25 @@ extension XCUIApplication {
             .waitForExistence(timeout: timeout)
     }
 
+    /// Launch arg (see DepthApp.swift) that pins the launch destination to a specific
+    /// team *after* the UI_TESTING_RESET_STATE clean slate. Lets a journey that only
+    /// needs a real team to exercise its own feature skip the cold default-team fetch +
+    /// the switcher-search prologue (`selectTeam`) entirely.
+    static let uiTestingStartTeamArgPrefix = "UI_TESTING_START_TEAM="
+
+    /// Reset-state launch + start straight into `teamId`'s chart. The collapse of the
+    /// old `app.launch(); waitForDepthChart(); selectTeam(teamId, searching:…)`
+    /// prologue for journeys that don't need to exercise the switcher itself.
+    @discardableResult
+    func launch(intoTeam teamId: String, timeout: TimeInterval = 15) -> Bool {
+        launchArguments = ["UI_TESTING_RESET_STATE", "\(Self.uiTestingStartTeamArgPrefix)\(teamId)"]
+        launch()
+        return waitForDepthChart(timeout: timeout)
+    }
+
     /// Opens the switcher from the navigation-bar team name, searches, and selects a
     /// team. Returns once the switcher has dismissed and the header (and chart) have
     /// re-rendered for the *newly selected* team specifically.
-    ///
     /// `expectedDisplayName` is the team's "<City> <Name>" as it appears in
     /// `TeamDetailView.navigationTitleText` / the `team-switcher-button` accessibility
     /// label (e.g. "Buffalo Bills"). Selecting a team is now a sheet dismiss over the

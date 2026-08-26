@@ -30,6 +30,38 @@ struct DepthApp: App {
             DepthEnvironment.preferences.markOnboardingSeen()
         }
 
+        // UI_TESTING_START_TEAM: an optional test launch arg (`UI_TESTING_START_TEAM=bills`)
+        // that pins the launch destination to a specific team after the reset above. Every
+        // production-backed journey that only needs *a* real team (schedule, page-switcher,
+        // stats/schedule season pickers, tab bar reachability) previously spent the same
+        // ~20s-plus prologue — cold default-team fetch, then opening the switcher sheet and
+        // waiting up to 20s (`selectTeam`'s row wait) just to land on the Bills. With this
+        // arg the app launches straight into that team's chart, so those journeys collapse a
+        // 5-line `selectTeam` prologue into a single `waitForDepthChart`. It writes
+        // `lastTeamId`, the *same* preference `selectTeam` ultimately sets, so the launched
+        // state is indistinguishable from a real switch. Must run after the reset block so it
+        // wins over the nil-ing above. Only honored while UI_TESTING_RESET_STATE is set, so
+        // it can never leak into a manual launch.
+        if ProcessInfo.processInfo.arguments.contains("UI_TESTING_RESET_STATE"),
+            let startTeamArg = ProcessInfo.processInfo.arguments.first(where: {
+                $0.hasPrefix("UI_TESTING_START_TEAM=")
+            })
+        {
+            // Trim both the prefix and whitespace so whitespace-separated launch-arg arrays
+            // pass the value cleanly.
+            let teamName = startTeamArg
+                .replacingOccurrences(of: "UI_TESTING_START_TEAM=", with: "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            if !teamName.isEmpty {
+                // Resolve-free direct write: StartupTeam.resolve would validate against the
+                // live ids, but the list hasn't loaded this early in init. Tests pass a
+                // real id, and DepthChartsTab's `.task` already corrects a stale
+                // preference once the list arrives (AGENTS.md invariant 6), so writing the
+                // raw id here is safe.
+                DepthEnvironment.preferences.lastTeamId = teamName
+            }
+        }
+
         // DEP-251 onboarding UI tests: the one launch argument that puts the app back
         // into its genuine "never seen the tutorial" state, isolated from the blanket
         // "seen" default UI_TESTING_RESET_STATE sets above.

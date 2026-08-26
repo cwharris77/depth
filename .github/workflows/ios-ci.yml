@@ -42,6 +42,8 @@ on:
   # runs regardless of whether ios/ changed that day; harmless, it's one run.
   schedule:
     - cron: '0 8 * * *'
+  # Manual full-suite run, on demand — same parallel fan-out as the nightly cron.
+  workflow_dispatch:
 
 concurrency:
   group: ios-ci-${{ github.ref }}
@@ -188,14 +190,14 @@ jobs:
   test:
     needs: [resolve-devices, build-for-testing]
     runs-on: macos-latest
-    # Only the nightly schedule run tests the full DepthUITests target — 15 minutes
-    # flat was too tight for that (confirmed: a push-triggered full-suite run was
-    # killed exactly at the 15-min mark mid-PerformanceUITests, back when full suite
-    # ran on every push). 30 matches the original pre-split single job's budget, now
-    # that build is a separate job with its own 25-minute allowance. Kept at 15 for
-    # pull_request/push — the smoke set finishes in ~11m, and a hung run should fail
-    # fast, not eat 30 minutes.
-    timeout-minutes: ${{ github.event_name == 'schedule' && 30 || 15 }}
+    # This PR/push job only runs the fast smoke set (unit + 4 UI classes), which finishes
+    # in ~11m — 15 flat leaves headroom for slow-runner noise and lets a hung run fail
+    # fast instead of eating 30 minutes. The slow full DepthUITests suite is not run here
+    # at all: it previously blew this exact 15-min budget mid-PerformanceUITests
+    # (confirmed on a push-triggered full-suite run), which is precisely why the full
+    # suite now lives in the nightly `test-full-suite` job below, fanned out across
+    # parallel simulator legs with its own 25-minute allowance.
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -214,28 +216,6 @@ jobs:
           name: test-products
           path: ios/DerivedData/Build/Products
 
-      # actions/download-artifact writes files tagged com.apple.quarantine (they arrived
-      # over HTTPS) — Gatekeeper then does a full recursive codesign re-verification of
-      # the .app bundle the first time the simulator installs it, a cost a locally-built
-      # .app never pays. Observed as a multi-minute silent stall between xcodebuild
-      # starting and the first test case actually running. Strip it before testing.
-      - name: Clear quarantine attribute on downloaded build products
-        run: xattr -cr ios/DerivedData/Build/Products
-
-      - name: Boot ${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].label }} simulator (${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].device }})
-        id: sim
-        env:
-          DEVICE: ${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].device }}
-          RUNTIME: ${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].runtime }}
-        run: |
-          set -euo pipefail
-          # Device/runtime pair was already validated as creatable in resolve-devices —
-          # reuse it directly instead of re-resolving the runtime on this separate
-          # runner (which could in principle pick up a different image/runtime set).
-          DEVICE_ID=$(xcrun simctl create "ci-${{ matrix.leg }}" "$DEVICE" "$RUNTIME")
-          xcrun simctl boot "$DEVICE_ID"
-          echo "device_id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
-
       # A PR and a plain push to main both get a fast smoke set: the unit tests plus the
       # single flagship chart→team→player journey, the reorder suite, and auth. The
       # other DepthUITests journeys (schedule, page-switcher, unit-tab tap targets,
@@ -248,24 +228,79 @@ jobs:
         run: |
           if [ "${{ matrix.leg }}" = "unit" ]; then
             echo "tests=-only-testing:DepthTests" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event_name }}" = "schedule" ]; then
-            echo "tests=-only-testing:DepthUITests" >> "$GITHUB_OUTPUT"
           else
             echo "tests=-only-testing:DepthUITests/DepthUITests/testAppLaunches -only-testing:DepthUITests/DepthUITests/testLaunchesIntoAChartThenSwitchesTeamAndOpensPlayerDetail -only-testing:DepthUITests/PlayerCardReorderUITests -only-testing:DepthUITests/AuthUITests" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run ${{ matrix.leg }} tests (Staging config)
-        run: |
-          set -o pipefail
-          XCTESTRUN=$(find ios/DerivedData/Build/Products -maxdepth 1 -name '*.xctestrun' | head -n1)
-          if [ -z "$XCTESTRUN" ]; then
-            echo "::error::No .xctestrun file found in downloaded build products."
-            exit 1
-          fi
-          xcodebuild \
-            -xctestrun "$XCTESTRUN" \
-            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.device_id }}" \
-            test-without-building ${{ steps.scope.outputs.tests }}
+        uses: ./.github/actions/run-ios-suite
+        with:
+          device: ${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].device }}
+          runtime: ${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].runtime }}
+          sim-name: ci-${{ matrix.leg }}
+          tests: ${{ steps.scope.outputs.tests }}
+
+  # The nightly full DepthUITests suite. Fan-out across parallel simulator legs is the
+  # dominant wall-time lever (the header comment applies it between unit/UI; this job
+  # applies the same idea *within* the UI suite): the ~15 slow production-backed
+  # journeys that are deliberately excluded from PR smoke runs each relaunch the app
+  # and re-fetch snapshots, so serialized they previously pushed one 15-min flat budget
+  # past its limit mid-PerformanceUITests (see the `test` job's comment). Splitting
+  # DepthUITests across the `slices` below, each on its own matrix job/VM running
+  # `test-without-building` against the single prebuilt product set, caps wall time at
+  # the slowest slice instead of the sum. GitHub-hosted macOS runners boot a handful of
+  # simulators comfortably, and `fail-fast: false` lets a slow slice finish without
+  # cancelling its siblings. The `workflow_dispatch` trigger runs this same fan-out on
+  # demand.
+  #
+  # Slice partition (each named slice covers disjoint classes; the union is the full
+  # DepthUITests target). AppStoreScreenshotsUITests and PRScreenshotsUITests are
+  # deliberately left out — they are on-demand capture tools with their own schemes, not
+  # correctness gates (see project.yml's skippedTests), so they never run in the nightly
+  # fan-out either.
+  test-full-suite:
+    needs: [resolve-devices, build-for-testing]
+    runs-on: macos-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The flagship journeys: 14 tests, the largest class — its own leg so a slow
+          # journey can't stall reorder/a11y/etc.
+          - slice: journeys
+            tests: -only-testing:DepthUITests/DepthUITests
+          # DEP-226 reorder persistence + edit-mode + formation: each test does a
+          # production-backed drag gesture, the jankiest (and slowest) interaction here.
+          - slice: reorder
+            tests: -only-testing:DepthUITests/PlayerCardReorderUITests
+          # Dynamic-type/motion announcements: heavy simulator accessibility work.
+          - slice: a11y
+            tests: -only-testing:DepthUITests/AccessibilityUITests
+          # Everything else — auth, share, performance — grouped so none dominates.
+          - slice: auth-share-perf
+            tests: >-
+              -only-testing:DepthUITests/AuthUITests
+              -only-testing:DepthUITests/ShareUITests
+              -only-testing:DepthUITests/PerformanceUITests
+    steps:
+      # Same fixture-filesystem requirement as the `test` job — needs the checkout at
+      # the conventional runner path build-for-testing used.
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Download build products
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: test-products
+          path: ios/DerivedData/Build/Products
+
+      - name: Run DepthUITests slice (${{ matrix.slice }})
+        uses: ./.github/actions/run-ios-suite
+        with:
+          device: ${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].device }}
+          runtime: ${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].runtime }}
+          sim-name: full-${{ matrix.slice }}
+          tests: ${{ matrix.tests }}
 
   archive-secret-check:
     runs-on: macos-latest
