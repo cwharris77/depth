@@ -2,20 +2,24 @@ import SwiftUI
 
 // Native two-team compare (DEP-258) — a port of web's components/CompareView.tsx,
 // replacing the navigation-parity placeholder. Two team-slot pickers feed two sections
-// behind a By-team/By-position segmented control: the By-team tab's Forecast/Roster/unit
-// lenses plus a "deepest room" teaser row, and the per-position depth table
-// (rank-aligned side-by-side columns). All content derives from the CompareViewModel's
-// resolved TeamStatsPage/TeamSnapshot reads through DepthRepository — no new data seam.
-// The repository is a `CachingDepthRepository` (concrete, like every tab) so the
-// team-picker sheet can reuse TeamListView.
+// behind a By-team/By-position segmented control: the By-team tab's unit-metrics lenses,
+// and the per-position depth table (rank-aligned side-by-side columns). All content
+// derives from the CompareViewModel's resolved TeamStatsPage/TeamSnapshot reads through
+// DepthRepository — no new data seam. The repository is a `CachingDepthRepository`
+// (concrete, like every tab) so the team-picker sheet can reuse TeamListView.
 //
 // DEP-266 (Compare page unification): every bounded surface composes the shared
 // `depthCard()` treatment (no hand-rolled background/border/radius literals), spacing
-// sits on the 8pt `DesignTokens.Spacing` scale, and web-parity details that were dropped
-// in the first port are restored — the `surfaceChip` VS capsule, the dashed unpicked
-// slot, the "Dot = row rank" legend, the `surfaceCard2` depth-table header band, and the
-// "By team"/"By position" tab copy. Web cards are `rounded-2xl` (16pt), so Compare passes
-// `radius: .md` to `depthCard` to keep exact parity rather than the app-wide 24pt.
+// sits on the 8pt `DesignTokens.Spacing` scale. Web cards are `rounded-2xl` (16pt), so
+// Compare passes `radius: .md` to `depthCard` to keep exact parity rather than the
+// app-wide 24pt.
+//
+// Aug 2026 feedback pass (two rounds): the Forecast lens, Roster lens, and Deepest Room
+// teaser were removed outright (not reworded) — see CompareViewModel.swift's Lens doc
+// comment and Domain/Compare.swift's header for why. The room→role position picker lost
+// its "1 OF 2 / 2 OF 2" step labels and each room's redundant detail caption, the depth
+// table lost its "Dot = row rank" legend and per-row dot (the numbered gutter chip is
+// the only rank indicator now), and each team slot grew an explicit clear affordance.
 struct CompareView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -141,19 +145,37 @@ struct CompareView: View {
     }
 
     private var teamSlotRow: some View {
-        HStack(spacing: DesignTokens.Spacing.sm) {
-            teamSlotButton(viewModel.teamA, slot: .a)
-            // Web parity: the VS separator is a `surfaceChip` capsule (web CompareView
-            // wraps "VS" in a `rounded-full` span with `surfaceChip` bg + `textFaint`
-            // caption text). Restored in DEP-266 after the first port drew it as bare text.
-            Text("VS")
-                .font(.caption.weight(.black))
-                .foregroundStyle(DesignTokens.Colors.textFaint)
-                .padding(.horizontal, DesignTokens.Spacing.sm)
-                .padding(.vertical, DesignTokens.Spacing.xs)
-                .background(DesignTokens.Colors.surfaceChip, in: Capsule())
-                .accessibilityHidden(true)
-            teamSlotButton(viewModel.teamB, slot: .b)
+        VStack(alignment: .trailing, spacing: DesignTokens.Spacing.xs) {
+            // Cooper (Aug 25 → repositioned Aug 26, above the pills rather than below):
+            // re-tapping a filled slot to swap teams wasn't obvious as a way to change your
+            // pick — an explicit "Clear selection" control was requested. Clears both slots;
+            // each slot's own corner button (below) clears just that one.
+            if viewModel.pickedCount > 0 {
+                Button {
+                    viewModel.clearTeam(.a)
+                    viewModel.clearTeam(.b)
+                } label: {
+                    Text("Clear selection")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(DesignTokens.Colors.textFaint)
+                }
+                .accessibilityIdentifier("compare-clear-both")
+            }
+
+            HStack(spacing: DesignTokens.Spacing.sm) {
+                teamSlotButton(viewModel.teamA, slot: .a)
+                // Web parity: the VS separator is a `surfaceChip` capsule (web CompareView
+                // wraps "VS" in a `rounded-full` span with `surfaceChip` bg + `textFaint`
+                // caption text). Restored in DEP-266 after the first port drew it as bare text.
+                Text("VS")
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(DesignTokens.Colors.textFaint)
+                    .padding(.horizontal, DesignTokens.Spacing.sm)
+                    .padding(.vertical, DesignTokens.Spacing.xs)
+                    .background(DesignTokens.Colors.surfaceChip, in: Capsule())
+                    .accessibilityHidden(true)
+                teamSlotButton(viewModel.teamB, slot: .b)
+            }
         }
     }
 
@@ -203,6 +225,25 @@ struct CompareView: View {
         .buttonStyle(.plain)
         .frame(maxWidth: .infinity)
         .accessibilityIdentifier("compare-slot-\(slot == .a ? "a" : "b")")
+        .overlay(alignment: .topTrailing) {
+            if team != nil {
+                Button {
+                    viewModel.clearTeam(slot)
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(DesignTokens.Colors.textMuted)
+                        .frame(width: 22, height: 22)
+                        .background(DesignTokens.Colors.navy, in: Circle())
+                        .overlay {
+                            Circle().strokeBorder(DesignTokens.Colors.borderInput, lineWidth: 1)
+                        }
+                }
+                .offset(x: 6, y: -6)
+                .accessibilityLabel("Clear \(slotLabel(team))")
+                .accessibilityIdentifier("compare-slot-\(slot == .a ? "a" : "b")-clear")
+            }
+        }
     }
 
     /// Final-indicator for the slot label. Web shows "City Name" at ≥480px and the
@@ -252,87 +293,15 @@ private struct TeamMatchupSection: View {
 
     var body: some View {
         if !viewModel.bothPicked {
-            ComparePrompt(pickedCount: viewModel.pickedCount, copy: "Forecast, roster usage, and unit metrics page side by side.")
+            ComparePrompt(pickedCount: viewModel.pickedCount, copy: "Offense, defense, and special teams metrics line up side by side.")
         } else if viewModel.sameTeam {
             SameTeamBlock()
+        } else if viewModel.teamA != nil, viewModel.teamB != nil {
+            CompareLensesView(viewModel: viewModel)
         } else {
-            if let teamA = viewModel.teamA, let teamB = viewModel.teamB {
-                VStack(spacing: DesignTokens.Spacing.sm) {
-                    CompareLensesView(viewModel: viewModel)
-                    if let teaser = viewModel.teaser {
-                        DeepestRoomTeaser(teaser: teaser, teamA: teamA, teamB: teamB) {
-                            viewModel.selectTab(.position)
-                            viewModel.selectPosition(teaser.position)
-                        }
-                    }
-                }
-            } else {
-                // Unreachable given bothPicked, but degrade rather than crash.
-                ComparePrompt(pickedCount: viewModel.pickedCount, copy: "Forecast, roster usage, and unit metrics page side by side.")
-            }
+            // Unreachable given bothPicked, but degrade rather than crash.
+            ComparePrompt(pickedCount: viewModel.pickedCount, copy: "Offense, defense, and special teams metrics line up side by side.")
         }
-    }
-}
-
-/// Web's `DeepestRoomTeaser` (components/CompareView.tsx) — a tappable discoverability
-/// row linking into the position tab. Overlapping team-color dots, the deepest
-/// position label, and the rank-1 matchup line.
-private struct DeepestRoomTeaser: View {
-    let teaser: CompareTeaser
-    let teamA: Team
-    let teamB: Team
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: DesignTokens.Spacing.sm) {
-                HStack(spacing: -6) {
-                    teamDot(color: Color(hex: teamA.colors.uiAccent))
-                    teamDot(color: Color(hex: teamB.colors.uiAccent))
-                }
-                VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-                    Text("DEEPEST ROOM · \(teaser.position.rawValue)")
-                        .font(.caption2.weight(.bold))
-                        .tracking(0.8)
-                        // DEP-266: the canonical eyebrow color is `textMuted` (was
-                        // `textFaintest`).
-                        .foregroundStyle(DesignTokens.Colors.textMuted)
-                    Text(teaserRowText)
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(DesignTokens.Colors.textPrimary)
-                        .lineLimit(1)
-                }
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(DesignTokens.Colors.textFaint)
-            }
-            .padding(.horizontal, DesignTokens.Spacing.sm)
-            .padding(.vertical, DesignTokens.Spacing.sm)
-            // DEP-266: web's teaser is `surfaceCard2` + dashed? No — `surfaceCard2` with a
-            // solid `borderDefault` and `rounded-2xl` (16pt). Composed via `depthCard`
-            // dense + radius .md; `padded: false` since the row carries its own padding.
-            .depthCard(dense: true, padded: false, radius: DesignTokens.Radius.md)
-            .contentShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("compare-deepest-room")
-    }
-
-    private func teamDot(color: Color) -> some View {
-        Circle()
-            .fill(color)
-            .frame(width: 20, height: 20)
-            .overlay {
-                Circle().strokeBorder(DesignTokens.Colors.bg, lineWidth: 2)
-            }
-    }
-
-    private var teaserRowText: String {
-        func name(_ player: Player?) -> String {
-            player.map { formatLastName($0.name) } ?? "—"
-        }
-        return "\(name(teaser.topA)) vs \(name(teaser.topB)) · \(teaser.countA) vs \(teaser.countB) deep"
     }
 }
 
@@ -369,44 +338,55 @@ private struct PositionDepthSection: View {
 }
 
 /// The DEP-311 two-step position picker that replaces the old horizontal chip scroller: a
-/// balanced unit→room grid followed by an exact-role panel, with a "1 OF 2 · ROOM" /
-/// "2 OF 2 · POSITION" progress label. All 29 `COMPARE_POSITIONS` values stay reachable with
-/// no horizontal scrolling; every interactive tile keeps a 44pt minimum tap target, selected
-/// state is never color-only, and VoiceOver labels come from `Position.fullName`.
+/// balanced unit→room grid followed by an exact-role panel. All 29 `COMPARE_POSITIONS`
+/// values stay reachable with no horizontal scrolling; every interactive tile keeps a 44pt
+/// minimum tap target, selected state is never color-only, and VoiceOver labels come from
+/// `Position.fullName`. Aug 2026: dropped the "1 OF 2 · ROOM" / "2 OF 2 · POSITION" step
+/// labels (Cooper: the two steps read fine without narrating themselves).
 private struct RoomPositionPicker: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let viewModel: CompareViewModel
 
+    /// The combined height of the room grid + exact-role panel, reserved regardless of which
+    /// unit/room is active, so the depth table below never jumps (Cooper, Aug 26: "I don't
+    /// like how the compare table in the by position gets moved around... it should be fixed
+    /// to one spot"). Sized to the tallest real combination: a 2-row room grid (Offense/
+    /// Defense both have 4 rooms) plus a 2-row exact-role panel (Line/Defensive Line/
+    /// Linebackers each have 5 roles). Special Teams' 1-room grid and Quarterback's
+    /// no-panel selection both just leave blank space below at this same fixed height.
+    private static let reservedPickerHeight: CGFloat = 250
+
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            // Unit lens — "Choose a unit" drives the room grid (step 1 of 2). Styled as a
-            // segmented unit switcher reusing the depth-chart field's unit tab treatment.
+            // Unit lens drives the room grid. Styled as a segmented unit switcher reusing the
+            // depth-chart field's unit tab treatment.
             unitLensRow
 
-            // Step 1: the balanced room grid is always present (DEP-298 refined.html keeps
-            // the `.rooms` grid with the active `.room` highlighted while the selection
-            // panel sits below it — not a grid-or-panel either/or). Picking a room fills
-            // it with accent + a thicker border and reveals step 2 beneath.
-            roomGrid
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+                // The balanced room grid is always present (DEP-298 refined.html keeps the
+                // `.rooms` grid with the active `.room` highlighted while the selection panel
+                // sits below it — not a grid-or-panel either/or). Picking a multi-role room
+                // expands its exact-role panel beneath; picking it again collapses it.
+                roomGrid
 
-            if let room = viewModel.selectedRoom {
-                // Step 2: the exact-role panel for the selected room.
-                exactRolePanel(room)
+                if let room = viewModel.expandedRoom {
+                    exactRolePanel(room)
+                }
             }
+            .frame(minHeight: Self.reservedPickerHeight, alignment: .top)
         }
         // NB: no `.accessibilityIdentifier` on this container — DepthUnitTabBar's buttons
         // carry their own `unit-tab-*` ids, and a container-level identifier on the VStack
         // overrode those (probed under DEP-311), leaving every lens unreachable by id.
-        .animation(reduceMotion ? nil : DesignTokens.Motion.selection, value: viewModel.selectedRoom)
+        .animation(reduceMotion ? nil : DesignTokens.Motion.selection, value: viewModel.expandedRoomID)
     }
 
     // MARK: Unit lens
 
     /// A segmented unit lens (Offense / Defense / Special Teams) above the room grid. Uses
     /// the depth-chart field's `DepthUnitTabBar` treatment — underline active indicator plus
-    /// a 44pt min-height — so the app's unit vocabulary reads the same way. Switching units
-    /// never clears a selected position that's still valid (DEP-311 task 3).
+    /// a 44pt min-height — so the app's unit vocabulary reads the same way.
     private var unitLensRow: some View {
         DepthUnitTabBar(
             selection: viewModel.selectedUnit,
@@ -414,42 +394,35 @@ private struct RoomPositionPicker: View {
         )
     }
 
-    // MARK: Step 1 — room grid
+    // MARK: Room grid
 
-    /// The balanced aligned room grid for the selected unit (step 1 of 2). Two columns on the
-    /// phone width the design locked (DEP-298 refined.html `.rooms` is `1fr 1fr`), which keeps
-    /// every room tile ≥ ~44pt tall without horizontal scrolling. Left-aligned name + detail
-    /// with a trailing position count, matching the locked refined tile.
+    /// The balanced aligned room grid for the selected unit. Two columns on the phone width
+    /// the design locked (DEP-298 refined.html `.rooms` is `1fr 1fr`), which keeps every room
+    /// tile ≥ ~44pt tall without horizontal scrolling. Aug 2026: dropped the per-room detail
+    /// caption (Cooper: it duplicated what the exact-role panel already spells out one tap
+    /// later) — name plus a trailing position count is enough.
     private var roomGrid: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            stepProgress("1 OF 2 · ROOM")
-            LazyVGrid(
-                columns: [GridItem(.flexible(), spacing: DesignTokens.Spacing.sm), GridItem(.flexible())],
-                spacing: DesignTokens.Spacing.sm
-            ) {
-                ForEach(CompareMatchRooms.rooms(in: viewModel.selectedUnit), id: \.id) { room in
-                    roomTile(room)
-                }
+        LazyVGrid(
+            columns: [GridItem(.flexible(), spacing: DesignTokens.Spacing.sm), GridItem(.flexible())],
+            spacing: DesignTokens.Spacing.sm
+        ) {
+            ForEach(CompareMatchRooms.rooms(in: viewModel.selectedUnit), id: \.id) { room in
+                roomTile(room)
             }
         }
     }
 
     private func roomTile(_ room: CompareRoom) -> some View {
-        let isActive = room == viewModel.selectedRoom
+        let isActive = room == viewModel.activeRoom
         return Button {
             withAnimation(reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection) {
                 viewModel.selectRoom(room)
             }
         } label: {
             HStack(spacing: DesignTokens.Spacing.sm) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(room.name)
-                        .font(.footnote.weight(.bold))
-                        .foregroundStyle(isActive ? DesignTokens.Colors.onAccent : DesignTokens.Colors.textPrimary)
-                    Text(room.detail)
-                        .font(.caption)
-                        .foregroundStyle(isActive ? DesignTokens.Colors.onAccent.opacity(0.7) : DesignTokens.Colors.textFaint)
-                }
+                Text(room.name)
+                    .font(.footnote.weight(.bold))
+                    .foregroundStyle(isActive ? DesignTokens.Colors.onAccent : DesignTokens.Colors.textPrimary)
                 Spacer(minLength: 0)
                 Text("\(room.positions.count)")
                     .font(.caption2.weight(.bold))
@@ -457,7 +430,7 @@ private struct RoomPositionPicker: View {
             }
             .padding(.horizontal, DesignTokens.Spacing.md)
             .padding(.vertical, DesignTokens.Spacing.md)
-            .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
             .background(isActive ? DesignTokens.Colors.accent : DesignTokens.Colors.surfaceCard2, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
             .overlay {
                 RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
@@ -475,20 +448,45 @@ private struct RoomPositionPicker: View {
         .accessibilityIdentifier("compare-room-\(room.id)")
     }
 
-    // MARK: Step 2 — exact-role panel
+    // MARK: Exact-role panel
 
-    /// The exact-role selection panel (step 2 of 2), shown once a room is picked. A compact
-    /// grid of every exact `Position` in the room; each tile is ≥ 44pt, marks selection with a
-    /// fill + checkmark (never color alone), and is VoiceOver-labeled with `Position.fullName`.
+    /// The exact-role selection panel, shown only while its room is expanded — never for a
+    /// single-position room (Cooper: "since there's only one position in the QB group, don't
+    /// add the secondary positions container for that one" — `CompareViewModel.selectRoom`
+    /// never expands one). A room with 3 or fewer roles (Backfield's RB/FB, etc.) centers its
+    /// tiles in a fixed-width row instead of sitting left-stuck in a 3-column grid with an
+    /// empty trailing cell; a room with more roles keeps the grid. Aug 2026: padding and tile
+    /// size both pulled back in — the previous round's "more space" pass over-corrected into
+    /// tiles that read as oversized (Cooper: "way smaller... They're pretty huge right now").
+    ///
+    /// No `.accessibilityIdentifier` on this container (there was one, "compare-exact-role-
+    /// panel", with no test or code ever reading it): applying an identifier to a `Group`
+    /// whose content structurally switches between two different view trees (`HStack` vs.
+    /// `LazyVGrid`, above) let that identifier bleed onto every child `roleTile` button the
+    /// instant a room→room transition crossed that branch — e.g. expanding a >3-role room
+    /// then immediately a ≤3-role one — so every role tile inside reported
+    /// "compare-exact-role-panel" instead of its own "compare-position-<code>" (caught by
+    /// `testMatchupRoomsReachEveryUnitWithoutHorizontalScrolling`, reproduced locally via
+    /// `xcodebuild test`: the accessibility snapshot showed all three Safeties role buttons
+    /// carrying the panel's identifier). Each `roleTile` already carries its own identifier
+    /// and `.accessibilityElement(children: .combine)`; the container needs none.
     private func exactRolePanel(_ room: CompareRoom) -> some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            stepProgress("2 OF 2 · POSITION")
-            LazyVGrid(
-                columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())],
-                spacing: DesignTokens.Spacing.sm
-            ) {
-                ForEach(room.positions, id: \.self) { pos in
-                    roleTile(pos)
+        Group {
+            if room.positions.count <= 3 {
+                HStack(spacing: DesignTokens.Spacing.xs) {
+                    ForEach(room.positions, id: \.self) { pos in
+                        roleTile(pos).frame(width: 76)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            } else {
+                LazyVGrid(
+                    columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())],
+                    spacing: DesignTokens.Spacing.xs
+                ) {
+                    ForEach(room.positions, id: \.self) { pos in
+                        roleTile(pos)
+                    }
                 }
             }
         }
@@ -496,7 +494,6 @@ private struct RoomPositionPicker: View {
         .padding(.horizontal, DesignTokens.Spacing.sm)
         .background(DesignTokens.Colors.surfaceCard2, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
         .animation(reduceMotion ? nil : DesignTokens.Motion.selection, value: viewModel.position)
-        .accessibilityIdentifier("compare-exact-role-panel")
     }
 
     private func roleTile(_ pos: Position) -> some View {
@@ -506,7 +503,7 @@ private struct RoomPositionPicker: View {
         } label: {
             HStack(spacing: DesignTokens.Spacing.xs) {
                 Text(pos.rawValue)
-                    .font(.caption.weight(.bold))
+                    .font(.caption2.weight(.bold))
                     .foregroundStyle(isSelected ? DesignTokens.Colors.onAccent : DesignTokens.Colors.textPrimary)
                 if isSelected {
                     Image(systemName: "checkmark")
@@ -516,6 +513,8 @@ private struct RoomPositionPicker: View {
                 }
             }
             .padding(.horizontal, DesignTokens.Spacing.xs)
+            // 44pt is the HIG minimum tap target (see the type doc comment above) — kept even
+            // though the visual chip itself reads smaller now via tighter outer padding.
             .frame(maxWidth: .infinity, minHeight: 44)
             .background(
                 isSelected ? DesignTokens.Colors.accent : DesignTokens.Colors.surfaceChip,
@@ -534,17 +533,6 @@ private struct RoomPositionPicker: View {
         .accessibilityLabel(pos.fullName)
         .accessibilityAddTraits(isSelected ? [.isSelected] : [.isButton])
         .accessibilityIdentifier("compare-position-\(pos.rawValue)")
-    }
-
-    // MARK: Helper
-
-    /// The two-step progress label ("1 OF 2 · ROOM" / "2 OF 2 · POSITION") that announces
-    /// which half of the picker the user is in.
-    private func stepProgress(_ text: String) -> some View {
-        Text(text)
-            .font(.caption2.weight(.black))
-            .tracking(0.6)
-            .foregroundStyle(DesignTokens.Colors.textFaint)
     }
 }
 
@@ -654,9 +642,12 @@ private struct CompareEmptyState<Content: View>: View {
     }
 }
 
-/// Web's `CompareRows` (components/CompareView.tsx) — the two-column (one per team)
-/// depth table: rank gutter on the left, a header cell per team, one row per depth
-/// rank. Uneven depth renders a dim "—" on the shorter side by leaving that player nil.
+/// Web's `CompareRows` (components/CompareView.tsx) — the two-column (one per team) depth
+/// table: a header cell per team, one row per depth rank. Uneven depth renders a dim "—" on
+/// the shorter side by leaving that player nil. Aug 2026: dropped the leading rank-number
+/// gutter column entirely (Cooper: "I don't like the gray column to the left of the first
+/// team... it should just be the two team columns" — split evenly, each centered within its
+/// half). Depth order is now conveyed purely by row order, top to bottom.
 private struct CompareRows: View {
     let a: (team: Team, players: [Player])
     let b: (team: Team, players: [Player])
@@ -669,12 +660,7 @@ private struct CompareRows: View {
         // `overflow-hidden rounded-2xl` box with a `borderDefault` border, `surfaceCard`
         // rows alternating `surfaceCard2`, and a `surfaceCard2` header band (DEP-266).
         VStack(spacing: 0) {
-            CompareRankLegend(teamA: a.team, teamB: b.team)
-                .padding(.horizontal, DesignTokens.Spacing.xs)
-                .padding(.bottom, DesignTokens.Spacing.xs)
-
             HStack(spacing: 0) {
-                Color.clear.frame(width: 28)
                 TeamHeaderCell(team: a.team)
                 TeamHeaderCell(team: b.team)
             }
@@ -685,9 +671,8 @@ private struct CompareRows: View {
 
             ForEach(0..<rowCount, id: \.self) { rank in
                 HStack(spacing: 0) {
-                    rankGutter(rank + 1)
-                    PlayerCell(player: a.players[safe: rank], team: a.team, rank: rank + 1)
-                    PlayerCell(player: b.players[safe: rank], team: b.team, rank: rank + 1)
+                    PlayerCell(player: a.players[safe: rank])
+                    PlayerCell(player: b.players[safe: rank])
                 }
                 .background(rank % 2 == 1 ? DesignTokens.Colors.surfaceCard2 : Color.clear)
                 .overlay(alignment: .top) {
@@ -703,64 +688,6 @@ private struct CompareRows: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("compare-rows")
-    }
-
-    private func rankGutter(_ rank: Int) -> some View {
-        Text("\(rank)")
-            .font(.caption2.weight(.bold))
-            .foregroundStyle(DesignTokens.Colors.textFaint)
-            .frame(width: 28, height: 40)
-            .background(
-                Circle()
-                    .fill(DesignTokens.Colors.surfaceChip)
-                    .frame(width: 20, height: 20)
-            )
-    }
-}
-
-/// Web's `CompareRankLegend` (components/CompareView.tsx) — "Dot = row rank", the two
-/// overlapping rank-1 team dots, and the faint "Deeper" swatch. Restored in DEP-266:
-/// the first port drew the rank dots with no legend, leaving the color-code opaque.
-private struct CompareRankLegend: View {
-    let teamA: Team
-    let teamB: Team
-
-    var body: some View {
-        HStack(spacing: DesignTokens.Spacing.xs + 2) {
-            Text("Dot = row rank")
-                .font(.caption.weight(.bold))
-                .foregroundStyle(DesignTokens.Colors.textFaint)
-
-            HStack(spacing: -3) {
-                rank1Dot(color: Color(hex: teamA.colors.uiAccent))
-                rank1Dot(color: Color(hex: teamB.colors.uiAccent))
-            }
-            .accessibilityHidden(true)
-            Text("Rank 1")
-                .font(.caption.weight(.bold))
-                .foregroundStyle(DesignTokens.Colors.textFaint)
-
-            Circle()
-                .fill(DesignTokens.Colors.textFaintest)
-                .frame(width: 6, height: 6)
-                .accessibilityHidden(true)
-            Text("Deeper")
-                .font(.caption.weight(.bold))
-                .foregroundStyle(DesignTokens.Colors.textFaint)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Dot equals row rank. Colored dot is rank one, faint dot is deeper.")
-        .accessibilityIdentifier("compare-rank-legend")
-    }
-
-    private func rank1Dot(color: Color) -> some View {
-        Circle()
-            .fill(color)
-            .frame(width: 6, height: 6)
-            .overlay {
-                Circle().strokeBorder(DesignTokens.Colors.bg, lineWidth: 1)
-            }
     }
 }
 
@@ -786,19 +713,17 @@ private struct TeamHeaderCell: View {
     }
 }
 
-/// Web's `PlayerCell` — one cell in a depth column: a rank dot (rank-1 = team uiAccent,
-/// deeper = dim), `#number LastName`. Web shows the full name past 480pt; native keeps
-/// the last-name form everywhere (the two compare columns are always narrow).
+/// Web's `PlayerCell` — one cell in a depth column: `#number LastName`. Web shows the
+/// full name past 480pt; native keeps the last-name form everywhere (the two compare
+/// columns are always narrow). Aug 2026: dropped the per-row rank dot (it duplicated the
+/// now-removed gutter's rank number) and centered the text within the column — with the
+/// gutter gone, each cell is exactly half the table's width, and a left-aligned label in
+/// a half-width column read off-center.
 private struct PlayerCell: View {
     let player: Player?
-    let team: Team
-    let rank: Int
 
     var body: some View {
-        HStack(spacing: DesignTokens.Spacing.xs + 2) {
-            Circle()
-                .fill(rank == 1 ? Color(hex: team.colors.uiAccent) : DesignTokens.Colors.textFaintest)
-                .frame(width: 6, height: 6)
+        Group {
             if let player {
                 Text("#\(player.number) \(formatLastName(player.name))")
                     .font(.caption.weight(.bold))
@@ -809,7 +734,6 @@ private struct PlayerCell: View {
                     .font(.caption.weight(.bold))
                     .foregroundStyle(DesignTokens.Colors.textFaintest)
             }
-            Spacer(minLength: 0)
         }
         .padding(.horizontal, DesignTokens.Spacing.sm + 2)
         .frame(maxWidth: .infinity, minHeight: 40)
