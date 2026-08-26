@@ -130,6 +130,53 @@ private actor AsyncCounter {
     #expect(store.user == nil)
 }
 
+// `waitForRestore()` is the contract DEP-319's favorite tier depends on: `user` is nil
+// for the whole restore window, so a caller that reads it early reports a signed-in
+// launch as signed out. These prove a parked caller resumes *after* the session settles
+// and therefore sees the real user — and that an already-settled store never parks.
+
+@Test @MainActor func waitForRestoreReturnsImmediatelyOnceTheSessionHasSettled() async {
+    let service = FakeAuthService()
+    let store = AuthSessionStore(service: service)
+    await store.refresh()
+    #expect(!store.isRestoring)
+
+    await store.waitForRestore()
+
+    #expect(store.user?.email == "owner@example.com")
+}
+
+@Test @MainActor func waitForRestoreResumesWithTheRestoredUserRatherThanNil() async {
+    let service = FakeAuthService()
+    let store = AuthSessionStore(service: service)
+    #expect(store.isRestoring)
+    let observed = Task { @MainActor in
+        await store.waitForRestore()
+        return store.user?.email
+    }
+    await Task.yield()
+
+    await store.refresh()
+
+    #expect(await observed.value == "owner@example.com")
+    #expect(!store.isRestoring)
+}
+
+@Test @MainActor func acceptedSessionReleasesParkedRestoreWaiters() async {
+    let service = FakeAuthService()
+    let store = AuthSessionStore(service: service)
+    let observed = Task { @MainActor in
+        await store.waitForRestore()
+        return store.user?.email
+    }
+    await Task.yield()
+
+    store.accept(DepthUser(id: UUID(), email: "accepted@example.com"))
+
+    #expect(await observed.value == "accepted@example.com")
+    #expect(!store.isRestoring)
+}
+
 @Test @MainActor func deletionFailureKeepsSessionAndPrivateData() async {
     let service = FakeAuthService()
     await service.setDeletionError(.deletionFailed(correlationId: "support-123"))

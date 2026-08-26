@@ -115,8 +115,19 @@ struct DepthChartsTab: View {
             // live ids are known, and it is a no-op in the overwhelmingly common case.
             // DEP-319: the favorite tier applies once the settings row has resolved
             // (load() is a no-op while signed out, so favorites only win when one exists).
+            //
+            // The two reads run *concurrently*, not in sequence: `load()` parks on
+            // `sessionStore.isRestoring` until the Supabase session restore settles
+            // (~300ms signed out, a full token-refresh round trip signed in), and
+            // awaiting it first delayed the launch team-list read — the one that warms
+            // the cache the team switcher reads — by exactly that long. Opening the
+            // switcher inside that window then paid a cold network read of its own
+            // (behind the same auth refresh when signed in), showing the loading
+            // skeleton for over a second. Starting the list read up front costs
+            // nothing — the resolve below still waits on both.
+            async let teamsResult = repository.teams()
             await userSettingsStore.load()
-            guard let teams = try? await repository.teams() else { return }
+            guard let teams = try? await teamsResult else { return }
             teamId = StartupTeam.resolve(
                 favoriteTeamId: userSettingsStore.favoriteTeamId,
                 startOnFavorite: userSettingsStore.startOnFavorite,
