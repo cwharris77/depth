@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X } from 'lucide-react';
 import {
   dismissInstallHint,
   hasDismissedInstallHint,
@@ -10,7 +9,7 @@ import {
   isStandaloneDisplay,
 } from '@/lib/utils/ios-install-hint';
 import { colors as uiTokens, springSheet, typeScale, zIndex } from '@/components/ui/tokens';
-import IconButton from '@/components/ui/IconButton';
+import CloseButton from '@/components/ui/CloseButton';
 
 // One-time hint for iOS Safari visitors pointing at Share -> Add to Home Screen. iOS Safari has
 // no native install prompt (`beforeinstallprompt` is Chromium-only), so without this the PWA
@@ -68,13 +67,7 @@ export default function IOSInstallHint() {
             <span aria-hidden="true">⎋</span>, then{' '}
             <span className="font-semibold">Add to Home Screen</span>.
           </span>
-          <IconButton
-            icon={<X size={16} color={uiTokens.textSecondary} />}
-            variant="ghost"
-            size="sm"
-            onClick={dismiss}
-            ariaLabel="Dismiss install hint"
-          />
+          <CloseButton onClick={dismiss} size="sm" ariaLabel="Dismiss install hint" />
         </motion.div>
       )}
     </AnimatePresence>

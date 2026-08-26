@@ -50,23 +50,16 @@ struct TeamListPickerSheet: View {
         // picker's top row — the picker's AFC/NFC fill color read as if it were the X's
         // own tint when the two collided there.
         .overlay(alignment: .topTrailing) {
-            // A neutral scrim behind the glyph so it stays legible over whatever content
-            // scrolls beneath it, independent of the current team's color.
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(DesignTokens.Colors.textPrimary)
-                    .frame(width: 32, height: 32)
-                    .background(DesignTokens.Colors.surfaceChip, in: Circle())
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Close")
-            .padding(.trailing, 4)
-            .zIndex(1)
+            // Same CloseButton the five toolbar-hosted sheets use, so only the *placement*
+            // diverges here, not the control. This used to be a bespoke 32pt filled chip
+            // pinned flush to the corner — visibly smaller and higher than every other
+            // sheet's X. The trailing padding matches a nav-bar item's standard inset and
+            // the top padding drops the 44pt hit box onto the inline title's own band, so
+            // it lines up with the "Teams" title rather than floating above it.
+            CloseButton(action: { dismiss() }, placement: .overlay)
+                .padding(.trailing, DesignTokens.Spacing.screenMargin)
+                .padding(.top, 13)
+                .zIndex(1)
         }
         .presentationBackground(DesignTokens.Colors.bg)
         // `.sheet()` content gets a fresh UITraitCollection rather than inheriting
