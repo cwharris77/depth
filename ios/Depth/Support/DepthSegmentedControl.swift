@@ -58,6 +58,9 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
                 }
                 .contentShape(Rectangle())
                 .buttonStyle(.plain)
+                // Selection already has a visible filled surface; expose the same state
+                // semantically so VoiceOver does not have to infer it from color.
+                .accessibilityAddTraits(isActive ? .isSelected : [])
                 .accessibilityIdentifier(option.identifier)
             }
         }

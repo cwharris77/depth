@@ -2,8 +2,8 @@ import SwiftUI
 
 // Native two-team compare (DEP-258) — a port of web's components/CompareView.tsx,
 // replacing the navigation-parity placeholder. Two team-slot pickers feed two sections
-// behind a Matchup/By-position segmented control: the matchup card (record, points,
-// home/road splits + a "deepest room" teaser row) and the per-position depth table
+// behind a By-team/By-position segmented control: the By-team tab's Forecast/Roster/unit
+// lenses plus a "deepest room" teaser row, and the per-position depth table
 // (rank-aligned side-by-side columns). All content derives from the CompareViewModel's
 // resolved TeamStatsPage/TeamSnapshot reads through DepthRepository — no new data seam.
 // The repository is a `CachingDepthRepository` (concrete, like every tab) so the
@@ -246,20 +246,19 @@ struct CompareView: View {
 
 // MARK: - Matchup tab
 
-/// Web's `TeamMatchup` (components/CompareView.tsx): the pick/same-team prompts, the
-/// matchup stat card, and the deepest-room teaser row below it.
+/// DEP-317's five-lens matchup briefing plus the existing DEP-311 drilldown path.
 private struct TeamMatchupSection: View {
     let viewModel: CompareViewModel
 
     var body: some View {
         if !viewModel.bothPicked {
-            ComparePrompt(pickedCount: viewModel.pickedCount, copy: "Their record, points, and home-road splits line up side by side.")
+            ComparePrompt(pickedCount: viewModel.pickedCount, copy: "Forecast, roster usage, and unit metrics page side by side.")
         } else if viewModel.sameTeam {
             SameTeamBlock()
         } else {
             if let teamA = viewModel.teamA, let teamB = viewModel.teamB {
                 VStack(spacing: DesignTokens.Spacing.sm) {
-                    matchupCard(teamA: teamA, teamB: teamB)
+                    CompareLensesView(viewModel: viewModel)
                     if let teaser = viewModel.teaser {
                         DeepestRoomTeaser(teaser: teaser, teamA: teamA, teamB: teamB) {
                             viewModel.selectTab(.position)
@@ -269,95 +268,10 @@ private struct TeamMatchupSection: View {
                 }
             } else {
                 // Unreachable given bothPicked, but degrade rather than crash.
-                ComparePrompt(pickedCount: viewModel.pickedCount, copy: "Their record, points, and home-road splits line up side by side.")
+                ComparePrompt(pickedCount: viewModel.pickedCount, copy: "Forecast, roster usage, and unit metrics page side by side.")
             }
         }
     }
-
-    private func matchupCard(teamA: Team, teamB: Team) -> some View {
-        VStack(spacing: 0) {
-            HStack(spacing: DesignTokens.Spacing.sm) {
-                teamHeader(teamA, stats: viewModel.effectiveStatsA)
-                // Web parity: the in-card VS is bare `textFaint` caption text (web
-                // CompareView line 422-426), distinct from the slot row's `surfaceChip`
-                // capsule.
-                Text("VS")
-                    .font(.caption.weight(.black))
-                    .foregroundStyle(DesignTokens.Colors.textFaint)
-                    .accessibilityHidden(true)
-                teamHeader(teamB, stats: viewModel.effectiveStatsB)
-            }
-            .padding(.vertical, DesignTokens.Spacing.sm)
-
-            statLine(label: "RECORD", a: record(viewModel.effectiveStatsA), b: record(viewModel.effectiveStatsB))
-            statLine(label: "PTS FOR", a: points(viewModel.effectiveStatsA), b: points(viewModel.effectiveStatsB))
-            statLine(label: "PTS AGAINST", a: against(viewModel.effectiveStatsA), b: against(viewModel.effectiveStatsB))
-            statLine(label: "HOME", a: homeRecord(viewModel.effectiveStatsA), b: homeRecord(viewModel.effectiveStatsB))
-            statLine(label: "ROAD", a: roadRecord(viewModel.effectiveStatsA), b: roadRecord(viewModel.effectiveStatsB))
-        }
-        // DEP-266: web's matchup card is `rounded-2xl` (16pt) — `depthCard(radius: .md)`.
-        // `padded: false` because the header/StatLines carry their own padding (matching
-        // PlayerDetailView's row-list card usage); without it the clip would inset rows.
-        .depthCard(padded: false, radius: DesignTokens.Radius.md)
-        .accessibilityIdentifier("compare-matchup-card")
-    }
-
-    private func teamHeader(_ team: Team, stats: TeamSeasonStats?) -> some View {
-        VStack(spacing: DesignTokens.Spacing.xs) {
-            Text(team.abbrev.uppercased())
-                .font(.caption.weight(.black))
-                .tracking(1)
-                .foregroundStyle(Color(hex: team.colors.uiAccent))
-            Text(team.city)
-                .font(.caption.bold())
-                .foregroundStyle(DesignTokens.Colors.textPrimary)
-                .lineLimit(1)
-            if let stats {
-                Text(String(stats.season))
-                    .font(.caption2)
-                    .foregroundStyle(DesignTokens.Colors.textFaint)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .accessibilityElement(children: .combine)
-    }
-
-    private func statLine(label: String, a: String, b: String) -> some View {
-        HStack(spacing: DesignTokens.Spacing.sm) {
-            Text(a)
-                .font(.caption.bold())
-                .foregroundStyle(DesignTokens.Colors.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .lineLimit(1)
-            Text(label)
-                .font(.caption2.weight(.bold))
-                .foregroundStyle(DesignTokens.Colors.textFaint)
-            Text(b)
-                .font(.caption.bold())
-                .foregroundStyle(DesignTokens.Colors.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .lineLimit(1)
-        }
-        .padding(.horizontal, DesignTokens.Spacing.md)
-        .padding(.vertical, DesignTokens.Spacing.sm)
-        .overlay(alignment: .top) {
-            Rectangle()
-                .fill(DesignTokens.Colors.borderSubtle)
-                .frame(height: 1)
-        }
-    }
-
-    private func record(_ stats: TeamSeasonStats?) -> String {
-        guard let stats else { return "—" }
-        return stats.overallTies != 0
-            ? "\(stats.overallWins)-\(stats.overallLosses)-\(stats.overallTies)"
-            : "\(stats.overallWins)-\(stats.overallLosses)"
-    }
-
-    private func points(_ stats: TeamSeasonStats?) -> String { stats.map { String($0.pointsFor) } ?? "—" }
-    private func against(_ stats: TeamSeasonStats?) -> String { stats.map { String($0.pointsAgainst) } ?? "—" }
-    private func homeRecord(_ stats: TeamSeasonStats?) -> String { stats.map { "\($0.homeWins)-\($0.homeLosses)" } ?? "—" }
-    private func roadRecord(_ stats: TeamSeasonStats?) -> String { stats.map { "\($0.roadWins)-\($0.roadLosses)" } ?? "—" }
 }
 
 /// Web's `DeepestRoomTeaser` (components/CompareView.tsx) — a tappable discoverability
