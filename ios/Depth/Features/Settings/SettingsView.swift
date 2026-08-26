@@ -100,16 +100,7 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .foregroundStyle(DesignTokens.Colors.textPrimary)
-                            .frame(minWidth: 44, minHeight: 44)
-                            .contentShape(Rectangle())
-                    }
-                    .accessibilityLabel("Close")
-                    .accessibilityIdentifier("account-close-button")
+                    CloseButton(action: { dismiss() }, identifier: "account-close-button")
                 }
             }
         }

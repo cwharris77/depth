@@ -1,7 +1,7 @@
 'use client';
 
 import Avatar from '@/components/ui/Avatar';
-import IconButton from '@/components/ui/IconButton';
+import CloseButton from '@/components/ui/CloseButton';
 import SectionLabel from '@/components/ui/SectionLabel';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
@@ -9,7 +9,7 @@ import { CONFERENCE_COLORS, readableTextOn } from '@/lib/utils/colors';
 import type { TeamMeta } from '@/lib/roster-source';
 import type { PlayerHit } from '@/lib/utils/search/search';
 import type { Conference, Player } from '@/lib/types';
-import { Check, Columns2, CornerDownLeft, Search, X } from 'lucide-react';
+import { Check, Columns2, CornerDownLeft, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
@@ -311,12 +311,7 @@ export default function NavSwitcher({
         <h2 className="text-lg font-black" style={{ color: uiTokens.textPrimary }}>
           {onPickTeam ? 'Pick a team' : 'Jump to'}
         </h2>
-        <IconButton
-          variant="ghost"
-          onClick={onClose}
-          ariaLabel="Close"
-          icon={<X size={18} color={uiTokens.textMuted} />}
-        />
+        <CloseButton onClick={onClose} />
       </div>
 
       <div className="px-5 pb-3">

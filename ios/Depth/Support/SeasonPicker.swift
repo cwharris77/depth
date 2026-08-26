@@ -151,15 +151,10 @@ struct SeasonPickerSheet: View {
                 // (TeamListPickerSheet, UniformFilterSheet, UniformPickerSheet,
                 // PlayerDetailView) — this sheet was missing it.
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .foregroundStyle(DesignTokens.Colors.textPrimary)
-                    }
-                    .frame(minWidth: 44, minHeight: 44)
-                    .accessibilityLabel("Close")
-                    .accessibilityIdentifier("\(identifierPrefix)-season-close")
+                    CloseButton(
+                        action: { dismiss() },
+                        identifier: "\(identifierPrefix)-season-close"
+                    )
                 }
             }
         }

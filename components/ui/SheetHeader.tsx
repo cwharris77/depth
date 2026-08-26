@@ -1,8 +1,7 @@
 'use client';
 
-import { X } from 'lucide-react';
 import type { ReactNode } from 'react';
-import IconButton from './IconButton';
+import CloseButton from './CloseButton';
 import { colors as uiTokens } from './tokens';
 
 interface SheetHeaderProps {
@@ -26,13 +25,7 @@ export default function SheetHeader({ title, onClose, children }: SheetHeaderPro
         ) : null}
         {children}
       </div>
-      <IconButton
-        icon={<X size={16} color={uiTokens.textMuted} />}
-        variant="ghost"
-        size="sm"
-        onClick={onClose}
-        ariaLabel="Close"
-      />
+      <CloseButton onClick={onClose} />
     </div>
   );
 }

@@ -9,10 +9,11 @@ import { readableTextOn } from '@/lib/utils/colors';
 import { positionFullName } from '@/lib/utils/team/positions';
 import { playerDeepLinkPath } from '@/lib/utils/depth-chart/share';
 import type { Player, TeamColors } from '@/lib/types';
-import { AlertCircle, Check, Share2, X } from 'lucide-react';
+import { AlertCircle, Check, Share2 } from 'lucide-react';
 import { useState } from 'react';
 import Avatar from '@/components/ui/Avatar';
 import Badge from '@/components/ui/Badge';
+import CloseButton from '@/components/ui/CloseButton';
 import IconButton from '@/components/ui/IconButton';
 import { colors as uiTokens } from '@/components/ui/tokens';
 
@@ -122,12 +123,7 @@ export default function PlayerCardHeader({
             )
           }
         />
-        <IconButton
-          variant="ghost"
-          onClick={onClose}
-          ariaLabel="Close player card"
-          icon={<X size={18} color={uiTokens.textMuted} />}
-        />
+        <CloseButton onClick={onClose} ariaLabel="Close player card" />
       </div>
     </div>
   );
