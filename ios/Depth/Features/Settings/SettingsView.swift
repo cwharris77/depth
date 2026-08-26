@@ -315,9 +315,6 @@ struct SettingsView: View {
                 }
                 .accessibilityIdentifier("settings-favorite-team")
             }
-            Text("Your favorite opens automatically when you start the app.")
-                .font(.caption)
-                .foregroundStyle(DesignTokens.Colors.textMuted)
         }
         .padding(.horizontal, DesignTokens.Spacing.md)
     }
