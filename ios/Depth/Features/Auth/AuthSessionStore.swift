@@ -11,6 +11,8 @@ final class AuthSessionStore {
 
     @ObservationIgnored private let service: any DepthAuthServicing
     @ObservationIgnored private var observationTask: Task<Void, Never>?
+    /// Parked `waitForRestore()` callers, resumed by `finishRestoring()`.
+    @ObservationIgnored private var restoreWaiters: [CheckedContinuation<Void, Never>] = []
 
     init(service: any DepthAuthServicing) {
         self.service = service
@@ -20,6 +22,40 @@ final class AuthSessionStore {
         observationTask?.cancel()
     }
 
+    /// Awaits the initial session restore, returning immediately once it has settled.
+    ///
+    /// Anything that must know whether there *is* a signed-in user has to await this
+    /// first: `user` is nil for the whole restore window, so reading it early reports a
+    /// signed-in launch as signed out (which is what would silently drop DEP-319's
+    /// favorite tier on every launch). That is also why the caller's `isSignedIn` check
+    /// cannot simply be hoisted above the wait to skip it when signed out — "signed out"
+    /// is not knowable until this returns.
+    ///
+    /// Replaces a 25ms `Task.sleep` poll loop in UserSettingsStore: that spun the main
+    /// actor at 40Hz for the length of the restore, added up to a poll interval of
+    /// latency on top of it, and — because `try? await Task.sleep` returns instantly on
+    /// a cancelled task — degenerated into a hot spin whenever its caller was cancelled
+    /// mid-restore.
+    func waitForRestore() async {
+        guard isRestoring else { return }
+        await withCheckedContinuation { continuation in
+            // Re-check inside the continuation: `finishRestoring()` may have run between
+            // the guard above and this closure, and a continuation appended after the
+            // last resume would never be resumed.
+            guard isRestoring else { return continuation.resume() }
+            restoreWaiters.append(continuation)
+        }
+    }
+
+    /// The one place `isRestoring` drops, so no path can settle the session without
+    /// releasing the waiters parked on it.
+    private func finishRestoring() {
+        isRestoring = false
+        let waiters = restoreWaiters
+        restoreWaiters = []
+        for waiter in waiters { waiter.resume() }
+    }
+
     func start() {
         guard observationTask == nil else { return }
         observationTask = Task { [weak self, service] in
@@ -27,7 +63,7 @@ final class AuthSessionStore {
             for await user in changes {
                 guard !Task.isCancelled else { return }
                 self?.user = user
-                self?.isRestoring = false
+                self?.finishRestoring()
             }
         }
     }
@@ -41,12 +77,12 @@ final class AuthSessionStore {
             // Auto-refresh can retry transient failures. Public browsing remains available,
             // and the last known session is not erased merely because the network is down.
         }
-        isRestoring = false
+        finishRestoring()
     }
 
     func accept(_ user: DepthUser) {
         self.user = user
-        isRestoring = false
+        finishRestoring()
     }
 
     func signOut() async throws {
