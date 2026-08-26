@@ -36,12 +36,12 @@ export async function generateMetadata({ searchParams }: Params): Promise<Metada
   const teamA = teams.find((t) => t.id === a);
   const teamB = teams.find((t) => t.id === b);
   if (!teamA || !teamB) {
-    return { title: 'Compare teams · Depth' };
+    return { title: 'Compare teams · The Sticks' };
   }
   return {
     title: raw.pos
-      ? `${teamA.abbrev} vs ${teamB.abbrev} — ${pos} depth · Depth`
-      : `${teamA.abbrev} vs ${teamB.abbrev} matchup · Depth`,
+      ? `${teamA.abbrev} vs ${teamB.abbrev} — ${pos} depth · The Sticks`
+      : `${teamA.abbrev} vs ${teamB.abbrev} matchup · The Sticks`,
     description: raw.pos
       ? `Side-by-side ${pos} depth chart comparison: ${teamA.city} ${teamA.name} vs ${teamB.city} ${teamB.name}.`
       : `Team matchup comparison: ${teamA.city} ${teamA.name} vs ${teamB.city} ${teamB.name}.`,

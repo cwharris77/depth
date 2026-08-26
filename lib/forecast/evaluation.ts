@@ -222,7 +222,7 @@ export function renderModelCard(report: ForecastEvaluationReport): string {
   );
 
   return [
-    '# Depth matchup forecast model card',
+    '# The Sticks matchup forecast model card',
     '',
     `Model version: \`${report.modelVersion}\`  `,
     `Evaluation decision: **${status}**`,
@@ -230,7 +230,7 @@ export function renderModelCard(report: ForecastEvaluationReport): string {
     '## Intended use',
     '',
     'This model estimates the probability of a home-team win for a scheduled NFL matchup.',
-    'For informational and entertainment purposes. Depth does not accept wagers or provide betting',
+    'For informational and entertainment purposes. The Sticks does not accept wagers or provide betting',
     'services.',
     '',
     '## Data and attribution',

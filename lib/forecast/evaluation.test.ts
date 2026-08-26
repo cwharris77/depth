@@ -254,7 +254,7 @@ describe('deterministic evaluation outputs', () => {
     expect(card).toMatch(/2023.+2025/);
     expect(card).toMatch(/updated|refresh/i);
     expect(card.replace(/\s+/g, ' ')).toContain(
-      'For informational and entertainment purposes. Depth does not accept wagers or provide betting services.'
+      'For informational and entertainment purposes. The Sticks does not accept wagers or provide betting services.'
     );
   });
 });

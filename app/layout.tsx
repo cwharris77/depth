@@ -31,7 +31,7 @@ const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: 'Depth · NFL Depth Charts',
+  title: 'The Sticks · NFL Depth Charts',
   description:
     'Interactive, mobile-first NFL depth charts. Pick a team and explore the roster on the field.',
 };

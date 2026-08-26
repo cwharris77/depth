@@ -4,7 +4,7 @@ import UniformArchive from '@/components/UniformArchive';
 import { getAllTeamUniformDefinitions } from '@/lib/uniforms/teams';
 
 export const metadata: Metadata = {
-  title: 'Uniform Archive · Depth',
+  title: 'Uniform Archive · The Sticks',
   description:
     'Browse every NFL uniform kit — home, away, throwbacks, and alternates — for all 32 teams.',
 };
