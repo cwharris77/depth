@@ -469,8 +469,12 @@ final class DepthUITests: XCTestCase {
 
     /// DEP-266 (Compare page unification) — the web-parity elements the first port
     /// dropped must render once both teams are picked: the VS capsule, the "By team"/
-    /// "By position" tab labels, the rank-dot legend, the 44pt position chips, and the
-    /// dashed unpicked slot (verified before picking).
+    /// "By position" tab labels, the 44pt position chips, and the dashed unpicked slot
+    /// (verified before picking). Aug 2026 feedback pass: Forecast and Roster were
+    /// removed outright (not just reworded) and the depth table's rank-dot legend went
+    /// with them — see CompareViewModel.swift's `Lens` doc comment and
+    /// CompareView.swift's `CompareRows` doc comment for why. This test now covers the
+    /// three lenses that remain instead of asserting the deleted ones exist.
     func testCompareRendersWebParityElements() throws {
         let app = XCUIApplication()
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
@@ -495,13 +499,13 @@ final class DepthUITests: XCTestCase {
         pickTeam(into: "a", query: "Bills", expectedRow: "team-row-bills", app: app)
         pickTeam(into: "b", query: "Seahawks", expectedRow: "team-row-seahawks", app: app)
 
-        // DEP-317: the By-team surface now opens on Forecast and exposes all five
-        // synchronized lens-selector buttons. Selecting Defense pages the content and
-        // reports the selection to VoiceOver rather than relying on color alone.
-        let forecastLens = app.buttons["compare-lens-forecast"]
-        XCTAssertTrue(forecastLens.waitForExistence(timeout: 20), "Forecast should be the first compare lens")
-        XCTAssertTrue(app.buttons["compare-lens-roster"].exists)
-        XCTAssertTrue(app.buttons["compare-lens-offense"].exists)
+        // The By-team surface now opens on Offense and exposes exactly three synchronized
+        // lens-selector buttons — no Forecast, no Roster. Selecting Defense pages the
+        // content and reports the selection to VoiceOver rather than relying on color alone.
+        let offenseLens = app.buttons["compare-lens-offense"]
+        XCTAssertTrue(offenseLens.waitForExistence(timeout: 20), "Offense should be the first compare lens")
+        XCTAssertFalse(app.buttons["compare-lens-forecast"].exists, "Forecast was removed outright")
+        XCTAssertFalse(app.buttons["compare-lens-roster"].exists, "Roster was removed outright")
         let defenseLens = app.buttons["compare-lens-defense"]
         XCTAssertTrue(defenseLens.exists)
         XCTAssertTrue(app.buttons["compare-lens-specialTeams"].exists)
@@ -511,12 +515,9 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(defenseCard.waitForExistence(timeout: 10), "selecting Defense should page to its evidence card")
         XCTAssertTrue(defenseLens.isSelected, "the active lens should expose the selected accessibility trait")
 
-        // Position tab: the DEP-311 room picker (unit lens + room grid) and the rank-dot
-        // legend above the depth rows. The old horizontal `compare-position-row` scroller
-        // is gone.
+        // Position tab: the DEP-311 room picker (unit lens + room grid). The old horizontal
+        // `compare-position-row` scroller is gone.
         app.buttons["compare-tab-position"].tap()
-        // The unit lens rows (offense/defense/special) and the offense room grid render on
-        // the position tab. The old horizontal `compare-position-row` scroller is gone.
         let lineupOffense = app.buttons["unit-tab-offense"]
         XCTAssertTrue(lineupOffense.waitForExistence(timeout: 10), "the unit lens row should render on the position tab")
         XCTAssertTrue(lineupOffense.isSelected || lineupOffense.frame.height >= 44 - 0.01, "the unit lens keeps its 44pt tap target")
@@ -526,8 +527,12 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(firstRoom.waitForExistence(timeout: 5), "the offense Quarterback room tile should render")
         XCTAssertGreaterThanOrEqual(firstRoom.frame.height, 44 - 0.01, "room tiles must meet the 44pt touch minimum")
 
-        let legend = app.descendants(matching: .any)["compare-rank-legend"].firstMatch
-        XCTAssertTrue(legend.waitForExistence(timeout: 5), "the rank-dot legend should render above the depth table")
+        // Quarterback is a single-position room — it selects directly with no exact-role
+        // panel and no "compare-position-QB" role tile of its own.
+        XCTAssertFalse(app.buttons["compare-position-QB"].exists, "a single-position room has no role panel")
+
+        let depthRows = app.descendants(matching: .any)["compare-rows"].firstMatch
+        XCTAssertTrue(depthRows.waitForExistence(timeout: 5), "the depth table should render for the default Quarterback selection")
     }
 
     /// DEP-311: every unit's last role is reachable through the two-step room→position
@@ -565,10 +570,14 @@ final class DepthUITests: XCTestCase {
         XCTAssertGreaterThanOrEqual(freeSafety.frame.height, 44 - 0.01, "FS must keep the 44pt touch minimum")
         freeSafety.tap()
 
-        // Special Teams: unit lens → Specialists → K (Kicker).
+        // Special Teams: Specialists is this unit's only room, and (Aug 2026: switching
+        // units now jumps straight to the new unit's first room, expanded — see
+        // CompareViewModel.swift's `selectUnit` doc comment) it's already expanded by the
+        // unit-tab tap alone. Tapping it again here would collapse it instead (the same
+        // Aug 2026 pass made an already-expanded room collapse on a second tap), so unlike
+        // the Line and Safeties rooms above, this one is asserted without an explicit tap.
         app.buttons["unit-tab-special"].tap()
         XCTAssertTrue(app.buttons["compare-room-specialists"].waitForExistence(timeout: 5), "the Specialists room should render in special teams")
-        app.buttons["compare-room-specialists"].tap()
         let kicker = app.buttons["compare-position-K"]
         XCTAssertTrue(kicker.waitForExistence(timeout: 5), "K should be reachable from the Specialists exact-role panel")
         XCTAssertGreaterThanOrEqual(kicker.frame.height, 44 - 0.01, "K must keep the 44pt touch minimum")

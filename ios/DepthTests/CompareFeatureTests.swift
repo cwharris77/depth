@@ -2,10 +2,14 @@ import Foundation
 import Testing
 @testable import Depth
 
-// DEP-258: the native two-team compare view model contract — team picking, the
-// deepest-room computation, per-position grouping, and the tab/position state machine.
-// The pure helpers (COMPARE_POSITIONS order, getDeepestPosition, buildCompareTeaser) get
-// direct coverage; the view-model integration covers team selection across slots.
+// DEP-258: the native two-team compare view model contract — team picking, per-position
+// grouping, and the tab/position/lens state machine. The pure helpers (COMPARE_POSITIONS
+// order, the room→unit map, evidence freshness) get direct coverage; the view-model
+// integration covers team selection across slots.
+//
+// Aug 2026 feedback pass removed the deepest-room teaser, market Forecast lens, and
+// Roster participation lens from the app; their tests (getDeepestPosition/
+// buildCompareTeaser, buildMarketForecast, summarizeStarterParticipation) went with them.
 
 private func compareTeam(_ id: String, abbrev: String, city: String) -> Team {
     Team(
@@ -56,27 +60,39 @@ private func statsPage(
     )
 }
 
+private func compareMatchupMetrics(season: Int, offensiveEPAPerPlay: Double) -> TeamMatchupMetrics {
+    TeamMatchupMetrics(
+        source: .nflverse, season: season, updatedAt: "2026-01-05T12:00:00Z",
+        games: nil, passingEPA: nil, rushingEPA: nil, passAttempts: nil, rushAttempts: nil,
+        sacksSuffered: nil, offensiveEPA: nil, offensivePlays: nil,
+        offensiveEPAPerPlay: offensiveEPAPerPlay, passingInterceptions: nil, fumblesLost: nil,
+        giveaways: nil, defensiveSacks: nil, quarterbackHits: nil, quarterbackHitsPerGame: nil,
+        defensiveInterceptions: nil, defensiveFumbleRecoveries: nil, defensiveFumblesForced: nil,
+        defensiveTakeaways: nil, defensiveTakeawaysPerGame: nil, fieldGoalsMade: nil,
+        fieldGoalsAttempted: nil, fieldGoalPercentage: nil, puntAttempts: nil, netPuntYards: nil,
+        netPuntYardsPerAttempt: nil, puntReturns: nil, puntReturnYards: nil,
+        puntReturnYardsPerAttempt: nil, kickoffReturns: nil, kickoffReturnYards: nil,
+        kickoffReturnYardsPerAttempt: nil, specialTeamsTouchdowns: nil
+    )
+}
+
 /// A fake backing the compare view model. Teams list + per-team snapshot/stats, so the
-/// view model can resolve both sides.
+/// view model can resolve both sides. `teamSchedule` has no `DepthRepository` default
+/// and Compare no longer reads it, so it just throws; `recentParticipation` falls back
+/// to the protocol's own `nil` default for the same reason.
 private actor CompareRepositoryFake: DepthRepository {
     let teams: [Team]
     let snapshots: [String: TeamSnapshot]
     let stats: [String: TeamStatsPage]
-    let schedules: [String: TeamSchedule]
-    let participation: [String: RecentParticipation]
 
     init(
         teams: [Team],
         snapshots: [String: TeamSnapshot],
-        stats: [String: TeamStatsPage],
-        schedules: [String: TeamSchedule] = [:],
-        participation: [String: RecentParticipation] = [:]
+        stats: [String: TeamStatsPage]
     ) {
         self.teams = teams
         self.snapshots = snapshots
         self.stats = stats
-        self.schedules = schedules
-        self.participation = participation
     }
 
     func teams() async throws -> [Team] { teams }
@@ -92,58 +108,12 @@ private actor CompareRepositoryFake: DepthRepository {
         throw DepthError.notFound
     }
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
-        guard let schedule = schedules[teamId] else { throw DepthError.notFound }
-        return schedule
-    }
-    func recentParticipation(teamId: String) async throws -> RecentParticipation? {
-        participation[teamId]
+        throw DepthError.notFound
     }
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
     func appConfig() async throws -> AppConfig {
         AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)
     }
-}
-
-private func compareMarket(
-    favoriteTeamId: String,
-    teamSpread: Double = -2.5
-) -> ScheduleGameMarket {
-    ScheduleGameMarket(
-        teamMoneyline: -135,
-        opponentMoneyline: 115,
-        teamSpread: teamSpread,
-        teamSpreadOdds: -110,
-        opponentSpreadOdds: -110,
-        totalLine: 44.5,
-        underOdds: -108,
-        overOdds: -112,
-        impliedWinProbability: 0.552,
-        favoriteTeamId: favoriteTeamId,
-        isPickEm: false,
-        isNeutralSite: false,
-        source: .nflverse,
-        updatedAt: "2026-08-25T12:00:00Z"
-    )
-}
-
-private func compareParticipation(team: Team, playerId: String) -> RecentParticipation {
-    RecentParticipation(
-        teamId: team.id,
-        season: 2025,
-        windowStartWeek: 16,
-        windowEndWeek: 18,
-        gameIds: ["game-16", "game-17", "game-18"],
-        source: "nflverse",
-        updatedAt: "2026-01-05T12:00:00Z",
-        players: [
-            PlayerRecentParticipation(
-                playerId: playerId,
-                offense: ParticipationUnit(snaps: 120, percentage: 0.83),
-                defense: ParticipationUnit(snaps: 0, percentage: nil),
-                specialTeams: ParticipationUnit(snaps: 4, percentage: 0.06)
-            )
-        ]
-    )
 }
 
 // MARK: - Pure helpers
@@ -216,46 +186,6 @@ private func compareParticipation(team: Team, playerId: String) -> RecentPartici
     }
 }
 
-@Test func deepestRoomPicksTheMostCombinedDepth() {
-    let a = (0..<3).map { comparePlayer(id: "a\($0)", name: "P\($0)", position: .wr, rank: $0 + 1, number: $0 + 1) }
-    let b = (0..<1).map { comparePlayer(id: "b\($0)", name: "P\($0)", position: .wr, rank: $0 + 1, number: $0 + 1) }
-    let empty: [Player] = []
-
-    // WR has 3+1=4 combined; QB and RB have none on one side.
-    let positions: [Position] = [.qb, .wr, .rb]
-    #expect(getDeepestPosition(playersA: [empty, a, empty], playersB: [empty, b, empty], positions: positions) == .wr)
-}
-
-@Test func deepestRoomTiesResolveToEarliestPosition() {
-    let a = (0..<2).map { comparePlayer(id: "a\($0)", name: "P\($0)", position: .qb, rank: $0 + 1, number: $0 + 1) }
-    let b = (0..<2).map { comparePlayer(id: "b\($0)", name: "P\($0)", position: .wr, rank: $0 + 1, number: $0 + 1) }
-    let empty: [Player] = []
-
-    // QB and WR both have 2 combined — tie resolves to the earlier position (QB).
-    let positions: [Position] = [.qb, .wr]
-    #expect(getDeepestPosition(playersA: [a, empty], playersB: [empty, b], positions: positions) == .qb)
-}
-
-@Test func deepestRoomReturnsNilWhenEverythingIsEmpty() {
-    let empty: [Player] = []
-    #expect(getDeepestPosition(playersA: [empty, empty], playersB: [empty, empty], positions: [.qb, .wr]) == nil)
-    // buildCompareTeaser mirrors that.
-    #expect(buildCompareTeaser(playersA: [empty], playersB: [empty], positions: [.qb]) == nil)
-}
-
-@Test func buildCompareTeaserCarriesTheRankOnePlayersAndCounts() {
-    let topA = comparePlayer(id: "a1", name: "Alpha One", position: .wr, rank: 1, number: 11)
-    let a = [topA]
-    let b = (0..<2).map { comparePlayer(id: "b\($0)", name: "P\($0)", position: .wr, rank: $0 + 1, number: $0 + 1) }
-
-    let teaser = buildCompareTeaser(playersA: [a], playersB: [b], positions: [.wr])
-    #expect(teaser?.position == .wr)
-    #expect(teaser?.countA == 1)
-    #expect(teaser?.countB == 2)
-    #expect(teaser?.topA == topA)
-    #expect(teaser?.topB == b[0])
-}
-
 @Test func compareFreshnessMarksEvidenceOlderThanOneDayAsStale() {
     let now = Date(timeIntervalSince1970: 2_000_000)
     let current = "1970-01-24T03:33:20Z" // 2,000,000 seconds since epoch
@@ -266,108 +196,6 @@ private func compareParticipation(team: Team, playerId: String) -> RecentPartici
     #expect(compareFreshness(updatedAt: nil, now: now) == .unavailable)
 }
 
-@Test func marketForecastOrientsProbabilityToTheFavorite() {
-    let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
-    let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
-    let game = ScheduleGame(
-        week: 5,
-        isBye: false,
-        date: "2026-10-11",
-        isHome: false,
-        opponent: niners,
-        teamScore: nil,
-        opponentScore: nil,
-        result: nil,
-        market: compareMarket(favoriteTeamId: niners.id, teamSpread: 2.5)
-    )
-
-    let forecast = buildMarketForecast(game: game, perspectiveTeamId: hawks.id)
-
-    #expect(forecast?.favoriteTeamId == niners.id)
-    #expect(abs((forecast?.favoriteProbability ?? 0) - 0.448) < 0.0001)
-    #expect(forecast?.spread == -2.5)
-    #expect(forecast?.source == "nflverse")
-}
-
-@Test func marketForecastRequiresACompleteFavoriteAndProbability() {
-    let game = ScheduleGame(
-        week: 5,
-        isBye: false,
-        date: nil,
-        isHome: true,
-        opponent: nil,
-        teamScore: nil,
-        opponentScore: nil,
-        result: nil,
-        market: nil
-    )
-
-    #expect(buildMarketForecast(game: game, perspectiveTeamId: "seahawks") == nil)
-}
-
-@Test func starterParticipationSummaryUsesOnlyObservedPrimaryUnitShares() {
-    let team = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
-    let starter = Player(
-        id: "starter",
-        name: "Starter",
-        position: .qb,
-        depthRank: 1,
-        number: 1,
-        status: .starter
-    )
-    let backup = Player(
-        id: "backup",
-        name: "Backup",
-        position: .qb,
-        depthRank: 2,
-        number: 2,
-        status: .backup
-    )
-    let untrackedStarter = Player(
-        id: "untracked",
-        name: "Untracked",
-        position: .wr,
-        depthRank: 1,
-        number: 3,
-        status: .starter
-    )
-    let snapshot = TeamSnapshot(
-        team: team,
-        players: [starter, backup, untrackedStarter],
-        specialTeams: [],
-        uniforms: []
-    )
-    let recent = RecentParticipation(
-        teamId: team.id,
-        season: 2025,
-        windowStartWeek: 16,
-        windowEndWeek: 18,
-        gameIds: ["a", "b", "c"],
-        source: "nflverse",
-        updatedAt: "2026-01-05T12:00:00Z",
-        players: [
-            PlayerRecentParticipation(
-                playerId: starter.id,
-                offense: ParticipationUnit(snaps: 120, percentage: 0.8),
-                defense: ParticipationUnit(snaps: 0, percentage: nil),
-                specialTeams: ParticipationUnit(snaps: 0, percentage: nil)
-            ),
-            PlayerRecentParticipation(
-                playerId: backup.id,
-                offense: ParticipationUnit(snaps: 30, percentage: 0.2),
-                defense: ParticipationUnit(snaps: 0, percentage: nil),
-                specialTeams: ParticipationUnit(snaps: 0, percentage: nil)
-            ),
-        ]
-    )
-
-    let summary = summarizeStarterParticipation(snapshot: snapshot, recent: recent)
-
-    #expect(summary.totalStarters == 2)
-    #expect(summary.trackedStarters == 1)
-    #expect(summary.averageSnapShare == 0.8)
-}
-
 // MARK: - View model
 
 @Test func compareLensesPageInTheApprovedOrderAndKeepSelection() async {
@@ -375,83 +203,12 @@ private func compareParticipation(team: Team, playerId: String) -> RecentPartici
 
     #expect(
         CompareViewModel.Lens.allCases.map(\.accessibilityLabel)
-            == ["Forecast", "Roster", "Offense", "Defense", "Special Teams"]
+            == ["Offense", "Defense", "Special Teams"]
     )
-    #expect(await viewModel.lens == .forecast)
+    #expect(await viewModel.lens == .offense)
 
     await viewModel.selectLens(.defense)
     #expect(await viewModel.lens == .defense)
-}
-
-@Test func pickingTeamsLoadsPartialEvidenceAndFindsTheirNextMatchup() async {
-    let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
-    let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
-    let rams = compareTeam("rams", abbrev: "LAR", city: "Los Angeles")
-    let hawksSnapshot = compareSnapshot(team: hawks, qbCount: 1)
-    let hawksParticipation = compareParticipation(team: hawks, playerId: hawksSnapshot.players[0].id)
-    let completedNinersGame = ScheduleGame(
-        week: 2,
-        isBye: false,
-        date: "2026-09-20",
-        isHome: true,
-        opponent: niners,
-        teamScore: 24,
-        opponentScore: 21,
-        result: .win,
-        market: compareMarket(favoriteTeamId: hawks.id)
-    )
-    let upcomingRamsGame = ScheduleGame(
-        week: 3,
-        isBye: false,
-        date: "2026-09-27",
-        isHome: false,
-        opponent: rams,
-        teamScore: nil,
-        opponentScore: nil,
-        result: nil,
-        market: compareMarket(favoriteTeamId: rams.id)
-    )
-    let upcomingNinersGame = ScheduleGame(
-        week: 5,
-        isBye: false,
-        date: "2026-10-11",
-        isHome: false,
-        opponent: niners,
-        teamScore: nil,
-        opponentScore: nil,
-        result: nil,
-        market: compareMarket(favoriteTeamId: niners.id)
-    )
-    let repo = CompareRepositoryFake(
-        teams: [hawks, niners, rams],
-        snapshots: [hawks.id: hawksSnapshot, niners.id: compareSnapshot(team: niners, qbCount: 2)],
-        stats: [
-            hawks.id: statsPage(team: hawks, wins: 12),
-            niners.id: statsPage(team: niners, wins: 11),
-        ],
-        schedules: [
-            hawks.id: TeamSchedule(
-                season: 2026,
-                games: [completedNinersGame, upcomingRamsGame, upcomingNinersGame]
-            )
-        ],
-        participation: [hawks.id: hawksParticipation]
-    )
-    let viewModel = await CompareViewModel(repository: repo)
-    await viewModel.load()
-
-    await viewModel.pickTeam(hawks.id, into: .a)
-    await viewModel.pickTeam(niners.id, into: .b)
-
-    #expect(await viewModel.participationA == hawksParticipation)
-    #expect(await viewModel.participationB == nil)
-    #expect(await viewModel.matchup?.week == 5)
-    #expect(await viewModel.matchup?.market?.favoriteTeamId == niners.id)
-    #expect(await viewModel.evidenceLoadState == .loaded)
-    // Missing schedule and participation on one side must not discard its successful
-    // roster/stats reads — each dependency degrades independently.
-    #expect(await viewModel.effectiveStatsB?.overallWins == 11)
-    #expect(await viewModel.positionGroupB.count == 2)
 }
 
 @Test func pickingBothTeamsResolvesStatsAndRoster() async {
@@ -493,7 +250,53 @@ private func compareParticipation(team: Team, playerId: String) -> RecentPartici
     #expect(await viewModel.positionGroupB.count == 3)
 }
 
-@Test func tappingSameTeamFlagsAndTeaserHides() async {
+/// Aug 26 — Cooper on the Staging build (real prod data): "it doesn't have any data. It
+/// says 'No offense metrics'" even though he'd confirmed matchup metrics genuinely exist
+/// in prod. Root cause: nflverse writes a `team_stats` row for the new season the moment
+/// its schedule exists — an all-zero stub, well before any game is played (see
+/// `lib/nflverse/records.ts`) — and that stub sorts ahead of last season's real row but
+/// never carries `matchupMetrics` (a separate table with nothing to aggregate yet).
+/// `effectiveStatsA`/`B` must skip a metrics-less stub and use the newest season that
+/// actually has metrics, not just `seasons.first`.
+@Test func effectiveStatsSkipsAMetricsLessCurrentSeasonStub() async {
+    let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
+    let statsWithStub = TeamStatsPage(
+        team: hawks,
+        seasons: [
+            // 2026: schedule published, zero games played — a real stub, per records.ts.
+            TeamSeasonStats(
+                season: 2026, overallWins: 0, overallLosses: 0, overallTies: 0,
+                homeWins: 0, homeLosses: 0, roadWins: 0, roadLosses: 0,
+                divisionWins: 0, divisionLosses: 0, conferenceWins: 0, conferenceLosses: 0,
+                pointsFor: 0, pointsAgainst: 0, pointDifferential: 0,
+                matchupMetrics: nil
+            ),
+            // 2025: last completed season, real nflverse metrics already ingested.
+            TeamSeasonStats(
+                season: 2025, overallWins: 12, overallLosses: 5, overallTies: 0,
+                homeWins: 7, homeLosses: 1, roadWins: 5, roadLosses: 4,
+                divisionWins: 4, divisionLosses: 2, conferenceWins: 8, conferenceLosses: 4,
+                pointsFor: 402, pointsAgainst: 291, pointDifferential: 111,
+                matchupMetrics: compareMatchupMetrics(season: 2025, offensiveEPAPerPlay: 0.08)
+            ),
+        ],
+        upcomingSeason: 2026,
+        currentSeason: 2026
+    )
+    let repo = CompareRepositoryFake(
+        teams: [hawks],
+        snapshots: [hawks.id: compareSnapshot(team: hawks, qbCount: 1)],
+        stats: [hawks.id: statsWithStub]
+    )
+    let viewModel = await CompareViewModel(repository: repo)
+    await viewModel.load()
+    await viewModel.pickTeam("seahawks", into: .a)
+
+    #expect(await viewModel.effectiveStatsA?.season == 2025, "must skip the metrics-less 2026 stub")
+    #expect(await viewModel.effectiveStatsA?.matchupMetrics?.offensiveEPAPerPlay == 0.08)
+}
+
+@Test func tappingSameTeamFlagsSameTeam() async {
     let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
     let repo = CompareRepositoryFake(
         teams: [hawks],
@@ -508,11 +311,9 @@ private func compareParticipation(team: Team, playerId: String) -> RecentPartici
 
     #expect(await viewModel.sameTeam)
     #expect(await viewModel.bothPicked)
-    // Teaser hides when both sides are the same team.
-    #expect(await viewModel.teaser == nil)
 }
 
-@Test func teaserShowsOnlyOnceBothDistinctTeamsArePicked() async {
+@Test func clearingASlotUnpicksJustThatTeam() async {
     let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
     let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
     let repo = CompareRepositoryFake(
@@ -528,13 +329,15 @@ private func compareParticipation(team: Team, playerId: String) -> RecentPartici
     )
     let viewModel = await CompareViewModel(repository: repo)
     await viewModel.load()
-
-    // One side picked — no teaser yet.
     await viewModel.pickTeam("seahawks", into: .a)
-    #expect(await viewModel.teaser == nil)
-
     await viewModel.pickTeam("49ers", into: .b)
-    #expect(await viewModel.teaser?.position == .qb)
+    #expect(await viewModel.bothPicked)
+
+    await viewModel.clearTeam(.a)
+
+    #expect(await viewModel.teamA == nil)
+    #expect(await viewModel.teamB?.id == "49ers")
+    #expect(await viewModel.pickedCount == 1)
 }
 
 @Test func tabAndPositionSelectionAreLocalState() async {
@@ -559,7 +362,14 @@ private func compareParticipation(team: Team, playerId: String) -> RecentPartici
 
 // MARK: - DEP-311: room picker state machine
 
-@Test func roomSelectionChoosesFirstPositionAndPreservesSelection() async {
+/// Aug 26 feedback superseded DEP-311 task 3's "preserve position across units" decision:
+/// Cooper found it left the depth table showing a stale position with nothing highlighted
+/// to explain it. `roomSelectionChoosesFirstPositionAndPreservesSelection` /
+/// `switchingLensPreservesValidSelection` (the old task-3 tests) are replaced by the tests
+/// below, which cover the new default-to-first-room behavior, the single-position-room
+/// no-panel case, and the collapse-on-second-tap toggle.
+
+@Test func pickingARoomExpandsItAndSelectsItsFirstPosition() async {
     let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
     let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
     let repo = CompareRepositoryFake(
@@ -572,36 +382,33 @@ private func compareParticipation(team: Team, playerId: String) -> RecentPartici
     await viewModel.pickTeam("seahawks", into: .a)
     await viewModel.pickTeam("49ers", into: .b)
 
-    // No room selected until the user acts.
-    #expect(await viewModel.hasSelectedRoom == false)
+    // Defaults to Offense's first room (Quarterback), already active — a room is always
+    // implicitly associated with the default position, unlike the old nil-until-tapped state.
     #expect(await viewModel.selectedUnit == .offense)
+    #expect(await viewModel.activeRoom?.id == "quarterback")
+    // Quarterback has one position, so nothing is expanded (see the single-position test below).
+    #expect(await viewModel.expandedRoom == nil)
 
-    // Pick the Receivers room → its FIRST position (WR) becomes the selection, and the
-    // selected room is set.
     let receivers = CompareMatchRooms.rooms.first { $0.id == "receivers" }!
     await viewModel.selectRoom(receivers)
-    #expect(await viewModel.hasSelectedRoom == true)
-    #expect(await viewModel.selectedRoom == receivers)
+    #expect(await viewModel.expandedRoom == receivers)
+    #expect(await viewModel.activeRoom == receivers)
     #expect(await viewModel.position == .wr)
 
-    // Move the exact role to TE, then switch lenses; TE is still valid within the same room
-    // (still offense), so the selection is preserved.
+    // Move the exact role to TE within the still-expanded room.
     await viewModel.selectPosition(.te)
     #expect(await viewModel.position == .te)
+    #expect(await viewModel.expandedRoomID == "receivers", "picking a role tile doesn't collapse its own panel")
+
+    // Picking a different room expands that one instead (only one room open at a time) and
+    // resets to its first position.
     let backfield = CompareMatchRooms.rooms.first { $0.id == "backfield" }!
     await viewModel.selectRoom(backfield)
-    #expect(await viewModel.selectedRoom == backfield)
+    #expect(await viewModel.expandedRoom == backfield)
     #expect(await viewModel.position == .rb, "selecting a new room should pick its first position")
-
-    // A brand-new unit with no valid role for the current position leaves position alone and
-    // clears the room — the user must explicitly pick a room in the new unit (DEP-311 task 3).
-    await viewModel.selectUnit(.special)
-    #expect(await viewModel.selectedUnit == .special)
-    #expect(await viewModel.hasSelectedRoom == false)
-    #expect(await viewModel.position == .rb, "an invalid role across units is preserved, not reset")
 }
 
-@Test func switchingLensPreservesValidSelection() async {
+@Test func singlePositionRoomSelectsDirectlyWithNoPanel() async {
     let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
     let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
     let repo = CompareRepositoryFake(
@@ -614,15 +421,78 @@ private func compareParticipation(team: Team, playerId: String) -> RecentPartici
     await viewModel.pickTeam("seahawks", into: .a)
     await viewModel.pickTeam("49ers", into: .b)
 
-    // Pick offense WR, then jump to defense; the WR position doesn't belong to any defense
-    // room, so no room is auto-selected but the position is preserved until a room is picked.
-    await viewModel.selectPosition(.wr)
+    // Expand a multi-position room first, then tap the single-position Quarterback room —
+    // it should select QB directly and collapse whatever else was open, per Cooper: "since
+    // there's only one position in the QB group, don't add the secondary positions container."
+    let receivers = CompareMatchRooms.rooms.first { $0.id == "receivers" }!
+    await viewModel.selectRoom(receivers)
+    #expect(await viewModel.expandedRoom != nil)
+
+    let quarterback = CompareMatchRooms.rooms.first { $0.id == "quarterback" }!
+    await viewModel.selectRoom(quarterback)
+    #expect(await viewModel.position == .qb)
+    #expect(await viewModel.expandedRoom == nil)
+}
+
+@Test func tappingAnExpandedRoomAgainCollapsesItWithoutChangingPosition() async {
+    let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
+    let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
+    let repo = CompareRepositoryFake(
+        teams: [hawks, niners],
+        snapshots: [hawks.id: compareSnapshot(team: hawks, qbCount: 1), niners.id: compareSnapshot(team: niners, qbCount: 3)],
+        stats: [hawks.id: statsPage(team: hawks, wins: 12), niners.id: statsPage(team: niners, wins: 9)]
+    )
+    let viewModel = await CompareViewModel(repository: repo)
+    await viewModel.load()
+    await viewModel.pickTeam("seahawks", into: .a)
+    await viewModel.pickTeam("49ers", into: .b)
+
+    let receivers = CompareMatchRooms.rooms.first { $0.id == "receivers" }!
+    await viewModel.selectRoom(receivers)
+    await viewModel.selectPosition(.te)
+    #expect(await viewModel.expandedRoom == receivers)
+
+    // Tapping Receivers a second time collapses it — Cooper: "right now it stays expanded
+    // forever." The depth table keeps showing TE, the last role picked.
+    await viewModel.selectRoom(receivers)
+    #expect(await viewModel.expandedRoom == nil)
+    #expect(await viewModel.position == .te, "collapsing a room must not reset its last-picked role")
+
+    // A third tap re-expands it, resetting to the room's first position (fresh-open behavior).
+    await viewModel.selectRoom(receivers)
+    #expect(await viewModel.expandedRoom == receivers)
+    #expect(await viewModel.position == .wr)
+}
+
+@Test func switchingUnitDefaultsToItsFirstRoomAndPosition() async {
+    let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
+    let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
+    let repo = CompareRepositoryFake(
+        teams: [hawks, niners],
+        snapshots: [hawks.id: compareSnapshot(team: hawks, qbCount: 1), niners.id: compareSnapshot(team: niners, qbCount: 3)],
+        stats: [hawks.id: statsPage(team: hawks, wins: 12), niners.id: statsPage(team: niners, wins: 9)]
+    )
+    let viewModel = await CompareViewModel(repository: repo)
+    await viewModel.load()
+    await viewModel.pickTeam("seahawks", into: .a)
+    await viewModel.pickTeam("49ers", into: .b)
+
+    let receivers = CompareMatchRooms.rooms.first { $0.id == "receivers" }!
+    await viewModel.selectRoom(receivers)
+    await viewModel.selectPosition(.te)
+    #expect(await viewModel.position == .te)
+
+    // Cooper (Aug 26): "when you switch offense, defense or special teams tabs... the table
+    // doesn't update, it stays on the last selected team unit. It should default to the
+    // first [room] on the new page." Defense's first room is Defensive Line — its first
+    // position (DE) should be selected and expanded immediately, not TE left over from Offense.
     await viewModel.selectUnit(.defense)
     #expect(await viewModel.selectedUnit == .defense)
-    #expect(await viewModel.hasSelectedRoom == false)
+    #expect(await viewModel.position == .de)
+    #expect(await viewModel.expandedRoom?.id == "front")
 
-    // Now pick the Linebackers room — resolves to its FIRST position (LB).
-    let lbs = CompareMatchRooms.rooms.first { $0.id == "linebackers" }!
-    await viewModel.selectRoom(lbs)
-    #expect(await viewModel.position == .lb)
+    // Special Teams' first (and only) room, Specialists, has 2 positions — still expands.
+    await viewModel.selectUnit(.special)
+    #expect(await viewModel.position == .k)
+    #expect(await viewModel.expandedRoom?.id == "specialists")
 }

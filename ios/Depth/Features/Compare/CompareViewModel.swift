@@ -3,10 +3,9 @@ import Observation
 
 // Feature-local state for the native two-team compare (DEP-258) — the port of web's
 // components/CompareView.tsx. Owns the two picked team ids, the active tab
-// (By team / By position), the selected lens/position, and each side's bounded stats,
-// roster, schedule, and participation reads. The per-position groups, market forecast,
-// and participation summary are derived with pure helpers in Domain/Compare.swift, so
-// the view stays thin.
+// (By team / By position), the selected lens/position, and each side's bounded stats
+// and roster reads. Per-position groups are derived with pure helpers in
+// Domain/Compare.swift, so the view stays thin.
 //
 // A side-resolution failure degrades that side to empty stats/roster (renders dashes /
 // "Neither team lists a position") rather than failing the whole page — web's stats are
@@ -22,11 +21,11 @@ final class CompareViewModel {
         case position
     }
 
-    /// DEP-317's five horizontally-paged explanations. The enum is the shared source
-    /// of truth for selector order, page tags, VoiceOver labels, and page indicators.
+    /// The three horizontally-paged unit-metrics lenses. Forecast and Roster were removed
+    /// (Aug 2026 feedback pass) — Forecast needed an upcoming two-sided market line, blank
+    /// for most teams most of the season; Roster paired snap share with no injury data to
+    /// make it actionable. What's left is season-stable: never gated on the current week.
     enum Lens: String, CaseIterable, Hashable, Identifiable {
-        case forecast
-        case roster
         case offense
         case defense
         case specialTeams
@@ -35,8 +34,6 @@ final class CompareViewModel {
 
         var accessibilityLabel: String {
             switch self {
-            case .forecast: "Forecast"
-            case .roster: "Roster"
             case .offense: "Offense"
             case .defense: "Defense"
             case .specialTeams: "Special Teams"
@@ -68,23 +65,30 @@ final class CompareViewModel {
     private(set) var statsA: TeamSeasonStats?
     private(set) var statsB: TeamSeasonStats?
     private(set) var tab: Tab = .matchup
-    private(set) var lens: Lens = .forecast
+    private(set) var lens: Lens = .offense
     private(set) var position: Position = .qb
 
     // MARK: - DEP-311: room-picker state
 
     /// The unit lens currently selected in the position picker (Offense / Defense / Special
-    /// Teams). Independent of `selectedRoom`/`position`: switching units never resets which
-    /// room or role is chosen for that unit, so the user can hop lenses to compare across
-    /// units without re-picking.
+    /// Teams).
     private(set) var selectedUnit: Unit = .offense
-    /// The room currently selected within `selectedUnit`. nil until the user picks a room —
-    /// there is no "default" room, unlike the old always-active position chip row.
-    private(set) var selectedRoom: CompareRoom?
+    /// The id of the room whose exact-role panel is currently expanded, or nil when every
+    /// room is collapsed (Aug 2026: rooms are now collapsible — tapping the expanded room
+    /// again collapses it, per Cooper: "right now it stays expanded forever"). A
+    /// single-position room (Quarterback) never has a panel to expand, so this never holds
+    /// its id — see `selectRoom`.
+    private(set) var expandedRoomID: String?
 
-    /// `true` while the user is inside the exact-role panel of the two-step picker (a room is
-    /// selected). Drives the step label ("1 OF 2 · ROOM" → "2 OF 2 · POSITION").
-    var hasSelectedRoom: Bool { selectedRoom != nil }
+    /// The room that owns `position` — always non-nil once a room's positions cover every
+    /// `COMPARE_POSITIONS` value, which they do (see `CompareMatchRooms`). Drives which grid
+    /// tile reads as active; independent of `expandedRoomID`, which drives panel visibility.
+    var activeRoom: CompareRoom? { CompareMatchRooms.room(of: position) }
+    /// The expanded room's full model, for the view to render its exact-role panel.
+    var expandedRoom: CompareRoom? {
+        guard let expandedRoomID else { return nil }
+        return CompareMatchRooms.rooms.first { $0.id == expandedRoomID }
+    }
     /// A team-picker sheet is targeting this slot, or nil when closed.
     private(set) var pickingSlot: Slot?
 
@@ -97,8 +101,6 @@ final class CompareViewModel {
     private var allTeams: [Team] = []
     private var statsPages: [String: TeamStatsPage] = [:]
     private var snapshots: [String: TeamSnapshot] = [:]
-    private var schedules: [String: TeamSchedule] = [:]
-    private var participation: [String: RecentParticipation] = [:]
     private var resolvingTeamIds: Set<String> = []
 
     init(repository: DepthRepository, preselectedTeamIds: (a: String, b: String)? = nil) {
@@ -126,16 +128,6 @@ final class CompareViewModel {
         return resolvingTeamIds.isEmpty ? .loaded : .loading
     }
 
-    var participationA: RecentParticipation? {
-        guard let teamA else { return nil }
-        return participation[teamA.id]
-    }
-
-    var participationB: RecentParticipation? {
-        guard let teamB else { return nil }
-        return participation[teamB.id]
-    }
-
     var snapshotA: TeamSnapshot? {
         guard let teamA else { return nil }
         return snapshots[teamA.id]
@@ -146,48 +138,31 @@ final class CompareViewModel {
         return snapshots[teamB.id]
     }
 
-    /// The next unplayed game between the selected teams. Compare asks for the latest
-    /// schedule independently from every other evidence read; a missing schedule hides
-    /// Forecast market context without discarding roster or metric data.
-    var matchup: ScheduleGame? {
-        guard let teamA, let teamB else { return nil }
-        if let game = schedules[teamA.id]?.games.first(where: {
-            !$0.isBye && $0.result == nil && $0.opponent?.id == teamB.id
-        }) {
-            return game
-        }
-        return schedules[teamB.id]?.games.first {
-            !$0.isBye && $0.result == nil && $0.opponent?.id == teamA.id
-        }
-    }
-
-    /// The team perspective used by the schedule row returned from `matchup`.
-    /// Schedule feeds are team-oriented, so this preserves correct market probability
-    /// orientation even when only side B's schedule read succeeds.
-    var matchupPerspectiveTeamId: String? {
-        guard let teamA, let teamB else { return nil }
-        if schedules[teamA.id]?.games.contains(where: {
-            !$0.isBye && $0.result == nil && $0.opponent?.id == teamB.id
-        }) == true {
-            return teamA.id
-        }
-        if schedules[teamB.id]?.games.contains(where: {
-            !$0.isBye && $0.result == nil && $0.opponent?.id == teamA.id
-        }) == true {
-            return teamB.id
-        }
-        return nil
-    }
-
     /// The side A team's stats, or nil when not picked/invalid.
     var effectiveStatsA: TeamSeasonStats? {
         guard let teamA else { return nil }
-        return statsPages[teamA.id]?.seasons.first
+        return effectiveStats(for: teamA.id)
     }
 
     var effectiveStatsB: TeamSeasonStats? {
         guard let teamB else { return nil }
-        return statsPages[teamB.id]?.seasons.first
+        return effectiveStats(for: teamB.id)
+    }
+
+    /// `seasons.first` alone picks up a stub: nflverse writes a `team_stats` row for a
+    /// season as soon as its schedule exists, all zeros, well before any game is played
+    /// (see `lib/nflverse/records.ts`'s "a scheduled-but-unstarted season is a real 0-0").
+    /// That stub sorts newest-first ahead of last season's real row, and it never carries
+    /// `matchupMetrics` (a separate nflverse table with nothing to aggregate yet) — so
+    /// during the exact window this page cares about (preseason/early season, before this
+    /// year's advanced stats exist), Compare read a metrics-less stub while a perfectly
+    /// good prior-season row sat one index behind it. `effectiveStats(for:)` prefers the
+    /// newest season that actually has `matchupMetrics`, falling back to `seasons.first`
+    /// only if none do — which also means it stops reaching for last season the moment
+    /// this year's first games are played and nflverse ingests real data for it.
+    private func effectiveStats(for teamId: String) -> TeamSeasonStats? {
+        guard let seasons = statsPages[teamId]?.seasons else { return nil }
+        return seasons.first { $0.matchupMetrics != nil } ?? seasons.first
     }
 
     /// The currently-selected position's two sides, depth-ordered (web's `positionsA`/
@@ -200,27 +175,6 @@ final class CompareViewModel {
     var positionGroupB: [Player] {
         guard let roster = roster(of: teamB?.id) else { return [] }
         return getPlayers(in: roster, at: position)
-    }
-
-    /// The deepest-room teaser for the matchup tab (web `buildCompareTeaser`). Hidden
-    /// unless both sides are picked and different — web hides it when `both` is false
-    /// (and empty both sides → the function itself returns nil).
-    var teaser: CompareTeaser? {
-        guard bothPicked, !sameTeam else { return nil }
-        return buildCompareTeaser(
-            playersA: positionGroups(teamId: teamA?.id).map(\.players),
-            playersB: positionGroups(teamId: teamB?.id).map(\.players),
-            positions: COMPARE_POSITIONS
-        )
-    }
-
-    /// All positions' arrays for one side, parallel to COMPARE_POSITIONS (web's
-    /// `groupsA`/`groupsB`). Empty for an unpicked/undeleted side.
-    private func positionGroups(teamId: String?) -> [(position: Position, players: [Player])] {
-        guard let roster = roster(of: teamId) else { return [] }
-        return COMPARE_POSITIONS.map { position in
-            (position: position, players: getPlayers(in: roster, at: position))
-        }
     }
 
     private func roster(of teamId: String?) -> Roster? {
@@ -267,15 +221,11 @@ final class CompareViewModel {
         resolvingTeamIds.insert(teamId)
         defer { resolvingTeamIds.remove(teamId) }
 
-        // DEP-317's dependencies are independently optional. Resolve them concurrently,
-        // then retain every successful result so one absent feed never blanks another.
+        // Stats and roster are independently optional. Resolve them concurrently, then
+        // retain every successful result so one absent feed never blanks the other.
         async let stats = try? repository.teamStats(teamId: teamId)
         async let snapshot = try? repository.teamSnapshot(teamId: teamId)
-        async let schedule = try? repository.teamSchedule(teamId: teamId, season: nil)
-        async let recent = try? repository.recentParticipation(teamId: teamId)
-        let (page, snap, teamSchedule, recentParticipation) = await (
-            stats, snapshot, schedule, recent
-        )
+        let (page, snap) = await (stats, snapshot)
 
         if let page {
             statsPages[teamId] = page
@@ -287,16 +237,6 @@ final class CompareViewModel {
         } else {
             snapshots.removeValue(forKey: teamId)
         }
-        if let teamSchedule {
-            schedules[teamId] = teamSchedule
-        } else {
-            schedules.removeValue(forKey: teamId)
-        }
-        if let recentParticipation {
-            participation[teamId] = recentParticipation
-        } else {
-            participation.removeValue(forKey: teamId)
-        }
     }
 
     func beginPicking(_ slot: Slot) {
@@ -307,6 +247,18 @@ final class CompareViewModel {
         pickingSlot = nil
     }
 
+    /// Clears one slot's team, per Cooper's Aug 25 feedback ("we should have a button
+    /// labeled 'Clear selection'" — re-tapping a filled slot to swap teams wasn't obvious).
+    /// Cached stats/roster reads for that team id are left in place — harmless, and avoids
+    /// re-fetching if the same team is picked again into either slot.
+    func clearTeam(_ slot: Slot) {
+        if slot == .a {
+            teamA = nil
+        } else {
+            teamB = nil
+        }
+    }
+
     func selectTab(_ tab: Tab) {
         self.tab = tab
     }
@@ -315,44 +267,48 @@ final class CompareViewModel {
         self.lens = lens
     }
 
+    /// Called when a role tile is tapped inside an already-expanded panel — the panel's own
+    /// room stays expanded, only the exact role changes.
     func selectPosition(_ position: Position) {
         self.position = position
-        // Keep the room picker coherent with an externally-chosen position (e.g. the
-        // matchup tab's deepest-room teaser jumps straight to a role): align the unit lens
-        // and selected room so the exact-role panel shows that position is active.
-        if let room = CompareMatchRooms.room(of: position) {
-            selectedUnit = room.unit
-            selectedRoom = room
-        }
     }
 
     // MARK: - DEP-311: room picker
 
-    /// Moves the unit lens and keeps the previously-selected position for that unit if it's
-    /// still valid, per DEP-311 task 3. When the newly-selected unit's room has no matching
-    /// role for the current position, don't invent one — leave position untouched.
+    /// Moves the unit lens. Aug 2026 (Cooper: "the table doesn't update, it stays on the last
+    /// selected team unit... it should default to the first [room] on the new page") —
+    /// superseded DEP-311 task 3's "preserve the previous position across units" decision,
+    /// which left the depth table showing a stale position from the old unit with no room
+    /// highlighted to explain it. Every unit switch now jumps to its first room's first
+    /// position, same as tapping that room directly.
     func selectUnit(_ unit: Unit) {
         guard unit != selectedUnit else { return }
         selectedUnit = unit
-        // Task 3: preserve selection when moving lenses while valid. `position` remains the
-        // single source of truth; a position that maps into the new unit is still valid, so
-        // leave it alone. A position that doesn't (e.g. .qb → .defense) is simply left until
-        // the user picks a room in the new unit — see selectRoom.
-        if let room = CompareMatchRooms.room(of: position), room.unit == unit {
-            selectedRoom = room
-        } else {
-            // The previous room belonged to the old unit; a room's positions only select once
-            // the user picks that room in the new unit.
-            selectedRoom = nil
-        }
+        guard let firstRoom = CompareMatchRooms.rooms(in: unit).first else { return }
+        position = firstRoom.positions[0]
+        expandedRoomID = firstRoom.positions.count > 1 ? firstRoom.id : nil
     }
 
-    /// Selects a room in the current unit and, per DEP-311 task 3, chooses its FIRST position
-    /// only now — not before the user acts. Resets the exact role to the room's first
-    /// position so the "View matchup"-ready state is deterministic.
+    /// Taps a room tile. A single-position room (Quarterback) has no panel to show — it just
+    /// selects its one position directly (Cooper: "since there's only one position in the QB
+    /// group, don't add the secondary positions container for that one"). A multi-position
+    /// room toggles: tapping it while collapsed expands it and resets to its FIRST position
+    /// (DEP-311 task 3's original behavior, still correct for a fresh open); tapping it again
+    /// while already expanded collapses the panel without touching `position` — the depth
+    /// table keeps showing the role that was last selected (Cooper: rooms should collapse on
+    /// a second tap, "right now it stays expanded forever").
     func selectRoom(_ room: CompareRoom) {
         guard room.unit == selectedUnit else { return }
-        selectedRoom = room
-        position = room.positions[0]
+        guard room.positions.count > 1 else {
+            position = room.positions[0]
+            expandedRoomID = nil
+            return
+        }
+        if expandedRoomID == room.id {
+            expandedRoomID = nil
+        } else {
+            expandedRoomID = room.id
+            position = room.positions[0]
+        }
     }
 }
