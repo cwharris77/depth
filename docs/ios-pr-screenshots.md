@@ -28,6 +28,7 @@ App Store sequence uses.
 | `teams` | A filtered team-search result. |
 | `uniform` | The uniform picker sheet (thumbnail corner radius, kit list). |
 | `player` | A player detail sheet (opened from a filled depth-chart slot). |
+| `settings` | The Settings sheet, signed-out state (the only state reachable from the anonymous clean slate). |
 
 Anything outside the documented targets is ignored. Requesting nothing (or only unknown
 tokens) falls back to `field` so a capture never silently produces zero screenshots.

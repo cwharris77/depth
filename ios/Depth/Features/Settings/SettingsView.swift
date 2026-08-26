@@ -17,15 +17,13 @@ import SwiftUI
 // entirely, like web's signed-out sign-in prompt), setting a favorite opts into
 // auto-opening, and the toggle row appears only once a favorite is set.
 //
-// Layout (DEP-257 design pass): three visually distinct tiers instead of one uniform
-// stack of look-alike cards — a bare identity header (no card chrome, mirrors web's
-// AccountView.tsx avatar+"Signed in as" treatment), a routine-actions card (Sign Out),
-// a separately red-tinted danger card (Delete Account, matching web's danger-zone
-// treatment so a permanently destructive action never reads at the same weight as a
-// routine one), and an About card with the privacy link as a real disclosure row and
-// the disclaimer demoted to footer text below the card rather than crammed inside it.
-// Tight spacing within each card, generous spacing between tiers, so the grouping is
-// visible at a glance rather than one repeated gap value flattening everything.
+// Layout (design import, Settings.dc.html): Account / Preferences / About cards, each
+// under its own section label, with Sign Out and Delete Account demoted out of the
+// cards entirely — Sign Out as a full-width secondary button, Delete Account as a
+// centered text link below it — so the two routine-vs-destructive account actions read
+// at their own weight instead of living inside a settings card. Tight spacing within
+// each card, generous spacing between tiers, so the grouping is visible at a glance
+// rather than one repeated gap value flattening everything.
 struct SettingsView: View {
     @Bindable var sessionStore: AuthSessionStore
 
@@ -78,9 +76,10 @@ struct SettingsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
                     if let user = sessionStore.user {
-                        identityHeader(email: user.email)
+                        accountTier(email: user.email)
                         settingsTier
-                        dangerTier
+                        signOutButton
+                        dangerLink
                     } else {
                         signInPrompt
                         // The name-presentation preference is a local, account-independent
@@ -94,7 +93,7 @@ struct SettingsView: View {
             }
             .scrollIndicators(.hidden)
             .background(DesignTokens.Colors.bg)
-            .navigationTitle("Account")
+            .navigationTitle("Settings")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -138,36 +137,40 @@ struct SettingsView: View {
         }
     }
 
-    // Bare identity anchor — no card, matching web's un-boxed header row. The avatar
-    // reuses AuthSheet's success-circle tint/border treatment (accent 14%-fill,
-    // accent 30%-stroke) so the two identity moments in the account flow read as one
-    // system.
-    private func identityHeader(email: String) -> some View {
-        HStack(spacing: DesignTokens.Spacing.md) {
-            ZStack {
-                Circle()
-                    .fill(DesignTokens.Colors.accent.opacity(0.14))
-                Circle()
-                    .strokeBorder(DesignTokens.Colors.accent.opacity(0.3), lineWidth: 1)
-                Text(String(email.prefix(1)).uppercased())
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(DesignTokens.Colors.accent)
-            }
-            .frame(width: 48, height: 48)
+    // Account card — the avatar reuses AuthSheet's success-circle tint/border treatment
+    // (accent 14%-fill, accent 30%-stroke) so the two identity moments in the account
+    // flow read as one system.
+    private func accountTier(email: String) -> some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+            sectionLabel("Account", tint: DesignTokens.Colors.accent)
+            HStack(spacing: DesignTokens.Spacing.md) {
+                ZStack {
+                    Circle()
+                        .fill(DesignTokens.Colors.accent.opacity(0.14))
+                    Circle()
+                        .strokeBorder(DesignTokens.Colors.accent.opacity(0.3), lineWidth: 1)
+                    Text(String(email.prefix(1)).uppercased())
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(DesignTokens.Colors.accent)
+                }
+                .frame(width: 48, height: 48)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text("SIGNED IN AS")
-                    .font(.caption2.weight(.bold))
-                    .tracking(0.8)
-                    .foregroundStyle(DesignTokens.Colors.textFaint)
-                Text(email)
-                    .font(.body.weight(.bold))
-                    .foregroundStyle(DesignTokens.Colors.textPrimary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("SIGNED IN AS")
+                        .font(.caption2.weight(.bold))
+                        .tracking(0.8)
+                        .foregroundStyle(DesignTokens.Colors.textFaint)
+                    Text(email)
+                        .font(.body.weight(.bold))
+                        .foregroundStyle(DesignTokens.Colors.textPrimary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
             }
+            .accessibilityElement(children: .combine)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .depthCard()
         }
-        .accessibilityElement(children: .combine)
     }
 
     // No card wrapper — mirrors web's bare "Sign in" heading + copy + button rather
@@ -195,7 +198,7 @@ struct SettingsView: View {
 
     private var settingsTier: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            sectionLabel("Settings", tint: DesignTokens.Colors.accent)
+            sectionLabel("Preferences", tint: DesignTokens.Colors.accent)
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
                 if sessionStore.user != nil {
                     // DEP-319: favorite-team picker, mirroring web's AccountView select.
@@ -237,22 +240,9 @@ struct SettingsView: View {
                 )
                 .font(.caption)
                 .foregroundStyle(DesignTokens.Colors.textMuted)
-
-                if sessionStore.user != nil {
-                    Divider().overlay(DesignTokens.Colors.borderSubtle)
-                    // DEP-269: 44pt hit target on every account action.
-                    Button("Sign Out") {
-                        Task { await signOut() }
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .depthCard()
-
-            if let signOutError {
-                errorChip(signOutError.message, identifier: "settings-sign-out-error")
-            }
         }
     }
 
@@ -317,15 +307,37 @@ struct SettingsView: View {
         )
     }
 
-    private var dangerTier: some View {
+    // DEP-269: 44pt hit target on every account action. Full-width secondary button
+    // rather than a card row (design import, Settings.dc.html) — Sign Out is routine
+    // enough to stand on its own, not bundled into the preferences card.
+    private var signOutButton: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            sectionLabel("Danger Zone", tint: DesignTokens.Colors.danger)
-            Button("Delete Account", role: .destructive) {
-                showDeletion = true
+            Button {
+                Task { await signOut() }
+            } label: {
+                Text("Sign Out")
+                    .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-            .depthCard()
+            .buttonStyle(.bordered)
+            .tint(DesignTokens.Colors.textPrimary)
+            .frame(minHeight: 44)
+
+            if let signOutError {
+                errorChip(signOutError.message, identifier: "settings-sign-out-error")
+            }
         }
+    }
+
+    // Plain centered text link, not a card + button (design import, Settings.dc.html) —
+    // reads at a lower, more deliberate weight than Sign Out so a permanently
+    // destructive action never competes visually with a routine one.
+    private var dangerLink: some View {
+        Button("Delete Account", role: .destructive) {
+            showDeletion = true
+        }
+        .font(.footnote)
+        .frame(maxWidth: .infinity, minHeight: 44)
+        .accessibilityIdentifier("settings-delete-account")
     }
 
     private var aboutTier: some View {
