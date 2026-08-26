@@ -83,6 +83,7 @@
 		7347F78B2F3964BD2B1A8A11 /* CoachmarkOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C73AF9C348A6717B3BCD620A /* CoachmarkOverlayView.swift */; };
 		79CBA961DD4279FF61E930E1 /* RecordingAppEventsRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C2DE91B6A232290671FD77 /* RecordingAppEventsRecorder.swift */; };
 		7C5132BAE9E0A0D27086FBD3 /* FormationsParityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62ABB8FA352722CEF133910 /* FormationsParityTests.swift */; };
+		7C6B803E317BF154BAA85331 /* CloseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D28C58D7A122104DADA8CC /* CloseButton.swift */; };
 		7DA6D56AE84232942CE0AED1 /* FieldMarkings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D6A549002DA47A8FDFBB04 /* FieldMarkings.swift */; };
 		7DBE8842FD1DEC8D017AABB1 /* ScheduleMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD908EA6E702771824EF1659 /* ScheduleMapper.swift */; };
 		83C996BDD22497000B07DF86 /* TeamBadgeOverride.swift in Sources */ = {isa = PBXBuildFile; fileRef = 029EE2AA6BD3B9939AFE7FB2 /* TeamBadgeOverride.swift */; };
@@ -258,6 +259,7 @@
 		9149D725F0D8E31CEA618D40 /* TeamLogoCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamLogoCache.swift; sourceTree = "<group>"; };
 		922288D41A6979441CB8E2EF /* DepthChartShareButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthChartShareButton.swift; sourceTree = "<group>"; };
 		926872EFF68F2D404BCDB79B /* DepthBrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthBrandMark.swift; sourceTree = "<group>"; };
+		92D28C58D7A122104DADA8CC /* CloseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloseButton.swift; sourceTree = "<group>"; };
 		952FA1238A438E45AD02C4E9 /* OnboardingControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingControllerTests.swift; sourceTree = "<group>"; };
 		954B921C7ED809C93EB75D81 /* StartupTeamTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTeamTests.swift; sourceTree = "<group>"; };
 		9A1A58C48C2A6DDA57820C9D /* CompareViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareViewModel.swift; sourceTree = "<group>"; };
@@ -582,6 +584,7 @@
 				50938E38F00E79484F436B49 /* AppBuildInfo.swift */,
 				E636B964C5DE055FDAD2CB44 /* AppEventsRecorder.swift */,
 				211666973EE0946E8D40C189 /* Card.swift */,
+				92D28C58D7A122104DADA8CC /* CloseButton.swift */,
 				34803FD110C2C303B40AA906 /* CurrentTeamStore.swift */,
 				926872EFF68F2D404BCDB79B /* DepthBrandMark.swift */,
 				FCEB2197DF04D84335401768 /* DepthEnvironment.swift */,
@@ -887,6 +890,7 @@
 				6885D42C0072D1BB6A3C8A0E /* CachedSnapshotStore.swift in Sources */,
 				B04373D05283099BC265E21C /* CachingDepthRepository.swift in Sources */,
 				9BABC7039CA491D54D4B1F7F /* Card.swift in Sources */,
+				7C6B803E317BF154BAA85331 /* CloseButton.swift in Sources */,
 				8C531E05A8606C6EF58D724C /* CoachmarkAnchor.swift in Sources */,
 				7347F78B2F3964BD2B1A8A11 /* CoachmarkOverlayView.swift in Sources */,
 				FEFD2588F9DE49DDE62D400D /* Compare.swift in Sources */,
