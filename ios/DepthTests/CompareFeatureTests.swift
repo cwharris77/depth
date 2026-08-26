@@ -60,6 +60,22 @@ private func statsPage(
     )
 }
 
+private func compareMatchupMetrics(season: Int, offensiveEPAPerPlay: Double) -> TeamMatchupMetrics {
+    TeamMatchupMetrics(
+        source: .nflverse, season: season, updatedAt: "2026-01-05T12:00:00Z",
+        games: nil, passingEPA: nil, rushingEPA: nil, passAttempts: nil, rushAttempts: nil,
+        sacksSuffered: nil, offensiveEPA: nil, offensivePlays: nil,
+        offensiveEPAPerPlay: offensiveEPAPerPlay, passingInterceptions: nil, fumblesLost: nil,
+        giveaways: nil, defensiveSacks: nil, quarterbackHits: nil, quarterbackHitsPerGame: nil,
+        defensiveInterceptions: nil, defensiveFumbleRecoveries: nil, defensiveFumblesForced: nil,
+        defensiveTakeaways: nil, defensiveTakeawaysPerGame: nil, fieldGoalsMade: nil,
+        fieldGoalsAttempted: nil, fieldGoalPercentage: nil, puntAttempts: nil, netPuntYards: nil,
+        netPuntYardsPerAttempt: nil, puntReturns: nil, puntReturnYards: nil,
+        puntReturnYardsPerAttempt: nil, kickoffReturns: nil, kickoffReturnYards: nil,
+        kickoffReturnYardsPerAttempt: nil, specialTeamsTouchdowns: nil
+    )
+}
+
 /// A fake backing the compare view model. Teams list + per-team snapshot/stats, so the
 /// view model can resolve both sides. `teamSchedule` has no `DepthRepository` default
 /// and Compare no longer reads it, so it just throws; `recentParticipation` falls back
@@ -232,6 +248,52 @@ private actor CompareRepositoryFake: DepthRepository {
     #expect(await viewModel.position == .qb)
     #expect(await viewModel.positionGroupA.count == 1)
     #expect(await viewModel.positionGroupB.count == 3)
+}
+
+/// Aug 26 — Cooper on the Staging build (real prod data): "it doesn't have any data. It
+/// says 'No offense metrics'" even though he'd confirmed matchup metrics genuinely exist
+/// in prod. Root cause: nflverse writes a `team_stats` row for the new season the moment
+/// its schedule exists — an all-zero stub, well before any game is played (see
+/// `lib/nflverse/records.ts`) — and that stub sorts ahead of last season's real row but
+/// never carries `matchupMetrics` (a separate table with nothing to aggregate yet).
+/// `effectiveStatsA`/`B` must skip a metrics-less stub and use the newest season that
+/// actually has metrics, not just `seasons.first`.
+@Test func effectiveStatsSkipsAMetricsLessCurrentSeasonStub() async {
+    let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
+    let statsWithStub = TeamStatsPage(
+        team: hawks,
+        seasons: [
+            // 2026: schedule published, zero games played — a real stub, per records.ts.
+            TeamSeasonStats(
+                season: 2026, overallWins: 0, overallLosses: 0, overallTies: 0,
+                homeWins: 0, homeLosses: 0, roadWins: 0, roadLosses: 0,
+                divisionWins: 0, divisionLosses: 0, conferenceWins: 0, conferenceLosses: 0,
+                pointsFor: 0, pointsAgainst: 0, pointDifferential: 0,
+                matchupMetrics: nil
+            ),
+            // 2025: last completed season, real nflverse metrics already ingested.
+            TeamSeasonStats(
+                season: 2025, overallWins: 12, overallLosses: 5, overallTies: 0,
+                homeWins: 7, homeLosses: 1, roadWins: 5, roadLosses: 4,
+                divisionWins: 4, divisionLosses: 2, conferenceWins: 8, conferenceLosses: 4,
+                pointsFor: 402, pointsAgainst: 291, pointDifferential: 111,
+                matchupMetrics: compareMatchupMetrics(season: 2025, offensiveEPAPerPlay: 0.08)
+            ),
+        ],
+        upcomingSeason: 2026,
+        currentSeason: 2026
+    )
+    let repo = CompareRepositoryFake(
+        teams: [hawks],
+        snapshots: [hawks.id: compareSnapshot(team: hawks, qbCount: 1)],
+        stats: [hawks.id: statsWithStub]
+    )
+    let viewModel = await CompareViewModel(repository: repo)
+    await viewModel.load()
+    await viewModel.pickTeam("seahawks", into: .a)
+
+    #expect(await viewModel.effectiveStatsA?.season == 2025, "must skip the metrics-less 2026 stub")
+    #expect(await viewModel.effectiveStatsA?.matchupMetrics?.offensiveEPAPerPlay == 0.08)
 }
 
 @Test func tappingSameTeamFlagsSameTeam() async {

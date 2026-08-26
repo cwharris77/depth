@@ -141,12 +141,28 @@ final class CompareViewModel {
     /// The side A team's stats, or nil when not picked/invalid.
     var effectiveStatsA: TeamSeasonStats? {
         guard let teamA else { return nil }
-        return statsPages[teamA.id]?.seasons.first
+        return effectiveStats(for: teamA.id)
     }
 
     var effectiveStatsB: TeamSeasonStats? {
         guard let teamB else { return nil }
-        return statsPages[teamB.id]?.seasons.first
+        return effectiveStats(for: teamB.id)
+    }
+
+    /// `seasons.first` alone picks up a stub: nflverse writes a `team_stats` row for a
+    /// season as soon as its schedule exists, all zeros, well before any game is played
+    /// (see `lib/nflverse/records.ts`'s "a scheduled-but-unstarted season is a real 0-0").
+    /// That stub sorts newest-first ahead of last season's real row, and it never carries
+    /// `matchupMetrics` (a separate nflverse table with nothing to aggregate yet) — so
+    /// during the exact window this page cares about (preseason/early season, before this
+    /// year's advanced stats exist), Compare read a metrics-less stub while a perfectly
+    /// good prior-season row sat one index behind it. `effectiveStats(for:)` prefers the
+    /// newest season that actually has `matchupMetrics`, falling back to `seasons.first`
+    /// only if none do — which also means it stops reaching for last season the moment
+    /// this year's first games are played and nflverse ingests real data for it.
+    private func effectiveStats(for teamId: String) -> TeamSeasonStats? {
+        guard let seasons = statsPages[teamId]?.seasons else { return nil }
+        return seasons.first { $0.matchupMetrics != nil } ?? seasons.first
     }
 
     /// The currently-selected position's two sides, depth-ordered (web's `positionsA`/
