@@ -298,14 +298,6 @@ struct PlayerDetailView: View {
     @ViewBuilder
     private var positionDepth: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            // DEP-225: dropped the repeated position — the header's badge (DEP-223)
-            // already shows it. Native-only divergence from web, which still repeats
-            // it in this title; don't "fix" this back to match web without checking
-            // that ticket first.
-            Text("Position Depth")
-                .font(.headline)
-                .accessibilityIdentifier("player-profile-depth-title")
-
             if displayOrder.count <= 1 {
                 Text("No backups available")
                     .font(.footnote)

@@ -119,15 +119,6 @@ export default function PlayerCardDepthList({
     return (
       <div className="px-6 mb-6">
         <div
-          className="font-semibold mb-3"
-          style={{
-            color: uiTokens.textMuted,
-            letterSpacing: '0.1em',
-            fontSize: typeScale.caption,
-          }}>
-          POSITION DEPTH · {player.position}
-        </div>
-        <div
           className="rounded-2xl flex items-center justify-center py-6"
           style={{
             background: uiTokens.surfaceCard2,
