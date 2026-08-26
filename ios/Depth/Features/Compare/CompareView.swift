@@ -458,6 +458,18 @@ private struct RoomPositionPicker: View {
     /// empty trailing cell; a room with more roles keeps the grid. Aug 2026: padding and tile
     /// size both pulled back in — the previous round's "more space" pass over-corrected into
     /// tiles that read as oversized (Cooper: "way smaller... They're pretty huge right now").
+    ///
+    /// No `.accessibilityIdentifier` on this container (there was one, "compare-exact-role-
+    /// panel", with no test or code ever reading it): applying an identifier to a `Group`
+    /// whose content structurally switches between two different view trees (`HStack` vs.
+    /// `LazyVGrid`, above) let that identifier bleed onto every child `roleTile` button the
+    /// instant a room→room transition crossed that branch — e.g. expanding a >3-role room
+    /// then immediately a ≤3-role one — so every role tile inside reported
+    /// "compare-exact-role-panel" instead of its own "compare-position-<code>" (caught by
+    /// `testMatchupRoomsReachEveryUnitWithoutHorizontalScrolling`, reproduced locally via
+    /// `xcodebuild test`: the accessibility snapshot showed all three Safeties role buttons
+    /// carrying the panel's identifier). Each `roleTile` already carries its own identifier
+    /// and `.accessibilityElement(children: .combine)`; the container needs none.
     private func exactRolePanel(_ room: CompareRoom) -> some View {
         Group {
             if room.positions.count <= 3 {
@@ -482,7 +494,6 @@ private struct RoomPositionPicker: View {
         .padding(.horizontal, DesignTokens.Spacing.sm)
         .background(DesignTokens.Colors.surfaceCard2, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
         .animation(reduceMotion ? nil : DesignTokens.Motion.selection, value: viewModel.position)
-        .accessibilityIdentifier("compare-exact-role-panel")
     }
 
     private func roleTile(_ pos: Position) -> some View {
