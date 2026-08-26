@@ -80,8 +80,8 @@ export default function PrivacyPage() {
               Children&apos;s privacy
             </h2>
             <p className="m-0">
-              The Sticks isn&apos;t directed at children under 13, and we don&apos;t knowingly collect
-              data from them.
+              The Sticks isn&apos;t directed at children under 13, and we don&apos;t knowingly
+              collect data from them.
             </p>
           </div>
           <div>

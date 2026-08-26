@@ -38,9 +38,9 @@ export default function TermsPage() {
               Using The Sticks
             </h2>
             <p className="m-0">
-              The Sticks is an NFL depth-chart viewer. You can browse team rosters without an account.
-              Signing in (via a one-time email code) lets you save a favorite team, personal
-              depth-chart reorders, and share them with others.
+              The Sticks is an NFL depth-chart viewer. You can browse team rosters without an
+              account. Signing in (via a one-time email code) lets you save a favorite team,
+              personal depth-chart reorders, and share them with others.
             </p>
           </div>
           <div>
@@ -49,8 +49,8 @@ export default function TermsPage() {
             </h2>
             <p className="m-0">
               You&apos;re responsible for the email address you sign in with and for any activity
-              under your account. You must be able to access that email to sign in — The Sticks has no
-              password to reset.
+              under your account. You must be able to access that email to sign in — The Sticks has
+              no password to reset.
             </p>
           </div>
           <div>
@@ -58,11 +58,11 @@ export default function TermsPage() {
               Shared depth charts
             </h2>
             <p className="m-0">
-              If you share a depth chart, anyone with the link can view it. The Sticks&apos;s roster and
-              player data comes from public NFL sources and may contain errors or be out of date —
-              your reorders reflect your own opinion, not an official source. Don&apos;t use shared
-              links to post content that&apos;s abusive, illegal, or infringes someone else&apos;s
-              rights; we may remove links that violate this.
+              If you share a depth chart, anyone with the link can view it. The Sticks&apos;s roster
+              and player data comes from public NFL sources and may contain errors or be out of date
+              — your reorders reflect your own opinion, not an official source. Don&apos;t use
+              shared links to post content that&apos;s abusive, illegal, or infringes someone
+              else&apos;s rights; we may remove links that violate this.
             </p>
           </div>
           <div>
@@ -70,8 +70,8 @@ export default function TermsPage() {
               No warranty
             </h2>
             <p className="m-0">
-              The Sticks is provided as-is, without warranty of any kind. We don&apos;t guarantee the
-              roster data is accurate, complete, or available at all times.
+              The Sticks is provided as-is, without warranty of any kind. We don&apos;t guarantee
+              the roster data is accurate, complete, or available at all times.
             </p>
           </div>
           <div>
@@ -89,8 +89,8 @@ export default function TermsPage() {
               Changes
             </h2>
             <p className="m-0">
-              We may update these terms as The Sticks changes. Continued use after an update means you
-              accept the revised terms.
+              We may update these terms as The Sticks changes. Continued use after an update means
+              you accept the revised terms.
             </p>
           </div>
           <div>

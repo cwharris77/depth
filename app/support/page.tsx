@@ -46,8 +46,8 @@ export default function SupportPage() {
               Signing in
             </h2>
             <p className="m-0">
-              The Sticks uses a one-time code sent to your email — no password to remember. If a code
-              doesn&apos;t arrive, check your spam folder or email us and we&apos;ll help.
+              The Sticks uses a one-time code sent to your email — no password to remember. If a
+              code doesn&apos;t arrive, check your spam folder or email us and we&apos;ll help.
             </p>
           </div>
           <div>
