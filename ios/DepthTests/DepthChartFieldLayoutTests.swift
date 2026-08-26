@@ -222,3 +222,137 @@ struct DepthChartFieldLayoutTests {
         #expect(DepthChartFieldLayout.showsNames(unit: .offense, fieldWidth: 800))
     }
 }
+
+// Shipped bug (Cooper, 2026-08-26, Ravens defense): a callout's leader line ran straight
+// across two other dots and through their position tags. The placement search only ever
+// checked where the name TAG landed — nothing looked at the line that had to reach it, so
+// a tag in genuinely free grass could still be wired up through the middle of the
+// formation. These assert the line's route, not just the tag's spot.
+struct LeaderLineRoutingTests {
+    /// The field as it renders on the reported device: an iPhone 17 Pro's 402pt width
+    /// minus the page's horizontal padding, at the height `containerRelativeFrame` gives
+    /// the chart in TeamDetailView.
+    private let phoneField = CGSize(width: 367, height: 477)
+
+    /// The exact alignment from the report — a nickel front (five DBs, a three-man line)
+    /// with the real name lengths. Name width is what decides whether a name goes inline
+    /// or to a callout, so a fixture with one repeated name doesn't reproduce this: the
+    /// crowding depends on "Hendrickson" being wide while "Smith" is narrow.
+    private func nickelDefenseSlots() -> [(String, Double, Double, String, Bool)] {
+        [
+            ("def-ss-0", 34, 14, "Kyle Hawkins", false),
+            ("def-fs-0", 66, 14, "Malaki Starks", false),
+            ("def-lcb-0", 10, 26, "Nate Wiggins", false),
+            ("def-nb-0", 50, 26, "Kyle Hamilton", false),
+            ("def-rcb-0", 90, 26, "Marlon Humphrey", false),
+            ("def-wlb-0", 22, 37, "Teddye Robinson", false),
+            ("def-lilb-0", 42, 37, "Roquan Smith", false),
+            ("def-rilb-0", 58, 37, "Jay Buchanan", false),
+            ("def-slb-0", 78, 37, "Trey Hendrickson", false),
+            ("def-lde-0", 26, 49, "Nnamdi Madubuike", true),
+            ("def-rde-0", 74, 49, "Calais Campbell", true),
+        ]
+    }
+
+    private func defenseSlots() -> [RenderSlot] {
+        nickelDefenseSlots().enumerated().map { index, spec in
+            let (key, x, y, name, onLine) = spec
+            return RenderSlot(
+                key: key,
+                x: x,
+                y: y,
+                label: String(key.dropFirst(4).dropLast(2)).uppercased(),
+                player: Player(
+                    id: "p\(index)", name: name, position: .lb, depthRank: 1, number: 90 + index
+                ),
+                onLine: onLine
+            )
+        }
+    }
+
+    @Test("no leader line passes through another player's dot")
+    func leaderLinesClearOtherDots() {
+        let slots = defenseSlots()
+        let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: phoneField)
+        let clearance = DepthChartFieldLayout.leaderLineClearance(dotSize: layout.dotSize)
+
+        #expect(!layout.nameCallouts.isEmpty, "a phone-width 3-4 should route some names to callouts")
+
+        for (key, callout) in layout.nameCallouts {
+            guard let raw = layout.positions[key],
+                let slot = slots.first(where: { $0.key == key })
+            else { continue }
+            let dot = CGPoint(
+                x: raw.x,
+                y: raw.y
+                    + DepthChartFieldLayout.lineOffset(
+                        y: slot.y, onLine: slot.onLine, dotSize: layout.dotSize
+                    )
+            )
+            for other in slots where other.key != key {
+                guard let otherRaw = layout.positions[other.key] else { continue }
+                let otherDot = CGPoint(
+                    x: otherRaw.x,
+                    y: otherRaw.y
+                        + DepthChartFieldLayout.lineOffset(
+                            y: other.y, onLine: other.onLine, dotSize: layout.dotSize
+                        )
+                )
+                let distance = DepthChartFieldLayout.distance(
+                    from: otherDot, toSegment: dot, callout
+                )
+                #expect(
+                    distance >= clearance,
+                    "\(key)'s leader line passes \(distance)pt from \(other.key)'s dot"
+                )
+                // The reported symptom: the line missed the dots but ran straight through
+                // the position tag and name printed under one of them.
+                let name = other.player?.name ?? ""
+                let zone = DepthChartFieldLayout.labelZone(
+                    center: otherDot,
+                    inlineName: layout.showsInlineName(other.key) && !name.isEmpty
+                        ? formatLastName(name) : nil,
+                    dotSize: layout.dotSize
+                )
+                #expect(
+                    DepthChartFieldLayout.segment(dot, callout, avoids: zone),
+                    "\(key)'s leader line crosses \(other.key)'s label text"
+                )
+            }
+        }
+    }
+
+    @Test("every crowded name still gets a callout")
+    func everyCrowdedNameKeepsItsCallout() {
+        let slots = defenseSlots()
+        let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: phoneField)
+
+        // A crowded slot draws no inline name, so losing its callout loses the name
+        // outright — the line-clearance preference must never cost a placement.
+        for slot in slots where !layout.showsInlineName(slot.key) {
+            #expect(
+                layout.nameCallouts[slot.key] != nil,
+                "\(slot.key) renders no inline name and no callout — its name would vanish"
+            )
+        }
+    }
+
+    @Test("point-to-segment distance measures the segment, not its endpoints")
+    func distanceMeasuresTheWholeSegment() {
+        let a = CGPoint(x: 0, y: 0)
+        let b = CGPoint(x: 100, y: 0)
+        // Directly above the midpoint: far from both endpoints, 10pt from the line.
+        #expect(abs(DepthChartFieldLayout.distance(from: CGPoint(x: 50, y: 10), toSegment: a, b) - 10) < 0.001)
+        // Past the far endpoint: clamped to it rather than projected onto the infinite line.
+        #expect(abs(DepthChartFieldLayout.distance(from: CGPoint(x: 130, y: 0), toSegment: a, b) - 30) < 0.001)
+        // Degenerate segment falls back to a plain point distance.
+        #expect(abs(DepthChartFieldLayout.distance(from: CGPoint(x: 3, y: 4), toSegment: a, a) - 5) < 0.001)
+    }
+
+    @Test("segment/rect test catches a crossing that misses both endpoints")
+    func segmentAvoidanceCatchesMidCrossings() {
+        let rect = CGRect(x: 40, y: -5, width: 20, height: 10)
+        #expect(!DepthChartFieldLayout.segment(CGPoint(x: 0, y: 0), CGPoint(x: 100, y: 0), avoids: rect))
+        #expect(DepthChartFieldLayout.segment(CGPoint(x: 0, y: 40), CGPoint(x: 100, y: 40), avoids: rect))
+    }
+}
