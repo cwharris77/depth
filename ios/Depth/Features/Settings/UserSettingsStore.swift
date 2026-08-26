@@ -60,11 +60,12 @@ final class UserSettingsStore {
         guard let remote else { return }
         // Wait for the session restore (ContentView's `.task` refresh()) to settle before
         // deciding whether there is a row to read — without this, the startup resolver's
-        // `.task` could run while `isRestoring` is still true and skip the favorite tier
-        // for the launch (a fresh launch would open last-viewed instead of the favorite).
-        while sessionStore.isRestoring {
-            try? await Task.sleep(for: .milliseconds(25))
-        }
+        // `.task` could run while the restore is still in flight and skip the favorite
+        // tier for the launch (a fresh launch would open last-viewed instead of the
+        // favorite). The guard below therefore cannot be hoisted above this await to skip
+        // the wait when signed out: `user` is nil for the whole restore window, so
+        // "signed out" is not knowable until this returns.
+        await sessionStore.waitForRestore()
         guard isSignedIn else { return }
         do {
             let settings = try await remote.settings()
