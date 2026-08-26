@@ -35,7 +35,11 @@ private func compareSnapshot(team: Team, qbCount: Int) -> TeamSnapshot {
     return TeamSnapshot(team: team, players: qbs + wrs, specialTeams: [], uniforms: [])
 }
 
-private func statsPage(team: Team, wins: Int) -> TeamStatsPage {
+private func statsPage(
+    team: Team,
+    wins: Int,
+    matchupMetrics: TeamMatchupMetrics? = nil
+) -> TeamStatsPage {
     TeamStatsPage(
         team: team,
         seasons: [
@@ -44,7 +48,7 @@ private func statsPage(team: Team, wins: Int) -> TeamStatsPage {
                 homeWins: 4, homeLosses: 4, roadWins: wins - 4, roadLosses: 5,
                 divisionWins: 2, divisionLosses: 3, conferenceWins: 5, conferenceLosses: 5,
                 pointsFor: 402, pointsAgainst: 291, pointDifferential: 111,
-                matchupMetrics: nil
+                matchupMetrics: matchupMetrics
             )
         ],
         upcomingSeason: nil,
@@ -58,11 +62,21 @@ private actor CompareRepositoryFake: DepthRepository {
     let teams: [Team]
     let snapshots: [String: TeamSnapshot]
     let stats: [String: TeamStatsPage]
+    let schedules: [String: TeamSchedule]
+    let participation: [String: RecentParticipation]
 
-    init(teams: [Team], snapshots: [String: TeamSnapshot], stats: [String: TeamStatsPage]) {
+    init(
+        teams: [Team],
+        snapshots: [String: TeamSnapshot],
+        stats: [String: TeamStatsPage],
+        schedules: [String: TeamSchedule] = [:],
+        participation: [String: RecentParticipation] = [:]
+    ) {
         self.teams = teams
         self.snapshots = snapshots
         self.stats = stats
+        self.schedules = schedules
+        self.participation = participation
     }
 
     func teams() async throws -> [Team] { teams }
@@ -78,12 +92,58 @@ private actor CompareRepositoryFake: DepthRepository {
         throw DepthError.notFound
     }
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
-        throw DepthError.notFound
+        guard let schedule = schedules[teamId] else { throw DepthError.notFound }
+        return schedule
+    }
+    func recentParticipation(teamId: String) async throws -> RecentParticipation? {
+        participation[teamId]
     }
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
     func appConfig() async throws -> AppConfig {
         AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)
     }
+}
+
+private func compareMarket(
+    favoriteTeamId: String,
+    teamSpread: Double = -2.5
+) -> ScheduleGameMarket {
+    ScheduleGameMarket(
+        teamMoneyline: -135,
+        opponentMoneyline: 115,
+        teamSpread: teamSpread,
+        teamSpreadOdds: -110,
+        opponentSpreadOdds: -110,
+        totalLine: 44.5,
+        underOdds: -108,
+        overOdds: -112,
+        impliedWinProbability: 0.552,
+        favoriteTeamId: favoriteTeamId,
+        isPickEm: false,
+        isNeutralSite: false,
+        source: .nflverse,
+        updatedAt: "2026-08-25T12:00:00Z"
+    )
+}
+
+private func compareParticipation(team: Team, playerId: String) -> RecentParticipation {
+    RecentParticipation(
+        teamId: team.id,
+        season: 2025,
+        windowStartWeek: 16,
+        windowEndWeek: 18,
+        gameIds: ["game-16", "game-17", "game-18"],
+        source: "nflverse",
+        updatedAt: "2026-01-05T12:00:00Z",
+        players: [
+            PlayerRecentParticipation(
+                playerId: playerId,
+                offense: ParticipationUnit(snaps: 120, percentage: 0.83),
+                defense: ParticipationUnit(snaps: 0, percentage: nil),
+                specialTeams: ParticipationUnit(snaps: 4, percentage: 0.06)
+            )
+        ]
+    )
 }
 
 // MARK: - Pure helpers
@@ -185,7 +245,6 @@ private actor CompareRepositoryFake: DepthRepository {
 
 @Test func buildCompareTeaserCarriesTheRankOnePlayersAndCounts() {
     let topA = comparePlayer(id: "a1", name: "Alpha One", position: .wr, rank: 1, number: 11)
-    let topB = comparePlayer(id: "b1", name: "Beta One", position: .wr, rank: 1, number: 12)
     let a = [topA]
     let b = (0..<2).map { comparePlayer(id: "b\($0)", name: "P\($0)", position: .wr, rank: $0 + 1, number: $0 + 1) }
 
@@ -197,7 +256,203 @@ private actor CompareRepositoryFake: DepthRepository {
     #expect(teaser?.topB == b[0])
 }
 
+@Test func compareFreshnessMarksEvidenceOlderThanOneDayAsStale() {
+    let now = Date(timeIntervalSince1970: 2_000_000)
+    let current = "1970-01-24T03:33:20Z" // 2,000,000 seconds since epoch
+    let stale = "1970-01-22T03:33:20Z" // 172,800 seconds before `now`
+
+    #expect(compareFreshness(updatedAt: current, now: now) == .current)
+    #expect(compareFreshness(updatedAt: stale, now: now) == .stale)
+    #expect(compareFreshness(updatedAt: nil, now: now) == .unavailable)
+}
+
+@Test func marketForecastOrientsProbabilityToTheFavorite() {
+    let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
+    let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
+    let game = ScheduleGame(
+        week: 5,
+        isBye: false,
+        date: "2026-10-11",
+        isHome: false,
+        opponent: niners,
+        teamScore: nil,
+        opponentScore: nil,
+        result: nil,
+        market: compareMarket(favoriteTeamId: niners.id, teamSpread: 2.5)
+    )
+
+    let forecast = buildMarketForecast(game: game, perspectiveTeamId: hawks.id)
+
+    #expect(forecast?.favoriteTeamId == niners.id)
+    #expect(abs((forecast?.favoriteProbability ?? 0) - 0.448) < 0.0001)
+    #expect(forecast?.spread == -2.5)
+    #expect(forecast?.source == "nflverse")
+}
+
+@Test func marketForecastRequiresACompleteFavoriteAndProbability() {
+    let game = ScheduleGame(
+        week: 5,
+        isBye: false,
+        date: nil,
+        isHome: true,
+        opponent: nil,
+        teamScore: nil,
+        opponentScore: nil,
+        result: nil,
+        market: nil
+    )
+
+    #expect(buildMarketForecast(game: game, perspectiveTeamId: "seahawks") == nil)
+}
+
+@Test func starterParticipationSummaryUsesOnlyObservedPrimaryUnitShares() {
+    let team = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
+    let starter = Player(
+        id: "starter",
+        name: "Starter",
+        position: .qb,
+        depthRank: 1,
+        number: 1,
+        status: .starter
+    )
+    let backup = Player(
+        id: "backup",
+        name: "Backup",
+        position: .qb,
+        depthRank: 2,
+        number: 2,
+        status: .backup
+    )
+    let untrackedStarter = Player(
+        id: "untracked",
+        name: "Untracked",
+        position: .wr,
+        depthRank: 1,
+        number: 3,
+        status: .starter
+    )
+    let snapshot = TeamSnapshot(
+        team: team,
+        players: [starter, backup, untrackedStarter],
+        specialTeams: [],
+        uniforms: []
+    )
+    let recent = RecentParticipation(
+        teamId: team.id,
+        season: 2025,
+        windowStartWeek: 16,
+        windowEndWeek: 18,
+        gameIds: ["a", "b", "c"],
+        source: "nflverse",
+        updatedAt: "2026-01-05T12:00:00Z",
+        players: [
+            PlayerRecentParticipation(
+                playerId: starter.id,
+                offense: ParticipationUnit(snaps: 120, percentage: 0.8),
+                defense: ParticipationUnit(snaps: 0, percentage: nil),
+                specialTeams: ParticipationUnit(snaps: 0, percentage: nil)
+            ),
+            PlayerRecentParticipation(
+                playerId: backup.id,
+                offense: ParticipationUnit(snaps: 30, percentage: 0.2),
+                defense: ParticipationUnit(snaps: 0, percentage: nil),
+                specialTeams: ParticipationUnit(snaps: 0, percentage: nil)
+            ),
+        ]
+    )
+
+    let summary = summarizeStarterParticipation(snapshot: snapshot, recent: recent)
+
+    #expect(summary.totalStarters == 2)
+    #expect(summary.trackedStarters == 1)
+    #expect(summary.averageSnapShare == 0.8)
+}
+
 // MARK: - View model
+
+@Test func compareLensesPageInTheApprovedOrderAndKeepSelection() async {
+    let viewModel = await CompareViewModel(repository: CompareRepositoryFake(teams: [], snapshots: [:], stats: [:]))
+
+    #expect(
+        CompareViewModel.Lens.allCases.map(\.accessibilityLabel)
+            == ["Forecast", "Roster", "Offense", "Defense", "Special Teams"]
+    )
+    #expect(await viewModel.lens == .forecast)
+
+    await viewModel.selectLens(.defense)
+    #expect(await viewModel.lens == .defense)
+}
+
+@Test func pickingTeamsLoadsPartialEvidenceAndFindsTheirNextMatchup() async {
+    let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
+    let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
+    let rams = compareTeam("rams", abbrev: "LAR", city: "Los Angeles")
+    let hawksSnapshot = compareSnapshot(team: hawks, qbCount: 1)
+    let hawksParticipation = compareParticipation(team: hawks, playerId: hawksSnapshot.players[0].id)
+    let completedNinersGame = ScheduleGame(
+        week: 2,
+        isBye: false,
+        date: "2026-09-20",
+        isHome: true,
+        opponent: niners,
+        teamScore: 24,
+        opponentScore: 21,
+        result: .win,
+        market: compareMarket(favoriteTeamId: hawks.id)
+    )
+    let upcomingRamsGame = ScheduleGame(
+        week: 3,
+        isBye: false,
+        date: "2026-09-27",
+        isHome: false,
+        opponent: rams,
+        teamScore: nil,
+        opponentScore: nil,
+        result: nil,
+        market: compareMarket(favoriteTeamId: rams.id)
+    )
+    let upcomingNinersGame = ScheduleGame(
+        week: 5,
+        isBye: false,
+        date: "2026-10-11",
+        isHome: false,
+        opponent: niners,
+        teamScore: nil,
+        opponentScore: nil,
+        result: nil,
+        market: compareMarket(favoriteTeamId: niners.id)
+    )
+    let repo = CompareRepositoryFake(
+        teams: [hawks, niners, rams],
+        snapshots: [hawks.id: hawksSnapshot, niners.id: compareSnapshot(team: niners, qbCount: 2)],
+        stats: [
+            hawks.id: statsPage(team: hawks, wins: 12),
+            niners.id: statsPage(team: niners, wins: 11),
+        ],
+        schedules: [
+            hawks.id: TeamSchedule(
+                season: 2026,
+                games: [completedNinersGame, upcomingRamsGame, upcomingNinersGame]
+            )
+        ],
+        participation: [hawks.id: hawksParticipation]
+    )
+    let viewModel = await CompareViewModel(repository: repo)
+    await viewModel.load()
+
+    await viewModel.pickTeam(hawks.id, into: .a)
+    await viewModel.pickTeam(niners.id, into: .b)
+
+    #expect(await viewModel.participationA == hawksParticipation)
+    #expect(await viewModel.participationB == nil)
+    #expect(await viewModel.matchup?.week == 5)
+    #expect(await viewModel.matchup?.market?.favoriteTeamId == niners.id)
+    #expect(await viewModel.evidenceLoadState == .loaded)
+    // Missing schedule and participation on one side must not discard its successful
+    // roster/stats reads — each dependency degrades independently.
+    #expect(await viewModel.effectiveStatsB?.overallWins == 11)
+    #expect(await viewModel.positionGroupB.count == 2)
+}
 
 @Test func pickingBothTeamsResolvesStatsAndRoster() async {
     let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
