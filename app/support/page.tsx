@@ -4,8 +4,8 @@ import { ArrowLeft } from 'lucide-react';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 
 export const metadata: Metadata = {
-  title: 'Support · Depth',
-  description: 'Get help with Depth, or reach out with a question or bug report.',
+  title: 'Support · The Sticks',
+  description: 'Get help with The Sticks, or reach out with a question or bug report.',
 };
 
 // Static support page (App Store Connect requires a Support URL). Mirrors app/privacy's
@@ -46,7 +46,7 @@ export default function SupportPage() {
               Signing in
             </h2>
             <p className="m-0">
-              Depth uses a one-time code sent to your email — no password to remember. If a code
+              The Sticks uses a one-time code sent to your email — no password to remember. If a code
               doesn&apos;t arrive, check your spam folder or email us and we&apos;ll help.
             </p>
           </div>

@@ -189,7 +189,7 @@ export default function TeamRail({
         background: uiTokens.bgDrawer,
         borderRight: `1px solid ${uiTokens.borderDrawer}`,
       }}>
-      <Link href="/" className="px-2 pb-4 w-fit" aria-label="Depth home">
+      <Link href="/" className="px-2 pb-4 w-fit" aria-label="The Sticks home">
         <DepthMark />
       </Link>
       <div className="pb-3">

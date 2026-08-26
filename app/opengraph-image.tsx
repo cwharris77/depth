@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { colors as uiTokens } from '@/components/ui/tokens';
 
-export const alt = 'Depth · NFL Depth Charts';
+export const alt = 'The Sticks · NFL Depth Charts';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -40,7 +40,7 @@ export default function Image() {
           NFL DEPTH CHARTS
         </div>
       </div>
-      <div style={{ fontSize: 150, fontWeight: 800, lineHeight: 1.05 }}>Depth</div>
+      <div style={{ fontSize: 150, fontWeight: 800, lineHeight: 1.05 }}>The Sticks</div>
       <div
         style={{
           fontSize: 40,

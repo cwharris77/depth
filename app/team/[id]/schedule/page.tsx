@@ -20,11 +20,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
   const team = (await dbRosterSource.listTeams()).find((t) => t.id === id);
   if (!team) {
-    return { title: 'Team not found · Depth' };
+    return { title: 'Team not found · The Sticks' };
   }
   const fullName = `${team.city} ${team.name}`;
   return {
-    title: `${fullName} Schedule · Depth`,
+    title: `${fullName} Schedule · The Sticks`,
     description: `Regular-season schedule and results for the ${fullName}.`,
     alternates: { canonical: `/team/${id}/schedule` },
   };
