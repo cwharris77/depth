@@ -1,0 +1,72 @@
+name: Run iOS test suite (test-without-building)
+description: |
+  Downloads the build-for-testing products, boots the selected simulator, and runs a
+  `test-without-building` leg with the given `-only-testing` slice. Shared by the PR/push
+  `test` job and the nightly `test-full-suite` job so both fan out parallel legs against
+  the single prebuilt product set without duplicating the boilerplate.
+inputs:
+  # Simulator device type (e.g. "iPhone 17 Pro") — resolved as creatable against
+  # `runtime` by the resolve-devices job, same guarantee both callers rely on.
+  device:
+    description: Simulator device type to create.
+    required: true
+  runtime:
+    description: Simulator runtime identifier to create against.
+    required: true
+  # Unique instance name per parallel leg so the matrix simulators in one job don't
+  # collide; each call creates + boots its own device.
+  sim-name:
+    description: Unique name for the simulator device created by this leg.
+    required: true
+  # Space-separated `-only-testing:...` args. May be empty to run every test in the
+  # prebuilt bundle.
+  tests:
+    description: Space-separated -only-testing slice (may be empty string).
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    # actions/download-artifact writes files tagged com.apple.quarantine (they arrived
+    # over HTTPS) — Gatekeeper then does a full recursive codesign re-verification of
+    # the .app bundle the first time the simulator installs it, a cost a locally-built
+    # .app never pays. Observed as a multi-minute silent stall between xcodebuild
+    # starting and the first test case actually running. Strip it before testing.
+    - name: Clear quarantine attribute on downloaded build products
+      run: xattr -cr ios/DerivedData/Build/Products
+      shell: bash
+
+    - name: Boot ${{ inputs.sim-name }} simulator (${{ inputs.device }})
+      id: sim
+      env:
+        DEVICE: ${{ inputs.device }}
+        RUNTIME: ${{ inputs.runtime }}
+        SIM_NAME: ${{ inputs.sim-name }}
+      run: |
+        set -euo pipefail
+        # Device/runtime pair was already validated as creatable in resolve-devices —
+        # reuse it directly instead of re-resolving the runtime (which could in
+        # principle pick up a different image/runtime set on this runner).
+        DEVICE_ID=$(xcrun simctl create "$SIM_NAME" "$DEVICE" "$RUNTIME")
+        xcrun simctl boot "$DEVICE_ID"
+        echo "device_id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
+      shell: bash
+
+    - name: Run tests${{ inputs.tests != '' && format(' ({0})', inputs.sim-name) || '' }}
+      env:
+        DEVICE_ID: ${{ steps.sim.outputs.device_id }}
+        TESTS: ${{ inputs.tests }}
+      run: |
+        set -o pipefail
+        XCTESTRUN=$(find ios/DerivedData/Build/Products -maxdepth 1 -name '*.xctestrun' | head -n1)
+        if [ -z "$XCTESTRUN" ]; then
+          echo "::error::No .xctestrun file found in downloaded build products."
+          exit 1
+        fi
+        # `$TESTS` expands to the whitespace-separated `-only-testing:` args; empty is fine.
+        # shellcheck disable=SC2086
+        xcodebuild \
+          -xctestrun "$XCTESTRUN" \
+          -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+          test-without-building $TESTS
+      shell: bash
