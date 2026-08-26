@@ -34,6 +34,8 @@ plans — checkbox task lists an agent executes against the code — live here i
 specs index + README status table are the fallback; do not guess at roadmap intent.
 Never write a new spec into this repo's `docs/` — that reintroduces the repo/vault
 copies drifting out of sync that this split exists to prevent.
+Handoff briefs follow the same rule — they live in the vault at
+`../obsidian/Projects/depth/specs/`, not in this repo's `docs/`.
 
 ## 2. Architecture invariants
 
