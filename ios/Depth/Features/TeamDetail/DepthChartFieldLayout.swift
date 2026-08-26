@@ -172,6 +172,56 @@ struct DepthChartFieldLayout: Equatable {
         max(30, CGFloat(name.count) * 5.8 + 12)
     }
 
+    /// How far a leader line must stay from another slot's dot center before the stroke is
+    /// broken around it (DepthChartFieldView.leaderLine). Shared with the callout placement
+    /// search so "does this line hit that dot" has one answer in both places — the search
+    /// used to ignore the line entirely and could pick a spot whose line ran straight
+    /// through the formation, leaving the drawing layer to gap it out afterwards.
+    static func leaderLineClearance(dotSize: CGFloat) -> CGFloat {
+        dotSize / 2 + 5
+    }
+
+    /// The block under a dot that its text occupies. The position tag ("RILB") is drawn
+    /// under every dot unconditionally (see DepthChartFieldView.slotDot), so the zone is at
+    /// least `nameMinWidth` wide; a slot rendering its name inline widens it to that name.
+    /// Shared by the callout placement search and the leader-line stroke so a line can't
+    /// be routed through text that the drawing layer would then have to strike out.
+    static func labelZone(center: CGPoint, inlineName: String?, dotSize: CGFloat) -> CGRect {
+        let w = max(nameMinWidth, inlineName.map(estimatedNameWidth) ?? 0)
+        return CGRect(
+            x: center.x - w / 2,
+            y: center.y + dotSize / 2 + labelTopGap,
+            width: w,
+            height: labelBlockHeight
+        )
+    }
+
+    /// Shortest distance from `point` to the segment `a`–`b`. The leader line is a straight
+    /// segment, so a point-to-segment test is what decides whether it clips a dot — a
+    /// point-to-endpoint test would miss everything the line passes over in between.
+    static func distance(from point: CGPoint, toSegment a: CGPoint, _ b: CGPoint) -> CGFloat {
+        let dx = b.x - a.x
+        let dy = b.y - a.y
+        let lengthSquared = dx * dx + dy * dy
+        guard lengthSquared > 0 else { return hypot(point.x - a.x, point.y - a.y) }
+        let t = min(max(((point.x - a.x) * dx + (point.y - a.y) * dy) / lengthSquared, 0), 1)
+        return hypot(point.x - (a.x + t * dx), point.y - (a.y + t * dy))
+    }
+
+    /// Whether the segment `a`–`b` stays out of `rect`. Sampled rather than solved
+    /// analytically: the sample count only has to be fine enough that no gap between
+    /// samples can straddle a label block, and 32 steps across a phone-width field is far
+    /// finer than `labelBlockHeight`.
+    static func segment(_ a: CGPoint, _ b: CGPoint, avoids rect: CGRect) -> Bool {
+        let steps = 32
+        for step in 0...steps {
+            let t = CGFloat(step) / CGFloat(steps)
+            let point = CGPoint(x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t)
+            if rect.contains(point) { return false }
+        }
+        return true
+    }
+
     /// Web parity (components/PlayerDot.tsx): an on-line dot is nudged a radius onto its
     /// own side of the line of scrimmage. Layout has to account for it or every collision
     /// test is off by that much for exactly the most crowded row on the field.
@@ -288,21 +338,47 @@ struct DepthChartFieldLayout: Equatable {
                 height: labelBlockHeight
             )
 
+            // Shipped bug (Cooper, Ravens defense): the search only ever checked where the
+            // TAG landed, never the leader LINE that has to reach it — so a tag could sit
+            // in genuinely free grass while its line ran straight across two other dots
+            // and through their position tags. Every candidate is now also asked whether
+            // its line arrives cleanly. It's a preference, not a hard requirement: a
+            // second pass drops the line test so a crowded slot still gets a callout
+            // rather than losing its name entirely (no candidate at all means no callout
+            // is drawn, and a crowded slot draws no inline name either).
+            let lineClearance = leaderLineClearance(dotSize: dotSize)
+            let otherLabelZones = named.filter { $0.key != slot.key }.map { other in
+                labelZone(
+                    center: center(other),
+                    inlineName: crowded.contains(where: { $0.key == other.key })
+                        ? nil : formatLastName(other.player?.name ?? ""),
+                    dotSize: dotSize
+                )
+            }
+            func lineIsClear(to anchor: CGPoint) -> Bool {
+                others.allSatisfy {
+                    distance(from: CGPoint(x: $0.midX, y: $0.midY), toSegment: dot, anchor)
+                        >= lineClearance
+                } && otherLabelZones.allSatisfy { segment(dot, anchor, avoids: $0) }
+            }
+
             var best: CGPoint?
-            search: for ring in 0..<8 {
-                for direction in [away, -away] {
-                    for dx in [CGFloat(0), -w * 0.7, w * 0.7, -w * 1.4, w * 1.4] {
-                        let x = min(max(w / 2 + 2, dot.x + dx), width - w / 2 - 2)
-                        let y = dot.y + direction * (firstRing + CGFloat(ring) * step)
-                        let tag = CGRect(x: x - w / 2, y: y - 9, width: w, height: 18)
-                        guard field.contains(tag) else { continue }
-                        let padded = tag.insetBy(dx: -6, dy: -2)
-                        let blocked =
-                            others.contains { $0.intersects(padded) }
-                            || placedLabels.contains { $0.intersects(padded) }
-                            || placedTags.contains { $0.intersects(padded) }
-                            || ownLabelZone.intersects(padded)
-                        if !blocked {
+            search: for requireClearLine in [true, false] {
+                for ring in 0..<8 {
+                    for direction in [away, -away] {
+                        for dx in [CGFloat(0), -w * 0.7, w * 0.7, -w * 1.4, w * 1.4] {
+                            let x = min(max(w / 2 + 2, dot.x + dx), width - w / 2 - 2)
+                            let y = dot.y + direction * (firstRing + CGFloat(ring) * step)
+                            let tag = CGRect(x: x - w / 2, y: y - 9, width: w, height: 18)
+                            guard field.contains(tag) else { continue }
+                            let padded = tag.insetBy(dx: -6, dy: -2)
+                            let blocked =
+                                others.contains { $0.intersects(padded) }
+                                || placedLabels.contains { $0.intersects(padded) }
+                                || placedTags.contains { $0.intersects(padded) }
+                                || ownLabelZone.intersects(padded)
+                            if blocked { continue }
+                            if requireClearLine, !lineIsClear(to: CGPoint(x: x, y: y)) { continue }
                             best = CGPoint(x: x, y: y)
                             break search
                         }

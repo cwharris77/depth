@@ -200,10 +200,25 @@ struct DepthChartFieldView: View {
         avoiding key: String,
         layout: DepthChartFieldLayout
     ) -> Path {
-        let clearance = layout.dotSize / 2 + 5
+        let clearance = DepthChartFieldLayout.leaderLineClearance(dotSize: layout.dotSize)
         let blockers = slots.compactMap { slot -> CGPoint? in
             guard slot.key != key, let p = layout.positions[slot.key] else { return nil }
             return CGPoint(x: p.x, y: p.y + lineOffset(for: slot, dotSize: layout.dotSize))
+        }
+        // The placement search prefers a route that clears the other slots' text outright,
+        // but it falls back to allowing crossings when a crowded field leaves no clean
+        // spot — so the stroke breaks around those label blocks the same way it breaks
+        // around dots, rather than striking through a position tag.
+        let labelBlockers = slots.compactMap { slot -> CGRect? in
+            guard slot.key != key, let p = layout.positions[slot.key] else { return nil }
+            let center = CGPoint(x: p.x, y: p.y + lineOffset(for: slot, dotSize: layout.dotSize))
+            let name = slot.player?.name ?? ""
+            return DepthChartFieldLayout.labelZone(
+                center: center,
+                inlineName: layout.showsInlineName(slot.key) && !name.isEmpty
+                    ? formatLastName(name) : nil,
+                dotSize: layout.dotSize
+            )
         }
 
         let steps = 60
@@ -217,6 +232,7 @@ struct DepthChartFieldView: View {
                 y: callout.y + (dot.y - callout.y) * t
             )
             let blocked = blockers.contains { hypot(point.x - $0.x, point.y - $0.y) < clearance }
+                || labelBlockers.contains { $0.contains(point) }
             if blocked {
                 if let start = runStart, let end = previous {
                     path.move(to: start)
