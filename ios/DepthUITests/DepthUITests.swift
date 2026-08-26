@@ -63,11 +63,7 @@ final class DepthUITests: XCTestCase {
 
     func testOpenTeamSchedule() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
-        app.launch()
-
-        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
-        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
 
         // Round-4 (DEP-217): Schedule is the middle tab of the ROSTER/SCHEDULE/STATS page
         // switcher, no longer a toolbar destination.
@@ -89,11 +85,7 @@ final class DepthUITests: XCTestCase {
     /// the embedded schedule. Uses the Bills, a team with real ingested stats.
     func testPageSwitcherReachesAllThreePages() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
-        app.launch()
-
-        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
-        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
 
         let statsTab = app.buttons["page-switcher-stats"]
         XCTAssertTrue(statsTab.waitForExistence(timeout: 10), "team detail should expose a Stats page tab")
@@ -128,11 +120,7 @@ final class DepthUITests: XCTestCase {
     /// the spec's Testing section requires the 44pt tap target survive the restyle.
     func testUnitTabsPreserveTapTargets() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
-        app.launch()
-
-        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
-        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
 
         for identifier in ["unit-tab-offense", "unit-tab-defense", "unit-tab-special"] {
             let tab = app.buttons[identifier]
@@ -147,11 +135,7 @@ final class DepthUITests: XCTestCase {
 
     func testOpenHistoricalRosterProfileAndReturnToToday() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
-        app.launch()
-
-        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
-        app.selectTeam("seahawks", searching: "Seahawks", expectedDisplayName: "Seattle Seahawks")
+        XCTAssertTrue(app.launch(intoTeam: "seahawks"), "the app should launch straight into the Seahawks depth chart")
 
         // Seasons lives behind the ••• overflow menu (2026-08-15 visual-pass: the bare
         // icon row was removed).
@@ -212,11 +196,7 @@ final class DepthUITests: XCTestCase {
     /// sheet is verified from a genuinely historical state.
     func testBackToCurrentFromSeasonsSheet() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
-        app.launch()
-
-        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
-        app.selectTeam("seahawks", searching: "Seahawks", expectedDisplayName: "Seattle Seahawks")
+        XCTAssertTrue(app.launch(intoTeam: "seahawks"), "the app should launch straight into the Seahawks depth chart")
 
         let overflow = app.buttons["depth-chart-overflow"]
         XCTAssertTrue(overflow.waitForExistence(timeout: 10), "team detail should expose the overflow menu")
@@ -259,11 +239,7 @@ final class DepthUITests: XCTestCase {
     /// a second on-page button.
     func testBackToCurrentFromStatsPage() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
-        app.launch()
-
-        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
-        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
 
         let statsTab = app.buttons["page-switcher-stats"]
         XCTAssertTrue(statsTab.waitForExistence(timeout: 10))
@@ -313,11 +289,7 @@ final class DepthUITests: XCTestCase {
     /// Stats. "Back to current" now lives in the sheet's toolbar.
     func testBackToCurrentFromSchedulePage() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
-        app.launch()
-
-        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
-        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
 
         let scheduleTab = app.buttons["page-switcher-schedule"]
         XCTAssertTrue(scheduleTab.waitForExistence(timeout: 10))
@@ -362,11 +334,7 @@ final class DepthUITests: XCTestCase {
     /// completes without regressing.
     func testKitPickFollowsOntoScheduleAndStats() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
-        app.launch()
-
-        XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
-        app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
+        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
 
         let statsTab = app.buttons["page-switcher-stats"]
         XCTAssertTrue(statsTab.waitForExistence(timeout: 10))
