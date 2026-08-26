@@ -471,7 +471,7 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(accountButton.waitForExistence(timeout: 10), "Account should be reachable from the nav bar")
         accountButton.tap()
         XCTAssertTrue(
-            app.staticTexts["settings-about-name"].waitForExistence(timeout: 10),
+            app.staticTexts["settings-about-version"].waitForExistence(timeout: 10),
             "Account should render the settings content"
         )
     }

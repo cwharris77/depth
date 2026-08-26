@@ -78,18 +78,20 @@ struct SettingsView: View {
                     if let user = sessionStore.user {
                         accountTier(email: user.email)
                         settingsTier
+                        aboutTier
                         signOutButton
                         dangerLink
                     } else {
                         // The name-presentation preference is a local, account-independent
                         // choice, so it stays reachable whether or not the user is signed in.
                         settingsTier
+                        aboutTier
                         // Sign In sits where Sign Out sits in the signed-in branch above —
-                        // same bottom-of-account-section position in both states.
+                        // same bottom-of-page position in both states, matching the design
+                        // import's actual order (Settings.dc.html: Account/Preferences/
+                        // Data & Sync/About cards, THEN Sign Out/Delete Account last).
                         signInPrompt
                     }
-
-                    aboutTier
                 }
                 .padding(DesignTokens.Spacing.md)
             }
@@ -160,8 +162,10 @@ struct SettingsView: View {
                 }
             }
             .accessibilityElement(children: .combine)
+            .padding(.horizontal, DesignTokens.Spacing.md)
+            .padding(.vertical, DesignTokens.Spacing.sm)
             .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-            .depthCard()
+            .depthCard(padded: false)
         }
     }
 
@@ -191,7 +195,11 @@ struct SettingsView: View {
     private var settingsTier: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             sectionLabel("Preferences", tint: DesignTokens.Colors.accent)
-            VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+            // `padded: false` + per-row horizontal padding (not padding on the outer
+            // card) — the default `padded: true` insets everything including the row
+            // dividers below, which then stop short of the card's edges instead of
+            // spanning full-bleed like the design import's `.row+.row{border-top:...}`.
+            VStack(alignment: .leading, spacing: 0) {
                 if sessionStore.user != nil {
                     // DEP-319: favorite-team picker, mirroring web's AccountView select.
                     // Rendered only while signed in — settingsTier itself is shown to both
@@ -202,59 +210,67 @@ struct SettingsView: View {
                     if let favoriteTeamId = settingsStore.favoriteTeamId, !favoriteTeamId.isEmpty {
                         Divider().overlay(DesignTokens.Colors.borderSubtle)
                         startOnFavoriteToggle
+                            .padding(.horizontal, DesignTokens.Spacing.md)
                     }
                     if let updateError = settingsStore.updateError {
                         Divider().overlay(DesignTokens.Colors.borderSubtle)
                         Text(updateError)
                             .font(.footnote)
                             .foregroundStyle(DesignTokens.Colors.textMuted)
+                            .padding(.horizontal, DesignTokens.Spacing.md)
                             .accessibilityIdentifier("settings-favorite-update-error")
                     }
                     Divider().overlay(DesignTokens.Colors.borderSubtle)
                 }
-
-                // A menu rather than DepthSegmentedControl: three labels this long do not
-                // fit a segmented track at phone width, and shortening them to fit
-                // ("Lines"/"Fit"/"Off") would leave users guessing what they picked. A
-                // custom-label `Menu` (not `Picker(.menu)`, which wraps its own
-                // system-rendered value text onto multiple lines with no truncation
-                // control outside a List) keeps the row's value on one line, matching
-                // the design import's `.row-value{white-space:nowrap}`.
-                Menu {
-                    ForEach(FieldNameMode.allCases) { mode in
-                        Button(mode.title) { fieldNameMode = mode }
-                    }
-                } label: {
-                    HStack(spacing: DesignTokens.Spacing.md) {
-                        iconBadge("textformat", tint: DesignTokens.Colors.accent)
-                        Text("Player Names")
-                            .foregroundStyle(DesignTokens.Colors.textPrimary)
-                        Spacer()
-                        Text(fieldNameMode.title)
-                            .font(.subheadline)
-                            .foregroundStyle(DesignTokens.Colors.textMuted)
-                            .lineLimit(1)
-                        Image(systemName: "chevron.up.chevron.down")
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(DesignTokens.Colors.textFaint)
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                    .contentShape(Rectangle())
-                }
-                .accessibilityIdentifier("settings-field-name-mode")
-
-                Text(
-                    "How player names appear on the depth chart. Names under the dot are "
-                        + "easiest to read; leader lines keep every name on screen when the "
-                        + "field gets crowded."
-                )
-                .font(.caption)
-                .foregroundStyle(DesignTokens.Colors.textMuted)
-                .padding(.leading, 28 + DesignTokens.Spacing.md)
+                playerNamesRow
             }
+            .padding(.vertical, DesignTokens.Spacing.sm)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .depthCard()
+            .depthCard(padded: false)
         }
+    }
+
+    // A menu rather than DepthSegmentedControl: three labels this long do not fit a
+    // segmented track at phone width, and shortening them to fit ("Lines"/"Fit"/"Off")
+    // would leave users guessing what they picked. A custom-label `Menu` (not
+    // `Picker(.menu)`, which wraps its own system-rendered value text onto multiple
+    // lines with no truncation control outside a List) keeps the row's value on one
+    // line, matching the design import's `.row-value{white-space:nowrap}`.
+    private var playerNamesRow: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+            Menu {
+                ForEach(FieldNameMode.allCases) { mode in
+                    Button(mode.title) { fieldNameMode = mode }
+                }
+            } label: {
+                HStack(spacing: DesignTokens.Spacing.md) {
+                    iconBadge("textformat", tint: DesignTokens.Colors.accent)
+                    Text("Player Names")
+                        .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    Spacer()
+                    Text(fieldNameMode.title)
+                        .font(.subheadline)
+                        .foregroundStyle(DesignTokens.Colors.textMuted)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(DesignTokens.Colors.textFaint)
+                }
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .contentShape(Rectangle())
+            }
+            .accessibilityIdentifier("settings-field-name-mode")
+
+            Text(
+                "How player names appear on the depth chart. Names under the dot are "
+                    + "easiest to read; leader lines keep every name on screen when the "
+                    + "field gets crowded."
+            )
+            .font(.caption)
+            .foregroundStyle(DesignTokens.Colors.textMuted)
+        }
+        .padding(.horizontal, DesignTokens.Spacing.md)
     }
 
     // DEP-319: mirrors web's favorite-team select (components/AccountView.tsx) — the
@@ -289,6 +305,7 @@ struct SettingsView: View {
                             .font(.subheadline)
                             .foregroundStyle(DesignTokens.Colors.textMuted)
                             .lineLimit(1)
+                            .minimumScaleFactor(0.75)
                         Image(systemName: "chevron.up.chevron.down")
                             .font(.caption2.weight(.semibold))
                             .foregroundStyle(DesignTokens.Colors.textFaint)
@@ -301,8 +318,8 @@ struct SettingsView: View {
             Text("Your favorite opens automatically when you start the app.")
                 .font(.caption)
                 .foregroundStyle(DesignTokens.Colors.textMuted)
-                .padding(.leading, 28 + DesignTokens.Spacing.md)
         }
+        .padding(.horizontal, DesignTokens.Spacing.md)
     }
 
     private var favoriteTeamValueLabel: String {
@@ -371,7 +388,9 @@ struct SettingsView: View {
     private var aboutTier: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             sectionLabel("About", tint: DesignTokens.Colors.textMuted)
-            VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+            // `padded: false` + per-row horizontal padding — see settingsTier's comment
+            // above for why (full-bleed row dividers, matching the design import).
+            VStack(alignment: .leading, spacing: 0) {
                 if let url = AppBuildInfo.privacyPolicyURL {
                     Link(destination: url) {
                         HStack(spacing: DesignTokens.Spacing.md) {
@@ -383,6 +402,7 @@ struct SettingsView: View {
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(DesignTokens.Colors.textFaint)
                         }
+                        .padding(.horizontal, DesignTokens.Spacing.md)
                         .frame(minHeight: 44)
                         .contentShape(Rectangle())
                     }
@@ -400,6 +420,7 @@ struct SettingsView: View {
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(DesignTokens.Colors.textFaint)
                         }
+                        .padding(.horizontal, DesignTokens.Spacing.md)
                         .frame(minHeight: 44)
                         .contentShape(Rectangle())
                     }
@@ -427,19 +448,20 @@ struct SettingsView: View {
                             .font(.footnote.weight(.semibold))
                             .foregroundStyle(DesignTokens.Colors.textFaint)
                     }
+                    .padding(.horizontal, DesignTokens.Spacing.md)
                     .frame(minHeight: 44)
                     .contentShape(Rectangle())
                 }
                 .accessibilityIdentifier("settings-take-the-tour")
                 Divider().overlay(DesignTokens.Colors.borderSubtle)
-                LabeledContent("Name", value: AppBuildInfo.displayName)
-                    .accessibilityIdentifier("settings-about-name")
-                Divider().overlay(DesignTokens.Colors.borderSubtle)
                 LabeledContent("Version", value: AppBuildInfo.version)
+                    .padding(.horizontal, DesignTokens.Spacing.md)
+                    .frame(minHeight: 44)
                     .accessibilityIdentifier("settings-about-version")
             }
+            .padding(.vertical, DesignTokens.Spacing.sm)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .depthCard()
+            .depthCard(padded: false)
 
             Text(AppBuildInfo.nonAffiliationDisclaimer)
                 .font(.footnote)
