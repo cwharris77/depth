@@ -1,9 +1,19 @@
 import SwiftUI
 
-// DEP-317's native Compare briefing: five horizontally-paged, auditable lenses driven
-// entirely by CompareViewModel's bounded repository reads. The view never invents an
-// opaque score, health state, or proprietary forecast; missing feeds stay visibly
-// unavailable and every displayed metric carries nflverse season/freshness context.
+// DEP-317's native Compare briefing: three horizontally-paged, auditable unit-metrics
+// lenses driven entirely by CompareViewModel's bounded repository reads. The view never
+// invents an opaque score, health state, or proprietary forecast; missing feeds stay
+// visibly unavailable, and no lens ever names its underlying data source (nflverse) —
+// customer-facing copy stays vendor-neutral.
+//
+// Aug 2026 feedback pass (two rounds): the Forecast lens (blank for most teams most of
+// the season/offseason, and its unavailable-state copy referenced "our model" — not
+// customer-facing language) and the Roster lens (paired snap share with no injury data,
+// so it wasn't actionable) were both removed outright. What remains — Offense, Defense,
+// Special Teams — reads a season-stable metrics row that's never gated on the current
+// week, so it's the one thing on this page that isn't blank out of season. Each lens's
+// metric rows also moved from repeating "TEAM_ABBREV value" per row to a proper table:
+// one header row with each team as a column, then just the numbers underneath.
 struct CompareLensesView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -70,10 +80,6 @@ struct CompareLensesView: View {
             CompareLensSkeleton(lens: lens)
         case .idle, .loaded:
             switch lens {
-            case .forecast:
-                ForecastLens(viewModel: viewModel)
-            case .roster:
-                RosterLens(viewModel: viewModel)
             case .offense:
                 UnitMetricsLens(viewModel: viewModel, unit: .offense)
             case .defense:
@@ -85,178 +91,6 @@ struct CompareLensesView: View {
     }
 }
 
-private struct ForecastLens: View {
-    let viewModel: CompareViewModel
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            if let game = viewModel.matchup,
-                let perspectiveTeamId = viewModel.matchupPerspectiveTeamId,
-                let forecast = buildMarketForecast(game: game, perspectiveTeamId: perspectiveTeamId),
-                let favorite = [viewModel.teamA, viewModel.teamB]
-                    .compactMap({ $0 })
-                    .first(where: { $0.id == forecast.favoriteTeamId })
-            {
-                VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
-                    LensEyebrow(text: "MARKET FORECAST")
-                    HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.sm) {
-                        Text(forecast.favoriteProbability, format: .percent.precision(.fractionLength(0)))
-                            .font(.system(.largeTitle, design: .rounded, weight: .black))
-                            .foregroundStyle(DesignTokens.Colors.textPrimary)
-                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-                            Text("\(favorite.city) favored")
-                                .font(.headline)
-                                .foregroundStyle(Color(hex: favorite.colors.uiAccent))
-                            if let spread = forecast.spread {
-                                Text("Market · \(favorite.abbrev) \(signed(spread))")
-                                    .font(.caption.bold())
-                                    .foregroundStyle(DesignTokens.Colors.textMuted)
-                            }
-                        }
-                    }
-
-                    Divider().overlay(DesignTokens.Colors.borderSubtle)
-
-                    Text("No Depth forecast is available")
-                        .font(.headline)
-                        .foregroundStyle(DesignTokens.Colors.textPrimary)
-                    Text("Depth’s evaluated model did not outperform the market, so this lens reports the attributed market view without inventing a prediction.")
-                        .font(.subheadline)
-                        .foregroundStyle(DesignTokens.Colors.textSecondary)
-                }
-                .depthCard(radius: DesignTokens.Radius.md)
-
-                LensSourceLine(
-                    leading: "Market view · \(forecast.source)",
-                    trailing: sourceDate(forecast.updatedAt)
-                )
-            } else {
-                LensUnavailableCard(
-                    eyebrow: "MARKET FORECAST",
-                    title: "No market forecast available",
-                    detail: "These teams do not have an upcoming matchup with a complete two-sided market line. Depth does not create a probability without one.",
-                    identifier: "compare-forecast-unavailable"
-                )
-            }
-
-            Text("For informational and entertainment purposes. Depth does not accept wagers or provide betting services.")
-                .font(.caption2)
-                .foregroundStyle(DesignTokens.Colors.textFaint)
-        }
-        .accessibilityIdentifier("compare-lens-forecast-card")
-    }
-
-    private func signed(_ value: Double) -> String {
-        let number = value.formatted(.number.precision(.fractionLength(1)))
-        return value > 0 ? "+\(number)" : number
-    }
-}
-
-private struct RosterLens: View {
-    let viewModel: CompareViewModel
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
-                LensEyebrow(text: "ROSTER LENS")
-                Text(rosterTakeaway)
-                    .font(.title3.weight(.heavy))
-                    .foregroundStyle(DesignTokens.Colors.textPrimary)
-                Text("Recent snap share confirms usage only. It does not establish health or game availability.")
-                    .font(.subheadline)
-                    .foregroundStyle(DesignTokens.Colors.textSecondary)
-
-                HStack(alignment: .top, spacing: DesignTokens.Spacing.sm) {
-                    if let team = viewModel.teamA {
-                        participationTile(team: team, summary: summaryA)
-                    }
-                    if let team = viewModel.teamB {
-                        participationTile(team: team, summary: summaryB)
-                    }
-                }
-
-                VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-                    Text("INJURY REPORT")
-                        .font(.caption2.bold())
-                        .foregroundStyle(DesignTokens.Colors.textMuted)
-                    Text("Current injury detail is unavailable")
-                        .font(.subheadline.bold())
-                        .foregroundStyle(DesignTokens.Colors.textPrimary)
-                    Text("The approved live source is unavailable, so Depth does not infer injuries from roster status or participation.")
-                        .font(.caption)
-                        .foregroundStyle(DesignTokens.Colors.textFaint)
-                }
-                .padding(DesignTokens.Spacing.sm)
-                .depthCard(dense: true, padded: false, radius: DesignTokens.Radius.sm)
-            }
-            .depthCard(radius: DesignTokens.Radius.md)
-
-            LensSourceLine(
-                leading: "Participation · nflverse",
-                trailing: participationWindow
-            )
-        }
-        .accessibilityIdentifier("compare-lens-roster-card")
-    }
-
-    private var summaryA: StarterParticipationSummary? {
-        guard let snapshot = viewModel.snapshotA else { return nil }
-        return summarizeStarterParticipation(snapshot: snapshot, recent: viewModel.participationA)
-    }
-
-    private var summaryB: StarterParticipationSummary? {
-        guard let snapshot = viewModel.snapshotB else { return nil }
-        return summarizeStarterParticipation(snapshot: snapshot, recent: viewModel.participationB)
-    }
-
-    private var rosterTakeaway: String {
-        guard let a = summaryA?.averageSnapShare, let b = summaryB?.averageSnapShare,
-            let teamA = viewModel.teamA, let teamB = viewModel.teamB
-        else { return "Recent starter usage is partially available" }
-        if abs(a - b) < 0.01 { return "Recent starter usage is essentially even" }
-        return "\(a > b ? teamA.city : teamB.city) has the higher recent starter snap share"
-    }
-
-    private var participationWindow: String {
-        guard let recent = viewModel.participationA ?? viewModel.participationB else {
-            return "Unavailable"
-        }
-        return "\(recent.season) · W\(recent.windowStartWeek)–\(recent.windowEndWeek)"
-    }
-
-    private func participationTile(
-        team: Team,
-        summary: StarterParticipationSummary?
-    ) -> some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-            Text("\(team.abbrev) RECENT SHARE")
-                .font(.caption2.bold())
-                .foregroundStyle(DesignTokens.Colors.textMuted)
-            if let share = summary?.averageSnapShare {
-                Text(share, format: .percent.precision(.fractionLength(0)))
-                    .font(.title2.weight(.heavy))
-                    .foregroundStyle(DesignTokens.Colors.textPrimary)
-            } else {
-                Text("—")
-                    .font(.title2.weight(.heavy))
-                    .foregroundStyle(DesignTokens.Colors.textFaint)
-            }
-            Text(coverage(summary))
-                .font(.caption2)
-                .foregroundStyle(DesignTokens.Colors.textFaint)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(DesignTokens.Spacing.sm)
-        .depthCard(dense: true, padded: false, radius: DesignTokens.Radius.sm)
-        .accessibilityElement(children: .combine)
-    }
-
-    private func coverage(_ summary: StarterParticipationSummary?) -> String {
-        guard let summary else { return "No roster evidence" }
-        return "\(summary.trackedStarters) of \(summary.totalStarters) starters tracked"
-    }
-}
-
 private struct UnitMetricsLens: View {
     let viewModel: CompareViewModel
     let unit: Unit
@@ -265,9 +99,7 @@ private struct UnitMetricsLens: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             if rows.isEmpty {
                 LensUnavailableCard(
-                    eyebrow: "\(unitTitle.uppercased()) LENS",
                     title: "No \(unitTitle.lowercased()) metrics available",
-                    detail: "Depth leaves unavailable nflverse values blank instead of converting them to zero or an opaque score.",
                     identifier: "compare-\(unit.rawValue)-unavailable"
                 )
             } else {
@@ -280,20 +112,78 @@ private struct UnitMetricsLens: View {
                         .font(.subheadline)
                         .foregroundStyle(DesignTokens.Colors.textSecondary)
 
-                    ForEach(rows) { row in
-                        metricRow(row)
-                    }
+                    metricsTable
                 }
                 .depthCard(radius: DesignTokens.Radius.md)
 
                 LensSourceLine(
-                    leading: "Team metrics · nflverse",
+                    leading: "Team metrics",
                     trailing: metricFreshness
                 )
             }
         }
         .accessibilityIdentifier("compare-lens-\(lensIdentifier)-card")
     }
+
+    // MARK: Table
+
+    /// Cooper (Aug 26): "it should be a table... each team gets a column instead of
+    /// having to write the short name on each row." One header row (team abbrevs as
+    /// columns), then each metric is a row of just its two numbers underneath — the
+    /// team abbrev no longer repeats on every metric.
+    private var metricsTable: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: DesignTokens.Spacing.sm) {
+                Color.clear.frame(width: labelColumnWidth)
+                teamHeader(viewModel.teamA)
+                teamHeader(viewModel.teamB)
+            }
+            .padding(.bottom, DesignTokens.Spacing.xs)
+
+            ForEach(rows) { row in
+                metricRow(row)
+            }
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private func teamHeader(_ team: Team?) -> some View {
+        Text(team?.abbrev.uppercased() ?? "—")
+            .font(.caption.weight(.black))
+            .tracking(0.6)
+            .foregroundStyle(team.map { Color(hex: $0.colors.uiAccent) } ?? DesignTokens.Colors.textFaint)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func metricRow(_ row: LensMetricRow) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.sm) {
+            Text(row.label)
+                .font(.caption2.bold())
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+                .frame(width: labelColumnWidth, alignment: .leading)
+            Text(row.format.string(row.valueA))
+                .font(.subheadline.weight(.heavy))
+                .foregroundStyle(DesignTokens.Colors.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text(row.format.string(row.valueB))
+                .font(.subheadline.weight(.heavy))
+                .foregroundStyle(DesignTokens.Colors.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.vertical, DesignTokens.Spacing.sm)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(DesignTokens.Colors.borderSubtle)
+                .frame(height: 1)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    /// Fixed label-column width so every row's two value columns start at the same x —
+    /// the point of a table over the old repeated-abbrev rows.
+    private let labelColumnWidth: CGFloat = 108
+
+    // MARK: Data
 
     private var metricsA: TeamMatchupMetrics? { viewModel.effectiveStatsA?.matchupMetrics }
     private var metricsB: TeamMatchupMetrics? { viewModel.effectiveStatsB?.matchupMetrics }
@@ -422,41 +312,6 @@ private struct UnitMetricsLens: View {
         guard let metrics = metricsA ?? metricsB else { return "Unavailable" }
         return "\(metrics.season) · \(sourceDate(metrics.updatedAt))"
     }
-
-    private func metricRow(_ row: LensMetricRow) -> some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-            Text(row.label)
-                .font(.caption2.bold())
-                .foregroundStyle(DesignTokens.Colors.textMuted)
-            HStack(spacing: DesignTokens.Spacing.sm) {
-                metricValue(row.valueA, format: row.format, team: viewModel.teamA)
-                metricValue(row.valueB, format: row.format, team: viewModel.teamB)
-            }
-        }
-        .padding(.top, DesignTokens.Spacing.sm)
-        .overlay(alignment: .top) {
-            Rectangle()
-                .fill(DesignTokens.Colors.borderSubtle)
-                .frame(height: 1)
-        }
-    }
-
-    private func metricValue(
-        _ value: Double?,
-        format: LensMetricFormat,
-        team: Team?
-    ) -> some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-            Text(team?.abbrev.uppercased() ?? "—")
-                .font(.caption2.bold())
-                .foregroundStyle(DesignTokens.Colors.textFaint)
-            Text(format.string(value))
-                .font(.title3.weight(.heavy))
-                .foregroundStyle(DesignTokens.Colors.textPrimary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityElement(children: .combine)
-    }
 }
 
 private struct CompareLensSkeleton: View {
@@ -484,26 +339,23 @@ private struct CompareLensSkeleton: View {
     }
 }
 
+/// Aug 2026 (Cooper): the eyebrow and the "we leave it blank instead of zero" explanation
+/// were both implementation detail — customers don't care how the app models missing data,
+/// they just want to know it's missing. Down to one centered line, and never names the app
+/// ("Depth" — the old brand; the app is The Sticks now, but the fix here is simply not
+/// saying either name in this sentence).
 private struct LensUnavailableCard: View {
-    let eyebrow: String
     let title: String
-    let detail: String
     let identifier: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            LensEyebrow(text: eyebrow)
-            Text(title)
-                .font(.title3.weight(.heavy))
-                .foregroundStyle(DesignTokens.Colors.textPrimary)
-            Text(detail)
-                .font(.subheadline)
-                .foregroundStyle(DesignTokens.Colors.textSecondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .depthCard(radius: DesignTokens.Radius.md)
-        .accessibilityElement(children: .combine)
-        .accessibilityIdentifier(identifier)
+        Text(title)
+            .font(.subheadline.weight(.bold))
+            .foregroundStyle(DesignTokens.Colors.textSecondary)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .depthCard(radius: DesignTokens.Radius.md)
+            .accessibilityIdentifier(identifier)
     }
 }
 
