@@ -119,6 +119,19 @@ final class PRScreenshotsUITests: XCTestCase {
             if close.waitForExistence(timeout: 5) { close.tap() }
         }
 
+        // `settings` — the Settings sheet in its signed-out state (the only state
+        // reachable from the anonymous UI_TESTING_RESET_STATE clean slate every other
+        // capture in this file uses).
+        if requested.contains("settings") {
+            let accountButton = app.buttons["account-button"]
+            XCTAssertTrue(accountButton.waitForExistence(timeout: 15), "the header should expose the account button")
+            accountButton.tap()
+            XCTAssertTrue(app.buttons["Sign In"].waitForExistence(timeout: 15), "the Settings sheet should present its sign-in prompt")
+            attachScreenshot(name: "settings")
+            let close = app.buttons["account-close-button"]
+            if close.waitForExistence(timeout: 5) { close.tap() }
+        }
+
         // `player` — a player detail sheet (opened from a filled depth-chart slot).
         if requested.contains("player") {
             let playerSlot = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'player-slot-'")).firstMatch
@@ -151,7 +164,7 @@ final class PRScreenshotsUITests: XCTestCase {
         } else {
             raw = ProcessInfo.processInfo.environment["SCREENSHOT_TARGETS"] ?? ""
         }
-        let valid: Set<String> = ["field", "field-footer", "formations", "teams", "uniform", "player"]
+        let valid: Set<String> = ["field", "field-footer", "formations", "teams", "uniform", "player", "settings"]
         let tokens = raw.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         let requested = Set(tokens).intersection(valid)
         // `field` is the documented default (empty/missing env, or no valid token →

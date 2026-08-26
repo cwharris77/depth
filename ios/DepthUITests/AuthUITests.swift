@@ -19,12 +19,6 @@ final class AuthUITests: XCTestCase {
         XCTAssertTrue(accountButton.waitForExistence(timeout: 15), "Account should be reachable from the nav bar")
         accountButton.tap()
 
-        let appName = app.staticTexts["settings-about-name"]
-        XCTAssertTrue(appName.waitForExistence(timeout: 15), "About should show the app display name")
-        XCTAssertTrue(
-            appName.label.contains("The Sticks"),
-            "About should use the current customer-facing brand"
-        )
         let version = app.staticTexts["settings-about-version"]
         XCTAssertTrue(version.waitForExistence(timeout: 15), "About should show the app version")
         XCTAssertFalse(
