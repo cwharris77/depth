@@ -6,8 +6,8 @@ import { colors } from '@/components/ui/tokens';
 // set in the root layout's viewport. Icon reuses the SVG served from app/icon.svg.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Depth · NFL Depth Charts',
-    short_name: 'Depth',
+    name: 'The Sticks · NFL Depth Charts',
+    short_name: 'The Sticks',
     description:
       'Interactive, mobile-first NFL depth charts. Pick a team and explore the roster on the field.',
     start_url: '/',

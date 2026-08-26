@@ -4,8 +4,8 @@ import { ArrowLeft } from 'lucide-react';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 
 export const metadata: Metadata = {
-  title: 'Privacy policy · Depth',
-  description: 'What Depth collects, what it does not, and how to delete your data.',
+  title: 'Privacy policy · The Sticks',
+  description: 'What The Sticks collects, what it does not, and how to delete your data.',
 };
 
 // Static privacy policy page (Phase C, P0 App Store requirement). Copy is grounded in what the
@@ -80,8 +80,8 @@ export default function PrivacyPage() {
               Children&apos;s privacy
             </h2>
             <p className="m-0">
-              Depth isn&apos;t directed at children under 13, and we don&apos;t knowingly collect
-              data from them.
+              The Sticks isn&apos;t directed at children under 13, and we don&apos;t knowingly
+              collect data from them.
             </p>
           </div>
           <div>

@@ -64,7 +64,7 @@ export default function IOSInstallHint() {
           exit={{ y: 40, opacity: 0 }}
           transition={springSheet}>
           <span className="min-w-0 flex-1">
-            Install Depth: tap <span className="font-semibold">Share</span>{' '}
+            Install The Sticks: tap <span className="font-semibold">Share</span>{' '}
             <span aria-hidden="true">⎋</span>, then{' '}
             <span className="font-semibold">Add to Home Screen</span>.
           </span>

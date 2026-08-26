@@ -23,11 +23,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
   const page = await dbRosterSource.getTeamStats(id);
   if (!page) {
-    return { title: 'Team not found · Depth' };
+    return { title: 'Team not found · The Sticks' };
   }
   const fullName = `${page.team.city} ${page.team.name}`;
   return {
-    title: `${fullName} Stats · Depth`,
+    title: `${fullName} Stats · The Sticks`,
     description: `Season record and coaching staff for the ${fullName}.`,
     alternates: { canonical: `/team/${id}/stats` },
   };

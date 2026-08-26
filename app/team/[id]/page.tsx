@@ -32,7 +32,7 @@ export async function generateMetadata({
   const { id } = await params;
   const roster = await dbRosterSource.getTeam(id);
   if (!roster) {
-    return { title: 'Team not found · Depth' };
+    return { title: 'Team not found · The Sticks' };
   }
   const { team } = roster;
   const fullName = `${team.city} ${team.name}`;
@@ -52,7 +52,7 @@ export async function generateMetadata({
   const ogImage = { url: ogImageUrl, ...OG_IMAGE_SIZE, alt: OG_IMAGE_ALT };
 
   return {
-    title: `${fullName} Depth Chart · Depth`,
+    title: `${fullName} Depth Chart · The Sticks`,
     description: `Interactive depth chart for the ${fullName} — tap any player for their bio and stats.`,
     // Cross-team player picks deep-link here as /team/[id]?player=<id> (see
     // NavSwitcher). Those are the same page, so point the canonical at the clean

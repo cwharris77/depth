@@ -46,7 +46,7 @@ export default function PlayerCardHeader({
     const url = window.location.origin + playerDeepLinkPath(teamId, player.id);
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
-        await navigator.share({ title: `${player.name} · Depth`, url });
+        await navigator.share({ title: `${player.name} · The Sticks`, url });
       } catch {
         // user dismissed the share sheet, or it's unavailable — nothing to do
       }

@@ -1,6 +1,6 @@
 // Converts nflverse's home-oriented market snapshot into one selected team's display
 // perspective. The raw line remains auditable on Game; this module only derives bounded
-// presentation values and never labels a bookmaker probability as Depth's model.
+// presentation values and never labels a bookmaker probability as The Sticks's model.
 
 import type { Game, TeamGameMarket } from '@/lib/types';
 

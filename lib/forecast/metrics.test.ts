@@ -350,7 +350,7 @@ describe('promotion gate', () => {
     expect(twoWins.promoted).toBe(true);
   });
 
-  it('never promotes the calibrated-market diagnostic as the Depth candidate', () => {
+  it('never promotes the calibrated-market diagnostic as the The Sticks candidate', () => {
     const decision = evaluatePromotionGate({
       model: 'calibratedMarket',
       metrics: gateMetrics(),

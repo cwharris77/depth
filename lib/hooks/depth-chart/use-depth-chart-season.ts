@@ -38,7 +38,7 @@ export function useDepthChartSeason(team: { id: string; city: string; name: stri
   // override/kit share flow, which doesn't apply to a read-only past season.
   const handleShareHistoricalRoster = async () => {
     const url = window.location.href;
-    const title = `${team.city} ${team.name} ${season} season · Depth`;
+    const title = `${team.city} ${team.name} ${season} season · The Sticks`;
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({ title, url });

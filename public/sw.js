@@ -1,4 +1,4 @@
-// Service worker for the Depth PWA.
+// Service worker for the The Sticks PWA.
 //
 // Caches:
 //   - PRECACHE: at install, the home route + all 32 team pages. Team pages are

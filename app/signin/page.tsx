@@ -9,7 +9,7 @@ import { safeNext } from '@/lib/utils/auth/auth-redirect';
 import { colors as uiTokens } from '@/components/ui/tokens';
 
 export const metadata: Metadata = {
-  title: 'Sign in · Depth',
+  title: 'Sign in · The Sticks',
   description: 'Optionally sign in to sync your favorite team and settings across devices.',
 };
 
@@ -44,11 +44,11 @@ export default async function SignInPage({
         {/* Logo + wordmark, centered branding. */}
         <Link
           href="/"
-          aria-label="Depth home"
+          aria-label="The Sticks home"
           className={`mx-auto mb-8 flex w-fit items-center ${MARK_WORDMARK_GAP}`}>
           <Logo size={36} />
           <span className="text-xl font-bold tracking-widest" style={{ color: uiTokens.textMuted }}>
-            depth
+            The Sticks
           </span>
         </Link>
         <AccountView teams={options} />
