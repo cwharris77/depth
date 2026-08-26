@@ -527,11 +527,21 @@ final class DepthUITests: XCTestCase {
         pickTeam(into: "a", query: "Bills", expectedRow: "team-row-bills", app: app)
         pickTeam(into: "b", query: "Seahawks", expectedRow: "team-row-seahawks", app: app)
 
-        // Matchup tab renders its card once both teams resolve stats. The identifier
-        // lands on the card's StaticText children (`.depthCard`'s clipShape), so match
-        // any element type rather than `otherElements`.
-        let matchupCard = app.descendants(matching: .any)["compare-matchup-card"].firstMatch
-        XCTAssertTrue(matchupCard.waitForExistence(timeout: 20), "the matchup card should render once both teams are picked")
+        // DEP-317: the By-team surface now opens on Forecast and exposes all five
+        // synchronized lens-selector buttons. Selecting Defense pages the content and
+        // reports the selection to VoiceOver rather than relying on color alone.
+        let forecastLens = app.buttons["compare-lens-forecast"]
+        XCTAssertTrue(forecastLens.waitForExistence(timeout: 20), "Forecast should be the first compare lens")
+        XCTAssertTrue(app.buttons["compare-lens-roster"].exists)
+        XCTAssertTrue(app.buttons["compare-lens-offense"].exists)
+        let defenseLens = app.buttons["compare-lens-defense"]
+        XCTAssertTrue(defenseLens.exists)
+        XCTAssertTrue(app.buttons["compare-lens-specialTeams"].exists)
+
+        defenseLens.tap()
+        let defenseCard = app.descendants(matching: .any)["compare-lens-defense-card"].firstMatch
+        XCTAssertTrue(defenseCard.waitForExistence(timeout: 10), "selecting Defense should page to its evidence card")
+        XCTAssertTrue(defenseLens.isSelected, "the active lens should expose the selected accessibility trait")
 
         // Position tab: the DEP-311 room picker (unit lens + room grid) and the rank-dot
         // legend above the depth rows. The old horizontal `compare-position-row` scroller

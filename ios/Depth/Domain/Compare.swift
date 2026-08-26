@@ -113,6 +113,106 @@ func buildCompareTeaser(
     )
 }
 
+// MARK: - DEP-317: auditable lens evidence
+
+/// A market-only Forecast value derived from DEP-315's team-oriented schedule row.
+/// DEP-316 declined Depth's candidate model, so this type deliberately contains no
+/// proprietary probability, score, or generated reason.
+struct CompareMarketForecast: Equatable {
+    let favoriteTeamId: String
+    let favoriteProbability: Double
+    /// Conventional spread from the favorite's perspective (favorite values negative).
+    let spread: Double?
+    let source: String
+    let updatedAt: String?
+}
+
+enum CompareFreshness: Equatable {
+    case current
+    case stale
+    case unavailable
+}
+
+func compareFreshness(
+    updatedAt: String?,
+    now: Date,
+    staleAfter: TimeInterval = 24 * 60 * 60
+) -> CompareFreshness {
+    guard let updatedAt, let date = ISO8601DateFormatter().date(from: updatedAt) else {
+        return .unavailable
+    }
+    return now.timeIntervalSince(date) > staleAfter ? .stale : .current
+}
+
+func buildMarketForecast(
+    game: ScheduleGame,
+    perspectiveTeamId: String
+) -> CompareMarketForecast? {
+    guard let market = game.market,
+        let favoriteTeamId = market.favoriteTeamId,
+        let perspectiveProbability = market.impliedWinProbability
+    else { return nil }
+
+    let perspectiveIsFavorite = favoriteTeamId == perspectiveTeamId
+    return CompareMarketForecast(
+        favoriteTeamId: favoriteTeamId,
+        favoriteProbability: perspectiveIsFavorite
+            ? perspectiveProbability
+            : 1 - perspectiveProbability,
+        spread: market.teamSpread.map { perspectiveIsFavorite ? $0 : -$0 },
+        source: market.source.rawValue,
+        updatedAt: market.updatedAt
+    )
+}
+
+/// Roster-lens participation coverage for listed rank-one players. A snap share is
+/// evidence of recent usage only; this summary never converts it into health, injury,
+/// or game-status language (DEP-313/DEP-314's explicit boundary).
+struct StarterParticipationSummary: Equatable {
+    let totalStarters: Int
+    let trackedStarters: Int
+    let averageSnapShare: Double?
+}
+
+func summarizeStarterParticipation(
+    snapshot: TeamSnapshot,
+    recent: RecentParticipation?
+) -> StarterParticipationSummary {
+    let starters = snapshot.players.filter { $0.depthRank == 1 }
+    guard let recent else {
+        return StarterParticipationSummary(
+            totalStarters: starters.count,
+            trackedStarters: 0,
+            averageSnapShare: nil
+        )
+    }
+
+    let participationByPlayer = Dictionary(uniqueKeysWithValues: recent.players.map { ($0.playerId, $0) })
+    let observedShares = starters.compactMap { player -> Double? in
+        guard let participation = participationByPlayer[player.id] else { return nil }
+        switch CompareMatchRooms.room(of: player.position)?.unit {
+        case .offense:
+            return participation.offense.percentage
+        case .defense:
+            return participation.defense.percentage
+        case .special:
+            return participation.specialTeams.percentage
+        case nil:
+            return [.k, .p, .ls, .kr, .pr].contains(player.position)
+                ? participation.specialTeams.percentage
+                : nil
+        }
+    }
+    let average = observedShares.isEmpty
+        ? nil
+        : observedShares.reduce(0, +) / Double(observedShares.count)
+    return StarterParticipationSummary(
+        totalStarters: starters.count,
+        trackedStarters: observedShares.count,
+        averageSnapShare: average
+    )
+}
+
 private extension Array {
     subscript(safe index: Int) -> Element? {
         indices.contains(index) ? self[index] : nil

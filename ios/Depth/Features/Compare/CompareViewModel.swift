@@ -3,11 +3,10 @@ import Observation
 
 // Feature-local state for the native two-team compare (DEP-258) — the port of web's
 // components/CompareView.tsx. Owns the two picked team ids, the active tab
-// (By team / By position), the selected position, and the per-side TeamStatsPage +
-// TeamSnapshot resolution. Both sides' stats + snapshots resolve on pick (web resolves
-// both unconditionally once a/b are picked, so the client-side tab switch needs both
-// datasets on hand); the per-position groups and deepest-room teaser are derived with
-// the pure helpers in Domain/Compare.swift, so the view stays thin.
+// (By team / By position), the selected lens/position, and each side's bounded stats,
+// roster, schedule, and participation reads. The per-position groups, market forecast,
+// and participation summary are derived with pure helpers in Domain/Compare.swift, so
+// the view stays thin.
 //
 // A side-resolution failure degrades that side to empty stats/roster (renders dashes /
 // "Neither team lists a position") rather than failing the whole page — web's stats are
@@ -21,6 +20,34 @@ final class CompareViewModel {
     enum Tab: Hashable {
         case matchup
         case position
+    }
+
+    /// DEP-317's five horizontally-paged explanations. The enum is the shared source
+    /// of truth for selector order, page tags, VoiceOver labels, and page indicators.
+    enum Lens: String, CaseIterable, Hashable, Identifiable {
+        case forecast
+        case roster
+        case offense
+        case defense
+        case specialTeams
+
+        var id: Self { self }
+
+        var accessibilityLabel: String {
+            switch self {
+            case .forecast: "Forecast"
+            case .roster: "Roster"
+            case .offense: "Offense"
+            case .defense: "Defense"
+            case .specialTeams: "Special Teams"
+            }
+        }
+    }
+
+    enum EvidenceLoadState: Equatable {
+        case idle
+        case loading
+        case loaded
     }
 
     enum LoadState: Equatable {
@@ -41,6 +68,7 @@ final class CompareViewModel {
     private(set) var statsA: TeamSeasonStats?
     private(set) var statsB: TeamSeasonStats?
     private(set) var tab: Tab = .matchup
+    private(set) var lens: Lens = .forecast
     private(set) var position: Position = .qb
 
     // MARK: - DEP-311: room-picker state
@@ -69,6 +97,9 @@ final class CompareViewModel {
     private var allTeams: [Team] = []
     private var statsPages: [String: TeamStatsPage] = [:]
     private var snapshots: [String: TeamSnapshot] = [:]
+    private var schedules: [String: TeamSchedule] = [:]
+    private var participation: [String: RecentParticipation] = [:]
+    private var resolvingTeamIds: Set<String> = []
 
     init(repository: DepthRepository, preselectedTeamIds: (a: String, b: String)? = nil) {
         self.repository = repository
@@ -88,6 +119,64 @@ final class CompareViewModel {
     var sameTeam: Bool {
         guard let teamA, let teamB else { return false }
         return teamA.id == teamB.id
+    }
+
+    var evidenceLoadState: EvidenceLoadState {
+        guard pickedCount > 0 else { return .idle }
+        return resolvingTeamIds.isEmpty ? .loaded : .loading
+    }
+
+    var participationA: RecentParticipation? {
+        guard let teamA else { return nil }
+        return participation[teamA.id]
+    }
+
+    var participationB: RecentParticipation? {
+        guard let teamB else { return nil }
+        return participation[teamB.id]
+    }
+
+    var snapshotA: TeamSnapshot? {
+        guard let teamA else { return nil }
+        return snapshots[teamA.id]
+    }
+
+    var snapshotB: TeamSnapshot? {
+        guard let teamB else { return nil }
+        return snapshots[teamB.id]
+    }
+
+    /// The next unplayed game between the selected teams. Compare asks for the latest
+    /// schedule independently from every other evidence read; a missing schedule hides
+    /// Forecast market context without discarding roster or metric data.
+    var matchup: ScheduleGame? {
+        guard let teamA, let teamB else { return nil }
+        if let game = schedules[teamA.id]?.games.first(where: {
+            !$0.isBye && $0.result == nil && $0.opponent?.id == teamB.id
+        }) {
+            return game
+        }
+        return schedules[teamB.id]?.games.first {
+            !$0.isBye && $0.result == nil && $0.opponent?.id == teamA.id
+        }
+    }
+
+    /// The team perspective used by the schedule row returned from `matchup`.
+    /// Schedule feeds are team-oriented, so this preserves correct market probability
+    /// orientation even when only side B's schedule read succeeds.
+    var matchupPerspectiveTeamId: String? {
+        guard let teamA, let teamB else { return nil }
+        if schedules[teamA.id]?.games.contains(where: {
+            !$0.isBye && $0.result == nil && $0.opponent?.id == teamB.id
+        }) == true {
+            return teamA.id
+        }
+        if schedules[teamB.id]?.games.contains(where: {
+            !$0.isBye && $0.result == nil && $0.opponent?.id == teamA.id
+        }) == true {
+            return teamB.id
+        }
+        return nil
     }
 
     /// The side A team's stats, or nil when not picked/invalid.
@@ -175,16 +264,38 @@ final class CompareViewModel {
     /// Resolves one side's stats + snapshot once its team is known. A read failure
     /// degrades that side (dashes / no players) rather than failing the page.
     private func resolveSide(_ teamId: String) async {
-        async let stats = repository.teamStats(teamId: teamId)
-        async let snapshot = repository.teamSnapshot(teamId: teamId)
-        do {
-            let (page, snap) = try await (stats, snapshot)
+        resolvingTeamIds.insert(teamId)
+        defer { resolvingTeamIds.remove(teamId) }
+
+        // DEP-317's dependencies are independently optional. Resolve them concurrently,
+        // then retain every successful result so one absent feed never blanks another.
+        async let stats = try? repository.teamStats(teamId: teamId)
+        async let snapshot = try? repository.teamSnapshot(teamId: teamId)
+        async let schedule = try? repository.teamSchedule(teamId: teamId, season: nil)
+        async let recent = try? repository.recentParticipation(teamId: teamId)
+        let (page, snap, teamSchedule, recentParticipation) = await (
+            stats, snapshot, schedule, recent
+        )
+
+        if let page {
             statsPages[teamId] = page
-            snapshots[teamId] = snap
-        } catch {
-            // Degrade: drop any prior value so the side shows unpicked-state dashes.
+        } else {
             statsPages.removeValue(forKey: teamId)
+        }
+        if let snap {
+            snapshots[teamId] = snap
+        } else {
             snapshots.removeValue(forKey: teamId)
+        }
+        if let teamSchedule {
+            schedules[teamId] = teamSchedule
+        } else {
+            schedules.removeValue(forKey: teamId)
+        }
+        if let recentParticipation {
+            participation[teamId] = recentParticipation
+        } else {
+            participation.removeValue(forKey: teamId)
         }
     }
 
@@ -198,6 +309,10 @@ final class CompareViewModel {
 
     func selectTab(_ tab: Tab) {
         self.tab = tab
+    }
+
+    func selectLens(_ lens: Lens) {
+        self.lens = lens
     }
 
     func selectPosition(_ position: Position) {
