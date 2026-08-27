@@ -25,7 +25,6 @@ import SwiftUI
 // bordered fallback pre-26 rather than gating the whole trigger behind availability.
 struct SeasonPickerTrigger: View {
     let season: Int?
-    let accent: Color
     let identifier: String
     /// True while a non-current season is selected — shows the "back to current"
     /// button beside the trigger.
@@ -34,6 +33,8 @@ struct SeasonPickerTrigger: View {
     let action: () -> Void
 
     var body: some View {
+        // `Spacer()` only appears when the back-to-current button does, so a single
+        // trigger still just hugs its own content (leading) instead of centering.
         HStack(spacing: DesignTokens.Spacing.xs) {
             Button(action: action) {
                 HStack(spacing: 4) {
@@ -54,15 +55,25 @@ struct SeasonPickerTrigger: View {
             .accessibilityIdentifier(identifier)
 
             if isHistorical {
+                Spacer()
+
+                // Cooper report: a bare icon read as unlabeled and sat too close to the
+                // trigger — spelling it out and pinning it to the row's far edge (web's
+                // `justify-content: space-between`) reads as a deliberate second control,
+                // not an afterthought. Same capsule height as the trigger and the same
+                // white used there, for the same low-contrast-team-accent reason.
                 Button(action: onBackToCurrent) {
-                    Image(systemName: "arrow.uturn.backward")
-                        .font(.caption.bold())
-                        .foregroundStyle(accent)
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
+                    HStack(spacing: 4) {
+                        Text("Back to current season")
+                            .font(.caption.bold())
+                        Image(systemName: "arrow.uturn.backward")
+                            .font(.caption2.bold())
+                    }
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    .padding(.horizontal, DesignTokens.Spacing.sm)
                 }
+                .frame(minHeight: 44)
                 .modifier(GlassTriggerStyle())
-                .accessibilityLabel("Back to current season")
                 .accessibilityIdentifier("\(identifier)-back-to-current")
             }
         }

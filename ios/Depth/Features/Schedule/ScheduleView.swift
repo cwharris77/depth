@@ -135,7 +135,6 @@ struct ScheduleView: View {
     private var seasonPicker: some View {
         SeasonPickerTrigger(
             season: viewModel.selectedSeason,
-            accent: uiAccent,
             identifier: "schedule-season-trigger",
             isHistorical: viewModel.isPastSeason,
             onBackToCurrent: {
