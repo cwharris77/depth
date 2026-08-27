@@ -475,9 +475,10 @@ struct TeamStatsView: View {
                     .tracking(0.6)
                     .foregroundStyle(uiAccent)
                 Text(verbatim: leader.name)
-                    .font(.system(size: 17, weight: .heavy))
+                    .font(.system(size: 15, weight: .heavy))
                     .foregroundStyle(DesignTokens.Colors.textPrimary)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.8)
                     .truncationMode(.tail)
             }
             Spacer(minLength: 4)
