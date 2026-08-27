@@ -30,6 +30,10 @@ enum TeamBadgeOverride {
         // Cooper (2026-08-17): the all-red flag blends into a red primary — use the dark
         // pewter with the orange ring so the badge still pops on the dark list.
         "buccaneers": Entry(backgroundColorSource: .secondary, ringColorSource: .accent),
+        // Cooper (2026-08-26): the orange bucking horse vanished into an orange primary once
+        // #516's curated `broncos-home` row replaced the ESPN-reconciled navy one. Navy
+        // background with the orange ring — the helmet's own arrangement.
+        "broncos": Entry(backgroundColorSource: .secondary, ringColorSource: .primary),
     ]
 
     static func backgroundColorHex(for team: Team) -> String {
