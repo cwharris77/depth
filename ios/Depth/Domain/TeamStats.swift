@@ -12,11 +12,45 @@ struct TeamStatsPage: Equatable, Codable, Sendable {
     let team: Team
     let seasons: [TeamSeasonStats]
     let upcomingSeason: Int?
+    /// This team's league position per metric, keyed by season (web:
+    /// `TeamStatsPage.leagueRanksBySeason`). An empty map is a truthful "no ranks known",
+    /// so this stays non-optional — but a property default does NOT make the synthesized
+    /// decoder tolerate a missing key, hence the custom `init(from:)` below. Without it a
+    /// snapshot cached before this field existed fails to decode and costs a live refetch
+    /// on every launch until the store is wiped.
+    var leagueRanksBySeason: [Int: TeamStatsRanks] = [:]
     /// The current NFL season year. A season is "completed" (all games played, playoff
     /// outcomes known) when its year is less than this. Used to scope the next-game card
     /// to the current/upcoming season tab (web: TeamStatsView's isViewingCurrentSeason /
     /// isViewingUpcomingSeason).
     let currentSeason: Int
+
+    init(
+        team: Team,
+        seasons: [TeamSeasonStats],
+        upcomingSeason: Int?,
+        leagueRanksBySeason: [Int: TeamStatsRanks] = [:],
+        currentSeason: Int
+    ) {
+        self.team = team
+        self.seasons = seasons
+        self.upcomingSeason = upcomingSeason
+        self.leagueRanksBySeason = leagueRanksBySeason
+        self.currentSeason = currentSeason
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        team = try container.decode(Team.self, forKey: .team)
+        seasons = try container.decode([TeamSeasonStats].self, forKey: .seasons)
+        upcomingSeason = try container.decodeIfPresent(Int.self, forKey: .upcomingSeason)
+        currentSeason = try container.decode(Int.self, forKey: .currentSeason)
+        // decodeIfPresent, not decode: a cache written before ranks existed has no such
+        // key, and that must degrade to "no ranks" rather than failing the whole read.
+        leagueRanksBySeason =
+            try container.decodeIfPresent([Int: TeamStatsRanks].self, forKey: .leagueRanksBySeason)
+            ?? [:]
+    }
 }
 
 // One team_stats row per ingested season (current + up to two prior, web's
@@ -44,6 +78,28 @@ struct TeamSeasonStats: Equatable, Codable, Sendable {
     /// seasons without a matching source row—and caches written before this additive
     /// field existed—remain valid rather than fabricating zero-valued metrics.
     let matchupMetrics: TeamMatchupMetrics?
+    /// Web-parity fields the round-4 port left out. All optional, which is both honest
+    /// and load-bearing: a snapshot cached before they existed decodes with them absent,
+    /// where a non-optional property — even one with a default — would fail the whole
+    /// read and cost a live refetch on every launch until the store was wiped.
+    ///
+    /// Each would also be a lie at zero. `winPercent` 0 is a real winless season;
+    /// `playoffSeed` 0 already means "missed the playoffs"; `streak` is preformatted by
+    /// ESPN ("W3") and has no numeric identity. `coach` is season-scoped — the coach who
+    /// led this team in 2023 is not the one leading it in 2025.
+    var winPercent: Double?
+    var streak: String?
+    var playoffSeed: Int?
+    var coach: TeamSeasonCoach?
+    var passingYards: Int?
+    var rushingYards: Int?
+}
+
+/// The hand-curated head coach for one season (web: `TeamStats.coach`, sourced from
+/// team_coach_seasons, not ESPN's live `teams.coach_name`).
+struct TeamSeasonCoach: Equatable, Codable, Sendable {
+    let name: String
+    let experience: Int
 }
 
 // Auditable inputs for Compare's Offense, Defense, and Special Teams lenses (DEP-312).
