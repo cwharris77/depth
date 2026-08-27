@@ -12,6 +12,7 @@ import Tooltip from '@/components/ui/Tooltip';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import { readableTextOn } from '@/lib/utils/colors';
 import { formatGameDate, ordinal } from '@/lib/utils/format';
+import { displayStreak, isPlayoffSeed } from '@/lib/utils/team/playoff-seed';
 import type { TeamMeta, TeamStatsRanks } from '@/lib/roster-source';
 import type { Leader, RosterLeaders, TeamScheduleGame, TeamStats } from '@/lib/types';
 import { useKitColors } from '@/lib/hooks/use-kit-colors';
@@ -611,9 +612,11 @@ export default function TeamStatsView({
               style={{ borderBottom: `1px dashed ${uiTokens.borderInput}` }}>
               <div className="text-[52px] font-bold leading-none tracking-[-0.02em]">{record}</div>
               <div className="text-right">
-                <div className="font-bold" style={{ color: uiAccent, fontSize: typeScale.title }}>
-                  {active.streak}
-                </div>
+                {displayStreak(active.streak) && (
+                  <div className="font-bold" style={{ color: uiAccent, fontSize: typeScale.title }}>
+                    {displayStreak(active.streak)}
+                  </div>
+                )}
                 {activeRanks?.winPercent && (
                   <div
                     className="font-bold"
@@ -627,7 +630,7 @@ export default function TeamStatsView({
                     stub rows with no data). */}
                 {active.season < currentSeason && (
                   <div style={{ color: uiTokens.textFaint, fontSize: typeScale.label }}>
-                    {active.playoffSeed
+                    {isPlayoffSeed(active.playoffSeed, active.season)
                       ? `SEED ${active.playoffSeed} · ${team.conference}`
                       : `MISSED PLAYOFFS · ${team.conference}`}
                   </div>
