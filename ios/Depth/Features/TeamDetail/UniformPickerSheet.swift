@@ -18,8 +18,8 @@ import SwiftUI
 // at the plain jersey crop (`UniformArt.jerseyURL`, not the archive's full-mannequin
 // `-full` raster) — the picker shows just the jersey, matching web's UniformSheet swatch,
 // while sharing the same thumbnail component as the archive instead of a second
-// jersey-rendering implementation. Each card's caption is the kit kind only (Home/Away/
-// etc.) — no year range, since an undated kit has nothing meaningful to show there.
+// jersey-rendering implementation. Each card's caption is the curated uniform name
+// only — no duplicate kind or year range.
 struct UniformPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -77,14 +77,9 @@ struct UniformPickerSheet: View {
             UniformThumb(url: UniformArt.jerseyURL(for: uniform.id), size: 140, heightMultiplier: 0.81)
                 .padding(.top, DesignTokens.Spacing.md)
 
-            VStack(spacing: DesignTokens.Spacing.xs) {
-                Text(uniform.name)
-                    .font(.title3.bold())
-                    .foregroundStyle(DesignTokens.Colors.textPrimary)
-                Text(uniform.kind.displayName)
-                    .font(.footnote)
-                    .foregroundStyle(DesignTokens.Colors.textMuted)
-            }
+            Text(uniform.name)
+                .font(.title3.bold())
+                .foregroundStyle(DesignTokens.Colors.textPrimary)
             .multilineTextAlignment(.center)
         }
         .padding(.horizontal, DesignTokens.Spacing.lg)
@@ -92,9 +87,7 @@ struct UniformPickerSheet: View {
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .ignore)
         .accessibilityIdentifier("uniform-\(uniform.id)")
-        .accessibilityLabel(
-            "\(uniform.name), \(uniform.kind.displayName)\(uniform.id == selectedID ? ", selected" : "")"
-        )
+        .accessibilityLabel("\(uniform.name)\(uniform.id == selectedID ? ", selected" : "")")
     }
 
     /// Accent-tinted page dots (web's UniformSheet.tsx page-dot row): the active dot is
