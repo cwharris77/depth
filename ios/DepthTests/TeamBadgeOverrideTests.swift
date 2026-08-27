@@ -3,8 +3,9 @@ import Testing
 @testable import Depth
 
 // DEP-237 coverage: TeamBadgeOverride resolves the default primary-fill/secondary-ring
-// badge for every team, and the two hand-curated overrides (Panthers keep their blue
+// badge for every team, and the three hand-curated overrides (Panthers keep their blue
 // uiAccent background; Buccaneers swap the blend-in red primary for the pewter secondary
+// with an orange ring; Broncos swap the blend-in orange primary for the navy secondary
 // with an orange ring). Colors are sourced from the team's own palette, never hardcoded.
 
 private func team(id: String, primary: String, secondary: String, accent: String, uiAccent: String, onAccent: String = "#0a0e1a") -> Team {
@@ -18,6 +19,7 @@ private func team(id: String, primary: String, secondary: String, accent: String
 private let bills = team(id: "bills", primary: "#00338d", secondary: "#d50a0a", accent: "#d50a0a", uiAccent: "#d50a0a")
 private let panthers = team(id: "panthers", primary: "#0085CA", secondary: "#101820", accent: "#101820", uiAccent: "#36A7E0")
 private let buccaneers = team(id: "buccaneers", primary: "#D50A0A", secondary: "#34302B", accent: "#FF7900", uiAccent: "#FF4D4D")
+private let broncos = team(id: "broncos", primary: "#FB4F14", secondary: "#002244", accent: "#002244", uiAccent: "#FF6A33")
 
 @Test func defaultBadgeUsesPrimaryFillAndSecondaryRing() {
     #expect(TeamBadgeOverride.backgroundColorHex(for: bills) == "#00338d")
@@ -38,4 +40,9 @@ private let buccaneers = team(id: "buccaneers", primary: "#D50A0A", secondary: "
 @Test func buccaneersOverrideSwapsRedPrimaryForPewterWithOrangeRing() {
     #expect(TeamBadgeOverride.backgroundColorHex(for: buccaneers) == "#34302B")
     #expect(TeamBadgeOverride.ringColorHex(for: buccaneers) == "#FF7900")
+}
+
+@Test func broncosOverrideSwapsOrangePrimaryForNavyWithOrangeRing() {
+    #expect(TeamBadgeOverride.backgroundColorHex(for: broncos) == "#002244")
+    #expect(TeamBadgeOverride.ringColorHex(for: broncos) == "#FB4F14", "ring is the primary, not the default secondary")
 }
