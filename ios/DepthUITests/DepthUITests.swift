@@ -508,11 +508,14 @@ final class DepthUITests: XCTestCase {
         XCTAssertFalse(app.buttons["compare-lens-roster"].exists, "Roster was removed outright")
         let defenseLens = app.buttons["compare-lens-defense"]
         XCTAssertTrue(defenseLens.exists)
-        XCTAssertTrue(app.buttons["compare-lens-specialTeams"].exists)
+        XCTAssertTrue(app.buttons["compare-lens-special"].exists)
 
         defenseLens.tap()
-        let defenseCard = app.descendants(matching: .any)["compare-lens-defense-card"].firstMatch
-        XCTAssertTrue(defenseCard.waitForExistence(timeout: 10), "selecting Defense should page to its evidence card")
+        // The lens now swaps grouped metric tables in place (Aug 26 redesign) rather than
+        // paging a single evidence card, so Defense is confirmed by its own first group
+        // rather than by a per-lens card identifier.
+        let pressureGroup = app.descendants(matching: .any)["compare-group-defense-pressure"].firstMatch
+        XCTAssertTrue(pressureGroup.waitForExistence(timeout: 10), "selecting Defense should swap in its metric groups")
         XCTAssertTrue(defenseLens.isSelected, "the active lens should expose the selected accessibility trait")
 
         // Position tab: the DEP-311 room picker (unit lens + room grid). The old horizontal

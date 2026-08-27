@@ -15,6 +15,11 @@ struct DepthUnitTabBar: View {
     let selection: Unit
     let onChange: (Unit) -> Void
     var activeColor: Color = DesignTokens.Colors.accent
+    /// Accessibility-identifier prefix, so a second instance on another screen is
+    /// addressable separately (Compare's By-team lens passes "compare-lens"; the field and
+    /// Compare's By-position picker keep the default). Defaulted, so every existing caller
+    /// keeps the ids its tests already assert.
+    var identifierPrefix: String = "unit-tab"
 
     var body: some View {
         HStack(spacing: 16) {
@@ -52,7 +57,12 @@ struct DepthUnitTabBar: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityIdentifier("unit-tab-\(unit.rawValue)")
+        // The active tab was previously distinguished only by text color and a 2px
+        // underline — both invisible to VoiceOver, which announced all three tabs
+        // identically. `DepthSegmentedControl` already exposes this; the underline variant
+        // should too (it is the depth-chart field's unit switcher as well as Compare's).
+        .accessibilityAddTraits(isActive ? .isSelected : [])
+        .accessibilityIdentifier("\(identifierPrefix)-\(unit.rawValue)")
     }
 
     private var selectionIndicator: some View {
