@@ -25,6 +25,8 @@ import Foundation
 //   recentParticipation() straight delegate — bounded live Compare evidence; no cache,
 //                    TTL, or in-flight state belongs in this decorator
 //   searchPlayers()  straight delegate — per-keystroke read; caching would serve stale hits
+//   rosterLeaders()  straight delegate — bounded per-season-tab read; no cache, TTL, or
+//                    in-flight state belongs in this decorator
 //   listUniforms()   cache-first + background refresh (uniform archive is stable, ~105 rows)
 //   appConfig()      network-first, cache-fallback — a stale cached minimum build is
 //                    exactly wrong for the update gate
@@ -226,6 +228,12 @@ actor CachingDepthRepository: DepthRepository {
     /// Cross-team search is a per-keystroke read; caching it would serve stale hits.
     func searchPlayers(query: String) async throws -> [PlayerHit] {
         try await underlying.searchPlayers(query: query)
+    }
+
+    /// Re-derived per season tab, like teamSchedule's per-season reads — no cache, TTL,
+    /// or in-flight dedup state belongs in this decorator for a read this bounded.
+    func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? {
+        try await underlying.rosterLeaders(teamId: teamId, season: season)
     }
 
     // MARK: - Uniform archive list

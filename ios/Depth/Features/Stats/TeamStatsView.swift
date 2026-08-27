@@ -115,6 +115,9 @@ struct TeamStatsView: View {
                     if let active = viewModel.selectedSeasonStats {
                         metricSections(active)
                     }
+                    if let leaders = viewModel.selectedSeasonLeaders {
+                        rosterLeadersCard(leaders)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -423,6 +426,77 @@ struct TeamStatsView: View {
         stride(from: 0, to: metrics.count, by: 2).map { i in
             (metrics[i], i + 1 < metrics.count ? metrics[i + 1] : nil)
         }
+    }
+
+    /// Web's ROSTER LEADERS card (RowCardList): rounded-2xl, `surfaceCard2` fill,
+    /// `borderSubtle` border, no divider above the first row and `surfaceRaised`
+    /// hairlines between the rest. A category with no positive yardage is absent from
+    /// `leaders` (Domain/RosterLeaders.swift's `topBy`), so the row list simply omits it
+    /// rather than rendering a zeroed row; the whole card is absent when every category is.
+    @ViewBuilder
+    private func rosterLeadersCard(_ leaders: RosterLeaders) -> some View {
+        let rows: [(label: String, leader: Leader)] = [
+            leaders.passing.map { ("PASSING", $0) },
+            leaders.rushing.map { ("RUSHING", $0) },
+            leaders.receiving.map { ("RECEIVING", $0) },
+        ].compactMap { $0 }
+        if !rows.isEmpty {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("ROSTER LEADERS")
+                    .font(.caption.weight(.semibold))
+                    .tracking(1.2)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+                    .padding(.bottom, DesignTokens.Spacing.xs)
+                VStack(spacing: 0) {
+                    ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
+                        if index > 0 {
+                            Rectangle()
+                                .fill(DesignTokens.Colors.surfaceRaised)
+                                .frame(height: 1)
+                        }
+                        leaderRow(label: row.label, leader: row.leader)
+                    }
+                }
+                .depthCard(padded: false, radius: DesignTokens.Radius.md)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, DesignTokens.Spacing.md)
+            .padding(.top, DesignTokens.Spacing.lg)
+            .padding(.bottom, DesignTokens.Spacing.xl)
+            .accessibilityIdentifier("stats-roster-leaders")
+        }
+    }
+
+    private func leaderRow(label: String, leader: Leader) -> some View {
+        HStack(alignment: .center, spacing: DesignTokens.Spacing.sm) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(verbatim: label)
+                    .font(.caption2.weight(.bold))
+                    .tracking(0.6)
+                    .foregroundStyle(uiAccent)
+                Text(verbatim: leader.name)
+                    .font(.system(size: 15, weight: .heavy))
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                    .truncationMode(.tail)
+            }
+            Spacer(minLength: 4)
+            // Web parity: the line has no truncate class, so a long line wraps within its
+            // 170pt column instead of losing the trailing "· N TD" the way `lineLimit(1)`
+            // would (seen live: a 3-part line at this width truncated to "· ...").
+            Text(verbatim: leader.line)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: 170, alignment: .trailing)
+        }
+        // Web parity: RowCardList's `px-3.5`/`py-3.5` (14pt), off the 8pt spacing scale —
+        // matched as a literal rather than snapped to `sm`/`md`, same as NextGameCard's
+        // fixed 28pt icon tile above.
+        .padding(.horizontal, 14)
+        .padding(.vertical, 14)
+        .accessibilityElement(children: .combine)
     }
 
     private func degradedUpcomingHero(_ upcoming: Int) -> some View {

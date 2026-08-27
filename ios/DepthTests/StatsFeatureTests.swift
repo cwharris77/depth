@@ -46,8 +46,12 @@ private func statsPage(
 
 private actor StatsRepositoryFake: DepthRepository {
     let page: TeamStatsPage
+    let leadersBySeason: [Int: RosterLeaders]
 
-    init(page: TeamStatsPage) { self.page = page }
+    init(page: TeamStatsPage, leadersBySeason: [Int: RosterLeaders] = [:]) {
+        self.page = page
+        self.leadersBySeason = leadersBySeason
+    }
 
     func teams() async throws -> [Team] { [] }
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot { throw DepthError.notFound }
@@ -55,6 +59,7 @@ private actor StatsRepositoryFake: DepthRepository {
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
     func teamStats(teamId: String) async throws -> TeamStatsPage { page }
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
+    func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? { leadersBySeason[season] }
     func appConfig() async throws -> AppConfig { AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil) }
 }
 
@@ -103,4 +108,36 @@ private actor StatsRepositoryFake: DepthRepository {
     // web, which refetches on every tab switch).
     #expect(await viewModel.selectedSeason == 2025)
     #expect(await viewModel.loadState == .loaded)
+}
+
+/// Roster leaders are re-derived per season tab (web parity: getRosterLeaders takes a
+/// season param, not pinned to the roster's newest season). `load()` fans the read out
+/// once per season up front; switching tabs afterward reads the cached-by-season result
+/// with no refetch, same as `selectedSeasonStats`.
+@Test func selectedSeasonLeadersTracksTheActiveSeasonTabWithNoRefetch() async {
+    let leaders2025 = RosterLeaders(
+        season: 2025,
+        passing: Leader(playerId: "qb1", name: "2025 Leader", line: "1/1 · 1 yds · 1 TD"),
+        rushing: nil, receiving: nil
+    )
+    let leaders2024 = RosterLeaders(
+        season: 2024,
+        passing: Leader(playerId: "qb2", name: "2024 Leader", line: "2/2 · 2 yds · 2 TD"),
+        rushing: nil, receiving: nil
+    )
+    let repository = StatsRepositoryFake(
+        page: statsPage(), leadersBySeason: [2025: leaders2025, 2024: leaders2024]
+    )
+    let viewModel = await TeamStatsViewModel(teamId: "bills", repository: repository)
+    await viewModel.load()
+
+    #expect(await viewModel.selectedSeasonLeaders?.passing?.name == "2025 Leader")
+
+    await viewModel.selectSeason(2024)
+    #expect(await viewModel.selectedSeasonLeaders?.passing?.name == "2024 Leader")
+
+    // 2023 has no leaders row (e.g. no ingested player_stats that season) — the card
+    // simply has nothing to show, not a stale prior season's leaders.
+    await viewModel.selectSeason(2023)
+    #expect(await viewModel.selectedSeasonLeaders == nil)
 }
