@@ -225,8 +225,7 @@ struct PlayerDetailView: View {
 
     private var statsSection: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            Text("Season Stats")
-                .font(.headline)
+            sectionHeader(PlayerProfileSection.seasonStatsTitle)
             switch viewModel.statsState {
             case .loading:
                 PlayerStatsSkeleton(columnCount: playerStatColumns(for: player.position).count)
@@ -236,6 +235,7 @@ struct PlayerDetailView: View {
                     columns: playerStatColumns(for: player.position),
                     accent: team.map { Color(hex: $0.colors.uiAccent) } ?? DesignTokens.Colors.accent
                 )
+                .frame(maxWidth: .infinity, alignment: PlayerStatsTableLayout.containerAlignment.swiftUI)
             case .empty:
                 ContentUnavailableView("No stats available", systemImage: "chart.bar.xaxis")
                     .frame(maxWidth: .infinity)
@@ -284,6 +284,13 @@ struct PlayerDetailView: View {
         .accessibilityElement(children: .combine)
     }
 
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.caption)
+            .tracking(0.5)
+            .foregroundStyle(DesignTokens.Colors.textMuted)
+    }
+
     // Web parity (components/PlayerCardDepthList.tsx): the position's players in depth
     // order, STARTER/BACKUP/RESERVE rank labels, current player highlighted with the
     // team accent + checkmark, others tappable to switch the card. DEP-226 adds the
@@ -292,6 +299,7 @@ struct PlayerDetailView: View {
     private var positionDepth: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             if displayOrder.count <= 1 {
+                sectionHeader(PlayerProfileSection.depthChartTitle)
                 Text("No backups available")
                     .font(.footnote)
                     .foregroundStyle(DesignTokens.Colors.textMuted)
@@ -333,10 +341,11 @@ struct PlayerDetailView: View {
         .accessibilityIdentifier("player-profile-depth")
     }
 
-    /// Web parity (PlayerCardDepthList's header row): CUSTOM tag on the left once the
-    /// position has a saved custom order, Reset + the Reorder/Done toggle on the right.
+    /// Web parity (PlayerCardDepthList's header row): depth-chart eyebrow and CUSTOM tag
+    /// on the left, Reset + the Reorder/Done toggle on the right.
     private var depthHeader: some View {
         HStack(spacing: DesignTokens.Spacing.sm) {
+            sectionHeader(PlayerProfileSection.depthChartTitle)
             if positionIsCustom {
                 customTag
             }
@@ -806,33 +815,56 @@ private struct DepthReorderList: View {
     }
 }
 
-// Web parity (components/PlayerCardSeasonStats.tsx): the table's columns stretch to fill
-// the card's full width regardless of how many stats a position has — the old fixed-width
-// cells made the card narrower for a 1-column OL row than a 5-column QB row (2026-08-15
-// visual-pass round 3). SZN/TM stay fixed-width; the stat columns split the remaining
-// space equally. The former horizontal ScrollView (which existed so columns could grow at
-// Accessibility XXXL) is gone: flexed columns shrink gracefully like the web's grid, and
-// every value still arrives paired with its spoken column name via
-// `PlayerStatsAccessibility.rowLabel`.
+enum PlayerProfileSection {
+    static let seasonStatsTitle = "SEASON STATS"
+    static let depthChartTitle = "DEPTH CHART"
+}
+
+// Season-stats columns share one centered width, whether they are labels or values. The table
+// uses its preferred readable width for sparse rows and grows only as far as the card allows
+// for stat-heavy rows (DEP-292). Every value still arrives paired with its spoken column name
+// via `PlayerStatsAccessibility.rowLabel`.
+enum PlayerStatsTableLayout {
+    enum ColumnAlignment: Equatable {
+        case center
+
+        var swiftUI: Alignment {
+            .center
+        }
+    }
+
+    static let alignment: ColumnAlignment = .center
+    static let containerAlignment: ColumnAlignment = .center
+}
+
 private struct PlayerStatsTable: View {
     let stats: [PlayerSeasonStats]
     let columns: [PlayerStatColumn]
     let accent: Color
 
-    // DEP-234: the fixed SZN/TM cells only need ~30-36pt (a 4-digit year / 3-letter
-    // abbrev), and trimming them plus the row spacing frees ~44pt for the flexible stat
-    // columns — that's what lets a wide CMP/ATT pair like "312/489" render at full size
-    // instead of truncating. The value cells keep a 0.75 shrink floor (never illegibly
-    // tiny — truncate honestly rather than shrink to mush).
-    @ScaledMetric(relativeTo: .footnote) private var labelWidth: CGFloat = 36
+    // Keeps short rows compact while leaving room for the widest compact stat labels and
+    // values. More columns use the card's available width instead.
+    @ScaledMetric(relativeTo: .footnote) private var preferredColumnWidth: CGFloat = 96
+
+    private var preferredTableWidth: CGFloat {
+        CGFloat(columns.count + 2) * preferredColumnWidth
+    }
 
     var body: some View {
+        ViewThatFits(in: .horizontal) {
+            table.frame(width: preferredTableWidth)
+            table.frame(maxWidth: .infinity)
+        }
+        .depthCard(dense: true, padded: false)
+    }
+
+    private var table: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: DesignTokens.Spacing.sm) {
-                cell("SZN", header: true, fixed: true)
-                cell("TM", header: true, fixed: true)
+                cell("SZN", header: true)
+                cell("TM", header: true)
                 ForEach(columns, id: \.self) { column in
-                    cell(column.header, header: true, fixed: false)
+                    cell(column.header, header: true)
                 }
             }
             .padding(.horizontal, DesignTokens.Spacing.sm)
@@ -851,10 +883,10 @@ private struct PlayerStatsTable: View {
                 // newest-first) is highlighted, its year colored accent (DEP-227).
                 let isCurrent = index == 0
                 HStack(spacing: DesignTokens.Spacing.sm) {
-                    cell("\(season.season)", fixed: true, valueColor: isCurrent ? accent : nil)
-                    cell(season.teamAbbrev ?? "—", fixed: true)
+                    cell("\(season.season)", valueColor: isCurrent ? accent : nil)
+                    cell(season.teamAbbrev ?? "—")
                     ForEach(columns, id: \.self) { column in
-                        cell(column.value(for: season), fixed: false)
+                        cell(column.value(for: season))
                     }
                 }
                 .padding(.horizontal, DesignTokens.Spacing.sm)
@@ -866,17 +898,18 @@ private struct PlayerStatsTable: View {
                 )
             }
         }
-        .frame(maxWidth: .infinity)
-        .depthCard(dense: true, padded: false)
     }
 
-    private func cell(_ value: String, header: Bool = false, fixed: Bool, valueColor: Color? = nil) -> some View {
+    private func cell(_ value: String, header: Bool = false, valueColor: Color? = nil) -> some View {
         Text(value)
             .font(header ? .caption.bold() : .footnote.weight(.semibold))
             .foregroundStyle(valueColor ?? (header ? DesignTokens.Colors.textMuted : DesignTokens.Colors.textPrimary))
             .lineLimit(1)
             .minimumScaleFactor(0.75)
-            .frame(maxWidth: fixed ? labelWidth : .infinity, alignment: .leading)
+            .frame(
+                maxWidth: .infinity,
+                alignment: PlayerStatsTableLayout.alignment.swiftUI
+            )
     }
 }
 
