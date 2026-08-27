@@ -812,7 +812,9 @@ private struct DepthReorderList: View {
 // visual-pass round 3). SZN/TM stay fixed-width; the stat columns split the remaining
 // space equally. The former horizontal ScrollView (which existed so columns could grow at
 // Accessibility XXXL) is gone: flexed columns shrink gracefully like the web's grid, and
-// every value still arrives paired with its spoken column name via
+// their contents stay centered inside that flexed space so sparse positions do not leave
+// one or three labels clustered beside the fixed SZN/TM columns (DEP-292). Every value
+// still arrives paired with its spoken column name via
 // `PlayerStatsAccessibility.rowLabel`.
 private struct PlayerStatsTable: View {
     let stats: [PlayerSeasonStats]
@@ -876,7 +878,10 @@ private struct PlayerStatsTable: View {
             .foregroundStyle(valueColor ?? (header ? DesignTokens.Colors.textMuted : DesignTokens.Colors.textPrimary))
             .lineLimit(1)
             .minimumScaleFactor(0.75)
-            .frame(maxWidth: fixed ? labelWidth : .infinity, alignment: .leading)
+            .frame(
+                maxWidth: fixed ? labelWidth : .infinity,
+                alignment: fixed ? .leading : .center
+            )
     }
 }
 
