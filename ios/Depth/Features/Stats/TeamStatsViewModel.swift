@@ -2,9 +2,12 @@ import Foundation
 import Observation
 
 // Feature-local state for the round-4 Stats page (spec: mirrors web's TeamStatsView —
-// record, splits, PF/PA/diff, season chips, next-game card). All seasons arrive in the
-// one `teamStats` payload, so season selection is pure state with no refetch (cheaper
-// than web, which re-reads on every tab). The next-game card is derived from the
+// record, splits, PF/PA/diff, season chips, next-game card, roster leaders). All seasons
+// arrive in the one `teamStats` payload, so season selection is pure state with no
+// refetch. Roster leaders are the one exception: `rosterLeaders(teamId:season:)` is a
+// separate per-season read (like web's getRosterLeaders), so `load()` fans it out once
+// per season up front and caches the results by season — switching tabs afterward is
+// still pure state, no refetch. The next-game card is derived from the
 // deliberately-uncached `teamSchedule` read (recorded decision #5): a schedule failure
 // hides the card, never the page — web's `page.tsx` wraps `getNextGame` the same way.
 @Observable
@@ -24,6 +27,11 @@ final class TeamStatsViewModel {
     /// it means that row (web's `upcomingSeasonHasRealRow` collapses the two cases).
     private(set) var selectedSeason: Int?
     private(set) var nextGame: ScheduleGame?
+    /// ROSTER LEADERS, keyed by season — fetched once per season in `page.seasons`
+    /// (web parity: `getRosterLeaders` re-derives leaders per season tab rather than
+    /// pinning to the roster's newest season) so switching tabs is pure state, no
+    /// refetch, same as `selectedSeasonStats`.
+    private(set) var leadersBySeason: [Int: RosterLeaders] = [:]
 
     private let repository: DepthRepository
 
@@ -52,6 +60,11 @@ final class TeamStatsViewModel {
     var selectedSeasonStats: TeamSeasonStats? {
         guard let selectedSeason else { return nil }
         return seasons.first { $0.season == selectedSeason }
+    }
+
+    var selectedSeasonLeaders: RosterLeaders? {
+        guard let selectedSeason else { return nil }
+        return leadersBySeason[selectedSeason]
     }
 
     /// Mirrors web's `isViewingCurrentSeason`/`isViewingUpcomingSeason` (lines 277-281):
@@ -106,6 +119,27 @@ final class TeamStatsViewModel {
             loadState = .failed(.server("\(error)"))
         }
         await loadNextGame()
+        await loadLeaders()
+    }
+
+    /// One leaders fetch per season row (web parity comment in page.tsx: "seasons is
+    /// small — current + up to two prior years, invariant 5") so the season switcher can
+    /// show each season's own leaders. `try?` per season — one season's read failing
+    /// must not blank the others (same degrade posture as `loadNextGame`).
+    private func loadLeaders() async {
+        guard let page else { return }
+        await withTaskGroup(of: (Int, RosterLeaders?).self) { group in
+            for stats in page.seasons {
+                group.addTask { [repository, teamId] in
+                    (stats.season, try? await repository.rosterLeaders(teamId: teamId, season: stats.season))
+                }
+            }
+            var result: [Int: RosterLeaders] = [:]
+            for await (season, leaders) in group {
+                if let leaders { result[season] = leaders }
+            }
+            leadersBySeason = result
+        }
     }
 
     /// Pure selection — every season is already in the `teamStats` payload.
