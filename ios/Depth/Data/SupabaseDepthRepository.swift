@@ -80,6 +80,9 @@ actor SupabaseDepthRepository: DepthRepository {
         "game_id, season, game_type, week, gameday, home_team_id, away_team_id, home_score, away_score, location, away_moneyline, home_moneyline, spread_line, away_spread_odds, home_spread_odds, total_line, under_odds, over_odds, market_updated_at"
     private static let playerStatsSelect =
         "season, season_type, games, completions, attempts, passing_yards, passing_tds, passing_interceptions, carries, rushing_yards, rushing_tds, receptions, targets, receiving_yards, receiving_tds, def_tackles_solo, def_sacks, def_interceptions, fg_made, fg_att, teams(abbrev)"
+    private static let rosterLeaderPlayersSelect = "id, name"
+    private static let rosterLeaderStatsSelect =
+        "player_id, season, completions, attempts, passing_yards, passing_tds, carries, rushing_yards, rushing_tds, receptions, receiving_yards, receiving_tds"
     private static let historicalRosterSelect =
         "season, team_id, gsis_id, name, number, position, college, height, weight, depth_rank, player_order"
     private static let playerSearchSelect = """
@@ -402,6 +405,37 @@ actor SupabaseDepthRepository: DepthRepository {
             throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server("\(error)")
         } catch {
             throw DepthError.server("\(error)")
+        }
+    }
+
+    /// Team passing/rushing/receiving leaders for one season (Stats page's ROSTER
+    /// LEADERS card), mirrors web's getRosterLeaders: the team's current players (for id
+    /// -> name) and their REG player_stats rows for that season, merged in memory — no
+    /// user input touches PostgREST filter syntax (invariant 8). Degrades to nil for an
+    /// unknown team, a season with no ingested stats, or any query error (skip, don't
+    /// throw — the page renders without the card, same posture as teamStats' try/catch).
+    func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? {
+        do {
+            let players: [RosterLeaderPlayerDTO] = try await client
+                .from("players")
+                .select(Self.rosterLeaderPlayersSelect)
+                .eq("team_id", value: teamId)
+                .execute()
+                .value
+            guard !players.isEmpty else { return nil }
+
+            let stats: [RosterLeaderStatsDTO] = try await client
+                .from("player_stats")
+                .select(Self.rosterLeaderStatsSelect)
+                .in("player_id", values: players.map(\.id))
+                .eq("season_type", value: "REG")
+                .eq("season", value: season)
+                .execute()
+                .value
+
+            return selectRosterLeaders(RosterLeadersMapper.map(players: players, stats: stats))
+        } catch {
+            return nil
         }
     }
 

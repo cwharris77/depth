@@ -35,6 +35,11 @@ protocol DepthRepository: Sendable {
     /// roster. A default no-op keeps test doubles honest until a real implementation
     /// lands; only SupabaseDepthRepository overrides it.
     func searchPlayers(query: String) async throws -> [PlayerHit]
+    /// The team's passing/rushing/receiving leaders for one season (Stats page's ROSTER
+    /// LEADERS card, mirrors web's getRosterLeaders): re-derived per season tab, not
+    /// pinned to the roster's newest season, so the season switcher shows each season's
+    /// own leaders. A default nil keeps unrelated focused test doubles source-compatible.
+    func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders?
     /// All 32 teams' kits as flat listings for the uniform archive (mirrors web's
     /// `listUniforms`). One query joins uniform rows with team conference/division in
     /// code — kit metadata only, no player/depth-chart embeds, so the payload stays
@@ -49,5 +54,6 @@ protocol DepthRepository: Sendable {
 extension DepthRepository {
     func recentParticipation(teamId: String) async throws -> RecentParticipation? { nil }
     func searchPlayers(query: String) async throws -> [PlayerHit] { [] }
+    func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? { nil }
     func listUniforms() async throws -> [UniformListing] { [] }
 }
