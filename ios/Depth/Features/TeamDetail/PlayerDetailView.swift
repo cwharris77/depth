@@ -225,8 +225,10 @@ struct PlayerDetailView: View {
 
     private var statsSection: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            Text("Season Stats")
-                .font(.headline)
+            Text("SEASON STATS")
+                .font(.caption)
+                .tracking(0.5)
+                .foregroundStyle(DesignTokens.Colors.textMuted)
             switch viewModel.statsState {
             case .loading:
                 PlayerStatsSkeleton(columnCount: playerStatColumns(for: player.position).count)
@@ -236,6 +238,7 @@ struct PlayerDetailView: View {
                     columns: playerStatColumns(for: player.position),
                     accent: team.map { Color(hex: $0.colors.uiAccent) } ?? DesignTokens.Colors.accent
                 )
+                .frame(maxWidth: .infinity, alignment: PlayerStatsTableLayout.containerAlignment.swiftUI)
             case .empty:
                 ContentUnavailableView("No stats available", systemImage: "chart.bar.xaxis")
                     .frame(maxWidth: .infinity)
@@ -820,6 +823,7 @@ enum PlayerStatsTableLayout {
     }
 
     static let alignment: ColumnAlignment = .center
+    static let containerAlignment: ColumnAlignment = .center
 }
 
 private struct PlayerStatsTable: View {
