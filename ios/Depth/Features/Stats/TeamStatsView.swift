@@ -102,16 +102,18 @@ struct TeamStatsView: View {
                         // this page's first element is the trigger row, so it needs the
                         // same 16pt inset or it sits flush against the page switcher above.
                         .padding(.top, 16)
-                    teamNameBlock(page.team)
+                    teamNameBlock(page.team, coach: viewModel.selectedSeasonStats?.coach)
                     if let active = viewModel.selectedSeasonStats {
                         heroRecord(active)
                         breakdownTable(active)
-                        footerTicker(active)
                     } else if let upcoming = viewModel.upcomingSeason {
                         degradedUpcomingHero(upcoming)
                     }
                     if viewModel.isViewingCurrentOrUpcomingSeason, let nextGame = viewModel.nextGame {
                         NextGameCard(game: nextGame, accent: uiAccent)
+                    }
+                    if let active = viewModel.selectedSeasonStats {
+                        metricSections(active)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -151,10 +153,29 @@ struct TeamStatsView: View {
         return items
     }
 
-    private func teamNameBlock(_ team: Team) -> some View {
-        StatsEyebrow(text: "\(team.city.uppercased()) \(team.name.uppercased())")
-            .padding(.horizontal, DesignTokens.Spacing.md)
-            .padding(.top, DesignTokens.Spacing.md)
+    /// Web parity: the eyebrow and the season-scoped coach are one block above the hero
+    /// record, not a labelled section further down the page.
+    private func teamNameBlock(_ team: Team, coach: TeamSeasonCoach?) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            StatsEyebrow(text: "\(team.city.uppercased()) \(team.name.uppercased())")
+            if let coach {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(verbatim: coach.name)
+                        .font(.title3.weight(.heavy))
+                        .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    Text(verbatim: "HEAD COACH · \(ordinal(coach.experience).uppercased()) SEASON")
+                        .font(.caption.bold())
+                        .tracking(0.6)
+                        .foregroundStyle(uiAccent)
+                }
+                .padding(.top, 11)
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("stats-coach")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, DesignTokens.Spacing.md)
+        .padding(.top, DesignTokens.Spacing.md)
     }
 
     /// Shared "hero section" container (DEP-265): horizontal inset + bottom hairline +
@@ -174,89 +195,234 @@ struct TeamStatsView: View {
             }
     }
 
-    /// Web's hero record (lines 413-443). Phase-1 has no streak/ranks/playoff-seed data,
-    /// so the right column of the web hero is absent and the record stands alone.
+    /// Web's hero record: the record at display size with streak, league rank, and
+    /// playoff seed stacked to its right. The playoff line is suppressed for a season
+    /// that has not finished — `playoffSeed` is 0 for a team that missed, so rendering it
+    /// mid-season would falsely claim they already had.
     private func heroRecord(_ stats: TeamSeasonStats) -> some View {
         heroSection {
-            Text(verbatim: record(stats))
-                .font(.largeTitle.bold())
-                .accessibilityIdentifier("stats-record")
-                .padding(.top, DesignTokens.Spacing.sm)
+            HStack(alignment: .firstTextBaseline) {
+                Text(verbatim: record(stats))
+                    .font(.largeTitle.bold())
+                    .accessibilityIdentifier("stats-record")
+                Spacer(minLength: DesignTokens.Spacing.md)
+                VStack(alignment: .trailing, spacing: 1) {
+                    if let streak = stats.streak, !streak.isEmpty {
+                        Text(verbatim: streak)
+                            .font(.footnote.bold())
+                            .foregroundStyle(uiAccent)
+                    }
+                    if let caption = teamStatsRankLabel(
+                        ranks(for: stats)?.winPercent, lastRank: leagueSize, qualifier: .overall
+                    ) {
+                        Text(verbatim: caption)
+                            .font(.caption.bold())
+                            .foregroundStyle(DesignTokens.Colors.textMuted)
+                    }
+                    if let current = viewModel.currentSeason, stats.season < current, let team = viewModel.page?.team {
+                        Text(verbatim: playoffLine(stats, conference: team.conference))
+                            .font(.caption)
+                            .foregroundStyle(DesignTokens.Colors.textFaint)
+                    }
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("stats-hero-meta")
+            }
+            .padding(.top, DesignTokens.Spacing.sm)
         }
     }
+
+    private func playoffLine(_ stats: TeamSeasonStats, conference: String) -> String {
+        guard let seed = stats.playoffSeed, seed > 0 else {
+            return "MISSED PLAYOFFS · \(conference)"
+        }
+        return "SEED \(seed) · \(conference)"
+    }
+
+    /// This team's ranks for a season. Absent until the league-wide read resolves, and
+    /// absent for a season with no games played — a rank off an empty record is noise.
+    private func ranks(for stats: TeamSeasonStats) -> TeamStatsRanks? {
+        let played = stats.overallWins + stats.overallLosses + stats.overallTies
+        guard played > 0 else { return nil }
+        return viewModel.page?.leagueRanksBySeason[stats.season]
+    }
+
+    /// League size, so a last-place rank reads "Last in NFL" rather than "32nd most".
+    /// Web passes `teams.length` here; this page never loads the full team list, and the
+    /// NFL has been 32 teams since 2002 — the earliest season team_stats carries.
+    private var leagueSize: Int { 32 }
 
     /// Web's breakdown table (lines 446-517): HOME/ROAD · DIV/CONF · PTS FOR/PTS AGAINST
     /// · DIFF, with strong hairlines between the first three rows. DIFF is accent when
     /// positive, `statusInjured` when negative, muted at zero (web lines 323).
     private func breakdownTable(_ stats: TeamSeasonStats) -> some View {
-        VStack(spacing: 0) {
-            statRow(left: ("HOME", record(stats.homeWins, stats.homeLosses)), right: ("ROAD", record(stats.roadWins, stats.roadLosses)))
-            hairline(DesignTokens.Colors.borderStrong)
-            statRow(left: ("DIV", record(stats.divisionWins, stats.divisionLosses)), right: ("CONF", record(stats.conferenceWins, stats.conferenceLosses)))
-            hairline(DesignTokens.Colors.borderStrong)
-            statRow(left: ("PTS FOR", String(stats.pointsFor)), right: ("PTS AGAINST", String(stats.pointsAgainst)))
-            hairline(DesignTokens.Colors.borderStrong)
-            // DEP-265: DIFF has no right-hand stat, so it runs through the same
-            // statRow/statCell two-column path (right: nil) instead of a hand-rolled
-            // phantom-spacer HStack.
+        let r = ranks(for: stats)
+        let metrics = stats.matchupMetrics
+        return VStack(spacing: 0) {
             statRow(
-                left: ("DIFF", diffLabel(stats.pointDifferential)),
-                right: nil,
-                leftColor: diffColor(stats.pointDifferential)
+                left: StatCellSpec("HOME", record(stats.homeWins, stats.homeLosses)),
+                right: StatCellSpec("ROAD", record(stats.roadWins, stats.roadLosses))
             )
+            hairline(DesignTokens.Colors.borderStrong)
+            statRow(
+                left: StatCellSpec("DIV", record(stats.divisionWins, stats.divisionLosses)),
+                right: StatCellSpec("CONF", record(stats.conferenceWins, stats.conferenceLosses))
+            )
+            hairline(DesignTokens.Colors.borderStrong)
+            statRow(
+                left: StatCellSpec(
+                    "PTS FOR", String(stats.pointsFor),
+                    rank: teamStatsRankLabel(r?.pointsFor, lastRank: leagueSize, qualifier: .most)
+                ),
+                right: StatCellSpec(
+                    "PTS AGAINST", String(stats.pointsAgainst),
+                    rank: teamStatsRankLabel(r?.pointsAgainst, lastRank: leagueSize, qualifier: .least)
+                )
+            )
+            hairline(DesignTokens.Colors.borderStrong)
+            // Turnover margin is a team-level signed number like DIFF, not a unit metric,
+            // so it sits beside it rather than under a section heading — and this cell was
+            // previously empty. Absent when the season has no nflverse row.
+            statRow(
+                left: StatCellSpec(
+                    "DIFF", diffLabel(stats.pointDifferential),
+                    color: diffColor(stats.pointDifferential),
+                    rank: teamStatsRankLabel(r?.pointDifferential, lastRank: leagueSize, qualifier: .most)
+                ),
+                right: metrics?.turnoverMargin.map { margin in
+                    StatCellSpec(
+                        "TO MARGIN", diffLabel(margin), color: diffColor(margin),
+                        rank: showMetricRanks(stats)
+                            ? teamStatsRankLabel(r?.turnoverMargin, lastRank: leagueSize, qualifier: .most)
+                            : nil
+                    )
+                }
+            )
+            // The nflverse yardage pair, behind its own lighter rule the way web separates
+            // it from the ESPN standings rows above. Present when either half is.
+            if stats.passingYards != nil || stats.rushingYards != nil {
+                hairline(DesignTokens.Colors.borderInput)
+                statRow(
+                    left: stats.passingYards.map {
+                        StatCellSpec(
+                            "PASS YDS", String($0),
+                            rank: teamStatsRankLabel(r?.passingYards, lastRank: leagueSize, qualifier: .most)
+                        )
+                    },
+                    right: stats.rushingYards.map {
+                        StatCellSpec(
+                            "RUSH YDS", String($0),
+                            rank: teamStatsRankLabel(r?.rushingYards, lastRank: leagueSize, qualifier: .most)
+                        )
+                    }
+                )
+            }
         }
         .padding(.horizontal, DesignTokens.Spacing.md)
         .padding(.top, DesignTokens.Spacing.sm)
     }
 
-    private func statRow(
-        left: (label: String, value: String),
-        right: (label: String, value: String)?,
-        leftColor: Color = DesignTokens.Colors.textPrimary,
-        rightColor: Color = DesignTokens.Colors.textPrimary
-    ) -> some View {
-        HStack(spacing: DesignTokens.Spacing.lg) {
-            statCell(label: left.label, value: left.value, valueColor: leftColor)
-            if let right {
-                statCell(label: right.label, value: right.value, valueColor: rightColor)
-            } else {
-                Color.clear
-            }
+    /// Below a two-game sample the values still show but nothing is ranked — a league
+    /// position off one game is noise presented as fact (Compare's `isThinSample`).
+    private func showMetricRanks(_ stats: TeamSeasonStats) -> Bool {
+        stats.overallWins + stats.overallLosses + stats.overallTies > 1
+    }
+
+    /// One label/value pair in the breakdown table or a metric section. `rank` is the
+    /// caption beneath the value — the league position that, on a single-team page,
+    /// replaces Compare's second team column. Nil renders no caption rather than a dash.
+    private struct StatCellSpec {
+        let label: String
+        let value: String
+        var color: Color = DesignTokens.Colors.textPrimary
+        var rank: String?
+
+        init(_ label: String, _ value: String, color: Color = DesignTokens.Colors.textPrimary, rank: String? = nil) {
+            self.label = label
+            self.value = value
+            self.color = color
+            self.rank = rank
         }
     }
 
-    private func statCell(label: String, value: String, valueColor: Color = DesignTokens.Colors.textPrimary) -> some View {
-        HStack {
-            Text(label)
+    /// A two-column row. A nil side leaves its half blank — the DIFF row has done this
+    /// since DEP-265, and an odd-length metric group now does the same.
+    private func statRow(left: StatCellSpec?, right: StatCellSpec?) -> some View {
+        HStack(alignment: .top, spacing: DesignTokens.Spacing.lg) {
+            if let left { statCell(left) } else { Color.clear }
+            if let right { statCell(right) } else { Color.clear }
+        }
+    }
+
+    private func statCell(_ spec: StatCellSpec) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(spec.label)
                 .font(.caption)
                 .foregroundStyle(DesignTokens.Colors.textFaint)
             Spacer(minLength: 4)
-            Text(value)
-                .font(.caption.bold())
-                .foregroundStyle(valueColor)
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(spec.value)
+                    .font(.caption.bold())
+                    .foregroundStyle(spec.color)
+                if let rank = spec.rank {
+                    Text(rank)
+                        .font(.caption2.bold())
+                        .foregroundStyle(DesignTokens.Colors.textFaintest)
+                }
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, DesignTokens.Spacing.sm)
+        .accessibilityElement(children: .combine)
     }
 
     private func hairline(_ color: Color) -> some View {
         Rectangle().fill(color).frame(height: 1)
     }
 
-    /// Web's footer ticker (lines 519-524): `"{season} SEASON · {games} GAME(S) PLAYED"`.
-    private func footerTicker(_ stats: TeamSeasonStats) -> some View {
-        let games = stats.overallWins + stats.overallLosses + stats.overallTies
-        let gamesLabel = "\(games) GAME\(games == 1 ? "" : "S") PLAYED"
-        return StatsEyebrow(text: "\(stats.season) SEASON · \(gamesLabel)")
+    /// The nflverse metrics, grouped by unit, in the breakdown table's own vocabulary —
+    /// same statCell, same hairline, same inset, no card chrome. The catalog drops
+    /// metrics whose source column is missing before they are paired into rows, so a gap
+    /// closes rather than leaving a hole; a group left with nothing renders no heading.
+    @ViewBuilder
+    private func metricSections(_ stats: TeamSeasonStats) -> some View {
+        let groups = TeamStatsMetricCatalog.resolve(
+            metrics: stats.matchupMetrics,
+            ranks: ranks(for: stats),
+            lastRank: leagueSize,
+            showRanks: showMetricRanks(stats)
+        )
+        ForEach(groups) { group in
+            VStack(alignment: .leading, spacing: 0) {
+                Text(group.title)
+                    .font(.caption.weight(.semibold))
+                    .tracking(1.2)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+                    .padding(.bottom, DesignTokens.Spacing.xs)
+                ForEach(Array(metricRows(group.metrics).enumerated()), id: \.offset) { index, pair in
+                    if index > 0 { hairline(DesignTokens.Colors.borderStrong) }
+                    statRow(
+                        left: StatCellSpec(pair.0.label, pair.0.display, rank: pair.0.rankCaption),
+                        right: pair.1.map { StatCellSpec($0.label, $0.display, rank: $0.rankCaption) }
+                    )
+                }
+            }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, DesignTokens.Spacing.md)
-            .padding(.top, DesignTokens.Spacing.md)
-            .padding(.bottom, DesignTokens.Spacing.lg)
-            .accessibilityIdentifier("stats-games-played")
+            .padding(.top, DesignTokens.Spacing.lg)
+            .accessibilityIdentifier("stats-metrics-\(group.id)")
+        }
     }
 
-    /// Web's degraded upcoming-season hero (lines 526-534): a real chip exists but no
-    /// games are played yet, so degrade instead of faking a 0-0 record (invariant 6).
+    /// Pairs resolved metrics two per row; an odd count leaves the final right cell blank.
+    private func metricRows(
+        _ metrics: [ResolvedTeamStatsMetric]
+    ) -> [(ResolvedTeamStatsMetric, ResolvedTeamStatsMetric?)] {
+        stride(from: 0, to: metrics.count, by: 2).map { i in
+            (metrics[i], i + 1 < metrics.count ? metrics[i + 1] : nil)
+        }
+    }
+
     private func degradedUpcomingHero(_ upcoming: Int) -> some View {
         heroSection {
             VStack(alignment: .leading, spacing: 0) {
