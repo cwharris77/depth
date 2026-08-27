@@ -122,9 +122,18 @@ struct TeamMatchupMetrics: Equatable, Codable, Sendable {
     let offensiveEPA: Double?
     let offensivePlays: Int?
     let offensiveEPAPerPlay: Double?
+    /// Sacks as a share of dropbacks (0-1, not a percentage). Compare computed this
+    /// inline in its own catalog; the Stats page ranks it league-wide, so it belongs on
+    /// the contract rather than being recomputed per surface. Mirrors web's
+    /// `TeamMatchupMetrics.sackRate`.
+    let sackRate: Double?
     let passingInterceptions: Int?
     let fumblesLost: Int?
     let giveaways: Int?
+    /// Takeaways won minus giveaways conceded. Signed, and nil unless BOTH halves are
+    /// known — a team with an unknown giveaway count has an unknown margin, not one
+    /// equal to its takeaways.
+    let turnoverMargin: Int?
     let defensiveSacks: Double?
     let quarterbackHits: Int?
     let quarterbackHitsPerGame: Double?
@@ -160,9 +169,11 @@ struct TeamMatchupMetrics: Equatable, Codable, Sendable {
         case offensiveEPA = "offensiveEpa"
         case offensivePlays
         case offensiveEPAPerPlay = "offensiveEpaPerPlay"
+        case sackRate
         case passingInterceptions
         case fumblesLost
         case giveaways
+        case turnoverMargin
         case defensiveSacks
         case quarterbackHits
         case quarterbackHitsPerGame
