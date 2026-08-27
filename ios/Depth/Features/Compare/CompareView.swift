@@ -213,7 +213,11 @@ struct CompareView: View {
         Button {
             viewModel.beginPicking(slot)
         } label: {
-            VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+            // Aug 26 (Cooper): the slot's contents are centered rather than left-aligned.
+            // The abbrev, name, and record are three lines of very different widths, and
+            // left-aligning them against a slot whose clear button sits in the opposite
+            // corner made the stack read as pushed off to one side.
+            VStack(spacing: DesignTokens.Spacing.xs) {
                 if let team {
                     Text(team.abbrev.uppercased())
                         .font(.caption.weight(.black))
@@ -228,7 +232,8 @@ struct CompareView: View {
                     slotRecord(slot)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
             .padding(.horizontal, DesignTokens.Spacing.md)
             .padding(.vertical, team != nil ? DesignTokens.Spacing.sm : DesignTokens.Spacing.lg)
             .background(
