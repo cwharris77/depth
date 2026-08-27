@@ -41,12 +41,14 @@ final class CompareViewModel {
             }
         }
 
-        /// The segmented-control label. Shortened to "Special" (canvas 1b) because the
-        /// third segment now shares a full-width three-up bar with two shorter labels and
-        /// "Special Teams" was the only one that had to shrink to fit. VoiceOver still
-        /// hears the full unit name via `accessibilityLabel`.
-        var tabLabel: String {
-            self == .specialTeams ? "Special" : accessibilityLabel
+        /// The inverse of `unit` — the lens picker is a `DepthUnitTabBar`, which speaks
+        /// `Unit`, so its selection has to map back.
+        init(unit: Unit) {
+            switch unit {
+            case .offense: self = .offense
+            case .defense: self = .defense
+            case .special: self = .specialTeams
+            }
         }
 
         var accessibilityLabel: String {

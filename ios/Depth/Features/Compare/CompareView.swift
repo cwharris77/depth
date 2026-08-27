@@ -164,85 +164,47 @@ struct CompareView: View {
         .accessibilityIdentifier("compare-content")
     }
 
-    /// The season picker plus its provenance stamp (vault canvas 1b / 3a-3b). Hidden until
-    /// at least one team resolves, because the season list is read off the picked teams'
-    /// own `teamStats` payloads — there is no team-independent season source here, and a
-    /// chip that opens an empty sheet is worse than no chip. (The canvas draws it in 2a
-    /// with nothing picked; that is the one place this deviates, and it deviates toward not
-    /// showing an inert control.)
+    /// The season picker. Hidden until at least one team resolves, because the season list
+    /// is read off the picked teams' own `teamStats` payloads — there is no team-independent
+    /// season source here, and a chip that opens an empty sheet is worse than no chip.
     ///
-    /// The trailing slot carries whichever of the two is meaningful: the stamp when there
-    /// are numbers to date-stamp, otherwise the "Clear selection" control that used to sit
-    /// above the slot row (canvas 2b puts it exactly here). Per-slot X buttons are
-    /// unchanged, so no way of clearing a pick was removed.
+    /// Aug 26 (Cooper): the provenance stamp that sat opposite this chip is gone — "I don't
+    /// need to see that the season already happened or how many games it had or when it
+    /// ended." The season chip itself already answers which season you are looking at, which
+    /// was the gap worth closing; the FINAL/LIVE/UPCOMING badge and its date line were
+    /// answering a question nobody asked. The thin-sample caution strip stays: that one is a
+    /// warning about the numbers below it, not a provenance claim.
     @ViewBuilder
     private var seasonRow: some View {
         if !viewModel.seasonOptions.isEmpty {
-            HStack(spacing: DesignTokens.Spacing.sm) {
-                SeasonPickerTrigger(
-                    season: viewModel.resolvedSeason,
-                    accent: DesignTokens.Colors.accent,
-                    identifier: "compare-season-trigger"
-                ) {
-                    showSeasonPicker = true
-                }
-
-                Spacer(minLength: 0)
-
-                if viewModel.seasonStamp.badge != nil {
-                    CompareSeasonStampView(stamp: viewModel.seasonStamp)
-                } else if viewModel.pickedCount > 0 {
-                    clearSelectionButton
-                }
+            SeasonPickerTrigger(
+                season: viewModel.resolvedSeason,
+                accent: DesignTokens.Colors.accent,
+                identifier: "compare-season-trigger"
+            ) {
+                showSeasonPicker = true
             }
         }
-    }
-
-    /// True when `seasonRow` already rendered the clear control, so `teamSlotRow` must not
-    /// render a second one. The canvas drops "Clear selection" entirely on the stamped page
-    /// (1b), but that control was a direct request — rather than delete it, it falls back to
-    /// its previous home above the slot row whenever the stamp takes the season row's
-    /// trailing slot.
-    private var clearSelectionIsInSeasonRow: Bool {
-        !viewModel.seasonOptions.isEmpty && viewModel.seasonStamp.badge == nil
-    }
-
-    /// Cooper (Aug 25): re-tapping a filled slot to swap teams wasn't obvious as a way to
-    /// change your pick — an explicit "Clear selection" control was requested. Clears both
-    /// slots; each slot's own corner button clears just that one.
-    private var clearSelectionButton: some View {
-        Button {
-            viewModel.clearTeam(.a)
-            viewModel.clearTeam(.b)
-        } label: {
-            Text("Clear selection")
-                .font(.caption.weight(.bold))
-                .foregroundStyle(DesignTokens.Colors.textFaint)
-        }
-        .frame(minHeight: 44)
-        .accessibilityIdentifier("compare-clear-both")
     }
 
     private var teamSlotRow: some View {
-        VStack(alignment: .trailing, spacing: DesignTokens.Spacing.xs) {
-            if viewModel.pickedCount > 0 && !clearSelectionIsInSeasonRow {
-                clearSelectionButton
-            }
-
-            HStack(spacing: DesignTokens.Spacing.sm) {
-                teamSlotButton(viewModel.teamA, slot: .a)
-                // Web parity: the VS separator is a `surfaceChip` capsule (web CompareView
-                // wraps "VS" in a `rounded-full` span with `surfaceChip` bg + `textFaint`
-                // caption text). Restored in DEP-266 after the first port drew it as bare text.
-                Text("VS")
-                    .font(.caption.weight(.black))
-                    .foregroundStyle(DesignTokens.Colors.textFaint)
-                    .padding(.horizontal, DesignTokens.Spacing.sm)
-                    .padding(.vertical, DesignTokens.Spacing.xs)
-                    .background(DesignTokens.Colors.surfaceChip, in: Capsule())
-                    .accessibilityHidden(true)
-                teamSlotButton(viewModel.teamB, slot: .b)
-            }
+        // Aug 26 (Cooper): the "Clear selection" control is gone — each slot's own X is a
+        // clear enough way to change a pick now that both slots carry one ("it'll be a couple
+        // more clicks, but I'm not worried about it"). That also buys back the vertical space
+        // this row used to spend on a label.
+        HStack(spacing: DesignTokens.Spacing.sm) {
+            teamSlotButton(viewModel.teamA, slot: .a)
+            // Web parity: the VS separator is a `surfaceChip` capsule (web CompareView
+            // wraps "VS" in a `rounded-full` span with `surfaceChip` bg + `textFaint`
+            // caption text). Restored in DEP-266 after the first port drew it as bare text.
+            Text("VS")
+                .font(.caption.weight(.black))
+                .foregroundStyle(DesignTokens.Colors.textFaint)
+                .padding(.horizontal, DesignTokens.Spacing.sm)
+                .padding(.vertical, DesignTokens.Spacing.xs)
+                .background(DesignTokens.Colors.surfaceChip, in: Capsule())
+                .accessibilityHidden(true)
+            teamSlotButton(viewModel.teamB, slot: .b)
         }
     }
 
@@ -381,67 +343,6 @@ struct CompareView: View {
     }
 }
 
-// MARK: - Provenance stamp
-
-/// The badge + detail line beside the season picker (vault canvas 1b, corrected by 3a/3b).
-/// The badge is the honesty control on this page: FINAL only for a season that is actually
-/// over, LIVE plus a games-played count while it is still being played, UPCOMING before
-/// kickoff. See `compareSeasonStamp` for why FINAL cannot be the default.
-private struct CompareSeasonStampView: View {
-    let stamp: CompareSeasonStamp
-
-    var body: some View {
-        if let badge = stamp.badge {
-            HStack(spacing: DesignTokens.Spacing.xs + 2) {
-                Text(badge)
-                    .font(.caption2.weight(.heavy))
-                    .tracking(0.7)
-                    .foregroundStyle(badgeForeground)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 4)
-                    .background(badgeBackground, in: RoundedRectangle(cornerRadius: 4))
-                    .overlay {
-                        if stamp == .upcoming {
-                            RoundedRectangle(cornerRadius: 4)
-                                .strokeBorder(DesignTokens.Colors.accent.opacity(0.5), lineWidth: 1)
-                        }
-                    }
-
-                let detail = stamp.detail()
-                if !detail.isEmpty {
-                    Text(detail)
-                        .font(.caption2.weight(.semibold))
-                        .tracking(0.4)
-                        .foregroundStyle(DesignTokens.Colors.textFaint)
-                }
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel(accessibilityLabel(badge))
-            .accessibilityIdentifier("compare-season-stamp")
-        }
-    }
-
-    /// UPCOMING is drawn as an outline rather than a fill: it is the one state with no
-    /// numbers behind it, so it should read as a note, not a status light.
-    private var badgeBackground: Color {
-        switch stamp {
-        case .final: DesignTokens.Colors.textMuted
-        case .live: DesignTokens.Colors.statusWin
-        case .upcoming: DesignTokens.Colors.accent.opacity(0.14)
-        case .none: .clear
-        }
-    }
-
-    private var badgeForeground: Color {
-        stamp == .upcoming ? DesignTokens.Colors.accent : DesignTokens.Colors.onAccent
-    }
-
-    private func accessibilityLabel(_ badge: String) -> String {
-        let detail = stamp.detail()
-        return detail.isEmpty ? badge : "\(badge), \(detail.lowercased())"
-    }
-}
-
 // MARK: - Matchup tab
 
 /// DEP-317's five-lens matchup briefing plus the existing DEP-311 drilldown path.
@@ -508,11 +409,16 @@ private struct RoomPositionPicker: View {
     /// The combined height of the room grid + exact-role panel, reserved regardless of which
     /// unit/room is active, so the depth table below never jumps (Cooper, Aug 26: "I don't
     /// like how the compare table in the by position gets moved around... it should be fixed
-    /// to one spot"). Sized to the tallest real combination: a 2-row room grid (Offense/
-    /// Defense both have 4 rooms) plus a 2-row exact-role panel (Line/Defensive Line/
-    /// Linebackers each have 5 roles). Special Teams' 1-room grid and Quarterback's
-    /// no-panel selection both just leave blank space below at this same fixed height.
-    private static let reservedPickerHeight: CGFloat = 250
+    /// to one spot"). Sized to the tallest real combination: a 2-row room grid (Offense and
+    /// Defense both have 4 rooms) plus a single row of role pills — the widest room is five
+    /// roles, which now fits one row since the pills hug their labels. Special Teams' 1-row
+    /// grid and Quarterback's no-panel selection leave blank space below at this same height.
+    ///
+    /// Aug 26 (Cooper): down from 250. The old value reserved two rows of full-width role
+    /// tiles plus the container box around them; with both gone, the surplus was pure dead
+    /// space between the picker and the table, and the ask was for the By-position view to
+    /// fit without scrolling.
+    private static let reservedPickerHeight: CGFloat = 176
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
@@ -628,28 +534,18 @@ private struct RoomPositionPicker: View {
     /// carrying the panel's identifier). Each `roleTile` already carries its own identifier
     /// and `.accessibilityElement(children: .combine)`; the container needs none.
     private func exactRolePanel(_ room: CompareRoom) -> some View {
-        Group {
-            if room.positions.count <= 3 {
-                HStack(spacing: DesignTokens.Spacing.xs) {
-                    ForEach(room.positions, id: \.self) { pos in
-                        roleTile(pos).frame(width: 76)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-            } else {
-                LazyVGrid(
-                    columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())],
-                    spacing: DesignTokens.Spacing.xs
-                ) {
-                    ForEach(room.positions, id: \.self) { pos in
-                        roleTile(pos)
-                    }
-                }
+        // Aug 26 (Cooper): the canvas's By-position artboard (1d) draws these as a plain row
+        // of small hugging chips with no container behind them — "I like those better than
+        // ours... also remove the outer box around the pills." The widest room is five roles
+        // (Line, Defensive Line, Linebackers), which fits one row at this size, so the
+        // grid/HStack branch that used to switch on role count is gone too: it exists only
+        // when tiles are wide enough to wrap.
+        HStack(spacing: DesignTokens.Spacing.xs + 2) {
+            ForEach(room.positions, id: \.self) { pos in
+                roleTile(pos)
             }
+            Spacer(minLength: 0)
         }
-        .padding(.vertical, DesignTokens.Spacing.sm)
-        .padding(.horizontal, DesignTokens.Spacing.sm)
-        .background(DesignTokens.Colors.surfaceCard2, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
         .animation(reduceMotion ? nil : DesignTokens.Motion.selection, value: viewModel.position)
     }
 
@@ -669,10 +565,11 @@ private struct RoomPositionPicker: View {
                         .accessibilityHidden(true)
                 }
             }
-            .padding(.horizontal, DesignTokens.Spacing.xs)
-            // 44pt is the HIG minimum tap target (see the type doc comment above) — kept even
-            // though the visual chip itself reads smaller now via tighter outer padding.
-            .frame(maxWidth: .infinity, minHeight: 44)
+            // The painted chip hugs its label (canvas 1d: 8x12px padding), while the button
+            // around it still reserves the 44pt HIG tap target. Splitting the two is what
+            // lets the pill read small without shrinking what you actually have to hit.
+            .padding(.horizontal, DesignTokens.Spacing.sm + 4)
+            .padding(.vertical, DesignTokens.Spacing.sm)
             .background(
                 isSelected ? DesignTokens.Colors.accent : DesignTokens.Colors.surfaceChip,
                 in: RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
@@ -683,7 +580,8 @@ private struct RoomPositionPicker: View {
                         .strokeBorder(DesignTokens.Colors.onAccent.opacity(0.40), lineWidth: 1)
                 }
             }
-            .contentShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)

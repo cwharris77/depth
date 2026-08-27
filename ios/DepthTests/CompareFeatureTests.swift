@@ -578,30 +578,24 @@ private func multiSeasonPage(
 
 // MARK: Season stamp (canvas 3a/3b)
 
-@Test func aCompletedSeasonStampsFinalWithItsGameCountAndDate() {
-    let stamp = compareSeasonStamp(metrics: fullMetrics(games: 17), isCompleted: true)
-    #expect(stamp.badge == "FINAL")
-    #expect(stamp.detail(locale: Locale(identifier: "en_US")) == "17 GAMES · JAN 6")
+@Test func aCompletedSeasonReadsAsFinal() {
+    #expect(compareSeasonStamp(metrics: fullMetrics(games: 17), isCompleted: true) == .final)
 }
 
 /// The correction turn 3 of the canvas makes: `effectiveStats(for:)` promotes the live
 /// season as soon as ONE game's metrics land, so FINAL would be a lie there.
-@Test func aSeasonStillBeingPlayedStampsLiveNotFinal() {
-    let stamp = compareSeasonStamp(metrics: fullMetrics(season: 2026, games: 1), isCompleted: false)
-    #expect(stamp.badge == "LIVE")
-    #expect(stamp.detail() == "THROUGH 1 GAME")
-
-    let week9 = compareSeasonStamp(metrics: fullMetrics(season: 2026, games: 8), isCompleted: false)
-    #expect(week9.detail() == "THROUGH 8 GAMES")
+@Test func aSeasonStillBeingPlayedReadsAsLiveNotFinal() {
+    // The distinction the sample guard depends on: `effectiveStats(for:)` promotes the live
+    // season the moment one game's metrics land, so "completed" cannot be assumed.
+    #expect(compareSeasonStamp(metrics: fullMetrics(season: 2026, games: 1), isCompleted: false) == .live(games: 1))
+    #expect(compareSeasonStamp(metrics: fullMetrics(season: 2026, games: 8), isCompleted: false) == .live(games: 8))
 }
 
-@Test func aSeasonWithNoGamesPlayedStampsUpcomingWithNoDetail() {
-    let stamp = compareSeasonStamp(metrics: fullMetrics(games: 0), isCompleted: false)
-    #expect(stamp == .upcoming)
-    #expect(stamp.detail() == "")
+@Test func aSeasonWithNoGamesPlayedReadsAsUpcoming() {
+    #expect(compareSeasonStamp(metrics: fullMetrics(games: 0), isCompleted: false) == .upcoming)
 }
 
-@Test func missingMetricsOrGameCountStampNothingRatherThanClaimingZeroGames() {
+@Test func missingMetricsOrGameCountResolveToNoneRatherThanClaimingZeroGames() {
     // A completed season with no metrics is a data gap and claims nothing...
     #expect(compareSeasonStamp(metrics: nil, isCompleted: true) == .none)
     // ...but a season still to be played has no metrics *by definition*, which is exactly
@@ -611,7 +605,6 @@ private func multiSeasonPage(
     // No season resolved at all (canvas 2a): nothing to date-stamp.
     #expect(compareSeasonStamp(metrics: nil, isCompleted: false, hasResolvedSeason: false) == .none)
     #expect(compareSeasonStamp(metrics: fullMetrics(games: nil), isCompleted: true) == .none)
-    #expect(CompareSeasonStamp.none.badge == nil)
 }
 
 // MARK: Thin-sample guard (canvas 3a)
@@ -620,7 +613,7 @@ private func multiSeasonPage(
     #expect(CompareSampleGuard.isThin(.live(games: CompareSampleGuard.cautionMaxGames)))
     #expect(!CompareSampleGuard.isThin(.live(games: CompareSampleGuard.cautionMaxGames + 1)))
     // A completed season is never cautioned, however few games it holds.
-    #expect(!CompareSampleGuard.isThin(.final(games: 1, lastUpdated: nil)))
+    #expect(!CompareSampleGuard.isThin(.final))
     #expect(!CompareSampleGuard.isThin(.upcoming))
     #expect(!CompareSampleGuard.isThin(.none))
 }
@@ -824,7 +817,7 @@ private func twoSeasonViewModel() async -> CompareViewModel {
     let viewModel = await twoSeasonViewModel()
     #expect(viewModel.selectedSeason == nil)
     #expect(viewModel.resolvedSeason == 2025, "2026 is a metrics-less stub, so 2025 stays the default")
-    #expect(viewModel.seasonStamp.badge == "FINAL")
+    #expect(viewModel.seasonStamp == .final)
 }
 
 @Test @MainActor func pickingASeasonReadsBothSidesAtThatExactYear() async {
@@ -959,14 +952,16 @@ private func twoSeasonViewModel() async -> CompareViewModel {
     #expect(!week9.isThinSample)
 }
 
-@Test func everyLensMapsToItsUnitAndShortensOnlyTheSpecialTeamsTabLabel() {
+/// The lens picker is a `DepthUnitTabBar`, which speaks `Unit`, so the two mappings have to
+/// round-trip or selecting a tab would land on the wrong lens.
+@Test func lensAndUnitRoundTripInBothDirections() {
+    for lens in CompareViewModel.Lens.allCases {
+        #expect(CompareViewModel.Lens(unit: lens.unit) == lens)
+    }
     #expect(CompareViewModel.Lens.offense.unit == .offense)
     #expect(CompareViewModel.Lens.defense.unit == .defense)
     #expect(CompareViewModel.Lens.specialTeams.unit == .special)
-    #expect(CompareViewModel.Lens.specialTeams.tabLabel == "Special")
-    // VoiceOver keeps the full unit name.
     #expect(CompareViewModel.Lens.specialTeams.accessibilityLabel == "Special Teams")
-    #expect(CompareViewModel.Lens.offense.tabLabel == CompareViewModel.Lens.offense.accessibilityLabel)
 }
 
 // MARK: - Timestamp parsing
@@ -988,13 +983,9 @@ private func twoSeasonViewModel() async -> CompareViewModel {
     )
 }
 
-@Test func freshnessAndTheSeasonStampBothReadAFractionalSecondsTimestamp() {
+@Test func freshnessReadsAFractionalSecondsTimestamp() {
     let updatedAt = "2026-01-06T12:00:00.123456+00:00"
     let now = Timestamp.parseISO8601(updatedAt)!
-
     // Previously `.unavailable` — the formatter rejected the string, not the data.
     #expect(compareFreshness(updatedAt: updatedAt, now: now) == .current)
-
-    let stamp = compareSeasonStamp(metrics: fullMetrics(updatedAt: updatedAt), isCompleted: true)
-    #expect(stamp.detail(locale: Locale(identifier: "en_US")) == "17 GAMES · JAN 6")
 }

@@ -43,18 +43,17 @@ struct CompareLensesView: View {
         }
     }
 
+    /// Aug 26 (Cooper): the field page's underline tab bar, not a second filled pill —
+    /// "it helped break up the monotony of all the pickers on the page." With By team/By
+    /// position already a full-width segmented pill directly above it, a second identical
+    /// pill made the two controls read as one undifferentiated stack. `DepthUnitTabBar` is
+    /// the same treatment the depth-chart field and Compare's own By-position picker use,
+    /// so the app's unit vocabulary is consistent wherever a unit is chosen.
     private var lensSelector: some View {
-        DepthSegmentedControl(
-            options: CompareViewModel.Lens.allCases.map { lens in
-                DepthSegmentedOption(
-                    value: lens,
-                    label: lens.tabLabel,
-                    identifier: "compare-lens-\(lens.rawValue)"
-                )
-            },
-            selection: viewModel.lens,
-            onChange: { viewModel.selectLens($0) },
-            fullWidth: true
+        DepthUnitTabBar(
+            selection: viewModel.lens.unit,
+            onChange: { unit in viewModel.selectLens(CompareViewModel.Lens(unit: unit)) },
+            identifierPrefix: "compare-lens"
         )
         .accessibilityElement(children: .contain)
     }
@@ -132,8 +131,12 @@ private struct CompareMetricTable: View {
         VStack(spacing: 0) {
             header
             VStack(spacing: 0) {
-                ForEach(rows) { row in
-                    metricRow(row)
+                // Aug 26 (Cooper): "an extra separator underneath the table header." The
+                // header already draws its own bottom hairline, so the first row must not
+                // draw its top one as well — the two sat 4pt apart and read as a double
+                // rule. Every row after the first still needs its divider.
+                ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
+                    metricRow(row, showsTopDivider: index > 0)
                 }
             }
             .padding(.horizontal, DesignTokens.Spacing.md - 2)
@@ -176,7 +179,7 @@ private struct CompareMetricTable: View {
             .frame(width: valueColumnWidth, alignment: .trailing)
     }
 
-    private func metricRow(_ row: CompareMetricRow) -> some View {
+    private func metricRow(_ row: CompareMetricRow, showsTopDivider: Bool) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.sm) {
             Text(row.label)
                 .font(.caption2.bold())
@@ -188,7 +191,9 @@ private struct CompareMetricTable: View {
         }
         .padding(.vertical, DesignTokens.Spacing.sm + 2)
         .overlay(alignment: .top) {
-            Rectangle().fill(DesignTokens.Colors.borderSubtle).frame(height: 1)
+            if showsTopDivider {
+                Rectangle().fill(DesignTokens.Colors.borderSubtle).frame(height: 1)
+            }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel(row))
@@ -378,7 +383,11 @@ private struct CompareMetricsSkeleton: View {
                     }
                     .padding(.vertical, DesignTokens.Spacing.sm + 2)
                     .overlay(alignment: .top) {
-                        Rectangle().fill(DesignTokens.Colors.borderSubtle).frame(height: 1)
+                        // Matches CompareMetricTable: the header owns the divider under
+                        // itself, so the first row does not draw a second one.
+                        if row > 0 {
+                            Rectangle().fill(DesignTokens.Colors.borderSubtle).frame(height: 1)
+                        }
                     }
                 }
             }

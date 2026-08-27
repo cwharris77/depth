@@ -42,48 +42,21 @@ enum CompareSampleGuard {
 
 // MARK: - Season stamp
 
-/// The provenance claim shown beside Compare's season picker. `.none` is a real case,
-/// not an absence of information: with no teams picked there is no data to date-stamp,
-/// so the canvas (2a) deliberately shows the season chip alone.
+/// Which kind of season the page is reading. Aug 26 (Cooper): this is no longer *shown* —
+/// the FINAL/LIVE/UPCOMING badge and its "17 GAMES · JAN 6" line were removed ("I don't need
+/// to see that the season already happened or how many games it had or when it ended"). It
+/// survives because `CompareSampleGuard` still needs to know a live season from a finished
+/// one: dropping leader tints on a one-game sample depends on that distinction, and nothing
+/// else in the app draws it.
 enum CompareSeasonStamp: Equatable {
-    /// A completed season. Games played is final and `lastUpdated` dates the numbers.
-    case final(games: Int, lastUpdated: Date?)
+    /// A completed season — whatever its sample, the user picked it deliberately.
+    case final
     /// The season currently being played, with the games it has metrics through.
     case live(games: Int)
     /// A season that exists but has kicked off no games yet.
     case upcoming
-    /// Nothing to stamp (no team picked, or no metrics row at all).
+    /// No season resolved, or no metrics row at all.
     case none
-
-    /// The short badge text — nil for `.none`, which renders no badge.
-    var badge: String? {
-        switch self {
-        case .final: "FINAL"
-        case .live: "LIVE"
-        case .upcoming: "UPCOMING"
-        case .none: nil
-        }
-    }
-
-    /// The detail line beside the badge. Empty for `.upcoming`/`.none`, which the canvas
-    /// draws as a bare badge (2d) or nothing at all (2a).
-    func detail(calendar: Calendar = .current, locale: Locale = .current) -> String {
-        switch self {
-        case .final(let games, let lastUpdated):
-            let count = "\(games) \(games == 1 ? "GAME" : "GAMES")"
-            guard let lastUpdated else { return count }
-            return "\(count) · \(Self.stampDate(lastUpdated, locale: locale))"
-        case .live(let games):
-            return "THROUGH \(games) \(games == 1 ? "GAME" : "GAMES")"
-        case .upcoming, .none:
-            return ""
-        }
-    }
-
-    /// "JAN 6" — abbreviated month and day, upcased to sit level with the badge.
-    private static func stampDate(_ date: Date, locale: Locale) -> String {
-        date.formatted(.dateTime.month(.abbreviated).day().locale(locale)).uppercased(with: locale)
-    }
 }
 
 /// Derives the stamp for a resolved season. `isCompleted` is the caller's judgement
@@ -109,10 +82,7 @@ func compareSeasonStamp(
     // claim a sample size, so it degrades to `.none` rather than stamping "0 GAMES".
     guard let games = metrics.games else { return .none }
     guard games > 0 else { return .upcoming }
-    if isCompleted {
-        return .final(games: games, lastUpdated: Timestamp.parseISO8601(metrics.updatedAt))
-    }
-    return .live(games: games)
+    return isCompleted ? .final : .live(games: games)
 }
 
 // MARK: - Metric rows
