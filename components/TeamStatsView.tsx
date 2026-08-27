@@ -12,7 +12,6 @@ import Tooltip from '@/components/ui/Tooltip';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import { readableTextOn } from '@/lib/utils/colors';
 import { formatGameDate, ordinal } from '@/lib/utils/format';
-import { postseasonRoundLabel } from '@/lib/utils/schedule/schedule';
 import type { TeamMeta, TeamStatsRanks } from '@/lib/roster-source';
 import type { Leader, RosterLeaders, TeamScheduleGame, TeamStats } from '@/lib/types';
 import { useKitColors } from '@/lib/hooks/use-kit-colors';
@@ -44,10 +43,6 @@ interface Props {
   // The team's next unplayed game (design spec 5a's NEXT GAME card). Null in the
   // offseason / once the season is complete, in which case the card is omitted.
   nextGame?: TeamScheduleGame | null;
-  // The team's postseason games (opponent, round, result, score) for its most recent
-  // completed/reported season (seasons[0]) only — not re-derived per season tab. Empty
-  // for a team that missed the postseason, in which case no section renders.
-  postseasonGames?: TeamScheduleGame[];
 }
 
 function wl(wins: number, losses: number): string {
@@ -114,6 +109,210 @@ function StatCell({
         )}
       </td>
     </>
+  );
+}
+
+// The nflverse team metrics, as the Stats page's own hairline rows rather than Compare's
+// two-column tables. A Compare table answers "which of these two is bigger"; this page
+// answers "where does this team sit in the league", so the rank caption StatCell already
+// renders for PTS FOR / PASS YDS is what replaces Compare's second team column.
+//
+// `direction: 'neutral'` metrics from Compare's catalog are deliberately absent: they are
+// denominators and context for a two-team comparison, have no better/worse direction, and
+// so cannot carry the rank caption that is the entire point of this treatment.
+type MetricSpec = {
+  label: string;
+  // Undefined means the source column was missing — the row is dropped, never zeroed.
+  value: (m: NonNullable<TeamStats['matchupMetrics']>) => number | undefined;
+  format: (value: number) => string;
+  rank: keyof TeamStatsRanks;
+  // Feeds rankLabel's copy: "First in NFL" / "3rd most" / "6th least" / "4th overall".
+  qualifier: 'overall' | 'most' | 'least';
+};
+
+const signed = (digits: number) => (value: number) =>
+  `${value > 0 ? '+' : ''}${value.toFixed(digits)}`;
+const decimal = (digits: number) => (value: number) => value.toFixed(digits);
+const integer = (value: number) => String(value);
+// Both rate metrics are stored 0-1 (see TeamMatchupMetrics.sackRate); percent lives here
+// so no caller has to remember to multiply.
+const percent = (value: number) => `${(value * 100).toFixed(1)}%`;
+
+const METRIC_SECTIONS: { title: string; metrics: MetricSpec[] }[] = [
+  {
+    title: 'OFFENSE',
+    metrics: [
+      {
+        label: 'EPA / PLAY',
+        value: (m) => m.offensiveEpaPerPlay,
+        format: signed(2),
+        rank: 'offensiveEpaPerPlay',
+        qualifier: 'overall',
+      },
+      {
+        label: 'SACK RATE',
+        value: (m) => m.sackRate,
+        format: percent,
+        rank: 'sackRate',
+        qualifier: 'least',
+      },
+      {
+        label: 'PASS EPA',
+        value: (m) => m.passingEpa,
+        format: decimal(1),
+        rank: 'passingEpa',
+        qualifier: 'most',
+      },
+      {
+        label: 'RUSH EPA',
+        value: (m) => m.rushingEpa,
+        format: decimal(1),
+        rank: 'rushingEpa',
+        qualifier: 'most',
+      },
+      // Labelled INTS THROWN, not INTERCEPTIONS: DEFENSE carries its own INTERCEPTIONS
+      // row a few lines down meaning the opposite thing. Compare's catalog labels both
+      // "INTERCEPTIONS" and gets away with it only because its unit lenses are never on
+      // screen together (Cooper, 2026-08-27).
+      {
+        label: 'INTS THROWN',
+        value: (m) => m.passingInterceptions,
+        format: integer,
+        rank: 'passingInterceptions',
+        qualifier: 'least',
+      },
+      {
+        label: 'FUMBLES LOST',
+        value: (m) => m.fumblesLost,
+        format: integer,
+        rank: 'fumblesLost',
+        qualifier: 'least',
+      },
+    ],
+  },
+  {
+    title: 'DEFENSE',
+    metrics: [
+      {
+        label: 'SACKS',
+        value: (m) => m.defensiveSacks,
+        format: decimal(1),
+        rank: 'defensiveSacks',
+        qualifier: 'most',
+      },
+      {
+        label: 'QB HITS / GM',
+        value: (m) => m.quarterbackHitsPerGame,
+        format: decimal(1),
+        rank: 'quarterbackHitsPerGame',
+        qualifier: 'most',
+      },
+      {
+        label: 'TAKEAWAYS',
+        value: (m) => m.defensiveTakeaways,
+        format: integer,
+        rank: 'defensiveTakeaways',
+        qualifier: 'most',
+      },
+      {
+        label: 'INTERCEPTIONS',
+        value: (m) => m.defensiveInterceptions,
+        format: integer,
+        rank: 'defensiveInterceptions',
+        qualifier: 'most',
+      },
+    ],
+  },
+  {
+    title: 'SPECIAL TEAMS',
+    metrics: [
+      {
+        label: 'FIELD GOAL %',
+        value: (m) => m.fieldGoalPercentage,
+        format: percent,
+        rank: 'fieldGoalPercentage',
+        qualifier: 'overall',
+      },
+      {
+        label: 'NET PUNT / ATT',
+        value: (m) => m.netPuntYardsPerAttempt,
+        format: decimal(1),
+        rank: 'netPuntYardsPerAttempt',
+        qualifier: 'most',
+      },
+      {
+        label: 'PUNT RET AVG',
+        value: (m) => m.puntReturnYardsPerAttempt,
+        format: decimal(1),
+        rank: 'puntReturnYardsPerAttempt',
+        qualifier: 'most',
+      },
+      {
+        label: 'KICK RET AVG',
+        value: (m) => m.kickoffReturnYardsPerAttempt,
+        format: decimal(1),
+        rank: 'kickoffReturnYardsPerAttempt',
+        qualifier: 'most',
+      },
+    ],
+  },
+];
+
+// One labelled group of metric rows, in the breakdown table's own vocabulary — same
+// StatCell, same borderStrong hairline, same full-bleed px-5 inset, no card chrome.
+// Absent metrics are filtered out BEFORE pairing, so a missing source column closes the
+// gap instead of leaving a hole mid-row; an odd count leaves the final right cell blank,
+// exactly as the DIFF row already does.
+function MetricSection({
+  title,
+  metrics,
+  showRanks,
+  lastRank,
+}: {
+  title: string;
+  metrics: { spec: MetricSpec; display: string; rank?: number }[];
+  showRanks: boolean;
+  lastRank: number;
+}) {
+  if (metrics.length === 0) return null;
+  const rows: (typeof metrics)[] = [];
+  for (let i = 0; i < metrics.length; i += 2) rows.push(metrics.slice(i, i + 2));
+
+  return (
+    <div className="px-5 pt-5">
+      <SectionLabel className="mb-1 px-0">{title}</SectionLabel>
+      <table className="w-full border-collapse text-xs">
+        <tbody>
+          {rows.map((pair, i) => (
+            <tr
+              key={pair[0].spec.label}
+              style={i > 0 ? { borderTop: `1px solid ${uiTokens.borderStrong}` } : undefined}>
+              <StatCell
+                label={pair[0].spec.label}
+                value={pair[0].display}
+                rank={
+                  showRanks ? rankLabel(pair[0].rank, lastRank, pair[0].spec.qualifier) : undefined
+                }
+              />
+              <td className="w-6" />
+              {pair[1] ? (
+                <StatCell
+                  label={pair[1].spec.label}
+                  value={pair[1].display}
+                  rank={
+                    showRanks
+                      ? rankLabel(pair[1].rank, lastRank, pair[1].spec.qualifier)
+                      : undefined
+                  }
+                />
+              ) : (
+                <td colSpan={2} />
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -187,7 +386,6 @@ export default function TeamStatsView({
   currentSeason,
   leadersBySeason,
   nextGame,
-  postseasonGames,
 }: Props) {
   const [index, setIndex] = useState(seasons.length > 0 ? 0 : -1);
   const [seasonSheetOpen, setSeasonSheetOpen] = useState(false);
@@ -297,13 +495,6 @@ export default function TeamStatsView({
     : upcomingSeasonHasRealRow && active?.season === upcomingSeason;
   const showNextGame = !!nextGame?.opponent && (isViewingCurrentSeason || isViewingUpcomingSeason);
 
-  // Postseason section: only on the season tab it was fetched for (seasons[0], the most
-  // recent completed/reported season) — never on an older season tab or the upcoming-
-  // season/incoming-coach chips, which have no postseason data attached. Empty array
-  // (missed the postseason, or games not ingested yet) renders no section (invariant 6).
-  const showPostseason =
-    !!postseasonGames?.length && !!active && active.season === seasons[0]?.season;
-
   // Coach badge — season-scoped, keyed off the active season row (docs/superpowers/
   // specs/2026-07-14-season-scoped-head-coach-design.md). Derived once instead of four
   // near-duplicate <CoachBadge> call sites that each recomputed the same name/meta pair
@@ -339,12 +530,29 @@ export default function TeamStatsView({
   const diffLabel = diff > 0 ? `+${diff}` : String(diff);
   const diffColor = diff > 0 ? uiAccent : diff < 0 ? uiTokens.statusInjured : uiTokens.textMuted;
   const gamesPlayed = active ? active.overallWins + active.overallLosses + active.overallTies : 0;
-  const gamesPlayedLabel = `${gamesPlayed} GAME${gamesPlayed === 1 ? '' : 'S'} PLAYED`;
   // Stub/upcoming team_stats rows can exist before a season starts. With every team at
   // 0 games and 0 points, ranking those rows makes everyone look "first" at stats that
   // have not happened yet, so rank context starts only after a real game is recorded.
   const activeRanks = active && gamesPlayed > 0 ? leagueRanksBySeason?.[active.season] : undefined;
   const lastRank = teams.length;
+
+  // Resolve each section's metrics against the selected season, dropping any whose source
+  // column is missing (invariant 6 — an absent row, never a zeroed one).
+  const activeMetrics = active?.matchupMetrics;
+  const metricSections = METRIC_SECTIONS.map((section) => ({
+    title: section.title,
+    metrics: activeMetrics
+      ? section.metrics.flatMap((spec) => {
+          const value = spec.value(activeMetrics);
+          return value === undefined
+            ? []
+            : [{ spec, display: spec.format(value), rank: activeRanks?.[spec.rank] }];
+        })
+      : [],
+  }));
+  // At a one-game sample the numbers still show but nothing is ranked — a league position
+  // off a single game is noise presented as fact. Same posture as Compare's isThinSample.
+  const showMetricRanks = gamesPlayed > 1;
 
   return (
     <TeamPageShell {...shellProps}>
@@ -472,7 +680,30 @@ export default function TeamStatsView({
                       color={diffColor}
                       rank={rankLabel(activeRanks?.pointDifferential, lastRank, 'most')}
                     />
-                    <td colSpan={2} />
+                    <td className="w-6" />
+                    {/* Turnover margin is a team-level signed number like DIFF, not a
+                      unit metric, so it belongs beside it rather than under a section
+                      heading — and this cell was previously empty. */}
+                    {active.matchupMetrics?.turnoverMargin !== undefined ? (
+                      <StatCell
+                        label="TO MARGIN"
+                        value={signed(0)(active.matchupMetrics.turnoverMargin)}
+                        color={
+                          active.matchupMetrics.turnoverMargin > 0
+                            ? uiAccent
+                            : active.matchupMetrics.turnoverMargin < 0
+                              ? uiTokens.statusInjured
+                              : uiTokens.textMuted
+                        }
+                        rank={
+                          showMetricRanks
+                            ? rankLabel(activeRanks?.turnoverMargin, lastRank, 'most')
+                            : undefined
+                        }
+                      />
+                    ) : (
+                      <td colSpan={2} />
+                    )}
                   </tr>
                   {active.passingYards !== undefined && (
                     <tr style={{ borderTop: `1px solid ${uiTokens.borderInput}` }}>
@@ -499,13 +730,6 @@ export default function TeamStatsView({
                   )}
                 </tbody>
               </table>
-            </div>
-
-            {/* Footer ticker */}
-            <div
-              className="px-5 pb-[22px] pt-3.5 tracking-[0.06em]"
-              style={{ color: uiTokens.textFaintest, fontSize: typeScale.caption }}>
-              {active.season} SEASON · {gamesPlayedLabel}
             </div>
           </>
         ) : clampedIndex === -1 && upcomingSeason ? (
@@ -562,59 +786,22 @@ export default function TeamStatsView({
           </div>
         )}
 
-        {showPostseason && active && (
-          <div className="px-5 pb-7 pt-1">
-            <SectionLabel className="px-0 mb-2">POSTSEASON · {active.season}</SectionLabel>
-            {/* Card doesn't fit here: needs rounded-2xl + overflow-hidden clip + zero
-              padding (rows supply their own), none of which Card's API exposes
-              (rounded-3xl only, no clip variant, padding=16 default) — RowCardList
-              instead, same deviation pattern as PlayerCard's task. */}
-            <RowCardList
-              rows={(postseasonGames ?? []).map((g) => ({
-                key: `${g.gameType}-${g.week}`,
-                left: (
-                  <div className="min-w-0">
-                    <div
-                      className="font-bold tracking-[0.06em]"
-                      style={{ color: uiAccent, fontSize: typeScale.micro }}>
-                      {postseasonRoundLabel(g.gameType).toUpperCase()}
-                    </div>
-                    <div
-                      className="mt-0.5 truncate text-xs font-extrabold"
-                      style={{ color: uiTokens.textPrimary }}>
-                      {g.isHome ? 'vs' : '@'} {g.opponent?.abbrev ?? '—'}
-                    </div>
-                  </div>
-                ),
-                right: (
-                  <div
-                    className="shrink-0 text-right font-bold"
-                    style={{
-                      fontSize: typeScale.label,
-                      // Postseason win uses the team's own accent (not the fixed green
-                      // used by the schedule page's W/L/T — this is a hero result, not
-                      // a compact grid chip).
-                      color:
-                        g.result === 'W'
-                          ? uiAccent
-                          : g.result === 'L'
-                            ? uiTokens.statusInjured
-                            : uiTokens.textMuted,
-                    }}>
-                    {g.result ?? ''}{' '}
-                    {g.teamScore !== null && g.oppScore !== null
-                      ? `${g.teamScore}-${g.oppScore}`
-                      : ''}
-                  </div>
-                ),
-              }))}
-            />
-          </div>
-        )}
+        {/* Team metrics — the breakdown table's language continued, grouped by unit.
+          Placed after NEXT GAME so the hero block keeps its existing adjacency, and
+          before ROSTER LEADERS per the approved design. */}
+        {metricSections.map((section) => (
+          <MetricSection
+            key={section.title}
+            title={section.title}
+            metrics={section.metrics}
+            showRanks={showMetricRanks}
+            lastRank={lastRank}
+          />
+        ))}
 
         {leaderRows.length > 0 && leaders && (
           <div className="px-5 pb-7 pt-1">
-            <SectionLabel className="px-0 mb-2">ROSTER LEADERS · {leaders.season}</SectionLabel>
+            <SectionLabel className="px-0 mb-2">ROSTER LEADERS</SectionLabel>
             {/* Card doesn't fit here: needs rounded-2xl + overflow-hidden clip + zero
               padding (rows supply their own), none of which Card's API exposes
               (rounded-3xl only, no clip variant, padding=16 default) — RowCardList
