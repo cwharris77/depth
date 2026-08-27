@@ -56,7 +56,6 @@ struct ScheduleView: View {
                 SeasonPickerSheet(
                     items: viewModel.seasonOptions.map { SeasonPickerItem(season: $0) },
                     selectedSeason: selectedSeason,
-                    currentSeason: defaultSeason,
                     accent: uiAccent,
                     identifierPrefix: "schedule"
                 ) { season in
@@ -137,7 +136,12 @@ struct ScheduleView: View {
         SeasonPickerTrigger(
             season: viewModel.selectedSeason,
             accent: uiAccent,
-            identifier: "schedule-season-trigger"
+            identifier: "schedule-season-trigger",
+            isHistorical: viewModel.isPastSeason,
+            onBackToCurrent: {
+                guard let defaultSeason = viewModel.defaultSeason else { return }
+                Task { await viewModel.selectSeason(defaultSeason) }
+            }
         ) {
             showSeasonPicker = true
         }

@@ -28,11 +28,10 @@ struct TeamStatsView: View {
             .task { await viewModel.load() }
             .refreshable { await viewModel.load() }
             .sheet(isPresented: $showSeasonPicker) {
-                if let selectedSeason = viewModel.selectedSeason, let currentSeason = viewModel.currentSeason {
+                if let selectedSeason = viewModel.selectedSeason {
                     SeasonPickerSheet(
                         items: seasonPickerItems,
                         selectedSeason: selectedSeason,
-                        currentSeason: currentSeason,
                         accent: uiAccent,
                         identifierPrefix: "stats"
                     ) { season in
@@ -130,7 +129,9 @@ struct TeamStatsView: View {
         SeasonPickerTrigger(
             season: viewModel.selectedSeason,
             accent: uiAccent,
-            identifier: "stats-season-trigger"
+            identifier: "stats-season-trigger",
+            isHistorical: viewModel.isViewingPastSeason,
+            onBackToCurrent: viewModel.backToCurrentSeason
         ) {
             showSeasonPicker = true
         }

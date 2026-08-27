@@ -69,7 +69,6 @@ struct CompareView: View {
                         SeasonPickerSheet(
                             items: viewModel.seasonOptions,
                             selectedSeason: selected,
-                            currentSeason: viewModel.currentSeason ?? selected,
                             accent: DesignTokens.Colors.accent,
                             identifierPrefix: "compare",
                             onSelect: { season in
@@ -180,7 +179,13 @@ struct CompareView: View {
             SeasonPickerTrigger(
                 season: viewModel.resolvedSeason,
                 accent: DesignTokens.Colors.accent,
-                identifier: "compare-season-trigger"
+                identifier: "compare-season-trigger",
+                isHistorical: viewModel.resolvedSeason != nil && viewModel.resolvedSeason != viewModel.currentSeason,
+                onBackToCurrent: {
+                    if let currentSeason = viewModel.currentSeason {
+                        viewModel.selectSeason(currentSeason)
+                    }
+                }
             ) {
                 showSeasonPicker = true
             }
