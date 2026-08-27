@@ -3,19 +3,9 @@ import Foundation
 import Testing
 @testable import Depth
 
-// Geometry regression tests for DEP-207: at any realistic field width, no two dots on
-// the field are closer than `dotSize + gap`, and a row that can't hold the minimum dot
-// size is re-spread around its centroid instead of letting its dots touch.
-//
-// THREE TESTS BELOW ARE SKIPPED — see DEP-318. The phone-field readability prototype
-// replaced the sizing rule these assert: dot size is no longer derived from the tightest
-// same-row gap (which is what forced every offense dot to the 26pt floor), and a tight row
-// is no longer re-spread as a single unit (receivers are now placed in the strip beside
-// the line instead, so the row's combined centroid legitimately moves). They are skipped
-// rather than rewritten because the prototype is still being A/B tested — rewriting them
-// now would bake in numbers that change again once a variant is chosen. DEP-318 covers
-// unskipping and reworking them to assert the new invariants (uniform size, no overlap,
-// receiver clearance) rather than specific pixel sizes.
+// Geometry regression tests for DEP-207/DEP-318. They assert the field's durable
+// legibility guarantees — uniform readable dots, collision clearance, receiver separation,
+// and honest on/off-line depth — without pinning the tuning constants to duplicate literals.
 struct DepthChartFieldLayoutTests {
     // The field on a typical iPhone: screen width minus horizontal padding, height set
     // by `.containerRelativeFrame(.vertical)` in TeamDetailView.
@@ -33,30 +23,46 @@ struct DepthChartFieldLayoutTests {
     ) {
         for (i, a) in slots.enumerated() {
             for b in slots.dropFirst(i + 1) {
-                let pa = layout.positions[a.key] ?? .zero
-                let pb = layout.positions[b.key] ?? .zero
+                let pa = renderedPoint(for: a, layout: layout)
+                let pb = renderedPoint(for: b, layout: layout)
                 let distance = hypot(pa.x - pb.x, pa.y - pb.y)
                 #expect(distance + 0.001 >= layout.dotSize + DepthChartFieldLayout.gap, "\(a.key) and \(b.key) are too close: \(distance)pt", sourceLocation: sourceLocation)
             }
         }
     }
 
-    // SKIPPED (DEP-318): asserts dotSize == 27.6, i.e. sized to the tightest same-row gap.
-    // The prototype sizes every dot uniformly instead; 27.6 was the symptom being fixed.
-    @Test(
-        "generic offense dots never touch at iPhone field width",
-        .disabled("DEP-318: asserts the pre-prototype size-to-tightest-gap rule")
-    )
+    private func renderedPoint(for slot: RenderSlot, layout: DepthChartFieldLayout) -> CGPoint {
+        let point = layout.positions[slot.key] ?? .zero
+        return CGPoint(
+            x: point.x,
+            y: point.y
+                + DepthChartFieldLayout.lineOffset(
+                    y: slot.y, onLine: slot.onLine, dotSize: layout.dotSize
+                )
+        )
+    }
+
+    @Test("phone layouts use one readable dot size across units")
     func offenseDotsNeverTouch() {
-        let slots = offenseFormation.map {
+        let offense = offenseFormation.map {
             RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
         }
-        let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField)
+        let defense = baseDefense.map {
+            RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+        }
+        let special = [
+            slot("st-kr", 30, 18), slot("st-pr", 70, 18), slot("st-ls", 50, 68),
+            slot("st-k", 38, 80), slot("st-p", 62, 80),
+        ]
+        let layouts = [offense, defense, special].map {
+            DepthChartFieldLayout.compute(slots: $0, fieldSize: iphoneField)
+        }
 
-        // The shoulder-to-shoulder OL (8% apart) is the tightest pair: 8% of 370 = 29.6,
-        // minus the 2pt gap → 27.6pt dots.
-        #expect(abs(layout.dotSize - 27.6) < 0.001)
-        assertNoTouching(slots, layout: layout)
+        #expect(Set(layouts.map(\.dotSize)).count == 1, "every unit should use one uniform dot size")
+        #expect(layouts.allSatisfy { $0.dotSize >= DepthChartFieldLayout.minDotSize })
+        assertNoTouching(offense, layout: layouts[0])
+        assertNoTouching(defense, layout: layouts[1])
+        assertNoTouching(special, layout: layouts[2])
     }
 
     @Test("base defense dots never touch and cap at the max size")
@@ -85,37 +91,51 @@ struct DepthChartFieldLayoutTests {
         assertNoTouching(slots, layout: layout)
     }
 
-    // SKIPPED (DEP-318): asserts the row collapses to `minDotSize` and that the row's
-    // combined centroid is preserved. The prototype never shrinks to the floor, and pulls
-    // receivers out of the row's re-spread, so that combined centroid moves by design.
-    @Test(
-        "a row too tight even at the minimum size is re-spread around its centroid",
-        .disabled("DEP-318: asserts the pre-prototype min-size re-spread rule")
-    )
+    @Test("a tight offense preserves receiver clearance and line depth")
     func tightRowIsReSpread() {
-        // 300pt field → the OL's 8% gap is 24pt, below the 26pt minimum + 2pt gap.
         let size = CGSize(width: 300, height: 650)
-        let slots = offenseFormation.map {
-            RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
-        }
+        // Both off-line receivers are charted in the same tight row as the five-man
+        // interior. This is the exact shape that must split into receiver strips rather
+        // than flattening all seven slots into one evenly spaced wall.
+        let slots = [
+            RenderSlot(key: "wr-left", x: 24, y: 54, label: "WR", player: nil, onLine: false),
+            RenderSlot(key: "lt", x: 34, y: 51, label: "LT", player: nil, onLine: true),
+            RenderSlot(key: "lg", x: 42, y: 51, label: "LG", player: nil, onLine: true),
+            RenderSlot(key: "c", x: 50, y: 51, label: "C", player: nil, onLine: true),
+            RenderSlot(key: "rg", x: 58, y: 51, label: "RG", player: nil, onLine: true),
+            RenderSlot(key: "rt", x: 66, y: 51, label: "RT", player: nil, onLine: true),
+            RenderSlot(key: "wr-right", x: 76, y: 54, label: "WR", player: nil, onLine: false),
+        ]
         let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: size)
 
-        #expect(layout.dotSize == DepthChartFieldLayout.minDotSize)
         assertNoTouching(slots, layout: layout)
 
-        // The OL row's centroid must be preserved through the re-spread.
-        let rows = DepthChartFieldLayout.rows(in: slots)
-        var olKeys: [String] = []
-        for row in rows where row.contains(where: { $0.key == "off-c-0" }) {
-            olKeys = row.map { $0.key }
-            break
+        let onLine = slots.filter { $0.onLine == true }
+        let lineYs = onLine.map { renderedPoint(for: $0, layout: layout).y }
+        #expect(lineYs.allSatisfy { abs($0 - lineYs[0]) < 0.001 }, "on-line slots should render on one row")
+
+        let offLine = slots.filter { $0.onLine != true }
+        for slot in offLine {
+            let y = renderedPoint(for: slot, layout: layout).y
+            #expect(
+                lineYs.allSatisfy { abs(y - $0) >= layout.dotSize / 2 },
+                "\(slot.key) should remain visibly off the line"
+            )
         }
-        #expect(!olKeys.isEmpty, "the OL row should be present")
-        let originalCentroid = olKeys.map { key in slots.first(where: { $0.key == key })!.x }
-            .reduce(0, +) / Double(olKeys.count)
-        let reSpreadCentroid = olKeys.map { key in layout.positions[key]!.x / size.width * 100 }
-            .reduce(0, +) / CGFloat(olKeys.count)
-        #expect(abs(originalCentroid - Double(reSpreadCentroid)) < 0.5)
+
+        let interior = onLine.filter { $0.label != "WR" }
+        for receiver in slots.filter({ $0.label == "WR" && $0.onLine != true }) {
+            let receiverX = renderedPoint(for: receiver, layout: layout).x
+            guard let nearest = interior.min(by: {
+                abs(renderedPoint(for: $0, layout: layout).x - receiverX)
+                    < abs(renderedPoint(for: $1, layout: layout).x - receiverX)
+            }) else { continue }
+            let interiorX = renderedPoint(for: nearest, layout: layout).x
+            #expect(
+                abs(receiverX - interiorX) - layout.dotSize >= DepthChartFieldLayout.receiverClearance,
+                "\(receiver.key) should keep a real gap from \(nearest.key)"
+            )
+        }
     }
 
     @Test("dot size stays in the safe range across plausible field widths")
@@ -132,13 +152,7 @@ struct DepthChartFieldLayoutTests {
         }
     }
 
-    // SKIPPED (DEP-318): the edge-pinning behavior this covers still holds, but the test
-    // also asserts dotSize == 27.6 (same stale rule as above). Worth reviving in DEP-318
-    // with the size assertion dropped — the fill-width guarantee itself is still real.
-    @Test(
-        "offense with fillWidth spreads to the field edges and runs larger dots (DEP-244)",
-        .disabled("DEP-318: asserts the pre-prototype size-to-tightest-gap rule")
-    )
+    @Test("offense with fillWidth reaches the field edges (DEP-244)")
     func offenseFillWidthReachesEdges() {
         let slots = offenseFormation.map {
             RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
@@ -164,10 +178,9 @@ struct DepthChartFieldLayoutTests {
         // The no-touch guarantee still holds.
         assertNoTouching(slots, layout: filled)
 
-        // Default fillWidth stays false, so existing offense geometry is unchanged.
+        // Omitting fillWidth remains equivalent to the explicit default.
         let `default` = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField)
-        #expect(`default`.dotSize == plain.dotSize)
-        #expect(abs(plain.dotSize - 27.6) < 0.001)
+        #expect(`default` == plain)
     }
 
     @Test("real Shotgun 11 fills the field width too (DEP-244, Raiders case)")
