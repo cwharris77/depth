@@ -178,7 +178,6 @@ struct CompareView: View {
         if !viewModel.seasonOptions.isEmpty {
             SeasonPickerTrigger(
                 season: viewModel.resolvedSeason,
-                accent: DesignTokens.Colors.accent,
                 identifier: "compare-season-trigger",
                 isHistorical: viewModel.resolvedSeason != nil && viewModel.resolvedSeason != viewModel.currentSeason,
                 onBackToCurrent: {

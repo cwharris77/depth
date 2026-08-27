@@ -128,7 +128,6 @@ struct TeamStatsView: View {
     private var seasonPickerTrigger: some View {
         SeasonPickerTrigger(
             season: viewModel.selectedSeason,
-            accent: uiAccent,
             identifier: "stats-season-trigger",
             isHistorical: viewModel.isViewingPastSeason,
             onBackToCurrent: viewModel.backToCurrentSeason
