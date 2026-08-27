@@ -128,3 +128,40 @@ private func metrics(
         #expect(groups.first?.metrics.first?.rankCaption == nil)
     }
 }
+
+// ESPN's playoffseed is a conference standings position, not a playoff seed. These are
+// the Swift twins of lib/utils/team/playoff-seed.test.ts.
+@Suite struct PlayoffSeedAndStreakTests {
+    @Test func sevenPlayoffSpotsFrom2020AndSixBefore() {
+        #expect(playoffSpotsPerConference(season: 2019) == 6)
+        #expect(playoffSpotsPerConference(season: 2020) == 7)
+        #expect(playoffSpotsPerConference(season: 2002) == 6)
+    }
+
+    @Test func rejectsAStandingsPositionOutsideTheBracket() {
+        #expect(isPlayoffSeed(1, season: 2025))
+        #expect(isPlayoffSeed(7, season: 2025))
+        #expect(!isPlayoffSeed(8, season: 2025))
+        // The shipped bug: a 5-12 Browns team sat 13th in the AFC and read "SEED 13".
+        #expect(!isPlayoffSeed(13, season: 2025))
+    }
+
+    @Test func respectsThePre2020SixTeamField() {
+        #expect(isPlayoffSeed(6, season: 2019))
+        #expect(!isPlayoffSeed(7, season: 2019))
+        #expect(isPlayoffSeed(7, season: 2020))
+    }
+
+    @Test func treatsAnAbsentOrZeroSeedAsNotASeed() {
+        #expect(!isPlayoffSeed(nil, season: 2025))
+        #expect(!isPlayoffSeed(0, season: 2025))
+    }
+
+    @Test func dropsESPNsNoStreakPlaceholders() {
+        #expect(displayStreak("W3") == "W3")
+        #expect(displayStreak("-") == nil)
+        #expect(displayStreak(" - ") == nil)
+        #expect(displayStreak("") == nil)
+        #expect(displayStreak(nil) == nil)
+    }
+}

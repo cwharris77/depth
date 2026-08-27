@@ -207,7 +207,7 @@ struct TeamStatsView: View {
                     .accessibilityIdentifier("stats-record")
                 Spacer(minLength: DesignTokens.Spacing.md)
                 VStack(alignment: .trailing, spacing: 1) {
-                    if let streak = stats.streak, !streak.isEmpty {
+                    if let streak = displayStreak(stats.streak) {
                         Text(verbatim: streak)
                             .font(.footnote.bold())
                             .foregroundStyle(uiAccent)
@@ -233,7 +233,9 @@ struct TeamStatsView: View {
     }
 
     private func playoffLine(_ stats: TeamSeasonStats, conference: String) -> String {
-        guard let seed = stats.playoffSeed, seed > 0 else {
+        guard isPlayoffSeed(stats.playoffSeed, season: stats.season),
+              let seed = stats.playoffSeed
+        else {
             return "MISSED PLAYOFFS · \(conference)"
         }
         return "SEED \(seed) · \(conference)"

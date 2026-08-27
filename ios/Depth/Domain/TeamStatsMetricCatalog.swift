@@ -26,6 +26,33 @@ func ordinal(_ n: Int) -> String {
     }
 }
 
+// Swift twins of web's lib/utils/team/playoff-seed.ts. `team_stats.playoff_seed` is
+// ESPN's `playoffseed`, which is a team's position within its conference (1-16), NOT a
+// playoff seed — a team that missed still gets a number, so rendering it as "SEED 13"
+// claimed a 5-12 team made the postseason. The NFL went from six playoff teams per
+// conference to seven in 2020, and team_stats reaches back to 2002, so the boundary
+// covers most of the ingested history.
+private let sevenTeamFieldFrom = 2020
+
+func playoffSpotsPerConference(season: Int) -> Int {
+    season >= sevenTeamFieldFrom ? 7 : 6
+}
+
+/// True when `seed` is a real postseason seed for that season, false when it is only a
+/// standings position.
+func isPlayoffSeed(_ seed: Int?, season: Int) -> Bool {
+    guard let seed, seed > 0 else { return false }
+    return seed <= playoffSpotsPerConference(season: season)
+}
+
+/// ESPN writes "-" as the streak for a season with no games played. That is not a
+/// streak, and printing it left a stray dash in the hero.
+func displayStreak(_ streak: String?) -> String? {
+    guard let streak else { return nil }
+    let trimmed = streak.trimmingCharacters(in: .whitespaces)
+    return trimmed.isEmpty || trimmed == "-" ? nil : trimmed
+}
+
 /// How a rank reads in copy, matching web's `rankLabel` third argument.
 enum TeamStatsRankQualifier: String, Sendable {
     case overall
