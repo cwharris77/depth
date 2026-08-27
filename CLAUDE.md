@@ -138,9 +138,16 @@ refactor (see §6).
 
 ### Process
 
-- **One concern per PR.** Big features split into stacked PRs by layer (PR1 data,
-  PR2 UI — see #56/#57). A stacked PR's base is the previous branch; note "retarget
-  to main once #N merges" in the body.
+- **One concern per PR.** Big multi-layer features split into stacked PRs by layer
+  (PR1 data, PR2 UI — see #56/#57) using GitHub's native `gh stack` workflow, not
+  manual base-then-retarget. A stack is a **linear chain** where each PR targets the
+  branch below it, bottom → `main`; GitHub auto-re-targets each upper PR to `main`
+  when the one below lands, so **never write "retarget to main once #N merges"** — that's
+  the old manual way. Build it with `gh stack init <branch>` → commit →
+  `gh stack add <next>` per layer → `gh stack submit` to open all linked PRs at once;
+  merge with the stack UI or `gh stack merge`. Stacks only make sense for **linear
+  dependency chains** (data → UI); parallel independent work stays separate PRs, and
+  all layers must live in this repo (no cross-fork stacks).
 - **Conventional Commits** for commits and PR titles. Scopes in use: `uniforms`,
   `nav`, `search`, `player`, `field`, `depth`, `card`, `switcher`, `teams`, `colors`,
   `espn`, `ingest`, `supabase`, `scripts`, `pwa`, `seo`, `theme`, `layout`, `ci`,
