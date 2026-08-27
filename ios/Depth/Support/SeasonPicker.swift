@@ -3,14 +3,22 @@ import SwiftUI
 // Shared season picker — trigger button + sheet — for Schedule and Stats, replacing the
 // old inline SeasonChipRow (a flat horizontally-scrolling list of chips that stopped
 // scaling once team_stats ingest landed seasons back to 1999, ~25+ entries). The sheet
-// is the same List + toolbar "Back to current" shape as History's HistorySeasonSheet,
-// generalized to a plain Int season instead of HistorySeason's current/past distinction
-// — Schedule and Stats have no roster-vs-historical wrinkle to encode. Originally
-// duplicated per-screen (DEP-278); unified into one component after that duplication
-// carried a bug into both copies (a raw `Text("\(season) SEASON")` interpolation is a
-// SwiftUI `LocalizedStringKey` literal, which formats an interpolated `Int` with
-// locale grouping — "2,026" instead of "2026" — `Text(verbatim:)` here avoids it once,
-// for both screens).
+// is the same List shape as History's HistorySeasonSheet, generalized to a plain Int
+// season instead of HistorySeason's current/past distinction — Schedule and Stats have
+// no roster-vs-historical wrinkle to encode. Originally duplicated per-screen
+// (DEP-278); unified into one component after that duplication carried a bug into both
+// copies (a raw `Text("\(season) SEASON")` interpolation is a SwiftUI
+// `LocalizedStringKey` literal, which formats an interpolated `Int` with locale
+// grouping — "2,026" instead of "2026" — `Text(verbatim:)` here avoids it once, for
+// both screens).
+//
+// Cooper report: the sheet's own "Back to current" toolbar button rendered clipped in
+// `.topBarLeading` (squeezed against the centered "Seasons" title), and its placement
+// was backwards anyway — once you're already looking at the season list, tapping the
+// current row does the same thing a dedicated button would. The escape hatch belongs
+// next to the *trigger* that opened the sheet, in the same row, so it stays reachable
+// without opening the sheet at all. `SeasonPickerTrigger` now renders that affordance
+// itself; the sheet no longer has one.
 //
 // Styled as a Liquid Glass control (`.buttonStyle(.glass)`, iOS 26+) — a clear/outlined
 // button, matching the rest of the OS's current material language — with a plain
@@ -19,23 +27,45 @@ struct SeasonPickerTrigger: View {
     let season: Int?
     let accent: Color
     let identifier: String
+    /// True while a non-current season is selected — shows the "back to current"
+    /// button beside the trigger.
+    let isHistorical: Bool
+    let onBackToCurrent: () -> Void
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 4) {
-                Text(verbatim: season.map { "\($0) SEASON" } ?? "SEASON")
-                    .font(.caption.bold())
-                    .tracking(0.1)
-                Image(systemName: "chevron.down")
-                    .font(.caption2.bold())
+        HStack(spacing: DesignTokens.Spacing.xs) {
+            Button(action: action) {
+                HStack(spacing: 4) {
+                    // Cooper report: some teams' accent colors read poorly against this
+                    // capsule's translucent gray material — white (the same color the
+                    // sheet's own close "X" uses) stays legible against every team.
+                    Text(verbatim: season.map { "\($0) SEASON" } ?? "SEASON")
+                        .font(.caption.bold())
+                        .tracking(0.1)
+                    Image(systemName: "chevron.down")
+                        .font(.caption2.bold())
+                }
+                .foregroundStyle(DesignTokens.Colors.textPrimary)
+                .padding(.horizontal, DesignTokens.Spacing.sm)
             }
-            .foregroundStyle(accent)
-            .padding(.horizontal, DesignTokens.Spacing.sm)
+            .frame(minHeight: 44)
+            .modifier(GlassTriggerStyle())
+            .accessibilityIdentifier(identifier)
+
+            if isHistorical {
+                Button(action: onBackToCurrent) {
+                    Image(systemName: "arrow.uturn.backward")
+                        .font(.caption.bold())
+                        .foregroundStyle(accent)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .modifier(GlassTriggerStyle())
+                .accessibilityLabel("Back to current season")
+                .accessibilityIdentifier("\(identifier)-back-to-current")
+            }
         }
-        .frame(minHeight: 44)
-        .modifier(GlassTriggerStyle())
-        .accessibilityIdentifier(identifier)
     }
 }
 
@@ -66,7 +96,6 @@ struct SeasonPickerSheet: View {
     /// Newest season first, matching both callers' natural query/stride order.
     let items: [SeasonPickerItem]
     let selectedSeason: Int
-    let currentSeason: Int
     let accent: Color
     let identifierPrefix: String
     let onSelect: (Int) -> Void
@@ -134,19 +163,11 @@ struct SeasonPickerSheet: View {
             .navigationTitle("Seasons")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // Mirrors HistorySeasonSheet's DEP-245 escape hatch: once a past season is
-                // selected, the current row can be scrolled far out of view in a long
-                // 1999→present list, so pin a one-tap way back in the toolbar.
-                if selectedSeason != currentSeason {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button("Back to current") {
-                            onSelect(currentSeason)
-                        }
-                        .tint(accent)
-                        .frame(minWidth: 44, minHeight: 44)
-                        .accessibilityIdentifier("\(identifierPrefix)-season-back-to-current")
-                    }
-                }
+                // No "Back to current" here — that escape hatch now lives on
+                // `SeasonPickerTrigger`, beside the button that opens this sheet
+                // (Cooper report: it was clipped in this toolbar, and redundant once
+                // you're already looking at the season list — tapping the current row
+                // does the same thing).
                 // Top-trailing X, matching every other picker sheet in the app
                 // (TeamListPickerSheet, UniformFilterSheet, UniformPickerSheet,
                 // PlayerDetailView) — this sheet was missing it.
