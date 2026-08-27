@@ -26,6 +26,20 @@ import Testing
     #expect(url?.path == "/privacy")
 }
 
+// DEP-308: both pre-submit auth disclosures must use the same canonical public site,
+// with separate stable destinations rather than a guessed host in AuthSheet.
+struct AuthLegalURLTests {
+    @Test func linksShareTheProductionStaticSite() {
+        let terms = AppBuildInfo.termsOfServiceURL
+        let privacy = AppBuildInfo.privacyPolicyURL
+
+        #expect(terms?.scheme == "https")
+        #expect(terms?.host == privacy?.host)
+        #expect(terms?.path == "/terms")
+        #expect(privacy?.path == "/privacy")
+    }
+}
+
 private actor FakeDepthRepository: DepthRepository {
     var teamsResult: Result<[Team], Error>
     var snapshotResults: [String: Result<TeamSnapshot, Error>] = [:]

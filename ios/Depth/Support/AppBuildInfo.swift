@@ -2,9 +2,9 @@ import Foundation
 
 // Static About-section content (Settings) — design spec Gate 0 item 9's in-app
 // non-affiliation disclaimer, Milestone 2B item 24's "settings" item, and the DEP-160
-// privacy-policy link (required by Apple — reachable from within the app, not just the
-// App Store listing). The production site (depth-ashen.vercel.app) hosts the /privacy
-// page; verified live before wiring the link here.
+// legal links (required by Apple — reachable from within the app, not just the App Store
+// listing). The production site hosts both public pages; every in-app destination derives
+// from this one canonical origin rather than repeating or guessing hosts at call sites.
 enum AppBuildInfo {
     /// Reads the live bundle's CFBundleDisplayName rather than a literal — a hardcoded
     /// string here silently went stale during the "The Sticks" rename (caught in QA:
@@ -22,12 +22,15 @@ enum AppBuildInfo {
         + "Any trademarks used in the app are used solely to identify the respective "
         + "entities and remain the property of their respective owners."
 
-    /// The live production `/privacy` page (verified 200 on depth-ashen.vercel.app).
-    /// Kept as a string so a typo degrades to a nil URL at the call site rather than a
-    /// crash — the About card simply omits the row if it can't be constructed.
-    static let privacyPolicyURLString = "https://depth-ashen.vercel.app/privacy"
+    /// Canonical public origin retained from DEP-160's verified production privacy URL.
+    /// Kept as a string so malformed configuration degrades to nil at each call site.
+    private static let publicSiteURLString = "https://depth-ashen.vercel.app"
+
+    static let privacyPolicyURLString = "\(publicSiteURLString)/privacy"
+    static let termsOfServiceURLString = "\(publicSiteURLString)/terms"
 
     static var privacyPolicyURL: URL? { URL(string: privacyPolicyURLString) }
+    static var termsOfServiceURL: URL? { URL(string: termsOfServiceURLString) }
 
     /// The support/feedback contact address — previously an unfilled Gate 0 item (no
     /// placeholder was invented before a real address existed). Also published on the

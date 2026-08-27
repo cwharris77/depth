@@ -45,6 +45,14 @@ final class AuthUITests: XCTestCase {
             app.textFields["auth-email"].waitForExistence(timeout: 15),
             "sign-in should present the native email OTP flow"
         )
+        XCTAssertTrue(
+            app.links["Terms of Service"].waitForExistence(timeout: 5),
+            "the pre-submit disclosure should expose a separate Terms link"
+        )
+        XCTAssertTrue(
+            app.links["Privacy Policy"].waitForExistence(timeout: 5),
+            "the pre-submit disclosure should expose a separate Privacy link"
+        )
         XCTAssertTrue(app.buttons["auth-send-code"].waitForExistence(timeout: 15))
     }
 

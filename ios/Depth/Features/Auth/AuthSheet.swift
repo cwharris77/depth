@@ -75,6 +75,23 @@ struct AuthSheet: View {
                 )
                 .accessibilityIdentifier("auth-email")
 
+            // DEP-308: shown before submission and built from AppBuildInfo's canonical
+            // public origin. Markdown preserves two independently tappable, VoiceOver-
+            // discoverable links while keeping the approved sentence intact.
+            if let terms = AppBuildInfo.termsOfServiceURL,
+                let privacy = AppBuildInfo.privacyPolicyURL,
+                let disclosure = try? AttributedString(
+                    markdown:
+                        "By continuing, you agree to our [Terms of Service](\(terms.absoluteString)) and acknowledge our [Privacy Policy](\(privacy.absoluteString))."
+                )
+            {
+                Text(disclosure)
+                    .font(.caption)
+                    .foregroundStyle(DesignTokens.Colors.textFaint)
+                    .tint(DesignTokens.Colors.accent)
+                    .accessibilityIdentifier("auth-legal-disclosure")
+            }
+
             Button {
                 Task { await viewModel.sendCode() }
             } label: {

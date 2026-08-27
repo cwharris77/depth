@@ -457,6 +457,19 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
             Enter a valid email address.
           </div>
         )}
+        <p
+          className="leading-relaxed"
+          style={{ color: colors.textFaint, fontSize: typeScale.label }}>
+          By continuing, you agree to our{' '}
+          <Link href="/terms" style={{ color: colors.accent }} className="underline">
+            Terms of Service
+          </Link>{' '}
+          and acknowledge our{' '}
+          <Link href="/privacy" style={{ color: colors.accent }} className="underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
         <Button
           onClick={sendCode}
           disabled={sendState === 'sending' || !isValidEmail(trimmedEmail)}>
@@ -468,14 +481,6 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
           </div>
         )}
       </div>
-
-      <p className="leading-relaxed" style={{ color: colors.textFaint, fontSize: typeScale.label }}>
-        By continuing you agree to our{' '}
-        <Link href="/privacy" style={{ color: colors.accent }} className="underline">
-          privacy policy
-        </Link>
-        .
-      </p>
     </div>
   );
 }
