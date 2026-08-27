@@ -32,6 +32,23 @@ final class CompareViewModel {
 
         var id: Self { self }
 
+        /// The unit whose metric groups this lens shows.
+        var unit: Unit {
+            switch self {
+            case .offense: .offense
+            case .defense: .defense
+            case .specialTeams: .special
+            }
+        }
+
+        /// The segmented-control label. Shortened to "Special" (canvas 1b) because the
+        /// third segment now shares a full-width three-up bar with two shorter labels and
+        /// "Special Teams" was the only one that had to shrink to fit. VoiceOver still
+        /// hears the full unit name via `accessibilityLabel`.
+        var tabLabel: String {
+            self == .specialTeams ? "Special" : accessibilityLabel
+        }
+
         var accessibilityLabel: String {
             switch self {
             case .offense: "Offense"
@@ -67,6 +84,12 @@ final class CompareViewModel {
     private(set) var tab: Tab = .matchup
     private(set) var lens: Lens = .offense
     private(set) var position: Position = .qb
+
+    /// The season the user explicitly picked, or nil to follow `defaultSeason`. Kept nil
+    /// until a deliberate pick so the redesign's season picker (vault canvas option 1b)
+    /// only *surfaces* the season this page was already reading — it does not change which
+    /// one that is. See `defaultSeason`.
+    private(set) var selectedSeason: Int?
 
     // MARK: - DEP-311: room-picker state
 
@@ -138,15 +161,114 @@ final class CompareViewModel {
         return snapshots[teamB.id]
     }
 
-    /// The side A team's stats, or nil when not picked/invalid.
+    /// The side A team's stats at the resolved season, or nil when not picked/invalid.
     var effectiveStatsA: TeamSeasonStats? {
         guard let teamA else { return nil }
-        return effectiveStats(for: teamA.id)
+        return seasonStats(for: teamA.id)
     }
 
     var effectiveStatsB: TeamSeasonStats? {
         guard let teamB else { return nil }
-        return effectiveStats(for: teamB.id)
+        return seasonStats(for: teamB.id)
+    }
+
+    // MARK: - Season selection and provenance (canvas options 1b / 2d / 3a-3b)
+
+    /// The season both sides are read at: the user's explicit pick, else `defaultSeason`.
+    var resolvedSeason: Int? { selectedSeason ?? defaultSeason }
+
+    /// The season this page lands on with no explicit pick. Deliberately unchanged from
+    /// the behavior that predated the picker — `effectiveStats(for:)`'s "newest season
+    /// that actually has matchupMetrics" — so surfacing the season does not silently move
+    /// which numbers a returning user sees. Side A decides; side B is read at the same
+    /// season so the two columns are always the same year (both teams' metrics are
+    /// ingested together, so in practice they agree anyway).
+    private var defaultSeason: Int? {
+        if let teamA, let season = effectiveStats(for: teamA.id)?.season { return season }
+        if let teamB, let season = effectiveStats(for: teamB.id)?.season { return season }
+        return nil
+    }
+
+    /// Every season either team has a row for, newest first, plus the upcoming season when
+    /// ingest hasn't written a real row for it yet. Mirrors TeamStatsViewModel's synthetic
+    /// upcoming chip so Compare's picker offers the same years as Stats and Schedule.
+    var seasonOptions: [SeasonPickerItem] {
+        let pages = [teamA, teamB].compactMap { $0 }.compactMap { statsPages[$0.id] }
+        var years = Set(pages.flatMap { $0.seasons.map(\.season) })
+        let upcoming = pages.compactMap(\.upcomingSeason).max()
+        if let upcoming { years.insert(upcoming) }
+        return years.sorted(by: >).map {
+            SeasonPickerItem(season: $0, isUpcoming: $0 == upcoming)
+        }
+    }
+
+    /// The season "Back to current" returns to in the picker sheet.
+    var currentSeason: Int? {
+        let pages = [teamA, teamB].compactMap { $0 }.compactMap { statsPages[$0.id] }
+        return pages.compactMap(\.upcomingSeason).max() ?? pages.map(\.currentSeason).max()
+    }
+
+    /// True once the resolved season is over — every game played, outcome known. Drives
+    /// the FINAL stamp, which turn 3 of the canvas established is only honest here: a
+    /// season still being played stamps LIVE plus its games-played count instead.
+    private var resolvedSeasonIsCompleted: Bool {
+        guard let resolvedSeason, let current = currentSeasonYear else { return false }
+        return resolvedSeason < current
+    }
+
+    /// The league's current season year, from whichever page is loaded.
+    private var currentSeasonYear: Int? {
+        [teamA, teamB].compactMap { $0 }.compactMap { statsPages[$0.id]?.currentSeason }.max()
+    }
+
+    /// The provenance claim beside the season picker. `.none` whenever there is nothing to
+    /// date-stamp — no team picked, or the resolved season has no metrics row on either
+    /// side (canvas 2a).
+    var seasonStamp: CompareSeasonStamp {
+        compareSeasonStamp(
+            metrics: metricsA ?? metricsB,
+            isCompleted: resolvedSeasonIsCompleted,
+            hasResolvedSeason: resolvedSeason != nil
+        )
+    }
+
+    /// True while the live season's sample is too thin to rank the two teams — the caution
+    /// strip shows and every leader tint is dropped (canvas 3a).
+    var isThinSample: Bool { CompareSampleGuard.isThin(seasonStamp) }
+
+    var metricsA: TeamMatchupMetrics? { effectiveStatsA?.matchupMetrics }
+    var metricsB: TeamMatchupMetrics? { effectiveStatsB?.matchupMetrics }
+
+    /// True when the resolved season has no metrics for either side — the canvas 2d state,
+    /// which names the season rather than dead-ending on a bare "no metrics available".
+    var metricsUnavailable: Bool { metricsA == nil && metricsB == nil }
+
+    /// The newest season older than the resolved one that BOTH picked teams have metrics
+    /// for — what 2d's "Compare <year> instead" jumps to. Only offered when it would
+    /// actually populate the page, so a season that only one side reports is not a
+    /// destination. Falls back to a single picked team when only one slot is filled.
+    var fallbackSeasonWithMetrics: Int? {
+        let ids = [teamA, teamB].compactMap { $0?.id }
+        guard !ids.isEmpty else { return nil }
+        let perTeam = ids.map { id in
+            Set(
+                (statsPages[id]?.seasons ?? [])
+                    .filter { $0.matchupMetrics != nil }
+                    .map(\.season)
+            )
+        }
+        guard var shared = perTeam.first else { return nil }
+        for years in perTeam.dropFirst() { shared.formIntersection(years) }
+        if let resolvedSeason { shared = shared.filter { $0 < resolvedSeason } }
+        return shared.max()
+    }
+
+    /// The exact row for the resolved season — never a neighbouring year's. A team with no
+    /// row for that season degrades to nil, which the table renders as em dashes on that
+    /// side rather than quietly borrowing another season's numbers.
+    private func seasonStats(for teamId: String) -> TeamSeasonStats? {
+        guard let resolvedSeason else { return effectiveStats(for: teamId) }
+        return statsPages[teamId]?.seasons.first { $0.season == resolvedSeason }
     }
 
     /// `seasons.first` alone picks up a stub: nflverse writes a `team_stats` row for a
@@ -257,6 +379,12 @@ final class CompareViewModel {
         } else {
             teamB = nil
         }
+    }
+
+    /// Pure selection — every season already arrived in the two `teamStats` payloads, so
+    /// this never refetches (same as TeamStatsViewModel's season chips).
+    func selectSeason(_ season: Int) {
+        selectedSeason = season
     }
 
     func selectTab(_ tab: Tab) {

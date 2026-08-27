@@ -91,7 +91,7 @@ func compareFreshness(
     now: Date,
     staleAfter: TimeInterval = 24 * 60 * 60
 ) -> CompareFreshness {
-    guard let updatedAt, let date = ISO8601DateFormatter().date(from: updatedAt) else {
+    guard let updatedAt, let date = Timestamp.parseISO8601(updatedAt) else {
         return .unavailable
     }
     return now.timeIntervalSince(date) > staleAfter ? .stale : .current

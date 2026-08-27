@@ -62,6 +62,23 @@ struct CompareView: View {
                         dismissOnSelect: false
                     )
                 }
+                .sheet(isPresented: $showSeasonPicker) {
+                    // Same shared control Stats and Schedule use, so Compare's season
+                    // vocabulary matches theirs (SeasonPickerTrigger above, this sheet here).
+                    if let selected = viewModel.resolvedSeason {
+                        SeasonPickerSheet(
+                            items: viewModel.seasonOptions,
+                            selectedSeason: selected,
+                            currentSeason: viewModel.currentSeason ?? selected,
+                            accent: DesignTokens.Colors.accent,
+                            identifierPrefix: "compare",
+                            onSelect: { season in
+                                viewModel.selectSeason(season)
+                                showSeasonPicker = false
+                            }
+                        )
+                    }
+                }
                 .sheet(isPresented: $showAccount) {
                     // Matches TeamDetailView's account sheet exactly (DEP-252) — same
                     // SettingsView, same three dependencies, just sourced from
@@ -79,6 +96,7 @@ struct CompareView: View {
     }
 
     @State private var showAccount = false
+    @State private var showSeasonPicker = false
 
     /// The sheet presents when a slot is mid-pick (`pickingSlot != nil`).
     private var pickerPresented: Binding<Bool> {
@@ -123,7 +141,9 @@ struct CompareView: View {
 
     private var compareContent: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm + 6) {
+                seasonRow
+
                 teamSlotRow
 
                 tabSwitcher
@@ -144,22 +164,69 @@ struct CompareView: View {
         .accessibilityIdentifier("compare-content")
     }
 
+    /// The season picker plus its provenance stamp (vault canvas 1b / 3a-3b). Hidden until
+    /// at least one team resolves, because the season list is read off the picked teams'
+    /// own `teamStats` payloads — there is no team-independent season source here, and a
+    /// chip that opens an empty sheet is worse than no chip. (The canvas draws it in 2a
+    /// with nothing picked; that is the one place this deviates, and it deviates toward not
+    /// showing an inert control.)
+    ///
+    /// The trailing slot carries whichever of the two is meaningful: the stamp when there
+    /// are numbers to date-stamp, otherwise the "Clear selection" control that used to sit
+    /// above the slot row (canvas 2b puts it exactly here). Per-slot X buttons are
+    /// unchanged, so no way of clearing a pick was removed.
+    @ViewBuilder
+    private var seasonRow: some View {
+        if !viewModel.seasonOptions.isEmpty {
+            HStack(spacing: DesignTokens.Spacing.sm) {
+                SeasonPickerTrigger(
+                    season: viewModel.resolvedSeason,
+                    accent: DesignTokens.Colors.accent,
+                    identifier: "compare-season-trigger"
+                ) {
+                    showSeasonPicker = true
+                }
+
+                Spacer(minLength: 0)
+
+                if viewModel.seasonStamp.badge != nil {
+                    CompareSeasonStampView(stamp: viewModel.seasonStamp)
+                } else if viewModel.pickedCount > 0 {
+                    clearSelectionButton
+                }
+            }
+        }
+    }
+
+    /// True when `seasonRow` already rendered the clear control, so `teamSlotRow` must not
+    /// render a second one. The canvas drops "Clear selection" entirely on the stamped page
+    /// (1b), but that control was a direct request — rather than delete it, it falls back to
+    /// its previous home above the slot row whenever the stamp takes the season row's
+    /// trailing slot.
+    private var clearSelectionIsInSeasonRow: Bool {
+        !viewModel.seasonOptions.isEmpty && viewModel.seasonStamp.badge == nil
+    }
+
+    /// Cooper (Aug 25): re-tapping a filled slot to swap teams wasn't obvious as a way to
+    /// change your pick — an explicit "Clear selection" control was requested. Clears both
+    /// slots; each slot's own corner button clears just that one.
+    private var clearSelectionButton: some View {
+        Button {
+            viewModel.clearTeam(.a)
+            viewModel.clearTeam(.b)
+        } label: {
+            Text("Clear selection")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(DesignTokens.Colors.textFaint)
+        }
+        .frame(minHeight: 44)
+        .accessibilityIdentifier("compare-clear-both")
+    }
+
     private var teamSlotRow: some View {
         VStack(alignment: .trailing, spacing: DesignTokens.Spacing.xs) {
-            // Cooper (Aug 25 → repositioned Aug 26, above the pills rather than below):
-            // re-tapping a filled slot to swap teams wasn't obvious as a way to change your
-            // pick — an explicit "Clear selection" control was requested. Clears both slots;
-            // each slot's own corner button (below) clears just that one.
-            if viewModel.pickedCount > 0 {
-                Button {
-                    viewModel.clearTeam(.a)
-                    viewModel.clearTeam(.b)
-                } label: {
-                    Text("Clear selection")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(DesignTokens.Colors.textFaint)
-                }
-                .accessibilityIdentifier("compare-clear-both")
+            if viewModel.pickedCount > 0 && !clearSelectionIsInSeasonRow {
+                clearSelectionButton
             }
 
             HStack(spacing: DesignTokens.Spacing.sm) {
@@ -195,6 +262,9 @@ struct CompareView: View {
                     .font(.footnote.weight(.bold))
                     .foregroundStyle(team != nil ? DesignTokens.Colors.textPrimary : DesignTokens.Colors.textFaint)
                     .lineLimit(1)
+                if team != nil {
+                    slotRecord(slot)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, DesignTokens.Spacing.md)
@@ -246,6 +316,32 @@ struct CompareView: View {
         }
     }
 
+    /// The picked team's W-L at the resolved season, under its name (vault canvas 1b) —
+    /// "the filled side already shows its record, so the page starts paying off before the
+    /// second pick" (canvas 2b). While the side is still resolving this is a placeholder bar
+    /// of the same height (canvas 2e), never a "0-0" that would flash and then jump
+    /// (AGENTS.md mistake #16). A resolved season the team has no row for shows nothing
+    /// rather than borrowing another year's record.
+    @ViewBuilder
+    private func slotRecord(_ slot: CompareViewModel.Slot) -> some View {
+        if viewModel.evidenceLoadState == .loading {
+            RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
+                .fill(DesignTokens.Colors.surfacePlaceholder)
+                .frame(width: 40, height: 11)
+        } else if let stats = slot == .a ? viewModel.effectiveStatsA : viewModel.effectiveStatsB {
+            Text(
+                verbatim: CompareRecordCatalog.recordText(
+                    wins: stats.overallWins,
+                    losses: stats.overallLosses,
+                    ties: stats.overallTies
+                )
+            )
+            .font(.caption.weight(.semibold))
+            .monospacedDigit()
+            .foregroundStyle(DesignTokens.Colors.textMuted)
+        }
+    }
+
     /// Final-indicator for the slot label. Web shows "City Name" at ≥480px and the
     /// short name below (web CompareView's `min-[480px]` swap). Native has no CSS
     /// breakpoint, but at phone widths the two columns are always narrow, so the city is
@@ -282,6 +378,67 @@ struct CompareView: View {
         case .position:
             PositionDepthSection(viewModel: viewModel)
         }
+    }
+}
+
+// MARK: - Provenance stamp
+
+/// The badge + detail line beside the season picker (vault canvas 1b, corrected by 3a/3b).
+/// The badge is the honesty control on this page: FINAL only for a season that is actually
+/// over, LIVE plus a games-played count while it is still being played, UPCOMING before
+/// kickoff. See `compareSeasonStamp` for why FINAL cannot be the default.
+private struct CompareSeasonStampView: View {
+    let stamp: CompareSeasonStamp
+
+    var body: some View {
+        if let badge = stamp.badge {
+            HStack(spacing: DesignTokens.Spacing.xs + 2) {
+                Text(badge)
+                    .font(.caption2.weight(.heavy))
+                    .tracking(0.7)
+                    .foregroundStyle(badgeForeground)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 4)
+                    .background(badgeBackground, in: RoundedRectangle(cornerRadius: 4))
+                    .overlay {
+                        if stamp == .upcoming {
+                            RoundedRectangle(cornerRadius: 4)
+                                .strokeBorder(DesignTokens.Colors.accent.opacity(0.5), lineWidth: 1)
+                        }
+                    }
+
+                let detail = stamp.detail()
+                if !detail.isEmpty {
+                    Text(detail)
+                        .font(.caption2.weight(.semibold))
+                        .tracking(0.4)
+                        .foregroundStyle(DesignTokens.Colors.textFaint)
+                }
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(accessibilityLabel(badge))
+            .accessibilityIdentifier("compare-season-stamp")
+        }
+    }
+
+    /// UPCOMING is drawn as an outline rather than a fill: it is the one state with no
+    /// numbers behind it, so it should read as a note, not a status light.
+    private var badgeBackground: Color {
+        switch stamp {
+        case .final: DesignTokens.Colors.textMuted
+        case .live: DesignTokens.Colors.statusWin
+        case .upcoming: DesignTokens.Colors.accent.opacity(0.14)
+        case .none: .clear
+        }
+    }
+
+    private var badgeForeground: Color {
+        stamp == .upcoming ? DesignTokens.Colors.accent : DesignTokens.Colors.onAccent
+    }
+
+    private func accessibilityLabel(_ badge: String) -> String {
+        let detail = stamp.detail()
+        return detail.isEmpty ? badge : "\(badge), \(detail.lowercased())"
     }
 }
 
