@@ -17,6 +17,12 @@ import type {
 // Lightweight team metadata for listings (e.g. the team switcher) — no player data.
 export type TeamMeta = Team;
 
+// One team's league position (1 = best) per metric, for the season this record is keyed
+// by. A rank is absent whenever the team's own source value is missing, so the Stats
+// page renders the value with no rank caption rather than implying a last-place finish.
+// The nflverse-sourced entries below `rushingYards` back the Stats page's Offense,
+// Defense, and Special Teams sections: on a single-team page the league rank is what
+// replaces Compare's second team column.
 export interface TeamStatsRanks {
   winPercent?: number;
   pointsFor?: number;
@@ -24,6 +30,25 @@ export interface TeamStatsRanks {
   pointDifferential?: number;
   passingYards?: number;
   rushingYards?: number;
+  // Team-level (rendered in the record breakdown, beside DIFF)
+  turnoverMargin?: number;
+  // Offense
+  offensiveEpaPerPlay?: number;
+  sackRate?: number;
+  passingEpa?: number;
+  rushingEpa?: number;
+  passingInterceptions?: number;
+  fumblesLost?: number;
+  // Defense
+  defensiveSacks?: number;
+  quarterbackHitsPerGame?: number;
+  defensiveTakeaways?: number;
+  defensiveInterceptions?: number;
+  // Special teams
+  fieldGoalPercentage?: number;
+  netPuntYardsPerAttempt?: number;
+  puntReturnYardsPerAttempt?: number;
+  kickoffReturnYardsPerAttempt?: number;
 }
 
 // A single kit flattened with its team's identity, for the archive listing (Phase 7

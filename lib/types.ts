@@ -208,9 +208,17 @@ export interface TeamMatchupMetrics {
   offensiveEpa?: number;
   offensivePlays?: number;
   offensiveEpaPerPlay?: number;
+  // Sacks as a share of dropbacks (0-1, not a percentage). Compare computed this inline
+  // in its own catalog; the Stats page ranks it league-wide, so it belongs on the
+  // contract rather than being recomputed per surface.
+  sackRate?: number;
   passingInterceptions?: number;
   fumblesLost?: number;
   giveaways?: number;
+  // Takeaways won minus giveaways conceded. Signed, and absent unless BOTH halves are
+  // known — a team with an unknown giveaway count has an unknown margin, not one equal
+  // to its takeaways.
+  turnoverMargin?: number;
   defensiveSacks?: number;
   quarterbackHits?: number;
   quarterbackHitsPerGame?: number;

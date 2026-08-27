@@ -12,6 +12,7 @@ import type {
 } from '@/lib/roster-source';
 import { type LeaderEntry, rosterLeaders } from '@/lib/utils/roster/roster-leaders';
 import { buildMatchupMetrics } from '@/lib/utils/compare/matchup-metrics';
+import { deriveTeamMetrics } from '@/lib/utils/team-metrics/derive';
 import {
   buildRecentParticipation,
   type PlayerRecentSnapsRow,
@@ -142,11 +143,40 @@ type TeamStatsRankRow = Pick<
 const TEAM_STATS_RANK_SELECT =
   'team_id, season, win_percent, points_for, points_against, point_differential';
 
+// The rank query is unscoped by team (all 32 × every season), so it carries only the
+// columns a rank is actually built from. It must stay a superset of
+// `RawTeamMetricColumns` — `deriveTeamMetrics` reads those names directly, and a column
+// dropped from the SELECT would make its metric `undefined` for every team at once
+// rather than failing loudly. Keep the `Pick<>` and the SELECT string edited together.
 export type TeamSeasonStatsRankRow = Pick<
   Tables['team_season_stats']['Row'],
-  'team_id' | 'season' | 'passing_yards' | 'rushing_yards'
+  | 'team_id'
+  | 'season'
+  | 'passing_yards'
+  | 'rushing_yards'
+  | 'games'
+  | 'attempts'
+  | 'carries'
+  | 'sacks_suffered'
+  | 'passing_epa'
+  | 'rushing_epa'
+  | 'passing_interceptions'
+  | 'fumbles_lost_total'
+  | 'def_sacks'
+  | 'def_qb_hits'
+  | 'def_interceptions'
+  | 'def_fumbles'
+  | 'fg_made'
+  | 'fg_att'
+  | 'pt_att'
+  | 'pt_net_yards'
+  | 'punt_returns'
+  | 'punt_return_yards'
+  | 'kickoff_returns'
+  | 'kickoff_return_yards'
 >;
-const TEAM_SEASON_STATS_RANK_SELECT = 'team_id, season, passing_yards, rushing_yards';
+const TEAM_SEASON_STATS_RANK_SELECT =
+  'team_id, season, passing_yards, rushing_yards, games, attempts, carries, sacks_suffered, passing_epa, rushing_epa, passing_interceptions, fumbles_lost_total, def_sacks, def_qb_hits, def_interceptions, def_fumbles, fg_made, fg_att, pt_att, pt_net_yards, punt_returns, punt_return_yards, kickoff_returns, kickoff_return_yards';
 
 type TeamSeasonStatsValueRow = Pick<
   Tables['team_season_stats']['Row'],
@@ -267,25 +297,67 @@ export function buildLeagueRanks(
     }
   }
   return Object.fromEntries(
-    [...bySeason].map(([season, seasonRows]) => [
-      season,
-      {
-        winPercent: rankValue(seasonRows, teamId, (row) => row.win_percent),
-        pointsFor: rankValue(seasonRows, teamId, (row) => row.points_for),
-        pointsAgainst: rankValue(seasonRows, teamId, (row) => row.points_against, 'asc'),
-        pointDifferential: rankValue(seasonRows, teamId, (row) => row.point_differential),
-        passingYards: rankValue(
-          nflverseBySeason.get(season) ?? [],
-          teamId,
-          (row) => row.passing_yards
-        ),
-        rushingYards: rankValue(
-          nflverseBySeason.get(season) ?? [],
-          teamId,
-          (row) => row.rushing_yards
-        ),
-      },
-    ])
+    [...bySeason].map(([season, seasonRows]) => {
+      // Derive once per team, then rank off the derived values. `rankValue` calls its
+      // accessor for every row on every metric, so deriving inside the accessor would
+      // recompute the same season ~15 times over.
+      const nflverse = (nflverseBySeason.get(season) ?? []).map((row) => ({
+        team_id: row.team_id,
+        passing_yards: row.passing_yards,
+        rushing_yards: row.rushing_yards,
+        passing_epa: row.passing_epa,
+        rushing_epa: row.rushing_epa,
+        passing_interceptions: row.passing_interceptions,
+        fumbles_lost_total: row.fumbles_lost_total,
+        def_sacks: row.def_sacks,
+        def_interceptions: row.def_interceptions,
+        ...deriveTeamMetrics(row),
+      }));
+
+      return [
+        season,
+        {
+          winPercent: rankValue(seasonRows, teamId, (row) => row.win_percent),
+          pointsFor: rankValue(seasonRows, teamId, (row) => row.points_for),
+          pointsAgainst: rankValue(seasonRows, teamId, (row) => row.points_against, 'asc'),
+          pointDifferential: rankValue(seasonRows, teamId, (row) => row.point_differential),
+          passingYards: rankValue(nflverse, teamId, (row) => row.passing_yards),
+          rushingYards: rankValue(nflverse, teamId, (row) => row.rushing_yards),
+          turnoverMargin: rankValue(nflverse, teamId, (row) => row.turnoverMargin),
+          // Offense. Sack rate, interceptions thrown, and fumbles lost rank ascending —
+          // for these, fewer is better.
+          offensiveEpaPerPlay: rankValue(nflverse, teamId, (row) => row.offensiveEpaPerPlay),
+          sackRate: rankValue(nflverse, teamId, (row) => row.sackRate, 'asc'),
+          passingEpa: rankValue(nflverse, teamId, (row) => row.passing_epa),
+          rushingEpa: rankValue(nflverse, teamId, (row) => row.rushing_epa),
+          passingInterceptions: rankValue(
+            nflverse,
+            teamId,
+            (row) => row.passing_interceptions,
+            'asc'
+          ),
+          fumblesLost: rankValue(nflverse, teamId, (row) => row.fumbles_lost_total, 'asc'),
+          // Defense
+          defensiveSacks: rankValue(nflverse, teamId, (row) => row.def_sacks),
+          quarterbackHitsPerGame: rankValue(nflverse, teamId, (row) => row.quarterbackHitsPerGame),
+          defensiveTakeaways: rankValue(nflverse, teamId, (row) => row.defensiveTakeaways),
+          defensiveInterceptions: rankValue(nflverse, teamId, (row) => row.def_interceptions),
+          // Special teams
+          fieldGoalPercentage: rankValue(nflverse, teamId, (row) => row.fieldGoalPercentage),
+          netPuntYardsPerAttempt: rankValue(nflverse, teamId, (row) => row.netPuntYardsPerAttempt),
+          puntReturnYardsPerAttempt: rankValue(
+            nflverse,
+            teamId,
+            (row) => row.puntReturnYardsPerAttempt
+          ),
+          kickoffReturnYardsPerAttempt: rankValue(
+            nflverse,
+            teamId,
+            (row) => row.kickoffReturnYardsPerAttempt
+          ),
+        },
+      ];
+    })
   );
 }
 
@@ -598,6 +670,12 @@ const TEAM_STATS_PAGE_TEAM_SELECT = `${TEAM_SELECT}, coach_name, coach_experienc
 // select would then silently truncate to a subset of teams/seasons and produce wrong
 // ranks with no error. Page through with .range() instead so the full set always loads
 // regardless of the project's max-rows setting.
+//
+// Every paged query MUST also carry an explicit .order() -- PostgREST guarantees no row
+// order without one, so successive .range() windows over an unordered result can repeat
+// a row in two pages and drop another entirely. That failure is silent and produces the
+// same confidently-wrong ranks the paging exists to prevent, just at a different row
+// count. (team_id, season) is the stable key here.
 const RANK_QUERY_PAGE_SIZE = 500;
 
 async function fetchAllRankRows<T>(
@@ -649,7 +727,12 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
       .eq('team_id', teamId)
       .returns<TeamCoachSeasonRow[]>(),
     fetchAllRankRows<TeamStatsRankRow>((from, to) =>
-      client.from(tables.teamStats).select(TEAM_STATS_RANK_SELECT).range(from, to)
+      client
+        .from(tables.teamStats)
+        .select(TEAM_STATS_RANK_SELECT)
+        .order('team_id')
+        .order('season')
+        .range(from, to)
     ),
     client
       .from(tables.teamSeasonStats)
@@ -658,7 +741,12 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
       .order('season', { ascending: false })
       .returns<TeamSeasonStatsValueRow[]>(),
     fetchAllRankRows<TeamSeasonStatsRankRow>((from, to) =>
-      client.from(tables.teamSeasonStats).select(TEAM_SEASON_STATS_RANK_SELECT).range(from, to)
+      client
+        .from(tables.teamSeasonStats)
+        .select(TEAM_SEASON_STATS_RANK_SELECT)
+        .order('team_id')
+        .order('season')
+        .range(from, to)
     ),
     client
       .from(tables.uniforms)
