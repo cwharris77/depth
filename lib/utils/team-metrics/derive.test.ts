@@ -184,3 +184,71 @@ describe('anti-drift: the rendered value and the ranked value are one derivation
     }
   });
 });
+
+// `sackRate` and `turnoverMargin` are ranked league-wide by `buildLeagueRanks`, so the
+// contract must expose the values those ranks describe — otherwise a page could rank a
+// quantity it has no way to render.
+describe('the contract exposes every quantity the Stats page ranks', () => {
+  it('carries sackRate and turnoverMargin through buildMatchupMetrics', () => {
+    const metrics = buildMatchupMetrics({
+      season: 2024,
+      updated_at: '2026-08-27T00:00:00Z',
+      games: 17,
+      attempts: 600,
+      carries: 380,
+      sacks_suffered: 30,
+      passing_epa: 30,
+      rushing_epa: 10,
+      passing_interceptions: 9,
+      fumbles_lost_total: 5,
+      def_sacks: 44,
+      def_qb_hits: 102,
+      def_interceptions: 12,
+      def_fumbles: 8,
+      def_fumbles_forced: 11,
+      fg_made: 28,
+      fg_att: 32,
+      pt_att: 50,
+      pt_net_yards: 2090,
+      punt_returns: 30,
+      punt_return_yards: 282,
+      kickoff_returns: 24,
+      kickoff_return_yards: 578,
+      special_teams_tds: 1,
+    });
+    // 30 sacks over 630 dropbacks (600 attempts + 30 sacks), and (12+8) - (9+5) = +6.
+    expect(metrics?.sackRate).toBeCloseTo(30 / 630, 10);
+    expect(metrics?.turnoverMargin).toBe(6);
+  });
+
+  it('leaves both absent when their inputs are, rather than reading as 0% and even', () => {
+    const metrics = buildMatchupMetrics({
+      season: 2024,
+      updated_at: '2026-08-27T00:00:00Z',
+      games: null,
+      attempts: null,
+      carries: null,
+      sacks_suffered: null,
+      passing_epa: null,
+      rushing_epa: null,
+      passing_interceptions: null,
+      fumbles_lost_total: null,
+      def_sacks: null,
+      def_qb_hits: null,
+      def_interceptions: null,
+      def_fumbles: null,
+      def_fumbles_forced: null,
+      fg_made: null,
+      fg_att: null,
+      pt_att: null,
+      pt_net_yards: null,
+      punt_returns: null,
+      punt_return_yards: null,
+      kickoff_returns: null,
+      kickoff_return_yards: null,
+      special_teams_tds: null,
+    });
+    expect(metrics?.sackRate).toBeUndefined();
+    expect(metrics?.turnoverMargin).toBeUndefined();
+  });
+});
