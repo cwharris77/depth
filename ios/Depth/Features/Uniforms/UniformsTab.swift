@@ -2,7 +2,7 @@ import SwiftUI
 
 // Tab for the uniform archive (port of the web `/uniforms` page). Mirrors the web's
 // structure: kits grouped conference → division → team, each kit's full-mannequin WebP
-// thumbnail with its name and years, and the attribution footer. Filters and grouping
+// thumbnail with its name, plus the attribution footer. Filters and grouping
 // are pure logic in UniformListing.swift (same rules as lib/uniforms/filter.ts) so the
 // two clients can't drift. A new tab in the root TabView, after Depth Charts and before
 // Compare.
@@ -232,7 +232,9 @@ struct UniformsTab: View {
     }
 }
 
-/// One kit's full-mannequin WebP thumbnail plus name and years — the archive's unit.
+/// One kit's full-mannequin WebP thumbnail plus name — the archive's unit. DEP-305
+/// temporarily hides the uneven date metadata until the archive redesign can restore
+/// it consistently; the underlying `UniformListing` fields remain intact.
 private struct KitFigure: View {
     let kit: UniformListing
     let teamName: String
@@ -245,11 +247,6 @@ private struct KitFigure: View {
                 .foregroundStyle(DesignTokens.Colors.textMuted)
                 .multilineTextAlignment(.center)
                 .lineLimit(2, reservesSpace: true)
-            if let years = yearsText {
-                Text(years)
-                    .font(.caption2)
-                    .foregroundStyle(DesignTokens.Colors.textFaint)
-            }
         }
         .frame(width: 56)
         .accessibilityElement(children: .combine)
@@ -257,13 +254,7 @@ private struct KitFigure: View {
     }
 
     private var accessibilityText: String {
-        [teamName, kit.name, yearsText].compactMap { $0 }.joined(separator: ", ")
-    }
-
-    private var yearsText: String? {
-        guard let start = kit.yearStart else { return nil }
-        if let end = kit.yearEnd { return start == end ? "\(start)" : "\(start)–\(end)" }
-        return "\(start)–"
+        [teamName, kit.name].joined(separator: ", ")
     }
 }
 
