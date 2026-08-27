@@ -84,6 +84,7 @@ import Testing
 @Test func seasonStatsUseEqualCenteredColumns() {
     #expect(PlayerStatsTableLayout.alignment == .center)
     #expect(PlayerStatsTableLayout.containerAlignment == .center)
+    #expect(PlayerProfileSection.depthChartTitle == "DEPTH CHART")
 }
 
 @Test func statsRowAccessibilityLabelPairsEverySpokenNameWithItsValue() {

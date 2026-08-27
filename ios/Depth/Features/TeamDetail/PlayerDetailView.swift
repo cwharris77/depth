@@ -225,10 +225,7 @@ struct PlayerDetailView: View {
 
     private var statsSection: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            Text("SEASON STATS")
-                .font(.caption)
-                .tracking(0.5)
-                .foregroundStyle(DesignTokens.Colors.textMuted)
+            sectionHeader(PlayerProfileSection.seasonStatsTitle)
             switch viewModel.statsState {
             case .loading:
                 PlayerStatsSkeleton(columnCount: playerStatColumns(for: player.position).count)
@@ -287,6 +284,13 @@ struct PlayerDetailView: View {
         .accessibilityElement(children: .combine)
     }
 
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.caption)
+            .tracking(0.5)
+            .foregroundStyle(DesignTokens.Colors.textMuted)
+    }
+
     // Web parity (components/PlayerCardDepthList.tsx): the position's players in depth
     // order, STARTER/BACKUP/RESERVE rank labels, current player highlighted with the
     // team accent + checkmark, others tappable to switch the card. DEP-226 adds the
@@ -294,6 +298,7 @@ struct PlayerDetailView: View {
     @ViewBuilder
     private var positionDepth: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+            sectionHeader(PlayerProfileSection.depthChartTitle)
             if displayOrder.count <= 1 {
                 Text("No backups available")
                     .font(.footnote)
@@ -807,6 +812,11 @@ private struct DepthReorderList: View {
         default: "RESERVE"
         }
     }
+}
+
+enum PlayerProfileSection {
+    static let seasonStatsTitle = "SEASON STATS"
+    static let depthChartTitle = "DEPTH CHART"
 }
 
 // Season-stats columns share one centered width, whether they are labels or values. The table
