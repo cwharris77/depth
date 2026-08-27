@@ -15,26 +15,39 @@ struct DepthChartShareButton: View {
         "\(snapshot.team.city) \(snapshot.team.name) depth chart · \(AppBuildInfo.displayName)"
     }
 
-    private var renderedImage: Image? {
-        let renderer = ImageRenderer(
+    private var renderedImages: (item: Image, preview: Image)? {
+        let itemRenderer = ImageRenderer(
             content: ShareCardView(team: snapshot.team, starters: featuredStarters(from: snapshot))
         )
-        renderer.scale = displayScale
-        guard let uiImage = renderer.uiImage else { return nil }
-        return Image(uiImage: uiImage)
+        itemRenderer.scale = displayScale
+        guard let itemUIImage = itemRenderer.uiImage else { return nil }
+        let item = Image(uiImage: itemUIImage)
+
+        // DEP-296: the activity sheet crops its preview thumbnail independently of the
+        // transferred image. Give that thumbnail a square, padded composition while the
+        // actual shared item stays the original 600×315 card.
+        let previewRenderer = ImageRenderer(
+            content: ShareCardPreviewView(
+                team: snapshot.team,
+                starters: featuredStarters(from: snapshot)
+            )
+        )
+        previewRenderer.scale = displayScale
+        let preview = previewRenderer.uiImage.map { Image(uiImage: $0) } ?? item
+        return (item, preview)
     }
 
     var body: some View {
-        if let image = renderedImage {
+        if let images = renderedImages {
             // `preview:` only drives the share sheet's own preview UI — it is not
             // transferred to the chosen destination (Greptile review on depth#367).
             // `subject`/`message` are the actual accompanying text some destinations
             // (Mail, Messages) attach alongside the image.
             ShareLink(
-                item: image,
+                item: images.item,
                 subject: Text(shareTitle),
                 message: Text(shareTitle),
-                preview: SharePreview(shareTitle, image: image)
+                preview: SharePreview(shareTitle, image: images.preview)
             ) {
                 Label("Share", systemImage: "square.and.arrow.up")
             }

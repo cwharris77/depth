@@ -100,3 +100,19 @@ private func snapshot(players: [Player]) -> TeamSnapshot {
     // space-between); pinned purely as a contract against accidental drift.
     #expect(ShareCardMetrics.columnSpacing == 24)
 }
+
+// DEP-296: the activity sheet may crop its preview thumbnail, so the wide transfer
+// raster is composed inside a square canvas with breathing room on every edge. These
+// assertions keep the preview contract separate from the unchanged shared-image size.
+@Test func sharePreviewCanvasFitsTheWholeCardWithSafeInsets() {
+    #expect(SharePreviewMetrics.safeInset == 24)
+    #expect(SharePreviewMetrics.canvasSide == 648)
+    #expect(
+        ShareCardMetrics.cardWidth + (SharePreviewMetrics.safeInset * 2)
+            <= SharePreviewMetrics.canvasSide
+    )
+    #expect(
+        ShareCardMetrics.cardHeight + (SharePreviewMetrics.safeInset * 2)
+            <= SharePreviewMetrics.canvasSide
+    )
+}
