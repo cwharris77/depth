@@ -12,23 +12,74 @@ enum TeamStatsMapper {
         team: Team,
         rows: [TeamStatsRowDTO],
         matchupRows: [TeamMatchupMetricsDTO] = [],
+        coachRows: [TeamCoachSeasonDTO] = [],
+        recordRankRows: [TeamStatsRankDTO] = [],
+        metricRankRows: [TeamSeasonStatsRankDTO] = [],
+        teamId: String? = nil,
         now: Date = .now
     ) -> TeamStatsPage {
         let state = nflSeasonState(now: now)
         let matchupBySeason = Dictionary(uniqueKeysWithValues: matchupRows.map { ($0.season, $0) })
+        let coachBySeason = Dictionary(uniqueKeysWithValues: coachRows.map { ($0.season, $0) })
         return TeamStatsPage(
             team: team,
             seasons: rows
-                .map { mapSeason($0, matchup: matchupBySeason[$0.season]) }
+                .map {
+                    mapSeason($0, matchup: matchupBySeason[$0.season], coach: coachBySeason[$0.season])
+                }
                 .sorted { $0.season > $1.season },
             upcomingSeason: state.isOffseason ? state.upcomingSeason : nil,
+            leagueRanksBySeason: mapRanks(
+                teamId: teamId ?? team.id,
+                recordRows: recordRankRows,
+                metricRows: metricRankRows
+            ),
             currentSeason: state.isOffseason ? state.upcomingSeason : state.upcomingSeason - 1
+        )
+    }
+
+    /// Reduces both rank reads to their domain value types and hands them to the pure
+    /// builder. The derivation runs once per team-season here, not once per metric.
+    static func mapRanks(
+        teamId: String,
+        recordRows: [TeamStatsRankDTO],
+        metricRows: [TeamSeasonStatsRankDTO]
+    ) -> [Int: TeamStatsRanks] {
+        guard !recordRows.isEmpty else { return [:] }
+        return TeamLeagueRanks.build(
+            teamId: teamId,
+            record: recordRows.map {
+                TeamSeasonRecordRankValues(
+                    teamId: $0.teamId,
+                    season: $0.season,
+                    winPercent: $0.winPercent,
+                    pointsFor: $0.pointsFor,
+                    pointsAgainst: $0.pointsAgainst,
+                    pointDifferential: $0.pointDifferential
+                )
+            },
+            nflverse: metricRows.map {
+                TeamSeasonRankValues(
+                    teamId: $0.teamId,
+                    season: $0.season,
+                    passingYards: $0.passingYards,
+                    rushingYards: $0.rushingYards,
+                    passingEPA: $0.passingEPA,
+                    rushingEPA: $0.rushingEPA,
+                    passingInterceptions: $0.passingInterceptions,
+                    fumblesLost: $0.fumblesLostTotal,
+                    defensiveSacks: $0.defensiveSacks,
+                    defensiveInterceptions: $0.defensiveInterceptions,
+                    derived: TeamMetrics.derive($0)
+                )
+            }
         )
     }
 
     static func mapSeason(
         _ row: TeamStatsRowDTO,
-        matchup: TeamMatchupMetricsDTO? = nil
+        matchup: TeamMatchupMetricsDTO? = nil,
+        coach: TeamCoachSeasonDTO? = nil
     ) -> TeamSeasonStats {
         let matchupMetrics = matchup.map { mapMatchupMetrics($0) }
         let overallWins: Int = row.overallWins ?? 0
@@ -61,22 +112,25 @@ enum TeamStatsMapper {
             pointsFor: pointsFor,
             pointsAgainst: pointsAgainst,
             pointDifferential: pointDifferential,
-            matchupMetrics: matchupMetrics
+            matchupMetrics: matchupMetrics,
+            winPercent: row.winPercent,
+            // Unlike the record columns these stay nil rather than defaulting: an absent
+            // streak is "not reported", and playoff seed 0 means "missed the playoffs",
+            // so a `?? 0` here would turn missing data into a claim.
+            streak: row.streak,
+            playoffSeed: row.playoffSeed,
+            coach: coach.map { TeamSeasonCoach(name: $0.coachName, experience: $0.coachExperience) },
+            passingYards: matchup?.passingYards,
+            rushingYards: matchup?.rushingYards
         )
     }
 
     private static func mapMatchupMetrics(_ row: TeamMatchupMetricsDTO) -> TeamMatchupMetrics {
-        let offensiveEPA = sum(row.passingEPA, row.rushingEPA)
-        let offensivePlays = sum(row.attempts, row.carries, row.sacksSuffered)
-        let giveaways = sum(row.passingInterceptions, row.fumblesLostTotal)
-        let defensiveTakeaways = sum(row.defensiveInterceptions, row.defensiveFumbleRecoveries)
-        let offensiveEPAPerPlay = ratio(offensiveEPA, offensivePlays)
-        let quarterbackHitsPerGame = ratio(row.quarterbackHits, row.games)
-        let defensiveTakeawaysPerGame = ratio(defensiveTakeaways, row.games)
-        let fieldGoalPercentage = ratio(row.fieldGoalsMade, row.fieldGoalsAttempted)
-        let netPuntYardsPerAttempt = ratio(row.netPuntYards, row.puntAttempts)
-        let puntReturnYardsPerAttempt = ratio(row.puntReturnYards, row.puntReturns)
-        let kickoffReturnYardsPerAttempt = ratio(row.kickoffReturnYards, row.kickoffReturns)
+        // Derived values come from the shared derivation, never recomputed here — the
+        // league-rank builder ranks these same quantities, and two copies of the math
+        // could disagree while each stayed internally consistent (a page would print one
+        // number and rank it as another). See Domain/TeamMetricsDerivation.swift.
+        let d = TeamMetrics.derive(row)
 
         return TeamMatchupMetrics(
             source: .nflverse,
@@ -88,64 +142,34 @@ enum TeamStatsMapper {
             passAttempts: row.attempts,
             rushAttempts: row.carries,
             sacksSuffered: row.sacksSuffered,
-            offensiveEPA: offensiveEPA,
-            offensivePlays: offensivePlays,
-            offensiveEPAPerPlay: offensiveEPAPerPlay,
+            offensiveEPA: d.offensiveEPA,
+            offensivePlays: d.offensivePlays,
+            offensiveEPAPerPlay: d.offensiveEPAPerPlay,
             passingInterceptions: row.passingInterceptions,
             fumblesLost: row.fumblesLostTotal,
-            giveaways: giveaways,
+            giveaways: d.giveaways,
             defensiveSacks: row.defensiveSacks,
             quarterbackHits: row.quarterbackHits,
-            quarterbackHitsPerGame: quarterbackHitsPerGame,
+            quarterbackHitsPerGame: d.quarterbackHitsPerGame,
             defensiveInterceptions: row.defensiveInterceptions,
             defensiveFumbleRecoveries: row.defensiveFumbleRecoveries,
             defensiveFumblesForced: row.defensiveFumblesForced,
-            defensiveTakeaways: defensiveTakeaways,
-            defensiveTakeawaysPerGame: defensiveTakeawaysPerGame,
+            defensiveTakeaways: d.defensiveTakeaways,
+            defensiveTakeawaysPerGame: d.defensiveTakeawaysPerGame,
             fieldGoalsMade: row.fieldGoalsMade,
             fieldGoalsAttempted: row.fieldGoalsAttempted,
-            fieldGoalPercentage: fieldGoalPercentage,
+            fieldGoalPercentage: d.fieldGoalPercentage,
             puntAttempts: row.puntAttempts,
             netPuntYards: row.netPuntYards,
-            netPuntYardsPerAttempt: netPuntYardsPerAttempt,
+            netPuntYardsPerAttempt: d.netPuntYardsPerAttempt,
             puntReturns: row.puntReturns,
             puntReturnYards: row.puntReturnYards,
-            puntReturnYardsPerAttempt: puntReturnYardsPerAttempt,
+            puntReturnYardsPerAttempt: d.puntReturnYardsPerAttempt,
             kickoffReturns: row.kickoffReturns,
             kickoffReturnYards: row.kickoffReturnYards,
-            kickoffReturnYardsPerAttempt: kickoffReturnYardsPerAttempt,
+            kickoffReturnYardsPerAttempt: d.kickoffReturnYardsPerAttempt,
             specialTeamsTouchdowns: row.specialTeamsTouchdowns
         )
-    }
-
-    private static func sum(_ lhs: Double?, _ rhs: Double?) -> Double? {
-        guard let lhs, let rhs else { return nil }
-        return lhs + rhs
-    }
-
-    private static func sum(_ first: Int?, _ second: Int?) -> Int? {
-        guard let first, let second else { return nil }
-        return first + second
-    }
-
-    private static func sum(_ first: Int?, _ second: Int?, _ third: Int?) -> Int? {
-        guard let first, let second, let third else { return nil }
-        return first + second + third
-    }
-
-    private static func ratio(_ numerator: Double?, _ denominator: Double?) -> Double? {
-        guard let numerator, let denominator, denominator > 0 else { return nil }
-        return numerator / denominator
-    }
-
-    private static func ratio(_ numerator: Double?, _ denominator: Int?) -> Double? {
-        guard let denominator else { return nil }
-        return ratio(numerator, Double(denominator))
-    }
-
-    private static func ratio(_ numerator: Int?, _ denominator: Int?) -> Double? {
-        guard let numerator, let denominator else { return nil }
-        return ratio(Double(numerator), Double(denominator))
     }
 
     /// Swift port of lib/utils/team/nfl-season.ts's `nflSeasonState()` — the NFL season
