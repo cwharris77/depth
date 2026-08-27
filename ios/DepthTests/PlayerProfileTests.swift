@@ -81,9 +81,8 @@ import Testing
     }
 }
 
-@Test func sparseStatColumnsAnchorAtTheTrailingTableEdge() {
-    #expect(PlayerStatsTableLayout.alignment(fixed: true) == .leading)
-    #expect(PlayerStatsTableLayout.alignment(fixed: false) == .trailing)
+@Test func seasonStatsUseEqualCenteredColumns() {
+    #expect(PlayerStatsTableLayout.alignment == .center)
 }
 
 @Test func statsRowAccessibilityLabelPairsEverySpokenNameWithItsValue() {
