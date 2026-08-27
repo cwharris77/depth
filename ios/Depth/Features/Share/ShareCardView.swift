@@ -71,6 +71,32 @@ struct ShareCardView: View {
     }
 }
 
+// The system share sheet owns its thumbnail crop, so preview the wide card inside a
+// square safe area instead of handing the 600×315 transfer image directly to that crop.
+// The background continues the team color and the shared item itself remains untouched.
+struct ShareCardPreviewView: View {
+    let team: Team
+    let starters: [FeaturedStarter]
+
+    var body: some View {
+        ZStack {
+            Color(hex: team.colors.primary)
+            ShareCardView(team: team, starters: starters)
+        }
+        .frame(
+            width: SharePreviewMetrics.canvasSide,
+            height: SharePreviewMetrics.canvasSide
+        )
+    }
+}
+
+enum SharePreviewMetrics {
+    /// A safe inset keeps the complete landscape raster inside any square
+    /// thumbnail treatment used by the activity sheet (DEP-296).
+    static let safeInset: CGFloat = 24
+    static let canvasSide: CGFloat = ShareCardMetrics.cardWidth + (safeInset * 2)
+}
+
 /// Fixed-point metrics for the off-screen share card. The native card renders at exactly
 /// half the web card's 1200×630 raster, so each value is the web route's
 /// (`app/team/[id]/og-image/route.tsx`) equivalent scaled 1:2 — the web value is noted
