@@ -298,8 +298,8 @@ struct PlayerDetailView: View {
     @ViewBuilder
     private var positionDepth: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            sectionHeader(PlayerProfileSection.depthChartTitle)
             if displayOrder.count <= 1 {
+                sectionHeader(PlayerProfileSection.depthChartTitle)
                 Text("No backups available")
                     .font(.footnote)
                     .foregroundStyle(DesignTokens.Colors.textMuted)
@@ -341,10 +341,11 @@ struct PlayerDetailView: View {
         .accessibilityIdentifier("player-profile-depth")
     }
 
-    /// Web parity (PlayerCardDepthList's header row): CUSTOM tag on the left once the
-    /// position has a saved custom order, Reset + the Reorder/Done toggle on the right.
+    /// Web parity (PlayerCardDepthList's header row): depth-chart eyebrow and CUSTOM tag
+    /// on the left, Reset + the Reorder/Done toggle on the right.
     private var depthHeader: some View {
         HStack(spacing: DesignTokens.Spacing.sm) {
+            sectionHeader(PlayerProfileSection.depthChartTitle)
             if positionIsCustom {
                 customTag
             }
