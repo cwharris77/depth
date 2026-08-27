@@ -76,7 +76,7 @@ extension XCUIApplication {
 extension XCUIElement {
     /// Polls `label` until it contains `substring` or `timeout` elapses. XCUITest has no
     /// built-in "wait until a property changes" API for plain string properties (only for
-    /// existence/hittable-style predicates), so this is a short manual retry loop.
+    /// status/hittable-style predicates), so this is a short manual retry loop.
     @discardableResult
     func waitForLabel(containing substring: String, timeout: TimeInterval = 10) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
@@ -85,5 +85,15 @@ extension XCUIElement {
             RunLoop.current.run(until: Date().addingTimeInterval(0.1))
         }
         return label.contains(substring)
+    }
+
+    /// Taps an element only if it becomes reachable (exists + hittable) within `timeout` —
+    /// used for best-effort dismissals where the control may or may not be on screen (e.g.
+    /// closing a sheet the previous step may not have opened). Returns whether it tapped.
+    @discardableResult
+    func tapIfExists(timeout: TimeInterval = 3) -> Bool {
+        guard waitForExistence(timeout: timeout), isHittable else { return false }
+        tap()
+        return true
     }
 }

@@ -146,46 +146,96 @@ final class AccessibilityUITests: XCTestCase {
     // Regression guard for the stat table's spoken reading: a row combined from its raw
     // cells announces bare numbers, so every value must arrive paired with its column's
     // spoken name (PlayerStatsAccessibility.rowLabel).
+    //
+    // This suite runs against production Supabase, and the depth chart resolves *whichever*
+    // player the DB currently pins to a slot (DEP-329). That resolution can be a season-less
+    // backup or a just-signed player before ESPN's ingest has a row for them, so the old
+    // "the starting QB always has rows" assert hard-failed on real data mid-season. This
+    // instead walks the roster for the first player that actually has a season-stat row, and
+    // only skips if the whole chart yields none — it still asserts the real spoken-label
+    // contract whenever production has any stats at all.
     func testSeasonStatRowsAnnounceColumnNamesWithTheirValues() throws {
         let app = launchApp()
         openBillsDepthChart(app)
 
-        let quarterback = app.buttons["player-slot-off-qb-0"]
-        XCTAssertTrue(quarterback.waitForExistence(timeout: 15), "the field should render its starting QB")
-        quarterback.tap()
+        guard let seasonRow = firstSeasonStatRow(in: app) else {
+            throw XCTSkip(
+                "no Bills player in the current production depth chart has season-stat rows — "
+                    + "skipping the spoken-label contract rather than hard-failing on which "
+                    + "player the QB slot happens to resolve to (DEP-329)"
+            )
+        }
 
-        let stats = app.otherElements["player-profile-stats"]
-        XCTAssertTrue(stats.waitForExistence(timeout: 15), "the profile should resolve a stats state")
+        // Which columns appear depends on whichever position surfaced first, so assert the
+        // shape rather than a specific stat: every segment after the season/team must be a
+        // sentence-case spoken name plus its value. The compact on-screen headers are
+        // all-caps abbreviations, so a segment with no lowercase letter means a raw header
+        // (or a bare number) leaked into the spoken label. The team segment is optional and
+        // is a single token ("BUF"); every stat segment is "<name> <value>", so a space is
+        // what separates the two.
+        assertSpokenLabelContract(seasonRow.label)
+    }
 
-        // A starting QB in real production data always has season-stat rows, so this
-        // asserts directly rather than skipping — a silent skip here would let the
-        // spoken-label contract regress without ever failing the suite.
-        let seasonRow = stats.otherElements.matching(NSPredicate(format: "label CONTAINS ' season, '")).firstMatch
-        XCTAssertTrue(
-            seasonRow.waitForExistence(timeout: 10),
-            "the starting QB should have at least one season-stat row in production data"
-        )
-
-        // Which columns appear depends on whichever position the field surfaced first,
-        // so assert the shape rather than a specific stat: every segment after the
-        // season/team must be a sentence-case spoken name plus its value. The compact
-        // on-screen headers are all-caps abbreviations, so a segment with no lowercase
-        // letter means a raw header (or a bare number) leaked into the spoken label.
-        // The team segment is optional and is a single token ("BUF"); every stat segment
-        // is "<name> <value>", so a space is what separates the two.
-        let label = seasonRow.label
+    /// Asserts the stat-table spoken-label shape of a season row: every comma-separated
+    /// segment after the season must pair a sentence-case spoken column name with a value,
+    /// exactly as `PlayerStatsAccessibility.rowLabel` builds it.
+    private func assertSpokenLabelContract(
+        _ label: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
         let statSegments = label.components(separatedBy: ", ").dropFirst().filter { $0.contains(" ") }
-        XCTAssertFalse(statSegments.isEmpty, "a season row should announce at least one stat: \(label)")
+        XCTAssertFalse(statSegments.isEmpty, "a season row should announce at least one stat: \(label)", file: file, line: line)
         for segment in statSegments {
             XCTAssertNotNil(
                 segment.rangeOfCharacter(from: .lowercaseLetters),
-                "\"\(segment)\" is not a spoken column name — full label: \(label)"
+                "\"\(segment)\" is not a spoken column name — full label: \(label)",
+                file: file, line: line
             )
             XCTAssertNotNil(
                 segment.rangeOfCharacter(from: .decimalDigits.union(CharacterSet(charactersIn: "—"))),
-                "\"\(segment)\" announces a column name with no value — full label: \(label)"
+                "\"\(segment)\" announces a column name with no value — full label: \(label)",
+                file: file, line: line
             )
         }
+    }
+
+    /// Taps every filled, reachable player slot across the depth chart's three unit tabs
+    /// and returns the first season-stat row found, or nil when no reachable player yields
+    /// one. This is the "tolerant of the data actually being absent" guarantee: which
+    /// specific player the chart resolves into each slot is not a contract, but the
+    /// spoken-label shape of a real row is.
+    private func firstSeasonStatRow(
+        in app: XCUIApplication,
+        rowTimeout: TimeInterval = 8
+    ) -> XCUIElement? {
+        for unit in ["offense", "defense", "special"] {
+            let tab = app.buttons["unit-tab-\(unit)"]
+            guard tab.waitForExistence(timeout: 5), tab.isHittable else { continue }
+            tab.tap()
+
+            let slots = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'player-slot-'"))
+            for index in 0..<slots.count {
+                let slot = slots.element(boundBy: index)
+                guard slot.exists, slot.isHittable else { continue }
+                slot.tap()
+
+                let stats = app.otherElements["player-profile-stats"]
+                guard stats.waitForExistence(timeout: rowTimeout) else {
+                    app.buttons["Close"].tapIfExists()
+                    continue
+                }
+                let seasonRow = stats.otherElements
+                    .matching(NSPredicate(format: "label CONTAINS ' season, '"))
+                    .firstMatch
+                if seasonRow.waitForExistence(timeout: rowTimeout) {
+                    return seasonRow
+                }
+                // No row for this player: back out to the chart and try the next slot.
+                app.buttons["Close"].tapIfExists()
+            }
+        }
+        return nil
     }
 
     // The loading list hides its placeholder rows from VoiceOver; without a label on the
