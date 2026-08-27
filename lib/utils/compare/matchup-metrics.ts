@@ -1,7 +1,13 @@
 // Builds the bounded nflverse evidence contract consumed by Compare (DEP-312). The
 // helper keeps raw numerators and denominators beside derived rates, and refuses to
 // turn missing source values into zero, so partial seasons degrade honestly.
+//
+// The derived half of that contract is NOT computed here -- it comes from
+// lib/utils/team-metrics/derive.ts, which the Stats page's league-rank builder also
+// uses. Keeping one derivation is what stops a rendered value and its league rank from
+// disagreeing; see that module's header.
 import type { TeamMatchupMetrics } from '@/lib/types';
+import { deriveTeamMetrics, present } from '@/lib/utils/team-metrics/derive';
 
 export interface TeamMatchupMetricsRow {
   season: number;
@@ -30,31 +36,24 @@ export interface TeamMatchupMetricsRow {
   special_teams_tds: number | null;
 }
 
-function present(value: number | null): number | undefined {
-  return value ?? undefined;
-}
-
-function sum(values: Array<number | null>): number | undefined {
-  return values.every((value): value is number => value !== null)
-    ? values.reduce((total, value) => total + value, 0)
-    : undefined;
-}
-
-function ratio(numerator: number | undefined, denominator: number | undefined) {
-  return numerator === undefined || denominator === undefined || denominator <= 0
-    ? undefined
-    : numerator / denominator;
-}
-
 export function buildMatchupMetrics(
   row: TeamMatchupMetricsRow | undefined
 ): TeamMatchupMetrics | undefined {
   if (!row) return undefined;
 
-  const offensiveEpa = sum([row.passing_epa, row.rushing_epa]);
-  const offensivePlays = sum([row.attempts, row.carries, row.sacks_suffered]);
-  const giveaways = sum([row.passing_interceptions, row.fumbles_lost_total]);
-  const defensiveTakeaways = sum([row.def_interceptions, row.def_fumbles]);
+  const {
+    offensiveEpa,
+    offensivePlays,
+    offensiveEpaPerPlay,
+    giveaways,
+    defensiveTakeaways,
+    defensiveTakeawaysPerGame,
+    quarterbackHitsPerGame,
+    fieldGoalPercentage,
+    netPuntYardsPerAttempt,
+    puntReturnYardsPerAttempt,
+    kickoffReturnYardsPerAttempt,
+  } = deriveTeamMetrics(row);
   const games = present(row.games);
   const quarterbackHits = present(row.def_qb_hits);
   const fieldGoalsMade = present(row.fg_made);
@@ -78,30 +77,30 @@ export function buildMatchupMetrics(
     sacksSuffered: present(row.sacks_suffered),
     offensiveEpa,
     offensivePlays,
-    offensiveEpaPerPlay: ratio(offensiveEpa, offensivePlays),
+    offensiveEpaPerPlay,
     passingInterceptions: present(row.passing_interceptions),
     fumblesLost: present(row.fumbles_lost_total),
     giveaways,
     defensiveSacks: present(row.def_sacks),
     quarterbackHits,
-    quarterbackHitsPerGame: ratio(quarterbackHits, games),
+    quarterbackHitsPerGame,
     defensiveInterceptions: present(row.def_interceptions),
     defensiveFumbleRecoveries: present(row.def_fumbles),
     defensiveFumblesForced: present(row.def_fumbles_forced),
     defensiveTakeaways,
-    defensiveTakeawaysPerGame: ratio(defensiveTakeaways, games),
+    defensiveTakeawaysPerGame,
     fieldGoalsMade,
     fieldGoalsAttempted,
-    fieldGoalPercentage: ratio(fieldGoalsMade, fieldGoalsAttempted),
+    fieldGoalPercentage,
     puntAttempts,
     netPuntYards,
-    netPuntYardsPerAttempt: ratio(netPuntYards, puntAttempts),
+    netPuntYardsPerAttempt,
     puntReturns,
     puntReturnYards,
-    puntReturnYardsPerAttempt: ratio(puntReturnYards, puntReturns),
+    puntReturnYardsPerAttempt,
     kickoffReturns,
     kickoffReturnYards,
-    kickoffReturnYardsPerAttempt: ratio(kickoffReturnYards, kickoffReturns),
+    kickoffReturnYardsPerAttempt,
     specialTeamsTouchdowns: present(row.special_teams_tds),
   };
 }
