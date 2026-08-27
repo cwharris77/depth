@@ -59,9 +59,20 @@ actor SupabaseDepthRepository: DepthRepository {
         """
 
     private static let teamStatsSelect =
-        "season, overall_wins, overall_losses, overall_ties, home_wins, home_losses, road_wins, road_losses, division_wins, division_losses, conference_wins, conference_losses, points_for, points_against, point_differential"
+        "season, overall_wins, overall_losses, overall_ties, win_percent, streak, playoff_seed, home_wins, home_losses, road_wins, road_losses, division_wins, division_losses, conference_wins, conference_losses, points_for, points_against, point_differential"
     private static let teamMatchupMetricsSelect =
-        "season, updated_at, games, attempts, carries, sacks_suffered, passing_epa, rushing_epa, passing_interceptions, fumbles_lost_total, def_sacks, def_qb_hits, def_interceptions, def_fumbles, def_fumbles_forced, fg_made, fg_att, pt_att, pt_net_yards, punt_returns, punt_return_yards, kickoff_returns, kickoff_return_yards, special_teams_tds"
+        "season, updated_at, passing_yards, rushing_yards, games, attempts, carries, sacks_suffered, passing_epa, rushing_epa, passing_interceptions, fumbles_lost_total, def_sacks, def_qb_hits, def_interceptions, def_fumbles, def_fumbles_forced, fg_made, fg_att, pt_att, pt_net_yards, punt_returns, punt_return_yards, kickoff_returns, kickoff_return_yards, special_teams_tds"
+    private static let teamCoachSeasonsSelect = "season, coach_name, coach_experience"
+    /// Matches web's RANK_QUERY_PAGE_SIZE — see `fetchAllRankRows` below for why paging
+    /// these reads is required rather than defensive.
+    private static let rankQueryPageSize = 500
+    // The two league-wide rank reads (web: TEAM_STATS_RANK_SELECT /
+    // TEAM_SEASON_STATS_RANK_SELECT). Unscoped by team on purpose — a rank needs all 32.
+    // Keep each in sync with its DTO's CodingKeys.
+    private static let teamStatsRankSelect =
+        "team_id, season, win_percent, points_for, points_against, point_differential"
+    private static let teamSeasonStatsRankSelect =
+        "team_id, season, passing_yards, rushing_yards, games, attempts, carries, sacks_suffered, passing_epa, rushing_epa, passing_interceptions, fumbles_lost_total, def_sacks, def_qb_hits, def_interceptions, def_fumbles, fg_made, fg_att, pt_att, pt_net_yards, punt_returns, punt_return_yards, kickoff_returns, kickoff_return_yards"
     private static let recentParticipationSelect =
         "team_id, season, player_id, window_start_week, window_end_week, window_game_ids, games, offense_snaps, offense_pct, defense_snaps, defense_pct, special_teams_snaps, special_teams_pct, source, updated_at"
     private static let scheduleSelect = "team_id, season"
@@ -253,11 +264,33 @@ actor SupabaseDepthRepository: DepthRepository {
                 .order("season", ascending: false)
                 .execute()
                 .value
-            let (team, rows, matchupRows) = try await (teamResult, statsResult, matchupResult)
+            async let coachResult: [TeamCoachSeasonDTO] = client
+                .from("team_coach_seasons")
+                .select(Self.teamCoachSeasonsSelect)
+                .eq("team_id", value: teamId)
+                .order("season", ascending: false)
+                .execute()
+                .value
+            // Both rank reads are league-wide: a rank is meaningless scoped to one team.
+            // They stay inside this same async-let group so the page still costs one
+            // round trip, matching web's single Promise.all in fetchTeamStatsPage.
+            async let recordRankResult: [TeamStatsRankDTO] =
+                fetchAllRankRows(from: "team_stats", select: Self.teamStatsRankSelect)
+            async let metricRankResult: [TeamSeasonStatsRankDTO] =
+                fetchAllRankRows(from: "team_season_stats", select: Self.teamSeasonStatsRankSelect)
+            let (team, rows, matchupRows, coachRows, recordRankRows, metricRankRows) =
+                try await (
+                    teamResult, statsResult, matchupResult,
+                    coachResult, recordRankResult, metricRankResult
+                )
             return TeamStatsMapper.map(
                 team: TeamSnapshotMapper.mapTeamListRow(team),
                 rows: rows,
-                matchupRows: matchupRows
+                matchupRows: matchupRows,
+                coachRows: coachRows,
+                recordRankRows: recordRankRows,
+                metricRankRows: metricRankRows,
+                teamId: teamId
             )
         } catch let error as DepthError {
             throw error
@@ -270,6 +303,32 @@ actor SupabaseDepthRepository: DepthRepository {
         } catch {
             throw DepthError.server("\(error)")
         }
+    }
+
+    /// Pages a league-wide rank read, mirroring web's `fetchAllRankRows`. These queries
+    /// are unscoped by team (32 teams × every ingested season back to 2002), so they
+    /// already sit near PostgREST's default 1000-row cap and will cross it — an
+    /// unbounded select would silently return a subset and produce confidently wrong
+    /// ranks with no error. Ordered by (team_id, season) so page boundaries are stable:
+    /// PostgREST guarantees no row order without an explicit sort, so paging an
+    /// unordered query can repeat or skip rows.
+    private func fetchAllRankRows<T: Decodable>(from table: String, select: String) async throws -> [T] {
+        var rows: [T] = []
+        var offset = 0
+        while true {
+            let page: [T] = try await client
+                .from(table)
+                .select(select)
+                .order("team_id")
+                .order("season")
+                .range(from: offset, to: offset + Self.rankQueryPageSize - 1)
+                .execute()
+                .value
+            rows.append(contentsOf: page)
+            if page.count < Self.rankQueryPageSize { break }
+            offset += Self.rankQueryPageSize
+        }
+        return rows
     }
 
     /// Mirrors web's bounded player_recent_snaps read: only the current source season

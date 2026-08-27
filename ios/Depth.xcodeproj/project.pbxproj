@@ -37,6 +37,7 @@
 		2F42DE35421AF81749E5CE75 /* URLErrorOfflineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE00D91918FC8ECB279A4098 /* URLErrorOfflineTests.swift */; };
 		32FAA8533AADB16AE7ED4855 /* DesignTokensTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909FC5E5EBC96FBAFD1AEDBE /* DesignTokensTests.swift */; };
 		33C42687B66E7D2A4E70816B /* TeamListPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10E7D3B04967C0DFBDBEED5 /* TeamListPickerSheet.swift */; };
+		33FB7E6755C96F8F01EEF4E3 /* TeamMetricsDerivation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6A822C67A27916C2E68B6E1 /* TeamMetricsDerivation.swift */; };
 		362F1B4B478C5684328409CA /* AuthSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12A1C43C94C87299E927B13F /* AuthSheet.swift */; };
 		37AE06330C1CC70E67900031 /* PlayerSeasonStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE10A985ED752B98C685C839 /* PlayerSeasonStats.swift */; };
 		395710372FD0077DB2AF33D5 /* DepthRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FCC4475C04D0057618A6FE /* DepthRepository.swift */; };
@@ -88,6 +89,7 @@
 		7DA6D56AE84232942CE0AED1 /* FieldMarkings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D6A549002DA47A8FDFBB04 /* FieldMarkings.swift */; };
 		7DBE8842FD1DEC8D017AABB1 /* ScheduleMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD908EA6E702771824EF1659 /* ScheduleMapper.swift */; };
 		83C996BDD22497000B07DF86 /* TeamBadgeOverride.swift in Sources */ = {isa = PBXBuildFile; fileRef = 029EE2AA6BD3B9939AFE7FB2 /* TeamBadgeOverride.swift */; };
+		85E26CF46D31F62777F40D8B /* TeamLeagueRanks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 990B9EB2FDCE5F3057E3F93E /* TeamLeagueRanks.swift */; };
 		8776168F92D68DF063EB6EAB /* TeamStatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F7DAE880E2A1C8391F040A /* TeamStatsViewModel.swift */; };
 		88BE6ACCCEDA76C1CBB97025 /* FixtureLoading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29F97862C18E5EAD7104430A /* FixtureLoading.swift */; };
 		899F1EE1BC16BAD58D80C106 /* AppEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50B9DB06DE3CBD6B5F61C84 /* AppEventsTests.swift */; };
@@ -265,6 +267,7 @@
 		92D28C58D7A122104DADA8CC /* CloseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloseButton.swift; sourceTree = "<group>"; };
 		952FA1238A438E45AD02C4E9 /* OnboardingControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingControllerTests.swift; sourceTree = "<group>"; };
 		954B921C7ED809C93EB75D81 /* StartupTeamTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTeamTests.swift; sourceTree = "<group>"; };
+		990B9EB2FDCE5F3057E3F93E /* TeamLeagueRanks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamLeagueRanks.swift; sourceTree = "<group>"; };
 		9A1A58C48C2A6DDA57820C9D /* CompareViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareViewModel.swift; sourceTree = "<group>"; };
 		9F022703396305729D075AA5 /* Position.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Position.swift; sourceTree = "<group>"; };
 		A0DE3824F1EEDE104DC7FDFB /* CachedSnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedSnapshotStore.swift; sourceTree = "<group>"; };
@@ -288,6 +291,7 @@
 		B14888EF10F7F9A82139F0BD /* DepthChartFieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthChartFieldView.swift; sourceTree = "<group>"; };
 		B363F9AF5C0854305B6E670A /* PlayerCardReorderUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCardReorderUITests.swift; sourceTree = "<group>"; };
 		B5797D0C01507D900A35C148 /* UniformFilterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniformFilterSheet.swift; sourceTree = "<group>"; };
+		B6A822C67A27916C2E68B6E1 /* TeamMetricsDerivation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamMetricsDerivation.swift; sourceTree = "<group>"; };
 		B6AEFA01C7AE1138FA0B9741 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		B8FF910E933BD5EBFA34FABB /* TeamListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamListView.swift; sourceTree = "<group>"; };
 		BA9D8878CEE6F531310761A9 /* RecentParticipationDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentParticipationDTO.swift; sourceTree = "<group>"; };
@@ -407,6 +411,8 @@
 				3757D55E58A34FC37F1E6C19 /* Roster.swift */,
 				DE6C33A0D7CAEFAEEEE07D8A /* StartupTeam.swift */,
 				48FA4E18037077277DE72192 /* Team.swift */,
+				990B9EB2FDCE5F3057E3F93E /* TeamLeagueRanks.swift */,
+				B6A822C67A27916C2E68B6E1 /* TeamMetricsDerivation.swift */,
 				BE03AF4D1E15ED94B758ADBE /* TeamSchedule.swift */,
 				5DC2684A5931092EB633E74B /* TeamStats.swift */,
 				44227E9491E009CF1F13FFAD /* Timestamp.swift */,
@@ -961,10 +967,12 @@
 				FCB7419B6D19F100EBF99D11 /* TeamDetailView.swift in Sources */,
 				D028D091F525E2DDCA7ED6CD /* TeamDetailViewModel.swift in Sources */,
 				F93D1A06E551689D53504A86 /* TeamIconView.swift in Sources */,
+				85E26CF46D31F62777F40D8B /* TeamLeagueRanks.swift in Sources */,
 				33C42687B66E7D2A4E70816B /* TeamListPickerSheet.swift in Sources */,
 				FF338B862BDF1825AA91B360 /* TeamListView.swift in Sources */,
 				96EE9CC19DC42FC68DEB9F90 /* TeamListViewModel.swift in Sources */,
 				17A2F54F4BEC004A37AFB2AF /* TeamLogoCache.swift in Sources */,
+				33FB7E6755C96F8F01EEF4E3 /* TeamMetricsDerivation.swift in Sources */,
 				66F6BBAF1B3D78957CB02C09 /* TeamSchedule.swift in Sources */,
 				F24DC74F4E029AF45C2E80B7 /* TeamSnapshotDTO.swift in Sources */,
 				D448FF5EA6F5184AD7517AA3 /* TeamSnapshotMapper.swift in Sources */,

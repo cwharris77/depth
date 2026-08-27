@@ -23,7 +23,10 @@ private func row(
     conferenceLosses: Int? = 4,
     pointsFor: Int? = 402,
     pointsAgainst: Int? = 291,
-    pointDifferential: Int? = 111
+    pointDifferential: Int? = 111,
+    winPercent: Double? = 0.75,
+    streak: String? = "W3",
+    playoffSeed: Int? = 2
 ) -> TeamStatsRowDTO {
     TeamStatsRowDTO(
         season: season,
@@ -32,7 +35,8 @@ private func row(
         roadWins: roadWins, roadLosses: roadLosses,
         divisionWins: divisionWins, divisionLosses: divisionLosses,
         conferenceWins: conferenceWins, conferenceLosses: conferenceLosses,
-        pointsFor: pointsFor, pointsAgainst: pointsAgainst, pointDifferential: pointDifferential
+        pointsFor: pointsFor, pointsAgainst: pointsAgainst, pointDifferential: pointDifferential,
+        winPercent: winPercent, streak: streak, playoffSeed: playoffSeed
     )
 }
 
@@ -46,6 +50,8 @@ private func team(id: String = "bills") -> Team {
 
 private func matchupRow(
     season: Int = 2025,
+    passingYards: Int? = nil,
+    rushingYards: Int? = nil,
     games: Int? = 17,
     attempts: Int? = 500,
     carries: Int? = 425,
@@ -72,6 +78,8 @@ private func matchupRow(
     TeamMatchupMetricsDTO(
         season: season,
         updatedAt: "2026-08-23T12:00:00.000Z",
+        passingYards: passingYards,
+        rushingYards: rushingYards,
         games: games,
         attempts: attempts,
         carries: carries,
@@ -293,10 +301,15 @@ private func offseasonDate() -> Date {
             season: 2026, overallWins: nil, overallLosses: nil, overallTies: nil,
             homeWins: nil, homeLosses: nil, roadWins: nil, roadLosses: nil,
             divisionWins: nil, divisionLosses: nil, conferenceWins: nil, conferenceLosses: nil,
-            pointsFor: nil, pointsAgainst: nil, pointDifferential: nil
+            pointsFor: nil, pointsAgainst: nil, pointDifferential: nil,
+            winPercent: nil, streak: nil, playoffSeed: nil
         )
     )
     #expect(stats.season == 2026)
+    // A stub row also carries no streak/seed/win% — they stay absent, not zeroed.
+    #expect(stats.streak == nil)
+    #expect(stats.playoffSeed == nil)
+    #expect(stats.winPercent == nil)
     #expect(stats.overallWins == 0)
     #expect(stats.overallLosses == 0)
     #expect(stats.overallTies == 0)
@@ -344,4 +357,235 @@ private func offseasonDate() -> Date {
     #expect(state.completedSeason == 2026)
     #expect(state.upcomingSeason == 2027)
     #expect(state.isOffseason == false)
+}
+
+// MARK: - Web-parity fields and league ranks
+
+private func rankRow(
+    _ teamId: String,
+    season: Int = 2025,
+    winPercent: Double? = nil,
+    pointsFor: Int? = nil,
+    pointsAgainst: Int? = nil,
+    pointDifferential: Int? = nil
+) -> TeamStatsRankDTO {
+    TeamStatsRankDTO(
+        teamId: teamId, season: season, winPercent: winPercent,
+        pointsFor: pointsFor, pointsAgainst: pointsAgainst,
+        pointDifferential: pointDifferential
+    )
+}
+
+/// Every metric column defaults to nil, so a test names only the columns its metric
+/// reads and every other rank is legitimately absent.
+private func metricRankRow(
+    _ teamId: String,
+    season: Int = 2025,
+    passingYards: Int? = nil,
+    rushingYards: Int? = nil,
+    games: Int? = nil,
+    attempts: Int? = nil,
+    carries: Int? = nil,
+    sacksSuffered: Int? = nil,
+    passingEPA: Double? = nil,
+    rushingEPA: Double? = nil,
+    passingInterceptions: Int? = nil,
+    fumblesLostTotal: Int? = nil,
+    defensiveSacks: Double? = nil,
+    quarterbackHits: Int? = nil,
+    defensiveInterceptions: Int? = nil,
+    defensiveFumbleRecoveries: Int? = nil,
+    fieldGoalsMade: Int? = nil,
+    fieldGoalsAttempted: Int? = nil,
+    puntAttempts: Int? = nil,
+    netPuntYards: Int? = nil,
+    puntReturns: Int? = nil,
+    puntReturnYards: Int? = nil,
+    kickoffReturns: Int? = nil,
+    kickoffReturnYards: Int? = nil
+) -> TeamSeasonStatsRankDTO {
+    TeamSeasonStatsRankDTO(
+        teamId: teamId, season: season, passingYards: passingYards, rushingYards: rushingYards,
+        games: games, attempts: attempts, carries: carries, sacksSuffered: sacksSuffered,
+        passingEPA: passingEPA, rushingEPA: rushingEPA,
+        passingInterceptions: passingInterceptions, fumblesLostTotal: fumblesLostTotal,
+        defensiveSacks: defensiveSacks, quarterbackHits: quarterbackHits,
+        defensiveInterceptions: defensiveInterceptions,
+        defensiveFumbleRecoveries: defensiveFumbleRecoveries,
+        fieldGoalsMade: fieldGoalsMade, fieldGoalsAttempted: fieldGoalsAttempted,
+        puntAttempts: puntAttempts, netPuntYards: netPuntYards,
+        puntReturns: puntReturns, puntReturnYards: puntReturnYards,
+        kickoffReturns: kickoffReturns, kickoffReturnYards: kickoffReturnYards
+    )
+}
+
+@Suite struct TeamStatsParityFieldTests {
+    @Test func mapsStreakSeedWinPercentAndSeasonScopedCoach() {
+        let page = TeamStatsMapper.map(
+            team: team(),
+            rows: [row(season: 2025), row(season: 2024)],
+            coachRows: [TeamCoachSeasonDTO(season: 2025, coachName: "Sean McDermott", coachExperience: 9)],
+            now: offseasonDate()
+        )
+        let current = page.seasons.first
+        #expect(current?.streak == "W3")
+        #expect(current?.playoffSeed == 2)
+        #expect(current?.winPercent == 0.75)
+        #expect(current?.coach == TeamSeasonCoach(name: "Sean McDermott", experience: 9))
+        // The coach is season-scoped: 2024 has no curated row, so it has no coach rather
+        // than inheriting 2025's.
+        #expect(page.seasons.last?.coach == nil)
+    }
+
+    @Test func absentStreakAndSeedStayNilInsteadOfBecomingZero() {
+        // playoffSeed 0 means "missed the playoffs" — a `?? 0` here would turn a missing
+        // column into that claim.
+        let stats = TeamStatsMapper.mapSeason(row(season: 2025, streak: nil, playoffSeed: nil))
+        #expect(stats.streak == nil)
+        #expect(stats.playoffSeed == nil)
+    }
+
+    @Test func carriesPassAndRushYardsFromTheMatchupRow() {
+        let page = TeamStatsMapper.map(
+            team: team(),
+            rows: [row(season: 2025)],
+            matchupRows: [matchupRow(season: 2025)],
+            now: offseasonDate()
+        )
+        // matchupRow's defaults leave the yardage columns nil, so the season carries no
+        // yardage rather than zero.
+        #expect(page.seasons.first?.passingYards == nil)
+        #expect(page.seasons.first?.rushingYards == nil)
+    }
+}
+
+@Suite struct TeamLeagueRanksTests {
+    private let espn = [
+        rankRow("bills", winPercent: 0.75, pointsFor: 402, pointsAgainst: 291, pointDifferential: 111),
+        rankRow("chiefs", winPercent: 0.88, pointsFor: 430, pointsAgainst: 280, pointDifferential: 150),
+        rankRow("jets", winPercent: 0.25, pointsFor: 250, pointsAgainst: 400, pointDifferential: -150),
+    ]
+
+    private func ranks(_ rows: [TeamSeasonStatsRankDTO]) -> TeamStatsRanks? {
+        TeamStatsMapper.mapRanks(teamId: "bills", recordRows: espn, metricRows: rows)[2025]
+    }
+
+    @Test func ranksRecordMetricsWithPointsAgainstAscending() {
+        let result = ranks([])
+        #expect(result?.winPercent == 2)
+        #expect(result?.pointsFor == 2)
+        // Fewer points allowed is better, so the Bills' 291 is 2nd best, not 2nd most.
+        #expect(result?.pointsAgainst == 2)
+        #expect(result?.pointDifferential == 2)
+    }
+
+    @Test func ranksHigherIsBetterMetrics() {
+        let result = ranks([
+            metricRankRow("bills", passingEPA: 30, rushingEPA: 10, defensiveSacks: 44),
+            metricRankRow("chiefs", passingEPA: 45, rushingEPA: 5, defensiveSacks: 50),
+            metricRankRow("jets", passingEPA: 15, rushingEPA: 1, defensiveSacks: 30),
+        ])
+        #expect(result?.passingEPA == 2)
+        #expect(result?.rushingEPA == 1)
+        #expect(result?.defensiveSacks == 2)
+    }
+
+    @Test func ranksLowerIsBetterMetricsAscending() {
+        let result = ranks([
+            metricRankRow("bills", attempts: 600, sacksSuffered: 30, passingInterceptions: 9, fumblesLostTotal: 5),
+            metricRankRow("chiefs", attempts: 600, sacksSuffered: 20, passingInterceptions: 6, fumblesLostTotal: 9),
+            metricRankRow("jets", attempts: 600, sacksSuffered: 50, passingInterceptions: 15, fumblesLostTotal: 12),
+        ])
+        // Fewer is better for all three.
+        #expect(result?.sackRate == 2)
+        #expect(result?.passingInterceptions == 2)
+        #expect(result?.fumblesLost == 1)
+    }
+
+    @Test func ranksDerivedMetrics() {
+        let result = ranks([
+            metricRankRow(
+                "bills", games: 17, attempts: 600, carries: 380, sacksSuffered: 20,
+                passingEPA: 30, rushingEPA: 10, passingInterceptions: 9, fumblesLostTotal: 5,
+                quarterbackHits: 102, defensiveInterceptions: 12, defensiveFumbleRecoveries: 8,
+                fieldGoalsMade: 28, fieldGoalsAttempted: 32
+            ),
+            metricRankRow(
+                "chiefs", games: 17, attempts: 600, carries: 380, sacksSuffered: 20,
+                passingEPA: 45, rushingEPA: 15, passingInterceptions: 6, fumblesLostTotal: 9,
+                quarterbackHits: 68, defensiveInterceptions: 10, defensiveFumbleRecoveries: 4,
+                fieldGoalsMade: 30, fieldGoalsAttempted: 32
+            ),
+            metricRankRow(
+                "jets", games: 17, attempts: 600, carries: 380, sacksSuffered: 20,
+                passingEPA: 15, rushingEPA: 5, passingInterceptions: 15, fumblesLostTotal: 12,
+                quarterbackHits: 136, defensiveInterceptions: 20, defensiveFumbleRecoveries: 6,
+                fieldGoalsMade: 20, fieldGoalsAttempted: 32
+            ),
+        ])
+        #expect(result?.offensiveEPAPerPlay == 2)
+        #expect(result?.quarterbackHitsPerGame == 2)
+        // bills 12+8=20, chiefs 10+4=14, jets 20+6=26 — the Jets lead.
+        #expect(result?.defensiveTakeaways == 2)
+        #expect(result?.fieldGoalPercentage == 2)
+        // bills (12+8)-(9+5) = +6; chiefs (10+4)-(6+9) = -1; jets (20+6)-(15+12) = -1
+        #expect(result?.turnoverMargin == 1)
+    }
+
+    @Test func tiedTeamsShareARank() {
+        let result = ranks([
+            metricRankRow("bills", defensiveSacks: 44),
+            metricRankRow("chiefs", defensiveSacks: 44),
+            metricRankRow("jets", defensiveSacks: 30),
+        ])
+        #expect(result?.defensiveSacks == 1)
+    }
+
+    @Test func omitsARankWhenTheTeamIsMissingAColumnItNeeds() {
+        // The Bills have attempts but no sacks, so their sack rate is unknown — not 0%,
+        // which would rank them first in the league.
+        let result = ranks([
+            metricRankRow("bills", attempts: 600),
+            metricRankRow("chiefs", attempts: 600, sacksSuffered: 20),
+            metricRankRow("jets", attempts: 600, sacksSuffered: 50),
+        ])
+        #expect(result?.sackRate == nil)
+    }
+
+    @Test func omitsARankOnAZeroDenominator() {
+        let result = ranks([
+            metricRankRow("bills", fieldGoalsMade: 0, fieldGoalsAttempted: 0),
+            metricRankRow("chiefs", fieldGoalsMade: 30, fieldGoalsAttempted: 32),
+        ])
+        #expect(result?.fieldGoalPercentage == nil)
+    }
+
+    @Test func omitsTurnoverMarginWhenOnlyOneHalfIsKnown() {
+        let result = ranks([
+            metricRankRow("bills", defensiveInterceptions: 12, defensiveFumbleRecoveries: 8),
+            metricRankRow(
+                "chiefs", passingInterceptions: 6, fumblesLostTotal: 9,
+                defensiveInterceptions: 10, defensiveFumbleRecoveries: 4
+            ),
+        ])
+        #expect(result?.turnoverMargin == nil)
+    }
+
+    @Test func producesNoRanksWhenTheRecordReadIsEmpty() {
+        #expect(TeamStatsMapper.mapRanks(teamId: "bills", recordRows: [], metricRows: []).isEmpty)
+    }
+
+    @Test func cachedPageWrittenBeforeRanksExistedStillDecodes() throws {
+        // The cache is disposable, but a decode failure costs a live refetch on every
+        // launch until it is wiped — so every field added here must be defaulted.
+        let legacy = """
+        {"team":{"id":"bills","city":"Buffalo","name":"Bills","abbrev":"BUF",
+        "conference":"AFC","division":"East","colors":{"primary":"#00338d",
+        "secondary":"#d50a0a","accent":"#d50a0a","uiAccent":"#d50a0a","onAccent":"#fff"}},
+        "seasons":[],"currentSeason":2026}
+        """.data(using: .utf8)!
+        let page = try JSONDecoder().decode(TeamStatsPage.self, from: legacy)
+        #expect(page.leagueRanksBySeason.isEmpty)
+        #expect(page.seasons.isEmpty)
+    }
 }
