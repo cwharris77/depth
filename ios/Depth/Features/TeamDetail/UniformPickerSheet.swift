@@ -86,21 +86,6 @@ struct UniformPickerSheet: View {
                     .foregroundStyle(DesignTokens.Colors.textMuted)
             }
             .multilineTextAlignment(.center)
-
-            if uniform.id == selectedID {
-                HStack(spacing: 6) {
-                    Image(systemName: "checkmark")
-                        .font(.caption.weight(.bold))
-                    Text("Active")
-                        .font(.caption.weight(.bold))
-                }
-                .foregroundStyle(DesignTokens.Colors.accent)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(DesignTokens.Colors.accent.opacity(0.12), in: Capsule())
-                .overlay(Capsule().strokeBorder(DesignTokens.Colors.accent.opacity(0.4), lineWidth: 1))
-                .accessibilityHidden(true)
-            }
         }
         .padding(.horizontal, DesignTokens.Spacing.lg)
         .padding(.bottom, DesignTokens.Spacing.md)
