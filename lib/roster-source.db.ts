@@ -670,6 +670,12 @@ const TEAM_STATS_PAGE_TEAM_SELECT = `${TEAM_SELECT}, coach_name, coach_experienc
 // select would then silently truncate to a subset of teams/seasons and produce wrong
 // ranks with no error. Page through with .range() instead so the full set always loads
 // regardless of the project's max-rows setting.
+//
+// Every paged query MUST also carry an explicit .order() -- PostgREST guarantees no row
+// order without one, so successive .range() windows over an unordered result can repeat
+// a row in two pages and drop another entirely. That failure is silent and produces the
+// same confidently-wrong ranks the paging exists to prevent, just at a different row
+// count. (team_id, season) is the stable key here.
 const RANK_QUERY_PAGE_SIZE = 500;
 
 async function fetchAllRankRows<T>(
@@ -721,7 +727,12 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
       .eq('team_id', teamId)
       .returns<TeamCoachSeasonRow[]>(),
     fetchAllRankRows<TeamStatsRankRow>((from, to) =>
-      client.from(tables.teamStats).select(TEAM_STATS_RANK_SELECT).range(from, to)
+      client
+        .from(tables.teamStats)
+        .select(TEAM_STATS_RANK_SELECT)
+        .order('team_id')
+        .order('season')
+        .range(from, to)
     ),
     client
       .from(tables.teamSeasonStats)
@@ -730,7 +741,12 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
       .order('season', { ascending: false })
       .returns<TeamSeasonStatsValueRow[]>(),
     fetchAllRankRows<TeamSeasonStatsRankRow>((from, to) =>
-      client.from(tables.teamSeasonStats).select(TEAM_SEASON_STATS_RANK_SELECT).range(from, to)
+      client
+        .from(tables.teamSeasonStats)
+        .select(TEAM_SEASON_STATS_RANK_SELECT)
+        .order('team_id')
+        .order('season')
+        .range(from, to)
     ),
     client
       .from(tables.uniforms)
