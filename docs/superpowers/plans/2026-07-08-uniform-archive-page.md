@@ -20,7 +20,7 @@
 - Conventional Commits with a scope from: `uniforms`, `field`, `flags`/`theme`, `supabase`, `specs`. Squash-merge only.
 - Two color systems: `uiAccent`/`onAccent` for anything legible on `#0a0e1a`; `primary`/`secondary`/`accent` are brand-true surfaces (the jersey figure uses these).
 
-**Reference spec:** `docs/superpowers/specs/2026-07-08-uniform-archive-page-design.md`
+**Reference spec:** `../obsidian/Projects/depth/specs/2026-07-08-uniform-archive-page-design.md`
 
 ---
 
