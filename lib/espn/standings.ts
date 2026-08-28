@@ -89,19 +89,30 @@ function splitRecord(display: string | undefined): { wins: number; losses: numbe
 // "missed the playoffs" sentinel (`row.playoff_seed ?? 0` in the DB reader). Writing 0
 // over a *completed* season's real seed is how the Seahawks' 2025 Super Bowl year got
 // rendered "MISSED PLAYOFFS" (fixed 2026-08-28) -- skipping the entry preserves whatever
-// good seed the prior run wrote. `season` is read per-division from
-// `standings.season` (not the document's top-level season, which flips to the *next*
-// season once the current one ends -- verified live 2026-07-14) so this same parser
-// handles both the unparameterized "current" fetch and an explicit `?season=YYYY` fetch
-// for prior years (docs/superpowers/specs/2026-07-14-multi-season-team-stats-design.md).
-// A division missing `standings.season` skips all its entries -- season is part of the
-// composite key, so a half-known season is as unusable as a half-known stat.
-export function parseTeamStats(json: EspnStandings): Map<string, TeamStats> {
+// good seed the prior run wrote.
+//
+// `expectedSeason`, when provided, is the season the caller explicitly requested via
+// `?season=YYYY`. ESPN echoing a different `standings.season` means the payload isn't
+// what we asked for (the rollover window can relabel a placeholder block) -- skip, never
+// write it under the wrong season. The calendar (lib/utils/team/season-state.ts) decides
+// what we request; this guard just refuses a mislabeled response. `season` is read
+// per-division from `standings.season` (not the document's top-level season, which flips
+// to the *next* season once the current one ends -- verified live 2026-07-14) so this
+// same parser handles both the unparameterized "current" fetch and an explicit
+// `?season=YYYY` fetch for prior years (docs/superpowers/specs/2026-07-14-multi-season-
+// team-stats-design.md). A division missing `standings.season` skips all its entries --
+// season is part of the composite key, so a half-known season is as unusable as a
+// half-known stat.
+export function parseTeamStats(
+  json: EspnStandings,
+  expectedSeason?: number
+): Map<string, TeamStats> {
   const out = new Map<string, TeamStats>();
   for (const conf of kids(json.children)) {
     for (const div of kids(conf.children)) {
       const season = div.standings?.season;
       if (season === undefined) continue;
+      if (expectedSeason !== undefined && season !== expectedSeason) continue;
       for (const entry of div.standings?.entries ?? []) {
         const id = entry.team?.id;
         if (!id) continue;

@@ -199,6 +199,22 @@ describe('parseTeamStats', () => {
     expect(map.has('21')).toBe(false);
   });
 
+  it('keeps entries only when their echoed season matches the one requested (expectedSeason)', () => {
+    // STATS_FIXTURE's standings.season is 2025, so an exact match keeps the two
+    // complete, seed-greater-than-zero teams (12, 20).
+    const map = parseTeamStats(STATS_FIXTURE, 2025);
+    expect(map.size).toBe(2);
+    expect(map.has('12')).toBe(true);
+    expect(map.has('20')).toBe(true);
+  });
+
+  it('refuses a response whose echoed standings.season is not the one requested (expectedSeason)', () => {
+    // The rollover window can relabel a placeholder block; a `?season=` response
+    // echoing a different season must never be written under the wrong year.
+    const map = parseTeamStats(STATS_FIXTURE, 2024);
+    expect(map.size).toBe(0);
+  });
+
   it('covers exactly the teams with a complete stats block', () => {
     const map = parseTeamStats(STATS_FIXTURE);
     expect(map.size).toBe(2);

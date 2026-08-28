@@ -138,19 +138,27 @@ leave the DB one run stale.
   division for every team in one call. `parseStandings` (`lib/espn/standings.ts`) maps
   each ESPN team id → `{conference, division}`; the ingest writes these, so conf/div is
   ESPN-sourced, not hand-curated. `lib/teams/league.ts` is now just an identity seed
-  (id/city/name/abbrev) the ingest loops over. The same fetch (plus one explicit
-  `?season=` call for the prior year, unflagged -- this + last season) also carries
-  each team's win/loss/points record, which `parseTeamStats` still parses in full --
-  but as of the DEP-146 re-own the ingest writes only **`playoff_seed`** from it. Every
-  W-L column in `team_stats` is nflverse's now, computed REG-only from game rows
-  (`lib/nflverse/records.ts`). Reason: this endpoint aggregates whatever season type is
-  currently live, with no way to tell from the response which it was, so through August
-  it reports *preseason* games as the season record (DEP-200 -- observed 2026-08-21,
-  every team carrying a preseason W-L weeks before Week 1). Playoff seed has no nflverse
-  equivalent, so it stays here. The two ingests share each `team_stats` row via
-  column-scoped upserts: PostgREST's on-conflict update only touches columns present in
-  the payload, so neither clobbers the other's. A `--seasons` backfill widens the range
-  (see Scheduling below).
+  (id/city/name/abbrev) the ingest loops over. The **same endpoint** also carries each
+  team's win/loss/points record, which `parseTeamStats` parses in full and the ingest
+  writes **only `playoff_seed`** from (DEP-146 re-own). Every W-L column in `team_stats`
+  is nflverse's now, computed REG-only from game rows (`lib/nflverse/records.ts`).
+  Reason: this endpoint aggregates whatever season type is currently live, with no way
+  to tell from the response which it was, so through August it reports *preseason* games
+  as the season record (DEP-200 -- observed 2026-08-21, every team carrying a preseason
+  W-L weeks before Week 1). Playoff seed has no nflverse equivalent, so it stays here.
+  The two ingests share each `team_stats` row via column-scoped upserts: PostgREST's
+  on-conflict update only touches columns present in the payload, so neither clobbers
+  the other's.
+- **Which seasons are fetched is the calendar's call, not ESPN's** — the canonical
+  definition of "current season" is `lib/utils/team/season-state.ts` (one function used
+  by the read side, the iOS twin, and every ingest). The unflagged daily job fetches
+  `?season=<current>` and `?season=<current-1>` by explicit URL; a `--seasons` backfill
+  fetches the requested range the same way. ESPN's own `standings.season` label is only
+  ever echoed back as the row key, and `parseTeamStats` refuses a response whose echoed
+  season isn't the one requested. This replaced the old "discover the latest season from
+  the unparameterized response" behavior after that label mislabeled the 2025 standings
+  during the 2026 rollover and the ingest wrote a playoff seed 0 over the Super Bowl
+  champion Seahawks (2026-08-28 reconciliation, DEP-394).
 - ESPN's `playoffseed` of 0 means "never seeded this season" (pre-kickoff window,
   off-season churn) — `parseTeamStats` skips any entry carrying it, so a `0` never lands
   in `team_stats.playoff_seed`. The read side treats 0 as the "missed the playoffs"
