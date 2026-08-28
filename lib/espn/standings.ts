@@ -80,10 +80,16 @@ function splitRecord(display: string | undefined): { wins: number; losses: numbe
 }
 
 // Same standings fetch parseStandings reads, mapped to the fuller stat block instead of
-// just conference/division. A team whose stats array is missing or partial (bye-week
-// ingest gap, mid-season expansion) is left out of the map entirely -- never a
-// half-filled TeamStats (invariant 6) -- so the caller's "no entry -> skip the upsert"
-// logic (scripts/ingest-espn.mts) has a clean signal. `season` is read per-division from
+// just conference/division. A team whose stats array is missing, partial (bye-week
+// ingest gap, mid-season expansion), or carries ESPN's `playoffseed` of 0 is left out of
+// the map entirely -- never a half-filled TeamStats (invariant 6) -- so the caller's
+// "no entry -> skip the upsert" logic (scripts/ingest-espn.mts) has a clean signal.
+// The 0 case is load-bearing: ESPN emits `playoffseed` 0 for seasons it hasn't seeded
+// yet (the pre-kickoff window, and off-season churn), and the read side treats 0 as the
+// "missed the playoffs" sentinel (`row.playoff_seed ?? 0` in the DB reader). Writing 0
+// over a *completed* season's real seed is how the Seahawks' 2025 Super Bowl year got
+// rendered "MISSED PLAYOFFS" (fixed 2026-08-28) -- skipping the entry preserves whatever
+// good seed the prior run wrote. `season` is read per-division from
 // `standings.season` (not the document's top-level season, which flips to the *next*
 // season once the current one ends -- verified live 2026-07-14) so this same parser
 // handles both the unparameterized "current" fetch and an explicit `?season=YYYY` fetch
@@ -124,6 +130,7 @@ export function parseTeamStats(json: EspnStandings): Map<string, TeamStats> {
           pointsAgainst === undefined ||
           pointDifferential === undefined ||
           playoffSeed === undefined ||
+          playoffSeed <= 0 || // ESPN's "not seeded yet" stub; 0 means MISSED on read
           streak === undefined ||
           !home ||
           !road ||
