@@ -1213,13 +1213,19 @@ export const UNIFORMS: UniformSeed[] = [
       onAccent: '#0a0e1a',
     },
   },
-  // Jaguars original teal (1995-2012 design era, reintroduced 2023). Hexes: teamcolorcodes (teal #006778, gold #D7A22A, black #101820). uiAccent reuses the team's bright teal.
+  // Jaguars "Prowler Throwback" — recreates the 1998-2008 original teal design (curved
+  // three-color numbers, running-jaguar sleeve patch); the team's primary color from
+  // 1995-2008 before black took over 2009-2020, then dormant until this recreation
+  // debuted 2024 (jaguars.com). yearStart is the era it recreates, matching the app's
+  // other current throwbacks (Packers 1923 Throwback, Eagles Kelly Green), not the 2024
+  // revival year. Hexes: teamcolorcodes (teal #006778, gold #D7A22A, black #101820).
+  // uiAccent reuses the team's bright teal.
   {
     teamId: 'jaguars',
     slug: 'teal-throwback',
     kind: 'throwback',
-    name: 'Teal Throwback',
-    yearStart: 1995,
+    name: 'Prowler Throwback',
+    yearStart: 1998,
     yearEnd: null,
     isCurrent: true,
     colors: {
