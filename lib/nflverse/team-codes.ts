@@ -3,7 +3,7 @@
 // relocations appear under old codes (`OAK`, `SD`, `STL`). A plain join on `abbrev` would
 // silently miss the Rams and every relocated franchise, so this is a hand-reviewed static
 // map. Historic codes fold into the current franchise's id so pre-move seasons land on the
-// right team (docs/superpowers/specs/2026-07-17-team-schedule-design.md). An unknown code
+// right team (../obsidian/Projects/depth/specs/2026-07-17-team-schedule-design.md). An unknown code
 // resolves to null and its game is skipped-and-counted at ingest, never guessed.
 
 export const NFLVERSE_TEAM_CODES: Record<string, string> = {
@@ -46,7 +46,7 @@ export const NFLVERSE_TEAM_CODES: Record<string, string> = {
   LAR: 'rams', // ESPN-style alias, in case a nflverse asset ever emits it
   // roster_<season>.csv (Phase D1) uses these abbreviated codes for seasons 2001-2015,
   // then switches to the standard forms above from 2016 on -- discovered ingesting the
-  // 2013 backfill (docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-design.md).
+  // 2013 backfill (../obsidian/Projects/depth/specs/2026-07-07-phase-d-history-and-boards-design.md).
   // nfldata/games.csv (the schedule ingest) never emits these, so they're additive, not
   // a behavior change for that path.
   ARZ: 'cardinals',

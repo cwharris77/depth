@@ -142,7 +142,7 @@ export function postseasonRoundLabel(gameType: string): string {
 }
 
 // Maps a `?season=` value to the schedule season to view, or null for the default view
-// (docs/superpowers/specs/2026-08-10-past-season-schedule-view-design.md). `null` means
+// (../obsidian/Projects/depth/specs/2026-08-10-past-season-schedule-view-design.md). `null` means
 // "today" — the page's prerendered latest-season schedule. The current season IS that
 // default view, so an explicit param equal to `currentSeason` normalizes to null rather
 // than double-fetching it through the API (same semantic as SeasonSheet's current row).

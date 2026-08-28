@@ -31,7 +31,7 @@
 - [ ] **Step 1: Write the migration**
 
 ```sql
--- Team stats page (Phase E, docs/superpowers/specs/2026-07-12-team-stats-page-design.md).
+-- Team stats page (Phase E, ../obsidian/Projects/depth/specs/2026-07-12-team-stats-page-design.md).
 -- Season record + standings detail, one row per team. Sourced from the same ESPN
 -- standings fetch already used for conference/division (lib/espn/standings.ts
 -- parseTeamStats) -- no new fetch, just more of the payload read. All nullable: a team
@@ -115,7 +115,7 @@ export interface Team {
 }
 
 // Season record + standings detail (Phase E stats page,
-// docs/superpowers/specs/2026-07-12-team-stats-page-design.md). Sourced from the same
+// ../obsidian/Projects/depth/specs/2026-07-12-team-stats-page-design.md). Sourced from the same
 // ESPN standings fetch already used for conference/division (lib/espn/standings.ts
 // parseTeamStats) -- one call, more of the payload read. A team missing from the
 // standings response (bye-week gap, mid-season expansion) has no TeamStats rather than
@@ -431,7 +431,7 @@ export interface Coach {
 // coach — ESPN doesn't expose the rest of the staff cheaply). Missing/empty array
 // (expansion team, offseason gap) -> null, never a crash (invariant 6). Consumed
 // directly by scripts/ingest-espn.mts for the teams.coach_* columns and by the team
-// stats page (docs/superpowers/specs/2026-07-12-team-stats-page-design.md) — no
+// stats page (../obsidian/Projects/depth/specs/2026-07-12-team-stats-page-design.md) — no
 // longer threaded through Team/TeamRoster.
 export function toCoach(roster: EspnRoster): Coach | null {
   const coach = roster.coach?.[0];
@@ -1077,7 +1077,7 @@ Immediately after the closing `}` of `writeTeam` (before `main().catch(...)`), a
 
 ```typescript
 // team_stats is 1:1 with teams (Phase E stats page,
-// docs/superpowers/specs/2026-07-12-team-stats-page-design.md). `stats` is undefined
+// ../obsidian/Projects/depth/specs/2026-07-12-team-stats-page-design.md). `stats` is undefined
 // when this team had no complete entry in this run's standings fetch (bye-week gap,
 // mid-season expansion) -- skip the upsert entirely rather than write a partial row;
 // whatever row already exists from a prior run is left untouched.
@@ -1802,7 +1802,7 @@ which also gives the season record somewhere to live.
   header has no coach line and a working stats button; `/team/seahawks/stats` renders
   coach + record + stat grid without overflow.
 
-Spec: `docs/superpowers/specs/2026-07-12-team-stats-page-design.md`
+Spec: `../obsidian/Projects/depth/specs/2026-07-12-team-stats-page-design.md`
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF

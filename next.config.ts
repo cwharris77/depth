@@ -60,7 +60,7 @@ const nextConfig: NextConfig = {
       {
         // Historical rosters' headshot_url (Phase D1, roster_history.headshot_url,
         // nflverse's roster_<season>.csv) — every row observed 1999-2024 uses this
-        // path shape (docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-
+        // path shape (../obsidian/Projects/depth/specs/2026-07-07-phase-d-history-and-boards-
         // design.md).
         protocol: 'https',
         hostname: 'static.www.nfl.com',

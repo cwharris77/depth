@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getTeamSchedule } from '@/lib/roster-source.db';
 import { SEASONS_MIN } from '@/lib/nflverse/roster-history';
 
-// Backs the schedule page's SeasonSheet past-season view (docs/superpowers/specs/
+// Backs the schedule page's SeasonSheet past-season view (../obsidian/Projects/depth/specs/
 // 2026-08-10-past-season-schedule-view-design.md). 404s for an unknown team, a
 // malformed/out-of-range season, or a season with no ingested games (never a guess,
 // AGENTS.md invariant 6).
