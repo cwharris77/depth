@@ -467,7 +467,7 @@
         "group": "LB",
         "preferredPosition": "WLB",
         "x": 26,
-        "y": 37,
+        "y": 33,
         "label": "WLB",
         "onLine": false
       },
@@ -478,7 +478,7 @@
         "group": "LB",
         "preferredPosition": "LILB",
         "x": 42,
-        "y": 37,
+        "y": 33,
         "label": "LILB",
         "onLine": false
       },
@@ -489,7 +489,7 @@
         "group": "LB",
         "preferredPosition": "RILB",
         "x": 58,
-        "y": 37,
+        "y": 33,
         "label": "RILB",
         "onLine": false
       },
@@ -500,7 +500,7 @@
         "group": "LB",
         "preferredPosition": "SLB",
         "x": 74,
-        "y": 37,
+        "y": 33,
         "label": "SLB",
         "onLine": false
       },
@@ -577,7 +577,7 @@
       {
         "key": "def-lb-0",
         "x": 26,
-        "y": 37,
+        "y": 33,
         "label": "WLB",
         "onLine": false,
         "playerId": "wlb1"
@@ -585,7 +585,7 @@
       {
         "key": "def-lb-1",
         "x": 42,
-        "y": 37,
+        "y": 33,
         "label": "LILB",
         "onLine": false,
         "playerId": "lilb1"
@@ -593,7 +593,7 @@
       {
         "key": "def-lb-2",
         "x": 58,
-        "y": 37,
+        "y": 33,
         "label": "RILB",
         "onLine": false,
         "playerId": "rilb1"
@@ -601,7 +601,7 @@
       {
         "key": "def-lb-3",
         "x": 74,
-        "y": 37,
+        "y": 33,
         "label": "SLB",
         "onLine": false,
         "playerId": "slb1"
@@ -742,7 +742,7 @@
         "group": "LB",
         "preferredPosition": null,
         "x": 26,
-        "y": 37,
+        "y": 33,
         "label": "LB",
         "onLine": false
       },
@@ -753,7 +753,7 @@
         "group": "LB",
         "preferredPosition": null,
         "x": 74,
-        "y": 37,
+        "y": 33,
         "label": "LB",
         "onLine": false
       },
@@ -849,7 +849,7 @@
       {
         "key": "def-lb-0",
         "x": 26,
-        "y": 37,
+        "y": 33,
         "label": "LB",
         "onLine": false,
         "playerId": null
@@ -857,7 +857,7 @@
       {
         "key": "def-lb-1",
         "x": 74,
-        "y": 37,
+        "y": 33,
         "label": "LB",
         "onLine": false,
         "playerId": null

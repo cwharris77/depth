@@ -43,7 +43,7 @@
         "group": "LB",
         "preferredPosition": "WLB",
         "x": 26,
-        "y": 37,
+        "y": 33,
         "label": "WLB",
         "onLine": false
       },
@@ -54,7 +54,7 @@
         "group": "LB",
         "preferredPosition": "LILB",
         "x": 42,
-        "y": 37,
+        "y": 33,
         "label": "LILB",
         "onLine": false
       },
@@ -65,7 +65,7 @@
         "group": "LB",
         "preferredPosition": "RILB",
         "x": 58,
-        "y": 37,
+        "y": 33,
         "label": "RILB",
         "onLine": false
       },
@@ -76,7 +76,7 @@
         "group": "LB",
         "preferredPosition": "SLB",
         "x": 74,
-        "y": 37,
+        "y": 33,
         "label": "SLB",
         "onLine": false
       },
@@ -182,7 +182,7 @@
         "group": "LB",
         "preferredPosition": null,
         "x": 26,
-        "y": 37,
+        "y": 33,
         "label": "LB",
         "onLine": false
       },
@@ -193,7 +193,7 @@
         "group": "LB",
         "preferredPosition": null,
         "x": 50,
-        "y": 37,
+        "y": 33,
         "label": "LB",
         "onLine": false
       },
@@ -204,7 +204,7 @@
         "group": "LB",
         "preferredPosition": null,
         "x": 74,
-        "y": 37,
+        "y": 33,
         "label": "LB",
         "onLine": false
       },
@@ -288,7 +288,7 @@
         "group": "LB",
         "preferredPosition": "WLB",
         "x": 26,
-        "y": 37,
+        "y": 33,
         "label": "WLB",
         "onLine": false
       },
@@ -299,7 +299,7 @@
         "group": "LB",
         "preferredPosition": "LILB",
         "x": 42,
-        "y": 37,
+        "y": 33,
         "label": "LILB",
         "onLine": false
       },
@@ -310,7 +310,7 @@
         "group": "LB",
         "preferredPosition": "RILB",
         "x": 58,
-        "y": 37,
+        "y": 33,
         "label": "RILB",
         "onLine": false
       },
@@ -321,7 +321,7 @@
         "group": "LB",
         "preferredPosition": "SLB",
         "x": 74,
-        "y": 37,
+        "y": 33,
         "label": "SLB",
         "onLine": false
       },
@@ -405,7 +405,7 @@
         "group": "LB",
         "preferredPosition": "WLB",
         "x": 26,
-        "y": 37,
+        "y": 33,
         "label": "WLB",
         "onLine": false
       },
@@ -416,7 +416,7 @@
         "group": "LB",
         "preferredPosition": "LILB",
         "x": 42,
-        "y": 37,
+        "y": 33,
         "label": "LILB",
         "onLine": false
       },
@@ -427,7 +427,7 @@
         "group": "LB",
         "preferredPosition": "RILB",
         "x": 58,
-        "y": 37,
+        "y": 33,
         "label": "RILB",
         "onLine": false
       },
@@ -438,7 +438,7 @@
         "group": "LB",
         "preferredPosition": "SLB",
         "x": 74,
-        "y": 37,
+        "y": 33,
         "label": "SLB",
         "onLine": false
       },
@@ -566,7 +566,7 @@
         "group": "LB",
         "preferredPosition": null,
         "x": 26,
-        "y": 37,
+        "y": 33,
         "label": "LB",
         "onLine": false
       },
@@ -577,7 +577,7 @@
         "group": "LB",
         "preferredPosition": null,
         "x": 74,
-        "y": 37,
+        "y": 33,
         "label": "LB",
         "onLine": false
       },
@@ -694,7 +694,7 @@
         "group": "LB",
         "preferredPosition": null,
         "x": 50,
-        "y": 37,
+        "y": 33,
         "label": "LB",
         "onLine": false
       },

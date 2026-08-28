@@ -384,7 +384,13 @@ export function buildRealFormation(alignment: string, code: string): FormationSl
 
 const DEFENSE_PERSONNEL_CODE_RE = /^(\d+)-(\d+)-(\d+)$/;
 const DL_Y = 49; // same line the offense's OL sits on, mirrored to the defense's side
-const LB_Y = 37;
+// 4pp of clearance below DL_Y rather than the original 8: at 37 the LB position labels
+// overlapped the defensive-line circles in denser fronts (4-2-5 especially). iOS moved
+// first (#568, lbY in ios/Depth/Domain/Formations.swift) but only on its own side, which
+// broke the cross-language fixture parity test — this is web catching up so both surfaces
+// place linebackers identically again. The two constants must move together; changing one
+// alone fails realDefenseFormationParity().
+const LB_Y = 33;
 
 function spreadX(count: number, minX: number, maxX: number): number[] {
   if (count <= 0) return [];
