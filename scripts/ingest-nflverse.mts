@@ -393,6 +393,10 @@ async function ingestRecentSnaps(
   pfrCrosswalk: ReadonlyMap<string, string>,
   startedAt: string
 ): Promise<RecentSnapsIngestResult> {
+  // Data-availability probe only (which release asset exists) — NOT the canonical
+  // "current season" definition, which is the calendar alone (2026-08-28 reconciliation,
+  // lib/utils/team/season-state.ts). A source may probe its own availability; it never
+  // relabels a season. nflverse's "latest" stops at whatever the project has published.
   const latestSeason = await latestAvailableSeason(SNAP_COUNTS_TAG, SNAP_COUNTS_PREFIX);
   if (latestSeason === null) {
     return {

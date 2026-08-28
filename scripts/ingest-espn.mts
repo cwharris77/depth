@@ -27,6 +27,7 @@ import {
   type EspnStandings,
 } from '@/lib/espn/standings';
 import { notifyRevalidate } from '@/lib/utils/ingest/notify-revalidate';
+import { currentSeasonOf, nflSeasonState } from '@/lib/utils/team/season-state';
 import { TEAMS } from '@/lib/teams/index';
 import { parseSeasonsArg } from '@/lib/nflverse/seasons-arg';
 import type { EspnDepthcharts, EspnRoster, EspnTeamInfo } from '@/lib/espn/types';
@@ -96,22 +97,21 @@ async function main() {
 
   const startedAt = new Date().toISOString();
   const espnIndex = await espnTeamIndex();
+  // Standings fetch for conference/division identity -- see parseStandings. The same
+  // response once fed team stats too, but which seasons to fetch is no longer ESPN's
+  // call: the canonical definition of "current season" is the calendar
+  // (lib/utils/team/season-state.ts -- deployed 2026-08-28 after ESPN's standings.season
+  // label mislabeled the 2025 standings during the 2026 rollover and the ingest wrote a
+  // playoff seed 0 over the Super Bowl champion Seahawks). Each season is now fetched
+  // by an explicit `?season=` URL that we choose.
   const standingsJson = await getJson<EspnStandings>(STANDINGS);
   const divisions = parseStandings(standingsJson);
 
-  // Multi-season team stats (docs/superpowers/specs/2026-07-14-multi-season-team-stats-
-  // design.md, extended by 2026-08-19-espn-full-history-team-stats-design.md): the
-  // unparameterized fetch's own entries tell us the latest season `Y` (embedded
-  // per-division, not the top-level document field -- see standings.ts). Unflagged runs
-  // (the daily job) then fetch just the prior season -- this + last season, narrowed
-  // from the original 3-season default now that the job runs daily instead of weekly
-  // (2026-08-19-espn-full-history-team-stats-design.md). A `--seasons` backfill instead
-  // fetches every OTHER season in the requested range (the unparameterized call already
-  // covers the latest one) in small chunks, not one giant Promise.all. All merge into
-  // one ESPN-team-id -> TeamStats[] map.
-  const currentSeasonStats = parseTeamStats(standingsJson);
-  const latestSeason = [...currentSeasonStats.values()][0]?.season ?? null;
-
+  // The fetch set (docs/superpowers/specs/2026-07-14-multi-season-team-stats-design.md,
+  // extended by 2026-08-19-espn-full-history-team-stats-design.md): the daily job
+  // fetches current + last season by calendar; a `--seasons` backfill fetches exactly
+  // the requested range. All in small chunks (never one giant Promise.all) and merged
+  // into one ESPN-team-id -> TeamStats[] map.
   const seasonsArg = parseSeasonsArg(process.argv.slice(2));
   if (seasonsArg !== null) {
     const outOfRange = seasonsArg.filter((s) => s < ESPN_TEAM_STATS_SEASONS_MIN);
@@ -121,16 +121,14 @@ async function main() {
       );
     }
   }
-
-  const priorSeasons =
-    latestSeason === null
-      ? []
-      : seasonsArg !== null
-        ? seasonsArg.filter((y) => y !== latestSeason)
-        : [latestSeason - 1];
-  const priorSeasonsJson = await fetchStandingsInChunks(priorSeasons);
+  const currentSeason = currentSeasonOf(nflSeasonState());
+  const fetchSeasons = seasonsArg !== null ? seasonsArg : [currentSeason, currentSeason - 1];
+  const seasonsJson = await fetchStandingsInChunks(fetchSeasons);
   const teamStatsByEspnId = new Map<string, TeamStats[]>();
-  for (const seasonMap of [currentSeasonStats, ...priorSeasonsJson.map(parseTeamStats)]) {
+  // `expectedSeason` per fetch: refuse any response whose echoed `standings.season`
+  // isn't the one we asked for (the rollover window can relabel a placeholder block).
+  for (const [index, json] of seasonsJson.entries()) {
+    const seasonMap = parseTeamStats(json, fetchSeasons[index]);
     for (const [id, stats] of seasonMap) {
       const existing = teamStatsByEspnId.get(id) ?? [];
       existing.push(stats);

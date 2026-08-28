@@ -18,7 +18,7 @@ import {
   type PlayerRecentSnapsRow,
 } from '@/lib/utils/compare/recent-participation';
 import { resolvePostseason, resolveSchedule } from '@/lib/utils/schedule/schedule';
-import { getNflSeasonState } from '@/lib/utils/team/nfl-season';
+import { currentSeasonOf, getNflSeasonState } from '@/lib/utils/team/nfl-season';
 import {
   type PlayerHit,
   escapeLike,
@@ -765,11 +765,12 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
   if (!teamRow) return undefined;
 
   const { upcomingSeason, isOffseason } = await getNflSeasonState();
-  // The current NFL season year. During the off-season (Feb–Aug) it's the upcoming
+  // The current NFL season year — one canonical definition, see
+  // lib/utils/team/season-state.ts. During the off-season (Feb–Aug) it's the upcoming
   // season; during the in-season (Sep–Jan) it's the season currently being played.
   // A season is "completed" when its year is less than this value — all games have
   // been played and playoff outcomes are known.
-  const currentSeason = isOffseason ? upcomingSeason : upcomingSeason - 1;
+  const currentSeason = currentSeasonOf({ isOffseason, upcomingSeason });
   const coachBySeason = new Map((coachRows ?? []).map((row) => [row.season, row]));
   const nflverseBySeason = new Map((nflverseStatsRows ?? []).map((row) => [row.season, row]));
   const seasons = (statsRows ?? []).map((row) => toTeamStats(row, coachBySeason, nflverseBySeason));
@@ -803,7 +804,7 @@ async function fetchRecentParticipation(teamId: string): Promise<RecentParticipa
   cacheLife('ingest');
   cacheTag('ingest:nflverse');
   const { upcomingSeason, isOffseason } = await getNflSeasonState();
-  const currentSeason = isOffseason ? upcomingSeason : upcomingSeason - 1;
+  const currentSeason = currentSeasonOf({ isOffseason, upcomingSeason });
   const { data, error } = await supabase()
     .from(tables.playerRecentSnaps)
     .select(PLAYER_RECENT_SNAPS_SELECT)
