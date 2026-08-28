@@ -16,6 +16,12 @@ struct DepthSearchField: View {
     /// Set where a UI test needs to address this specific field.
     var identifier: String? = nil
 
+    /// A `TextField` is only hit-testable across its own intrinsic text box — roughly a
+    /// 20pt band, starting after the magnifier. Everything else inside the capsule (the
+    /// horizontal padding, the icon, the space above and below the baseline) is dead
+    /// unless focus is driven explicitly, so a tap near the edge silently did nothing.
+    @FocusState private var isFocused: Bool
+
     var body: some View {
         HStack(spacing: DesignTokens.Spacing.sm) {
             Image(systemName: "magnifyingglass")
@@ -28,6 +34,7 @@ struct DepthSearchField: View {
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
                 .submitLabel(.search)
+                .focused($isFocused)
                 .foregroundStyle(DesignTokens.Colors.textPrimary)
                 .tint(DesignTokens.Colors.accent)
                 .accessibilityIdentifier(identifier ?? "")
@@ -64,7 +71,14 @@ struct DepthSearchField: View {
         .background(DesignTokens.Colors.surfaceChip, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
         .overlay {
             RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
-                .strokeBorder(DesignTokens.Colors.borderInput, lineWidth: 1)
+                .strokeBorder(
+                    isFocused ? DesignTokens.Colors.accent : DesignTokens.Colors.borderInput,
+                    lineWidth: 1
+                )
         }
+        // The whole capsule is the target — see `isFocused`. The clear button and the
+        // text field claim their own taps first, so this only picks up the gaps.
+        .contentShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
+        .onTapGesture { isFocused = true }
     }
 }
