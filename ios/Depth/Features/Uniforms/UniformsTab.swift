@@ -117,6 +117,10 @@ struct UniformsTab: View {
                     .padding(.top, DesignTokens.Spacing.sm + 6)
                     .padding(.bottom, DesignTokens.Spacing.lg)
                 }
+                // `DepthSearchField` is page content, not `.searchable`, so it doesn't
+                // get the system's drag-to-dismiss for free — wire the same behavior up
+                // manually so the keyboard doesn't get stuck open while browsing.
+                .scrollDismissesKeyboard(.immediately)
             }
         }
     }

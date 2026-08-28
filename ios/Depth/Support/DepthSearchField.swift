@@ -35,6 +35,10 @@ struct DepthSearchField: View {
                 .textInputAutocapitalization(.never)
                 .submitLabel(.search)
                 .focused($isFocused)
+                // Since this isn't `.searchable`, it doesn't inherit the system's
+                // built-in Cancel/dismiss handling — tapping "search" on the keyboard
+                // has to resign focus itself.
+                .onSubmit { isFocused = false }
                 .foregroundStyle(DesignTokens.Colors.textPrimary)
                 .tint(DesignTokens.Colors.accent)
                 .accessibilityIdentifier(identifier ?? "")
