@@ -154,9 +154,9 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(season.waitForExistence(timeout: 5), "2013 should be available in the season picker")
         season.tap()
 
-        let seasonState = app.staticTexts["history-season-state"]
-        XCTAssertTrue(seasonState.waitForExistence(timeout: 10))
-        XCTAssertEqual(seasonState.label, "2013 season")
+        let seasonTrigger = app.buttons["roster-history-season-trigger"]
+        XCTAssertTrue(seasonTrigger.waitForExistence(timeout: 10))
+        XCTAssertEqual(seasonTrigger.label, "2013 SEASON")
         // Historical rosters are read-only: reopen the overflow menu and confirm the
         // Edit Depth Chart toggle is present but disabled (DEP-231 — disabled, not
         // hidden, matching web's disabledReason treatment).
@@ -184,17 +184,18 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["player-profile-name"].waitForExistence(timeout: 5))
         app.buttons["Close"].tap()
 
-        let backToToday = app.buttons["history-back-to-today"]
+        let backToToday = app.buttons["roster-history-season-trigger-back-to-current"]
         XCTAssertTrue(backToToday.waitForExistence(timeout: 5))
         backToToday.tap()
-        XCTAssertFalse(seasonState.waitForExistence(timeout: 2))
+        XCTAssertFalse(seasonTrigger.waitForExistence(timeout: 2))
     }
 
-    /// DEP-245: the Seasons sheet itself offers a one-tap "Back to current" while a past
-    /// season is selected, so a user who scrolled deep into the 1999→present list never
-    /// has to scroll back to the current-season row. Reuses the 2013 selection so the
-    /// sheet is verified from a genuinely historical state.
-    func testBackToCurrentFromSeasonsSheet() throws {
+    /// DEP-245: while a past season is selected, returning to the live roster is a
+    /// one-tap "Back to current season" escape beside the page's season trigger (matching
+    /// Stats/Schedule) — the Seasons sheet itself now uses only the standardized "X" close,
+    /// not a bespoke in-sheet button. Reuses the 2013 selection so the flow is verified
+    /// from a genuinely historical state.
+    func testBackToCurrentFromRosterTrigger() throws {
         let app = XCUIApplication()
         XCTAssertTrue(app.launch(intoTeam: "seahawks"), "the app should launch straight into the Seahawks depth chart")
 
@@ -203,6 +204,10 @@ final class DepthUITests: XCTestCase {
         overflow.tap()
         app.buttons["history-destination"].tap()
 
+        // The Seasons sheet uses the standardized "X" close, not a bespoke back-to-current.
+        let sheetClose = app.buttons["history-season-close"]
+        XCTAssertTrue(sheetClose.waitForExistence(timeout: 5), "the Seasons sheet should expose the standardized close")
+
         let season = app.buttons["history-season-2013"]
         for _ in 0..<4 where !season.exists {
             app.swipeUp()
@@ -210,25 +215,20 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(season.waitForExistence(timeout: 5), "2013 should be available in the season picker")
         season.tap()
 
-        let seasonState = app.staticTexts["history-season-state"]
-        XCTAssertTrue(seasonState.waitForExistence(timeout: 10))
-        XCTAssertEqual(seasonState.label, "2013 season")
+        let seasonTrigger = app.buttons["roster-history-season-trigger"]
+        XCTAssertTrue(seasonTrigger.waitForExistence(timeout: 10))
+        XCTAssertEqual(seasonTrigger.label, "2013 SEASON")
 
-        // Reopen the sheet while 2013 is still the active historical season.
-        let overflow2 = app.buttons["depth-chart-overflow"]
-        XCTAssertTrue(overflow2.waitForExistence(timeout: 5))
-        overflow2.tap()
-        app.buttons["history-destination"].tap()
-
-        let backToCurrent = app.buttons["history-season-back-to-current"]
+        // The page's trigger — not the sheet — offers "Back to current season".
+        let backToCurrent = app.buttons["roster-history-season-trigger-back-to-current"]
         XCTAssertTrue(
             backToCurrent.waitForExistence(timeout: 5),
-            "the Seasons sheet should offer Back to current while a past season is selected"
+            "the roster should offer Back to current beside the season trigger while a past season is selected"
         )
         backToCurrent.tap()
 
-        XCTAssertFalse(backToCurrent.waitForExistence(timeout: 2), "the sheet should dismiss on Back to current")
-        XCTAssertFalse(seasonState.waitForExistence(timeout: 2), "Back to current should leave the historical roster")
+        XCTAssertFalse(backToCurrent.waitForExistence(timeout: 2), "Back to current should hide once on the current season")
+        XCTAssertFalse(seasonTrigger.waitForExistence(timeout: 2), "Back to current should leave the historical roster")
     }
 
     /// DEP-278 follow-up: the Stats page's season chip row stopped scaling once

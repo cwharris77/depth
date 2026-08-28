@@ -8,7 +8,8 @@ import Testing
 // and honest on/off-line depth — without pinning the tuning constants to duplicate literals.
 struct DepthChartFieldLayoutTests {
     // The field on a typical iPhone: screen width minus horizontal padding, height set
-    // by `.containerRelativeFrame(.vertical)` in TeamDetailView.
+    // by `frame(maxHeight: .infinity)` in TeamDetailView (it flexes to the remaining
+    // space below the page chrome, above the tab bar).
     private let iphoneField = CGSize(width: 370, height: 650)
 
     private func slot(_ key: String, _ x: Double, _ y: Double) -> RenderSlot {
@@ -243,8 +244,8 @@ struct DepthChartFieldLayoutTests {
 // formation. These assert the line's route, not just the tag's spot.
 struct LeaderLineRoutingTests {
     /// The field as it renders on the reported device: an iPhone 17 Pro's 402pt width
-    /// minus the page's horizontal padding, at the height `containerRelativeFrame` gives
-    /// the chart in TeamDetailView.
+    /// minus the page's horizontal padding, at the height `frame(maxHeight: .infinity)`
+    /// gives the chart in TeamDetailView.
     private let phoneField = CGSize(width: 367, height: 477)
 
     /// The exact alignment from the report — a nickel front (five DBs, a three-man line)
