@@ -298,7 +298,7 @@ func buildRealFormation(alignment: String, code: String) -> [FormationSlot] {
 // --- Real per-team defensive formations -------------------------------------------
 
 private let dlY: Double = 49
-private let lbY: Double = 37
+private let lbY: Double = 33
 
 private func spreadX(_ count: Int, _ minX: Double, _ maxX: Double) -> [Double] {
     if count <= 0 { return [] }
