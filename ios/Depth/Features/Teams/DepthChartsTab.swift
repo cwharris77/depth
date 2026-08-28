@@ -34,6 +34,10 @@ struct DepthChartsTab: View {
     private let userSettingsStore: UserSettingsStore
     /// Cross-tab "open this team" requests (today: the uniform archive's kit sheet).
     private let teamRouteStore: TeamRouteStore
+    /// DEP-329: the uniform the user was viewing when they tapped "Open depth
+    /// chart" from the uniform kit sheet — applied once on appear so the
+    /// depth chart shows the originating kit, not whatever was last persisted.
+    @State private var requestedUniformId: String?
 
     init(
         repository: CachingDepthRepository,
@@ -62,20 +66,21 @@ struct DepthChartsTab: View {
 
     var body: some View {
         NavigationStack {
-            TeamDetailView(
-                viewModel: TeamDetailViewModel(teamId: teamId, repository: repository, events: events),
-                repository: repository,
-                preferences: preferences,
-                sessionStore: sessionStore,
-                overrideService: overrideService,
-                events: events,
-                requestedPlayerID: $pendingPlayerID,
-                currentTeamStore: currentTeamStore,
-                onOpenTeamSwitcher: { showSwitcher = true },
-                onOpenCompare: { teamAId, teamBId in
-                    compareRequest = ScheduleCompareRequest(teamAId: teamAId, teamBId: teamBId)
-                }
-            )
+             TeamDetailView(
+                 viewModel: TeamDetailViewModel(teamId: teamId, repository: repository, events: events),
+                 repository: repository,
+                 preferences: preferences,
+                 sessionStore: sessionStore,
+                 overrideService: overrideService,
+                 events: events,
+                 requestedPlayerID: $pendingPlayerID,
+                 requestedUniformId: $requestedUniformId,
+                 currentTeamStore: currentTeamStore,
+                 onOpenTeamSwitcher: { showSwitcher = true },
+                 onOpenCompare: { teamAId, teamBId in
+                     compareRequest = ScheduleCompareRequest(teamAId: teamAId, teamBId: teamBId)
+                 }
+             )
             // Rebuilds the whole team-detail subtree (view model, unit picker, history,
             // overrides) when the switcher picks a different team — the SwiftUI
             // key-reset idiom, rather than mutating a view model in place.
@@ -142,8 +147,10 @@ struct DepthChartsTab: View {
         // Consumed (not just read) so a re-render for an unrelated reason can't re-apply
         // a request the user has since navigated away from — see TeamRouteStore.
         .onChange(of: teamRouteStore.requestedTeamId) { _, _ in
-            if let requested = teamRouteStore.consume() {
-                teamId = requested
+            let (teamId, uniformId) = teamRouteStore.consume()
+            if let teamId {
+                self.teamId = teamId
+                self.requestedUniformId = uniformId
             }
         }
         .onChange(of: teamId, initial: true) { _, newValue in

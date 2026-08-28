@@ -22,9 +22,9 @@ struct UniformsTab: View {
     /// Jumps to a team's depth chart on the Depth Charts tab — the kit sheet's primary
     /// action. Supplied by RootTabView, which owns both the tab selection and the route
     /// store the other tab reads.
-    private let onOpenDepthChart: (String) -> Void
+    private let onOpenDepthChart: (String, String) -> Void
 
-    init(repository: DepthRepository, onOpenDepthChart: @escaping (String) -> Void) {
+    init(repository: DepthRepository, onOpenDepthChart: @escaping (String, String) -> Void) {
         _viewModel = State(initialValue: UniformArchiveViewModel(repository: repository))
         self.onOpenDepthChart = onOpenDepthChart
     }
@@ -79,7 +79,7 @@ struct UniformsTab: View {
             )
         }
         .sheet(item: $selectedKit) { kit in
-            UniformKitSheet(kit: kit) { onOpenDepthChart(kit.teamId) }
+            UniformKitSheet(kit: kit) { onOpenDepthChart(kit.teamId, kit.id) }
                 // A `.sheet()` gets a fresh UITraitCollection rather than inheriting the
                 // presenter's Dynamic Type override — see UITestingDynamicTypeOverride.
                 .modifier(UITestingDynamicTypeOverride())
