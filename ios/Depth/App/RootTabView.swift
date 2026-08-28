@@ -48,7 +48,8 @@ struct RootTabView: View {
                     overrideService: DepthEnvironment.overrideService,
                     events: DepthEnvironment.appEvents,
                     currentTeamStore: currentTeamStore,
-                    userSettingsStore: DepthEnvironment.userSettingsStore
+                    userSettingsStore: DepthEnvironment.userSettingsStore,
+                    teamRouteStore: DepthEnvironment.teamRouteStore
                 )
             }
 
@@ -57,7 +58,13 @@ struct RootTabView: View {
             }
 
             Tab("Uniforms", systemImage: "tshirt", value: RootTab.uniforms) {
-                UniformsTab(repository: DepthEnvironment.repository)
+                // The archive's kit sheet can send you to that team's depth chart. This
+                // view owns the tab selection, so the jump is composed here: park the
+                // team id where DepthChartsTab will pick it up, then switch tabs.
+                UniformsTab(repository: DepthEnvironment.repository) { teamId in
+                    DepthEnvironment.teamRouteStore.request(teamId: teamId)
+                    onboarding.activeTab = .depthCharts
+                }
             }
         }
         // Selected-tab tint from the current team's uiAccent (visual-pass follow-up:

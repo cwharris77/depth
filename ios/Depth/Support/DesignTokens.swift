@@ -22,6 +22,12 @@ enum DesignTokens {
         /// of the 32 teams' uiAccent.
         static let accent = Color(hex: "#6E8CAE")
         static let onAccent = Color(hex: "#15161a")
+        /// A legible-on-dark lift of `accent`, for text and glyphs sitting *on* an
+        /// accent-tinted fill (`accent.opacity(0.16)` chips) where `accent` itself is too
+        /// close in value to the fill to separate from it. Native-only so far — the
+        /// uniform archive's "IN ROTATION" badge and its active filter chips
+        /// (2026-08-27 archive v2).
+        static let accentSoft = Color(hex: "#8fa8c4")
         static let danger = Color(hex: "#ff6b6b")
         /// Matches web's `statusInjured` — injury status and negative point differential.
         static let statusInjured = Color(hex: "#ef5350")

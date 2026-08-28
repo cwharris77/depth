@@ -494,7 +494,8 @@ private func recentParticipation() -> RecentParticipation {
 
 private func uniformListing(id: String = "bills-home") -> UniformListing {
     UniformListing(
-        id: id, teamId: "bills", teamName: "Buffalo Bills", conference: "AFC",
+        id: id, teamId: "bills", teamName: "Buffalo Bills", teamAbbrev: "BUF",
+        teamShortName: "Bills", conference: "AFC",
         division: "East", kind: .home, name: "Home", yearStart: 2025, yearEnd: nil,
         isCurrent: true,
         colors: TeamColors(

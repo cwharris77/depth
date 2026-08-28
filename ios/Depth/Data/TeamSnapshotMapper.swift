@@ -155,6 +155,7 @@ enum TeamSnapshotMapper {
         }
         return UniformListing(
             id: dto.id, teamId: team.id, teamName: "\(team.city) \(team.name)",
+            teamAbbrev: team.abbrev, teamShortName: team.name,
             conference: team.conference, division: team.division, kind: kind, name: dto.name,
             yearStart: dto.yearStart, yearEnd: dto.yearEnd, isCurrent: dto.isCurrent,
             colors: TeamColors(
