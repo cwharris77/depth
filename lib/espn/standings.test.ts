@@ -125,6 +125,29 @@ const STATS_FIXTURE = {
                   statEntry('vsconf', undefined, '7-5'),
                 ],
               },
+              {
+                team: { id: '21' },
+                // Complete stats, but playoffseed 0 -- ESPN's stub for "this season
+                // hasn't been seeded yet" (pre-kickoff, and off-season churn). 0 is the
+                // read side's "missed the playoffs" sentinel, so the team must be
+                // skipped, never written, preserving a prior good seed.
+                stats: [
+                  statEntry('wins', 11, '11'),
+                  statEntry('losses', 6, '6'),
+                  statEntry('ties', 0, '0'),
+                  statEntry('winpercent', 0.647, '.647'),
+                  statEntry('streak', 1, 'W1'),
+                  statEntry('playoffseed', 0, '0'),
+                  statEntry('pointsfor', 410, '410'),
+                  statEntry('pointsagainst', 360, '360'),
+                  statEntry('pointdifferential', 50, '+50'),
+                  statEntry('total', undefined, '11-6'),
+                  statEntry('home', undefined, '6-2'),
+                  statEntry('road', undefined, '5-4'),
+                  statEntry('vsdiv', undefined, '4-2'),
+                  statEntry('vsconf', undefined, '7-5'),
+                ],
+              },
             ],
           },
         },
@@ -166,6 +189,14 @@ describe('parseTeamStats', () => {
   it('skips a team with a partial stats array rather than storing a half-filled row', () => {
     const map = parseTeamStats(STATS_FIXTURE);
     expect(map.has('9')).toBe(false);
+  });
+
+  it(`skips a complete entry whose playoffseed is 0 (ESPN's "not seeded yet" stub)`, () => {
+    // 0 is the read side's "missed the playoffs" sentinel, so writing it over a
+    // completed season falsely renders MISSED PLAYOFFS -- a full-but-zero entry must
+    // be skipped just like a partial one (shipped bug: Seahawks 2025, fixed 2026-08-28).
+    const map = parseTeamStats(STATS_FIXTURE);
+    expect(map.has('21')).toBe(false);
   });
 
   it('covers exactly the teams with a complete stats block', () => {

@@ -151,6 +151,12 @@ leave the DB one run stale.
   column-scoped upserts: PostgREST's on-conflict update only touches columns present in
   the payload, so neither clobbers the other's. A `--seasons` backfill widens the range
   (see Scheduling below).
+- ESPN's `playoffseed` of 0 means "never seeded this season" (pre-kickoff window,
+  off-season churn) — `parseTeamStats` skips any entry carrying it, so a `0` never lands
+  in `team_stats.playoff_seed`. The read side treats 0 as the "missed the playoffs"
+  sentinel, so writing 0 over a completed season's real seed rendered a false
+  "MISSED PLAYOFFS" (Seahawks 2025, fixed 2026-08-28); skipping preserves the prior
+  good seed.
 - A KR/PR/K/P/LS can be a player ranked outside the normal top-3-per-position cap
   (e.g. a low-depth-chart WR who's still the primary punt returner) — `toTeamRoster`
   adds them to `players` anyway via a bio-position fallback, so `specialTeams` never
