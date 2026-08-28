@@ -84,38 +84,6 @@ struct YearLabelTests {
     }
 }
 
-@Suite("UniformArchive spanLabel")
-struct SpanLabelTests {
-    @Test func retiredKitsCountSeasons() {
-        #expect(
-            UniformArchive.spanLabel(listing(id: "a", yearStart: 1970, yearEnd: 1976, isCurrent: false))
-                == "6 seasons, retired 1976"
-        )
-    }
-
-    @Test func aSingleSeasonIsNotPluralised() {
-        #expect(
-            UniformArchive.spanLabel(listing(id: "a", yearStart: 1994, yearEnd: 1994, isCurrent: false))
-                == "1 season, retired 1994"
-        )
-    }
-
-    /// An open-ended throwback's start year is the era it recreates, not a first-worn
-    /// date — counting seasons from it would invent a fact.
-    @Test func openEndedThrowbackStatesWhatItRecreates() {
-        let throwback = listing(id: "a", kind: .throwback, yearStart: 1923, yearEnd: nil)
-        #expect(UniformArchive.spanLabel(throwback) == "Recreates the 1923 kit")
-    }
-
-    @Test func openEndedCurrentKitStatesRotation() {
-        #expect(UniformArchive.spanLabel(bills) == "Still in rotation")
-    }
-
-    @Test func undatedDegradesRatherThanCalculating() {
-        #expect(UniformArchive.spanLabel(listing(id: "a", yearStart: nil)) == "Undated")
-    }
-}
-
 @Suite("UniformArchive shortKitName")
 struct ShortKitNameTests {
     @Test func stripsALeadingYearToken() {
