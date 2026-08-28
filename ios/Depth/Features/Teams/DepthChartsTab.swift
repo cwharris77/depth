@@ -66,21 +66,21 @@ struct DepthChartsTab: View {
 
     var body: some View {
         NavigationStack {
-             TeamDetailView(
-                 viewModel: TeamDetailViewModel(teamId: teamId, repository: repository, events: events),
-                 repository: repository,
-                 preferences: preferences,
-                 sessionStore: sessionStore,
-                 overrideService: overrideService,
-                 events: events,
-                 requestedPlayerID: $pendingPlayerID,
-                 requestedUniformId: $requestedUniformId,
-                 currentTeamStore: currentTeamStore,
-                 onOpenTeamSwitcher: { showSwitcher = true },
-                 onOpenCompare: { teamAId, teamBId in
-                     compareRequest = ScheduleCompareRequest(teamAId: teamAId, teamBId: teamBId)
-                 }
-             )
+            TeamDetailView(
+                viewModel: TeamDetailViewModel(teamId: teamId, repository: repository, events: events),
+                repository: repository,
+                preferences: preferences,
+                sessionStore: sessionStore,
+                overrideService: overrideService,
+                events: events,
+                requestedPlayerID: $pendingPlayerID,
+                requestedUniformId: $requestedUniformId,
+                currentTeamStore: currentTeamStore,
+                onOpenTeamSwitcher: { showSwitcher = true },
+                onOpenCompare: { teamAId, teamBId in
+                    compareRequest = ScheduleCompareRequest(teamAId: teamAId, teamBId: teamBId)
+                }
+            )
             // Rebuilds the whole team-detail subtree (view model, unit picker, history,
             // overrides) when the switcher picks a different team — the SwiftUI
             // key-reset idiom, rather than mutating a view model in place.
