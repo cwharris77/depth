@@ -1018,8 +1018,8 @@ private struct FormationsSheetView: View {
             .navigationTitle("Formations")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { onClose() }
+                ToolbarItem(placement: .topBarTrailing) {
+                    CloseButton { onClose() }
                 }
             }
         }
