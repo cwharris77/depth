@@ -77,10 +77,6 @@ struct UniformKitSheet: View {
                 Text(UniformArchive.yearsLong(kit))
                     .font(.title2.monospacedDigit())
                     .foregroundStyle(DesignTokens.Colors.textPrimary)
-                Text(UniformArchive.spanLabel(kit))
-                    .font(.caption)
-                    .foregroundStyle(DesignTokens.Colors.textFaint)
-                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

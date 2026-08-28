@@ -84,18 +84,6 @@ enum UniformArchive {
         return end == start ? "\(start)" : "\(start)–\(end)"
     }
 
-    /// Season math only where both ends are real. An open-ended throwback's start year is
-    /// the era it recreates, not a first-worn date — counting seasons from it would
-    /// invent a fact ("1923 Throwback · 103 seasons"), so open-ended kits state status.
-    static func spanLabel(_ kit: UniformListing) -> String {
-        guard let start = kit.yearStart else { return "Undated" }
-        guard let end = kit.yearEnd else {
-            return kit.kind == .throwback ? "Recreates the \(start) kit" : "Still in rotation"
-        }
-        let seasons = max(1, end - start)
-        return "\(seasons) \(seasons == 1 ? "season" : "seasons"), retired \(end)"
-    }
-
     /// The compact era cell drops a leading year from the name — the year label right
     /// below already carries it ("1976 Throwback" + "1976–2001" says the same thing
     /// twice).
