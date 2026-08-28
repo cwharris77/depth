@@ -265,7 +265,7 @@ final class PlayerCardReorderUITests: XCTestCase {
         }
         XCTAssertTrue(season.waitForExistence(timeout: 5))
         season.tap()
-        XCTAssertTrue(app.staticTexts["history-season-state"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["roster-history-season-trigger"].waitForExistence(timeout: 10))
         assertEditingEnded("entering a historical roster")
     }
 

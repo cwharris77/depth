@@ -497,13 +497,25 @@ struct TeamDetailView: View {
             Button {
                 editMode.toggle()
             } label: {
-                // Web parity (FieldHeaderMenu's share item): the label stays constant and
-                // the leading glyph flips to a Check while active — no redundant
-                // "Done Editing" rename.
-                Label(
-                    "Edit Depth Chart",
-                    systemImage: editMode.isActive ? "checkmark" : "pencil"
-                )
+                // Web parity (FieldHeaderMenu's "Edit depth chart" row): the label stays
+                // constant and the leading glyph flips to a Check while active — no
+                // redundant "Done Editing" rename. While a past season is selected the row
+                // is disabled (not hidden), and a muted second line states *why* — the iOS
+                // equivalent of web's `disabledReason` tooltip, which would otherwise be
+                // silent on a bare disabled item.
+                HStack(spacing: 8) {
+                    Image(systemName: editMode.isActive ? "checkmark" : "pencil")
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Edit Depth Chart")
+                            .font(.body)
+                        if historyViewModel.isHistorical {
+                            Text("Historical seasons are read-only")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    Spacer()
+                }
             }
             .disabled(historyViewModel.isHistorical)
             .accessibilityIdentifier("edit-depth-order")
@@ -660,19 +672,25 @@ struct TeamDetailView: View {
     }
 
     private func rosterContent(snapshot: TeamSnapshot, historical: Bool) -> some View {
-            ScrollView {
-                VStack(spacing: 16) {
+            VStack(spacing: 16) {
                     if historical {
-                        HStack {
-                            Text(verbatim: "\(historyViewModel.selectedSeason.year) season")
-                                .font(.headline)
-                                .accessibilityIdentifier("history-season-state")
-                            Spacer()
-                            Button("Back to today") {
+                        // Web parity (DEP-245): rather than the roster's own bare "Back to
+                        // today" text button, use the same `SeasonPickerTrigger` Stats and
+                        // Schedule render — a glass capsule showing the picked season with a
+                        // "Back to current season" escape beside it, reachable without
+                        // reopening the Seasons sheet. The trigger opens the roster's own
+                        // HistorySeasonSheet (its current/past distinction), while the
+                        // escape returns to the live roster the same way the sheet's own
+                        // back-to-current does.
+                        SeasonPickerTrigger(
+                            season: historyViewModel.selectedSeason.year,
+                            identifier: "roster-history-season-trigger",
+                            isHistorical: true,
+                            onBackToCurrent: {
                                 historyViewModel.selectImmediately(.current(historyViewModel.currentSeason))
                             }
-                            .frame(minWidth: 44, minHeight: 44)
-                            .accessibilityIdentifier("history-back-to-today")
+                        ) {
+                            showHistory = true
                         }
                         .padding(.horizontal)
                     }
@@ -733,7 +751,15 @@ struct TeamDetailView: View {
                     // available height instead of capping at a fixed ~1.4:1 aspect and
                     // leaving a large blank area beneath it (DEP-207). Width still comes
                     // from the horizontal padding; only the vertical axis is sized here.
-                    .containerRelativeFrame(.vertical)
+                    //
+                    // `containerRelativeFrame(.vertical)` measured the ScrollView's full
+                    // viewport height and ignored the unit tabs / chips / attribution that
+                    // sit above the field — so on tall phones (iPhone 17) the field's
+                    // bottom rows (special teams, offense backfield) were pushed beneath
+                    // the tab bar. `frame(maxHeight: .infinity)` makes the field flex to
+                    // the *remaining* height inside the VStack, so it fills the space
+                    // between the chrome and the tab bar without ever extending under it.
+                    .frame(maxHeight: .infinity)
                     .padding(.horizontal)
 
                     // FTN charting is CC-BY-SA 4.0, so the notice follows the field
@@ -748,8 +774,13 @@ struct TeamDetailView: View {
                     }
                 }
                 .padding(.vertical)
-            }
-            .scrollIndicators(.hidden)
+                // Pin the stack to the page's available height (the parent already
+                // constrains it to the area above the tab bar) so the field's flexible
+                // `frame(maxHeight: .infinity)` resolves to the *remaining* space after
+                // the chrome above it. A ScrollView can't do this — it proposes an
+                // infinite height on its scroll axis, which collapses a flexible child to
+                // zero instead of filling (DEP-207 height fix, iPhone 17).
+                .frame(maxHeight: .infinity)
     }
 
     private func historyUnavailable(title: String, description: String, retry: Bool = false) -> some View {
