@@ -49,6 +49,10 @@ struct TeamDetailView: View {
     /// A player to open once this team's snapshot resolves — set by DepthChartsTab when
     /// a player is picked from the switcher's cross-team search. Cleared after present.
     @Binding var requestedPlayerID: String?
+    /// DEP-329: the uniform the user was viewing when they tapped "Open depth
+    /// chart" from the uniform kit sheet — applied once on appear so the
+    /// depth chart shows the originating kit, not whatever was last persisted.
+    @Binding var requestedUniformId: String?
     /// Opens the team switcher. Required, not optional: `DepthChartsTab` is the only
     /// place this view is constructed now that it is a tab's stack root rather than a
     /// pushed destination, so an unset case would be dead code.
@@ -72,6 +76,7 @@ struct TeamDetailView: View {
         overrideService: any DepthOverrideServicing,
         events: any AppEventsRecording = NoOpAppEventsRecorder(),
         requestedPlayerID: Binding<String?> = .constant(nil),
+        requestedUniformId: Binding<String?> = .constant(nil),
         currentTeamStore: CurrentTeamStore,
         onOpenTeamSwitcher: @escaping () -> Void,
         onOpenCompare: @escaping (String, String) -> Void = { _, _ in }
@@ -83,6 +88,7 @@ struct TeamDetailView: View {
         self.overrideService = overrideService
         self.events = events
         self._requestedPlayerID = requestedPlayerID
+        self._requestedUniformId = requestedUniformId
         self.currentTeamStore = currentTeamStore
         self.onOpenTeamSwitcher = onOpenTeamSwitcher
         self.onOpenCompare = onOpenCompare
@@ -172,11 +178,18 @@ struct TeamDetailView: View {
                 // A cross-team search pick arrives with the snapshot not yet loaded
                 // (the view is recreated via `.id(teamId)`); present once it resolves.
                 presentRequestedPlayer(requestedPlayerID)
+                // DEP-329: apply the uniform the user was viewing in the kit sheet,
+                // so the depth chart shows the originating kit, not whatever was
+                // last persisted for this team.
+                presentRequestedUniform(requestedUniformId)
             }
             .onChange(of: requestedPlayerID) { _, id in
                 // Also covers picking a player on the already-current team, where
                 // `.id(teamId)` doesn't change and `.task` won't re-run.
                 presentRequestedPlayer(id)
+            }
+            .onChange(of: requestedUniformId) { _, id in
+                presentRequestedUniform(id)
             }
             // DEP-278 follow-up: publish the resolved accent (kit pick, or the team's
             // own once the snapshot loads) so Stats/Schedule — which read this same
@@ -853,6 +866,16 @@ struct TeamDetailView: View {
         }
         selectedPlayer = player
         requestedPlayerID = nil
+    }
+
+    /// DEP-329: select the uniform the user was viewing in the kit sheet,
+    /// so the depth chart shows the originating kit instead of whatever was
+    /// last persisted for this team. Cleared after applying so it doesn't
+    /// re-apply on subsequent renders (e.g. pull-to-refresh).
+    private func presentRequestedUniform(_ id: String?) {
+        guard let id else { return }
+        selectedUniformID = id
+        requestedUniformId = nil
     }
 
     /// The sheet delegates its state change here to keep the main SwiftUI body small

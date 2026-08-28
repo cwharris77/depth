@@ -61,8 +61,8 @@ struct RootTabView: View {
                 // The archive's kit sheet can send you to that team's depth chart. This
                 // view owns the tab selection, so the jump is composed here: park the
                 // team id where DepthChartsTab will pick it up, then switch tabs.
-                UniformsTab(repository: DepthEnvironment.repository) { teamId in
-                    DepthEnvironment.teamRouteStore.request(teamId: teamId)
+                UniformsTab(repository: DepthEnvironment.repository) { teamId, uniformId in
+                    DepthEnvironment.teamRouteStore.request(teamId: teamId, uniformId: uniformId)
                     onboarding.activeTab = .depthCharts
                 }
             }
