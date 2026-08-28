@@ -1,7 +1,7 @@
 import DepthChartField from '@/components/DepthChartField';
 import RememberTeam from '@/components/RememberTeam';
 import { dbRosterSource, getPlayerStatsForRoster, getTeamFormations } from '@/lib/roster-source.db';
-import { getNflSeasonState } from '@/lib/utils/team/nfl-season';
+import { currentSeasonOf, getNflSeasonState } from '@/lib/utils/team/nfl-season';
 import { OG_IMAGE_ALT, OG_IMAGE_SIZE } from '@/lib/utils/og';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -93,8 +93,9 @@ export default async function TeamPage({ params }: Params) {
   ]);
 
   // The season SeasonSheet's "roster" row shows (Phase D1) — same "which season is
-  // live right now" definition fetchTeamStatsPage uses for its currentSeason field.
-  const currentSeason = isOffseason ? upcomingSeason : upcomingSeason - 1;
+  // live right now" definition fetchTeamStatsPage uses, and the ingest fetch set (see
+  // lib/utils/team/season-state.ts — one canonical calendar definition).
+  const currentSeason = currentSeasonOf({ isOffseason, upcomingSeason });
 
   // RememberTeam records this team in localStorage (5a) so the home route reopens it.
   return (

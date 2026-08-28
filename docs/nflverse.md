@@ -18,6 +18,11 @@ scaffolding with their own specs.
   `latestAvailableSeason(tag, prefix, fetchImpl)` HEAD-checks the current year and walks
   back up to 3 years, since a season's file isn't published the instant the calendar year
   starts (2025 wasn't live at spec-verification time). `fetchImpl` is injectable for tests.
+  This is a **data-availability probe only** — which of nflverse's files exist — never a
+  season *definition*. "Current season" is the calendar's call, one shared function
+  (`lib/utils/team/season-state.ts`) used by the read side, the iOS twin, and every
+  ingest (2026-08-28 reconciliation, DEP-394); a source may probe its own availability
+  but never relabel a season.
 - `lib/nflverse/crosswalk.ts` — `buildCrosswalk(playersCsvRows)`: nflverse's own id
   crosswalk (`players.csv`) mapped `gsis_id -> espn_id`. This is the join hub between
   nflverse's stats (keyed by `gsis_id`) and our `players` table (keyed by ESPN athlete

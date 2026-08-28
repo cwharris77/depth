@@ -2,7 +2,7 @@ import DepthChartField from '@/components/DepthChartField';
 import { resolveStartupTeam } from '@/lib/utils/team/home-team';
 import { dbRosterSource, getPlayerStatsForRoster, getTeamFormations } from '@/lib/roster-source.db';
 import { getServerClient, requireUser } from '@/lib/supabase/server';
-import { getNflSeasonState } from '@/lib/utils/team/nfl-season';
+import { currentSeasonOf, getNflSeasonState } from '@/lib/utils/team/nfl-season';
 import { DEFAULT_TEAM_ID } from '@/lib/teams';
 import { notFound, redirect } from 'next/navigation';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
@@ -20,8 +20,8 @@ export default async function Home() {
     getNflSeasonState(),
   ]);
   // Same "which season is live right now" definition as /team/[id] (Phase D1's
-  // SeasonSheet roster row).
-  const currentSeason = isOffseason ? upcomingSeason : upcomingSeason - 1;
+  // SeasonSheet roster row) — see lib/utils/team/season-state.ts, the one owner.
+  const currentSeason = currentSeasonOf({ isOffseason, upcomingSeason });
 
   if (user) {
     const supabase = await getServerClient();
