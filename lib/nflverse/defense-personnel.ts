@@ -1,5 +1,5 @@
 // Parses nflverse participation's `defense_personnel` column (FTN-era, 2023+ — mirrors
-// `personnel.ts`'s offense parser, see docs/superpowers/specs/2026-07-07-phase-e-real-
+// `personnel.ts`'s offense parser, see ../obsidian/Projects/depth/specs/2026-07-07-phase-e-real-
 // formations-design.md, defense listed as a "later mirror") into DL/LB/DB counts, and
 // derives the standard front label from those counts.
 //

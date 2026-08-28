@@ -4,7 +4,7 @@ import { resolveOlSide, type RosterPosition } from './positions';
 // Historical rosters (nflverse's roster_<season>.csv) carry no real depth order, so
 // depth_rank is computed at ingest from that season's usage stats
 // (stats_player_reg_<season>.csv), joined by gsis_id. Usage score by position group is
-// the locked decision from docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-
+// the locked decision from ../obsidian/Projects/depth/specs/2026-07-07-phase-d-history-and-boards-
 // design.md: the best available proxy for who actually played, without needing a real
 // depth-chart feed for seasons nflverse never published one for. Pure -- no fetch, no DB.
 

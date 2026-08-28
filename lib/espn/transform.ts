@@ -26,7 +26,7 @@ export interface Coach {
 // coach — ESPN doesn't expose the rest of the staff cheaply). Missing/empty array
 // (expansion team, offseason gap) -> null, never a crash (invariant 6). Consumed
 // directly by scripts/ingest-espn.mts for the teams.coach_* columns and by the team
-// stats page (docs/superpowers/specs/2026-07-12-team-stats-page-design.md) — no
+// stats page (../obsidian/Projects/depth/specs/2026-07-12-team-stats-page-design.md) — no
 // longer threaded through Team/TeamRoster.
 export function toCoach(roster: EspnRoster): Coach | null {
   const coach = roster.coach?.[0];

@@ -2,7 +2,7 @@
 // no fetch, no DB. Each CSV row is one shared game (home + away on a single row); it
 // becomes one game row and contributes a schedule row for each team's (team, season) —
 // the ingest upserts schedules first so the games' composite FKs resolve
-// (docs/superpowers/specs/2026-07-17-team-schedule-design.md). A row whose home or away
+// (../obsidian/Projects/depth/specs/2026-07-17-team-schedule-design.md). A row whose home or away
 // code doesn't crosswalk (resolveCode -> null), or whose season isn't a number, is
 // skipped and counted -- never guessed, same posture as the player-stats transform.
 //

@@ -99,7 +99,7 @@ function splitRecord(display: string | undefined): { wins: number; losses: numbe
 // per-division from `standings.season` (not the document's top-level season, which flips
 // to the *next* season once the current one ends -- verified live 2026-07-14) so this
 // same parser handles both the unparameterized "current" fetch and an explicit
-// `?season=YYYY` fetch for prior years (docs/superpowers/specs/2026-07-14-multi-season-
+// `?season=YYYY` fetch for prior years (../obsidian/Projects/depth/specs/2026-07-14-multi-season-
 // team-stats-design.md). A division missing `standings.season` skips all its entries --
 // season is part of the composite key, so a half-known season is as unusable as a
 // half-known stat.

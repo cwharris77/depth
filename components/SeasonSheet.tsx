@@ -9,7 +9,7 @@ import { colors as uiTokens } from '@/components/ui/tokens';
 // (row = identity + a trailing check on the active one). Selecting `currentSeason` is
 // "back to today": it clears the historical view rather than fetching roster_history for
 // a season that also happens to be ingested there
-// (docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-design.md).
+// (../obsidian/Projects/depth/specs/2026-07-07-phase-d-history-and-boards-design.md).
 export default function SeasonSheet({
   currentSeason,
   minSeason,

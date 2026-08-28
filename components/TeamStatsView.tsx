@@ -1,6 +1,6 @@
 'use client';
 
-// Season-record view for the team stats page (docs/superpowers/specs/2026-07-14-
+// Season-record view for the team stats page (../obsidian/Projects/depth/specs/2026-07-14-
 // multi-season-team-stats-design.md, season count extended by 2026-08-19-espn-full-
 // history-team-stats-design.md). A client component so the season switcher can hold
 // local state; it receives one team's already-resolved data as a prop (invariant 5) —

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import type { TeamSchedule } from '@/lib/types';
 
 // Client-side fetch for a past season's read-only schedule (the schedule page's season
-// picker, docs/superpowers/specs/2026-08-10-past-season-schedule-view-design.md). `season`
+// picker, ../obsidian/Projects/depth/specs/2026-08-10-past-season-schedule-view-design.md). `season`
 // null means "not viewing history" -- the hook stays idle. Aborted on team/season change
 // so a slow response for a since-abandoned selection can't clobber a newer one (same
 // posture as useTeamSeason and PlayerCard's stats fetch). `notFound` distinguishes "no

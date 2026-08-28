@@ -1,5 +1,5 @@
 // Cross-device sync for custom depth-chart order (Phase C, override-sync pass --
-// docs/superpowers/specs/2026-07-07-phase-c-auth-and-saved-boards-design.md, "Overlay sync").
+// ../obsidian/Projects/depth/specs/2026-07-07-phase-c-auth-and-saved-boards-design.md, "Overlay sync").
 // localStorage (lib/depth-overrides) stays the always-on cache; when signed in, every local
 // write is mirrored to the server (fire-and-forget, last-write-wins), and a one-time merge on
 // sign-in reconciles the two. Signed out, none of this runs -- persistence is account-gated.

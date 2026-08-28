@@ -8,7 +8,7 @@ import { rankByUsage, usageScore, type UsageEntry, type UsageStatsRow } from './
 export const SEASONS_MIN = 1999;
 
 // Pure join of one season's roster_<season>.csv + stats_player_reg_<season>.csv into
-// roster_history upsert rows (docs/superpowers/specs/2026-07-07-phase-d-history-and-
+// roster_history upsert rows (../obsidian/Projects/depth/specs/2026-07-07-phase-d-history-and-
 // boards-design.md). No fetch, no DB -- scripts/ingest-nflverse-rosters.mts is the I/O
 // glue. A roster row missing gsis_id/full_name, whose team code doesn't resolve, or
 // whose position doesn't map is skipped and counted, never guessed (AGENTS.md

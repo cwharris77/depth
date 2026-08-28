@@ -17,7 +17,7 @@ import { buildTeam, pl } from './_build';
 // pre-2026-08-04 fixtures only ever carried 3 LBs (matching the old 4-3-shaped default
 // formation), and BASE_DEFENSE's new 3-4 front needs a 4th (WLB/LILB/RILB/SLB) — added
 // mechanically so every shipped roster still resolves fully against the new formation
-// (docs/superpowers/specs/2026-08-04-full-espn-position-taxonomy-design.md, DEP-134).
+// (../obsidian/Projects/depth/specs/2026-08-04-full-espn-position-taxonomy-design.md, DEP-134).
 
 export const LEAGUE: TeamRosterSeed[] = [
   // ───────────── AFC East ─────────────

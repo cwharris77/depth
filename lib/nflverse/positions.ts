@@ -5,7 +5,7 @@ import type { Position } from '../types';
 // offensive tackles and guards into one code per pair (`T`/`OT`, `G`/`OG`) with no
 // left/right side in the data -- those resolve to a pseudo-position here and get a
 // real side assigned by lib/nflverse/depth-heuristic.ts's usage-order alternation
-// (docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-design.md, locked
+// (../obsidian/Projects/depth/specs/2026-07-07-phase-d-history-and-boards-design.md, locked
 // decision table). Every other code maps straight through; an unrecognized code is
 // `null` -- the caller skips the row and counts it, never guesses (AGENTS.md invariant 6).
 export type RosterPosition = Position | 'OL_TACKLE' | 'OL_GUARD';

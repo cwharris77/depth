@@ -18,7 +18,7 @@ export function isUnit(value: string | null | undefined): value is Unit {
 // carried through every rebuild (unlike `player`/`unit`, it isn't reset by selecting a
 // player or switching units) since Phase D1's `?season=` link is meant to stay shareable
 // through ordinary field interaction, not just survive a page load
-// (docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-design.md).
+// (../obsidian/Projects/depth/specs/2026-07-07-phase-d-history-and-boards-design.md).
 export function buildTeamSelectionUrl(
   pathname: string,
   selection: { unit: Unit; playerId: string | null; season?: number | null }

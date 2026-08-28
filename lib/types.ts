@@ -157,12 +157,12 @@ export interface Team {
 }
 
 // Season record + standings detail (Phase E stats page,
-// docs/superpowers/specs/2026-07-12-team-stats-page-design.md). Sourced from the same
+// ../obsidian/Projects/depth/specs/2026-07-12-team-stats-page-design.md). Sourced from the same
 // ESPN standings fetch already used for conference/division (lib/espn/standings.ts
 // parseTeamStats) -- one call, more of the payload read. A team missing from the
 // standings response (bye-week gap, mid-season expansion) has no TeamStats rather than
 // a partially-filled one (invariant 6). `coach` is independently optional and
-// hand-curated (docs/superpowers/specs/2026-07-14-season-scoped-head-coach-design.md,
+// hand-curated (../obsidian/Projects/depth/specs/2026-07-14-season-scoped-head-coach-design.md,
 // `team_coach_seasons` table) -- unlike every other field here it did not come from
 // ESPN, since ESPN's roster endpoint doesn't vary `coach` by season.
 export interface TeamStats {
@@ -307,7 +307,7 @@ export interface TeamRosterSeed {
 }
 
 // One of every real formation a team ran that season, per unit (Phase E, nflverse
-// participation ingestion, docs/superpowers/specs/2026-07-07-phase-e-real-formations-
+// participation ingestion, ../obsidian/Projects/depth/specs/2026-07-07-phase-e-real-formations-
 // design.md; defense added, top-N cap lifted, DEP-141). For `unit: 'offense'`,
 // `alignment` is FTN's charted offense_formation ('SHOTGUN' | 'UNDER CENTER' | 'PISTOL')
 // and `personnel` the standard shorthand ({RB count}{TE count}, e.g. '11'), feeding
@@ -327,7 +327,7 @@ export interface TeamFormation {
   pct: number;
 }
 
-// One player's season stat line (nflverse ingestion, docs/superpowers/specs/2026-07-07-
+// One player's season stat line (nflverse ingestion, ../obsidian/Projects/depth/specs/2026-07-07-
 // nflverse-ingestion-and-player-stats-design.md). All stat columns nullable: the
 // display set is a subset of nflverse's full frame, and most columns don't apply to
 // every position (a WR row's passing_* fields are null). def_sacks is a fraction
@@ -363,7 +363,7 @@ export interface PlayerSeasonStats {
 }
 
 // One game as stored/read from the `games` table (nflverse schedule ingestion,
-// docs/superpowers/specs/2026-07-17-team-schedule-design.md). A game is shared between
+// ../obsidian/Projects/depth/specs/2026-07-17-team-schedule-design.md). A game is shared between
 // two teams — one row, both ids. Scores are null until the game is played (which is how
 // the read layer detects an upcoming game). Camel-cased mirror of the DB row.
 export interface Game {
