@@ -35,11 +35,10 @@ struct TeamDetailView: View {
     /// fires — the bug this avoids is web's UniformSheet, which persists on every drag
     /// settle instead of on close.
     @State private var previewUniformID: String?
-    /// The user's chosen real formation for the active unit (web's `activeFormation`, an
-    /// ephemeral pick — not persisted, not in the URL). nil means "use the unit's top
-    /// formation as the default"; reset to nil on unit change so switching units always
-    /// starts at that unit's top (web's resetToTopForUnit).
-    @State private var selectedFormation: TeamFormation?
+    /// Per-unit formation pick (web's `activeFormation`). Keyed by Unit so switching
+    /// between offense / defence tabs retains the last-picked formation for each side.
+    /// nil for a given unit means "use the unit's top formation as the default".
+    @State private var selectedFormations: [Unit: TeamFormation] = [:]
     @State private var confirmedOrders: [Position: [String]] = [:]
 
     private let preferences: UserPreferences
@@ -131,7 +130,7 @@ struct TeamDetailView: View {
     /// otherwise the unit's top formation (web's `activeFormation`). nil for special
     /// teams / no data / historical, which render the generic layout.
     private var activeFormation: TeamFormation? {
-        selectedFormation ?? defaultFormation(for: unit)
+        selectedFormations[unit] ?? defaultFormation(for: unit)
     }
 
     /// The overflow menu's "Formations" row shows the current pick inline (web's
@@ -199,9 +198,6 @@ struct TeamDetailView: View {
             .onChange(of: unit) { _, newValue in
                 preferences.lastUnit = newValue
                 editMode.exitForContextChange()
-                // A formation pick is unit-specific — reset to the new unit's top rather
-                // than carrying a stale offense pick onto defense (web's resetToTopForUnit).
-                selectedFormation = nil
             }
             .onChange(of: page) { _, _ in
                 editMode.exitForContextChange()
@@ -863,7 +859,7 @@ struct TeamDetailView: View {
     /// enough for the compiler while preserving the field's formation-settle animation.
     private func selectFormation(_ formation: TeamFormation) {
         withAnimation(reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.formation) {
-            selectedFormation = formation
+            selectedFormations[unit] = formation
         }
         showFormations = false
     }
@@ -957,8 +953,9 @@ private struct FTNAttributionText: View {
 // Mirrors components/FormationsSheet.tsx — single-select list of the active unit's real
 // formations, opened from the ••• menu's "Formations" row. Rows are grouped by personnel
 // code (offense) or front name (defense), groups and rows ordered by share desc; the
-// active pick carries a check. Selection writes the ephemeral `selectedFormation` in
-// TeamDetailView (never persisted, matches web's locked decision).
+// active pick carries a check. Selection writes into the per-unit
+// `selectedFormations` dictionary in TeamDetailView (persists across tab switches,
+// cleared on app launch).
 private struct FormationsSheetView: View {
     let unit: Unit
     let formations: [TeamFormation]
