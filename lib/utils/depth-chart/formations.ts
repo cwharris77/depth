@@ -163,7 +163,7 @@ export const OFFENSE_FORMATION: FormationSlot[] = [
 
 // True 3-4 base: a 3-man front (LDE/NT/RDE) + 4 linebackers (WLB/LILB/RILB/SLB) = 7 in
 // the box, plus 2 corners and 2 safeties — matching what every sampled team's real ESPN
-// depth chart names "Base 3-4 D" (docs/superpowers/specs/2026-08-04-full-espn-position-
+// depth chart names "Base 3-4 D" (../obsidian/Projects/depth/specs/2026-08-04-full-espn-position-
 // taxonomy-design.md's Verified source facts). Formerly a 4-3-shaped DEFENSE_FORMATION
 // (2 DE + 2 DT + 3 LB) that no team's real data actually described. onLine marks the DL
 // front.
@@ -216,7 +216,7 @@ export function resolveUnit(
   });
 }
 
-// --- Real per-team formations (Phase E, docs/superpowers/specs/2026-07-07-phase-e-
+// --- Real per-team formations (Phase E, ../obsidian/Projects/depth/specs/2026-07-07-phase-e-
 // real-formations-design.md) -----------------------------------------------------
 //
 // A "real formation" is the pair (qbAlignment, personnelCode) nflverse participation
@@ -398,7 +398,7 @@ function spreadX(count: number, minX: number, maxX: number): number[] {
 // carry a generic `position` ('DE'/'DT'/'LB') plus `group` ('DL'/'LB'), and resolveUnit
 // fills them by broad group + index (getPlayersByPositionGroup) as a fallback. Where the
 // front shape is one the taxonomy spec verified as real (single-gap NT, an edge-rush
-// pair, or the true 3-4's LDE/NT/RDE — docs/superpowers/specs/2026-08-04-full-espn-
+// pair, or the true 3-4's LDE/NT/RDE — ../obsidian/Projects/depth/specs/2026-08-04-full-espn-
 // position-taxonomy-design.md), `preferredPosition` seats the exact-tagged player first,
 // same as DB_SLOTS/RB (DEP-148, PR #299) — Jarren Reid tagged NT shouldn't render on the
 // left edge just because he sorted first in the DL pool. Larger interior counts (4+ DL)

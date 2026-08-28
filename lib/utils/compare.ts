@@ -1,6 +1,6 @@
 import type { Player, Position } from '@/lib/types';
 
-// Pure query-param validation for the two-team compare view (docs/superpowers/specs/
+// Pure query-param validation for the two-team compare view (../obsidian/Projects/depth/specs/
 // 2026-07-07-compare-view-design.md). Kept separate from app/compare/page.tsx so it's
 // unit-testable without a server component. `?a=&b=&pos=` are untrusted query params,
 // not route segments — an unknown team id or bad position degrades to "unpicked"/the

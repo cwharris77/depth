@@ -84,7 +84,7 @@ export default function FieldHeader({
         />
       )}
       {/* Read-only past-season indicator with a one-tap way back to today (Phase D1,
-        docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-design.md). */}
+        ../obsidian/Projects/depth/specs/2026-07-07-phase-d-history-and-boards-design.md). */}
       {historicalMode && (
         <ActionChip
           icon={<History size={11} />}

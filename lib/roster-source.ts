@@ -72,8 +72,8 @@ export interface UniformListing {
 
 // Everything the team stats page needs, composed in one read: team identity (for the
 // header/theming) and one TeamStats row per ingested season (current + up to two prior
-// — docs/superpowers/specs/2026-07-14-multi-season-team-stats-design.md), newest first.
-// Each season's coach lives on that `TeamStats` entry (docs/superpowers/specs/2026-07-14-
+// — ../obsidian/Projects/depth/specs/2026-07-14-multi-season-team-stats-design.md), newest first.
+// Each season's coach lives on that `TeamStats` entry (../obsidian/Projects/depth/specs/2026-07-14-
 // season-scoped-head-coach-design.md) rather than here, since the coach who led a team
 // in 2023 is not the coach who leads it in 2025. `seasons` is always an array, empty
 // rather than undefined when no season has a complete entry, so callers don't need an
@@ -99,7 +99,7 @@ export interface TeamStatsPage {
   // The current NFL season year. A season is "completed" (all games played, playoff
   // outcomes known) when its year is less than this. Used by TeamStatsView to suppress
   // the playoff-status line ("SEED N" / "MISSED PLAYOFFS") for seasons that haven't
-  // finished yet — see docs/superpowers/specs/2026-07-14-multi-season-team-stats-design.md.
+  // finished yet — see ../obsidian/Projects/depth/specs/2026-07-14-multi-season-team-stats-design.md.
   currentSeason: number;
 }
 

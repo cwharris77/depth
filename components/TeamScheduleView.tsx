@@ -6,7 +6,7 @@
 // called out. Client component receiving one team's already-resolved schedule as a prop
 // (invariant 5); it never imports all-32 data — opponent colors are baked into the prop.
 //
-// Season browsing (docs/superpowers/specs/2026-08-10-past-season-schedule-view-design.md):
+// Season browsing (../obsidian/Projects/depth/specs/2026-08-10-past-season-schedule-view-design.md):
 // the prerendered `schedule` prop is the default (current/latest) season; a past season
 // selected from the SeasonSheet bottom sheet is fetched client-side from the schedule
 // season API route and shown in the same grid — a completed season is all-played results,

@@ -220,7 +220,7 @@ const TEAM_COACH_SEASONS_SELECT = 'season, coach_name, coach_experience';
 // 6 — writeTeamStats skips the upsert on a partial entry), so every column should be
 // non-null in practice; the `?? 0`/`?? ''` fallbacks only guard the nullable-by-schema
 // type, not a real expected case. `coachBySeason` is a separate hand-curated table
-// (docs/superpowers/specs/2026-07-14-season-scoped-head-coach-design.md) — a season with
+// (../obsidian/Projects/depth/specs/2026-07-14-season-scoped-head-coach-design.md) — a season with
 // no curated row (not yet backfilled) simply has no coach, same "degrade, don't fake"
 // rule as every other optional field here.
 // `nflverseStatsBySeason` carries team_season_stats (nflverse) values merged alongside
@@ -567,7 +567,7 @@ const ROSTER_HISTORY_SELECT =
 // Historical player ids are `gsis:<gsis_id>@<season>` (not an ESPN id -- most historical
 // players were never ingested by the live ESPN pipeline). This is the same typed-ref
 // format the D2 boards spec's player refs share, so a board can point at either id space
-// unambiguously (docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-design.md).
+// unambiguously (../obsidian/Projects/depth/specs/2026-07-07-phase-d-history-and-boards-design.md).
 function toHistoricalPlayer(row: RosterHistoryRow, team: Team): Player {
   const rank = row.depth_rank as 1 | 2 | 3;
   return {
@@ -1073,7 +1073,7 @@ function toTeamFormation(row: TeamFormationRow): TeamFormation {
 }
 
 // Every real formation a team ran per unit for its latest ingested season (Phase E,
-// docs/superpowers/specs/2026-07-07-phase-e-real-formations-design.md; defense added,
+// ../obsidian/Projects/depth/specs/2026-07-07-phase-e-real-formations-design.md; defense added,
 // cap lifted DEP-141) — feeds the Formations sheet for both the offense and defense
 // tabs. No `.limit()`: the accumulator is already coverage-gated (lib/nflverse/
 // participation.ts), so a team's real per-season combo count never approaches
@@ -1284,7 +1284,7 @@ function toScheduleGame(
 // this team's perspective with opponents enriched for the UI. Standalone read (not on
 // RosterSource, like getPlayerStats) — the field view never needs it. Degrades to null on
 // an unknown team, a season with no games, or any query error
-// (docs/superpowers/specs/2026-07-17-team-schedule-design.md).
+// (../obsidian/Projects/depth/specs/2026-07-17-team-schedule-design.md).
 export async function getTeamSchedule(
   teamId: string,
   season?: number
