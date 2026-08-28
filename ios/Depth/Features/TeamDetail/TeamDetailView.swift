@@ -281,8 +281,7 @@ struct TeamDetailView: View {
             .sheet(isPresented: $showHistory) {
                 HistorySeasonSheet(
                     seasons: historyViewModel.seasons,
-                    selectedSeason: historyViewModel.selectedSeason,
-                    currentSeason: historyViewModel.currentSeason
+                    selectedSeason: historyViewModel.selectedSeason
                 ) { season in
                     showHistory = false
                     historyViewModel.selectImmediately(season)
@@ -759,8 +758,11 @@ struct TeamDetailView: View {
                     // the tab bar. `frame(maxHeight: .infinity)` makes the field flex to
                     // the *remaining* height inside the VStack, so it fills the space
                     // between the chrome and the tab bar without ever extending under it.
+                    //
+                    // No horizontal padding: the field fills the full safe-area width so
+                    // it sits as close to the screen edges as possible (the roster chrome
+                    // above it keeps its own inset, so only the field goes edge-to-edge).
                     .frame(maxHeight: .infinity)
-                    .padding(.horizontal)
 
                     // FTN charting is CC-BY-SA 4.0, so the notice follows the field
                     // content it attributes. Keep it in the scroll stack rather than
