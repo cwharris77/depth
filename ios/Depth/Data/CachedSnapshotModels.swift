@@ -10,7 +10,9 @@ import SwiftData
 // mismatch means the on-disk shape (or the JSON payload it decodes to) may no longer
 // match this build's Domain structs, so the row is discarded rather than risking a
 // decode crash or silently-wrong stale data ("safe schema discard").
-let depthCacheSchemaVersion = 1
+// 2 (2026-08-27, archive v2): `UniformListing` gained `teamAbbrev`/`teamShortName`, so a
+// v1 cached uniform payload no longer decodes into this build's struct.
+let depthCacheSchemaVersion = 2
 
 @Model
 final class CachedTeamListEntry {

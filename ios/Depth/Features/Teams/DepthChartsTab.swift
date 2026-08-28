@@ -32,6 +32,8 @@ struct DepthChartsTab: View {
     private let currentTeamStore: CurrentTeamStore
     /// DEP-319: favorite/start-on-favorite state read at launch for the favorite tier.
     private let userSettingsStore: UserSettingsStore
+    /// Cross-tab "open this team" requests (today: the uniform archive's kit sheet).
+    private let teamRouteStore: TeamRouteStore
 
     init(
         repository: CachingDepthRepository,
@@ -40,7 +42,8 @@ struct DepthChartsTab: View {
         overrideService: any DepthOverrideServicing,
         events: any AppEventsRecording = NoOpAppEventsRecorder(),
         currentTeamStore: CurrentTeamStore,
-        userSettingsStore: UserSettingsStore
+        userSettingsStore: UserSettingsStore,
+        teamRouteStore: TeamRouteStore
     ) {
         self.repository = repository
         self.preferences = preferences
@@ -49,6 +52,7 @@ struct DepthChartsTab: View {
         self.events = events
         self.currentTeamStore = currentTeamStore
         self.userSettingsStore = userSettingsStore
+        self.teamRouteStore = teamRouteStore
         _teamId = State(initialValue: StartupTeam.resolve(
             favoriteTeamId: userSettingsStore.favoriteTeamId,
             startOnFavorite: userSettingsStore.startOnFavorite,
@@ -134,6 +138,13 @@ struct DepthChartsTab: View {
                 lastTeamId: teamId,
                 validIds: teams.map(\.id)
             )
+        }
+        // Consumed (not just read) so a re-render for an unrelated reason can't re-apply
+        // a request the user has since navigated away from — see TeamRouteStore.
+        .onChange(of: teamRouteStore.requestedTeamId) { _, _ in
+            if let requested = teamRouteStore.consume() {
+                teamId = requested
+            }
         }
         .onChange(of: teamId, initial: true) { _, newValue in
             preferences.lastTeamId = newValue
