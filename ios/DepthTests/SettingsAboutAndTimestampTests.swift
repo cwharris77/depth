@@ -19,10 +19,14 @@ import Testing
 
 // DEP-160: the About card's privacy-policy link must point at the live production
 // /privacy page on the retained static site (verified 200), not a placeholder host.
+// Host updated 2026-08-28 from the generated `depth-ashen.vercel.app` alias to the
+// branded custom domain. The literal is hardcoded on purpose rather than read back
+// from AppBuildInfo — asserting against the same constant the code uses would make
+// this test tautological, and its whole job is to catch an unintended host change.
 @Test func privacyPolicyURLPointsAtProductionStaticSite() {
     let url = AppBuildInfo.privacyPolicyURL
     #expect(url?.scheme == "https")
-    #expect(url?.host == "depth-ashen.vercel.app")
+    #expect(url?.host == "sticks.cooper-harris.site")
     #expect(url?.path == "/privacy")
 }
 

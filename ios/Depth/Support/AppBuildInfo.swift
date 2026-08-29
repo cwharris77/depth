@@ -22,9 +22,17 @@ enum AppBuildInfo {
         + "Any trademarks used in the app are used solely to identify the respective "
         + "entities and remain the property of their respective owners."
 
-    /// Canonical public origin retained from DEP-160's verified production privacy URL.
-    /// Kept as a string so malformed configuration degrades to nil at each call site.
-    private static let publicSiteURLString = "https://depth-ashen.vercel.app"
+    /// Canonical public origin — the branded custom domain, not the generated
+    /// `depth-ashen.vercel.app` alias this shipped with before 2026-08-28. The alias still
+    /// 301s here, so builds already in testers' hands keep resolving these links; new
+    /// builds skip the hop. Kept as a string so malformed configuration degrades to nil at
+    /// each call site.
+    ///
+    /// NOTE: `UniformArt.baseURL` deliberately still points at the old alias — the
+    /// `uniforms.image_path` rows in production embed that origin, so moving the artwork
+    /// origin is a code+data migration rather than a constant swap. Don't "fix" the
+    /// inconsistency by editing one side.
+    private static let publicSiteURLString = "https://sticks.cooper-harris.site"
 
     static let privacyPolicyURLString = "\(publicSiteURLString)/privacy"
     static let termsOfServiceURLString = "\(publicSiteURLString)/terms"
@@ -32,10 +40,11 @@ enum AppBuildInfo {
     static var privacyPolicyURL: URL? { URL(string: privacyPolicyURLString) }
     static var termsOfServiceURL: URL? { URL(string: termsOfServiceURLString) }
 
-    /// The support/feedback contact address — previously an unfilled Gate 0 item (no
-    /// placeholder was invented before a real address existed). Also published on the
-    /// production `/support` page for App Store Connect's Support URL field.
-    static let supportEmail = "cwharris365@gmail.com"
+    /// The support/feedback contact address. Mirrors SUPPORT_EMAIL in lib/utils/legal.ts —
+    /// the same address is published on `/privacy`, `/terms` and `/support`, so the two
+    /// must change together (nothing enforces that at build time). Also the address behind
+    /// App Store Connect's Support URL field.
+    static let supportEmail = "support@cooper-harris.site"
 
     /// `mailto:` link pre-filled with a subject carrying the version/build, so a report
     /// sent from the About card always identifies which build it came from without the
