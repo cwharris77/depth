@@ -1,5 +1,8 @@
 <!--
-  The Sticks (depth) sign-in code email. Colors mirror the app's dark UI-chrome tokens
+  The Sticks (depth) verification-code email — the shared OTP template. Sent for
+  sign-in, sign-up, AND account-deletion (AccountDeletionViewModel.requestFreshCode uses
+  the same sign-in OTP path), so the wording stays neutral: "sign-in" here would mislabel
+  deletion confirmations. Colors mirror the app's dark UI-chrome tokens
   (components/ui/tokens.ts: bg #15161a, accent #6E8CAE, textPrimary/textMuted) rather than
   any team's brand colors — this is app chrome, not a team surface (AGENTS.md invariant 4).
   Table-based layout + inline styles for email-client compatibility (Outlook desktop has no
@@ -40,7 +43,7 @@
                 font-weight: 700;
                 color: #f0f4ff;
               ">
-              Your sign-in code for The Sticks
+              Your verification code for The Sticks
             </h2>
           </td>
         </tr>

@@ -76,7 +76,7 @@ private func localMailpitCode(for email: String) async throws -> String {
         }
         let inbox = try JSONDecoder().decode(Inbox.self, from: data)
         if let message = inbox.messages.first(where: {
-            $0.subject == "Your Depth sign-in code"
+            $0.subject == "Your verification code for The Sticks"
                 && $0.to.contains(where: { $0.address == email })
         }), let code = sixDigitCode(in: message.snippet) {
             return code

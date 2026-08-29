@@ -269,7 +269,10 @@ otp_expiry = 3600
 # Native and rollback-window web auth both verify a typed code in-app. Keeping
 # ConfirmationURL out of this template prevents a browser magic-link handoff.
 [auth.email.template.magic_link]
-subject = "Your sign-in code for The Sticks"
+# Shared OTP template — sent for sign-in, sign-up, AND account-deletion codes
+# (AccountDeletionViewModel.requestFreshCode uses the same sign-in OTP path), so the
+# subject stays neutral. "Sign-in" wording here would mislabel deletion confirmations.
+subject = "Your verification code for The Sticks"
 content_path = "./supabase/templates/magic-link.html"
 
 # Uncomment to customize notification email template
