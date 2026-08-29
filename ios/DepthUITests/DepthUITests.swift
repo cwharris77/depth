@@ -321,6 +321,9 @@ final class DepthUITests: XCTestCase {
         // row (the year before the newest, top of the list) so a completed past season
         // is active.
         let rows = app.buttons.matching(NSPredicate(format: "identifier MATCHES 'stats-season-[0-9]+'"))
+        // The sheet is still presenting right after `trigger.tap()` — wait for the first
+        // row before counting (same cold-run race the Schedule picker hit).
+        XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 10), "the stats picker should render its season rows")
         XCTAssertGreaterThanOrEqual(rows.count, 2, "the stats picker should offer more than one season row")
         let pastRow = rows.element(boundBy: 1)
         // Row label is "<year>" (or "<year>, selected") — strip the suffix so we can
@@ -377,6 +380,10 @@ final class DepthUITests: XCTestCase {
         // the same reason: a schedule far enough back can have no ingested games at all,
         // landing on the "No Schedule" empty state instead of a normal past season.
         let rows = app.buttons.matching(NSPredicate(format: "identifier MATCHES 'schedule-season-[0-9]+'"))
+        // The sheet is still presenting when `trigger.tap()` returns — `rows.count`
+        // snapshots immediately, so wait for the first row before counting (cold-run
+        // flake: count read 0 with the sheet mid-animation).
+        XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 10), "the schedule picker should render its season rows")
         XCTAssertGreaterThanOrEqual(rows.count, 2, "the schedule picker should offer a current and at least one past season")
         rows.element(boundBy: 1).tap()
 
