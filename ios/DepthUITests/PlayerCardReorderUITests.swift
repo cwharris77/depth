@@ -259,13 +259,17 @@ final class PlayerCardReorderUITests: XCTestCase {
         let history = app.buttons["history-destination"]
         XCTAssertTrue(history.waitForExistence(timeout: 5))
         history.tap()
-        let season = app.buttons["history-season-2013"]
+        // 2025 is the only past season `roster_history` has data for (2013 renders "No
+        // roster data" — see the DEP-* roster-history tests' comment).
+        let season = app.buttons["history-season-2025"]
         for _ in 0..<4 where !season.exists {
             app.swipeUp()
         }
         XCTAssertTrue(season.waitForExistence(timeout: 5))
         season.tap()
-        XCTAssertTrue(app.buttons["roster-history-season-trigger"].waitForExistence(timeout: 10))
+        // The historical roster re-fetches from production before its trigger renders
+        // (same cold-CI batch as the sibling roster-history journeys).
+        XCTAssertTrue(app.buttons["roster-history-season-trigger"].waitForExistence(timeout: 20))
         assertEditingEnded("entering a historical roster")
     }
 

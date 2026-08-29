@@ -134,7 +134,7 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(statsTab.waitForExistence(timeout: 10), "team detail should expose a Stats page tab")
         statsTab.tap()
         XCTAssertTrue(
-            app.scrollViews["stats-content"].waitForExistence(timeout: 15),
+            app.scrollViews["stats-content"].waitForExistence(timeout: 30),
             "the Stats page should render its record content"
         )
         XCTAssertTrue(
@@ -146,7 +146,7 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(scheduleTab.waitForExistence(timeout: 5), "the page switcher should still be reachable from Stats")
         scheduleTab.tap()
         XCTAssertTrue(
-            app.otherElements["schedule-content"].waitForExistence(timeout: 15),
+            app.otherElements["schedule-content"].waitForExistence(timeout: 30),
             "the schedule page should render once switched from Stats"
         )
 
@@ -190,16 +190,26 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(historyButton.waitForExistence(timeout: 5), "the overflow menu should expose History")
         historyButton.tap()
 
-        let season = app.buttons["history-season-2013"]
+        // 2025 is the only historical season `roster_history` currently has for
+        // produced teams (ingested 2026-08; older seasons render "No roster data" — see
+        // SupabaseDepthRepository.teamSeason's `.notFound` path). Any past-season row
+        // exercises the historical journey identically, so pick one with data.
+        let season = app.buttons["history-season-2025"]
         for _ in 0..<4 where !season.exists {
             app.swipeUp()
         }
-        XCTAssertTrue(season.waitForExistence(timeout: 5), "2013 should be available in the season picker")
+        XCTAssertTrue(season.waitForExistence(timeout: 5), "2025 should be available in the season picker")
         season.tap()
 
         let seasonTrigger = app.buttons["roster-history-season-trigger"]
-        XCTAssertTrue(seasonTrigger.waitForExistence(timeout: 10))
-        XCTAssertEqual(seasonTrigger.label, "2013 SEASON")
+        // Selecting 2025 swaps to the historical roster view, which re-fetches that
+        // season's full roster from production — the trigger only re-renders once that
+        // lands (same cold-CI/prod bound as Stats/Schedule), so wait past the reload.
+        XCTAssertTrue(seasonTrigger.waitForExistence(timeout: 20))
+        XCTAssertTrue(
+            seasonTrigger.waitForLabel(containing: "2025", timeout: 20),
+            "the historical roster's season trigger should read 2025 SEASON"
+        )
         // Historical rosters are read-only: reopen the overflow menu and confirm the
         // Edit Depth Chart toggle is present but disabled (DEP-231 — disabled, not
         // hidden, matching web's disabledReason treatment).
@@ -236,8 +246,9 @@ final class DepthUITests: XCTestCase {
     /// DEP-245: while a past season is selected, returning to the live roster is a
     /// one-tap "Back to current season" escape beside the page's season trigger (matching
     /// Stats/Schedule) — the Seasons sheet itself now uses only the standardized "X" close,
-    /// not a bespoke in-sheet button. Reuses the 2013 selection so the flow is verified
-    /// from a genuinely historical state.
+    /// not a bespoke in-sheet button. Reuses the 2025 selection so the flow is verified
+    /// from a genuinely historical state (2025 is the only past season `roster_history`
+    /// has data for — see the sibling test's comment).
     func testBackToCurrentFromRosterTrigger() throws {
         let app = XCUIApplication()
         XCTAssertTrue(app.launch(intoTeam: "seahawks"), "the app should launch straight into the Seahawks depth chart")
@@ -251,21 +262,30 @@ final class DepthUITests: XCTestCase {
         let sheetClose = app.buttons["history-season-close"]
         XCTAssertTrue(sheetClose.waitForExistence(timeout: 5), "the Seasons sheet should expose the standardized close")
 
-        let season = app.buttons["history-season-2013"]
+        let season = app.buttons["history-season-2025"]
         for _ in 0..<4 where !season.exists {
             app.swipeUp()
         }
-        XCTAssertTrue(season.waitForExistence(timeout: 5), "2013 should be available in the season picker")
+        XCTAssertTrue(season.waitForExistence(timeout: 5), "2025 should be available in the season picker")
         season.tap()
 
         let seasonTrigger = app.buttons["roster-history-season-trigger"]
-        XCTAssertTrue(seasonTrigger.waitForExistence(timeout: 10))
-        XCTAssertEqual(seasonTrigger.label, "2013 SEASON")
+        // Same 2025-reload bound as testOpenHistoricalRosterProfileAndReturnToToday above:
+        // the historical roster fetch lands against production before the trigger reads
+        // "2025 SEASON".
+        XCTAssertTrue(seasonTrigger.waitForExistence(timeout: 20))
+        XCTAssertTrue(
+            seasonTrigger.waitForLabel(containing: "2025", timeout: 20),
+            "the historical roster's season trigger should read 2025 SEASON"
+        )
 
         // The page's trigger — not the sheet — offers "Back to current season".
         let backToCurrent = app.buttons["roster-history-season-trigger-back-to-current"]
+        // Same reload-render bound as the Stats/Schedule back-to-current journeys:
+        // selecting a past season re-fetches the historical roster, and the button only
+        // re-appears once that lands against production.
         XCTAssertTrue(
-            backToCurrent.waitForExistence(timeout: 5),
+            backToCurrent.waitForExistence(timeout: 20),
             "the roster should offer Back to current beside the season trigger while a past season is selected"
         )
         backToCurrent.tap()
@@ -288,7 +308,9 @@ final class DepthUITests: XCTestCase {
         let statsTab = app.buttons["page-switcher-stats"]
         XCTAssertTrue(statsTab.waitForExistence(timeout: 10))
         statsTab.tap()
-        XCTAssertTrue(app.scrollViews["stats-content"].waitForExistence(timeout: 15))
+        // Cold CI simulator + production data: the first Stats load can crawl past the
+        // tab's own 10s (flake 2026-08-29) — 30s budget covers the network round-trip.
+        XCTAssertTrue(app.scrollViews["stats-content"].waitForExistence(timeout: 30))
 
         let trigger = app.buttons["stats-season-trigger"]
         XCTAssertTrue(trigger.waitForExistence(timeout: 10))
@@ -299,6 +321,9 @@ final class DepthUITests: XCTestCase {
         // row (the year before the newest, top of the list) so a completed past season
         // is active.
         let rows = app.buttons.matching(NSPredicate(format: "identifier MATCHES 'stats-season-[0-9]+'"))
+        // The sheet is still presenting right after `trigger.tap()` — wait for the first
+        // row before counting (same cold-run race the Schedule picker hit).
+        XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 10), "the stats picker should render its season rows")
         XCTAssertGreaterThanOrEqual(rows.count, 2, "the stats picker should offer more than one season row")
         let pastRow = rows.element(boundBy: 1)
         // Row label is "<year>" (or "<year>, selected") — strip the suffix so we can
@@ -310,12 +335,15 @@ final class DepthUITests: XCTestCase {
         // redundant "<year> season" line that just repeated the trigger's own label) — a
         // past season relabels the trigger to the picked year.
         XCTAssertTrue(
-            trigger.waitForLabel(containing: pastYear),
+            trigger.waitForLabel(containing: pastYear, timeout: 20),
             "selecting a past season should relabel the trigger to that season"
         )
 
         let backToCurrent = app.buttons["stats-season-trigger-back-to-current"]
-        XCTAssertTrue(backToCurrent.waitForExistence(timeout: 5), "a past season should offer Back to current beside the trigger")
+        // Selecting a past season drops Stats into a full-page `.loading` state — the
+        // trigger (and this button) only re-render once the past-season fetch lands. 5s
+        // was too tight for that reload against production (flake 2026-08-29).
+        XCTAssertTrue(backToCurrent.waitForExistence(timeout: 20), "a past season should offer Back to current beside the trigger")
         backToCurrent.tap()
 
         XCTAssertTrue(
@@ -339,7 +367,9 @@ final class DepthUITests: XCTestCase {
         let scheduleTab = app.buttons["page-switcher-schedule"]
         XCTAssertTrue(scheduleTab.waitForExistence(timeout: 10))
         scheduleTab.tap()
-        XCTAssertTrue(app.otherElements["schedule-content"].waitForExistence(timeout: 15))
+        // Cold CI simulator + production data: schedule payload loads over the network and
+        // can exceed 15s on first load (flake 2026-08-29) — 30s budget.
+        XCTAssertTrue(app.otherElements["schedule-content"].waitForExistence(timeout: 30))
 
         let trigger = app.buttons["schedule-season-trigger"]
         XCTAssertTrue(trigger.waitForExistence(timeout: 10))
@@ -350,11 +380,19 @@ final class DepthUITests: XCTestCase {
         // the same reason: a schedule far enough back can have no ingested games at all,
         // landing on the "No Schedule" empty state instead of a normal past season.
         let rows = app.buttons.matching(NSPredicate(format: "identifier MATCHES 'schedule-season-[0-9]+'"))
+        // The sheet is still presenting when `trigger.tap()` returns — `rows.count`
+        // snapshots immediately, so wait for the first row before counting (cold-run
+        // flake: count read 0 with the sheet mid-animation).
+        XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 10), "the schedule picker should render its season rows")
         XCTAssertGreaterThanOrEqual(rows.count, 2, "the schedule picker should offer a current and at least one past season")
         rows.element(boundBy: 1).tap()
 
         let backToCurrent = app.buttons["schedule-season-trigger-back-to-current"]
-        XCTAssertTrue(backToCurrent.waitForExistence(timeout: 5), "a past season should offer Back to current beside the trigger")
+        // Selecting a past season drops Schedule into a full-page `.loading` state — the
+        // trigger (and this button) only re-render once the past-season fetch lands. 5s
+        // was too tight for that reload against production (flake 2026-08-29, reproduced
+        // on unmodified main).
+        XCTAssertTrue(backToCurrent.waitForExistence(timeout: 20), "a past season should offer Back to current beside the trigger")
 
         // Screenshot the historical state before returning to current.
         let attachment = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
