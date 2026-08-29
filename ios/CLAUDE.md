@@ -1,15 +1,19 @@
 # depth iOS — agent operating manual
 
-Read this before writing any Swift code. It's the iOS sibling of the root
-[`CLAUDE.md`](../CLAUDE.md) — that file's git workflow, commit conventions, and
-vault-vs-repo doc split apply here unchanged; this file only covers what's different
-about working in `ios/`. If a rule isn't here, check root `CLAUDE.md` before assuming
-one doesn't exist.
+Read this before writing any Swift code. **This is the primary operating manual for
+depth's active surface** — iOS-first since 2026-08-29 (vault `Decisions.md`): the web
+app is frozen and kept only to host the privacy policy and support policy, and **new
+tickets default to iOS-only** unless they say otherwise. Root
+[`CLAUDE.md`](../CLAUDE.md)'s git workflow, commit conventions, vault-vs-repo doc split,
+and quality bar apply here unchanged (this file's §5 is the iOS-specific part of them);
+this file covers what's different about working in `ios/`.
 
-Per [`project_multi-surface-parity-process`](../../obsidian/Projects/depth/specs/2026-08-20-multi-surface-parity-process-design.md)
-(2026-08-20): a feature request with no named target defaults to **all three surfaces**
-(iOS, desktop web, mobile web), each built per its own convention — this file is iOS's.
-Never port web's literal component/class; match its *behavior*, not its markup.
+The pre-freeze parity process ([`2026-08-20-multi-surface-parity-process-design.md`](../../obsidian/Projects/depth/specs/2026-08-20-multi-surface-parity-process-design.md))
+used to default new features to **all three surfaces**; that default is **reversed
+2026-08-29** — features default to iOS. The web app still exists but is frozen: read it
+only as *reference* for a behavior that already exists there. Never port web's literal
+component/class; match its *behavior*, not its markup — and only when the behavior is
+worth carrying forward.
 
 ## 1. What this app is
 
@@ -167,23 +171,27 @@ Everything in root `CLAUDE.md` §5's "Any code PR" checklist applies. Additional
       scoped to the suites the diff touches — `DepthTests` for data/domain,
       `DepthUITests`/`AccessibilityUITests`/`ShareUITests` for the flows changed
       (root `CLAUDE.md` §5's iOS bullet points here for the full rule).
-- [ ] For a feature that has a web counterpart: verified against the live site
-      (screenshot-diffing) rather than assumed — see §6.
+- [ ] For a behavior that already shipped on the frozen web app: reference the live site
+      for what it *was* ("what did web do?") — see §6. New features define the iOS-native
+      way; "web does it this way" is never a justification by itself.
 
-## 6. Cross-surface parity — how it's actually verified today
+## 6. Parity after the web freeze (2026-08-29)
 
-Three mechanisms, from strongest to weakest guarantee:
+The web app is frozen, so "parity" is no longer a forward requirement — there is no live
+web surface to port to. What remains, in order of strength:
 
-1. **Cross-language fixtures** (§2.6 above) — mechanical, CI-enforced for formation/
-   roster domain logic. The strongest guarantee; extend this pattern to new pure
-   domain logic before falling back to manual verification.
-2. **`DesignTokens.swift`'s literal port** — hand-maintained, not enforced by CI, but
-   at least a single well-known file to check against `tokens.ts`.
-3. **Screenshot-diffing against the live site** — the default for everything else
-   (layout, interaction, copy). Load the equivalent web page/state side by side with
-   the iOS simulator and compare directly; this is how per-screen feature parity has
-   actually been verified throughout the native iOS build-out so far. Not automated —
-   budget time for it explicitly, don't skip it because nothing forces it.
+1. **Cross-language fixtures** (§2.6 above) — mechanical, CI-enforced, and *still the
+   strongest guarantee*, because the shared pure domain logic (formations, roster
+   ordering) must stay provably identical to the TS implementation both languages read.
+   Keep extending this pattern to new pure domain logic regardless of surface.
+2. **`DesignTokens.swift`'s literal port** — hand-maintained, not enforced by CI. With
+   web frozen, `tokens.ts` only changes if someone touches the frozen web app; keep the
+   two in sync on the rare occasion that happens.
+3. **The frozen web app as behavior reference** — for features that already shipped on
+   web (most screens here started as ports), the live site is the reference for what a
+   behavior *was*. New features define the iOS-native way; don't invent "the web does
+   it this way" as justification for a new decision (Cooper, 2026-08-18: "iOS is its
+   own design").
 
-Track per-surface shipped status with a ticket's `parity:` frontmatter field
-(`System/Templates/Ticket.md`, vault) rather than a separate tracking doc.
+`parity:` frontmatter on tickets (`System/Templates/Ticket.md`, vault) still exists as
+the tracking field; since 2026-08-29 its practical default is `ios-only`.

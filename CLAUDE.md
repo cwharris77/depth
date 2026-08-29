@@ -9,21 +9,38 @@ This version has breaking changes — APIs, conventions, and file structure may 
 Read this before writing any code. It is the distilled version of ~60 merged PRs of
 house style; deviating from it is the main way agents waste Cooper's time here.
 
+> **iOS-first (2026-08-29).** This app is now iOS-first. The product is the native
+> SwiftUI app in `ios/`; the Next.js web app is **frozen and kept only to host the
+> privacy policy and support policy**. **New tickets default to iOS-only** unless the
+> ticket says otherwise; web UI work is out of scope, and web PRs land only for
+> legal-page hosting or shared backend (Supabase, ingest, fixtures). This file still
+> documents the whole repo — for anything iOS-specific, `ios/CLAUDE.md` is the primary
+> operating manual and §5's iOS checklist governs. Vault record of the change:
+> `Decisions.md` 2026-08-29 (supersedes the 2026-08-20 parity defaults).
+
 ## 1. What this app is
 
-Interactive NFL depth chart viewer: pick any of the 32 teams, see the depth chart on a
-field, tap a player for bio/stats. Stack: Next.js 16 App Router · React 19 · TypeScript
-strict · Tailwind 4 · Framer Motion · Vitest · Supabase Postgres.
+**The product is the native iOS app** (`ios/`) — an interactive NFL depth chart viewer:
+pick any of the 32 teams, see the depth chart on a field, tap a player for bio/stats.
+Stack: SwiftUI · Swift 6 strict concurrency · SwiftData (offline cache) · Supabase
+Postgres · XcodeGen. Read `ios/CLAUDE.md` for its operating manual.
 
-Data flow (one direction, no shortcuts):
+The Next.js 16 App Router web app (`app/`, `components/`, `lib/`) is **frozen** — kept
+only to host the privacy policy and support policy and to share the Supabase backend
+(ingest, schema, cross-language domain fixtures). Web-only feature work is out of scope
+(2026-08-29). Its stack lingers as documented history: React 19 · TypeScript strict ·
+Tailwind 4 · Framer Motion · Vitest.
+
+Shared data flow (one direction, no shortcuts; both clients read the same backend):
 
 ```
 ESPN unofficial APIs
   → scripts/ingest-espn.mts   (weekly GitHub Action, Wed 12:00 UTC; STRICT=1 in CI)
   → Supabase Postgres          (schema = supabase/migrations/, types = lib/database.types.ts)
   → dbRosterSource             (lib/roster-source.db.ts, the only RosterSource impl)
-  → app/team/[id]/page.tsx     (server, prerendered per team)
-  → DepthChartField            (client, receives ONE resolved roster as a prop)
+  → iOS DepthRepository        (ios/Depth/Data/DepthRepository.swift — the iOS seam)
+  → DepthChartFieldView        (SwiftUI, receives ONE resolved roster per screen)
+      (web app/team/[id]/page.tsx → DepthChartField remain the frozen web reader)
 ```
 
 Design docs (specs) live in the Obsidian vault, not this repo:
@@ -40,7 +57,12 @@ Handoff briefs follow the same rule — they live in the vault at
 ## 2. Architecture invariants
 
 These are settled. Do not "improve" them; changing one is a design decision, not a
-refactor (see §6).
+refactor (see §6). Invariants 1–10 govern the frozen web code and the shared backend;
+new feature work happens in iOS, whose parallel invariants live in `ios/CLAUDE.md` §2
+(`DepthRepository` seam, `DepthEnvironment` composition root, disposable SwiftData cache,
+publishable-key-only in the bundle). Cross-language domain fixtures (invariant §2.6 of
+that file) keep the *shared pure logic* provably identical — that stays even though the
+web UI is frozen.
 
 1. **All roster reads go through the `RosterSource` seam** (`lib/roster-source.ts`).
    Routes and components never query Supabase or import a registry directly.
@@ -148,10 +170,11 @@ refactor (see §6).
   merge with the stack UI or `gh stack merge`. Stacks only make sense for **linear
   dependency chains** (data → UI); parallel independent work stays separate PRs, and
   all layers must live in this repo (no cross-fork stacks).
-- **Conventional Commits** for commits and PR titles. Scopes in use: `uniforms`,
+- **Conventional Commits** for commits and PR titles. Scopes in use: `ios`, `uniforms`,
   `nav`, `search`, `player`, `field`, `depth`, `card`, `switcher`, `teams`, `colors`,
   `espn`, `ingest`, `supabase`, `scripts`, `pwa`, `seo`, `theme`, `layout`, `ci`,
-  `specs`, `readme`, `auth`. Types include `a11y:` where apt.
+  `specs`, `readme`, `auth`. Types include `a11y:` where apt. Most work now scopes
+  `ios` (see `ios/CLAUDE.md`).
 - **Squash-merge only** (`gh pr merge --squash`). Never merge-commit, never rebase-
   merge, never delete or force-push `main`.
 - **PR bodies follow the house shape**: `## What` / `## Why` / `## Tests` (or
@@ -176,7 +199,10 @@ refactor (see §6).
 
 ## 4. Mistakes you will make here unless you follow these rules
 
-Each is named for what it looks like in a diff. The rule prevents it.
+Each is named for what it looks like in a diff. The rule prevents it. Most of these are
+web-era lessons; they still govern any PR that touches the frozen web app or shared
+backend. iOS-specific failure modes (project.yml without regen, stale domain fixtures,
+cached-read crashes, reaching around `DepthRepository`) are in `ios/CLAUDE.md` §4.
 
 1. **Training-data Next.js.** You write `middleware.ts`, old metadata APIs, or
    pages-router idioms. *Rule: read the matching guide under
@@ -282,11 +308,14 @@ Each is named for what it looks like in a diff. The rule prevents it.
 
 Adjectives don't count; these boxes do.
 
+**iOS-first (2026-08-29):** most PRs are iOS-only — their full checklist lives in
+`ios/CLAUDE.md` §5 (targeted `xcodebuild -only-testing:`, `xcodegen generate`,
+fixture regen, `DesignTokens.swift` sync). The web-toolchain checks below apply only
+when the diff touches the frozen web app or shared backend.
+
 **Any code PR**
-- [ ] `npm run format:check` clean
-- [ ] `npx tsc --noEmit` exits 0
-- [ ] `npm test` green; new pure logic has new tests (malformed/empty input included)
-- [ ] UI-visible change verified in a running browser; PR body says what was seen
+- [ ] Web-touching diff only: `npm run format:check` clean; `npx tsc --noEmit` exits 0; `npm test` green, new pure logic has new tests (malformed/empty input included)
+- [ ] UI-visible change verified in the running app — web: browser; iOS: simulator — PR body says what was seen
 - [ ] New UI composed from `components/ui/` primitives — no bespoke re-implementation
       of an existing primitive; new primitives (if any) live in `components/ui/`
 - [ ] No div structure or conditional-text logic pasted a second time in the same file
