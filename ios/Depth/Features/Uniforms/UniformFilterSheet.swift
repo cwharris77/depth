@@ -27,23 +27,31 @@ struct UniformFilterSheet: View {
     let applyLabel: String
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
-                header
-                sortSection
-                kindSection
-                currentOnlyRow
-                applyButton
+        DepthSheet(
+            title: nil,
+            sizing: .height(520),
+            showDragIndicator: true,
+            // No X: this sheet's own "Show N kits" bottom button is the dismiss, and the
+            // header row already carries a trailing control ("Reset all"). The X would
+            // collide with it.
+            showClose: false,
+            background: DesignTokens.Colors.surfaceCard
+        ) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
+                    header
+                    sortSection
+                    kindSection
+                    currentOnlyRow
+                    applyButton
+                }
+                .padding(.horizontal, DesignTokens.Spacing.lg)
+                .padding(.top, DesignTokens.Spacing.sm)
+                .padding(.bottom, DesignTokens.Spacing.xl)
             }
-            .padding(.horizontal, DesignTokens.Spacing.lg)
-            .padding(.top, DesignTokens.Spacing.sm)
-            .padding(.bottom, DesignTokens.Spacing.xl)
+            .scrollBounceBehavior(.basedOnSize)
+            .background(DesignTokens.Colors.bg)
         }
-        .scrollBounceBehavior(.basedOnSize)
-        .background(DesignTokens.Colors.bg)
-        .presentationBackground(DesignTokens.Colors.surfaceCard)
-        .presentationDragIndicator(.visible)
-        .presentationDetents([.height(520), .large])
         .accessibilityIdentifier("uniform-filter-sheet")
     }
 

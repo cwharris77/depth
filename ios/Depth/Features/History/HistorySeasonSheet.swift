@@ -3,13 +3,12 @@ import SwiftUI
 // Native counterpart to the web SeasonSheet: one deterministic VoiceOver row per season,
 // with the live roster first and no alternate uniforms or rights-gated imagery.
 struct HistorySeasonSheet: View {
-    @Environment(\.dismiss) private var dismiss
     let seasons: [HistorySeason]
     let selectedSeason: HistorySeason
     let onSelect: (HistorySeason) -> Void
 
     var body: some View {
-        NavigationStack {
+        DepthSheet(title: "Seasons", closeIdentifier: "history-season-close") {
             List(seasons) { season in
                 Button {
                     onSelect(season)
@@ -40,19 +39,11 @@ struct HistorySeasonSheet: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
-            .navigationTitle("Seasons")
-            .navigationBarTitleDisplayMode(.inline)
-            // Standardized "X" close, matching SeasonPickerSheet (Stats/Schedule) and the
-            // other picker sheets in the app — a roster viewing a past season returns to
-            // the live roster from the page's own "Back to current season" escape
-            // (SeasonPickerTrigger), not a bespoke button inside this sheet.
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    CloseButton(action: { dismiss() }, identifier: "history-season-close")
-                }
-            }
+            // Close is the shared X in the corner (via DepthSheet) — matching
+            // SeasonPickerSheet (Stats/Schedule) and the other picker sheets. There is no
+            // in-sheet "back" affordance: a roster viewing a past season returns via the
+            // page's own "Back to current season" escape (SeasonPickerTrigger).
         }
-        .presentationBackground(DesignTokens.Colors.bg)
     }
 
     private func label(for season: HistorySeason) -> String {

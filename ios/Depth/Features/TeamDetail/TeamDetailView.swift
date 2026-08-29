@@ -315,11 +315,9 @@ struct TeamDetailView: View {
                 ) { uniformID in
                     previewUniformID = uniformID
                 }
-                // Jersey-only cards are short — a full-height sheet left a wall of empty
-                // space below the page dots. `.medium` keeps the picker compact like
-                // FormationsSheetView below; still draggable up to `.large` for a11y
-                // text-size growth.
-                .presentationDetents([.medium, .large])
+                // Jersey-only cards are short — DepthSheet's `.medium` sizing keeps the
+                // picker compact like FormationsSheetView; still draggable up to `.large`
+                // for a11y text-size growth.
             }
             .sheet(isPresented: $showFormations) {
                 FormationsSheetView(
@@ -330,7 +328,6 @@ struct TeamDetailView: View {
                     onSelect: selectFormation,
                     onClose: { showFormations = false }
                 )
-                .presentationDetents([.medium, .large])
             }
     }
 
@@ -1014,7 +1011,7 @@ private struct FormationsSheetView: View {
     // hand-rolled card-highlight row. Section headers give header/row alignment for
     // free (both siblings rely on the same default List section inset).
     var body: some View {
-        NavigationStack {
+        DepthSheet(title: "Formations", sizing: .medium, closeAction: onClose) {
             List {
                 ForEach(grouped, id: \.header) { group in
                     Section {
@@ -1036,13 +1033,6 @@ private struct FormationsSheetView: View {
                     .accessibilityIdentifier("formations-attribution")
             }
             .scrollIndicators(.hidden)
-            .navigationTitle("Formations")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    CloseButton { onClose() }
-                }
-            }
         }
     }
 

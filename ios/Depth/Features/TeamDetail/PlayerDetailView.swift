@@ -50,8 +50,6 @@ struct PlayerDetailView: View {
     /// either is on.
     private var effectiveEditing: Bool { editing || globalEditMode }
 
-    @Environment(\.dismiss) private var dismiss
-
     // Portrait and vital tiles scale with body text so an Accessibility XXXL reader
     // gets a proportionate layout rather than large type crammed beside fixed chrome.
     // The portrait is capped because past that it is the text, not the image, that
@@ -105,7 +103,9 @@ struct PlayerDetailView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        // Visible grabber so the swipe-to-dismiss gesture is discoverable, not just
+        // the X (web's player card is a right-hand drawer; native is a sheet).
+        DepthSheet(showDragIndicator: true) {
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
                     header
@@ -123,21 +123,8 @@ struct PlayerDetailView: View {
             }
             .scrollIndicators(.hidden)
             .accessibilityIdentifier("player-profile-content")
-            .toolbar {
-                // Top-trailing X, matching the web PlayerCardHeader's close. An xmark is
-                // more discoverable than a "Close" text button, and mirrors the familiar
-                // swipe-down sheet affordance.
-                ToolbarItem(placement: .topBarTrailing) {
-                    CloseButton { dismiss() }
-                }
-            }
+            .task { await viewModel.load() }
         }
-        .presentationBackground(DesignTokens.Colors.bg)
-        .task { await viewModel.load() }
-        // Visible grabber so the swipe-to-dismiss gesture is discoverable, not just
-        // the X (web's player card is a right-hand drawer; native is a sheet).
-        .presentationDragIndicator(.visible)
-        .presentationDetents([.large])
     }
 
     // Side-by-side portrait and name only works while the name still has room to wrap on
