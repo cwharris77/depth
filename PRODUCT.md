@@ -4,7 +4,7 @@
 
 ## Platform
 
-adaptive
+iOS-first (2026-08-29): the product is the native SwiftUI app for the App Store. The Next.js web app is frozen and kept only to host the privacy policy and support policy.
 
 ## Users
 
@@ -27,14 +27,14 @@ The field experience. Depth-chart data exists elsewhere; depth renders the roste
   blocks a deploy.
 - Uniform-archive curation is a measured craft workflow: reference images (internal-only, never committed or redistributed), 1–3 teams per pass, every hex cites its source (`docs/uniform-model-brief.md`).
 - Specs and roadmap live in the Obsidian vault (`../obsidian/Projects/depth/`); implementation plans live in this repo (`docs/superpowers/plans/`). Never write specs into this repo's `docs/`.
-- Multi-surface parity process (vault spec, 2026-08-20): a feature request with no named target defaults to all three surfaces — iOS, desktop web, mobile web — each built per its own convention.
-- Deployed on Vercel with a PWA manifest; protected preview deployments use a bypass token kept out of the repo.
+- Multi-surface parity process (vault spec, 2026-08-20): **reversed 2026-08-29** — a feature request with no named target defaults to **iOS only**. The web app is frozen and retained solely to host the privacy policy and support policy. See Decisions.md 2026-08-29.
+- The web app runs on Vercel (frozen; legal pages only); protected preview deployments use a bypass token kept out of the repo.
 
 ## Capabilities and Constraints
 
 Confirmed functionality:
-- Prerendered per-team depth chart pages, unified team/player command-palette search, player bio/stats cards, shareable depth-chart links, `/uniforms` archive, `/compare`, sign-in with saved preferences ("my team", defaults to Seahawks), gated public API routes (player search, shares, overrides).
-- Native SwiftUI companion app in `ios/` (same Supabase backend, its own design system), currently pre-release.
+- Native SwiftUI app in `ios/` (same Supabase backend, its own design system) — the product. The frozen web app continues to serve the legal pages and share the backend.
+- Frozen web-app capability (reference only; iOS owns feature work): prerendered per-team depth chart pages, unified team/player command-palette search, player bio/stats cards, shareable depth-chart links, `/uniforms` archive, `/compare`, sign-in with saved preferences ("my team", defaults to Seahawks), gated public API routes (player search, shares, overrides).
 
 Durable constraints:
 - Team colors are machine-owned: the weekly ingest overwrites them wholesale; corrections happen in the transform (`lib/espn/transform.ts`), never by hand-patching.
@@ -68,7 +68,7 @@ Explicitly undecided:
 2. **The field is the product.** Every surface either strengthens reading a roster on the field or gets out of its way; fidelity serves the experience, not a spreadsheet.
 3. **League data deserves provenance.** Machine-owned values stay machine-owned, curated history is append-only, every color cites its source — correctness beats convenience.
 4. **Degrade gracefully.** Bad input, missing data, or a failed ingest costs a fallback or a stale week — never an error screen or a broken promise.
-5. **Native where it lands.** Behavior is shared across web and iOS; markup and interaction idioms are not. Match the conventions of the surface being built.
+5. **Native where it lands.** The build surface is iOS, and iOS is its own design (2026-08-18). Where a behavior already exists on the frozen web app and still matters, share the *behavior*, never markup — the shared backend is the real cross-surface seam.
 
 ## Accessibility & Inclusion
 
