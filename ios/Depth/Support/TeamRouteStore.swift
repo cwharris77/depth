@@ -6,9 +6,10 @@ import Observation
 // two tabs have no view-tree relationship to pass it through — RootTabView switches the
 // selected tab, this store carries which team (and optionally which uniform to select).
 //
-// Deliberately one nullable field and not a general router: the app has exactly one
-// cross-tab destination today. `consume()` rather than a plain read so the request can't
-// fire a second time when DepthChartsTab re-renders for an unrelated reason.
+// Deliberately one nullable field and not a general router: the app has two cross-tab
+// destinations (this and CompareRouteStore, DEP-405), each with its own store.
+// `consume()` rather than a plain read so the request can't fire a second time when
+// DepthChartsTab re-renders for an unrelated reason.
 @MainActor
 @Observable
 final class TeamRouteStore {

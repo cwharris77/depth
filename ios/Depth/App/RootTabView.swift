@@ -49,12 +49,27 @@ struct RootTabView: View {
                     events: DepthEnvironment.appEvents,
                     currentTeamStore: currentTeamStore,
                     userSettingsStore: DepthEnvironment.userSettingsStore,
-                    teamRouteStore: DepthEnvironment.teamRouteStore
+                    teamRouteStore: DepthEnvironment.teamRouteStore,
+                    // DEP-405: a schedule-card tap switches to the Compare tab instead of
+                    // pushing Compare inside this tab — the "Go to Depth Chart" pattern
+                    // (UniformsTab's callback below) applied to the schedule→compare jump.
+                    // RootTabView owns both the tab selection and the route store the
+                    // Compare tab consumes.
+                    onOpenCompare: { teamAId, teamBId in
+                        DepthEnvironment.compareRouteStore.request(teamAId: teamAId, teamBId: teamBId)
+                        onboarding.activeTab = .compare
+                    }
                 )
             }
 
             Tab("Compare", systemImage: "rectangle.split.2x1", value: RootTab.compare) {
-                CompareView(repository: DepthEnvironment.repository)
+                // DEP-405: the Compare tab's root is route-aware — a schedule-card tap's
+                // matchup lands here (pre-loaded, with the "Back to schedule" pill) once
+                // the tab is switched to. See CompareRouteStore.
+                CompareView(
+                    repository: DepthEnvironment.repository,
+                    compareRouteStore: DepthEnvironment.compareRouteStore
+                )
             }
 
             Tab("Uniforms", systemImage: "tshirt", value: RootTab.uniforms) {

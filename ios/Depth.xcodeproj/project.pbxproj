@@ -87,6 +87,7 @@
 		72BB407EBD75889F652AA8F2 /* HistoricalRosterDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121908B720F13534ED4C3EA /* HistoricalRosterDTO.swift */; };
 		72F2A4F9ED2F188C0493D2FA /* DepthError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3FAC7E6A6D97F9DB462C939 /* DepthError.swift */; };
 		7347F78B2F3964BD2B1A8A11 /* CoachmarkOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C73AF9C348A6717B3BCD620A /* CoachmarkOverlayView.swift */; };
+		752A920F3370F15352B11A0A /* CompareRouteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923AAAB0A437C4B6B9B25F95 /* CompareRouteStore.swift */; };
 		79CBA961DD4279FF61E930E1 /* RecordingAppEventsRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C2DE91B6A232290671FD77 /* RecordingAppEventsRecorder.swift */; };
 		7B46810619219F9D7DBB2B59 /* TeamRouteStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85406C2D1FB6F58B9740BF56 /* TeamRouteStoreTests.swift */; };
 		7C5132BAE9E0A0D27086FBD3 /* FormationsParityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62ABB8FA352722CEF133910 /* FormationsParityTests.swift */; };
@@ -112,6 +113,7 @@
 		96EE9CC19DC42FC68DEB9F90 /* TeamListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA198C4CAB3B2E7EFB862E6 /* TeamListViewModel.swift */; };
 		9909E89DE38E775D5969B145 /* UniformFilterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5797D0C01507D900A35C148 /* UniformFilterSheet.swift */; };
 		9BABC7039CA491D54D4B1F7F /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211666973EE0946E8D40C189 /* Card.swift */; };
+		9F5DD2824BF5CEC938507C4F /* CompareRouteStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63A225239F5ABFB9311A50B3 /* CompareRouteStoreTests.swift */; };
 		9F60A5FF883ED001520157AC /* SettingsAboutAndTimestampTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B86BB6DD9B066ECA8E654F /* SettingsAboutAndTimestampTests.swift */; };
 		A068F82187295FE530D6A4D1 /* DepthTopNavToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B91457A1E9A955B7EC8EBEF /* DepthTopNavToolbar.swift */; };
 		A1E1EFE3A8781B7BA2758DB4 /* AuthUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFE9E3629D2A8EF20465A2F7 /* AuthUITests.swift */; };
@@ -257,6 +259,7 @@
 		5E7327B7FE220C00C465A0C5 /* PlayerProfileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfileTests.swift; sourceTree = "<group>"; };
 		60834B644FBDE21B7AB75B7A /* RosterLeaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterLeaders.swift; sourceTree = "<group>"; };
 		610CCB2392EE0A9607EE8CB5 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		63A225239F5ABFB9311A50B3 /* CompareRouteStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareRouteStoreTests.swift; sourceTree = "<group>"; };
 		64ECA11ED67DB4F54B0E5CCF /* HistorySeasonSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistorySeasonSheet.swift; sourceTree = "<group>"; };
 		652CB710AECDBD04710A4ECF /* UserSettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettingsService.swift; sourceTree = "<group>"; };
 		6552F9CA65DF43159FA618D0 /* SupabaseRLSIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseRLSIntegrationTests.swift; sourceTree = "<group>"; };
@@ -285,6 +288,7 @@
 		909FC5E5EBC96FBAFD1AEDBE /* DesignTokensTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokensTests.swift; sourceTree = "<group>"; };
 		9149D725F0D8E31CEA618D40 /* TeamLogoCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamLogoCache.swift; sourceTree = "<group>"; };
 		922288D41A6979441CB8E2EF /* DepthChartShareButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthChartShareButton.swift; sourceTree = "<group>"; };
+		923AAAB0A437C4B6B9B25F95 /* CompareRouteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareRouteStore.swift; sourceTree = "<group>"; };
 		926872EFF68F2D404BCDB79B /* DepthBrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthBrandMark.swift; sourceTree = "<group>"; };
 		92D28C58D7A122104DADA8CC /* CloseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloseButton.swift; sourceTree = "<group>"; };
 		952FA1238A438E45AD02C4E9 /* OnboardingControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingControllerTests.swift; sourceTree = "<group>"; };
@@ -572,6 +576,7 @@
 				E67531979ED38F349577206E /* AuthAndSettingsTests.swift */,
 				ADAF14C6ADEF3A0B809897F9 /* CachingDepthRepositoryTests.swift */,
 				659DD65EABE16BCA1D1426D5 /* CompareFeatureTests.swift */,
+				63A225239F5ABFB9311A50B3 /* CompareRouteStoreTests.swift */,
 				E372B1C3FDDFC4260939314C /* DepthChartFieldLayoutTests.swift */,
 				8853CE0D389E576E83A733BB /* DepthOverrideMergeTests.swift */,
 				7971C7A65ECC4B94913325CD /* DepthTests.swift */,
@@ -633,6 +638,7 @@
 				E636B964C5DE055FDAD2CB44 /* AppEventsRecorder.swift */,
 				211666973EE0946E8D40C189 /* Card.swift */,
 				92D28C58D7A122104DADA8CC /* CloseButton.swift */,
+				923AAAB0A437C4B6B9B25F95 /* CompareRouteStore.swift */,
 				34803FD110C2C303B40AA906 /* CurrentTeamStore.swift */,
 				926872EFF68F2D404BCDB79B /* DepthBrandMark.swift */,
 				FCEB2197DF04D84335401768 /* DepthEnvironment.swift */,
@@ -891,6 +897,7 @@
 				5DF288F4FE20EF2FEE2C3358 /* AuthAndSettingsTests.swift in Sources */,
 				A8BC97475680BFF262BD9ACB /* CachingDepthRepositoryTests.swift in Sources */,
 				3D26828AF35B868C462D6227 /* CompareFeatureTests.swift in Sources */,
+				9F5DD2824BF5CEC938507C4F /* CompareRouteStoreTests.swift in Sources */,
 				BC722D8E91C6C886838011CF /* DepthChartFieldLayoutTests.swift in Sources */,
 				28BF18B10DB865B898B2F878 /* DepthOverrideMergeTests.swift in Sources */,
 				A33FB64445E73B74A1AA7011 /* DepthTests.swift in Sources */,
@@ -950,6 +957,7 @@
 				FEFD2588F9DE49DDE62D400D /* Compare.swift in Sources */,
 				216287DC1BC170297F969DCA /* CompareLensesView.swift in Sources */,
 				1B3A154597D7689EA37856B2 /* CompareMetrics.swift in Sources */,
+				752A920F3370F15352B11A0A /* CompareRouteStore.swift in Sources */,
 				F0BAAFAD8DD63BF43C660855 /* CompareView.swift in Sources */,
 				03F357FEC081C3772FD3D851 /* CompareViewModel.swift in Sources */,
 				8F38AC4DC5380D3CD035AD20 /* ContentView.swift in Sources */,

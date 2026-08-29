@@ -84,6 +84,10 @@ enum DepthEnvironment {
     /// A cross-tab "open this team's depth chart" request — written by the uniform
     /// archive's kit sheet, consumed by DepthChartsTab (see TeamRouteStore).
     @MainActor static let teamRouteStore = TeamRouteStore()
+    /// DEP-405: a cross-tab "compare these two teams" request — written by the schedule
+    /// page's game-card tap (via RootTabView's tab switch), consumed by the Compare tab
+    /// (see CompareRouteStore).
+    @MainActor static let compareRouteStore = CompareRouteStore()
     /// DEP-251 first-run tutorial state — owns the welcome/coachmark sequence, shared
     /// between ContentView (mounts the overlay + fires the first-launch trigger) and
     /// SettingsView ("Take the tour" row).

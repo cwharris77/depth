@@ -80,6 +80,49 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(weekCard.waitForExistence(timeout: 5), "the schedule should render at least one weekly card")
     }
 
+    /// DEP-405: a schedule-card tap lands on the Compare *tab* — the tab bar highlights
+    /// Compare, the matchup pre-loads into both slots, and the schedule-origin "Back to
+    /// schedule" pill (the DEP-280 affordance, restored now that the tab switch removed
+    /// the pushed instance's back chevron) returns to the Depth Charts tab.
+    func testScheduleCardTapSwitchesToCompareTab() throws {
+        let app = XCUIApplication()
+        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+
+        let scheduleTab = app.buttons["page-switcher-schedule"]
+        XCTAssertTrue(scheduleTab.waitForExistence(timeout: 10), "team detail should expose a Schedule page tab")
+        scheduleTab.tap()
+        XCTAssertTrue(app.otherElements["schedule-content"].waitForExistence(timeout: 10), "the schedule should render production content")
+
+        // The first tappable game card — a bye week or a past season renders the same
+        // `schedule-week-N` identifier on a non-button element, so pick the first
+        // button that is actually hittable (current-season, non-bye matchup).
+        let cards = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'schedule-week-'"))
+        XCTAssertTrue(cards.firstMatch.waitForExistence(timeout: 15), "the schedule should render at least one tappable weekly card")
+        var index = 0
+        while index < cards.count && !cards.element(boundBy: index).isHittable {
+            index += 1
+        }
+        let weekCard = cards.element(boundBy: index)
+        XCTAssertTrue(weekCard.isHittable, "the Bills' current-season schedule should have a non-bye, tappable game card")
+        weekCard.tap()
+
+        // The tab bar now reflects where we landed — Compare selected, not Depth Charts.
+        let compareTab = app.tabBars.firstMatch.buttons["Compare"]
+        XCTAssertTrue(compareTab.waitForExistence(timeout: 5))
+        XCTAssertTrue(compareTab.isSelected, "tapping a schedule card should switch the active tab to Compare")
+
+        // The matchup pre-loaded into both slots (the offense lens renders once both
+        // teams resolve) and the schedule-origin pill is present.
+        XCTAssertTrue(app.buttons["compare-back-to-schedule"].waitForExistence(timeout: 15), "the schedule-origin pill should render on the Compare tab")
+        XCTAssertTrue(app.buttons["compare-lens-offense"].waitForExistence(timeout: 20), "both compare slots should auto-fill with the matchup's teams")
+
+        // The pill returns to the Depth Charts tab, whose schedule page is still open.
+        app.buttons["compare-back-to-schedule"].tap()
+        let depthChartsTab = app.tabBars.firstMatch.buttons["Depth Charts"]
+        XCTAssertTrue(depthChartsTab.waitForExistence(timeout: 5))
+        XCTAssertTrue(depthChartsTab.isSelected, "Back to schedule should return to the Depth Charts tab")
+    }
+
     /// Round-4 (DEP-216/217): the ROSTER/SCHEDULE/STATS page switcher reaches all three
     /// pages, each rendering its own content — the roster chart, the Stats record, and
     /// the embedded schedule. Uses the Bills, a team with real ingested stats.
