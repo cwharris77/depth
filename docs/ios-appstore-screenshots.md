@@ -61,11 +61,12 @@ constant fails loudly, which is the right failure for a manually-run release too
 ## Running it
 
 **One command** — `ios/scripts/capture-appstore-screenshots.sh` wraps the whole pipeline
-(see its header for the full contract): it resolves the newest 6.9-inch "iPhone N Pro
-Max"-class simulator, boots a **disposable** instance, normalizes the status bar, runs
-the capture test against the dedicated `Depth-AppStoreScreenshots` scheme (which carries
-no `skippedTests`, so no `project.yml` editing is ever needed), exports the PNGs, verifies
-them (exactly five, 1320×2868, no alpha), and tears the simulator down:
+(see its header for the full contract): it resolves the newest 1284×2778-class simulator
+(**iPhone 13 Pro Max**, the 6.5-inch display class), boots a **disposable** instance,
+normalizes the status bar, runs the capture test against the dedicated
+`Depth-AppStoreScreenshots` scheme (which carries no `skippedTests`, so no `project.yml`
+editing is ever needed), exports the PNGs, verifies them (exactly five, 1284×2778, no
+alpha), and tears the simulator down:
 
 ```
 ios/scripts/capture-appstore-screenshots.sh
@@ -81,7 +82,23 @@ Screenshots/<device>/04-compare.png
 Screenshots/<device>/05-uniform-archive.png
 ```
 
-where `<device>` is the resolved simulator type slug (e.g. `iPhone-17-Pro-Max`).
+where `<device>` is the resolved simulator type slug (e.g. `iPhone-13-Pro-Max`).
+
+### Why 1284×2778 (2026-08-28)
+
+The pipeline originally captured **1320×2868** on the iPhone 17 Pro Max (6.9-inch class).
+App Store Connect rejected that outright with: *"Screenshots dimensions should be:
+1242 × 2688px, 2688 × 1242px, 1284 × 2778px or 2778 × 1284px"* — i.e. this app record's
+upload flow is accepting the **6.5-inch display class**, not the 6.9-inch class. Apple's
+current screenshot guide confirms 1284×2778 (and 1242×2688) are the 6.5-inch class sizes,
+and that **if 6.9-inch screenshots aren't provided, the 6.5-inch ones are required and get
+scaled up to fill 6.9-inch displays** — so a single 1284×2778 set is sufficient.
+
+The 1284×2778 class maps to the **iPhone 12/13 Pro Max** (428×926pt @3x); newer Pro Max
+iPhones are 1290×2796 or 1320×2868 and are *not* accepted here. The capture script pins to
+the newest iPhone in the class (iPhone 13 Pro Max) and refuses to emit a PNG that isn't
+exactly 1284×2778, so a wrong device pick fails loudly instead of quietly producing
+unusable files.
 
 The script normalizes the status bar itself (`xcrun simctl status_bar override --time
 "9:41" …`) because the XCUITest process runs inside the simulator and can't call
@@ -105,7 +122,7 @@ xcrun simctl status_bar <device-udid> override \
 
 xcodebuild -project ios/Depth.xcodeproj -scheme Depth-AppStoreScreenshots \
   -configuration Staging \
-  -destination 'platform=iOS Simulator,id=<a 6.9-inch simulator UDID>' \
+  -destination 'platform=iOS Simulator,id=<an iPhone 13 Pro Max simulator UDID>' \
   -only-testing:DepthUITests/AppStoreScreenshotsUITests \
   -resultBundlePath /tmp/depth-screenshots.xcresult \
   test
@@ -113,12 +130,12 @@ xcodebuild -project ios/Depth.xcodeproj -scheme Depth-AppStoreScreenshots \
 xcrun simctl status_bar <device-udid> clear
 ```
 
-As of this writing the currently-accepted 6.9-inch simulator is the **iPhone 17 Pro Max**
-(1320×2868 px @3x, matching Apple's published 6.9-inch requirement) — re-check
-`xcrun simctl list devicetypes -j` and Apple's current screenshot-spec page before every
-real submission, since Apple periodically retires the oldest accepted size class and
-simulator naming shifts with each generation. The capture script refuses to emit a PNG
-that isn't exactly 1320×2868, so a non-6.9-inch pick fails loudly instead of quietly
+As of this writing the capture targets the **iPhone 13 Pro Max** (1284×2778 px @3x, the
+newest device in the App Store Connect 6.5-inch display class this app's upload flow
+accepts) — re-check `xcrun simctl list devicetypes -j` and Apple's current screenshot-spec
+page before every real submission, since Apple periodically retires the oldest accepted
+size class and simulator naming shifts with each generation. The capture script refuses to
+emit a PNG that isn't exactly 1284×2778, so a wrong pick fails loudly instead of quietly
 producing unusable files.
 
 ## Extracting the PNGs
