@@ -102,8 +102,6 @@ struct SeasonPickerItem: Identifiable {
 }
 
 struct SeasonPickerSheet: View {
-    @Environment(\.dismiss) private var dismiss
-
     /// Newest season first, matching both callers' natural query/stride order.
     let items: [SeasonPickerItem]
     let selectedSeason: Int
@@ -112,7 +110,11 @@ struct SeasonPickerSheet: View {
     let onSelect: (Int) -> Void
 
     var body: some View {
-        NavigationStack {
+        DepthSheet(
+            title: "Seasons",
+            showDragIndicator: true,
+            closeIdentifier: "\(identifierPrefix)-season-close"
+        ) {
             List(Array(items.enumerated()), id: \.element.id) { index, item in
                 Button {
                     onSelect(item.season)
@@ -171,28 +173,11 @@ struct SeasonPickerSheet: View {
             // first/last row sit flush against the chrome instead.
             .contentMargins(.top, 0, for: .scrollContent)
             .contentMargins(.bottom, 0, for: .scrollContent)
-            .navigationTitle("Seasons")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                // No "Back to current" here — that escape hatch now lives on
-                // `SeasonPickerTrigger`, beside the button that opens this sheet
-                // (Cooper report: it was clipped in this toolbar, and redundant once
-                // you're already looking at the season list — tapping the current row
-                // does the same thing).
-                // Top-trailing X, matching every other picker sheet in the app
-                // (TeamListPickerSheet, UniformFilterSheet, UniformPickerSheet,
-                // PlayerDetailView) — this sheet was missing it.
-                ToolbarItem(placement: .topBarTrailing) {
-                    CloseButton(
-                        action: { dismiss() },
-                        identifier: "\(identifierPrefix)-season-close"
-                    )
-                }
-            }
+            // No "Back to current" here — that escape hatch now lives on
+            // `SeasonPickerTrigger`, beside the button that opens this sheet
+            // (Cooper report: it was clipped in this toolbar, and redundant once
+            // you're already looking at the season list — tapping the current row
+            // does the same thing). The X in the corner comes from `DepthSheet`.
         }
-        .presentationBackground(DesignTokens.Colors.bg)
-        // Visible grabber so the swipe-to-dismiss gesture is discoverable, matching
-        // PlayerDetailView's convention — not just the X.
-        .presentationDragIndicator(.visible)
     }
 }

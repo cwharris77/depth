@@ -22,30 +22,29 @@ struct UniformKitSheet: View {
     let onOpenDepthChart: () -> Void
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
-                HStack(alignment: .top, spacing: DesignTokens.Spacing.md + 2) {
-                    UniformThumb(url: UniformArt.fullURL(for: kit.id), size: 112)
-                    details
+        DepthSheet(
+            title: nil,
+            sizing: .height(470),
+            showDragIndicator: true,
+            closePlacement: .overlay,
+            closeIdentifier: "uniform-kit-close",
+            background: DesignTokens.Colors.surfaceCard
+        ) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
+                    HStack(alignment: .top, spacing: DesignTokens.Spacing.md + 2) {
+                        UniformThumb(url: UniformArt.fullURL(for: kit.id), size: 112)
+                        details
+                    }
+                    openDepthChartButton
                 }
-                openDepthChartButton
+                .padding(.horizontal, DesignTokens.Spacing.lg)
+                .padding(.top, DesignTokens.Spacing.lg)
+                .padding(.bottom, DesignTokens.Spacing.xl)
             }
-            .padding(.horizontal, DesignTokens.Spacing.lg)
-            .padding(.top, DesignTokens.Spacing.lg)
-            .padding(.bottom, DesignTokens.Spacing.xl)
+            .scrollBounceBehavior(.basedOnSize)
+            .background(DesignTokens.Colors.bg)
         }
-        .scrollBounceBehavior(.basedOnSize)
-        .overlay(alignment: .topTrailing) {
-            CloseButton(action: { dismiss() }, placement: .overlay, identifier: "uniform-kit-close")
-                .padding(DesignTokens.Spacing.md)
-        }
-        .background(DesignTokens.Colors.bg)
-        .presentationBackground(DesignTokens.Colors.surfaceCard)
-        .presentationDragIndicator(.visible)
-        // Sized to the artwork it is built around, with `.large` available so an
-        // accessibility text size can grow into a full sheet instead of scrolling a
-        // cramped one.
-        .presentationDetents([.height(470), .large])
         .accessibilityIdentifier("uniform-kit-sheet")
     }
 

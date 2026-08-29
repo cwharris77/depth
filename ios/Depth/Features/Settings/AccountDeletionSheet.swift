@@ -15,7 +15,11 @@ struct AccountDeletionSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        DepthSheet(
+            title: "Delete Account",
+            closeDisabled: viewModel.step == .deleting,
+            dismissDisabled: viewModel.step == .deleting
+        ) {
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
                     switch viewModel.step {
@@ -43,16 +47,7 @@ struct AccountDeletionSheet: View {
                 .padding(DesignTokens.Spacing.md)
             }
             .scrollIndicators(.hidden)
-            .background(DesignTokens.Colors.bg)
-            .navigationTitle("Delete Account")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                        .disabled(viewModel.step == .deleting)
-                }
-            }
         }
-        .interactiveDismissDisabled(viewModel.step == .deleting)
     }
 
     private var warningCard: some View {

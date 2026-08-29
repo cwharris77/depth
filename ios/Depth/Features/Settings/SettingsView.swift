@@ -72,7 +72,10 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        DepthSheet(
+            title: "Settings",
+            closeIdentifier: "account-close-button"
+        ) {
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
                     if let user = sessionStore.user {
@@ -96,13 +99,6 @@ struct SettingsView: View {
                 .padding(DesignTokens.Spacing.md)
             }
             .scrollIndicators(.hidden)
-            .background(DesignTokens.Colors.bg)
-            .navigationTitle("Settings")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    CloseButton(action: { dismiss() }, identifier: "account-close-button")
-                }
-            }
         }
         .tint(DesignTokens.Colors.accent)
         .task {
@@ -114,8 +110,9 @@ struct SettingsView: View {
             self.teams = teams
         }
         .sheet(isPresented: $showAuth) {
+            // DepthSheet owns each sheet's background now (DEP-420) — no more explicit
+            // `.presentationBackground(bg)` at nesting call sites.
             AuthSheet(service: authService, sessionStore: sessionStore, events: events)
-                .presentationBackground(DesignTokens.Colors.bg)
         }
         .sheet(isPresented: $showDeletion) {
             if let email = sessionStore.user?.email {
@@ -127,7 +124,6 @@ struct SettingsView: View {
                         clearPrivateData: clearPrivateData
                     )
                 )
-                .presentationBackground(DesignTokens.Colors.bg)
             }
         }
     }

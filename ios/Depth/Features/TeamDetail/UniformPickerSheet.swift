@@ -21,7 +21,6 @@ import SwiftUI
 // jersey-rendering implementation. Each card's caption is the kit kind only (Home/Away/
 // etc.) — no year range, since an undated kit has nothing meaningful to show there.
 struct UniformPickerSheet: View {
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let uniforms: [Uniform]
@@ -39,7 +38,7 @@ struct UniformPickerSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        DepthSheet(title: "Choose Uniform", sizing: .medium) {
             VStack(spacing: 0) {
                 TabView(selection: $currentIndex) {
                     ForEach(Array(uniforms.enumerated()), id: \.element.id) { index, uniform in
@@ -54,22 +53,14 @@ struct UniformPickerSheet: View {
                 pageDots
                     .padding(.bottom, DesignTokens.Spacing.md)
             }
-            .navigationTitle("Choose Uniform")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    CloseButton { dismiss() }
-                }
+            // Preview-only signal on every page change — see the header comment. The
+            // caller decides whether/when this becomes the committed selection.
+            .onChange(of: currentIndex) { _, newIndex in
+                guard uniforms.indices.contains(newIndex) else { return }
+                onSelect(uniforms[newIndex].id)
             }
         }
-        .presentationBackground(DesignTokens.Colors.bg)
         .accessibilityIdentifier("uniform-picker-sheet")
-        // Preview-only signal on every page change — see the header comment. The
-        // caller decides whether/when this becomes the committed selection.
-        .onChange(of: currentIndex) { _, newIndex in
-            guard uniforms.indices.contains(newIndex) else { return }
-            onSelect(uniforms[newIndex].id)
-        }
     }
 
     private func card(for uniform: Uniform) -> some View {
