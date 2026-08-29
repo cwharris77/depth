@@ -7,8 +7,9 @@
 # lives here, so a human (or the ticket's "run the script on a clean checkout" acceptance
 # gate) never has to hand-edit project.yml:
 #
-#   1. Picks the newest 6.9-inch "iPhone N Pro Max"-class simulator device type and boots
-#      a DISPOSABLE instance of it (nothing is left booted afterward — same hygiene as
+#   1. Picks the newest simulator device type in the 1284×2778 (6.5-inch display) class —
+#      iPhone 13 Pro Max, falling back to iPhone 12 Pro Max — and boots a DISPOSABLE
+#      instance of it (nothing is left booted afterward — same hygiene as
 #      screenshot-check.sh, so parallel worktrees don't pile up sims and exhaust RAM).
 #   2. Overrides the status bar via `simctl status_bar` — the same "9:41" / charged /
 #      full-signal baseline on every capture, since the XCUITest process runs inside the
@@ -27,8 +28,8 @@
 #          Screenshots/<device>/05-uniform-archive.png
 #
 #   5. Verifies the artifacts automatically: exactly five files, each at the exact current
-#      App Store Connect 6.9-inch portrait resolution (1320×2868) with no alpha channel.
-#      The remaining checks in the spec's item 38 (clipping, stale data, placeholder
+#      App Store Connect 6.5-inch-display portrait resolution (1284×2778) with no alpha
+#      channel. The remaining checks in the spec's item 38 (clipping, stale data, placeholder
 #      artifacts, simulator chrome, personal information, unlicensed assets) are visual
 #      and stay a human-in-the-loop step — the script prints the checklist when done.
 #
@@ -42,7 +43,7 @@
 #   -d <path>  DerivedData dir. Default: ios/.derivedData (gitignored, worktree-local)
 #   -o <path>  Output root. Default: <repo-root>/Screenshots (gitignored). The five PNGs
 #              land in <outRoot>/<device>/, where <device> is the resolved simulator type
-#              slug (e.g. iPhone-17-Pro-Max).
+#              slug (e.g. iPhone-13-Pro-Max).
 #   -h         Help
 #
 # Dependencies: xcodegen, xcodebuild, xcrun (simctl/xcresulttool), jq, sips.
@@ -70,23 +71,32 @@ done
 [ -z "$DERIVED" ] && DERIVED="$REPO_ROOT/ios/.derivedData"
 [ -z "$OUT_ROOT" ] && OUT_ROOT="$REPO_ROOT/Screenshots"
 
-# The exact App Store Connect 6.9-inch portrait spec (iPhone 17 Pro Max, 1320×2868 @3x).
-# Re-check Apple's current screenshot-spec page before a real submission — Apple
-# periodically retires the oldest accepted size class and simulator naming shifts with
-# each generation (docs/ios-appstore-screenshots.md records this same caveat).
-EXPECT_W=1320
-EXPECT_H=2868
+# The exact App Store Connect 6.5-inch-display portrait spec (iPhone 13 Pro Max, 1284×2778
+# @3x). Retargeted 2026-08-28 from 1320×2868 (iPhone 17 Pro Max, 6.9-inch class): App Store
+# Connect rejected the 1320×2868 captures outright ("Screenshots dimensions should be:
+# 1242 × 2688px … 1284 × 2778px…"), and Apple's current screenshot guide's 6.5-inch class —
+# the class this app record's upload flow is accepting — lists exactly 1242×2688 and
+# 1284×2778. 1284×2778 is the larger of the two. Apple scales these up for 6.9-inch displays
+# ("If screenshots with the accepted sizes aren't provided, scaled screenshots for 6\.9"
+# displays are used"), so a 6.5-inch-class set is sufficient. Re-check Apple's current
+# screenshot-spec page before a real submission — Apple periodically retires the oldest
+# accepted size class and simulator naming shifts with each generation
+# (docs/ios-appstore-screenshots.md records this same caveat).
+EXPECT_W=1284
+EXPECT_H=2778
 
-# ---- resolve a disposable 6.9-inch simulator device type ----
+# ---- resolve a disposable 1284×2778 (6.5-inch display class) simulator device type ----
 RUNTIME=$(xcrun simctl list runtimes -j | jq -r '[.runtimes[] | select(.platform == "iOS" and .isAvailable)] | sort_by(.version) | last | .identifier')
 if [ -z "$RUNTIME" ] || [ "$RUNTIME" = "null" ]; then
   echo "ERROR: no available iOS simulator runtime found" >&2
   exit 1
 fi
 
-# A device type being *installed* doesn't mean it's *creatable* against the newest
-# runtime (same trap ios-ci.yml's resolve-devices calls out) — test-create and delete
-# each 6.9-inch candidate newest-first, keep the first that works.
+# The 1284×2778 class is exactly the iPhone 12/13 Pro Max devices (428×926pt @3x); iPhone
+# 14 Pro Max and later moved to 1290×2796 and are NOT accepted by this app record's upload
+# flow. Prefer the newest. A device type being *installed* doesn't mean it's *creatable*
+# against the newest runtime (same trap ios-ci.yml's resolve-devices calls out) — test-create
+# and delete each candidate newest-first, keep the first that works.
 try_create() {
   local name="$1"
   local device_id
@@ -97,12 +107,9 @@ try_create() {
   return 1
 }
 
-CANDIDATES=$(xcrun simctl list devicetypes -j | jq -r '
-  [.devicetypes[]
-    | select(.productFamily == "iPhone" and (.name | test("^iPhone [0-9]+ Pro Max$")))
-    | {name, num: (.name | capture("^iPhone (?<n>[0-9]+)") | .n | tonumber)}]
-  | sort_by(-.num) | .[].name
-')
+# The 1284×2778 class in the simulator is exactly iPhone 12/13 Pro Max (428×926pt @3x).
+# Order newest-first; try_create picks the first candidate that is creatable.
+CANDIDATES=$'iPhone 13 Pro Max\niPhone 12 Pro Max'
 DEVICE_TYPE=""
 while IFS= read -r candidate; do
   [ -z "$candidate" ] && continue
@@ -112,10 +119,10 @@ while IFS= read -r candidate; do
   fi
 done <<< "$CANDIDATES"
 if [ -z "$DEVICE_TYPE" ]; then
-  echo "ERROR: no 6.9-inch 'iPhone N Pro Max' device type is both installed and creatable against runtime $RUNTIME" >&2
+  echo "ERROR: no 1284×2778-class device type (iPhone 13/12 Pro Max) is both installed and creatable against runtime $RUNTIME" >&2
   exit 1
 fi
-# e.g. "iPhone 17 Pro Max" -> "iPhone-17-Pro-Max" — the deterministic per-device output dir.
+# e.g. "iPhone 13 Pro Max" -> "iPhone-13-Pro-Max" — the deterministic per-device output dir.
 DEVICE_SLUG=$(printf '%s' "$DEVICE_TYPE" | tr ' ' '-')
 OUT_DIR="$OUT_ROOT/$DEVICE_SLUG"
 
@@ -127,7 +134,7 @@ cleanup() {
   xcrun simctl delete "$DEVICE_ID" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
-echo "Booted disposable 6.9-inch simulator: $DEVICE_TYPE ($DEVICE_ID)" >&2
+echo "Booted disposable 1284×2778-class simulator: $DEVICE_TYPE ($DEVICE_ID)" >&2
 xcrun simctl boot "$DEVICE_ID"
 xcrun simctl bootstatus "$DEVICE_ID" -b >/dev/null 2>&1 || true
 
@@ -191,7 +198,7 @@ for f in "$OUT_DIR"/*.png; do
   ALPHA=$(sips -g hasAlpha "$f" | awk '/hasAlpha:/{print $2}')
   printf '  %-34s %sx%s alpha:%s\n' "$(basename "$f")" "$W" "$H" "$ALPHA"
   if [ "$W" != "$EXPECT_W" ] || [ "$H" != "$EXPECT_H" ]; then
-    echo "ERROR: $(basename "$f") is ${W}x${H}, expected ${EXPECT_W}x${EXPECT_H} — the resolved device ($DEVICE_TYPE) is not the accepted 6.9-inch class." >&2
+    echo "ERROR: $(basename "$f") is ${W}x${H}, expected ${EXPECT_W}x${EXPECT_H} — the resolved device ($DEVICE_TYPE) is not the accepted 1284×2778 (6.5-inch) class." >&2
     PASS=0
   fi
   if [ "$ALPHA" != "no" ]; then

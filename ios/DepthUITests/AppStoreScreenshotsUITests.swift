@@ -10,12 +10,15 @@ import XCTest
 //
 //   ios/scripts/capture-appstore-screenshots.sh
 //
-// Or by hand against the dedicated scheme (the default Depth scheme's scheme-level
-// `skippedTests` cannot be overridden by `-only-testing` at the command line):
+// (boots a disposable 1284×2778-class iPhone 13 Pro Max simulator, normalizes the status
+// bar, runs the test against the dedicated Depth-AppStoreScreenshots scheme — no project.yml
+// editing needed — and exports the PNGs). Or by hand against the dedicated scheme (the
+// default Depth scheme's scheme-level `skippedTests` cannot be overridden by `-only-testing`
+// at the command line):
 //
 //   xcodebuild -project ios/Depth.xcodeproj -scheme Depth-AppStoreScreenshots \
 //     -configuration Staging \
-//     -destination 'platform=iOS Simulator,id=<a 6.9-inch simulator UDID>' \
+//     -destination 'platform=iOS Simulator,id=<an iPhone 13 Pro Max simulator UDID>' \
 //     -only-testing:DepthUITests/AppStoreScreenshotsUITests \
 //     -resultBundlePath /tmp/depth-screenshots.xcresult test
 //
@@ -209,9 +212,9 @@ final class AppStoreScreenshotsUITests: XCTestCase {
     /// at native device resolution (no simulator bezel/chrome — that's rendered by the
     /// Simulator.app window, never part of the captured buffer) rather than
     /// `XCUIApplication.screenshot()`, which is scoped to the app's own window frame.
-    /// For App Store Connect's exact-pixel-resolution requirement (1320×2868 on the
-    /// iPhone 17 Pro Max this test targets), the full-screen API is the one that's
-    /// guaranteed to match the published spec.
+    /// For App Store Connect's exact-pixel-resolution requirement (1284×2778 on the
+    /// iPhone 13 Pro Max this test targets — the accepted 6.5-inch display class), the
+    /// full-screen API is the one that's guaranteed to match the published spec.
     private func attachScreenshot(name: String) {
         let screenshot = XCUIScreen.main.screenshot()
         let attachment = XCTAttachment(screenshot: screenshot)
