@@ -57,9 +57,10 @@ struct TeamDetailView: View {
     /// place this view is constructed now that it is a tab's stack root rather than a
     /// pushed destination, so an unset case would be dead code.
     private let onOpenTeamSwitcher: () -> Void
-    /// DEP-280: bubbles a schedule-card tap up to DepthChartsTab, which owns the
-    /// NavigationStack that pushes Compare — TeamDetailView has no push destination of
-    /// its own (it's the stack root). Carries this team's id and the tapped game's
+    /// DEP-405: bubbles a schedule-card tap up through DepthChartsTab to RootTabView,
+    /// which owns the tab selection — it routes the matchup to CompareRouteStore and
+    /// switches to the Compare tab (DEP-280's push into this tab's stack is gone; the
+    /// tab switch is its replacement). Carries this team's id and the tapped game's
     /// opponent id, matching web's `?a=<teamId>&b=<opponentId>` compare-link params.
     private let onOpenCompare: (String, String) -> Void
     @State private var historyViewModel: HistoryViewModel

@@ -18,10 +18,6 @@ struct DepthChartsTab: View {
     /// `teamId` lets the (recreated) TeamDetailView open that player's profile once its
     /// snapshot resolves.
     @State private var pendingPlayerID: String?
-    /// DEP-280: set by a schedule-card tap (bubbled up through TeamDetailView), driving
-    /// the `.navigationDestination(item:)` push below. This tab owns the NavigationStack
-    /// TeamDetailView (the stack root) has none of its own, so the push lives here.
-    @State private var compareRequest: ScheduleCompareRequest?
 
     private let repository: CachingDepthRepository
     private let preferences: UserPreferences
@@ -34,6 +30,11 @@ struct DepthChartsTab: View {
     private let userSettingsStore: UserSettingsStore
     /// Cross-tab "open this team" requests (today: the uniform archive's kit sheet).
     private let teamRouteStore: TeamRouteStore
+    /// DEP-405: bubbles a schedule-card tap (up through TeamDetailView) to RootTabView,
+    /// which owns the tab selection — it writes the matchup to CompareRouteStore and
+    /// switches to the Compare tab. Required, not optional: the schedule→compare jump
+    /// is the only behavior this tab's onOpenCompare plumbing exists for.
+    private let onOpenCompare: (String, String) -> Void
     /// DEP-329: the uniform the user was viewing when they tapped "Open depth
     /// chart" from the uniform kit sheet — applied once on appear so the
     /// depth chart shows the originating kit, not whatever was last persisted.
@@ -47,7 +48,8 @@ struct DepthChartsTab: View {
         events: any AppEventsRecording = NoOpAppEventsRecorder(),
         currentTeamStore: CurrentTeamStore,
         userSettingsStore: UserSettingsStore,
-        teamRouteStore: TeamRouteStore
+        teamRouteStore: TeamRouteStore,
+        onOpenCompare: @escaping (String, String) -> Void
     ) {
         self.repository = repository
         self.preferences = preferences
@@ -57,6 +59,7 @@ struct DepthChartsTab: View {
         self.currentTeamStore = currentTeamStore
         self.userSettingsStore = userSettingsStore
         self.teamRouteStore = teamRouteStore
+        self.onOpenCompare = onOpenCompare
         _teamId = State(initialValue: StartupTeam.resolve(
             favoriteTeamId: userSettingsStore.favoriteTeamId,
             startOnFavorite: userSettingsStore.startOnFavorite,
@@ -78,24 +81,13 @@ struct DepthChartsTab: View {
                 currentTeamStore: currentTeamStore,
                 onOpenTeamSwitcher: { showSwitcher = true },
                 onOpenCompare: { teamAId, teamBId in
-                    compareRequest = ScheduleCompareRequest(teamAId: teamAId, teamBId: teamBId)
+                    onOpenCompare(teamAId, teamBId)
                 }
             )
             // Rebuilds the whole team-detail subtree (view model, unit picker, history,
             // overrides) when the switcher picks a different team — the SwiftUI
             // key-reset idiom, rather than mutating a view model in place.
             .id(teamId)
-            // DEP-280: push Compare pre-populated with the schedule card's two teams.
-            // A plain `.navigationDestination(item:)` push (not a sheet), so the pushed
-            // Compare screen gets the system back chevron + edge-swipe pop — the only
-            // back affordance (2026-08-23: the web-parity "Back to schedule" pill was
-            // removed as a duplicate; see DEP-325, the navigation-affordance audit).
-            .navigationDestination(item: $compareRequest) { request in
-                CompareView(
-                    repository: repository,
-                    preselectedTeamIds: (a: request.teamAId, b: request.teamBId)
-                )
-            }
         }
         .sheet(isPresented: $showSwitcher) {
             TeamSwitcherSheet(
@@ -164,15 +156,4 @@ struct DepthChartsTab: View {
             }
         }
     }
-}
-
-/// DEP-280: the `.navigationDestination(item:)` payload for a schedule-card-initiated
-/// compare push. `Identifiable` (not just `Equatable`) because `navigationDestination
-/// (item:)` requires it; `id` combines both team ids so two different matchups are
-/// treated as distinct pushes (relevant if a future compare screen ever lets you pick a
-/// different game while it's still on screen — today a new tap always pops first).
-private struct ScheduleCompareRequest: Identifiable, Hashable {
-    let teamAId: String
-    let teamBId: String
-    var id: String { "\(teamAId)-\(teamBId)" }
 }
