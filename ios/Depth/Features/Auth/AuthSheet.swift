@@ -20,7 +20,12 @@ struct AuthSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        DepthSheet(
+            title: viewModel.step == .success ? "" : "Sign In",
+            // The success step is the one place the sheet deliberately has no close:
+            // the only way forward is "Manage account settings", which dismisses itself.
+            showClose: viewModel.step != .success
+        ) {
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
                     switch viewModel.step {
@@ -36,18 +41,7 @@ struct AuthSheet: View {
                 .padding(DesignTokens.Spacing.md)
             }
             .scrollIndicators(.hidden)
-            .background(DesignTokens.Colors.bg)
-            .navigationTitle(viewModel.step == .success ? "" : "Sign In")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                if viewModel.step != .success {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") { dismiss() }
-                    }
-                }
-            }
         }
-        .presentationDetents([.large])
     }
 
     private var emailCard: some View {
