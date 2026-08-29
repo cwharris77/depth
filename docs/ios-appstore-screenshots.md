@@ -13,11 +13,18 @@ strongest surfaces and attaches a full-resolution PNG at each step:
 
 | # | File | Screen | Team | Suggested caption |
 | --- | --- | --- | --- | --- |
-| 1 | `01-depth-chart-offense.png` | Offensive depth chart | Seahawks | See every position at a glance. |
-| 2 | `02-depth-chart-defense.png` | Defensive depth chart | Broncos | Both sides of the ball. |
-| 3 | `03-team-stats.png` | Team stats | Chargers | The numbers behind the roster. |
-| 4 | `04-compare.png` | Compare, "By team" | Chiefs vs Eagles | Match up any two teams. |
-| 5 | `05-uniform-archive.png` | Uniform archive | all 32 | Every kit, every era. |
+| 1 | `01-depth-chart-offense.png` | Offensive depth chart | Seahawks | Depth charts for all 32 teams |
+| 2 | `02-depth-chart-defense.png` | Defensive depth chart | Broncos | Offense, defense and special teams |
+| 3 | `03-team-stats.png` | Team stats | Chargers | Team stats, records and rankings |
+| 4 | `04-compare.png` | Compare, "By team" | Chiefs vs Eagles | Compare any two teams head to head |
+| 5 | `05-uniform-archive.png` | Uniform archive | all 32 | See your team’s look across the eras |
+
+Captions are **ASO copy, not mood copy** (rewritten 2026-08-28): they carry the search terms the
+keyword field can't afford to repeat, and they deliberately contain **no "NFL" and no team
+marks** — the app identifies teams by name *inside itself* under the non-affiliation disclaimer,
+but listing copy is marketing, which is where an unlicensed mark starts implying endorsement.
+"Pro football" carries the same intent without the mark. See DEP-162's listing-copy section for
+the full set of store fields this matches.
 
 Teams are **pinned, not incidental** — reruns stay byte-comparable, and no single team
 dominates the listing. Shot 1 needs no navigation at all: screenshot mode clears

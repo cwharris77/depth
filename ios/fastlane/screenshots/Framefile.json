@@ -12,23 +12,23 @@
   "data": [
     {
       "filter": "01-depth-chart-offense",
-      "title": { "text": "See every position at a glance." }
+      "title": { "text": "Depth charts for all 32 teams" }
     },
     {
       "filter": "02-depth-chart-defense",
-      "title": { "text": "Both sides of the ball." }
+      "title": { "text": "Offense, defense and special teams" }
     },
     {
       "filter": "03-team-stats",
-      "title": { "text": "The numbers behind the roster." }
+      "title": { "text": "Team stats, records and rankings" }
     },
     {
       "filter": "04-compare",
-      "title": { "text": "Match up any two teams." }
+      "title": { "text": "Compare any two teams head to head" }
     },
     {
       "filter": "05-uniform-archive",
-      "title": { "text": "Every kit, every era." }
+      "title": { "text": "See your team’s look across the eras" }
     }
   ]
 }
