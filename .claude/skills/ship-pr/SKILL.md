@@ -62,6 +62,12 @@ per-run workaround.
 
 ### 4. Open the PR
 
+Use the repo's PR template as the source shape — the heredoc below mirrors it. For
+agent-generated bodies, `gh pr create` with `--body` bypasses the template, so keep
+the `## Screenshots` section (with its sentinels) in the body: fill it for UI changes
+(run `/pr-screenshots` on web, `/ios-screenshots` or `/ios-pr-screenshots` on iOS);
+remove it only for a non-UI PR.
+
 ```bash
 git push -u origin <branch>
 gh pr create --title "<same conventional title>" --body "$(cat <<'EOF'
@@ -78,6 +84,18 @@ gh pr create --title "<same conventional title>" --body "$(cat <<'EOF'
 <new/changed test files and what they cover; "tsc --noEmit + vitest green (N tests)">
 
 Verified live: <the sentence from step 2, UI changes only>
+
+## Screenshots
+
+<REQUIRED for ALL UI changes — web, iOS, or both. Delete this section for non-UI PRs.
+Web: run /pr-screenshots. iOS: comment /ios-screenshots or run /ios-pr-screenshots.
+Keep the sentinels below; the tool replaces the block in place.>
+
+<!-- screenshots-start -->
+
+<auto-filled by the screenshot pass>
+
+<!-- screenshots-end -->
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
@@ -120,7 +138,7 @@ gh pr merge <N> --squash --delete-branch
 | Tests | `npm test` (note the count) |
 | Live check | dev server via launch.json; write the "Verified live" sentence |
 | Title | `type(scope): message` — becomes `main` history |
-| Body | What / Why / Tests / footer |
+| Body | What / Why / Tests (+ `## Screenshots` for UI changes) / footer |
 | Merge | `gh pr merge --squash --delete-branch` only |
 
 ## Red flags — stop, you're about to violate the workflow

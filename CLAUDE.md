@@ -157,7 +157,11 @@ refactor (see §6).
 - **PR bodies follow the house shape**: `## What` / `## Why` / `## Tests` (or
   `## Verification`), ending with the "Generated with Claude Code" footer. The
   verification section carries *evidence*, not claims — test counts, and a "Verified
-  live: …" line describing what was actually seen in the browser.
+  live: …" line describing what was actually seen in the browser. **Start every PR
+  from the template** (`.github/pull_request_template.md`) and keep its sections —
+  agents: `gh pr create` without `--body`, or pass `--body-file` on the template, so
+  the `## Screenshots` section stays in and any UI change fills it (web:
+  `/pr-screenshots`; iOS: `/ios-screenshots` or `/ios-pr-screenshots`).
 - **Vercel preview browser QA starts with the bypass URL.** Protected preview
   deployments use Vercel's Protection Bypass for Automation. Keep the token only in
   `.env.local` as `X_VERCEL_PROTECTION_BYPASS`; never commit it. Before opening a
@@ -290,7 +294,8 @@ Adjectives don't count; these boxes do.
 - [ ] Diff contains only the stated concern; no unrelated reformatting
 - [ ] New/changed modules carry a role-and-constraint header comment
 - [ ] Conventional-commit title with a scope from the list in §3
-- [ ] PR body has What/Why/Tests-or-Verification and the footer
+- [ ] PR body starts from `.github/pull_request_template.md` (What/Why/Tests + footer);
+      the `## Screenshots` section is filled in for any UI change, not deleted
 - [ ] No new dependency (or explicit sign-off recorded in the PR body)
 
 **Schema change (additionally)**
