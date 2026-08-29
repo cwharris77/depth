@@ -3,9 +3,7 @@ import XCTest
 // Deterministic App Store screenshot capture (task-9d-screenshots-brief.md, DEP-162
 // blocker). Not part of the default `xcodebuild test` run — excluded via project.yml's
 // scheme `skippedTests` because it's a slow, human-triggered release-prep tool, not a
-// correctness gate. Screenshot #4 opens the reorder editor directly — DEP-219 made
-// editing local-first, so no signed-in session (or screenshot-only bypass) is needed to
-// reach it anymore. Run it via the one-command capture script (which boots a disposable
+// correctness gate. Run it via the one-command capture script (which boots a disposable
 // 6.9-inch simulator, normalizes the status bar, runs the test against the dedicated
 // Depth-AppStoreScreenshots scheme — no project.yml editing needed — and exports the
 // PNGs):
@@ -22,6 +20,17 @@ import XCTest
 //     -resultBundlePath /tmp/depth-screenshots.xcresult test
 //
 // See docs/ios-appstore-screenshots.md for the full workflow.
+//
+// The sequence was reselected 2026-08-28 (Cooper) around the surfaces that actually sell
+// the app — two depth-chart fields, stats, compare, uniforms — replacing the earlier
+// team-search / player-detail / reorder / schedule set. Two of those were actively weak:
+// the search shot rendered one result row above ~70% empty black while captioned "Every
+// team", and the reorder shot reused the same player card as the player-detail shot, so
+// two of five slots showed what read as the same image.
+//
+// Teams are pinned rather than incidental: Seahawks (already the launch default), Broncos
+// for defense, Chargers for stats, Chiefs/Eagles for compare. Pinning keeps reruns
+// byte-comparable and keeps one team from dominating the listing.
 final class AppStoreScreenshotsUITests: XCTestCase {
     func testCaptureAppStoreScreenshotSequence() throws {
         let app = XCUIApplication()
@@ -34,97 +43,166 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         app.launchArguments = ["UI_TESTING_APPSTORE_SCREENSHOTS", "UI_TESTING_REDUCE_MOTION"]
         app.launch()
 
-        // 1. Team selector/search — "Every team. One clear depth chart." The selector is
-        // no longer the app root (2026-08-15 navigation-parity spec); it is the switcher
-        // sheet, so this opens it explicitly. The five-shot sequence and its captions are
-        // otherwise unchanged.
+        // 1. Offensive depth chart — the hero shot. No navigation needed: screenshot mode
+        // clears `lastTeamId`, so startup falls back to StartupTeam.defaultTeamId
+        // ("seahawks") on the default offense unit.
         XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
         let switcher = app.buttons["team-switcher-button"]
         XCTAssertTrue(switcher.waitForExistence(timeout: 15), "the chart header should expose the team switcher")
-        switcher.tap()
+        XCTAssertTrue(
+            switcher.waitForLabel(containing: "Seahawks"),
+            "screenshot mode should start on the default team so this shot is deterministic"
+        )
+        XCTAssertTrue(
+            waitForFilledSlot(in: app),
+            "the offense should render at least one filled slot before capture"
+        )
+        attachScreenshot(name: "01-depth-chart-offense")
 
+        // 2. Defensive depth chart — a different team and unit, so the two field shots
+        // aren't near-duplicates of each other.
+        selectTeam(named: "Broncos", rowIdentifier: "team-row-broncos", switcher: switcher, app: app)
+        let defenseTab = app.buttons["unit-tab-defense"]
+        XCTAssertTrue(defenseTab.waitForExistence(timeout: 15), "the unit tab bar should offer Defense")
+        defenseTab.tap()
+        XCTAssertTrue(
+            waitForFilledSlot(in: app),
+            "the defense should render at least one filled slot before capture"
+        )
+        attachScreenshot(name: "02-depth-chart-defense")
+
+        // 3. Team stats.
+        selectTeam(named: "Chargers", rowIdentifier: "team-row-chargers", switcher: switcher, app: app)
+        let statsTab = app.buttons["page-switcher-stats"]
+        XCTAssertTrue(statsTab.waitForExistence(timeout: 15), "team detail should expose a Stats page tab")
+        statsTab.tap()
+        XCTAssertTrue(
+            element(app, identifier: "stats-content").waitForExistence(timeout: 20),
+            "the stats page should render production content"
+        )
+        // Switch to a completed season before capturing. Unlike Compare — which detects an
+        // empty current season and falls back on its own (see `compare-season-fallback`) —
+        // the stats page honours the current season literally, so before week 1 it renders
+        // an all-zero page: 0-0 record, 0 points for, 0 against. Accurate, but it reads as
+        // a broken app in a store listing.
+        //
+        // The year is pinned rather than derived: the picker's identifiers are
+        // season-numbered, and a manually-run release tool is better off failing loudly on
+        // a stale constant than silently capturing whatever season happens to sort first.
+        // Bump this once the current season has real data.
+        let seasonTrigger = app.buttons["stats-season-trigger"]
+        XCTAssertTrue(seasonTrigger.waitForExistence(timeout: 10), "the stats page should expose a season picker")
+        seasonTrigger.tap()
+        let completedSeason = app.buttons["stats-season-2025"]
+        XCTAssertTrue(
+            completedSeason.waitForExistence(timeout: 10),
+            "the season sheet should offer 2025 — bump this year once the current season has data"
+        )
+        completedSeason.tap()
+        XCTAssertTrue(
+            element(app, identifier: "stats-content").waitForExistence(timeout: 20),
+            "the stats page should re-render for the selected season"
+        )
+        attachScreenshot(name: "03-team-stats")
+
+        // 4. Compare, on the "By team" (matchup) tab with both slots filled.
+        let tabs = app.tabBars.firstMatch
+        XCTAssertTrue(tabs.waitForExistence(timeout: 10), "the app should present a bottom tab bar")
+        tabs.buttons["Compare"].tap()
+        pickCompareTeam(into: "a", query: "Chiefs", rowIdentifier: "team-row-chiefs", app: app)
+        pickCompareTeam(into: "b", query: "Eagles", rowIdentifier: "team-row-eagles", app: app)
+        // Select the matchup segment explicitly rather than trusting the default — the
+        // capture is only meaningful on "By team".
+        let byTeamTab = app.buttons["compare-tab-matchup"]
+        XCTAssertTrue(byTeamTab.waitForExistence(timeout: 10), "compare should offer the By team segment")
+        byTeamTab.tap()
+        XCTAssertTrue(
+            element(app, identifier: "compare-content").waitForExistence(timeout: 20),
+            "compare should render its comparison content once both slots are filled"
+        )
+        attachScreenshot(name: "04-compare")
+
+        // 5. Uniform archive — the top-level grid, not drilled into a team.
+        tabs.buttons["Uniforms"].tap()
+        XCTAssertTrue(
+            app.navigationBars["Uniforms"].waitForExistence(timeout: 15),
+            "the Uniforms tab should render its own navigation bar"
+        )
+        // The nav bar can exist before the grid has any rows, so wait for real content —
+        // same reasoning as the schedule capture's week-card wait.
+        let uniformTeam = app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier BEGINSWITH 'uniforms-team-'")
+        ).firstMatch
+        XCTAssertTrue(uniformTeam.waitForExistence(timeout: 20), "the archive should render at least one team's kits")
+        attachScreenshot(name: "05-uniform-archive")
+    }
+
+    // MARK: - Helpers
+
+    /// Look an element up by identifier without committing to an element *type*.
+    /// `stats-content` and `compare-content` both sit on ScrollViews, so querying
+    /// `app.otherElements` for them silently never resolves — the query is valid, it just
+    /// matches nothing, and the failure reads as "the page never rendered" rather than
+    /// "you asked the wrong collection". Type-agnostic lookup also survives one of these
+    /// containers changing from a ScrollView to something else.
+    private func element(_ app: XCUIApplication, identifier: String) -> XCUIElement {
+        app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+    }
+
+    /// Any filled depth-chart slot. Used as the "the field has actually rendered players"
+    /// signal before a capture — `unit-tab-*` existing only proves the chrome is up.
+    private func waitForFilledSlot(in app: XCUIApplication) -> Bool {
+        app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'player-slot-'")
+        ).firstMatch.waitForExistence(timeout: 20)
+    }
+
+    /// Switch the depth chart to another team through the switcher sheet. Waits for the
+    /// switcher to relabel before returning: selecting a team dismisses a sheet over the
+    /// already-mounted chart rather than pushing a fresh one, so waiting on slots alone
+    /// proves *a* chart is up, not that it's the requested team (same reasoning as
+    /// UITestHelpers' `selectTeam`).
+    private func selectTeam(
+        named name: String,
+        rowIdentifier: String,
+        switcher: XCUIElement,
+        app: XCUIApplication
+    ) {
+        switcher.tap()
         let searchField = app.searchFields.firstMatch
         XCTAssertTrue(searchField.waitForExistence(timeout: 15), "the switcher sheet should offer team search")
         searchField.tap()
-        searchField.typeText("Bills")
+        searchField.typeText(name)
 
-        let teamRow = app.buttons["team-row-bills"]
-        XCTAssertTrue(teamRow.waitForExistence(timeout: 15), "searching \"Bills\" should surface the Buffalo Bills row")
-        // Dismiss the keyboard before capturing — a raw post-typing screenshot would
-        // show the on-screen keyboard covering most of the result, which isn't a clean
-        // release screenshot (spec item 38's "inspect for clipping" concern applies to
-        // self-inflicted clipping too).
-        app.keyboards.buttons["Search"].tap()
-        attachScreenshot(name: "01-team-search")
-
-        // 2. Team depth chart — "See every position at a glance."
-        teamRow.tap()
-        // Selecting a team is a sheet dismiss over the previously-mounted chart, not a
-        // fresh push, so waiting on the unit picker/player slot alone doesn't prove the
-        // Bills chart is what's actually on screen — it proves *a* chart is. Wait for the
-        // switcher button to relabel for the Bills specifically first (see
-        // UITestHelpers.swift's `selectTeam` for the same reasoning).
+        let row = app.buttons[rowIdentifier]
+        XCTAssertTrue(row.waitForExistence(timeout: 15), "searching \"\(name)\" should surface \(rowIdentifier)")
+        row.tap()
         XCTAssertTrue(
-            switcher.waitForLabel(containing: "Buffalo Bills"),
-            "the switcher button should relabel for the Buffalo Bills once the switch completes"
+            switcher.waitForLabel(containing: name),
+            "the switcher button should relabel for the \(name) once the switch completes"
         )
-        let unitTab = app.buttons["unit-tab-offense"]
-        XCTAssertTrue(unitTab.waitForExistence(timeout: 15), "depth chart should render the unit tab bar once the team snapshot loads")
-        let playerSlot = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'player-slot-'")).firstMatch
-        XCTAssertTrue(playerSlot.waitForExistence(timeout: 15), "at least one filled depth-chart slot should be tappable")
-        attachScreenshot(name: "02-team-depth-chart")
+    }
 
-        // 3. Player detail — "Know who's next."
-        playerSlot.tap()
-        XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 10), "player detail should present")
-        XCTAssertTrue(app.staticTexts["player-profile-name"].waitForExistence(timeout: 10), "profile should show the player name")
-        attachScreenshot(name: "03-player-detail")
-        let closeButton = app.buttons["Close"]
-        XCTAssertTrue(closeButton.waitForExistence(timeout: 5))
-        closeButton.tap()
-        XCTAssertFalse(closeButton.waitForExistence(timeout: 3), "dismissing should close the player detail sheet")
+    /// Fill one compare slot through its picker sheet. Mirrors DepthUITests' `pickTeam`,
+    /// which is private to that suite.
+    private func pickCompareTeam(
+        into slot: String,
+        query: String,
+        rowIdentifier: String,
+        app: XCUIApplication
+    ) {
+        let slotButton = app.buttons["compare-slot-\(slot)"]
+        XCTAssertTrue(slotButton.waitForExistence(timeout: 15), "the \(slot) compare slot should exist")
+        slotButton.tap()
 
-        // 4. Personal reorder editing — "Make the chart yours." DEP-231 replaced the old
-        // per-position OverrideEditorSheet with an app-level "Edit Depth Chart" toggle
-        // (web's globalEditMode): toggling it on and opening a player card shows that
-        // card's position depth already in drag-to-reorder mode. Edit Depth Chart lives
-        // inside the ••• overflow menu.
-        let overflow = app.buttons["depth-chart-overflow"]
-        XCTAssertTrue(overflow.waitForExistence(timeout: 10), "team detail should expose the overflow menu")
-        overflow.tap()
-        let editToggle = app.buttons["edit-depth-order"]
-        XCTAssertTrue(editToggle.waitForExistence(timeout: 5), "the overflow menu should expose the Edit Depth Chart toggle")
-        editToggle.tap()
-        // Dismiss the overflow menu, then open a filled position slot — the card is now
-        // already in reorder mode (grip-led rows), no per-card Reorder tap needed.
-        let editSlot = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'player-slot-'")).firstMatch
-        XCTAssertTrue(editSlot.waitForExistence(timeout: 15))
-        editSlot.tap()
-        XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 10), "player detail should present in edit mode")
-        XCTAssertTrue(
-            app.descendants(matching: .any).matching(
-                NSPredicate(format: "identifier BEGINSWITH 'player-profile-depth-reorder-row-'")
-            ).firstMatch.waitForExistence(timeout: 10),
-            "global edit mode should show the card already reordering"
-        )
-        attachScreenshot(name: "04-reorder-editing")
-        app.buttons["Close"].tap()
+        let searchField = app.searchFields.firstMatch
+        XCTAssertTrue(searchField.waitForExistence(timeout: 10), "the picker sheet should offer team search")
+        searchField.tap()
+        searchField.typeText(query)
 
-        // 5. Schedule — "Context beyond the lineup." Round-4 (DEP-217): Schedule is now the
-        // middle page-switcher tab instead of a toolbar destination.
-        let scheduleTab = app.buttons["page-switcher-schedule"]
-        XCTAssertTrue(scheduleTab.waitForExistence(timeout: 10), "team detail should expose a Schedule page tab")
-        scheduleTab.tap()
-        XCTAssertTrue(app.otherElements["schedule-content"].waitForExistence(timeout: 15), "the schedule should render production content")
-        // `schedule-content` is the outer scroll container and can exist before its
-        // LazyVGrid actually renders any game cards — wait for a real week card too,
-        // same pattern DepthUITests.swift's testOpenTeamSchedule uses (Greptile P1 on
-        // this PR's first review).
-        let weekCard = app.descendants(matching: .any).matching(
-            NSPredicate(format: "identifier BEGINSWITH 'schedule-week-'")
-        ).firstMatch
-        XCTAssertTrue(weekCard.waitForExistence(timeout: 10), "the schedule should render at least one weekly card")
-        attachScreenshot(name: "05-schedule")
+        let row = app.buttons[rowIdentifier]
+        XCTAssertTrue(row.waitForExistence(timeout: 15), "searching \"\(query)\" should surface \(rowIdentifier)")
+        row.tap()
     }
 
     /// `XCUIScreen.main.screenshot()` captures the simulator's full physical framebuffer
