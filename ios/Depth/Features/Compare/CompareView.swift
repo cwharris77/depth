@@ -24,11 +24,21 @@ struct CompareView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var viewModel: CompareViewModel
+    /// DEP-405: the matchup this tab was routed to by a schedule-card tap, or nil for a
+    /// plain tab-bar visit. Non-nil is the analog of DEP-280's `enteredFromSchedule`: it
+    /// both re-seeds the view model's preselection and gates the "Back to schedule" pill
+    /// (the tab switch removed the pushed instance's system back chevron, so the pill is
+    /// the schedule-origin escape again). Consumed from `compareRouteStore`; cleared when
+    /// the pill is tapped, which resets the tab to its empty root state (DEP-280's pop).
+    @State private var scheduleMatchup: CompareRouteStore.CompareRouteRequest?
     private let repository: CachingDepthRepository
+    private let compareRouteStore: CompareRouteStore
 
-    init(repository: CachingDepthRepository, preselectedTeamIds: (a: String, b: String)? = nil) {
+    init(repository: CachingDepthRepository, compareRouteStore: CompareRouteStore) {
         self.repository = repository
-        _viewModel = State(initialValue: CompareViewModel(repository: repository, preselectedTeamIds: preselectedTeamIds))
+        self.compareRouteStore = compareRouteStore
+        _viewModel = State(initialValue: CompareViewModel(repository: repository))
+        _scheduleMatchup = State(initialValue: nil)
     }
 
     var body: some View {
@@ -92,6 +102,36 @@ struct CompareView: View {
                     )
                 }
         }
+        // DEP-405: a schedule-card tap writes the matchup to the store *and* switches the
+        // active tab in the same callback, so the request is always pending by the time
+        // this tab appears. `.onAppear` catches a first-ever visit (the store changed
+        // before this view existed, so `.onChange` never saw it); `.onChange` catches an
+        // already-visited instance the store update reaches while it's installed. Both
+        // run `applyPendingCompareRequest`, whose `consume()` makes the second a no-op.
+        .onAppear { applyPendingCompareRequest() }
+        .onChange(of: compareRouteStore.pendingRequest) { _, _ in
+            applyPendingCompareRequest()
+        }
+        // Rebuild the view model whenever the schedule-origin matchup changes — the
+        // `.id(teamId)` key-reset idiom applied to Compare's preselection, so a new
+        // schedule tap re-seeds both slots and the pill's tap returns the tab to its
+        // empty root state (DEP-280's pop) rather than carrying a stale matchup forward.
+        .onChange(of: scheduleMatchup) { _, matchup in
+            viewModel = CompareViewModel(
+                repository: repository,
+                preselectedTeamIds: matchup.map { (a: $0.teamAId, b: $0.teamBId) }
+            )
+            Task { await viewModel.load() }
+        }
+    }
+
+    /// Consumes a pending schedule-origin matchup from the store, if any, and applies it
+    /// as this tab's `scheduleMatchup` (which re-seeds the view model and shows the
+    /// "Back to schedule" pill). Idempotent: the store's `consume()` returns nil for any
+    /// later call, so a tab re-appearance never re-applies a consumed request.
+    private func applyPendingCompareRequest() {
+        guard let request = compareRouteStore.consume() else { return }
+        scheduleMatchup = request
     }
 
     @State private var showAccount = false
@@ -141,6 +181,10 @@ struct CompareView: View {
     private var compareContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm + 6) {
+                if scheduleMatchup != nil {
+                    backToScheduleButton
+                }
+
                 seasonRow
 
                 teamSlotRow
@@ -161,6 +205,33 @@ struct CompareView: View {
         }
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("compare-content")
+    }
+
+    /// DEP-405: the DEP-280 "Back to schedule" control, restored now that the schedule-
+    /// origin compare lives on the Compare *tab* rather than as a push — the tab switch
+    /// removed the system back chevron the pushed instance had, so this pill is the
+    /// schedule-origin escape again. Mirrors web's `scheduleTeam` link
+    /// (`/team/<id>/schedule`) and the original pill's `surfaceChip` vocabulary; instead
+    /// of popping, it clears the schedule-origin session and switches back to the Depth
+    /// Charts tab, whose TeamDetailView still has the Schedule page selected.
+    private var backToScheduleButton: some View {
+        Button {
+            scheduleMatchup = nil
+            DepthEnvironment.onboarding.activeTab = .depthCharts
+        } label: {
+            HStack(spacing: DesignTokens.Spacing.xs) {
+                Image(systemName: "arrow.left")
+                    .font(.caption2.weight(.bold))
+                Text("Back to schedule")
+                    .font(.caption.weight(.semibold))
+            }
+            .foregroundStyle(DesignTokens.Colors.textSecondary)
+            .padding(.horizontal, DesignTokens.Spacing.sm + 4)
+            .padding(.vertical, DesignTokens.Spacing.xs)
+            .background(DesignTokens.Colors.surfaceChip, in: Capsule())
+        }
+        .frame(minHeight: 44)
+        .accessibilityIdentifier("compare-back-to-schedule")
     }
 
     /// The season picker. Hidden until at least one team resolves, because the season list
