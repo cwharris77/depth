@@ -8,39 +8,48 @@ or `UI_TESTING_APPSTORE_SCREENSHOTS`.
 
 ## What it captures
 
-`AppStoreScreenshotsUITests.testCaptureAppStoreScreenshotSequence` walks one team (the
-Buffalo Bills — `bills`, the repo's existing stable fixture team) through the design
-spec's five-screenshot sequence and attaches a full-resolution PNG at each step. The app
-now launches directly into a depth chart (2026-08-15 navigation-parity spec) rather than
-a searchable team list, so screenshot #1 captures the team switcher sheet — opened via
-the `team-switcher-button` in the chart's navigation bar — instead of an app-root list;
-screenshots #2–#5 follow selecting the Buffalo Bills from that sheet, unchanged:
+`AppStoreScreenshotsUITests.testCaptureAppStoreScreenshotSequence` walks the app's five
+strongest surfaces and attaches a full-resolution PNG at each step:
 
-| # | File | Screen | Suggested caption |
-| --- | --- | --- | --- |
-| 1 | `01-team-search.png` | Team switcher sheet | Every team. One clear depth chart. |
-| 2 | `02-team-depth-chart.png` | Team depth chart | See every position at a glance. |
-| 3 | `03-player-detail.png` | Player detail | Know who's next. |
-| 4 | `04-reorder-editing.png` | Personal reorder editing | Make the chart yours. |
-| 5 | `05-schedule.png` | Schedule | Context beyond the lineup. |
+| # | File | Screen | Team | Suggested caption |
+| --- | --- | --- | --- | --- |
+| 1 | `01-depth-chart-offense.png` | Offensive depth chart | Seahawks | See every position at a glance. |
+| 2 | `02-depth-chart-defense.png` | Defensive depth chart | Broncos | Both sides of the ball. |
+| 3 | `03-team-stats.png` | Team stats | Chargers | The numbers behind the roster. |
+| 4 | `04-compare.png` | Compare, "By team" | Chiefs vs Eagles | Match up any two teams. |
+| 5 | `05-uniform-archive.png` | Uniform archive | all 32 | Every kit, every era. |
+
+Teams are **pinned, not incidental** — reruns stay byte-comparable, and no single team
+dominates the listing. Shot 1 needs no navigation at all: screenshot mode clears
+`lastTeamId`, so startup falls back to `StartupTeam.defaultTeamId` (`seahawks`).
 
 It runs against **Staging**, which (per `ios/xcconfig/Staging.xcconfig`'s
 `TODO(DEP-40 Lane B)`) currently points at the real production Supabase project — there
 is no separate staging seed to stand up for this, so "stable staging seed" means picking
-one already-stable team rather than fabricating fixture data.
+already-stable teams rather than fabricating fixture data.
 
-### Screenshot #4 — how reorder editing is reached signed-out
+### Why this sequence (2026-08-28)
 
-The original T9D implementation needed a judgment call here: the old per-position
-`OverrideEditorSheet` was gated on a real signed-in session, and the design spec's
-launch-mode requirement explicitly rules out fabricating a session ("without exposing an
-email or test secret"), so the capture added a narrow `isAppStoreScreenshotMode` bypass
-to open the sheet's authentic unsaved-drag-preview state. That bypass is **gone now**:
-DEP-219 made depth-chart editing local-first (no sign-in needed to reorder — only
-cross-device sync needs an account, matching web's `localStorage` model), and DEP-231
-replaced the standalone editor with an app-level "Edit Depth Chart" toggle. Screenshot #4
-today opens a real player card already in reorder mode via that toggle — genuinely
-reachable signed-out, no launch-argument special-casing in the app.
+It replaced an earlier team-search / depth-chart / player-detail / reorder / schedule set.
+Two of those shots were actively harmful and both passed their assertions perfectly — a
+reminder that this test proves *reachability*, never that a frame is worth uploading:
+
+- **Team search** typed a query before capturing, so it rendered one result row above
+  ~70% empty black while captioned "Every team."
+- **Reorder editing** reused the same player card as the player-detail shot. The only
+  visible difference was the row drag grips, so two of five slots showed what reads as the
+  same image at thumbnail size.
+
+### Screenshot #3 — why it selects a completed season
+
+The capture explicitly picks 2025 rather than accepting the default. Compare detects an
+empty current season and falls back on its own (`compare-season-fallback`); the stats page
+honours the current season literally, so before week 1 it renders an all-zero page — 0-0
+record, 0 points for, 0 against. Accurate, but it reads as a broken app in a listing.
+
+The year is pinned because the picker's identifiers are season-numbered
+(`stats-season-<year>`). **Bump it once the current season has real data** — a stale
+constant fails loudly, which is the right failure for a manually-run release tool.
 
 ## Running it
 
@@ -58,11 +67,11 @@ ios/scripts/capture-appstore-screenshots.sh
 Output lands raw (unframed, no alpha) in a deterministic, gitignored directory:
 
 ```
-Screenshots/<device>/01-team-search.png
-Screenshots/<device>/02-team-depth-chart.png
-Screenshots/<device>/03-player-detail.png
-Screenshots/<device>/04-reorder-editing.png
-Screenshots/<device>/05-schedule.png
+Screenshots/<device>/01-depth-chart-offense.png
+Screenshots/<device>/02-depth-chart-defense.png
+Screenshots/<device>/03-team-stats.png
+Screenshots/<device>/04-compare.png
+Screenshots/<device>/05-uniform-archive.png
 ```
 
 where `<device>` is the resolved simulator type slug (e.g. `iPhone-17-Pro-Max`).
@@ -123,9 +132,9 @@ xcrun xcresulttool get test-results attachments \
 (On older Xcode/`xcresulttool` versions without the `test-results attachments`
 subcommand, use `xcrun xcresulttool export attachments --legacy` instead — check
 `xcrun xcresulttool --help` for what's available on the toolchain you're running.) Each
-attachment is exported with its `name` as the filename prefix (`01-team-search...png`,
+attachment is exported with its `name` as the filename prefix (`01-depth-chart-offense...png`,
 etc.) alongside a manifest — rename each export to drop the `xcresulttool` suffix (so the
-file is exactly `01-team-search.png` etc.) and inspect every image at full size before
+file is exactly `01-depth-chart-offense.png` etc.) and inspect every image at full size before
 upload for clipping, stale data, placeholder artifacts, simulator chrome, personal
 information, unlicensed assets, and inconsistent status-bar time (design spec item 38).
 
@@ -147,7 +156,7 @@ bundle exec fastlane frameit download_frames   # caches device bezels in ~/.fram
 
 Then, after exporting the PNGs above into `ios/fastlane/screenshots/en-US/` (rename each
 export to drop `xcresulttool`'s manifest suffix, so the file is exactly
-`01-team-search.png` etc. — `ios/fastlane/screenshots/Framefile.json`'s `filter` keys
+`01-depth-chart-offense.png` etc. — `ios/fastlane/screenshots/Framefile.json`'s `filter` keys
 match on that base name):
 ```
 cd ios && bundle exec fastlane frameit path:./fastlane/screenshots
