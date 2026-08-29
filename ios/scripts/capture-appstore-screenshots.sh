@@ -20,11 +20,11 @@
 #   4. Exports the five XCTAttachment PNGs from the .xcresult and writes them raw — no
 #      bezel, no frameit, no caption — to a deterministic output directory:
 #
-#          Screenshots/<device>/01-team-search.png
-#          Screenshots/<device>/02-team-depth-chart.png
-#          Screenshots/<device>/03-player-detail.png
-#          Screenshots/<device>/04-reorder-editing.png
-#          Screenshots/<device>/05-schedule.png
+#          Screenshots/<device>/01-depth-chart-offense.png
+#          Screenshots/<device>/02-depth-chart-defense.png
+#          Screenshots/<device>/03-team-stats.png
+#          Screenshots/<device>/04-compare.png
+#          Screenshots/<device>/05-uniform-archive.png
 #
 #   5. Verifies the artifacts automatically: exactly five files, each at the exact current
 #      App Store Connect 6.9-inch portrait resolution (1320×2868) with no alpha channel.
@@ -49,8 +49,9 @@
 #
 # Staging config: runs against real production Supabase (xcconfig/Staging.xcconfig's
 # TODO(DEP-40 Lane B) — no dedicated staging project exists), same as every other
-# DepthUITests run. "Stable staging seed" is the Buffalo Bills, the repo's established
-# fixture team; the screenshots never show a signed-in session or real credentials.
+# DepthUITests run. "Stable staging seed" means pinned real teams (Seahawks, Broncos,
+# Chargers, and Chiefs/Eagles for compare) rather than fabricated fixture data, so reruns
+# stay byte-comparable; the screenshots never show a signed-in session or real credentials.
 set -euo pipefail
 
 # ---- flags ----
@@ -164,11 +165,11 @@ xcrun xcresulttool export attachments --path "$XCRESULT" --output-path "$EXPORT_
 # manifest.json — map via the manifest and rename to the deterministic
 # "<index>-<name>.png" the docs and App Store Connect workflow expect.
 declare -a NAMES=(
-  "01-team-search"
-  "02-team-depth-chart"
-  "03-player-detail"
-  "04-reorder-editing"
-  "05-schedule"
+  "01-depth-chart-offense"
+  "02-depth-chart-defense"
+  "03-team-stats"
+  "04-compare"
+  "05-uniform-archive"
 )
 rm -rf "$OUT_DIR"/*.png 2>/dev/null || true
 for name in "${NAMES[@]}"; do
@@ -215,6 +216,6 @@ echo "Before uploading, inspect every PNG at full size for (design spec item 38)
 echo "  - clipping or placeholder/shimmer artifacts"
 echo "  - stale data or inconsistent status-bar time"
 echo "  - simulator chrome (bezel — should be none: the framebuffer excludes it)"
-echo "  - personal information (none expected: signed-out, Buffalo Bills roster only)"
+echo "  - personal information (none expected: signed-out, public roster data only)"
 echo "  - unlicensed assets"
 echo "Optional marketing framing (bezel + caption) via frameit — see docs/ios-appstore-screenshots.md."
