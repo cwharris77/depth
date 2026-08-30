@@ -1,15 +1,17 @@
-# Native iOS PR screenshot capture (agent-triggered)
+# Native iOS PR screenshot capture
 
-The iOS analog of checking a web PR's Vercel build. An agent (or Cooper) that changed an
-iOS screen triggers a capture of that screen as PNGs — driven by a headless XCUITest on a
-**disposable simulator**, so nothing stays booted and no shared local simulator pool is
-needed (the pool-starving-RAM problem from parallel worktrees). The PNGs are consumed
-like a preview URL: read them back, don't hold a live sim.
+The iOS analog of checking a web PR's Vercel build. Every PR that touches iOS UI ships
+with screenshots **in its body** — captured locally (no CI action) by a headless
+XCUITest on a **disposable simulator**, so nothing stays booted and no shared local
+simulator pool is needed (the pool-starving-RAM problem from parallel worktrees). The
+PNGs are consumed like a preview URL: read them back, don't hold a live sim.
 
-This is not an automated per-PR gate. It's an **on-demand** tool an agent invokes when it
-edits an iOS screen and wants to confirm how it renders — the same role `/pr-screenshots`
-plays for web. See `docs/ios-appstore-screenshots.md` for the sibling, fixed-sequence
-release-prep capture; this one is parameterized by target.
+The driver is `ios/scripts/pr-screenshots.sh`: it decides which screens the diff can
+reach (see "Every UI PR ships screenshots in the body" below), captures, diffs, uploads,
+and fills the PR body. The underlying pieces (`screenshot-check.sh`, the
+`Depth-PRScreenshots` scheme, `PRScreenshotsUITests`) are the same on-demand machinery
+the old GitHub Action used — just run locally now. See
+`docs/ios-appstore-screenshots.md` for the sibling, fixed-sequence release-prep capture.
 
 ## What it captures
 
@@ -35,11 +37,24 @@ tokens) falls back to `field` so a capture never silently produces zero screensh
 
 ## Running it
 
-### Easy path — `ios/scripts/screenshot-check.sh`
+### For a PR: `ios/scripts/pr-screenshots.sh` (the one command)
+
+The driver every UI PR runs via the `ship-pr` skill. Decides targets from the diff,
+captures, diffs, uploads, and fills a PR body file — see **"Every UI PR ships
+screenshots in the body"** below for the full pipeline.
+
+```sh
+# from the repo root, after the branch is committed:
+ios/scripts/pr-screenshots.sh --body-file /tmp/pr-body.md
+gh pr create --body-file /tmp/pr-body.md
+```
+
+### Manual capture: `ios/scripts/screenshot-check.sh`
 
 A wrapper that does everything: builds the current worktree's app, boots a disposable
 simulator, runs the capture test, exports the PNGs, and shuts the sim down. Uses a
 worktree-local `ios/.derivedData` (gitignored) so parallel worktrees don't collide.
+Targets come from `ios/scripts/suggest-pr-targets.sh` (diff-driven) or `-t`.
 
 ```sh
 # Capture the depth-chart field (default) from the current code:
@@ -48,12 +63,14 @@ ios/scripts/screenshot-check.sh
 # Capture the field and both attribution placements:
 ios/scripts/screenshot-check.sh -t field,field-footer,formations
 
-# Capture "before" from main + "after" from your branch (before/after pair):
+# Capture "before" from main + "after" from your branch (before/after pair).
+# This also runs the visual diff and writes diff/<target>.diff.png + summary.json:
 ios/scripts/screenshot-check.sh --base main -t field,field-footer,formations
 ```
 
-Output: `ios/.pr-screenshots/after/<target>.png` (and `before/` when `--base` given) —
-gitignored, never committed. See the script's `-h` for all flags.
+Output: `ios/.pr-screenshots/after/<target>.png` (and `before/` when `--base` given),
+plus `diff/` (visual diff) — gitignored, never committed. See the script's `-h` for
+all flags.
 
 ### Raw `xcodebuild` path
 
@@ -99,45 +116,60 @@ for a PR decision.
 > `ios/Depth.xcodeproj/xcshareddata/xcschemes/` — it must ship with the code the workflow
 > references.
 
-## GitHub Actions workflow (`.github/workflows/ios-pr-screenshots.yml`)
+## Every UI PR ships screenshots in the body — `ios/scripts/pr-screenshots.sh`
 
-On a PR, the repo owner or a collaborator writes a comment:
+The UI-screenshot pass for PRs is **local and deterministic** — no GitHub Action. The
+Action was removed (`.github/workflows/ios-pr-screenshots.yml`): it ran only when
+someone remembered to comment `/ios-screenshots`, burned ~15 min of macOS runner,
+and posted a *comment* instead of filling the PR body.
 
-- `/ios-screenshots` — captures the default `field` target
-- `/ios-screenshots field,uniform` — captures those two
+`ios/scripts/pr-screenshots.sh` replaces it with one local command that the `ship-pr`
+skill runs for every PR before `gh pr create`:
 
-The workflow passes the targets to the test runner by baking `SCREENSHOT_TARGETS` into the
-scheme's TestAction environment variable (via `xcodegen generate` + a `perl` patch on the
-generated `Depth-PRScreenshots.xcscheme`) — the only channel that reliably reaches the
-XCUITest runner. Passing it as a plain process env var to `xcodebuild test` does NOT
-reach the runner (DEP-280), so the scheme env is the transport.
+1. **Decides targets from the diff** — `suggest-pr-targets.sh` matches changed files
+   against `ios/scripts/pr-target-map.txt` (screenmap-style "suspects", native
+   SwiftUI edition). No iOS UI touched → the `## Screenshots` section is stripped
+   from the body. iOS touched but no target matches → warns and defaults to `field`.
+2. **Captures** via `screenshot-check.sh --base <ref>` (before/after on a disposable
+   simulator, status bar frozen at 9:41).
+3. **Computes the visual diff** — `scripts/diff-pr-screenshots.mts` (screenmap-style):
+   a `<target>.diff.png` with changed regions tinted + boxed, plus `summary.json`
+   with per-target verdicts (`changed %` / `unchanged`).
+4. **Uploads to Cloudinary** (the uploader `/pr-screenshots` already uses) and
+   **fills the `## Screenshots` block** in the PR body file — a Target | Before |
+   After | Diff table with the URLs, cell-level "unchanged"/"changed (N%)" notes.
 
-The workflow captures **before** (the PR's base branch) then **after** (the PR head) —
-sequential on the same GitHub-hosted `macos-latest` runner, booting one **disposable**
-current-flagship iPhone simulator for both — and:
+```sh
+# build the body from the template, then:
+ios/scripts/pr-screenshots.sh --body-file /tmp/pr-body.md   # fills or strips ## Screenshots
+gh pr create --body-file /tmp/pr-body.md
+```
 
-1. Uploads the full-res PNGs as a `pr-ios-screenshots` workflow artifact (30-day retention), and
-2. Uploads width-500 JPEG previews to Cloudinary and posts a PR comment that embeds them
-   inline as `![before](...)` / `![after](...)` markdown (external image URLs render in
-   comments; data-URI images do not). Same unsigned-preset upload as the web
-   `/pr-screenshots` skill, under a `pr-ios-screenshots/<repo>/<pr>` folder.
+`--base <ref>` defaults to `main` (falls back to `origin/main`, then after-only).
+Cloudinary absent → captures stay on disk and the body notes the paths (degraded,
+not blocked — the exit code stays 0 so the PR still opens).
 
-Cloudinary env vars `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_UPLOAD_PRESET` (the non-secret
-unsigned preset from `/setup-pr-screenshots`) must exist as repo secrets for the inline
-embed to work; the artifact download is still posted if they're absent.
+**CI enforces this.** `.github/workflows/ci.yml` runs a cheap `ios-ui-screenshots` gate
+on every PR: if the diff touches `ios/Depth/**` and the body has no real screenshot
+table (`![…](https://…)` images + the end sentinel, or the degraded no-Cloudinary note),
+the job fails with instructions to run `ios/scripts/pr-screenshots.sh` and push again. It
+never *captures* in CI (that was the slow Action you deleted) — it only verifies the body,
+so it can't be forgotten and costs ~0 (no build, no macOS runner).
 
-Why the dedicated scheme rather than editing the default one: the default scheme's
-`skippedTests` can't be overridden by `-only-testing` (documented friction in
-`docs/ios-appstore-screenshots.md`), so a parallel scheme is the clean way to keep the
-capture out of main CI while still making it directly invocable.
+The still-relevant mechanics from the old workflow carry over unchanged:
 
-This is exactly the "check the Vercel build" pattern: an agent triggers it, GitHub's
-macOS does the heavy lifting, and the artifact is the preview you inspect — no shared
-local Simulator, no booted-sim RAM contention across parallel worktrees.
-
-This repo is public, so the workflow gates the trigger: only the repo owner or a
-collaborator may invoke it (an `authz` step fails fast on any other commenter) — keeps
-unlimited macOS build minutes from being farmable by a passerby comment.
+- **Targets reach the runner via the scheme env var.** `xcodegen generate` + a
+  `perl` patch bakes `SCREENSHOT_TARGETS` into the generated
+  `Depth-PRScreenshots.xcscheme`'s TestAction env — the only channel that reliably
+  reaches the XCUITest runner (DEP-280). A plain process env var to
+  `xcodebuild test` does NOT reach it.
+- **Why the dedicated scheme.** The default `Depth` scheme's `skippedTests` can't be
+  overridden by `-only-testing`, so `Depth-PRScreenshots` is the parallel scheme that
+  keeps the capture out of main CI while staying directly invocable.
+- **Cloudinary** uses the same non-secret unsigned preset as `/pr-screenshots`
+  (`CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_UPLOAD_PRESET`), under a
+  `pr-ios-screenshots/<repo>/<head-sha>` folder. External image URLs render in the
+  PR body; data-URI images do not.
 
 ## Notes / caveats
 
@@ -145,8 +177,9 @@ unlimited macOS build minutes from being farmable by a passerby comment.
   `TODO(DEP-40 Lane B)`). Captures read real production data via the stable Bills fixture.
 - **Screenshots are for visual decision support, not pixel-perfect CI gates.** Treat "does
   it look right" as the signal, same as a Vercel preview URL.
-- **Never commit the exported PNGs.** They're a workflow artifact / `xcresult`
-  attachment, not source (same rule as `docs/ios-appstore-screenshots.md`).
+- **Never commit the exported PNGs.** They're scratch output in `ios/.pr-screenshots/`
+  (gitignored), uploaded to Cloudinary for the PR body — not source (same rule as
+  `docs/ios-appstore-screenshots.md`).
 - **Add targets by appending a token + a `if requested.contains(...)` block** in
   `PRScreenshotsUITests.swift`. Keep it to a handful of high-signal screens (YAGNI — don't
   enumerate every tab).

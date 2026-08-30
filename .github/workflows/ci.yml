@@ -31,3 +31,55 @@ jobs:
       - run: npm run format:check
       - run: npx tsc --noEmit
       - run: npm test
+
+  # Screenshots gate: A PR that touches iOS app sources MUST carry real screenshots in
+  # its body, not the template's "Table auto-fills here after the screenshot pass"
+  # placeholder. Capture is LOCAL (ios/scripts/pr-screenshots.sh — no CI action), so CI
+  # only verifies the body — this job is cheap (fast string check, no build, no macOS)
+  # and cannot be forgotten. On failure the agent runs the driver and pushes again.
+  ios-ui-screenshots:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Check iOS UI PR has real screenshots in the body
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.issue.number;
+
+            // Does the PR's diff touch iOS app sources (ios/Depth/**)?
+            const diff = await github.rest.pulls.listFiles({
+              owner, repo, pull_number: pr, per_page: 100,
+            });
+            const touchesiOSUI = diff.data.some((f) =>
+              f.filename.startsWith('ios/Depth/'));
+            if (!touchesiOSUI) {
+              console.log('No iOS app sources in this PR — screenshots not required.');
+              return;
+            }
+
+            const { data: prData } = await github.rest.pulls.get({ owner, repo, pull_number: pr });
+            const body = prData.body ?? '';
+            // A real screenshot table has markdown image links with http(s) URLs
+            // (e.g. | field | ![before](https://…) |). Match image syntax + URL.
+            const hasReal = /!\[[^\]]*\]\(https?:/i.test(body) && body.includes('screenshots-end');
+            const isAfterOnly = body.includes('Captured locally (no Cloudinary');
+
+            if (!hasReal && !isAfterOnly) {
+              core.setFailed(
+                `This PR touches iOS app sources (ios/Depth/**) but the ## Screenshots block in the body is not filled.\n\n` +
+                `Run the screenshot driver before pushing:\n` +
+                `  ios/scripts/pr-screenshots.sh --body-file <path-to-pr-body>\n` +
+                `then push again. It decides targets from the diff, captures before/after + a boxed visual diff, ` +
+                `uploads to Cloudinary, and fills the ## Screenshots table. ` +
+                `If it found no coverage (a map gap), it defaults to 'field'. ` +
+                `See docs/ios-pr-screenshots.md.`
+              );
+            } else {
+              console.log('Screenshots present in the body — gate passed.');
+            }

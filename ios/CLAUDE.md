@@ -171,6 +171,11 @@ Everything in root `CLAUDE.md` §5's "Any code PR" checklist applies. Additional
       scoped to the suites the diff touches — `DepthTests` for data/domain,
       `DepthUITests`/`AccessibilityUITests`/`ShareUITests` for the flows changed
       (root `CLAUDE.md` §5's iOS bullet points here for the full rule).
+- [ ] **Visual/screen-touching change: the PR body's `## Screenshots` block is filled,
+      not the template placeholder.** Every iOS UI PR runs
+      `ios/scripts/pr-screenshots.sh --body-file <body>` before `gh pr create` (see
+      `docs/ios-pr-screenshots.md`). CI enforces this — a failing `ios/*` screenshots
+      gate means run it and push again.
 - [ ] For a behavior that already shipped on the frozen web app: reference the live site
       for what it *was* ("what did web do?") — see §6. New features define the iOS-native
       way; "web does it this way" is never a justification by itself.

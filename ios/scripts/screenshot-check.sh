@@ -26,6 +26,11 @@
 #   -h             Help
 #
 # Outputs PNGs to ./ios/.pr-screenshots/<target>.png (after/) and, with --base, ./before/.
+# With --base, after both sides are captured it also runs scripts/diff-pr-screenshots.mts
+# to produce ios/.pr-screenshots/diff/<target>.diff.png (screenmap-style before/after
+# visual diff — changed regions tinted + boxed) plus diff/summary.json. The status bar
+# is frozen at 9:41 on every disposable sim so before/after pixels differ only where
+# the app differs.
 # Prints their paths when done. Bundle ID is read from the built app (defaults to
 # com.cwharris.depth).
 #
@@ -90,6 +95,9 @@ capture_one() {
   echo "Booted disposable sim: $DEVICE_ID" >&2
   xcrun simctl boot "$DEVICE_ID"
   xcrun simctl bootstatus "$DEVICE_ID" -b >/dev/null 2>&1 || true
+  # Freeze the status bar at 9:41 so before/after pixels differ only where the app
+  # differs (same trick screenmap uses) — makes the visual diff output meaningful.
+  xcrun simctl status_bar override "$DEVICE_ID" --time "9:41" >/dev/null 2>&1 || true
 
   echo "Building + running PRScreenshotsUITests ($CONFIG, targets: $TARGETS)…" >&2
   ( cd "$wt/ios" && xcodegen generate ) >/dev/null 2>&1
@@ -145,7 +153,23 @@ if [ -n "$BASE_REF" ]; then
   git -C "$REPO_ROOT" worktree remove "$WORKTREE" --force 2>/dev/null || true
 fi
 
+# ---- visual diff: only meaningful when both sides exist ----
+if [ -d "$OUT_DIR/before" ] && [ -d "$OUT_DIR/after" ]; then
+  if [ -x "$REPO_ROOT/node_modules/.bin/tsx" ]; then
+    echo
+    echo "=== Computing before/after visual diff (scripts/diff-pr-screenshots.mts)… ===" >&2
+    DIFF_DIR="$OUT_DIR/diff"
+    mkdir -p "$DIFF_DIR"
+    "$REPO_ROOT/node_modules/.bin/tsx" "$REPO_ROOT/scripts/diff-pr-screenshots.mts" \
+      --before "$OUT_DIR/before" --after "$OUT_DIR/after" --out "$DIFF_DIR" \
+      || echo "WARNING: diff step failed — screenshots are still captured" >&2
+  else
+    echo "WARNING: tsx not found (npm install) — skipping visual diff" >&2
+  fi
+fi
+
 echo
 echo "Done. PNGs in: $OUT_DIR"
 echo "  before/ → $([ -d "$OUT_DIR/before" ] && echo present || echo '(none)')"
 echo "  after/  → present"
+echo "  diff/   → $([ -d "$OUT_DIR/diff" ] && echo present || echo '(none)')"
