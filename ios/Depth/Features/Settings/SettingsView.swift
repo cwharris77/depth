@@ -267,11 +267,7 @@ struct SettingsView: View {
     private var favoriteTeamPicker: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
             if settingsStore.isLoading {
-                RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
-                    .fill(DesignTokens.Colors.surfacePlaceholder)
-                    .frame(height: 44)
-                    .redacted(reason: .placeholder)
-                    .accessibilityHidden(true)
+                FavoriteTeamPickerSkeleton()
                     .accessibilityIdentifier("settings-favorite-loading")
             } else {
                 // Custom-label `Menu`, not `Picker(.menu)` — see the Player Names row's
@@ -503,5 +499,36 @@ struct SettingsView: View {
         } catch {
             signOutError = .server
         }
+    }
+}
+
+// MARK: - Loading skeleton
+
+/// DEP-319: skeleton for the favorite-team picker row while the server row
+/// is loading. Mirrors the loaded row's layout (icon badge, label, value,
+/// chevron) so the transition to the real content is smooth with no layout
+/// shift. Uses the shared `surfacePlaceholder` fill and `redacted` pattern
+/// from `TeamRowSkeleton` and `PlayerStatsSkeleton`.
+private struct FavoriteTeamPickerSkeleton: View {
+    var body: some View {
+        HStack(spacing: DesignTokens.Spacing.md) {
+            Circle()
+                .fill(DesignTokens.Colors.surfacePlaceholder)
+                .frame(width: 28, height: 28)
+            RoundedRectangle(cornerRadius: 4)
+                .fill(DesignTokens.Colors.surfacePlaceholder)
+                .frame(maxWidth: 100, maxHeight: 14)
+            Spacer()
+            RoundedRectangle(cornerRadius: 4)
+                .fill(DesignTokens.Colors.surfacePlaceholder)
+                .frame(maxWidth: 60, maxHeight: 14)
+            RoundedRectangle(cornerRadius: 4)
+                .fill(DesignTokens.Colors.surfacePlaceholder)
+                .frame(width: 16, height: 16)
+        }
+        .frame(maxWidth: .infinity, minHeight: 44)
+        .redacted(reason: .placeholder)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Loading favorite team")
     }
 }
