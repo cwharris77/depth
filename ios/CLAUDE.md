@@ -15,6 +15,15 @@ only as *reference* for a behavior that already exists there. Never port web's l
 component/class; match its *behavior*, not its markup — and only when the behavior is
 worth carrying forward.
 
+**Default search scope is `ios/`.** Unless the ticket explicitly says to check web's
+existing behavior for parity (or touches shared backend — `supabase/`, `fixtures/`),
+grep/find only inside `ios/` — don't speculatively search or read `app/`, `components/`,
+`lib/`, or `public/`. Those are the frozen web app; wandering into them on a plain iOS
+ticket wastes tool calls chasing dead ends (confirmed: a same-day audit had an agent
+read two unrelated web files, `components/ui/Coachmark.tsx` and
+`lib/utils/nav-drawer-coachmark.ts`, before finding the real iOS coachmark system in
+`ios/Depth/Features/Onboarding/`, purely because its first search wasn't scoped).
+
 ## 1. What this app is
 
 Native SwiftUI companion to the web app (parent spec:
