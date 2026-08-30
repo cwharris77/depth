@@ -63,43 +63,44 @@ per-run workaround.
 ### 4. Open the PR
 
 Use the repo's PR template as the source shape — the heredoc below mirrors it. For
-agent-generated bodies, `gh pr create` with `--body` bypasses the template, so keep
-the `## Screenshots` section (with its sentinels) in the body: fill it for UI changes
-(run `/pr-screenshots` on web, `/ios-screenshots` or `/ios-pr-screenshots` on iOS);
-remove it only for a non-UI PR.
+agent-generated bodies, `gh pr create` with `--body` bypasses the template, so build the
+body from a template copy and let `ios/scripts/pr-screenshots.sh` handle the
+`## Screenshots` section: it decides targets from the diff, captures before/after + a
+boxed visual diff on a disposable simulator, uploads to Cloudinary, and fills the
+section — or strips it when the PR touches no iOS UI. (Web-only UI changes on the frozen
+web app: run `/pr-screenshots` and let it replace the block.)
 
 ```bash
 git push -u origin <branch>
-gh pr create --title "<same conventional title>" --body "$(cat <<'EOF'
-## What
 
-<what changed, user-visible first; bullet the mechanism — name the functions/files>
+BODY=$(mktemp -d)/pr-body.md
+cp .github/pull_request_template.md "$BODY"
+# fill in the template's What / Why / Tests / Verified live from step 2, keeping the
+# ## Screenshots section and both sentinels in place (edit "$BODY" with your editor)
 
-## Why
+# iOS UI touched → fills the ## Screenshots table; no iOS UI → strips the section.
+# Stacked PR: add --base <parent-branch> so "before" is the parent, not main.
+ios/scripts/pr-screenshots.sh --body-file "$BODY"
 
-<the reason this exists; one short paragraph. Omit the section only if What already says it>
+gh pr create --title "<same conventional title>" --body-file "$BODY"
+```
 
-## Tests
+The resulting body keeps the house shape — `## What` / `## Why` / `## Tests`
+(+ `## Screenshots` for UI changes) / footer — with the screenshot table between the
+sentinels:
 
-<new/changed test files and what they cover; "tsc --noEmit + vitest green (N tests)">
-
-Verified live: <the sentence from step 2, UI changes only>
+```markdown
+<!-- screenshots-start -->
 
 ## Screenshots
 
-<REQUIRED for ALL UI changes — web, iOS, or both. Delete this section for non-UI PRs.
-Web: run /pr-screenshots. iOS: comment /ios-screenshots or run /ios-pr-screenshots.
-Keep the sentinels below; the tool replaces the block in place.>
+| Target | Before | After | Diff |
+| --- | --- | --- | --- |
+| field | ![before](https://…) | ![after](https://…) | ![diff](https://…) <br>_changed (2.5%)_ |
 
-<!-- screenshots-start -->
-
-<auto-filled by the screenshot pass>
+_Captured by `ios/scripts/pr-screenshots.sh` on a disposable simulator (staging, stable Bills fixture). Diff = changed regions tinted + boxed._
 
 <!-- screenshots-end -->
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-EOF
-)"
 ```
 
 ### 5. CI, then squash-merge
