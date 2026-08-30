@@ -32,7 +32,7 @@ import {
   SEASONS_MIN,
   type RosterHistoryInsert,
 } from '@/lib/nflverse/roster-history';
-import { parseSeasonsArg } from '@/lib/nflverse/seasons-arg';
+import { parseSeasonsArg } from '@/lib/utils/ingest/seasons-arg';
 import { buildRosterHistorySeedSql } from '@/lib/nflverse/seed-sql';
 import type { Database } from '@/lib/database.types';
 

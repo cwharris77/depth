@@ -42,7 +42,7 @@ import { toTeamRecords, type TeamAlignment, type TeamRecordInsert } from '@/lib/
 import { FormationAccumulator, type ParticipationRow } from '@/lib/nflverse/participation';
 import { DefenseFormationAccumulator } from '@/lib/nflverse/defense-participation';
 import { resolveTeamCode } from '@/lib/nflverse/team-codes';
-import { parseSeasonsArg } from '@/lib/nflverse/seasons-arg';
+import { parseSeasonsArg } from '@/lib/utils/ingest/seasons-arg';
 import { SEASONS_MIN } from '@/lib/nflverse/roster-history';
 import { ingestRecentSnapSeason, ingestRecentSnapSeasons } from '@/lib/nflverse/snap-counts-ingest';
 import type { RecentSnapSummaryInsert, SnapCountsDiagnostics } from '@/lib/nflverse/snap-counts';
