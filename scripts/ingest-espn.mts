@@ -29,7 +29,7 @@ import {
 import { notifyRevalidate } from '@/lib/utils/ingest/notify-revalidate';
 import { currentSeasonOf, nflSeasonState } from '@/lib/utils/team/season-state';
 import { TEAMS } from '@/lib/teams/index';
-import { parseSeasonsArg } from '@/lib/nflverse/seasons-arg';
+import { parseSeasonsArg } from '@/lib/utils/ingest/seasons-arg';
 import type { EspnDepthcharts, EspnRoster, EspnTeamInfo } from '@/lib/espn/types';
 import type { TeamRoster, TeamStats } from '@/lib/types';
 import type { Database } from '@/lib/database.types';
