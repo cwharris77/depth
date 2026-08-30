@@ -83,19 +83,34 @@ struct TeamListView: View {
     private var content: some View {
         switch viewModel.loadState {
         case .loading:
-            // Hiding the placeholder rows keeps VoiceOver from reading eight blank
-            // stand-ins, but a fully hidden screen announces nothing at all — the
-            // container carries the state instead.
-            List(0..<8, id: \.self) { _ in
-                TeamRowSkeleton().accessibilityHidden(true)
+            // The skeleton mirrors the loaded state's structure — conference
+            // picker placeholder on top, then grouped division sections — so
+            // the team rows appear in the same position when data lands,
+            // avoiding a jarring layout shift (AGENTS.md mistake #16).
+            VStack(spacing: 0) {
+                // Placeholder matching the conference picker's height and padding.
+                RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
+                    .fill(DesignTokens.Colors.surfacePlaceholder)
+                    .frame(height: 44)
+                    .padding(.horizontal)
+                    .padding(.top, DesignTokens.Spacing.sm)
+                    .padding(.bottom, DesignTokens.Spacing.xs)
+
+                List {
+                    ForEach(skeletonDivisions, id: \.division) { division in
+                        Section(header: sectionHeader(divisionHeader(division.division))) {
+                            ForEach(division.teams, id: \.self) { _ in
+                                TeamRowSkeleton()
+                                    .accessibilityHidden(true)
+                            }
+                        }
+                    }
+                }
+                .listStyle(.plain)
+                .scrollIndicators(.hidden)
+                .scrollContentBackground(.hidden)
             }
-            .listStyle(.plain)
-            // DEP-262: the loaded branches set `.scrollContentBackground(.hidden)` +
-            // `.background(bg)`; without them a `.plain` List paints pure black, flashing
-            // against the sheet's navy as content lands.
-            .scrollContentBackground(.hidden)
             .background(DesignTokens.Colors.bg)
-            .scrollIndicators(.hidden)
             .redacted(reason: .placeholder)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("Loading teams")
@@ -375,9 +390,24 @@ private struct TeamRow: View {
     }
 }
 
+// Skeleton divisions that mirror the loaded state's AFC division grouping,
+// so the team rows land in the same vertical position when data arrives.
+// Uses the same division order as the loaded state (divisionOrder in
+// TeamListView.divisions). Each division carries a placeholder team count
+// matching the real AFC division size (4 teams per division).
+private let skeletonDivisions = [
+    (division: "East", teams: Array(repeating: 0, count: 4)),
+    (division: "North", teams: Array(repeating: 0, count: 4)),
+    (division: "South", teams: Array(repeating: 0, count: 4)),
+    (division: "West", teams: Array(repeating: 0, count: 4)),
+]
+
 // Sized against the same scaled badge metric as `TeamRow`, so the list doesn't resize
 // under the user when real rows land (AGENTS.md's flash-then-jump rule). Single line,
 // matching the post-DEP-238 TeamRow (division subtitle removed).
+// DEP-262: the real teamRow enforces a 44pt minimum height via .frame(minHeight: 44);
+// the skeleton must match so placeholder and real rows are the same height and the
+// loaded content doesn't jump when data arrives.
 private struct TeamRowSkeleton: View {
     @ScaledMetric(relativeTo: .body) private var badgeSize: CGFloat = TeamBadge.baseSize
     @ScaledMetric(relativeTo: .body) private var titleHeight: CGFloat = 16
@@ -390,6 +420,7 @@ private struct TeamRowSkeleton: View {
                 .frame(maxWidth: 140, maxHeight: titleHeight)
         }
         .padding(.vertical, 4)
+        .frame(minHeight: 44)
     }
 }
 
