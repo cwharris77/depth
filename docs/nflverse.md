@@ -96,7 +96,7 @@ scaffolding with their own specs.
   including the 2022 tie teams (ties count as half a win, matching ESPN's `winpercent`).
   `playoff_seed` is **not** written here — it has no nflverse equivalent and stays
   ESPN-owned, so the two ingests share the row via column-scoped upserts.
-- `lib/nflverse/seasons-arg.ts` — `parseSeasonsArg(argv)`: pure parse of the `--seasons`
+- `lib/utils/ingest/seasons-arg.ts` — `parseSeasonsArg(argv)`: pure parse of the `--seasons`
   CLI flag (`--seasons 1999-2025` a range, `--seasons 2013` one year, no flag -> `null`
   meaning "the daily job's default"). Shared by `scripts/ingest-nflverse-rosters.mts`
   and `scripts/ingest-nflverse.mts`'s games/schedules step.
