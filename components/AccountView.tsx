@@ -217,7 +217,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
             Settings
           </div>
           <Card className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5 px-4 py-2">
               <label
                 htmlFor="favorite-team"
                 className="flex items-center gap-2 text-sm font-semibold"
@@ -232,7 +232,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
                   id="favorite-team"
                   value={favoriteTeamId ?? ''}
                   onChange={(e) => changeFavorite(e.target.value)}
-                  className="rounded-xl px-3 py-2.5 text-base outline-none transition-shadow duration-150 focus-visible:shadow-[0_0_0_3px_rgba(105,190,40,0.3)]"
+                  className="rounded-xl px-4 py-2.5 text-base outline-none transition-shadow duration-150 focus-visible:shadow-[0_0_0_3px_rgba(105,190,40,0.3)]"
                   style={{
                     background: colors.surfaceInput,
                     border: `1px solid ${colors.borderInput}`,
@@ -262,8 +262,8 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
 
             {favoriteTeamId && (
               <>
-                <div style={{ height: 1, background: colors.borderSubtle }} />
-                <div className="flex items-center justify-between gap-3">
+                <div className="my-3" style={{ height: 1, background: colors.borderSubtle }} />
+                <div className="flex items-center justify-between gap-3 px-4 py-2">
                   <span className="text-sm" style={{ color: colors.textSecondary }}>
                     Open this team when I start the app
                   </span>
