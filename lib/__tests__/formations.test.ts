@@ -211,12 +211,24 @@ describe('formations are well-formed', () => {
     // depth rank -- any DL could land there. A slot's generic bucket label always equals
     // its own `position` field (bare 'DE'/'DT'/'CB'/'S'/'LB'/'RB'); the moment a builder
     // gives a slot a more specific label (an L/R side, NT, or a role like SS/FS/WLB), the
-    // resolver can only honor that promise via preferredPosition -- so any slot with
-    // label !== position must carry preferredPosition (and it must equal that label).
-    // Swept across every front shape the DL/LB/DB counts can realistically take, so a
-    // future builder (or a new field on an existing one) that reintroduces this gap
-    // fails here instead of waiting for someone to notice a misplaced dot on a team page.
-    const allGroupSlots: FormationSlot[] = [];
+    // resolver can only honor that promise via preferredPosition -- so any group-based
+    // slot either seats exactly what its label names (preferredPosition === label) or
+    // carries the group's generic bucket label and no preferredPosition, which is the
+    // only label group-by-depth resolution can seat honestly. Both halves are asserted:
+    // a set preferredPosition must equal the label, and a slot without one must label
+    // a generic bucket -- not a granular tag, even when that tag equals its `position`
+    // field (a hypothetical buildOlSlots emitting position: 'LT' + group: 'OL' + label:
+    // 'LT' with no preferredPosition would clear a bare label !== position check, yet
+    // group-by-depth would still seat an LG under an 'LT'-labeled dot -- the real O-line
+    // is the most likely next join point to hit this, so the check is written to catch
+    // it whether the builder uses a generic 'OL' position or granular OL tags; adding a
+    // group that uses a new generic bucket label requires registering it below).
+    // Swept across every front shape the DL/LB/DB counts can realistically take, the
+    // generic offense/defense fallbacks, and every RB/TE personnel shape, so a future
+    // builder (or a new field on an existing one) that reintroduces this gap fails here
+    // instead of waiting for someone to notice a misplaced dot on a team page.
+    const GENERIC_LABELS = new Set(['DE', 'DT', 'LB', 'CB', 'S', 'RB']);
+    const allGroupSlots: FormationSlot[] = [...OFFENSE_FORMATION, ...BASE_DEFENSE];
     for (let dl = 0; dl <= 7; dl++) {
       for (let lb = 0; lb <= 7; lb++) {
         const db = 11 - dl - lb;
@@ -232,7 +244,10 @@ describe('formations are well-formed', () => {
     }
 
     const mislabeled = allGroupSlots.filter(
-      (s) => s.group && s.label !== s.position && s.preferredPosition !== s.label
+      (s) =>
+        s.group &&
+        ((s.preferredPosition && s.preferredPosition !== s.label) ||
+          (!s.preferredPosition && (s.label !== s.position || !GENERIC_LABELS.has(s.label))))
     );
     expect(mislabeled).toEqual([]);
   });
