@@ -259,8 +259,8 @@ final class PlayerCardReorderUITests: XCTestCase {
         let history = app.buttons["history-destination"]
         XCTAssertTrue(history.waitForExistence(timeout: 5))
         history.tap()
-        // 2025 is the only past season `roster_history` has data for (2013 renders "No
-        // roster data" — see the DEP-* roster-history tests' comment).
+        // 2025 is the past season guaranteed in both backends this suite hits — CI's
+        // Staging/prod (backfilled 1999+) and local Debug (seed is current season only).
         let season = app.buttons["history-season-2025"]
         for _ in 0..<4 where !season.exists {
             app.swipeUp()
