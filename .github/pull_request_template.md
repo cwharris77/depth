@@ -27,8 +27,9 @@ Verified live: _one concrete sentence of what was actually seen — UI changes o
 
 _**Required for ALL UI changes** — iOS, or web only when the diff touches the frozen web app. Delete this section for non-UI PRs._
 
-- **iOS:** comment `/ios-screenshots` on this PR (GitHub-hosted runner, recommended),
-  or run `/ios-pr-screenshots` locally — before/after captures are embedded or linked.
+- **iOS:** run `ios/scripts/pr-screenshots.sh --body-file <body>` before `gh pr create` — it
+  decides targets from the diff, captures before/after + a boxed visual diff, uploads to
+  Cloudinary, and fills this block automatically. CI enforces it for `ios/Depth/**` diffs.
 - **Web (frozen app PRs only):** run `/pr-screenshots` — it captures before/after and replaces the block
   below with the generated route table.
 

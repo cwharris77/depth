@@ -184,7 +184,8 @@ web UI is frozen.
   from the template** (`.github/pull_request_template.md`) and keep its sections —
   agents: `gh pr create` without `--body`, or pass `--body-file` on the template, so
   the `## Screenshots` section stays in and any UI change fills it (web:
-  `/pr-screenshots`; iOS: `/ios-screenshots` or `/ios-pr-screenshots`).
+  `/pr-screenshots`; iOS: `ios/scripts/pr-screenshots.sh --body-file <body>` — runs
+  automatically for every iOS UI PR via the `ship-pr` skill).
 - **Vercel preview browser QA starts with the bypass URL.** Protected preview
   deployments use Vercel's Protection Bypass for Automation. Keep the token only in
   `.env.local` as `X_VERCEL_PROTECTION_BYPASS`; never commit it. Before opening a

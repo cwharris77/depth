@@ -1,0 +1,45 @@
+# pr-target-map.txt — map iOS source files to PR-screenshot capture targets.
+#
+# Consumed by ios/scripts/suggest-pr-targets.sh. One line per entry:
+#   <targets>\t<source-path-prefix>
+#
+# <targets> is a comma-separated list of capture targets from
+# ios/DepthUITests/PRScreenshotsUITests.swift (field, field-footer, formations,
+# teams, uniform, player, settings) or the token `all` (= every target).
+# <source-path-prefix> is a repo-root-relative path; a changed file matches when it
+# equals the prefix or lives under it.
+#
+# Cost model: one screenshot-check.sh run = one build + one sim boot + one XCUITest
+# pass, so extra targets are nearly free. Bias therefore toward MORE targets on
+# shared host files (App/, Support/ visuals, Data/, Domain/, the team-detail host)
+# and fewer on a specific view's own files.
+#
+# Files that don't match anything (tests, docs, other features) suggest nothing —
+# the caller falls back to the documented default `field`.
+
+# ---- app-wide: touch these and every capture target is worth covering ----
+all	ios/Depth/App/
+all	ios/Depth/Assets.xcassets/
+all	ios/Depth/Data/
+all	ios/Depth/Domain/
+all	ios/Depth/Support/Card.swift
+all	ios/Depth/Support/CloseButton.swift
+all	ios/Depth/Support/DepthBrandMark.swift
+
+# ---- team-detail host screen: field, formation, uniform and player captures all
+# navigate through it (overflow menu, header, attribution), so cover them together ----
+all	ios/Depth/Features/TeamDetail/TeamDetailView.swift
+all	ios/Depth/Features/TeamDetail/TeamDetailViewModel.swift
+
+# ---- specific views ----
+field,field-footer	ios/Depth/Features/TeamDetail/DepthChartFieldView.swift
+field,field-footer	ios/Depth/Features/TeamDetail/DepthChartFieldLayout.swift
+field,field-footer	ios/Depth/Features/TeamDetail/FieldMarkings.swift
+formations	ios/Depth/Domain/Formations.swift
+formations	ios/Depth/Domain/FormationSlot.swift
+teams	ios/Depth/Features/Teams/
+uniform	ios/Depth/Features/TeamDetail/UniformPickerSheet.swift
+uniform	ios/Depth/Features/Uniforms/
+player	ios/Depth/Features/TeamDetail/PlayerDetailView.swift
+player	ios/Depth/Features/TeamDetail/PlayerProfileViewModel.swift
+settings	ios/Depth/Features/Settings/
