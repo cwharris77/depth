@@ -190,10 +190,11 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(historyButton.waitForExistence(timeout: 5), "the overflow menu should expose History")
         historyButton.tap()
 
-        // 2025 is the only historical season `roster_history` currently has for
-        // produced teams (ingested 2026-08; older seasons render "No roster data" — see
-        // SupabaseDepthRepository.teamSeason's `.notFound` path). Any past-season row
-        // exercises the historical journey identically, so pick one with data.
+        // Pick the most recent past season (2025) for the historical journey. This
+        // suite runs under two backends: CI's Staging config (production — backfilled
+        // 1999-present) and local Debug (`supabase db reset` seeds current season only).
+        // 2025 is the one past season guaranteed present in both; a deeper season like
+        // 2013 exists in prod but not in a fresh local stack.
         let season = app.buttons["history-season-2025"]
         for _ in 0..<4 where !season.exists {
             app.swipeUp()
@@ -247,8 +248,8 @@ final class DepthUITests: XCTestCase {
     /// one-tap "Back to current season" escape beside the page's season trigger (matching
     /// Stats/Schedule) — the Seasons sheet itself now uses only the standardized "X" close,
     /// not a bespoke in-sheet button. Reuses the 2025 selection so the flow is verified
-    /// from a genuinely historical state (2025 is the only past season `roster_history`
-    /// has data for — see the sibling test's comment).
+    /// from a genuinely historical state (2025 is the past season guaranteed present in
+    /// both CI/Staging-prod and local-Debug stacks — see the sibling test's comment).
     func testBackToCurrentFromRosterTrigger() throws {
         let app = XCUIApplication()
         XCTAssertTrue(app.launch(intoTeam: "seahawks"), "the app should launch straight into the Seahawks depth chart")
