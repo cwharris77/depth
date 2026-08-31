@@ -6,8 +6,9 @@ import type { TeamColors, UniformKind } from '../types';
 // SQL migration. APPEND-ONLY — never delete a kit; retire it with yearEnd + isCurrent.
 //
 // colors.primary/secondary/accent are the exact curated palette consumed by each team's
-// geometry definition. uiAccent/onAccent are curated to read on the dark app background
-// (#0a0e1a) — enforced by lib/__tests__/uniforms.test.ts. The row id is
+// geometry definition. uiAccent is either a real team color (one of primary/secondary/accent)
+// or a brightened brand hue that reads on the dark app background; onAccent is the readable
+// text color on top of it. Both enforced by lib/__tests__/uniforms.test.ts. The row id is
 // `${teamId}-${slug}-${yearStart}`.
 //
 // year_start/year_end describe the kit's primary era; is_current marks whether it's in a
@@ -42,7 +43,7 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#241773',
       secondary: '#000000',
       accent: '#9E7C0C',
-      uiAccent: '#9F8CFF',
+      uiAccent: '#9E7C0C',
       onAccent: '#0a0e1a',
     },
   },
@@ -106,8 +107,8 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#00338D',
       secondary: '#C60C30',
       accent: '#C60C30',
-      uiAccent: '#5B9BFF',
-      onAccent: '#0a0e1a',
+      uiAccent: '#C60C30',
+      onAccent: '#FFFFFF',
     },
   },
   {
@@ -154,8 +155,8 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#125740',
       secondary: '#FFFFFF',
       accent: '#FFFFFF',
-      uiAccent: '#4CC38A',
-      onAccent: '#0a0e1a',
+      uiAccent: '#125740',
+      onAccent: '#FFFFFF',
     },
   },
   {
@@ -170,8 +171,8 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#03202F',
       secondary: '#A71930',
       accent: '#A71930',
-      uiAccent: '#5B9BFF',
-      onAccent: '#0a0e1a',
+      uiAccent: '#A71930',
+      onAccent: '#FFFFFF',
     },
   },
   {
@@ -186,7 +187,7 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#002C5F',
       secondary: '#A2AAAD',
       accent: '#A2AAAD',
-      uiAccent: '#5B9BFF',
+      uiAccent: '#A2AAAD',
       onAccent: '#0a0e1a',
     },
   },
@@ -362,7 +363,7 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#003594',
       secondary: '#869397',
       accent: '#869397',
-      uiAccent: '#5B9BFF',
+      uiAccent: '#869397',
       onAccent: '#0a0e1a',
     },
   },
@@ -378,8 +379,8 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#0B2265',
       secondary: '#A71930',
       accent: '#A71930',
-      uiAccent: '#5B9BFF',
-      onAccent: '#0a0e1a',
+      uiAccent: '#A71930',
+      onAccent: '#FFFFFF',
     },
   },
   {
@@ -655,8 +656,8 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#FFFFFF',
       secondary: '#00338D',
       accent: '#C60C30',
-      uiAccent: '#5B9BFF',
-      onAccent: '#0a0e1a',
+      uiAccent: '#C60C30',
+      onAccent: '#FFFFFF',
     },
   },
   {
@@ -703,8 +704,8 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#FFFFFF',
       secondary: '#125740',
       accent: '#125740',
-      uiAccent: '#4CC38A',
-      onAccent: '#0a0e1a',
+      uiAccent: '#125740',
+      onAccent: '#FFFFFF',
     },
   },
   {
@@ -771,7 +772,7 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#FFFFFF',
       secondary: '#241773',
       accent: '#9E7C0C',
-      uiAccent: '#9F8CFF',
+      uiAccent: '#9E7C0C',
       onAccent: '#0a0e1a',
     },
   },
@@ -835,8 +836,8 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#FFFFFF',
       secondary: '#03202F',
       accent: '#A71930',
-      uiAccent: '#5B9BFF',
-      onAccent: '#0a0e1a',
+      uiAccent: '#A71930',
+      onAccent: '#FFFFFF',
     },
   },
   {
@@ -851,7 +852,7 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#FFFFFF',
       secondary: '#002C5F',
       accent: '#A2AAAD',
-      uiAccent: '#5B9BFF',
+      uiAccent: '#A2AAAD',
       onAccent: '#0a0e1a',
     },
   },
@@ -963,7 +964,7 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#FFFFFF',
       secondary: '#003594',
       accent: '#869397',
-      uiAccent: '#5B9BFF',
+      uiAccent: '#869397',
       onAccent: '#0a0e1a',
     },
   },
@@ -979,8 +980,8 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#FFFFFF',
       secondary: '#0B2265',
       accent: '#A71930',
-      uiAccent: '#5B9BFF',
-      onAccent: '#0a0e1a',
+      uiAccent: '#A71930',
+      onAccent: '#FFFFFF',
     },
   },
   {
@@ -1303,8 +1304,8 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#FFFFFF',
       secondary: '#00338D',
       accent: '#C60C30',
-      uiAccent: '#5B9BFF',
-      onAccent: '#0a0e1a',
+      uiAccent: '#C60C30',
+      onAccent: '#FFFFFF',
     },
   },
   // Dolphins 2025 Rivalries: black base, aqua/orange. Heritage accents (aqua #008E97, orange #FC4C02).
@@ -1354,8 +1355,8 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#115740',
       secondary: '#000000',
       accent: '#FFFFFF',
-      uiAccent: '#4CC38A',
-      onAccent: '#0a0e1a',
+      uiAccent: '#115740',
+      onAccent: '#FFFFFF',
     },
   },
   // Cardinals 2025 Rivalries. Corrected from a white/cardinal/black guess (the original comment
@@ -1489,8 +1490,8 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#000000',
       secondary: '#125740',
       accent: '#FFFFFF',
-      uiAccent: '#4CC38A',
-      onAccent: '#0a0e1a',
+      uiAccent: '#125740',
+      onAccent: '#FFFFFF',
     },
   },
   // Steelers 1934 'Bumblebee' block-stripe throwback (actively worn). Black base, gold stripes.
@@ -1576,7 +1577,7 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#000000',
       secondary: '#241773',
       accent: '#9E7C0C',
-      uiAccent: '#9F8CFF',
+      uiAccent: '#9E7C0C',
       onAccent: '#0a0e1a',
     },
   },
@@ -1593,8 +1594,8 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#A71930',
       secondary: '#03202F',
       accent: '#FFFFFF',
-      uiAccent: '#5B9BFF',
-      onAccent: '#0a0e1a',
+      uiAccent: '#A71930',
+      onAccent: '#FFFFFF',
     },
   },
   // Jaguars black alternate. Black base, gold/teal trim.
@@ -1661,8 +1662,8 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#0B2265',
       secondary: '#A71930',
       accent: '#FFFFFF',
-      uiAccent: '#5B9BFF',
-      onAccent: '#0a0e1a',
+      uiAccent: '#A71930',
+      onAccent: '#FFFFFF',
     },
   },
   // Eagles black alternate (2020+). Black base, midnight-green/silver trim.
