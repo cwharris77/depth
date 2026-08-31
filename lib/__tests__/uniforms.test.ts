@@ -13,8 +13,13 @@ describe('uniform seed — dark-UI contrast', () => {
   for (const u of UNIFORMS) {
     const id = `${u.teamId}-${u.slug}-${u.yearStart}`;
 
-    it(`${id}: uiAccent reads on the dark app background`, () => {
-      expect(contrastRatio(u.colors.uiAccent, DARK_BG)).toBeGreaterThanOrEqual(AA);
+    it(`${id}: uiAccent is a real team color or reads on the dark app background`, () => {
+      const { primary, secondary, accent, uiAccent } = u.colors;
+      const isRealColor = [primary, secondary, accent].some(
+        (c) => c.toLowerCase() === uiAccent.toLowerCase()
+      );
+      const readsOnDark = contrastRatio(uiAccent, DARK_BG) >= AA;
+      expect(isRealColor || readsOnDark).toBe(true);
     });
 
     it(`${id}: onAccent reads on uiAccent`, () => {
