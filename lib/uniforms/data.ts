@@ -1338,8 +1338,8 @@ export const UNIFORMS: UniformSeed[] = [
       primary: '#002F6C',
       secondary: '#C60C30',
       accent: '#FFFFFF',
-      uiAccent: '#5B9BFF',
-      onAccent: '#0a0e1a',
+      uiAccent: '#C60C30',
+      onAccent: '#FFFFFF',
     },
   },
   // Jets 2025 Rivalries 'Gotham': dark green base, black/white. Heritage green #115740.

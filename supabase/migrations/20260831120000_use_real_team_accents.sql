@@ -82,7 +82,7 @@ values
   ('packers-1923-throwback-1923', 'packers', 'throwback', '1923 Throwback', 1923, NULL, true, '#1B2C4E', '#CC8835', '#FFFFFF', '#CC8835', '#0a0e1a', 'https://depth-ashen.vercel.app/uniforms/packers-1923-throwback-1923.webp'),
   ('bills-rivalries-2025-2025', 'bills', 'alternate', 'Rivalries', 2025, NULL, true, '#FFFFFF', '#00338D', '#C60C30', '#C60C30', '#FFFFFF', 'https://depth-ashen.vercel.app/uniforms/bills-rivalries-2025-2025.webp'),
   ('dolphins-rivalries-2025-2025', 'dolphins', 'alternate', 'Rivalries', 2025, NULL, true, '#101820', '#008E97', '#FC4C02', '#2DD4D4', '#0a0e1a', 'https://depth-ashen.vercel.app/uniforms/dolphins-rivalries-2025-2025.webp'),
-  ('patriots-rivalries-2025-2025', 'patriots', 'alternate', 'Rivalries', 2025, NULL, true, '#002F6C', '#C60C30', '#FFFFFF', '#5B9BFF', '#0a0e1a', 'https://depth-ashen.vercel.app/uniforms/patriots-rivalries-2025-2025.webp'),
+  ('patriots-rivalries-2025-2025', 'patriots', 'alternate', 'Rivalries', 2025, NULL, true, '#002F6C', '#C60C30', '#FFFFFF', '#C60C30', '#FFFFFF', 'https://depth-ashen.vercel.app/uniforms/patriots-rivalries-2025-2025.webp'),
   ('jets-rivalries-2025-2025', 'jets', 'alternate', 'Rivalries', 2025, NULL, true, '#115740', '#000000', '#FFFFFF', '#115740', '#FFFFFF', 'https://depth-ashen.vercel.app/uniforms/jets-rivalries-2025-2025.webp'),
   ('cardinals-rivalries-2025-2025', 'cardinals', 'alternate', 'Rivalries', 2025, NULL, true, '#FFF7E3', '#B31529', '#EE6B3D', '#EE6B3D', '#0a0e1a', 'https://depth-ashen.vercel.app/uniforms/cardinals-rivalries-2025-2025.webp'),
   ('rams-rivalries-2025-2025', 'rams', 'alternate', 'Rivalries', 2025, NULL, true, '#0D1B3E', '#FFD100', '#FFFFFF', '#FFC20E', '#0a0e1a', 'https://depth-ashen.vercel.app/uniforms/rams-rivalries-2025-2025.webp'),
