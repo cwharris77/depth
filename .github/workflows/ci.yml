@@ -32,7 +32,7 @@ jobs:
       - run: npx tsc --noEmit
       - run: npm test
 
-  # Screenshots gate: A PR that touches iOS app sources MUST carry real screenshots in
+  # Screenshots gate: A PR that touches iOS UI sources MUST carry real screenshots in
   # its body, not the template's "Table auto-fills here after the screenshot pass"
   # placeholder. Capture is LOCAL (ios/scripts/pr-screenshots.sh — no CI action), so CI
   # only verifies the body — this job is cheap (fast string check, no build, no macOS)
@@ -52,14 +52,20 @@ jobs:
             const { owner, repo } = context.repo;
             const pr = context.issue.number;
 
-            // Does the PR's diff touch iOS app sources (ios/Depth/**)?
+            // Does the PR's diff touch iOS *UI* sources (ios/Depth/**, excluding Domain/)?
             const diff = await github.rest.pulls.listFiles({
               owner, repo, pull_number: pr, per_page: 100,
             });
+            // ios/Depth/Domain/ is pure model types and pure logic by architecture
+            // (ios/CLAUDE.md §2) — no SwiftUI views live there, so a diff confined to it
+            // cannot change a pixel and has nothing to capture. Excluded so pure-domain
+            // PRs aren't blocked into producing identical before/after images, which read
+            // as "a visual change was reviewed" when none happened.
             const touchesiOSUI = diff.data.some((f) =>
-              f.filename.startsWith('ios/Depth/'));
+              f.filename.startsWith('ios/Depth/') &&
+              !f.filename.startsWith('ios/Depth/Domain/'));
             if (!touchesiOSUI) {
-              console.log('No iOS app sources in this PR — screenshots not required.');
+              console.log('No iOS UI sources in this PR — screenshots not required.');
               return;
             }
 
@@ -72,7 +78,7 @@ jobs:
 
             if (!hasReal && !isAfterOnly) {
               core.setFailed(
-                `This PR touches iOS app sources (ios/Depth/**) but the ## Screenshots block in the body is not filled.\n\n` +
+                `This PR touches iOS UI sources (ios/Depth/**, excluding Domain/) but the ## Screenshots block in the body is not filled.\n\n` +
                 `Run the screenshot driver before pushing:\n` +
                 `  ios/scripts/pr-screenshots.sh --body-file <path-to-pr-body>\n` +
                 `then push again. It decides targets from the diff, captures before/after + a boxed visual diff, ` +
