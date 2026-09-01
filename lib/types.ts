@@ -144,6 +144,12 @@ export interface TeamColors {
   onAccent: string;
 }
 
+// The three colors that describe a real jersey. Everything the app paints resolves from
+// these via lib/utils/team-surfaces.ts. Deliberately excludes uiAccent/onAccent so a
+// resolver cannot read the legacy compatibility pair even by accident (see
+// lib/uniforms/legacy-accents.ts).
+export type JerseyColors = Pick<TeamColors, 'primary' | 'secondary' | 'accent'>;
+
 export interface Team {
   id: string;
   city: string;

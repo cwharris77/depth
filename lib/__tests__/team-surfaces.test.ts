@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { UNIFORMS } from '@/lib/uniforms/data';
 import { contrastRatio, DARK_BG } from '@/lib/utils/colors';
 import { teamFill, teamRing, textOnFill, numeralColors } from '@/lib/utils/team-surfaces';
-import type { TeamColors } from '@/lib/types';
+import type { JerseyColors } from '@/lib/types';
 
 // The resolvers replace a per-kit stored hex, so the property that matters most is not
 // "is it legible" but "is it the team's". These loop the whole archive, one `it` per kit,
@@ -23,11 +23,10 @@ const TEXT_FLOOR = 4;
 // ground (which readableTextOn returns for light fills).
 const ALLOWED_NON_TEAM = [WHITE, DARK_BG.toLowerCase()];
 
-// Archive rows still carry the legacy uiAccent/onAccent pair until plan PR 2 moves it out.
-// The resolvers must never read either, which the "no resolver invents a color" suite below
-// enforces: a resolver that leaked uiAccent would return a hex that is not one of the kit's
-// three real colors for the 63 kits whose legacy value is an invented hue.
-function kitColors(u: (typeof UNIFORMS)[number]): TeamColors {
+// Archive rows carry only the three real jersey colors — the legacy uiAccent/onAccent pair
+// lives in legacy-accents.ts and `JerseyColors` makes it unreachable from here, so a resolver
+// cannot read it even by accident.
+function kitColors(u: (typeof UNIFORMS)[number]): JerseyColors {
   return { ...u.colors };
 }
 
@@ -39,7 +38,7 @@ function kitById(id: string): (typeof UNIFORMS)[number] {
   return found;
 }
 
-function isTeamColorOrAllowed(value: string, colors: TeamColors): boolean {
+function isTeamColorOrAllowed(value: string, colors: JerseyColors): boolean {
   const v = value.toLowerCase();
   const real = [colors.primary, colors.secondary, colors.accent].map((c) => c.toLowerCase());
   return real.includes(v) || ALLOWED_NON_TEAM.includes(v);

@@ -1,4 +1,4 @@
-import type { TeamColors } from '@/lib/types';
+import type { JerseyColors } from '@/lib/types';
 import { contrastRatio, readableTextOn, DARK_BG } from '@/lib/utils/colors';
 
 // The single place a team's colors are matched to a UI surface. Every surface resolves
@@ -35,7 +35,7 @@ const WHITE = '#FFFFFF';
 // The dot fill, the headshot fill, and the ground of any team-colored chip. Always the
 // jersey body -- this is the one surface no kit can fail, because the color *is* the
 // surface rather than something painted on it.
-export function teamFill(colors: TeamColors): string {
+export function teamFill(colors: JerseyColors): string {
   return colors.primary;
 }
 
@@ -44,7 +44,7 @@ export function teamFill(colors: TeamColors): string {
 // neither the fill it encloses nor the page behind it (Ravens home purple-on-black, and
 // its black-alt inverse), which falls back to `accent` -- the official gold ESPN's
 // two-color feed omits, and a real team color, not a derived one.
-export function teamRing(colors: TeamColors): string {
+export function teamRing(colors: JerseyColors): string {
   const { primary, secondary, accent } = colors;
   const readsOnFill = contrastRatio(secondary, primary) >= RING_MIN;
   const readsOnGround = contrastRatio(secondary, DARK_BG) >= RING_MIN;
@@ -56,7 +56,7 @@ export function teamRing(colors: TeamColors): string {
 // jersey colors are too close (Chiefs gold-on-red is 2.72, Dolphins orange-on-aqua 1.16).
 // The fallback isn't a compromise: most NFL jerseys use white numerals, which is exactly
 // what readableTextOn picks for a dark body.
-export function textOnFill(colors: TeamColors, fill: string = colors.primary): string {
+export function textOnFill(colors: JerseyColors, fill: string = colors.primary): string {
   return contrastRatio(colors.secondary, fill) >= TEXT_MIN
     ? colors.secondary
     : readableTextOn(fill);
@@ -75,7 +75,7 @@ export interface NumeralColors {
 // on every away kit in the archive, so an unconditional white stroke renders those numerals
 // as a solid white slab. Swapping (stroke = the white primary, fill = the dark secondary) is
 // both legible and what the actual away jersey looks like.
-export function numeralColors(colors: TeamColors): NumeralColors {
+export function numeralColors(colors: JerseyColors): NumeralColors {
   const { primary, secondary } = colors;
   if (contrastRatio(secondary, DARK_BG) >= LARGE_TEXT_MIN) {
     return { fill: primary, stroke: secondary };

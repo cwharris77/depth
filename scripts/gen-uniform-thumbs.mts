@@ -24,7 +24,7 @@ import { renderUniformThumbSVG } from '@/lib/uniforms/art';
 import { UNIFORMS } from '@/lib/uniforms/data';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
 import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/utils/env';
-import type { TeamColors } from '@/lib/types';
+import type { JerseyColors } from '@/lib/types';
 
 dotenv.config({ path: '.env.local' });
 
@@ -42,7 +42,7 @@ const VARIANTS = {
 type UniformRow = {
   id: string;
   team_id: string;
-  colors: TeamColors;
+  colors: JerseyColors;
 };
 
 // Live-rows mode: every `uniforms` row with the colors the picker reads.

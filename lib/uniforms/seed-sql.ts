@@ -1,5 +1,6 @@
 import { UNIFORMS } from './data';
 import { uniformArtURL } from './art';
+import { LEGACY_ACCENTS } from './legacy-accents';
 
 // Turns the hand-curated archive (data.ts) into an idempotent SQL seed migration. Every
 // uniform is curated, so the upsert owns every emitted row and has no provenance branch.
@@ -37,6 +38,13 @@ function sqlVal(v: string | number | boolean | null): string {
 
 function rowValues(u: (typeof UNIFORMS)[number]): string {
   const id = `${u.teamId}-${u.slug}-${u.yearStart}`;
+  const legacy = LEGACY_ACCENTS[id];
+  // A new kit with no legacy pair would emit NULLs and break every installed build's decode,
+  // so fail loudly at generation time instead. Fill one in with teamRing()/readableTextOn().
+  if (!legacy)
+    throw new Error(
+      `no legacy accent pair for uniform id "${id}" — add one to lib/uniforms/legacy-accents.ts`
+    );
   const record: Record<string, string | number | boolean | null> = {
     id,
     team_id: u.teamId,
@@ -48,8 +56,11 @@ function rowValues(u: (typeof UNIFORMS)[number]): string {
     color_primary: u.colors.primary,
     color_secondary: u.colors.secondary,
     color_accent: u.colors.accent,
-    ui_accent: u.colors.uiAccent,
-    on_accent: u.colors.onAccent,
+    // Legacy compatibility columns, not jersey facts — frozen values keyed by row id, so
+    // already-installed iOS builds keep decoding what they were shipped against. See
+    // legacy-accents.ts for why they are never derived or re-curated.
+    ui_accent: legacy.uiAccent,
+    on_accent: legacy.onAccent,
     // Deterministic artifact URL (DEP-220): every curated kit's thumb lives at
     // UNIFORM_ART_BASE_URL/<teamId>-<slug>-<yearStart>.webp. data.ts's explicit imagePath override
     // (if ever set) wins over the derived default.
