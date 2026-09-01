@@ -297,7 +297,7 @@ struct CompareView: View {
                     Text(team.abbrev.uppercased())
                         .font(.caption.weight(.black))
                         .tracking(1)
-                        .foregroundStyle(Color(hex: team.colors.uiAccent))
+                        .foregroundStyle(Color(hex: TeamSurfaces.mark(team.colors.jersey)))
                 }
                 Text(slotLabel(team))
                     .font(.footnote.weight(.bold))
@@ -312,7 +312,7 @@ struct CompareView: View {
             .padding(.horizontal, DesignTokens.Spacing.md)
             .padding(.vertical, team != nil ? DesignTokens.Spacing.sm : DesignTokens.Spacing.lg)
             .background(
-                team.map { Color(hex: $0.colors.uiAccent).opacity(0.10) }
+                team.map { Color(hex: TeamSurfaces.mark($0.colors.jersey)).opacity(0.10) }
                     ??
                     // DEP-266: the unpicked slot is a dashed `borderInput` border on
                     // transparent — web parity — so it reads as a "fill this in" hole
@@ -323,7 +323,7 @@ struct CompareView: View {
             .overlay {
                 if let team {
                     RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
-                        .strokeBorder(Color(hex: team.colors.uiAccent).opacity(0.33), lineWidth: 1)
+                        .strokeBorder(Color(hex: TeamSurfaces.mark(team.colors.jersey)).opacity(0.33), lineWidth: 1)
                 } else {
                     RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
                         .strokeBorder(
@@ -827,7 +827,7 @@ private struct CompareRows: View {
 }
 
 /// Web's `TeamHeaderCell` (components/CompareView.tsx) — the team abbrev + city tinted
-/// with that team's uiAccent.
+/// with that team's ring color.
 private struct TeamHeaderCell: View {
     let team: Team
 
@@ -836,7 +836,7 @@ private struct TeamHeaderCell: View {
             Text(team.abbrev.uppercased())
                 .font(.caption.weight(.black))
                 .tracking(1)
-                .foregroundStyle(Color(hex: team.colors.uiAccent))
+                .foregroundStyle(Color(hex: TeamSurfaces.mark(team.colors.jersey)))
             Text(team.city)
                 .font(.caption2)
                 .foregroundStyle(DesignTokens.Colors.textMuted)
@@ -844,7 +844,7 @@ private struct TeamHeaderCell: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, DesignTokens.Spacing.sm + 4)
-        .background(Color(hex: team.colors.uiAccent).opacity(0.07))
+        .background(Color(hex: TeamSurfaces.mark(team.colors.jersey)).opacity(0.07))
     }
 }
 

@@ -24,7 +24,7 @@ import {
   type PlayerRecentSnapsRow,
 } from '@/lib/utils/compare/recent-participation';
 import { UNIFORMS } from '@/lib/uniforms/data';
-import { teamFill, teamRing, textOnFill, numeralColors } from '@/lib/utils/team-surfaces';
+import { teamFill, teamRing, kitMark, textOnFill, numeralColors } from '@/lib/utils/team-surfaces';
 import type { Player, TeamRoster, FormationSlot } from '@/lib/types';
 
 const outDir = join(dirname(fileURLToPath(import.meta.url)), 'domain');
@@ -515,6 +515,7 @@ write(
       expected: {
         fill: teamFill(colors),
         ring: teamRing(colors),
+        mark: kitMark(colors),
         textOnFill: textOnFill(colors),
         numeralFill: numeral.fill,
         numeralStroke: numeral.stroke,

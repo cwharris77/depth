@@ -9,6 +9,7 @@
     "expected": {
       "fill": "#241773",
       "ring": "#9E7C0C",
+      "mark": "#9E7C0C",
       "textOnFill": "#ffffff",
       "numeralFill": "#241773",
       "numeralStroke": "#FFFFFF"
@@ -24,6 +25,7 @@
     "expected": {
       "fill": "#FB4F14",
       "ring": "#000000",
+      "mark": "#FB4F14",
       "textOnFill": "#000000",
       "numeralFill": "#000000",
       "numeralStroke": "#FB4F14"
@@ -39,6 +41,7 @@
     "expected": {
       "fill": "#311D00",
       "ring": "#FF3C00",
+      "mark": "#FF3C00",
       "textOnFill": "#FF3C00",
       "numeralFill": "#311D00",
       "numeralStroke": "#FF3C00"
@@ -54,6 +57,7 @@
     "expected": {
       "fill": "#FFB612",
       "ring": "#101820",
+      "mark": "#FFB612",
       "textOnFill": "#101820",
       "numeralFill": "#101820",
       "numeralStroke": "#FFB612"
@@ -69,6 +73,7 @@
     "expected": {
       "fill": "#00338D",
       "ring": "#C60C30",
+      "mark": "#C60C30",
       "textOnFill": "#ffffff",
       "numeralFill": "#00338D",
       "numeralStroke": "#C60C30"
@@ -84,6 +89,7 @@
     "expected": {
       "fill": "#008E97",
       "ring": "#FC4C02",
+      "mark": "#FC4C02",
       "textOnFill": "#15161a",
       "numeralFill": "#008E97",
       "numeralStroke": "#FC4C02"
@@ -99,6 +105,7 @@
     "expected": {
       "fill": "#002244",
       "ring": "#C60C30",
+      "mark": "#C60C30",
       "textOnFill": "#ffffff",
       "numeralFill": "#002244",
       "numeralStroke": "#C60C30"
@@ -114,6 +121,7 @@
     "expected": {
       "fill": "#125740",
       "ring": "#FFFFFF",
+      "mark": "#FFFFFF",
       "textOnFill": "#FFFFFF",
       "numeralFill": "#125740",
       "numeralStroke": "#FFFFFF"
@@ -129,6 +137,7 @@
     "expected": {
       "fill": "#03202F",
       "ring": "#A71930",
+      "mark": "#A71930",
       "textOnFill": "#ffffff",
       "numeralFill": "#03202F",
       "numeralStroke": "#FFFFFF"
@@ -144,6 +153,7 @@
     "expected": {
       "fill": "#002C5F",
       "ring": "#A2AAAD",
+      "mark": "#A2AAAD",
       "textOnFill": "#A2AAAD",
       "numeralFill": "#002C5F",
       "numeralStroke": "#A2AAAD"
@@ -159,6 +169,7 @@
     "expected": {
       "fill": "#006778",
       "ring": "#D7A22A",
+      "mark": "#D7A22A",
       "textOnFill": "#ffffff",
       "numeralFill": "#006778",
       "numeralStroke": "#D7A22A"
@@ -174,6 +185,7 @@
     "expected": {
       "fill": "#0C2340",
       "ring": "#4B92DB",
+      "mark": "#4B92DB",
       "textOnFill": "#4B92DB",
       "numeralFill": "#0C2340",
       "numeralStroke": "#4B92DB"
@@ -189,6 +201,7 @@
     "expected": {
       "fill": "#FB4F14",
       "ring": "#002244",
+      "mark": "#FB4F14",
       "textOnFill": "#002244",
       "numeralFill": "#002244",
       "numeralStroke": "#FB4F14"
@@ -204,6 +217,7 @@
     "expected": {
       "fill": "#E31837",
       "ring": "#FFB81C",
+      "mark": "#FFB81C",
       "textOnFill": "#ffffff",
       "numeralFill": "#E31837",
       "numeralStroke": "#FFB81C"
@@ -219,6 +233,7 @@
     "expected": {
       "fill": "#000000",
       "ring": "#A5ACAF",
+      "mark": "#A5ACAF",
       "textOnFill": "#A5ACAF",
       "numeralFill": "#000000",
       "numeralStroke": "#A5ACAF"
@@ -234,6 +249,7 @@
     "expected": {
       "fill": "#0080C6",
       "ring": "#FFC20E",
+      "mark": "#FFC20E",
       "textOnFill": "#ffffff",
       "numeralFill": "#0080C6",
       "numeralStroke": "#FFC20E"
@@ -249,6 +265,7 @@
     "expected": {
       "fill": "#0B162A",
       "ring": "#C83803",
+      "mark": "#C83803",
       "textOnFill": "#ffffff",
       "numeralFill": "#0B162A",
       "numeralStroke": "#C83803"
@@ -264,6 +281,7 @@
     "expected": {
       "fill": "#0076B6",
       "ring": "#B0B7BC",
+      "mark": "#B0B7BC",
       "textOnFill": "#ffffff",
       "numeralFill": "#0076B6",
       "numeralStroke": "#B0B7BC"
@@ -279,6 +297,7 @@
     "expected": {
       "fill": "#203731",
       "ring": "#FFB612",
+      "mark": "#FFB612",
       "textOnFill": "#FFB612",
       "numeralFill": "#203731",
       "numeralStroke": "#FFB612"
@@ -294,6 +313,7 @@
     "expected": {
       "fill": "#4F2683",
       "ring": "#FFC62F",
+      "mark": "#FFC62F",
       "textOnFill": "#FFC62F",
       "numeralFill": "#4F2683",
       "numeralStroke": "#FFC62F"
@@ -309,6 +329,7 @@
     "expected": {
       "fill": "#003594",
       "ring": "#869397",
+      "mark": "#869397",
       "textOnFill": "#ffffff",
       "numeralFill": "#003594",
       "numeralStroke": "#869397"
@@ -324,6 +345,7 @@
     "expected": {
       "fill": "#0B2265",
       "ring": "#A71930",
+      "mark": "#A71930",
       "textOnFill": "#ffffff",
       "numeralFill": "#0B2265",
       "numeralStroke": "#FFFFFF"
@@ -339,6 +361,7 @@
     "expected": {
       "fill": "#004C54",
       "ring": "#A5ACAF",
+      "mark": "#A5ACAF",
       "textOnFill": "#ffffff",
       "numeralFill": "#004C54",
       "numeralStroke": "#A5ACAF"
@@ -354,6 +377,7 @@
     "expected": {
       "fill": "#5A1414",
       "ring": "#FFB612",
+      "mark": "#FFB612",
       "textOnFill": "#FFB612",
       "numeralFill": "#5A1414",
       "numeralStroke": "#FFB612"
@@ -369,6 +393,7 @@
     "expected": {
       "fill": "#A71930",
       "ring": "#000000",
+      "mark": "#A71930",
       "textOnFill": "#ffffff",
       "numeralFill": "#A71930",
       "numeralStroke": "#FFFFFF"
@@ -384,6 +409,7 @@
     "expected": {
       "fill": "#0085CA",
       "ring": "#101820",
+      "mark": "#0085CA",
       "textOnFill": "#15161a",
       "numeralFill": "#101820",
       "numeralStroke": "#0085CA"
@@ -399,6 +425,7 @@
     "expected": {
       "fill": "#D3BC8D",
       "ring": "#101820",
+      "mark": "#D3BC8D",
       "textOnFill": "#101820",
       "numeralFill": "#101820",
       "numeralStroke": "#D3BC8D"
@@ -414,6 +441,7 @@
     "expected": {
       "fill": "#D50A0A",
       "ring": "#34302B",
+      "mark": "#FF7900",
       "textOnFill": "#ffffff",
       "numeralFill": "#34302B",
       "numeralStroke": "#D50A0A"
@@ -429,6 +457,7 @@
     "expected": {
       "fill": "#97233F",
       "ring": "#000000",
+      "mark": "#FFB612",
       "textOnFill": "#ffffff",
       "numeralFill": "#97233F",
       "numeralStroke": "#FFFFFF"
@@ -444,6 +473,7 @@
     "expected": {
       "fill": "#003594",
       "ring": "#FFA300",
+      "mark": "#FFA300",
       "textOnFill": "#FFA300",
       "numeralFill": "#003594",
       "numeralStroke": "#FFA300"
@@ -459,6 +489,7 @@
     "expected": {
       "fill": "#AA0000",
       "ring": "#B3995D",
+      "mark": "#B3995D",
       "textOnFill": "#ffffff",
       "numeralFill": "#AA0000",
       "numeralStroke": "#B3995D"
@@ -474,6 +505,7 @@
     "expected": {
       "fill": "#002244",
       "ring": "#69BE28",
+      "mark": "#69BE28",
       "textOnFill": "#69BE28",
       "numeralFill": "#002244",
       "numeralStroke": "#69BE28"
@@ -489,6 +521,7 @@
     "expected": {
       "fill": "#003087",
       "ring": "#046A38",
+      "mark": "#8A8D8F",
       "textOnFill": "#ffffff",
       "numeralFill": "#003087",
       "numeralStroke": "#FFFFFF"
@@ -504,6 +537,7 @@
     "expected": {
       "fill": "#FF8200",
       "ring": "#C8102E",
+      "mark": "#C8102E",
       "textOnFill": "#15161a",
       "numeralFill": "#FF8200",
       "numeralStroke": "#C8102E"
@@ -519,6 +553,7 @@
     "expected": {
       "fill": "#046A38",
       "ring": "#A5ACAF",
+      "mark": "#A5ACAF",
       "textOnFill": "#ffffff",
       "numeralFill": "#046A38",
       "numeralStroke": "#A5ACAF"
@@ -534,6 +569,7 @@
     "expected": {
       "fill": "#001489",
       "ring": "#FA4616",
+      "mark": "#FA4616",
       "textOnFill": "#ffffff",
       "numeralFill": "#001489",
       "numeralStroke": "#FA4616"
@@ -549,6 +585,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#002244",
+      "mark": "#69BE28",
       "textOnFill": "#002244",
       "numeralFill": "#002244",
       "numeralStroke": "#FFFFFF"
@@ -564,6 +601,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#00338D",
+      "mark": "#C60C30",
       "textOnFill": "#00338D",
       "numeralFill": "#00338D",
       "numeralStroke": "#FFFFFF"
@@ -579,6 +617,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#008E97",
+      "mark": "#008E97",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#008E97"
@@ -594,6 +633,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#002244",
+      "mark": "#C60C30",
       "textOnFill": "#002244",
       "numeralFill": "#002244",
       "numeralStroke": "#FFFFFF"
@@ -609,6 +649,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#125740",
+      "mark": "#FFFFFF",
       "textOnFill": "#125740",
       "numeralFill": "#125740",
       "numeralStroke": "#FFFFFF"
@@ -624,6 +665,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#97233F",
+      "mark": "#FFB612",
       "textOnFill": "#97233F",
       "numeralFill": "#97233F",
       "numeralStroke": "#FFFFFF"
@@ -639,6 +681,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#003594",
+      "mark": "#FFA300",
       "textOnFill": "#003594",
       "numeralFill": "#003594",
       "numeralStroke": "#FFFFFF"
@@ -654,6 +697,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#AA0000",
+      "mark": "#B3995D",
       "textOnFill": "#AA0000",
       "numeralFill": "#AA0000",
       "numeralStroke": "#FFFFFF"
@@ -669,6 +713,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#241773",
+      "mark": "#9E7C0C",
       "textOnFill": "#241773",
       "numeralFill": "#241773",
       "numeralStroke": "#FFFFFF"
@@ -684,6 +729,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#FB4F14",
+      "mark": "#FB4F14",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#FB4F14"
@@ -699,6 +745,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#311D00",
+      "mark": "#FF3C00",
       "textOnFill": "#311D00",
       "numeralFill": "#311D00",
       "numeralStroke": "#FFFFFF"
@@ -714,6 +761,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#FFB612",
+      "mark": "#FFB612",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#FFB612"
@@ -729,6 +777,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#03202F",
+      "mark": "#FFFFFF",
       "textOnFill": "#03202F",
       "numeralFill": "#03202F",
       "numeralStroke": "#FFFFFF"
@@ -744,6 +793,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#002C5F",
+      "mark": "#A2AAAD",
       "textOnFill": "#002C5F",
       "numeralFill": "#002C5F",
       "numeralStroke": "#FFFFFF"
@@ -759,6 +809,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#006778",
+      "mark": "#D7A22A",
       "textOnFill": "#006778",
       "numeralFill": "#006778",
       "numeralStroke": "#FFFFFF"
@@ -774,6 +825,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#0C2340",
+      "mark": "#4B92DB",
       "textOnFill": "#0C2340",
       "numeralFill": "#0C2340",
       "numeralStroke": "#FFFFFF"
@@ -789,6 +841,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#FB4F14",
+      "mark": "#FB4F14",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#FB4F14"
@@ -804,6 +857,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#E31837",
+      "mark": "#E31837",
       "textOnFill": "#E31837",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#E31837"
@@ -819,6 +873,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#000000",
+      "mark": "#A5ACAF",
       "textOnFill": "#000000",
       "numeralFill": "#000000",
       "numeralStroke": "#FFFFFF"
@@ -834,6 +889,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#0080C6",
+      "mark": "#0080C6",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#0080C6"
@@ -849,6 +905,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#003594",
+      "mark": "#869397",
       "textOnFill": "#003594",
       "numeralFill": "#003594",
       "numeralStroke": "#FFFFFF"
@@ -864,6 +921,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#0B2265",
+      "mark": "#FFFFFF",
       "textOnFill": "#0B2265",
       "numeralFill": "#0B2265",
       "numeralStroke": "#FFFFFF"
@@ -879,6 +937,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#004C54",
+      "mark": "#A5ACAF",
       "textOnFill": "#004C54",
       "numeralFill": "#004C54",
       "numeralStroke": "#FFFFFF"
@@ -894,6 +953,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#5A1414",
+      "mark": "#FFB612",
       "textOnFill": "#5A1414",
       "numeralFill": "#5A1414",
       "numeralStroke": "#FFFFFF"
@@ -909,6 +969,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#0B162A",
+      "mark": "#C83803",
       "textOnFill": "#0B162A",
       "numeralFill": "#0B162A",
       "numeralStroke": "#FFFFFF"
@@ -924,6 +985,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#0076B6",
+      "mark": "#0076B6",
       "textOnFill": "#0076B6",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#0076B6"
@@ -939,6 +1001,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#203731",
+      "mark": "#FFB612",
       "textOnFill": "#203731",
       "numeralFill": "#203731",
       "numeralStroke": "#FFFFFF"
@@ -954,6 +1017,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#4F2683",
+      "mark": "#FFC62F",
       "textOnFill": "#4F2683",
       "numeralFill": "#4F2683",
       "numeralStroke": "#FFFFFF"
@@ -969,6 +1033,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#A71930",
+      "mark": "#FFFFFF",
       "textOnFill": "#A71930",
       "numeralFill": "#A71930",
       "numeralStroke": "#FFFFFF"
@@ -984,6 +1049,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#0085CA",
+      "mark": "#0085CA",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#0085CA"
@@ -999,6 +1065,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#D3BC8D",
+      "mark": "#D3BC8D",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#D3BC8D"
@@ -1014,6 +1081,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#D50A0A",
+      "mark": "#D50A0A",
       "textOnFill": "#D50A0A",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#D50A0A"
@@ -1029,6 +1097,7 @@
     "expected": {
       "fill": "#0080C6",
       "ring": "#FFC20E",
+      "mark": "#FFC20E",
       "textOnFill": "#ffffff",
       "numeralFill": "#0080C6",
       "numeralStroke": "#FFC20E"
@@ -1044,6 +1113,7 @@
     "expected": {
       "fill": "#4B92DB",
       "ring": "#C8102E",
+      "mark": "#C8102E",
       "textOnFill": "#15161a",
       "numeralFill": "#4B92DB",
       "numeralStroke": "#C8102E"
@@ -1059,6 +1129,7 @@
     "expected": {
       "fill": "#C83803",
       "ring": "#0B162A",
+      "mark": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#0B162A",
       "numeralStroke": "#C83803"
@@ -1074,6 +1145,7 @@
     "expected": {
       "fill": "#101820",
       "ring": "#D3BC8D",
+      "mark": "#D3BC8D",
       "textOnFill": "#D3BC8D",
       "numeralFill": "#101820",
       "numeralStroke": "#D3BC8D"
@@ -1089,6 +1161,7 @@
     "expected": {
       "fill": "#006778",
       "ring": "#D7A22A",
+      "mark": "#D7A22A",
       "textOnFill": "#ffffff",
       "numeralFill": "#006778",
       "numeralStroke": "#D7A22A"
@@ -1104,6 +1177,7 @@
     "expected": {
       "fill": "#5A1414",
       "ring": "#FFB612",
+      "mark": "#FFB612",
       "textOnFill": "#FFB612",
       "numeralFill": "#5A1414",
       "numeralStroke": "#FFB612"
@@ -1119,6 +1193,7 @@
     "expected": {
       "fill": "#4F2683",
       "ring": "#FFC62F",
+      "mark": "#FFC62F",
       "textOnFill": "#FFC62F",
       "numeralFill": "#4F2683",
       "numeralStroke": "#FFC62F"
@@ -1134,6 +1209,7 @@
     "expected": {
       "fill": "#1B2C4E",
       "ring": "#CC8835",
+      "mark": "#CC8835",
       "textOnFill": "#CC8835",
       "numeralFill": "#1B2C4E",
       "numeralStroke": "#CC8835"
@@ -1149,6 +1225,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#00338D",
+      "mark": "#C60C30",
       "textOnFill": "#00338D",
       "numeralFill": "#00338D",
       "numeralStroke": "#FFFFFF"
@@ -1164,6 +1241,7 @@
     "expected": {
       "fill": "#101820",
       "ring": "#008E97",
+      "mark": "#008E97",
       "textOnFill": "#008E97",
       "numeralFill": "#101820",
       "numeralStroke": "#008E97"
@@ -1179,6 +1257,7 @@
     "expected": {
       "fill": "#002F6C",
       "ring": "#C60C30",
+      "mark": "#C60C30",
       "textOnFill": "#ffffff",
       "numeralFill": "#002F6C",
       "numeralStroke": "#C60C30"
@@ -1194,6 +1273,7 @@
     "expected": {
       "fill": "#115740",
       "ring": "#000000",
+      "mark": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#115740",
       "numeralStroke": "#FFFFFF"
@@ -1209,6 +1289,7 @@
     "expected": {
       "fill": "#FFF7E3",
       "ring": "#B31529",
+      "mark": "#EE6B3D",
       "textOnFill": "#B31529",
       "numeralFill": "#B31529",
       "numeralStroke": "#FFF7E3"
@@ -1224,6 +1305,7 @@
     "expected": {
       "fill": "#0D1B3E",
       "ring": "#FFD100",
+      "mark": "#FFD100",
       "textOnFill": "#FFD100",
       "numeralFill": "#0D1B3E",
       "numeralStroke": "#FFD100"
@@ -1239,6 +1321,7 @@
     "expected": {
       "fill": "#101820",
       "ring": "#B3995D",
+      "mark": "#B3995D",
       "textOnFill": "#B3995D",
       "numeralFill": "#101820",
       "numeralStroke": "#B3995D"
@@ -1254,6 +1337,7 @@
     "expected": {
       "fill": "#C6D3DC",
       "ring": "#002244",
+      "mark": "#C6D3DC",
       "textOnFill": "#002244",
       "numeralFill": "#002244",
       "numeralStroke": "#C6D3DC"
@@ -1269,6 +1353,7 @@
     "expected": {
       "fill": "#008E97",
       "ring": "#FC4C02",
+      "mark": "#FC4C02",
       "textOnFill": "#15161a",
       "numeralFill": "#008E97",
       "numeralStroke": "#FC4C02"
@@ -1284,6 +1369,7 @@
     "expected": {
       "fill": "#C8102E",
       "ring": "#002F6C",
+      "mark": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#002F6C",
       "numeralStroke": "#C8102E"
@@ -1299,6 +1385,7 @@
     "expected": {
       "fill": "#000000",
       "ring": "#125740",
+      "mark": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#000000",
       "numeralStroke": "#FFFFFF"
@@ -1314,6 +1401,7 @@
     "expected": {
       "fill": "#101820",
       "ring": "#FFB612",
+      "mark": "#FFB612",
       "textOnFill": "#FFB612",
       "numeralFill": "#101820",
       "numeralStroke": "#FFB612"
@@ -1329,6 +1417,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#FF3C00",
+      "mark": "#FF3C00",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#FF3C00"
@@ -1344,6 +1433,7 @@
     "expected": {
       "fill": "#FB4F14",
       "ring": "#000000",
+      "mark": "#FFFFFF",
       "textOnFill": "#000000",
       "numeralFill": "#000000",
       "numeralStroke": "#FB4F14"
@@ -1359,6 +1449,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#000000",
+      "mark": "#FFFFFF",
       "textOnFill": "#000000",
       "numeralFill": "#000000",
       "numeralStroke": "#FFFFFF"
@@ -1374,6 +1465,7 @@
     "expected": {
       "fill": "#000000",
       "ring": "#9E7C0C",
+      "mark": "#9E7C0C",
       "textOnFill": "#ffffff",
       "numeralFill": "#000000",
       "numeralStroke": "#FFFFFF"
@@ -1389,6 +1481,7 @@
     "expected": {
       "fill": "#A71930",
       "ring": "#03202F",
+      "mark": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#A71930",
       "numeralStroke": "#FFFFFF"
@@ -1404,6 +1497,7 @@
     "expected": {
       "fill": "#101820",
       "ring": "#D7A22A",
+      "mark": "#D7A22A",
       "textOnFill": "#D7A22A",
       "numeralFill": "#101820",
       "numeralStroke": "#D7A22A"
@@ -1419,6 +1513,7 @@
     "expected": {
       "fill": "#0C2340",
       "ring": "#4B92DB",
+      "mark": "#4B92DB",
       "textOnFill": "#4B92DB",
       "numeralFill": "#0C2340",
       "numeralStroke": "#4B92DB"
@@ -1434,6 +1529,7 @@
     "expected": {
       "fill": "#FB4F14",
       "ring": "#002244",
+      "mark": "#FFFFFF",
       "textOnFill": "#002244",
       "numeralFill": "#002244",
       "numeralStroke": "#FB4F14"
@@ -1449,6 +1545,7 @@
     "expected": {
       "fill": "#0B2265",
       "ring": "#A71930",
+      "mark": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#0B2265",
       "numeralStroke": "#FFFFFF"
@@ -1464,6 +1561,7 @@
     "expected": {
       "fill": "#000000",
       "ring": "#004C54",
+      "mark": "#A5ACAF",
       "textOnFill": "#ffffff",
       "numeralFill": "#000000",
       "numeralStroke": "#FFFFFF"
@@ -1479,6 +1577,7 @@
     "expected": {
       "fill": "#B0B7BC",
       "ring": "#0076B6",
+      "mark": "#0076B6",
       "textOnFill": "#15161a",
       "numeralFill": "#B0B7BC",
       "numeralStroke": "#0076B6"
@@ -1494,6 +1593,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#4F2683",
+      "mark": "#FFC62F",
       "textOnFill": "#4F2683",
       "numeralFill": "#4F2683",
       "numeralStroke": "#FFFFFF"
@@ -1509,6 +1609,7 @@
     "expected": {
       "fill": "#FFFFFF",
       "ring": "#203731",
+      "mark": "#FFB612",
       "textOnFill": "#203731",
       "numeralFill": "#203731",
       "numeralStroke": "#FFFFFF"
@@ -1524,6 +1625,7 @@
     "expected": {
       "fill": "#A71930",
       "ring": "#000000",
+      "mark": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#A71930",
       "numeralStroke": "#FFFFFF"
@@ -1539,6 +1641,7 @@
     "expected": {
       "fill": "#101820",
       "ring": "#0085CA",
+      "mark": "#0085CA",
       "textOnFill": "#ffffff",
       "numeralFill": "#101820",
       "numeralStroke": "#0085CA"
@@ -1554,6 +1657,7 @@
     "expected": {
       "fill": "#000000",
       "ring": "#97233F",
+      "mark": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#000000",
       "numeralStroke": "#FFFFFF"
@@ -1569,6 +1673,7 @@
     "expected": {
       "fill": "#F0EBE0",
       "ring": "#003594",
+      "mark": "#FFA300",
       "textOnFill": "#003594",
       "numeralFill": "#003594",
       "numeralStroke": "#F0EBE0"

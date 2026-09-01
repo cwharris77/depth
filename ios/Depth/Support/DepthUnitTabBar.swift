@@ -2,7 +2,7 @@ import SwiftUI
 
 // Literal port of web's `components/ui/TabBar.tsx` as used by `FieldHeaderMenu.tsx`
 // (lines 36-46): an underline-style unit switcher for the depth-chart field. The active
-// tab carries a 2px bottom border in the team's `uiAccent`; inactive tabs are faint with
+// tab carries a 2px bottom border in the team's accent; inactive tabs are faint with
 // a transparent border. Distinct from `DepthSegmentedControl`'s filled pill — used where
 // tabs share a baseline, per web. Unit-specific (not generic like the segmented control)
 // because it is the one place this underline row exists; the three labels are the web

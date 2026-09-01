@@ -45,6 +45,11 @@ enum TeamSurfaces {
     // WCAG AA for large text. The player-card numeral is 48pt+, so it's judged at this bar.
     private static let largeTextMin = 3.0
 
+    // A mark on the ground has no fill to borrow contrast from, so it is judged against the
+    // ground alone -- at the graphical-object bar, not body-text AA: these are underlines,
+    // tints and borders, and 4.5 would reject six kits' real colors for their white body.
+    private static let markMin = 3.0
+
     private static let white = "#FFFFFF"
 
     /// The dot fill, the headshot fill, and the ground of any team-colored chip. Always the
@@ -63,6 +68,33 @@ enum TeamSurfaces {
         let readsOnFill = contrastRatio(colors.secondary, colors.primary) >= ringMin
         let readsOnGround = contrastRatio(colors.secondary, darkBackgroundHex) >= ringMin
         return readsOnFill || readsOnGround ? colors.secondary : colors.accent
+    }
+
+    /// A mark that floats on the app ground with no fill behind it: the unit-tab underline,
+    /// the tab-bar tint, the overflow menu, a chip's text and border. This is the surface
+    /// ring(_:) must NOT be used for -- a ring may borrow contrast from the fill it encloses,
+    /// and one that reads against a white dot (Seahawks away navy on white) is invisible once
+    /// the same hex is painted straight onto the ground.
+    ///
+    /// The candidate order is the whole rule. `primary` is the jersey BODY, and no team puts
+    /// navy numerals on a navy jersey -- Seattle's are green, Oakland's silver. A kit already
+    /// carries the color it uses to be seen, so ask for that half first and fall back to the
+    /// body last. Ordering primary earlier is what washed the chrome out: primary is #FFFFFF
+    /// on all 32 current away kits, so a body-first rule turns every away kit's chrome white.
+    ///
+    /// 95 of 98 current kits clear the bar with one of their own colors. The three that
+    /// cannot (Texans, Giants, Falcons home) take the BEST of the three rather than the body:
+    /// falling back to `primary` would hand the Texans their #03202F navy at 1.08 while the
+    /// kit owns a red at 2.43. Dim is a background problem and the 2026-07-03 precedent says
+    /// live with it -- but never pick a worse real color than the kit offers.
+    static func mark(_ colors: JerseyColors) -> String {
+        let candidates = [colors.secondary, colors.accent, colors.primary]
+        if let clears = candidates.first(where: { contrastRatio($0, darkBackgroundHex) >= markMin })
+        {
+            return clears
+        }
+        return candidates.max { contrastRatio($0, darkBackgroundHex) < contrastRatio($1, darkBackgroundHex) }
+            ?? colors.primary
     }
 
     /// Text painted on a team-colored fill. Prefers the kit's own contrast color so the pair

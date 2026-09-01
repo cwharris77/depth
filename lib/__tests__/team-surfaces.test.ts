@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { UNIFORMS } from '@/lib/uniforms/data';
 import { contrastRatio, DARK_BG } from '@/lib/utils/colors';
-import { teamFill, teamRing, textOnFill, numeralColors } from '@/lib/utils/team-surfaces';
+import { teamFill, teamRing, kitMark, textOnFill, numeralColors } from '@/lib/utils/team-surfaces';
 import type { JerseyColors } from '@/lib/types';
 
 // The resolvers replace a per-kit stored hex, so the property that matters most is not
@@ -175,5 +175,92 @@ describe('team surfaces — player-card numeral', () => {
     const resolved = numeralColors(kitColors(kitById(id)));
     expect(resolved.fill.toLowerCase()).toBe(fill);
     expect(resolved.stroke.toLowerCase()).toBe(stroke);
+  });
+});
+
+// kitMark is what every surface floating on the app ground uses. Its whole job is to never
+// return the jersey body when the kit owns something louder, so the properties worth pinning
+// are "it's the kit's own color" and "it doesn't fall to the body early".
+describe('kitMark', () => {
+  const MARK_MIN = 3;
+  const current = UNIFORMS.filter((u) => u.isCurrent);
+
+  for (const u of current) {
+    it(`${u.teamId}/${u.slug} marks with one of its own colors`, () => {
+      const colors = kitColors(u);
+      expect(
+        [colors.primary, colors.secondary, colors.accent].map((c) => c.toLowerCase())
+      ).toContain(kitMark(colors).toLowerCase());
+    });
+  }
+
+  // The regression this rule exists to prevent: primary is #FFFFFF on every current away kit,
+  // so a body-first order paints all 32 away chromes white. A kit may still land on white --
+  // but only when it owns nothing else that reads, never merely because white came first.
+  it('resolves an away kit to its white body only when nothing else reads', () => {
+    const away = current.filter((u) => u.slug === 'away');
+    expect(away).toHaveLength(32);
+    expect(away.every((u) => u.colors.primary.toUpperCase() === '#FFFFFF')).toBe(true);
+
+    const white = away.filter((u) => kitMark(kitColors(u)).toUpperCase() === '#FFFFFF');
+    // The three dark-body/mid-red teams that also go dim at home, plus the Jets — their
+    // #125740 hunter green reads at only 2.1 on the ground. Every other away kit keeps a
+    // real color.
+    expect(white.map((u) => u.teamId).sort()).toEqual(['falcons', 'giants', 'jets', 'texans']);
+    for (const u of white) {
+      const { secondary, accent } = kitColors(u);
+      expect(contrastRatio(secondary, DARK_BG)).toBeLessThan(MARK_MIN);
+      expect(contrastRatio(accent, DARK_BG)).toBeLessThan(MARK_MIN);
+    }
+  });
+
+  // Only three current kits own nothing that reads on the ground. Pinned so a rule change has
+  // to justify moving it.
+  it('leaves exactly three current kits dim, all dark bodies with a mid-red', () => {
+    const dim = current.filter((u) => contrastRatio(kitMark(kitColors(u)), DARK_BG) < MARK_MIN);
+    expect(dim.map((u) => `${u.teamId}/${u.slug}`).sort()).toEqual([
+      'falcons/home',
+      'giants/home',
+      'texans/home',
+    ]);
+  });
+
+  // Even when no color clears the bar, the mark is the best the kit owns — never a worse one.
+  // A `?? primary` fallback handed the Texans #03202F at 1.08 over their own red at 2.43.
+  it('always picks the kit color that reads best when none clears the bar', () => {
+    for (const u of current) {
+      const colors = kitColors(u);
+      const mark = kitMark(colors);
+      if (contrastRatio(mark, DARK_BG) >= MARK_MIN) continue;
+      for (const candidate of [colors.primary, colors.secondary, colors.accent]) {
+        expect(contrastRatio(mark, DARK_BG)).toBeGreaterThanOrEqual(
+          contrastRatio(candidate, DARK_BG)
+        );
+      }
+    }
+  });
+
+  // The bug that motivated the split: teamRing may borrow contrast from the fill it encloses,
+  // so it can return a hex that is invisible once painted straight onto the ground. Wherever
+  // the two differ, the mark must read at least as well on the ground as the ring does.
+  it('never reads worse on the ground than teamRing', () => {
+    const divergent = current.filter((u) => teamRing(kitColors(u)) !== kitMark(kitColors(u)));
+    expect(divergent.length).toBeGreaterThan(0);
+    for (const u of divergent) {
+      const ringContrast = contrastRatio(teamRing(kitColors(u)), DARK_BG);
+      const markContrast = contrastRatio(kitMark(kitColors(u)), DARK_BG);
+      expect(markContrast).toBeGreaterThanOrEqual(ringContrast);
+      expect(ringContrast).toBeLessThan(MARK_MIN);
+    }
+  });
+
+  it.each([
+    ['seahawks', 'home', '#69BE28'],
+    ['seahawks', 'away', '#69BE28'],
+    ['raiders', 'home', '#A5ACAF'],
+    ['raiders', 'away', '#A5ACAF'],
+  ])('%s/%s marks with %s', (teamId, slug, expected) => {
+    const kit = UNIFORMS.find((u) => u.teamId === teamId && u.slug === slug && u.isCurrent)!;
+    expect(kitMark(kitColors(kit)).toLowerCase()).toBe(expected.toLowerCase());
   });
 });
