@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- **Never drop or null `ui_accent`/`on_accent`.** Shipped iOS builds name them in their PostgREST selects and decode them non-optionally; removing either 400s the team page, team list and uniform archive for every installed copy, permanently. See `lib/uniforms/data.ts`'s header.
+- **Do not drop or null `ui_accent`/`on_accent` in this plan.** Shipped iOS builds name them in their PostgREST selects and decode them non-optionally; removing either 400s the team page, team list and uniform archive for every installed copy. DEP-425 (forced-update gate) makes retirement possible later — see the spec's "Retirement path" section — but it does not unblock it for builds that predate the gate, and nothing here depends on the drop. See `lib/uniforms/data.ts`'s header.
 - iOS-first: the product is `ios/`. The frozen web app changes only where a shared module or a stale comment forces it — no web UI sweep (`AGENTS.md` §1, 2026-08-29).
 - Formatting is Prettier's job — `npm run format` before every commit. `npm run format:check` is a CI gate.
 - Every new/changed `lib/` module needs a role-and-constraint header comment; inline comments state contracts and cross-file couplings, never line narration.
@@ -193,7 +193,7 @@
 
 ## Out of scope
 
-- Dropping the `ui_accent`/`on_accent` **columns** from Postgres. Not before 2027, and only if old-build traffic is gone.
+- Dropping the `ui_accent`/`on_accent` **columns** from Postgres. Blocked on DEP-425 (forced-update gate) *and* on pre-gate installs draining — file it `blocked-by: DEP-425`, not on a date.
 - `brand_colors` — still written by the weekly ingest and read by nothing, deliberately (2026-08-24 spec).
 - Uniform geometry (`lib/uniforms/teams/*.ts`) — its `ColorRef` system is the model this plan generalises; no changes.
 - The app-wide accent token (DEP-273's policy question).
