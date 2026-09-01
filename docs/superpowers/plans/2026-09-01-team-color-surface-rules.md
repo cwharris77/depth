@@ -6,7 +6,7 @@
 
 **Goal:** Stop storing "what color goes here" as data. Every surface resolves from the kit's real jersey colors (`primary`/`secondary`/`accent`) through one shared helper; `uiAccent`/`onAccent` become frozen legacy columns that new clients never read. The player-card numeral becomes an outlined jersey numeral in two real team colors (spec direction 3).
 
-**Architecture:** A new pure module (`lib/utils/colors/surfaces.ts`, mirrored in `ios/Depth/Support/TeamSurfaces.swift`) exposes one resolver per surface — fill, ring, text-on-fill, numeral. Call sites ask for a surface and never compose contrast logic themselves. The 105 legacy `uiAccent`/`onAccent` values move off the curation surface into a frozen map that only the seed generator reads. Cross-language domain fixtures prove the Swift and TS resolvers agree on all 105 kits.
+**Architecture:** A new pure module (`lib/utils/team-surfaces.ts`, mirrored in `ios/Depth/Support/TeamSurfaces.swift`) exposes one resolver per surface — fill, ring, text-on-fill, numeral. Call sites ask for a surface and never compose contrast logic themselves. The 105 legacy `uiAccent`/`onAccent` values move off the curation surface into a frozen map that only the seed generator reads. Cross-language domain fixtures prove the Swift and TS resolvers agree on all 105 kits.
 
 **Tech Stack:** TypeScript strict + Vitest (shared logic, seed generation), Swift 6 + XCTest (the product), Supabase Postgres (the seed target).
 
@@ -29,8 +29,8 @@
 ### Task 1: The resolver module
 
 **Files:**
-- Create: `lib/utils/colors/surfaces.ts`
-- Create: `lib/__tests__/surfaces.test.ts`
+- Create: `lib/utils/team-surfaces.ts` — flat, not `lib/utils/colors/surfaces.ts`: a `colors/` directory beside the existing `lib/utils/colors.ts` makes `@/lib/utils/colors` ambiguous, and `AGENTS.md` names that file as a sanctioned flat cross-cutting util. The name also matches the Swift mirror.
+- Create: `lib/__tests__/team-surfaces.test.ts`
 
 **Interfaces:**
 - Produces: `teamFill(colors): string` — always `primary`.
@@ -47,7 +47,7 @@
 ### Task 2: The numeral resolver (spec direction 3)
 
 **Files:**
-- Modify: `lib/utils/colors/surfaces.ts`, `lib/__tests__/surfaces.test.ts`
+- Modify: `lib/utils/team-surfaces.ts`, `lib/__tests__/team-surfaces.test.ts`
 
 **Interfaces:**
 - `numeralColors(colors)` resolves in this order, against the app ground at the WCAG **large-text** threshold of 3.0:
