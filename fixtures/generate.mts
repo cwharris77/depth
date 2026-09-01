@@ -23,6 +23,8 @@ import {
   buildRecentParticipation,
   type PlayerRecentSnapsRow,
 } from '@/lib/utils/compare/recent-participation';
+import { UNIFORMS } from '@/lib/uniforms/data';
+import { teamFill, teamRing, textOnFill, numeralColors } from '@/lib/utils/team-surfaces';
 import type { Player, TeamRoster, FormationSlot } from '@/lib/types';
 
 const outDir = join(dirname(fileURLToPath(import.meta.url)), 'domain');
@@ -497,6 +499,28 @@ write(
     input: testCase.rows,
     expected: buildRecentParticipation(testCase.rows),
   }))
+);
+
+// Team surface resolvers, over every kit in the curated archive. Swift's TeamSurfaces must
+// return identical strings for all 105 — this is what keeps the two implementations from
+// drifting once views on both sides start asking for surfaces instead of a stored hex.
+write(
+  'team-surfaces',
+  UNIFORMS.map((u) => {
+    const colors = u.colors;
+    const numeral = numeralColors(colors);
+    return {
+      id: `${u.teamId}-${u.slug}-${u.yearStart}`,
+      colors,
+      expected: {
+        fill: teamFill(colors),
+        ring: teamRing(colors),
+        textOnFill: textOnFill(colors),
+        numeralFill: numeral.fill,
+        numeralStroke: numeral.stroke,
+      },
+    };
+  })
 );
 
 console.log('done.');

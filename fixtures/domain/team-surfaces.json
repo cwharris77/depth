@@ -1,0 +1,1577 @@
+[
+  {
+    "id": "ravens-home-1996",
+    "colors": {
+      "primary": "#241773",
+      "secondary": "#000000",
+      "accent": "#9E7C0C"
+    },
+    "expected": {
+      "fill": "#241773",
+      "ring": "#9E7C0C",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#241773",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "bengals-home-2021",
+    "colors": {
+      "primary": "#FB4F14",
+      "secondary": "#000000",
+      "accent": "#000000"
+    },
+    "expected": {
+      "fill": "#FB4F14",
+      "ring": "#000000",
+      "textOnFill": "#000000",
+      "numeralFill": "#000000",
+      "numeralStroke": "#FB4F14"
+    }
+  },
+  {
+    "id": "browns-home-2020",
+    "colors": {
+      "primary": "#311D00",
+      "secondary": "#FF3C00",
+      "accent": "#FF3C00"
+    },
+    "expected": {
+      "fill": "#311D00",
+      "ring": "#FF3C00",
+      "textOnFill": "#FF3C00",
+      "numeralFill": "#311D00",
+      "numeralStroke": "#FF3C00"
+    }
+  },
+  {
+    "id": "steelers-home-1997",
+    "colors": {
+      "primary": "#FFB612",
+      "secondary": "#101820",
+      "accent": "#101820"
+    },
+    "expected": {
+      "fill": "#FFB612",
+      "ring": "#101820",
+      "textOnFill": "#101820",
+      "numeralFill": "#101820",
+      "numeralStroke": "#FFB612"
+    }
+  },
+  {
+    "id": "bills-home-2011",
+    "colors": {
+      "primary": "#00338D",
+      "secondary": "#C60C30",
+      "accent": "#C60C30"
+    },
+    "expected": {
+      "fill": "#00338D",
+      "ring": "#C60C30",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#00338D",
+      "numeralStroke": "#C60C30"
+    }
+  },
+  {
+    "id": "dolphins-home-2018",
+    "colors": {
+      "primary": "#008E97",
+      "secondary": "#FC4C02",
+      "accent": "#FC4C02"
+    },
+    "expected": {
+      "fill": "#008E97",
+      "ring": "#FC4C02",
+      "textOnFill": "#15161a",
+      "numeralFill": "#008E97",
+      "numeralStroke": "#FC4C02"
+    }
+  },
+  {
+    "id": "patriots-home-2020",
+    "colors": {
+      "primary": "#002244",
+      "secondary": "#C60C30",
+      "accent": "#B0B7BC"
+    },
+    "expected": {
+      "fill": "#002244",
+      "ring": "#C60C30",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#002244",
+      "numeralStroke": "#C60C30"
+    }
+  },
+  {
+    "id": "jets-home-2024",
+    "colors": {
+      "primary": "#125740",
+      "secondary": "#FFFFFF",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#125740",
+      "ring": "#FFFFFF",
+      "textOnFill": "#FFFFFF",
+      "numeralFill": "#125740",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "texans-home-2024",
+    "colors": {
+      "primary": "#03202F",
+      "secondary": "#A71930",
+      "accent": "#A71930"
+    },
+    "expected": {
+      "fill": "#03202F",
+      "ring": "#A71930",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#03202F",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "colts-home-2004",
+    "colors": {
+      "primary": "#002C5F",
+      "secondary": "#A2AAAD",
+      "accent": "#A2AAAD"
+    },
+    "expected": {
+      "fill": "#002C5F",
+      "ring": "#A2AAAD",
+      "textOnFill": "#A2AAAD",
+      "numeralFill": "#002C5F",
+      "numeralStroke": "#A2AAAD"
+    }
+  },
+  {
+    "id": "jaguars-home-2018",
+    "colors": {
+      "primary": "#006778",
+      "secondary": "#D7A22A",
+      "accent": "#D7A22A"
+    },
+    "expected": {
+      "fill": "#006778",
+      "ring": "#D7A22A",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#006778",
+      "numeralStroke": "#D7A22A"
+    }
+  },
+  {
+    "id": "titans-home-2018",
+    "colors": {
+      "primary": "#0C2340",
+      "secondary": "#4B92DB",
+      "accent": "#4B92DB"
+    },
+    "expected": {
+      "fill": "#0C2340",
+      "ring": "#4B92DB",
+      "textOnFill": "#4B92DB",
+      "numeralFill": "#0C2340",
+      "numeralStroke": "#4B92DB"
+    }
+  },
+  {
+    "id": "broncos-home-2024",
+    "colors": {
+      "primary": "#FB4F14",
+      "secondary": "#002244",
+      "accent": "#002244"
+    },
+    "expected": {
+      "fill": "#FB4F14",
+      "ring": "#002244",
+      "textOnFill": "#002244",
+      "numeralFill": "#002244",
+      "numeralStroke": "#FB4F14"
+    }
+  },
+  {
+    "id": "chiefs-home-1963",
+    "colors": {
+      "primary": "#E31837",
+      "secondary": "#FFB81C",
+      "accent": "#FFB81C"
+    },
+    "expected": {
+      "fill": "#E31837",
+      "ring": "#FFB81C",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#E31837",
+      "numeralStroke": "#FFB81C"
+    }
+  },
+  {
+    "id": "raiders-home-1963",
+    "colors": {
+      "primary": "#000000",
+      "secondary": "#A5ACAF",
+      "accent": "#A5ACAF"
+    },
+    "expected": {
+      "fill": "#000000",
+      "ring": "#A5ACAF",
+      "textOnFill": "#A5ACAF",
+      "numeralFill": "#000000",
+      "numeralStroke": "#A5ACAF"
+    }
+  },
+  {
+    "id": "chargers-home-2020",
+    "colors": {
+      "primary": "#0080C6",
+      "secondary": "#FFC20E",
+      "accent": "#FFC20E"
+    },
+    "expected": {
+      "fill": "#0080C6",
+      "ring": "#FFC20E",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#0080C6",
+      "numeralStroke": "#FFC20E"
+    }
+  },
+  {
+    "id": "bears-home-1984",
+    "colors": {
+      "primary": "#0B162A",
+      "secondary": "#C83803",
+      "accent": "#C83803"
+    },
+    "expected": {
+      "fill": "#0B162A",
+      "ring": "#C83803",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#0B162A",
+      "numeralStroke": "#C83803"
+    }
+  },
+  {
+    "id": "lions-home-2024",
+    "colors": {
+      "primary": "#0076B6",
+      "secondary": "#B0B7BC",
+      "accent": "#B0B7BC"
+    },
+    "expected": {
+      "fill": "#0076B6",
+      "ring": "#B0B7BC",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#0076B6",
+      "numeralStroke": "#B0B7BC"
+    }
+  },
+  {
+    "id": "packers-home-1959",
+    "colors": {
+      "primary": "#203731",
+      "secondary": "#FFB612",
+      "accent": "#FFB612"
+    },
+    "expected": {
+      "fill": "#203731",
+      "ring": "#FFB612",
+      "textOnFill": "#FFB612",
+      "numeralFill": "#203731",
+      "numeralStroke": "#FFB612"
+    }
+  },
+  {
+    "id": "vikings-home-2013",
+    "colors": {
+      "primary": "#4F2683",
+      "secondary": "#FFC62F",
+      "accent": "#FFC62F"
+    },
+    "expected": {
+      "fill": "#4F2683",
+      "ring": "#FFC62F",
+      "textOnFill": "#FFC62F",
+      "numeralFill": "#4F2683",
+      "numeralStroke": "#FFC62F"
+    }
+  },
+  {
+    "id": "cowboys-home-1964",
+    "colors": {
+      "primary": "#003594",
+      "secondary": "#869397",
+      "accent": "#869397"
+    },
+    "expected": {
+      "fill": "#003594",
+      "ring": "#869397",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#003594",
+      "numeralStroke": "#869397"
+    }
+  },
+  {
+    "id": "giants-home-2000",
+    "colors": {
+      "primary": "#0B2265",
+      "secondary": "#A71930",
+      "accent": "#A71930"
+    },
+    "expected": {
+      "fill": "#0B2265",
+      "ring": "#A71930",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#0B2265",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "eagles-home-1996",
+    "colors": {
+      "primary": "#004C54",
+      "secondary": "#A5ACAF",
+      "accent": "#A5ACAF"
+    },
+    "expected": {
+      "fill": "#004C54",
+      "ring": "#A5ACAF",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#004C54",
+      "numeralStroke": "#A5ACAF"
+    }
+  },
+  {
+    "id": "commanders-home-2022",
+    "colors": {
+      "primary": "#5A1414",
+      "secondary": "#FFB612",
+      "accent": "#FFB612"
+    },
+    "expected": {
+      "fill": "#5A1414",
+      "ring": "#FFB612",
+      "textOnFill": "#FFB612",
+      "numeralFill": "#5A1414",
+      "numeralStroke": "#FFB612"
+    }
+  },
+  {
+    "id": "falcons-home-2020",
+    "colors": {
+      "primary": "#A71930",
+      "secondary": "#000000",
+      "accent": "#000000"
+    },
+    "expected": {
+      "fill": "#A71930",
+      "ring": "#000000",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#A71930",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "panthers-home-2012",
+    "colors": {
+      "primary": "#0085CA",
+      "secondary": "#101820",
+      "accent": "#101820"
+    },
+    "expected": {
+      "fill": "#0085CA",
+      "ring": "#101820",
+      "textOnFill": "#15161a",
+      "numeralFill": "#101820",
+      "numeralStroke": "#0085CA"
+    }
+  },
+  {
+    "id": "saints-home-2002",
+    "colors": {
+      "primary": "#D3BC8D",
+      "secondary": "#101820",
+      "accent": "#101820"
+    },
+    "expected": {
+      "fill": "#D3BC8D",
+      "ring": "#101820",
+      "textOnFill": "#101820",
+      "numeralFill": "#101820",
+      "numeralStroke": "#D3BC8D"
+    }
+  },
+  {
+    "id": "buccaneers-home-2020",
+    "colors": {
+      "primary": "#D50A0A",
+      "secondary": "#34302B",
+      "accent": "#FF7900"
+    },
+    "expected": {
+      "fill": "#D50A0A",
+      "ring": "#34302B",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#34302B",
+      "numeralStroke": "#D50A0A"
+    }
+  },
+  {
+    "id": "cardinals-home-2023",
+    "colors": {
+      "primary": "#97233F",
+      "secondary": "#000000",
+      "accent": "#FFB612"
+    },
+    "expected": {
+      "fill": "#97233F",
+      "ring": "#000000",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#97233F",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "rams-home-2020",
+    "colors": {
+      "primary": "#003594",
+      "secondary": "#FFA300",
+      "accent": "#FFA300"
+    },
+    "expected": {
+      "fill": "#003594",
+      "ring": "#FFA300",
+      "textOnFill": "#FFA300",
+      "numeralFill": "#003594",
+      "numeralStroke": "#FFA300"
+    }
+  },
+  {
+    "id": "49ers-home-2022",
+    "colors": {
+      "primary": "#AA0000",
+      "secondary": "#B3995D",
+      "accent": "#B3995D"
+    },
+    "expected": {
+      "fill": "#AA0000",
+      "ring": "#B3995D",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#AA0000",
+      "numeralStroke": "#B3995D"
+    }
+  },
+  {
+    "id": "seahawks-home-2012",
+    "colors": {
+      "primary": "#002244",
+      "secondary": "#69BE28",
+      "accent": "#A5ACAF"
+    },
+    "expected": {
+      "fill": "#002244",
+      "ring": "#69BE28",
+      "textOnFill": "#69BE28",
+      "numeralFill": "#002244",
+      "numeralStroke": "#69BE28"
+    }
+  },
+  {
+    "id": "seahawks-1976-throwback-1976",
+    "colors": {
+      "primary": "#003087",
+      "secondary": "#046A38",
+      "accent": "#8A8D8F"
+    },
+    "expected": {
+      "fill": "#003087",
+      "ring": "#046A38",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#003087",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "buccaneers-creamsicle-1976",
+    "colors": {
+      "primary": "#FF8200",
+      "secondary": "#C8102E",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#FF8200",
+      "ring": "#C8102E",
+      "textOnFill": "#15161a",
+      "numeralFill": "#FF8200",
+      "numeralStroke": "#C8102E"
+    }
+  },
+  {
+    "id": "eagles-kelly-green-1987",
+    "colors": {
+      "primary": "#046A38",
+      "secondary": "#A5ACAF",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#046A38",
+      "ring": "#A5ACAF",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#046A38",
+      "numeralStroke": "#A5ACAF"
+    }
+  },
+  {
+    "id": "broncos-orange-crush-1968",
+    "colors": {
+      "primary": "#001489",
+      "secondary": "#FA4616",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#001489",
+      "ring": "#FA4616",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#001489",
+      "numeralStroke": "#FA4616"
+    }
+  },
+  {
+    "id": "seahawks-away-2012",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#002244",
+      "accent": "#69BE28"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#002244",
+      "textOnFill": "#002244",
+      "numeralFill": "#002244",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "bills-away-2011",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#00338D",
+      "accent": "#C60C30"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#00338D",
+      "textOnFill": "#00338D",
+      "numeralFill": "#00338D",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "dolphins-away-2018",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#008E97",
+      "accent": "#FC4C02"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#008E97",
+      "textOnFill": "#15161a",
+      "numeralFill": "#FFFFFF",
+      "numeralStroke": "#008E97"
+    }
+  },
+  {
+    "id": "patriots-away-2020",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#002244",
+      "accent": "#C60C30"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#002244",
+      "textOnFill": "#002244",
+      "numeralFill": "#002244",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "jets-away-2024",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#125740",
+      "accent": "#125740"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#125740",
+      "textOnFill": "#125740",
+      "numeralFill": "#125740",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "cardinals-away-2023",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#97233F",
+      "accent": "#FFB612"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#97233F",
+      "textOnFill": "#97233F",
+      "numeralFill": "#97233F",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "rams-away-2020",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#003594",
+      "accent": "#FFA300"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#003594",
+      "textOnFill": "#003594",
+      "numeralFill": "#003594",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "49ers-away-2022",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#AA0000",
+      "accent": "#B3995D"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#AA0000",
+      "textOnFill": "#AA0000",
+      "numeralFill": "#AA0000",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "ravens-away-1996",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#241773",
+      "accent": "#9E7C0C"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#241773",
+      "textOnFill": "#241773",
+      "numeralFill": "#241773",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "bengals-away-2021",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#FB4F14",
+      "accent": "#FB4F14"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#FB4F14",
+      "textOnFill": "#15161a",
+      "numeralFill": "#FFFFFF",
+      "numeralStroke": "#FB4F14"
+    }
+  },
+  {
+    "id": "browns-away-2020",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#311D00",
+      "accent": "#FF3C00"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#311D00",
+      "textOnFill": "#311D00",
+      "numeralFill": "#311D00",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "steelers-away-1997",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#FFB612",
+      "accent": "#101820"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#FFB612",
+      "textOnFill": "#15161a",
+      "numeralFill": "#FFFFFF",
+      "numeralStroke": "#FFB612"
+    }
+  },
+  {
+    "id": "texans-away-2024",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#03202F",
+      "accent": "#A71930"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#03202F",
+      "textOnFill": "#03202F",
+      "numeralFill": "#03202F",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "colts-away-2004",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#002C5F",
+      "accent": "#A2AAAD"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#002C5F",
+      "textOnFill": "#002C5F",
+      "numeralFill": "#002C5F",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "jaguars-away-2018",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#006778",
+      "accent": "#D7A22A"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#006778",
+      "textOnFill": "#006778",
+      "numeralFill": "#006778",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "titans-away-2018",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#0C2340",
+      "accent": "#4B92DB"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#0C2340",
+      "textOnFill": "#0C2340",
+      "numeralFill": "#0C2340",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "broncos-away-2024",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#FB4F14",
+      "accent": "#002244"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#FB4F14",
+      "textOnFill": "#15161a",
+      "numeralFill": "#FFFFFF",
+      "numeralStroke": "#FB4F14"
+    }
+  },
+  {
+    "id": "chiefs-away-1963",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#E31837",
+      "accent": "#FFB81C"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#E31837",
+      "textOnFill": "#E31837",
+      "numeralFill": "#FFFFFF",
+      "numeralStroke": "#E31837"
+    }
+  },
+  {
+    "id": "raiders-away-1963",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#000000",
+      "accent": "#A5ACAF"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#000000",
+      "textOnFill": "#000000",
+      "numeralFill": "#000000",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "chargers-away-2020",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#0080C6",
+      "accent": "#FFC20E"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#0080C6",
+      "textOnFill": "#15161a",
+      "numeralFill": "#FFFFFF",
+      "numeralStroke": "#0080C6"
+    }
+  },
+  {
+    "id": "cowboys-away-1964",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#003594",
+      "accent": "#869397"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#003594",
+      "textOnFill": "#003594",
+      "numeralFill": "#003594",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "giants-away-2000",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#0B2265",
+      "accent": "#A71930"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#0B2265",
+      "textOnFill": "#0B2265",
+      "numeralFill": "#0B2265",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "eagles-away-1996",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#004C54",
+      "accent": "#A5ACAF"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#004C54",
+      "textOnFill": "#004C54",
+      "numeralFill": "#004C54",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "commanders-away-2022",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#5A1414",
+      "accent": "#FFB612"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#5A1414",
+      "textOnFill": "#5A1414",
+      "numeralFill": "#5A1414",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "bears-away-1984",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#0B162A",
+      "accent": "#C83803"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#0B162A",
+      "textOnFill": "#0B162A",
+      "numeralFill": "#0B162A",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "lions-away-2024",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#0076B6",
+      "accent": "#B0B7BC"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#0076B6",
+      "textOnFill": "#0076B6",
+      "numeralFill": "#FFFFFF",
+      "numeralStroke": "#0076B6"
+    }
+  },
+  {
+    "id": "packers-away-1959",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#203731",
+      "accent": "#FFB612"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#203731",
+      "textOnFill": "#203731",
+      "numeralFill": "#203731",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "vikings-away-2013",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#4F2683",
+      "accent": "#FFC62F"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#4F2683",
+      "textOnFill": "#4F2683",
+      "numeralFill": "#4F2683",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "falcons-away-2020",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#A71930",
+      "accent": "#A71930"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#A71930",
+      "textOnFill": "#A71930",
+      "numeralFill": "#A71930",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "panthers-away-2012",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#0085CA",
+      "accent": "#101820"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#0085CA",
+      "textOnFill": "#15161a",
+      "numeralFill": "#FFFFFF",
+      "numeralStroke": "#0085CA"
+    }
+  },
+  {
+    "id": "saints-away-2002",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#D3BC8D",
+      "accent": "#101820"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#D3BC8D",
+      "textOnFill": "#15161a",
+      "numeralFill": "#FFFFFF",
+      "numeralStroke": "#D3BC8D"
+    }
+  },
+  {
+    "id": "buccaneers-away-2020",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#D50A0A",
+      "accent": "#34302B"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#D50A0A",
+      "textOnFill": "#D50A0A",
+      "numeralFill": "#FFFFFF",
+      "numeralStroke": "#D50A0A"
+    }
+  },
+  {
+    "id": "chargers-powder-blue-1960",
+    "colors": {
+      "primary": "#0080C6",
+      "secondary": "#FFC20E",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#0080C6",
+      "ring": "#FFC20E",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#0080C6",
+      "numeralStroke": "#FFC20E"
+    }
+  },
+  {
+    "id": "titans-oilers-throwback-1960",
+    "colors": {
+      "primary": "#4B92DB",
+      "secondary": "#C8102E",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#4B92DB",
+      "ring": "#C8102E",
+      "textOnFill": "#15161a",
+      "numeralFill": "#4B92DB",
+      "numeralStroke": "#C8102E"
+    }
+  },
+  {
+    "id": "bears-orange-alternate-2005",
+    "colors": {
+      "primary": "#C83803",
+      "secondary": "#0B162A",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#C83803",
+      "ring": "#0B162A",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#0B162A",
+      "numeralStroke": "#C83803"
+    }
+  },
+  {
+    "id": "saints-color-rush-2022",
+    "colors": {
+      "primary": "#101820",
+      "secondary": "#D3BC8D",
+      "accent": "#D3BC8D"
+    },
+    "expected": {
+      "fill": "#101820",
+      "ring": "#D3BC8D",
+      "textOnFill": "#D3BC8D",
+      "numeralFill": "#101820",
+      "numeralStroke": "#D3BC8D"
+    }
+  },
+  {
+    "id": "jaguars-teal-throwback-1998",
+    "colors": {
+      "primary": "#006778",
+      "secondary": "#D7A22A",
+      "accent": "#101820"
+    },
+    "expected": {
+      "fill": "#006778",
+      "ring": "#D7A22A",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#006778",
+      "numeralStroke": "#D7A22A"
+    }
+  },
+  {
+    "id": "commanders-70s-burgundy-1972",
+    "colors": {
+      "primary": "#5A1414",
+      "secondary": "#FFB612",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#5A1414",
+      "ring": "#FFB612",
+      "textOnFill": "#FFB612",
+      "numeralFill": "#5A1414",
+      "numeralStroke": "#FFB612"
+    }
+  },
+  {
+    "id": "vikings-purple-classic-1961",
+    "colors": {
+      "primary": "#4F2683",
+      "secondary": "#FFC62F",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#4F2683",
+      "ring": "#FFC62F",
+      "textOnFill": "#FFC62F",
+      "numeralFill": "#4F2683",
+      "numeralStroke": "#FFC62F"
+    }
+  },
+  {
+    "id": "packers-1923-throwback-1923",
+    "colors": {
+      "primary": "#1B2C4E",
+      "secondary": "#CC8835",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#1B2C4E",
+      "ring": "#CC8835",
+      "textOnFill": "#CC8835",
+      "numeralFill": "#1B2C4E",
+      "numeralStroke": "#CC8835"
+    }
+  },
+  {
+    "id": "bills-rivalries-2025-2025",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#00338D",
+      "accent": "#C60C30"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#00338D",
+      "textOnFill": "#00338D",
+      "numeralFill": "#00338D",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "dolphins-rivalries-2025-2025",
+    "colors": {
+      "primary": "#101820",
+      "secondary": "#008E97",
+      "accent": "#FC4C02"
+    },
+    "expected": {
+      "fill": "#101820",
+      "ring": "#008E97",
+      "textOnFill": "#008E97",
+      "numeralFill": "#101820",
+      "numeralStroke": "#008E97"
+    }
+  },
+  {
+    "id": "patriots-rivalries-2025-2025",
+    "colors": {
+      "primary": "#002F6C",
+      "secondary": "#C60C30",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#002F6C",
+      "ring": "#C60C30",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#002F6C",
+      "numeralStroke": "#C60C30"
+    }
+  },
+  {
+    "id": "jets-rivalries-2025-2025",
+    "colors": {
+      "primary": "#115740",
+      "secondary": "#000000",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#115740",
+      "ring": "#000000",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#115740",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "cardinals-rivalries-2025-2025",
+    "colors": {
+      "primary": "#FFF7E3",
+      "secondary": "#B31529",
+      "accent": "#EE6B3D"
+    },
+    "expected": {
+      "fill": "#FFF7E3",
+      "ring": "#B31529",
+      "textOnFill": "#B31529",
+      "numeralFill": "#B31529",
+      "numeralStroke": "#FFF7E3"
+    }
+  },
+  {
+    "id": "rams-rivalries-2025-2025",
+    "colors": {
+      "primary": "#0D1B3E",
+      "secondary": "#FFD100",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#0D1B3E",
+      "ring": "#FFD100",
+      "textOnFill": "#FFD100",
+      "numeralFill": "#0D1B3E",
+      "numeralStroke": "#FFD100"
+    }
+  },
+  {
+    "id": "49ers-rivalries-2025-2025",
+    "colors": {
+      "primary": "#101820",
+      "secondary": "#B3995D",
+      "accent": "#AA0000"
+    },
+    "expected": {
+      "fill": "#101820",
+      "ring": "#B3995D",
+      "textOnFill": "#B3995D",
+      "numeralFill": "#101820",
+      "numeralStroke": "#B3995D"
+    }
+  },
+  {
+    "id": "seahawks-rivalries-2025-2025",
+    "colors": {
+      "primary": "#C6D3DC",
+      "secondary": "#002244",
+      "accent": "#29594C"
+    },
+    "expected": {
+      "fill": "#C6D3DC",
+      "ring": "#002244",
+      "textOnFill": "#002244",
+      "numeralFill": "#002244",
+      "numeralStroke": "#C6D3DC"
+    }
+  },
+  {
+    "id": "dolphins-1972-throwback-1966",
+    "colors": {
+      "primary": "#008E97",
+      "secondary": "#FC4C02",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#008E97",
+      "ring": "#FC4C02",
+      "textOnFill": "#15161a",
+      "numeralFill": "#008E97",
+      "numeralStroke": "#FC4C02"
+    }
+  },
+  {
+    "id": "patriots-pat-patriot-1961",
+    "colors": {
+      "primary": "#C8102E",
+      "secondary": "#002F6C",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#C8102E",
+      "ring": "#002F6C",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#002F6C",
+      "numeralStroke": "#C8102E"
+    }
+  },
+  {
+    "id": "jets-black-alt-2024",
+    "colors": {
+      "primary": "#000000",
+      "secondary": "#125740",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#000000",
+      "ring": "#125740",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#000000",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "steelers-bumblebee-1933",
+    "colors": {
+      "primary": "#101820",
+      "secondary": "#FFB612",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#101820",
+      "ring": "#FFB612",
+      "textOnFill": "#FFB612",
+      "numeralFill": "#101820",
+      "numeralStroke": "#FFB612"
+    }
+  },
+  {
+    "id": "browns-1946-throwback-1946",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#FF3C00",
+      "accent": "#311D00"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#FF3C00",
+      "textOnFill": "#15161a",
+      "numeralFill": "#FFFFFF",
+      "numeralStroke": "#FF3C00"
+    }
+  },
+  {
+    "id": "bengals-orange-alt-2021",
+    "colors": {
+      "primary": "#FB4F14",
+      "secondary": "#000000",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#FB4F14",
+      "ring": "#000000",
+      "textOnFill": "#000000",
+      "numeralFill": "#000000",
+      "numeralStroke": "#FB4F14"
+    }
+  },
+  {
+    "id": "bengals-color-rush-2016",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#000000",
+      "accent": "#000000"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#000000",
+      "textOnFill": "#000000",
+      "numeralFill": "#000000",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "ravens-black-alt-2004",
+    "colors": {
+      "primary": "#000000",
+      "secondary": "#241773",
+      "accent": "#9E7C0C"
+    },
+    "expected": {
+      "fill": "#000000",
+      "ring": "#9E7C0C",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#000000",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "texans-battle-red-2024",
+    "colors": {
+      "primary": "#A71930",
+      "secondary": "#03202F",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#A71930",
+      "ring": "#03202F",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#A71930",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "jaguars-black-alt-2018",
+    "colors": {
+      "primary": "#101820",
+      "secondary": "#D7A22A",
+      "accent": "#006778"
+    },
+    "expected": {
+      "fill": "#101820",
+      "ring": "#D7A22A",
+      "textOnFill": "#D7A22A",
+      "numeralFill": "#101820",
+      "numeralStroke": "#D7A22A"
+    }
+  },
+  {
+    "id": "titans-navy-alt-2018",
+    "colors": {
+      "primary": "#0C2340",
+      "secondary": "#4B92DB",
+      "accent": "#C8102E"
+    },
+    "expected": {
+      "fill": "#0C2340",
+      "ring": "#4B92DB",
+      "textOnFill": "#4B92DB",
+      "numeralFill": "#0C2340",
+      "numeralStroke": "#4B92DB"
+    }
+  },
+  {
+    "id": "broncos-orange-alt-2024",
+    "colors": {
+      "primary": "#FB4F14",
+      "secondary": "#002244",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#FB4F14",
+      "ring": "#002244",
+      "textOnFill": "#002244",
+      "numeralFill": "#002244",
+      "numeralStroke": "#FB4F14"
+    }
+  },
+  {
+    "id": "giants-1980s-throwback-1980",
+    "colors": {
+      "primary": "#0B2265",
+      "secondary": "#A71930",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#0B2265",
+      "ring": "#A71930",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#0B2265",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "eagles-black-alt-2003",
+    "colors": {
+      "primary": "#000000",
+      "secondary": "#004C54",
+      "accent": "#A5ACAF"
+    },
+    "expected": {
+      "fill": "#000000",
+      "ring": "#004C54",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#000000",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "lions-gridiron-gray-2017",
+    "colors": {
+      "primary": "#B0B7BC",
+      "secondary": "#0076B6",
+      "accent": "#000000"
+    },
+    "expected": {
+      "fill": "#B0B7BC",
+      "ring": "#0076B6",
+      "textOnFill": "#15161a",
+      "numeralFill": "#B0B7BC",
+      "numeralStroke": "#0076B6"
+    }
+  },
+  {
+    "id": "vikings-winter-warrior-2024",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#4F2683",
+      "accent": "#FFC62F"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#4F2683",
+      "textOnFill": "#4F2683",
+      "numeralFill": "#4F2683",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "packers-winter-warning-2025",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#203731",
+      "accent": "#FFB612"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#203731",
+      "textOnFill": "#203731",
+      "numeralFill": "#203731",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "falcons-red-alt-2020",
+    "colors": {
+      "primary": "#A71930",
+      "secondary": "#000000",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#A71930",
+      "ring": "#000000",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#A71930",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "panthers-black-alt-2012",
+    "colors": {
+      "primary": "#101820",
+      "secondary": "#0085CA",
+      "accent": "#A5ACAF"
+    },
+    "expected": {
+      "fill": "#101820",
+      "ring": "#0085CA",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#101820",
+      "numeralStroke": "#0085CA"
+    }
+  },
+  {
+    "id": "cardinals-black-alt-2023",
+    "colors": {
+      "primary": "#000000",
+      "secondary": "#97233F",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#000000",
+      "ring": "#97233F",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#000000",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "rams-bone-2020",
+    "colors": {
+      "primary": "#F0EBE0",
+      "secondary": "#003594",
+      "accent": "#FFA300"
+    },
+    "expected": {
+      "fill": "#F0EBE0",
+      "ring": "#003594",
+      "textOnFill": "#003594",
+      "numeralFill": "#003594",
+      "numeralStroke": "#F0EBE0"
+    }
+  }
+]
