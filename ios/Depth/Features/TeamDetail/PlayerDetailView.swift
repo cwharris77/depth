@@ -76,6 +76,54 @@ struct PlayerDetailView: View {
     /// when the card was opened from the depth chart, else the team's own.
     private var jersey: JerseyColors? { kitColors ?? team?.colors.jersey }
 
+    /// The jersey numeral above the name: a filled glyph with a contrasting outline, the
+    /// way a real jersey number is built (spec direction 3, locked 2026-09-01).
+    ///
+    /// This replaces a 26%-opacity watermark. That treatment was decorative by construction
+    /// — it carried `accessibilityHidden` — and for dark-primary teams it composited to
+    /// 1.02–1.16 against the ground, i.e. invisible. Promoting it to a real object is a
+    /// deliberate hierarchy change, so it also gains a label.
+    ///
+    /// Both colors come from TeamSurfaces.numeral, so the pair is always two real jersey
+    /// colors. The swap branch there is why this isn't just "stroke it white": `primary` is
+    /// white on every away kit in the archive, so an unconditional white stroke renders
+    /// those numerals as a solid white slab.
+    ///
+    /// A negative `strokeWidth` fills *and* strokes; a positive value strokes only, leaving
+    /// the glyph hollow. That sign is the whole trick — see the spec's implementation note.
+    @ViewBuilder
+    private var jerseyNumeral: some View {
+        let label = "#\(player.number)"
+        if let colors = jersey {
+            let numeral = TeamSurfaces.numeral(colors)
+            StrokedText(
+                text: label,
+                size: scaledNumberSize,
+                weight: .black,
+                tracking: scaledNumberSize * -0.03,
+                fill: Color(hex: numeral.fill),
+                stroke: Color(hex: numeral.stroke),
+                strokeWidthPercent: numeralStrokePercent
+            )
+            .accessibilityLabel("Jersey number \(player.number)")
+        } else {
+            // No kit resolved yet: the app accent, unstroked. There is no team pair to
+            // outline with, and a stroke in a neutral would read as a rendering artefact.
+            Text(label)
+                .font(.system(size: scaledNumberSize, weight: .black))
+                .tracking(scaledNumberSize * -0.03)
+                .foregroundStyle(DesignTokens.Colors.accent)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+                .accessibilityLabel("Jersey number \(player.number)")
+        }
+    }
+
+    /// Outline weight as a percentage of the glyph size, so it holds its proportion at
+    /// accessibility text sizes rather than thinning out as the numeral grows. 6% is about
+    /// the ratio a real jersey numeral's trim carries.
+    private var numeralStrokePercent: CGFloat { 6 }
+
     /// The card's accent for anything drawn straight on the page — watermark, row text,
     /// stats highlights, chip labels and borders. `mark` rather than `ring` because none of
     /// these sit on a fill to borrow contrast from.
@@ -158,13 +206,7 @@ struct PlayerDetailView: View {
             // the name — the most recognizable jersey identity, placed first per
             // Cooper's visual pass ("make it a large team-colored number that appears
             // above the name"). The `#12 · QB · Quarterback` line below stays.
-            Text("#\(player.number)")
-                .font(.system(size: scaledNumberSize, weight: .black))
-                .tracking(scaledNumberSize * -0.03)
-                .foregroundStyle(accent.opacity(0.26))
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
-                .accessibilityHidden(true)
+            jerseyNumeral
             Text(player.name.isEmpty ? "#\(player.number)" : player.name)
                 .font(.title.bold())
                 .accessibilityIdentifier("player-profile-name")
