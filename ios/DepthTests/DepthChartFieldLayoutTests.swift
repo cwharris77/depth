@@ -69,6 +69,37 @@ struct DepthChartFieldLayoutTests {
         }
     }
 
+    /// DEP-431: every unit is framed to the card, so each one should actually use most of
+    /// the height available to it. Before framing, the shared 0–100 charted space meant a
+    /// unit only ever occupied its own band of the card — measured, the defense used 39% of
+    /// the height and the offense 25%, with the opposing half left empty, which is what made
+    /// a tight front unreadable.
+    ///
+    /// The floor is 45% of *dot-center to dot-center*, which is a good deal less than how
+    /// full the card looks: the framed extent also carries the label block under the lowest
+    /// dot and the margin kept past the line of scrimmage, neither of which sits between two
+    /// centers. `maxFramingScale` is what binds here — the offense charts into so little
+    /// vertical space that even the full 2x stretch only spans ~51% center-to-center (the
+    /// defense, starting wider, clears 60%). So this asserts the doubling happened at all
+    /// rather than pinning the constants, which are tuning.
+    @Test("every unit is framed to use most of the card's height")
+    func unitsFillTheCardVertically() {
+        let size = CGSize(width: 370, height: 650)
+        let offense = offenseFormation.map {
+            RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+        }
+        let defense = baseDefense.map {
+            RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+        }
+        for (name, slots) in [("offense", offense), ("defense", defense)] {
+            let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: size)
+            let ys = slots.map { renderedPoint(for: $0, layout: layout).y }
+            guard let top = ys.min(), let bottom = ys.max() else { continue }
+            let used = (bottom - top) / size.height
+            #expect(used > 0.45, "\(name) only used \(Int(used * 100))% of the card's height")
+        }
+    }
+
     @Test("no defensive slot ever renders past the line of scrimmage")
     func noDefensiveSlotCrossesTheLine() {
         let sizes = [
@@ -378,9 +409,17 @@ struct DepthChartFieldLayoutTests {
 // formation. These assert the line's route, not just the tag's spot.
 struct LeaderLineRoutingTests {
     /// The field as it renders on the reported device: an iPhone 17 Pro's 402pt width
-    /// minus the page's horizontal padding, at the height `frame(maxHeight: .infinity)`
-    /// gives the chart in TeamDetailView.
-    private let phoneField = CGSize(width: 367, height: 477)
+    /// minus the page's horizontal padding.
+    ///
+    /// The height is deliberately 400 rather than the 477 this fixture originally used.
+    /// DEP-431's framing gives a unit roughly twice the vertical room it had, and at 477
+    /// every name in this nickel front now fits inline — the layout emits zero callouts, so
+    /// the leader-line assertions below would pass vacuously and stop covering the routing
+    /// logic at all. 400 is inside the range where crowding (and therefore callouts) still
+    /// genuinely occurs — short/landscape/split-screen viewports — which is exactly where
+    /// leader lines still ship, so this keeps the routing logic under real test.
+    /// Measured on this fixture: ≤440pt still produces callouts, ≥480pt produces none.
+    private let phoneField = CGSize(width: 367, height: 400)
 
     /// The exact alignment from the report — a nickel front (five DBs, a three-man line)
     /// with the real name lengths. Name width is what decides whether a name goes inline

@@ -38,6 +38,37 @@ enum FieldNameMode: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
+/// The vertical charted→screen mapping for one unit's field (DEP-431).
+///
+/// The charted coordinate space is shared by both sides of the ball — y=50 is the line of
+/// scrimmage, the defense occupies roughly 10–49 and the offense 51–76 — but a depth chart
+/// only ever draws ONE unit at a time. Mapping the full 0–100 space onto the card therefore
+/// spent most of the card on the empty half: measured across the real formations, the
+/// defense used 39% of the available height and the offense just 25%, which is what made a
+/// crowded front (the Jets' 3-3-5, where the DB and LB rows chart 3–7 units apart) illegible.
+///
+/// So the field is framed to the unit actually being drawn: an affine transform on y that
+/// fits the unit's own rendered extent to the card. `FieldMarkings` draws the yard lines,
+/// hash marks and line of scrimmage through this SAME transform — otherwise the field's
+/// geography stops agreeing with the players standing on it, and the line of scrimmage in
+/// particular would no longer be the line the front is actually lined up on.
+struct FieldFraming: Equatable {
+    /// Applied to a y already expressed in unframed "full field" screen points.
+    let scale: CGFloat
+    let offset: CGFloat
+
+    /// The untransformed full-field mapping — what the field drew before DEP-431, and the
+    /// safe fallback whenever there's nothing to frame against (no slots, zero extent).
+    static let identity = FieldFraming(scale: 1, offset: 0)
+
+    func apply(_ y: CGFloat) -> CGFloat { y * scale + offset }
+
+    /// Charted percent (0–100) → screen y. The entry point `FieldMarkings` draws through.
+    func screenY(chartedPercent: Double, height: CGFloat) -> CGFloat {
+        apply(height * CGFloat(chartedPercent) / 100)
+    }
+}
+
 struct DepthChartFieldLayout: Equatable {
     /// Visual dot diameter in points.
     let dotSize: CGFloat
@@ -55,6 +86,10 @@ struct DepthChartFieldLayout: Equatable {
     /// other two variants draw no callouts and use this instead — either the slots with no
     /// room (`inlineOnly`) or every slot (`off`).
     var crowdedKeys: Set<String> = []
+    /// The vertical charted→screen transform this layout was framed with. `FieldMarkings`
+    /// must draw the yard lines, hash marks and line of scrimmage through the SAME
+    /// transform, or the field's geography stops agreeing with the players standing on it.
+    var framing: FieldFraming = .identity
 
     /// Whether this slot's name renders under its own dot.
     func showsInlineName(_ key: String) -> Bool {
@@ -145,7 +180,8 @@ struct DepthChartFieldLayout: Equatable {
                             height: fieldSize.height
                         ).keys
                     )
-                    : Set(slots.map(\.key))
+                    : Set(slots.map(\.key)),
+                framing: base.framing
             )
         }
         return DepthChartFieldLayout(
@@ -157,7 +193,8 @@ struct DepthChartFieldLayout: Equatable {
                 dotSize: base.dotSize,
                 width: width,
                 height: fieldSize.height
-            )
+            ),
+            framing: base.framing
         )
     }
 
@@ -562,7 +599,12 @@ struct DepthChartFieldLayout: Equatable {
             centers = resolvingLabelOverlaps(centers, slots: slots, dotSize: dotSize, width: width, height: height)
             centers = resolvingOverlaps(centers, slots: slots, dotSize: dotSize, width: width)
         }
-        return DepthChartFieldLayout(dotSize: dotSize, positions: centers, nameCallouts: [:])
+        let (framedCenters, fieldFraming) = framing(
+            centers, slots: slots, dotSize: dotSize, width: width, height: height
+        )
+        return DepthChartFieldLayout(
+            dotSize: dotSize, positions: framedCenters, nameCallouts: [:], framing: fieldFraming
+        )
     }
 
     /// THROWAWAY PROTOTYPE, per Cooper 2026-08-23: makes "off the line of scrimmage" legible.
@@ -811,6 +853,77 @@ struct DepthChartFieldLayout: Equatable {
         return centers
     }
 
+    /// Vertical breathing room (pt) left above the topmost dot and below the lowest label
+    /// once a unit is framed to the card.
+    static let framingInset: CGFloat = 8
+    /// Ceiling on how far a unit may be stretched vertically. The offense charts into just
+    /// 25% of the field, so an uncapped fit would blow it up ~3.7x and strand the backfield
+    /// alone at the bottom of the card with the line alone at the top — legible, but no
+    /// longer reading as a formation. 2x is the most that still holds together as one shape.
+    static let maxFramingScale: CGFloat = 2
+    /// Grass (pt, before scaling) kept on the far side of the line of scrimmage so the line
+    /// reads as one — see `framing`.
+    static let lineOfScrimmageMargin: CGFloat = 16
+
+    /// Fits `centers` to the card vertically, then re-settles the collision passes in the
+    /// framed space so every guarantee (`resolvingOverlaps`' dot clearance,
+    /// `resolvingLabelOverlaps`' tag clearance and its line-of-scrimmage clamp) holds in the
+    /// coordinates actually drawn rather than in the pre-framing space they were solved in.
+    /// Re-settling matters in both directions: stretching can pull a slot off a row it was
+    /// deliberately snapped to, and a unit too tall for the card gets scaled DOWN, which
+    /// shrinks gaps that were previously clear.
+    private static func framing(
+        _ centers: [String: CGPoint],
+        slots: [RenderSlot],
+        dotSize: CGFloat,
+        width: CGFloat,
+        height: CGFloat,
+        fixed: Set<String> = []
+    ) -> ([String: CGPoint], FieldFraming) {
+        var top = CGFloat.greatestFiniteMagnitude
+        var bottom = -CGFloat.greatestFiniteMagnitude
+        for slot in slots {
+            guard let p = centers[slot.key] else { continue }
+            let y = p.y + lineOffset(y: slot.y, onLine: slot.onLine, dotSize: dotSize)
+            top = min(top, y - dotSize / 2)
+            // The label block under the lowest dot is part of the unit's real footprint —
+            // framing to the dots alone would push the bottom row's tags off the card.
+            bottom = max(bottom, y + dotSize / 2 + labelTopGap + labelBlockHeight)
+        }
+        // Keep the line of scrimmage in frame with grass beyond it. Framing to the players
+        // alone put the line hard against the card edge with the front crammed into it,
+        // which reads as a formation cut off by the crop rather than one lined up against
+        // a line — the line needs something on its far side to be a line at all.
+        let lineOfScrimmageY = height * 0.5
+        top = min(top, lineOfScrimmageY - lineOfScrimmageMargin)
+        bottom = max(bottom, lineOfScrimmageY + lineOfScrimmageMargin)
+        let extent = bottom - top
+        let target = height - framingInset * 2
+        guard extent > 0, target > 0 else { return (centers, .identity) }
+
+        let framing = FieldFraming(
+            scale: min(target / extent, maxFramingScale),
+            offset: 0
+        )
+        // Center what's left over rather than pinning to the top, so a unit that hits the
+        // scale cap sits in the middle of the card instead of leaving all its slack below.
+        let centered = FieldFraming(
+            scale: framing.scale,
+            offset: (height - extent * framing.scale) / 2 - top * framing.scale
+        )
+
+        var framed = centers.mapValues { CGPoint(x: $0.x, y: centered.apply($0.y)) }
+        for _ in 0..<4 {
+            framed = resolvingLabelOverlaps(
+                framed, slots: slots, dotSize: dotSize, width: width, height: height, fixed: fixed
+            )
+            framed = resolvingOverlaps(
+                framed, slots: slots, dotSize: dotSize, width: width, fixed: fixed
+            )
+        }
+        return (framed, centered)
+    }
+
     private static func withX(_ slot: RenderSlot, _ x: Double) -> RenderSlot {
         RenderSlot(key: slot.key, x: x, y: slot.y, label: slot.label, player: slot.player, onLine: slot.onLine)
     }
@@ -877,6 +990,12 @@ struct DepthChartFieldLayout: Equatable {
             )
         }
 
-        return DepthChartFieldLayout(dotSize: base.dotSize, positions: positions, nameCallouts: base.nameCallouts)
+        // `base` came from standardLayout, which already framed the unit to the card; the
+        // re-pin above only moves x, so that framing still describes these positions and is
+        // carried through rather than recomputed (reframing here would double-apply it).
+        return DepthChartFieldLayout(
+            dotSize: base.dotSize, positions: positions, nameCallouts: base.nameCallouts,
+            framing: base.framing
+        )
     }
 }
