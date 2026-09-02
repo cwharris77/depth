@@ -73,6 +73,17 @@ enum DesignTokens {
         /// Hash-mark strokes, distinct from `borderStrong`'s 0.10 — field lines at
         /// 0.12 white (`FieldMarkings.tsx`'s `surfaceChipHover`).
         static let fieldHashMark = Color.white.opacity(0.12)
+        /// The field's yard lines and per-yard ticks, drawn as chalk (DEP-432).
+        ///
+        /// These used to share `borderStrong` (0.10 white) with app chrome, which is right
+        /// for a hairline between two dark surfaces and wrong on turf — at 10% they read as
+        /// grey haze rather than markings. Once the field became a real ruler the lines have
+        /// to be legible enough to count, so they get their own value at chalk strength
+        /// instead of borrowing a border token.
+        static let fieldChalk = Color.white.opacity(0.55)
+        /// The five-yard lines, a touch brighter than the single-yard ticks between them so
+        /// the ruler has a readable rhythm rather than a uniform comb.
+        static let fieldChalkMajor = Color.white.opacity(0.75)
         /// Matches web's `borderDrawer` — the Uniforms tab's division-header hairline.
         static let borderDrawer = Color(hex: "#2d333d")
         /// Native-only (DEP-259) — no web tokens.ts counterpart. Shared redacted-skeleton
