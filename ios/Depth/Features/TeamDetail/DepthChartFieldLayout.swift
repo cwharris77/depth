@@ -38,6 +38,68 @@ enum FieldNameMode: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
+/// Maps the shared charted coordinate space onto the card in real yards (DEP-432).
+///
+/// The charted space runs 0–100 across both axes with the line of scrimmage at y=50, and
+/// the field used to map all 100 units of it onto the card — so a unit occupied only its
+/// own band (the defense 39% of the height, the offense 25%), and each drawn yard line was
+/// worth ~2.9 real yards. That is what made an under-centre quarterback read as if he were
+/// standing ten yards deep.
+///
+/// Instead the card is cropped to a window around the unit being drawn, which sets the
+/// vertical scale directly: roughly a 10-yard window for the offense and 14 for the defense.
+/// At those windows every real alignment clears the dot-collision minimum on its own, so
+/// depth can be drawn at **true scale** with nothing added to it — see
+/// `settingOffLineDepth`, which no longer pushes anything apart to make room for labels.
+///
+/// `FieldMarkings` draws its yard ticks through this same scale, so the ruler beside the
+/// players measures the distance the players are actually spaced by.
+struct FieldYardScale: Equatable {
+    /// Screen points per charted unit.
+    let pointsPerUnit: CGFloat
+    /// Screen y of charted 0.
+    let originY: CGFloat
+
+    /// Charted units per real yard, fitted by least squares against 137 measured snaps of
+    /// NFL tracking data (DEP-432). The charted values are not perfectly self-consistent —
+    /// they were authored by eye — so this is the best single linear fit, accurate to
+    /// within half a yard everywhere except the secondary, whose charted depths are
+    /// separately known to be wrong and are tracked for correction.
+    static let chartedUnitsPerYard: CGFloat = 3.8
+
+    /// The line of scrimmage in charted coordinates.
+    static let lineOfScrimmage: Double = 50
+
+    /// The untransformed full-field mapping: the whole charted space on the card, about 26
+    /// real yards of it. The safe fallback when there is nothing to frame against, and what
+    /// every unit drew before DEP-432.
+    ///
+    /// The offense still uses it, per Cooper. Cropping to the unit's own extent is what
+    /// makes the defense readable — its four depth levels need the room — but the offense
+    /// has only two (the line, and the backfield four to seven yards behind it), and
+    /// zooming into those made it read as stretched no matter how the window was tuned.
+    /// Showing the offense the whole field keeps the backfield close to the line, which is
+    /// where it belongs.
+    static func fullField(height: CGFloat) -> FieldYardScale {
+        FieldYardScale(pointsPerUnit: height / 100, originY: 0)
+    }
+
+    var pointsPerYard: CGFloat { pointsPerUnit * Self.chartedUnitsPerYard }
+
+    func screenY(charted: Double) -> CGFloat { CGFloat(charted) * pointsPerUnit + originY }
+
+    /// Real yards between two charted y values.
+    static func yards(between a: Double, and b: Double) -> CGFloat {
+        CGFloat(abs(b - a)) / chartedUnitsPerYard
+    }
+
+    /// Charted y for a whole-yard tick `yards` from the line of scrimmage, on the side the
+    /// sign selects (positive = the offense's side, matching charted y increasing downward).
+    static func charted(yardsFromLine yards: CGFloat) -> Double {
+        lineOfScrimmage + Double(yards * chartedUnitsPerYard)
+    }
+}
+
 struct DepthChartFieldLayout: Equatable {
     /// Visual dot diameter in points.
     let dotSize: CGFloat
@@ -55,6 +117,10 @@ struct DepthChartFieldLayout: Equatable {
     /// other two variants draw no callouts and use this instead — either the slots with no
     /// room (`inlineOnly`) or every slot (`off`).
     var crowdedKeys: Set<String> = []
+    /// The charted→screen vertical mapping this layout was drawn with. `FieldMarkings`
+    /// must draw its yard ticks through the SAME scale, or the ruler stops measuring the
+    /// distances the players are spaced by.
+    var yardScale: FieldYardScale = FieldYardScale(pointsPerUnit: 1, originY: 0)
 
     /// Whether this slot's name renders under its own dot.
     func showsInlineName(_ key: String) -> Bool {
@@ -62,12 +128,19 @@ struct DepthChartFieldLayout: Equatable {
     }
 
     static let minDotSize: CGFloat = 26
-    /// THROWAWAY PROTOTYPE, per Cooper 2026-08-23: 32 rather than 36. At 36 the six-man
-    /// interior run (five linemen plus a tight end) eats ~190pt of a ~367pt row, leaving
-    /// no room for the receivers to sit visibly off the line — the whole offense collapsed
-    /// into one evenly spaced wall. 32 buys back the strip the receivers need while still
-    /// reading much larger than the old size-to-the-tightest-gap result (27.6pt), and it
-    /// stays uniform across offense/defense/special, which was the point of the change.
+    /// 32, and the ceiling rather than a preference.
+    ///
+    /// The offense's width is set by the six-man interior run — five linemen plus a tight
+    /// end — which costs `6 * dotSize + 5 * gap` no matter how the formation is framed.
+    /// Five linemen occupy 6.18 real yards, which at the field's true horizontal scale is
+    /// 43pt for six dots, so they must be stretched ~5x just to be separable, and that
+    /// stretch is what consumes the row. At 32 the formation needs ~77% of a 370pt card;
+    /// at 36 it needs 86% and fills it edge to edge; at 40 the interior additionally
+    /// starts pushing names off their inline slot onto leader lines.
+    ///
+    /// So dot size is the only lever on how wide the offense reads, and 32 is where it
+    /// leaves visible grass at the sidelines without the dots getting small. Uniform across
+    /// offense/defense/special, as it has been since 2026-08-23.
     static let maxDotSize: CGFloat = 32
     static let gap: CGFloat = 2
     /// Deliberate empty space between the outermost interior dot (tackle or tight end) and
@@ -117,15 +190,19 @@ struct DepthChartFieldLayout: Equatable {
         slots: [RenderSlot],
         fieldSize: CGSize,
         fillWidth: Bool = false,
-        nameMode: FieldNameMode = .callouts
+        nameMode: FieldNameMode = .callouts,
+        zoomToUnit: Bool = true
     ) -> DepthChartFieldLayout {
         let width = fieldSize.width
         guard width > 0, fieldSize.height > 0, !slots.isEmpty else {
-            return DepthChartFieldLayout(dotSize: maxDotSize, positions: [:], nameCallouts: [:])
+            return DepthChartFieldLayout(
+                dotSize: maxDotSize, positions: [:], nameCallouts: [:],
+                yardScale: .fullField(height: max(fieldSize.height, 1))
+            )
         }
         let base = fillWidth
-            ? fillingLayout(slots: slots, width: width, height: fieldSize.height)
-            : standardLayout(slots: slots, width: width, height: fieldSize.height)
+            ? fillingLayout(slots: slots, width: width, height: fieldSize.height, zoomToUnit: zoomToUnit)
+            : standardLayout(slots: slots, width: width, height: fieldSize.height, zoomToUnit: zoomToUnit)
         // Only the leader-line variant draws callouts. The other two want the same
         // geometry with no callout points at all — and because a slot renders its name
         // inline exactly when it has NO callout, `inlineOnly` needs the crowded slots
@@ -145,7 +222,8 @@ struct DepthChartFieldLayout: Equatable {
                             height: fieldSize.height
                         ).keys
                     )
-                    : Set(slots.map(\.key))
+                    : Set(slots.map(\.key)),
+                yardScale: base.yardScale
             )
         }
         return DepthChartFieldLayout(
@@ -157,7 +235,8 @@ struct DepthChartFieldLayout: Equatable {
                 dotSize: base.dotSize,
                 width: width,
                 height: fieldSize.height
-            )
+            ),
+            yardScale: base.yardScale
         )
     }
 
@@ -225,6 +304,16 @@ struct DepthChartFieldLayout: Equatable {
     /// Web parity (components/PlayerDot.tsx): an on-line dot is nudged a radius onto its
     /// own side of the line of scrimmage. Layout has to account for it or every collision
     /// test is off by that much for exactly the most crowded row on the field.
+    /// Only ever a dot radius — enough that an on-line player isn't drawn straddling the
+    /// line, and nothing more.
+    ///
+    /// An intermediate version of DEP-432 extended the defensive side to clear the whole
+    /// label block, because a label hangs below its dot (back toward the line, on the
+    /// defense's side) and the line of scrimmage was being drawn through the defensive
+    /// linemen's names. That was compensating in the render for a charted depth that was
+    /// simply wrong: `dlY` implied 0.26 yd against 1.3–1.4 measured. With `dlY` corrected
+    /// the line clears its own labels honestly, so the compensation is gone — keeping both
+    /// would have double-counted it and pushed the front to ~2.5 yd.
     static func lineOffset(y: Double, onLine: Bool?, dotSize: CGFloat) -> CGFloat {
         guard onLine == true else { return 0 }
         return y >= 50 ? dotSize / 2 + 3 : -(dotSize / 2 + 3)
@@ -406,15 +495,23 @@ struct DepthChartFieldLayout: Equatable {
     private static func standardLayout(
         slots: [RenderSlot],
         width: CGFloat,
-        height: CGFloat
+        height: CGFloat,
+        zoomToUnit: Bool = true
     ) -> DepthChartFieldLayout {
         let dotSize = maxDotSize
+        // DEP-432: y goes through the unit's yard window rather than the full charted
+        // space, so a point on screen is a fixed number of real yards. x is untouched —
+        // five linemen occupy 6.2 measured yards, which is 43pt at the field's true
+        // horizontal scale, so width has to stay stretched for the dots to be separable.
+        let yardScale = zoomToUnit
+            ? yardScaleFitting(slots: slots, dotSize: dotSize, height: height)
+            : .fullField(height: height)
 
         var centers: [String: CGPoint] = [:]
         for slot in slots {
             centers[slot.key] = CGPoint(
                 x: width * slot.x / 100,
-                y: height * slot.y / 100
+                y: yardScale.screenY(charted: slot.y)
             )
         }
 
@@ -456,7 +553,7 @@ struct DepthChartFieldLayout: Equatable {
                     for (k, slot) in interior.enumerated() {
                         centers[slot.key] = CGPoint(
                             x: width * (startPct + spacingPct * CGFloat(k)) / 100,
-                            y: height * slot.y / 100
+                            y: yardScale.screenY(charted: slot.y)
                         )
                     }
                 }
@@ -519,7 +616,7 @@ struct DepthChartFieldLayout: Equatable {
                         for entry in placed {
                             centers[entry.key] = CGPoint(
                                 x: max(0, min(width, entry.x)),
-                                y: height * entry.y / 100
+                                y: yardScale.screenY(charted: entry.y)
                             )
                         }
                     }
@@ -547,14 +644,14 @@ struct DepthChartFieldLayout: Equatable {
                     placedXsPct.append(xPct)
                     centers[wr.key] = CGPoint(
                         x: width * max(0, min(100, xPct)) / 100,
-                        y: height * wr.y / 100
+                        y: yardScale.screenY(charted: wr.y)
                     )
                 }
                 i = j + 1
             }
         }
 
-        centers = settingOffLineDepth(centers, slots: slots, dotSize: dotSize, height: height)
+        centers = settingOffLineDepth(centers, slots: slots, dotSize: dotSize)
         // A single label/dot pass can re-open a gap it just closed elsewhere (pushing one
         // dot clear of a tag can walk it into a THIRD slot's tag zone) — iterate to a
         // fixed point rather than trusting one pass to converge.
@@ -562,121 +659,102 @@ struct DepthChartFieldLayout: Equatable {
             centers = resolvingLabelOverlaps(centers, slots: slots, dotSize: dotSize, width: width, height: height)
             centers = resolvingOverlaps(centers, slots: slots, dotSize: dotSize, width: width)
         }
-        return DepthChartFieldLayout(dotSize: dotSize, positions: centers, nameCallouts: [:])
+        return DepthChartFieldLayout(
+            dotSize: dotSize, positions: centers, nameCallouts: [:], yardScale: yardScale
+        )
     }
 
-    /// THROWAWAY PROTOTYPE, per Cooper 2026-08-23: makes "off the line of scrimmage" legible.
+    /// Snaps each side's on-line players onto one row. `buildRealFormation` promotes
+    /// receivers to on-line to satisfy the seven-on-the-line rule but leaves them at their
+    /// charted wing depth, so a promoted receiver would render BELOW the line it is
+    /// supposedly on; the whole group is snapped to the row nearest the line of scrimmage,
+    /// which is what "on the line" has to look like.
     ///
-    /// A slot receiver charts only ~4% deeper than the line — about 24pt — and the on-line
-    /// nudge that keeps linemen from straddling the line eats almost all of that, so a
-    /// receiver off the line ended up drawn at the same depth as the tackle beside him and
-    /// the whole formation read as one flat row. An under-center quarterback had it worse:
-    /// he charts 5% back and landed on top of the linemen's own position tags.
+    /// **This function used to do much more, and that was the bug** (DEP-432). It pushed
+    /// every off-line slot clear of the on-line row's *label block* — a floor of roughly
+    /// 67pt, expressed in points and unrelated to yards, which forced ~2.9 yards of
+    /// separation onto any two levels closer than that. Measured against tracking data, an
+    /// under-centre quarterback charted 1.4 yards back was being drawn at 24.8, because the
+    /// floor bit hardest on exactly the shallowest player. Worse, it bit unevenly: a shotgun
+    /// quarterback was exaggerated 6.7x against the under-centre one's 17.8x, so the picture
+    /// could not distinguish the two alignments at all.
     ///
-    /// So every off-line slot is pushed clear of the on-line row by its full label block —
-    /// the smallest gap that can't be misread as "level with the line", and enough that the
-    /// line's tags stay readable. Slots already deeper than that (a shotgun quarterback, the
-    /// backfield) don't move; this only ever increases the distance from the line.
+    /// The yard window (`yardScaleFitting`) now gives every real alignment enough room on
+    /// its own — the tightest pair on the field, an under-centre quarterback half a yard off
+    /// his own centre, clears the dot minimum by itself — so nothing needs pushing and
+    /// charted depth survives to the screen unmodified.
     private static func settingOffLineDepth(
         _ centers: [String: CGPoint],
         slots: [RenderSlot],
-        dotSize: CGFloat,
-        height: CGFloat
+        dotSize: CGFloat
     ) -> [String: CGPoint] {
         var centers = centers
-        func placed(_ slot: RenderSlot) -> CGFloat? {
-            centers[slot.key].map { $0.y + lineOffset(y: slot.y, onLine: slot.onLine, dotSize: dotSize) }
-        }
-        // Two clearances. A slot behind the line's own labels has to clear the whole label
-        // block; one out beyond them (a receiver split wide, where there is nothing under
-        // the line to avoid) only needs enough to read as off the line. Using the label
-        // clearance for everyone shoved wide receivers as deep as running backs.
-        let labelClearance = dotSize / 2 + labelTopGap + labelBlockHeight + 4 + dotSize / 2
-
-        // Each side of the ball is handled on its own: the offense's on-line row is nudged
-        // down and its skill players are deeper (larger y), the defense's mirrors that.
         for isOffense in [true, false] {
             let side = slots.filter { isOffense ? $0.y >= 50 : $0.y < 50 }
             let onLine = side.filter { $0.onLine == true }
-            let offLine = side.filter { $0.onLine != true }
             guard !onLine.isEmpty else { continue }
 
-            // Everyone on the line is drawn ON one line. `buildRealFormation` promotes
-            // receivers to on-line to satisfy the seven-on-the-line rule but leaves them
-            // at their charted wing depth, so a promoted receiver rendered BELOW the line
-            // it is supposedly on. Snap the whole on-line group to the row nearest the
-            // line of scrimmage — which is what "on the line" has to look like.
             let anchors = onLine.compactMap { centers[$0.key]?.y }
-            if let lineRowY = isOffense ? anchors.min() : anchors.max() {
-                for slot in onLine {
-                    guard let current = centers[slot.key] else { continue }
-                    centers[slot.key] = CGPoint(x: current.x, y: lineRowY)
-                }
+            guard let lineRowY = isOffense ? anchors.min() : anchors.max() else { continue }
+            for slot in onLine {
+                guard let current = centers[slot.key] else { continue }
+                centers[slot.key] = CGPoint(x: current.x, y: lineRowY)
             }
-            guard !offLine.isEmpty else { continue }
 
-            // The same nudge the on-line row received, in this side's direction.
+            // On-line dots are drawn a radius onto their own side of the line
+            // (`lineOffset`), so every off-line slot on this side shifts by the same amount
+            // to preserve the real gap between them. Without it a receiver charted just off
+            // the line renders level with the tackle beside him.
             let nudge: CGFloat = isOffense ? dotSize / 2 + 3 : -(dotSize / 2 + 3)
-            for slot in offLine {
+            for slot in side where slot.onLine != true {
                 guard let current = centers[slot.key] else { continue }
-                // Does this slot sit behind any of the line's labels?
-                let underLabel = onLine.contains { other in
-                    guard let p = centers[other.key] else { return false }
-                    return abs(p.x - current.x) < nameMinWidth / 2 + dotSize / 2
-                }
-                guard underLabel else {
-                    // Out where nothing sits under the line, the charted depth is already
-                    // correct and should simply survive being drawn: the on-line row got
-                    // nudged onto its own side of the line, so shifting this slot by the
-                    // SAME amount preserves the real gap between them. A flat minimum
-                    // instead of this made a split-wide receiver sit several yards off the
-                    // line — a flanker drawn like a running back.
-                    centers[slot.key] = CGPoint(x: current.x, y: current.y + nudge)
-                    continue
-                }
-                let limit: CGFloat
-                if isOffense {
-                    guard let lowest = onLine.compactMap(placed).max() else { continue }
-                    limit = lowest + labelClearance
-                    guard current.y < limit else { continue }
-                } else {
-                    guard let highest = onLine.compactMap(placed).min() else { continue }
-                    limit = highest - labelClearance
-                    guard current.y > limit else { continue }
-                }
-                centers[slot.key] = CGPoint(x: current.x, y: limit)
-            }
-
-            // NOTE: an earlier version also walked the backfield apart so every stacked
-            // player had a full label block beneath it. A deep under-center set
-            // (quarterback, fullback, tailback in one column) stacked three of those and
-            // shoved the tailback off the bottom of the field. The backfield now keeps its
-            // charted depth and the label pass decides per name whether it fits inline or
-            // needs a callout — the positions are the honest part, the labels are the part
-            // that can move.
-            //
-            // Every push above still moves players away from the line, and a deep formation
-            // (an under-center backfield of quarterback, fullback and tailback) stacks
-            // three of them — enough to shove the last one off the bottom of the field.
-            // If the group no longer fits, compress the whole set of distances-from-the-
-            // line proportionally: everything keeps its order and its relative depth, the
-            // formation just gets shallower rather than running off the surface.
-            guard let lineRowY = onLine.compactMap({ centers[$0.key]?.y }).first else { continue }
-            let limit = height * 0.86
-            let depths = offLine.compactMap { centers[$0.key].map { abs($0.y - lineRowY) } }
-            guard let deepest = depths.max(), deepest > 0 else { continue }
-            let room = abs(limit - lineRowY) - dotSize / 2 - labelBlockHeight
-            guard room > 0, deepest > room else { continue }
-            let squeeze = room / deepest
-            for slot in offLine {
-                guard let current = centers[slot.key] else { continue }
-                centers[slot.key] = CGPoint(
-                    x: current.x,
-                    y: lineRowY + (current.y - lineRowY) * squeeze
-                )
+                centers[slot.key] = CGPoint(x: current.x, y: current.y + nudge)
             }
         }
         return centers
+    }
+
+    /// Grass (yards) kept beyond the outermost player and beyond the line of scrimmage, so
+    /// the unit isn't flush against the card edge and the line reads as a line.
+    static let windowMarginYards: CGFloat = 1.4
+
+
+    /// Crops the card to a window around this unit and returns the resulting scale.
+    ///
+    /// The window always contains the line of scrimmage as well as every player, so the
+    /// line stays in frame wherever the unit sits relative to it — near the bottom for a
+    /// defense, near the top for an offense, mid-card for special teams, all falling out of
+    /// the same arithmetic rather than needing a per-unit rule.
+    ///
+    /// Room for the label block under the lowest dot is reserved in *points* before the
+    /// yard scale is fitted, because a label is a fixed size on screen and does not scale
+    /// with the window.
+    private static func yardScaleFitting(
+        slots: [RenderSlot],
+        dotSize: CGFloat,
+        height: CGFloat
+    ) -> FieldYardScale {
+        let charted = slots.map(\.y)
+        guard let lo = charted.min(), let hi = charted.max() else {
+            return .fullField(height: height)
+        }
+        let margin = Double(windowMarginYards * FieldYardScale.chartedUnitsPerYard)
+        let windowMin = min(lo, FieldYardScale.lineOfScrimmage) - margin
+        let windowMax = max(hi, FieldYardScale.lineOfScrimmage) + margin
+
+        let span = windowMax - windowMin
+        guard span > 0 else { return .fullField(height: height) }
+
+        let topInset = dotSize / 2 + 4
+        let bottomInset = dotSize / 2 + labelTopGap + labelBlockHeight + 4
+        let usable = height - topInset - bottomInset
+        guard usable > 0 else { return .fullField(height: height) }
+
+        let pointsPerUnit = usable / CGFloat(span)
+        return FieldYardScale(
+            pointsPerUnit: pointsPerUnit,
+            originY: topInset - CGFloat(windowMin) * pointsPerUnit
+        )
     }
 
     /// THROWAWAY PROTOTYPE, per Cooper 2026-08-23: every other pass here is same-ROW only,
@@ -824,7 +902,8 @@ struct DepthChartFieldLayout: Equatable {
     private static func fillingLayout(
         slots: [RenderSlot],
         width: CGFloat,
-        height: CGFloat
+        height: CGFloat,
+        zoomToUnit: Bool = true
     ) -> DepthChartFieldLayout {
         // Margin (percent) that keeps the largest dot's radius fully inside the field.
         // This budgeted an extra 26pt for the pinned receiver's name text at one point;
@@ -846,7 +925,7 @@ struct DepthChartFieldLayout: Equatable {
             adjusted[right] = withX(slots[right], 100 - marginPct)
         }
 
-        let base = standardLayout(slots: adjusted, width: width, height: height)
+        let base = standardLayout(slots: adjusted, width: width, height: height, zoomToUnit: zoomToUnit)
 
         // Re-pin the edge WRs to the field edges after the standard layout's re-spread.
         // Only x is re-pinned: y must keep whatever the standard pass decided, which is
@@ -877,6 +956,11 @@ struct DepthChartFieldLayout: Equatable {
             )
         }
 
-        return DepthChartFieldLayout(dotSize: base.dotSize, positions: positions, nameCallouts: base.nameCallouts)
+        // `base` came from standardLayout, which fitted the yard window; the re-pin above
+        // only moves x, so that scale still describes these positions.
+        return DepthChartFieldLayout(
+            dotSize: base.dotSize, positions: positions, nameCallouts: base.nameCallouts,
+            yardScale: base.yardScale
+        )
     }
 }
