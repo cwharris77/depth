@@ -43,6 +43,36 @@ struct DepthChartFieldLayoutTests {
         )
     }
 
+    /// Every real per-team offensive alignment (`buildRealFormation`'s alignment ×
+    /// personnel space) across a spread of plausible field sizes never lets a tag reach a
+    /// neighboring dot. Regression coverage for the shotgun QB/RB case and, more
+    /// importantly, for the fix itself: an earlier version of `resolvingLabelOverlaps`
+    /// passed the narrower `shotgunQbTagClearsRbDot` test below while still visibly
+    /// knocking an under-center running back off to one side of the QB it's charted
+    /// directly behind — this sweep is what actually caught that regression.
+    @Test("no real offensive alignment ever lets a tag reach a neighboring dot")
+    func noOffensiveAlignmentEverLabelOverlaps() {
+        let sizes = [
+            CGSize(width: 370, height: 650), CGSize(width: 370, height: 470),
+            CGSize(width: 402, height: 580), CGSize(width: 402, height: 420),
+        ]
+        for alignment in ["UNDER CENTER", "SHOTGUN", "PISTOL"] {
+            for code in ["10", "11", "12", "20", "21", "01", "02", "22"] {
+                for size in sizes {
+                    let formation = buildRealFormation(alignment: alignment, code: code)
+                    let slots = formation.map {
+                        RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+                    }
+                    let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: size)
+                    assertNoLabelOverlap(
+                        slots, layout: layout,
+                        context: "\(alignment) \(code) at \(size.width)x\(size.height)"
+                    )
+                }
+            }
+        }
+    }
+
     @Test("phone layouts use one readable dot size across units")
     func offenseDotsNeverTouch() {
         let offense = offenseFormation.map {
@@ -144,6 +174,7 @@ struct DepthChartFieldLayoutTests {
     /// DL dot" shape and its offense analog, a shotgun QB's tag over the RB behind it.
     private func assertNoLabelOverlap(
         _ slots: [RenderSlot], layout: DepthChartFieldLayout,
+        context: String = "",
         sourceLocation: SourceLocation = #_sourceLocation
     ) {
         for a in slots {
@@ -162,7 +193,7 @@ struct DepthChartFieldLayoutTests {
                 )
                 #expect(
                     !tagZone.intersects(dotRect),
-                    "\(a.key)'s position tag overlaps \(b.key)'s dot",
+                    "\(context.isEmpty ? "" : "[\(context)] ")\(a.key)'s position tag overlaps \(b.key)'s dot",
                     sourceLocation: sourceLocation
                 )
             }
