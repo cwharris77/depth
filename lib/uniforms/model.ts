@@ -1,5 +1,5 @@
 import { readableTextOn } from '@/lib/utils/colors';
-import type { TeamColors } from '@/lib/types';
+import type { JerseyColors } from '@/lib/types';
 import type {
   NumberStyle,
   TeamUniformDefinition,
@@ -104,7 +104,7 @@ export interface ResolvedUniformStyle {
   number: Omit<NumberStyle, 'fill' | 'outline'> & { fill: string; outline: string };
 }
 
-export function resolveColor(ref: unknown, colors: TeamColors, bodyColor: string): string {
+export function resolveColor(ref: unknown, colors: JerseyColors, bodyColor: string): string {
   if (ref === 'primary' || ref === 'secondary' || ref === 'accent') return colors[ref];
   if (ref === 'readable-on-body') return readableTextOn(bodyColor);
   if (typeof ref === 'string' && ref.startsWith('#')) return ref;
@@ -153,7 +153,7 @@ function mergeStyle(style: UniformStyle, override?: UniformStyleOverride): Unifo
 
 function resolveLayer(
   layer: UniformLayer,
-  colors: TeamColors,
+  colors: JerseyColors,
   bodyColor: string
 ): ResolvedUniformLayer {
   if (layer.kind === 'fill') return { ...layer, fill: resolveColor(layer.fill, colors, bodyColor) };
@@ -163,7 +163,7 @@ function resolveLayer(
 export function resolveUniformModel(
   definition: TeamUniformDefinition | undefined,
   kitSlug: string,
-  colors: TeamColors
+  colors: JerseyColors
 ): ResolvedUniformStyle {
   const withDefaults = mergeStyle(GENERIC_UNIFORM_STYLE, definition?.defaults);
   const style = mergeStyle(withDefaults, definition?.kits?.[kitSlug]);

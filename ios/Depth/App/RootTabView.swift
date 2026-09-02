@@ -82,15 +82,18 @@ struct RootTabView: View {
                 }
             }
         }
-        // Selected-tab tint from the current team's uiAccent (visual-pass follow-up:
+        // Selected-tab tint from the current kit's ring color (visual-pass follow-up:
         // "team colors aren't coming through the chrome"). DepthChartsTab publishes the
-        // active team's accent into CurrentTeamStore, so the nav title, toolbar icons,
-        // and tab bar adopt team color — the same theming the web applies via
-        // activeColors.uiAccent. Before a team resolves (fresh launch) the app falls
-        // back to its own accent, mirroring web's useLastAccent fallback. The unselected
+        // active kit's colors into CurrentTeamStore, so the nav title, toolbar icons, and
+        // tab bar adopt team color. Cooper picked the ring here (2026-09-01) so chrome
+        // matches the field dots, knowing legibility is explicitly not gated: a ring only
+        // has to separate from its fill *or* the ground, and a tint has no fill, so 51 of
+        // 105 kits read dim against the bar. That is the 2026-07-03 precedent — a dark
+        // accent on a dark surface is a background problem, not a reason to fake the
+        // team's color. Before a team resolves the app falls back to its own accent. The unselected
         // tab color is not controllable through SwiftUI's public TabView/Tab API on this
         // iOS version without a UIKit appearance bridge — left at the system default
         // deliberately rather than reaching for private API.
-        .tint(currentTeamStore.uiAccent.map(Color.init(hex:)) ?? DesignTokens.Colors.accent)
+        .tint(currentTeamStore.colors.map { Color(hex: TeamSurfaces.mark($0)) } ?? DesignTokens.Colors.accent)
     }
 }

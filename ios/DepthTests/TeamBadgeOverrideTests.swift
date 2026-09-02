@@ -4,7 +4,8 @@ import Testing
 
 // DEP-237 coverage: TeamBadgeOverride resolves the default primary-fill/secondary-ring
 // badge for every team, and the three hand-curated overrides (Panthers keep their blue
-// uiAccent background; Buccaneers swap the blend-in red primary for the pewter secondary
+// DEP-424 retired the Panthers row (it pinned an invented hex); Buccaneers swap the
+// blend-in red primary for the pewter secondary
 // with an orange ring; Broncos swap the blend-in orange primary for the navy secondary
 // with an orange ring). Colors are sourced from the team's own palette, never hardcoded.
 
@@ -32,8 +33,11 @@ private let broncos = team(id: "broncos", primary: "#FB4F14", secondary: "#00224
     #expect(TeamBadgeOverride.ringColorHex(for: mystery) == "#654321")
 }
 
-@Test func panthersOverrideKeepsBlueUiAccentBackground() {
-    #expect(TeamBadgeOverride.backgroundColorHex(for: panthers) == "#36A7E0")
+// DEP-424: the Panthers row pinned the background to `uiAccent` (#36A7E0), a brightened
+// blue the team does not own. With the invented accents retired they fall back to the
+// default — their real primary #0085CA, which is already blue and reads under the logo.
+@Test func panthersNoLongerOverrideAndFallBackToRealPrimary() {
+    #expect(TeamBadgeOverride.backgroundColorHex(for: panthers) == "#0085CA")
     #expect(TeamBadgeOverride.ringColorHex(for: panthers) == "#101820", "ring stays the default secondary")
 }
 

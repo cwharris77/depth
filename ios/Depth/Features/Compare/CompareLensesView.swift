@@ -4,7 +4,7 @@ import SwiftUI
 // (options 1b + 2d/2e + 3a/3b). The lens tabs now swap a vertical stack of grouped metric
 // tables in place: each group is one bordered card whose header row carries the group name
 // and the two team abbrevs as columns, and whose rows are a label plus two right-aligned,
-// tabular-figure numbers. The leader in each row is tinted in that team's `uiAccent` and
+// tabular-figure numbers. The leader in each row is tinted in that team's ring color and
 // the trailing side dims, so the winner reads without a per-row badge.
 //
 // What this replaced, and why (all four are canvas decisions, not cleanup):
@@ -175,7 +175,7 @@ private struct CompareMetricTable: View {
         Text(team?.abbrev.uppercased() ?? "—")
             .font(.caption.weight(.black))
             .tracking(0.6)
-            .foregroundStyle(team.map { Color(hex: $0.colors.uiAccent) } ?? DesignTokens.Colors.textFaint)
+            .foregroundStyle(team.map { Color(hex: TeamSurfaces.mark($0.colors.jersey)) } ?? DesignTokens.Colors.textFaint)
             .frame(width: valueColumnWidth, alignment: .trailing)
     }
 
@@ -213,7 +213,7 @@ private struct CompareMetricTable: View {
         guard let leader else { return DesignTokens.Colors.textPrimary }
         guard leader == side else { return DesignTokens.Colors.textFaint }
         let team = side == .a ? teamA : teamB
-        return team.map { Color(hex: $0.colors.uiAccent) } ?? DesignTokens.Colors.textPrimary
+        return team.map { Color(hex: TeamSurfaces.mark($0.colors.jersey)) } ?? DesignTokens.Colors.textPrimary
     }
 
     /// Color alone can't carry the leader for VoiceOver, so the spoken row names it.
@@ -407,7 +407,7 @@ private struct CompareMetricsSkeleton: View {
         Text(team?.abbrev.uppercased() ?? "—")
             .font(.caption.weight(.black))
             .tracking(0.6)
-            .foregroundStyle(team.map { Color(hex: $0.colors.uiAccent) } ?? DesignTokens.Colors.textFaint)
+            .foregroundStyle(team.map { Color(hex: TeamSurfaces.mark($0.colors.jersey)) } ?? DesignTokens.Colors.textFaint)
             .frame(width: 74, alignment: .trailing)
     }
 

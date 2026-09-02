@@ -6,6 +6,13 @@ import SwiftUI
 struct PlayerDetailView: View {
     let player: Player
     let team: Team?
+    /// The actively-selected kit's colors, threaded down from the depth chart so the card
+    /// follows the uniform picker (DEP-424). `team.colors` is the *home* kit — the read
+    /// layer's withHomeColors overlay — so without this the watermark, headshot ring and
+    /// every accent on the card stayed in home colors while the field beside it changed.
+    /// Nil falls back to the team's own, which is what a card opened outside the depth
+    /// chart (search, deep link) gets.
+    let kitColors: JerseyColors?
     /// Every player at `player`'s position, depth-ordered (web's `getPlayersByPosition`).
     /// Drives the POSITION DEPTH section — tap another row to switch the card to that
     /// player (web's `onSelectPlayer`).
@@ -65,9 +72,21 @@ struct PlayerDetailView: View {
 
     private var photoSize: CGFloat { min(scaledPhotoSize, 140) }
 
+    /// The palette every team-colored surface on this card resolves from: the picked kit
+    /// when the card was opened from the depth chart, else the team's own.
+    private var jersey: JerseyColors? { kitColors ?? team?.colors.jersey }
+
+    /// The card's accent for anything drawn straight on the page — watermark, row text,
+    /// stats highlights, chip labels and borders. `mark` rather than `ring` because none of
+    /// these sit on a fill to borrow contrast from.
+    private var markColor: Color {
+        jersey.map { Color(hex: TeamSurfaces.mark($0)) } ?? DesignTokens.Colors.accent
+    }
+
     init(
         player: Player,
         team: Team?,
+        kitColors: JerseyColors? = nil,
         repository: DepthRepository,
         depthChart: [Player],
         onSelectPlayer: ((Player) -> Void)? = nil,
@@ -80,6 +99,7 @@ struct PlayerDetailView: View {
     ) {
         self.player = player
         self.team = team
+        self.kitColors = kitColors
         self.depthChart = depthChart
         self.onSelectPlayer = onSelectPlayer
         self.defaultDepthChart = defaultDepthChart.isEmpty ? depthChart : defaultDepthChart
@@ -132,7 +152,7 @@ struct PlayerDetailView: View {
     // single word, so the layout stacks instead — otherwise names break mid-word
     // ("DJ Moor / e"), which is the failure this switch exists to prevent.
     private var header: some View {
-        let accent = team.map { Color(hex: $0.colors.uiAccent) } ?? DesignTokens.Colors.accent
+        let accent = markColor
         let identity = VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             // Web parity (PlayerCardHeader): a large team-accent watermark number above
             // the name — the most recognizable jersey identity, placed first per
@@ -220,7 +240,7 @@ struct PlayerDetailView: View {
                 PlayerStatsTable(
                     stats: viewModel.stats,
                     columns: playerStatColumns(for: player.position),
-                    accent: team.map { Color(hex: $0.colors.uiAccent) } ?? DesignTokens.Colors.accent
+                    accent: markColor
                 )
                 .frame(maxWidth: .infinity, alignment: PlayerStatsTableLayout.containerAlignment.swiftUI)
             case .empty:
@@ -469,12 +489,16 @@ struct PlayerDetailView: View {
         DepthRowContent(player: p, isCurrent: isCurrent, accent: accent)
     }
 
-    private var accent: Color {
-        team.map { Color(hex: $0.colors.uiAccent) } ?? DesignTokens.Colors.accent
-    }
+    private var accent: Color { markColor }
 
+    /// The label for text sitting on the editing affordance's team-colored fill. Derived
+    /// from `mark` — the exact color behind it — and never from a second resolver: an
+    /// earlier revision paired a `ring` fill with a `textOnFill` label, which measures
+    /// against `primary`, and for 21 of 32 teams both returned the same hex (the Seahawks
+    /// rendered #69BE28 on #69BE28, contrast 1.00).
     private var onAccent: Color {
-        (team?.colors.onAccent).map { Color(hex: $0) } ?? DesignTokens.Colors.onAccent
+        jersey.map { Color(hex: readableTextOn(TeamSurfaces.mark($0))) }
+            ?? DesignTokens.Colors.onAccent
     }
 
     // Mirrors web PlayerCardDepthList.depthRankLabel: ranks are capped at 3, so
@@ -487,14 +511,15 @@ struct PlayerDetailView: View {
         }
     }
 
-    // Web parity (components/PlayerCardHeader.tsx's Avatar: fillColor={colors.primary},
-    // ringColor={accent}). Fill was accidentally the ring color with no ring at all
-    // before (DEP-224) — fill is the team's `primary`, ring is a 2px `uiAccent` border.
+    // Fill is the team's jersey body, ring is a 2px band in the kit's contrast color
+    // (DEP-224 fixed a version where fill was the ring color and there was no ring at all).
+    // DEP-424: both now resolve through TeamSurfaces — the ring is the one surface the
+    // rules cover exactly, since it borrows contrast from the fill it encloses.
     @ViewBuilder
     private var photo: some View {
-        let accent = team.map { Color(hex: $0.colors.uiAccent) } ?? DesignTokens.Colors.accent
-        let fill = team.map { Color(hex: $0.colors.primary) } ?? DesignTokens.Colors.accent
-        let onFillHex = team.map { readableTextOn($0.colors.primary) }
+        let accent = jersey.map { Color(hex: TeamSurfaces.ring($0)) } ?? DesignTokens.Colors.accent
+        let fill = jersey.map { Color(hex: TeamSurfaces.fill($0)) } ?? DesignTokens.Colors.accent
+        let onFillHex = jersey.map { readableTextOn(TeamSurfaces.fill($0)) }
         let onFill = onFillHex.map(Color.init(hex:)) ?? DesignTokens.Colors.onAccent
         ZStack {
             Circle().fill(fill)
@@ -563,8 +588,10 @@ struct PlayerDetailView: View {
     }
 }
 
-// Mirrors lib/utils/colors.ts statusColor: starter is team-driven (uiAccent), the
-// rest are fixed semantic colors shared by every team.
+// Mirrors lib/utils/colors.ts statusColor: starter is team-driven, the rest are fixed
+// semantic colors shared by every team. DEP-424: the caller now passes a TeamSurfaces-
+// resolved color, so `starter` no longer resolves to the retired `uiAccent` — which made
+// it 2.12:1 on the Jets.
 private func playerStatusColor(_ status: PlayerStatus, accent: Color) -> Color {
     switch status {
     case .starter: accent

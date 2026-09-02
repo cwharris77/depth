@@ -79,7 +79,7 @@ enum DepthEnvironment {
         return UserSettingsStore(remote: remote, sessionStore: authSessionStore)
     }()
     /// The current team's accent, published by DepthChartsTab and read by the root tab
-    /// bar for its `.tint` — app chrome adopts team color (web parity: activeColors.uiAccent).
+    /// bar for its `.tint` — app chrome adopts team color via TeamSurfaces.ring (DEP-424).
     @MainActor static let currentTeamStore = CurrentTeamStore()
     /// A cross-tab "open this team's depth chart" request — written by the uniform
     /// archive's kit sheet, consumed by DepthChartsTab (see TeamRouteStore).

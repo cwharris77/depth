@@ -338,8 +338,11 @@ struct TeamListView: View {
     // number is more informative in a dense search-result list.
     @ViewBuilder
     private func playerHitAvatar(_ hit: PlayerHit) -> some View {
-        let accent = Color(hex: hit.team.colors.uiAccent)
-        let onAccent = Color(hex: hit.team.colors.onAccent)
+        // The search-result avatar is a team-colored *fill* with the jersey number on it,
+        // so it takes the jersey body and resolves its own readable label (DEP-424) rather
+        // than the retired uiAccent/onAccent pair.
+        let accent = Color(hex: TeamSurfaces.fill(hit.team.colors.jersey))
+        let onAccent = Color(hex: TeamSurfaces.textOnFill(hit.team.colors.jersey))
         ZStack {
             Circle().fill(accent)
             if let url = hit.photoUrl.flatMap(URL.init(string:)) {

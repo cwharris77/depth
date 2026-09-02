@@ -35,8 +35,10 @@ struct ScheduleView: View {
 
     /// Falls back to the app's own accent before any team has resolved a color this
     /// session, mirroring RootTabView's identical fallback for the same store.
-    private var uiAccent: Color {
-        currentTeamStore.uiAccent.map(Color.init(hex:)) ?? DesignTokens.Colors.accent
+    /// The season-chip row's accent. DEP-424: the ring color — a real kit color, the same
+    /// one the field dots and the tab tint use, with legibility deliberately not gated.
+    private var teamAccent: Color {
+        currentTeamStore.colors.map { Color(hex: TeamSurfaces.mark($0)) } ?? DesignTokens.Colors.accent
     }
 
     var body: some View {
@@ -56,7 +58,7 @@ struct ScheduleView: View {
                 SeasonPickerSheet(
                     items: viewModel.seasonOptions.map { SeasonPickerItem(season: $0) },
                     selectedSeason: selectedSeason,
-                    accent: uiAccent,
+                    accent: teamAccent,
                     identifierPrefix: "schedule"
                 ) { season in
                     showSeasonPicker = false
