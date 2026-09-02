@@ -555,7 +555,13 @@ struct DepthChartFieldLayout: Equatable {
         }
 
         centers = settingOffLineDepth(centers, slots: slots, dotSize: dotSize, height: height)
-        centers = resolvingOverlaps(centers, slots: slots, dotSize: dotSize, width: width)
+        // A single label/dot pass can re-open a gap it just closed elsewhere (pushing one
+        // dot clear of a tag can walk it into a THIRD slot's tag zone) — iterate to a
+        // fixed point rather than trusting one pass to converge.
+        for _ in 0..<4 {
+            centers = resolvingLabelOverlaps(centers, slots: slots, dotSize: dotSize, width: width, height: height)
+            centers = resolvingOverlaps(centers, slots: slots, dotSize: dotSize, width: width)
+        }
         return DepthChartFieldLayout(dotSize: dotSize, positions: centers, nameCallouts: [:])
     }
 
@@ -717,6 +723,94 @@ struct DepthChartFieldLayout: Equatable {
         return centers
     }
 
+    /// Ensures a slot's position-tag block never visually overlaps a NEIGHBORING dot.
+    /// `resolvingOverlaps` above only guarantees `dotSize + gap` between dot CENTERS —
+    /// it says nothing about the label block DepthChartFieldView renders unconditionally
+    /// under every dot (position tag, regardless of crowding — see
+    /// `calloutsForCrowdedNames`'s doc comment), which can reach past a neighboring dot
+    /// even when the dots themselves are clear. Same mechanism in shipped reports: a
+    /// linebacker's tag over the DL dot behind it (DEP-427) and a shotgun QB's tag over the
+    /// RB dot charted just behind it.
+    ///
+    /// Earlier versions of this shipped a regression apiece, so the remaining logic here is
+    /// deliberately narrow rather than a general solver:
+    /// - Always pushing sideways knocked a running back charted dead-center behind the QB
+    ///   off to one side, breaking the "stacked behind the QB" read Cooper checks directly
+    ///   off the chart.
+    /// - Always adding vertical clearance instead resolved that, but a slot squeezed
+    ///   between two independent tag sources above and below it (an edge linebacker with a
+    ///   DL dot below and a safety's tag above) has no y that clears both — pushing it
+    ///   shallower to clear one reactivates the other, and it never settles no matter how
+    ///   many iterations run.
+    /// - A congested interior slot (a 3-4 nose tackle with an interior linebacker's tag
+    ///   reaching it from both sides) has the same shape in x: pushing it away from one
+    ///   linebacker's tag walks it into the other's.
+    /// - An UNCLAMPED vertical push, chained through a column of slots stacked at the same
+    ///   x (a 3-3-5's nickel back, middle linebacker, and nose tackle all sit at x=50),
+    ///   could compound across iterations far enough to push the linebacker's dot PAST the
+    ///   defensive line's row entirely — visibly rendering it on the offense's side of the
+    ///   line of scrimmage. Worse than the graze it was trying to fix, and only showed up
+    ///   live in the simulator on a real team's real personnel, not in the geometry-only
+    ///   test sweep, since that sweep only ever asserted "no overlap", never "still on the
+    ///   correct side of the line."
+    ///
+    /// So: an on-line slot's y never moves — it's snapped to its row by
+    /// `settingOffLineDepth` and must stay there. When the dot owner is off the line, push
+    /// it deeper (y), clamped to stop short of the on-line row it must not cross. When the
+    /// dot owner IS on the line (DEP-427's DL) and the pair aren't charted at the same x,
+    /// push the dot sideways instead, same as `resolvingOverlaps`. A dot owner that's both
+    /// on-line and charted at the same x as its tag's owner (the nose-tackle-under-a-
+    /// linebacker shape) has no safe move by either axis and is left as a known, accepted
+    /// residual case rather than risk a worse regression.
+    private static func resolvingLabelOverlaps(
+        _ centers: [String: CGPoint],
+        slots: [RenderSlot],
+        dotSize: CGFloat,
+        width: CGFloat,
+        height: CGFloat,
+        fixed: Set<String> = []
+    ) -> [String: CGPoint] {
+        var centers = centers
+        let halfClearance = nameMinWidth / 2 + dotSize / 2
+        // The minimum center-to-center y for a tag block to fully clear the dot below it.
+        let requiredDy = dotSize / 2 + labelTopGap + labelBlockHeight + dotSize / 2
+        func rendered(_ slot: RenderSlot) -> CGPoint? {
+            centers[slot.key].map {
+                CGPoint(x: $0.x, y: $0.y + lineOffset(y: slot.y, onLine: slot.onLine, dotSize: dotSize))
+            }
+        }
+        // The one shared row every on-line slot is already snapped to (at most one such
+        // row exists per unit) — the hard boundary an off-line push must stop short of.
+        let lineY: CGFloat? = slots.first(where: { $0.onLine == true }).flatMap { rendered($0)?.y }
+        for a in slots {
+            guard let pa = rendered(a) else { continue }
+            let tagZone = CGRect(
+                x: pa.x - nameMinWidth / 2,
+                y: pa.y + dotSize / 2 + labelTopGap,
+                width: nameMinWidth,
+                height: labelBlockHeight
+            )
+            for b in slots where b.key != a.key && !fixed.contains(b.key) {
+                guard let pb = rendered(b) else { continue }
+                let dotRect = CGRect(x: pb.x - dotSize / 2, y: pb.y - dotSize / 2, width: dotSize, height: dotSize)
+                guard tagZone.intersects(dotRect) else { continue }
+                if b.onLine != true {
+                    var targetY = max(centers[b.key]?.y ?? pb.y, pa.y + requiredDy)
+                    if let lineY, pb.y < lineY {
+                        targetY = min(targetY, lineY - dotSize - gap)
+                    }
+                    targetY = min(height, targetY)
+                    centers[b.key] = CGPoint(x: centers[b.key]?.x ?? pb.x, y: targetY)
+                } else if abs(pb.x - pa.x) >= 1 {
+                    let direction: CGFloat = pb.x < pa.x ? -1 : 1
+                    let targetX = max(0, min(width, pa.x + direction * halfClearance))
+                    centers[b.key] = CGPoint(x: targetX, y: centers[b.key]?.y ?? pb.y)
+                }
+            }
+        }
+        return centers
+    }
+
     private static func withX(_ slot: RenderSlot, _ x: Double) -> RenderSlot {
         RenderSlot(key: slot.key, x: x, y: slot.y, label: slot.label, player: slot.player, onLine: slot.onLine)
     }
@@ -774,9 +868,14 @@ struct DepthChartFieldLayout: Equatable {
         var pinned: Set<String> = []
         if let left { pinned.insert(slots[left].key) }
         if let right, right != left { pinned.insert(slots[right].key) }
-        positions = resolvingOverlaps(
-            positions, slots: slots, dotSize: base.dotSize, width: width, fixed: pinned
-        )
+        for _ in 0..<4 {
+            positions = resolvingLabelOverlaps(
+                positions, slots: slots, dotSize: base.dotSize, width: width, height: height, fixed: pinned
+            )
+            positions = resolvingOverlaps(
+                positions, slots: slots, dotSize: base.dotSize, width: width, fixed: pinned
+            )
+        }
 
         return DepthChartFieldLayout(dotSize: base.dotSize, positions: positions, nameCallouts: base.nameCallouts)
     }
