@@ -174,8 +174,7 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         switcher.tap()
         let searchField = app.searchFields.firstMatch
         XCTAssertTrue(searchField.waitForExistence(timeout: 15), "the switcher sheet should offer team search")
-        searchField.tap()
-        searchField.typeText(name)
+        searchField.typeTextAfterFocusing(name, in: app)
 
         let row = app.buttons[rowIdentifier]
         XCTAssertTrue(row.waitForExistence(timeout: 15), "searching \"\(name)\" should surface \(rowIdentifier)")
@@ -200,8 +199,7 @@ final class AppStoreScreenshotsUITests: XCTestCase {
 
         let searchField = app.searchFields.firstMatch
         XCTAssertTrue(searchField.waitForExistence(timeout: 10), "the picker sheet should offer team search")
-        searchField.tap()
-        searchField.typeText(query)
+        searchField.typeTextAfterFocusing(query, in: app)
 
         let row = app.buttons[rowIdentifier]
         XCTAssertTrue(row.waitForExistence(timeout: 15), "searching \"\(query)\" should surface \(rowIdentifier)")

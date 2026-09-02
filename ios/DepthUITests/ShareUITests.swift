@@ -34,7 +34,7 @@ final class ShareUITests: XCTestCase {
         let dismissRegion = app.otherElements["PopoverDismissRegion"]
         XCTAssertTrue(dismissRegion.waitForExistence(timeout: 5))
         dismissRegion.tap()
-        XCTAssertFalse(shareSheet.waitForExistence(timeout: 3), "the share sheet should dismiss on cancel")
+        XCTAssertTrue(shareSheet.waitForAbsence(timeout: 10), "the share sheet should dismiss on cancel")
         XCTAssertTrue(overflow.waitForExistence(timeout: 5), "team detail should remain unchanged after cancelling the share sheet")
         overflow.tap()
         XCTAssertTrue(shareButton.waitForExistence(timeout: 5), "Share should still be reachable in the overflow menu")

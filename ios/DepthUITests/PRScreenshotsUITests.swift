@@ -96,8 +96,7 @@ final class PRScreenshotsUITests: XCTestCase {
             switcher.tap()
             let searchField = app.searchFields.firstMatch
             XCTAssertTrue(searchField.waitForExistence(timeout: 10), "the switcher should offer team search")
-            searchField.tap()
-            searchField.typeText(teamQuery)
+            searchField.typeTextAfterFocusing(teamQuery, in: app)
             XCTAssertTrue(app.buttons["team-row-\(teamId)"].waitForExistence(timeout: 20), "team search should surface the Bills row")
             attachScreenshot(name: "teams")
         }
