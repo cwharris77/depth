@@ -732,8 +732,8 @@ struct DepthChartFieldLayout: Equatable {
     /// linebacker's tag over the DL dot behind it (DEP-427) and a shotgun QB's tag over the
     /// RB dot charted just behind it.
     ///
-    /// Three earlier versions of this shipped a regression apiece, so the remaining logic
-    /// here is deliberately narrow rather than a general solver:
+    /// Earlier versions of this shipped a regression apiece, so the remaining logic here is
+    /// deliberately narrow rather than a general solver:
     /// - Always pushing sideways knocked a running back charted dead-center behind the QB
     ///   off to one side, breaking the "stacked behind the QB" read Cooper checks directly
     ///   off the chart.
@@ -745,15 +745,23 @@ struct DepthChartFieldLayout: Equatable {
     /// - A congested interior slot (a 3-4 nose tackle with an interior linebacker's tag
     ///   reaching it from both sides) has the same shape in x: pushing it away from one
     ///   linebacker's tag walks it into the other's.
+    /// - An UNCLAMPED vertical push, chained through a column of slots stacked at the same
+    ///   x (a 3-3-5's nickel back, middle linebacker, and nose tackle all sit at x=50),
+    ///   could compound across iterations far enough to push the linebacker's dot PAST the
+    ///   defensive line's row entirely — visibly rendering it on the offense's side of the
+    ///   line of scrimmage. Worse than the graze it was trying to fix, and only showed up
+    ///   live in the simulator on a real team's real personnel, not in the geometry-only
+    ///   test sweep, since that sweep only ever asserted "no overlap", never "still on the
+    ///   correct side of the line."
     ///
-    /// So: when the dot owner is off the line, push it deeper (y) — off-line depth already
-    /// gets adjusted elsewhere (`settingOffLineDepth`) and isn't a fixed signal the way an
-    /// exact x match is. When the two are charted at the same x (a shotgun/under-center
-    /// back stacked behind the QB), do the same — add clearance, don't move x, preserving
-    /// the alignment. Otherwise (an on-line dot being reached by an off-line slot's tag,
-    /// as in DEP-427) push the dot sideways instead, same as `resolvingOverlaps` — the
-    /// congested multi-source cases above are known not to fully converge either way; this
-    /// is the version that doesn't regress the two confirmed, reported cases.
+    /// So: an on-line slot's y never moves — it's snapped to its row by
+    /// `settingOffLineDepth` and must stay there. When the dot owner is off the line, push
+    /// it deeper (y), clamped to stop short of the on-line row it must not cross. When the
+    /// dot owner IS on the line (DEP-427's DL) and the pair aren't charted at the same x,
+    /// push the dot sideways instead, same as `resolvingOverlaps`. A dot owner that's both
+    /// on-line and charted at the same x as its tag's owner (the nose-tackle-under-a-
+    /// linebacker shape) has no safe move by either axis and is left as a known, accepted
+    /// residual case rather than risk a worse regression.
     private static func resolvingLabelOverlaps(
         _ centers: [String: CGPoint],
         slots: [RenderSlot],
@@ -771,6 +779,9 @@ struct DepthChartFieldLayout: Equatable {
                 CGPoint(x: $0.x, y: $0.y + lineOffset(y: slot.y, onLine: slot.onLine, dotSize: dotSize))
             }
         }
+        // The one shared row every on-line slot is already snapped to (at most one such
+        // row exists per unit) — the hard boundary an off-line push must stop short of.
+        let lineY: CGFloat? = slots.first(where: { $0.onLine == true }).flatMap { rendered($0)?.y }
         for a in slots {
             guard let pa = rendered(a) else { continue }
             let tagZone = CGRect(
@@ -783,10 +794,14 @@ struct DepthChartFieldLayout: Equatable {
                 guard let pb = rendered(b) else { continue }
                 let dotRect = CGRect(x: pb.x - dotSize / 2, y: pb.y - dotSize / 2, width: dotSize, height: dotSize)
                 guard tagZone.intersects(dotRect) else { continue }
-                if b.onLine != true || abs(pb.x - pa.x) < 1 {
-                    let targetY = min(height, max(centers[b.key]?.y ?? pb.y, pa.y + requiredDy))
+                if b.onLine != true {
+                    var targetY = max(centers[b.key]?.y ?? pb.y, pa.y + requiredDy)
+                    if let lineY, pb.y < lineY {
+                        targetY = min(targetY, lineY - dotSize - gap)
+                    }
+                    targetY = min(height, targetY)
                     centers[b.key] = CGPoint(x: centers[b.key]?.x ?? pb.x, y: targetY)
-                } else {
+                } else if abs(pb.x - pa.x) >= 1 {
                     let direction: CGFloat = pb.x < pa.x ? -1 : 1
                     let targetX = max(0, min(width, pa.x + direction * halfClearance))
                     centers[b.key] = CGPoint(x: targetX, y: centers[b.key]?.y ?? pb.y)

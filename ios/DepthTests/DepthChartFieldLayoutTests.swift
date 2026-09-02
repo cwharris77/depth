@@ -43,6 +43,50 @@ struct DepthChartFieldLayoutTests {
         )
     }
 
+    /// Asserts no off-line slot ever renders on the wrong side of the on-line row — the
+    /// LOS-crossing shape `resolvingLabelOverlaps` shipped once: an unclamped vertical push
+    /// chained through a column of slots stacked at the same x (a 3-3-5's nickel back,
+    /// middle linebacker, and nose tackle all sit at x=50) compounded across iterations far
+    /// enough to render a linebacker past the defensive line, on the offense's side of the
+    /// line of scrimmage. Caught live in the simulator on the Jets' real personnel, not by
+    /// the geometry test suite, since every existing test only asserted "no overlap," never
+    /// "still the correct side of the line" — this closes that gap.
+    private func assertNoLineCrossing(
+        _ slots: [RenderSlot], layout: DepthChartFieldLayout,
+        context: String = "",
+        sourceLocation: SourceLocation = #_sourceLocation
+    ) {
+        guard let lineY = slots.first(where: { $0.onLine == true })
+            .map({ renderedPoint(for: $0, layout: layout).y })
+        else { return }
+        for slot in slots where slot.onLine != true {
+            let y = renderedPoint(for: slot, layout: layout).y
+            #expect(
+                y < lineY,
+                "\(context.isEmpty ? "" : "[\(context)] ")\(slot.key) rendered at y=\(y), past the on-line row at y=\(lineY)",
+                sourceLocation: sourceLocation
+            )
+        }
+    }
+
+    @Test("no defensive slot ever renders past the line of scrimmage")
+    func noDefensiveSlotCrossesTheLine() {
+        let sizes = [
+            CGSize(width: 370, height: 650), CGSize(width: 370, height: 470),
+            CGSize(width: 402, height: 580), CGSize(width: 402, height: 420),
+        ]
+        for code in ["3-4-4", "4-3-4", "2-4-5", "1-4-6", "4-2-5", "4-1-6", "4-0-7", "3-3-5"] {
+            for size in sizes {
+                let formation = buildRealDefenseFormation(code)
+                let slots = formation.map {
+                    RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+                }
+                let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: size)
+                assertNoLineCrossing(slots, layout: layout, context: "\(code) at \(size.width)x\(size.height)")
+            }
+        }
+    }
+
     /// Every real per-team offensive alignment (`buildRealFormation`'s alignment ×
     /// personnel space) across a spread of plausible field sizes never lets a tag reach a
     /// neighboring dot. Regression coverage for the shotgun QB/RB case and, more
