@@ -116,9 +116,9 @@ let baseDefense: [FormationSlot] = [
     FormationSlot(id: "def-lilb-0", position: .lilb, index: 0, x: 42, y: 37, label: "LILB", onLine: false),
     FormationSlot(id: "def-rilb-0", position: .rilb, index: 0, x: 58, y: 37, label: "RILB", onLine: false),
     FormationSlot(id: "def-slb-0", position: .slb, index: 0, x: 78, y: 37, label: "SLB", onLine: false),
-    FormationSlot(id: "def-lde-0", position: .lde, index: 0, x: 26, y: 49, label: "LDE", onLine: true),
-    FormationSlot(id: "def-nt-0", position: .nt, index: 0, x: 50, y: 49, label: "NT", onLine: true),
-    FormationSlot(id: "def-rde-0", position: .rde, index: 0, x: 74, y: 49, label: "RDE", onLine: true),
+    FormationSlot(id: "def-lde-0", position: .lde, index: 0, x: 26, y: 45, label: "LDE", onLine: true),
+    FormationSlot(id: "def-nt-0", position: .nt, index: 0, x: 50, y: 45, label: "NT", onLine: true),
+    FormationSlot(id: "def-rde-0", position: .rde, index: 0, x: 74, y: 45, label: "RDE", onLine: true),
 ]
 
 /// Resolve a unit to render-ready slots for a given roster. `realFormation` lets a
@@ -297,7 +297,14 @@ func buildRealFormation(alignment: String, code: String) -> [FormationSlot] {
 
 // --- Real per-team defensive formations -------------------------------------------
 
-private let dlY: Double = 49
+// DEP-432: 45, not the 49 this was authored at. Measured against 137 clean snaps of NFL
+// tracking data, a defensive lineman aligns 1.3-1.4 yd off the ball with a very tight
+// spread (+/-0.5); 49 implied 0.26 yd, so the line was charted almost on top of the ball.
+// 45 lands it at 1.3 yd. This was the one charted depth the tracking data showed as
+// unambiguously wrong -- the backfield checked out, and the secondary is bimodal enough
+// (58% press at corner in the sample game; 47% of snaps league-wide have 7+ in the box)
+// that no single value is "correct" there, so those were deliberately left alone.
+private let dlY: Double = 45
 private let lbY: Double = 33
 
 private func spreadX(_ count: Int, _ minX: Double, _ maxX: Double) -> [Double] {

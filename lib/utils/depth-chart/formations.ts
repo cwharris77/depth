@@ -176,9 +176,9 @@ export const BASE_DEFENSE: FormationSlot[] = [
   { id: 'def-lilb-0', position: 'LILB', index: 0, x: 42, y: 37, label: 'LILB', onLine: false },
   { id: 'def-rilb-0', position: 'RILB', index: 0, x: 58, y: 37, label: 'RILB', onLine: false },
   { id: 'def-slb-0', position: 'SLB', index: 0, x: 78, y: 37, label: 'SLB', onLine: false },
-  { id: 'def-lde-0', position: 'LDE', index: 0, x: 26, y: 49, label: 'LDE', onLine: true },
-  { id: 'def-nt-0', position: 'NT', index: 0, x: 50, y: 49, label: 'NT', onLine: true },
-  { id: 'def-rde-0', position: 'RDE', index: 0, x: 74, y: 49, label: 'RDE', onLine: true },
+  { id: 'def-lde-0', position: 'LDE', index: 0, x: 26, y: 45, label: 'LDE', onLine: true },
+  { id: 'def-nt-0', position: 'NT', index: 0, x: 50, y: 45, label: 'NT', onLine: true },
+  { id: 'def-rde-0', position: 'RDE', index: 0, x: 74, y: 45, label: 'RDE', onLine: true },
 ];
 
 // Resolve a unit to render-ready slots for a given roster. `realFormation` lets a
@@ -383,7 +383,14 @@ export function buildRealFormation(alignment: string, code: string): FormationSl
 // data yields gets a reasonable layout, not just the handful of named fronts.
 
 const DEFENSE_PERSONNEL_CODE_RE = /^(\d+)-(\d+)-(\d+)$/;
-const DL_Y = 49; // same line the offense's OL sits on, mirrored to the defense's side
+// DEP-432: 45, not the 49 this was authored at. Measured against 137 clean snaps of NFL
+// tracking data, a defensive lineman aligns 1.3-1.4 yd off the ball with a very tight
+// spread (+/-0.5); 49 implied 0.26 yd, so the line was charted almost on top of the ball.
+// 45 lands it at 1.3 yd. This was the one charted depth the tracking data showed as
+// unambiguously wrong -- the backfield checked out, and the secondary is bimodal enough
+// (58% press at corner in the sample game; 47% of snaps league-wide have 7+ in the box)
+// that no single value is "correct" there, so those were deliberately left alone.
+const DL_Y = 45;
 // 4pp of clearance below DL_Y rather than the original 8: at 37 the LB position labels
 // overlapped the defensive-line circles in denser fronts (4-2-5 especially). iOS moved
 // first (#568, lbY in ios/Depth/Domain/Formations.swift) but only on its own side, which
