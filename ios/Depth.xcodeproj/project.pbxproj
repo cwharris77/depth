@@ -160,6 +160,7 @@
 		D92620A6F76FD1F67C0291EE /* SeasonPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514627092C503F450158CF24 /* SeasonPicker.swift */; };
 		D9A4CE067930A4D8148774BA /* DepthSearchField.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD38FD984114AE1ED01BE296 /* DepthSearchField.swift */; };
 		DC95DB2C72B7E87E9FE73999 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 025761971C890C088DEB466C /* AppConfig.swift */; };
+		DE757576FB1049036BBD5E4E /* StrokedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8521734F1203CA5415C441D8 /* StrokedText.swift */; };
 		DEA6657C52F2D9ACB38F070D /* Position.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F022703396305729D075AA5 /* Position.swift */; };
 		E14C66657BFEECC3262A1E50 /* UserSettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13D35EE3460926AE41CD3A6 /* UserSettingsStoreTests.swift */; };
 		E27FEDA18F25E697ACBE5CC7 /* TeamRouteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C55F5110D99F3D93E1168F2B /* TeamRouteStore.swift */; };
@@ -283,6 +284,7 @@
 		7D5CEA9E4551B2004154E97F /* FormationAttributionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormationAttributionUITests.swift; sourceTree = "<group>"; };
 		816264632C865BB71721C27F /* UniformKitSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniformKitSheet.swift; sourceTree = "<group>"; };
 		81C2EA6E8FFCA933708611EF /* UniformPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniformPickerSheet.swift; sourceTree = "<group>"; };
+		8521734F1203CA5415C441D8 /* StrokedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrokedText.swift; sourceTree = "<group>"; };
 		85406C2D1FB6F58B9740BF56 /* TeamRouteStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamRouteStoreTests.swift; sourceTree = "<group>"; };
 		88314A701F47D93C3F85CFC9 /* Staging.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Staging.xcconfig; sourceTree = "<group>"; };
 		8853CE0D389E576E83A733BB /* DepthOverrideMergeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthOverrideMergeTests.swift; sourceTree = "<group>"; };
@@ -660,6 +662,7 @@
 				797CCBB2827B3B2EC8DC53E2 /* DesignTokens.swift */,
 				1E9CFF06C6B4EFEF89CC1B12 /* NetworkMonitor.swift */,
 				514627092C503F450158CF24 /* SeasonPicker.swift */,
+				8521734F1203CA5415C441D8 /* StrokedText.swift */,
 				F250C793481162ED79D64BB6 /* TeamIconView.swift */,
 				C10E7D3B04967C0DFBDBEED5 /* TeamListPickerSheet.swift */,
 				9149D725F0D8E31CEA618D40 /* TeamLogoCache.swift */,
@@ -1027,6 +1030,7 @@
 				BF92CF2CE4CF9FE16C7E3CE6 /* SettingsView.swift in Sources */,
 				603210A77A4D480A09C2F034 /* ShareCardView.swift in Sources */,
 				B41D7BCD75AAF30866913BE2 /* StartupTeam.swift in Sources */,
+				DE757576FB1049036BBD5E4E /* StrokedText.swift in Sources */,
 				5AB8FFDF7A29877D1E98EC94 /* SupabaseDepthRepository.swift in Sources */,
 				A76DE210A4F5A111AEA3C45C /* Team.swift in Sources */,
 				83C996BDD22497000B07DF86 /* TeamBadgeOverride.swift in Sources */,
