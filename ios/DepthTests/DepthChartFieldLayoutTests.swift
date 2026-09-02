@@ -43,6 +43,80 @@ struct DepthChartFieldLayoutTests {
         )
     }
 
+    /// Asserts no off-line slot ever renders on the wrong side of the on-line row — the
+    /// LOS-crossing shape `resolvingLabelOverlaps` shipped once: an unclamped vertical push
+    /// chained through a column of slots stacked at the same x (a 3-3-5's nickel back,
+    /// middle linebacker, and nose tackle all sit at x=50) compounded across iterations far
+    /// enough to render a linebacker past the defensive line, on the offense's side of the
+    /// line of scrimmage. Caught live in the simulator on the Jets' real personnel, not by
+    /// the geometry test suite, since every existing test only asserted "no overlap," never
+    /// "still the correct side of the line" — this closes that gap.
+    private func assertNoLineCrossing(
+        _ slots: [RenderSlot], layout: DepthChartFieldLayout,
+        context: String = "",
+        sourceLocation: SourceLocation = #_sourceLocation
+    ) {
+        guard let lineY = slots.first(where: { $0.onLine == true })
+            .map({ renderedPoint(for: $0, layout: layout).y })
+        else { return }
+        for slot in slots where slot.onLine != true {
+            let y = renderedPoint(for: slot, layout: layout).y
+            #expect(
+                y < lineY,
+                "\(context.isEmpty ? "" : "[\(context)] ")\(slot.key) rendered at y=\(y), past the on-line row at y=\(lineY)",
+                sourceLocation: sourceLocation
+            )
+        }
+    }
+
+    @Test("no defensive slot ever renders past the line of scrimmage")
+    func noDefensiveSlotCrossesTheLine() {
+        let sizes = [
+            CGSize(width: 370, height: 650), CGSize(width: 370, height: 470),
+            CGSize(width: 402, height: 580), CGSize(width: 402, height: 420),
+        ]
+        for code in ["3-4-4", "4-3-4", "2-4-5", "1-4-6", "4-2-5", "4-1-6", "4-0-7", "3-3-5"] {
+            for size in sizes {
+                let formation = buildRealDefenseFormation(code)
+                let slots = formation.map {
+                    RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+                }
+                let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: size)
+                assertNoLineCrossing(slots, layout: layout, context: "\(code) at \(size.width)x\(size.height)")
+            }
+        }
+    }
+
+    /// Every real per-team offensive alignment (`buildRealFormation`'s alignment ×
+    /// personnel space) across a spread of plausible field sizes never lets a tag reach a
+    /// neighboring dot. Regression coverage for the shotgun QB/RB case and, more
+    /// importantly, for the fix itself: an earlier version of `resolvingLabelOverlaps`
+    /// passed the narrower `shotgunQbTagClearsRbDot` test below while still visibly
+    /// knocking an under-center running back off to one side of the QB it's charted
+    /// directly behind — this sweep is what actually caught that regression.
+    @Test("no real offensive alignment ever lets a tag reach a neighboring dot")
+    func noOffensiveAlignmentEverLabelOverlaps() {
+        let sizes = [
+            CGSize(width: 370, height: 650), CGSize(width: 370, height: 470),
+            CGSize(width: 402, height: 580), CGSize(width: 402, height: 420),
+        ]
+        for alignment in ["UNDER CENTER", "SHOTGUN", "PISTOL"] {
+            for code in ["10", "11", "12", "20", "21", "01", "02", "22"] {
+                for size in sizes {
+                    let formation = buildRealFormation(alignment: alignment, code: code)
+                    let slots = formation.map {
+                        RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+                    }
+                    let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: size)
+                    assertNoLabelOverlap(
+                        slots, layout: layout,
+                        context: "\(alignment) \(code) at \(size.width)x\(size.height)"
+                    )
+                }
+            }
+        }
+    }
+
     @Test("phone layouts use one readable dot size across units")
     func offenseDotsNeverTouch() {
         let offense = offenseFormation.map {
@@ -137,6 +211,66 @@ struct DepthChartFieldLayoutTests {
                 "\(receiver.key) should keep a real gap from \(nearest.key)"
             )
         }
+    }
+
+    /// Asserts no slot's unconditional position-tag block (drawn below every dot
+    /// regardless of crowding) intersects another slot's dot — the DEP-427 "LB tag over
+    /// DL dot" shape and its offense analog, a shotgun QB's tag over the RB behind it.
+    private func assertNoLabelOverlap(
+        _ slots: [RenderSlot], layout: DepthChartFieldLayout,
+        context: String = "",
+        sourceLocation: SourceLocation = #_sourceLocation
+    ) {
+        for a in slots {
+            let pa = renderedPoint(for: a, layout: layout)
+            let tagZone = CGRect(
+                x: pa.x - DepthChartFieldLayout.nameMinWidth / 2,
+                y: pa.y + layout.dotSize / 2 + DepthChartFieldLayout.labelTopGap,
+                width: DepthChartFieldLayout.nameMinWidth,
+                height: DepthChartFieldLayout.labelBlockHeight
+            )
+            for b in slots where b.key != a.key {
+                let pb = renderedPoint(for: b, layout: layout)
+                let dotRect = CGRect(
+                    x: pb.x - layout.dotSize / 2, y: pb.y - layout.dotSize / 2,
+                    width: layout.dotSize, height: layout.dotSize
+                )
+                #expect(
+                    !tagZone.intersects(dotRect),
+                    "\(context.isEmpty ? "" : "[\(context)] ")\(a.key)'s position tag overlaps \(b.key)'s dot",
+                    sourceLocation: sourceLocation
+                )
+            }
+        }
+    }
+
+    @Test("shotgun QB's position tag never overlaps the RB dot behind it")
+    func shotgunQbTagClearsRbDot() {
+        for code in ["10", "11", "20", "21"] {
+            let formation = buildRealFormation(alignment: "SHOTGUN", code: code)
+            let slots = formation.map {
+                RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+            }
+            let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField)
+            assertNoTouching(slots, layout: layout)
+            assertNoLabelOverlap(slots, layout: layout)
+        }
+    }
+
+    @Test("a 4-3 front's edge linebacker tag never overlaps the DL dot behind it (DEP-427)")
+    func baseFourThreeLbTagClearsDlDot() {
+        // The Jets' base 4-3 from DEP-427: dl=4 spreads x 24...76, lb=3 spreads x
+        // 26...74 — the outer LB slots land almost directly above the edge DL slots.
+        let formation = buildRealDefenseFormation("4-3-4")
+        let slots = formation.map {
+            RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+        }
+        // The real device height from DEP-427's report, shorter than the generic
+        // iphoneField fixture — this is where the overlap actually reproduced.
+        let size = CGSize(width: 370, height: 470)
+        let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: size)
+        assertNoTouching(slots, layout: layout)
+        assertNoLabelOverlap(slots, layout: layout)
     }
 
     @Test("dot size stays in the safe range across plausible field widths")
