@@ -70,8 +70,16 @@ struct FieldYardScale: Equatable {
     /// The line of scrimmage in charted coordinates.
     static let lineOfScrimmage: Double = 50
 
-    /// The untransformed full-field mapping — the safe fallback when there is nothing to
-    /// frame against, and what the field drew before DEP-432.
+    /// The untransformed full-field mapping: the whole charted space on the card, about 26
+    /// real yards of it. The safe fallback when there is nothing to frame against, and what
+    /// every unit drew before DEP-432.
+    ///
+    /// The offense still uses it, per Cooper. Cropping to the unit's own extent is what
+    /// makes the defense readable — its four depth levels need the room — but the offense
+    /// has only two (the line, and the backfield four to seven yards behind it), and
+    /// zooming into those made it read as stretched no matter how the window was tuned.
+    /// Showing the offense the whole field keeps the backfield close to the line, which is
+    /// where it belongs.
     static func fullField(height: CGFloat) -> FieldYardScale {
         FieldYardScale(pointsPerUnit: height / 100, originY: 0)
     }
@@ -182,7 +190,8 @@ struct DepthChartFieldLayout: Equatable {
         slots: [RenderSlot],
         fieldSize: CGSize,
         fillWidth: Bool = false,
-        nameMode: FieldNameMode = .callouts
+        nameMode: FieldNameMode = .callouts,
+        zoomToUnit: Bool = true
     ) -> DepthChartFieldLayout {
         let width = fieldSize.width
         guard width > 0, fieldSize.height > 0, !slots.isEmpty else {
@@ -192,8 +201,8 @@ struct DepthChartFieldLayout: Equatable {
             )
         }
         let base = fillWidth
-            ? fillingLayout(slots: slots, width: width, height: fieldSize.height)
-            : standardLayout(slots: slots, width: width, height: fieldSize.height)
+            ? fillingLayout(slots: slots, width: width, height: fieldSize.height, zoomToUnit: zoomToUnit)
+            : standardLayout(slots: slots, width: width, height: fieldSize.height, zoomToUnit: zoomToUnit)
         // Only the leader-line variant draws callouts. The other two want the same
         // geometry with no callout points at all — and because a slot renders its name
         // inline exactly when it has NO callout, `inlineOnly` needs the crowded slots
@@ -486,14 +495,17 @@ struct DepthChartFieldLayout: Equatable {
     private static func standardLayout(
         slots: [RenderSlot],
         width: CGFloat,
-        height: CGFloat
+        height: CGFloat,
+        zoomToUnit: Bool = true
     ) -> DepthChartFieldLayout {
         let dotSize = maxDotSize
         // DEP-432: y goes through the unit's yard window rather than the full charted
         // space, so a point on screen is a fixed number of real yards. x is untouched —
         // five linemen occupy 6.2 measured yards, which is 43pt at the field's true
         // horizontal scale, so width has to stay stretched for the dots to be separable.
-        let yardScale = yardScaleFitting(slots: slots, dotSize: dotSize, height: height)
+        let yardScale = zoomToUnit
+            ? yardScaleFitting(slots: slots, dotSize: dotSize, height: height)
+            : .fullField(height: height)
 
         var centers: [String: CGPoint] = [:]
         for slot in slots {
@@ -890,7 +902,8 @@ struct DepthChartFieldLayout: Equatable {
     private static func fillingLayout(
         slots: [RenderSlot],
         width: CGFloat,
-        height: CGFloat
+        height: CGFloat,
+        zoomToUnit: Bool = true
     ) -> DepthChartFieldLayout {
         // Margin (percent) that keeps the largest dot's radius fully inside the field.
         // This budgeted an extra 26pt for the pinned receiver's name text at one point;
@@ -912,7 +925,7 @@ struct DepthChartFieldLayout: Equatable {
             adjusted[right] = withX(slots[right], 100 - marginPct)
         }
 
-        let base = standardLayout(slots: adjusted, width: width, height: height)
+        let base = standardLayout(slots: adjusted, width: width, height: height, zoomToUnit: zoomToUnit)
 
         // Re-pin the edge WRs to the field edges after the standard layout's re-spread.
         // Only x is re-pinned: y must keep whatever the standard pass decided, which is

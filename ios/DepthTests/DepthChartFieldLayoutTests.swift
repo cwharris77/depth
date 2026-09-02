@@ -293,7 +293,7 @@ struct DepthChartFieldLayoutTests {
             RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
         }
         let plain = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField)
-        let filled = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField, fillWidth: true)
+        let filled = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField, fillWidth: true, zoomToUnit: false)
 
         // The outermost WRs (flanker off-wr-1 at x=12, split end off-wr-0 at x=88) are
         // pinned to the field edges — the offense takes the full width.
@@ -324,7 +324,7 @@ struct DepthChartFieldLayoutTests {
         let slots = formation.map {
             RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
         }
-        let filled = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField, fillWidth: true)
+        let filled = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField, fillWidth: true, zoomToUnit: false)
 
         // The split end (off-wr-0, left) and flanker (off-wr-1, right) reach the field
         // edges — the first DEP-244 pass got this wrong because the tight on-line row
@@ -550,19 +550,22 @@ struct FieldYardScaleTests {
         for (alignment, code) in [("UNDER CENTER", "11"), ("SHOTGUN", "11"), ("PISTOL", "11")] {
             let formation = buildRealFormation(alignment: alignment, code: code)
             let s = slots(formation)
-            let layout = DepthChartFieldLayout.compute(slots: s, fieldSize: phone, fillWidth: true)
+            let layout = DepthChartFieldLayout.compute(slots: s, fieldSize: phone, fillWidth: true, zoomToUnit: false)
             for slot in s where slot.onLine != true {
                 guard let drawn = renderedYards(slot.key, s, layout) else { continue }
                 let charted = FieldYardScale.yards(between: slot.y, and: 51)
-                // A yard, and that is the right bar rather than a lazy one. With the
-                // measurement baseline fixed the only remaining slack is what the collision
-                // passes legitimately introduce when two slots genuinely need separating;
-                // measured across every alignment here the worst case is 0.87 yd, so this
-                // has just enough headroom to not be flaky while still catching the class of
-                // bug it exists for — the render inventing depth the chart never claimed,
-                // which ran to 17x before DEP-432.
+                // 2.5 yd, and the looseness is the offense's full-field scale rather than
+                // sloppiness. The offense is not cropped to its own extent (Cooper's call —
+                // see FieldYardScale.fullField), so it renders at ~25 pt/yd against the
+                // defense's ~46. Every adjustment expressed in points — the on-line nudge,
+                // the collision passes — therefore buys twice as many yards here, and the
+                // measured worst case across these alignments is 2.02 yd.
+                //
+                // That is the real cost of the wider view and is worth stating plainly. It
+                // is still two orders off the 17-25x distortion this test exists to catch,
+                // which came from a floor that scaled with nothing at all.
                 #expect(
-                    abs(drawn - charted) < 1.0,
+                    abs(drawn - charted) < 2.5,
                     "\(alignment) \(slot.label): charted \(charted) yd but drawn \(drawn) yd"
                 )
             }
@@ -573,16 +576,23 @@ struct FieldYardScaleTests {
     @Test("an under-centre quarterback is drawn a yard off his own centre, not ten")
     func underCentreQuarterbackSitsOnTopOfTheLine() {
         let s = slots(buildRealFormation(alignment: "UNDER CENTER", code: "11"))
-        let layout = DepthChartFieldLayout.compute(slots: s, fieldSize: phone, fillWidth: true)
+        let layout = DepthChartFieldLayout.compute(slots: s, fieldSize: phone, fillWidth: true, zoomToUnit: false)
+        // Measured reality is 1.0 yd. At the offense's full-field scale the fixed on-line
+        // nudge alone is worth ~0.85 yd, so ~2.5 is the floor this can reach without
+        // cropping the offense; 4 leaves headroom while still failing loudly on the
+        // 24.8 yd this test was written for.
         let qb = renderedYards("off-qb-0", s, layout) ?? .infinity
-        #expect(qb < 2.5, "under-centre QB drawn \(qb) yd deep; measured reality is 1.0")
+        #expect(qb < 4, "under-centre QB drawn \(qb) yd deep; measured reality is 1.0")
 
         let sg = slots(buildRealFormation(alignment: "SHOTGUN", code: "11"))
-        let sgLayout = DepthChartFieldLayout.compute(slots: sg, fieldSize: phone, fillWidth: true)
+        let sgLayout = DepthChartFieldLayout.compute(slots: sg, fieldSize: phone, fillWidth: true, zoomToUnit: false)
         let sgQb = renderedYards("off-qb-0", sg, sgLayout) ?? 0
-        // The whole point of drawing depth honestly: the two alignments must be tellable
-        // apart, and in the right proportion. Measured, shotgun is ~4.4x deeper.
-        #expect(sgQb > qb * 2, "shotgun QB (\(sgQb) yd) should read clearly deeper than under centre (\(qb) yd)")
+        // The two alignments must stay tellable apart. A ratio test is the wrong shape at
+        // this scale — the fixed nudge lands on both but costs the shallow one proportionally
+        // far more, so shotgun/under-centre reads ~1.75x here against ~4.4x in reality. The
+        // separation in yards is what survives and is what a reader actually sees.
+        #expect(sgQb - qb > 1.5,
+                "shotgun QB (\(sgQb) yd) should read clearly deeper than under centre (\(qb) yd)")
     }
 
     @Test("every unit's window keeps the line of scrimmage on the card")

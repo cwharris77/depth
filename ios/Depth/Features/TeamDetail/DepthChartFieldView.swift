@@ -82,7 +82,10 @@ struct DepthChartFieldView: View {
                 slots: slots,
                 fieldSize: proxy.size,
                 fillWidth: unit == .offense,
-                nameMode: nameMode
+                nameMode: nameMode,
+                // Defense and special teams are cropped to the unit; the offense keeps the
+                // whole field (see FieldYardScale.fullField).
+                zoomToUnit: unit != .offense
             )
             ZStack {
                 LinearGradient(
