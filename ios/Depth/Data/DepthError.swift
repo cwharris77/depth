@@ -1,5 +1,6 @@
 import Foundation
 
+// THROWAWAY: verifying the ios-ui-screenshots gate exempts Data/ — not for merge.
 // Typed error surface for every repository operation (design spec's "Data and state
 // contract"). One case per distinct recovery UI needs — never a bare String/nil.
 enum DepthError: Error, Equatable {
