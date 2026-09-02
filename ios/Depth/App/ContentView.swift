@@ -4,6 +4,9 @@ import SwiftUI
 // gated by the T5 update screen when the installed build is below the server's minimum.
 // Composition only: real state lives in RootTabView's tabs and UpdateGateViewModel.
 struct ContentView: View {
+    /// DEP-425: drives the foreground re-check below, so a server-side minimum-build flip
+    /// reaches already-running installs and not just cold launches.
+    @Environment(\.scenePhase) private var scenePhase
     @State private var updateGate = UpdateGateViewModel(repository: DepthEnvironment.repository)
     @State private var authSessionStore = DepthEnvironment.authSessionStore
     @State private var currentTeamStore = DepthEnvironment.currentTeamStore
@@ -22,8 +25,16 @@ struct ContentView: View {
 
     var body: some View {
         Group {
-            if updateGate.isBlocked {
-                BlockingUpdateView()
+            if updateGate.isChecking {
+                // DEP-425: the gate must resolve before any other data fetch starts, so
+                // nothing that reads Supabase may mount here. This branch is reached only
+                // on a first-ever launch with no cached app_config — every later launch
+                // takes the cached fast path and skips it. It intentionally mirrors the
+                // launch storyboard (LaunchScreen: the mark on #0A0E1A), so the hold
+                // reads as the launch screen persisting rather than as a new screen.
+                UpdateGateCheckingView()
+            } else if updateGate.isBlocked {
+                BlockingUpdateView(maintenanceMessage: updateGate.maintenanceMessage)
             } else {
                 RootTabView(sessionStore: authSessionStore, currentTeamStore: currentTeamStore, onboarding: onboarding)
                     // Mounted at the tab-bar's own level (not further up, past
@@ -56,6 +67,22 @@ struct ContentView: View {
         .preferredColorScheme(.dark)
         .task {
             DepthEnvironment.appEvents.record(.appLaunch)
+            // DEP-425: the gate runs FIRST — ahead of the auth refresh and ahead of any
+            // tab mounting (the `isChecking` branch above holds the tree). A build too
+            // old for the current schema must never issue a read against it; the gate
+            // reads only `app_config`, whose shape is frozen precisely so this check
+            // cannot itself be broken by the migration it's protecting against.
+            await updateGate.check()
+        }
+        // Everything that depends on the gate having ALLOWED the app. Keyed on the gate
+        // state rather than living in the launch `.task` above so it also runs on a
+        // blocked → allowed transition: if the gate is stood down server-side while a
+        // user sits on BlockingUpdateView, the foreground re-check unblocks them and this
+        // work still has to happen. A plain `.task` would have already completed by then,
+        // leaving the app rendered with the auth session never started.
+        .task(id: updateGate.state) {
+            guard updateGate.state == .allowed else { return }
+
             authSessionStore.start()
             await authSessionStore.refresh()
             // Screenshot capture needs a deterministic signed-out start regardless of
@@ -66,14 +93,21 @@ struct ContentView: View {
             if ProcessInfo.processInfo.arguments.contains("UI_TESTING_APPSTORE_SCREENSHOTS") {
                 try? await authSessionStore.signOut()
             }
-            await updateGate.check()
-            // DEP-251: fires after the update gate resolves so a blocked build never
-            // shows the welcome screen underneath/behind BlockingUpdateView. No-op on
+            // DEP-251: fires only once the update gate has allowed the app, so a blocked
+            // build never shows the welcome screen underneath/behind BlockingUpdateView
+            // — the `guard` at the top of this task is what enforces that now. No-op on
             // every launch after the first (or once the tutorial's been skipped or
             // finished) — see OnboardingController.startIfNeeded.
-            if !updateGate.isBlocked {
-                onboarding.startIfNeeded()
-            }
+            onboarding.startIfNeeded()
+        }
+        // DEP-425: re-gate on foreground. A server-side minimum-build flip has to reach
+        // apps that are already running, not just cold launches — without this, a
+        // long-lived install that never fully terminates stays un-gated indefinitely and
+        // keeps reading a schema it may be too old for. `check()` is cheap (one singleton
+        // row) and can only ever move the gate toward blocked.
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            Task { await updateGate.check() }
         }
         .modifier(UITestingDynamicTypeOverride())
     }

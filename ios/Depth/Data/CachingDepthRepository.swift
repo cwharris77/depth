@@ -312,4 +312,20 @@ actor CachingDepthRepository: DepthRepository {
             throw error
         }
     }
+
+    /// Cache-only read, no network. DEP-425's launch fast path: the gate has to resolve
+    /// *before* any other fetch starts, and awaiting a round trip on every cold launch
+    /// would put a network stall in front of first render. This returns the last known
+    /// config synchronously-ish so the gate can make a provisional decision immediately,
+    /// while `appConfig()` above runs concurrently and corrects it.
+    ///
+    /// Deliberately does not weaken the network-first rule: a cached value only ever
+    /// *decides earlier*, never overrides a successful live read. Because the minimum
+    /// build is monotonic, the one direction this can be wrong in is cached-allows /
+    /// server-blocks, which the live check then corrects a moment later — strictly
+    /// better than the pre-DEP-425 behavior, where the app mounted every tab and started
+    /// fetching before the gate had resolved at all.
+    func cachedAppConfig() async -> AppConfig? {
+        try? await store.appConfig()
+    }
 }

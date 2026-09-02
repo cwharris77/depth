@@ -9,3 +9,10 @@ DEVELOPMENT_TEAM = 63JZBB528Q
 APP_BUNDLE_IDENTIFIER = com.cwharris.depth
 APP_DISPLAY_NAME = The Sticks
 APP_ICON_NAME = AppIcon
+
+// DEP-425 forced-update gate: the numeric App Store id the blocking update screen deep
+// links to. `0` means "not configured" — BlockingUpdateView hides its Update button
+// rather than shipping a link that opens nothing. Set this to the real id once the App
+// Store Connect record exists (Gate 0); no code change is needed, and the gate is not
+// safe to arm server-side until it is set.
+APP_STORE_ID = 0
