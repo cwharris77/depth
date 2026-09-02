@@ -7,56 +7,68 @@ import UIKit
 // this is the one screen in the app that blocks rather than degrades (the explicit,
 // bounded exception to root CLAUDE.md invariant 6).
 //
-// Presented as a native `.alert` over an inert brand backdrop, matching the Clash of
-// Clans pattern this feature is modeled on (Cooper's reference, 2026-09-01). The alert
-// is the block; the backdrop exists only so there is never interactive app content
-// behind it. Two consequences worth knowing:
+// Modeled on the Clash of Clans update prompt (Cooper's reference, 2026-09-01): a
+// centered dialog over a dimmed brand backdrop, with a single Update action.
 //
-//   * The alert carries a single button, so the ONLY way to dismiss it is tapping
-//     Update — which leaves for the App Store. There is no cancel path by construction.
-//   * A dismissed alert re-presents itself (see `.task(id:)` below), so returning from
-//     the App Store — or a build where the store id is unconfigured and the tap goes
-//     nowhere — lands back on the gate rather than on a bare backdrop the user is stuck
-//     on with no affordance at all.
+// Built as a dialog rather than a system `.alert` for two reasons, both load-bearing:
+//   * iOS 26 leading-aligns an alert's title and message and exposes no API to center
+//     them, and the reference is centered.
+//   * A system alert is dismissed by its own button, so blocking with one required
+//     re-presenting it after every dismissal. A plain view simply never goes away —
+//     there is no dismissal to race, which is the property this screen actually needs.
 struct BlockingUpdateView: View {
     /// Optional server-authored copy from `app_config.maintenance_message`. Lets a
     /// specific outage or release be explained without shipping a build — the same
     /// "flip one row" property the minimum build itself has. Falls back to generic copy.
     var maintenanceMessage: String?
 
-    @State private var isPresented = true
-
     var body: some View {
         ZStack {
             DesignTokens.Colors.bg.ignoresSafeArea()
-            // Anchored to the top rather than centered: the alert sits mid-screen and
-            // dims what is behind it, so a centered mark reads as a smudge under the
-            // dialog instead of as branding.
+            // Anchored to the top rather than centered: the dialog sits mid-screen, so a
+            // centered mark would read as a smudge behind it instead of as branding.
             VStack {
                 DepthBrandMark(size: 96)
                     .padding(.top, DesignTokens.Spacing.xl)
                 Spacer()
             }
+            dialog
+                .padding(.horizontal, DesignTokens.Spacing.xl)
         }
-        .alert("Update Available!", isPresented: $isPresented) {
-            Button("Update") {
+    }
+
+    private var dialog: some View {
+        VStack(spacing: DesignTokens.Spacing.md) {
+            VStack(spacing: DesignTokens.Spacing.sm) {
+                Text("Update is available!")
+                    .font(.headline)
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                Text(maintenanceMessage ?? "Good news! A new version of the app is available.")
+                    .font(.subheadline)
+                    .foregroundStyle(DesignTokens.Colors.textSecondary)
+            }
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+
+            Button {
                 // Nil only in a build whose APP_STORE_ID was never set (see
-                // AppStoreUpdate.url). The alert re-presents either way, so an
+                // AppStoreUpdate.url). The dialog stays put either way, so an
                 // unconfigured build blocks honestly instead of dead-ending.
                 if let url = AppStoreUpdate.url {
                     UIApplication.shared.open(url)
                 }
+            } label: {
+                Text("Update")
+                    .font(.headline)
+                    .foregroundStyle(DesignTokens.Colors.onAccent)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .background(DesignTokens.Colors.accent)
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
             }
-        } message: {
-            Text(maintenanceMessage ?? "A new version of the app is available.")
+            .accessibilityIdentifier("update-gate-update-button")
         }
-        // Re-present after any dismissal. The single Update button is the only way to
-        // dismiss, and tapping it hands off to the App Store — so this restores the gate
-        // for the return trip rather than leaving the user on the bare backdrop.
-        .task(id: isPresented) {
-            guard !isPresented else { return }
-            isPresented = true
-        }
+        .padding(DesignTokens.Spacing.lg)
+        .depthCard()
     }
 }
 
