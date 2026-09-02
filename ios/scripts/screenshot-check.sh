@@ -5,25 +5,45 @@
 # DISPOSABLE simulator, runs the PRScreenshotsUITests XCUITest (which drives real
 # navigation to the requested screens), exports the captured PNGs, then shuts the
 # simulator down. By default it captures the CURRENT worktree's code ("after"), and —
-# with --before — also a temp base-branch worktree ("before") so you can compare
+# with --base — also a temp base-branch worktree ("before") so you can compare
 # rendered changes on your own Mac before opening a PR.
+#
+# The "before" side is cached by (base ref sha, target) under
+# ios/.pr-screenshots-cache/ (gitignored) — the base ref's rendering hasn't changed
+# since the last run that captured it, so a repeat run with the same base and targets
+# skips the base build + sim entirely and just reuses the cached PNGs. A rebase moves
+# what the base ref resolves to, which changes the sha and so the cache key — a
+# rebased PR never compares against a stale image. Pass --recapture-base to force a
+# fresh base capture regardless of what's cached.
 #
 # Nothing stays booted and a fresh disposable sim is created per run, so parallel
 # worktrees on the same Mac don't pile up sims and exhaust RAM.
 #
 # Usage:
 #   ios/scripts/screenshot-check.sh [-t field,field-footer,formations,teams,uniform,player] [--base main] \
-#       [-d <derivedDataDir>] [-s <sim-device-type>] [-c <config>]
+#       [-d <derivedDataDir>] [-s <sim-device-type>] [-c <config>] [--recapture-base]
 #
 # Flags:
-#   -t <csv>       Targets to capture (field, field-footer, formations, teams, uniform,
-#                  player). Default: field
-#   --base <ref>   Capture "before" from this base ref via a temp worktree (e.g. main).
-#   -d <path>      DerivedData dir. Default: ios/.derivedData (gitignored, worktree-local)
-#   -s <type>      Simulator device type e.g. "iPhone 17 Pro Max". Default: auto-pick a
-#                  current flagship (same logic as ios-ci.yml).
-#   -c <config>    Build configuration (Debug|Staging|Release). Default: Staging
-#   -h             Help
+#   -t <csv>            Targets to capture (field, field-footer, formations, teams,
+#                       uniform, player). Default: field
+#   --base <ref>        Capture "before" from this base ref via a temp worktree (e.g.
+#                       main), reusing the cache when available.
+#   --recapture-base    Discard any cached "before" PNGs for this base ref and rebuild.
+#   -d <path>           DerivedData dir. Default: ios/.derivedData (gitignored,
+#                       worktree-local)
+#   -s <type>           Simulator device type e.g. "iPhone 17 Pro Max". Default:
+#                       auto-pick a current flagship (same logic as ios-ci.yml).
+#   -c <config>         Build configuration (Debug|Staging|Release). Default: Debug —
+#                       Debug.xcconfig points at the local `supabase start` stack
+#                       (DEP-270), so a PR that changes data and UI together renders
+#                       the "after" side against the real migrated data instead of
+#                       stale prod. Pass `-c Staging` to capture against production
+#                       Supabase instead (a pure-rendering PR with no local stack up).
+#   -h                  Help
+#
+# When `-c Debug` (the default) is in effect, the script fails loudly before
+# capturing anything if the local Supabase stack isn't reachable at 127.0.0.1:54321 —
+# rather than silently capturing empty/error screens. Run `supabase start` first.
 #
 # Outputs PNGs to ./ios/.pr-screenshots/<target>.png (after/) and, with --base, ./before/.
 # With --base, after both sides are captured it also runs scripts/diff-pr-screenshots.mts
@@ -42,12 +62,14 @@ TARGETS="field"
 BASE_REF=""
 DERIVED=""
 SIM_TYPE=""
-CONFIG="Staging"
+CONFIG="Debug"
+RECAPTURE_BASE=0
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 while [ $# -gt 0 ]; do
   case "$1" in
     -t) TARGETS="${2:?}"; shift 2 ;;
     --base) BASE_REF="${2:?}"; shift 2 ;;
+    --recapture-base) RECAPTURE_BASE=1; shift ;;
     -d) DERIVED="${2:?}"; shift 2 ;;
     -s) SIM_TYPE="${2:?}"; shift 2 ;;
     -c) CONFIG="${2:?}"; shift 2 ;;
@@ -58,7 +80,18 @@ done
 
 [ -z "$DERIVED" ] && DERIVED="$REPO_ROOT/ios/.derivedData"
 OUT_DIR="$REPO_ROOT/ios/.pr-screenshots"
-mkdir -p "$DERIVED" "$OUT_DIR"
+CACHE_DIR="$REPO_ROOT/ios/.pr-screenshots-cache"
+mkdir -p "$DERIVED" "$OUT_DIR" "$CACHE_DIR"
+
+# ---- fail loudly instead of silently capturing empty screens against a dead local stack ----
+if [ "$CONFIG" = "Debug" ]; then
+  if ! curl -s -o /dev/null --max-time 2 "http://127.0.0.1:54321/rest/v1/"; then
+    echo "ERROR: -c Debug (the default) captures against the local Supabase stack, but" >&2
+    echo "       nothing is reachable at http://127.0.0.1:54321. Run 'supabase start' first," >&2
+    echo "       or pass '-c Staging' to capture against production Supabase instead." >&2
+    exit 1
+  fi
+fi
 
 # ---- resolve a disposable simulator device type ----
 RUNTIME=$(xcrun simctl list runtimes -j | jq -r '[.runtimes[] | select(.platform == "iOS" and .isAvailable)] | sort_by(.version) | last | .identifier')
@@ -140,17 +173,42 @@ capture_one() {
 # ---- after: current worktree ----
 capture_one "$REPO_ROOT" "$OUT_DIR/after" "$OUT_DIR/.xcresult-after"
 
-# ---- before: optional base-branch worktree ----
+# ---- before: optional base-branch capture, reusing the (base sha, target) cache ----
+# cache_satisfies <dir> — true if <dir> already has a PNG for every requested target
+cache_satisfies() {
+  local dir="$1"
+  [ -d "$dir" ] || return 1
+  local t
+  for t in "${TARGET_LIST[@]}"; do
+    find "$dir" -maxdepth 1 -name "$t*.png" -print -quit | grep -q . || return 1
+  done
+  return 0
+}
+
 if [ -n "$BASE_REF" ]; then
-  WORKTREE="$(mktemp -d)/pr-before"
-  echo "Creating base worktree at $WORKTREE from $BASE_REF" >&2
-  git -C "$REPO_ROOT" worktree prune 2>/dev/null || true
-  git -C "$REPO_ROOT" worktree add --detach "$WORKTREE" "$BASE_REF" 2>/dev/null \
-    || { echo "ERROR: could not create worktree at '$BASE_REF'" >&2; exit 1; }
-  # remove the base worktree even if capture_one fails mid-way
-  capture_one "$WORKTREE" "$OUT_DIR/before" "$OUT_DIR/.xcresult-before" \
-    || { echo "ERROR: before-capture failed" >&2; git -C "$REPO_ROOT" worktree remove "$WORKTREE" --force 2>/dev/null || true; exit 1; }
-  git -C "$REPO_ROOT" worktree remove "$WORKTREE" --force 2>/dev/null || true
+  IFS=',' read -ra TARGET_LIST <<< "$TARGETS"
+  BASE_SHA="$(git -C "$REPO_ROOT" rev-parse "$BASE_REF" 2>/dev/null)" \
+    || { echo "ERROR: could not resolve base ref '$BASE_REF'" >&2; exit 1; }
+  CACHE_ENTRY="$CACHE_DIR/$BASE_SHA"
+
+  if [ "$RECAPTURE_BASE" -eq 0 ] && cache_satisfies "$CACHE_ENTRY"; then
+    echo "=== Reusing cached before/ for $BASE_REF ($BASE_SHA) — skipping base build+capture ===" >&2
+    rm -rf "$OUT_DIR/before"; mkdir -p "$OUT_DIR/before"
+    cp "$CACHE_ENTRY"/*.png "$OUT_DIR/before/"
+  else
+    WORKTREE="$(mktemp -d)/pr-before"
+    echo "Creating base worktree at $WORKTREE from $BASE_REF" >&2
+    git -C "$REPO_ROOT" worktree prune 2>/dev/null || true
+    git -C "$REPO_ROOT" worktree add --detach "$WORKTREE" "$BASE_REF" 2>/dev/null \
+      || { echo "ERROR: could not create worktree at '$BASE_REF'" >&2; exit 1; }
+    # remove the base worktree even if capture_one fails mid-way
+    capture_one "$WORKTREE" "$OUT_DIR/before" "$OUT_DIR/.xcresult-before" \
+      || { echo "ERROR: before-capture failed" >&2; git -C "$REPO_ROOT" worktree remove "$WORKTREE" --force 2>/dev/null || true; exit 1; }
+    git -C "$REPO_ROOT" worktree remove "$WORKTREE" --force 2>/dev/null || true
+    # merge into the cache — keeps prior targets captured for this sha, adds these
+    mkdir -p "$CACHE_ENTRY"
+    cp "$OUT_DIR/before"/*.png "$CACHE_ENTRY/" 2>/dev/null || true
+  fi
 fi
 
 # ---- visual diff: only meaningful when both sides exist ----
