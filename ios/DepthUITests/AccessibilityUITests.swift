@@ -43,8 +43,7 @@ final class AccessibilityUITests: XCTestCase {
         let row = app.buttons["team-row-bills"]
         let searchField = app.searchFields.firstMatch
         XCTAssertTrue(searchField.waitForExistence(timeout: 15), "the switcher sheet should offer team search")
-        searchField.tap()
-        searchField.typeText("Bills")
+        searchField.typeTextAfterFocusing("Bills", in: app)
         XCTAssertTrue(row.waitForExistence(timeout: 10), "Bills row should exist")
         return row.frame.height
     }
