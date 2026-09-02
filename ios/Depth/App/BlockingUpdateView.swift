@@ -6,39 +6,57 @@ import UIKit
 // whole purpose is that an old client cannot reach a backend that has moved past it, so
 // this is the one screen in the app that blocks rather than degrades (the explicit,
 // bounded exception to root CLAUDE.md invariant 6).
+//
+// Presented as a native `.alert` over an inert brand backdrop, matching the Clash of
+// Clans pattern this feature is modeled on (Cooper's reference, 2026-09-01). The alert
+// is the block; the backdrop exists only so there is never interactive app content
+// behind it. Two consequences worth knowing:
+//
+//   * The alert carries a single button, so the ONLY way to dismiss it is tapping
+//     Update — which leaves for the App Store. There is no cancel path by construction.
+//   * A dismissed alert re-presents itself (see `.task(id:)` below), so returning from
+//     the App Store — or a build where the store id is unconfigured and the tap goes
+//     nowhere — lands back on the gate rather than on a bare backdrop the user is stuck
+//     on with no affordance at all.
 struct BlockingUpdateView: View {
     /// Optional server-authored copy from `app_config.maintenance_message`. Lets a
     /// specific outage or release be explained without shipping a build — the same
     /// "flip one row" property the minimum build itself has. Falls back to generic copy.
     var maintenanceMessage: String?
 
+    @State private var isPresented = true
+
     var body: some View {
-        VStack(spacing: DesignTokens.Spacing.lg) {
-            DepthBrandMark(size: 96)
-            ContentUnavailableView {
-                Label("Update Available!", systemImage: "arrow.down.circle")
-            } description: {
-                Text(maintenanceMessage ?? "A new version of the app is available.")
-                    .foregroundStyle(DesignTokens.Colors.textSecondary)
-            } actions: {
-                // No button at all when the App Store id hasn't been configured yet —
-                // a dead link that silently does nothing is worse than no affordance on
-                // a screen the user cannot leave. See AppStoreUpdate.url.
+        ZStack {
+            DesignTokens.Colors.bg.ignoresSafeArea()
+            // Anchored to the top rather than centered: the alert sits mid-screen and
+            // dims what is behind it, so a centered mark reads as a smudge under the
+            // dialog instead of as branding.
+            VStack {
+                DepthBrandMark(size: 96)
+                    .padding(.top, DesignTokens.Spacing.xl)
+                Spacer()
+            }
+        }
+        .alert("Update Available!", isPresented: $isPresented) {
+            Button("Update") {
+                // Nil only in a build whose APP_STORE_ID was never set (see
+                // AppStoreUpdate.url). The alert re-presents either way, so an
+                // unconfigured build blocks honestly instead of dead-ending.
                 if let url = AppStoreUpdate.url {
-                    Button("Update") {
-                        UIApplication.shared.open(url)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .frame(minWidth: 44, minHeight: 44)
+                    UIApplication.shared.open(url)
                 }
             }
-            // DEP-269: this screen renders outside RootTabView's `.tint`, so the Update
-            // button (and icon) would otherwise fall back to the system blue — pinned to
-            // the app accent here.
-            .tint(DesignTokens.Colors.accent)
+        } message: {
+            Text(maintenanceMessage ?? "A new version of the app is available.")
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(DesignTokens.Colors.bg)
+        // Re-present after any dismissal. The single Update button is the only way to
+        // dismiss, and tapping it hands off to the App Store — so this restores the gate
+        // for the return trip rather than leaving the user on the bare backdrop.
+        .task(id: isPresented) {
+            guard !isPresented else { return }
+            isPresented = true
+        }
     }
 }
 

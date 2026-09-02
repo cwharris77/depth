@@ -1,6 +1,6 @@
 # Forced-update gate (DEP-425)
 
-The native iOS app checks a server-controlled minimum build number at launch. Any install below it is blocked on a full-screen "Update Available!" interstitial with no way to continue — the Clash Royale pattern. This exists so depth can ship breaking backend changes (dropped columns, changed contracts) without carrying permanent backwards-compatibility shims for stragglers on old builds: old clients get blocked instead of silently degrading or crashing against a backend that has moved on.
+The native iOS app checks a server-controlled minimum build number at launch. Any install below it is blocked behind an "Update Available!" alert over an inert brand backdrop, with no way to continue — the Clash of Clans pattern. The alert carries a single button, so the only way to dismiss it is tapping Update, which leaves for the App Store; a dismissed alert re-presents itself, so there is no path into the app and no way to end up stranded on a bare backdrop. This exists so depth can ship breaking backend changes (dropped columns, changed contracts) without carrying permanent backwards-compatibility shims for stragglers on old builds: old clients get blocked instead of silently degrading or crashing against a backend that has moved on.
 
 Arming it is a one-row update, but it is not a standalone action: the flip is a planned release step, paired with a new build going live on the App Store and sequenced ahead of the breaking change it protects. See "Arming it" and "Release sequencing" below.
 
