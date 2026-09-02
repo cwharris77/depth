@@ -96,7 +96,7 @@ struct DepthChartFieldView: View {
                 )
                 .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
 
-                FieldMarkings()
+                FieldMarkings(yardScale: layout.yardScale)
                     .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
 
                 ZStack {

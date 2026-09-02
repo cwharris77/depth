@@ -377,10 +377,16 @@ struct DepthChartFieldLayoutTests {
 // a tag in genuinely free grass could still be wired up through the middle of the
 // formation. These assert the line's route, not just the tag's spot.
 struct LeaderLineRoutingTests {
-    /// The field as it renders on the reported device: an iPhone 17 Pro's 402pt width
-    /// minus the page's horizontal padding, at the height `frame(maxHeight: .infinity)`
-    /// gives the chart in TeamDetailView.
-    private let phoneField = CGSize(width: 367, height: 477)
+    /// An iPhone SE — the narrowest supported device — with the chart squeezed short.
+    ///
+    /// This fixture was 367x477 (an iPhone 17 Pro) until DEP-432 drew the field in real
+    /// yards. At that size the extra room means every name in this nickel front now fits
+    /// inline and the layout emits *zero* callouts, so the leader-line assertions below
+    /// would pass vacuously and stop covering the routing logic entirely. Callouts are
+    /// driven by horizontal crowding, which the yard scale doesn't affect, so a narrower
+    /// card still produces them: measured on this fixture, 340pt wide yields several
+    /// callouts at any height, while 367pt needs a short card to force even one.
+    private let phoneField = CGSize(width: 340, height: 300)
 
     /// The exact alignment from the report — a nickel front (five DBs, a three-man line)
     /// with the real name lengths. Name width is what decides whether a name goes inline
@@ -502,5 +508,82 @@ struct LeaderLineRoutingTests {
         let rect = CGRect(x: 40, y: -5, width: 20, height: 10)
         #expect(!DepthChartFieldLayout.segment(CGPoint(x: 0, y: 0), CGPoint(x: 100, y: 0), avoids: rect))
         #expect(DepthChartFieldLayout.segment(CGPoint(x: 0, y: 40), CGPoint(x: 100, y: 40), avoids: rect))
+    }
+}
+
+// DEP-432: the field is drawn in real yards, validated against 137 measured snaps of NFL
+// tracking data. These assert the render no longer distorts charted depth — the defect that
+// made an under-centre quarterback read as if he stood 25 yards deep.
+struct FieldYardScaleTests {
+    private let phone = CGSize(width: 370, height: 650)
+
+    private func slots(_ f: [FormationSlot]) -> [RenderSlot] {
+        f.map { RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine) }
+    }
+
+    /// Depth in real yards from the on-line row, read off the rendered points.
+    private func renderedYards(
+        _ key: String, _ slots: [RenderSlot], _ layout: DepthChartFieldLayout
+    ) -> CGFloat? {
+        guard let p = layout.positions[key],
+            let line = slots.first(where: { $0.onLine == true }),
+            let lineY = layout.positions[line.key]
+        else { return nil }
+        return abs(p.y - lineY.y) / layout.yardScale.pointsPerYard
+    }
+
+    @Test("rendered depth matches the charted depth it claims, in yards")
+    func renderedDepthIsHonest() {
+        for (alignment, code) in [("UNDER CENTER", "11"), ("SHOTGUN", "11"), ("PISTOL", "11")] {
+            let formation = buildRealFormation(alignment: alignment, code: code)
+            let s = slots(formation)
+            let layout = DepthChartFieldLayout.compute(slots: s, fieldSize: phone, fillWidth: true)
+            for slot in s where slot.onLine != true {
+                guard let drawn = renderedYards(slot.key, s, layout) else { continue }
+                let charted = FieldYardScale.yards(between: slot.y, and: 51)
+                // One yard of tolerance absorbs the on-line nudge and the collision passes.
+                #expect(
+                    abs(drawn - charted) < 1.0,
+                    "\(alignment) \(slot.label): charted \(charted) yd but drawn \(drawn) yd"
+                )
+            }
+        }
+    }
+
+    /// The specific regression: measured 1.0 yd, was being drawn at 24.8.
+    @Test("an under-centre quarterback is drawn a yard off his own centre, not ten")
+    func underCentreQuarterbackSitsOnTopOfTheLine() {
+        let s = slots(buildRealFormation(alignment: "UNDER CENTER", code: "11"))
+        let layout = DepthChartFieldLayout.compute(slots: s, fieldSize: phone, fillWidth: true)
+        let qb = renderedYards("off-qb-0", s, layout) ?? .infinity
+        #expect(qb < 2.5, "under-centre QB drawn \(qb) yd deep; measured reality is 1.0")
+
+        let sg = slots(buildRealFormation(alignment: "SHOTGUN", code: "11"))
+        let sgLayout = DepthChartFieldLayout.compute(slots: sg, fieldSize: phone, fillWidth: true)
+        let sgQb = renderedYards("off-qb-0", sg, sgLayout) ?? 0
+        // The whole point of drawing depth honestly: the two alignments must be tellable
+        // apart, and in the right proportion. Measured, shotgun is ~4.4x deeper.
+        #expect(sgQb > qb * 2, "shotgun QB (\(sgQb) yd) should read clearly deeper than under centre (\(qb) yd)")
+    }
+
+    @Test("every unit's window keeps the line of scrimmage on the card")
+    func lineOfScrimmageStaysInFrame() {
+        let units: [(String, [RenderSlot])] = [
+            ("offense", slots(offenseFormation)),
+            ("defense", slots(baseDefense)),
+            ("special", [
+                RenderSlot(key: "st-kr", x: 30, y: 18, label: "KR", player: nil, onLine: nil),
+                RenderSlot(key: "st-pr", x: 70, y: 18, label: "PR", player: nil, onLine: nil),
+                RenderSlot(key: "st-ls", x: 50, y: 68, label: "LS", player: nil, onLine: nil),
+                RenderSlot(key: "st-k", x: 38, y: 80, label: "K", player: nil, onLine: nil),
+                RenderSlot(key: "st-p", x: 62, y: 80, label: "P", player: nil, onLine: nil),
+            ]),
+        ]
+        for (name, s) in units {
+            let layout = DepthChartFieldLayout.compute(slots: s, fieldSize: phone)
+            let los = layout.yardScale.screenY(charted: FieldYardScale.lineOfScrimmage)
+            #expect(los >= 0 && los <= phone.height, "\(name) drew the line of scrimmage off-card at \(los)")
+            #expect(layout.yardScale.pointsPerYard > 20, "\(name) window too wide to read: \(layout.yardScale.pointsPerYard) pt/yd")
+        }
     }
 }
