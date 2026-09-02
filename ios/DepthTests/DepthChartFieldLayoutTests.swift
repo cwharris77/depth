@@ -287,7 +287,14 @@ struct DepthChartFieldLayoutTests {
         }
     }
 
-    @Test("offense with fillWidth reaches the field edges (DEP-244)")
+    /// DEP-244 originally pinned the outermost receivers flush to the card edges so the
+    /// offense "filled the field's width". DEP-432 walked that back per Cooper: measured
+    /// across 137 snaps a real formation spans 24.6 yd widest-to-widest and leaves 10.1 yd
+    /// of grass outside the widest player, where pinning left ~2.9. The intent DEP-244 was
+    /// protecting — receivers out wide rather than huddled next to the tackles — still
+    /// holds and is what this now asserts; what changed is that they stop short of the
+    /// boundary instead of sitting on it.
+    @Test("offense spreads its receivers wide but off the sideline (DEP-244, revised)")
     func offenseFillWidthReachesEdges() {
         let slots = offenseFormation.map {
             RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
@@ -295,12 +302,16 @@ struct DepthChartFieldLayoutTests {
         let plain = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField)
         let filled = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField, fillWidth: true)
 
-        // The outermost WRs (flanker off-wr-1 at x=12, split end off-wr-0 at x=88) are
-        // pinned to the field edges — the offense takes the full width.
+        // Still out wide — inside the outer sixth of the card — but no longer flush to it.
         let leftWR = filled.positions["off-wr-1"]?.x ?? .zero
         let rightWR = filled.positions["off-wr-0"]?.x ?? .zero
-        #expect(leftWR < 40, "leftmost WR should be pinned to the left edge, got \(leftWR)")
-        #expect(rightWR > iphoneField.width - 40, "rightmost WR should be pinned to the right edge, got \(rightWR)")
+        let edgeBand = iphoneField.width / 6
+        #expect(leftWR < edgeBand, "leftmost WR should still be out wide, got \(leftWR)")
+        #expect(rightWR > iphoneField.width - edgeBand, "rightmost WR should still be out wide, got \(rightWR)")
+        #expect(leftWR > DepthChartFieldLayout.maxDotSize / 2,
+                "leftmost WR should keep grass outside it, not sit on the sideline")
+        #expect(rightWR < iphoneField.width - DepthChartFieldLayout.maxDotSize / 2,
+                "rightmost WR should keep grass outside it, not sit on the sideline")
 
         // The line keeps its real (clustered) spacing — the center is unchanged and the
         // dots stay as large as that spacing allows (same as plain, since the line isn't
@@ -318,7 +329,7 @@ struct DepthChartFieldLayoutTests {
         #expect(`default` == plain)
     }
 
-    @Test("real Shotgun 11 fills the field width too (DEP-244, Raiders case)")
+    @Test("real Shotgun 11 spreads wide too (DEP-244 revised, Raiders case)")
     func realShotgun11FillsWidth() {
         let formation = buildRealFormation(alignment: "SHOTGUN", code: "11")
         let slots = formation.map {
@@ -326,13 +337,16 @@ struct DepthChartFieldLayoutTests {
         }
         let filled = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField, fillWidth: true)
 
-        // The split end (off-wr-0, left) and flanker (off-wr-1, right) reach the field
-        // edges — the first DEP-244 pass got this wrong because the tight on-line row
-        // (TE 5% from RT) was re-spread around its centroid and pulled the split end back in.
+        // The split end (off-wr-0, left) and flanker (off-wr-1, right) still get out wide —
+        // the original DEP-244 bug was the tight on-line row (TE 5% from RT) being re-spread
+        // around its centroid and dragging the split end back in toward the tackles, which
+        // this still guards. They just stop short of the boundary now rather than on it.
         let leftWR = filled.positions["off-wr-0"]?.x ?? .zero
         let rightWR = filled.positions["off-wr-1"]?.x ?? .zero
-        #expect(leftWR < 40, "split end should be near the left edge, got \(leftWR)")
-        #expect(rightWR > iphoneField.width - 40, "flanker should be near the right edge, got \(rightWR)")
+        let edgeBand = iphoneField.width / 6
+        #expect(leftWR < edgeBand, "split end should still be out wide, got \(leftWR)")
+        #expect(rightWR > iphoneField.width - edgeBand, "flanker should still be out wide, got \(rightWR)")
+        #expect(leftWR > DepthChartFieldLayout.maxDotSize / 2, "split end should keep grass outside it")
 
         // Dots stay as large as the real (clustered) line spacing allows — within the
         // safe range, not the max: the RT/TE gap is tight, so offense stays at the floor.

@@ -120,20 +120,20 @@ struct DepthChartFieldLayout: Equatable {
     }
 
     static let minDotSize: CGFloat = 26
-    /// 36 (DEP-432). This was 32, chosen because at 36 the six-man interior run — five
-    /// linemen plus a tight end — left no room for the receivers to sit visibly off the
-    /// line and the offense collapsed into one evenly spaced wall.
+    /// 32, and the ceiling rather than a preference.
     ///
-    /// What changed is that receivers no longer get pinned to the card edges (see
-    /// `fillingLayout`), so the row's budget is spent on dots rather than on flinging the
-    /// split end into the sideline. Uniform across offense/defense/special, as before.
+    /// The offense's width is set by the six-man interior run — five linemen plus a tight
+    /// end — which costs `6 * dotSize + 5 * gap` no matter how the formation is framed.
+    /// Five linemen occupy 6.18 real yards, which at the field's true horizontal scale is
+    /// 43pt for six dots, so they must be stretched ~5x just to be separable, and that
+    /// stretch is what consumes the row. At 32 the formation needs ~77% of a 370pt card;
+    /// at 36 it needs 86% and fills it edge to edge; at 40 the interior additionally
+    /// starts pushing names off their inline slot onto leader lines.
     ///
-    /// This is close to the ceiling and the constraint is worth knowing: the interior run
-    /// costs `6 * dotSize + 5 * gap` no matter how wide the formation is drawn, so dot size
-    /// and formation width trade directly against each other. At 40 the interior consumes
-    /// enough of the row that names start losing their inline slot to leader lines, and the
-    /// receivers get forced back out to the edges anyway.
-    static let maxDotSize: CGFloat = 36
+    /// So dot size is the only lever on how wide the offense reads, and 32 is where it
+    /// leaves visible grass at the sidelines without the dots getting small. Uniform across
+    /// offense/defense/special, as it has been since 2026-08-23.
+    static let maxDotSize: CGFloat = 32
     static let gap: CGFloat = 2
     /// Deliberate empty space between the outermost interior dot (tackle or tight end) and
     /// the nearest receiver — the visual gap that says "this receiver is split out", not
