@@ -173,8 +173,9 @@ Cloudinary absent → captures stay on disk and the body notes the paths (degrad
 not blocked — the exit code stays 0 so the PR still opens).
 
 **CI enforces this.** `.github/workflows/ci.yml` runs a cheap `ios-ui-screenshots` gate
-on every PR: if the diff touches `ios/Depth/**` — excluding `ios/Depth/Domain/**`, which
-holds pure model types and pure logic with no views, so a diff confined to it cannot change
+on every PR: if the diff touches `ios/Depth/**` — excluding `ios/Depth/Domain/**` (pure
+model types and pure logic) and `ios/Depth/Data/**` (DTOs, mappers, repositories) —
+neither imports SwiftUI or declares a View, so a diff confined to either cannot change
 a pixel — and the body has no real screenshot table (`![…](https://…)` images + the end
 sentinel, or the degraded no-Cloudinary note), the job fails with instructions to run
 `ios/scripts/pr-screenshots.sh` and push again. It
