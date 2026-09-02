@@ -3,7 +3,7 @@ name: depth
 description: Interactive NFL depth chart viewer — rosters rendered as living formations on a broadcast-dark field
 colors:
   bg: "#15161a"
-  bg-page: "#0a0e1a"
+  bg-page: "#15161a"
   accent: "#6E8CAE"
   on-accent: "#15161a"
   text-primary: "#f0f4ff"
@@ -157,7 +157,7 @@ Signal colors that communicate status without competing with team color:
 The chrome ramp — every surface, border, and text color in the UI, all built from near-black with subtle white-alpha layering:
 
 - **Chrome Ground** (#15161a): Base for all UI chrome primitives (chips, inputs, cards, drawers). Distinct from the page ground.
-- **Page Ground** (#0a0e1a): The deepest background — body, PWA chrome, mobile browser theme.
+- **Page Ground** (#15161a): The deepest background — body, PWA chrome, mobile browser theme.
 - **Surface Card** (#1a1e23): Cards and elevated panels.
 - **Surface Card Dense** (rgba(255,255,255,0.03)): Dense/nested card variant.
 - **Surface Raised** (rgba(255,255,255,0.05)): Faint fill for rows, subtle cards.
