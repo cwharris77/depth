@@ -16,9 +16,9 @@ struct BlockingUpdateView: View {
         VStack(spacing: DesignTokens.Spacing.lg) {
             DepthBrandMark(size: 96)
             ContentUnavailableView {
-                Label("Update Required", systemImage: "arrow.down.circle")
+                Label("Update Available!", systemImage: "arrow.down.circle")
             } description: {
-                Text(maintenanceMessage ?? "A newer version of The Sticks is required to continue.")
+                Text(maintenanceMessage ?? "A new version of the app is available.")
                     .foregroundStyle(DesignTokens.Colors.textSecondary)
             } actions: {
                 // No button at all when the App Store id hasn't been configured yet —
