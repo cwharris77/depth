@@ -176,7 +176,8 @@ upload() {
   return 1
 }
 
-# find_first <dir> <target> — the xcresult-exported PNG for a target (e.g. field-abc123.png)
+# find_first <dir> <target> — the xcresult-exported PNG for a target (e.g. field_0_<uuid>.png
+# — screenshot-check.sh renames the export's raw UUID filenames to this via manifest.json)
 find_first() {
   [ -d "$1" ] && find "$1" -maxdepth 1 -name "$2*.png" | head -1
 }

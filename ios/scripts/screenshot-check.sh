@@ -162,6 +162,17 @@ capture_one() {
     || xcrun xcresulttool get test-results attachments --path "$rbund" --output-path "$out" 2>/dev/null \
     || { echo "ERROR: could not export attachments from $rbund" >&2; exit 1; }
 
+  # `export attachments` writes each PNG under its raw UUID and records the real name
+  # (e.g. "field_0_<uuid>.png", already target-prefixed — see attachScreenshot(name:)
+  # in PRScreenshotsUITests.swift) only in manifest.json's suggestedHumanReadableName.
+  # Rename on disk so cache_satisfies/find_first's target-prefix globs actually match —
+  # same manifest-driven rename capture-appstore-screenshots.sh does.
+  if [ -f "$out/manifest.json" ]; then
+    while IFS=$'\t' read -r exported human; do
+      [ -n "$exported" ] && [ -n "$human" ] && [ -f "$out/$exported" ] && mv -f "$out/$exported" "$out/$human"
+    done < <(jq -r '.[] | .attachments[]? | select(.exportedFileName and .suggestedHumanReadableName) | [.exportedFileName, .suggestedHumanReadableName] | @tsv' "$out/manifest.json")
+  fi
+
   # Every sim is fully deleted before returning (not just at script EXIT) so a second
   # capture_one — or the script's caller — never inherits a leaked booted sim.
   cleanup
