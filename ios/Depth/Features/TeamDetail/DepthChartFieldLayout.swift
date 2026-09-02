@@ -706,21 +706,6 @@ struct DepthChartFieldLayout: Equatable {
     /// the unit isn't flush against the card edge and the line reads as a line.
     static let windowMarginYards: CGFloat = 1.4
 
-    /// Floor on how few yards a window may show, which is what keeps the units on a shared
-    /// vertical scale (DEP-432).
-    ///
-    /// Fitting each unit to its own extent zoomed the offense far harder than the defense —
-    /// the offense only charts about 7 yards deep against the defense's 10.5, so it was
-    /// drawn at ~72 pt/yd against ~41. A yard meant something different depending on which
-    /// tab you were on, and the offense read as stretched: a backfield barely four yards
-    /// behind the ball took up half the card.
-    ///
-    /// 12 sits just under what the defense asks for on its own (~12.3 for a nickel, ~13.3
-    /// for a dime), so the defense is untouched and only the offense — which fits in ~8 —
-    /// zooms out to meet it. Special teams exceeds it too, its returners and kicker sitting
-    /// on opposite sides of the line, and is allowed to: clipping a unit is worse than
-    /// drawing it smaller.
-    static let minWindowYards: CGFloat = 12
 
     /// Crops the card to a window around this unit and returns the resulting scale.
     ///
@@ -742,24 +727,8 @@ struct DepthChartFieldLayout: Equatable {
             return .fullField(height: height)
         }
         let margin = Double(windowMarginYards * FieldYardScale.chartedUnitsPerYard)
-        var windowMin = min(lo, FieldYardScale.lineOfScrimmage) - margin
-        var windowMax = max(hi, FieldYardScale.lineOfScrimmage) + margin
-
-        // Widen a shallow unit to the shared floor, growing away from the line of scrimmage
-        // so the line keeps its position relative to the players rather than drifting to
-        // the middle of the card.
-        let floor = Double(minWindowYards * FieldYardScale.chartedUnitsPerYard)
-        let shortfall = floor - (windowMax - windowMin)
-        if shortfall > 0 {
-            if lo >= FieldYardScale.lineOfScrimmage {
-                windowMax += shortfall  // offense: field opens up behind the backfield
-            } else if hi <= FieldYardScale.lineOfScrimmage {
-                windowMin -= shortfall  // defense: opens up behind the secondary
-            } else {
-                windowMin -= shortfall / 2
-                windowMax += shortfall / 2
-            }
-        }
+        let windowMin = min(lo, FieldYardScale.lineOfScrimmage) - margin
+        let windowMax = max(hi, FieldYardScale.lineOfScrimmage) + margin
 
         let span = windowMax - windowMin
         guard span > 0 else { return .fullField(height: height) }
@@ -923,32 +892,11 @@ struct DepthChartFieldLayout: Equatable {
         width: CGFloat,
         height: CGFloat
     ) -> DepthChartFieldLayout {
-        // How far in from the sideline the outermost receiver sits (DEP-432). This used to
-        // be just a dot radius — receivers pinned hard to the card edges, which drew the
-        // offense about twice its true width: measured across 137 snaps, a real formation
-        // spans 24.6 yd widest-to-widest and leaves 10.1 yd of grass outside the widest
-        // player, against the ~2.9 yd this was leaving.
-        //
-        // 19% of the card would be that measured 10.1 yd — but the interior run almost never
-        // spares it. Six dots at `maxDotSize + gap` is a fixed cost that grows with dot
-        // size, and on a phone it consumes essentially the whole row: at 36pt the interior
-        // spans 228pt of a 370pt card, leaving the receiver only ~7% of the width to sit in
-        // before it would collide with the tackle. So the real inset is what we ask for and
-        // the tackle clearance is what we get.
-        //
-        // Pulling receivers further in than this collapses the offense into one evenly
-        // spaced wall with the split end indistinguishable from a lineman — the same failure
-        // that set `maxDotSize` in the first place. `receiverClearance` is the gap that says
-        // "this receiver is split out" rather than merely "these dots don't touch", and it
-        // is the binding constraint here, not the sideline.
-        let realInsetPct = 19.0
-        let interiorHalf = Double(3 * (maxDotSize + gap))
-        let clearOfTacklePct = (Double(width) / 2 - interiorHalf
-            - Double(receiverClearance + maxDotSize)) / Double(width) * 100
-        let marginPct = max(
-            Double(maxDotSize / 2 + 4) / Double(width) * 100,
-            min(realInsetPct, clearOfTacklePct)
-        )
+        // Margin (percent) that keeps the largest dot's radius fully inside the field.
+        // This budgeted an extra 26pt for the pinned receiver's name text at one point;
+        // that is now the label pass's job (it clamps a name or moves it to a callout),
+        // and the extra margin here only ate into the strip the receivers need.
+        let marginPct = Double(maxDotSize / 2 + 4) / Double(width) * 100
 
         // The wide receivers are the slots labelled "WR" (every offense formation labels
         // its WR skill slots this way); they're the ones pinned to the field edges.
