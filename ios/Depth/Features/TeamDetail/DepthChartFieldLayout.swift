@@ -120,13 +120,20 @@ struct DepthChartFieldLayout: Equatable {
     }
 
     static let minDotSize: CGFloat = 26
-    /// THROWAWAY PROTOTYPE, per Cooper 2026-08-23: 32 rather than 36. At 36 the six-man
-    /// interior run (five linemen plus a tight end) eats ~190pt of a ~367pt row, leaving
-    /// no room for the receivers to sit visibly off the line — the whole offense collapsed
-    /// into one evenly spaced wall. 32 buys back the strip the receivers need while still
-    /// reading much larger than the old size-to-the-tightest-gap result (27.6pt), and it
-    /// stays uniform across offense/defense/special, which was the point of the change.
-    static let maxDotSize: CGFloat = 32
+    /// 36 (DEP-432). This was 32, chosen because at 36 the six-man interior run — five
+    /// linemen plus a tight end — left no room for the receivers to sit visibly off the
+    /// line and the offense collapsed into one evenly spaced wall.
+    ///
+    /// What changed is that receivers no longer get pinned to the card edges (see
+    /// `fillingLayout`), so the row's budget is spent on dots rather than on flinging the
+    /// split end into the sideline. Uniform across offense/defense/special, as before.
+    ///
+    /// This is close to the ceiling and the constraint is worth knowing: the interior run
+    /// costs `6 * dotSize + 5 * gap` no matter how wide the formation is drawn, so dot size
+    /// and formation width trade directly against each other. At 40 the interior consumes
+    /// enough of the row that names start losing their inline slot to leader lines, and the
+    /// receivers get forced back out to the edges anyway.
+    static let maxDotSize: CGFloat = 36
     static let gap: CGFloat = 2
     /// Deliberate empty space between the outermost interior dot (tackle or tight end) and
     /// the nearest receiver — the visual gap that says "this receiver is split out", not
@@ -883,11 +890,32 @@ struct DepthChartFieldLayout: Equatable {
         width: CGFloat,
         height: CGFloat
     ) -> DepthChartFieldLayout {
-        // Margin (percent) that keeps the largest dot's radius fully inside the field.
-        // This budgeted an extra 26pt for the pinned receiver's name text at one point;
-        // that is now the label pass's job (it clamps a name or moves it to a callout),
-        // and the extra margin here only ate into the strip the receivers need.
-        let marginPct = Double(maxDotSize / 2 + 4) / Double(width) * 100
+        // How far in from the sideline the outermost receiver sits (DEP-432). This used to
+        // be just a dot radius — receivers pinned hard to the card edges, which drew the
+        // offense about twice its true width: measured across 137 snaps, a real formation
+        // spans 24.6 yd widest-to-widest and leaves 10.1 yd of grass outside the widest
+        // player, against the ~2.9 yd this was leaving.
+        //
+        // 19% of the card would be that measured 10.1 yd — but the interior run almost never
+        // spares it. Six dots at `maxDotSize + gap` is a fixed cost that grows with dot
+        // size, and on a phone it consumes essentially the whole row: at 36pt the interior
+        // spans 228pt of a 370pt card, leaving the receiver only ~7% of the width to sit in
+        // before it would collide with the tackle. So the real inset is what we ask for and
+        // the tackle clearance is what we get.
+        //
+        // Pulling receivers further in than this collapses the offense into one evenly
+        // spaced wall with the split end indistinguishable from a lineman — the same failure
+        // that set `maxDotSize` in the first place. `receiverClearance` is the gap that says
+        // "this receiver is split out" rather than merely "these dots don't touch", and it
+        // is the binding constraint here, not the sideline.
+        let realInsetPct = 19.0
+        let interiorHalf = Double(3 * (maxDotSize + gap))
+        let clearOfTacklePct = (Double(width) / 2 - interiorHalf
+            - Double(receiverClearance + maxDotSize)) / Double(width) * 100
+        let marginPct = max(
+            Double(maxDotSize / 2 + 4) / Double(width) * 100,
+            min(realInsetPct, clearOfTacklePct)
+        )
 
         // The wide receivers are the slots labelled "WR" (every offense formation labels
         // its WR skill slots this way); they're the ones pinned to the field edges.
