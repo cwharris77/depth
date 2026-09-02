@@ -14,6 +14,7 @@ Arming it is a one-row update, but it is not a standalone action: the flip is a 
 | Gate decision | [`ios/Depth/App/UpdateGateViewModel.swift`](../ios/Depth/App/UpdateGateViewModel.swift) |
 | Blocking screen | [`ios/Depth/App/BlockingUpdateView.swift`](../ios/Depth/App/BlockingUpdateView.swift) |
 | Arming it | a data migration under [`supabase/migrations/`](../supabase/migrations/) (see below) |
+| App Store deep link | `APP_STORE_ID` in [`ios/xcconfig/Base.xcconfig`](../ios/xcconfig/Base.xcconfig) |
 
 `app_config` is deliberately the only table the gate reads, and its shape is frozen by contract. A gate that had to decode the schema it protects would fail in exactly the situation it exists for, so **never add a column the gate's read depends on, and never change the two it already reads.**
 
@@ -71,10 +72,23 @@ The gate blocks users. Arming it before a compliant build is actually installabl
 
 Step 1 is not optional. App Store propagation is not instant, and a minimum above every available build is indistinguishable to users from the app being broken.
 
-### Two preconditions that are not satisfied yet
+### Build number, not version number
 
-- **`APP_STORE_ID` is `0`.** The blocking screen's Update button is hidden entirely while the id is unset, because a button that opens nothing is worse than no affordance on a screen the user cannot leave. Set it in [`ios/xcconfig/Base.xcconfig`](../ios/xcconfig/Base.xcconfig) once the App Store Connect record exists — no code change needed. **Arming the gate in production before this is set leaves blocked users with no route to the update.**
-- **The gate only blocks builds that contain the gate.** It shipped in T5 (`7c4d88d`, #355), so every build from that point on is gateable.
+`minimum_supported_build` is compared against **`CFBundleVersion`** — the integer build number, auto-stamped as the git commit count on archive (`ios/project.yml`). It is *not* `CFBundleShortVersionString`, the marketing version shown in the App Store ("1.0"). Those are different numbers and the gate never reads the second one. Take the build number from the App Store Connect build listing, not from the version string.
+
+### Do not arm before the listing is public
+
+While the app is in review or otherwise not yet released, arming the gate is unsafe even with `APP_STORE_ID` set correctly:
+
+- The App Store product page is not publicly reachable, so the Update button deep-links to a dead end.
+- TestFlight builds share the same `CFBundleVersion` scheme, so a minimum above your testers' installed build locks out the only channel with real installs.
+- There is no old-client cohort to block yet, so there is nothing to gain against that risk.
+
+The gate first earns its keep at the *second* release: 1.0 goes live, you later ship a build carrying a breaking change, and you raise the minimum to that build once it is live in the store.
+
+### Still true regardless
+
+**The gate only blocks builds that contain the gate.** It shipped in T5 (`7c4d88d`, #355), so every build from that point on is gateable.
 
 ## Testing it locally
 
