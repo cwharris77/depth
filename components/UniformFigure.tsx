@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import Image from 'next/image';
-import type { TeamColors } from '@/lib/types';
+import type { JerseyColors } from '@/lib/types';
 import { variantSpec, type UniformVariant } from '@/lib/uniforms/figure';
 import { resolveUniformModel, type ResolvedUniformStyle } from '@/lib/uniforms/model';
 import type { TeamUniformDefinition, UniformSurface } from '@/lib/uniforms/teams/types';
@@ -11,7 +11,7 @@ import type { TeamUniformDefinition, UniformSurface } from '@/lib/uniforms/teams
 export type UniformArtVariant = Extract<UniformVariant, 'jersey' | 'full'>;
 
 // The generated vector uniform. Colors/striping/layout are facts (not copyrightable), so every
-// kit is drawn from its TeamColors — zero external image assets. Team modules may additionally
+// kit is drawn from its JerseyColors — zero external image assets. Team modules may additionally
 // supply a helmet decal path; those are team marks reproduced for identification, and each starts
 // life as a machine trace flagged TRACE-PENDING-STYLIZE until it is hand-stylized. One renderer
 // backs the picker (variant="jersey") and the archive (variant="full"); a variant is a viewBox
@@ -147,7 +147,7 @@ export default function UniformFigure({
   kitId,
   definition,
 }: {
-  colors: TeamColors;
+  colors: JerseyColors;
   variant?: UniformArtVariant;
   size?: number;
   imagePath?: string;

@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import UniformFigure, { type UniformArtVariant } from '@/components/UniformFigure';
-import type { TeamColors } from '@/lib/types';
+import type { JerseyColors } from '@/lib/types';
 import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
 
 // DEP-220 art pipeline: deterministic, prerendered uniform rasters for the native iOS
@@ -50,7 +50,7 @@ const RASTER_NUMBER_FONT = 'font-family:Helvetica, sans-serif';
 // geometry resolved against those colors — exactly the inputs the web renders, so the
 // raster can't diverge from the fallback it replaces.
 export function renderUniformThumbSVG(
-  colors: TeamColors,
+  colors: JerseyColors,
   kitId: string,
   definition?: TeamUniformDefinition,
   variant: UniformArtVariant = 'jersey'

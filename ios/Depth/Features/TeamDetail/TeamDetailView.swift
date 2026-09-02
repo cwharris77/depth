@@ -102,12 +102,7 @@ struct TeamDetailView: View {
         viewModel.snapshot.map { "\($0.team.city) \($0.team.name)" } ?? "Team"
     }
 
-    /// DEP-278 follow-up: the color published into `currentTeamStore` — the picked
-    /// kit's `uiAccent` when one is resolved, else the team's own. nil only before the
-    /// snapshot has loaded at all, matching `fieldColors`'s own gating.
-    private var resolvedUiAccentHex: String? {
-        (fieldColors ?? displayedSnapshot?.team.colors)?.uiAccent
-    }
+
 
     /// The selected uniform's palette recolors the field dots (web's kit selection);
     /// nil keeps the team's own colors. Prefers the live-previewed kit (while the picker
@@ -196,9 +191,9 @@ struct TeamDetailView: View {
             // own once the snapshot loads) so Stats/Schedule — which read this same
             // store — follow a kit switch the same render pass the field does.
             // `initial: true` covers the very first resolution, not just later changes.
-            .onChange(of: resolvedUiAccentHex, initial: true) { _, hex in
-                if let hex {
-                    currentTeamStore.refine(uiAccent: hex)
+            .onChange(of: activeJerseyColors, initial: true) { _, colors in
+                if let colors {
+                    currentTeamStore.refine(colors: colors)
                 }
             }
             .refreshable {
@@ -247,6 +242,7 @@ struct TeamDetailView: View {
                 PlayerDetailView(
                     player: player,
                     team: displayedSnapshot?.team,
+                    kitColors: activeJerseyColors,
                     repository: repository,
                     depthChart: players(for: position),
                     onSelectPlayer: { selectedPlayer = $0 },
@@ -412,7 +408,13 @@ struct TeamDetailView: View {
             },
             selection: page,
             onChange: { page = $0 },
-            activeColor: teamAccentColor,
+            activeColor: teamFillColor,
+            // Plain black/white against the fill rather than textOnFill's prefer-the-kit's-
+            // own-contrast-color rule (Cooper 2026-09-01: "the text can just be black or
+            // white, like the currently built app"), and always derived from that same fill.
+            activeTextColor: activeJerseyColors
+                .map { Color(hex: readableTextOn(TeamSurfaces.fill($0))) }
+                ?? DesignTokens.Colors.onAccent,
             fullWidth: true
         )
         .accessibilityElement(children: .contain)
@@ -611,13 +613,24 @@ struct TeamDetailView: View {
         }
     }
 
-    /// Team- or kit-driven accent for the page switcher and unit tabs (web: `activeColors`
-    /// = the active kit's colors, else the team's). Falls back to the app's own accent
-    /// before a team resolves.
+    /// The active kit's jersey colors, or nil before a team resolves.
+    private var activeJerseyColors: JerseyColors? {
+        (fieldColors ?? displayedSnapshot?.team.colors)?.jersey
+    }
+
+    /// The page switcher's active segment is a team-colored *fill*, so it takes the jersey
+    /// body and its label is a plain black/white pick against that same fill (see
+    /// pageSwitcher) — always derived from the exact color behind it.
+    private var teamFillColor: Color {
+        activeJerseyColors.map { Color(hex: TeamSurfaces.fill($0)) } ?? DesignTokens.Colors.accent
+    }
+
+    /// The accent for everything drawn on the page ground: the outlined chips (a 12%-alpha
+    /// wash is not a fill, so their label is effectively on the page), the unit-tab
+    /// underline, and the formations sheet. TeamSurfaces.mark, not ring — a ring may borrow
+    /// contrast from the fill it encloses, so it can return a hex that vanishes here.
     private var teamAccentColor: Color {
-        let colors = fieldColors ?? displayedSnapshot?.team.colors
-        guard let colors else { return DesignTokens.Colors.accent }
-        return Color(hex: colors.uiAccent)
+        activeJerseyColors.map { Color(hex: TeamSurfaces.mark($0)) } ?? DesignTokens.Colors.accent
     }
 
     @ViewBuilder

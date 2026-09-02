@@ -32,7 +32,7 @@ struct TeamStatsView: View {
                     SeasonPickerSheet(
                         items: seasonPickerItems,
                         selectedSeason: selectedSeason,
-                        accent: uiAccent,
+                        accent: teamAccent,
                         identifierPrefix: "stats"
                     ) { season in
                         showSeasonPicker = false
@@ -47,12 +47,15 @@ struct TeamStatsView: View {
     /// it (DEP-278 follow-up, web parity: `useKitColors`); falls back to this page's
     /// own team read while that hasn't happened yet (e.g. Stats opened before the
     /// roster page's snapshot has loaded for this team).
-    private var uiAccent: Color {
-        if let hex = currentTeamStore.uiAccent {
-            return Color(hex: hex)
+    /// The page's team accent, from the actively-picked kit when one is resolved, else this
+    /// team's own. DEP-424: the ring color — a real kit color, the same one the field dots
+    /// and the tab tint use, with legibility deliberately not gated.
+    private var teamAccent: Color {
+        if let colors = currentTeamStore.colors {
+            return Color(hex: TeamSurfaces.mark(colors))
         }
         guard let page = viewModel.page else { return DesignTokens.Colors.accent }
-        return Color(hex: page.team.colors.uiAccent)
+        return Color(hex: TeamSurfaces.mark(page.team.colors.jersey))
     }
 
     @ViewBuilder
@@ -110,7 +113,7 @@ struct TeamStatsView: View {
                         degradedUpcomingHero(upcoming)
                     }
                     if viewModel.isViewingCurrentOrUpcomingSeason, let nextGame = viewModel.nextGame {
-                        NextGameCard(game: nextGame, accent: uiAccent)
+                        NextGameCard(game: nextGame, accent: teamAccent)
                     }
                     if let active = viewModel.selectedSeasonStats {
                         metricSections(active)
@@ -169,7 +172,7 @@ struct TeamStatsView: View {
                     Text(verbatim: "HEAD COACH · \(ordinal(coach.experience).uppercased()) SEASON")
                         .font(.caption.bold())
                         .tracking(0.6)
-                        .foregroundStyle(uiAccent)
+                        .foregroundStyle(teamAccent)
                 }
                 .padding(.top, 11)
                 .accessibilityElement(children: .combine)
@@ -213,7 +216,7 @@ struct TeamStatsView: View {
                     if let streak = displayStreak(stats.streak) {
                         Text(verbatim: streak)
                             .font(.footnote.bold())
-                            .foregroundStyle(uiAccent)
+                            .foregroundStyle(teamAccent)
                     }
                     if let caption = teamStatsRankLabel(
                         ranks(for: stats)?.winPercent, lastRank: leagueSize, qualifier: .overall
@@ -473,7 +476,7 @@ struct TeamStatsView: View {
                 Text(verbatim: label)
                     .font(.caption2.weight(.bold))
                     .tracking(0.6)
-                    .foregroundStyle(uiAccent)
+                    .foregroundStyle(teamAccent)
                 Text(verbatim: leader.name)
                     .font(.system(size: 15, weight: .heavy))
                     .foregroundStyle(DesignTokens.Colors.textPrimary)

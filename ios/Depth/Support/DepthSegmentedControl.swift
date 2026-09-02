@@ -2,7 +2,8 @@ import SwiftUI
 
 // Literal port of web's `components/ui/SegmentedControl.tsx` (fill flavor, `sm` size):
 // a rounded-pill tab group on a `surfaceChip` track where the active segment fills with
-// the caller's color (the team's `uiAccent`), active text sits on `onAccent`, and the
+// the caller's color (the team's jersey body via TeamSurfaces.fill), active text sits on
+// the caller's activeTextColor (TeamSurfaces.textOnFill), and the
 // active segment carries a `withAlpha(activeTextColor, 40)` border (web lines 74-78).
 // Two widths, matching web's `fullWidth` (DEP-236): default hugs content — the compact
 // `size="sm"` that once sat inline next to the team pill (DEP-229) — and `fullWidth:
