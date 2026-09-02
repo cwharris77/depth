@@ -11,8 +11,7 @@ private func scheduleTeam(id: String, abbrev: String) -> Team {
         id: id, city: id.capitalized, name: "Team", abbrev: abbrev,
         conference: "AFC", division: "East",
         colors: TeamColors(
-            primary: "#00338d", secondary: "#d50a0a", accent: "#d50a0a",
-            uiAccent: "#d50a0a", onAccent: "#ffffff"
+            primary: "#00338d", secondary: "#d50a0a", accent: "#d50a0a"
         ),
         logo: nil, logoDark: nil
     )

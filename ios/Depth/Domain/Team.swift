@@ -1,12 +1,17 @@
 import Foundation
 
-// Mirrors lib/types.ts's TeamColors.
+// Mirrors lib/types.ts's TeamColors — the three colors that describe a real jersey.
+//
+// `ui_accent`/`on_accent` are deliberately absent. They were rendering policy stored as
+// jersey data, and every surface now resolves from these three through TeamSurfaces. The
+// columns still exist in Postgres for builds already on devices (lib/uniforms/legacy-accents.ts
+// holds their frozen values), but this build neither selects nor decodes them, so a later
+// DROP COLUMN cannot break it. See ../../../obsidian/Projects/depth/specs/
+// 2026-09-01-team-color-surface-rules-design.md, "Retirement path".
 struct TeamColors: Codable, Equatable {
     let primary: String
     let secondary: String
     let accent: String
-    let uiAccent: String
-    let onAccent: String
 }
 
 // Mirrors lib/types.ts's Team.

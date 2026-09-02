@@ -10,8 +10,7 @@ private func historyTeam() -> Team {
         id: "seahawks", city: "Seattle", name: "Seahawks", abbrev: "SEA",
         conference: "NFC", division: "West",
         colors: TeamColors(
-            primary: "#002244", secondary: "#69be28", accent: "#69be28",
-            uiAccent: "#69be28", onAccent: "#001b2e"
+            primary: "#002244", secondary: "#69be28", accent: "#69be28"
         ),
         logo: "https://example.com/logo.png", logoDark: "https://example.com/logo-dark.png"
     )
