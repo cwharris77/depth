@@ -2,11 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Spec:** `../obsidian/Projects/depth/specs/2026-09-01-team-color-surface-rules-design.md` (all decisions locked 2026-09-01)
+**Spec:** `../obsidian/Projects/depth/specs/2026-09-01-team-color-surface-rules-design.md` (rewritten 2026-09-01 after implementation)
 
-**Goal:** Stop storing "what color goes here" as data. Every surface resolves from the kit's real jersey colors (`primary`/`secondary`/`accent`) through one shared helper; `uiAccent`/`onAccent` become frozen legacy columns that new clients never read. The player-card numeral becomes an outlined jersey numeral in two real team colors (spec direction 3).
+**Status (2026-09-01):** PRs 1–4 are **built and open** — [#593](https://github.com/cwharris77/depth/pull/593), [#594](https://github.com/cwharris77/depth/pull/594), [#596](https://github.com/cwharris77/depth/pull/596), [#598](https://github.com/cwharris77/depth/pull/598) — as a linear stack onto `main`. PR 4 shipped a different rule than this plan originally described: see its rewritten section below. PRs 5 and 6 are renumbered and PR 5 is split in two, because only half of it is safe to merge.
 
-**Architecture:** A new pure module (`lib/utils/team-surfaces.ts`, mirrored in `ios/Depth/Support/TeamSurfaces.swift`) exposes one resolver per surface — fill, ring, text-on-fill, numeral. Call sites ask for a surface and never compose contrast logic themselves. The 105 legacy `uiAccent`/`onAccent` values move off the curation surface into a frozen map that only the seed generator reads. Cross-language domain fixtures prove the Swift and TS resolvers agree on all 105 kits.
+**Goal:** Stop storing "what color goes here" as data. Every surface resolves from **the selected kit's** real jersey colors (`primary`/`secondary`/`accent`) through one shared helper, so changing the uniform changes every team-colored surface; `uiAccent`/`onAccent` become frozen legacy columns that new clients never read. The player-card numeral becomes an outlined jersey numeral in two real team colors (spec direction 3).
+
+**Architecture:** A new pure module (`lib/utils/team-surfaces.ts`, mirrored in `ios/Depth/Domain/TeamSurfaces.swift`) exposes one resolver per surface — fill, ring, **mark**, text-on-fill, numeral. `mark` is the one this plan originally lacked: a color painted straight on the page has no fill to borrow contrast from, so it takes the kit's colors in the order `secondary → accent → primary` against the ground. Call sites ask for a surface and never compose contrast logic themselves. The 105 legacy `uiAccent`/`onAccent` values move off the curation surface into a frozen map that only the seed generator reads. Cross-language domain fixtures prove the Swift and TS resolvers agree on all 105 kits.
 
 **Tech Stack:** TypeScript strict + Vitest (shared logic, seed generation), Swift 6 + XCTest (the product), Supabase Postgres (the seed target).
 
@@ -24,7 +26,7 @@
 
 ---
 
-## PR 1 — Shared surface resolvers (TypeScript, no callers changed)
+## PR 1 — Shared surface resolvers (TypeScript, no callers changed) — **DONE, [#593](https://github.com/cwharris77/depth/pull/593)**
 
 ### Task 1: The resolver module
 
@@ -62,7 +64,7 @@
 
 ---
 
-## PR 2 — Generator owns the legacy columns
+## PR 2 — Generator owns the legacy columns — **DONE, [#594](https://github.com/cwharris77/depth/pull/594)**
 
 **Why this is safe:** the regenerated migration must be **byte-identical** to `supabase/migrations/20260901120000_restore_legacy_ui_accent_legibility.sql`. That is the proof that this is a pure refactor with zero effect on shipped builds.
 
@@ -87,7 +89,7 @@
 
 ---
 
-## PR 3 — Swift mirror + cross-language parity
+## PR 3 — Swift mirror + cross-language parity — **DONE, [#596](https://github.com/cwharris77/depth/pull/596)**
 
 ### Task 4: `TeamSurfaces.swift`
 
@@ -110,38 +112,50 @@
 
 ---
 
-## PR 4 — iOS views route through the resolvers (replaces DEP-424)
+## PR 4 — iOS views route through the resolvers (replaces DEP-424) — **DONE, [#598](https://github.com/cwharris77/depth/pull/598)**
 
-**Note:** this supersedes DEP-424's task list. Its "sweep every foreground `uiAccent` to white" step is obsolete — under these rules team color never lands on bare text, so there is nothing to recolor; the call sites change *what they ask for*, not *what color they hardcode*. Rewrite the ticket rather than implementing it as written.
+**This section was rewritten after implementation.** The original plan said "anything that was bare team-colored text becomes a chip." That was built, reviewed on device, and rejected as visually heavy. What shipped instead keeps bare team-colored marks and makes them legible by *choosing the right one of the kit's own colors* — the `mark` resolver. See the spec's "Rejected during implementation" section for the two other approaches that were built and dropped.
 
-### Task 5: Migrate the call sites
+### Task 5: Migrate the call sites — DONE
 
-**Files:**
-- Modify: `ios/Depth/Features/Teams/TeamListView.swift`, `Features/TeamDetail/PlayerDetailView.swift`, `Features/TeamDetail/TeamDetailView.swift`, `Features/Compare/CompareView.swift`, `Features/Compare/CompareLensesView.swift`, `Features/Stats/TeamStatsView.swift`, `Features/Schedule/ScheduleView.swift`, `Features/TeamDetail/DepthChartFieldView.swift`
-- Delete: `ios/Depth/Features/Teams/TeamBadgeOverride.swift` and `ios/DepthTests/TeamBadgeOverrideTests.swift`
-- Modify: `ios/Depth/Support/CurrentTeamStore.swift`
+- [x] Added `kitMark`/`TeamSurfaces.mark` and routed every surface painted on the page ground through it: unit-tab underline, tab-bar tint, overflow menu, chip labels and borders, stats accents, player-card watermark. Fills stay `fill`; bands around a fill stay `ring`.
+- [x] `CurrentTeamStore` publishes the active kit's `JerseyColors`; `refine(_:)` keeps its behaviour so the picked kit drives chrome.
+- [x] **Threaded `kitColors` into `PlayerDetailView`.** Not in the original plan and the most user-visible part: the card read `team.colors`, which the read layer overlays with the *home* kit, so the watermark, headshot ring, headshot ground and every accent ignored the uniform picker.
+- [x] Text on a fill is always `readableTextOn` of that same fill. A `ring` fill paired with a `textOnFill` label collapsed to one hex for 21 of 32 teams (Seahawks `#69BE28` on `#69BE28`, contrast 1.00).
+- [x] `DesignTokens.Colors.accent` kept as the pre-resolution fallback.
+- [x] **`TeamBadgeOverride` kept, not deleted** — reversing this plan's Step 3. It solves logo-on-background blending (Buccaneers, Broncos), which is image content the color rules cannot see. Only the Panthers row was retired, since it pinned an invented `#36A7E0`.
+- [x] Targeted runs: `DepthTests` (389 pass; 4 pre-existing local-stack integration failures unrelated to the diff), `DepthUITests/PlayerCardReorderUITests` 5/5.
 
-- [ ] **Step 1: Replace every `colors.uiAccent` read** with the matching `TeamSurfaces` call. Fills stay fills; rings become `TeamSurfaces.ring`; anything that was bare team-colored text becomes a chip (fill + `textOnFill`).
-- [ ] **Step 2: `CurrentTeamStore`** stores the resolved *kit colors* rather than a single `uiAccent` hex, so downstream views can ask for any surface. Keep `refine(_:)`'s behaviour — the picked kit still drives chrome.
-- [ ] **Step 3: Delete `TeamBadgeOverride`.** Its per-team entries (e.g. the Panthers' blue background) exist only because the fill/ring rule wasn't uniform; verify the Panthers badge still reads correctly under the uniform rule before deleting, and say so in the PR body.
-- [ ] **Step 4: Keep `DesignTokens.Colors.accent` as the pre-resolution fallback** wherever no team is resolved yet (`RootTabView`'s `.tint` at fresh launch). That is app chrome, not team color — out of scope per the spec.
-- [ ] **Step 5:** Targeted runs: `DepthUITests`, `AccessibilityUITests` for the flows touched.
-- [ ] **Step 6: Simulator-verify** the eight teams #590 changed plus **both Seahawks kits** — the home/away inversion is the case that breaks naive rules. Screenshots via `ios/scripts/pr-screenshots.sh --body-file <body>`.
-
-### Task 6: Stop selecting the legacy columns
-
-**Files:**
-- Modify: `ios/Depth/Data/SupabaseDepthRepository.swift` (4 select strings), `ios/Depth/Data/TeamSnapshotDTO.swift` (3 DTO field pairs), `ios/Depth/Data/CachedSnapshotModels.swift`, `ios/Depth/Data/TeamSnapshotMapper.swift`
-- Modify: `ios/DepthTests/TeamSnapshotMapperTests.swift`, `CachingDepthRepositoryTests.swift`, `UniformArchiveTests.swift`
-
-- [ ] **Step 1: Drop `ui_accent, on_accent`** from `teamSnapshotSelect`, `teamListSelect`, `uniformListingSelect` and the flat uniform select. The columns stay in the database — this only stops the *new* build asking for them.
-- [ ] **Step 2: Drop the fields** from `TeamColorUniformDTO`, the flat uniform DTO, and the archive DTO; drop `uiAccent`/`onAccent` from the app's `TeamColors` and from `CachedTeamListEntry`.
-- [ ] **Step 3: The SwiftData shape change needs no migration.** `DepthEnvironment.swift:40-59` already wipes and retries the store when it fails to open against a changed schema, by design ("this cache is disposable"). Confirm on a device/simulator upgraded from a pre-change build rather than a clean install, and note that in the PR body — a clean install does not exercise this path.
-- [ ] **Step 4:** Targeted runs for `DepthTests` (data/domain suites).
+**Not done:** screenshots. `ios/scripts/pr-screenshots.sh` rebuilds the base side from a fresh worktree every run and builds both sides against production, so it cannot show a local-only change — follow-up ticket filed in the vault ("iOS PR screenshot flow should reuse baselines and hit the local stack").
 
 ---
 
-## PR 5 — The player-card numeral
+## PR 5a — Stop selecting the legacy columns (client-side only)
+
+**Safe to merge whenever.** The columns stay in the database, so builds already on devices are unaffected — this build simply stops asking for them. Split from the `DROP COLUMN` work (PR 5b) on Cooper's call 2026-09-01; conflating them was an error in the original plan's Task 6.
+
+**Files:**
+- Modify: `ios/Depth/Data/SupabaseDepthRepository.swift` (4 select strings), `TeamSnapshotDTO.swift` (3 DTO field pairs), `CachedSnapshotModels.swift`, `TeamSnapshotMapper.swift`, `ios/Depth/Domain/Team.swift`
+- Modify: `ios/DepthTests/TeamSnapshotMapperTests.swift`, `CachingDepthRepositoryTests.swift`, `UniformArchiveTests.swift`
+
+- [ ] **Step 1:** Drop `ui_accent, on_accent` from `teamSnapshotSelect`, `teamListSelect`, `uniformListingSelect` and the flat uniform select.
+- [ ] **Step 2:** Drop the fields from `TeamColorUniformDTO`, the flat uniform DTO and the archive DTO; drop `uiAccent`/`onAccent` from the app's `TeamColors` and from `CachedTeamListEntry`. `JerseyColors` already makes them unreachable from the resolvers, so this is the last read path.
+- [ ] **Step 3:** The SwiftData shape change needs no migration — `DepthEnvironment.swift:40-59` wipes and retries on an incompatible store by design. **Verify on a simulator upgraded from a pre-change build, not a clean install**, since a clean install never exercises that path. Say so in the PR body.
+- [ ] **Step 4:** Targeted `DepthTests` runs for the data/domain suites.
+
+---
+
+## PR 5b — Drop the columns (BLOCKED)
+
+**Blocked on DEP-425 plus install drain.** Do not schedule by date. A version gate only blocks builds that contain the gate; the build currently in App Store review has no version check, so dropping a column 400s it regardless of any minimum-version value. File as its own ticket with `blocked-by: DEP-425`. See the spec's "Retirement path" section.
+
+- [ ] Migration dropping `ui_accent`/`on_accent` from `uniforms`
+- [ ] Delete `lib/uniforms/legacy-accents.ts` and its read in `lib/uniforms/seed-sql.ts`
+- [ ] `npm run db:types` regenerated and committed in the same PR
+
+---
+
+## PR 6 — The player-card numeral
 
 ### Task 7: Outlined numeral, iOS
 
@@ -163,9 +177,16 @@
 
 ---
 
-## PR 6 — Documentation reconciliation
+## PR 7 — Documentation reconciliation
 
 ### Task 9: Correct every stale claim
+
+Additional stale claims found while implementing (2026-09-01), beyond whatever this task already lists:
+
+- [ ] `AGENTS.md` §3 says `.prettierignore` exempts fixtures. It exempts `lib/espn/fixtures/` only, so `fixtures/domain/` churns on every regeneration until `npm run format` runs.
+- [ ] `ios/CLAUDE.md` §5 shows `-only-testing:<Suite>/<Test>` without parentheses. Swift Testing free functions need them — `-only-testing:'DepthTests/teamSurfacesParity()'`. Without, the run matches nothing and prints `Executed 0 tests` **and** `** TEST SUCCEEDED **`, which reads as a pass. This silently hid a broken filter during PR 3.
+- [ ] Surviving `#0a0e1a` references in `lib/roster-source.db.ts` and `lib/utils/colors.ts` — the ground moved to `#15161a` in DEP-274.
+- [ ] `AGENTS.md` invariant 4 and its §5 quality-bar row assert every curated pair passes AA. False by design now: `uiAccent`/`onAccent` are frozen compat columns, and the live rules derive contrast at render time.
 
 **Files:**
 - Modify: `AGENTS.md` (invariant 4, mistake #2, §5 curated-data quality bar)
