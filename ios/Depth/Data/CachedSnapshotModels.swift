@@ -25,8 +25,6 @@ final class CachedTeamListEntry {
     var colorPrimary: String
     var colorSecondary: String
     var colorAccent: String
-    var uiAccent: String
-    var onAccent: String
     var logoUrl: String?
     var logoDarkUrl: String?
     var schemaVersion: Int
@@ -42,8 +40,6 @@ final class CachedTeamListEntry {
         self.colorPrimary = team.colors.primary
         self.colorSecondary = team.colors.secondary
         self.colorAccent = team.colors.accent
-        self.uiAccent = team.colors.uiAccent
-        self.onAccent = team.colors.onAccent
         self.logoUrl = team.logo
         self.logoDarkUrl = team.logoDark
         self.schemaVersion = schemaVersion
@@ -54,9 +50,7 @@ final class CachedTeamListEntry {
         Team(
             id: id, city: city, name: name, abbrev: abbrev, conference: conference, division: division,
             colors: TeamColors(
-                primary: colorPrimary, secondary: colorSecondary, accent: colorAccent,
-                uiAccent: uiAccent, onAccent: onAccent
-            ),
+                primary: colorPrimary, secondary: colorSecondary, accent: colorAccent),
             logo: logoUrl, logoDark: logoDarkUrl
         )
     }

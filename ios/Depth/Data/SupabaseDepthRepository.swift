@@ -21,7 +21,7 @@ actor SupabaseDepthRepository: DepthRepository {
         special_teams_slots(id, team_id, label, player_id, x, y, \
         player:players(id, team_id, name, number, position, status, age, college, experience, height, weight, bio, photo_url)), \
         uniforms(id, team_id, kind, name, year_start, year_end, is_current, \
-        color_primary, color_secondary, color_accent, ui_accent, on_accent, image_path), \
+        color_primary, color_secondary, color_accent, image_path), \
         team_formations(season, rank, unit, alignment, personnel, pct)
         """
 
@@ -55,7 +55,7 @@ actor SupabaseDepthRepository: DepthRepository {
 
     private static let teamListSelect = """
         id, abbrev, city, name, conference, division, logo_url, logo_dark_url, \
-        uniforms(kind, is_current, color_primary, color_secondary, color_accent, ui_accent, on_accent)
+        uniforms(kind, is_current, color_primary, color_secondary, color_accent)
         """
 
     private static let teamStatsSelect =
@@ -88,11 +88,11 @@ actor SupabaseDepthRepository: DepthRepository {
     private static let playerSearchSelect = """
         id, name, number, position, college, photo_url, \
         teams(id, abbrev, city, name, conference, division, logo_url, logo_dark_url, \
-        uniforms(kind, is_current, color_primary, color_secondary, color_accent, ui_accent, on_accent))
+        uniforms(kind, is_current, color_primary, color_secondary, color_accent))
         """
 
     private static let uniformListingSelect =
-        "id, team_id, kind, name, year_start, year_end, is_current, color_primary, color_secondary, color_accent, ui_accent, on_accent, image_path"
+        "id, team_id, kind, name, year_start, year_end, is_current, color_primary, color_secondary, color_accent, image_path"
 
     func teams() async throws -> [Team] {
         do {

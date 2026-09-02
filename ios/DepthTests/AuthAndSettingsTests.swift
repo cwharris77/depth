@@ -259,9 +259,7 @@ private actor AsyncCounter {
     let colors = TeamColors(
         primary: "#000000",
         secondary: "#111111",
-        accent: "#222222",
-        uiAccent: "#FFFFFF",
-        onAccent: "#000000"
+        accent: "#222222"
     )
     let formation = TeamFormation(
         season: 2025,

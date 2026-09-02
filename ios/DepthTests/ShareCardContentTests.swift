@@ -25,7 +25,7 @@ import Testing
 private func team(primary: String = "#000000", id: String = "test") -> Team {
     Team(
         id: id, city: "Test", name: "Team", abbrev: "TST", conference: "NFC", division: "West",
-        colors: TeamColors(primary: primary, secondary: "#fff", accent: "#888", uiAccent: "#fff", onAccent: "#000"),
+        colors: TeamColors(primary: primary, secondary: "#fff", accent: "#888"),
         logo: nil, logoDark: nil
     )
 }

@@ -8,8 +8,7 @@ import Testing
 // house "untrusted input degrades, never throws" invariant.
 
 private let billsColors = TeamColors(
-    primary: "#00338D", secondary: "#C60C30", accent: "#D50A0A",
-    uiAccent: "#4D8BFF", onAccent: "#0a0e1a"
+    primary: "#00338D", secondary: "#C60C30", accent: "#D50A0A"
 )
 
 private func listing(

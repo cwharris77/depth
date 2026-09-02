@@ -130,7 +130,7 @@ private func inMemoryStore() -> CachedSnapshotStore {
 private func team(id: String = "bills") -> Team {
     Team(
         id: id, city: "Buffalo", name: "Bills", abbrev: "BUF", conference: "AFC", division: "East",
-        colors: TeamColors(primary: "#00338d", secondary: "#d50a0a", accent: "#d50a0a", uiAccent: "#d50a0a", onAccent: "#fff"),
+        colors: TeamColors(primary: "#00338d", secondary: "#d50a0a", accent: "#d50a0a"),
         logo: nil, logoDark: nil
     )
 }
@@ -499,8 +499,7 @@ private func uniformListing(id: String = "bills-home") -> UniformListing {
         division: "East", kind: .home, name: "Home", yearStart: 2025, yearEnd: nil,
         isCurrent: true,
         colors: TeamColors(
-            primary: "#00338D", secondary: "#C60C30", accent: "#D50A0A",
-            uiAccent: "#4D8BFF", onAccent: "#0a0e1a"
+            primary: "#00338D", secondary: "#C60C30", accent: "#D50A0A"
         ),
         imagePath: "https://depth-ashen.vercel.app/uniforms/bills-home.webp"
     )

@@ -110,7 +110,7 @@ final class PerformanceMetricsTests: XCTestCase {
 private func sampleTeam(id: String = "bills") -> Team {
     Team(
         id: id, city: "Buffalo", name: "Bills", abbrev: "BUF", conference: "AFC", division: "East",
-        colors: TeamColors(primary: "#00338d", secondary: "#d50a0a", accent: "#d50a0a", uiAccent: "#d50a0a", onAccent: "#fff"),
+        colors: TeamColors(primary: "#00338d", secondary: "#d50a0a", accent: "#d50a0a"),
         logo: nil, logoDark: nil
     )
 }

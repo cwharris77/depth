@@ -52,8 +52,7 @@ enum TeamSnapshotMapper {
     }
 
     private static let neutralTeamColors = TeamColors(
-        primary: "#333333", secondary: "#666666", accent: "#666666",
-        uiAccent: "#4CC3FF", onAccent: "#0a0e1a"
+        primary: "#333333", secondary: "#666666", accent: "#666666"
     )
 
     private static func currentHomeColors(_ uniforms: [Uniform]) -> TeamColors {
@@ -65,8 +64,7 @@ enum TeamSnapshotMapper {
             return neutralTeamColors
         }
         return TeamColors(
-            primary: home.colorPrimary, secondary: home.colorSecondary, accent: home.colorAccent,
-            uiAccent: home.uiAccent, onAccent: home.onAccent
+            primary: home.colorPrimary, secondary: home.colorSecondary, accent: home.colorAccent
         )
     }
 
@@ -137,8 +135,7 @@ enum TeamSnapshotMapper {
             id: dto.id, teamId: dto.teamId, kind: kind, name: dto.name,
             yearStart: dto.yearStart, yearEnd: dto.yearEnd, isCurrent: dto.isCurrent,
             colors: TeamColors(
-                primary: dto.colorPrimary, secondary: dto.colorSecondary, accent: dto.colorAccent,
-                uiAccent: dto.uiAccent, onAccent: dto.onAccent
+                primary: dto.colorPrimary, secondary: dto.colorSecondary, accent: dto.colorAccent
             ),
             imagePath: dto.imagePath
         )
@@ -159,8 +156,7 @@ enum TeamSnapshotMapper {
             conference: team.conference, division: team.division, kind: kind, name: dto.name,
             yearStart: dto.yearStart, yearEnd: dto.yearEnd, isCurrent: dto.isCurrent,
             colors: TeamColors(
-                primary: dto.colorPrimary, secondary: dto.colorSecondary, accent: dto.colorAccent,
-                uiAccent: dto.uiAccent, onAccent: dto.onAccent
+                primary: dto.colorPrimary, secondary: dto.colorSecondary, accent: dto.colorAccent
             ),
             imagePath: dto.imagePath
         )

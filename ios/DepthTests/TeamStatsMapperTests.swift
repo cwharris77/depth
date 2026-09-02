@@ -43,7 +43,7 @@ private func row(
 private func team(id: String = "bills") -> Team {
     Team(
         id: id, city: "Buffalo", name: "Bills", abbrev: "BUF", conference: "AFC", division: "East",
-        colors: TeamColors(primary: "#00338d", secondary: "#d50a0a", accent: "#d50a0a", uiAccent: "#d50a0a", onAccent: "#fff"),
+        colors: TeamColors(primary: "#00338d", secondary: "#d50a0a", accent: "#d50a0a"),
         logo: nil, logoDark: nil
     )
 }
@@ -581,7 +581,7 @@ private func metricRankRow(
         let legacy = """
         {"team":{"id":"bills","city":"Buffalo","name":"Bills","abbrev":"BUF",
         "conference":"AFC","division":"East","colors":{"primary":"#00338d",
-        "secondary":"#d50a0a","accent":"#d50a0a","uiAccent":"#d50a0a","onAccent":"#fff"}},
+        "secondary":"#d50a0a","accent":"#d50a0a"}},
         "seasons":[],"currentSeason":2026}
         """.data(using: .utf8)!
         let page = try JSONDecoder().decode(TeamStatsPage.self, from: legacy)

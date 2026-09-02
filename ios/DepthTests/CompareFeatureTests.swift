@@ -16,8 +16,7 @@ private func compareTeam(_ id: String, abbrev: String, city: String) -> Team {
         id: id, city: city, name: abbrev, abbrev: abbrev,
         conference: "NFC", division: "West",
         colors: TeamColors(
-            primary: "#002244", secondary: "#69be28", accent: "#69be28",
-            uiAccent: "#69be28", onAccent: "#001b2e"
+            primary: "#002244", secondary: "#69be28", accent: "#69be28"
         ),
         logo: nil, logoDark: nil
     )

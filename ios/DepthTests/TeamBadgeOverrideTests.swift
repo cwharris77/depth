@@ -9,18 +9,18 @@ import Testing
 // with an orange ring; Broncos swap the blend-in orange primary for the navy secondary
 // with an orange ring). Colors are sourced from the team's own palette, never hardcoded.
 
-private func team(id: String, primary: String, secondary: String, accent: String, uiAccent: String, onAccent: String = "#0a0e1a") -> Team {
+private func team(id: String, primary: String, secondary: String, accent: String) -> Team {
     Team(
         id: id, city: "City", name: "Name", abbrev: id.uppercased(), conference: "AFC", division: "East",
-        colors: TeamColors(primary: primary, secondary: secondary, accent: accent, uiAccent: uiAccent, onAccent: onAccent),
+        colors: TeamColors(primary: primary, secondary: secondary, accent: accent),
         logo: nil, logoDark: nil
     )
 }
 
-private let bills = team(id: "bills", primary: "#00338d", secondary: "#d50a0a", accent: "#d50a0a", uiAccent: "#d50a0a")
-private let panthers = team(id: "panthers", primary: "#0085CA", secondary: "#101820", accent: "#101820", uiAccent: "#36A7E0")
-private let buccaneers = team(id: "buccaneers", primary: "#D50A0A", secondary: "#34302B", accent: "#FF7900", uiAccent: "#FF4D4D")
-private let broncos = team(id: "broncos", primary: "#FB4F14", secondary: "#002244", accent: "#002244", uiAccent: "#FF6A33")
+private let bills = team(id: "bills", primary: "#00338d", secondary: "#d50a0a", accent: "#d50a0a")
+private let panthers = team(id: "panthers", primary: "#0085CA", secondary: "#101820", accent: "#101820")
+private let buccaneers = team(id: "buccaneers", primary: "#D50A0A", secondary: "#34302B", accent: "#FF7900")
+private let broncos = team(id: "broncos", primary: "#FB4F14", secondary: "#002244", accent: "#002244")
 
 @Test func defaultBadgeUsesPrimaryFillAndSecondaryRing() {
     #expect(TeamBadgeOverride.backgroundColorHex(for: bills) == "#00338d")
@@ -28,7 +28,7 @@ private let broncos = team(id: "broncos", primary: "#FB4F14", secondary: "#00224
 }
 
 @Test func unknownTeamFallsBackToDefaultColors() {
-    let mystery = team(id: "mystery", primary: "#123456", secondary: "#654321", accent: "#654321", uiAccent: "#654321")
+    let mystery = team(id: "mystery", primary: "#123456", secondary: "#654321", accent: "#654321")
     #expect(TeamBadgeOverride.backgroundColorHex(for: mystery) == "#123456")
     #expect(TeamBadgeOverride.ringColorHex(for: mystery) == "#654321")
 }

@@ -34,21 +34,23 @@ private func team(
         UniformDTO(
             id: "bills-home-2002", teamId: "bills", kind: "home", name: "Retired Home",
             yearStart: 2002, yearEnd: 2010, isCurrent: false,
-            colorPrimary: "#111111", colorSecondary: "#222222", colorAccent: "#333333",
-            uiAccent: "#444444", onAccent: "#ffffff", imagePath: nil
+            colorPrimary: "#111111", colorSecondary: "#222222", colorAccent: "#333333", imagePath: nil
         ),
         UniformDTO(
             id: "bills-home-2011", teamId: "bills", kind: "home", name: "Current Home",
             yearStart: 2011, yearEnd: nil, isCurrent: true,
-            colorPrimary: "#00338D", colorSecondary: "#C60C30", colorAccent: "#C60C30",
-            uiAccent: "#5B9BFF", onAccent: "#0a0e1a", imagePath: nil
+            colorPrimary: "#00338D", colorSecondary: "#C60C30", colorAccent: "#C60C30", imagePath: nil
         ),
     ])
     let snapshot = try TeamSnapshotMapper.map(dto)
     #expect(snapshot.team.id == "bills")
     #expect(snapshot.team.abbrev == "BUF")
     #expect(snapshot.team.colors.primary == "#00338D")
-    #expect(snapshot.team.colors.onAccent == "#0a0e1a")
+    // Asserted against all three so the test still proves the mapper took the *current*
+    // home kit rather than the retired one — the retired row's #111111/#222222/#333333
+    // would fail any of them. This previously leaned on onAccent, which no longer exists.
+    #expect(snapshot.team.colors.secondary == "#C60C30")
+    #expect(snapshot.team.colors.accent == "#C60C30")
 }
 
 @Test func mapsDepthChartPlayerWithRealDepthRank() throws {
@@ -128,8 +130,7 @@ private func team(
         UniformDTO(
             id: "bills-home", teamId: "bills", kind: "home", name: "Home",
             yearStart: nil, yearEnd: nil, isCurrent: true,
-            colorPrimary: "#00338D", colorSecondary: "#C60C30", colorAccent: "#C60C30",
-            uiAccent: "#5B9BFF", onAccent: "#0a0e1a", imagePath: nil
+            colorPrimary: "#00338D", colorSecondary: "#C60C30", colorAccent: "#C60C30", imagePath: nil
         ),
     ])
     let snapshot = try TeamSnapshotMapper.map(dto)
@@ -143,8 +144,7 @@ private func team(
         UniformDTO(
             id: "x", teamId: "bills", kind: "bogus", name: "X",
             yearStart: nil, yearEnd: nil, isCurrent: false,
-            colorPrimary: "#000", colorSecondary: "#000", colorAccent: "#000",
-            uiAccent: "#000", onAccent: "#000", imagePath: nil
+            colorPrimary: "#000", colorSecondary: "#000", colorAccent: "#000", imagePath: nil
         ),
     ])
     #expect(throws: DepthError.self) {
