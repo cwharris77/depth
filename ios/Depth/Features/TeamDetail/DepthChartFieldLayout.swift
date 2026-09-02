@@ -706,6 +706,22 @@ struct DepthChartFieldLayout: Equatable {
     /// the unit isn't flush against the card edge and the line reads as a line.
     static let windowMarginYards: CGFloat = 1.4
 
+    /// Floor on how few yards a window may show, which is what keeps the units on a shared
+    /// vertical scale (DEP-432).
+    ///
+    /// Fitting each unit to its own extent zoomed the offense far harder than the defense —
+    /// the offense only charts about 7 yards deep against the defense's 10.5, so it was
+    /// drawn at ~72 pt/yd against ~41. A yard meant something different depending on which
+    /// tab you were on, and the offense read as stretched: a backfield barely four yards
+    /// behind the ball took up half the card.
+    ///
+    /// 12 sits just under what the defense asks for on its own (~12.3 for a nickel, ~13.3
+    /// for a dime), so the defense is untouched and only the offense — which fits in ~8 —
+    /// zooms out to meet it. Special teams exceeds it too, its returners and kicker sitting
+    /// on opposite sides of the line, and is allowed to: clipping a unit is worse than
+    /// drawing it smaller.
+    static let minWindowYards: CGFloat = 12
+
     /// Crops the card to a window around this unit and returns the resulting scale.
     ///
     /// The window always contains the line of scrimmage as well as every player, so the
@@ -726,8 +742,25 @@ struct DepthChartFieldLayout: Equatable {
             return .fullField(height: height)
         }
         let margin = Double(windowMarginYards * FieldYardScale.chartedUnitsPerYard)
-        let windowMin = min(lo, FieldYardScale.lineOfScrimmage) - margin
-        let windowMax = max(hi, FieldYardScale.lineOfScrimmage) + margin
+        var windowMin = min(lo, FieldYardScale.lineOfScrimmage) - margin
+        var windowMax = max(hi, FieldYardScale.lineOfScrimmage) + margin
+
+        // Widen a shallow unit to the shared floor, growing away from the line of scrimmage
+        // so the line keeps its position relative to the players rather than drifting to
+        // the middle of the card.
+        let floor = Double(minWindowYards * FieldYardScale.chartedUnitsPerYard)
+        let shortfall = floor - (windowMax - windowMin)
+        if shortfall > 0 {
+            if lo >= FieldYardScale.lineOfScrimmage {
+                windowMax += shortfall  // offense: field opens up behind the backfield
+            } else if hi <= FieldYardScale.lineOfScrimmage {
+                windowMin -= shortfall  // defense: opens up behind the secondary
+            } else {
+                windowMin -= shortfall / 2
+                windowMax += shortfall / 2
+            }
+        }
+
         let span = windowMax - windowMin
         guard span > 0 else { return .fullField(height: height) }
 

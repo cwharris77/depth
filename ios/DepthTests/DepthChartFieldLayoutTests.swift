@@ -521,15 +521,28 @@ struct FieldYardScaleTests {
         f.map { RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine) }
     }
 
-    /// Depth in real yards from the on-line row, read off the rendered points.
+    /// Depth in real yards from the on-line row, read off the points actually drawn.
+    ///
+    /// Both sides must include `lineOffset`. An on-line dot is drawn a radius onto its own
+    /// side of the line and `settingOffLineDepth` shifts off-line slots by the same amount
+    /// to preserve the gap, so the two cancel — but only if the on-line row is measured
+    /// where it is *drawn* rather than where it is stored. Measuring against the stored
+    /// position double-counts that shift, which is worth a whole yard once the window is
+    /// wide enough that 21pt buys one.
     private func renderedYards(
         _ key: String, _ slots: [RenderSlot], _ layout: DepthChartFieldLayout
     ) -> CGFloat? {
-        guard let p = layout.positions[key],
-            let line = slots.first(where: { $0.onLine == true }),
-            let lineY = layout.positions[line.key]
+        func drawn(_ slot: RenderSlot) -> CGFloat? {
+            layout.positions[slot.key].map {
+                $0.y + DepthChartFieldLayout.lineOffset(
+                    y: slot.y, onLine: slot.onLine, dotSize: layout.dotSize
+                )
+            }
+        }
+        guard let slot = slots.first(where: { $0.key == key }), let p = drawn(slot),
+            let line = slots.first(where: { $0.onLine == true }), let lineY = drawn(line)
         else { return nil }
-        return abs(p.y - lineY.y) / layout.yardScale.pointsPerYard
+        return abs(p - lineY) / layout.yardScale.pointsPerYard
     }
 
     @Test("rendered depth matches the charted depth it claims, in yards")
@@ -541,7 +554,13 @@ struct FieldYardScaleTests {
             for slot in s where slot.onLine != true {
                 guard let drawn = renderedYards(slot.key, s, layout) else { continue }
                 let charted = FieldYardScale.yards(between: slot.y, and: 51)
-                // One yard of tolerance absorbs the on-line nudge and the collision passes.
+                // A yard, and that is the right bar rather than a lazy one. With the
+                // measurement baseline fixed the only remaining slack is what the collision
+                // passes legitimately introduce when two slots genuinely need separating;
+                // measured across every alignment here the worst case is 0.87 yd, so this
+                // has just enough headroom to not be flaky while still catching the class of
+                // bug it exists for — the render inventing depth the chart never claimed,
+                // which ran to 17x before DEP-432.
                 #expect(
                     abs(drawn - charted) < 1.0,
                     "\(alignment) \(slot.label): charted \(charted) yd but drawn \(drawn) yd"
