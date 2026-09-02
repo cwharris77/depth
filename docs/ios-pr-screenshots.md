@@ -72,6 +72,26 @@ Output: `ios/.pr-screenshots/after/<target>.png` (and `before/` when `--base` gi
 plus `diff/` (visual diff) — gitignored, never committed. See the script's `-h` for
 all flags.
 
+**The "before" side is cached and defaults to the local Supabase stack:**
+
+- **Baseline cache.** `--base` PNGs are cached by `(base ref sha, target)` under
+  `ios/.pr-screenshots-cache/` (gitignored) — the base ref's rendering hasn't changed
+  since the last run that captured it, so a repeat run with the same base and targets
+  reuses the cached PNGs and skips the base worktree build + sim boot entirely. The
+  cache key is the resolved commit sha, not the ref string, so rebasing `main` (or any
+  base branch moving forward) changes the key automatically — a rebased PR never
+  compares against a stale image. Pass `--recapture-base` to force a fresh capture
+  regardless of what's cached.
+- **Local stack by default.** `-c` (build configuration) now defaults to `Debug`
+  instead of `Staging` — `Debug.xcconfig` points at the local `supabase start` stack
+  (DEP-270) instead of production, so a PR that ships a migration/ingest change
+  alongside the UI that reads it renders the "after" side against the real migrated
+  data. Pass `-c Staging` to capture against production instead (fine for a
+  pure-rendering change with no local stack running). When `-c Debug` is in effect the
+  script checks `http://127.0.0.1:54321` before capturing anything and fails loudly —
+  "Run `supabase start` first" — rather than silently capturing empty/error screens
+  against a dead local stack.
+
 ### Raw `xcodebuild` path
 
 The capture test is **excluded from the default `Depth` scheme** (same `skippedTests`
@@ -85,12 +105,15 @@ cd ios && xcodegen generate && cd ..
 
 SCREENSHOT_TARGETS="field,uniform" \
 xcodebuild -project ios/Depth.xcodeproj -scheme Depth-PRScreenshots \
-  -configuration Staging \
+  -configuration Debug \
   -destination 'platform=iOS Simulator,id=<sim-udid>' \
   -only-testing:DepthUITests/PRScreenshotsUITests \
   -resultBundlePath /tmp/pr-ios-screenshots.xcresult \
   test
 ```
+
+`-configuration Debug` reads the local `supabase start` stack (`Debug.xcconfig`);
+swap in `Staging` to capture against production instead.
 
 ## Extracting the PNGs (if you run the test locally instead of the workflow)
 
@@ -175,12 +198,20 @@ The still-relevant mechanics from the old workflow carry over unchanged:
 
 ## Notes / caveats
 
-- **Staging points at production** (same as the App Store sequence — see that doc's
-  `TODO(DEP-40 Lane B)`). Captures read real production data via the stable Bills fixture.
+- **Default capture stack is local, not production.** `screenshot-check.sh`/
+  `pr-screenshots.sh` default to `-c Debug`, which reads the local `supabase start`
+  stack (DEP-270) instead of production — start it first (`supabase start`) or the
+  script fails loudly rather than capturing empty screens. Pass `-c Staging` to
+  capture against production instead — same "Staging points at production" caveat as
+  the App Store sequence (see that doc's `TODO(DEP-40 Lane B)`) applies when you do.
+- **The "before" side is cached** by `(base ref sha, target)` under
+  `ios/.pr-screenshots-cache/` (gitignored) — a re-run against an unchanged base skips
+  the base build + sim entirely. `--recapture-base` forces a fresh capture.
 - **Screenshots are for visual decision support, not pixel-perfect CI gates.** Treat "does
   it look right" as the signal, same as a Vercel preview URL.
-- **Never commit the exported PNGs.** They're scratch output in `ios/.pr-screenshots/`
-  (gitignored), uploaded to Cloudinary for the PR body — not source (same rule as
+- **Never commit the exported PNGs or the baseline cache.** They're scratch output in
+  `ios/.pr-screenshots/` and `ios/.pr-screenshots-cache/` (both gitignored), uploaded
+  to Cloudinary for the PR body — not source (same rule as
   `docs/ios-appstore-screenshots.md`).
 - **Add targets by appending a token + a `if requested.contains(...)` block** in
   `PRScreenshotsUITests.swift`. Keep it to a handful of high-signal screens (YAGNI — don't

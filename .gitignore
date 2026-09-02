@@ -52,6 +52,7 @@ ios/DerivedData/
 ios/.derivedData/
 ios/.pr-screenshots/
 ios/.pr-screenshots.xcresult
+ios/.pr-screenshots-cache/
 ios/.local-service-role-key
 ios/vendor/bundle/
 # frameit raw captures + framed output are release artifacts, never source (same

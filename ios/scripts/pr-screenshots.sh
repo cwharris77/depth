@@ -8,7 +8,8 @@
 # of a PR body file — so every PR that touches iOS UI ships with evidence in the body.
 #
 # Usage:
-#   ios/scripts/pr-screenshots.sh --body-file <path> [--base <ref>] [-t <csv>]
+#   ios/scripts/pr-screenshots.sh --body-file <path> [--base <ref>] [-t <csv>] \
+#       [-c <config>] [--recapture-base]
 #
 #   --body-file <path>  PR body (usually built from .github/pull_request_template.md).
 #                       In place: fills the ## Screenshots block between the
@@ -16,8 +17,18 @@
 #                       the diff touches no iOS UI; leaves it with local paths noted
 #                       when Cloudinary is unavailable.
 #   --base <ref>        Base ref for the "before" side (default: main; falls back to
-#                       origin/main, then after-only if neither resolves).
+#                       origin/main, then after-only if neither resolves). The
+#                       "before" side is cached by (base sha, target) — see
+#                       screenshot-check.sh — so a re-run against the same base is
+#                       normally much faster than the first.
 #   -t <csv>            Explicit target list — skips diff-based suggestion.
+#   -c <config>         Build configuration passed through to screenshot-check.sh
+#                       (Debug|Staging|Release). Default: Debug — the local
+#                       `supabase start` stack, so a PR shipping data + UI together
+#                       renders against the real migrated data. Pass `-c Staging` for
+#                       a pure-rendering PR captured against production instead.
+#   --recapture-base    Passed through to screenshot-check.sh — discard the cached
+#                       "before" PNGs for this base ref and rebuild.
 #   --no-capture        Only decide targets + fill/strip the body (no capture).
 #   -h, --help          This help.
 #
@@ -39,13 +50,17 @@ BODY_FILE=""
 BASE_REF="main"
 TARGETS_OVERRIDE=""
 NO_CAPTURE=0
+CONFIG=""
+RECAPTURE_BASE=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --body-file) BODY_FILE="${2:?}"; shift 2 ;;
     --base) BASE_REF="${2:?}"; shift 2 ;;
     -t) TARGETS_OVERRIDE="${2:?}"; shift 2 ;;
+    -c) CONFIG="${2:?}"; shift 2 ;;
+    --recapture-base) RECAPTURE_BASE=1; shift ;;
     --no-capture) NO_CAPTURE=1; shift ;;
-    -h|--help) sed -n '1,30p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '1,34p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown flag: $1" >&2; exit 1 ;;
   esac
 done
@@ -117,16 +132,20 @@ log "targets: $RESOLVED_TARGETS"
 
 # ---- capture ----
 if [ "$NO_CAPTURE" -eq 0 ]; then
+  SC_ARGS=(-t "$RESOLVED_TARGETS")
+  [ -n "$CONFIG" ] && SC_ARGS+=(-c "$CONFIG")
+  [ "$RECAPTURE_BASE" -eq 1 ] && SC_ARGS+=(--recapture-base)
+
   BASE=""
   git cat-file -e "$BASE_REF^{commit}" 2>/dev/null && BASE="$BASE_REF" || true
   if [ -z "$BASE" ] && git cat-file -e "origin/$BASE_REF^{commit}" 2>/dev/null; then BASE="origin/$BASE_REF"; fi
   if [ -n "$BASE" ]; then
-    log "capturing before ($BASE) + after"
-    ios/scripts/screenshot-check.sh -t "$RESOLVED_TARGETS" --base "$BASE" \
+    log "capturing before ($BASE, cached when unchanged) + after"
+    ios/scripts/screenshot-check.sh "${SC_ARGS[@]}" --base "$BASE" \
       || { echo "pr-screenshots: ERROR: screenshot-check.sh failed — body left untouched" >&2; exit 1; }
   else
     log "base ref '$BASE_REF' not found locally — after-only capture"
-    ios/scripts/screenshot-check.sh -t "$RESOLVED_TARGETS" \
+    ios/scripts/screenshot-check.sh "${SC_ARGS[@]}" \
       || { echo "pr-screenshots: ERROR: screenshot-check.sh failed — body left untouched" >&2; exit 1; }
   fi
 fi
@@ -233,9 +252,9 @@ for t in "${TARGETS[@]}"; do
   fi
   printf '| %s | %s | %s | %s |\n' "$t" "$bcell" "$acell" "$dcell" >> "$SECTION"
 done
-cat >> "$SECTION" <<'EOF'
+cat >> "$SECTION" <<EOF
 
-_Captured by `ios/scripts/pr-screenshots.sh` on a disposable simulator (staging, stable Bills fixture). Diff = changed regions tinted + boxed._
+_Captured by \`ios/scripts/pr-screenshots.sh\` on a disposable simulator (${CONFIG:-local stack}, stable Bills fixture). Diff = changed regions tinted + boxed._
 
 <!-- screenshots-end -->
 EOF
