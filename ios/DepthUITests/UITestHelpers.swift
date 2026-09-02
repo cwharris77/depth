@@ -51,8 +51,7 @@ extension XCUIApplication {
 
         let searchField = searchFields.firstMatch
         XCTAssertTrue(searchField.waitForExistence(timeout: 10), "the switcher sheet should offer team search", file: file, line: line)
-        searchField.tap()
-        searchField.typeText(query)
+        searchField.typeTextAfterFocusing(query, in: self)
 
         let teamRow = buttons["team-row-\(teamId)"]
         // The switcher fetches the 32-team list from production on a fresh launch (no
@@ -61,8 +60,8 @@ extension XCUIApplication {
         XCTAssertTrue(teamRow.waitForExistence(timeout: 20), "searching \"\(query)\" should surface the \(teamId) row", file: file, line: line)
         teamRow.tap()
 
-        XCTAssertFalse(
-            otherElements["team-switcher-sheet"].waitForExistence(timeout: 3),
+        XCTAssertTrue(
+            otherElements["team-switcher-sheet"].waitForAbsence(timeout: 10),
             "selecting a team should dismiss the switcher", file: file, line: line
         )
         XCTAssertTrue(
@@ -95,5 +94,55 @@ extension XCUIElement {
         guard waitForExistence(timeout: timeout), isHittable else { return false }
         tap()
         return true
+    }
+
+    /// Taps a search field, then waits for the on-screen keyboard to actually appear
+    /// (retapping while it hasn't) before typing. A bare `tap(); typeText(...)` races the
+    /// sheet's presentation animation — the tap can land before the field is focusable, so
+    /// `typeText` synthesizes into a field with no focus and XCUITest throws "Neither
+    /// element nor any descendant has keyboard focus" (flaky under CI load wherever a
+    /// search field sits inside a just-presented sheet — team switcher, compare picker).
+    /// XCUIElement has no direct "did this field gain focus" query, so the keyboard's
+    /// existence is used as the proxy: it only appears once some field is actually focused.
+    func typeTextAfterFocusing(_ text: String, in app: XCUIApplication, timeout: TimeInterval = 10) {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !app.keyboards.element.exists && Date() < deadline {
+            if isHittable { tap() }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        }
+        typeText(text)
+    }
+
+    /// Polls until the element no longer exists, or `timeout` elapses. `waitForExistence`
+    /// only waits for an element to *appear* — there's no built-in "wait for gone", so a
+    /// dismiss check written as `XCTAssertFalse(el.waitForExistence(timeout: 3))` fails
+    /// instantly whenever the element still exists at the moment of the call (mid dismiss
+    /// animation) instead of giving the animation time to finish.
+    @discardableResult
+    func waitForAbsence(timeout: TimeInterval = 10) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while exists && Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        }
+        return !exists
+    }
+}
+
+extension XCUIElementQuery {
+    /// Polls until this query matches at least `minimum` elements, or `timeout` elapses,
+    /// returning the count actually reached. `count` snapshots the accessibility tree the
+    /// instant it's read — right after a sheet's rows start appearing, waiting on
+    /// `firstMatch.waitForExistence` can pass while the rest of the list is still
+    /// mid-render, so a `count` read on the next line can still observe fewer elements
+    /// than the finished layout will settle on (the season-picker sheets' cold-run race).
+    @discardableResult
+    func waitForCount(atLeast minimum: Int, timeout: TimeInterval = 10) -> Int {
+        let deadline = Date().addingTimeInterval(timeout)
+        var current = count
+        while current < minimum && Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+            current = count
+        }
+        return current
     }
 }
