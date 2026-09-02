@@ -137,9 +137,13 @@ export interface TeamColors {
   primary: string;
   secondary: string;
   accent: string;
-  // uiAccent is curated to read on the dark app background (#0a0e1a). It drives text,
-  // player dots, selection rings, and stat accents. onAccent is the text color used on
-  // top of uiAccent. These guarantee legibility across all 32 teams.
+  // LEGACY COMPATIBILITY ONLY — not jersey facts and not read by any renderer. These were
+  // rendering policy stored as data; every surface now resolves from the three colors above
+  // through lib/utils/team-surfaces.ts. The columns stay populated so iOS builds already on
+  // devices keep decoding (they name ui_accent/on_accent in their selects), their values are
+  // frozen in lib/uniforms/legacy-accents.ts, and `JerseyColors` exists so a resolver cannot
+  // reach them by accident. onAccent still holds the pre-DEP-274 ground #0a0e1a, which is
+  // exactly why a derived value never belonged in a jersey table.
   uiAccent: string;
   onAccent: string;
 }

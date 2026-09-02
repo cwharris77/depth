@@ -73,11 +73,16 @@ web UI is frozen.
 3. **`brand_colors` is machine-owned.** The weekly ingest overwrites ESPN's identity
    colors there. Never use those rows for a jersey or app chrome while a current uniform
    exists; never hand-patch them.
-4. **Uniform colors have two jobs.** `primary/secondary/accent` are the exact palette
-   consumed by the selected kit's geometry and controlled surfaces. `uiAccent/onAccent`
-   are curated to read on the dark bg `#0a0e1a` — text, dots, rings, and stat accents.
-   Every curated color pair must pass the WCAG-AA contrast test
-   (`lib/__tests__/uniforms.test.ts` pattern, `lib/utils/colors.ts`).
+4. **A kit stores three colors; the app decides where each one goes.** `primary/secondary/
+   accent` are the exact palette of a real jersey, and nothing else is stored. Every
+   surface — fill, ring, mark, text-on-a-fill, the player-card numeral — resolves from
+   those three at render time through `lib/utils/team-surfaces.ts`, mirrored in
+   `ios/Depth/Domain/TeamSurfaces.swift` with 105-kit fixture parity. Call sites ask for a
+   surface and never compose contrast logic themselves. `uiAccent/onAccent` still exist as
+   Postgres columns for iOS builds already on devices; their frozen values live in
+   `lib/uniforms/legacy-accents.ts`, only the seed generator reads them, and no resolver
+   may (`JerseyColors` makes it a compile error). Design:
+   `../obsidian/Projects/depth/specs/2026-09-01-team-color-surface-rules-design.md`.
 5. **A team page ships one team's data.** Client components receive a resolved
    `TeamRoster` prop; importing all-32 data into a client bundle is a regression.
 6. **Untrusted input degrades, never throws.** Share params decode to `null` on any
@@ -105,7 +110,9 @@ web UI is frozen.
   100 width, es5 trailing commas, bracket-same-line) is the only authority — never
   hand-align or argue style. `npm run format` before committing;
   `npm run format:check` is a CI gate. `.prettierignore` exempts generated files
-  (`lib/database.types.ts`), fixtures, markdown, and `supabase/` — keep it that way.
+  (`lib/database.types.ts`), `lib/espn/fixtures/`, markdown, and `supabase/` — keep it
+  that way. Note it does **not** cover `fixtures/domain/`, so regenerating the
+  cross-language fixtures always leaves a format diff until `npm run format` runs.
 - **Comment density is deliberately high, and it's "why"-comments.** Every `lib/`
   module opens with a header comment stating its role and the design constraint it
   satisfies. Inline comments state contracts and cross-file couplings ("see
@@ -208,10 +215,14 @@ cached-read crashes, reaching around `DepthRepository`) are in `ios/CLAUDE.md` �
 1. **Training-data Next.js.** You write `middleware.ts`, old metadata APIs, or
    pages-router idioms. *Rule: read the matching guide under
    `node_modules/next/dist/docs/` before touching any Next API (top of this file).*
-2. **The wrong color knob.** You style text/dots with `primary` (unreadable navy on a
-   dark bg) or paint a header with `uiAccent`. *Rule: uiAccent/onAccent for anything
-   that must be legible on `#0a0e1a`; primary/secondary for brand surfaces; never
-   invent a hex — uniform hexes come from a named source and get a comment citing it.*
+2. **The wrong surface resolver.** You paint a mark that floats on the page with
+   `teamRing` (which may borrow its contrast from the fill it encloses, so it can return a
+   hex that vanishes on `#15161a`), or you label a team-colored fill using a resolver
+   measured against a *different* ground — the bug that rendered Seahawks `#69BE28` on
+   `#69BE28`, contrast 1.00, for 21 of 32 teams. *Rule: `teamFill` for a body, `teamRing`
+   for a band around a known fill, `kitMark` for anything on the page ground, and a label
+   is ALWAYS derived from the exact color behind it. Never invent a hex — uniform hexes
+   come from a named source and get a comment citing it.*
 3. **Hand-editing `lib/database.types.ts`.** It typechecks, then the next
    regeneration silently reverts your change. *Rule: only `npm run db:types` writes
    that file; migration and regenerated types land in the same PR.*
@@ -363,7 +374,9 @@ operating manual (architecture, conventions, parity mechanisms). Quality-bar sum
 
 **Curated data (kits, seeds)**
 - [ ] Every hex cites its source in a comment (teamcolorcodes / GUD / TruColor / press release)
-- [ ] Contrast tests pass for every new row (uiAccent vs `#0a0e1a`, onAccent vs uiAccent ≥ 4.5)
+- [ ] Resolver tests pass for every new row: each surface returns one of the kit's own
+      three colors, white, or the app ground — never an invented hex
+      (`lib/__tests__/team-surfaces.test.ts` loops the archive, one `it` per kit)
 - [ ] Append-only respected; ids follow `${teamId}-${slug}-${yearStart}`
 
 **Ingest / script change**

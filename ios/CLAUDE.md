@@ -144,7 +144,10 @@ ios/Depth/
    step that would catch this — the two files silently drift. *Rule: grep
    `DesignTokens.swift` for the token name whenever you touch `tokens.ts`.*
 4. **Running the full test suite on every change.** This is a pre-release app; the
-   full run is minutes long. *Rule: targeted `-only-testing:` runs scoped to the
+   full run is minutes long. **A Swift Testing free function needs its parentheses in the
+   filter** (`DepthTests/teamSurfacesParity()`); without them the filter matches nothing and
+   xcodebuild prints `Executed 0 tests` **followed by `** TEST SUCCEEDED **`**, which reads
+   as a pass. *Rule: targeted `-only-testing:` runs scoped to the
    suites your diff touches — see §5 below, same rule as root `CLAUDE.md`'s quality
    bar.*
 5. **A View reaching around `DepthRepository`** to construct its own `SupabaseClient`
@@ -175,7 +178,8 @@ Everything in root `CLAUDE.md` §5's "Any code PR" checklist applies. Additional
       ```
       xcodebuild -project ios/Depth.xcodeproj -scheme Depth \
         -destination 'platform=iOS Simulator,id=…' test \
-        -only-testing:<Suite>/<Test>
+        -only-testing:<Suite>/<Test>          # XCTest
+        -only-testing:'DepthTests/someTest()'  # Swift Testing free function -- KEEP THE ()
       ```
       scoped to the suites the diff touches — `DepthTests` for data/domain,
       `DepthUITests`/`AccessibilityUITests`/`ShareUITests` for the flows changed

@@ -973,8 +973,8 @@ type PlayerStatsRow = Pick<
   // source code, or a pre-DEP-202 row) or, in principle, dangling (FK-enforced, so
   // shouldn't happen; degrades to null rather than throwing either way, invariant 6).
   // logo_dark_url (not logo_url) -- the season-stats card always sits on the app's fixed
-  // dark background (#0a0e1a, invariant 4), so the dark-optimized ESPN variant is the
-  // right asset, same reasoning as uiAccent/onAccent for text. Independently nullable
+  // dark background (#15161a since DEP-274), so the dark-optimized ESPN variant is the
+  // right asset -- the same reasoning the surface resolvers apply to text. Independently nullable
   // from team_id resolving.
   teams: Pick<Tables['teams']['Row'], 'abbrev' | 'logo_dark_url'> | null;
 };

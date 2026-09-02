@@ -52,7 +52,7 @@ Explicitly undecided:
 ## Brand Commitments
 
 - Name: **depth** — lowercase wordmark (Rows3 icon + text), header top-right opposite the switcher.
-- The dark visual world (`#0a0e1a` ground, near-black blue-gradient cards) is the incumbent identity: extend it, don't relitigate it (Design Brief, 2026-07-02). Guardrails from the prior review remain in force: no generic 3-column white-card grids, no centered-everything, no decorative blobs, no icon-in-colored-circle rows.
+- The dark visual world (`#15161a` ground, near-black blue-gradient cards) is the incumbent identity: extend it, don't relitigate it (Design Brief, 2026-07-02). Guardrails from the prior review remain in force: no generic 3-column white-card grids, no centered-everything, no decorative blobs, no icon-in-colored-circle rows.
 - iOS is deliberately its own native design, not a port of web's UI ("iOS is its own design", 2026-08-18).
 
 ## Evidence on Hand
