@@ -12,8 +12,7 @@ private func statsTeam() -> Team {
         id: "bills", city: "Buffalo", name: "Bills", abbrev: "BUF",
         conference: "AFC", division: "East",
         colors: TeamColors(
-            primary: "#00338d", secondary: "#d50a0a", accent: "#d50a0a",
-            uiAccent: "#d50a0a", onAccent: "#ffffff"
+            primary: "#00338d", secondary: "#d50a0a", accent: "#d50a0a"
         ),
         logo: nil, logoDark: nil
     )

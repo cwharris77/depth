@@ -16,8 +16,7 @@ private func teamDTO(
         uniforms: [
             TeamColorUniformDTO(
                 kind: "home", isCurrent: true,
-                colorPrimary: "#00338d", colorSecondary: "#d50a0a", colorAccent: "#d50a0a",
-                uiAccent: "#d50a0a", onAccent: "#ffffff"
+                colorPrimary: "#00338d", colorSecondary: "#d50a0a", colorAccent: "#d50a0a"
             ),
         ]
     )
@@ -43,8 +42,7 @@ private func hit(
             id: "bills", city: "Buffalo", name: "Bills", abbrev: "BUF",
             conference: "AFC", division: "East",
             colors: TeamColors(
-                primary: "#00338d", secondary: "#d50a0a", accent: "#d50a0a",
-                uiAccent: "#d50a0a", onAccent: "#ffffff"
+                primary: "#00338d", secondary: "#d50a0a", accent: "#d50a0a"
             ),
             logo: nil, logoDark: nil
         )

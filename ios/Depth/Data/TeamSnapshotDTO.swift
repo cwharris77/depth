@@ -39,8 +39,6 @@ struct TeamColorUniformDTO: Decodable {
     let colorPrimary: String
     let colorSecondary: String
     let colorAccent: String
-    let uiAccent: String
-    let onAccent: String
 
     enum CodingKeys: String, CodingKey {
         case kind
@@ -48,8 +46,6 @@ struct TeamColorUniformDTO: Decodable {
         case colorPrimary = "color_primary"
         case colorSecondary = "color_secondary"
         case colorAccent = "color_accent"
-        case uiAccent = "ui_accent"
-        case onAccent = "on_accent"
     }
 }
 
@@ -217,8 +213,6 @@ struct UniformDTO: Decodable {
     let colorPrimary: String
     let colorSecondary: String
     let colorAccent: String
-    let uiAccent: String
-    let onAccent: String
     let imagePath: String?
 
     enum CodingKeys: String, CodingKey {
@@ -230,8 +224,6 @@ struct UniformDTO: Decodable {
         case colorPrimary = "color_primary"
         case colorSecondary = "color_secondary"
         case colorAccent = "color_accent"
-        case uiAccent = "ui_accent"
-        case onAccent = "on_accent"
         case imagePath = "image_path"
     }
 }
@@ -251,8 +243,6 @@ struct UniformListingRowDTO: Decodable {
     let colorPrimary: String
     let colorSecondary: String
     let colorAccent: String
-    let uiAccent: String
-    let onAccent: String
     let imagePath: String?
 
     enum CodingKeys: String, CodingKey {
@@ -264,8 +254,6 @@ struct UniformListingRowDTO: Decodable {
         case colorPrimary = "color_primary"
         case colorSecondary = "color_secondary"
         case colorAccent = "color_accent"
-        case uiAccent = "ui_accent"
-        case onAccent = "on_accent"
         case imagePath = "image_path"
     }
 }
