@@ -555,7 +555,13 @@ struct DepthChartFieldLayout: Equatable {
         }
 
         centers = settingOffLineDepth(centers, slots: slots, dotSize: dotSize, height: height)
-        centers = resolvingOverlaps(centers, slots: slots, dotSize: dotSize, width: width)
+        // A single label/dot pass can re-open a gap it just closed elsewhere (pushing one
+        // dot clear of a tag can walk it into a THIRD slot's tag zone) — iterate to a
+        // fixed point rather than trusting one pass to converge.
+        for _ in 0..<4 {
+            centers = resolvingLabelOverlaps(centers, slots: slots, dotSize: dotSize, width: width)
+            centers = resolvingOverlaps(centers, slots: slots, dotSize: dotSize, width: width)
+        }
         return DepthChartFieldLayout(dotSize: dotSize, positions: centers, nameCallouts: [:])
     }
 
@@ -717,6 +723,51 @@ struct DepthChartFieldLayout: Equatable {
         return centers
     }
 
+    /// Ensures a slot's position-tag block never visually overlaps a NEIGHBORING dot.
+    /// `resolvingOverlaps` above only guarantees `dotSize + gap` between dot CENTERS —
+    /// it says nothing about the label block DepthChartFieldView renders unconditionally
+    /// under every dot (position tag, regardless of crowding — see
+    /// `calloutsForCrowdedNames`'s doc comment), which can reach past a neighboring dot
+    /// even when the dots themselves are clear. Same mechanism in two shipped reports: a
+    /// linebacker's tag over the DL dot behind it (DEP-427) and a shotgun QB's tag over
+    /// the RB dot charted just behind it — both are a shallower slot's tag block reaching
+    /// a deeper slot's dot because the two are close in x. Only x moves, mirroring
+    /// `resolvingOverlaps`, since y is the charted depth; must run before that pass so its
+    /// own dot-center guarantee gets the final word on the result.
+    private static func resolvingLabelOverlaps(
+        _ centers: [String: CGPoint],
+        slots: [RenderSlot],
+        dotSize: CGFloat,
+        width: CGFloat,
+        fixed: Set<String> = []
+    ) -> [String: CGPoint] {
+        var centers = centers
+        let halfClearance = nameMinWidth / 2 + dotSize / 2
+        func rendered(_ slot: RenderSlot) -> CGPoint? {
+            centers[slot.key].map {
+                CGPoint(x: $0.x, y: $0.y + lineOffset(y: slot.y, onLine: slot.onLine, dotSize: dotSize))
+            }
+        }
+        for a in slots {
+            guard let pa = rendered(a) else { continue }
+            let tagZone = CGRect(
+                x: pa.x - nameMinWidth / 2,
+                y: pa.y + dotSize / 2 + labelTopGap,
+                width: nameMinWidth,
+                height: labelBlockHeight
+            )
+            for b in slots where b.key != a.key && !fixed.contains(b.key) {
+                guard let pb = rendered(b) else { continue }
+                let dotRect = CGRect(x: pb.x - dotSize / 2, y: pb.y - dotSize / 2, width: dotSize, height: dotSize)
+                guard tagZone.intersects(dotRect) else { continue }
+                let direction: CGFloat = pb.x == pa.x ? (pa.x < width / 2 ? 1 : -1) : (pb.x < pa.x ? -1 : 1)
+                let targetX = max(0, min(width, pa.x + direction * halfClearance))
+                centers[b.key] = CGPoint(x: targetX, y: centers[b.key]?.y ?? pb.y)
+            }
+        }
+        return centers
+    }
+
     private static func withX(_ slot: RenderSlot, _ x: Double) -> RenderSlot {
         RenderSlot(key: slot.key, x: x, y: slot.y, label: slot.label, player: slot.player, onLine: slot.onLine)
     }
@@ -774,9 +825,14 @@ struct DepthChartFieldLayout: Equatable {
         var pinned: Set<String> = []
         if let left { pinned.insert(slots[left].key) }
         if let right, right != left { pinned.insert(slots[right].key) }
-        positions = resolvingOverlaps(
-            positions, slots: slots, dotSize: base.dotSize, width: width, fixed: pinned
-        )
+        for _ in 0..<4 {
+            positions = resolvingLabelOverlaps(
+                positions, slots: slots, dotSize: base.dotSize, width: width, fixed: pinned
+            )
+            positions = resolvingOverlaps(
+                positions, slots: slots, dotSize: base.dotSize, width: width, fixed: pinned
+            )
+        }
 
         return DepthChartFieldLayout(dotSize: base.dotSize, positions: positions, nameCallouts: base.nameCallouts)
     }
