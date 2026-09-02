@@ -561,9 +561,10 @@ export const UNIFORMS: UniformSeed[] = [
   },
 
   // Away kits — the standard white-base road look. secondary/accent are each team's real
-  // identity hexes (the trim/number color on the white jersey); uiAccent/onAccent reuse the
-  // team's live dark-UI pair, so they already clear the AA contrast gate on #0a0e1a. First
-  // tranche (PR-A); the rest follow the curation cadence. primary #FFFFFF = white base.
+  // identity hexes (the trim/number color on the white jersey). First tranche (PR-A); the
+  // rest follow the curation cadence. primary #FFFFFF = white base -- which is why the mark
+  // resolver asks for secondary/accent before primary: a body-first rule would paint every
+  // away kit's chrome white. See lib/utils/team-surfaces.ts.
   {
     teamId: 'seahawks',
     slug: 'away',
@@ -677,8 +678,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   // Away kits — second tranche (remaining 24 teams). Same rule as the first tranche:
-  // white base; secondary = team primary, accent = the team's identity trim color;
-  // uiAccent/onAccent reuse each team's live dark-UI pair (already AA-clear on #0a0e1a).
+  // white base; secondary = team primary, accent = the team's identity trim color.
   // Generated from lib/teams/league.ts.
   {
     teamId: 'ravens',

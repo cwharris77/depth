@@ -155,7 +155,7 @@
 
 ---
 
-## PR 6 — The player-card numeral
+## PR 6 — The player-card numeral — **DONE, [#602](https://github.com/cwharris77/depth/pull/602)**
 
 ### Task 7: Outlined numeral, iOS
 
@@ -183,10 +183,10 @@
 
 Additional stale claims found while implementing (2026-09-01), beyond whatever this task already lists:
 
-- [ ] `AGENTS.md` §3 says `.prettierignore` exempts fixtures. It exempts `lib/espn/fixtures/` only, so `fixtures/domain/` churns on every regeneration until `npm run format` runs.
-- [ ] `ios/CLAUDE.md` §5 shows `-only-testing:<Suite>/<Test>` without parentheses. Swift Testing free functions need them — `-only-testing:'DepthTests/teamSurfacesParity()'`. Without, the run matches nothing and prints `Executed 0 tests` **and** `** TEST SUCCEEDED **`, which reads as a pass. This silently hid a broken filter during PR 3.
-- [ ] Surviving `#0a0e1a` references in `lib/roster-source.db.ts` and `lib/utils/colors.ts` — the ground moved to `#15161a` in DEP-274.
-- [ ] `AGENTS.md` invariant 4 and its §5 quality-bar row assert every curated pair passes AA. False by design now: `uiAccent`/`onAccent` are frozen compat columns, and the live rules derive contrast at render time.
+- [x] `AGENTS.md` §3 says `.prettierignore` exempts fixtures. It exempts `lib/espn/fixtures/` only, so `fixtures/domain/` churns on every regeneration until `npm run format` runs.
+- [x] `ios/CLAUDE.md` §5 shows `-only-testing:<Suite>/<Test>` without parentheses. Swift Testing free functions need them — `-only-testing:'DepthTests/teamSurfacesParity()'`. Without, the run matches nothing and prints `Executed 0 tests` **and** `** TEST SUCCEEDED **`, which reads as a pass. This silently hid a broken filter during PR 3.
+- [x] Stale `#0a0e1a` references. My earlier note named the wrong files: `lib/utils/colors.ts` never had one. The real ones were `lib/types.ts`, `lib/uniforms/data.ts` (x2) and `lib/roster-source.db.ts:976`, plus `DESIGN.md`, `PRODUCT.md` and three spots in `CLAUDE.md`. The occurrences in `legacy-accents.ts` and `team-surfaces.ts` are correct and stay — they describe the frozen legacy value, which really is `#0a0e1a`.
+- [x] `AGENTS.md` invariant 4 and its §5 quality-bar row assert every curated pair passes AA. False by design now: `uiAccent`/`onAccent` are frozen compat columns, and the live rules derive contrast at render time.
 
 **Files:**
 - Modify: `AGENTS.md` (invariant 4, mistake #2, §5 curated-data quality bar)
