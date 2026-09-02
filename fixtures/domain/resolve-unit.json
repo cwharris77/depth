@@ -189,7 +189,7 @@
       {
         "key": "def-lde-0",
         "x": 26,
-        "y": 49,
+        "y": 45,
         "label": "LDE",
         "onLine": true,
         "playerId": null
@@ -197,7 +197,7 @@
       {
         "key": "def-nt-0",
         "x": 50,
-        "y": 49,
+        "y": 45,
         "label": "NT",
         "onLine": true,
         "playerId": null
@@ -205,7 +205,7 @@
       {
         "key": "def-rde-0",
         "x": 74,
-        "y": 49,
+        "y": 45,
         "label": "RDE",
         "onLine": true,
         "playerId": null
@@ -434,7 +434,7 @@
         "group": "DL",
         "preferredPosition": "LDE",
         "x": 24,
-        "y": 49,
+        "y": 45,
         "label": "LDE",
         "onLine": true
       },
@@ -445,7 +445,7 @@
         "group": "DL",
         "preferredPosition": "NT",
         "x": 50,
-        "y": 49,
+        "y": 45,
         "label": "NT",
         "onLine": true
       },
@@ -456,7 +456,7 @@
         "group": "DL",
         "preferredPosition": "RDE",
         "x": 76,
-        "y": 49,
+        "y": 45,
         "label": "RDE",
         "onLine": true
       },
@@ -553,7 +553,7 @@
       {
         "key": "def-de-0",
         "x": 24,
-        "y": 49,
+        "y": 45,
         "label": "LDE",
         "onLine": true,
         "playerId": "lde1"
@@ -561,7 +561,7 @@
       {
         "key": "def-dt-0",
         "x": 50,
-        "y": 49,
+        "y": 45,
         "label": "NT",
         "onLine": true,
         "playerId": "nt1"
@@ -569,7 +569,7 @@
       {
         "key": "def-de-1",
         "x": 76,
-        "y": 49,
+        "y": 45,
         "label": "RDE",
         "onLine": true,
         "playerId": "rde1"
@@ -698,7 +698,7 @@
         "group": "DL",
         "preferredPosition": "LDE",
         "x": 24,
-        "y": 49,
+        "y": 45,
         "label": "LDE",
         "onLine": true
       },
@@ -709,7 +709,7 @@
         "group": "DL",
         "preferredPosition": null,
         "x": 41.33333333333333,
-        "y": 49,
+        "y": 45,
         "label": "DT",
         "onLine": true
       },
@@ -720,7 +720,7 @@
         "group": "DL",
         "preferredPosition": null,
         "x": 58.666666666666664,
-        "y": 49,
+        "y": 45,
         "label": "DT",
         "onLine": true
       },
@@ -731,7 +731,7 @@
         "group": "DL",
         "preferredPosition": "RDE",
         "x": 76,
-        "y": 49,
+        "y": 45,
         "label": "RDE",
         "onLine": true
       },
@@ -817,7 +817,7 @@
       {
         "key": "def-de-0",
         "x": 24,
-        "y": 49,
+        "y": 45,
         "label": "LDE",
         "onLine": true,
         "playerId": null
@@ -825,7 +825,7 @@
       {
         "key": "def-dt-0",
         "x": 41.33333333333333,
-        "y": 49,
+        "y": 45,
         "label": "DT",
         "onLine": true,
         "playerId": null
@@ -833,7 +833,7 @@
       {
         "key": "def-dt-1",
         "x": 58.666666666666664,
-        "y": 49,
+        "y": 45,
         "label": "DT",
         "onLine": true,
         "playerId": null
@@ -841,7 +841,7 @@
       {
         "key": "def-de-1",
         "x": 76,
-        "y": 49,
+        "y": 45,
         "label": "RDE",
         "onLine": true,
         "playerId": null

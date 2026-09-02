@@ -288,21 +288,19 @@ struct DepthChartFieldLayout: Equatable {
     /// Web parity (components/PlayerDot.tsx): an on-line dot is nudged a radius onto its
     /// own side of the line of scrimmage. Layout has to account for it or every collision
     /// test is off by that much for exactly the most crowded row on the field.
-    /// The offense and defense need different amounts because a label always hangs *below*
-    /// its dot. For the offense (drawn below the line) that is away from the line, so a dot
-    /// radius is enough. For the defense (drawn above it) the label hangs back toward the
-    /// line, so the offset has to clear the whole label block or the line of scrimmage is
-    /// drawn straight through the defensive linemen's names.
+    /// Only ever a dot radius — enough that an on-line player isn't drawn straddling the
+    /// line, and nothing more.
     ///
-    /// The defensive figure also happens to land the line at ~1.3 real yards, against the
-    /// 1.4 measured from tracking data (DEP-432) — the charted value of 49 implies only
-    /// 0.26 yd, which is one of the charted depths known to be wrong. **Revisit this offset
-    /// when those are corrected**, or the correction will be double-counted.
+    /// An intermediate version of DEP-432 extended the defensive side to clear the whole
+    /// label block, because a label hangs below its dot (back toward the line, on the
+    /// defense's side) and the line of scrimmage was being drawn through the defensive
+    /// linemen's names. That was compensating in the render for a charted depth that was
+    /// simply wrong: `dlY` implied 0.26 yd against 1.3–1.4 measured. With `dlY` corrected
+    /// the line clears its own labels honestly, so the compensation is gone — keeping both
+    /// would have double-counted it and pushed the front to ~2.5 yd.
     static func lineOffset(y: Double, onLine: Bool?, dotSize: CGFloat) -> CGFloat {
         guard onLine == true else { return 0 }
-        return y >= 50
-            ? dotSize / 2 + 3
-            : -(dotSize / 2 + labelTopGap + labelBlockHeight + 4)
+        return y >= 50 ? dotSize / 2 + 3 : -(dotSize / 2 + 3)
     }
 
     /// THROWAWAY PROTOTYPE, per Cooper 2026-08-23: decides which names can't be drawn under
