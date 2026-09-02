@@ -41,7 +41,7 @@ struct FieldMarkings: View {
                         path.move(to: CGPoint(x: 0, y: losY))
                         path.addLine(to: CGPoint(x: w, y: losY))
                     }
-                    .stroke(DesignTokens.Colors.fieldLineOfScrimmage, lineWidth: 3)
+                    .stroke(DesignTokens.Colors.fieldLineOfScrimmage, lineWidth: 2)
                 }
             }
         }
@@ -58,7 +58,7 @@ struct FieldMarkings: View {
                     path.move(to: CGPoint(x: 0, y: y))
                     path.addLine(to: CGPoint(x: width, y: y))
                 }
-                .stroke(DesignTokens.Colors.fieldChalkMajor, lineWidth: 2)
+                .stroke(DesignTokens.Colors.fieldChalkMajor, lineWidth: 1)
             } else {
                 // Per-yard gradation, kept to a rail on both edges so it reads as a ruler
                 // rather than clutter across the middle of the formation. Long enough to
@@ -70,7 +70,7 @@ struct FieldMarkings: View {
                     path.move(to: CGPoint(x: width - 14, y: y))
                     path.addLine(to: CGPoint(x: width, y: y))
                 }
-                .stroke(DesignTokens.Colors.fieldChalk, lineWidth: 1.5)
+                .stroke(DesignTokens.Colors.fieldChalk, lineWidth: 1)
             }
         }
 
