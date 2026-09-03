@@ -26,6 +26,7 @@ import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/utils/env';
 dotenv.config({ path: '.env.local' });
 import { parseCsv } from '@/lib/nflverse/csv';
 import { assetUrl, latestAvailableSeason } from '@/lib/nflverse/assets';
+import { buildCrosswalk } from '@/lib/nflverse/crosswalk';
 import { resolveTeamCode } from '@/lib/nflverse/team-codes';
 import {
   toRosterHistoryRows,
@@ -42,6 +43,10 @@ const ROSTERS_PREFIX = 'roster_';
 // file's header comment for the `player_stats` -> `stats_player` rename history.
 const STATS_TAG = 'stats_player';
 const STATS_PREFIX = 'stats_player_reg_';
+// The all-era gsis_id -> espn_id crosswalk (players.csv). Same source the player-stats
+// ingest uses; fills espn_id for older roster rows whose own CSV column is empty.
+const PLAYERS_TAG = 'players';
+const PLAYERS_FILE = 'players.csv';
 // Supabase upsert payload cap: a season is ~1,700 rows, comfortably under one chunk,
 // but the full backfill sends every season in one process run.
 const UPSERT_CHUNK = 1000;
@@ -100,6 +105,12 @@ async function main() {
     );
   }
 
+  // players.csv once per run: the gsis_id -> espn_id crosswalk that fills espn_id for
+  // older roster rows whose own CSV column never carried it (see toRosterHistoryRows).
+  // Always fetched, even in SEED_OUT mode -- the generated seed should carry the same
+  // resolved ids the live ingest writes.
+  const crosswalk = buildCrosswalk(parseCsv(await getText(assetUrl(PLAYERS_TAG, PLAYERS_FILE))));
+
   let rowsWritten = 0;
   let skipped = 0;
   const allRows: RosterHistoryInsert[] = [];
@@ -114,7 +125,8 @@ async function main() {
         season,
         parseCsv(rosterCsv),
         parseCsv(statsCsv),
-        resolveTeamCode
+        resolveTeamCode,
+        crosswalk
       );
       skipped += seasonSkipped;
 
