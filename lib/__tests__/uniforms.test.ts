@@ -49,6 +49,23 @@ describe('uniform seed — integrity', () => {
     expect(new Set(homes.map((u) => u.teamId)).size).toBe(32);
   });
 
+  // Mirrors the `uniforms_one_current_home_away_per_team` partial unique index
+  // (20260903213000). Distinct from the aggregate check above: that one pins league size
+  // (32 teams, each with a home kit), this one names the offending team and also covers
+  // `away`, which had no coverage at all. Both resolvers pick the current kit with a
+  // first-match predicate over an unordered result, so a duplicate makes a team's whole
+  // palette nondeterministic rather than merely adding a stray archive row.
+  for (const teamId of [...new Set(UNIFORMS.map((u) => u.teamId))].sort()) {
+    for (const kind of ['home', 'away'] as const) {
+      it(`${teamId}: exactly one current ${kind} kit`, () => {
+        const current = UNIFORMS.filter(
+          (u) => u.teamId === teamId && u.kind === kind && u.isCurrent
+        ).map((u) => `${u.teamId}-${u.slug}-${u.yearStart}`);
+        expect(current).toHaveLength(1);
+      });
+    }
+  }
+
   it('keeps the Broncos current home palette orange-first', () => {
     const broncosHome = UNIFORMS.find(
       (u) => u.teamId === 'broncos' && u.kind === 'home' && u.isCurrent
