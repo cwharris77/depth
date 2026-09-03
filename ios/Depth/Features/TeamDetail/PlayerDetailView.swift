@@ -63,10 +63,13 @@ struct PlayerDetailView: View {
     // needs the width.
     @ScaledMetric(relativeTo: .title) private var scaledPhotoSize: CGFloat = 96
 
-    // The jersey-number watermark above the name (web PlayerCardHeader: `text-6xl
-    // font-black`, accent at 26% opacity, -0.03em tracking). Scales with .title so it
-    // grows at accessibility sizes the same way the portrait and vitals do.
-    @ScaledMetric(relativeTo: .title) private var scaledNumberSize: CGFloat = 48
+    // The jersey numeral above the name (web PlayerCardHeader: `text-6xl font-black`,
+    // -0.03em tracking). Scales with .title so it grows at accessibility sizes the same
+    // way the portrait and vitals do. 64pt rather than web's 60 because the numeral is
+    // the card's identity anchor and has to out-rank the `.title` name directly under it
+    // (Cooper's visual pass, 2026-09-02) — the portrait beside it caps at 140pt, so the
+    // identity column still has room at this size.
+    @ScaledMetric(relativeTo: .title) private var scaledNumberSize: CGFloat = 64
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -89,27 +92,45 @@ struct PlayerDetailView: View {
     /// white on every away kit in the archive, so an unconditional white stroke renders
     /// those numerals as a solid white slab.
     ///
-    /// A negative `strokeWidth` fills *and* strokes; a positive value strokes only, leaving
-    /// the glyph hollow. That sign is the whole trick — see the spec's implementation note.
+    /// The `#` and the digits are separate runs so each can carry its own `strokeWidth`
+    /// sign: negative fills *and* strokes (the digits), positive strokes only, leaving the
+    /// glyph hollow (the `#`). That sign is the whole trick — see the spec's
+    /// implementation note.
     @ViewBuilder
     private var jerseyNumeral: some View {
-        let label = "#\(player.number)"
         if let colors = jersey {
             let numeral = TeamSurfaces.numeral(colors)
             StrokedText(
-                text: label,
-                size: scaledNumberSize,
+                runs: [
+                    // The `#` gets the digits' exact treatment — filled, same trim — at
+                    // half size, so it reads as a small prefix mark rather than a fourth
+                    // digit. It carries the SAME stroke percentage as the digits on
+                    // purpose: the percentage is relative to each run's own size, so the
+                    // half-size `#` also gets a half-as-wide outline. That proportion is
+                    // the fix — see hashSizeRatio.
+                    .init(
+                        text: "#",
+                        size: scaledNumberSize * hashSizeRatio,
+                        fill: Color(hex: numeral.fill),
+                        stroke: Color(hex: numeral.stroke),
+                        strokeWidthPercent: numeralStrokePercent
+                    ),
+                    .init(
+                        text: String(player.number),
+                        size: scaledNumberSize,
+                        fill: Color(hex: numeral.fill),
+                        stroke: Color(hex: numeral.stroke),
+                        strokeWidthPercent: numeralStrokePercent
+                    ),
+                ],
                 weight: .black,
-                tracking: scaledNumberSize * -0.03,
-                fill: Color(hex: numeral.fill),
-                stroke: Color(hex: numeral.stroke),
-                strokeWidthPercent: numeralStrokePercent
+                tracking: scaledNumberSize * -0.03
             )
             .accessibilityLabel("Jersey number \(player.number)")
         } else {
             // No kit resolved yet: the app accent, unstroked. There is no team pair to
             // outline with, and a stroke in a neutral would read as a rendering artefact.
-            Text(label)
+            Text("#\(player.number)")
                 .font(.system(size: scaledNumberSize, weight: .black))
                 .tracking(scaledNumberSize * -0.03)
                 .foregroundStyle(DesignTokens.Colors.accent)
@@ -120,9 +141,21 @@ struct PlayerDetailView: View {
     }
 
     /// Outline weight as a percentage of the glyph size, so it holds its proportion at
-    /// accessibility text sizes rather than thinning out as the numeral grows. 6% is about
-    /// the ratio a real jersey numeral's trim carries.
-    private var numeralStrokePercent: CGFloat { 6 }
+    /// accessibility text sizes rather than thinning out as the numeral grows. 3% (~1.9pt
+    /// at 64pt) is a trim line around the digit. 6% was tried first and was the single
+    /// biggest thing wrong with this treatment (Cooper, 2026-09-02: *"way worse overall …
+    /// the outline should be thinner"*): it read as a slab rather than trim, and it nearly
+    /// closed the counters of round digits like 3, 6 and 8.
+    private var numeralStrokePercent: CGFloat { 3 }
+
+    /// The `#`'s size relative to the digits. Half-size keeps it subordinate to the number,
+    /// and because the outline is a percentage of each run's own size it also halves the
+    /// `#`'s trim — which is the actual fix for the original complaint. A stroke is centred
+    /// on the glyph path, so on a bar of thickness `t` a stroke of width `w` meets itself
+    /// in the middle once `w` approaches `t`. The `#`'s bars are the thinnest strokes in
+    /// the numeral, so the weight that merely looked heavy on the digits was wide enough to
+    /// close the `#` — that is what "the outline goes through the hashtag" was.
+    private var hashSizeRatio: CGFloat { 0.5 }
 
     /// The card's accent for anything drawn straight on the page — watermark, row text,
     /// stats highlights, chip labels and borders. `mark` rather than `ring` because none of
