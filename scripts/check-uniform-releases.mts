@@ -1,25 +1,37 @@
 // Monitors SportsLogos.net News' NFL category for new uniform unveilings so the
-// append-only archive (lib/uniforms/data.ts) doesn't miss one. Run weekly (see
+// append-only archive (lib/uniforms/data.ts) doesn't miss one. Run monthly (see
 // .github/workflows/check-uniform-releases.yml), plus a manual trigger. Never part of
 // `next build`.
 //
 // Fetches the NFL RSS feed, skips any item whose URL is already in
-// uniform_release_watches (already seen), and records every new item there. Issue
-// creation happens in the workflow step (`gh issue create`/actions/github-script), not
-// here — this script only decides what's new and writes GITHUB_OUTPUT for it, keeping
-// the dedupe write and the notification as separate concerns.
+// uniform_release_watches (already seen), and records every new item there. Dedupe covers
+// EVERY new item; notification covers only the ones lib/sportslogos/classify.ts judges to
+// be actual unveilings — the feed is a general NFL-news category, so recording everything
+// keeps the dedupe complete while the filter keeps listicles, Madden coverage, headwear
+// drops and leaks out of the notification.
+//
+// Notification writes a dated one-liner per unveiling into the Obsidian vault's
+// System/Inbox.md, where inbox-triage/capture-ticket turns each into a depth ticket
+// grouped under a run-month epic. This replaces the GitHub issue per item that DEP-43
+// originally specified (reversed 2026-09-03 — see the vault's Projects/depth/Decisions.md:
+// the issues were unfiltered noise and lived outside the board Cooper actually triages).
 //
 // Usage: npm run check:uniform-releases
 // Requires SUPABASE_URL + SUPABASE_SECRET_KEY in the environment (secret key
 // bypasses RLS-equivalent restrictions for writes; never expose it client-side).
+// OBSIDIAN_VAULT_PATH points at the vault working copy; when it is unset the script still
+// runs and records dedupe state, printing what it would have filed instead of writing.
 
 import dotenv from 'dotenv';
-import { appendFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/utils/env';
 
 dotenv.config({ path: '.env.local' });
 import { parseSportsLogosFeed } from '@/lib/sportslogos/parse';
+import { classifyNewsItem } from '@/lib/sportslogos/classify';
+import { formatInboxLine, insertUnsortedLines } from '@/lib/sportslogos/inbox';
 import type { Database } from '@/lib/database.types';
 
 const NFL_FEED_URL = 'https://news.sportslogos.net/category/nfl/feed/';
@@ -69,15 +81,46 @@ async function main() {
   }
 
   console.log(`${newItems.length} new item(s) not previously seen`);
-  for (const item of newItems) console.log(`  ${item.title} -> ${item.url}`);
 
-  // The workflow step reads this to loop over new items and open one GitHub issue per
-  // item -- kept out of this script so the DB write (idempotency boundary) and the
-  // notification (side effect) can't get out of sync with each other.
-  const outputPath = process.env.GITHUB_OUTPUT;
-  if (outputPath) {
-    appendFileSync(outputPath, `new_items=${JSON.stringify(newItems)}\n`);
+  const unveilings: typeof newItems = [];
+  for (const item of newItems) {
+    const verdict = classifyNewsItem(item.title);
+    if (verdict.isUnveiling) {
+      unveilings.push(item);
+      console.log(`  [unveiling] ${item.title}`);
+    } else {
+      console.log(`  [skip: ${verdict.reason}] ${item.title}`);
+    }
   }
+  console.log(`${unveilings.length} of them are uniform unveilings worth filing`);
+
+  if (unveilings.length > 0) fileToVaultInbox(unveilings);
+}
+
+// Appends one line per unveiling under System/Inbox.md's `## Unsorted` heading. Read →
+// insert → write rather than a blind append: the heading is the anchor, and a note whose
+// shape has changed underneath us degrades to "print, don't write" so the monitor can
+// never corrupt the inbox.
+function fileToVaultInbox(unveilings: readonly { title: string; url: string }[]) {
+  const lines = unveilings.map((item) => formatInboxLine(item, new Date()));
+
+  const vaultPath = process.env.OBSIDIAN_VAULT_PATH;
+  if (!vaultPath) {
+    console.log('OBSIDIAN_VAULT_PATH unset — would have filed:');
+    for (const line of lines) console.log(`  ${line}`);
+    return;
+  }
+
+  const inboxPath = join(vaultPath, 'System', 'Inbox.md');
+  const updated = insertUnsortedLines(readFileSync(inboxPath, 'utf8'), lines);
+  if (updated === null) {
+    console.error(`No "## Unsorted" heading in ${inboxPath} — not writing. Would have filed:`);
+    for (const line of lines) console.error(`  ${line}`);
+    return;
+  }
+
+  writeFileSync(inboxPath, updated);
+  console.log(`Filed ${lines.length} item(s) into ${inboxPath}`);
 }
 
 main().catch((e) => {
