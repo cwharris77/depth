@@ -102,19 +102,18 @@ struct PlayerDetailView: View {
             let numeral = TeamSurfaces.numeral(colors)
             StrokedText(
                 runs: [
-                    // The `#` is a small hollow prefix on the digits' baseline, not a
-                    // fourth digit. Filled and full-size it was the widest glyph on the
-                    // card and its crossbars read as the outline cutting through it —
-                    // the "goes through the hashtag" artefact. Hollow and half-size it
-                    // reads as the mark it is. Its outline is proportionally lighter
-                    // because a hollow glyph spends the width twice, once on each side
-                    // of a crossbar, and `#`'s counters are the narrowest here.
+                    // The `#` gets the digits' exact treatment — filled, same trim — at
+                    // half size, so it reads as a small prefix mark rather than a fourth
+                    // digit. It carries the SAME stroke percentage as the digits on
+                    // purpose: the percentage is relative to each run's own size, so the
+                    // half-size `#` also gets a half-as-wide outline. That proportion is
+                    // the fix — see hashSizeRatio.
                     .init(
                         text: "#",
                         size: scaledNumberSize * hashSizeRatio,
-                        fill: nil,
+                        fill: Color(hex: numeral.fill),
                         stroke: Color(hex: numeral.stroke),
-                        strokeWidthPercent: hashStrokePercent
+                        strokeWidthPercent: numeralStrokePercent
                     ),
                     .init(
                         text: String(player.number),
@@ -142,16 +141,21 @@ struct PlayerDetailView: View {
     }
 
     /// Outline weight as a percentage of the glyph size, so it holds its proportion at
-    /// accessibility text sizes rather than thinning out as the numeral grows. 6% is about
-    /// the ratio a real jersey numeral's trim carries.
-    private var numeralStrokePercent: CGFloat { 6 }
+    /// accessibility text sizes rather than thinning out as the numeral grows. 3% (~1.9pt
+    /// at 64pt) is a trim line around the digit. 6% was tried first and was the single
+    /// biggest thing wrong with this treatment (Cooper, 2026-09-02: *"way worse overall …
+    /// the outline should be thinner"*): it read as a slab rather than trim, and it nearly
+    /// closed the counters of round digits like 3, 6 and 8.
+    private var numeralStrokePercent: CGFloat { 3 }
 
-    /// The hollow `#`'s size relative to the digits, and its outline weight as a
-    /// percentage of that reduced size. Half-size keeps it subordinate to the number;
-    /// 4% is the heaviest outline that leaves the `#`'s counters open at that size
-    /// (verified in the simulator — 3.5% of the *full* size closed them into a slab).
+    /// The `#`'s size relative to the digits. Half-size keeps it subordinate to the number,
+    /// and because the outline is a percentage of each run's own size it also halves the
+    /// `#`'s trim — which is the actual fix for the original complaint. A stroke is centred
+    /// on the glyph path, so on a bar of thickness `t` a stroke of width `w` meets itself
+    /// in the middle once `w` approaches `t`. The `#`'s bars are the thinnest strokes in
+    /// the numeral, so the weight that merely looked heavy on the digits was wide enough to
+    /// close the `#` — that is what "the outline goes through the hashtag" was.
     private var hashSizeRatio: CGFloat { 0.5 }
-    private var hashStrokePercent: CGFloat { 4 }
 
     /// The card's accent for anything drawn straight on the page — watermark, row text,
     /// stats highlights, chip labels and borders. `mark` rather than `ring` because none of
