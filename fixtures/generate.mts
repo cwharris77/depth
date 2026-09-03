@@ -318,6 +318,24 @@ const resolveUnitCases: {
     ],
     realFormation: buildRealDefenseFormation('4-2-5'),
   },
+  {
+    description:
+      'generic-tag defense on the fallback formation (a historical season): every BASE_DEFENSE slot fills from its position group, no side/role tags present',
+    unit: 'defense',
+    players: [
+      player({ id: 'de1', position: 'DE', depthRank: 1, number: 91 }),
+      player({ id: 'dt1', position: 'DT', depthRank: 1, number: 94 }),
+      player({ id: 'de2', position: 'DE', depthRank: 2, number: 96 }),
+      player({ id: 'lb1', position: 'LB', depthRank: 1, number: 54 }),
+      player({ id: 'lb2', position: 'LB', depthRank: 1, number: 50 }),
+      player({ id: 'lb3', position: 'LB', depthRank: 2, number: 58 }),
+      player({ id: 'lb4', position: 'LB', depthRank: 2, number: 59 }),
+      player({ id: 'cb1', position: 'CB', depthRank: 1, number: 24 }),
+      player({ id: 'cb2', position: 'CB', depthRank: 1, number: 25 }),
+      player({ id: 's1', position: 'S', depthRank: 1, number: 31 }),
+      player({ id: 's2', position: 'S', depthRank: 1, number: 33 }),
+    ],
+  },
 ];
 
 write(

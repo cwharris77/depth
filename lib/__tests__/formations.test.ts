@@ -603,3 +603,48 @@ describe('alignmentLabel', () => {
     expect(alignmentLabel('WILDCAT')).toBe('WILDCAT');
   });
 });
+
+describe('BASE_DEFENSE resolves a generically-tagged roster (historical-defense fix, 2026-09-02)', () => {
+  // The historical-season repro: nflverse's roster vocabulary has no side/role tags
+  // (lib/nflverse/positions.ts maps every end to 'DE', every backer to 'LB', every
+  // safety to 'S'), and a past season has no formation rows, so the field falls back to
+  // BASE_DEFENSE. Position-exact slots ('LDE', 'WLB', 'SS', ...) matched nothing on such
+  // a roster and every defensive dot vanished.
+  const genericDefense = [
+    player({ id: 'de1', position: 'DE', depthRank: 1, number: 91 }),
+    player({ id: 'dt1', position: 'DT', depthRank: 1, number: 94 }),
+    player({ id: 'de2', position: 'DE', depthRank: 2, number: 55 }),
+    player({ id: 'lb1', position: 'LB', depthRank: 1, number: 54 }),
+    player({ id: 'lb2', position: 'LB', depthRank: 1, number: 50 }),
+    player({ id: 'lb3', position: 'LB', depthRank: 2, number: 58 }),
+    player({ id: 'lb4', position: 'LB', depthRank: 2, number: 59 }),
+    player({ id: 'cb1', position: 'CB', depthRank: 1, number: 24 }),
+    player({ id: 'cb2', position: 'CB', depthRank: 1, number: 25 }),
+    player({ id: 's1', position: 'S', depthRank: 1, number: 31 }),
+    player({ id: 's2', position: 'S', depthRank: 1, number: 33 }),
+  ];
+
+  it('fills all 11 slots from the position groups', () => {
+    const resolved = resolveUnit(roster(genericDefense), 'defense');
+    expect(resolved.filter((s) => !s.player).map((s) => s.key)).toEqual([]);
+  });
+
+  it('assigns each player exactly once', () => {
+    const ids = resolveUnit(roster(genericDefense), 'defense').map((s) => s.player?.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('still seats granular tags in their own named dots when the roster carries them', () => {
+    const r = roster([
+      player({ id: 'nose', position: 'NT', depthRank: 2, number: 98 }),
+      player({ id: 'edge', position: 'DE', depthRank: 1, number: 91 }),
+      player({ id: 'strong', position: 'SS', depthRank: 2, number: 33 }),
+      player({ id: 'free', position: 'FS', depthRank: 1, number: 31 }),
+    ]);
+    const resolved = resolveUnit(r, 'defense');
+    expect(resolved.find((s) => s.label === 'NT')?.player?.id).toBe('nose');
+    expect(resolved.find((s) => s.label === 'SS')?.player?.id).toBe('strong');
+    expect(resolved.find((s) => s.label === 'FS')?.player?.id).toBe('free');
+    expect(resolved.find((s) => s.label === 'LDE')?.player?.id).toBe('edge');
+  });
+});

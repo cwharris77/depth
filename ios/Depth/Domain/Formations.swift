@@ -107,18 +107,59 @@ let offenseFormation: [FormationSlot] = [
 ]
 
 // True 3-4 base: a 3-man front (LDE/NT/RDE) + 4 linebackers (WLB/LILB/RILB/SLB).
+//
+// Every slot is group-based with a preferredPosition, exactly like the real-formation
+// builders below. Position-exact resolution here was a silent whole-unit
+// failure for any roster tagged with the generic vocabulary: nflverse's historical
+// rosters carry no side/role tags at all (lib/nflverse/positions.ts collapses every end
+// to DE, backer to LB, safety to S) and a past season has no formation rows to swap in a
+// real front, so all 11 dots resolved to nothing and the defense rendered empty.
+// preferredPosition keeps a granularly-tagged roster seating exactly as before.
 let baseDefense: [FormationSlot] = [
-    FormationSlot(id: "def-ss-0", position: .ss, index: 0, x: 34, y: 14, label: "SS", onLine: false),
-    FormationSlot(id: "def-fs-0", position: .fs, index: 0, x: 66, y: 14, label: "FS", onLine: false),
-    FormationSlot(id: "def-lcb-0", position: .lcb, index: 0, x: 10, y: 26, label: "LCB", onLine: false),
-    FormationSlot(id: "def-rcb-0", position: .rcb, index: 0, x: 90, y: 26, label: "RCB", onLine: false),
-    FormationSlot(id: "def-wlb-0", position: .wlb, index: 0, x: 22, y: 37, label: "WLB", onLine: false),
-    FormationSlot(id: "def-lilb-0", position: .lilb, index: 0, x: 42, y: 37, label: "LILB", onLine: false),
-    FormationSlot(id: "def-rilb-0", position: .rilb, index: 0, x: 58, y: 37, label: "RILB", onLine: false),
-    FormationSlot(id: "def-slb-0", position: .slb, index: 0, x: 78, y: 37, label: "SLB", onLine: false),
-    FormationSlot(id: "def-lde-0", position: .lde, index: 0, x: 26, y: 45, label: "LDE", onLine: true),
-    FormationSlot(id: "def-nt-0", position: .nt, index: 0, x: 50, y: 45, label: "NT", onLine: true),
-    FormationSlot(id: "def-rde-0", position: .rde, index: 0, x: 74, y: 45, label: "RDE", onLine: true),
+    FormationSlot(
+        id: "def-ss-0", position: .s, index: 0, group: .s, preferredPosition: .ss,
+        x: 34, y: 14, label: "SS", onLine: false
+    ),
+    FormationSlot(
+        id: "def-fs-0", position: .s, index: 1, group: .s, preferredPosition: .fs,
+        x: 66, y: 14, label: "FS", onLine: false
+    ),
+    FormationSlot(
+        id: "def-lcb-0", position: .cb, index: 0, group: .cb, preferredPosition: .lcb,
+        x: 10, y: 26, label: "LCB", onLine: false
+    ),
+    FormationSlot(
+        id: "def-rcb-0", position: .cb, index: 1, group: .cb, preferredPosition: .rcb,
+        x: 90, y: 26, label: "RCB", onLine: false
+    ),
+    FormationSlot(
+        id: "def-wlb-0", position: .lb, index: 0, group: .lb, preferredPosition: .wlb,
+        x: 22, y: 37, label: "WLB", onLine: false
+    ),
+    FormationSlot(
+        id: "def-lilb-0", position: .lb, index: 1, group: .lb, preferredPosition: .lilb,
+        x: 42, y: 37, label: "LILB", onLine: false
+    ),
+    FormationSlot(
+        id: "def-rilb-0", position: .lb, index: 2, group: .lb, preferredPosition: .rilb,
+        x: 58, y: 37, label: "RILB", onLine: false
+    ),
+    FormationSlot(
+        id: "def-slb-0", position: .lb, index: 3, group: .lb, preferredPosition: .slb,
+        x: 78, y: 37, label: "SLB", onLine: false
+    ),
+    FormationSlot(
+        id: "def-lde-0", position: .de, index: 0, group: .dl, preferredPosition: .lde,
+        x: 26, y: 45, label: "LDE", onLine: true
+    ),
+    FormationSlot(
+        id: "def-nt-0", position: .dt, index: 0, group: .dl, preferredPosition: .nt,
+        x: 50, y: 45, label: "NT", onLine: true
+    ),
+    FormationSlot(
+        id: "def-rde-0", position: .de, index: 1, group: .dl, preferredPosition: .rde,
+        x: 74, y: 45, label: "RDE", onLine: true
+    ),
 ]
 
 /// Resolve a unit to render-ready slots for a given roster. `realFormation` lets a

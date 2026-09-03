@@ -903,5 +903,182 @@
         "playerId": "nb1"
       }
     ]
+  },
+  {
+    "description": "generic-tag defense on the fallback formation (a historical season): every BASE_DEFENSE slot fills from its position group, no side/role tags present",
+    "unit": "defense",
+    "roster": {
+      "players": [
+        {
+          "id": "de1",
+          "position": "DE",
+          "depthRank": 1,
+          "number": 91,
+          "order": null
+        },
+        {
+          "id": "dt1",
+          "position": "DT",
+          "depthRank": 1,
+          "number": 94,
+          "order": null
+        },
+        {
+          "id": "de2",
+          "position": "DE",
+          "depthRank": 2,
+          "number": 96,
+          "order": null
+        },
+        {
+          "id": "lb1",
+          "position": "LB",
+          "depthRank": 1,
+          "number": 54,
+          "order": null
+        },
+        {
+          "id": "lb2",
+          "position": "LB",
+          "depthRank": 1,
+          "number": 50,
+          "order": null
+        },
+        {
+          "id": "lb3",
+          "position": "LB",
+          "depthRank": 2,
+          "number": 58,
+          "order": null
+        },
+        {
+          "id": "lb4",
+          "position": "LB",
+          "depthRank": 2,
+          "number": 59,
+          "order": null
+        },
+        {
+          "id": "cb1",
+          "position": "CB",
+          "depthRank": 1,
+          "number": 24,
+          "order": null
+        },
+        {
+          "id": "cb2",
+          "position": "CB",
+          "depthRank": 1,
+          "number": 25,
+          "order": null
+        },
+        {
+          "id": "s1",
+          "position": "S",
+          "depthRank": 1,
+          "number": 31,
+          "order": null
+        },
+        {
+          "id": "s2",
+          "position": "S",
+          "depthRank": 1,
+          "number": 33,
+          "order": null
+        }
+      ],
+      "specialTeams": []
+    },
+    "realFormation": null,
+    "resolved": [
+      {
+        "key": "def-ss-0",
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false,
+        "playerId": "s1"
+      },
+      {
+        "key": "def-fs-0",
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false,
+        "playerId": "s2"
+      },
+      {
+        "key": "def-lcb-0",
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false,
+        "playerId": "cb1"
+      },
+      {
+        "key": "def-rcb-0",
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false,
+        "playerId": "cb2"
+      },
+      {
+        "key": "def-wlb-0",
+        "x": 22,
+        "y": 37,
+        "label": "WLB",
+        "onLine": false,
+        "playerId": "lb2"
+      },
+      {
+        "key": "def-lilb-0",
+        "x": 42,
+        "y": 37,
+        "label": "LILB",
+        "onLine": false,
+        "playerId": "lb1"
+      },
+      {
+        "key": "def-rilb-0",
+        "x": 58,
+        "y": 37,
+        "label": "RILB",
+        "onLine": false,
+        "playerId": "lb3"
+      },
+      {
+        "key": "def-slb-0",
+        "x": 78,
+        "y": 37,
+        "label": "SLB",
+        "onLine": false,
+        "playerId": "lb4"
+      },
+      {
+        "key": "def-lde-0",
+        "x": 26,
+        "y": 45,
+        "label": "LDE",
+        "onLine": true,
+        "playerId": "de1"
+      },
+      {
+        "key": "def-nt-0",
+        "x": 50,
+        "y": 45,
+        "label": "NT",
+        "onLine": true,
+        "playerId": "dt1"
+      },
+      {
+        "key": "def-rde-0",
+        "x": 74,
+        "y": 45,
+        "label": "RDE",
+        "onLine": true,
+        "playerId": "de2"
+      }
+    ]
   }
 ]

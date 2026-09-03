@@ -115,10 +115,45 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
     #expect(slots["K"] == "gsis:k1@2013")
     #expect(slots["P"] == "gsis:p1@2013")
     #expect(slots["LS"] == "gsis:ls1@2013")
-    #expect(slots.keys.contains("KR"))
-    #expect(slots.keys.contains("PR"))
-    #expect(slots["KR"]! == nil)
-    #expect(slots["PR"]! == nil)
+    // No returner slots at all: nflverse never says who returned kicks, and an
+    // unseatable dot renders as a "?" that reads like a broken player circle
+    // (Cooper, 2026-09-02 — reverses the earlier "unfilled by policy" call).
+    #expect(!slots.keys.contains("KR"))
+    #expect(!slots.keys.contains("PR"))
+}
+
+@Test func historicalSpecialTeamsOmitASlotThePastSeasonCannotSeat() throws {
+    let roster = try HistoricalRosterMapper.map(team: historyTeam(), rows: [
+        historyRow(gsisId: "p1", name: "Punter", position: "P", depthRank: 1),
+    ])
+    #expect(roster.specialTeams.map(\.label) == ["P"])
+}
+
+@Test func historicalDefenseFillsEveryFieldSlotFromGenericPositionTags() throws {
+    // Historical-defense repro at the seam that actually shipped the bug: nflverse's roster
+    // vocabulary has no side/role tags (every end is "DE", backer "LB", safety "S"), and
+    // a past season has no formation rows, so the field falls back to baseDefense. With
+    // position-exact slots that combination resolved all 11 dots to nil and the defense
+    // rendered completely empty.
+    let generic: [(String, String)] = [
+        ("de1", "DE"), ("dt1", "DT"), ("de2", "DE"),
+        ("lb1", "LB"), ("lb2", "LB"), ("lb3", "LB"), ("lb4", "LB"),
+        ("cb1", "CB"), ("cb2", "CB"), ("s1", "S"), ("s2", "S"),
+    ]
+    let snapshot = try HistoricalRosterMapper.map(
+        team: historyTeam(),
+        rows: generic.enumerated().map { i, entry in
+            historyRow(gsisId: entry.0, name: entry.0, position: entry.1, playerOrder: i)
+        }
+    )
+    let resolved = resolveUnit(
+        roster: Roster(players: snapshot.players, specialTeams: snapshot.specialTeams),
+        unit: .defense
+    )
+
+    #expect(resolved.count == baseDefense.count)
+    #expect(resolved.filter { $0.player == nil }.map(\.key) == [])
+    #expect(Set(resolved.compactMap { $0.player?.id }).count == resolved.count)
 }
 
 @Test func historicalPlayerReferenceParserRejectsMalformedReferences() {
