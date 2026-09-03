@@ -1,15 +1,24 @@
 name: Check for new uniform releases
 
-# Recurring monitor for new NFL uniform unveilings (SportsLogos.net News only -- see
-# docs/superpowers/specs). Wraps `npm run check:uniform-releases` on a weekly schedule,
-# plus a manual trigger. On a hit, opens a GitHub issue per new item so Cooper can run
-# the manual capture workflow -- the script itself only records what's new in
-# uniform_release_watches; this job turns that into a notification.
+# Recurring monitor for new NFL uniform unveilings (SportsLogos.net News only). Wraps
+# `npm run check:uniform-releases` on a monthly schedule, plus a manual trigger.
+#
+# Runs on a SELF-HOSTED runner, not ubuntu-latest: SportsLogos.net's Cloudflare WAF 403s
+# all GitHub-hosted runner egress (verified on both ubuntu and macos images, with and
+# without a browser UA), which silently failed every run of this workflow from the day it
+# shipped. Home egress returns 200, so the job runs on Cooper's Mac.
+#
+# On a hit the script files a line per unveiling into the Obsidian vault's System/Inbox.md
+# for inbox-triage to turn into depth tickets. It does NOT open GitHub issues any more --
+# DEP-43's original issue-per-item notification was reversed 2026-09-03 (see the vault's
+# Projects/depth/Decisions.md): unfiltered, it opened 30 issues of which ~7 were real, and
+# they lived outside the board Cooper actually triages.
 
 on:
   schedule:
-    # Monday 12:00 UTC -- offseason cadence, ahead of the Wed ESPN/nflverse ingests.
-    - cron: '0 12 * * 1'
+    # 08:00 UTC on the 1st. Monthly is enough -- unveilings arrive in bursts a few times a
+    # year, and the dedupe table means a late check never misses one.
+    - cron: '0 8 1 * *'
   workflow_dispatch: {}
 
 # Never let two checks overlap (a slow run + the next schedule, or a manual dispatch
@@ -20,11 +29,10 @@ concurrency:
 
 permissions:
   contents: read
-  issues: write
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos, arm64]
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
@@ -33,32 +41,20 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      - id: check
-        run: npm run check:uniform-releases
+      # The vault working copy on the self-hosted runner's host. Overridable with a repo
+      # variable; otherwise the standard checkout location on Cooper's Mac, the only
+      # machine this job runs on. Committing the inbox change is left to his normal vault
+      # sync -- this job only edits the note.
+      - name: Resolve the vault path
+        run: echo "OBSIDIAN_VAULT_PATH=${OVERRIDE:-$HOME/Documents/GitHubProjects/obsidian}" >> "$GITHUB_ENV"
+        env:
+          OVERRIDE: ${{ vars.OBSIDIAN_VAULT_PATH }}
+      # Fail loudly rather than letting the script fall back to printing: a monthly job
+      # that silently stops filing is a job nobody notices is broken (this workflow already
+      # spent 7 runs failing unnoticed).
+      - name: Verify the vault inbox is reachable
+        run: test -f "$OBSIDIAN_VAULT_PATH/System/Inbox.md"
+      - run: npm run check:uniform-releases
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
-      - name: Open an issue for each new unveiling
-        if: steps.check.outputs.new_items != '[]'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const items = JSON.parse(process.env.NEW_ITEMS);
-            for (const item of items) {
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: `New NFL uniform unveiling: ${item.title}`,
-                body: [
-                  `SportsLogos.net News: ${item.url}`,
-                  '',
-                  'Manual capture workflow:',
-                  '1. Pull the hex(es) from the source.',
-                  '2. Curate uiAccent/onAccent (contrast-tested against #0a0e1a).',
-                  '3. Append the kit to `lib/uniforms/data.ts`.',
-                  '4. Run `npm run gen:uniform-seed`.',
-                ].join('\n'),
-              });
-            }
-        env:
-          NEW_ITEMS: ${{ steps.check.outputs.new_items }}
