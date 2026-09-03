@@ -27,7 +27,14 @@ scaffolding with their own specs.
   crosswalk (`players.csv`) mapped `gsis_id -> espn_id`. This is the join hub between
   nflverse's stats (keyed by `gsis_id`) and our `players` table (keyed by ESPN athlete
   id) — **no name-matching fallback**, since that's where silent data corruption comes
-  from. A row missing either id is simply omitted from the map.
+  from. A row missing either id is simply omitted from the map. The roster-history
+  ingest (`scripts/ingest-nflverse-rosters.mts`) also resolves each historical player's
+  `espn_id` through this same crosswalk when the roster CSV's own `espn_id` cell is
+  empty — the roster CSV column is sparse for older seasons, so without the fallback
+  most historical rows would carry a null `espn_id` and the profile read path (which
+  joins `roster_history.espn_id` to `player_stats.player_id`) could never reach their
+  stats. A `players.csv` fetch failure degrades to the pre-fix null behavior and is
+  recorded on the `ingestion_runs` row, never an abort.
 - `lib/nflverse/transform.ts` — `toPlayerStatsRows(statsCsvRows, crosswalk,
   knownPlayerIds, opts?)`: pure join + numeric coercion (`''` -> `null`, else
   `Number(...)`, `NaN` -> `null`). A stats row whose `gsis_id` has no crosswalk match is
