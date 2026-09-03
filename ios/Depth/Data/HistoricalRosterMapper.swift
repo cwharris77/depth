@@ -2,7 +2,7 @@ import Foundation
 
 // Converts the immutable historical rows into the existing field domain. Strict position
 // and rank validation makes a corrupt public row a typed decoding failure rather than an
-// inaccurately seated player; special-team returners remain visibly unfilled by policy.
+// inaccurately seated player.
 enum HistoricalRosterMapper {
     static func map(team: Team, rows: [HistoricalRosterRowDTO]) throws -> TeamSnapshot {
         let players = try rows.map { row in
@@ -23,22 +23,20 @@ enum HistoricalRosterMapper {
         return TeamSnapshot(team: team, players: players, specialTeams: specialTeams(players), uniforms: [])
     }
 
+    /// Kicker, punter and long snapper only. nflverse's roster rows say who was on the
+    /// team, never who returned kicks, so a past season has no returner to seat — and a
+    /// permanently empty KR/PR dot reads as a broken player circle rather than as a data
+    /// gap (Cooper, 2026-09-02, reversing the earlier "unfilled by policy" call). Omitting
+    /// the slots keeps history consistent with how the field already treats an unresolved
+    /// offense/defense slot: it draws nothing.
     private static func specialTeams(_ players: [Player]) -> [SpecialSlot] {
         let layout: [(Position, String, Double, Double)] = [
-            (.kr, "KR", 30, 18), (.pr, "PR", 70, 18), (.ls, "LS", 50, 68),
-            (.k, "K", 38, 80), (.p, "P", 62, 80),
+            (.ls, "LS", 50, 68), (.k, "K", 38, 80), (.p, "P", 62, 80),
         ]
-        return layout.map { position, label, x, y in
-            let playerId: String?
-            switch position {
-            case .k, .p, .ls:
-                playerId = players.first { $0.position == position && $0.depthRank == 1 }?.id
-            case .kr, .pr:
-                playerId = nil
-            default:
-                playerId = nil
-            }
-            return SpecialSlot(id: "st-\(label.lowercased())", playerId: playerId, x: x, y: y, label: label)
+        return layout.compactMap { position, label, x, y in
+            guard let player = players.first(where: { $0.position == position && $0.depthRank == 1 })
+            else { return nil }
+            return SpecialSlot(id: "st-\(label.lowercased())", playerId: player.id, x: x, y: y, label: label)
         }
     }
 }

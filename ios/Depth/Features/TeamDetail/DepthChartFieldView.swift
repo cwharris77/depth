@@ -292,10 +292,11 @@ struct DepthChartFieldView: View {
             .accessibilityIdentifier("player-slot-\(slot.key)")
             .buttonStyle(FieldPlayerButtonStyle())
         } else if unit == .special {
-            // Web parity gap, deliberately kept: special-team returners are the one case
-            // where "no player" is a real, documented state (KR/PR "unfilled by policy",
-            // see HistoricalRosterMapper) rather than a resolution gap — showing a mark
-            // here is intentional, not a stand-in for a missing player.
+            // Web parity gap, deliberately kept: a special-teams slot exists only because
+            // the roster explicitly assigned that spot, so "assigned but the player is
+            // gone" is a real state worth marking rather than a resolution gap. History
+            // no longer reaches here — HistoricalRosterMapper omits a slot it can't seat
+            // instead of shipping a permanently empty one (Cooper, 2026-09-02).
             slotDot(
                 label: slot.label,
                 number: nil,
