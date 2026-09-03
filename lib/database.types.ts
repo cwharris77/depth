@@ -57,18 +57,21 @@ export type Database = {
       }
       app_events: {
         Row: {
+          app_version: string | null
           created_at: string
           error_category: string | null
           event_name: string
           id: string
         }
         Insert: {
+          app_version?: string | null
           created_at?: string
           error_category?: string | null
           event_name: string
           id?: string
         }
         Update: {
+          app_version?: string | null
           created_at?: string
           error_category?: string | null
           event_name?: string
