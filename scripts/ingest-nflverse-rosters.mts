@@ -26,6 +26,7 @@ import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/utils/env';
 dotenv.config({ path: '.env.local' });
 import { parseCsv } from '@/lib/nflverse/csv';
 import { assetUrl, latestAvailableSeason } from '@/lib/nflverse/assets';
+import { buildCrosswalk } from '@/lib/nflverse/crosswalk';
 import { resolveTeamCode } from '@/lib/nflverse/team-codes';
 import {
   toRosterHistoryRows,
@@ -42,6 +43,10 @@ const ROSTERS_PREFIX = 'roster_';
 // file's header comment for the `player_stats` -> `stats_player` rename history.
 const STATS_TAG = 'stats_player';
 const STATS_PREFIX = 'stats_player_reg_';
+// The all-era gsis_id -> espn_id crosswalk (players.csv). Same source the player-stats
+// ingest uses; fills espn_id for older roster rows whose own CSV column is empty.
+const PLAYERS_TAG = 'players';
+const PLAYERS_FILE = 'players.csv';
 // Supabase upsert payload cap: a season is ~1,700 rows, comfortably under one chunk,
 // but the full backfill sends every season in one process run.
 const UPSERT_CHUNK = 1000;
@@ -100,6 +105,30 @@ async function main() {
     );
   }
 
+  // players.csv once per run: the gsis_id -> espn_id crosswalk that fills espn_id for
+  // older roster rows whose own CSV column never carried it (see toRosterHistoryRows).
+  // A fetch failure is a degrade, not an abort: espn_id falls back to the pre-fix
+  // null behavior and the run records the failure instead of dying before writing a
+  // single row (the per-season fetches are caught individually; this one was new and
+  // would otherwise be the only uncaught fetch in the script). An empty map from a
+  // 200-but-bad body is visible via the recorded mapping count, not silent.
+  let crosswalk: Map<string, string>;
+  let crosswalkFailure: string | null = null;
+  try {
+    crosswalk = buildCrosswalk(parseCsv(await getText(assetUrl(PLAYERS_TAG, PLAYERS_FILE))));
+  } catch (e) {
+    crosswalk = new Map();
+    crosswalkFailure = (e as Error).message;
+    // SEED_OUT keeps hard-failing: the generated seed is a committed artifact, so a
+    // degraded crosswalk would silently bake null espn_ids into every local reset.
+    if (seedOut) throw e;
+  }
+  console.log(
+    crosswalkFailure
+      ? `crosswalk: fetch failed (${crosswalkFailure}); espn_id left null where the roster CSV has none`
+      : `crosswalk: ${crosswalk.size} gsis_id -> espn_id mappings`
+  );
+
   let rowsWritten = 0;
   let skipped = 0;
   const allRows: RosterHistoryInsert[] = [];
@@ -114,7 +143,8 @@ async function main() {
         season,
         parseCsv(rosterCsv),
         parseCsv(statsCsv),
-        resolveTeamCode
+        resolveTeamCode,
+        crosswalk
       );
       skipped += seasonSkipped;
 
@@ -165,7 +195,13 @@ async function main() {
     finished_at: finishedAt,
     status,
     teams_written: rowsWritten,
-    errors: { seasons, rows_written: rowsWritten, skipped, failures },
+    errors: {
+      seasons,
+      rows_written: rowsWritten,
+      skipped,
+      failures,
+      ...(crosswalkFailure ? { crosswalk_failure: crosswalkFailure } : {}),
+    },
   });
   if (runError) throw new Error(`failed to record ingestion_runs: ${runError.message}`);
 

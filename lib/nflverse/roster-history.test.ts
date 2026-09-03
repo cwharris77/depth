@@ -116,4 +116,37 @@ describe('toRosterHistoryRows', () => {
     expect(rows).toHaveLength(1);
     expect(rows[0].depth_rank).toBe(1);
   });
+
+  it('fills a null roster espn_id from the crosswalk', () => {
+    const { rows } = toRosterHistoryRows(
+      2013,
+      [rosterRow({ espn_id: '' })],
+      [],
+      RESOLVE,
+      new Map([['00-0029263', '14881']])
+    );
+    expect(rows[0].espn_id).toBe('14881');
+  });
+
+  it('keeps the roster CSV espn_id over a crosswalk value', () => {
+    const { rows } = toRosterHistoryRows(
+      2013,
+      [rosterRow({ espn_id: '14881' })],
+      [],
+      RESOLVE,
+      new Map([['00-0029263', '99999']])
+    );
+    expect(rows[0].espn_id).toBe('14881');
+  });
+
+  it('leaves espn_id null when neither the roster CSV nor the crosswalk has one', () => {
+    const { rows } = toRosterHistoryRows(
+      2013,
+      [rosterRow({ espn_id: '' })],
+      [],
+      RESOLVE,
+      new Map()
+    );
+    expect(rows[0].espn_id).toBeNull();
+  });
 });

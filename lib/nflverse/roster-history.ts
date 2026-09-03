@@ -15,6 +15,13 @@ export const SEASONS_MIN = 1999;
 // invariant 6). A player traded mid-season can appear more than once for the same team
 // in the raw CSV (e.g. a practice-squad elevation); the last occurrence wins, matching
 // roster_history's (season, team_id, gsis_id) primary key.
+//
+// `espn_id` comes from the roster CSV when present, else from the caller-supplied
+// gsis_id -> espn_id crosswalk (the same players.csv buildCrosswalk the player-stats
+// ingest uses). The roster CSV's espn_id column is sparse for older seasons (near-zero
+// in 1999), so without the fallback most historical rows would carry a null espn_id
+// and the profile read path (SupabaseDepthRepository.playerStats resolves the historical
+// id via roster_history.espn_id) could never reach their player_stats rows.
 
 export interface RosterHistoryInsert {
   season: number;
@@ -85,7 +92,8 @@ export function toRosterHistoryRows(
   season: number,
   rosterCsvRows: Record<string, string>[],
   statsCsvRows: Record<string, string>[],
-  resolveTeamCode: (code: string) => string | null
+  resolveTeamCode: (code: string) => string | null,
+  crosswalk: Map<string, string> = new Map()
 ): { rows: RosterHistoryInsert[]; skipped: number } {
   const usageByGsisId = buildUsageByGsisId(statsCsvRows);
 
@@ -108,7 +116,9 @@ export function toRosterHistoryRows(
       teamId,
       gsisId,
       position,
-      espnId: toNullableText(row.espn_id),
+      // The roster CSV's espn_id wins when present; the crosswalk fills the gap for
+      // older seasons where the CSV never carried one.
+      espnId: toNullableText(row.espn_id) ?? crosswalk.get(gsisId) ?? null,
       name,
       number: toNullableInt(row.jersey_number),
       college: toNullableText(row.college),
