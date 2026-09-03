@@ -235,19 +235,33 @@ final class PlayerCardReorderUITests: XCTestCase {
         }
 
         enterEditing()
-        app.buttons["unit-tab-defense"].tap()
+        XCTAssertTrue(
+            app.buttons["unit-tab-defense"].tapUntil { app.buttons["unit-tab-defense"].isSelected },
+            "the defense unit tab should become the selected unit"
+        )
         assertEditingEnded("changing units")
 
         enterEditing()
-        app.buttons["page-switcher-schedule"].tap()
+        XCTAssertTrue(
+            app.buttons["page-switcher-schedule"].tapUntil { app.otherElements["schedule-content"].exists },
+            "the schedule page should render once switched from Roster"
+        )
         assertEditingEnded("leaving the roster page")
-        app.buttons["page-switcher-roster"].tap()
-        XCTAssertTrue(app.buttons["depth-chart-overflow"].waitForExistence(timeout: 10))
+        XCTAssertTrue(
+            app.buttons["page-switcher-roster"].tapUntil { app.buttons["depth-chart-overflow"].exists },
+            "returning to the roster page should restore the overflow menu"
+        )
 
         enterEditing()
-        app.tabBars.firstMatch.buttons["Compare"].tap()
-        app.tabBars.firstMatch.buttons["Depth Charts"].tap()
-        XCTAssertTrue(app.buttons["depth-chart-overflow"].waitForExistence(timeout: 10))
+        let tabs = app.tabBars.firstMatch
+        XCTAssertTrue(
+            tabs.buttons["Compare"].tapUntil { app.scrollViews["compare-content"].exists },
+            "the Compare tab should render its content"
+        )
+        XCTAssertTrue(
+            tabs.buttons["Depth Charts"].tapUntil { app.buttons["depth-chart-overflow"].exists },
+            "returning to the Depth Charts tab should restore the overflow menu"
+        )
         assertEditingEnded("leaving the Depth Charts tab")
 
         enterEditing()

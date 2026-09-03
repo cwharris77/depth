@@ -5,15 +5,22 @@ import XCTest
 // used to "type in the root search field and tap a row" now goes through the same three
 // steps — worth one helper rather than four copies (AGENTS.md mistake #17).
 extension XCUIApplication {
+    /// The launch chart's first tappable player slot. The unit picker exists as soon as a
+    /// snapshot resolves, but a slot is the accurate "chart rendered" signal.
+    private var depthChartSlot: XCUIElement {
+        buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'player-slot-'")).firstMatch
+    }
+
     /// Waits for the launch depth chart to actually render a tappable player slot.
-    /// The unit picker exists as soon as a snapshot resolves, but a slot is the accurate
-    /// "chart rendered" signal.
     @discardableResult
     func waitForDepthChart(timeout: TimeInterval = 15) -> Bool {
-        buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'player-slot-'"))
-            .firstMatch
-            .waitForExistence(timeout: timeout)
+        depthChartSlot.waitForExistence(timeout: timeout)
     }
+
+    /// The same "chart rendered" signal as a single non-blocking read — the shape
+    /// `tapUntil`'s condition needs (it does its own polling, so a condition that blocks
+    /// for its own timeout would multiply the wait).
+    var hasDepthChart: Bool { depthChartSlot.exists }
 
     /// Launch arg (see DepthApp.swift) that pins the launch destination to a specific
     /// team *after* the UI_TESTING_RESET_STATE clean slate. Lets a journey that only
@@ -96,21 +103,78 @@ extension XCUIElement {
         return true
     }
 
-    /// Taps a search field, then waits for the on-screen keyboard to actually appear
-    /// (retapping while it hasn't) before typing. A bare `tap(); typeText(...)` races the
-    /// sheet's presentation animation — the tap can land before the field is focusable, so
-    /// `typeText` synthesizes into a field with no focus and XCUITest throws "Neither
-    /// element nor any descendant has keyboard focus" (flaky under CI load wherever a
-    /// search field sits inside a just-presented sheet — team switcher, compare picker).
-    /// XCUIElement has no direct "did this field gain focus" query, so the keyboard's
-    /// existence is used as the proxy: it only appears once some field is actually focused.
-    func typeTextAfterFocusing(_ text: String, in app: XCUIApplication, timeout: TimeInterval = 10) {
-        let deadline = Date().addingTimeInterval(timeout)
-        while !app.keyboards.element.exists && Date() < deadline {
-            if isHittable { tap() }
-            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+    /// Taps a search field and types into it only once the field has actually taken
+    /// keyboard focus. A bare `tap(); typeText(...)` races the sheet's presentation
+    /// animation — the tap can land before the field is focusable, so `typeText`
+    /// synthesizes into a field with no focus and XCUITest throws "Neither element nor
+    /// any descendant has keyboard focus" (flaky under CI load wherever a search field
+    /// sits inside a just-presented sheet — team switcher, compare picker).
+    /// XCUIElement has no public per-element focus query, so the keyboard's existence is
+    /// the proxy: it only appears once some field is actually focused.
+    ///
+    /// The budget is measured from *after* each `tap()` returns, and that is the whole
+    /// point of the loop's shape. The first cut of this helper took one deadline before
+    /// tapping, and `tap()` blocks while the app idles: on a loaded runner that call took
+    /// 49s against a 10s budget (CI 2026-09-02, AccessibilityXXXL), so the deadline was
+    /// already 46s stale when the keyboard was polled — exactly once, immediately after
+    /// the tap — and the helper then typed into a still-unfocused field, reproducing the
+    /// failure it was written to prevent. A timeout that a slow tap can spend is not a
+    /// timeout. When focus never lands, fail with this message rather than typing blindly
+    /// into whatever has focus instead.
+    func typeTextAfterFocusing(
+        _ text: String, in app: XCUIApplication, attempts: Int = 3, timeout: TimeInterval = 15,
+        file: StaticString = #filePath, line: UInt = #line
+    ) {
+        for _ in 1...attempts {
+            tap()
+            let deadline = Date().addingTimeInterval(timeout)
+            repeat {
+                if app.keyboards.element.exists {
+                    typeText(text)
+                    return
+                }
+                RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+            } while Date() < deadline
         }
-        typeText(text)
+        XCTFail(
+            "the field never took keyboard focus, so \"\(text)\" could not be typed",
+            file: file, line: line
+        )
+    }
+
+    /// Taps, then polls `condition`, re-tapping (up to `attempts` times) when the tap
+    /// produced no effect at all.
+    ///
+    /// A synthesized tap is not guaranteed to register. XCUITest sends touch-down and
+    /// touch-up as separate events and waits for the app to idle around them; on a loaded
+    /// CI runner that window stretches into tens of seconds (measured: 25-43s between
+    /// "Synthesize event" and the following step), long enough for the press to be
+    /// cancelled rather than delivered as a tap. The usual `tap()` + `waitForExistence`
+    /// pair then polls an *unchanged* screen until it times out, and a longer timeout
+    /// cannot help because nothing is in flight — CI 2026-09-03 tapped
+    /// `page-switcher-roster`, waited 10s for `depth-chart-overflow`, and the failure
+    /// hierarchy still showed SCHEDULE as the selected page. Re-sending the tap is the
+    /// only thing that recovers it, so any navigation tap whose whole purpose is to bring
+    /// a destination on screen goes through here instead.
+    ///
+    /// Note this is a *test-harness* workaround, not cover for an app bug: a real touch
+    /// sequence from a finger is delivered normally, and the app has never been observed
+    /// dropping a page switch outside a synthesized tap under runner load.
+    @discardableResult
+    func tapUntil(
+        attempts: Int = 3, timeout: TimeInterval = 10, _ condition: () -> Bool
+    ) -> Bool {
+        for _ in 1...attempts {
+            tap()
+            // Same rule as `typeTextAfterFocusing` above: the deadline starts after the
+            // tap, because the tap itself can consume more than the whole budget.
+            let deadline = Date().addingTimeInterval(timeout)
+            repeat {
+                if condition() { return true }
+                RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+            } while Date() < deadline
+        }
+        return condition()
     }
 
     /// Polls until the element no longer exists, or `timeout` elapses. `waitForExistence`
