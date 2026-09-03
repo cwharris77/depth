@@ -58,8 +58,8 @@ describe('insertUnsortedLines', () => {
 
   it('inserts directly under the ## Unsorted heading, above the capture hint', () => {
     const out = insertUnsortedLines(NOTE, ['- line a', '- line b']);
-    expect(out).not.toBeNull();
-    const lines = out!.split('\n');
+    if (out === null) throw new Error('expected an insertion, got null');
+    const lines = out.split('\n');
     expect(lines[6]).toBe('## Unsorted');
     expect(lines[7]).toBe('');
     expect(lines[8]).toBe('- line a');
@@ -69,7 +69,8 @@ describe('insertUnsortedLines', () => {
   });
 
   it('leaves the rest of the note untouched', () => {
-    const out = insertUnsortedLines(NOTE, ['- line a'])!;
+    const out = insertUnsortedLines(NOTE, ['- line a']);
+    if (out === null) throw new Error('expected an insertion, got null');
     expect(out).toContain('## Needs you');
     expect(out).toContain('- existing item');
     expect(out.startsWith('---\ntype: system')).toBe(true);
