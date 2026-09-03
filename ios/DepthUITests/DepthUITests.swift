@@ -69,10 +69,10 @@ final class DepthUITests: XCTestCase {
         // switcher, no longer a toolbar destination.
         let scheduleTab = app.buttons["page-switcher-schedule"]
         XCTAssertTrue(scheduleTab.waitForExistence(timeout: 10), "team detail should expose a Schedule page tab")
-        scheduleTab.tap()
-
-        let scheduleContent = app.otherElements["schedule-content"]
-        XCTAssertTrue(scheduleContent.waitForExistence(timeout: 10), "the schedule should render production content")
+        XCTAssertTrue(
+            scheduleTab.tapUntil { app.otherElements["schedule-content"].exists },
+            "the schedule should render production content"
+        )
 
         let weekCard = app.descendants(matching: .any).matching(
             NSPredicate(format: "identifier BEGINSWITH 'schedule-week-'")
@@ -90,8 +90,10 @@ final class DepthUITests: XCTestCase {
 
         let scheduleTab = app.buttons["page-switcher-schedule"]
         XCTAssertTrue(scheduleTab.waitForExistence(timeout: 10), "team detail should expose a Schedule page tab")
-        scheduleTab.tap()
-        XCTAssertTrue(app.otherElements["schedule-content"].waitForExistence(timeout: 10), "the schedule should render production content")
+        XCTAssertTrue(
+            scheduleTab.tapUntil { app.otherElements["schedule-content"].exists },
+            "the schedule should render production content"
+        )
 
         // The first tappable game card — a bye week or a past season renders the same
         // `schedule-week-N` identifier on a non-button element, so pick the first
@@ -104,12 +106,12 @@ final class DepthUITests: XCTestCase {
         }
         let weekCard = cards.element(boundBy: index)
         XCTAssertTrue(weekCard.isHittable, "the Bills' current-season schedule should have a non-bye, tappable game card")
-        weekCard.tap()
-
         // The tab bar now reflects where we landed — Compare selected, not Depth Charts.
         let compareTab = app.tabBars.firstMatch.buttons["Compare"]
-        XCTAssertTrue(compareTab.waitForExistence(timeout: 5))
-        XCTAssertTrue(compareTab.isSelected, "tapping a schedule card should switch the active tab to Compare")
+        XCTAssertTrue(
+            weekCard.tapUntil { compareTab.exists && compareTab.isSelected },
+            "tapping a schedule card should switch the active tab to Compare"
+        )
 
         // The matchup pre-loaded into both slots (the offense lens renders once both
         // teams resolve) and the schedule-origin pill is present.
@@ -117,10 +119,11 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(app.buttons["compare-lens-offense"].waitForExistence(timeout: 20), "both compare slots should auto-fill with the matchup's teams")
 
         // The pill returns to the Depth Charts tab, whose schedule page is still open.
-        app.buttons["compare-back-to-schedule"].tap()
         let depthChartsTab = app.tabBars.firstMatch.buttons["Depth Charts"]
-        XCTAssertTrue(depthChartsTab.waitForExistence(timeout: 5))
-        XCTAssertTrue(depthChartsTab.isSelected, "Back to schedule should return to the Depth Charts tab")
+        XCTAssertTrue(
+            app.buttons["compare-back-to-schedule"].tapUntil { depthChartsTab.exists && depthChartsTab.isSelected },
+            "Back to schedule should return to the Depth Charts tab"
+        )
     }
 
     /// Round-4 (DEP-216/217): the ROSTER/SCHEDULE/STATS page switcher reaches all three
@@ -132,9 +135,10 @@ final class DepthUITests: XCTestCase {
 
         let statsTab = app.buttons["page-switcher-stats"]
         XCTAssertTrue(statsTab.waitForExistence(timeout: 10), "team detail should expose a Stats page tab")
-        statsTab.tap()
         XCTAssertTrue(
-            app.scrollViews["stats-content"].waitForExistence(timeout: 30),
+            // 30s: a cold CI simulator's first Stats load crawls through a production
+            // round-trip (flake 2026-08-29).
+            statsTab.tapUntil(timeout: 30) { app.scrollViews["stats-content"].exists },
             "the Stats page should render its record content"
         )
         XCTAssertTrue(
@@ -144,17 +148,15 @@ final class DepthUITests: XCTestCase {
 
         let scheduleTab = app.buttons["page-switcher-schedule"]
         XCTAssertTrue(scheduleTab.waitForExistence(timeout: 5), "the page switcher should still be reachable from Stats")
-        scheduleTab.tap()
         XCTAssertTrue(
-            app.otherElements["schedule-content"].waitForExistence(timeout: 30),
+            scheduleTab.tapUntil(timeout: 30) { app.otherElements["schedule-content"].exists },
             "the schedule page should render once switched from Stats"
         )
 
         let rosterTab = app.buttons["page-switcher-roster"]
         XCTAssertTrue(rosterTab.waitForExistence(timeout: 5))
-        rosterTab.tap()
         XCTAssertTrue(
-            app.waitForDepthChart(),
+            rosterTab.tapUntil(timeout: 15) { app.hasDepthChart },
             "returning to Roster should render the depth chart again"
         )
     }
@@ -308,10 +310,9 @@ final class DepthUITests: XCTestCase {
 
         let statsTab = app.buttons["page-switcher-stats"]
         XCTAssertTrue(statsTab.waitForExistence(timeout: 10))
-        statsTab.tap()
         // Cold CI simulator + production data: the first Stats load can crawl past the
         // tab's own 10s (flake 2026-08-29) — 30s budget covers the network round-trip.
-        XCTAssertTrue(app.scrollViews["stats-content"].waitForExistence(timeout: 30))
+        XCTAssertTrue(statsTab.tapUntil(timeout: 30) { app.scrollViews["stats-content"].exists })
 
         let trigger = app.buttons["stats-season-trigger"]
         XCTAssertTrue(trigger.waitForExistence(timeout: 10))
@@ -367,10 +368,9 @@ final class DepthUITests: XCTestCase {
 
         let scheduleTab = app.buttons["page-switcher-schedule"]
         XCTAssertTrue(scheduleTab.waitForExistence(timeout: 10))
-        scheduleTab.tap()
         // Cold CI simulator + production data: schedule payload loads over the network and
         // can exceed 15s on first load (flake 2026-08-29) — 30s budget.
-        XCTAssertTrue(app.otherElements["schedule-content"].waitForExistence(timeout: 30))
+        XCTAssertTrue(scheduleTab.tapUntil(timeout: 30) { app.otherElements["schedule-content"].exists })
 
         let trigger = app.buttons["schedule-season-trigger"]
         XCTAssertTrue(trigger.waitForExistence(timeout: 10))
@@ -422,17 +422,18 @@ final class DepthUITests: XCTestCase {
 
         let statsTab = app.buttons["page-switcher-stats"]
         XCTAssertTrue(statsTab.waitForExistence(timeout: 10))
-        statsTab.tap()
-        XCTAssertTrue(app.scrollViews["stats-content"].waitForExistence(timeout: 15))
+        XCTAssertTrue(statsTab.tapUntil(timeout: 15) { app.scrollViews["stats-content"].exists })
         let statsBefore = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
         statsBefore.name = "stats-before-kit-pick"
         statsBefore.lifetime = .keepAlways
         add(statsBefore)
 
         // Back to the roster to pick a kit.
-        app.buttons["page-switcher-roster"].tap()
         let overflow = app.buttons["depth-chart-overflow"]
-        XCTAssertTrue(overflow.waitForExistence(timeout: 10), "team detail should expose the overflow menu")
+        XCTAssertTrue(
+            app.buttons["page-switcher-roster"].tapUntil { overflow.exists },
+            "team detail should expose the overflow menu"
+        )
         overflow.tap()
         let chooseUniform = app.buttons["choose-uniform"]
         XCTAssertTrue(chooseUniform.waitForExistence(timeout: 5), "the Bills should have uniforms to pick from")
@@ -474,8 +475,10 @@ final class DepthUITests: XCTestCase {
         add(statsAfter)
 
         let scheduleTab = app.buttons["page-switcher-schedule"]
-        scheduleTab.tap()
-        XCTAssertTrue(app.otherElements["schedule-content"].waitForExistence(timeout: 15), "Schedule should still render after a kit pick")
+        XCTAssertTrue(
+            scheduleTab.tapUntil(timeout: 15) { app.otherElements["schedule-content"].exists },
+            "Schedule should still render after a kit pick"
+        )
         let scheduleAfter = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
         scheduleAfter.name = "schedule-after-kit-pick"
         scheduleAfter.lifetime = .keepAlways
@@ -495,12 +498,11 @@ final class DepthUITests: XCTestCase {
         let tabs = app.tabBars.firstMatch
         XCTAssertTrue(tabs.waitForExistence(timeout: 10), "the app should present a bottom tab bar")
 
-        tabs.buttons["Compare"].tap()
         // DEP-258: the real compare UI renders the two team-slot pickers + the
         // Matchup/By-position switcher, plus the "Pick two teams to compare" prompt
         // (no teams picked on a fresh launch — the placeholder "coming soon" is gone).
         XCTAssertTrue(
-            app.scrollViews["compare-content"].waitForExistence(timeout: 10),
+            tabs.buttons["Compare"].tapUntil { app.scrollViews["compare-content"].exists },
             "Compare should render its team-slot picker content"
         )
         XCTAssertTrue(
@@ -508,22 +510,22 @@ final class DepthUITests: XCTestCase {
             "Compare should prompt to pick two teams on first load"
         )
 
-        tabs.buttons["Uniforms"].tap()
         XCTAssertTrue(
-            app.navigationBars["Uniforms"].waitForExistence(timeout: 10),
+            tabs.buttons["Uniforms"].tapUntil { app.navigationBars["Uniforms"].exists },
             "Uniforms should render its own content"
         )
 
-        tabs.buttons["Depth Charts"].tap()
-        XCTAssertTrue(app.waitForDepthChart(), "returning to Depth Charts should show the chart again")
+        XCTAssertTrue(
+            tabs.buttons["Depth Charts"].tapUntil(timeout: 15) { app.hasDepthChart },
+            "returning to Depth Charts should show the chart again"
+        )
 
         // DEP-252: Account is now a nav-bar trailing icon on the team page, opening the
         // settings content as a sheet rather than switching tabs.
         let accountButton = app.buttons["account-button"]
         XCTAssertTrue(accountButton.waitForExistence(timeout: 10), "Account should be reachable from the nav bar")
-        accountButton.tap()
         XCTAssertTrue(
-            app.staticTexts["settings-about-version"].waitForExistence(timeout: 10),
+            accountButton.tapUntil { app.staticTexts["settings-about-version"].exists },
             "Account should render the settings content"
         )
     }
@@ -565,9 +567,11 @@ final class DepthUITests: XCTestCase {
         app.launch()
         XCTAssertTrue(app.waitForDepthChart(), "Depth Charts should be the launch tab")
 
-        app.tabBars.firstMatch.buttons["Compare"].tap()
         let content = app.scrollViews["compare-content"]
-        XCTAssertTrue(content.waitForExistence(timeout: 10), "Compare should render its content")
+        XCTAssertTrue(
+            app.tabBars.firstMatch.buttons["Compare"].tapUntil { content.exists },
+            "Compare should render its content"
+        )
 
         // Both empty slots exist and read as "Pick a team" holes.
         let slotA = app.buttons["compare-slot-a"]
@@ -631,8 +635,7 @@ final class DepthUITests: XCTestCase {
         app.launch()
         XCTAssertTrue(app.waitForDepthChart(), "Depth Charts should be the launch tab")
 
-        app.tabBars.firstMatch.buttons["Compare"].tap()
-        XCTAssertTrue(app.scrollViews["compare-content"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.tabBars.firstMatch.buttons["Compare"].tapUntil { app.scrollViews["compare-content"].exists })
         pickTeam(into: "a", query: "Bills", expectedRow: "team-row-bills", app: app)
         pickTeam(into: "b", query: "Seahawks", expectedRow: "team-row-seahawks", app: app)
 

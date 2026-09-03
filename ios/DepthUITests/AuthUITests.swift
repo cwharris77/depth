@@ -17,10 +17,11 @@ final class AuthUITests: XCTestCase {
         // runs lost here at both sheet boundaries with every query crawling 2-10s.
         let accountButton = app.buttons["account-button"]
         XCTAssertTrue(accountButton.waitForExistence(timeout: 15), "Account should be reachable from the nav bar")
-        accountButton.tap()
-
         let version = app.staticTexts["settings-about-version"]
-        XCTAssertTrue(version.waitForExistence(timeout: 15), "About should show the app version")
+        XCTAssertTrue(
+            accountButton.tapUntil(timeout: 15) { version.exists },
+            "About should show the app version"
+        )
         XCTAssertFalse(
             version.label.contains("("),
             "About should hide the internal build number from customers"
@@ -39,10 +40,8 @@ final class AuthUITests: XCTestCase {
             signInButton.waitForExistence(timeout: 15),
             "anonymous settings should offer native sign-in"
         )
-        signInButton.tap()
-
         XCTAssertTrue(
-            app.textFields["auth-email"].waitForExistence(timeout: 15),
+            signInButton.tapUntil(timeout: 15) { app.textFields["auth-email"].exists },
             "sign-in should present the native email OTP flow"
         )
         XCTAssertTrue(
@@ -64,7 +63,14 @@ final class AuthUITests: XCTestCase {
 
         let accountButton = app.buttons["account-button"]
         XCTAssertTrue(accountButton.waitForExistence(timeout: 15), "Account should be reachable from the nav bar")
-        accountButton.tap()
+        // The assertions below are all negative, so they would pass vacuously if the
+        // settings sheet never opened (a synthesized tap that doesn't register — see
+        // `tapUntil`). Prove the sheet is actually on screen before asserting what it
+        // must *not* contain.
+        XCTAssertTrue(
+            accountButton.tapUntil(timeout: 15) { app.staticTexts["settings-about-version"].exists },
+            "Account should open the settings sheet"
+        )
 
         // DEP-319: the favorite picker + start-on-favorite toggle are account-gated by
         // RLS (the user_settings row is scoped to auth.uid()), so a signed-out visitor
