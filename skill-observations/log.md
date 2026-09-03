@@ -131,3 +131,35 @@ The compounding problem is not the original misjudgement, which is cheap and rec
 **Suggested improvement:** Treat a formal ticket whose acceptance criteria and done-when are explicit as the confirmation itself: restate the planned design decisions in the final report and commit rather than pausing pre-edit. Reserve the blocking pause for genuinely underspecified asks (no acceptance criteria, or a mapping choice that changes visible behavior). Where a ticket's wording leaves real latitude, state the chosen interpretation explicitly in the commit body so the reviewer can veto cheaply.
 
 **Principle:** The "wait for confirmation" guardrail exists to catch scope-creep risk in underspecified requests, not to gate every edit. A scoped ticket is the artifact that resolves the ambiguity — the confirmation step degrades to "document the judgment calls taken," which keeps the guardrail's protection without serializing the whole task on a pause.
+
+## 2026-09-03
+
+### Observation 18: A handoff brief's factual claims need verifying before its priority order is acted on
+
+**Status:** OPEN
+**Date:** 2026-09-03
+**Session context:** Resuming a half-finished workstream (a broken scheduled monitor) from a long pasted handoff brief written by the previous session.
+**Skill:** context-restore (or New skill candidate: handoff-intake)
+**Type:** open-source
+**Phase/Area:** Restoring context from a written handoff rather than a session checkpoint
+
+**Issue:** The handoff read as authoritative and carried an explicit recommended priority order, but several of its claims were wrong or garbled: it named a docs file as carrying stale cross-references that in fact contained none; it had corrupted paths and identifiers in its "gotchas" section (a directory name missing characters, a tool name mistyped); and its most urgent-sounding item — "the workflow will spam issues on every new run, consider disabling the schedule" — was a non-issue, because the changed workflow lived on an unmerged branch and the platform only runs scheduled jobs from the default branch. Acting on the stated priority order first would have meant a needless CI-settings change (an ask-first action in this repo) to fix a problem that did not exist. A ten-minute verification pass over the brief's claims, done before touching anything, invalidated one priority item and removed one file from the planned diff.
+
+**Suggested improvement:** Add a "verify before you sequence" step at the front of the restore procedure: before adopting a handoff's task ordering, check each load-bearing factual claim against the live system — do the named files/paths exist and say what the brief says, is the asserted failure mode actually reachable given where the code currently lives, are the identifiers spelled correctly. Treat the brief as a lead list, not a spec. Explicitly flag that a handoff's *urgency* claims deserve the most scrutiny, since they are what reorders the work.
+
+**Principle:** A handoff document is the previous session's memory, not the system's state — and memory degrades. Verify a handoff's claims against the live system before adopting its conclusions or its ordering; the items it marks most urgent are the ones most worth checking first, because they are the ones that will restructure the work.
+
+### Observation 19: Offer options in the vocabulary of the target system's own primitives
+
+**Status:** OPEN
+**Date:** 2026-09-03
+**Session context:** Asking the user to choose where an automated monitor should file its notifications, among three destinations in an existing personal knowledge system.
+**Skill:** capture-ticket (and any skill that presents destination/structure choices)
+**Type:** open-source
+**Phase/Area:** Presenting a decision to the user
+
+**Issue:** Three well-researched options were offered for where notifications should land, all framed around *which file* to write to. The user rejected the framing rather than picking one: their concern was that a batch of items arriving at once should be *grouped* under a container, and none of the three options addressed grouping — they asked "I don't know if this is already possible." It was: the target system already had a first-class grouping tier (a shared string field on child records that renders them as one swimlane), documented in its own conventions file, requiring no new machinery. The option set had been built by surveying candidate *locations* without first enumerating the target system's *structural* primitives, so the dimension the user actually cared about was invisible in the choices offered.
+
+**Suggested improvement:** Before composing an option set about how output lands in an existing system, enumerate that system's own organizing primitives (grouping tiers, containers, statuses, link/relationship fields) from its conventions documentation, and check each one against the shape of the incoming data — especially "what happens when N items arrive at once instead of one." Where a primitive applies, make it part of an option rather than leaving it for the user to think of.
+
+**Principle:** An option set that omits a dimension the user cares about does not read as incomplete — it reads as "that isn't possible here," and pushes the user into inventing a requirement the system already satisfies. When the decision is about how work enters an existing system, survey that system's structural vocabulary before drafting the options, not after the user pushes back.
