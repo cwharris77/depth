@@ -1,0 +1,63 @@
+name: iOS Screenshots Gate
+
+# A PR that touches iOS UI sources MUST carry real screenshots in its body, not the
+# template's "Table auto-fills here after the screenshot pass" placeholder. Capture is
+# LOCAL (ios/scripts/pr-screenshots.sh — no CI action), so this workflow only verifies
+# the body: a fast string check, no build, no macOS runner, and it cannot be forgotten.
+# On failure the agent runs the driver and pushes again.
+#
+# Scoping lives in the `paths` filter below rather than in the script, so a PR with no
+# iOS UI in it never provisions a runner at all (it used to start one and full-clone the
+# repo on every PR — web, docs, workflow-only — just to decide it had nothing to do).
+# The exclusions mirror ios/CLAUDE.md §2: ios/Depth/Domain/ is pure model types and pure
+# logic, ios/Depth/Data/ is DTOs/mappers/repositories (DepthRepository,
+# SupabaseDepthRepository, the mappers) — by architecture neither imports SwiftUI nor
+# declares a View, so a diff confined to either cannot change a pixel and has nothing to
+# capture. Blocking those would force identical before/after images, which read as "a
+# visual change was reviewed" when none happened. Negated patterns are evaluated in
+# order per file, so a PR touching both a View and a Data file still runs the gate.
+on:
+  pull_request:
+    paths:
+      - 'ios/Depth/**'
+      - '!ios/Depth/Domain/**'
+      - '!ios/Depth/Data/**'
+      - '.github/workflows/ios-screenshots-gate.yml'
+
+concurrency:
+  group: ios-screenshots-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # No checkout: the check reads the PR body over the API and needs no working tree.
+      - name: Check iOS UI PR has real screenshots in the body
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const { data: pr } = await github.rest.pulls.get({
+              owner, repo, pull_number: context.issue.number,
+            });
+            const body = pr.body ?? '';
+            // A real screenshot table has markdown image links with http(s) URLs
+            // (e.g. | field | ![before](https://…) |). Match image syntax + URL.
+            const hasReal = /!\[[^\]]*\]\(https?:/i.test(body) && body.includes('screenshots-end');
+            const isAfterOnly = body.includes('Captured locally (no Cloudinary');
+
+            if (!hasReal && !isAfterOnly) {
+              core.setFailed(
+                `This PR touches iOS UI sources (ios/Depth/**, excluding Domain/ and Data/) but the ## Screenshots block in the body is not filled.\n\n` +
+                `Run the screenshot driver before pushing:\n` +
+                `  ios/scripts/pr-screenshots.sh --body-file <path-to-pr-body>\n` +
+                `then push again. It decides targets from the diff, captures before/after + a boxed visual diff, ` +
+                `uploads to Cloudinary, and fills the ## Screenshots table. ` +
+                `If it found no coverage (a map gap), it defaults to 'field'. ` +
+                `See docs/ios-pr-screenshots.md.`
+              );
+            } else {
+              console.log('Screenshots present in the body — gate passed.');
+            }
