@@ -56,9 +56,9 @@ Expect these to be harder than Bears and easier than Seattle. Seattle exercised 
 
 Blocked on the licensing question in the spec. Do not start without Cooper's answer, because the answer changes whether a machine trace can ship at all or only ever scaffolds a hand-stylized mark.
 
-- [ ] B1. Reference gate: keyline-component-count check wired into the drawkit workflow; reject a reference whose mark is <256px wide or whose keyline resolves to more than one component
+- [ ] B1. Reference gate as a drawkit check: thinnest critical stroke >= 2px (p5 horizontal run in the mark's carrying color) AND component count stable under a 0.75x downscale. Validated on Bears (hairline keyline, 0.65% stroke fraction) and Seahawks (fat white channels, 1.67%); both reject below 128px and accept at/above. Aim for >=256px references
 - [ ] B2. Ticket format: mark artwork attached at unveiling time (SportsLogos 403s automated fetches and GUD returns empty, so an agent cannot fetch it; the Wikimedia API can be fetched and returns licence metadata)
-- [ ] B3. Per-team decal re-authoring, one team per PR, each with a before/after at true thumbnail scale on the shell color
+- [ ] B3. Per-team decal re-authoring, one team per PR, each with a before/after at true thumbnail scale on the shell color. TWO axes, both required (spec decision 7): (a) linework, from a gate-passing mark reference; (b) application geometry — scale, rotation, extent, silhouette clipping, and which logo elements actually appear — measured from the GUD **helmet** reference, where 46px is fine. Bake any rotation into the path coordinates; `UniformLayer` has no transform field. Acceptance is a side-by-side against the helmet reference, not the logo
 
 Note that B changes artwork at existing URLs, so installed iOS builds pick it up immediately. That is a product decision, not a technical one.
 
