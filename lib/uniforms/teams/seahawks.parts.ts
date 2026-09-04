@@ -83,6 +83,10 @@ function shoulder(band: string, cap: string): PartLayer[] {
 
 const HELMET_NAVY_HAWK: UniformPart = {
   base: 'navy',
+  // Black cage, sampled from the GUD reference crop (the facemask region reads #000000 there,
+  // against the shell's #0D2135). The shared neutral #4b5158 it replaces was a mid-grey mass at
+  // relative luminance 80 over a shell at 29 -- the single brightest thing on the helmet.
+  facemask: 'facemaskBlack',
   layers: [
     fill('seahawks-helmet-center-stripe', 'helmet', HELMET_CROWN_STRIPE_PATH, 'crownWedge'),
     ...hawk('green'),
@@ -106,15 +110,22 @@ export const SEAHAWKS_PARTS: TeamPartsDefinition = {
   palette: {
     navy: '#002244',
     green: '#69BE28',
+    // Wolf Grey is a construction fact of the modern kit, not a runtime body color: an
+    // ESPN-sourced palette sets accent = secondary, so 'accent' would resolve to action green.
+    // Hex from teamcolorcodes.
     wolfGrey: '#A5ACAF',
     white: '#FFFFFF',
     crownWedge: '#2B507C',
+    // A fourth color with no kit token, and it can never have one: it fails AA on the dark UI
+    // (1.57), so it could never be uiAccent. Sampled from the GUD 2025 composite.
     rivalriesTeal: '#023A4D',
     rivalriesSilver: '#C6D3DC',
     rivalriesPine: '#29594C',
     royal76: '#003087',
     green76: '#046A38',
     silver76: '#8A8D8F',
+    // Sampled from the GUD reference helmet crop.
+    facemaskBlack: '#000000',
   },
   helmets: {
     'navy-hawk': HELMET_NAVY_HAWK,

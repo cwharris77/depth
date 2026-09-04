@@ -27,7 +27,6 @@ export type UniformArtVariant = Extract<UniformVariant, 'jersey' | 'full'>;
 // readableTextOn(primary) so it stays legible on any body color.
 
 const OUTLINE = '#8a9096';
-const FACEMASK = '#4b5158';
 
 // Shared mannequin paths (template coordinate space; viewBox origin 20,45).
 const GEO = {
@@ -312,7 +311,7 @@ export default function UniformFigure({
             <Geo
               part="facemask"
               shared={sharedDefs}
-              fill={FACEMASK}
+              fill={model.facemaskColor}
               fillRule="evenodd"
               stroke={OUTLINE}
               strokeWidth={7}
