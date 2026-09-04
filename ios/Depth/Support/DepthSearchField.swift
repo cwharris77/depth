@@ -11,6 +11,7 @@ import SwiftUI
 // Styled from the chip vocabulary (`surfaceChip` fill, `borderInput` hairline, `Radius.sm`)
 // so it reads as the same family as the Filters pill sitting under it.
 struct DepthSearchField: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Binding var text: String
     var placeholder: String
     /// Set where a UI test needs to address this specific field.
@@ -71,7 +72,8 @@ struct DepthSearchField: View {
         .padding(.horizontal, DesignTokens.Spacing.sm + DesignTokens.Spacing.xs)
         // 44, not the design's 38: every other tappable control in this app asks for the
         // HIG minimum, and a text field is no less of a touch target than a chip.
-        .frame(height: 44)
+        .padding(.vertical, dynamicTypeSize.isAccessibilitySize ? DesignTokens.Spacing.sm : 0)
+        .frame(minHeight: 44)
         .background(DesignTokens.Colors.surfaceChip, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
         .overlay {
             RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)

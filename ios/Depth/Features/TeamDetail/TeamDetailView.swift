@@ -8,6 +8,7 @@ import SwiftUI
 // the new Stats page (DEP-216); Schedule's pushed-destination chrome is suppressed
 // through `isEmbedded`.
 struct TeamDetailView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var viewModel: TeamDetailViewModel
@@ -232,7 +233,9 @@ struct TeamDetailView: View {
             // see `depthTopNavToolbar` for why this isn't hand-rolled per screen anymore.
             // The team pill is this screen's contribution to the "conditional" half.
             .toolbar {
-                depthTopNavToolbar(teamPill: { teamSwitcherPill }) {
+                depthTopNavToolbar(teamPill: {
+                    if !dynamicTypeSize.isAccessibilitySize { teamSwitcherPill }
+                }) {
                     showAccount = true
                 }
             }
@@ -339,6 +342,10 @@ struct TeamDetailView: View {
     // account affordance (DEP-252) and room for the pill's full team name (DEP-222).
     private var content: some View {
         VStack(spacing: 0) {
+            if dynamicTypeSize.isAccessibilitySize {
+                teamSwitcherPill
+                    .padding(.horizontal, DesignTokens.Spacing.screenMargin)
+            }
             pageSwitcher
                 .padding(.horizontal, DesignTokens.Spacing.screenMargin)
                 .padding(.top, 8)
@@ -373,8 +380,8 @@ struct TeamDetailView: View {
                 Text(navigationTitleText)
                     .font(.headline)
                     .foregroundStyle(textColor)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                    .minimumScaleFactor(dynamicTypeSize.isAccessibilitySize ? 1 : 0.7)
                 Image(systemName: "chevron.down")
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(textColor)
@@ -690,7 +697,18 @@ struct TeamDetailView: View {
         }
     }
 
+    @ViewBuilder
     private func rosterContent(snapshot: TeamSnapshot, historical: Bool) -> some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            ScrollView {
+                rosterStack(snapshot: snapshot, historical: historical)
+            }
+        } else {
+            rosterStack(snapshot: snapshot, historical: historical)
+        }
+    }
+
+    private func rosterStack(snapshot: TeamSnapshot, historical: Bool) -> some View {
             VStack(spacing: 16) {
                     if historical {
                         // Web parity (DEP-245): rather than the roster's own bare "Back to
@@ -991,6 +1009,7 @@ private struct FTNAttributionText: View {
 // `selectedFormations` dictionary in TeamDetailView (persists across tab switches,
 // cleared on app launch).
 private struct FormationsSheetView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let unit: Unit
     let formations: [TeamFormation]
     let activeFormation: TeamFormation?
@@ -1054,12 +1073,15 @@ private struct FormationsSheetView: View {
         return Button {
             onSelect(f)
         } label: {
-            HStack {
+            let layout = dynamicTypeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
+                : AnyLayout(HStackLayout())
+            layout {
                 Text(title(f))
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(isActive ? accent : DesignTokens.Colors.textPrimary)
-                    .lineLimit(1)
-                Spacer()
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                if !dynamicTypeSize.isAccessibilitySize { Spacer() }
                 VStack(alignment: .trailing, spacing: 0) {
                     // Two lines, not a bare "22%" — without a personnel/utilization
                     // breakdown the number alone doesn't say what it's a share OF.

@@ -6,6 +6,7 @@ import SwiftUI
 // page switcher), the pushed-destination chrome is suppressed: the shared nav bar keeps
 // the team identity, and the view renders as just the content column.
 struct ScheduleView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var viewModel: ScheduleViewModel
     @State private var showSeasonPicker = false
     private let isEmbedded: Bool
@@ -115,7 +116,9 @@ struct ScheduleView: View {
             VStack(alignment: .leading, spacing: 16) {
                 seasonPicker
                 LazyVGrid(
-                    columns: [GridItem(.adaptive(minimum: 144, maximum: 260), spacing: DesignTokens.Spacing.sm)],
+                    columns: dynamicTypeSize.isAccessibilitySize
+                        ? [GridItem(.flexible())]
+                        : [GridItem(.adaptive(minimum: 144, maximum: 260), spacing: DesignTokens.Spacing.sm)],
                     spacing: DesignTokens.Spacing.sm
                 ) {
                     ForEach(schedule.games) { game in

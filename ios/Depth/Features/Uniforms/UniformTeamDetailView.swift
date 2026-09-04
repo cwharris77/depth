@@ -9,6 +9,7 @@ import SwiftUI
 // `UniformArchiveViewModel.team(id:)`) is what keeps a filter change made from this
 // screen's own Filters button visible here instead of stranding a stale snapshot.
 struct UniformTeamDetailView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let team: UniformArchive.TeamGroup
     let onSelectKit: (UniformListing) -> Void
 
@@ -69,7 +70,10 @@ struct UniformTeamDetailView: View {
         Button {
             onSelectKit(kit)
         } label: {
-            HStack(spacing: DesignTokens.Spacing.md) {
+            let layout = dynamicTypeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.md))
+                : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.md))
+            layout {
                 UniformThumb(url: UniformArt.fullURL(for: kit.id), size: 60)
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm - 1) {
                     Text(kit.name)

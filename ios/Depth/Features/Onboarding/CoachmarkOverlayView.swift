@@ -21,6 +21,7 @@ import UIKit
 // bottom edge, which `proxy` itself can't report (its own frame stops short of it) — so
 // this step alone reads `UIScreen.main.bounds` for that one number.
 struct CoachmarkOverlayView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let controller: OnboardingController
@@ -102,11 +103,13 @@ struct CoachmarkOverlayView: View {
         )
         let spacing: CGFloat = 24
         let halfHeight = bubbleSize.height / 2
+        let topInset = dynamicTypeSize.isAccessibilitySize ? proxy.safeAreaInsets.top : 0
+        let bottomInset = dynamicTypeSize.isAccessibilitySize ? proxy.safeAreaInsets.bottom : 0
         let bubbleY = showsBelow
-            ? min(rect.maxY + spacing + halfHeight, proxy.size.height - halfHeight)
-            : max(rect.minY - spacing - halfHeight, halfHeight)
+            ? min(rect.maxY + spacing + halfHeight, proxy.size.height - bottomInset - halfHeight)
+            : max(rect.minY - spacing - halfHeight, topInset + halfHeight)
 
-        return VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+        let content = VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             HStack {
                 Text("\(controller.stepNumber) of \(CoachmarkStep.all.count)")
                     .font(.caption.weight(.bold))
@@ -138,6 +141,17 @@ struct CoachmarkOverlayView: View {
             .accessibilityIdentifier("coachmark-next")
         }
         .padding(DesignTokens.Spacing.md)
+
+        return Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                // DEP-415: keep Next/Skip reachable when the explanation is taller
+                // than the available viewport; the spotlight still names its target.
+                ScrollView { content }
+                    .frame(maxHeight: max(44, proxy.size.height - topInset - bottomInset - DesignTokens.Spacing.lg * 2))
+            } else {
+                content
+            }
+        }
         .frame(width: bubbleWidth, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: DesignTokens.Radius.md).fill(DesignTokens.Colors.surfaceCard))
         .overlay(

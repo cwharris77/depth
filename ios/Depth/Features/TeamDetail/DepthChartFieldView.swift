@@ -9,10 +9,9 @@ import SwiftUI
 // is re-spread around its own centroid. The *visual* dot shrinks only for a still-too-
 // tight cluster after re-spread; the *tap target* stays at the 44-point minimum via
 // `.frame(minWidth:minHeight:)` + `.contentShape` — the same 30px-visual/44px-hit-slop
-// contract the web uses. The field's text is still capped at `.accessibility1`:
-// positioned slots can't reflow, so a scaled glyph would merge the offensive line into
-// one shape, and the full content stays reachable at any size through each slot's
-// VoiceOver label.
+// contract the web uses. DEP-415: accessibility sizes render the same resolved slots
+// as full-width rows, since positioned dots cannot reflow. No Dynamic Type cap is
+// needed; names, positions, and player actions remain readable and reachable.
 //
 // On top of #378's geometry, the field now renders a real green surface — gradient +
 // yard-line/hash-mark/end-zone markings (FieldMarkings) — in place of the old flat
@@ -26,6 +25,7 @@ import SwiftUI
 // (DEP-323, Settings › Settings) decides whether those leader lines draw, whether a name
 // with no room is simply hidden, or whether names are skipped entirely.
 struct DepthChartFieldView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let snapshot: TeamSnapshot
@@ -74,7 +74,43 @@ struct DepthChartFieldView: View {
         return resolveUnit(roster: roster, unit: unit, realFormation: real)
     }
 
+    @ViewBuilder
     var body: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            // DEP-415: positioned dots cannot grow into readable paragraphs. Keep
+            // the resolved formation order and the same player actions in native rows.
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+                ForEach(slots, id: \.key) { slot in
+                    if let player = slot.player {
+                        Button { onSelectPlayer(player) } label: {
+                            VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+                                Text("\(slot.label) · #\(player.number)")
+                                    .font(.caption.bold())
+                                Text(player.name)
+                                    .font(.body)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(DesignTokens.Colors.textPrimary)
+                        .accessibilityIdentifier("player-slot-\(slot.key)")
+                        .accessibilityHint("Opens player detail")
+                        .depthCard(dense: true)
+                        .coachmarkTarget(if: slot.key == firstFilledSlotKey, id: .playerDot)
+                    } else if unit == .special {
+                        Text("\(slot.label), unfilled").font(.body)
+                    }
+                }
+            }
+            .padding(.horizontal)
+        } else {
+            field
+        }
+    }
+
+    private var field: some View {
         GeometryReader { proxy in
             // DEP-244: the offense always fills the field's full width (and its dots run
             // larger) whatever formation is active; defense/special keep their spread.
@@ -185,7 +221,6 @@ struct DepthChartFieldView: View {
                     .strokeBorder(DesignTokens.Colors.borderStrong, lineWidth: 1)
             }
         }
-        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
         .accessibilityElement(children: .contain)
     }
 

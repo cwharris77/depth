@@ -8,9 +8,20 @@ import SwiftUI
 // sequence (starting on Depth Charts), "Skip" ends the whole flow immediately — the
 // tour itself is optional, this screen is not a gate the user must pass through.
 struct WelcomeView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let controller: OnboardingController
 
+    @ViewBuilder
     var body: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            ScrollView { welcomeContent }
+                .background(DesignTokens.Colors.bg)
+        } else {
+            welcomeContent
+        }
+    }
+
+    private var welcomeContent: some View {
         VStack(spacing: DesignTokens.Spacing.xl) {
             Spacer()
 

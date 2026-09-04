@@ -9,6 +9,7 @@ import SwiftUI
 // `UNIT_LABELS` uppercased ("SPECIAL", not "Special Teams"). 44pt min-height preserves
 // the tap target the stock capsule `Picker` used to provide.
 struct DepthUnitTabBar: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Namespace private var selectionNamespace
 
@@ -22,7 +23,10 @@ struct DepthUnitTabBar: View {
     var identifierPrefix: String = "unit-tab"
 
     var body: some View {
-        HStack(spacing: 16) {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 0))
+            : AnyLayout(HStackLayout(spacing: 16))
+        layout {
             unitTab(.offense, label: "OFFENSE")
             unitTab(.defense, label: "DEFENSE")
             unitTab(.special, label: "SPECIAL")

@@ -13,6 +13,7 @@ import SwiftUI
 // All grouping, filtering, search and label logic is pure and lives in `UniformArchive`
 // (Domain/UniformListing.swift); this file is composition.
 struct UniformsTab: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var viewModel: UniformArchiveViewModel
     @State private var showAccount = false
     @State private var showFilterSheet = false
@@ -137,7 +138,10 @@ struct UniformsTab: View {
                 placeholder: "Team, kit or era",
                 identifier: "uniforms-search"
             )
-            HStack(spacing: DesignTokens.Spacing.sm) {
+            let layout = dynamicTypeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
+                : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.sm))
+            layout {
                 DepthSegmentedControl(
                     options: [
                         DepthSegmentedOption<UniformArchiveViewModel.ViewMode>(
@@ -243,7 +247,7 @@ struct UniformsTab: View {
                         .tracking(2)
                         .foregroundStyle(DesignTokens.Colors.textMuted)
                     LazyVGrid(
-                        columns: [
+                        columns: dynamicTypeSize.isAccessibilitySize ? [GridItem(.flexible())] : [
                             GridItem(.flexible(), spacing: DesignTokens.Spacing.sm + 2),
                             GridItem(.flexible(), spacing: DesignTokens.Spacing.sm + 2),
                         ],
@@ -273,7 +277,7 @@ struct UniformsTab: View {
                     Text(team.teamShortName)
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(DesignTokens.Colors.textSecondary)
-                        .lineLimit(1)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
                     Text(team.kitCountLabel)
                         .font(.caption2.monospacedDigit())
                         .foregroundStyle(DesignTokens.Colors.textMuted)
@@ -282,7 +286,7 @@ struct UniformsTab: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, DesignTokens.Spacing.sm + 4)
             .padding(.vertical, DesignTokens.Spacing.sm + 3)
-            .frame(height: 104)
+            .frame(height: dynamicTypeSize.isAccessibilitySize ? nil : 104)
             .background(alignment: .trailing) {
                 // Sits clear of the card's top edge rather than bleeding off it, so the
                 // jersey reads as a whole garment instead of a cropped shoulder.
@@ -323,7 +327,10 @@ struct UniformsTab: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
             ForEach(viewModel.decades) { decade in
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm + 2) {
-                    HStack(spacing: DesignTokens.Spacing.sm + 2) {
+                    let layout = dynamicTypeSize.isAccessibilitySize
+                        ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm + 2))
+                        : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.sm + 2))
+                    layout {
                         Text(decade.label)
                             .font(.largeTitle.weight(.bold).monospacedDigit())
                             .foregroundStyle(DesignTokens.Colors.textPrimary)
@@ -369,7 +376,7 @@ struct UniformsTab: View {
                 Text(UniformArchive.shortKitName(kit.name))
                     .font(.caption2)
                     .foregroundStyle(DesignTokens.Colors.textMuted)
-                    .lineLimit(1)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
                 Text(UniformArchive.years(kit))
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(DesignTokens.Colors.textFaint)
@@ -377,7 +384,7 @@ struct UniformsTab: View {
             .padding(.horizontal, DesignTokens.Spacing.xs)
             .padding(.top, DesignTokens.Spacing.sm)
             .padding(.bottom, DesignTokens.Spacing.sm + 2)
-            .frame(width: 104)
+            .frame(width: dynamicTypeSize.isAccessibilitySize ? 240 : 104)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

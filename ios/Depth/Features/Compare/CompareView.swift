@@ -21,6 +21,7 @@ import SwiftUI
 // table lost its "Dot = row rank" legend and per-row dot (the numbered gutter chip is
 // the only rank indicator now), and each team slot grew an explicit clear affordance.
 struct CompareView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var viewModel: CompareViewModel
@@ -267,7 +268,10 @@ struct CompareView: View {
         // clear enough way to change a pick now that both slots carry one ("it'll be a couple
         // more clicks, but I'm not worried about it"). That also buys back the vertical space
         // this row used to spend on a label.
-        HStack(spacing: DesignTokens.Spacing.sm) {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(spacing: DesignTokens.Spacing.sm))
+            : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.sm))
+        return layout {
             teamSlotButton(viewModel.teamA, slot: .a)
             // Web parity: the VS separator is a `surfaceChip` capsule (web CompareView
             // wraps "VS" in a `rounded-full` span with `surfaceChip` bg + `textFaint`
@@ -302,7 +306,7 @@ struct CompareView: View {
                 Text(slotLabel(team))
                     .font(.footnote.weight(.bold))
                     .foregroundStyle(team != nil ? DesignTokens.Colors.textPrimary : DesignTokens.Colors.textFaint)
-                    .lineLimit(1)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
                 if team != nil {
                     slotRecord(slot)
                 }
@@ -482,6 +486,7 @@ private struct PositionDepthSection: View {
 /// `Position.fullName`. Aug 2026: dropped the "1 OF 2 · ROOM" / "2 OF 2 · POSITION" step
 /// labels (Cooper: the two steps read fine without narrating themselves).
 private struct RoomPositionPicker: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let viewModel: CompareViewModel
@@ -546,7 +551,9 @@ private struct RoomPositionPicker: View {
     /// later) — name plus a trailing position count is enough.
     private var roomGrid: some View {
         LazyVGrid(
-            columns: [GridItem(.flexible(), spacing: DesignTokens.Spacing.sm), GridItem(.flexible())],
+            columns: dynamicTypeSize.isAccessibilitySize
+                ? [GridItem(.flexible())]
+                : [GridItem(.flexible(), spacing: DesignTokens.Spacing.sm), GridItem(.flexible())],
             spacing: DesignTokens.Spacing.sm
         ) {
             ForEach(CompareMatchRooms.rooms(in: viewModel.selectedUnit), id: \.id) { room in
@@ -620,11 +627,14 @@ private struct RoomPositionPicker: View {
         // (Line, Defensive Line, Linebackers), which fits one row at this size, so the
         // grid/HStack branch that used to switch on role count is gone too: it exists only
         // when tiles are wide enough to wrap.
-        HStack(spacing: DesignTokens.Spacing.xs + 2) {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(DepthFlowLayout(spacing: DesignTokens.Spacing.xs + 2))
+            : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.xs + 2))
+        return layout {
             ForEach(room.positions, id: \.self) { pos in
                 roleTile(pos)
             }
-            Spacer(minLength: 0)
+            if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: 0) }
         }
         .animation(reduceMotion ? nil : DesignTokens.Motion.selection, value: viewModel.position)
     }
@@ -784,6 +794,7 @@ private struct CompareEmptyState<Content: View>: View {
 /// team... it should just be the two team columns" — split evenly, each centered within its
 /// half). Depth order is now conveyed purely by row order, top to bottom.
 private struct CompareRows: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let a: (team: Team, players: [Player])
     let b: (team: Team, players: [Player])
 
@@ -805,8 +816,13 @@ private struct CompareRows: View {
             .background(DesignTokens.Colors.surfaceCard2)
 
             ForEach(0..<rowCount, id: \.self) { rank in
-                HStack(spacing: 0) {
+                let layout = dynamicTypeSize.isAccessibilitySize
+                    ? AnyLayout(VStackLayout(spacing: 0))
+                    : AnyLayout(HStackLayout(spacing: 0))
+                layout {
+                    if dynamicTypeSize.isAccessibilitySize { Text(a.team.abbrev).font(.caption.bold()) }
                     PlayerCell(player: a.players[safe: rank])
+                    if dynamicTypeSize.isAccessibilitySize { Text(b.team.abbrev).font(.caption.bold()) }
                     PlayerCell(player: b.players[safe: rank])
                 }
                 .background(rank % 2 == 1 ? DesignTokens.Colors.surfaceCard2 : Color.clear)
@@ -829,6 +845,7 @@ private struct CompareRows: View {
 /// Web's `TeamHeaderCell` (components/CompareView.tsx) — the team abbrev + city tinted
 /// with that team's ring color.
 private struct TeamHeaderCell: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let team: Team
 
     var body: some View {
@@ -840,7 +857,7 @@ private struct TeamHeaderCell: View {
             Text(team.city)
                 .font(.caption2)
                 .foregroundStyle(DesignTokens.Colors.textMuted)
-                .lineLimit(1)
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, DesignTokens.Spacing.sm + 4)
@@ -855,6 +872,7 @@ private struct TeamHeaderCell: View {
 /// gutter gone, each cell is exactly half the table's width, and a left-aligned label in
 /// a half-width column read off-center.
 private struct PlayerCell: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let player: Player?
 
     var body: some View {
@@ -863,7 +881,7 @@ private struct PlayerCell: View {
                 Text("#\(player.number) \(formatLastName(player.name))")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(DesignTokens.Colors.textPrimary)
-                    .lineLimit(1)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
             } else {
                 Text("—")
                     .font(.caption.weight(.bold))

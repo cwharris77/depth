@@ -6,12 +6,16 @@ import SwiftUI
 // decided here so "IN ROTATION" can't end up accent-tinted in one place and muted in
 // the other.
 struct UniformKitBadges: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let kit: UniformListing
     /// The sheet renders the pair a step larger than the row does.
     var prominent = false
 
     var body: some View {
-        HStack(spacing: DesignTokens.Spacing.xs + 2) {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.xs + 2))
+            : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.xs + 2))
+        layout {
             badge(
                 UniformArchive.kindLabel(kit.kind),
                 fill: DesignTokens.Colors.surfaceChip,

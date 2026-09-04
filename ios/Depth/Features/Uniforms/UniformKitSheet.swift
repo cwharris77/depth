@@ -14,6 +14,7 @@ import SwiftUI
 //     cream Creamsicle. A truthful per-kit palette needs color data the archive doesn't
 //     store, so the swatches are gone rather than wrong.
 struct UniformKitSheet: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.dismiss) private var dismiss
 
     let kit: UniformListing
@@ -32,7 +33,10 @@ struct UniformKitSheet: View {
         ) {
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
-                    HStack(alignment: .top, spacing: DesignTokens.Spacing.md + 2) {
+                    let layout = dynamicTypeSize.isAccessibilitySize
+                        ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.md + 2))
+                        : AnyLayout(HStackLayout(alignment: .top, spacing: DesignTokens.Spacing.md + 2))
+                    layout {
                         UniformThumb(url: UniformArt.fullURL(for: kit.id), size: 112)
                         details
                     }
