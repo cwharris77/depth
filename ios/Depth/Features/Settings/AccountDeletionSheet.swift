@@ -9,6 +9,7 @@ import SwiftUI
 struct AccountDeletionSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: AccountDeletionViewModel
+    @FocusState private var codeFocused: Bool
 
     init(viewModel: AccountDeletionViewModel) {
         _viewModel = State(initialValue: viewModel)
@@ -75,12 +76,17 @@ struct AccountDeletionSheet: View {
             TextField("Code", text: $viewModel.code)
                 .textContentType(.oneTimeCode)
                 .keyboardType(.numberPad)
+                .focused($codeFocused)
                 .accessibilityIdentifier("delete-code")
                 .padding(DesignTokens.Spacing.md)
                 .background(
                     RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
                         .fill(DesignTokens.Colors.surfaceRaised)
                 )
+                // DEP-395: padding is drawn outside the text box; forward its taps
+                // through the same focus route as DepthSearchField.
+                .contentShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
+                .onTapGesture { codeFocused = true }
             Button("Delete My Account", role: .destructive) {
                 Task {
                     if await viewModel.confirmDeletion() { dismiss() }

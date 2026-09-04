@@ -10,6 +10,7 @@ import SwiftUI
 struct AuthSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: AuthFlowViewModel
+    @FocusState private var emailFocused: Bool
 
     init(
         service: any DepthAuthServicing, sessionStore: AuthSessionStore,
@@ -58,6 +59,7 @@ struct AuthSheet: View {
                 .keyboardType(.emailAddress)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
+                .focused($emailFocused)
                 .padding(DesignTokens.Spacing.md)
                 .background(
                     RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
@@ -68,6 +70,10 @@ struct AuthSheet: View {
                         .strokeBorder(DesignTokens.Colors.borderInput, lineWidth: 1)
                 )
                 .accessibilityIdentifier("auth-email")
+                // DEP-395: route taps in the drawn padding to the actual text field,
+                // matching DepthSearchField without changing the field's layout.
+                .contentShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
+                .onTapGesture { emailFocused = true }
 
             // DEP-308: shown before submission and built from AppBuildInfo's canonical
             // public origin. Markdown preserves two independently tappable, VoiceOver-

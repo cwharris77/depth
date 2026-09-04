@@ -92,7 +92,16 @@ struct DepthApp: App {
 
     var body: some Scene {
         WindowGroup {
+            #if targetEnvironment(simulator)
+            if ProcessInfo.processInfo.arguments.contains("UI_TESTING_RESET_STATE"),
+                ProcessInfo.processInfo.arguments.contains("UI_TESTING_DELETE_TAP_TARGET") {
+                TapTargetAuditFixture()
+            } else {
+                ContentView()
+            }
+            #else
             ContentView()
+            #endif
         }
         .modelContainer(DepthEnvironment.modelContainer)
     }

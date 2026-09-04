@@ -56,8 +56,10 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
                         .padding(.horizontal, 10)
                         .frame(maxWidth: fullWidth ? .infinity : nil, minHeight: 44)
                         .background { selectionSurface(isActive: isActive) }
+                        // DEP-395: plain buttons need the hit shape on the expanded
+                        // label; a shape on Button leaves inactive-segment padding dead.
+                        .contentShape(Rectangle())
                 }
-                .contentShape(Rectangle())
                 .buttonStyle(.plain)
                 // Selection already has a visible filled surface; expose the same state
                 // semantically so VoiceOver does not have to infer it from color.
