@@ -1,20 +1,40 @@
 name: Auto-label PRs
 
+# Labels every PR from what it says it is and what it touches. The labels are not
+# decoration: .github/release.yml keys GitHub's auto-generated release notes off them, so
+# an unlabeled PR lands in "Other Changes" at release time.
+#
+# Three independent axes, all applied together (a PR is normally 2-3 labels):
+#   type  — the conventional-commit type in the title. Drives release-note categories.
+#   scope — the conventional-commit scope, when it names a real area of this repo
+#           (CLAUDE.md §3). Free-text scopes are ignored rather than minted into labels.
+#   area  — derived from the diff, not the title, because the title can lie about blast
+#           radius: `fix(ios)` that also edits a supabase/ migration is both.
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, edited]
 
 permissions:
   pull-requests: write
 
+concurrency:
+  group: auto-label-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   label:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/github-script@v7
         with:
           script: |
-            const typeLabels = {
+            const { owner, repo } = context.repo;
+            const number = context.payload.pull_request.number;
+
+            // Type -> release-note label. Values must match .github/release.yml's
+            // categories, or the PR silently falls through to "Other Changes".
+            const TYPE_LABELS = {
               feat: 'feature',
               fix: 'bug',
               docs: 'documentation',
@@ -26,33 +46,75 @@ jobs:
               ci: 'ci',
               chore: 'chore',
               revert: 'bug',
-              a11y: 'a11y'
+              a11y: 'a11y',
             };
 
-            const prTitle = context.payload.pull_request.title;
-            const match = prTitle.match(/^(feat|fix|docs|refactor|style|perf|test|build|ci|chore|revert|a11y)(\(.+\))?!?:/);
+            // Scopes from CLAUDE.md §3. An allowlist, not a passthrough: labeling on
+            // arbitrary scope text would mint a new label per typo, and every one of them
+            // would be a permanent repo-level object nobody chose.
+            const KNOWN_SCOPES = new Set([
+              'ios', 'uniforms', 'nav', 'search', 'player', 'field', 'depth', 'card',
+              'switcher', 'teams', 'colors', 'espn', 'ingest', 'supabase', 'scripts',
+              'pwa', 'seo', 'theme', 'layout', 'ci', 'specs', 'readme', 'auth',
+              'stats', 'compare', 'settings', 'legal', 'web', 'skills', 'pr',
+            ]);
+
+            // Area is about where the change lands, for reviewers filtering the queue.
+            // Ordered most- to least-specific; a PR can carry several.
+            const AREA_RULES = [
+              ['area:ios', (f) => f.startsWith('ios/')],
+              ['area:backend', (f) => f.startsWith('supabase/') || f.startsWith('scripts/') ||
+                                      f.startsWith('lib/espn/') || f.startsWith('lib/nflverse/')],
+              ['area:web', (f) => f.startsWith('app/') || f.startsWith('components/')],
+              ['area:ci', (f) => f.startsWith('.github/')],
+            ];
+
             const labels = new Set();
-            if (match && typeLabels[match[1]]) {
-              labels.add(typeLabels[match[1]]);
+
+            const title = context.payload.pull_request.title ?? '';
+            const m = title.match(
+              /^(feat|fix|docs|refactor|style|perf|test|build|ci|chore|revert|a11y)(?:\(([^)]+)\))?!?:/
+            );
+            if (m) {
+              if (TYPE_LABELS[m[1]]) labels.add(TYPE_LABELS[m[1]]);
+              // A comma-joined scope — `fix(ios,web):` — is two areas, label both.
+              for (const s of (m[2] ?? '').split(',').map((x) => x.trim()).filter(Boolean)) {
+                if (KNOWN_SCOPES.has(s)) labels.add(`scope:${s}`);
+              }
             }
 
-            if (labels.size === 0) return;
-
-            const { data: existing } = await github.rest.issues.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number
+            // paginate: a 100-file PR would otherwise silently lose every area label past
+            // the first page, which is exactly the PR where area labels matter most.
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner, repo, pull_number: number, per_page: 100,
             });
-
-            const existingLabels = existing.labels.map(l => l.name);
-            const toAdd = [...labels].filter(l => !existingLabels.includes(l));
-
-            if (toAdd.length > 0) {
-              await github.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.pull_request.number,
-                labels: toAdd
-              });
-              console.log(`Applied labels: ${[...labels].join(', ')}`);
+            for (const [label, matches] of AREA_RULES) {
+              if (files.some((f) => matches(f.filename))) labels.add(label);
             }
+
+            if (labels.size === 0) {
+              console.log(`No labels derived from "${title}" or its ${files.length} file(s).`);
+              return;
+            }
+
+            // Diff against what's already there so a no-op run makes no API write —
+            // re-adding an existing label churns the PR timeline on every synchronize.
+            // Note this is derive-and-add, not reconcile: a label removed by hand comes
+            // back on the next push, and a retitled PR keeps its old type label alongside
+            // the new one. Removing labels automatically would fight the human more often
+            // than it would help.
+            const { data: pr } = await github.rest.issues.get({
+              owner, repo, issue_number: number,
+            });
+            const existing = new Set(pr.labels.map((l) => (typeof l === 'string' ? l : l.name)));
+            const toAdd = [...labels].filter((l) => !existing.has(l));
+
+            if (toAdd.length === 0) {
+              console.log(`Already labeled: ${[...labels].sort().join(', ')}`);
+              return;
+            }
+
+            await github.rest.issues.addLabels({
+              owner, repo, issue_number: number, labels: toAdd,
+            });
+            console.log(`Applied: ${toAdd.sort().join(', ')}`);
