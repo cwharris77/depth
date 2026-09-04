@@ -41,6 +41,10 @@ export interface NumberStyle {
 
 export interface UniformStyle {
   helmetColor: ColorRef;
+  // The facemask cage. Team-specific in reality (Seattle black, Miami white, Kansas City grey)
+  // but rendered as one shared grey for every team until DEP-486; a team that has not set it
+  // inherits GENERIC_UNIFORM_STYLE's neutral, so adding this field repainted nothing.
+  facemaskColor: ColorRef;
   jerseyColor: ColorRef;
   pantsColor: ColorRef;
   layers: UniformLayer[];
@@ -49,6 +53,7 @@ export interface UniformStyle {
 
 export interface UniformStyleOverride {
   helmetColor?: ColorRef;
+  facemaskColor?: ColorRef;
   jerseyColor?: ColorRef;
   pantsColor?: ColorRef;
   layers?: UniformLayer[];

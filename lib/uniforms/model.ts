@@ -16,6 +16,9 @@ const YOKE_R = 'M558,466 L510,417 L452,401 L420,470 L432,556 L554,556 Z';
 
 export const GENERIC_UNIFORM_STYLE: UniformStyle = {
   helmetColor: 'primary',
+  // The neutral cage every team rendered before facemasks became team-specific. Kept as the
+  // default so a team that has not been given its real color paints exactly what it did before.
+  facemaskColor: '#4b5158',
   jerseyColor: 'primary',
   pantsColor: 'primary',
   layers: [
@@ -98,6 +101,7 @@ type ResolvedUniformLayer =
 
 export interface ResolvedUniformStyle {
   helmetColor: string;
+  facemaskColor: string;
   jerseyColor: string;
   pantsColor: string;
   layers: ResolvedUniformLayer[];
@@ -141,6 +145,7 @@ function mergeStyle(style: UniformStyle, override?: UniformStyleOverride): Unifo
 
   return {
     helmetColor: override.helmetColor ?? style.helmetColor,
+    facemaskColor: override.facemaskColor ?? style.facemaskColor,
     jerseyColor: override.jerseyColor ?? style.jerseyColor,
     pantsColor: override.pantsColor ?? style.pantsColor,
     layers: mergeLayers(style.layers, override.layers, override.removeLayerIds),
@@ -171,6 +176,7 @@ export function resolveUniformModel(
 
   return {
     helmetColor: resolveColor(style.helmetColor, colors, jerseyColor),
+    facemaskColor: resolveColor(style.facemaskColor, colors, jerseyColor),
     jerseyColor,
     pantsColor: resolveColor(style.pantsColor, colors, jerseyColor),
     layers: style.layers.map((layer) => resolveLayer(layer, colors, jerseyColor)),
