@@ -41,9 +41,10 @@ export interface NumberStyle {
 
 export interface UniformStyle {
   helmetColor: ColorRef;
-  // The facemask cage. Team-specific in reality (Seattle black, Miami white, Kansas City grey)
-  // but rendered as one shared grey for every team until DEP-486; a team that has not set it
-  // inherits GENERIC_UNIFORM_STYLE's neutral, so adding this field repainted nothing.
+  // The facemask cage. Team-specific in reality (Seattle black, Miami white, Kansas City grey);
+  // every team but Seattle still renders the shared neutral, and each is given its real color by
+  // its own ticket in the uniform accuracy pass. A team that has not set one inherits
+  // GENERIC_UNIFORM_STYLE's grey, so adding this field repainted nothing.
   facemaskColor: ColorRef;
   jerseyColor: ColorRef;
   pantsColor: ColorRef;
