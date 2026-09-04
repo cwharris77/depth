@@ -14,4 +14,11 @@ comment on table public.app_events is
   'Privacy-minimal native-app counters: event, error category, marketing version, server timestamp; no user/device linkage.';
 
 -- Preserve insert-only access and server ownership of id/created_at. RLS unchanged.
-grant insert (app_version) on public.app_events to anon, authenticated;
+-- Supabase pre-grants ALL (SELECT/INSERT/UPDATE/DELETE/TRUNCATE...) to anon and
+-- authenticated on every public table, so the original migration's column grant was
+-- a no-op and created_at/id were forgeable (DEP-322). Revoke the blanket ALL first,
+-- then grant exactly the columns clients may set; nothing reads app_events through
+-- an anon/authenticated client (aggregates use the service role), so the revoke
+-- breaks no reader.
+revoke all on table public.app_events from anon, authenticated;
+grant insert (event_name, error_category, app_version) on public.app_events to anon, authenticated;
