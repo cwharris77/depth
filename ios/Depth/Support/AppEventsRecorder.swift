@@ -4,7 +4,7 @@ import Supabase
 // Privacy-minimal native-app usage counters (design spec Milestone 2B item 26; full
 // App Privacy documentation lives at docs/ios-privacy-telemetry.md). `app_events`
 // (supabase/migrations/20260815084146_add_app_events.sql) stores only a fixed event
-// name and a non-sensitive error category — never a user id, device id, or session id
+// name, non-sensitive error category, and marketing version — never a user id, device id, or session id
 // — so this type can never carry anything that identifies or tracks an individual.
 enum AppEvent: Equatable {
     case appLaunch
@@ -39,27 +39,50 @@ protocol AppEventsRecording: Sendable {
     func record(_ event: AppEvent)
 }
 
+// DEP-322: the wire payload admits only a numeric marketing version, never the
+// Settings diagnostic string (which includes the build). Missing metadata is omitted
+// so telemetry still works in bundles without a version, just like older clients.
+struct AppEventPayload: Encodable, Sendable {
+    let eventName: String
+    let errorCategory: String?
+    let appVersion: String?
+
+    init(event: AppEvent, appVersion: String?) {
+        eventName = event.name
+        errorCategory = event.errorCategory
+        if let appVersion, appVersion.utf8.count <= 32,
+           appVersion.range(of: #"^[0-9]+(\.[0-9]+){0,2}\z"#, options: .regularExpression) != nil {
+            self.appVersion = appVersion
+        } else {
+            self.appVersion = nil
+        }
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case eventName = "event_name"
+        case errorCategory = "error_category"
+        case appVersion = "app_version"
+    }
+}
+
 final class SupabaseAppEventsRecorder: AppEventsRecording, Sendable {
     private let client: SupabaseClient
+    private let appVersion: String?
 
-    init(client: SupabaseClient) {
+    init(
+        client: SupabaseClient,
+        appVersion: String? = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+    ) {
         self.client = client
+        self.appVersion = appVersion
     }
 
     func record(_ event: AppEvent) {
         let client = client
+        let appVersion = appVersion
         Task.detached(priority: .background) {
-            struct Payload: Encodable {
-                let eventName: String
-                let errorCategory: String?
-
-                enum CodingKeys: String, CodingKey {
-                    case eventName = "event_name"
-                    case errorCategory = "error_category"
-                }
-            }
             _ = try? await client.from("app_events")
-                .insert(Payload(eventName: event.name, errorCategory: event.errorCategory))
+                .insert(AppEventPayload(event: event, appVersion: appVersion))
                 .execute()
         }
     }

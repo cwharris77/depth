@@ -48,14 +48,27 @@ product metrics the design spec asks for:
 | --- | --- |
 | `event_name` | One of the six names above — a Postgres `CHECK` constraint rejects anything else |
 | `error_category` | Present only when `event_name = 'error'`; one of `DepthError`/`DepthAuthError`'s case names (`offline`, `validation`, `server`, …) — never the associated diagnostic string, never free text |
+| `app_version` | Full marketing app version from `CFBundleShortVersionString` (for example, `1.4.2`), without build number or OS version; nullable for older clients and unavailable metadata. Numeric dot-separated version only, at most three components and 32 bytes. |
 | `created_at` | Server-assigned insert timestamp (`default now()`) |
 
 **Never stored, by construction (not by policy):** user id, device id, session id,
-email, IP address, precise or coarse location, advertising identifier, app/OS version,
+email, IP address, precise or coarse location, advertising identifier, OS version, build number,
 or any free-text field. The schema itself has no column to put any of that in — there is
 nowhere for it to leak to even by accident. Two rows recorded seconds apart, or from the
 same device, or from the same signed-in user, cannot be linked to each other through this
 table.
+
+DEP-322 (decision 2026-08-27) adds release attribution via
+`supabase/migrations/20260903201727_add_app_event_version.sql`. Apply the migration
+before distributing the updated app. Existing rows and inserts from already-submitted
+clients keep `app_version = NULL`; do not backfill a guessed release. Compare release
+counts/error rates by `app_version`, retaining unknown versions as a separate group.
+The recorder omits missing or malformed version metadata and keeps its existing
+background, drop-on-failure behavior.
+
+This field does not expand App Privacy disclosure: it describes a shared app release,
+not a person or device. Product Interaction remains unlinked, used only for internal
+analytics, and not used for tracking. No identifiers or other telemetry are added.
 
 ### Access
 
