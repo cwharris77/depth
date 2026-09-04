@@ -83,7 +83,11 @@ describe('team uniform definitions', () => {
     const home = definition?.kits.home;
     const layerIds = home?.layers?.map((layer) => layer.id);
 
-    expect(layerIds).toEqual([
+    // Seattle's own marks, in paint order. Filtered rather than compared whole because the kit is
+    // now compiled from composable parts (./parts.ts), and parts are total: the generic collar and
+    // pant stripes this kit used to inherit implicitly are listed explicitly (asserted below).
+    // What the kit paints is unchanged — parts-parity.test.ts holds the rasters byte-identical.
+    expect(layerIds?.filter((id) => id.startsWith('seahawks-'))).toEqual([
       'seahawks-helmet-center-stripe',
       'seahawks-helmet-hawk',
       'seahawks-helmet-hawk-eye',
@@ -93,6 +97,12 @@ describe('team uniform definitions', () => {
       'seahawks-shoulder-band-right',
       'seahawks-shoulder-cap-left',
       'seahawks-shoulder-cap-right',
+    ]);
+    // The generic marks home keeps: an action-green collar and the green pant stripe pair.
+    expect(layerIds?.filter((id) => id.startsWith('generic-'))).toEqual([
+      'generic-collar',
+      'generic-pants-stripe-left',
+      'generic-pants-stripe-right',
     ]);
     // The helmet decal is the one traced mark; chest wordmarks, league shields and sponsor marks
     // stay out of every kit.
