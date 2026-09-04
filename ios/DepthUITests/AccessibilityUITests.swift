@@ -9,6 +9,178 @@ import XCTest
 // Runs against the production Supabase project (Debug/Staging/Release all point at it),
 // same as every other Debug-config run.
 final class AccessibilityUITests: XCTestCase {
+    // Run with simctl's real content_size setting, so sheet presentations and native
+    // controls are covered independently of the app's launch-argument override.
+    func testSystemSizeSecondaryScreens() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        XCTAssertTrue(app.launch(intoTeam: "bills", timeout: 30))
+        app.buttons["depth-chart-overflow"].tap()
+        app.buttons["choose-formation"].tap()
+        XCTAssertTrue(app.buttons["Close"].waitForExistence(timeout: 10))
+        attachScreenshot(app, named: "system-formations")
+        app.buttons["Close"].tap()
+        app.buttons["depth-chart-overflow"].tap()
+        app.buttons["choose-uniform"].tap()
+        XCTAssertTrue(app.buttons["Close"].waitForExistence(timeout: 10))
+        attachScreenshot(app, named: "system-uniform-picker")
+        app.buttons["Close"].tap()
+
+        app.tabBars.buttons["Compare"].tap()
+        XCTAssertTrue(app.buttons["compare-slot-a"].waitForExistence(timeout: 20))
+        for (slot, query, team) in [("a", "Bills", "bills"), ("b", "Dolphins", "dolphins")] {
+            reveal(app.buttons["compare-slot-\(slot)"], in: app)
+            app.buttons["compare-slot-\(slot)"].tap()
+            XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 10))
+            app.searchFields.firstMatch.typeTextAfterFocusing(query, in: app)
+            app.buttons["team-row-\(team)"].tap()
+        }
+        attachScreenshot(app, named: "system-compare-teams")
+        reveal(app.buttons["compare-tab-position"], in: app)
+        app.buttons["compare-tab-position"].tap()
+        attachScreenshot(app, named: "system-compare-position")
+        for _ in 0..<3 { app.swipeUp() }
+        attachScreenshot(app, named: "system-compare-rows")
+        for _ in 0..<6 { app.swipeDown() }
+        reveal(app.buttons["compare-tab-matchup"], in: app)
+        app.buttons["compare-tab-matchup"].tap()
+        for _ in 0..<3 { app.swipeUp() }
+        attachScreenshot(app, named: "system-compare-metrics")
+
+        app.tabBars.buttons["Uniforms"].tap()
+        XCTAssertTrue(app.buttons["uniforms-team-bills"].waitForExistence(timeout: 20))
+        app.buttons["uniforms-team-bills"].tap()
+        attachScreenshot(app, named: "system-uniform-team")
+        let kit = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'uniform-kit-row-'")).firstMatch
+        XCTAssertTrue(kit.waitForExistence(timeout: 10))
+        kit.tap()
+        XCTAssertTrue(app.buttons["Close"].waitForExistence(timeout: 10))
+        attachScreenshot(app, named: "system-kit")
+        reveal(app.buttons["uniform-kit-open-depth-chart"], in: app)
+        attachScreenshot(app, named: "system-kit-action")
+        app.buttons["Close"].tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.buttons["uniforms-filter-button"].tap()
+        XCTAssertTrue(app.buttons["filter-reset"].waitForExistence(timeout: 10))
+        attachScreenshot(app, named: "system-filters")
+        reveal(app.buttons["filter-apply"], in: app)
+        attachScreenshot(app, named: "system-filter-action")
+        app.buttons["filter-apply"].tap()
+
+        app.buttons["account-button"].tap()
+        XCTAssertTrue(app.buttons["account-close-button"].waitForExistence(timeout: 10))
+        attachScreenshot(app, named: "system-settings")
+        reveal(app.buttons["Sign In"], in: app)
+        app.buttons["Sign In"].tap()
+        XCTAssertTrue(app.textFields["auth-email"].waitForExistence(timeout: 10))
+        attachScreenshot(app, named: "system-sign-in")
+        app.buttons.matching(identifier: "Close").element(boundBy: app.buttons.matching(identifier: "Close").count - 1).tap()
+        for _ in 0..<5 { app.swipeDown() }
+        let tour = app.buttons["settings-take-the-tour"]
+        reveal(tour, in: app)
+        tour.tap()
+        XCTAssertTrue(app.buttons["Skip"].waitForExistence(timeout: 10))
+        attachScreenshot(app, named: "system-welcome")
+        reveal(app.buttons["Take the Tour"], in: app)
+        app.buttons["Take the Tour"].tap()
+        XCTAssertTrue(app.buttons["coachmark-next"].waitForExistence(timeout: 10))
+        attachScreenshot(app, named: "system-coachmark")
+        reveal(app.buttons["coachmark-next"], in: app)
+        app.buttons["coachmark-next"].tap()
+        attachScreenshot(app, named: "system-coachmark-next")
+        app.buttons["coachmark-skip"].tap()
+    }
+
+    private func reveal(_ element: XCUIElement, in app: XCUIApplication) {
+        for _ in 0..<12 where !element.isHittable { app.swipeUp() }
+        XCTAssertTrue(element.isHittable, "control must be reachable: \(element.identifier)")
+    }
+
+    func testVitalsReflowAtAccessibilitySizes() throws {
+        continueAfterFailure = false
+        for size in ["accessibility1", "accessibility3", "accessibility5"] {
+            let app = launchApp(dynamicTypeSize: size)
+            XCTAssertTrue(app.waitForDepthChart(timeout: 30))
+            let profile = app.scrollViews["player-profile-content"]
+            XCTAssertTrue(app.buttons["player-slot-off-qb-0"].tapUntil { profile.exists })
+            var previousBottom: CGFloat?
+            for name in ["age", "experience", "height", "weight"] {
+                let vital = app.descendants(matching: .any)["player-vital-\(name)"]
+                XCTAssertTrue(vital.waitForExistence(timeout: 10))
+                // Accessibility bounds hug the text, not its full-width layout cell.
+                // Separate vertical ranges distinguish a stack from compressed columns.
+                if let previousBottom { XCTAssertGreaterThanOrEqual(vital.frame.minY, previousBottom) }
+                previousBottom = vital.frame.maxY
+            }
+            reveal(app.descendants(matching: .any)["player-vital-weight"], in: app)
+            attachScreenshot(app, named: "\(size)-vitals-reflow")
+            let reorder = app.buttons["player-profile-depth-reorder-toggle"]
+            reveal(reorder, in: app)
+            reorder.tap()
+            let editRow = app.descendants(matching: .any).matching(
+                NSPredicate(format: "identifier BEGINSWITH 'player-profile-depth-reorder-row-'")
+            ).firstMatch
+            XCTAssertTrue(editRow.waitForExistence(timeout: 10))
+            reveal(editRow, in: app)
+            attachScreenshot(app, named: "\(size)-depth-editing")
+            XCTAssertTrue(app.buttons["Close"].isHittable)
+            app.terminate()
+        }
+    }
+
+    // DEP-415: retain screenshots at intermediate steps as well as AX5. Existence
+    // alone cannot detect truncated labels; these captures are reviewed alongside
+    // the control-reachability assertions, before and after layout changes.
+    func testDynamicTypeScreenInventory() throws {
+        continueAfterFailure = false
+        for size in ["large", "accessibility1", "accessibility3", "accessibility5"] {
+            let app = launchApp(dynamicTypeSize: size)
+            XCTAssertTrue(app.waitForDepthChart(timeout: 30))
+            attachScreenshot(app, named: "\(size)-field")
+            let profile = app.scrollViews["player-profile-content"]
+            XCTAssertTrue(app.buttons["player-slot-off-qb-0"].tapUntil { profile.exists })
+            XCTAssertTrue(profile.waitForExistence(timeout: 10))
+            attachScreenshot(app, named: "\(size)-player-header")
+            for index in 1...3 {
+                profile.swipeUp()
+                attachScreenshot(app, named: "\(size)-player-scroll-\(index)")
+            }
+            XCTAssertTrue(app.buttons["Close"].isHittable)
+            app.buttons["Close"].tap()
+            for page in ["schedule", "stats"] {
+                app.buttons["page-switcher-\(page)"].tap()
+                XCTAssertTrue(app.descendants(matching: .any)["\(page)-content"].waitForExistence(timeout: 20))
+                attachScreenshot(app, named: "\(size)-\(page)")
+                app.swipeUp()
+                attachScreenshot(app, named: "\(size)-\(page)-scroll")
+            }
+            app.buttons["account-button"].tap()
+            XCTAssertTrue(app.buttons["account-close-button"].waitForExistence(timeout: 10))
+            attachScreenshot(app, named: "\(size)-settings")
+            app.swipeUp()
+            attachScreenshot(app, named: "\(size)-settings-scroll")
+            app.buttons["account-close-button"].tap()
+            app.tabBars.buttons["Compare"].tap()
+            XCTAssertTrue(app.buttons["compare-slot-a"].waitForExistence(timeout: 20))
+            attachScreenshot(app, named: "\(size)-compare")
+            app.buttons["compare-slot-a"].tap()
+            XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 10))
+            attachScreenshot(app, named: "\(size)-team-picker")
+            app.buttons["Close"].tap()
+            app.tabBars.buttons["Uniforms"].tap()
+            XCTAssertTrue(app.buttons["uniforms-filter-button"].waitForExistence(timeout: 20))
+            attachScreenshot(app, named: "\(size)-uniforms")
+            app.buttons["uniforms-view-era"].tap()
+            attachScreenshot(app, named: "\(size)-uniforms-era")
+            app.buttons["uniforms-filter-button"].tap()
+            XCTAssertTrue(app.buttons["filter-reset"].waitForExistence(timeout: 10))
+            attachScreenshot(app, named: "\(size)-filters")
+            app.swipeUp()
+            attachScreenshot(app, named: "\(size)-filters-scroll")
+            app.terminate()
+        }
+    }
+
     // Drives ContentView's UI_TESTING_DYNAMIC_TYPE override rather than
     // `-UIPreferredContentSizeCategoryName`, which is silently inert here — see the
     // comment on `ContentView.uiTestingDynamicTypeSize`.
@@ -68,9 +240,7 @@ final class AccessibilityUITests: XCTestCase {
         )
     }
 
-    // The depth chart caps its own Dynamic Type scaling (positioned slots cannot
-    // reflow), so the guarantee under test is that the journey still completes and the
-    // slots stay hittable — not that the glyphs grow.
+    // The accessible formation list must retain the same player-sheet journey.
     func testCriticalPathRemainsUsableAtAccessibilityXXXL() throws {
         let app = launchApp(dynamicTypeSize: "accessibility5")
         openBillsDepthChart(app)
@@ -85,9 +255,8 @@ final class AccessibilityUITests: XCTestCase {
             playerSlot.frame.height, 44,
             "slot tap targets must not fall below the 44-point minimum"
         )
-        playerSlot.tap()
-
         let profile = app.scrollViews["player-profile-content"]
+        XCTAssertTrue(playerSlot.tapUntil { profile.exists })
         XCTAssertTrue(profile.waitForExistence(timeout: 10), "player detail should open at Accessibility XXXL")
         XCTAssertTrue(
             app.staticTexts["player-profile-name"].waitForExistence(timeout: 5),
@@ -136,6 +305,8 @@ final class AccessibilityUITests: XCTestCase {
     // Assertions can prove elements exist and stay hittable; only an image shows whether
     // the layout still reads. Attached so a CI run carries its own evidence.
     private func attachScreenshot(_ app: XCUIApplication, named name: String) {
+        // Allow selection and sheet transitions to settle before visual comparison.
+        Thread.sleep(forTimeInterval: 0.5)
         let attachment = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
         attachment.name = name
         attachment.lifetime = .keepAlways

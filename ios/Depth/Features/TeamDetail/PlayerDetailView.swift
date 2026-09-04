@@ -278,13 +278,13 @@ struct PlayerDetailView: View {
         .accessibilityElement(children: .contain)
     }
 
-    // Vitals render as the web StatGrid's one row of four equal columns (AGE / EXP /
-    // HT / WT): a single card, label above value, both centered, thin vertical dividers
-    // between columns. Replaces the old adaptive grid that wrapped to two rows and
-    // left-aligned everything (Cooper's visual pass: values should be centered and
-    // smaller so all four fit on one line).
+    // DEP-415: retain the tuned four-column row at standard sizes. Accessibility
+    // sizes need a full-width cell per vital so Experience never breaks into letters.
     private var vitals: some View {
-        HStack(spacing: 0) {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(spacing: DesignTokens.Spacing.sm))
+            : AnyLayout(HStackLayout(spacing: 0))
+        return layout {
             vital("Age", PlayerProfileDisplay.age(player.age))
             divider
             vital("Experience", PlayerProfileDisplay.experience(player.experience))
@@ -298,11 +298,16 @@ struct PlayerDetailView: View {
         .accessibilityIdentifier("player-profile-vitals")
     }
 
+    @ViewBuilder
     private var divider: some View {
-        Rectangle()
-            .fill(DesignTokens.Colors.borderDefault)
-            .frame(width: 1)
-            .padding(.vertical, 4)
+        if dynamicTypeSize.isAccessibilitySize {
+            Divider().overlay(DesignTokens.Colors.borderDefault)
+        } else {
+            Rectangle()
+                .fill(DesignTokens.Colors.borderDefault)
+                .frame(width: 1)
+                .padding(.vertical, 4)
+        }
     }
 
     private var statsSection: some View {
@@ -348,6 +353,7 @@ struct PlayerDetailView: View {
         .frame(maxWidth: .infinity, alignment: .center)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(label), \(value)")
+        .accessibilityIdentifier("player-vital-\(label.lowercased())")
     }
 
     // DEP-259: unified onto the vitals eyebrow pattern (caption + tracking + textMuted
@@ -426,12 +432,15 @@ struct PlayerDetailView: View {
     /// Web parity (PlayerCardDepthList's header row): depth-chart eyebrow and CUSTOM tag
     /// on the left, Reset + the Reorder/Done toggle on the right.
     private var depthHeader: some View {
-        HStack(spacing: DesignTokens.Spacing.sm) {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
+            : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.sm))
+        return layout {
             sectionHeader(PlayerProfileSection.depthChartTitle)
             if positionIsCustom {
                 customTag
             }
-            Spacer()
+            if !dynamicTypeSize.isAccessibilitySize { Spacer() }
             if positionIsCustom, let onResetPosition {
                 Button {
                     resetPosition(onResetPosition)
@@ -705,12 +714,16 @@ private struct SixDotGrip: View {
 // (depthRow) and the drag-to-reorder rows (DepthReorderList) — mirrors web's
 // DepthRowContent.
 private struct DepthRowContent: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let player: Player
     let isCurrent: Bool
     let accent: Color
 
     var body: some View {
-        HStack(spacing: DesignTokens.Spacing.sm) {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
+            : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.sm))
+        layout {
             Text(depthRankLabel(player.depthRank))
                 .font(.caption.bold())
                 .foregroundStyle(playerStatusColor(player.status, accent: accent))
@@ -722,7 +735,7 @@ private struct DepthRowContent: View {
             Text(player.name.isEmpty ? "#\(player.number)" : player.name)
                 .font(.subheadline.bold())
                 .foregroundStyle(isCurrent ? accent : DesignTokens.Colors.textPrimary)
-                .lineLimit(1)
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
             Spacer()
             if isCurrent {
                 Image(systemName: "checkmark")
@@ -927,6 +940,7 @@ enum PlayerStatsTableLayout {
 }
 
 private struct PlayerStatsTable: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let stats: [PlayerSeasonStats]
     let columns: [PlayerStatColumn]
     let accent: Color
@@ -940,9 +954,31 @@ private struct PlayerStatsTable: View {
     }
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            table.frame(width: preferredTableWidth)
-            table.frame(maxWidth: .infinity)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                // Each season remains one unit, with its column names visible rather
+                // than compressed into a phone-width table (DEP-415).
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
+                    ForEach(stats) { season in
+                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+                            Text("\(String(season.season)) · \(season.teamAbbrev ?? "—")")
+                                .font(.headline)
+                            ForEach(columns, id: \.self) { column in
+                                Text("\(column.header): \(column.value(for: season))")
+                                    .font(.body)
+                            }
+                        }
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(PlayerStatsAccessibility.rowLabel(for: season, columns: columns))
+                    }
+                }
+                .padding(DesignTokens.Spacing.sm)
+            } else {
+                ViewThatFits(in: .horizontal) {
+                    table.frame(width: preferredTableWidth)
+                    table.frame(maxWidth: .infinity)
+                }
+            }
         }
         .depthCard(dense: true, padded: false)
     }

@@ -19,6 +19,7 @@ struct DepthSegmentedOption<Selection: Hashable> {
 }
 
 struct DepthSegmentedControl<Selection: Hashable>: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Namespace private var selectionNamespace
 
@@ -39,7 +40,11 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
         // touch target, while the selected surface is inset to 36pt so it reads as a
         // highlight inside the control instead of a second oversized button. The selected
         // surface moves as one piece between options, preserving spatial continuity.
-        HStack(spacing: 4) {
+        // DEP-415: full labels need their own row at accessibility sizes.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(spacing: 4))
+            : AnyLayout(HStackLayout(spacing: 4))
+        layout {
             ForEach(options, id: \.value) { option in
                 let isActive = option.value == selection
                 Button {
@@ -51,8 +56,9 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
                         .font(.caption.bold())
                         .tracking(0.3)
                         .foregroundStyle(isActive ? activeTextColor : DesignTokens.Colors.textMuted)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                        .minimumScaleFactor(dynamicTypeSize.isAccessibilitySize ? 1 : 0.7)
+                        .fixedSize(horizontal: false, vertical: dynamicTypeSize.isAccessibilitySize)
                         .padding(.horizontal, 10)
                         .frame(maxWidth: fullWidth ? .infinity : nil, minHeight: 44)
                         .background { selectionSurface(isActive: isActive) }

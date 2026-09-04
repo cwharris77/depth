@@ -21,6 +21,7 @@ import SwiftUI
 // jersey-rendering implementation. Each card's caption is the kit kind only (Home/Away/
 // etc.) — no year range, since an undated kit has nothing meaningful to show there.
 struct UniformPickerSheet: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let uniforms: [Uniform]
@@ -38,11 +39,17 @@ struct UniformPickerSheet: View {
     }
 
     var body: some View {
-        DepthSheet(title: "Choose Uniform", sizing: .medium) {
+        DepthSheet(title: "Choose Uniform", sizing: dynamicTypeSize.isAccessibilitySize ? .full : .medium) {
             VStack(spacing: 0) {
                 TabView(selection: $currentIndex) {
                     ForEach(Array(uniforms.enumerated()), id: \.element.id) { index, uniform in
-                        card(for: uniform)
+                        Group {
+                            if dynamicTypeSize.isAccessibilitySize {
+                                ScrollView { card(for: uniform) }
+                            } else {
+                                card(for: uniform)
+                            }
+                        }
                             .tag(index)
                     }
                 }
