@@ -9,6 +9,29 @@ import Testing
 // either that the right event fires exactly once, or that a repeated/background action
 // does NOT re-fire it — both matter for a usage-counter product metric.
 
+// DEP-322: exact wire keys also guard against accidental telemetry expansion.
+@Test(arguments: ["1", "1.0", "1.4.2", "12.34.567"])
+func appEventEncodesFullMarketingVersion(version: String) throws {
+    let data = try JSONEncoder().encode(AppEventPayload(event: .appLaunch, appVersion: version))
+    let payload = try #require(JSONSerialization.jsonObject(with: data) as? [String: String])
+    #expect(payload == ["event_name": "app_launch", "app_version": version])
+}
+
+@Test func errorEventEncodesVersionAndCategory() throws {
+    let data = try JSONEncoder().encode(
+        AppEventPayload(event: .error(category: "offline"), appVersion: "1.4.2")
+    )
+    let payload = try #require(JSONSerialization.jsonObject(with: data) as? [String: String])
+    #expect(payload == ["event_name": "error", "error_category": "offline", "app_version": "1.4.2"])
+}
+
+@Test(arguments: [nil, "", "1.4.2 (123)", "iOS 26.5", "1.2.3.4", "1.4.2\n", String(repeating: "1", count: 33)])
+func appEventOmitsUnavailableOrInvalidVersion(version: String?) throws {
+    let data = try JSONEncoder().encode(AppEventPayload(event: .appLaunch, appVersion: version))
+    let payload = try #require(JSONSerialization.jsonObject(with: data) as? [String: String])
+    #expect(payload == ["event_name": "app_launch"])
+}
+
 @Test func appEventNamesMatchTheAppEventsCheckConstraint() {
     #expect(AppEvent.appLaunch.name == "app_launch")
     #expect(AppEvent.depthChartReached.name == "depth_chart_reached")
