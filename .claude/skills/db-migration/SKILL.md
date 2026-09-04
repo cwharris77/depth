@@ -32,6 +32,14 @@ supabase migration new <snake_case_name>   # new file under supabase/migrations/
 - New tables need grants — follow the precedent in
   `20260701171029_grant_default_table_privileges.sql` (default privileges may already
   cover you; check before duplicating).
+- **Supabase grants `ALL` to `anon`/`authenticated` on every public table by
+  default, in local AND hosted projects.** A grant that *restricts* is a no-op
+  against that baseline (shipped bug: `app_events`' "insert-only" grant never
+  removed anon's SELECT/UPDATE/DELETE, and its server-owned `created_at` was
+  forgeable — DEP-322). If a table must be insert-only (or any narrower contract),
+  `revoke all on table ... from anon, authenticated;` *then* grant exactly the
+  columns/ops allowed, and verify with `\dp` that the ALL is actually gone — a
+  restrictive grant without the revoke is a silent no-op.
 - **New public tables ship with RLS on.** The auth phase (Phase C) has shipped —
   `AGENTS.md` invariant 10 now requires `enable row level security` plus a
   `"public read"` policy in the *same* migration as the table (precedent:
@@ -82,6 +90,24 @@ npm test               # includes lib/__tests__/roster-source.db.test.ts —
                        # locally with .env.local present; CI green ≠ DB layer tested
 ```
 
+**When the migration asserts a grant/RLS contract, verify it against the running
+local stack — the contract tests SKIP on CI** (no Docker on GitHub runners,
+`LocalSupabase.isReachable` is false there). This is a required step, not optional;
+a migration PR that changes grants/RLS does not leave the working tree until:
+
+- the migration's own SQL test runs clean under
+  `supabase migration up --local` + the `supabase/tests/*.sql` harness, AND
+- the existing Swift contract tests pass: the RLS actor-matrix suite
+  (`ios/DepthTests/SupabaseRLSIntegrationTests.swift`, e.g.
+  `anonymousCannotReadAppEvents` / `anonymousCannotForgeAnEventTimestamp`) — a red
+  one means the "contract" a migration claims is not actually enforced, and
+- if the contract is insert-only/owner-scoped, `\dp <table>` shows anon/authenticated
+  hold only the intended column grants (Supabase's default `ALL` bootstraps every
+  public table otherwise — see §1).
+
+A verification step that fails is the finding, not a waiver: investigate the root
+cause (test wrong, or assumption wrong?) before opening the PR.
+
 If the change affects assembled rosters, also hit a team page on the dev server
 against local data and confirm the shape renders.
 
@@ -112,6 +138,10 @@ prod; the hosted DB must stay reproducible from `supabase/migrations/`.
 - SQL run against the hosted project outside a migration.
 - A `Pick<>` changed without its SELECT string (or vice versa).
 - "CI is green so the DB layer works" — the DB tests skip without env vars.
+- A restrictive grant (`grant insert (...)` to anon) with no preceding `revoke all` —
+  Supabase's default `ALL` makes it a no-op.
+- A grant/RLS contract migration merged with the Swift RLS contract tests red (they
+  run locally only — CI never sees them).
 
 ## Common mistakes
 
@@ -121,3 +151,5 @@ prod; the hosted DB must stay reproducible from `supabase/migrations/`.
 | Migration in one PR, types in the next | Same PR, always — the window between them is untyped runtime |
 | Seed rewrites rows it doesn't own | Scope every seed/reconciler write by its `source` value |
 | New non-null column without backfill | Backfill in the same migration, or the reset/pipeline fails |
+| Restrictive grant without a revoke | Supabase pre-grants `ALL` to anon/authenticated on every public table — `revoke all` first, then grant only what's allowed, then `\dp` to confirm |
+| Grant/RLS contract PR with the RLS tests red | Investigate before opening — the tests are right, the migration's assumption is wrong (DEP-322) |
