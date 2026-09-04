@@ -165,6 +165,17 @@ ios/Depth/
    sandbox issue) after a retry is fatal — see `DepthEnvironment.modelContainer`'s
    wipe-and-retry pattern.*
 
+8. **Visible padding that does not accept taps.** A plain Button can expose a large
+   accessibility/layout frame while only its label glyphs accept touches. Put
+   `.contentShape(...)` on the **label**, after its padding/frame, matching the intended
+   surface. A shape outside Button is not equivalent. For padded text fields, bind
+   `@FocusState` to the field and route taps on the drawn container to that focus state
+   (see `DepthSearchField`). Keep this an ordering convention in existing primitives,
+   not a blanket modifier: buttons and text fields need different behavior, and a
+   missing shape alone does not prove a filled/system control is broken. Verify with
+   coordinate taps in padding at opposite edges, assert the action/focus, and retain
+   screenshots. `XCUIElement.tap()` and screenshots alone miss this (DEP-395).
+
 ## 5. Quality bar (iOS PRs)
 
 Everything in root `CLAUDE.md` §5's "Any code PR" checklist applies. Additionally:
