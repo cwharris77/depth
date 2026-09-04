@@ -1,5 +1,5 @@
 import { BEARS_UNIFORMS_FROM_PARTS } from './bears.parts';
-import { BENGALS_UNIFORMS } from './bengals';
+import { BENGALS_UNIFORMS_FROM_PARTS } from './bengals.parts';
 
 import { BILLS_UNIFORMS } from './bills';
 import { BRONCOS_UNIFORMS } from './broncos';
@@ -39,7 +39,7 @@ import type { TeamUniformDefinition } from './types';
 
 const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   bears: BEARS_UNIFORMS_FROM_PARTS,
-  bengals: BENGALS_UNIFORMS,
+  bengals: BENGALS_UNIFORMS_FROM_PARTS,
   bills: BILLS_UNIFORMS,
   broncos: BRONCOS_UNIFORMS,
   browns: BROWNS_UNIFORMS,
