@@ -16,13 +16,15 @@ name: iOS Screenshots Gate
 # capture. Blocking those would force identical before/after images, which read as "a
 # visual change was reviewed" when none happened. Negated patterns are evaluated in
 # order per file, so a PR touching both a View and a Data file still runs the gate.
+# This workflow deliberately does NOT list its own path: it asserts on the PR *body*, so
+# self-triggering would fail every PR that edits the gate (including the one that added
+# this filter) for having no screenshots to show.
 on:
   pull_request:
     paths:
       - 'ios/Depth/**'
       - '!ios/Depth/Domain/**'
       - '!ios/Depth/Data/**'
-      - '.github/workflows/ios-screenshots-gate.yml'
 
 concurrency:
   group: ios-screenshots-gate-${{ github.ref }}
