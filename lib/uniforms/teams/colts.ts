@@ -1,15 +1,7 @@
-import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } from './types';
-
-// Indianapolis' two archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
-// nfl-uniform-refs/colts (home is that sheet's row-1 figure 3, away its row-2 figure 1; the black
-// alternate and the preseason kit in that composite are not in depth's archive). Shoulder paths
-// use the outer 588-wide mannequin space; the helmet decal stays in raw helmet coordinates
-// (x:139-802, y:65-674). Right paths mirror the left across the centerline x=294 (588 - x).
-//
-// The construction is spare: a bare white shell carrying only the horseshoe, two canted shoulder
-// bars per sleeve, and plain numerals. No helmet stripe, no collar trim, and no pant stripe — the
-// reference's white pants are unbroken from hip to sock — so both kits strip most of the generic
-// model rather than recoloring it.
+// Indianapolis' construction geometry — the horseshoe decal and the shoulder-bar constants only.
+// The composable parts definition that consumes them lives in ./colts.parts.ts; the former flat
+// COLTS_UNIFORMS was deleted in the migration that proved parts render byte-identically (see
+// parts-parity.test.ts for the one-time gate).
 
 // White is a literal on both kits. The home palette is navy over speedway grey with accent ===
 // secondary (ESPN supplies only two colors), so no token resolves to the shell, the pants, the
@@ -34,79 +26,3 @@ export const COLTS_SHOULDER_BAR_INNER_LEFT = 'M133,401 L157,401 L176,492 L152,49
 export const COLTS_SHOULDER_BAR_INNER_RIGHT = 'M455,401 L431,401 L412,492 L436,492 Z';
 export const COLTS_SHOULDER_BAR_OUTER_LEFT = 'M93,415 L116,415 L132,492 L109,492 Z';
 export const COLTS_SHOULDER_BAR_OUTER_RIGHT = 'M495,415 L472,415 L456,492 L479,492 Z';
-
-const GENERIC_STRIPPED = [
-  'generic-helmet-stripe',
-  'generic-sleeve-yoke-left',
-  'generic-sleeve-yoke-right',
-  'generic-sleeve-stripe-left',
-  'generic-sleeve-stripe-right',
-  'generic-collar',
-  'generic-pants-stripe-left',
-  'generic-pants-stripe-right',
-];
-
-function shoulderBars(fill: ColorRef): UniformLayer[] {
-  const bars: { id: string; surface: UniformSurface; d: string }[] = [
-    {
-      id: 'colts-shoulder-bar-inner-left',
-      surface: 'sleeve-left',
-      d: COLTS_SHOULDER_BAR_INNER_LEFT,
-    },
-    {
-      id: 'colts-shoulder-bar-inner-right',
-      surface: 'sleeve-right',
-      d: COLTS_SHOULDER_BAR_INNER_RIGHT,
-    },
-    {
-      id: 'colts-shoulder-bar-outer-left',
-      surface: 'sleeve-left',
-      d: COLTS_SHOULDER_BAR_OUTER_LEFT,
-    },
-    {
-      id: 'colts-shoulder-bar-outer-right',
-      surface: 'sleeve-right',
-      d: COLTS_SHOULDER_BAR_OUTER_RIGHT,
-    },
-  ];
-  return bars.map((bar): UniformLayer => ({ ...bar, clip: true, kind: 'fill', fill }));
-}
-
-function horseshoe(fill: ColorRef): UniformLayer[] {
-  return [
-    {
-      id: 'colts-helmet-horseshoe',
-      surface: 'helmet',
-      d: COLTS_DECAL_HORSESHOE_PATH,
-      clip: true,
-      kind: 'fill',
-      fill,
-      fillRule: 'evenodd',
-    },
-  ];
-}
-
-export const COLTS_UNIFORMS: TeamUniformDefinition = {
-  teamId: 'colts',
-  // Both kits share the white shell and white pants; only the body color and which token carries
-  // navy differ, so the shell/pants live in defaults rather than being restated per kit.
-  defaults: {
-    helmetColor: COLTS_WHITE,
-    pantsColor: COLTS_WHITE,
-    removeLayerIds: GENERIC_STRIPPED,
-  },
-  kits: {
-    // Royal body: the palette's own primary is the navy, so the horseshoe resolves from `primary`
-    // and the bars and numerals take the white literal.
-    home: {
-      layers: [...horseshoe('primary'), ...shoulderBars(COLTS_WHITE)],
-      number: { fill: COLTS_WHITE, outline: COLTS_WHITE, outlineWidth: 10 },
-    },
-    // White body: the away palette moves white into primary and navy into secondary, so the same
-    // painted result needs the inverse token on every navy element.
-    away: {
-      layers: [...horseshoe('secondary'), ...shoulderBars('secondary')],
-      number: { fill: 'secondary', outline: 'secondary', outlineWidth: 10 },
-    },
-  },
-};
