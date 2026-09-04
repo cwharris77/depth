@@ -1,4 +1,4 @@
-import { BEARS_UNIFORMS } from './bears';
+import { BEARS_UNIFORMS_FROM_PARTS } from './bears.parts';
 import { BENGALS_UNIFORMS } from './bengals';
 
 import { BILLS_UNIFORMS } from './bills';
@@ -26,18 +26,19 @@ import { PACKERS_UNIFORMS } from './packers';
 import { RAMS_UNIFORMS } from './rams';
 import { RAVENS_UNIFORMS } from './ravens';
 import { SAINTS_UNIFORMS } from './saints';
-import { SEAHAWKS_UNIFORMS } from './seahawks';
+import { SEAHAWKS_UNIFORMS_FROM_PARTS } from './seahawks.parts';
 import { STEELERS_UNIFORMS } from './steelers';
 import { TEXANS_UNIFORMS } from './texans';
 import { TITANS_UNIFORMS } from './titans';
 import { VIKINGS_UNIFORMS } from './vikings';
 import type { TeamUniformDefinition } from './types';
 
-// Server-boundary registry for team construction definitions. Client team pages receive only the
-// selected definition instead of importing every team's geometry into their bundle.
+// Server-boundary registry for team construction definitions. Teams migrate to the composable
+// parts model (./parts.ts) one at a time — a `*_FROM_PARTS` entry is compiled from a
+// TeamPartsDefinition, a bare one is still authored flat. Both produce the same shape.
 
 const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
-  bears: BEARS_UNIFORMS,
+  bears: BEARS_UNIFORMS_FROM_PARTS,
   bengals: BENGALS_UNIFORMS,
   bills: BILLS_UNIFORMS,
   broncos: BRONCOS_UNIFORMS,
@@ -64,7 +65,7 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   rams: RAMS_UNIFORMS,
   ravens: RAVENS_UNIFORMS,
   saints: SAINTS_UNIFORMS,
-  seahawks: SEAHAWKS_UNIFORMS,
+  seahawks: SEAHAWKS_UNIFORMS_FROM_PARTS,
   steelers: STEELERS_UNIFORMS,
   texans: TEXANS_UNIFORMS,
   titans: TITANS_UNIFORMS,
