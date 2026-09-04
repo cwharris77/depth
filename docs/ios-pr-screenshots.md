@@ -172,15 +172,17 @@ gh pr create --body-file /tmp/pr-body.md
 Cloudinary absent → captures stay on disk and the body notes the paths (degraded,
 not blocked — the exit code stays 0 so the PR still opens).
 
-**CI enforces this.** `.github/workflows/ci.yml` runs a cheap `ios-ui-screenshots` gate
-on every PR: if the diff touches `ios/Depth/**` — excluding `ios/Depth/Domain/**` (pure
-model types and pure logic) and `ios/Depth/Data/**` (DTOs, mappers, repositories) —
-neither imports SwiftUI or declares a View, so a diff confined to either cannot change
-a pixel — and the body has no real screenshot table (`![…](https://…)` images + the end
-sentinel, or the degraded no-Cloudinary note), the job fails with instructions to run
-`ios/scripts/pr-screenshots.sh` and push again. It
-never *captures* in CI (that was the slow Action you deleted) — it only verifies the body,
-so it can't be forgotten and costs ~0 (no build, no macOS runner).
+**CI enforces this.** `.github/workflows/ios-screenshots-gate.yml` is a standalone
+workflow whose `paths` filter is the scoping: it triggers only when a PR touches
+`ios/Depth/**`, minus `ios/Depth/Domain/**` (pure model types and pure logic) and
+`ios/Depth/Data/**` (DTOs, mappers, repositories) — neither imports SwiftUI or declares a
+View, so a diff confined to either cannot change a pixel. Any other PR (web, docs,
+workflow-only) never provisions a runner for it at all; the check simply doesn't appear.
+When it does run and the body has no real screenshot table (`![…](https://…)` images +
+the end sentinel, or the degraded no-Cloudinary note), the job fails with instructions to
+run `ios/scripts/pr-screenshots.sh` and push again. It never *captures* in CI (that was
+the slow Action you deleted) — it only verifies the body over the API, with no checkout
+at all, so it can't be forgotten and costs ~0 (no build, no macOS runner).
 
 The still-relevant mechanics from the old workflow carry over unchanged:
 
