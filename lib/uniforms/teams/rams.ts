@@ -28,12 +28,6 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer } from './types';
 export const RAMS_WHITE = '#FFFFFF';
 export const RAMS_ROYAL = '#003594';
 
-// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
-// this path is a contour trace of the club's helmet mark, lifted from the GUD composite so there
-// is an accurate starting point to hand-stylize against. It is a literal reproduction of a
-// third-party mark and is expected to be REPLACED by original stylized geometry before this kit is
-// treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
-//
 // The horn is the largest and most forgiving mark traced so far — one bold curl plus the thin
 // upper tail, both solid, over an 84x80px source, so it needed no upsampling past 6x. Two
 // components emitted into one path and painted as a union; nothing here needs a fill rule.

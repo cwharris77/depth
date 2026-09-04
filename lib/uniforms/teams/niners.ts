@@ -21,12 +21,6 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } fr
 // either from `accent` would paint them gold.
 export const NINERS_WHITE = '#FFFFFF';
 
-// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
-// these paths are a contour trace of the club's helmet mark, lifted from the GUD composite so there
-// is an accurate starting point to hand-stylize against. They are a literal reproduction of a
-// third-party mark and are expected to be REPLACED by original stylized geometry before this kit is
-// treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
-//
 // Traced as three stacked silhouettes — ring, field, letters — rather than as regions with punched
 // holes. The first attempt traced the field with the monogram as evenodd holes, and the letters'
 // antialiased grey shading fell outside every predicate, so the "F" punched through to the black

@@ -3,7 +3,7 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } fr
 // Arizona's four archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
 // nfl-uniform-refs/cardinals. Construction geometry — the shoulder bars and sleeve bands — is
 // redrawn from that reference rather than traced; the helmet decal is the documented exception
-// (see TRACE-PENDING-STYLIZE below). Shoulder, sleeve and pant paths use the outer 588-wide
+// (see the provenance note below). Shoulder, sleeve and pant paths use the outer 588-wide
 // mannequin space; helmet paths stay in raw helmet coordinates (x:139-802, y:65-674). Right-side
 // paths mirror the left across the jersey centerline x=294 (mirroredX = 588 - x).
 //
@@ -15,11 +15,10 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } fr
 // Arizona's gold (#FFB612), which appears nowhere on it. Black sampled from the GUD composite.
 export const CARDINALS_NUMBER_KEYLINE = '#101820';
 
-// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
-// these paths are a contour trace of the club's helmet mark, lifted from the GUD composite so
-// there is an accurate starting point to hand-stylize against. They are a literal reproduction of
-// a third-party mark and are expected to be REPLACED by original stylized geometry before this kit
-// is treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
+// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
+// of a third-party mark, not original geometry. The mark is NON-FREE upstream
+// (Wikimedia `File:Arizona Cardinals logo.svg`, fair use; trademarked). Licence audit: the vault’s
+// Decisions.md, 2026-09-03.
 //
 // Traced as four color regions rather than a keyline (the Seahawks approach), which survives the
 // ~61x45px source far better: a filled region degrades gracefully where a thin line breaks up.

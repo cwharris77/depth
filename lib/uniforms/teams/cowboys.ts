@@ -30,12 +30,6 @@ export const COWBOYS_WHITE = '#FFFFFF';
 // step lighter (#B7C3CD) under its own shading; the published value is used here.
 export const COWBOYS_HELMET_SILVER = '#B0B7BC';
 
-// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
-// these paths are a contour trace of the club's helmet mark, lifted from the GUD composite so
-// there is an accurate starting point to hand-stylize against. They are a literal reproduction of
-// a third-party mark and are expected to be REPLACED by original stylized geometry before this kit
-// is treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
-//
 // Traced as two nested silhouettes rather than three: the reference's mark is a navy star inside a
 // white keyline inside a navy outer keyline, but that outer keyline is a single pixel and traced
 // into eleven broken fragments. Painting the full silhouette white and the star body over it

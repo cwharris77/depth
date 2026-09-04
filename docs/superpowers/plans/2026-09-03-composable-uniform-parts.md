@@ -4,7 +4,7 @@
 
 **Spec:** `../obsidian/Projects/depth/specs/2026-09-03-composable-uniform-parts-design.md`
 
-**Status (2026-09-03):** Stage A1 built on `feat/uniform-parts-model` — the parts model plus Bears and Seahawks migrated, 2872 tests green, all 210 committed rasters regenerated with zero diff. Stage A2+ is the remaining 30 teams. Stage B is blocked on the licensing call recorded in the spec's "Open question for Cooper".
+**Status (2026-09-03):** Stage A1 **merged** (depth [#656](https://github.com/cwharris77/depth/pull/656)) — the parts model plus Bears and Seahawks migrated, 2872 tests green, all 210 committed rasters regenerated with zero diff. Stage A2+ is the remaining 30 teams. Stage B is **UNBLOCKED** — Cooper decided 2026-09-03 to keep the club marks and make fidelity the bar rather than provenance; `TRACE-PENDING-STYLIZE` is retired (depth [#658](https://github.com/cwharris77/depth/pull/658)).
 
 **Goal:** Make a kit a *combination* of independently-authored helmet, jersey and pants parts, so that swapping a home helmet onto an away jersey is three string references rather than a re-transcription — and so that a new uniform from the monitor is a small, mechanical diff instead of an artwork exercise.
 
@@ -52,9 +52,9 @@ Expect these to be harder than Bears and easier than Seattle. Seattle exercised 
 - [ ] Consider folding the parts types into `types.ts` if the two-file split has stopped earning its keep
 - [ ] Keep the geometry constant exports — the parts files import them
 
-## Stage B — decal pipeline (BLOCKED)
+## Stage B — decal pipeline (unblocked 2026-09-03)
 
-Blocked on the licensing question in the spec. Do not start without Cooper's answer, because the answer changes whether a machine trace can ship at all or only ever scaffolds a hand-stylized mark.
+A trace from a gate-passing reference is acceptable output, not a scaffold. Hand-drawing is the fallback for a mark that cannot be traced, not the default. Accuracy is judged against the **helmet** reference, not the logo — placement (scale, rotation, extent, which logo elements appear) is a separate failure axis from linework and is measured from the GUD helmet composite.
 
 - [ ] B1. Reference gate as a drawkit check: thinnest critical stroke >= 2px (p5 horizontal run in the mark's carrying color) AND component count stable under a 0.75x downscale. Validated on Bears (hairline keyline, 0.65% stroke fraction) and Seahawks (fat white channels, 1.67%); both reject below 128px and accept at/above. Aim for >=256px references
 - [ ] B2. Ticket format: mark artwork attached at unveiling time (SportsLogos 403s automated fetches and GUD returns empty, so an agent cannot fetch it; the Wikimedia API can be fetched and returns licence metadata)

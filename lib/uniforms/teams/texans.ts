@@ -16,7 +16,7 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer } from './types';
 //
 // The BATTLE RED kit (row-2 figure 3) wears a large stylized horn sweeping across the whole crown,
 // drawn as one solid navy shape on a red shell. That path is a machine contour trace of GUD's
-// illustration and still carries TRACE-PENDING-STYLIZE.
+// illustration and is a trace, not original geometry (see the provenance note below).
 //
 // The NAVY kits wear the club's standard bull HEAD — compact, horned, with a face, a red right half
 // and a white star. It is NOT the same mark, and an earlier pass that assumed it was painted the
@@ -52,10 +52,11 @@ export const TEXANS_BULL_STAR_PATH =
   'M385.3,203.0 L397.3,221.1 L420.1,217.2 L404.9,233.2 L416.1,251.7 L394.7,243.5 L378.8,258.9 L380.8,237.8 L359.8,228.8 L382.4,224.0 Z';
 export const TEXANS_BULL_KEYLINE_WIDTH = 13;
 
-// TRACE-PENDING-STYLIZE — the Battle Red horn only. Machine trace, not final art: a contour trace
-// of the club's mark lifted from the GUD composite so there is an accurate starting point to
-// hand-stylize against, expected to be REPLACED by original geometry. Grep TRACE-PENDING-STYLIZE
-// for every path still in this state.
+// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
+// of a third-party mark, not original geometry. The mark is NON-FREE upstream
+// (Wikimedia `File:Houston Texans logo.svg`, fair use; trademarked). Licence audit: the vault’s
+// Decisions.md, 2026-09-03.
+//
 // Fixed art: the mark is the same three colors on every shell, so nothing here takes a token.
 export const TEXANS_DECAL_NAVY = '#031825'; // sampled (3,24,37)
 export const TEXANS_DECAL_RED = '#C80023'; // sampled (200,0,35)

@@ -29,12 +29,6 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer } from './types';
 // `primary`, so neither needs it.
 export const CHARGERS_WHITE = '#FFFFFF';
 
-// TRACE-PENDING-STYLIZE — machine traces, not final art. House workflow is trace-then-stylize:
-// these paths are contour traces of the club's bolt, lifted from the GUD composite so there is an
-// accurate starting point to hand-stylize against. They are literal reproductions of a third-party
-// mark and are expected to be REPLACED by original stylized geometry before these kits are treated
-// as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
-//
 // Both marks are traced the same way and for the same reason: the keyline is traced as the union of
 // keyline AND body, with the body painted over it, so the outline stays continuous instead of
 // breaking into slivers. One wrinkle worth recording — on the shell the two colors do NOT touch.

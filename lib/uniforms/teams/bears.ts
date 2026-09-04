@@ -13,12 +13,6 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } fr
 // resolving the stripe edging from `accent` would paint it orange-on-orange.
 export const BEARS_WHITE = '#FFFFFF';
 
-// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
-// these paths are a contour trace of the club's helmet mark, lifted from the GUD composite so
-// there is an accurate starting point to hand-stylize against. They are a literal reproduction of
-// a third-party mark and are expected to be REPLACED by original stylized geometry before this kit
-// is treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
-//
 // This is the cleanest trace of the set so far: the mark is only 31x21px in the reference, but a
 // bold single-stroke letterform survives that where the Seahawks' thin keyline did not. Keyline
 // paints first, the letter over it; both need fill-rule evenodd for their counters.
