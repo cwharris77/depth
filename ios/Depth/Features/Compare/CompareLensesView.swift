@@ -117,6 +117,7 @@ struct CompareLensesView: View {
 /// per metric. The two value columns are a fixed width so every row's numbers line up
 /// across every group on the page, not just within one card.
 private struct CompareMetricTable: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let title: String
     let rows: [CompareMetricRow]
     let teamA: Team?
@@ -154,14 +155,19 @@ private struct CompareMetricTable: View {
     }
 
     private var header: some View {
-        HStack(spacing: DesignTokens.Spacing.sm) {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
+            : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.sm))
+        return layout {
             Text(title)
                 .font(.caption2.bold())
                 .tracking(0.9)
                 .foregroundStyle(DesignTokens.Colors.textFaint)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            teamColumnHeader(teamA)
-            teamColumnHeader(teamB)
+            if !dynamicTypeSize.isAccessibilitySize {
+                teamColumnHeader(teamA)
+                teamColumnHeader(teamB)
+            }
         }
         .padding(.horizontal, DesignTokens.Spacing.md - 2)
         .padding(.vertical, DesignTokens.Spacing.sm + 3)
@@ -180,14 +186,15 @@ private struct CompareMetricTable: View {
     }
 
     private func metricRow(_ row: CompareMetricRow, showsTopDivider: Bool) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.sm) {
-            Text(row.label)
-                .font(.caption2.bold())
-                .tracking(0.5)
-                .foregroundStyle(DesignTokens.Colors.textMuted)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            value(row.a, side: .a, leader: row.leader)
-            value(row.b, side: .b, leader: row.leader)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                Text(accessibilityLabel(row))
+                    .font(.body)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                compactMetricRow(row)
+            }
         }
         .padding(.vertical, DesignTokens.Spacing.sm + 2)
         .overlay(alignment: .top) {
@@ -197,6 +204,18 @@ private struct CompareMetricTable: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel(row))
+    }
+
+    private func compactMetricRow(_ row: CompareMetricRow) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.sm) {
+            Text(row.label)
+                .font(.caption2.bold())
+                .tracking(0.5)
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            value(row.a, side: .a, leader: row.leader)
+            value(row.b, side: .b, leader: row.leader)
+        }
     }
 
     private func value(_ text: String, side: CompareSide, leader: CompareSide?) -> some View {

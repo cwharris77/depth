@@ -7,6 +7,7 @@ import SwiftUI
 // `TeamStatsPage` plus the derived next game; season selection is local state with no
 // refetch. Owns a feature-local `TeamStatsViewModel` and loads lazily on first visit.
 struct TeamStatsView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var viewModel: TeamStatsViewModel
     @State private var showSeasonPicker = false
     /// DEP-278 follow-up: Stats fetches no uniform data of its own (lightweight read,
@@ -207,11 +208,14 @@ struct TeamStatsView: View {
     /// mid-season would falsely claim they already had.
     private func heroRecord(_ stats: TeamSeasonStats) -> some View {
         heroSection {
-            HStack(alignment: .firstTextBaseline) {
+            let layout = dynamicTypeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
+                : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+            layout {
                 Text(verbatim: record(stats))
                     .font(.largeTitle.bold())
                     .accessibilityIdentifier("stats-record")
-                Spacer(minLength: DesignTokens.Spacing.md)
+                if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: DesignTokens.Spacing.md) }
                 VStack(alignment: .trailing, spacing: 1) {
                     if let streak = displayStreak(stats.streak) {
                         Text(verbatim: streak)
@@ -356,18 +360,24 @@ struct TeamStatsView: View {
     /// A two-column row. A nil side leaves its half blank — the DIFF row has done this
     /// since DEP-265, and an odd-length metric group now does the same.
     private func statRow(left: StatCellSpec?, right: StatCellSpec?) -> some View {
-        HStack(alignment: .top, spacing: DesignTokens.Spacing.lg) {
-            if let left { statCell(left) } else { Color.clear }
-            if let right { statCell(right) } else { Color.clear }
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 0))
+            : AnyLayout(HStackLayout(alignment: .top, spacing: DesignTokens.Spacing.lg))
+        return layout {
+            if let left { statCell(left) } else if !dynamicTypeSize.isAccessibilitySize { Color.clear }
+            if let right { statCell(right) } else if !dynamicTypeSize.isAccessibilitySize { Color.clear }
         }
     }
 
     private func statCell(_ spec: StatCellSpec) -> some View {
-        HStack(alignment: .firstTextBaseline) {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+        return layout {
             Text(spec.label)
                 .font(.caption)
                 .foregroundStyle(DesignTokens.Colors.textFaint)
-            Spacer(minLength: 4)
+            if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: 4) }
             VStack(alignment: .trailing, spacing: 2) {
                 Text(spec.value)
                     .font(.caption.bold())
@@ -471,20 +481,23 @@ struct TeamStatsView: View {
     }
 
     private func leaderRow(label: String, leader: Leader) -> some View {
-        HStack(alignment: .center, spacing: DesignTokens.Spacing.sm) {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
+            : AnyLayout(HStackLayout(alignment: .center, spacing: DesignTokens.Spacing.sm))
+        return layout {
             VStack(alignment: .leading, spacing: 1) {
                 Text(verbatim: label)
                     .font(.caption2.weight(.bold))
                     .tracking(0.6)
                     .foregroundStyle(teamAccent)
                 Text(verbatim: leader.name)
-                    .font(.system(size: 15, weight: .heavy))
+                    .font(dynamicTypeSize.isAccessibilitySize ? .subheadline.weight(.heavy) : .system(size: 15, weight: .heavy))
                     .foregroundStyle(DesignTokens.Colors.textPrimary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                    .minimumScaleFactor(dynamicTypeSize.isAccessibilitySize ? 1 : 0.8)
                     .truncationMode(.tail)
             }
-            Spacer(minLength: 4)
+            if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: 4) }
             // Web parity: the line has no truncate class, so a long line wraps within its
             // 170pt column instead of losing the trailing "· N TD" the way `lineLimit(1)`
             // would (seen live: a 3-part line at this width truncated to "· ...").
@@ -492,7 +505,7 @@ struct TeamStatsView: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(DesignTokens.Colors.textMuted)
                 .multilineTextAlignment(.trailing)
-                .frame(maxWidth: 170, alignment: .trailing)
+                .frame(maxWidth: dynamicTypeSize.isAccessibilitySize ? .infinity : 170, alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing)
         }
         // Web parity: RowCardList's `px-3.5`/`py-3.5` (14pt), off the 8pt spacing scale —
         // matched as a literal rather than snapped to `sm`/`md`, same as NextGameCard's

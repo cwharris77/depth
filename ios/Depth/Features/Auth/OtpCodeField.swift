@@ -7,6 +7,7 @@ import SwiftUI
 // visible boxes purely from the `code` string; this avoids juggling per-box SwiftUI
 // focus state to reproduce web's auto-advance/backspace/paste behavior.
 struct OtpCodeField: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let length: Int
     @Binding var code: String
     var disabled: Bool = false
@@ -30,7 +31,10 @@ struct OtpCodeField: View {
                 .keyboardType(.numberPad)
                 .textContentType(.oneTimeCode)
                 .focused($isFocused)
-                .opacity(0.01)
+                // DEP-415: at accessibility sizes use the native field, which scrolls
+                // its text and keeps the same paste/autofill/verification behavior.
+                .opacity(dynamicTypeSize.isAccessibilitySize ? 1 : 0.01)
+                .font(.title2.monospacedDigit())
                 .disabled(disabled)
                 .accessibilityIdentifier("auth-code")
                 .accessibilityLabel("\(length)-digit sign-in code")
@@ -40,12 +44,14 @@ struct OtpCodeField: View {
                     if filtered.count == length { onComplete() }
                 }
 
-            HStack(spacing: DesignTokens.Spacing.sm) {
-                ForEach(0..<length, id: \.self) { index in
-                    digitBox(index)
+            if !dynamicTypeSize.isAccessibilitySize {
+                HStack(spacing: DesignTokens.Spacing.sm) {
+                    ForEach(0..<length, id: \.self) { index in
+                        digitBox(index)
+                    }
                 }
+                .allowsHitTesting(false)
             }
-            .allowsHitTesting(false)
         }
         .contentShape(Rectangle())
         .onTapGesture { isFocused = true }

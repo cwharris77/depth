@@ -25,6 +25,7 @@ import SwiftUI
 // each card, generous spacing between tiers, so the grouping is visible at a glance
 // rather than one repeated gap value flattening everything.
 struct SettingsView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Bindable var sessionStore: AuthSessionStore
 
     let authService: any DepthAuthServicing
@@ -144,7 +145,7 @@ struct SettingsView: View {
                     Text(email)
                         .font(.body.weight(.semibold))
                         .foregroundStyle(DesignTokens.Colors.textPrimary)
-                        .lineLimit(1)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
                         .truncationMode(.middle)
                 }
             }
@@ -230,7 +231,10 @@ struct SettingsView: View {
                     Button(mode.title) { fieldNameMode = mode }
                 }
             } label: {
-                HStack(spacing: DesignTokens.Spacing.md) {
+                let layout = dynamicTypeSize.isAccessibilitySize
+                    ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
+                    : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.md))
+                layout {
                     iconBadge("textformat", tint: DesignTokens.Colors.accent)
                     Text("Player Names")
                         .foregroundStyle(DesignTokens.Colors.textPrimary)
@@ -238,8 +242,8 @@ struct SettingsView: View {
                     Text(fieldNameMode.title)
                         .font(.subheadline)
                         .foregroundStyle(DesignTokens.Colors.textMuted)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                        .minimumScaleFactor(dynamicTypeSize.isAccessibilitySize ? 1 : 0.75)
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(DesignTokens.Colors.textFaint)
@@ -279,7 +283,10 @@ struct SettingsView: View {
                         Button("\(team.city) \(team.name)") { settingsStore.selectTeam(team.id) }
                     }
                 } label: {
-                    HStack(spacing: DesignTokens.Spacing.md) {
+                    let layout = dynamicTypeSize.isAccessibilitySize
+                        ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
+                        : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.md))
+                    layout {
                         iconBadge("star.fill", tint: DesignTokens.Colors.accent)
                         Text("Favorite Team")
                             .foregroundStyle(DesignTokens.Colors.textPrimary)
@@ -287,8 +294,8 @@ struct SettingsView: View {
                         Text(favoriteTeamValueLabel)
                             .font(.subheadline)
                             .foregroundStyle(DesignTokens.Colors.textMuted)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.75)
+                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                            .minimumScaleFactor(dynamicTypeSize.isAccessibilitySize ? 1 : 0.75)
                         Image(systemName: "chevron.up.chevron.down")
                             .font(.caption2.weight(.semibold))
                             .foregroundStyle(DesignTokens.Colors.textFaint)
@@ -373,36 +380,14 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 0) {
                 if let url = AppBuildInfo.privacyPolicyURL {
                     Link(destination: url) {
-                        HStack(spacing: DesignTokens.Spacing.md) {
-                            iconBadge("shield.fill", tint: DesignTokens.Colors.textMuted, background: DesignTokens.Colors.surfaceChip)
-                            Text("Privacy Policy")
-                                .foregroundStyle(DesignTokens.Colors.textPrimary)
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.footnote.weight(.semibold))
-                                .foregroundStyle(DesignTokens.Colors.textFaint)
-                        }
-                        .padding(.horizontal, DesignTokens.Spacing.md)
-                        .frame(minHeight: 44)
-                        .contentShape(Rectangle())
+                        aboutRow("Privacy Policy", icon: "shield.fill")
                     }
                     .accessibilityIdentifier("settings-about-privacy")
                     Divider().overlay(DesignTokens.Colors.borderSubtle)
                 }
                 if let url = AppBuildInfo.feedbackMailtoURL {
                     Link(destination: url) {
-                        HStack(spacing: DesignTokens.Spacing.md) {
-                            iconBadge("questionmark.circle.fill", tint: DesignTokens.Colors.textMuted, background: DesignTokens.Colors.surfaceChip)
-                            Text("Send Feedback")
-                                .foregroundStyle(DesignTokens.Colors.textPrimary)
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.footnote.weight(.semibold))
-                                .foregroundStyle(DesignTokens.Colors.textFaint)
-                        }
-                        .padding(.horizontal, DesignTokens.Spacing.md)
-                        .frame(minHeight: 44)
-                        .contentShape(Rectangle())
+                        aboutRow("Send Feedback", icon: "questionmark.circle.fill")
                     }
                     .accessibilityIdentifier("settings-about-feedback")
                     Divider().overlay(DesignTokens.Colors.borderSubtle)
@@ -419,18 +404,7 @@ struct SettingsView: View {
                     dismiss()
                     onboarding.replay()
                 } label: {
-                    HStack(spacing: DesignTokens.Spacing.md) {
-                        iconBadge("sparkles", tint: DesignTokens.Colors.textMuted, background: DesignTokens.Colors.surfaceChip)
-                        Text("Take the Tour")
-                            .foregroundStyle(DesignTokens.Colors.textPrimary)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(DesignTokens.Colors.textFaint)
-                    }
-                    .padding(.horizontal, DesignTokens.Spacing.md)
-                    .frame(minHeight: 44)
-                    .contentShape(Rectangle())
+                    aboutRow("Take the Tour", icon: "sparkles")
                 }
                 .accessibilityIdentifier("settings-take-the-tour")
                 Divider().overlay(DesignTokens.Colors.borderSubtle)
@@ -449,6 +423,26 @@ struct SettingsView: View {
                 .padding(.top, DesignTokens.Spacing.sm)
                 .accessibilityIdentifier("settings-about-disclaimer")
         }
+    }
+
+    // DEP-415: all About actions share the same full-width wrapping treatment.
+    private func aboutRow(_ title: String, icon: String) -> some View {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
+            : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.md))
+        return layout {
+            iconBadge(icon, tint: DesignTokens.Colors.textMuted, background: DesignTokens.Colors.surfaceChip)
+            Text(title)
+                .foregroundStyle(DesignTokens.Colors.textPrimary)
+                .fixedSize(horizontal: false, vertical: dynamicTypeSize.isAccessibilitySize)
+            if !dynamicTypeSize.isAccessibilitySize { Spacer() }
+            Image(systemName: "chevron.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(DesignTokens.Colors.textFaint)
+        }
+        .padding(.horizontal, DesignTokens.Spacing.md)
+        .frame(minHeight: 44)
+        .contentShape(Rectangle())
     }
 
     // Icon-badge row leading element, matching Settings.dc.html's `.row-icon`

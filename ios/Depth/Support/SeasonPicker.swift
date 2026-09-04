@@ -24,6 +24,7 @@ import SwiftUI
 // button, matching the rest of the OS's current material language — with a plain
 // bordered fallback pre-26 rather than gating the whole trigger behind availability.
 struct SeasonPickerTrigger: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let season: Int?
     let identifier: String
     /// True while a non-current season is selected — shows the "back to current"
@@ -35,7 +36,10 @@ struct SeasonPickerTrigger: View {
     var body: some View {
         // `Spacer()` only appears when the back-to-current button does, so a single
         // trigger still just hugs its own content (leading) instead of centering.
-        HStack(spacing: DesignTokens.Spacing.xs) {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.xs))
+            : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.xs))
+        layout {
             Button(action: action) {
                 HStack(spacing: 4) {
                     // Cooper report: some teams' accent colors read poorly against this
@@ -55,7 +59,7 @@ struct SeasonPickerTrigger: View {
             .accessibilityIdentifier(identifier)
 
             if isHistorical {
-                Spacer()
+                if !dynamicTypeSize.isAccessibilitySize { Spacer() }
 
                 // Cooper report: a bare icon read as unlabeled and sat too close to the
                 // trigger — spelling it out and pinning it to the row's far edge (web's
