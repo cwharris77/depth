@@ -17,7 +17,7 @@ import { FALCONS_UNIFORMS_FROM_PARTS } from './falcons.parts';
 import { GIANTS_UNIFORMS_FROM_PARTS } from './giants.parts';
 import { JAGUARS_UNIFORMS } from './jaguars';
 import { JETS_UNIFORMS } from './jets';
-import { LIONS_UNIFORMS } from './lions';
+import { LIONS_UNIFORMS_FROM_PARTS } from './lions.parts';
 import { NINERS_UNIFORMS_FROM_PARTS } from './niners.parts';
 import { PANTHERS_UNIFORMS } from './panthers';
 import { PATRIOTS_UNIFORMS } from './patriots';
@@ -57,7 +57,7 @@ chiefs: CHIEFS_UNIFORMS_FROM_PARTS,
   giants: GIANTS_UNIFORMS_FROM_PARTS,
   jaguars: JAGUARS_UNIFORMS,
   jets: JETS_UNIFORMS,
-  lions: LIONS_UNIFORMS,
+  lions: LIONS_UNIFORMS_FROM_PARTS,
   packers: PACKERS_UNIFORMS,
   panthers: PANTHERS_UNIFORMS,
   patriots: PATRIOTS_UNIFORMS,
