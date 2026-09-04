@@ -36,6 +36,9 @@ final class PlayerCardReorderUITests: XCTestCase {
             NSPredicate(format: "identifier BEGINSWITH 'player-profile-depth-reorder-row-'")
         )
         XCTAssertGreaterThanOrEqual(rows.count, 2, "edit mode should show at least two reorder rows")
+        for index in 0..<rows.count {
+            XCTAssertTrue(rows.element(boundBy: index).label.contains("Quarterback, rank \(index + 1) of \(rows.count)"))
+        }
 
         // Drag the first row onto the last: the long-press pick-up then slow drag reorders
         // one slot at a time; holding at the end makes the last crossing register before the
@@ -56,6 +59,7 @@ final class PlayerCardReorderUITests: XCTestCase {
             draggedRowID,
             "a slow drag to the final slot should leave the dragged player there deterministically"
         )
+        XCTAssertTrue(rows.element(boundBy: lastIndex).label.contains("rank \(rows.count) of \(rows.count)"))
 
         let done = app.buttons["player-profile-depth-reorder-toggle"]
         XCTAssertEqual(done.label, "Done")
