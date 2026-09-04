@@ -1,25 +1,7 @@
-import type { ColorRef, TeamUniformDefinition, UniformLayer } from './types';
-
-// Dallas' two archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
-// nfl-uniform-refs/cowboys (home is that sheet's row-1 figure 1, away its row-2 figure 3). Collar
-// and sleeve paths use the outer 588-wide mannequin space; the helmet decal stays in raw helmet
-// coordinates (x:139-802, y:65-674). Right paths mirror the left across the centerline x=294.
-//
-// The two kits are not one construction recolored — they are different constructions, which is
-// why nothing here lives in `defaults` except the shell:
-//   home  navy body, no shoulder yoke at all, a white/silver band across the neck and a
-//         white-over-silver V-collar;
-//   away  white body under a large navy sleeve cap that runs from the shoulder seam to the hem,
-//         and no collar trim.
-// Neither kit carries a pant stripe: the reference's white pants are unbroken on both.
-//
-// One judgment call, stated rather than buried: the reference pairs its white jersey with a WHITE
-// shell (a 2025 alternate helmet), but depth's `away` row is the standard road kit, which wears
-// the same silver shell as home. The away definition therefore keeps the silver shell and takes
-// only its body construction from that figure.
-//
-// Out of scope on both kits, per the usual boundary: the sleeve star patch, the chest wordmark and
-// the league shield. The helmet decal is the one traced mark.
+// Dallas' construction geometry — the star decal and the collar/sleeve constants only.
+// The composable parts definition that consumes them lives in ./cowboys.parts.ts; the former flat
+// COWBOYS_UNIFORMS was deleted in the migration that proved parts render byte-identically (see
+// parts-parity.test.ts for the one-time gate).
 
 // Two literals, both forced. The home palette is navy over silver with accent === secondary (ESPN
 // supplies only two colors), so no token resolves to white — the neck band, the collar, the pants
@@ -49,7 +31,6 @@ export const COWBOYS_NECK_BAND_OUTER = 'M219,392 H373 V404 H219 Z';
 export const COWBOYS_NECK_BAND_CORE = 'M219,395 H373 V401 H219 Z';
 
 // Home's V-collar carries the same white-over-silver pair, measured at 7 reference px across.
-const COLLAR_PATH = 'M206,388 L294,455 L386,388';
 export const COWBOYS_COLLAR_OUTER_WIDTH = 22;
 export const COWBOYS_COLLAR_CORE_WIDTH = 14;
 
@@ -61,107 +42,3 @@ export const COWBOYS_COLLAR_CORE_WIDTH = 14;
 // runs past the jersey silhouette so the clip trims the cap flush.
 export const COWBOYS_SLEEVE_CAP_LEFT = 'M0,380 L108,395 L102,465 L137,580 L0,580 Z';
 export const COWBOYS_SLEEVE_CAP_RIGHT = 'M588,380 L480,395 L486,465 L451,580 L588,580 Z';
-
-const GENERIC_STRIPPED = [
-  'generic-helmet-stripe',
-  'generic-sleeve-yoke-left',
-  'generic-sleeve-yoke-right',
-  'generic-sleeve-stripe-left',
-  'generic-sleeve-stripe-right',
-  'generic-collar',
-  'generic-pants-stripe-left',
-  'generic-pants-stripe-right',
-];
-
-function star(keyline: ColorRef, body: ColorRef): UniformLayer[] {
-  return [
-    { id: 'cowboys-decal-star-keyline', d: COWBOYS_DECAL_STAR_OUTER_PATH, fill: keyline },
-    { id: 'cowboys-decal-star-body', d: COWBOYS_DECAL_STAR_BODY_PATH, fill: body },
-  ].map((layer): UniformLayer => ({
-    ...layer,
-    surface: 'helmet',
-    clip: true,
-    kind: 'fill',
-    fillRule: 'evenodd',
-  }));
-}
-
-export const COWBOYS_UNIFORMS: TeamUniformDefinition = {
-  teamId: 'cowboys',
-  // The silver shell, its navy star, and the stripped generic model are the only things both kits
-  // share; every construction difference below is a kit override.
-  defaults: {
-    helmetColor: COWBOYS_HELMET_SILVER,
-    removeLayerIds: GENERIC_STRIPPED,
-  },
-  kits: {
-    // Navy body over white pants. The reference's numerals are white, ringed navy, ringed white
-    // again — at swatch size that composite reads as a plain white glyph, so the outline restates
-    // the fill rather than painting a navy ring that would vanish into the navy body.
-    home: {
-      pantsColor: COWBOYS_WHITE,
-      layers: [
-        ...star(COWBOYS_WHITE, 'primary'),
-        {
-          id: 'cowboys-neck-band-outer',
-          surface: 'jersey',
-          d: COWBOYS_NECK_BAND_OUTER,
-          clip: true,
-          kind: 'fill',
-          fill: COWBOYS_WHITE,
-        },
-        {
-          id: 'cowboys-neck-band-core',
-          surface: 'jersey',
-          d: COWBOYS_NECK_BAND_CORE,
-          clip: true,
-          kind: 'fill',
-          fill: 'secondary',
-        },
-        {
-          id: 'cowboys-collar-outer',
-          surface: 'collar',
-          d: COLLAR_PATH,
-          clip: true,
-          kind: 'stroke',
-          stroke: COWBOYS_WHITE,
-          strokeWidth: COWBOYS_COLLAR_OUTER_WIDTH,
-        },
-        {
-          id: 'cowboys-collar-core',
-          surface: 'collar',
-          d: COLLAR_PATH,
-          clip: true,
-          kind: 'stroke',
-          stroke: 'secondary',
-          strokeWidth: COWBOYS_COLLAR_CORE_WIDTH,
-        },
-      ],
-      number: { fill: COWBOYS_WHITE, outline: COWBOYS_WHITE, outlineWidth: 10 },
-    },
-    // White body and pants under the navy sleeve caps. The away palette moves navy into secondary,
-    // so the star body and the caps both resolve from there.
-    away: {
-      layers: [
-        ...star(COWBOYS_WHITE, 'secondary'),
-        {
-          id: 'cowboys-sleeve-cap-left',
-          surface: 'sleeve-left',
-          d: COWBOYS_SLEEVE_CAP_LEFT,
-          clip: true,
-          kind: 'fill',
-          fill: 'secondary',
-        },
-        {
-          id: 'cowboys-sleeve-cap-right',
-          surface: 'sleeve-right',
-          d: COWBOYS_SLEEVE_CAP_RIGHT,
-          clip: true,
-          kind: 'fill',
-          fill: 'secondary',
-        },
-      ],
-      number: { fill: 'secondary', outline: 'secondary', outlineWidth: 10 },
-    },
-  },
-};
