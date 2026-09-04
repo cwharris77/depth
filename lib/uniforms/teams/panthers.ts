@@ -24,11 +24,10 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer } from './types';
 export const PANTHERS_WHITE = '#FFFFFF';
 export const PANTHERS_SILVER = '#A5ACAF';
 
-// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
-// these paths are a contour trace of the club's helmet mark, lifted from the GUD composite so there
-// is an accurate starting point to hand-stylize against. They are a literal reproduction of a
-// third-party mark and are expected to be REPLACED by original stylized geometry before this kit is
-// treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
+// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
+// of a third-party mark, not original geometry. The mark is NON-FREE upstream
+// (Wikimedia `File:Carolina Panthers logo.svg`, fair use; trademarked). Licence audit: the vault’s
+// Decisions.md, 2026-09-03.
 //
 // Two layers, because the mark's interior is NOT the shell color: a blue silhouette under a black
 // body, so the blue reads as the keyline it is. The silhouette is traced as the union of blue AND

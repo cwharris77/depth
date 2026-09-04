@@ -26,11 +26,10 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer } from './types';
 // `primary` — so the literal is confined to the one kit that needs it.
 export const DOLPHINS_WHITE = '#FFFFFF';
 
-// TRACE-PENDING-STYLIZE — machine traces, not final art. House workflow is trace-then-stylize:
-// these paths are contour traces of the club's helmet marks, lifted from the GUD composite so there
-// is an accurate starting point to hand-stylize against. They are literal reproductions of
-// third-party marks and are expected to be REPLACED by original stylized geometry before these kits
-// are treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
+// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
+// of a third-party mark, not original geometry. The mark is NON-FREE upstream
+// (Wikimedia `File:Miami Dolphins logo.svg`, fair use; trademarked). Licence audit: the vault’s
+// Decisions.md, 2026-09-03.
 //
 // TWO marks, because the throwback wears a different one — a teal dolphin breaking through a solid
 // orange ring, where the current kits wear a teal dolphin inside an orange sunburst. Both are two

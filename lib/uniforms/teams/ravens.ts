@@ -56,11 +56,10 @@ const GENERIC_STRIPPED = [
   'generic-pants-stripe-right',
 ];
 
-// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
-// these paths are a contour trace of the club's helmet mark, lifted from the GUD composite so
-// there is an accurate starting point to hand-stylize against. They are a literal reproduction of
-// a third-party mark and are expected to be REPLACED by original stylized geometry before this kit
-// is treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
+// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
+// of a third-party mark, not original geometry. The mark is NON-FREE upstream
+// (Wikimedia `File:Baltimore Ravens logo.svg`, fair use; trademarked). Licence audit: the vault’s
+// Decisions.md, 2026-09-03.
 //
 // The raven head, traced from the home figure's shell (bbox x30-173, y27-144 in the reference)
 // mapped onto the raw helmet space at ~6.25x. Four plain-union fills in paint order: gold keyline,
