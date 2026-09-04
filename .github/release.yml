@@ -1,3 +1,16 @@
+# Categorization for GitHub's auto-generated release notes. This is the repo's ONLY
+# changelog mechanism: cut a release (or `gh release create <tag> --generate-notes`) and
+# GitHub groups the PRs merged since the previous tag into the categories below, keyed on
+# the labels auto-label-prs.yml applies from each PR's conventional-commit title.
+#
+# A committed CHANGELOG.md + a workflow that regenerated it on every push to main used to
+# exist alongside this file. It was removed: it duplicated this mechanism, pushed a bot
+# commit to main per merge, and listed those bot commits in its own output. Nothing here
+# writes to the repo — the notes are rendered at release time and live on the release.
+#
+# Categories are matched in order and a PR lands in the FIRST one it matches, so the type
+# labels must stay above any broader label (see the '*' catch-all last).
+
 changelog:
   exclude:
     labels:
