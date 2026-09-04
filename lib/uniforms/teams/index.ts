@@ -27,7 +27,7 @@ import { RAMS_UNIFORMS } from './rams';
 import { RAVENS_UNIFORMS } from './ravens';
 import { SAINTS_UNIFORMS } from './saints';
 import { SEAHAWKS_UNIFORMS_FROM_PARTS } from './seahawks.parts';
-import { STEELERS_UNIFORMS } from './steelers';
+import { STEELERS_UNIFORMS_FROM_PARTS } from './steelers.parts';
 import { TEXANS_UNIFORMS } from './texans';
 import { TITANS_UNIFORMS } from './titans';
 import { VIKINGS_UNIFORMS } from './vikings';
@@ -66,7 +66,7 @@ chiefs: CHIEFS_UNIFORMS_FROM_PARTS,
   ravens: RAVENS_UNIFORMS,
   saints: SAINTS_UNIFORMS,
   seahawks: SEAHAWKS_UNIFORMS_FROM_PARTS,
-  steelers: STEELERS_UNIFORMS,
+  steelers: STEELERS_UNIFORMS_FROM_PARTS,
   texans: TEXANS_UNIFORMS,
   titans: TITANS_UNIFORMS,
   vikings: VIKINGS_UNIFORMS,
