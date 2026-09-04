@@ -15,6 +15,8 @@ export type Position =
   | 'C'
   | 'RG'
   | 'RT'
+  | 'OT'
+  | 'G'
   | 'DE'
   | 'LDE'
   | 'RDE'

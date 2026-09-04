@@ -1,5 +1,5 @@
 import type { Position } from '../types';
-import { resolveOlSide, type RosterPosition } from './positions';
+import type { RosterPosition } from './positions';
 
 // Historical rosters (nflverse's roster_<season>.csv) carry no real depth order, so
 // depth_rank is computed at ingest from that season's usage stats
@@ -38,8 +38,8 @@ export function usageScore(position: RosterPosition, stats: UsageStatsRow | unde
     case 'C':
     case 'RG':
     case 'RT':
-    case 'OL_TACKLE':
-    case 'OL_GUARD':
+    case 'OT':
+    case 'G':
       return n(stats.games);
     case 'DE':
     case 'DT':
@@ -76,10 +76,10 @@ export interface RankedEntry<T> {
 }
 
 // Ranks a group of same-team entries by usage (desc), ties broken by jersey number
-// (asc, locked decision). depthRank caps at 3; playerOrder keeps the full order. OL
-// tackle/guard groups additionally get their real side assigned here, by rank order
-// (see resolveOlSide) -- entries must already be scoped to one team before calling this
-// (it does not group by team itself, only by position within whatever it's given).
+// (asc, locked decision). depthRank caps at 3; playerOrder keeps the full order.
+// Offensive-line side comes from nflverse's historical depth-chart source before this
+// function runs. Generic OT/G fallback rows remain unseated rather than being assigned
+// an invented side. Entries must already be scoped to one team before calling this.
 export function rankByUsage<T>(entries: UsageEntry<T>[]): RankedEntry<T>[] {
   const byPosition = new Map<RosterPosition, UsageEntry<T>[]>();
   for (const entry of entries) {
@@ -91,20 +91,11 @@ export function rankByUsage<T>(entries: UsageEntry<T>[]): RankedEntry<T>[] {
   const ranked: RankedEntry<T>[] = [];
   for (const [position, group] of byPosition) {
     const sorted = [...group].sort((a, b) => b.usage - a.usage || a.number - b.number);
-    // Side assignment is a stable partition of the usage-sorted order (index 0,2,4…
-    // → left, 1,3,5… → right), so each side preserves the group's relative order and
-    // its own rank is just a per-side counter. depthRank must rank within the slot the
-    // player ends up in (LT/RT/LG/RG each need their own starter) — ranking on the
-    // collapsed group left every second side (RG/RT) with no depth_rank=1 row, which
-    // made the roster list start at BACKUP with no STARTER above it.
-    const sideRank = new Map<Position, number>();
     sorted.forEach((entry, i) => {
-      const resolved = resolveOlSide(position, i);
-      const rank = (sideRank.get(resolved) ?? 0) + 1;
-      sideRank.set(resolved, rank);
+      const rank = i + 1;
       ranked.push({
         item: entry.item,
-        position: resolved,
+        position,
         depthRank: Math.min(rank, 3) as 1 | 2 | 3,
         playerOrder: rank,
       });
