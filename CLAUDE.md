@@ -424,6 +424,14 @@ unreachable and the task depends on roadmap context the specs don't carry; or an
 instruction here conflicts with a direct request from Cooper (his request wins —
 say which rule you're overriding).
 
+**A verification test you cannot pass is a signal, not a waiver.** When your own
+test/check fails, route around the failure only after you've investigated the root
+cause and named it — the test may be asserting an assumption the code (or the
+migration's premise) never actually enforced (DEP-322: a "restrictive" Postgres
+grant was a silent no-op against Supabase's default `ALL` on every public table).
+A red check recorded in the PR body as "blocked" is a red flag you're shipping a
+contract that isn't true; fix the code or the test, don't document the exception.
+
 **Never**: force-push or delete `main`; commit a service-role key
 (`SUPABASE_SECRET_KEY` lives only in `.env.local` and GitHub Actions secrets —
 the anon key is public-safe by design); merge-commit; hand-edit generated files;
