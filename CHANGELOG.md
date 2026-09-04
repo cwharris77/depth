@@ -37,8 +37,6 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 - redesign iOS Settings page layout (#533) (settings)
 - rebrand in-app copy and metadata from Depth to The Sticks (#531) (web)
 - rebrand magic-link email to The Sticks (#526) (supabase)
-- add matchup room picker to compare (#524) (ios)
-- add favorite team and start-on-favorite settings (#521) (ios)
 ### Bug Fixes
 
 - repair the changelog workflow (#663) (ci)
@@ -81,6 +79,7 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 - keep receiver callout tags clear of their own position label (#525) (field)
 ### Documentation
 
+- update release notes [skip ci] (changelog)
 - reconcile the stale team-color claims (#604) (general)
 - rewrite the team-color plan against what shipped (#599) (specs)
 - implementation plan for team color surface rules (#592) (uniforms)
@@ -110,6 +109,7 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 - rework field geometry invariants (#546) (field)
 ### CI
 
+- scope the screenshots gate to iOS UI diffs (#662) (ios)
 - exempt Depth/Data from the screenshots gate (#605) (ios)
 - exempt Depth/Domain from the screenshots gate (#597) (ios)
 ### Chores
