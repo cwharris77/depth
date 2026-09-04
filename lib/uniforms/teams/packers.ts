@@ -3,7 +3,7 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } fr
 // Green Bay's four archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
 // nfl-uniform-refs/packers. Construction geometry — the sleeve stripe set, the concentric collar
 // and the pant stripes — is redrawn from that reference rather than traced; the helmet decal is
-// the documented exception (see TRACE-PENDING-STYLIZE below). Sleeve and pant paths use the outer
+// the documented exception (see the provenance note below). Sleeve and pant paths use the outer
 // 588-wide mannequin space; helmet paths stay in raw helmet coordinates (x:139-802, y:65-674).
 // Right-side paths mirror the left across the jersey centerline x=294 (mirroredX = 588 - x).
 
@@ -16,12 +16,6 @@ export const PACKERS_GREEN = '#203731';
 // The 1923 kit's leather shell and bronze-gold numerals have no token on that kit's palette.
 export const PACKERS_1923_LEATHER = '#7B4A2A';
 
-// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
-// this path is a contour trace of the club's helmet mark, lifted from the GUD composite so there
-// is an accurate starting point to hand-stylize against. It is a literal reproduction of a
-// third-party mark and is expected to be REPLACED by original stylized geometry before this kit is
-// treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
-//
 // Traced as the mark's WHITE region only. That region's boundary is the oval minus the glyph, so
 // painting a slightly larger ellipse beneath it in green yields both the oval's green rim and the
 // green glyph in one pass — no second trace of the letterform, whose ~2px stroke shreds into

@@ -4,12 +4,6 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } fr
 // nfl-uniform-refs/steelers. Sleeve and pant paths use the outer 588-wide mannequin space; right
 // paths mirror the left across the jersey centerline x=294 (mirroredX = 588 - x).
 //
-// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
-// these paths are a contour trace of the club's helmet mark, lifted from the GUD composite so
-// there is an accurate starting point to hand-stylize against. They are a literal reproduction of
-// a third-party mark and are expected to be REPLACED by original stylized geometry before this kit
-// is treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
-//
 // The three hypocycloids, traced from the home figure's shell (bbox x58-164, y93-189 in the
 // reference) mapped onto the raw helmet space at ~6.25x. This module previously called the mark
 // untraceable on two counts; one of those was right and one was not. The wordmark inside the disc

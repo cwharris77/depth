@@ -16,12 +16,6 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } fr
 // bars or the numerals; resolving any of them from `accent` would paint them grey.
 export const COLTS_WHITE = '#FFFFFF';
 
-// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
-// this path is a contour trace of the club's helmet mark, lifted from the GUD composite so there
-// is an accurate starting point to hand-stylize against. It is a literal reproduction of a
-// third-party mark and is expected to be REPLACED by original stylized geometry before this kit is
-// treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
-//
 // The cleanest trace of the set so far, and the reason is shape character rather than size: a
 // horseshoe is one bold closed band with no counter and no thin linework, so the 35x37px source
 // survives where the Falcons' falcon and the Seahawks' keyline shredded. Traced from the helmet

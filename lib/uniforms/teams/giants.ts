@@ -21,12 +21,6 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } fr
 // the collar and stripe set), so the numerals and the decal need the literal.
 export const GIANTS_WHITE = '#FFFFFF';
 
-// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
-// this path is a contour trace of the club's helmet mark, lifted from the GUD composite so there
-// is an accurate starting point to hand-stylize against. It is a literal reproduction of a
-// third-party mark and is expected to be REPLACED by original stylized geometry before this kit is
-// treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
-//
 // The cleanest letterform trace of the set: a bold lowercase monogram over a solid underbar, which
 // survives its 35x31px source the way the Bears' C did. Two components (the "n" fused to the bar,
 // and the "y"), emitted as one path and painted as a union — the "n" counter is open at the foot,

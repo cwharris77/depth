@@ -19,12 +19,6 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } fr
 // numeral face — resolving any of them from `accent` would paint them gold.
 export const CHIEFS_WHITE = '#FFFFFF';
 
-// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
-// this path is a contour trace of the club's helmet mark, lifted from the GUD composite so there
-// is an accurate starting point to hand-stylize against. It is a literal reproduction of a
-// third-party mark and is expected to be REPLACED by original stylized geometry before this kit is
-// treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
-//
 // One path, one color, no fill rule — and that is the whole trick here. The mark is a white
 // arrowhead with red letters, and the letters are the same red as the shell they sit on, so tracing
 // only the WHITE region gives a single boundary that snakes around the letterforms and lets the

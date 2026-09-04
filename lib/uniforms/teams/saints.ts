@@ -7,12 +7,6 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer } from './types';
 // home kit. What carries the uniform is a bold gold V-collar and gold numerals, so every kit here
 // strips the generic model down to that collar.
 
-// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
-// this path is a contour trace of the club's helmet mark, lifted from the GUD composite so there
-// is an accurate starting point to hand-stylize against. It is a literal reproduction of a
-// third-party mark and is expected to be REPLACED by original stylized geometry before this kit is
-// treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
-//
 // The fleur-de-lis, traced from the home figure's shell (bbox x59-165, y74-171 in the reference)
 // mapped onto the raw helmet space at ~6.25x. This module previously claimed the mark was too fine
 // to trace; that was wrong. It is a solid black shape and traces cleanly — what is genuinely too

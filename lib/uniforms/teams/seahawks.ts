@@ -5,12 +5,11 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } fr
 // nfl-uniform-refs/seahawks (2025 season composite + the 1976 throwback era sheet). Construction
 // geometry — stripes, bands, piping — is redrawn from those references rather than traced; the
 // helmet decal is the documented exception and is a machine trace awaiting hand-stylizing (see
-// TRACE-PENDING-STYLIZE below). Shoulder, sleeve and
-// pant paths use the outer 588-wide mannequin space; helmet paths stay in raw helmet coordinates
-// (x:139-802, y:65-674) so the renderer's translate(80.25 11) scale(0.5) group and per-surface
-// clip put each mark on its intended surface. Right-side paths mirror the left across the jersey
-// centerline x=294 (mirroredX = 588 - x) and are stored explicitly rather than transformed.
-
+// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
+// of a third-party mark, not original geometry. The mark is NON-FREE upstream
+// (Wikimedia `File:Seattle Seahawks logo.svg`, fair use; trademarked). Licence audit: the vault’s
+// Decisions.md, 2026-09-03.
+//
 // Wolf Grey is a construction fact of the modern kit, not a runtime body color: `toTeamColors`
 // sets accent = secondary, so an ESPN-sourced (home) palette carries no third token and 'accent'
 // would resolve to action green. Hex from teamcolorcodes.
@@ -26,11 +25,10 @@ export const SEAHAWKS_HELMET_CENTER_COLOR = '#2B507C';
 // The crown band this kit paints that color now lives in ./shared — San Francisco needs the same
 // geometry, and it is a fact about the mannequin shell rather than about Seattle.
 
-// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
-// this path is a contour trace of the club's helmet mark, lifted from the GUD composite so there
-// is an accurate starting point to hand-stylize against. It is a literal reproduction of a
-// third-party mark and is expected to be REPLACED by original stylized geometry before this kit is
-// treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
+// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
+// of a third-party mark, not original geometry. The mark is NON-FREE upstream
+// (Wikimedia `File:Seattle Seahawks logo.svg`, fair use; trademarked). Licence audit: the vault’s
+// Decisions.md, 2026-09-03.
 //
 // Produced by contour-tracing the decal's white keyline (upsampled 10x, Douglas-Peucker simplified)
 // and mapping it into raw helmet coordinates. The keyline is filled white and the shell reads

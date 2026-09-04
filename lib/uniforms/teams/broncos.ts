@@ -38,11 +38,10 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer } from './types';
 // `primary` on the away.
 export const BRONCOS_WHITE = '#FFFFFF';
 
-// TRACE-PENDING-STYLIZE — machine traces, not final art. House workflow is trace-then-stylize:
-// these paths are contour traces of the club's helmet marks, lifted from the GUD composite so there
-// is an accurate starting point to hand-stylize against. They are literal reproductions of
-// third-party marks and are expected to be REPLACED by original stylized geometry before these kits
-// are treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
+// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
+// of a third-party mark, not original geometry. The mark is NON-FREE upstream
+// (Wikimedia `File:Denver Broncos logo.svg`, fair use; trademarked). Licence audit: the vault’s
+// Decisions.md, 2026-09-03.
 //
 // TWO marks, because Orange Crush wears the era's "D" rather than the modern horse.
 //   - The horse is two layers of solid region — orange mane under a white head — and traced as

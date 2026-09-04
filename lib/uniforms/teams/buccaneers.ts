@@ -22,11 +22,10 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } fr
 // `accent`.
 export const BUCCANEERS_WHITE = '#FFFFFF';
 
-// TRACE-PENDING-STYLIZE — machine trace, not final art. House workflow is trace-then-stylize:
-// these paths are a contour trace of the club's helmet mark, lifted from the GUD composite so
-// there is an accurate starting point to hand-stylize against. They are a literal reproduction of
-// a third-party mark and are expected to be REPLACED by original stylized geometry before this kit
-// is treated as finished. Grep TRACE-PENDING-STYLIZE for every path in this state.
+// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
+// of a third-party mark, not original geometry. The mark is NON-FREE upstream
+// (Wikimedia `File:Tampa Bay Buccaneers logo.svg`, fair use; trademarked). Licence audit: the vault’s
+// Decisions.md, 2026-09-03.
 //
 // The flag, traced from the home figure's shell (bbox x60-166, y358-464 in the reference) mapped
 // onto the raw helmet space at ~6.25x. Four plain-union fills in paint order: keyline, red field,
