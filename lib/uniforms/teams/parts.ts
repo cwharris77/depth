@@ -36,6 +36,10 @@ export interface UniformPart {
   base: PaletteRef;
   // Layers in paint order, authored with palette keys rather than kit-relative ColorRefs.
   layers: PartLayer[];
+  // Only a helmet part carries a facemask; omitted, the kit keeps the shared neutral cage from
+  // GENERIC_UNIFORM_STYLE. The cage belongs to the helmet because that is how it is swapped in
+  // reality — a kit borrowing another kit's helmet borrows its facemask with it.
+  facemask?: PaletteRef;
   // Only a jersey part carries numerals.
   number?: PartNumberStyle;
 }
@@ -137,6 +141,9 @@ export function compileParts(def: TeamPartsDefinition): TeamUniformDefinition {
 
     kits[slug] = {
       helmetColor: hex(palette, helmet.base, teamId) as ColorRef,
+      ...(helmet.facemask && {
+        facemaskColor: hex(palette, helmet.facemask, teamId) as ColorRef,
+      }),
       jerseyColor: hex(palette, jersey.base, teamId) as ColorRef,
       pantsColor: hex(palette, pants.base, teamId) as ColorRef,
       removeLayerIds: GENERIC_LAYER_IDS,
