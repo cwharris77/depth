@@ -28,6 +28,7 @@ import {
   SEAHAWKS_1976_SLEEVE_WHITE_LEFT,
   SEAHAWKS_1976_SLEEVE_WHITE_RIGHT,
   SEAHAWKS_HELMET_HAWK_EYE_PATH,
+  SEAHAWKS_HELMET_HAWK_GREY_PATH,
   SEAHAWKS_HELMET_HAWK_PATH,
   SEAHAWKS_SHOULDER_BAND_LEFT,
   SEAHAWKS_SHOULDER_BAND_RIGHT,
@@ -57,10 +58,12 @@ const fill = (id: string, surface: UniformSurface, d: string, color: string): Pa
   fill: color,
 });
 
-// The modern decal: a white keyline whose counters let the shell read through, plus the eye.
-// There is no navy backing shape, which is why the mark only works on a shell it contrasts with.
+// The modern decal: the wolf-grey wing, then a white keyline whose counters let the shell read
+// through, then the eye. There is no navy backing shape, which is why the mark only works on a
+// shell it contrasts with. Geometry and placement rationale live in seahawks.ts.
 function hawk(eye: string): PartLayer[] {
   return [
+    fill('seahawks-helmet-hawk-grey', 'helmet', SEAHAWKS_HELMET_HAWK_GREY_PATH, 'wolfGrey'),
     fill('seahawks-helmet-hawk', 'helmet', SEAHAWKS_HELMET_HAWK_PATH, 'white'),
     fill('seahawks-helmet-hawk-eye', 'helmet', SEAHAWKS_HELMET_HAWK_EYE_PATH, eye),
   ];

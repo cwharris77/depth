@@ -89,6 +89,8 @@ describe('team uniform definitions', () => {
     // What the kit paints is unchanged — parts-parity.test.ts holds the rasters byte-identical.
     expect(layerIds?.filter((id) => id.startsWith('seahawks-'))).toEqual([
       'seahawks-helmet-center-stripe',
+      // Grey wing paints under the keyline; it was missing from the pre-2026-09-03 decal.
+      'seahawks-helmet-hawk-grey',
       'seahawks-helmet-hawk',
       'seahawks-helmet-hawk-eye',
       'seahawks-shoulder-bar-left',
