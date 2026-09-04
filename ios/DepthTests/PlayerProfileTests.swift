@@ -3,6 +3,37 @@ import Testing
 
 // Player-profile contract coverage starts at the DTO boundary, before presentation.
 
+@Test func depthReorderAccessibilityBoundsAndRanks() {
+    let player = Player(id: "p", name: "Test Player", position: .qb, depthRank: 3, number: 17)
+    for index in 0..<5 {
+        let row = DepthReorderAccessibility(player: player, index: index, count: 5)
+        #expect(row.destination(offset: -1) == (index == 0 ? nil : index - 1))
+        #expect(row.destination(offset: 1) == (index == 4 ? nil : index + 1))
+        #expect(row.label.contains("Quarterback, rank \(index + 1) of 5"))
+        #expect(row.label.contains(index == 0 ? "Starter" : index == 1 ? "Backup" : "Reserve"))
+    }
+    for count in [0, 1] {
+        let row = DepthReorderAccessibility(player: player, index: 0, count: count)
+        #expect(row.destination(offset: -1) == nil)
+        #expect(row.destination(offset: 1) == nil)
+    }
+    let missing = DepthReorderAccessibility(player: player, index: -1, count: 5)
+    #expect(missing.destination(offset: 1) == nil)
+    let row = DepthReorderAccessibility(player: player, index: 1, count: 5)
+    #expect(row.destination(offset: 0) == nil)
+    #expect(row.destination(offset: 2) == nil)
+}
+
+@Test func depthReorderAccessibilityNamesPlayerAndMoveResult() {
+    let player = Player(id: "p", name: "Test Player", position: .rb, depthRank: 3, number: 22)
+    let row = DepthReorderAccessibility(player: player, index: 0, count: 4)
+    #expect(row.label == "Test Player, number 22, Running Back, rank 1 of 4, Starter")
+    #expect(row.moveAnnouncement == "Moved Test Player, number 22 to Running Back, rank 1 of 4, Starter")
+    let unnamed = Player(id: "unknown", position: .rb, depthRank: 3, number: 22)
+    #expect(DepthReorderAccessibility(player: unnamed, index: 3, count: 4).label
+        == "Number 22, Running Back, rank 4 of 4, Reserve")
+}
+
 @Test func playerMapperPreservesCompleteProfileFields() throws {
     let dto = PlayerDTO(
         id: "p17", teamId: "bills", name: "Jordan Example", number: 17, position: "QB",

@@ -766,6 +766,7 @@ private struct DepthRowContent: View {
 // fires once on release.
 private struct DepthReorderList: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @AccessibilityFocusState(for: .voiceOver) private var focusedPlayerID: String?
 
     @Binding var players: [Player]
     let currentPlayerID: String
@@ -813,7 +814,9 @@ private struct DepthReorderList: View {
     }
 
     private func row(_ p: Player) -> some View {
-        HStack(spacing: DesignTokens.Spacing.sm) {
+        let index = players.firstIndex(where: { $0.id == p.id }) ?? 0
+        let accessibility = DepthReorderAccessibility(player: p, index: index, count: players.count)
+        return HStack(spacing: DesignTokens.Spacing.sm) {
             // Web parity (PlayerCardDepthList's edit rows): a grip glyph leads each row
             // while reordering — the six-dot drag grip (size 16, matching web's row
             // GripVertical), not a hamburger (DEP-241). Rows are no longer tap-to-switch.
@@ -865,11 +868,36 @@ private struct DepthReorderList: View {
                     onCommit(players)
                 }
         )
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(
-            "\(rankLabel(p.depthRank)), #\(p.number), \(p.name.isEmpty ? "#\(p.number)" : p.name)"
-        )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibility.label)
+        .accessibilityActions {
+            if accessibility.destination(offset: -1) != nil {
+                Button("Move Up") { moveAccessibly(playerID: p.id, offset: -1) }
+            }
+            if accessibility.destination(offset: 1) != nil {
+                Button("Move Down") { moveAccessibly(playerID: p.id, offset: 1) }
+            }
+        }
+        .accessibilityFocused($focusedPlayerID, equals: p.id)
         .accessibilityIdentifier("player-profile-depth-reorder-row-\(p.id)")
+    }
+
+    // DEP-414: resolve the current index when invoked, so repeated rotor actions never
+    // use a stale rank. Share drag's move and commit paths, including local persistence.
+    private func moveAccessibly(playerID: String, offset: Int) {
+        guard draggedPlayerID == nil,
+              let from = players.firstIndex(where: { $0.id == playerID }) else { return }
+        let accessibility = DepthReorderAccessibility(
+            player: players[from], index: from, count: players.count
+        )
+        guard let to = accessibility.destination(offset: offset) else { return }
+        moveDragged(from: from, to: to)
+        onCommit(players)
+        focusedPlayerID = playerID
+        AccessibilityNotification.Announcement(
+            DepthReorderAccessibility(player: players[to], index: to, count: players.count)
+                .moveAnnouncement
+        ).post()
     }
 
     /// Moves the dragged player one slot at a time as the finger crosses the adjacent slot
@@ -907,14 +935,32 @@ private struct DepthReorderList: View {
         }
         rankFeedbackCount += 1
     }
+}
 
-    private func rankLabel(_ rank: Int) -> String {
-        switch rank {
-        case 1: "STARTER"
-        case 2: "BACKUP"
-        default: "RESERVE"
-        }
+// DEP-414: spoken rank follows the actual list index, not depthRank (which caps at 3).
+// The same bounds determine available rotor actions and reject stale boundary moves.
+struct DepthReorderAccessibility {
+    let player: Player
+    let index: Int
+    let count: Int
+
+    func destination(offset: Int) -> Int? {
+        guard (offset == -1 || offset == 1), (0..<count).contains(index),
+              (0..<count).contains(index + offset) else { return nil }
+        return index + offset
     }
+
+    private var identity: String {
+        player.name.isEmpty ? "Number \(player.number)" : "\(player.name), number \(player.number)"
+    }
+
+    private var rank: String {
+        let role = index == 0 ? "Starter" : index == 1 ? "Backup" : "Reserve"
+        return "\(player.position.fullName), rank \(index + 1) of \(count), \(role)"
+    }
+
+    var label: String { "\(identity), \(rank)" }
+    var moveAnnouncement: String { "Moved \(identity) to \(rank)" }
 }
 
 enum PlayerProfileSection {
