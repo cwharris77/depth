@@ -1,5 +1,3 @@
-import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } from './types';
-
 // New England's four archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
 // nfl-uniform-refs/patriots (home is that sheet's row-2 figure 3, away its row-1 figure 1, Pat
 // Patriot its row-1 figure 7 — boxed "worn in same games"). Right paths mirror the left across the
@@ -18,11 +16,11 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } fr
 //
 // Out of scope on every kit: the chest wordmark, the league shield, the "WE ARE ALL PATRIOTS"
 // collar tab, the Super Bowl and USA-250 patches, the logo on each sleeve, and shoulder numerals.
-
-// White is a literal on the home kit only. Its palette is navy over red with silver in accent, so
-// nothing resolves to the middle band or the numeral face. The away carries white in `primary`, and
-// Pat Patriot and Rivalries both carry it in `accent`.
-export const PATRIOTS_WHITE = '#FFFFFF';
+//
+// Construction geometry only — the band and mark paths. The composable parts definition that
+// consumes them lives in ./patriots.parts.ts; the former flat PATRIOTS_UNIFORMS was deleted in the
+// migration that proved parts render byte-identically (see parts-parity.test.ts for the one-time
+// gate).
 
 // The shoulder bands, measured on the home figure (jersey top y=901, sleeve hem y=967, figure center
 // x=714.5, so scaleY = 191/66 and scaleX = 264/84.5). At reference y=913 the three run x650-656,
@@ -38,41 +36,6 @@ export const PATRIOTS_BANDS_RIGHT = [
   'M477,404 L458,404 L436,493 L455,493 Z',
   'M458,404 L439,404 L417,493 L436,493 Z',
 ];
-
-const GENERIC_STRIPPED = [
-  'generic-helmet-stripe',
-  'generic-sleeve-yoke-left',
-  'generic-sleeve-yoke-right',
-  'generic-sleeve-stripe-left',
-  'generic-sleeve-stripe-right',
-  'generic-collar',
-  'generic-pants-stripe-left',
-  'generic-pants-stripe-right',
-];
-
-function shoulderBands(outer: ColorRef, inner: ColorRef): UniformLayer[] {
-  const out: UniformLayer[] = [];
-  const sides: [UniformSurface, string[]][] = [
-    ['sleeve-left', PATRIOTS_BANDS_LEFT],
-    ['sleeve-right', PATRIOTS_BANDS_RIGHT],
-  ];
-
-  for (const [surface, paths] of sides) {
-    const side = surface === 'sleeve-left' ? 'left' : 'right';
-    paths.forEach((d, i) => {
-      out.push({
-        id: `patriots-band-${i}-${side}`,
-        surface,
-        d,
-        clip: true,
-        kind: 'fill',
-        fill: i === 1 ? inner : outer,
-      });
-    });
-  }
-
-  return out;
-}
 
 // Provenance: contour trace of the club's mark from the GUD composite — a reproduction
 // of a third-party mark, not original geometry. The mark is NON-FREE upstream
@@ -100,60 +63,3 @@ export const PATRIOTS_DECAL_STREAMERS_PATH =
   'M444.0,147.8 L447.4,149.1 L452.2,158.5 L448.1,164.5 L435.9,165.8 L359.8,191.2 L344.8,191.9 L324.4,197.2 L310.9,195.9 L351.6,183.2 L374.0,172.5 L381.5,171.8 L385.6,167.8 L443.3,148.5 Z M452.8,174.5 L459.0,176.5 L456.9,186.5 L418.9,196.5 L393.1,196.5 L395.1,193.9 L405.3,193.2 L452.2,175.2 Z';
 export const PATRIOTS_DECAL_STAR_PATH =
   'M580.5,161.8 L583.3,169.8 L590.7,173.2 L583.3,177.9 L587.3,188.5 L577.8,179.9 L564.9,182.5 L570.4,175.8 L565.6,167.8 L573.8,168.5 L579.9,162.5 Z';
-
-// Fixed art on every shell the club wears — navy, white, red and the Pat Patriot silver — so the
-// mark takes literals rather than tokens. Sampled off the reference figure.
-export const PATRIOTS_DECAL_NAVY = '#002244';
-export const PATRIOTS_DECAL_RED = '#C60C30';
-
-function decal(): UniformLayer[] {
-  return (
-    [
-      ['patriots-decal-keyline', PATRIOTS_DECAL_KEYLINE_PATH, PATRIOTS_WHITE],
-      ['patriots-decal-face', PATRIOTS_DECAL_FACE_PATH, PATRIOTS_DECAL_NAVY],
-      ['patriots-decal-streamers', PATRIOTS_DECAL_STREAMERS_PATH, PATRIOTS_DECAL_RED],
-      ['patriots-decal-star', PATRIOTS_DECAL_STAR_PATH, PATRIOTS_WHITE],
-    ] as [string, string, ColorRef][]
-  ).map(([id, d, fill]) => ({
-    id,
-    surface: 'helmet' as const,
-    d,
-    clip: true,
-    kind: 'fill' as const,
-    fill,
-  }));
-}
-
-export const PATRIOTS_UNIFORMS: TeamUniformDefinition = {
-  teamId: 'patriots',
-  defaults: { removeLayerIds: GENERIC_STRIPPED },
-  kits: {
-    // Navy body and shell, banded red/white/red. Red is `secondary`; white has no token in this
-    // palette, so the middle band and the numeral face both take the literal.
-    home: {
-      layers: [...shoulderBands('secondary', PATRIOTS_WHITE), ...decal()],
-      number: { fill: PATRIOTS_WHITE, outline: 'secondary', outlineWidth: 14 },
-    },
-    // White body under a silver shell, banded red/navy/red — the inner band picks up the body's
-    // contrast rather than staying white. The away palette moves white into primary, navy into
-    // secondary and red into accent, so every color here resolves from a token.
-    away: {
-      helmetColor: '#B0B7BC',
-      layers: [...shoulderBands('accent', 'secondary'), ...decal()],
-      number: { fill: 'secondary', outline: 'accent', outlineWidth: 14 },
-    },
-    // Red body, banded white/navy/white against it. Navy is `secondary` and white `accent`, so the
-    // pattern inverts from the home kit without either color needing a literal. NO HELMET MARK —
-    // this era wore the Pat Patriot logo, a different mark that no figure on the sheet draws.
-    'pat-patriot': {
-      layers: shoulderBands('accent', 'secondary'),
-      number: { fill: 'accent', outline: 'secondary', outlineWidth: 14 },
-    },
-    // INFERRED — no figure on the sheet. Takes the home pattern against its own palette, which
-    // carries white in `accent` and so needs no literal.
-    'rivalries-2025': {
-      layers: [...shoulderBands('secondary', 'accent'), ...decal()],
-      number: { fill: 'accent', outline: 'secondary', outlineWidth: 14 },
-    },
-  },
-};
