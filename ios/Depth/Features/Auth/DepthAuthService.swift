@@ -155,7 +155,10 @@ actor SupabaseDepthAuthService: DepthAuthServicing {
         return DepthUser(id: user.id, email: email)
     }
 
-    private static func map(_ error: Error) -> DepthAuthError {
+    // Internal for deterministic error-classification coverage. The service remains the
+    // only production caller, so feature code still receives DepthAuthError rather than
+    // interpreting GoTrue's unstable strings itself.
+    static func map(_ error: Error) -> DepthAuthError {
         if let depthError = error as? DepthAuthError { return depthError }
         if let urlError = error as? URLError, urlError.isNetworkUnavailable {
             return .offline
@@ -165,7 +168,9 @@ actor SupabaseDepthAuthService: DepthAuthServicing {
         }
 
         let message = error.localizedDescription.lowercased()
-        if message.contains("rate") || message.contains("429") { return .rateLimited }
+        if message.contains("rate") || message.contains("429") || message.contains("only request this after") {
+            return .rateLimited
+        }
         if message.contains("expired") { return .expiredCode }
         if message.contains("invalid") || message.contains("token") { return .invalidCode }
         return .server

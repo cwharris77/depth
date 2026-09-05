@@ -90,6 +90,16 @@ private actor AsyncCounter {
     #expect(model.resendAvailableAt == now.addingTimeInterval(60))
 }
 
+@Test func otpCooldownMapsToWaitAMomentMessage() {
+    let cooldown = NSError(
+        domain: "GoTrue",
+        code: 0,
+        userInfo: [NSLocalizedDescriptionKey: "For security purposes, you can only request this after 60 seconds."]
+    )
+
+    #expect(SupabaseDepthAuthService.map(cooldown) == .rateLimited)
+}
+
 @Test @MainActor func expiredOtpKeepsRetryableCodeState() async {
     let service = FakeAuthService()
     await service.setVerifyError(.expiredCode)
