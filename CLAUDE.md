@@ -101,6 +101,12 @@ web UI is frozen.
     tables are owner-only. Writes rely on the service-role ingest bypassing RLS. Never
     enable RLS on a *new* table without a read policy for whoever reads it (anon for
     public data, `auth.uid()` for private), or that reader breaks (see `docs/espn.md`).
+11. **Published data stays decodable by every supported app build.** Before an ingest,
+    schema, or API change writes a value an installed client cannot decode, ship the
+    compatible binary, confirm its App Store release, and use the existing forced-update
+    flow to block older builds. Only then run the backfill or enable the new payload.
+    A merged PR, TestFlight upload, or a configured-but-unenforced minimum build is not
+    sufficient.
 
 ## 3. Conventions
 
