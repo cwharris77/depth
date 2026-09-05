@@ -24,7 +24,6 @@ final class PRScreenshotsUITests: XCTestCase {
     // chart so before/after diffs are meaningful across runs.
     private let teamId = "bills"
     private let teamQuery = "Bills"
-    private let teamDisplayName = "Buffalo Bills"
 
     override func setUpWithError() throws {
         continueAfterFailure = false
@@ -34,25 +33,16 @@ final class PRScreenshotsUITests: XCTestCase {
         let requested = Self.requestedTargets()
 
         let app = XCUIApplication()
-        // Same clean-slate launch as the other deterministic UI journeys so every
-        // capture starts from the same anonymous, no-restored-team state.
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
-        app.launch()
-
-        // The app launches straight into a default team's depth chart
-        // (2026-08-15 navigation-parity spec); drive it to the stable Bills chart so
-        // captures are deterministic.
-        XCTAssertTrue(app.waitForDepthChart(), "app should launch straight into a depth chart")
-        app.selectTeam(
-            teamId, searching: teamQuery, expectedDisplayName: teamDisplayName,
-            file: #filePath, line: #line
-        )
+        // Capture targets need a stable chart, not team-switcher coverage. Start on the
+        // fixture team via the current deterministic launch path so screenshot runs do
+        // not depend on a search field being present after reset (DEP-487).
+        XCTAssertTrue(app.launch(intoTeam: teamId), "the Bills chart should launch directly")
 
         // `field` — the depth chart field surface itself (yard lines, end zones, LOS,
         // hash marks, grass gradient). The field is the chart; capture it after the team
         // re-renders its slots.
         if requested.contains("field") {
-            XCTAssertTrue(app.waitForDepthChart(), "the Bills chart should render after team selection")
+            XCTAssertTrue(app.waitForDepthChart(), "the Bills chart should render after direct launch")
             attachScreenshot(name: "field")
         }
 
