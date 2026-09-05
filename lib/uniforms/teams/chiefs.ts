@@ -1,18 +1,7 @@
-import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } from './types';
-
-// Kansas City's two archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
-// nfl-uniform-refs/chiefs (home is that sheet's row-1 figure 5, away its row-1 figure 1; the other
-// figures are pant combinations, not separate kits). Sleeve paths use the outer 588-wide mannequin
-// space; the helmet decal stays in raw helmet coordinates (x:139-802, y:65-674). Right paths mirror
-// the left across the centerline x=294 (mirroredX = 588 - x).
-//
-// Both kits are one construction with the tokens swapped: a bare red shell carrying only the
-// arrowhead, a three-band set at the end of each sleeve, and boldly trimmed numerals. No helmet
-// stripe, no collar trim, and no pant stripe — the reference's white pants are unbroken, and the
-// red/gold striping in the swatch beside each figure is the sock, not the pant.
-//
-// Out of scope on both kits: the chest wordmark, the league shield, and the AFL/anniversary patches
-// the reference shows on the chest.
+// Kansas City's construction geometry — the arrowhead decal and the sleeve-band constants only.
+// The composable parts definition that consumes them lives in ./chiefs.parts.ts; the former flat
+// CHIEFS_UNIFORMS was deleted in the migration that proved parts render byte-identically (see
+// parts-parity.test.ts for the one-time gate).
 
 // White is a literal on the home kit. Its palette is red over gold with accent === secondary (ESPN
 // supplies only two colors), so no token resolves to the pants, the outer sleeve bands or the
@@ -36,78 +25,3 @@ export const CHIEFS_DECAL_ARROWHEAD_PATH =
 export const CHIEFS_STRIPE_BOUNDS = [486, 503, 515, 533];
 export const CHIEFS_SLEEVE_X_LEFT = [30, 91];
 export const CHIEFS_SLEEVE_X_RIGHT = [497, 558];
-
-const GENERIC_STRIPPED = [
-  'generic-helmet-stripe',
-  'generic-sleeve-yoke-left',
-  'generic-sleeve-yoke-right',
-  'generic-sleeve-stripe-left',
-  'generic-sleeve-stripe-right',
-  'generic-collar',
-  'generic-pants-stripe-left',
-  'generic-pants-stripe-right',
-];
-
-// Outer bands top and bottom, one gold band between them — white-on-gold at home, red-on-gold away.
-function sleeveStripes(outer: ColorRef, middle: ColorRef): UniformLayer[] {
-  const out: UniformLayer[] = [];
-  const sides: [UniformSurface, number[]][] = [
-    ['sleeve-left', CHIEFS_SLEEVE_X_LEFT],
-    ['sleeve-right', CHIEFS_SLEEVE_X_RIGHT],
-  ];
-
-  for (let i = 0; i < CHIEFS_STRIPE_BOUNDS.length - 1; i += 1) {
-    const top = CHIEFS_STRIPE_BOUNDS[i];
-    const bottom = CHIEFS_STRIPE_BOUNDS[i + 1];
-    for (const [surface, [x0, x1]] of sides) {
-      const side = surface === 'sleeve-left' ? 'left' : 'right';
-      out.push({
-        id: `chiefs-sleeve-band-${i}-${side}`,
-        surface,
-        d: `M${x0},${top} H${x1} V${bottom} H${x0} Z`,
-        clip: true,
-        kind: 'fill',
-        fill: i === 1 ? middle : outer,
-      });
-    }
-  }
-
-  return out;
-}
-
-function arrowhead(): UniformLayer[] {
-  return [
-    {
-      id: 'chiefs-decal-arrowhead',
-      surface: 'helmet',
-      d: CHIEFS_DECAL_ARROWHEAD_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: CHIEFS_WHITE,
-    },
-  ];
-}
-
-export const CHIEFS_UNIFORMS: TeamUniformDefinition = {
-  teamId: 'chiefs',
-  // The red shell, its arrowhead and the stripped generic model are shared; only the body color and
-  // which token carries red differ between the kits.
-  defaults: { removeLayerIds: GENERIC_STRIPPED, layers: arrowhead() },
-  kits: {
-    // Red body over white pants. Both the numeral face and the outer sleeve bands are white, which
-    // this palette cannot supply, so both take the literal.
-    home: {
-      pantsColor: CHIEFS_WHITE,
-      layers: sleeveStripes(CHIEFS_WHITE, 'secondary'),
-      number: { fill: CHIEFS_WHITE, outline: 'secondary', outlineWidth: 22 },
-    },
-    // White body and pants under the same red shell. The away palette moves white into primary and
-    // red into secondary, so the bands and the numeral face swap onto the inverse tokens and gold
-    // moves from secondary to accent.
-    away: {
-      helmetColor: 'secondary',
-      layers: sleeveStripes('secondary', 'accent'),
-      number: { fill: 'secondary', outline: 'accent', outlineWidth: 22 },
-    },
-  },
-};
