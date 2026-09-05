@@ -229,51 +229,19 @@ const HELMET_ICE: UniformPart = {
   ],
 };
 
-// Home jersey: blue body, red generic sleeve band (the flat home inherits it), blue is the body.
+// Home jersey: blue body. The sleeve band set (incl. the generic red sleeve band) lives in the
+// shared HELMET_WHITE part; same-paint-order as the flat's inherited-then-applied merge.
 const JERSEY_BLUE: UniformPart = {
   base: 'navy',
-  layers: [
-    {
-      id: 'generic-sleeve-stripe-left',
-      surface: 'sleeve-left',
-      d: SLEEVE_BAND_PATH_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: 'red',
-    },
-    {
-      id: 'generic-sleeve-stripe-right',
-      surface: 'sleeve-right',
-      d: SLEEVE_BAND_PATH_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: 'red',
-    },
-  ],
+  layers: [],
   number: { fill: 'readable-on-body', outline: 'red', outlineWidth: 26 },
 };
 
-// Away jersey: white body with the red sleeve band and red pant stripe (the generic layers painted
-// red, since the white body needs the contrast).
+// Away jersey: white body with the red pant stripe (the generic layers painted red, since the
+// white body needs the contrast). The red sleeve band lives in the shared HELMET_WHITE part.
 const JERSEY_WHITE: UniformPart = {
   base: 'white',
   layers: [
-    {
-      id: 'generic-sleeve-stripe-left',
-      surface: 'sleeve-left',
-      d: SLEEVE_BAND_PATH_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: 'red',
-    },
-    {
-      id: 'generic-sleeve-stripe-right',
-      surface: 'sleeve-right',
-      d: SLEEVE_BAND_PATH_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: 'red',
-    },
     {
       id: 'generic-pants-stripe-left',
       surface: 'leg-left',
