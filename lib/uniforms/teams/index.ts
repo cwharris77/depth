@@ -29,7 +29,7 @@ import { SAINTS_UNIFORMS_FROM_PARTS } from './saints.parts';
 import { SEAHAWKS_UNIFORMS_FROM_PARTS } from './seahawks.parts';
 import { STEELERS_UNIFORMS_FROM_PARTS } from './steelers.parts';
 import { TEXANS_UNIFORMS_FROM_PARTS } from './texans.parts';
-import { TITANS_UNIFORMS } from './titans';
+import { TITANS_UNIFORMS_FROM_PARTS } from './titans.parts';
 import { VIKINGS_UNIFORMS } from './vikings';
 import type { TeamUniformDefinition } from './types';
 
@@ -68,7 +68,7 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   seahawks: SEAHAWKS_UNIFORMS_FROM_PARTS,
   steelers: STEELERS_UNIFORMS_FROM_PARTS,
   texans: TEXANS_UNIFORMS_FROM_PARTS,
-  titans: TITANS_UNIFORMS,
+  titans: TITANS_UNIFORMS_FROM_PARTS,
   vikings: VIKINGS_UNIFORMS,
 };
 
