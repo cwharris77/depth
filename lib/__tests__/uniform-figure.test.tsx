@@ -199,7 +199,6 @@ describe('UniformFigure', () => {
     ['test-jersey-fill', 'test-collar'],
     ['test-collar', 'test-number-mark'],
     ['test-number-mark', 'test-helmet-fill'],
-    ['test-helmet-fill', 'fill="#4b5158"'],
   ])('paints %s before %s', (earlier, later) => {
     const markup = renderFigure({ definition });
 
@@ -212,22 +211,23 @@ describe('UniformFigure', () => {
       .ensureAlpha()
       .raw()
       .toBuffer({ resolveWithObject: true });
-    const sightOpeningPixel = (180 * info.width + 410) * 4;
-    const frontShellRimPixel = (145 * info.width + 410) * 4;
-    const lowerCagePixel = (225 * info.width + 420) * 4;
+    const sightOpeningPixel = (170 * info.width + 400) * 4;
+    const frontShellRimPixel = (140 * info.width + 420) * 4;
+    const lowerCagePixel = (260 * info.width + 400) * 4;
 
     expect([...data.subarray(sightOpeningPixel, sightOpeningPixel + 4)]).toEqual([0, 0, 0, 0]);
     expect(data[frontShellRimPixel + 3]).toBe(255);
     expect([...data.subarray(lowerCagePixel, lowerCagePixel + 4)]).toEqual([0, 0, 0, 0]);
   });
 
-  it('paints shared helmet details beneath team-authored helmet layers', () => {
+  it('paints generated helmet art beneath team-authored helmet layers', () => {
     const markup = renderFigure({ definition });
-    const detail = 'data-detail-id="helmet-ear-opening"';
+    const helmetArt = 'data-helmet-art="base"';
     const teamLayer = 'data-layer-id="test-helmet-fill"';
 
-    expect(markup).toContain(detail);
-    expect(markup.indexOf(detail)).toBeLessThan(markup.indexOf(teamLayer));
+    expect(markup).not.toContain('data-detail-id=');
+    expect(markup).toContain(helmetArt);
+    expect(markup.indexOf(helmetArt)).toBeLessThan(markup.indexOf(teamLayer));
   });
 
   it('renders an authored number glyph instead of the fallback text', () => {
