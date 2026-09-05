@@ -24,6 +24,11 @@ changelog:
     - title: Features
       labels:
         - feature
+    # Above Bug Fixes deliberately: a PR carrying both (a hand-added `design` on a
+    # `fix:` title) is a look change, not a defect, and first-match decides.
+    - title: Design & Polish
+      labels:
+        - design
     - title: Bug Fixes
       labels:
         - bug

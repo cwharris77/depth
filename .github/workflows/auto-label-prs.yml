@@ -45,6 +45,11 @@ jobs:
               chore: 'chore',
               revert: 'bug',
               a11y: 'a11y',
+              // Non-standard, like a11y: a visual change that fixes nothing broken.
+              // `fix:` claims something was defective, which mislabels "I wanted a
+              // different look" as a bug in the release notes. Covers restyles that add
+              // no capability too — if the diff only changes how it looks, it is design.
+              design: 'design',
             };
 
             // Area is about where the change lands, for reviewers filtering the queue.
@@ -74,7 +79,7 @@ jobs:
 
             const title = context.payload.pull_request.title ?? '';
             const m = title.match(
-              /^(feat|fix|docs|refactor|style|perf|test|build|ci|chore|revert|a11y)(?:\(([^)]+)\))?!?:/
+              /^(feat|fix|docs|refactor|style|perf|test|build|ci|chore|revert|a11y|design)(?:\(([^)]+)\))?!?:/
             );
             if (m) {
               if (TYPE_LABELS[m[1]]) labels.add(TYPE_LABELS[m[1]]);
