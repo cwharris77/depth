@@ -8,7 +8,7 @@ import { BUCCANEERS_UNIFORMS } from './buccaneers';
 import { CARDINALS_UNIFORMS } from './cardinals';
 import { CHARGERS_UNIFORMS } from './chargers';
 import { CHIEFS_UNIFORMS_FROM_PARTS } from './chiefs.parts';
-import { COLTS_UNIFORMS } from './colts';
+import { COLTS_UNIFORMS_FROM_PARTS } from './colts.parts';
 import { COMMANDERS_UNIFORMS } from './commanders';
 import { COWBOYS_UNIFORMS } from './cowboys';
 import { DOLPHINS_UNIFORMS } from './dolphins';
@@ -46,8 +46,8 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   buccaneers: BUCCANEERS_UNIFORMS,
   cardinals: CARDINALS_UNIFORMS,
   chargers: CHARGERS_UNIFORMS,
-  chiefs: CHIEFS_UNIFORMS_FROM_PARTS,
-  colts: COLTS_UNIFORMS,
+chiefs: CHIEFS_UNIFORMS_FROM_PARTS,
+  colts: COLTS_UNIFORMS_FROM_PARTS,
   commanders: COMMANDERS_UNIFORMS,
   cowboys: COWBOYS_UNIFORMS,
   dolphins: DOLPHINS_UNIFORMS,
