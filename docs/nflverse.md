@@ -64,9 +64,10 @@ scaffolding with their own specs.
   `pos_abb` from the newest snapshot. `scripts/ingest-nflverse-rosters.mts` joins the
   resulting `(team_id, gsis_id)` position map before usage ranking. There is no depth
   chart release for 1999–2000, and a player absent from an otherwise available release
-  keeps the roster's generic `OT`/`G`; those values are intentionally unseated by the
-  field resolver rather than assigned an invented left/right side. A missing depth-chart
-  asset for 2001+ fails that season and leaves its previous rows intact.
+  is omitted rather than assigned an invented left/right side. Generic `OT`/`G` values
+  are not published because released native clients cannot decode them; every successful
+  roster ingest also deletes the earlier generic rows for its seasons. A missing
+  depth-chart asset for 2001+ fails that season and leaves its previous rows intact.
 - `lib/nflverse/team-stats.ts` — `parseDistanceList(raw)`: pure parse of a
   semicolon-delimited string (e.g. `"42;50;29;47"`) into `number[]`, blank -> `[]`.
   `toTeamStatsRows(csvRows, resolveCode?)`: transforms nflverse
