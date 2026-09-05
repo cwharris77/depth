@@ -1,5 +1,3 @@
-import type { ColorRef, TeamUniformDefinition, UniformLayer } from './types';
-
 // Los Angeles' four archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
 // nfl-uniform-refs/rams (home is that sheet's row-1 figure 3, Rivalries its row-1 figure 7, away
 // its row-2 figure 1, bone its row-2 figure 5). Sleeve paths use the outer 588-wide mannequin
@@ -20,13 +18,11 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer } from './types';
 // halftone panel — Washington's road sleeve, say — would not, and is a different judgement call.
 //
 // Out of scope on every kit: the chest wordmark, the league shield, and the Rivalries collar script.
-
-// Two literals. The home palette is royal over gold with accent === secondary (ESPN supplies only
-// two colors), so nothing resolves to the numerals' white keyline. And the Rivalries palette's
-// primary is a near-black navy, so its royal sleeve tail has no token either — that hex is the
-// club's published royal, which is also what the reference renders.
-export const RAMS_WHITE = '#FFFFFF';
-export const RAMS_ROYAL = '#003594';
+//
+// Construction geometry only — the horn and sleeve-mark paths. The composable parts definition
+// that consumes them lives in ./rams.parts.ts; the former flat RAMS_UNIFORMS was deleted in the
+// migration that proved parts render byte-identically (see parts-parity.test.ts for the one-time
+// gate).
 
 // The horn is the largest and most forgiving mark traced so far — one bold curl plus the thin
 // upper tail, both solid, over an 84x80px source, so it needed no upsampling past 6x. Two
@@ -44,89 +40,3 @@ export const RAMS_SLEEVE_BAND_LEFT = 'M74,420 L99,420 L124,560 L74,560 Z';
 export const RAMS_SLEEVE_BAND_RIGHT = 'M514,420 L489,420 L464,560 L514,560 Z';
 export const RAMS_SLEEVE_TAIL_LEFT = 'M55,436 L74,424 L74,490 Z';
 export const RAMS_SLEEVE_TAIL_RIGHT = 'M533,436 L514,424 L514,490 Z';
-
-const GENERIC_STRIPPED = [
-  'generic-helmet-stripe',
-  'generic-sleeve-yoke-left',
-  'generic-sleeve-yoke-right',
-  'generic-sleeve-stripe-left',
-  'generic-sleeve-stripe-right',
-  'generic-collar',
-  'generic-pants-stripe-left',
-  'generic-pants-stripe-right',
-];
-
-// Band and tail take separate colors because Rivalries is the one kit where they differ.
-function sleeveMark(band: ColorRef, tail: ColorRef): UniformLayer[] {
-  const parts: {
-    id: string;
-    surface: 'sleeve-left' | 'sleeve-right';
-    d: string;
-    fill: ColorRef;
-  }[] = [
-    { id: 'rams-sleeve-band-left', surface: 'sleeve-left', d: RAMS_SLEEVE_BAND_LEFT, fill: band },
-    {
-      id: 'rams-sleeve-band-right',
-      surface: 'sleeve-right',
-      d: RAMS_SLEEVE_BAND_RIGHT,
-      fill: band,
-    },
-    { id: 'rams-sleeve-tail-left', surface: 'sleeve-left', d: RAMS_SLEEVE_TAIL_LEFT, fill: tail },
-    {
-      id: 'rams-sleeve-tail-right',
-      surface: 'sleeve-right',
-      d: RAMS_SLEEVE_TAIL_RIGHT,
-      fill: tail,
-    },
-  ];
-  return parts.map((layer): UniformLayer => ({ ...layer, clip: true, kind: 'fill' }));
-}
-
-function horn(fill: ColorRef): UniformLayer[] {
-  return [
-    {
-      id: 'rams-decal-horn',
-      surface: 'helmet',
-      d: RAMS_DECAL_HORN_PATH,
-      clip: true,
-      kind: 'fill',
-      fill,
-    },
-  ];
-}
-
-export const RAMS_UNIFORMS: TeamUniformDefinition = {
-  teamId: 'rams',
-  defaults: { removeLayerIds: GENERIC_STRIPPED },
-  kits: {
-    // Royal body and shell over gold pants — the reference's primary combo. This palette's own
-    // secondary is the gold, so the horn, the sleeve mark and the numeral face all resolve from it.
-    home: {
-      pantsColor: 'secondary',
-      layers: [...horn('secondary'), ...sleeveMark('secondary', 'secondary')],
-      number: { fill: 'secondary', outline: RAMS_WHITE, outlineWidth: 14 },
-    },
-    // White body over royal pants under the royal shell. The away palette moves white into primary
-    // and royal into secondary, so gold slides to accent and every gold element follows it.
-    away: {
-      helmetColor: 'secondary',
-      pantsColor: 'secondary',
-      layers: [...horn('accent'), ...sleeveMark('accent', 'accent')],
-      number: { fill: 'secondary', outline: 'accent', outlineWidth: 14 },
-    },
-    // Bone on bone under the same royal shell; its palette carries bone as primary and otherwise
-    // matches away, so only the pants differ from that kit.
-    bone: {
-      helmetColor: 'secondary',
-      layers: [...horn('accent'), ...sleeveMark('accent', 'accent')],
-      number: { fill: 'secondary', outline: 'accent', outlineWidth: 14 },
-    },
-    // Rivalries is near-black on near-black with a yellow horn, and it is the only kit whose sleeve
-    // tail breaks from its band: royal against yellow rather than matching. That royal has no token
-    // on this palette (primary is the near-black navy), so it takes the literal.
-    'rivalries-2025': {
-      layers: [...horn('secondary'), ...sleeveMark('secondary', RAMS_ROYAL)],
-      number: { fill: 'accent', outline: RAMS_ROYAL, outlineWidth: 14 },
-    },
-  },
-};
