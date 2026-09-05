@@ -51,7 +51,20 @@ jobs:
             // Ordered most- to least-specific; a PR can carry several.
             const AREA_RULES = [
               ['area:ios', (f) => f.startsWith('ios/')],
-              ['area:backend', (f) => f.startsWith('supabase/') || f.startsWith('scripts/') ||
+              // The curated uniforms archive is its own area, not "backend": it is the
+              // single busiest stream of PRs here and reviewers filter for it by name.
+              // Its seed/thumb/draw scripts count too, so a kit PR that regenerates the
+              // seed is still findable as a uniforms change.
+              ['area:uniforms', (f) => f.startsWith('lib/uniforms/') ||
+                                       f.startsWith('public/uniforms/') ||
+                                       (f.startsWith('scripts/') && f.includes('uniform'))],
+              // Schema lives on its own axis from the ingest pipeline: a migration is
+              // reviewed for RLS and generated-types drift, an ingest change is not.
+              // lib/database.types.ts rides along because it is only ever regenerated
+              // from a migration in the same PR (CLAUDE.md invariant 8).
+              ['area:supabase', (f) => f.startsWith('supabase/') ||
+                                       f === 'lib/database.types.ts'],
+              ['area:backend', (f) => f.startsWith('scripts/') ||
                                       f.startsWith('lib/espn/') || f.startsWith('lib/nflverse/')],
               ['area:web', (f) => f.startsWith('app/') || f.startsWith('components/')],
               ['area:ci', (f) => f.startsWith('.github/')],
