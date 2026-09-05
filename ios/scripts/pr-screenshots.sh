@@ -26,7 +26,8 @@
 #                       (Debug|Staging|Release). Default: Debug — the local
 #                       `supabase start` stack, so a PR shipping data + UI together
 #                       renders against the real migrated data. Pass `-c Staging` for
-#                       a pure-rendering PR captured against production instead.
+#                       a pure-rendering PR captured against production instead only
+#                       with PR_SCREENSHOTS_ALLOW_HOSTED_DATA=1.
 #   --recapture-base    Passed through to screenshot-check.sh — discard the cached
 #                       "before" PNGs for this base ref and rebuild.
 #   --no-capture        Only decide targets + fill/strip the body (no capture).
@@ -69,6 +70,13 @@ done
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
+
+if [ "$CONFIG" = "Staging" ] && [ "${PR_SCREENSHOTS_ALLOW_HOSTED_DATA:-}" != "1" ]; then
+  echo "pr-screenshots: ERROR: PR screenshots default to local Debug data; refusing Staging/hosted data." >&2
+  echo "pr-screenshots:       Start 'supabase start' and omit -c Staging, or explicitly set" >&2
+  echo "pr-screenshots:       PR_SCREENSHOTS_ALLOW_HOSTED_DATA=1 for a production-data capture." >&2
+  exit 1
+fi
 
 log() { echo "pr-screenshots: $*" >&2; }
 

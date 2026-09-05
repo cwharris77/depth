@@ -54,7 +54,7 @@ if [ -z "$CHANGED" ]; then
 fi
 [ -z "$CHANGED" ] && { echo "(working tree clean — no targets)" >&2; exit 0; }
 
-CANONICAL=(field field-footer formations teams uniform player settings)
+CANONICAL=(field custom-order field-footer formations teams uniform player settings)
 
 # match_targets <file> — echoes the comma CSV of map targets that <file> hits ("" if none).
 match_targets() {

@@ -20,7 +20,7 @@
 # worktrees on the same Mac don't pile up sims and exhaust RAM.
 #
 # Usage:
-#   ios/scripts/screenshot-check.sh [-t field,field-footer,formations,teams,uniform,player] [--base main] \
+#   ios/scripts/screenshot-check.sh [-t field,custom-order,field-footer,formations,teams,uniform,player] [--base main] \
 #       [-d <derivedDataDir>] [-s <sim-device-type>] [-c <config>] [--recapture-base]
 #
 # Flags:
