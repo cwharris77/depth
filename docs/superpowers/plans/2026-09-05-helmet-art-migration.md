@@ -4,7 +4,9 @@
 
 **Spec:** `../obsidian/Projects/depth/specs/2026-09-05-helmet-art-migration-design.md`
 
-**Status (2026-09-05):** Base art merged-pending in depth [#711](https://github.com/cwharris77/depth/pull/711) — `lib/uniforms/helmet-base.svg` plus `scripts/uniform-draw/helmet_base.py`. 302 painted paths + a 4-path cage-opening mask. This plan is the renderer half and has not been started.
+**Status (2026-09-05): complete.** Base art depth [#711](https://github.com/cwharris77/depth/pull/711) — `lib/uniforms/helmet-base.svg` plus `scripts/uniform-draw/helmet_base.py`. 302 painted paths (122 shell / 156 facemask / 24 hardware) + a 4-path cage-opening mask. Stages 1–5 landed as [#712](https://github.com/cwharris77/depth/pull/712), [#713](https://github.com/cwharris77/depth/pull/713), [#715](https://github.com/cwharris77/depth/pull/715), [#716](https://github.com/cwharris77/depth/pull/716), [#717](https://github.com/cwharris77/depth/pull/717), with the spec's acceptance criteria guarded in [#718](https://github.com/cwharris77/depth/pull/718).
+
+Two checked boxes did not ship as committed code, deliberately — both harnesses read scratch directories and would fail in CI on any other machine, so their method and results live in the PR bodies instead: Stage 5's per-kit centroid proof (105/105, worst 8.502px) and its no-helmet-layer render helper. The spec's AC8 was amended as unachievable for the same class of reason — the generator needs the uncommitted reference SVG.
 
 **Goal:** Draw the helmet from Cooper's illustration instead of the four hand-authored `GEO` strings, on all 105 kits, without re-registering a single one of the 63 team decal layers and without flattening the shading that makes the art worth using.
 
@@ -25,46 +27,46 @@
 
 ## Stage 1 — Generate the typed art module
 
-- [ ] Extend `scripts/uniform-draw/helmet_base.py` to emit `lib/uniforms/helmet-art.ts` alongside the SVG, with a generated-file header matching the SVG's.
-- [ ] Export `HELMET_ART` as `readonly HelmetArtPath[]` — `{ d, tx, ty, role, fill?, dl? }`, where `hardware` carries `fill` and `shell`/`facemask` carry `dl` (HSL lightness delta from the surface base), never both.
-- [ ] Export `HELMET_ART_TRANSFORM = 'translate(30.83,-7.11) scale(0.50079)'` with a comment deriving it from the two bbox correspondences, so a future reader can re-check it rather than trust it.
-- [ ] Export `HELMET_ART_CLIP` — the outer silhouette (the first `<path>` inside `helmet-base.svg`'s `<g mask=…>`, `class="shell"`), in art space. The file's literal first `<path>` is a mask cutter, not the silhouette.
-- [ ] Export `HELMET_ART_CUT` — the 4 cage-opening `d` strings, in art space, for the renderer's `<mask>`.
-- [ ] `npm run format` (the generated `.ts` is not in `.prettierignore`).
+- [x] Extend `scripts/uniform-draw/helmet_base.py` to emit `lib/uniforms/helmet-art.ts` alongside the SVG, with a generated-file header matching the SVG's.
+- [x] Export `HELMET_ART` as `readonly HelmetArtPath[]` — `{ d, tx, ty, role, fill?, dl? }`, where `hardware` carries `fill` and `shell`/`facemask` carry `dl` (HSL lightness delta from the surface base), never both.
+- [x] Export `HELMET_ART_TRANSFORM = 'translate(30.83,-7.11) scale(0.50079)'` with a comment deriving it from the two bbox correspondences, so a future reader can re-check it rather than trust it.
+- [x] Export `HELMET_ART_CLIP` — the outer silhouette (the first `<path>` inside `helmet-base.svg`'s `<g mask=…>`, `class="shell"`), in art space. The file's literal first `<path>` is a mask cutter, not the silhouette.
+- [x] Export `HELMET_ART_CUT` — the 4 cage-opening `d` strings, in art space, for the renderer's `<mask>`.
+- [x] `npm run format` (the generated `.ts` is not in `.prettierignore`).
 
 ## Stage 2 — The recolour resolver
 
-- [ ] Add `lib/uniforms/helmet-shading.ts` with a role-and-constraint header and one export: `shadeFor(base: string, dl: number): string`.
-- [ ] Port `neutralize()`'s math from `scripts/uniform-draw/helmet_base.py` — re-light `base` by `dl` in HSL, clamp lightness to `[0,1]`.
-- [ ] Memoize on `(base, dl)`. Bound the cache; a page renders at most 32 team colors × 236 shades.
-- [ ] Add `lib/__tests__/helmet-shading.test.ts`: clamping at both ends, memo returns an identical string for a repeated call, one known base+delta pair asserted against the Python output, and malformed input degrading rather than throwing (invariant 6).
-- [ ] Add a looped integrity test over `HELMET_ART` — 302 entries, role counts 123 shell / 157 facemask / 25 hardware, and the `fill` xor `dl` invariant, one generated `it` per entry so a failure names the path index.
+- [x] Add `lib/uniforms/helmet-shading.ts` with a role-and-constraint header and one export: `shadeFor(base: string, dl: number): string`.
+- [x] Port `neutralize()`'s math from `scripts/uniform-draw/helmet_base.py` — re-light `base` by `dl` in HSL, clamp lightness to `[0,1]`.
+- [x] Memoize on `(base, dl)`. Bound the cache; a page renders at most 32 team colors × 236 shades.
+- [x] Add `lib/__tests__/helmet-shading.test.ts`: clamping at both ends, memo returns an identical string for a repeated call, one known base+delta pair asserted against the Python output, and malformed input degrading rather than throwing (invariant 6).
+- [x] Add a looped integrity test over `HELMET_ART` — 302 entries, role counts 122 shell / 156 facemask / 24 hardware, and the `fill` xor `dl` invariant, one generated `it` per entry so a failure names the path index.
 
 ## Stage 3 — Rewrite the helmet group
 
-- [ ] Delete `GEO.helmet`, `GEO.helmetVoid` and `GEO.facemask` from `components/UniformFigure.tsx:33-51`.
-- [ ] Delete `HelmetDetails()` at `components/UniformFigure.tsx:95-127` and its call site. Confirmed removal, not a disable (spec D2).
-- [ ] Replace the `${uid}-helmet` clipPath at `components/UniformFigure.tsx:257-270` with `HELMET_ART_CLIP` under `HELMET_ART_TRANSFORM`; drop the `${uid}-helmet-shell-mask` entirely.
-- [ ] Emit a `${uid}-helmet-openings` mask from `HELMET_ART_CUT` and apply it to the art group, so the cage openings stay see-through on the app's dark ground.
-- [ ] Replace the `hasHelmet` render block at `components/UniformFigure.tsx:350-378`: paint `HELMET_ART` inside `translate(80.25 11) scale(0.5)` → `HELMET_ART_TRANSFORM`, resolving `shell` against `model.helmetColor` and `facemask` against `model.facemaskColor` through `shadeFor`, `hardware` from its literal `fill`. Drop the 8px `OUTLINE` stroke — the base is deliberately outline-free, and re-stroking it puts back the halo the derivation removed.
-- [ ] Keep the decal layers painting *after* the art group so team marks stay on top, matching today's order.
-- [ ] Extend `UniformFigureDefs` / the `Geo` `sharedDefs` path so the archive's 104 figures reference the art once rather than re-embedding 51KB each.
-- [ ] Verify `OUTLINE`, `HELMET_DETAIL_DARK` and `HELMET_RIVET` are still referenced by the jersey/pants code before deleting any of them; remove only the ones that became unused.
+- [x] Delete `GEO.helmet`, `GEO.helmetVoid` and `GEO.facemask` from `components/UniformFigure.tsx:33-51`.
+- [x] Delete `HelmetDetails()` at `components/UniformFigure.tsx:95-127` and its call site. Confirmed removal, not a disable (spec D2).
+- [x] Replace the `${uid}-helmet` clipPath at `components/UniformFigure.tsx:257-270` with `HELMET_ART_CLIP` under `HELMET_ART_TRANSFORM`; drop the `${uid}-helmet-shell-mask` entirely.
+- [x] Emit a `${uid}-helmet-openings` mask from `HELMET_ART_CUT` and apply it to the art group, so the cage openings stay see-through on the app's dark ground.
+- [x] Replace the `hasHelmet` render block at `components/UniformFigure.tsx:350-378`: paint `HELMET_ART` inside `translate(80.25 11) scale(0.5)` → `HELMET_ART_TRANSFORM`, resolving `shell` against `model.helmetColor` and `facemask` against `model.facemaskColor` through `shadeFor`, `hardware` from its literal `fill`. Drop the 8px `OUTLINE` stroke — the base is deliberately outline-free, and re-stroking it puts back the halo the derivation removed.
+- [x] Keep the decal layers painting *after* the art group so team marks stay on top, matching today's order.
+- [x] Extend `UniformFigureDefs` / the `Geo` `sharedDefs` path so the archive's 104 figures reference the art once rather than re-embedding 51KB each.
+- [x] Verify `OUTLINE`, `HELMET_DETAIL_DARK` and `HELMET_RIVET` are still referenced by the jersey/pants code before deleting any of them; remove only the ones that became unused.
 
 ## Stage 4 — Fix the tests the deletion breaks
 
-- [ ] Rewrite `lib/__tests__/uniform-figure.test.tsx:224` ("paints shared helmet details beneath team-authored helmet layers") — it asserts `data-detail-id="helmet-ear-opening"`, which no longer exists. Assert instead that the art group precedes the first `data-layer-id`, using a stable marker attribute on the art group.
-- [ ] Re-derive the three probe coordinates in `lib/__tests__/uniform-figure.test.tsx:209` ("leaves the open facemask cage transparent") against the new art. The sight opening and lower cage must still be fully transparent and the front shell rim opaque — the assertion is unchanged, the sample points move.
-- [ ] `npx tsc --noEmit`, `npm test`, `npm run format:check`.
+- [x] Rewrite `lib/__tests__/uniform-figure.test.tsx:224` ("paints shared helmet details beneath team-authored helmet layers") — it asserts `data-detail-id="helmet-ear-opening"`, which no longer exists. Assert instead that the art group precedes the first `data-layer-id`, using a stable marker attribute on the art group.
+- [x] Re-derive the three probe coordinates in `lib/__tests__/uniform-figure.test.tsx:209` ("leaves the open facemask cage transparent") against the new art. The sight opening and lower cage must still be fully transparent and the front shell rim opaque — the assertion is unchanged, the sample points move.
+- [x] `npx tsc --noEmit`, `npm test`, `npm run format:check`.
 
 ## Stage 5 — Regenerate and prove the decals did not move
 
-- [ ] Capture the 105 `-full.webp` rasters from `main` into a scratch dir before regenerating (this is the before half of the diff — a diff read is not evidence, per mistake #19).
-- [ ] `npm run gen:uniform-thumbs`. Note it reads the hosted `uniforms` table in live-rows mode; that is a read, and the no-direct-prod-writes rule is not in play. If credentials are unavailable, use the curated-archive path and say so in the PR.
-- [ ] Confirm only the 105 `-full` files changed bytes and the 105 jersey crops did not — the jersey viewBox excludes the helmet, so any jersey diff means something leaked.
-- [ ] Add a looped raster test asserting each kit's decal centroid moved less than a threshold between before and after, one generated `it` per kit.
-- [ ] Run the generator a second time and confirm zero git diff (determinism).
-- [ ] Verify live in the browser on `/uniforms`: at least one team with a large wrapping decal (Bears, Seahawks), one with a distinct facemask color (Bears navy-on-navy, Rams), and one with no decal at all. Screenshot for the PR.
+- [x] Capture the 105 `-full.webp` rasters from `main` into a scratch dir before regenerating (this is the before half of the diff — a diff read is not evidence, per mistake #19).
+- [x] `npm run gen:uniform-thumbs`. Note it reads the hosted `uniforms` table in live-rows mode; that is a read, and the no-direct-prod-writes rule is not in play. If credentials are unavailable, use the curated-archive path and say so in the PR.
+- [x] Confirm only the 105 `-full` files changed bytes and the 105 jersey crops did not — the jersey viewBox excludes the helmet, so any jersey diff means something leaked.
+- [x] Add a looped raster test asserting each kit's decal centroid moved less than a threshold between before and after, one generated `it` per kit.
+- [x] Run the generator a second time and confirm zero git diff (determinism).
+- [x] Verify live in the browser on `/uniforms`: at least one team with a large wrapping decal (Bears, Seahawks), one with a distinct facemask color (Bears navy-on-navy, Rams), and one with no decal at all. Screenshot for the PR.
 
 ## Out of scope (do not do these here)
 
