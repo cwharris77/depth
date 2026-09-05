@@ -1,21 +1,7 @@
-import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } from './types';
-
-// Tampa Bay's three archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
-// nfl-uniform-refs/buccaneers (home is that sheet's row-1 figure 3, creamsicle its row-1 figure 7,
-// away its row-2 figure 1 — row-1 figures 1-2 are boxed "worn in preseason only" and were not
-// used). Right paths mirror the left across the centerline x=294.
-//
-// NOT one construction. The current kits wear a single solid band at the sleeve hem and a thin
-// collar keyline; the creamsicle wears a three-band cuff, red over white over red, and no collar
-// trim. No helmet stripe, no pant stripe on any kit.
-//
-// ONE APPROXIMATION, deliberate: the current kits' numerals carry a two-ring trim — an orange ring
-// against the face inside a heavier black one. `NumberStyle` allows a single outline, so the orange
-// is kept as the ring that sits against the face and reads as this club's, and the outer black is
-// dropped.
-//
-// Out of scope on every kit: the chest wordmark, the league shield, the 50th-season patch, the flag
-// mark on each sleeve, and the shoulder numerals.
+// Tampa Bay's construction geometry — the flag decal paths, cuff and collar paths, and the
+// fixed construction colors only. The composable parts definition that consumes them lives in
+// ./buccaneers.parts.ts; the former flat BUCCANEERS_UNIFORMS was deleted in the migration that
+// proved parts render byte-identically (see parts-parity.test.ts for the one-time gate).
 
 // White is a literal on the home kit only. Its palette is red over pewter with orange in accent, so
 // nothing resolves to its numeral face. The away carries white in `primary` and the creamsicle in
@@ -24,22 +10,13 @@ export const BUCCANEERS_WHITE = '#FFFFFF';
 
 // Provenance: contour trace of the club's mark from the GUD composite — a reproduction
 // of a third-party mark, not original geometry. The mark is NON-FREE upstream
-// (Wikimedia `File:Tampa Bay Buccaneers logo.svg`, fair use; trademarked). Licence audit: the vault’s
-// Decisions.md, 2026-09-03.
+// (Wikimedia `File:Tampa Bay Buccaneers logo.svg`, fair use; trademarked). Licence audit: the
+// vault’s Decisions.md, 2026-09-03.
 //
-// The flag, traced from the home figure's shell (bbox x60-166, y358-464 in the reference) mapped
-// onto the raw helmet space at ~6.25x. Four plain-union fills in paint order: keyline, red field,
-// white skull, orange football. The crossed swords are not a layer — they read as the dark gaps
-// between the white components, exactly as the sword blades do on the reference.
-//
-// EVERY COLOR HERE IS A LITERAL, and deliberately so. The mark is fixed art: it is the same four
-// colors on the pewter home shell and the pewter away shell, so nothing about it moves with the
-// palette, and threading it through tokens would only invite a kit-dependent recolor that the club
-// does not wear. Hexes are sampled off the reference figure.
-//
-// The CREAMSICLE KIT DOES NOT GET THIS MARK. Its white shell carries the old Bucco Bruce pirate
-// head, a different logo entirely — fine linework at this scale with no solid region, so it fails
-// the same test the Raiders shield failed. That shell stays bare.
+// The flag: four plain-union fills in paint order — keyline, red field, white skull, orange
+// football. EVERY COLOR HERE IS A LITERAL: the mark is the same four colors on both pewter shells,
+// so nothing moves with the palette. The CREAMSICLE does not get it (its white shell carries the
+// old Bucco Bruce head, which fails the trace test — the shell stays bare).
 export const BUCCANEERS_FLAG_KEYLINE = '#8C8C8C'; // sampled (137,140,139)
 export const BUCCANEERS_FLAG_RED = '#C51821'; // sampled (197,24,33)
 export const BUCCANEERS_FLAG_ORANGE = '#FF8800'; // sampled (255,136,0)
@@ -52,138 +29,15 @@ export const BUCCANEERS_DECAL_SKULL_PATH =
 export const BUCCANEERS_DECAL_BALL_PATH =
   'M374.3,256.0 L396.2,258.2 L403.3,263.2 L401.7,269.7 L411.1,274.7 L397.0,279.7 L375.1,275.4 L365.0,266.1 L366.5,259.6 L373.6,256.7 Z';
 
-// The sleeve cuff, measured on the home figure (jersey top y=461, sleeve hem y=527, figure center
-// x=511.5, so scaleY = 191/66 and scaleX = 264/84.5). A column at reference x=445 crosses black
-// y519-525 and the hem at y527, so the band ends flush; it spans reference x430-464. Extended
-// outward to x=30 and past the hem to y=578 so the jersey clip trims it.
+// The sleeve cuff — a single solid band at the hem, extended flush for the clip.
 export const BUCCANEERS_CUFF_LEFT = 'M30,545 H146 V578 H30 Z';
 export const BUCCANEERS_CUFF_RIGHT = 'M558,545 H442 V578 H558 Z';
 
-// The creamsicle's cuff is three bands, measured on row-1 figure 7 against the same anchors: red
-// y511-514, white y515-521, red y522 to the hem. Authored contiguous — the boundaries between them
-// are GUD's own hairlines, not body color.
+// The creamsicle's three-band cuff — authored contiguous (GUD's boundaries are hairline).
 export const BUCCANEERS_CREAM_BOUNDS = [528, 539, 559, 578];
 export const BUCCANEERS_SLEEVE_X_LEFT = [30, 146];
 export const BUCCANEERS_SLEEVE_X_RIGHT = [442, 558];
 
-// The collar is a keyline rather than a band — about 2 reference px — running from (486,473) to a
-// point at (511,494) and mirrored, which closes higher than the generic chevron's vertex.
-const BUCCANEERS_COLLAR_PATH = 'M214,418 L294,478 L374,418';
-const BUCCANEERS_COLLAR_WIDTH = 7;
-
-const GENERIC_STRIPPED = [
-  'generic-helmet-stripe',
-  'generic-sleeve-yoke-left',
-  'generic-sleeve-yoke-right',
-  'generic-sleeve-stripe-left',
-  'generic-sleeve-stripe-right',
-  'generic-collar',
-  'generic-pants-stripe-left',
-  'generic-pants-stripe-right',
-];
-
-function cuff(fill: ColorRef): UniformLayer[] {
-  return [
-    ['buccaneers-cuff-left', 'sleeve-left', BUCCANEERS_CUFF_LEFT],
-    ['buccaneers-cuff-right', 'sleeve-right', BUCCANEERS_CUFF_RIGHT],
-  ].map(([id, surface, d]) => ({
-    id,
-    surface: surface as UniformSurface,
-    d,
-    clip: true,
-    kind: 'fill' as const,
-    fill,
-  }));
-}
-
-function creamCuff(band: ColorRef, line: ColorRef): UniformLayer[] {
-  const out: UniformLayer[] = [];
-  const sides: [UniformSurface, number[]][] = [
-    ['sleeve-left', BUCCANEERS_SLEEVE_X_LEFT],
-    ['sleeve-right', BUCCANEERS_SLEEVE_X_RIGHT],
-  ];
-
-  for (let i = 0; i < BUCCANEERS_CREAM_BOUNDS.length - 1; i += 1) {
-    const top = BUCCANEERS_CREAM_BOUNDS[i];
-    const bottom = BUCCANEERS_CREAM_BOUNDS[i + 1];
-    for (const [surface, [x0, x1]] of sides) {
-      const side = surface === 'sleeve-left' ? 'left' : 'right';
-      out.push({
-        id: `buccaneers-cream-band-${i}-${side}`,
-        surface,
-        d: `M${x0},${top} H${x1} V${bottom} H${x0} Z`,
-        clip: true,
-        kind: 'fill',
-        fill: i === 1 ? line : band,
-      });
-    }
-  }
-
-  return out;
-}
-
-function collar(stroke: ColorRef): UniformLayer[] {
-  return [
-    {
-      id: 'buccaneers-collar',
-      surface: 'collar',
-      d: BUCCANEERS_COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke,
-      strokeWidth: BUCCANEERS_COLLAR_WIDTH,
-    },
-  ];
-}
-
-// Fixed art on both pewter shells — see the note above on why nothing here takes a token.
-function decal(): UniformLayer[] {
-  return (
-    [
-      ['buccaneers-decal-keyline', BUCCANEERS_DECAL_KEYLINE_PATH, BUCCANEERS_FLAG_KEYLINE],
-      ['buccaneers-decal-field', BUCCANEERS_DECAL_FIELD_PATH, BUCCANEERS_FLAG_RED],
-      ['buccaneers-decal-skull', BUCCANEERS_DECAL_SKULL_PATH, BUCCANEERS_WHITE],
-      ['buccaneers-decal-ball', BUCCANEERS_DECAL_BALL_PATH, BUCCANEERS_FLAG_ORANGE],
-    ] as [string, string, ColorRef][]
-  ).map(([id, d, fill]) => ({
-    id,
-    surface: 'helmet' as const,
-    d,
-    clip: true,
-    kind: 'fill' as const,
-    fill,
-  }));
-}
-
-export const BUCCANEERS_UNIFORMS: TeamUniformDefinition = {
-  teamId: 'buccaneers',
-  defaults: { removeLayerIds: GENERIC_STRIPPED },
-  kits: {
-    // Red body over white pants under the pewter shell. Pewter is `secondary` and carries both the
-    // cuff and the collar keyline; orange sits in `accent` and rings the numerals, whose white face
-    // this palette cannot supply.
-    home: {
-      helmetColor: 'secondary',
-      pantsColor: BUCCANEERS_WHITE,
-      layers: [...cuff('secondary'), ...collar('secondary'), ...decal()],
-      number: { fill: BUCCANEERS_WHITE, outline: 'accent', outlineWidth: 14 },
-    },
-    // White body and pants under the same pewter shell. The away palette moves white into primary,
-    // red into secondary and pewter into accent, so the cuff and collar shift onto `accent` and the
-    // numerals take the red.
-    away: {
-      helmetColor: 'accent',
-      layers: [...cuff('accent'), ...collar('accent'), ...decal()],
-      number: { fill: 'secondary', outline: 'accent', outlineWidth: 14 },
-    },
-    // Orange body over white pants under a white shell, and a different cuff — three bands rather
-    // than one, and no collar trim. Red is `secondary` and white `accent`, so nothing here is a
-    // literal.
-    creamsicle: {
-      helmetColor: 'accent',
-      pantsColor: 'accent',
-      layers: creamCuff('secondary', 'accent'),
-      number: { fill: 'accent', outline: 'secondary', outlineWidth: 14 },
-    },
-  },
-};
+// The collar is a keyline rather than a band — about 2 reference px.
+export const BUCCANEERS_COLLAR_PATH = 'M214,418 L294,478 L374,418';
+export const BUCCANEERS_COLLAR_WIDTH = 7;
