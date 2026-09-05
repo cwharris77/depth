@@ -53,6 +53,10 @@ struct AuthSheet: View {
             Text("Sign in only when you want to save private preferences or depth orders.")
                 .font(.footnote)
                 .foregroundStyle(DesignTokens.Colors.textMuted)
+            Text("New here? Enter your email to create an account or sign in.")
+                .font(.footnote)
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+                .accessibilityIdentifier("auth-signup-copy")
 
             TextField("Email", text: $viewModel.email)
                 .textContentType(.emailAddress)
