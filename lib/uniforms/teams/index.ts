@@ -3,7 +3,7 @@ import { BENGALS_UNIFORMS_FROM_PARTS } from './bengals.parts';
 
 import { BILLS_UNIFORMS_FROM_PARTS } from './bills.parts';
 import { BRONCOS_UNIFORMS_FROM_PARTS } from './broncos.parts';
-import { BROWNS_UNIFORMS } from './browns';
+import { BROWNS_UNIFORMS_FROM_PARTS } from './browns.parts';
 import { BUCCANEERS_UNIFORMS } from './buccaneers';
 import { CARDINALS_UNIFORMS } from './cardinals';
 import { CHARGERS_UNIFORMS } from './chargers';
@@ -42,7 +42,7 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   bengals: BENGALS_UNIFORMS_FROM_PARTS,
   bills: BILLS_UNIFORMS_FROM_PARTS,
   broncos: BRONCOS_UNIFORMS_FROM_PARTS,
-  browns: BROWNS_UNIFORMS,
+  browns: BROWNS_UNIFORMS_FROM_PARTS,
   buccaneers: BUCCANEERS_UNIFORMS,
   cardinals: CARDINALS_UNIFORMS,
   chargers: CHARGERS_UNIFORMS,
