@@ -25,6 +25,7 @@ App Store sequence uses.
 | Target | Screen the agent edited |
 | --- | --- |
 | `field` | The depth-chart field surface (grass gradient, yard lines, end zones, LOS, hash marks) — the app's signature screen. The default. |
+| `custom-order` | The field after a deterministic local reorder, with the field-level “Custom order · Reset all” chip visible. |
 | `field-footer` | The team page scrolled below the field, including the inline FTN attribution. |
 | `formations` | The formations sheet scrolled through every formation to its attribution footer. |
 | `teams` | A filtered team-search result. |
@@ -86,8 +87,8 @@ all flags.
   instead of `Staging` — `Debug.xcconfig` points at the local `supabase start` stack
   (DEP-270) instead of production, so a PR that ships a migration/ingest change
   alongside the UI that reads it renders the "after" side against the real migrated
-  data. Pass `-c Staging` to capture against production instead (fine for a
-  pure-rendering change with no local stack running). When `-c Debug` is in effect the
+  data. The PR driver refuses `-c Staging` unless `PR_SCREENSHOTS_ALLOW_HOSTED_DATA=1`
+  is set explicitly. When `-c Debug` is in effect the
   script checks `http://127.0.0.1:54321` before capturing anything and fails loudly —
   "Run `supabase start` first" — rather than silently capturing empty/error screens
   against a dead local stack.
@@ -204,9 +205,8 @@ The still-relevant mechanics from the old workflow carry over unchanged:
 - **Default capture stack is local, not production.** `screenshot-check.sh`/
   `pr-screenshots.sh` default to `-c Debug`, which reads the local `supabase start`
   stack (DEP-270) instead of production — start it first (`supabase start`) or the
-  script fails loudly rather than capturing empty screens. Pass `-c Staging` to
-  capture against production instead — same "Staging points at production" caveat as
-  the App Store sequence (see that doc's `TODO(DEP-40 Lane B)`) applies when you do.
+  script fails loudly rather than capturing empty screens. Hosted-data captures remain
+  available only as an explicit opt-in with `PR_SCREENSHOTS_ALLOW_HOSTED_DATA=1`.
 - **The "before" side is cached** by `(base ref sha, target)` under
   `ios/.pr-screenshots-cache/` (gitignored) — a re-run against an unchanged base skips
   the base build + sim entirely. `--recapture-base` forces a fresh capture.
