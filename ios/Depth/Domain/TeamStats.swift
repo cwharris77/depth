@@ -12,6 +12,9 @@ struct TeamStatsPage: Equatable, Codable, Sendable {
     let team: Team
     let seasons: [TeamSeasonStats]
     let upcomingSeason: Int?
+    /// The current live coach when ESPN reports a zero-tenure hire. Unlike a season coach,
+    /// this belongs to the upcoming season and must not be attached to prior results.
+    var incomingCoach: TeamIncomingCoach?
     /// This team's league position per metric, keyed by season (web:
     /// `TeamStatsPage.leagueRanksBySeason`). An empty map is a truthful "no ranks known",
     /// so this stays non-optional — but a property default does NOT make the synthesized
@@ -29,12 +32,14 @@ struct TeamStatsPage: Equatable, Codable, Sendable {
         team: Team,
         seasons: [TeamSeasonStats],
         upcomingSeason: Int?,
+        incomingCoach: TeamIncomingCoach? = nil,
         leagueRanksBySeason: [Int: TeamStatsRanks] = [:],
         currentSeason: Int
     ) {
         self.team = team
         self.seasons = seasons
         self.upcomingSeason = upcomingSeason
+        self.incomingCoach = incomingCoach
         self.leagueRanksBySeason = leagueRanksBySeason
         self.currentSeason = currentSeason
     }
@@ -44,6 +49,7 @@ struct TeamStatsPage: Equatable, Codable, Sendable {
         team = try container.decode(Team.self, forKey: .team)
         seasons = try container.decode([TeamSeasonStats].self, forKey: .seasons)
         upcomingSeason = try container.decodeIfPresent(Int.self, forKey: .upcomingSeason)
+        incomingCoach = try container.decodeIfPresent(TeamIncomingCoach.self, forKey: .incomingCoach)
         currentSeason = try container.decode(Int.self, forKey: .currentSeason)
         // decodeIfPresent, not decode: a cache written before ranks existed has no such
         // key, and that must degrade to "no ranks" rather than failing the whole read.
@@ -51,6 +57,11 @@ struct TeamStatsPage: Equatable, Codable, Sendable {
             try container.decodeIfPresent([Int: TeamStatsRanks].self, forKey: .leagueRanksBySeason)
             ?? [:]
     }
+}
+
+/// A newly hired coach reported by the live team record before they have a season result.
+struct TeamIncomingCoach: Equatable, Codable, Sendable {
+    let name: String
 }
 
 // One team_stats row per ingested season (current + up to two prior, web's

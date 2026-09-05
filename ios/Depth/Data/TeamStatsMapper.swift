@@ -13,6 +13,7 @@ enum TeamStatsMapper {
         rows: [TeamStatsRowDTO],
         matchupRows: [TeamMatchupMetricsDTO] = [],
         coachRows: [TeamCoachSeasonDTO] = [],
+        incomingCoach: TeamIncomingCoach? = nil,
         recordRankRows: [TeamStatsRankDTO] = [],
         metricRankRows: [TeamSeasonStatsRankDTO] = [],
         teamId: String? = nil,
@@ -29,6 +30,7 @@ enum TeamStatsMapper {
                 }
                 .sorted { $0.season > $1.season },
             upcomingSeason: state.isOffseason ? state.upcomingSeason : nil,
+            incomingCoach: incomingCoach,
             leagueRanksBySeason: mapRanks(
                 teamId: teamId ?? team.id,
                 recordRows: recordRankRows,
