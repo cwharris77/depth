@@ -53,6 +53,10 @@ final class AuthUITests: XCTestCase {
             "the pre-submit disclosure should expose a separate Privacy link"
         )
         XCTAssertTrue(app.buttons["auth-send-code"].waitForExistence(timeout: 15))
+        XCTAssertTrue(
+            app.staticTexts["auth-signup-copy"].waitForExistence(timeout: 5),
+            "the magic-code flow should explain that new users create an account here"
+        )
     }
 
     @MainActor
