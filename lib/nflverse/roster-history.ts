@@ -115,8 +115,15 @@ export function toRosterHistoryRows(
       continue;
     }
     // A depth-chart position is authoritative only when it belongs to this exact
-    // team/player key. Roster CSV fallback intentionally stays generic OT/G.
-    const position = depthChartPositions.get(`${teamId}|${gsisId}`) ?? rosterPosition;
+    // team/player key. Generic OL tags cannot seat a field slot and pre-DEP-440 native
+    // clients cannot decode them, so omit the row rather than publishing an invented
+    // side or breaking an entire historical season.
+    const sourcePosition = depthChartPositions.get(`${teamId}|${gsisId}`);
+    if (!sourcePosition && (rosterPosition === 'OT' || rosterPosition === 'G')) {
+      skipped++;
+      continue;
+    }
+    const position = sourcePosition ?? rosterPosition;
     byKey.set(`${teamId}|${gsisId}`, {
       teamId,
       gsisId,
