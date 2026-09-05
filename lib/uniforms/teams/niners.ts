@@ -1,20 +1,8 @@
-import { HELMET_CROWN_STRIPE_PATH } from './shared';
-import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } from './types';
-
-// San Francisco's three archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
-// nfl-uniform-refs/49ers (home is that sheet's row-1 figure 1, Rivalries its row-1 figure 3, away
-// its row-2 figure 1). Sleeve paths use the outer 588-wide mannequin space; the helmet decal stays
-// in raw helmet coordinates (x:139-802, y:65-674). Right paths mirror the left across the
-// centerline x=294 (mirroredX = 588 - x).
-//
-// Unusually for this set, all three kits are ONE construction with the tokens swapped: a crown
-// stripe, three bands at the end of each sleeve, and the oval on the shell. Nothing else — no
-// shoulder yoke, no collar trim, and no pant stripe on any of the three (the striped swatch beside
-// each figure in the composite is the sock, not the pant). So the shared parts live in `defaults`
-// and each kit override is just its colors.
-//
-// Out of scope on every kit, per the usual boundary: the "49ERS" chest wordmark, the league shield,
-// and the Rivalries kit's collar and script marks.
+// San Francisco's construction geometry — the oval decal and sleeve-band constants only.
+// The composable parts definition that consumes them lives in ./niners.parts.ts; the former flat
+// NINERS_UNIFORMS was deleted in the migration that proved parts render byte-identically (see
+// parts-parity.test.ts for the one-time gate). The crown stripe path comes from ./shared (a fact
+// about the mannequin shell shared with Seattle).
 
 // White is a literal on the home kit. Its palette is red over gold with accent === secondary (ESPN
 // supplies only two colors), so no token resolves to the sleeve bands or the numerals — resolving
@@ -47,101 +35,3 @@ export const NINERS_STRIPE_TOPS = [460, 493, 524];
 export const NINERS_STRIPE_HEIGHT = 13;
 export const NINERS_SLEEVE_X_LEFT = [30, 92];
 export const NINERS_SLEEVE_X_RIGHT = [496, 558];
-
-const GENERIC_STRIPPED = [
-  'generic-helmet-stripe',
-  'generic-sleeve-yoke-left',
-  'generic-sleeve-yoke-right',
-  'generic-sleeve-stripe-left',
-  'generic-sleeve-stripe-right',
-  'generic-collar',
-  'generic-pants-stripe-left',
-  'generic-pants-stripe-right',
-];
-
-function sleeveStripes(fill: ColorRef): UniformLayer[] {
-  const out: UniformLayer[] = [];
-  const sides: [UniformSurface, number[]][] = [
-    ['sleeve-left', NINERS_SLEEVE_X_LEFT],
-    ['sleeve-right', NINERS_SLEEVE_X_RIGHT],
-  ];
-
-  NINERS_STRIPE_TOPS.forEach((top, i) => {
-    for (const [surface, [x0, x1]] of sides) {
-      const side = surface === 'sleeve-left' ? 'left' : 'right';
-      out.push({
-        id: `niners-sleeve-stripe-${i}-${side}`,
-        surface,
-        d: `M${x0},${top} H${x1} V${top + NINERS_STRIPE_HEIGHT} H${x0} Z`,
-        clip: true,
-        kind: 'fill',
-        fill,
-      });
-    }
-  });
-
-  return out;
-}
-
-// Ring, field, letters — painted in that order, each a plain union (see the trace note above).
-function ovalDecal(field: ColorRef): UniformLayer[] {
-  const parts: { id: string; d: string; fill: ColorRef }[] = [
-    { id: 'niners-decal-ring', d: NINERS_DECAL_RING_PATH, fill: NINERS_DECAL_BLACK },
-    { id: 'niners-decal-field', d: NINERS_DECAL_FIELD_PATH, fill: field },
-    { id: 'niners-decal-letters', d: NINERS_DECAL_LETTERS_PATH, fill: NINERS_WHITE },
-  ];
-  return parts.map((layer): UniformLayer => ({
-    ...layer,
-    surface: 'helmet',
-    clip: true,
-    kind: 'fill',
-  }));
-}
-
-function crownStripe(fill: ColorRef): UniformLayer[] {
-  return [
-    {
-      id: 'niners-helmet-crown-stripe',
-      surface: 'helmet',
-      d: HELMET_CROWN_STRIPE_PATH,
-      clip: true,
-      kind: 'fill',
-      fill,
-    },
-  ];
-}
-
-export const NINERS_UNIFORMS: TeamUniformDefinition = {
-  teamId: '49ers',
-  defaults: { removeLayerIds: GENERIC_STRIPPED },
-  kits: {
-    // Gold shell and gold pants under a red body. The oval's field is this palette's own primary,
-    // and the crown stripe takes the same red.
-    home: {
-      helmetColor: 'secondary',
-      pantsColor: 'secondary',
-      layers: [...crownStripe('primary'), ...ovalDecal('primary'), ...sleeveStripes(NINERS_WHITE)],
-      number: { fill: NINERS_WHITE, outline: NINERS_WHITE, outlineWidth: 10 },
-    },
-    // White body over the same gold shell and pants. The away palette moves white into primary and
-    // red into secondary, so every red element takes the inverse token and the bands — white at
-    // home — become red here.
-    away: {
-      helmetColor: 'accent',
-      pantsColor: 'accent',
-      layers: [
-        ...crownStripe('secondary'),
-        ...ovalDecal('secondary'),
-        ...sleeveStripes('secondary'),
-      ],
-      number: { fill: 'secondary', outline: 'secondary', outlineWidth: 10 },
-    },
-    // Rivalries is black on black with a black shell: the only kit of the three whose helmet and
-    // pants take primary. Its numerals are the one place in this module where a keyline is really
-    // visible in the reference — red on a gold trim, thin enough to need a narrow width.
-    'rivalries-2025': {
-      layers: [...crownStripe('accent'), ...ovalDecal('accent'), ...sleeveStripes('accent')],
-      number: { fill: 'accent', outline: 'secondary', outlineWidth: 14 },
-    },
-  },
-};
