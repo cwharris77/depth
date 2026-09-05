@@ -60,6 +60,7 @@ actor SupabaseDepthRepository: DepthRepository {
 
     private static let teamStatsSelect =
         "season, overall_wins, overall_losses, overall_ties, win_percent, streak, playoff_seed, home_wins, home_losses, road_wins, road_losses, division_wins, division_losses, conference_wins, conference_losses, points_for, points_against, point_differential"
+    private static let teamStatsTeamSelect = "id, abbrev, city, name, conference, division, logo_url, logo_dark_url, coach_name, coach_experience, uniforms(kind, is_current, color_primary, color_secondary, color_accent)"
     private static let teamMatchupMetricsSelect =
         "season, updated_at, passing_yards, rushing_yards, games, attempts, carries, sacks_suffered, passing_epa, rushing_epa, passing_interceptions, fumbles_lost_total, def_sacks, def_qb_hits, def_interceptions, def_fumbles, def_fumbles_forced, fg_made, fg_att, pt_att, pt_net_yards, punt_returns, punt_return_yards, kickoff_returns, kickoff_return_yards, special_teams_tds"
     private static let teamCoachSeasonsSelect = "season, coach_name, coach_experience"
@@ -98,7 +99,7 @@ actor SupabaseDepthRepository: DepthRepository {
         do {
             let rows: [TeamListRowDTO] = try await client
                 .from("teams")
-                .select(Self.teamListSelect)
+                .select(Self.teamStatsTeamSelect)
                 .order("city")
                 .execute()
                 .value
@@ -291,6 +292,7 @@ actor SupabaseDepthRepository: DepthRepository {
                 rows: rows,
                 matchupRows: matchupRows,
                 coachRows: coachRows,
+                incomingCoach: team.coachName.flatMap { name in team.coachExperience == 0 ? TeamIncomingCoach(name: name) : nil },
                 recordRankRows: recordRankRows,
                 metricRankRows: metricRankRows,
                 teamId: teamId
