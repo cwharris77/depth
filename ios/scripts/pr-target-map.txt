@@ -4,7 +4,7 @@
 #   <targets>\t<source-path-prefix>
 #
 # <targets> is a comma-separated list of capture targets from
-# ios/DepthUITests/PRScreenshotsUITests.swift (field, field-footer, formations,
+# ios/DepthUITests/PRScreenshotsUITests.swift (field, custom-order, field-footer, formations,
 # teams, uniform, player, settings) or the token `all` (= every target).
 # <source-path-prefix> is a repo-root-relative path; a changed file matches when it
 # equals the prefix or lives under it.
@@ -35,6 +35,7 @@ all	ios/Depth/Features/TeamDetail/TeamDetailViewModel.swift
 field,field-footer	ios/Depth/Features/TeamDetail/DepthChartFieldView.swift
 field,field-footer	ios/Depth/Features/TeamDetail/DepthChartFieldLayout.swift
 field,field-footer	ios/Depth/Features/TeamDetail/FieldMarkings.swift
+custom-order	ios/Depth/Features/TeamDetail/PlayerDetailView.swift
 formations	ios/Depth/Domain/Formations.swift
 formations	ios/Depth/Domain/FormationSlot.swift
 teams	ios/Depth/Features/Teams/
