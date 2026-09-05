@@ -5,6 +5,10 @@ import UniformFigure from '@/components/UniformFigure';
 import type { TeamColors } from '@/lib/types';
 import { renderUniformThumbSVG } from '@/lib/uniforms/art';
 import { variantSpec } from '@/lib/uniforms/figure';
+import { HELMET_ART } from '@/lib/uniforms/helmet-art';
+import { shadeFor } from '@/lib/uniforms/helmet-shading';
+import { resolveUniformModel } from '@/lib/uniforms/model';
+import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
 import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
 
 const colors: TeamColors = {
@@ -134,6 +138,16 @@ function renderFigure(options?: { definition?: TeamUniformDefinition; kitId?: st
   );
 }
 
+// The art group paints HELMET_ART in order, so the nth fill in the group belongs to the nth
+// entry. Reading fills back out of the markup — rather than recomputing them — is what makes
+// these assertions cover the renderer's wiring and not just shadeFor's math.
+function helmetArtFills(markup: string): string[] {
+  const group = markup.slice(markup.indexOf('data-helmet-art="base"'));
+  return [...group.matchAll(/<path\b[^>]*?\sfill="([^"]+)"/g)]
+    .slice(0, HELMET_ART.length)
+    .map((match) => match[1]);
+}
+
 describe('variantSpec', () => {
   it('jersey crops to the torso region', () => {
     expect(variantSpec('jersey')).toEqual({
@@ -228,6 +242,80 @@ describe('UniformFigure', () => {
     expect(markup).not.toContain('data-detail-id=');
     expect(markup).toContain(helmetArt);
     expect(markup.indexOf(helmetArt)).toBeLessThan(markup.indexOf(teamLayer));
+  });
+
+  // Acceptance criteria 2 and 3 of the helmet art migration spec
+  // (../obsidian/Projects/depth/specs/2026-09-05-helmet-art-migration-design.md). The art is
+  // worth using only because it shades; a renderer that flattens it, or that paints the cage
+  // from the shell color, produces the same flat silhouette the hand-authored GEO helmet drew.
+  describe('helmet art shading', () => {
+    it('paints the shell in at least 20 distinct shades of the helmet color', () => {
+      const fills = helmetArtFills(renderFigure({ definition }));
+      const shellFills = fills.filter((_, index) => HELMET_ART[index].role === 'shell');
+
+      expect(new Set(shellFills).size).toBeGreaterThanOrEqual(20);
+    });
+
+    it.each(['shell', 'facemask'] as const)(
+      'derives every %s fill from that surface own color, never an invented hex',
+      (role) => {
+        const model = resolveUniformModel(definition, 'home', colors);
+        const base = role === 'shell' ? model.helmetColor : model.facemaskColor;
+        const fills = helmetArtFills(renderFigure({ definition }));
+
+        for (const [index, path] of HELMET_ART.entries()) {
+          if (path.role !== role) continue;
+          expect(fills[index]).toBe(shadeFor(base, path.dl ?? 0));
+        }
+      }
+    );
+
+    it('repaints the cage without touching the shell when only the facemask color changes', () => {
+      const recased: TeamUniformDefinition = {
+        ...definition,
+        defaults: { ...definition.defaults, facemaskColor: '#C60C30' },
+      };
+      const before = helmetArtFills(renderFigure({ definition }));
+      const after = helmetArtFills(renderFigure({ definition: recased }));
+
+      const shellIndexes = HELMET_ART.flatMap((path, index) =>
+        path.role === 'shell' ? [index] : []
+      );
+      const facemaskIndexes = HELMET_ART.flatMap((path, index) =>
+        path.role === 'facemask' ? [index] : []
+      );
+
+      expect(shellIndexes.map((index) => after[index])).toEqual(
+        shellIndexes.map((index) => before[index])
+      );
+      expect(facemaskIndexes.map((index) => after[index])).not.toEqual(
+        facemaskIndexes.map((index) => before[index])
+      );
+    });
+
+    // The Bears run a navy cage on a navy shell (depth#709) and the Rams a royal cage on a
+    // royal shell (depth#708) — the case that has to keep reading as a cage on shading alone,
+    // because the two surfaces resolve to the same base color.
+    it.each([
+      ['bears', 'home'],
+      ['rams', 'home'],
+    ])('renders %s %s as a same-color cage that still shades apart from the shell', (team, kit) => {
+      const teamDefinition = getTeamUniformDefinition(team);
+      const model = resolveUniformModel(teamDefinition, kit, colors);
+
+      expect(model.facemaskColor).toBe(model.helmetColor);
+
+      const fills = helmetArtFills(
+        renderFigure({ definition: teamDefinition, kitId: `${team}-${kit}` })
+      );
+      const shellShades = new Set(fills.filter((_, index) => HELMET_ART[index].role === 'shell'));
+      const facemaskShades = new Set(
+        fills.filter((_, index) => HELMET_ART[index].role === 'facemask')
+      );
+
+      expect(facemaskShades.size).toBeGreaterThanOrEqual(20);
+      expect([...facemaskShades].some((shade) => !shellShades.has(shade))).toBe(true);
+    });
   });
 
   it('renders an authored number glyph instead of the fallback text', () => {

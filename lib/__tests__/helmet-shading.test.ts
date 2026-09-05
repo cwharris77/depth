@@ -1,5 +1,12 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { HELMET_ART } from '@/lib/uniforms/helmet-art';
+import {
+  HELMET_ART,
+  HELMET_ART_CLIP,
+  HELMET_ART_CUT,
+  HELMET_ART_TRANSFORM,
+} from '@/lib/uniforms/helmet-art';
 import { shadeFor } from '@/lib/uniforms/helmet-shading';
 
 describe('shadeFor', () => {
@@ -37,6 +44,41 @@ describe('helmet art integrity', () => {
         return counts;
       }, {})
     ).toEqual({ shell: 122, facemask: 156, hardware: 24 });
+  });
+
+  // Acceptance criterion 8 of the spec asks that helmet-art.ts be byte-identical to a fresh
+  // generator run. That check cannot be automated: scripts/uniform-draw/helmet_base.py takes
+  // Cooper's reference SVG as argv[1] and the reference is deliberately not committed (it
+  // carries the Seahawks mark). These assertions are the achievable half of the same intent —
+  // they pin the constants a hand-edit would most plausibly disturb, so the file cannot drift
+  // from its generator silently even though re-running it here is impossible.
+  it('keeps the generated-file header that forbids hand-editing', () => {
+    const source = readFileSync(join(process.cwd(), 'lib/uniforms/helmet-art.ts'), 'utf8');
+
+    expect(source).toContain('GENERATED FILE — DO NOT EDIT.');
+    expect(source).toContain('scripts/uniform-draw/helmet_base.py');
+  });
+
+  it('pins the measured art-to-helmet-space registration transform', () => {
+    // Re-derived in the spec from two bbox correspondences; x and y scale agree to 0.013%.
+    // A drift here silently re-registers all 63 team decal layers at once.
+    expect(HELMET_ART_TRANSFORM).toBe('translate(30.83,-7.11) scale(0.50079)');
+  });
+
+  it('carries one silhouette and the four cage openings', () => {
+    expect(HELMET_ART_CUT).toHaveLength(4);
+    for (const cutter of HELMET_ART_CUT) expect(cutter).toMatch(/^m[-\d]/i);
+    expect(HELMET_ART_CLIP).toMatch(/^m[-\d]/i);
+  });
+
+  it('shades the shell across at least 20 distinct lightness offsets', () => {
+    // The spec calls a shell that flattens a failing outcome, not a cosmetic one. This is the
+    // floor at the data layer; uniform-figure.test.tsx asserts the rendered half.
+    const shellOffsets = new Set(
+      HELMET_ART.filter((path) => path.role === 'shell').map((path) => path.dl)
+    );
+
+    expect(shellOffsets.size).toBeGreaterThanOrEqual(20);
   });
 
   for (const [index, path] of HELMET_ART.entries()) {
