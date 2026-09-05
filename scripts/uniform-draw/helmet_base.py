@@ -1,4 +1,4 @@
-"""Derive lib/uniforms/helmet-base.svg — the team-neutral helmet every kit paints on.
+"""Derive the generated helmet art files every kit paints from.
 
 Input is Cooper's own hand-made helmet illustration, which was authored in Seahawks
 livery (College Navy shell + facemask, wolf-grey mark). This script strips what is
@@ -25,8 +25,11 @@ Four transforms, in order:
 The reference file is not committed (it carries the club mark). Re-run against it as:
 
     python3 scripts/uniform-draw/helmet_base.py <reference.svg> lib/uniforms/helmet-base.svg
+
+The TypeScript module is written beside the SVG as helmet-art.ts.
 """
 import colorsys, re, sys
+from pathlib import Path
 
 SRC, OUT = sys.argv[1], sys.argv[2]
 PATH_RE = re.compile(r'<path\s+transform="translate\(([^)]*)\)"\s+d="([^"]*)"\s+fill="([^"]*)"\s*/>')
@@ -226,9 +229,30 @@ def neutralize(fill):
     s2 = NS * (s / BS) if BS else NS
     return to_hex(*colorsys.hls_to_rgb(NH, l2, min(1.0, s2)))
 
+def translate_xy(transform):
+    values = [float(v) for v in NUM.findall(transform)] or [0.0]
+    return values[0], (values[1] if len(values) > 1 else 0.0)
+
+def art_space_d(transform, d):
+    """Bake a translate-only source path into art space for standalone constants."""
+    tx, ty = translate_xy(transform)
+    if not d.startswith('m0 0'):
+        raise ValueError('expected generated path to begin at its translate origin')
+    # Keep the relative move: any coordinate pairs immediately after it are implicit
+    # relative line commands and would become absolute if the `m` were replaced by `M`.
+    return 'M%s %s%s' % (number(tx), number(ty), d)
+
+def number(value):
+    if value == int(value):
+        return str(int(value))
+    return ('%.6f' % value).rstrip('0').rstrip('.')
+
+def ts_string(value):
+    return "'%s'" % value.replace('\\', '\\\\').replace("'", "\\'")
+
 src = open(SRC).read()
 head = src[:src.index('<path')]
-kept, src_indices, cutters = [], [], []
+kept, art_paths, src_indices, cutters, cutter_ds = [], [], [], [], []
 for i, m in enumerate(PATH_RE.finditer(src)):
     if i == BACKGROUND or i in DROPPED:
         continue
@@ -240,6 +264,7 @@ for i, m in enumerate(PATH_RE.finditer(src)):
         # white leaves the openings filled. They become a mask instead — see CUT_MASK.
         if in_facemask(bb) and is_opening(bb, m.group(2), m.group(1)):
             cutters.append(m.group(0).replace('fill="%s"' % fill, 'fill="#000"'))
+            cutter_ds.append(art_space_d(m.group(1), m.group(2)))
         continue
     if i not in LOGO and is_speck(bb, fill):
         continue
@@ -259,6 +284,15 @@ for i, m in enumerate(PATH_RE.finditer(src)):
     else:
         bucket, new = 'hardware', fill
     src_indices.append(i)
+    tx, ty = translate_xy(m.group(1))
+    art_paths.append({
+        'd': m.group(2),
+        'tx': tx,
+        'ty': ty,
+        'role': bucket,
+        'fill': new if bucket == 'hardware' else None,
+        'dl': None if bucket == 'hardware' else colorsys.rgb_to_hls(*to_rgb(new))[1] - NL,
+    })
     # class= carries the role so a consumer can recolour by selector; fill= keeps the
     # baked shade so the file also stands alone as a picture.
     tag = m.group(0).replace('fill="%s"' % fill, 'fill="%s"' % new)
@@ -268,6 +302,14 @@ for i, m in enumerate(PATH_RE.finditer(src)):
 patch = ('<path class="shell" transform="translate(0)" d="%s" fill="%s"/>'
          % (PATCH_D, neutralize(SHELL_BASE)))
 kept.insert(sum(1 for i in src_indices if i <= max(LOGO)), patch)
+art_paths.insert(sum(1 for i in src_indices if i <= max(LOGO)), {
+    'd': PATCH_D,
+    'tx': 0.0,
+    'ty': 0.0,
+    'role': 'shell',
+    'fill': None,
+    'dl': 0.0,
+})
 
 HEADER = """<!-- Team-neutral helmet base: the shell, facemask, vents, rivets and chin strap
      every kit paints on. Derived from Cooper's own helmet illustration by
@@ -292,6 +334,73 @@ CUT_MASK = ('<defs><mask id="helmet-openings">'
 
 open(OUT, 'w').write(head + HEADER + CUT_MASK + '\n<g mask="url(#helmet-openings)">\n'
                      + '\n'.join(kept) + '\n</g>\n</svg>\n')
+
+TS_HEADER = """/**
+ * GENERATED FILE — DO NOT EDIT.
+ *
+ * Team-neutral helmet art: the shell, facemask, vents, rivets, and chin strap every
+ * kit paints on. Derived from Cooper's own helmet illustration by
+ * scripts/uniform-draw/helmet_base.py, which strips the club mark and stores the shell
+ * and facemask shading as lightness offsets from the %s placeholder. Change the script
+ * and re-derive this file, or the next run will silently revert manual edits.
+ */
+""" % NEUTRAL_BASE
+
+ts_lines = [
+    TS_HEADER.rstrip(),
+    '',
+    "export type HelmetRole = 'shell' | 'facemask' | 'hardware';",
+    '',
+    'export interface HelmetArtPath {',
+    '  d: string;',
+    '  tx: number;',
+    '  ty: number;',
+    '  role: HelmetRole;',
+    '  /** Hardware only: the literal fill, unchanged on every kit. */',
+    '  fill?: string;',
+    '  /** Shell/facemask only: HSL lightness delta from the surface base. */',
+    '  dl?: number;',
+    '}',
+    '',
+    'export const HELMET_ART: readonly HelmetArtPath[] = [',
+]
+for path in art_paths:
+    ts_lines.extend([
+        '  {',
+        '    d: %s,' % ts_string(path['d']),
+        '    tx: %s,' % number(path['tx']),
+        '    ty: %s,' % number(path['ty']),
+        "    role: '%s'," % path['role'],
+        ('    fill: %s,' % ts_string(path['fill']) if path['fill'] is not None
+         else '    dl: %s,' % number(path['dl'])),
+        '  },',
+    ])
+ts_lines.extend([
+    '] as const;',
+    '',
+    '/**',
+    ' * Art bbox 216,144–1540,1360 maps to raw helmet bbox 139,65–802,674.',
+    ' * The independent scales are 663/1324 = 0.500755 and 609/1216 = 0.500822;',
+    ' * applying their 0.50079 midpoint gives 139 - 216×0.50079 = 30.83 and',
+    ' * 65 - 144×0.50079 = -7.11, so the registration can be re-checked here.',
+    ' */',
+    "export const HELMET_ART_TRANSFORM = 'translate(30.83,-7.11) scale(0.50079)';",
+    '',
+    '/** The outer shell silhouette in art space, used to clip team decals. */',
+    'export const HELMET_ART_CLIP =',
+    '  %s;' % ts_string(
+        art_space_d('translate(%s,%s)' % (art_paths[0]['tx'], art_paths[0]['ty']),
+                    art_paths[0]['d'])
+    ),
+    '',
+    '/** The four facemask openings in art space, used to keep the cage transparent. */',
+    'export const HELMET_ART_CUT = [',
+])
+ts_lines.extend('  %s,' % ts_string(d) for d in cutter_ds)
+ts_lines.extend(['] as const;', ''])
+
+ts_out = Path(OUT).with_name('helmet-art.ts')
+ts_out.write_text('\n'.join(ts_lines))
 
 print('kept %d paths, %d cage cutters (%d repainted flat over the mark, %d dropped)'
       % (len(kept), len(cutters), len(LOGO),
