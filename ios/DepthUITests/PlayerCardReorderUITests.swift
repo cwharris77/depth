@@ -77,6 +77,17 @@ final class PlayerCardReorderUITests: XCTestCase {
         // Relaunch without the reset argument: the override + seen-hint flag must come
         // back from the local cache.
         app.buttons["Close"].tap()
+        // DEP-433: the app-level reset action belongs to the status row, not the leading
+        // edge. Closing the player card exposes that row and lets the test assert the
+        // visual contract without reaching into TeamDetailView's private layout.
+        let resetAll = app.buttons["custom-order-reset-all"]
+        XCTAssertTrue(resetAll.waitForExistence(timeout: 5), "a custom team order should expose Reset all")
+        XCTAssertEqual(
+            resetAll.frame.midX,
+            app.windows.firstMatch.frame.midX,
+            accuracy: 1,
+            "Reset all should be centered within the depth chart status row"
+        )
         app.terminate()
         app.launchArguments = []
         app.launch()
