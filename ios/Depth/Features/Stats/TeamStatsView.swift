@@ -106,7 +106,11 @@ struct TeamStatsView: View {
                         // this page's first element is the trigger row, so it needs the
                         // same 16pt inset or it sits flush against the page switcher above.
                         .padding(.top, 16)
-                    teamNameBlock(page.team, coach: viewModel.selectedSeasonStats?.coach)
+                    teamNameBlock(
+                        page.team,
+                        coach: viewModel.selectedSeasonStats?.coach,
+                        incomingCoach: viewModel.isViewingCurrentOrUpcomingSeason ? page.incomingCoach : nil
+                    )
                     if let active = viewModel.selectedSeasonStats {
                         heroRecord(active)
                         breakdownTable(active)
@@ -162,7 +166,7 @@ struct TeamStatsView: View {
 
     /// Web parity: the eyebrow and the season-scoped coach are one block above the hero
     /// record, not a labelled section further down the page.
-    private func teamNameBlock(_ team: Team, coach: TeamSeasonCoach?) -> some View {
+    private func teamNameBlock(_ team: Team, coach: TeamSeasonCoach?, incomingCoach: TeamIncomingCoach?) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             StatsEyebrow(text: "\(team.city.uppercased()) \(team.name.uppercased())")
             if let coach {
@@ -171,6 +175,19 @@ struct TeamStatsView: View {
                         .font(.title3.weight(.heavy))
                         .foregroundStyle(DesignTokens.Colors.textPrimary)
                     Text(verbatim: "HEAD COACH · \(ordinal(coach.experience).uppercased()) SEASON")
+                        .font(.caption.bold())
+                        .tracking(0.6)
+                        .foregroundStyle(teamAccent)
+                }
+                .padding(.top, 11)
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("stats-coach")
+            } else if let incomingCoach {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(verbatim: incomingCoach.name)
+                        .font(.title3.weight(.heavy))
+                        .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    Text("HEAD COACH · INCOMING")
                         .font(.caption.bold())
                         .tracking(0.6)
                         .foregroundStyle(teamAccent)

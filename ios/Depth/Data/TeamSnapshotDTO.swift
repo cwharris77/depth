@@ -63,12 +63,16 @@ struct TeamListRowDTO: Decodable {
     let logoUrl: String?
     let logoDarkUrl: String?
     let uniforms: [TeamColorUniformDTO]
+    var coachName: String? = nil
+    var coachExperience: Int? = nil
 
     enum CodingKeys: String, CodingKey {
         case id, abbrev, city, name, conference, division
         case logoUrl = "logo_url"
         case logoDarkUrl = "logo_dark_url"
         case uniforms
+        case coachName = "coach_name"
+        case coachExperience = "coach_experience"
     }
 }
 

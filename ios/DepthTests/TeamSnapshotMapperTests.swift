@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import Depth
 
@@ -27,6 +28,25 @@ private func team(
         depthChartEntries: depthChartEntries, specialTeamsSlots: specialTeamsSlots,
         uniforms: uniforms, teamFormations: formations
     )
+}
+
+@Suite struct TeamListRowDTOTests {
+    @Test func decodesIncomingCoachFields() throws {
+        let data = Data(
+            """
+            {
+              "id": "bills", "abbrev": "BUF", "city": "Buffalo", "name": "Bills",
+              "conference": "AFC", "division": "East", "uniforms": [],
+              "coach_name": "Joe Brady", "coach_experience": 0
+            }
+            """.utf8
+        )
+
+        let dto = try JSONDecoder().decode(TeamListRowDTO.self, from: data)
+
+        #expect(dto.coachName == "Joe Brady")
+        #expect(dto.coachExperience == 0)
+    }
 }
 
 @Test func mapsTeamIdentityAndColorsFromCurrentHomeUniform() throws {

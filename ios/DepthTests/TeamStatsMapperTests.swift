@@ -420,6 +420,17 @@ private func metricRankRow(
 }
 
 @Suite struct TeamStatsParityFieldTests {
+    @Test func exposesAnIncomingCoachDuringTheOffseason() {
+        let page = TeamStatsMapper.map(
+            team: team(),
+            rows: [row(season: 2025)],
+            incomingCoach: TeamIncomingCoach(name: "Ben Johnson"),
+            now: offseasonDate()
+        )
+
+        #expect(page.incomingCoach == TeamIncomingCoach(name: "Ben Johnson"))
+    }
+
     @Test func mapsStreakSeedWinPercentAndSeasonScopedCoach() {
         let page = TeamStatsMapper.map(
             team: team(),
