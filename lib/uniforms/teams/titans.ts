@@ -1,24 +1,10 @@
-import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } from './types';
-
-// Tennessee's four archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
-// nfl-uniform-refs/titans. Right paths mirror the left across the centerline x=294.
+// Tennessee's construction geometry — the circle-T decal paths, the silver shoulder yoke, and
+// the fixed construction colors only. The composable parts definition that consumes them lives in
+// ./titans.parts.ts; the former flat TITANS_UNIFORMS was deleted in the migration that proved
+// parts render byte-identically (see parts-parity.test.ts for the one-time gate).
 //
-// READ THIS FIRST — THE STORED PALETTES PREDATE THE 2025 REBRAND, and this module is provisional
-// because of it, not because the geometry is unmeasured.
-//   - The composite contains exactly two looks: a LIGHT BLUE jersey (figures 1-2) and a white one
-//     (figures 3-4). There is no navy jersey on the sheet at all.
-//   - `titans-home` stores primary #0C2340 navy, but `teams.color_primary` is #4495d2 light blue.
-//     That is the same stale-home-row class as Denver and Pittsburgh — see the brief's step 1,
-//     trap 3 — except here the drift runs through the whole palette set, not just one row: none of
-//     the four kits carries the silver the reference paints across both shoulders.
-//   - So only `away` can be verified against a figure. `home` renders navy where the reference is
-//     light blue; `navy-alt` and `oilers-throwback` have no figure of their own at all.
-// The geometry below IS measured, off figure 1. The token assignments are the best fit to palettes
-// that describe a previous uniform, and every one of them should be re-derived once the archive
-// carries the rebrand. Do not read a wrong-looking Titans render as a bug in this file.
-//
-// Out of scope on every kit: the chest wordmark, the league shield, the starred collar tab, and the
-// shoulder numerals.
+// NOTE: the stored palettes predate the 2025 rebrand (only `away` can be verified against a
+// figure). This module preserves the existing render; it does not re-derive token assignments.
 
 // Silver is a literal on every kit, because no Titans palette carries it. The reference renders the
 // yoke around (144,144,143); this uses the hex the archive already stores as silver elsewhere
@@ -28,22 +14,12 @@ export const TITANS_WHITE = '#FFFFFF';
 
 // Provenance: contour trace of the club's mark from the GUD composite — a reproduction
 // of a third-party mark, not original geometry. The mark is NON-FREE upstream
-// (Wikimedia `File:Tennessee Titans Logo 2026.svg`, fair use; trademarked). Licence audit: the vault’s
-// Decisions.md, 2026-09-03.
+// (Wikimedia `File:Tennessee Titans Logo 2026.svg`, fair use; trademarked). Licence audit: the
+// vault’s Decisions.md, 2026-09-03.
 //
-// The circle-T, built from figure 1's shell (bbox x64-170, y27-134 in the reference) mapped onto
-// the raw helmet space at ~6.25x. This is the smallest mark of the 32 in its source — the disc is
-// about 25 reference px across, right on the floor below which a contour trace turns to mush — so
-// it is HALF TRACED AND HALF CONSTRUCTED, and the split is deliberate:
-//   - The three rings are CONCENTRIC CIRCLES fitted to the measured disc (center (403.9, 237.0) in
-//     helmet space, outer r 12 reference px). Traced, they came back as broken dashes; at this size
-//     the ring is two px wide and its antialiasing falls below any predicate that also excludes the
-//     navy shell.
-//   - The T and the three stars ARE traced, from a box drawn inside the disc so the ring's own
-//     white does not join them.
-// THE FLAME TAIL IS DROPPED. It is a four-color interleave (light blue, red, grey, white) about two
-// px per band, and every predicate that separated one band left the others as noise. Re-derive the
-// whole mark from a larger source before treating it as finished.
+// The circle-T: the three rings are CONCENTRIC CIRCLES fitted to the measured disc; the T and the
+// three stars ARE traced. THE FLAME TAIL IS DROPPED (a four-color interleave about two px per band).
+// Re-derive the whole mark from a larger source before treating it as finished.
 export const TITANS_DECAL_RING_OUTER_PATH =
   'M328.9,237.0 A75.0,75.0 0 1 0 478.9,237.0 A75.0,75.0 0 1 0 328.9,237.0 Z';
 export const TITANS_DECAL_RING_INNER_PATH =
@@ -58,95 +34,9 @@ export const TITANS_DECAL_STARS_PATH =
 export const TITANS_DECAL_RED = '#C8102E';
 export const TITANS_DECAL_LIGHT_BLUE = '#4B92DB';
 
-// The shoulder yoke, measured on figure 1 (jersey top y=131, sleeve hem y=197, figure center
-// x=108.5, so scaleY = 191/66 and scaleX = 264/84.5). Silver covers the whole shoulder cap and
-// tapers down the sleeve to a point near reference (26,187); at y=156 it spans x25-43. The navy bar
-// inside it runs reference x45-65 at y142-149. Both extended outward to x=30 for a flush clip.
+// The shoulder yoke — silver covers the whole shoulder cap and tapers down the sleeve to a point;
+// the navy bar inside it runs reference x45-65 at y142-149.
 export const TITANS_YOKE_LEFT = 'M30,386 L205,412 L36,548 Z';
 export const TITANS_YOKE_RIGHT = 'M558,386 L383,412 L552,548 Z';
 export const TITANS_BAR_LEFT = 'M96,415 H158 V435 H96 Z';
 export const TITANS_BAR_RIGHT = 'M492,415 H430 V435 H492 Z';
-
-const GENERIC_STRIPPED = [
-  'generic-helmet-stripe',
-  'generic-sleeve-yoke-left',
-  'generic-sleeve-yoke-right',
-  'generic-sleeve-stripe-left',
-  'generic-sleeve-stripe-right',
-  'generic-collar',
-  'generic-pants-stripe-left',
-  'generic-pants-stripe-right',
-];
-
-// Yoke first, bar over it.
-function shoulders(yoke: ColorRef, bar: ColorRef): UniformLayer[] {
-  const shapes: [string, UniformSurface, string, ColorRef][] = [
-    ['titans-yoke-left', 'sleeve-left', TITANS_YOKE_LEFT, yoke],
-    ['titans-yoke-right', 'sleeve-right', TITANS_YOKE_RIGHT, yoke],
-    ['titans-bar-left', 'sleeve-left', TITANS_BAR_LEFT, bar],
-    ['titans-bar-right', 'sleeve-right', TITANS_BAR_RIGHT, bar],
-  ];
-  return shapes.map(([id, surface, d, fill]) => ({
-    id,
-    surface,
-    d,
-    clip: true,
-    kind: 'fill',
-    fill,
-  }));
-}
-
-// Fixed art: the mark is the same five colors on every navy shell, so nothing here takes a token.
-// The OILERS THROWBACK DOES NOT GET IT — that kit's white shell carries the club's oil-derrick
-// mark, a different logo, and no figure on the sheet draws it.
-function decal(): UniformLayer[] {
-  return (
-    [
-      ['titans-decal-ring-outer', TITANS_DECAL_RING_OUTER_PATH, TITANS_DECAL_LIGHT_BLUE],
-      ['titans-decal-ring-inner', TITANS_DECAL_RING_INNER_PATH, TITANS_WHITE],
-      ['titans-decal-field', TITANS_DECAL_FIELD_PATH, '#0C2340'],
-      ['titans-decal-t', TITANS_DECAL_T_PATH, TITANS_WHITE],
-      ['titans-decal-stars', TITANS_DECAL_STARS_PATH, TITANS_DECAL_RED],
-    ] as [string, string, ColorRef][]
-  ).map(([id, d, fill]) => ({
-    id,
-    surface: 'helmet' as const,
-    d,
-    clip: true,
-    kind: 'fill' as const,
-    fill,
-  }));
-}
-
-export const TITANS_UNIFORMS: TeamUniformDefinition = {
-  teamId: 'titans',
-  defaults: { removeLayerIds: GENERIC_STRIPPED },
-  kits: {
-    // Renders a NAVY body because that is what the row stores; the reference's equivalent figure is
-    // light blue. Navy is `primary` here, so the shoulder bar takes it and the numerals take it too,
-    // keylined in white — neither of which this palette supplies, hence two literals.
-    home: {
-      layers: [...shoulders(TITANS_SILVER, 'primary'), ...decal()],
-      number: { fill: 'primary', outline: TITANS_WHITE, outlineWidth: 14 },
-    },
-    // The one kit that matches its figure. White body under the navy shell; navy is `secondary`, so
-    // the shoulder bar and numeral face both resolve from a token and only the silver is a literal.
-    away: {
-      helmetColor: 'secondary',
-      layers: [...shoulders(TITANS_SILVER, 'secondary'), ...decal()],
-      number: { fill: 'secondary', outline: TITANS_WHITE, outlineWidth: 14 },
-    },
-    // No figure on the sheet. Navy body with the light-blue `secondary` moved onto the shoulder bar,
-    // which is the assignment that keeps the bar legible against a navy shell.
-    'navy-alt': {
-      layers: [...shoulders(TITANS_SILVER, 'secondary'), ...decal()],
-      number: { fill: TITANS_WHITE, outline: 'secondary', outlineWidth: 14 },
-    },
-    // No figure on the sheet either. Light-blue body with red `secondary` on the bar and white in
-    // `accent` for the numerals.
-    'oilers-throwback': {
-      layers: shoulders(TITANS_SILVER, 'secondary'),
-      number: { fill: 'accent', outline: 'secondary', outlineWidth: 14 },
-    },
-  },
-};
