@@ -46,7 +46,7 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   buccaneers: BUCCANEERS_UNIFORMS,
   cardinals: CARDINALS_UNIFORMS,
   chargers: CHARGERS_UNIFORMS,
-chiefs: CHIEFS_UNIFORMS_FROM_PARTS,
+  chiefs: CHIEFS_UNIFORMS_FROM_PARTS,
   colts: COLTS_UNIFORMS_FROM_PARTS,
   commanders: COMMANDERS_UNIFORMS,
   cowboys: COWBOYS_UNIFORMS_FROM_PARTS,
