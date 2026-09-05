@@ -30,6 +30,8 @@ const POSITION_GROUP: Record<Position, PositionGroup | undefined> = {
   C: undefined,
   RG: undefined,
   RT: undefined,
+  OT: undefined,
+  G: undefined,
   DE: 'DL',
   LDE: 'DL',
   RDE: 'DL',

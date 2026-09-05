@@ -1,3 +1,4 @@
+import type { Position } from '../types';
 import { mapRosterPosition, type RosterPosition } from './positions';
 import { rankByUsage, usageScore, type UsageEntry, type UsageStatsRow } from './depth-heuristic';
 
@@ -93,7 +94,8 @@ export function toRosterHistoryRows(
   rosterCsvRows: Record<string, string>[],
   statsCsvRows: Record<string, string>[],
   resolveTeamCode: (code: string) => string | null,
-  crosswalk: Map<string, string> = new Map()
+  crosswalk: Map<string, string> = new Map(),
+  depthChartPositions: Map<string, Position> = new Map()
 ): { rows: RosterHistoryInsert[]; skipped: number } {
   const usageByGsisId = buildUsageByGsisId(statsCsvRows);
 
@@ -107,11 +109,14 @@ export function toRosterHistoryRows(
     const name = row.full_name?.trim();
     const teamId = resolveTeamCode(row.team?.trim() ?? '');
     const positionCode = row.depth_chart_position?.trim() || row.position?.trim() || '';
-    const position = mapRosterPosition(positionCode);
-    if (!gsisId || !name || !teamId || !position) {
+    const rosterPosition = mapRosterPosition(positionCode);
+    if (!gsisId || !name || !teamId || !rosterPosition) {
       skipped++;
       continue;
     }
+    // A depth-chart position is authoritative only when it belongs to this exact
+    // team/player key. Roster CSV fallback intentionally stays generic OT/G.
+    const position = depthChartPositions.get(`${teamId}|${gsisId}`) ?? rosterPosition;
     byKey.set(`${teamId}|${gsisId}`, {
       teamId,
       gsisId,

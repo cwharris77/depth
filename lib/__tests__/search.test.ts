@@ -39,7 +39,7 @@ describe('unitForPosition', () => {
 
 describe('positionGroupPositions', () => {
   it('resolves the offensive and defensive line groups', () => {
-    expect(positionGroupPositions('OL')).toEqual(['LT', 'LG', 'C', 'RG', 'RT']);
+    expect(positionGroupPositions('OL')).toEqual(['LT', 'LG', 'C', 'RG', 'RT', 'OT', 'G']);
     expect(positionGroupPositions('dl')).toEqual(['DE', 'LDE', 'RDE', 'DT', 'NT']);
   });
 
@@ -54,7 +54,7 @@ describe('positionGroupPositions', () => {
       'FS',
     ]);
     expect(positionGroupPositions('D-Line')).toEqual(['DE', 'LDE', 'RDE', 'DT', 'NT']);
-    expect(positionGroupPositions('  o line  ')).toEqual(['LT', 'LG', 'C', 'RG', 'RT']);
+    expect(positionGroupPositions('  o line  ')).toEqual(['LT', 'LG', 'C', 'RG', 'RT', 'OT', 'G']);
   });
 
   it('returns null for a non-group query', () => {

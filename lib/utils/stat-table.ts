@@ -81,6 +81,8 @@ export function seasonStatColumns(position: Position): StatColumn[] {
     case 'C':
     case 'RG':
     case 'RT':
+    case 'OT':
+    case 'G':
       return [{ header: 'GP', value: (s) => String(n(s.games)) }];
     case 'DE':
     case 'LDE':

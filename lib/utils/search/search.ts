@@ -45,9 +45,9 @@ export function unitForPosition(position: Position): Unit {
 // which the two-letter position codes alone don't express. Keys are normalized
 // (lowercased, spaces/hyphens stripped) by positionGroupPositions below.
 const POSITION_GROUPS: Record<string, Position[]> = {
-  ol: ['LT', 'LG', 'C', 'RG', 'RT'],
-  oline: ['LT', 'LG', 'C', 'RG', 'RT'],
-  offensiveline: ['LT', 'LG', 'C', 'RG', 'RT'],
+  ol: ['LT', 'LG', 'C', 'RG', 'RT', 'OT', 'G'],
+  oline: ['LT', 'LG', 'C', 'RG', 'RT', 'OT', 'G'],
+  offensiveline: ['LT', 'LG', 'C', 'RG', 'RT', 'OT', 'G'],
   dl: ['DE', 'LDE', 'RDE', 'DT', 'NT'],
   dline: ['DE', 'LDE', 'RDE', 'DT', 'NT'],
   defensiveline: ['DE', 'LDE', 'RDE', 'DT', 'NT'],

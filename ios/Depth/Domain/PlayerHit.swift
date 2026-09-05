@@ -73,7 +73,7 @@ enum PlayerSearch {
     }
 
     private static let offensePositions: Set<Position> = [
-        .qb, .rb, .fb, .wr, .te, .lt, .lg, .c, .rg, .rt,
+        .qb, .rb, .fb, .wr, .te, .lt, .lg, .c, .rg, .rt, .ot, .g,
     ]
     private static let defensePositions: Set<Position> = [
         .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb,
@@ -81,9 +81,9 @@ enum PlayerSearch {
     ]
 
     private static let positionGroups: [String: [Position]] = [
-        "ol": [.lt, .lg, .c, .rg, .rt],
-        "oline": [.lt, .lg, .c, .rg, .rt],
-        "offensiveline": [.lt, .lg, .c, .rg, .rt],
+        "ol": [.lt, .lg, .c, .rg, .rt, .ot, .g],
+        "oline": [.lt, .lg, .c, .rg, .rt, .ot, .g],
+        "offensiveline": [.lt, .lg, .c, .rg, .rt, .ot, .g],
         "dl": [.de, .lde, .rde, .dt, .nt],
         "dline": [.de, .lde, .rde, .dt, .nt],
         "defensiveline": [.de, .lde, .rde, .dt, .nt],

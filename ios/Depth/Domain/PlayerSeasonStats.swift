@@ -216,7 +216,7 @@ func playerStatColumns(for position: Position) -> [PlayerStatColumn] {
         [.carries, .rushingYards, .rushingTds, .receptions, .rushingYardsPerCarry]
     case .wr, .te:
         [.receptions, .targets, .receivingYards, .receivingTds, .receivingYardsPerReception]
-    case .lt, .lg, .c, .rg, .rt, .p, .ls, .kr, .pr:
+    case .lt, .lg, .c, .rg, .rt, .ot, .g, .p, .ls, .kr, .pr:
         [.games]
     case .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb, .cb, .lcb, .rcb, .nb, .s, .ss, .fs:
         [.tackles, .sacks, .interceptions]

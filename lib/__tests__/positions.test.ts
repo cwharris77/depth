@@ -13,6 +13,8 @@ const ALL_POSITIONS: Position[] = [
   'C',
   'RG',
   'RT',
+  'OT',
+  'G',
   'DE',
   'LDE',
   'RDE',
