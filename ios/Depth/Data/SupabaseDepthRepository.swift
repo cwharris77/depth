@@ -249,7 +249,7 @@ actor SupabaseDepthRepository: DepthRepository {
         do {
             async let teamResult: TeamListRowDTO = client
                 .from("teams")
-                .select(Self.teamListSelect)
+                .select(Self.teamStatsTeamSelect)
                 .eq("id", value: teamId)
                 .single()
                 .execute()

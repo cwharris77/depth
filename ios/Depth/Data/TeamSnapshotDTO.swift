@@ -63,8 +63,8 @@ struct TeamListRowDTO: Decodable {
     let logoUrl: String?
     let logoDarkUrl: String?
     let uniforms: [TeamColorUniformDTO]
-    let coachName: String? = nil
-    let coachExperience: Int? = nil
+    var coachName: String? = nil
+    var coachExperience: Int? = nil
 
     enum CodingKeys: String, CodingKey {
         case id, abbrev, city, name, conference, division
