@@ -18,6 +18,7 @@
 - **`lib/uniforms/helmet-art.ts` is generated.** Same rule as `lib/database.types.ts`: only its generator writes it, and it is committed in the same PR as a generator change. A hand-edit is silently reverted by the next run.
 - **Nothing paints outside the shell silhouette.** The base has no rim and its gaps are transparent by design (164 source paths are dropped at derivation — the outer rim, every near-white fill, and the crown flecks). Do not add a stroke, a drop shadow, or a background rect to "tidy" the edge.
 - **The cage openings are a mask, not paint.** `helmet-base.svg` carves them with `mask="url(#helmet-openings)"` because the facemask is a solid blob underneath. Drop the mask and the cage renders as a filled blob — carry `HELMET_ART_CUT` through to the renderer.
+- **Only the two cage bolts are hardware inside the facemask.** Every other grey in the cage is the bars' specular lighting and recolours with the mask. Re-neutralising them, or reverting them to `hardware`, renders a coloured mask with grey bars.
 - **The shading must survive.** A shell that renders in fewer than 20 distinct shades has flattened; that is a failing outcome, not a cosmetic one.
 - **No invented hexes.** Every shell and facemask shade must be a re-lit form of the kit's own color, per invariant 4 and `lib/utils/team-surfaces.ts`'s posture.
 - **Raster regeneration is deterministic.** Two consecutive `npm run gen:uniform-thumbs` runs must produce byte-identical output.
@@ -37,7 +38,7 @@
 - [ ] Port `neutralize()`'s math from `scripts/uniform-draw/helmet_base.py` — re-light `base` by `dl` in HSL, clamp lightness to `[0,1]`.
 - [ ] Memoize on `(base, dl)`. Bound the cache; a page renders at most 32 team colors × 236 shades.
 - [ ] Add `lib/__tests__/helmet-shading.test.ts`: clamping at both ends, memo returns an identical string for a repeated call, one known base+delta pair asserted against the Python output, and malformed input degrading rather than throwing (invariant 6).
-- [ ] Add a looped integrity test over `HELMET_ART` — 302 entries, role counts 123 shell / 29 facemask / 153 hardware, and the `fill` xor `dl` invariant, one generated `it` per entry so a failure names the path index.
+- [ ] Add a looped integrity test over `HELMET_ART` — 302 entries, role counts 123 shell / 157 facemask / 25 hardware, and the `fill` xor `dl` invariant, one generated `it` per entry so a failure names the path index.
 
 ## Stage 3 — Rewrite the helmet group
 

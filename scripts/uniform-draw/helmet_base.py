@@ -87,6 +87,21 @@ def is_speck(bb, fill):
 # FACEMASK_BOX is mask, except the rear-shell dimple texture that pokes into it.
 FACEMASK_BOX = (880, 540)          # x0, y0 — a path must start at or past both
 DIMPLE_BOX = (1270, 540, 1400, 700)  # shell texture inside FACEMASK_BOX; stays shell
+# The two cage bolt heads are the only genuinely metal parts of the facemask — real chrome,
+# identical on every kit. Everything else grey inside the cage is the bars' own lighting and
+# belongs to the facemask surface: leaving it hardware renders a red mask with grey bars
+# (Cooper, 2026-09-05). A bolt is its disc plus the slot cut into it, all centred on the same
+# point; the size cap keeps the big grey cage compounds, which happen to centre nearby, out.
+RIVETS = ((1020, 770), (1066, 1182))
+RIVET_R = 20
+RIVET_MAX = 80
+
+def is_rivet(bb):
+    cx, cy = (bb[0] + bb[2]) / 2, (bb[1] + bb[3]) / 2
+    if max(bb[2] - bb[0], bb[3] - bb[1]) > RIVET_MAX:
+        return False
+    return any((cx - rx) ** 2 + (cy - ry) ** 2 < RIVET_R ** 2 for rx, ry in RIVETS)
+
 SHELL_BASE = '#0E2335'    # College Navy as the trace rendered it
 NEUTRAL_BASE = '#575757'  # hue-free placeholder; every team swaps this at render time
 
@@ -236,6 +251,11 @@ for i, m in enumerate(PATH_RE.finditer(src)):
     elif is_blue(fill):
         bucket = 'facemask' if in_facemask(bb) else 'shell'
         new = neutralize(fill)
+    elif in_facemask(bb) and not is_rivet(bb):
+        # The cage's grey lighting. Its fill is kept literal rather than run through
+        # neutralize(), which maps navy shades: these are already hue-free greys, so they
+        # are placeholder-plus-lightness in exactly the sense the shell fills are.
+        bucket, new = 'facemask', fill
     else:
         bucket, new = 'hardware', fill
     src_indices.append(i)
@@ -256,8 +276,8 @@ HEADER = """<!-- Team-neutral helmet base: the shell, facemask, vents, rivets an
      Fill colours are NOT hand-editable — change the script and re-derive, or the next
      run silently reverts you. Every path carries its role: class="shell" and
      class="facemask" recolour with the team (separately — clubs run a mask that
-     differs from the shell); class="hardware" (chrome, rivets, vents, chin strap,
-     shadows, highlights) is construction and stays neutral on every kit. There is
+     differs from the shell); class="hardware" (the two cage bolts, crown vents, chin
+     strap, rear seam, ear padding) is construction and stays neutral on every kit. There is
      no outline: nothing paints outside the shell silhouette, and the gaps are real —
      the facemask openings are cut by mask="url(#helmet-openings)", so a dark app
      background shows through the cage rather than the reference's white page. -->
