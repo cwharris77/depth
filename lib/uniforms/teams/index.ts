@@ -30,7 +30,7 @@ import { SEAHAWKS_UNIFORMS_FROM_PARTS } from './seahawks.parts';
 import { STEELERS_UNIFORMS_FROM_PARTS } from './steelers.parts';
 import { TEXANS_UNIFORMS_FROM_PARTS } from './texans.parts';
 import { TITANS_UNIFORMS_FROM_PARTS } from './titans.parts';
-import { VIKINGS_UNIFORMS } from './vikings';
+import { VIKINGS_UNIFORMS_FROM_PARTS } from './vikings.parts';
 import type { TeamUniformDefinition } from './types';
 
 // Server-boundary registry for team construction definitions. Teams migrate to the composable
@@ -69,7 +69,7 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   steelers: STEELERS_UNIFORMS_FROM_PARTS,
   texans: TEXANS_UNIFORMS_FROM_PARTS,
   titans: TITANS_UNIFORMS_FROM_PARTS,
-  vikings: VIKINGS_UNIFORMS,
+  vikings: VIKINGS_UNIFORMS_FROM_PARTS,
 };
 
 export function getTeamUniformDefinition(teamId: string): TeamUniformDefinition | undefined {
