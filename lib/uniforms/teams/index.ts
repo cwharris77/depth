@@ -21,7 +21,7 @@ import { LIONS_UNIFORMS } from './lions';
 import { NINERS_UNIFORMS } from './niners';
 import { PANTHERS_UNIFORMS } from './panthers';
 import { PATRIOTS_UNIFORMS } from './patriots';
-import { RAIDERS_UNIFORMS } from './raiders';
+import { RAIDERS_UNIFORMS_FROM_PARTS } from './raiders.parts';
 import { PACKERS_UNIFORMS } from './packers';
 import { RAMS_UNIFORMS } from './rams';
 import { RAVENS_UNIFORMS } from './ravens';
@@ -61,7 +61,7 @@ chiefs: CHIEFS_UNIFORMS_FROM_PARTS,
   packers: PACKERS_UNIFORMS,
   panthers: PANTHERS_UNIFORMS,
   patriots: PATRIOTS_UNIFORMS,
-  raiders: RAIDERS_UNIFORMS,
+  raiders: RAIDERS_UNIFORMS_FROM_PARTS,
   rams: RAMS_UNIFORMS,
   ravens: RAVENS_UNIFORMS,
   saints: SAINTS_UNIFORMS,
