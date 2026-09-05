@@ -15,7 +15,7 @@ import { DOLPHINS_UNIFORMS_FROM_PARTS } from './dolphins.parts';
 import { EAGLES_UNIFORMS_FROM_PARTS } from './eagles.parts';
 import { FALCONS_UNIFORMS_FROM_PARTS } from './falcons.parts';
 import { GIANTS_UNIFORMS_FROM_PARTS } from './giants.parts';
-import { JAGUARS_UNIFORMS } from './jaguars';
+import { JAGUARS_UNIFORMS_FROM_PARTS } from './jaguars.parts';
 import { JETS_UNIFORMS } from './jets';
 import { LIONS_UNIFORMS_FROM_PARTS } from './lions.parts';
 import { NINERS_UNIFORMS_FROM_PARTS } from './niners.parts';
@@ -55,7 +55,7 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   eagles: EAGLES_UNIFORMS_FROM_PARTS,
   falcons: FALCONS_UNIFORMS_FROM_PARTS,
   giants: GIANTS_UNIFORMS_FROM_PARTS,
-  jaguars: JAGUARS_UNIFORMS,
+  jaguars: JAGUARS_UNIFORMS_FROM_PARTS,
   jets: JETS_UNIFORMS,
   lions: LIONS_UNIFORMS_FROM_PARTS,
   packers: PACKERS_UNIFORMS_FROM_PARTS,
