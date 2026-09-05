@@ -46,6 +46,45 @@ final class PRScreenshotsUITests: XCTestCase {
             attachScreenshot(name: "field")
         }
 
+        // `custom-order` creates the state that a generic field capture cannot show:
+        // the field-level "Custom order · Reset all" chip after a local reorder.
+        if requested.contains("custom-order") {
+            let overflow = app.buttons["depth-chart-overflow"]
+            XCTAssertTrue(overflow.waitForExistence(timeout: 15), "team detail should expose the overflow menu")
+            overflow.tap()
+            let editToggle = app.buttons["edit-depth-order"]
+            XCTAssertTrue(editToggle.waitForExistence(timeout: 5), "the overflow menu should expose depth editing")
+            editToggle.tap()
+
+            let quarterback = app.buttons["player-slot-off-qb-0"]
+            XCTAssertTrue(quarterback.waitForExistence(timeout: 10), "the Bills field should render its QB")
+            quarterback.tap()
+            XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 5))
+
+            let rows = app.descendants(matching: .any).matching(
+                NSPredicate(format: "identifier BEGINSWITH 'player-profile-depth-reorder-row-'")
+            )
+            XCTAssertGreaterThanOrEqual(rows.count, 2, "edit mode should show at least two reorder rows")
+            rows.firstMatch.press(
+                forDuration: 0.6,
+                thenDragTo: rows.element(boundBy: rows.count - 1),
+                withVelocity: .slow,
+                thenHoldForDuration: 0.5
+            )
+            app.buttons["player-profile-depth-reorder-toggle"].tap()
+            XCTAssertTrue(app.staticTexts["player-profile-depth-custom"].waitForExistence(timeout: 5))
+            app.buttons["Close"].tap()
+
+            // Turn the app-level editing mode off so the screenshot isolates the saved
+            // custom-order state and its reset chip, rather than the transient editor.
+            let editingChip = app.buttons["depth-chart-editing-active"]
+            if editingChip.waitForExistence(timeout: 3) { editingChip.tap() }
+
+            let resetAll = app.buttons["custom-order-reset-all"]
+            XCTAssertTrue(resetAll.waitForExistence(timeout: 5), "the field should show the custom-order reset chip")
+            attachScreenshot(name: "custom-order")
+        }
+
         // `formations` — the formations picker scrolled to its final row, proving the
         // attribution follows every formation instead of hovering over the sheet.
         if requested.contains("formations") {
@@ -136,7 +175,7 @@ final class PRScreenshotsUITests: XCTestCase {
             // `field` is the documented default (PRScreenshotsUITests.requestedTargets
             // returns ["field"] for empty/missing input), so this is unreachable — kept
             // as a defensive tripwire in case the default ever changes.
-            XCTFail("No recognized PR screenshot target requested — pass SCREENSHOT_TARGETS=field,field-footer,formations,teams,uniform,player")
+            XCTFail("No recognized PR screenshot target requested — pass SCREENSHOT_TARGETS=field,custom-order,field-footer,formations,teams,uniform,player")
         }
     }
 
@@ -153,7 +192,7 @@ final class PRScreenshotsUITests: XCTestCase {
         } else {
             raw = ProcessInfo.processInfo.environment["SCREENSHOT_TARGETS"] ?? ""
         }
-        let valid: Set<String> = ["field", "field-footer", "formations", "teams", "uniform", "player", "settings"]
+        let valid: Set<String> = ["field", "custom-order", "field-footer", "formations", "teams", "uniform", "player", "settings"]
         let tokens = raw.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         let requested = Set(tokens).intersection(valid)
         // `field` is the documented default (empty/missing env, or no valid token →
