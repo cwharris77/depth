@@ -55,6 +55,18 @@ scaffolding with their own specs.
   our `team.id`. NOT our ESPN `abbrev` (the Rams are nflverse `LA`, our abbrev `LAR`),
   and historic relocations (`OAK`/`SD`/`STL`) fold into the current franchise. A
   hand-reviewed static map; an unknown code -> `null` (its game is skipped-and-counted).
+- `lib/nflverse/depth-charts.ts` — `mapHistoricalDepthChartPositions(season, rows,
+  resolveTeamCode)`: pure owner-aware resolver for `roster_history.position`. nflverse's
+  roster CSV is the identity/bio source, but it collapses tackles and guards to generic
+  `T`/`OT` and `G`/`OG`; it cannot establish a field side. The depth-chart release is
+  authoritative for a real historical side: its 2001–2024 schema supplies
+  `depth_position` on the final `REG` week and its 2025+ timestamped schema supplies
+  `pos_abb` from the newest snapshot. `scripts/ingest-nflverse-rosters.mts` joins the
+  resulting `(team_id, gsis_id)` position map before usage ranking. There is no depth
+  chart release for 1999–2000, and a player absent from an otherwise available release
+  keeps the roster's generic `OT`/`G`; those values are intentionally unseated by the
+  field resolver rather than assigned an invented left/right side. A missing depth-chart
+  asset for 2001+ fails that season and leaves its previous rows intact.
 - `lib/nflverse/team-stats.ts` — `parseDistanceList(raw)`: pure parse of a
   semicolon-delimited string (e.g. `"42;50;29;47"`) into `number[]`, blank -> `[]`.
   `toTeamStatsRows(csvRows, resolveCode?)`: transforms nflverse

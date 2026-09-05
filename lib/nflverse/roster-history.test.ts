@@ -96,19 +96,33 @@ describe('toRosterHistoryRows', () => {
     expect(rows[0].number).toBe(12);
   });
 
-  it('alternates collapsed OL codes left/right by usage order', () => {
-    const rosterRows = [
-      rosterRow({ gsis_id: 't1', full_name: 'Tackle One', position: 'T', jersey_number: '70' }),
-      rosterRow({ gsis_id: 't2', full_name: 'Tackle Two', position: 'OT', jersey_number: '71' }),
-    ];
-    const statsRows = [
-      { player_id: 't1', games: '16' },
-      { player_id: 't2', games: '12' },
-    ];
-    const { rows } = toRosterHistoryRows(2013, rosterRows, statsRows, RESOLVE);
-    const byId = new Map(rows.map((r) => [r.gsis_id, r]));
-    expect(byId.get('t1')?.position).toBe('LT');
-    expect(byId.get('t2')?.position).toBe('RT');
+  it('uses a depth-chart side over a generic roster position', () => {
+    const { rows } = toRosterHistoryRows(
+      2025,
+      [
+        rosterRow({
+          gsis_id: '00-0037821',
+          full_name: 'Charles Cross',
+          position: 'T',
+          jersey_number: '67',
+        }),
+      ],
+      [],
+      RESOLVE,
+      new Map(),
+      new Map([['seahawks|00-0037821', 'LT']])
+    );
+    expect(rows[0].position).toBe('LT');
+  });
+
+  it('keeps a generic tackle unseated when no depth-chart row exists', () => {
+    const { rows } = toRosterHistoryRows(
+      2000,
+      [rosterRow({ gsis_id: 't1', full_name: 'Unknown Tackle', position: 'T' })],
+      [],
+      RESOLVE
+    );
+    expect(rows[0].position).toBe('OT');
   });
 
   it('degrades a missing usage row to zero score without throwing', () => {

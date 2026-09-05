@@ -15,6 +15,8 @@ export const POSITION_FULL_NAMES: Record<Position, string> = {
   C: 'Center',
   RG: 'Right Guard',
   RT: 'Right Tackle',
+  OT: 'Offensive Tackle',
+  G: 'Guard',
   DE: 'Defensive End',
   LDE: 'Left Defensive End',
   RDE: 'Right Defensive End',

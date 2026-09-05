@@ -12,7 +12,7 @@ import Foundation
 // the TS Record's compile-time enforcement.
 private let positionGroupMap: [Position: PositionGroup?] = [
     .qb: nil, .rb: .rb, .fb: .rb, .wr: nil, .te: nil,
-    .lt: nil, .lg: nil, .c: nil, .rg: nil, .rt: nil,
+    .lt: nil, .lg: nil, .c: nil, .rg: nil, .rt: nil, .ot: nil, .g: nil,
     .de: .dl, .lde: .dl, .rde: .dl, .dt: .dl, .nt: .dl,
     .lb: .lb, .wlb: .lb, .lilb: .lb, .rilb: .lb, .slb: .lb,
     .cb: .cb, .lcb: .cb, .rcb: .cb, .nb: .cb,

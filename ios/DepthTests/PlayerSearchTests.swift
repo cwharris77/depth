@@ -80,14 +80,14 @@ private func hit(
     }
 
     @Test func positionGroupResolvesOffensiveAndDefensiveLine() {
-        #expect(PlayerSearch.positionGroupPositions("OL") == [.lt, .lg, .c, .rg, .rt])
+        #expect(PlayerSearch.positionGroupPositions("OL") == [.lt, .lg, .c, .rg, .rt, .ot, .g])
         #expect(PlayerSearch.positionGroupPositions("dl") == [.de, .lde, .rde, .dt, .nt])
     }
 
     @Test func positionGroupResolvesSecondaryAndAcceptsSpacingAndHyphens() {
         #expect(PlayerSearch.positionGroupPositions("secondary") == [.cb, .lcb, .rcb, .nb, .s, .ss, .fs])
         #expect(PlayerSearch.positionGroupPositions("D-Line") == [.de, .lde, .rde, .dt, .nt])
-        #expect(PlayerSearch.positionGroupPositions("  o line  ") == [.lt, .lg, .c, .rg, .rt])
+        #expect(PlayerSearch.positionGroupPositions("  o line  ") == [.lt, .lg, .c, .rg, .rt, .ot, .g])
     }
 
     @Test func positionGroupReturnsNilForANonGroupQuery() {

@@ -1,5 +1,5 @@
-// Fetches nflverse's season-scoped roster + player-stats CSVs, joins them through the
-// pure lib/nflverse pipeline (position mapping + usage-based depth heuristic,
+// Fetches nflverse's season-scoped roster + player-stats + depth-chart CSVs, joins them through the
+// pure lib/nflverse pipeline (depth-chart positions + usage-based depth ranking,
 // docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-design.md), and upserts
 // `roster_history`. Run by hand for the one-time 1999-present backfill, or by the
 // daily job (current season only, no --seasons flag). Never part of `next build`.
@@ -27,6 +27,7 @@ dotenv.config({ path: '.env.local' });
 import { parseCsv } from '@/lib/nflverse/csv';
 import { assetUrl, latestAvailableSeason } from '@/lib/nflverse/assets';
 import { buildCrosswalk } from '@/lib/nflverse/crosswalk';
+import { mapHistoricalDepthChartPositions } from '@/lib/nflverse/depth-charts';
 import { resolveTeamCode } from '@/lib/nflverse/team-codes';
 import {
   toRosterHistoryRows,
@@ -43,6 +44,11 @@ const ROSTERS_PREFIX = 'roster_';
 // file's header comment for the `player_stats` -> `stats_player` rename history.
 const STATS_TAG = 'stats_player';
 const STATS_PREFIX = 'stats_player_reg_';
+// nflverse publishes side-specific historical depth charts from 2001 onward. Their
+// legacy files use depth_position; the 2025+ source uses pos_abb (DEP-145).
+const DEPTH_CHARTS_TAG = 'depth_charts';
+const DEPTH_CHARTS_PREFIX = 'depth_charts_';
+const DEPTH_CHARTS_MIN_SEASON = 2001;
 // The all-era gsis_id -> espn_id crosswalk (players.csv). Same source the player-stats
 // ingest uses; fills espn_id for older roster rows whose own CSV column is empty.
 const PLAYERS_TAG = 'players';
@@ -135,16 +141,23 @@ async function main() {
 
   for (const season of seasons) {
     try {
-      const [rosterCsv, statsCsv] = await Promise.all([
+      const [rosterCsv, statsCsv, depthChartCsv] = await Promise.all([
         getText(assetUrl(ROSTERS_TAG, `${ROSTERS_PREFIX}${season}.csv`)),
         getText(assetUrl(STATS_TAG, `${STATS_PREFIX}${season}.csv`)),
+        season >= DEPTH_CHARTS_MIN_SEASON
+          ? getText(assetUrl(DEPTH_CHARTS_TAG, `${DEPTH_CHARTS_PREFIX}${season}.csv`))
+          : Promise.resolve(null),
       ]);
+      const depthChartPositions = depthChartCsv
+        ? mapHistoricalDepthChartPositions(season, parseCsv(depthChartCsv), resolveTeamCode)
+        : new Map();
       const { rows, skipped: seasonSkipped } = toRosterHistoryRows(
         season,
         parseCsv(rosterCsv),
         parseCsv(statsCsv),
         resolveTeamCode,
-        crosswalk
+        crosswalk,
+        depthChartPositions
       );
       skipped += seasonSkipped;
 
@@ -160,7 +173,8 @@ async function main() {
       allRows.push(...rows);
       rowsWritten += rows.length;
       console.log(
-        `${season}: ${supabase ? 'wrote' : 'computed'} ${rows.length} rows, skipped ${seasonSkipped}`
+        `${season}: ${supabase ? 'wrote' : 'computed'} ${rows.length} rows, skipped ${seasonSkipped}, ` +
+          `depth positions ${depthChartPositions.size}`
       );
     } catch (e) {
       failures.push({ season, message: (e as Error).message });

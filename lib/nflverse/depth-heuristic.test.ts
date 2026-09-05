@@ -26,10 +26,10 @@ describe('usageScore', () => {
     expect(usageScore('TE', { ...NO_STATS, targets: 60 })).toBe(60);
   });
 
-  it('scores OL (real and collapsed) by games', () => {
+  it('scores OL (sided and generic) by games', () => {
     expect(usageScore('LT', { ...NO_STATS, games: 16 })).toBe(16);
-    expect(usageScore('OL_TACKLE', { ...NO_STATS, games: 16 })).toBe(16);
-    expect(usageScore('OL_GUARD', { ...NO_STATS, games: 12 })).toBe(12);
+    expect(usageScore('OT', { ...NO_STATS, games: 16 })).toBe(16);
+    expect(usageScore('G', { ...NO_STATS, games: 12 })).toBe(12);
   });
 
   it('scores defense by tackles + 3x(sacks + interceptions)', () => {
@@ -82,31 +82,24 @@ describe('rankByUsage', () => {
     expect(ranked.map((r) => r.playerOrder)).toEqual([1, 2, 3, 4, 5]);
   });
 
-  it('alternates OL side by rank order within the group and ranks each side independently', () => {
+  it('keeps generic OL rows unseated and ranks them by usage', () => {
     const entries: UsageEntry<string>[] = [
-      { item: 'best-tackle', position: 'OL_TACKLE', number: 70, usage: 16 },
-      { item: 'second-tackle', position: 'OL_TACKLE', number: 71, usage: 12 },
-      { item: 'third-tackle', position: 'OL_TACKLE', number: 72, usage: 4 },
+      { item: 'best-tackle', position: 'OT', number: 70, usage: 16 },
+      { item: 'second-tackle', position: 'OT', number: 71, usage: 12 },
+      { item: 'third-tackle', position: 'OT', number: 72, usage: 4 },
     ];
     const ranked = rankByUsage(entries);
-    expect(ranked.map((r) => r.position)).toEqual(['LT', 'RT', 'LT']);
-    // The side split must not leave one side without a starter: RT's best player is
-    // rank 1 within RT, and LT's second player is rank 2 within LT (regression for the
-    // RG/RT "no depth_rank=1" bug -- every side needs its own STARTER row).
-    expect(ranked.map((r) => r.depthRank)).toEqual([1, 1, 2]);
-    expect(ranked.map((r) => r.playerOrder)).toEqual([1, 1, 2]);
+    expect(ranked.map((r) => r.position)).toEqual(['OT', 'OT', 'OT']);
+    expect(ranked.map((r) => r.depthRank)).toEqual([1, 2, 3]);
+    expect(ranked.map((r) => r.playerOrder)).toEqual([1, 2, 3]);
   });
 
-  it('gives every non-empty position group a depth_rank=1 starter', () => {
-    // Property test across OL collapses (the bug shape): alternating sides must not
-    // produce a group that starts at depth_rank 2.
+  it('ranks generic OL positions independently', () => {
     const entries: UsageEntry<string>[] = [
-      { item: 'g1', position: 'OL_GUARD', number: 60, usage: 16 },
-      { item: 'g2', position: 'OL_GUARD', number: 61, usage: 12 },
-      { item: 'g3', position: 'OL_GUARD', number: 62, usage: 8 },
-      { item: 'g4', position: 'OL_GUARD', number: 63, usage: 4 },
-      { item: 't1', position: 'OL_TACKLE', number: 70, usage: 16 },
-      { item: 't2', position: 'OL_TACKLE', number: 71, usage: 12 },
+      { item: 'g1', position: 'G', number: 60, usage: 16 },
+      { item: 'g2', position: 'G', number: 61, usage: 12 },
+      { item: 't1', position: 'OT', number: 70, usage: 16 },
+      { item: 't2', position: 'OT', number: 71, usage: 12 },
     ];
     const ranked = rankByUsage(entries);
     const byPosition = new Map<string, typeof ranked>();
