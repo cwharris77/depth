@@ -186,8 +186,12 @@ web UI is frozen.
 - **Conventional Commits** for commits and PR titles. Scopes in use: `ios`, `uniforms`,
   `nav`, `search`, `player`, `field`, `depth`, `card`, `switcher`, `teams`, `colors`,
   `espn`, `ingest`, `supabase`, `scripts`, `pwa`, `seo`, `theme`, `layout`, `ci`,
-  `specs`, `readme`, `auth`. Types include `a11y:` where apt. Most work now scopes
-  `ios` (see `ios/CLAUDE.md`).
+  `specs`, `readme`, `auth`. Types include `a11y:` and `design:` where apt. Most work now
+  scopes `ios` (see `ios/CLAUDE.md`). **`design:` is for a change to how something looks
+  that fixes nothing broken** — "I wanted a different look" is not a bug, and titling it
+  `fix:` files it under Bug Fixes in the release notes. It covers restyles that add no
+  capability too, so reach for it over `feat:` when the diff only changes appearance.
+  `style:` stays what it has always been here: code formatting, never visual design.
 - **Squash-merge only** (`gh pr merge --squash`). Never merge-commit, never rebase-
   merge, never delete or force-push `main`.
 - **PR bodies follow the house shape**: `## What` / `## Why` / `## Tests` (or
