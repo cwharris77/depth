@@ -1,5 +1,3 @@
-import type { ColorRef, TeamUniformDefinition, UniformLayer } from './types';
-
 // Carolina's three archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
 // nfl-uniform-refs/panthers (black alternate is that sheet's row-2 figure 1, home its row-2
 // figure 5, away its row-3 figure 1 — each row's later figures are pant combinations, and the
@@ -16,13 +14,12 @@ import type { ColorRef, TeamUniformDefinition, UniformLayer } from './types';
 //
 // Out of scope on every kit: the chest wordmark, the league shield, the "KEEP POUNDING" collar
 // script, the panther patch on each sleeve, and the shoulder numerals GUD draws above the fan.
-
-// Two literals. The home palette is blue over black with accent === secondary (ESPN supplies only
-// two colors), so nothing resolves to the white wedge or the white numeral face; and the AWAY
-// palette (white/blue/black) carries no silver, so its shell has no token either. The silver is the
-// hex the archive already stores as this club's black-alternate accent (lib/uniforms/data.ts).
-export const PANTHERS_WHITE = '#FFFFFF';
-export const PANTHERS_SILVER = '#A5ACAF';
+//
+// Construction geometry only — the mark, fan, and collar paths. The composable parts definition
+// that consumes them lives in ./panthers.parts.ts; the former flat PANTHERS_UNIFORMS was deleted
+// in the migration that proved parts render byte-identically (see parts-parity.test.ts for the
+// one-time gate). The collar path/width were module-private consts; they are now exported for the
+// parts file.
 
 // Provenance: contour trace of the club's mark from the GUD composite — a reproduction
 // of a third-party mark, not original geometry. The mark is NON-FREE upstream
@@ -55,119 +52,5 @@ export const PANTHERS_WEDGE_RIGHT = 'M514,421 L486,426 L467,493 Z';
 // The collar V, measured on the same figure: the band's outer corner sits at reference (1085,703)
 // and both arms meet at (1119,745) — far deeper than the generic chevron, whose point is at y=455.
 // Roughly 9 reference px thick measured horizontally, which is ~24 units perpendicular to the arm.
-const PANTHERS_COLLAR_PATH = 'M189,392 L295,513 L399,392';
-const PANTHERS_COLLAR_WIDTH = 24;
-
-const GENERIC_STRIPPED = [
-  'generic-helmet-stripe',
-  'generic-sleeve-yoke-left',
-  'generic-sleeve-yoke-right',
-  'generic-sleeve-stripe-left',
-  'generic-sleeve-stripe-right',
-  'generic-collar',
-  'generic-pants-stripe-left',
-  'generic-pants-stripe-right',
-];
-
-// Wider triangle first, shorter one over it — the gap left below the middle band's point is where
-// the two outer bands merge in the reference.
-function shoulderFan(outer: ColorRef, middle: ColorRef): UniformLayer[] {
-  const shapes: [string, 'sleeve-left' | 'sleeve-right', string, ColorRef][] = [
-    ['panthers-fan-left', 'sleeve-left', PANTHERS_FAN_LEFT, outer],
-    ['panthers-fan-right', 'sleeve-right', PANTHERS_FAN_RIGHT, outer],
-    ['panthers-wedge-left', 'sleeve-left', PANTHERS_WEDGE_LEFT, middle],
-    ['panthers-wedge-right', 'sleeve-right', PANTHERS_WEDGE_RIGHT, middle],
-  ];
-  return shapes.map(([id, surface, d, fill]) => ({
-    id,
-    surface,
-    d,
-    clip: true,
-    kind: 'fill',
-    fill,
-  }));
-}
-
-function collar(fill: ColorRef): UniformLayer[] {
-  return [
-    {
-      id: 'panthers-collar',
-      surface: 'collar',
-      d: PANTHERS_COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: fill,
-      strokeWidth: PANTHERS_COLLAR_WIDTH,
-    },
-  ];
-}
-
-function decal(keyline: ColorRef, body: ColorRef): UniformLayer[] {
-  return [
-    {
-      id: 'panthers-decal-silhouette',
-      surface: 'helmet',
-      d: PANTHERS_DECAL_SILHOUETTE_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: keyline,
-    },
-    {
-      id: 'panthers-decal-body',
-      surface: 'helmet',
-      d: PANTHERS_DECAL_BODY_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: body,
-    },
-  ];
-}
-
-export const PANTHERS_UNIFORMS: TeamUniformDefinition = {
-  teamId: 'panthers',
-  // Every kit strips the same generic model; what differs is only which token carries each color.
-  defaults: { removeLayerIds: GENERIC_STRIPPED },
-  kits: {
-    // Blue body over black pants under a black shell — the only kit in the reference whose shell is
-    // not silver. Black is `secondary` here, so it carries the shell, the collar, the middle wedge
-    // and the numeral keyline; the outer wedge and numeral face are white, which this palette
-    // cannot supply, so both take the literal. On a black shell the decal's black body disappears
-    // into the shell and the blue silhouette reads alone, exactly as the reference draws it.
-    home: {
-      helmetColor: 'secondary',
-      pantsColor: 'secondary',
-      layers: [
-        ...shoulderFan(PANTHERS_WHITE, 'secondary'),
-        ...collar('secondary'),
-        ...decal('primary', 'secondary'),
-      ],
-      number: { fill: PANTHERS_WHITE, outline: 'secondary', outlineWidth: 14 },
-    },
-    // White body over black pants under the silver shell. The away palette moves white into
-    // primary, blue into secondary and black into accent, so the fan inverts to black-outside-blue
-    // and the numerals invert to a black face. Silver has no token here, so the shell takes the
-    // literal.
-    away: {
-      helmetColor: PANTHERS_SILVER,
-      pantsColor: 'accent',
-      layers: [
-        ...shoulderFan('accent', 'secondary'),
-        ...collar('accent'),
-        ...decal('secondary', 'accent'),
-      ],
-      number: { fill: 'accent', outline: 'secondary', outlineWidth: 14 },
-    },
-    // Black body and pants under the silver shell. This is the only kit whose palette carries
-    // silver — as `accent` — so the shell and the outer wedge both resolve from a token, and the
-    // numeral face is white again.
-    'black-alt': {
-      helmetColor: 'accent',
-      layers: [
-        ...shoulderFan('accent', 'secondary'),
-        ...collar('secondary'),
-        ...decal('secondary', 'primary'),
-      ],
-      number: { fill: PANTHERS_WHITE, outline: 'secondary', outlineWidth: 14 },
-    },
-  },
-};
+export const PANTHERS_COLLAR_PATH = 'M189,392 L295,513 L399,392';
+export const PANTHERS_COLLAR_WIDTH = 24;
