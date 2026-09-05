@@ -24,14 +24,20 @@ export type UniformArtVariant = Extract<UniformVariant, 'jersey' | 'full'>;
 //
 // Color contract: primary = helmet shell / jersey body / pants; secondary = helmet + sleeve +
 // pant stripes and the number outline; accent = shoulder yoke + helmet stripe; number fill =
-// readableTextOn(primary) so it stays legible on any body color.
+// readableTextOn(primary) so it stays legible on any body color. Helmet hardware and openings use
+// fixed neutrals because they describe physical depth and fasteners, not team-painted surfaces;
+// keeping them independent of the shell also preserves the same readable construction on every kit.
 
 const OUTLINE = '#8a9096';
+const HELMET_DETAIL_DARK = '#111820';
+const HELMET_RIVET = '#d6dbe3';
 
 // Shared mannequin paths (template coordinate space; viewBox origin 20,45).
 const GEO = {
   helmet:
     'M402,65 455,65 457,67 509,73 547,85 593,109 631,137 646,152 674,188 690,218 700,260 709,261 712,264 731,293 753,297 756,300 770,328 770,349 763,356 644,387 645,443 715,449 735,455 753,457 791,469 802,480 798,535 784,577 784,583 748,653 727,674 702,674 676,666 668,666 582,644 574,644 558,638 506,638 486,634 472,630 430,610 427,610 413,622 392,622 348,580 314,554 312,559 305,564 260,562 214,550 176,532 171,527 165,511 165,499 161,483 161,445 155,425 151,389 145,363 145,332 147,330 149,299 143,277 139,271 139,262 143,252 163,214 201,162 236,127 252,115 302,91 312,89 334,79 374,69 401,66Z',
+  helmetVoid:
+    'M656,414 712,400 712,438 656,438Z M656,464 748,472 748,490 656,482Z M652,507 748,507 748,533 652,533Z M652,550 739,550 718,627 682,627 652,579Z',
   facemask:
     'M729,302 746,306 749,309 761,333 761,346 734,355 690,365 682,369 636,379 635,449 642,452 656,452 658,454 678,454 680,456 714,458 734,464 752,466 778,474 786,478 793,485 789,534 775,576 775,582 765,604 761,608 739,650 724,665 703,665 677,657 669,657 651,651 643,651 641,649 617,645 583,635 567,633 545,625 518,610 514,602 514,591 517,585 527,595 527,601 530,604 558,618 576,622 590,628 621,634 624,631 624,622 622,620 622,606 620,604 620,584 614,580 616,571 620,569 620,546 547,545 539,541 564,499 562,486 558,480 546,444 537,433 523,423 501,409 491,405 482,396 476,386 481,367 491,379 491,385 496,390 534,414 551,431 571,469 575,487 580,496 621,496 622,490 609,487 603,476 621,478 622,460 591,457 586,447 622,447 622,350 609,345 591,343 589,341 563,337 553,333 539,333 537,331 517,333 505,328 519,318 544,318 546,320 568,322 570,324 590,326 602,330 651,336 661,332 695,326 719,318 730,311 728,303Z M740,318 743,320 749,331 740,335 738,329 734,325 734,322 739,319Z M724,328 727,328 731,334 729,339 717,343 711,343 697,349 691,349 689,351 683,351 681,353 675,353 673,355 667,355 665,357 659,357 641,363 636,363 636,350 674,346 676,344 682,344 696,338 702,338 714,334 723,329Z M538,359 545,359 556,366 560,374 558,389 551,396 545,398 532,396 525,389 523,374 527,366 537,360Z M636,462 663,464 665,466 683,466 685,468 697,468 699,470 709,470 711,472 721,472 723,474 733,474 735,476 751,478 751,489 741,489 739,491 710,491 698,487 644,483 642,481 636,481 636,463Z M712,506 731,506 737,510 749,512 749,525 747,527 699,527 697,529 649,529 647,531 634,531 634,510 668,510 670,508 711,507Z M604,510 621,510 621,533 556,533 570,512 603,511Z M758,536 763,536 763,539 761,541 761,549 759,551 759,559 757,561 753,587 749,593 749,597 745,603 745,607 731,639 729,641 726,639 724,628 738,602 744,584 744,578 750,566 750,560 752,558 752,552 757,537Z M742,538 747,539 743,547 737,577 733,583 725,607 715,625 708,623 698,615 688,611 674,601 664,597 660,593 634,579 632,577 632,544 668,544 670,542 710,542 712,540 741,539Z M560,569 569,569 578,576 580,580 580,589 578,593 569,600 560,600 551,593 549,589 549,580 551,576 559,570Z M632,592 635,592 663,610 673,614 703,634 717,648 715,653 696,653 694,651 688,651 686,649 680,649 678,647 672,647 670,645 664,645 646,639 638,639 636,637 632,593Z',
   jersey:
@@ -80,6 +86,44 @@ function Geo({
     />
   ) : (
     <path d={GEO[part]} fill={fill} stroke={stroke} strokeWidth={strokeWidth} fillRule={fillRule} />
+  );
+}
+
+// Shared shell construction is deliberately painted before team helmet layers. Large decals can
+// wrap over these landmarks just as they do on a physical helmet, while openings remain visible
+// wherever the team artwork leaves them exposed.
+function HelmetDetails() {
+  return (
+    <g strokeLinecap="round" strokeLinejoin="round">
+      <path
+        data-detail-id="helmet-rear-seam"
+        d="M166,474 C188,507 234,535 305,548"
+        fill="none"
+        stroke={OUTLINE}
+        strokeWidth={7}
+      />
+      <path
+        data-detail-id="helmet-crown-vents"
+        d="M286,102 L330,96 M236,135 L264,109 M565,144 L596,158"
+        fill="none"
+        stroke={HELMET_DETAIL_DARK}
+        strokeWidth={9}
+      />
+      <ellipse
+        data-detail-id="helmet-ear-opening"
+        cx="542"
+        cy="379"
+        rx="19"
+        ry="21"
+        fill={HELMET_DETAIL_DARK}
+        stroke={OUTLINE}
+        strokeWidth={6}
+      />
+      <g data-detail-id="helmet-rivets" fill={HELMET_RIVET} stroke={HELMET_DETAIL_DARK}>
+        <circle cx="476" cy="392" r="10" strokeWidth={5} />
+        <circle cx="456" cy="510" r="11" strokeWidth={5} />
+      </g>
+    </g>
   );
 }
 
@@ -218,9 +262,17 @@ export default function UniformFigure({
           </clipPath>
         )}
         {hasHelmet && (
-          <clipPath id={`${uid}-helmet`}>
-            <Geo part="helmet" shared={sharedDefs} />
-          </clipPath>
+          <>
+            <clipPath id={`${uid}-helmet`}>
+              <Geo part="helmet" shared={sharedDefs} />
+            </clipPath>
+            <mask id={`${uid}-helmet-shell-mask`} maskUnits="userSpaceOnUse">
+              <rect x="20" y="40" width="560" height="315" fill="white" />
+              <g transform="translate(80.25 11) scale(0.5)">
+                <Geo part="helmetVoid" shared={sharedDefs} fill="#000000" />
+              </g>
+            </mask>
+          </>
         )}
         {hasPants && (
           <>
@@ -297,26 +349,33 @@ export default function UniformFigure({
           </>
         )}
         {hasHelmet && (
-          <g transform="translate(80.25 11) scale(0.5)">
-            <Geo
-              part="helmet"
-              shared={sharedDefs}
-              fill={model.helmetColor}
-              stroke={OUTLINE}
-              strokeWidth={8}
-            />
-            {helmetLayers.map((layer) => (
-              <UniformLayerPath key={layer.id} layer={layer} uid={uid} />
-            ))}
-            <Geo
-              part="facemask"
-              shared={sharedDefs}
-              fill={model.facemaskColor}
-              fillRule="evenodd"
-              stroke={OUTLINE}
-              strokeWidth={7}
-            />
-          </g>
+          <>
+            <g mask={`url(#${uid}-helmet-shell-mask)`}>
+              <g transform="translate(80.25 11) scale(0.5)">
+                <Geo
+                  part="helmet"
+                  shared={sharedDefs}
+                  fill={model.helmetColor}
+                  stroke={OUTLINE}
+                  strokeWidth={8}
+                />
+                <HelmetDetails />
+                {helmetLayers.map((layer) => (
+                  <UniformLayerPath key={layer.id} layer={layer} uid={uid} />
+                ))}
+              </g>
+            </g>
+            <g transform="translate(80.25 11) scale(0.5)">
+              <Geo
+                part="facemask"
+                shared={sharedDefs}
+                fill={model.facemaskColor}
+                fillRule="evenodd"
+                stroke={OUTLINE}
+                strokeWidth={7}
+              />
+            </g>
+          </>
         )}
       </g>
     </svg>

@@ -1,7 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
 import UniformFigure from '@/components/UniformFigure';
 import type { TeamColors } from '@/lib/types';
+import { renderUniformThumbSVG } from '@/lib/uniforms/art';
 import { variantSpec } from '@/lib/uniforms/figure';
 import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
 
@@ -202,6 +204,30 @@ describe('UniformFigure', () => {
     const markup = renderFigure({ definition });
 
     expect(markup.indexOf(earlier)).toBeLessThan(markup.indexOf(later));
+  });
+
+  it('leaves the open facemask cage transparent', async () => {
+    const svg = renderUniformThumbSVG(colors, 'test-home', definition, 'full');
+    const { data, info } = await sharp(Buffer.from(svg))
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    const sightOpeningPixel = (180 * info.width + 410) * 4;
+    const frontShellRimPixel = (145 * info.width + 410) * 4;
+    const lowerCagePixel = (225 * info.width + 420) * 4;
+
+    expect([...data.subarray(sightOpeningPixel, sightOpeningPixel + 4)]).toEqual([0, 0, 0, 0]);
+    expect(data[frontShellRimPixel + 3]).toBe(255);
+    expect([...data.subarray(lowerCagePixel, lowerCagePixel + 4)]).toEqual([0, 0, 0, 0]);
+  });
+
+  it('paints shared helmet details beneath team-authored helmet layers', () => {
+    const markup = renderFigure({ definition });
+    const detail = 'data-detail-id="helmet-ear-opening"';
+    const teamLayer = 'data-layer-id="test-helmet-fill"';
+
+    expect(markup).toContain(detail);
+    expect(markup.indexOf(detail)).toBeLessThan(markup.indexOf(teamLayer));
   });
 
   it('renders an authored number glyph instead of the fallback text', () => {
