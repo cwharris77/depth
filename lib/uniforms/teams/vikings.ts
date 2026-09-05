@@ -1,9 +1,13 @@
-import type { ColorRef, TeamUniformDefinition, UniformLayer, UniformSurface } from './types';
-
 // Minnesota's four archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
 // nfl-uniform-refs/vikings, with the 1965 kit read from that folder's era sheet. Sleeve and pant
 // paths use the outer 588-wide mannequin space; right paths mirror the left across the jersey
 // centerline x=294 (mirroredX = 588 - x).
+//
+// Construction geometry only — the mark, band, collar and pant-stripe paths. The composable parts
+// definition that consumes them lives in ./vikings.parts.ts; the former flat VIKINGS_UNIFORMS was
+// deleted in the migration that proved parts render byte-identically (see parts-parity.test.ts for
+// the one-time gate). The collar path was a module-private const; it is now exported for the parts
+// file.
 
 // The generic outline width of 26 is tuned for a keyline that reads at swatch size; Minnesota's
 // numerals carry a thin trim over a contrasting face, and at 26 the trim swallowed the face and
@@ -39,161 +43,4 @@ export const VIKINGS_PANTS_OUTER_RIGHT = 'M448,807 H476 V1462 H448 Z';
 export const VIKINGS_PANTS_INNER_LEFT = 'M122,807 H130 V1462 H122 Z';
 export const VIKINGS_PANTS_INNER_RIGHT = 'M458,807 H466 V1462 H458 Z';
 
-const COLLAR_PATH = 'M206,388 L294,455 L386,388';
-const GENERIC_STRIPPED = [
-  'generic-helmet-stripe',
-  'generic-sleeve-yoke-left',
-  'generic-sleeve-yoke-right',
-  'generic-sleeve-stripe-left',
-  'generic-sleeve-stripe-right',
-  'generic-collar',
-  'generic-pants-stripe-left',
-  'generic-pants-stripe-right',
-];
-
-// One two-band set across all four kits; only which color sits above the other changes.
-function sleeveBands(upper: ColorRef, lower: ColorRef): UniformLayer[] {
-  const shapes: { id: string; surface: UniformSurface; d: string; fill: ColorRef }[] = [
-    {
-      id: 'vikings-band-upper-left',
-      surface: 'sleeve-left',
-      d: VIKINGS_BAND_UPPER_LEFT,
-      fill: upper,
-    },
-    {
-      id: 'vikings-band-upper-right',
-      surface: 'sleeve-right',
-      d: VIKINGS_BAND_UPPER_RIGHT,
-      fill: upper,
-    },
-    {
-      id: 'vikings-band-lower-left',
-      surface: 'sleeve-left',
-      d: VIKINGS_BAND_LOWER_LEFT,
-      fill: lower,
-    },
-    {
-      id: 'vikings-band-lower-right',
-      surface: 'sleeve-right',
-      d: VIKINGS_BAND_LOWER_RIGHT,
-      fill: lower,
-    },
-  ];
-  return shapes.map((s): UniformLayer => ({ ...s, clip: true, kind: 'fill' }));
-}
-
-function pantsStripes(outer: ColorRef, inner: ColorRef): UniformLayer[] {
-  const shapes: { id: string; surface: UniformSurface; d: string; fill: ColorRef }[] = [
-    {
-      id: 'vikings-pants-outer-left',
-      surface: 'leg-left',
-      d: VIKINGS_PANTS_OUTER_LEFT,
-      fill: outer,
-    },
-    {
-      id: 'vikings-pants-outer-right',
-      surface: 'leg-right',
-      d: VIKINGS_PANTS_OUTER_RIGHT,
-      fill: outer,
-    },
-    {
-      id: 'vikings-pants-inner-left',
-      surface: 'leg-left',
-      d: VIKINGS_PANTS_INNER_LEFT,
-      fill: inner,
-    },
-    {
-      id: 'vikings-pants-inner-right',
-      surface: 'leg-right',
-      d: VIKINGS_PANTS_INNER_RIGHT,
-      fill: inner,
-    },
-  ];
-  return shapes.map((s): UniformLayer => ({ ...s, clip: true, kind: 'fill' }));
-}
-
-function collar(outer: ColorRef, inner: ColorRef): UniformLayer[] {
-  return [
-    { id: 'vikings-collar-outer', stroke: outer, strokeWidth: 18 },
-    { id: 'vikings-collar-inner', stroke: inner, strokeWidth: 8 },
-  ].map((s): UniformLayer => ({
-    ...s,
-    surface: 'collar',
-    d: COLLAR_PATH,
-    clip: true,
-    kind: 'stroke',
-  }));
-}
-
-function decal(horn: ColorRef, crescent: ColorRef): UniformLayer[] {
-  return [
-    { id: 'vikings-decal-horn', d: VIKINGS_DECAL_HORN_PATH, fill: horn },
-    { id: 'vikings-decal-crescent', d: VIKINGS_DECAL_CRESCENT_PATH, fill: crescent },
-  ].map((s): UniformLayer => ({
-    ...s,
-    surface: 'helmet',
-    clip: true,
-    kind: 'fill',
-    fillRule: 'evenodd',
-  }));
-}
-
-export const VIKINGS_UNIFORMS: TeamUniformDefinition = {
-  teamId: 'vikings',
-  kits: {
-    // Purple body, purple pants, purple shell — white over gold on the sleeve, white numerals with
-    // a gold keyline.
-    home: {
-      removeLayerIds: GENERIC_STRIPPED,
-      layers: [
-        ...decal(VIKINGS_WHITE, 'secondary'),
-        ...sleeveBands(VIKINGS_WHITE, 'secondary'),
-        ...collar(VIKINGS_WHITE, 'secondary'),
-        ...pantsStripes(VIKINGS_WHITE, 'secondary'),
-      ],
-      number: { fill: VIKINGS_WHITE, outline: 'secondary', outlineWidth: 14 },
-    },
-    // White body over purple pants and the purple shell; the upper band becomes purple so it reads.
-    away: {
-      helmetColor: 'secondary',
-      pantsColor: 'secondary',
-      removeLayerIds: GENERIC_STRIPPED,
-      layers: [
-        ...decal(VIKINGS_WHITE, 'accent'),
-        ...sleeveBands('secondary', 'accent'),
-        ...collar('secondary', 'accent'),
-        ...pantsStripes('accent', VIKINGS_WHITE),
-      ],
-      number: { fill: 'secondary', outline: 'accent', outlineWidth: 14 },
-    },
-    // Winter Warrior stores the same palette as away and differs only in construction: the shell
-    // and pants go white too, leaving the purple/gold bands as the only color on the figure.
-    'winter-warrior': {
-      helmetColor: VIKINGS_WHITE,
-      pantsColor: VIKINGS_WHITE,
-      removeLayerIds: GENERIC_STRIPPED,
-      layers: [
-        ...decal('secondary', 'accent'),
-        ...sleeveBands('secondary', 'accent'),
-        ...collar('secondary', 'accent'),
-        ...pantsStripes('secondary', 'accent'),
-      ],
-      number: { fill: 'secondary', outline: 'accent', outlineWidth: 14 },
-    },
-    // 1965: purple body over white pants. Its palette carries a real white in `accent`, so nothing
-    // here needs a literal. The era sheet shows a denser sleeve set than the modern two bands —
-    // this reuses the measured modern geometry rather than inventing a count, so treat the band
-    // spacing as approximate while the colors and layout are right.
-    'purple-classic': {
-      pantsColor: 'accent',
-      removeLayerIds: GENERIC_STRIPPED,
-      layers: [
-        ...decal('accent', 'secondary'),
-        ...sleeveBands('accent', 'secondary'),
-        ...collar('accent', 'secondary'),
-        ...pantsStripes('primary', 'secondary'),
-      ],
-      number: { fill: 'accent', outline: 'secondary', outlineWidth: 14 },
-    },
-  },
-};
+export const VIKINGS_COLLAR_PATH = 'M206,388 L294,455 L386,388';
