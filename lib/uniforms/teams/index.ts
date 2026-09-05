@@ -24,7 +24,7 @@ import { PANTHERS_UNIFORMS } from './panthers';
 import { PATRIOTS_UNIFORMS } from './patriots';
 import { RAIDERS_UNIFORMS_FROM_PARTS } from './raiders.parts';
 import { RAMS_UNIFORMS } from './rams';
-import { RAVENS_UNIFORMS } from './ravens';
+import { RAVENS_UNIFORMS_FROM_PARTS } from './ravens.parts';
 import { SAINTS_UNIFORMS_FROM_PARTS } from './saints.parts';
 import { SEAHAWKS_UNIFORMS_FROM_PARTS } from './seahawks.parts';
 import { STEELERS_UNIFORMS_FROM_PARTS } from './steelers.parts';
@@ -63,7 +63,7 @@ const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   patriots: PATRIOTS_UNIFORMS,
   raiders: RAIDERS_UNIFORMS_FROM_PARTS,
   rams: RAMS_UNIFORMS,
-  ravens: RAVENS_UNIFORMS,
+  ravens: RAVENS_UNIFORMS_FROM_PARTS,
   saints: SAINTS_UNIFORMS_FROM_PARTS,
   seahawks: SEAHAWKS_UNIFORMS_FROM_PARTS,
   steelers: STEELERS_UNIFORMS_FROM_PARTS,
