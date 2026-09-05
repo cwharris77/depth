@@ -20,7 +20,7 @@ import Foundation
 /// exactly: KR/PR/LS are editorial special-teams slots, not depth groups, so they
 /// don't belong in a per-position depth comparison.
 let COMPARE_POSITIONS: [Position] = [
-    .qb, .rb, .fb, .wr, .te, .lt, .lg, .c, .rg, .rt, .ot, .g,
+    .qb, .rb, .fb, .wr, .te, .lt, .lg, .c, .rg, .rt,
     .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb,
     .cb, .lcb, .rcb, .nb, .s, .ss, .fs, .k, .p,
 ]
@@ -53,7 +53,7 @@ enum CompareMatchRooms {
         CompareRoom(id: "quarterback", name: "Quarterback", unit: .offense, positions: [.qb]),
         CompareRoom(id: "backfield", name: "Backfield", unit: .offense, positions: [.rb, .fb]),
         CompareRoom(id: "receivers", name: "Receivers", unit: .offense, positions: [.wr, .te]),
-        CompareRoom(id: "line", name: "Line", unit: .offense, positions: [.lt, .lg, .c, .rg, .rt, .ot, .g]),
+        CompareRoom(id: "line", name: "Line", unit: .offense, positions: [.lt, .lg, .c, .rg, .rt]),
         // Defense (17 positions)
         // Cooper (Aug 25): "Front" read as unclear next to "Linebackers"/"Corners"/
         // "Safeties" — renamed to the room's actual football name; id kept stable.
