@@ -483,15 +483,20 @@ struct TeamDetailView: View {
     }
 
     private var editStatusRow: some View {
-        HStack {
+        // DEP-433: a custom order is a screen-level status, so its reset control stays
+        // centered even when the optional trailing Editing exit control is absent.
+        ZStack {
             if !confirmedOrders.isEmpty {
                 customOrderChip
             }
-            Spacer()
-            if editMode.isActive {
-                editingChip
+            HStack {
+                Spacer()
+                if editMode.isActive {
+                    editingChip
+                }
             }
         }
+        .frame(maxWidth: .infinity)
     }
 
     /// Web parity (components/FieldHeaderMenu.tsx): actions beyond the page switcher's
