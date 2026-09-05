@@ -52,27 +52,26 @@ struct AccountDeletionSheet: View {
     }
 
     private var warningCard: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+        VStack(alignment: .center, spacing: DesignTokens.Spacing.sm) {
             Text(
                 "This permanently deletes your account, preferences, saved depth orders, and shared boards. This can't be undone."
             )
             .foregroundStyle(DesignTokens.Colors.textPrimary)
-            Button("Continue", role: .destructive) {
+            .multilineTextAlignment(.center)
+            destructiveButton(title: "Continue", identifier: "delete-request-code") {
                 Task { await viewModel.requestFreshCode() }
             }
-            .disabled(viewModel.isSubmitting)
-            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-            .accessibilityIdentifier("delete-request-code")
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity)
         .depthCard()
     }
 
     private var codeEntryCard: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+        VStack(alignment: .center, spacing: DesignTokens.Spacing.sm) {
             Text("Enter the new six-digit code sent to your verified email.")
                 .font(.footnote)
                 .foregroundStyle(DesignTokens.Colors.textSecondary)
+                .multilineTextAlignment(.center)
             TextField("Code", text: $viewModel.code)
                 .textContentType(.oneTimeCode)
                 .keyboardType(.numberPad)
@@ -87,21 +86,16 @@ struct AccountDeletionSheet: View {
                 // through the same focus route as DepthSearchField.
                 .contentShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
                 .onTapGesture { codeFocused = true }
-            Button("Delete My Account", role: .destructive) {
+            destructiveButton(title: "Delete My Account", identifier: "delete-confirm") {
                 Task {
                     if await viewModel.confirmDeletion() { dismiss() }
                 }
             }
-            .disabled(viewModel.isSubmitting)
-            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-            .accessibilityIdentifier("delete-confirm")
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 if viewModel.canResend(at: context.date) {
-                    Button("Send a new code") {
+                    destructiveButton(title: "Send a new code") {
                         Task { await viewModel.requestFreshCode() }
                     }
-                    .disabled(viewModel.isSubmitting)
-                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                 } else if let availableAt = viewModel.resendAvailableAt {
                     Text(
                         "Send a new code in \(max(1, Int(availableAt.timeIntervalSince(context.date).rounded(.up))))s"
@@ -115,7 +109,28 @@ struct AccountDeletionSheet: View {
                     .tint(DesignTokens.Colors.accent)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity)
         .depthCard()
+    }
+
+    @ViewBuilder
+    private func destructiveButton(
+        title: String,
+        identifier: String? = nil,
+        action: @escaping () -> Void
+    ) -> some View {
+        let button = Button(action: action) {
+            Text(title)
+                .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(DesignTokens.Colors.danger)
+        .disabled(viewModel.isSubmitting)
+        .frame(maxWidth: .infinity, minHeight: 44)
+        if let identifier {
+            button.accessibilityIdentifier(identifier)
+        } else {
+            button
+        }
     }
 }
