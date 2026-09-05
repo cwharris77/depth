@@ -81,8 +81,14 @@ function jersey(base: string, edge: string, core: string, numberFill: string): U
   };
 }
 
+// The one shell, on all three kits. The cage is navy, not a neutral: every helmet figure on the
+// GUD 2025 composite (nfl-uniform-refs/bears) wears a facemask painted the shell color, which
+// samples #03182f there. That is the sheet's rendering of the club navy rather than a separate
+// color, so the cage takes the archive's own stored navy (#0B162A) instead of an eyedrop — the
+// same call the Rams' shell-colored cage got.
 const HELMET_NAVY_C: UniformPart = {
   base: 'navy',
+  facemask: 'navy',
   layers: [
     { id: 'bears-decal-keyline', d: BEARS_DECAL_KEYLINE_PATH, fill: 'white' },
     { id: 'bears-decal-letter', d: BEARS_DECAL_LETTER_PATH, fill: 'orange' },
