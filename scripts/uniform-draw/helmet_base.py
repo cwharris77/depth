@@ -12,6 +12,10 @@ Three transforms, in order:
      and the facemask ground), so deleting the mark exposes a grey hawk silhouette.
   2. PATCH_D covers the one strip of that underlay the mark never covered — the grey
      wedge along the front-left edge, which is club livery rather than construction.
+     DROPPED then removes the paint that only existed because the reference sat on a
+     white canvas: the outer rim drawn outside the silhouette, and the white filling the
+     ear-hole edge and the shell/facemask junction. A base composites over anything, so
+     those have to be nothing, not white.
   3. Every blue-family fill is re-hued onto a neutral placeholder, keeping its
      lightness offset from the base navy. The shading deltas are what make the shell
      read as a curved surface, so they are preserved rather than flattened; a team
@@ -32,6 +36,14 @@ LOGO = {4,6,9,28,34,57,62,67,69,72,81,82,94,97,110,115,119,126,128,136,139,144,1
         282,283,284,288,299,306,307,322,331,332,352,355,361,365,372,385,411,421,422,423,435,
         437,438,446,447,448,453,455,456,467}
 BACKGROUND = 0            # opaque page rect — a base must composite over anything
+
+# Paint the reference put down because its canvas was white, which reads as a halo or a
+# white blob anywhere else. All four are construction that should be nothing at all:
+#   2  the #949595 compound — an outer rim drawn OUTSIDE the shell silhouette (plus the
+#      underlay for the mark and facemask ground, already covered by what paints over it)
+#   10 the white wedge below the ear hole, outside the shell's own edge
+#   31 + 80 the white filling the shell/facemask junction, where a real helmet is open
+DROPPED = {2, 10, 31, 80}
 
 # The shell and the facemask are both painted navy in the reference but are separate
 # team surfaces here (clubs run a facemask that differs from the shell — see the Bears'
@@ -118,7 +130,7 @@ src = open(SRC).read()
 head = src[:src.index('<path')]
 kept, src_indices = [], []
 for i, m in enumerate(PATH_RE.finditer(src)):
-    if i == BACKGROUND:
+    if i == BACKGROUND or i in DROPPED:
         continue
     fill = m.group(3)
     if i in LOGO:
@@ -142,18 +154,19 @@ patch = ('<path class="shell" transform="translate(0)" d="%s" fill="%s"/>'
          % (PATCH_D, neutralize(SHELL_BASE)))
 kept.insert(sum(1 for i in src_indices if i <= max(LOGO)), patch)
 
-HEADER = """<!-- Team-neutral helmet base: the shell, rim, facemask, vents, chin strap and ear
-     padding every kit paints on. Derived from Cooper's own helmet illustration by
+HEADER = """<!-- Team-neutral helmet base: the shell, facemask, vents, rivets and chin strap
+     every kit paints on. Derived from Cooper's own helmet illustration by
      scripts/uniform-draw/helmet_base.py, which strips the club mark and re-hues the
      shell family onto the %s placeholder while preserving its shading offsets.
      Fill colours are NOT hand-editable — change the script and re-derive, or the next
      run silently reverts you. Every path carries its role: class="shell" and
      class="facemask" recolour with the team (separately — clubs run a mask that
-     differs from the shell); class="hardware" (rim, chrome, vents, ear padding,
-     shadows, highlights) is construction and stays neutral on every kit. -->
+     differs from the shell); class="hardware" (chrome, rivets, vents, chin strap,
+     shadows, highlights) is construction and stays neutral on every kit. There is
+     no outline: nothing paints outside the shell silhouette, and gaps are gaps. -->
 """ % NEUTRAL_BASE
 
 open(OUT, 'w').write(head + HEADER + '\n'.join(kept) + '\n</svg>\n')
 
-print('kept %d paths (%d repainted flat over the mark, background dropped)'
-      % (len(kept), len(LOGO)))
+print('kept %d paths (%d repainted flat over the mark, %d dropped)'
+      % (len(kept), len(LOGO), len(DROPPED) + 1))
