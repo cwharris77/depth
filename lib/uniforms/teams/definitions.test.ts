@@ -140,6 +140,23 @@ describe('team uniform definitions', () => {
     }
   });
 
+  it('keeps the Steelers helmet mark in source paint order', () => {
+    const definition = getTeamUniformDefinition('steelers');
+    const layerIds = definition?.kits.home.layers
+      ?.filter((layer) => layer.surface === 'helmet')
+      .map((layer) => layer.id);
+
+    expect(layerIds).toEqual([
+      'steelers-decal-disc',
+      'steelers-decal-ring',
+      'steelers-decal-gold',
+      'steelers-decal-red',
+      'steelers-decal-blue',
+      'steelers-decal-separator',
+      'steelers-decal-wordmark',
+    ]);
+  });
+
   it('mirrors the home construction on the Seahawks away kit in navy', () => {
     const definition = getTeamUniformDefinition('seahawks');
     const model = resolveUniformModel(definition, 'away', {
