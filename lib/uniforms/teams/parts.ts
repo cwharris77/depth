@@ -71,7 +71,9 @@ export type PartNumberStyle = Omit<NumberStyle, 'fill' | 'outline'> & {
 export interface KitRef {
   helmet: string;
   jersey: string;
-  pants: string;
+  // Canonical first so compilation preserves the existing raster; remaining entries are the
+  // available pant options until the archive UI presents them.
+  pants: string | string[];
 }
 
 export interface TeamPartsDefinition {
@@ -136,7 +138,8 @@ export function compileParts(def: TeamPartsDefinition): TeamUniformDefinition {
   for (const [slug, ref] of Object.entries(def.kits)) {
     const helmet = lookup(def.helmets, ref.helmet, 'helmet', teamId);
     const jersey = lookup(def.jerseys, ref.jersey, 'jersey', teamId);
-    const pants = lookup(def.pants, ref.pants, 'pants', teamId);
+    const pantsId = Array.isArray(ref.pants) ? ref.pants[0] : ref.pants;
+    const pants = lookup(def.pants, pantsId, 'pants', teamId);
     const number = jersey.number;
 
     kits[slug] = {
