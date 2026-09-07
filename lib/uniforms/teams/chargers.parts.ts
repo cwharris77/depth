@@ -65,11 +65,11 @@ function decal(keyline: string, body: string): PartLayer[] {
 
 // The white shell with the bolt — one object, shared by all three kits.
 //
-// White cage. The white Chargers shell wears a white facemask (named sources; white-on-white
-// matches the shell).
+// Gold cage, sampled from the Chargers' 2025 GUD composite (nfl-uniform-refs/chargers); the
+// reference helmet consistently shows the facemask in the team's lightning-bolt gold.
 const HELMET_WHITE: UniformPart = {
   base: 'white',
-  facemask: 'white',
+  facemask: 'gold',
   layers: decal('powderBlue', 'gold'),
 };
 
@@ -88,8 +88,13 @@ const JERSEY_WHITE: UniformPart = {
   number: { fill: 'powderBlue', outline: 'gold', outlineWidth: 12 },
 };
 
-// Gold pants, shared by all three kits (the pants sample as unbroken gold on both figures).
+// The 2025 GUD composite shows gold, white, powder-blue, and navy pants. Gold is canonical for
+// every current Chargers kit, preserving the existing raster; the other colors remain available
+// data until the archive UI presents pant options.
 const PANTS_GOLD: UniformPart = { base: 'gold', layers: [] };
+const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
+const PANTS_POWDER: UniformPart = { base: 'powderBlue', layers: [] };
+const PANTS_NAVY: UniformPart = { base: 'navy', layers: [] };
 
 export const CHARGERS_PARTS: TeamPartsDefinition = {
   teamId: 'chargers',
@@ -99,17 +104,28 @@ export const CHARGERS_PARTS: TeamPartsDefinition = {
     powderBlue: '#0080C6',
     gold: '#FFC20E',
     white: '#FFFFFF',
+    // Navy pants sampled from the GUD 2025 composite (nfl-uniform-refs/chargers).
+    navy: '#002244',
   },
   helmets: { white: HELMET_WHITE },
   jerseys: {
     powder: JERSEY_POWDER,
     white: JERSEY_WHITE,
   },
-  pants: { gold: PANTS_GOLD },
+  pants: {
+    gold: PANTS_GOLD,
+    white: PANTS_WHITE,
+    powder: PANTS_POWDER,
+    navy: PANTS_NAVY,
+  },
   kits: {
-    home: { helmet: 'white', jersey: 'powder', pants: 'gold' },
-    away: { helmet: 'white', jersey: 'white', pants: 'gold' },
-    'powder-blue': { helmet: 'white', jersey: 'powder', pants: 'gold' },
+    home: { helmet: 'white', jersey: 'powder', pants: ['gold', 'white', 'powder', 'navy'] },
+    away: { helmet: 'white', jersey: 'white', pants: ['gold', 'white', 'powder', 'navy'] },
+    'powder-blue': {
+      helmet: 'white',
+      jersey: 'powder',
+      pants: ['gold', 'white', 'powder', 'navy'],
+    },
   },
 };
 
