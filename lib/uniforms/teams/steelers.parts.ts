@@ -21,10 +21,18 @@ import {
   STEELERS_BUMBLEBEE_TORSO_PATH,
   STEELERS_DECAL_BLUE,
   STEELERS_DECAL_BLUE_PATH,
+  STEELERS_DECAL_DISC,
   STEELERS_DECAL_DISC_PATH,
+  STEELERS_DECAL_GOLD,
   STEELERS_DECAL_GOLD_PATH,
   STEELERS_DECAL_RED,
   STEELERS_DECAL_RED_PATH,
+  STEELERS_DECAL_RING,
+  STEELERS_DECAL_RING_PATH,
+  STEELERS_DECAL_SEPARATOR,
+  STEELERS_DECAL_SEPARATOR_PATH,
+  STEELERS_DECAL_WORDMARK,
+  STEELERS_DECAL_WORDMARK_PATH,
   STEELERS_GOLD,
   STEELERS_PANTS_BLACK_LEFT,
   STEELERS_PANTS_BLACK_RIGHT,
@@ -58,14 +66,16 @@ const fill = (
   fill: color,
 });
 
-// The hypocycloid decal: white disc, then the three gold/red/blue hypocycloids. Fixed art on the
-// black shell — it does not recolor with the kit, so it takes palette literals. Gold reuses the
-// module's own STEELERS_GOLD; the red and blue are sampled off the reference (see steelers.ts).
+// The complete source mark paints its white disc, grey ring, hypocycloids, separator, then
+// wordmark. It is fixed art on the black shell, so every color is a palette literal.
 const DECAL: PartLayer[] = [
-  fill('steelers-decal-disc', 'helmet', STEELERS_DECAL_DISC_PATH, 'white'),
-  fill('steelers-decal-gold', 'helmet', STEELERS_DECAL_GOLD_PATH, 'gold'),
+  fill('steelers-decal-disc', 'helmet', STEELERS_DECAL_DISC_PATH, 'decalDisc'),
+  fill('steelers-decal-ring', 'helmet', STEELERS_DECAL_RING_PATH, 'decalRing'),
+  fill('steelers-decal-gold', 'helmet', STEELERS_DECAL_GOLD_PATH, 'decalGold'),
   fill('steelers-decal-red', 'helmet', STEELERS_DECAL_RED_PATH, 'decalRed'),
   fill('steelers-decal-blue', 'helmet', STEELERS_DECAL_BLUE_PATH, 'decalBlue'),
+  fill('steelers-decal-separator', 'helmet', STEELERS_DECAL_SEPARATOR_PATH, 'decalSeparator'),
+  fill('steelers-decal-wordmark', 'helmet', STEELERS_DECAL_WORDMARK_PATH, 'decalWordmark'),
 ];
 
 // The sleeve stripe set — black backing with gold/white/gold bands. Fixed construction, shared by
@@ -182,10 +192,14 @@ export const STEELERS_PARTS: TeamPartsDefinition = {
     white: '#FFFFFF',
     // The 1934 throwback's khaki pants have no token on any palette (sampled from the composite).
     khaki: STEELERS_BUMBLEBEE_KHAKI,
-    // Decal colors — the red and blue have no token on any Pittsburgh palette (sampled from the
-    // reference, see steelers.ts).
+    // Exact source-mark colors, separate from the physical jersey/sleeve gold above.
+    decalDisc: STEELERS_DECAL_DISC,
+    decalRing: STEELERS_DECAL_RING,
+    decalGold: STEELERS_DECAL_GOLD,
     decalRed: STEELERS_DECAL_RED,
     decalBlue: STEELERS_DECAL_BLUE,
+    decalSeparator: STEELERS_DECAL_SEPARATOR,
+    decalWordmark: STEELERS_DECAL_WORDMARK,
   },
   helmets: { black: HELMET_BLACK, gold: HELMET_GOLD },
   jerseys: {
