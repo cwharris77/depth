@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
 import {
   HELMET_ART,
@@ -37,13 +38,13 @@ describe('shadeFor', () => {
 
 describe('helmet art integrity', () => {
   it('contains the complete role inventory', () => {
-    expect(HELMET_ART).toHaveLength(302);
+    expect(HELMET_ART).toHaveLength(300);
     expect(
       HELMET_ART.reduce<Record<string, number>>((counts, path) => {
         counts[path.role] = (counts[path.role] ?? 0) + 1;
         return counts;
       }, {})
-    ).toEqual({ shell: 122, facemask: 156, hardware: 24 });
+    ).toEqual({ shell: 122, facemask: 154, hardware: 24 });
   });
 
   // Acceptance criterion 8 of the spec asks that helmet-art.ts be byte-identical to a fresh
@@ -65,10 +66,84 @@ describe('helmet art integrity', () => {
     expect(HELMET_ART_TRANSFORM).toBe('translate(30.83,-7.11) scale(0.50079)');
   });
 
-  it('carries one silhouette and the four cage openings', () => {
-    expect(HELMET_ART_CUT).toHaveLength(4);
+  it('carries one silhouette and seven cage openings', () => {
+    // Five carved as white in the reference, plus the two the reference painted as
+    // light-grey slabs rather than leaving blank (CAGE_GAP_FILLS in the generator).
+    // An eighth would mean someone hand-authored a gap contour.
+    expect(HELMET_ART_CUT).toHaveLength(7);
     for (const cutter of HELMET_ART_CUT) expect(cutter).toMatch(/^m[-\d]/i);
     expect(HELMET_ART_CLIP).toMatch(/^m[-\d]/i);
+  });
+
+  it('cuts the cage openings and leaves every bar body solid', async () => {
+    const source = readFileSync(join(process.cwd(), 'lib/uniforms/helmet-base.svg'));
+    const { data, info } = await sharp(source)
+      .resize(1720, 1440)
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    const alpha = (x: number, y: number) => data[(y * info.width + x) * 4 + 3];
+
+    // Art-space points inside source path 31, the opening the dimple carve-out hid.
+    for (const [x, y] of [
+      [1350, 610],
+      [1360, 620],
+      [1370, 635],
+      [1345, 600],
+    ]) {
+      expect(alpha(x, y), `top opening at ${x},${y}`).toBe(0);
+    }
+
+    // The two horizontal gaps between the lower bars (source paths 22 and 19). The
+    // reference traced these as light-grey slabs rather than leaving them blank, so
+    // they rendered as a grey fill where empty space belongs until CAGE_GAP_FILLS cut
+    // them. Points are interior, clear of both slabs' edges.
+    for (const [x, y] of [
+      [1300, 965],
+      [1250, 955],
+      [1395, 975],
+      [1300, 1050],
+      [1250, 1040],
+      [1400, 1060],
+    ]) {
+      expect(alpha(x, y), `cage gap at ${x},${y}`).toBe(0);
+    }
+
+    // The bars those gaps run between, plus the uprights and outer rail they end at.
+    // Every bar in this cage is painted by the blob, which is why a grey slab lying
+    // between two of them reads as a gap rather than as more bar.
+    for (const [x, y] of [
+      [1300, 1010],
+      [1250, 1010],
+      [1350, 1012],
+      [1300, 925],
+      [1300, 1090],
+      [1195, 965],
+      [1195, 1050],
+      [1460, 1000],
+      [1120, 965],
+      [1150, 1050],
+    ]) {
+      expect(alpha(x, y), `bar at ${x},${y}`).toBe(255);
+    }
+  });
+
+  it('does not paint the old shell-coloured outline around the cage', async () => {
+    const source = readFileSync(join(process.cwd(), 'lib/uniforms/helmet-base.svg'));
+    const { data, info } = await sharp(source)
+      .resize(1720, 1440)
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+
+    // The old shell path wrapped around the brow bar, front cage, and bottom rail.
+    for (const [x, y] of [
+      [1470, 690],
+      [1536, 985],
+      [1384, 1355],
+    ]) {
+      expect(data[(y * info.width + x) * 4 + 3], `outside cage at ${x},${y}`).toBe(0);
+    }
   });
 
   it('shades the shell across at least 20 distinct lightness offsets', () => {

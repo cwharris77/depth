@@ -19,7 +19,9 @@ export interface VariantSpec {
 const VARIANTS: Record<UniformVariant, VariantSpec> = {
   jersey: { parts: ['jersey'], viewBox: '20 372 560 452' },
   full: { parts: ['helmet', 'jersey', 'pants'], viewBox: '20 45 560 1535' },
-  helmet: { parts: ['helmet'], viewBox: '145 40 330 315' },
+  // The generated cage reaches x≈481 (the old template stopped before x=475).
+  // Keep padding around every edge, including the front of the facemask.
+  helmet: { parts: ['helmet'], viewBox: '140 38 350 315' },
 };
 
 export function variantSpec(variant: UniformVariant): VariantSpec {
