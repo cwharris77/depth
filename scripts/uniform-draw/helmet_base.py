@@ -22,9 +22,15 @@ Four transforms, in order:
      read as a curved surface, so they are preserved rather than flattened; a team
      recolour is then a hue swap over the same offsets.
 
-The reference file is not committed (it carries the club mark). Re-run against it as:
+The reference file is not committed (it carries the club mark). It lives beside the other
+uncommitted references, at ../nfl-uniform-refs/helmet/helmet-base-reference.svg — see that
+folder's README, whose provenance differs from the rest of nfl-uniform-refs. Re-run as:
 
-    python3 scripts/uniform-draw/helmet_base.py <reference.svg> lib/uniforms/helmet-base.svg
+    python3 scripts/uniform-draw/helmet_base.py \
+      ../nfl-uniform-refs/helmet/helmet-base-reference.svg lib/uniforms/helmet-base.svg
+    npm run format          # the generator writes helmet-art.ts unformatted
+
+Then `npm run gen:uniform-thumbs`, since every kit's raster bakes this art in.
 
 The TypeScript module is written beside the SVG as helmet-art.ts.
 """
@@ -53,9 +59,29 @@ DROPPED = {2}
 WHITE_L = 0.90
 
 # Inside the cage, near-white is doing one of two jobs, and they need opposite treatment.
-# The four enclosed openings have to become actual holes (is_opening -> the cut mask); the
-# rest are specular streaks along the bars and are simply dropped. A hole is chunky and
-# roughly as tall as it is wide; a streak runs long and thin down a bar (aspect 2.7-9.1).
+# The enclosed openings have to become actual holes (is_opening -> the cut mask); the rest
+# are specular streaks along the bars and are simply dropped. A hole is chunky and roughly
+# as tall as it is wide; a streak runs long and thin down a bar (aspect 2.7-9.1).
+#
+# The reference is the only authority on which is which: every real opening is carved there
+# in white over the solid cage blob, so a region the drawing never carved is a bar, however
+# much a render makes it look like negative space. Do not hand-author gap contours here.
+# Two gaps in the cage are traced as light-grey slabs rather than left as page: the
+# horizontal openings between the lower bars, where the drawing recorded what shows
+# through (the far side of the mask in shadow) instead of the white sheet behind it.
+# They are paint by every colour test, so they survive WHITE_L and render as a light-grey
+# fill where empty space belongs (Cooper, 2026-09-08). Cut them instead of painting them.
+#
+# Identified by index rather than derived, because no property separates them from the
+# bar shading: it is their POSITION that makes them gaps — each is a slab lying between
+# two bars, and every actual bar in this cage is painted by the blob (source path 3),
+# never grey. Verified by segmenting the reference into blob and non-blob regions: only
+# these two non-blob regions are bounded above and below by blob bars and span the full
+# width from the left upright to the outer rail. The other non-blob regions inside the
+# cage are highlights lying ON a bar (the top rail's, which carries 20+ shading paths),
+# rims around openings already cut, or the mask-mount element at (1049,1032).
+CAGE_GAP_FILLS = {19, 22}
+
 OPENING_ASPECT = 2.2
 OPENING_AREA = 1000
 
@@ -200,9 +226,21 @@ def poly_area(transform, d):
         total += abs(acc) / 2
     return total
 
+def in_cage(bb):
+    """Inside the facemask region at all — the gate for cutting an opening.
+
+    Deliberately does NOT apply DIMPLE_BOX. That carve-out answers a different question
+    (which team surface owns a path), and letting it gate opening detection suppressed a
+    real hole: source path 31, the 68x103 opening at the top of the cage, lands inside the
+    dimple box and so was dropped as paint instead of cut, leaving it filled (Cooper,
+    2026-09-08).
+    """
+    return bb[0] >= FACEMASK_BOX[0] and bb[1] >= FACEMASK_BOX[1]
+
 def in_facemask(bb):
+    """Which team surface owns this path: the mask, or the shell behind it."""
     x0, y0, x1, y1 = bb
-    if x0 < FACEMASK_BOX[0] or y0 < FACEMASK_BOX[1]:
+    if not in_cage(bb):
         return False
     dx0, dy0, dx1, dy1 = DIMPLE_BOX
     return not (x0 >= dx0 and x1 <= dx1 and y0 >= dy0 and y1 <= dy1)
@@ -242,6 +280,23 @@ def art_space_d(transform, d):
     # relative line commands and would become absolute if the `m` were replaced by `M`.
     return 'M%s %s%s' % (number(tx), number(ty), d)
 
+def shell_only_d(transform, d):
+    """Keep the traced crown/back, replacing the cage portion of the page silhouette.
+
+    Source path 1 enclosed BOTH shell and cage. Painting that whole path with the shell
+    colour leaves a second, larger cage behind the facemask — the white halo on LA.
+    The replacement front edge sits underneath the mounting pads and cheek brace;
+    the facemask's own paths now supply its perimeter, independently of shell colour.
+    """
+    prefix, marker, rest = d.partition('17 1 5 6 8 11')
+    _, tail_marker, tail = rest.partition('h-55l-39')
+    if not marker or not tail_marker:
+        raise ValueError('source shell silhouette changed; recheck the shell/cage boundary')
+    return (art_space_d(transform, prefix)
+            + ' L1340 620 L1325 665 L1180 700 L980 660 L925 720 L930 820 '
+              'L975 860 L1045 935 L1070 1005 L1020 1080 L975 1150 '
+              'L1000 1190 L1030 1230 L1044 1288 h-55l-39' + tail)
+
 def number(value):
     if value == int(value):
         return str(int(value))
@@ -262,9 +317,16 @@ for i, m in enumerate(PATH_RE.finditer(src)):
         # Near-white inside the cage is not paint to delete but a hole to cut: the
         # facemask under it is a solid blob (source path 3), so simply dropping the
         # white leaves the openings filled. They become a mask instead — see CUT_MASK.
-        if in_facemask(bb) and is_opening(bb, m.group(2), m.group(1)):
+        if in_cage(bb) and is_opening(bb, m.group(2), m.group(1)):
             cutters.append(m.group(0).replace('fill="%s"' % fill, 'fill="#000"'))
             cutter_ds.append(art_space_d(m.group(1), m.group(2)))
+        continue
+    if i in CAGE_GAP_FILLS:
+        # A gap the reference painted rather than left blank — cut, never fill. The
+        # near-white streak drawn on top of each is dropped by WHITE_L above, which is
+        # already correct once the slab under it is a hole.
+        cutters.append(m.group(0).replace('fill="%s"' % fill, 'fill="#000"'))
+        cutter_ds.append(art_space_d(m.group(1), m.group(2)))
         continue
     if i not in LOGO and is_speck(bb, fill):
         continue
@@ -285,8 +347,12 @@ for i, m in enumerate(PATH_RE.finditer(src)):
         bucket, new = 'hardware', fill
     src_indices.append(i)
     tx, ty = translate_xy(m.group(1))
+    d = m.group(2)
+    if i == 1:
+        d = shell_only_d(m.group(1), d)
+        tx = ty = 0.0
     art_paths.append({
-        'd': m.group(2),
+        'd': d,
         'tx': tx,
         'ty': ty,
         'role': bucket,
@@ -296,6 +362,8 @@ for i, m in enumerate(PATH_RE.finditer(src)):
     # class= carries the role so a consumer can recolour by selector; fill= keeps the
     # baked shade so the file also stands alone as a picture.
     tag = m.group(0).replace('fill="%s"' % fill, 'fill="%s"' % new)
+    if i == 1:
+        tag = '<path transform="translate(0,0)" d="%s" fill="%s"/>' % (d, new)
     kept.append('<path class="%s"%s' % (bucket, tag[len('<path'):]))
 
 # The patch paints after every mark path, so index order alone places it correctly.
@@ -379,21 +447,21 @@ ts_lines.extend([
     '] as const;',
     '',
     '/**',
-    ' * Art bbox 216,144–1540,1360 maps to raw helmet bbox 139,65–802,674.',
+    ' * Original art bbox 216,144–1540,1360 maps to raw helmet bbox 139,65–802,674.',
     ' * The independent scales are 663/1324 = 0.500755 and 609/1216 = 0.500822;',
     ' * applying their 0.50079 midpoint gives 139 - 216×0.50079 = 30.83 and',
     ' * 65 - 144×0.50079 = -7.11, so the registration can be re-checked here.',
+    ' * Keep this registration when trimming the shell/cage outline; decals share it.',
     ' */',
     "export const HELMET_ART_TRANSFORM = 'translate(30.83,-7.11) scale(0.50079)';",
     '',
     '/** The outer shell silhouette in art space, used to clip team decals. */',
     'export const HELMET_ART_CLIP =',
     '  %s;' % ts_string(
-        art_space_d('translate(%s,%s)' % (art_paths[0]['tx'], art_paths[0]['ty']),
-                    art_paths[0]['d'])
+        art_paths[0]['d']
     ),
     '',
-    '/** The four facemask openings in art space, used to keep the cage transparent. */',
+    '/** Facemask openings in art space, including the narrow gaps between bars. */',
     'export const HELMET_ART_CUT = [',
 ])
 ts_lines.extend('  %s,' % ts_string(d) for d in cutter_ds)

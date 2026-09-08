@@ -14,9 +14,11 @@ import { JERSEY_NUMBER_THREE } from '@/lib/uniforms/jersey-art';
 import { resolveUniformModel, type ResolvedUniformStyle } from '@/lib/uniforms/model';
 import type { TeamUniformDefinition, UniformSurface } from '@/lib/uniforms/teams/types';
 
-// The raster variants the prerender pipeline (lib/uniforms/art.tsx) and the live renderer
-// share: 'jersey' (picker swatch) or 'full' (archive mannequin). Re-exported so art.tsx
-// stays the single authority on which variant name means which artifact.
+// The raster variants the prerender pipeline (lib/uniforms/art.tsx) emits: 'jersey' (picker
+// swatch) or 'full' (archive mannequin). Re-exported so art.tsx stays the single authority on
+// which variant name means which artifact. The component itself accepts any UniformVariant —
+// 'helmet' renders correctly and its crop is asserted in lib/__tests__/uniform-figure.test.tsx,
+// it just has no raster artifact, so the narrowing belongs on art.tsx's signature, not here.
 export type UniformArtVariant = Extract<UniformVariant, 'jersey' | 'full'>;
 
 // The generated vector uniform. Colors/striping/layout are facts (not copyrightable), so every
@@ -203,7 +205,7 @@ export default function UniformFigure({
   definition,
 }: {
   colors: JerseyColors;
-  variant?: UniformArtVariant;
+  variant?: UniformVariant;
   size?: number;
   imagePath?: string;
   title?: string;
