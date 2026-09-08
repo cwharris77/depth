@@ -66,6 +66,22 @@ WHITE_L = 0.90
 # The reference is the only authority on which is which: every real opening is carved there
 # in white over the solid cage blob, so a region the drawing never carved is a bar, however
 # much a render makes it look like negative space. Do not hand-author gap contours here.
+# Two gaps in the cage are traced as light-grey slabs rather than left as page: the
+# horizontal openings between the lower bars, where the drawing recorded what shows
+# through (the far side of the mask in shadow) instead of the white sheet behind it.
+# They are paint by every colour test, so they survive WHITE_L and render as a light-grey
+# fill where empty space belongs (Cooper, 2026-09-08). Cut them instead of painting them.
+#
+# Identified by index rather than derived, because no property separates them from the
+# bar shading: it is their POSITION that makes them gaps — each is a slab lying between
+# two bars, and every actual bar in this cage is painted by the blob (source path 3),
+# never grey. Verified by segmenting the reference into blob and non-blob regions: only
+# these two non-blob regions are bounded above and below by blob bars and span the full
+# width from the left upright to the outer rail. The other non-blob regions inside the
+# cage are highlights lying ON a bar (the top rail's, which carries 20+ shading paths),
+# rims around openings already cut, or the mask-mount element at (1049,1032).
+CAGE_GAP_FILLS = {19, 22}
+
 OPENING_ASPECT = 2.2
 OPENING_AREA = 1000
 
@@ -304,6 +320,13 @@ for i, m in enumerate(PATH_RE.finditer(src)):
         if in_cage(bb) and is_opening(bb, m.group(2), m.group(1)):
             cutters.append(m.group(0).replace('fill="%s"' % fill, 'fill="#000"'))
             cutter_ds.append(art_space_d(m.group(1), m.group(2)))
+        continue
+    if i in CAGE_GAP_FILLS:
+        # A gap the reference painted rather than left blank — cut, never fill. The
+        # near-white streak drawn on top of each is dropped by WHITE_L above, which is
+        # already correct once the slab under it is a hole.
+        cutters.append(m.group(0).replace('fill="%s"' % fill, 'fill="#000"'))
+        cutter_ds.append(art_space_d(m.group(1), m.group(2)))
         continue
     if i not in LOGO and is_speck(bb, fill):
         continue

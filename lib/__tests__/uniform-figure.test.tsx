@@ -244,7 +244,19 @@ describe('UniformFigure', () => {
       expect(data[(y * info.width + x) * 4 + 3], `top cage opening at ${x},${y}`).toBe(0);
     }
 
-    // ...and the bar bodies beside it stay painted. A hand-authored gap contour once cut
+    // The two horizontal gaps between the lower bars. The reference traced these as
+    // light-grey slabs instead of leaving them blank, so they rendered as a grey fill
+    // where empty space belongs until the generator started cutting them.
+    for (const [x, y] of [
+      [401, 204],
+      [389, 202],
+      [401, 225],
+      [389, 223],
+    ]) {
+      expect(data[(y * info.width + x) * 4 + 3], `cage gap at ${x},${y}`).toBe(0);
+    }
+
+    // ...and the bar bodies beside them stay painted. A hand-authored gap contour once cut
     // these away, leaving the bars' specular highlights floating (Cooper, 2026-09-08).
     for (const [x, y] of [
       [401, 213],
