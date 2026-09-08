@@ -4,15 +4,16 @@
 //
 // Arizona's construction is unusually spare: no helmet stripe, no shoulder yoke, no contrasting
 // collar. The four kits differ in the shell (white for home/away, black for black-alt, cream for
-// rivalries) and the body/sleeve treatment: home is a solid red body with a white shoulder bar;
+// rivalries) and the body/sleeve treatment: home is a solid red body with a white shoulder number;
 // away and black-alt carry two horizontal sleeve bands on white/black bodies; rivalries is a cream
-// body with no stripe geometry. The decal is the full-color mark on the white/black shells and a
+// body with speckled fabric and sleeve patches. The decal is the full-color mark on the white/black shells and a
 // red-on-cream version on the rivalries shell.
 
+import { cardinalsJerseyDetails } from './cardinals-jersey';
 import {
   CARDINALS_NUMBER_KEYLINE,
-  CARDINALS_SHOULDER_BAR_LEFT,
-  CARDINALS_SHOULDER_BAR_RIGHT,
+  CARDINALS_SHOULDER_NUMBER_LEFT,
+  CARDINALS_SHOULDER_NUMBER_RIGHT,
   CARDINALS_SLEEVE_BAND_LOWER_LEFT,
   CARDINALS_SLEEVE_BAND_LOWER_RIGHT,
   CARDINALS_SLEEVE_BAND_UPPER_LEFT,
@@ -159,50 +160,51 @@ const HELMET_CREAM: UniformPart = {
   layers: rivalDecal(),
 };
 
-// Home jersey: solid cardinal body, white shoulder bar, plain white numerals (no keyline).
+// Home jersey: cardinal body, white shoulder numerals and ARIZONA chest/neck lettering.
 const JERSEY_RED: UniformPart = {
   base: 'red',
   layers: [
     {
-      id: 'cardinals-shoulder-bar-left',
+      id: 'cardinals-shoulder-number-left',
       surface: 'sleeve-left',
-      d: CARDINALS_SHOULDER_BAR_LEFT,
+      d: CARDINALS_SHOULDER_NUMBER_LEFT,
       clip: true,
       kind: 'fill',
       fill: 'white',
     },
     {
-      id: 'cardinals-shoulder-bar-right',
+      id: 'cardinals-shoulder-number-right',
       surface: 'sleeve-right',
-      d: CARDINALS_SHOULDER_BAR_RIGHT,
+      d: CARDINALS_SHOULDER_NUMBER_RIGHT,
       clip: true,
       kind: 'fill',
       fill: 'white',
     },
+    ...cardinalsJerseyDetails('home'),
   ],
-  number: { fill: 'white', outline: 'white', outlineWidth: 26 },
+  number: { fill: 'white', outline: 'stitch', outlineWidth: 1.5 },
 };
 
 // Away jersey: white body, cardinal sleeve bands, red numerals keylined black.
 const JERSEY_WHITE: UniformPart = {
   base: 'white',
-  layers: sleeveBands('cardinal'),
-  number: { fill: 'cardinal', outline: 'numberKeyline', outlineWidth: 26 },
+  layers: [...sleeveBands('cardinal'), ...cardinalsJerseyDetails('away')],
+  number: { fill: 'cardinal', outline: 'numberKeyline', outlineWidth: 3 },
 };
 
 // black-alt jersey (J4): black body, cardinal sleeve bands, red numerals keylined white.
 const JERSEY_BLACK: UniformPart = {
   base: 'black',
-  layers: sleeveBands('cardinal'),
-  number: { fill: 'cardinal', outline: 'white', outlineWidth: 26 },
+  layers: [...sleeveBands('cardinal'), ...cardinalsJerseyDetails('black')],
+  number: { fill: 'cardinal', outline: 'white', outlineWidth: 3 },
 };
 
-// Rivalries jersey (J3): cream body, no stripe geometry, red numerals with the orange offset (read as
-// an outline — the closest NumberStyle can express).
+// Rivalries jersey (J3): speckled cream fabric, feather sleeve patches, and red numerals
+// with the thin orange border approved in the jersey proof.
 const JERSEY_RIVALRIES: UniformPart = {
   base: 'cream',
-  layers: [],
-  number: { fill: 'rivalRed', outline: 'rivalOrange', outlineWidth: 26 },
+  layers: cardinalsJerseyDetails('rivalries'),
+  number: { fill: 'rivalRed', outline: 'rivalOrange', outlineWidth: 5 },
 };
 
 // Red pants (home), unbroken.
@@ -264,11 +266,12 @@ export const CARDINALS_PARTS: TeamPartsDefinition = {
   // colors; cream and rival-red/orange are Rivalries' curated palette; the decal red/gold and the
   // number keyline are the sampled fixed-art colors.
   palette: {
-    red: '#97233F',
-    cardinal: '#97233F',
+    // Body colors sampled from the approved 2026-09-07 proof (red x240/y300, cream x800/y310).
+    red: '#A01523',
+    cardinal: '#A01523',
     black: '#000000',
     white: '#FFFFFF',
-    cream: '#FFF7E3',
+    cream: '#FBF1DD',
     rivalRed: '#B31529',
     rivalOrange: '#EE6B3D',
     decalRed: CARDINALS_DECAL_RED,
@@ -278,6 +281,9 @@ export const CARDINALS_PARTS: TeamPartsDefinition = {
     eggshellDecalOrange: CARDINALS_EGGSHELL_DECAL_ORANGE,
     eggshellDecalWhite: CARDINALS_EGGSHELL_DECAL_WHITE,
     numberKeyline: CARDINALS_NUMBER_KEYLINE,
+    // Fine fabric flecks and stitching sampled from Cooper's approved jersey proof.
+    speckle: '#B8A58A',
+    stitch: '#99958D',
   },
   helmets: { white: HELMET_WHITE, black: HELMET_BLACK, cream: HELMET_CREAM },
   jerseys: {
