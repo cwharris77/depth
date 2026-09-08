@@ -59,6 +59,22 @@ WHITE_L = 0.90
 OPENING_ASPECT = 2.2
 OPENING_AREA = 1000
 
+# Negative space that the original navy illustration painted dark, rather than white.
+# These art-space contours follow the inside edges of the two horizontal bars and the
+# rear diagonal brace (Cooper's facemask correction, 2026-09-08). Colour/aspect tests
+# cannot recover them: the compound cage and shell both paint underneath these gaps.
+# Keep the brace between the two rear triangles and the centre upright uncut.
+CAGE_GAP_DS = (
+    'M1208 979 L1224 980 L1224 983 L1260 984 L1260 987 L1299 989 '
+    'L1336 993 L1336 995 L1356 999 L1418 999 L1420 996 L1443 995 '
+    'L1439 1033 L1426 1031 L1423 1028 L1412 1028 L1410 1025 '
+    'L1404 1024 L1402 1022 L1393 1020 L1379 1020 L1360 1021 '
+    'L1357 1024 L1326 1024 L1274 1025 L1273 1028 L1205 1028 Z',
+    'M1085 1042 L1099 1042 L1124 1074 L1067 1074 Z',
+    'M1115 1042 L1164 1042 L1164 1053 L1153 1070 L1147 1074 '
+    'L1138 1074 Z',
+)
+
 def is_opening(bb, d, transform):
     w, h = bb[2] - bb[0], bb[3] - bb[1]
     if not w or not h or max(w / h, h / w) >= OPENING_ASPECT:
@@ -242,6 +258,23 @@ def art_space_d(transform, d):
     # relative line commands and would become absolute if the `m` were replaced by `M`.
     return 'M%s %s%s' % (number(tx), number(ty), d)
 
+def shell_only_d(transform, d):
+    """Keep the traced crown/back, replacing the cage portion of the page silhouette.
+
+    Source path 1 enclosed BOTH shell and cage. Painting that whole path with the shell
+    colour leaves a second, larger cage behind the facemask — the white halo on LA.
+    The replacement front edge sits underneath the mounting pads and cheek brace;
+    the facemask's own paths now supply its perimeter, independently of shell colour.
+    """
+    prefix, marker, rest = d.partition('17 1 5 6 8 11')
+    _, tail_marker, tail = rest.partition('h-55l-39')
+    if not marker or not tail_marker:
+        raise ValueError('source shell silhouette changed; recheck the shell/cage boundary')
+    return (art_space_d(transform, prefix)
+            + ' L1340 620 L1325 665 L1180 700 L980 660 L925 720 L930 820 '
+              'L975 860 L1045 935 L1070 1005 L1020 1080 L975 1150 '
+              'L1000 1190 L1030 1230 L1044 1288 h-55l-39' + tail)
+
 def number(value):
     if value == int(value):
         return str(int(value))
@@ -285,8 +318,12 @@ for i, m in enumerate(PATH_RE.finditer(src)):
         bucket, new = 'hardware', fill
     src_indices.append(i)
     tx, ty = translate_xy(m.group(1))
+    d = m.group(2)
+    if i == 1:
+        d = shell_only_d(m.group(1), d)
+        tx = ty = 0.0
     art_paths.append({
-        'd': m.group(2),
+        'd': d,
         'tx': tx,
         'ty': ty,
         'role': bucket,
@@ -296,7 +333,12 @@ for i, m in enumerate(PATH_RE.finditer(src)):
     # class= carries the role so a consumer can recolour by selector; fill= keeps the
     # baked shade so the file also stands alone as a picture.
     tag = m.group(0).replace('fill="%s"' % fill, 'fill="%s"' % new)
+    if i == 1:
+        tag = '<path transform="translate(0,0)" d="%s" fill="%s"/>' % (d, new)
     kept.append('<path class="%s"%s' % (bucket, tag[len('<path'):]))
+
+cutters.extend('<path d="%s" fill="#000"/>' % d for d in CAGE_GAP_DS)
+cutter_ds.extend(CAGE_GAP_DS)
 
 # The patch paints after every mark path, so index order alone places it correctly.
 patch = ('<path class="shell" transform="translate(0)" d="%s" fill="%s"/>'
@@ -379,21 +421,21 @@ ts_lines.extend([
     '] as const;',
     '',
     '/**',
-    ' * Art bbox 216,144–1540,1360 maps to raw helmet bbox 139,65–802,674.',
+    ' * Original art bbox 216,144–1540,1360 maps to raw helmet bbox 139,65–802,674.',
     ' * The independent scales are 663/1324 = 0.500755 and 609/1216 = 0.500822;',
     ' * applying their 0.50079 midpoint gives 139 - 216×0.50079 = 30.83 and',
     ' * 65 - 144×0.50079 = -7.11, so the registration can be re-checked here.',
+    ' * Keep this registration when trimming the shell/cage outline; decals share it.',
     ' */',
     "export const HELMET_ART_TRANSFORM = 'translate(30.83,-7.11) scale(0.50079)';",
     '',
     '/** The outer shell silhouette in art space, used to clip team decals. */',
     'export const HELMET_ART_CLIP =',
     '  %s;' % ts_string(
-        art_space_d('translate(%s,%s)' % (art_paths[0]['tx'], art_paths[0]['ty']),
-                    art_paths[0]['d'])
+        art_paths[0]['d']
     ),
     '',
-    '/** The four facemask openings in art space, used to keep the cage transparent. */',
+    '/** Facemask openings in art space, including the narrow gaps between bars. */',
     'export const HELMET_ART_CUT = [',
 ])
 ts_lines.extend('  %s,' % ts_string(d) for d in cutter_ds)
@@ -404,4 +446,4 @@ ts_out.write_text('\n'.join(ts_lines))
 
 print('kept %d paths, %d cage cutters (%d repainted flat over the mark, %d dropped)'
       % (len(kept), len(cutters), len(LOGO),
-         len(list(PATH_RE.finditer(src))) - len(kept) - len(cutters) + 1))
+         len(list(PATH_RE.finditer(src))) - len(kept) - len(cutters) + len(CAGE_GAP_DS) + 1))

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
 import {
   HELMET_ART,
@@ -65,10 +66,58 @@ describe('helmet art integrity', () => {
     expect(HELMET_ART_TRANSFORM).toBe('translate(30.83,-7.11) scale(0.50079)');
   });
 
-  it('carries one silhouette and the four cage openings', () => {
-    expect(HELMET_ART_CUT).toHaveLength(4);
+  it('carries one silhouette and seven cage openings', () => {
+    expect(HELMET_ART_CUT).toHaveLength(7);
     for (const cutter of HELMET_ART_CUT) expect(cutter).toMatch(/^m[-\d]/i);
     expect(HELMET_ART_CLIP).toMatch(/^m[-\d]/i);
+  });
+
+  it('cuts the narrow cage gaps without cutting the bars or rear brace', async () => {
+    const source = readFileSync(join(process.cwd(), 'lib/uniforms/helmet-base.svg'));
+    const { data, info } = await sharp(source)
+      .resize(1720, 1440)
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    const alpha = (x: number, y: number) => data[(y * info.width + x) * 4 + 3];
+
+    // Art-space points inside the gaps, then the two bars, centre post and diagonal brace.
+    for (const [x, y] of [
+      [1220, 990],
+      [1300, 1000],
+      [1250, 1018],
+      [1350, 1017],
+      [1090, 1065],
+      [1145, 1060],
+    ]) {
+      expect(alpha(x, y), `gap at ${x},${y}`).toBe(0);
+    }
+    for (const [x, y] of [
+      [1300, 970],
+      [1300, 1050],
+      [1190, 1018],
+      [1118, 1060],
+    ]) {
+      expect(alpha(x, y), `bar at ${x},${y}`).toBe(255);
+    }
+  });
+
+  it('does not paint the old shell-coloured outline around the cage', async () => {
+    const source = readFileSync(join(process.cwd(), 'lib/uniforms/helmet-base.svg'));
+    const { data, info } = await sharp(source)
+      .resize(1720, 1440)
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+
+    // The old shell path wrapped around the brow bar, front cage, and bottom rail.
+    for (const [x, y] of [
+      [1470, 690],
+      [1536, 985],
+      [1384, 1355],
+    ]) {
+      expect(data[(y * info.width + x) * 4 + 3], `outside cage at ${x},${y}`).toBe(0);
+    }
   });
 
   it('shades the shell across at least 20 distinct lightness offsets', () => {

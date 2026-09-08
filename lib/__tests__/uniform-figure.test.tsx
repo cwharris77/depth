@@ -232,6 +232,49 @@ describe('UniformFigure', () => {
     expect([...data.subarray(sightOpeningPixel, sightOpeningPixel + 4)]).toEqual([0, 0, 0, 0]);
     expect(data[frontShellRimPixel + 3]).toBe(255);
     expect([...data.subarray(lowerCagePixel, lowerCagePixel + 4)]).toEqual([0, 0, 0, 0]);
+
+    // Narrow gaps used to inherit the solid cage's paint. These exercise the generated
+    // TypeScript cutters through the renderer, independently of the standalone base SVG.
+    for (const [x, y] of [
+      [389, 217],
+      [349, 229],
+      [362, 228],
+    ]) {
+      expect(data[(y * info.width + x) * 4 + 3], `cage gap at ${x},${y}`).toBe(0);
+    }
+  });
+
+  it('keeps the complete helmet inside the helmet-only crop', async () => {
+    const svg = renderToStaticMarkup(<UniformFigure colors={colors} variant="helmet" size={560} />);
+    const { data, info } = await sharp(Buffer.from(svg))
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    const alpha = (x: number, y: number) => data[(y * info.width + x) * 4 + 3];
+    let frontCagePixels = 0;
+    for (let y = 0; y < info.height; y++) {
+      expect(alpha(0, y), `left edge at ${y}`).toBe(0);
+      expect(alpha(info.width - 1, y), `right edge at ${y}`).toBe(0);
+      for (let x = info.width - 40; x < info.width; x++) {
+        if (alpha(x, y) > 0) frontCagePixels++;
+      }
+    }
+    for (let x = 0; x < info.width; x++) {
+      expect(alpha(x, 0), `top edge at ${x}`).toBe(0);
+      expect(alpha(x, info.height - 1), `bottom edge at ${x}`).toBe(0);
+    }
+    expect(frontCagePixels).toBeGreaterThan(0);
+  });
+
+  it('leaves the former shell outline outside the facemask transparent', async () => {
+    const svg = renderUniformThumbSVG(colors, 'test-home', definition, 'full');
+    const { data, info } = await sharp(Buffer.from(svg))
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+
+    expect(data[(209 * info.width + 460) * 4 + 3]).toBe(0);
+    expect(data[(302 * info.width + 420) * 4 + 3]).toBe(0);
   });
 
   it('paints generated helmet art beneath team-authored helmet layers', () => {
