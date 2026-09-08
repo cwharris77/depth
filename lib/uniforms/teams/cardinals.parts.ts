@@ -10,12 +10,6 @@
 // red-on-cream version on the rivalries shell.
 
 import {
-  CARDINALS_DECAL_BEAK_PATH,
-  CARDINALS_DECAL_BODY_PATH,
-  CARDINALS_DECAL_EYE_PATH,
-  CARDINALS_DECAL_GOLD,
-  CARDINALS_DECAL_KEYLINE_PATH,
-  CARDINALS_DECAL_RED,
   CARDINALS_NUMBER_KEYLINE,
   CARDINALS_SHOULDER_BAR_LEFT,
   CARDINALS_SHOULDER_BAR_RIGHT,
@@ -24,17 +18,36 @@ import {
   CARDINALS_SLEEVE_BAND_UPPER_LEFT,
   CARDINALS_SLEEVE_BAND_UPPER_RIGHT,
 } from './cardinals';
+import {
+  CARDINALS_DECAL_BEAK_LOWER_PATH,
+  CARDINALS_DECAL_BEAK_UPPER_PATH,
+  CARDINALS_DECAL_BODY_PATH,
+  CARDINALS_DECAL_EYE_PATH,
+  CARDINALS_DECAL_GOLD,
+  CARDINALS_DECAL_KEYLINE_PATH,
+  CARDINALS_DECAL_RED,
+  CARDINALS_EGGSHELL_DECAL_BEAK_LOWER_PATH,
+  CARDINALS_EGGSHELL_DECAL_BEAK_UPPER_PATH,
+  CARDINALS_EGGSHELL_DECAL_BODY_PATH,
+  CARDINALS_EGGSHELL_DECAL_CREAM,
+  CARDINALS_EGGSHELL_DECAL_EYE_PATH,
+  CARDINALS_EGGSHELL_DECAL_KEYLINE_PATH,
+  CARDINALS_EGGSHELL_DECAL_ORANGE,
+  CARDINALS_EGGSHELL_DECAL_RED,
+  CARDINALS_EGGSHELL_DECAL_WHITE,
+} from './cardinals-decals';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 
-// The full-color decal: keyline, red body, white eye, gold beak — each carries its own holes, so
-// every layer must render with fill-rule evenodd.
+// The full-color decal follows the supplied primary helmet-mark SVG. Every region carries its own
+// holes, so every layer must render with fill-rule evenodd.
 function fullDecal(): PartLayer[] {
   return (
     [
       ['cardinals-decal-keyline', CARDINALS_DECAL_KEYLINE_PATH, 'numberKeyline'],
       ['cardinals-decal-body', CARDINALS_DECAL_BODY_PATH, 'decalRed'],
+      ['cardinals-decal-beak-upper', CARDINALS_DECAL_BEAK_UPPER_PATH, 'decalGold'],
+      ['cardinals-decal-beak-lower', CARDINALS_DECAL_BEAK_LOWER_PATH, 'decalGold'],
       ['cardinals-decal-eye', CARDINALS_DECAL_EYE_PATH, 'white'],
-      ['cardinals-decal-beak', CARDINALS_DECAL_BEAK_PATH, 'decalGold'],
     ] as [string, string, string][]
   ).map(([id, d, fill]) => ({
     id,
@@ -47,14 +60,27 @@ function fullDecal(): PartLayer[] {
   }));
 }
 
-// Rivalries' red-on-cream mark: red keyline and body, cream eye and beak.
+// Rivalries has its own 2025 eggshell-specific mark, never the regular mark recolored.
 function rivalDecal(): PartLayer[] {
   return (
     [
-      ['cardinals-decal-keyline', CARDINALS_DECAL_KEYLINE_PATH, 'rivalRed'],
-      ['cardinals-decal-body', CARDINALS_DECAL_BODY_PATH, 'rivalRed'],
-      ['cardinals-decal-eye', CARDINALS_DECAL_EYE_PATH, 'cream'],
-      ['cardinals-decal-beak', CARDINALS_DECAL_BEAK_PATH, 'cream'],
+      [
+        'cardinals-eggshell-decal-keyline',
+        CARDINALS_EGGSHELL_DECAL_KEYLINE_PATH,
+        'eggshellDecalRed',
+      ],
+      ['cardinals-eggshell-decal-body', CARDINALS_EGGSHELL_DECAL_BODY_PATH, 'eggshellDecalCream'],
+      [
+        'cardinals-eggshell-decal-beak-upper',
+        CARDINALS_EGGSHELL_DECAL_BEAK_UPPER_PATH,
+        'eggshellDecalOrange',
+      ],
+      [
+        'cardinals-eggshell-decal-beak-lower',
+        CARDINALS_EGGSHELL_DECAL_BEAK_LOWER_PATH,
+        'eggshellDecalOrange',
+      ],
+      ['cardinals-eggshell-decal-eye', CARDINALS_EGGSHELL_DECAL_EYE_PATH, 'eggshellDecalWhite'],
     ] as [string, string, string][]
   ).map(([id, d, fill]) => ({
     id,
@@ -247,6 +273,10 @@ export const CARDINALS_PARTS: TeamPartsDefinition = {
     rivalOrange: '#EE6B3D',
     decalRed: CARDINALS_DECAL_RED,
     decalGold: CARDINALS_DECAL_GOLD,
+    eggshellDecalRed: CARDINALS_EGGSHELL_DECAL_RED,
+    eggshellDecalCream: CARDINALS_EGGSHELL_DECAL_CREAM,
+    eggshellDecalOrange: CARDINALS_EGGSHELL_DECAL_ORANGE,
+    eggshellDecalWhite: CARDINALS_EGGSHELL_DECAL_WHITE,
     numberKeyline: CARDINALS_NUMBER_KEYLINE,
   },
   helmets: { white: HELMET_WHITE, black: HELMET_BLACK, cream: HELMET_CREAM },
