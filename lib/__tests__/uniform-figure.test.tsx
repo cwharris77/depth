@@ -233,14 +233,26 @@ describe('UniformFigure', () => {
     expect(data[frontShellRimPixel + 3]).toBe(255);
     expect([...data.subarray(lowerCagePixel, lowerCagePixel + 4)]).toEqual([0, 0, 0, 0]);
 
-    // Narrow gaps used to inherit the solid cage's paint. These exercise the generated
-    // TypeScript cutters through the renderer, independently of the standalone base SVG.
+    // The opening at the top of the cage, which used to inherit the solid cage's paint.
+    // Exercises the generated TypeScript cutters through the renderer, independently of
+    // the standalone base SVG.
     for (const [x, y] of [
-      [389, 217],
+      [414, 115],
+      [416, 118],
+      [411, 112],
+    ]) {
+      expect(data[(y * info.width + x) * 4 + 3], `top cage opening at ${x},${y}`).toBe(0);
+    }
+
+    // ...and the bar bodies beside it stay painted. A hand-authored gap contour once cut
+    // these away, leaving the bars' specular highlights floating (Cooper, 2026-09-08).
+    for (const [x, y] of [
+      [401, 213],
+      [388, 217],
       [349, 229],
       [362, 228],
     ]) {
-      expect(data[(y * info.width + x) * 4 + 3], `cage gap at ${x},${y}`).toBe(0);
+      expect(data[(y * info.width + x) * 4 + 3], `cage bar at ${x},${y}`).toBe(255);
     }
   });
 

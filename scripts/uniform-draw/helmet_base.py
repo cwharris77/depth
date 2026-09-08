@@ -22,9 +22,15 @@ Four transforms, in order:
      read as a curved surface, so they are preserved rather than flattened; a team
      recolour is then a hue swap over the same offsets.
 
-The reference file is not committed (it carries the club mark). Re-run against it as:
+The reference file is not committed (it carries the club mark). It lives beside the other
+uncommitted references, at ../nfl-uniform-refs/helmet/helmet-base-reference.svg — see that
+folder's README, whose provenance differs from the rest of nfl-uniform-refs. Re-run as:
 
-    python3 scripts/uniform-draw/helmet_base.py <reference.svg> lib/uniforms/helmet-base.svg
+    python3 scripts/uniform-draw/helmet_base.py \
+      ../nfl-uniform-refs/helmet/helmet-base-reference.svg lib/uniforms/helmet-base.svg
+    npm run format          # the generator writes helmet-art.ts unformatted
+
+Then `npm run gen:uniform-thumbs`, since every kit's raster bakes this art in.
 
 The TypeScript module is written beside the SVG as helmet-art.ts.
 """
@@ -53,27 +59,15 @@ DROPPED = {2}
 WHITE_L = 0.90
 
 # Inside the cage, near-white is doing one of two jobs, and they need opposite treatment.
-# The four enclosed openings have to become actual holes (is_opening -> the cut mask); the
-# rest are specular streaks along the bars and are simply dropped. A hole is chunky and
-# roughly as tall as it is wide; a streak runs long and thin down a bar (aspect 2.7-9.1).
+# The enclosed openings have to become actual holes (is_opening -> the cut mask); the rest
+# are specular streaks along the bars and are simply dropped. A hole is chunky and roughly
+# as tall as it is wide; a streak runs long and thin down a bar (aspect 2.7-9.1).
+#
+# The reference is the only authority on which is which: every real opening is carved there
+# in white over the solid cage blob, so a region the drawing never carved is a bar, however
+# much a render makes it look like negative space. Do not hand-author gap contours here.
 OPENING_ASPECT = 2.2
 OPENING_AREA = 1000
-
-# Negative space that the original navy illustration painted dark, rather than white.
-# These art-space contours follow the inside edges of the two horizontal bars and the
-# rear diagonal brace (Cooper's facemask correction, 2026-09-08). Colour/aspect tests
-# cannot recover them: the compound cage and shell both paint underneath these gaps.
-# Keep the brace between the two rear triangles and the centre upright uncut.
-CAGE_GAP_DS = (
-    'M1208 979 L1224 980 L1224 983 L1260 984 L1260 987 L1299 989 '
-    'L1336 993 L1336 995 L1356 999 L1418 999 L1420 996 L1443 995 '
-    'L1439 1033 L1426 1031 L1423 1028 L1412 1028 L1410 1025 '
-    'L1404 1024 L1402 1022 L1393 1020 L1379 1020 L1360 1021 '
-    'L1357 1024 L1326 1024 L1274 1025 L1273 1028 L1205 1028 Z',
-    'M1085 1042 L1099 1042 L1124 1074 L1067 1074 Z',
-    'M1115 1042 L1164 1042 L1164 1053 L1153 1070 L1147 1074 '
-    'L1138 1074 Z',
-)
 
 def is_opening(bb, d, transform):
     w, h = bb[2] - bb[0], bb[3] - bb[1]
@@ -216,9 +210,21 @@ def poly_area(transform, d):
         total += abs(acc) / 2
     return total
 
+def in_cage(bb):
+    """Inside the facemask region at all — the gate for cutting an opening.
+
+    Deliberately does NOT apply DIMPLE_BOX. That carve-out answers a different question
+    (which team surface owns a path), and letting it gate opening detection suppressed a
+    real hole: source path 31, the 68x103 opening at the top of the cage, lands inside the
+    dimple box and so was dropped as paint instead of cut, leaving it filled (Cooper,
+    2026-09-08).
+    """
+    return bb[0] >= FACEMASK_BOX[0] and bb[1] >= FACEMASK_BOX[1]
+
 def in_facemask(bb):
+    """Which team surface owns this path: the mask, or the shell behind it."""
     x0, y0, x1, y1 = bb
-    if x0 < FACEMASK_BOX[0] or y0 < FACEMASK_BOX[1]:
+    if not in_cage(bb):
         return False
     dx0, dy0, dx1, dy1 = DIMPLE_BOX
     return not (x0 >= dx0 and x1 <= dx1 and y0 >= dy0 and y1 <= dy1)
@@ -295,7 +301,7 @@ for i, m in enumerate(PATH_RE.finditer(src)):
         # Near-white inside the cage is not paint to delete but a hole to cut: the
         # facemask under it is a solid blob (source path 3), so simply dropping the
         # white leaves the openings filled. They become a mask instead — see CUT_MASK.
-        if in_facemask(bb) and is_opening(bb, m.group(2), m.group(1)):
+        if in_cage(bb) and is_opening(bb, m.group(2), m.group(1)):
             cutters.append(m.group(0).replace('fill="%s"' % fill, 'fill="#000"'))
             cutter_ds.append(art_space_d(m.group(1), m.group(2)))
         continue
@@ -336,9 +342,6 @@ for i, m in enumerate(PATH_RE.finditer(src)):
     if i == 1:
         tag = '<path transform="translate(0,0)" d="%s" fill="%s"/>' % (d, new)
     kept.append('<path class="%s"%s' % (bucket, tag[len('<path'):]))
-
-cutters.extend('<path d="%s" fill="#000"/>' % d for d in CAGE_GAP_DS)
-cutter_ds.extend(CAGE_GAP_DS)
 
 # The patch paints after every mark path, so index order alone places it correctly.
 patch = ('<path class="shell" transform="translate(0)" d="%s" fill="%s"/>'
@@ -446,4 +449,4 @@ ts_out.write_text('\n'.join(ts_lines))
 
 print('kept %d paths, %d cage cutters (%d repainted flat over the mark, %d dropped)'
       % (len(kept), len(cutters), len(LOGO),
-         len(list(PATH_RE.finditer(src))) - len(kept) - len(cutters) + len(CAGE_GAP_DS) + 1))
+         len(list(PATH_RE.finditer(src))) - len(kept) - len(cutters) + 1))

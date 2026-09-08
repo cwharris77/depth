@@ -66,13 +66,16 @@ describe('helmet art integrity', () => {
     expect(HELMET_ART_TRANSFORM).toBe('translate(30.83,-7.11) scale(0.50079)');
   });
 
-  it('carries one silhouette and seven cage openings', () => {
-    expect(HELMET_ART_CUT).toHaveLength(7);
+  it('carries one silhouette and five cage openings', () => {
+    // Five, not four: the fifth is the opening at the top of the cage, which
+    // in_facemask()'s DIMPLE_BOX carve-out used to suppress. One cutter per white
+    // carve in the reference — a sixth would mean someone hand-authored a gap.
+    expect(HELMET_ART_CUT).toHaveLength(5);
     for (const cutter of HELMET_ART_CUT) expect(cutter).toMatch(/^m[-\d]/i);
     expect(HELMET_ART_CLIP).toMatch(/^m[-\d]/i);
   });
 
-  it('cuts the narrow cage gaps without cutting the bars or rear brace', async () => {
+  it('cuts the top cage opening and leaves every bar body solid', async () => {
     const source = readFileSync(join(process.cwd(), 'lib/uniforms/helmet-base.svg'));
     const { data, info } = await sharp(source)
       .resize(1720, 1440)
@@ -81,7 +84,19 @@ describe('helmet art integrity', () => {
       .toBuffer({ resolveWithObject: true });
     const alpha = (x: number, y: number) => data[(y * info.width + x) * 4 + 3];
 
-    // Art-space points inside the gaps, then the two bars, centre post and diagonal brace.
+    // Art-space points inside source path 31, the opening the dimple carve-out hid.
+    for (const [x, y] of [
+      [1350, 610],
+      [1360, 620],
+      [1370, 635],
+      [1345, 600],
+    ]) {
+      expect(alpha(x, y), `top opening at ${x},${y}`).toBe(0);
+    }
+
+    // The bars a hand-authored gap contour once cut through. The reference carves no
+    // white here, so it is bar body — dark under a specular highlight, not negative
+    // space, however much a dark-ground render suggests otherwise (Cooper, 2026-09-08).
     for (const [x, y] of [
       [1220, 990],
       [1300, 1000],
@@ -89,10 +104,6 @@ describe('helmet art integrity', () => {
       [1350, 1017],
       [1090, 1065],
       [1145, 1060],
-    ]) {
-      expect(alpha(x, y), `gap at ${x},${y}`).toBe(0);
-    }
-    for (const [x, y] of [
       [1300, 970],
       [1300, 1050],
       [1190, 1018],
