@@ -38,9 +38,10 @@ describe('uniform seed generator', () => {
     for (const u of UNIFORMS) {
       expect(sql).toContain(uniformArtURL(`${u.teamId}-${u.slug}-${u.yearStart}`));
     }
-    // Every curated row must carry the URL; a NULL image_path would leave the picker
-    // without a thumbnail for a kit whose WebP is always generated.
-    const urls = (sql.match(/https:\/\/depth-ashen\.vercel\.app\/uniforms\//g) ?? []).length;
+    // Every curated row must carry the path; a NULL image_path would leave the picker
+    // without a thumbnail for a kit whose WebP is always generated. Paths are
+    // origin-relative (DEP-406) so web art resolves against the current request origin.
+    const urls = (sql.match(/\/uniforms\/[a-z0-9-]+\.webp/g) ?? []).length;
     expect(urls).toBe(UNIFORMS.length);
   });
 });

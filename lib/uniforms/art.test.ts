@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  renderUniformThumbSVG,
-  uniformArtURL,
-  uniformArtFullURL,
-  UNIFORM_ART_BASE_URL,
-} from '@/lib/uniforms/art';
+import { renderUniformThumbSVG, uniformArtURL, uniformArtFullURL } from '@/lib/uniforms/art';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
 import type { TeamColors } from '@/lib/types';
 
@@ -22,13 +17,12 @@ const seahawksRivalries: TeamColors = {
 
 describe('uniformArtURL', () => {
   it('derives a kit URL from its stable id', () => {
-    expect(uniformArtURL('bengals-color-rush')).toBe(
-      'https://depth-ashen.vercel.app/uniforms/bengals-color-rush.webp'
-    );
+    expect(uniformArtURL('bengals-color-rush')).toBe('/uniforms/bengals-color-rush.webp');
   });
 
-  it('is anchored to the shared base URL', () => {
-    expect(UNIFORM_ART_BASE_URL).toBe('https://depth-ashen.vercel.app/uniforms');
+  it('is origin-relative so web art resolves against the current request origin', () => {
+    expect(uniformArtURL('bengals-color-rush')).toMatch(/^\/uniforms\//);
+    expect(uniformArtURL('bengals-color-rush')).not.toMatch(/^https?:\/\//);
   });
 });
 
@@ -84,9 +78,7 @@ describe('renderUniformThumbSVG', () => {
 
 describe('uniformArtFullURL', () => {
   it('derives the full-mannequin URL from a kit id, distinct from the jersey crop', () => {
-    expect(uniformArtFullURL('bengals-color-rush')).toBe(
-      'https://depth-ashen.vercel.app/uniforms/bengals-color-rush-full.webp'
-    );
+    expect(uniformArtFullURL('bengals-color-rush')).toBe('/uniforms/bengals-color-rush-full.webp');
     expect(uniformArtFullURL('bengals-color-rush')).not.toBe(uniformArtURL('bengals-color-rush'));
   });
 });

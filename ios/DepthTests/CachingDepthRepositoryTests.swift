@@ -501,7 +501,7 @@ private func uniformListing(id: String = "bills-home") -> UniformListing {
         colors: TeamColors(
             primary: "#00338D", secondary: "#C60C30", accent: "#D50A0A"
         ),
-        imagePath: "https://depth-ashen.vercel.app/uniforms/bills-home.webp"
+        imagePath: "/uniforms/bills-home.webp"
     )
 }
 

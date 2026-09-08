@@ -1,11 +1,14 @@
 import Foundation
 
-// Mirrors lib/uniforms/art.tsx's UNIFORM_ART_BASE_URL, uniformArtURL, and
-// uniformArtFullURL. The archive shows the `-full` mannequin raster (helmet → cleats);
-// the picker shows the plain jersey crop (`<id>.webp`) — the same two kinds of artifact
-// the web generator emits.
+// Mirrors lib/uniforms/art.tsx's uniformArtURL and uniformArtFullURL. Web art resolves
+// origin-relative (DEP-406) so local dev/preview serve the committed rasters; iOS can't
+// use a relative URL — URLSession needs an absolute one — so this pins the same scheme
+// to the canonical production origin (the branded domain, not the generated alias).
+// The archive shows the `-full` mannequin raster (helmet → cleats); the picker shows
+// the plain jersey crop (`<id>.webp`) — the same two kinds of artifact the web
+// generator emits.
 enum UniformArt {
-    static let baseURL = "https://depth-ashen.vercel.app/uniforms"
+    static let baseURL = "https://sticks.cooper-harris.site/uniforms"
 
     static func jerseyURL(for id: String) -> URL? {
         URL(string: "\(baseURL)/\(id).webp")
