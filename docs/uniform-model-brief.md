@@ -226,6 +226,8 @@ Two mannequin facts worth reaching for before hand-rolling:
 
 Prefer tokens (`'primary'`/`'secondary'`/`'accent'`) over literals wherever the palette genuinely supplies the color; use a cited literal where it does not. Where a kit has no keyline at all, set `outline` to the face color rather than leaving it to inherit the generic model's contrasting stroke.
 
+The shared archive numeral is a font-independent vector **3** in `lib/uniforms/jersey-art.ts`. SVG previews and native WebP assets use the same path; optional team glyph paths still override it. Cardinals wordmarks and collar lettering are outlined paths in `cardinals-jersey.ts`, with deterministic eggshell flecks. Shoulder numbers face outward in opposite directions and clip at the original jersey silhouette. Regenerate both jersey and full assets after changing these paths.
+
 `number.outlineWidth` defaults to 26, which is tuned for a keyline that reads at swatch size. Teams with a *thin* numeral trim need ~10–14, or the trim swallows the face and every number renders as one solid color (caught on Minnesota).
 
 ## Step 8 — Register, verify, and only then claim done

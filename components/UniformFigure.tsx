@@ -10,12 +10,15 @@ import {
   type HelmetArtPath,
 } from '@/lib/uniforms/helmet-art';
 import { shadeFor } from '@/lib/uniforms/helmet-shading';
+import { JERSEY_NUMBER_THREE } from '@/lib/uniforms/jersey-art';
 import { resolveUniformModel, type ResolvedUniformStyle } from '@/lib/uniforms/model';
 import type { TeamUniformDefinition, UniformSurface } from '@/lib/uniforms/teams/types';
 
-// The raster variants the prerender pipeline (lib/uniforms/art.tsx) and the live renderer
-// share: 'jersey' (picker swatch) or 'full' (archive mannequin). Re-exported so art.tsx
-// stays the single authority on which variant name means which artifact.
+// The raster variants the prerender pipeline (lib/uniforms/art.tsx) emits: 'jersey' (picker
+// swatch) or 'full' (archive mannequin). Re-exported so art.tsx stays the single authority on
+// which variant name means which artifact. The component itself accepts any UniformVariant —
+// 'helmet' renders correctly and its crop is asserted in lib/__tests__/uniform-figure.test.tsx,
+// it just has no raster artifact, so the narrowing belongs on art.tsx's signature, not here.
 export type UniformArtVariant = Extract<UniformVariant, 'jersey' | 'full'>;
 
 // The generated vector uniform. Colors/striping/layout are facts (not copyrightable), so every
@@ -202,7 +205,7 @@ export default function UniformFigure({
   definition,
 }: {
   colors: JerseyColors;
-  variant?: UniformArtVariant;
+  variant?: UniformVariant;
   size?: number;
   imagePath?: string;
   title?: string;
@@ -247,15 +250,7 @@ export default function UniformFigure({
   const collarLayers = model.layers.filter((layer) => layer.surface === 'collar');
   const numberLayers = model.layers.filter((layer) => layer.surface === 'number');
   const helmetLayers = model.layers.filter((layer) => layer.surface === 'helmet');
-  const numFont = { fontFamily: 'var(--font-anton), Anton, Helvetica, sans-serif' };
-  const numAttrs = {
-    x: 294,
-    y: 730,
-    fontSize: 210,
-    textAnchor: 'middle' as const,
-    letterSpacing: -4,
-    style: numFont,
-  };
+  const numberPath = model.number.glyphPath ?? JERSEY_NUMBER_THREE;
 
   return (
     <svg
@@ -268,9 +263,14 @@ export default function UniformFigure({
       aria-hidden={title ? undefined : true}>
       <defs>
         {hasJersey && (
-          <clipPath id={`${uid}-jersey`}>
-            <Geo part="jersey" shared={sharedDefs} />
-          </clipPath>
+          <>
+            <clipPath id={`${uid}-jersey`}>
+              <Geo part="jersey" shared={sharedDefs} />
+            </clipPath>
+            <pattern id={`${uid}-number-mesh`} width="5" height="5" patternUnits="userSpaceOnUse">
+              <circle cx="2.5" cy="2.5" r="0.55" fill={model.jerseyColor} opacity="0.22" />
+            </pattern>
+          </>
         )}
         {hasHelmet && (
           <>
@@ -334,7 +334,7 @@ export default function UniformFigure({
           </>
         )}
         {hasJersey && (
-          <>
+          <g>
             <Geo part="jersey" shared={sharedDefs} fill={model.jerseyColor} />
             {jerseyLayers.map((layer) => (
               <UniformLayerPath key={layer.id} layer={layer} uid={uid} />
@@ -345,38 +345,31 @@ export default function UniformFigure({
             {numberLayers.map((layer) => (
               <UniformLayerPath key={layer.id} layer={layer} uid={uid} />
             ))}
-            {model.number.glyphPath ? (
-              <>
+            <g data-number="3">
+              <path
+                clipPath={`url(#${uid}-jersey)`}
+                d={numberPath}
+                fill="none"
+                stroke={model.number.outline}
+                strokeWidth={model.number.outlineWidth}
+                strokeLinejoin="miter"
+              />
+              <path
+                clipPath={`url(#${uid}-jersey)`}
+                d={numberPath}
+                fill={model.number.fill}
+                stroke="none"
+              />
+              {!model.number.glyphPath && (
                 <path
                   clipPath={`url(#${uid}-jersey)`}
-                  d={model.number.glyphPath}
-                  fill="none"
-                  stroke={model.number.outline}
-                  strokeWidth={model.number.outlineWidth}
-                />
-                <path
-                  clipPath={`url(#${uid}-jersey)`}
-                  d={model.number.glyphPath}
-                  fill={model.number.fill}
+                  d={numberPath}
+                  fill={`url(#${uid}-number-mesh)`}
                   stroke="none"
                 />
-              </>
-            ) : (
-              <g stroke="none">
-                <text
-                  {...numAttrs}
-                  fill="none"
-                  stroke={model.number.outline}
-                  strokeWidth={model.number.outlineWidth}
-                  strokeLinejoin="round">
-                  1
-                </text>
-                <text {...numAttrs} fill={model.number.fill}>
-                  1
-                </text>
-              </g>
-            )}
-          </>
+              )}
+            </g>
+          </g>
         )}
         {hasHelmet && (
           <g transform="translate(80.25 11) scale(0.5)">

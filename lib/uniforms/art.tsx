@@ -37,15 +37,6 @@ export function uniformArtFullURL(id: string): string {
   return `/uniforms/${id}-full.webp`;
 }
 
-// UniformFigure's number <text> carries `font-family: var(--font-anton), Anton, …` —
-// a CSS custom property that only exists in the web bundle. The sharp/librsvg rasterizer
-// can't resolve `var()`, so the swap below pins a rasterizer-safe stack. The visual
-// result is a plain sans-serif "1" instead of the web's Anton digit — acceptable for a
-// ~50pt row thumbnail, and the swap is what keeps the raster byte-identical across
-// machines (a "one source of truth" requirement for a committed artifact).
-const WEB_NUMBER_FONT = 'font-family:var(--font-anton), Anton, Helvetica, sans-serif';
-const RASTER_NUMBER_FONT = 'font-family:Helvetica, sans-serif';
-
 // Renders a kit's SVG to the deterministic WebP raster. `variant` selects which the
 // caller wants: 'jersey' (the web picker swatch — viewBox 20 372 560 452) or 'full'
 // (the archive mannequin — viewBox 20 45 560 1535). Render size 560 keeps the raster
@@ -59,7 +50,7 @@ export function renderUniformThumbSVG(
   definition?: TeamUniformDefinition,
   variant: UniformArtVariant = 'jersey'
 ): string {
-  const markup = renderToStaticMarkup(
+  return renderToStaticMarkup(
     <UniformFigure
       colors={colors}
       variant={variant}
@@ -68,6 +59,4 @@ export function renderUniformThumbSVG(
       definition={definition}
     />
   );
-  // Both the outline and fill <text> carry the web font stack, so replace every occurrence.
-  return markup.replaceAll(WEB_NUMBER_FONT, RASTER_NUMBER_FONT);
 }

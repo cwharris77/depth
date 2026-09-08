@@ -45,14 +45,15 @@ describe('renderUniformThumbSVG', () => {
     expect(svg).toContain('fill="#C6D3DC"');
   });
 
-  it('swaps the web-only Anton font stack for a rasterizer-safe one', () => {
+  it('uses vector numerals without a rasterizer font dependency', () => {
     const svg = renderUniformThumbSVG(
       seahawksRivalries,
       'seahawks-rivalries-2025',
       getTeamUniformDefinition('seahawks')
     );
     expect(svg).not.toContain('var(--font-anton)');
-    expect(svg).toContain('font-family:Helvetica, sans-serif');
+    expect(svg).not.toContain('<text');
+    expect(svg).toContain('data-number="3"');
   });
 
   it('is deterministic across runs', () => {
@@ -94,7 +95,7 @@ describe('renderUniformThumbSVG full variant', () => {
     expect(svg).toContain('viewBox="20 45 560 1535"');
   });
 
-  it('still swaps the web-only font stack in the full variant', () => {
+  it('keeps the full variant independent of installed fonts', () => {
     const svg = renderUniformThumbSVG(
       seahawksRivalries,
       'seahawks-rivalries-2025',
@@ -102,6 +103,7 @@ describe('renderUniformThumbSVG full variant', () => {
       'full'
     );
     expect(svg).not.toContain('var(--font-anton)');
-    expect(svg).toContain('font-family:Helvetica, sans-serif');
+    expect(svg).not.toContain('<text');
+    expect(svg).toContain('data-number="3"');
   });
 });
