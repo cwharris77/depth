@@ -27,11 +27,6 @@ enum AppBuildInfo {
     /// 301s here, so builds already in testers' hands keep resolving these links; new
     /// builds skip the hop. Kept as a string so malformed configuration degrades to nil at
     /// each call site.
-    ///
-    /// NOTE: `UniformArt.baseURL` deliberately still points at the old alias — the
-    /// `uniforms.image_path` rows in production embed that origin, so moving the artwork
-    /// origin is a code+data migration rather than a constant swap. Don't "fix" the
-    /// inconsistency by editing one side.
     private static let publicSiteURLString = "https://sticks.cooper-harris.site"
 
     static let privacyPolicyURLString = "\(publicSiteURLString)/privacy"

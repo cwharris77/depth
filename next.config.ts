@@ -29,12 +29,13 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        // Committed uniform rasters (lib/uniforms/art.tsx's UNIFORM_ART_BASE_URL) —
-        // uniforms.image_path stores this absolute URL, and next/image's optimizer
-        // 400s on any external hostname not allow-listed here, even the app's own
-        // production domain (DEP-220's picker/archive art was broken on web only
-        // until this was added; the iOS app fetches the raw URL directly and was
-        // never affected).
+        // DEP-406 transition safety net: uniform art now resolves origin-relative
+        // (lib/uniforms/art.tsx), so this entry only covers the window while old
+        // absolute image_path rows / stale caches still reference the generated
+        // alias. Remove once the DEP-406 migration is verified live. (next/image's
+        // optimizer 400s on any external hostname not allow-listed here, even the
+        // app's own production domain — the iOS app fetches the raw URL directly
+        // and was never affected.)
         protocol: 'https',
         hostname: 'depth-ashen.vercel.app',
         pathname: '/uniforms/**',
