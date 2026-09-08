@@ -6,9 +6,9 @@
 // Outputs: `public/uniforms/<id>.webp` per row (id = `<teamId>-<slug>-<yearStart>`),
 // deterministically rendered from the shared UniformFigure jersey crop (the same SVG the
 // web picker's JerseySwatch fallback renders) and rasterized with sharp. Committed to the
-// repo like the `gen:icons` rasters and served at UNIFORM_ART_BASE_URL; the DB's
-// `uniforms.image_path` column points each row at its artifact (see the backfill
-// migration and lib/uniforms/seed-sql.ts).
+// repo like the `gen:icons` rasters and served under /uniforms/ (origin-relative on web,
+// per DEP-406); the DB's `uniforms.image_path` column points each row at its artifact
+// (see the backfill migration and lib/uniforms/seed-sql.ts).
 //
 // Usage: npm run gen:uniform-thumbs
 // Requires SUPABASE_URL + SUPABASE_SECRET_KEY to regenerate from live rows (reads only);

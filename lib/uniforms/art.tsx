@@ -12,16 +12,20 @@ import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
 // public/uniforms/<id>.webp (jersey crop, picker) and public/uniforms/<id>-full.webp
 // (full mannequin, archive) — the same committed-raster precedent as scripts/gen-icons.mts.
 
-// The Vercel production domain the iOS app already hardcodes (AppBuildInfo.swift's
-// privacy page) and that the web picker's <Image src={imagePath}> resolves against.
-// Kept as one module so the seed generator and the generator script can't drift apart.
-export const UNIFORM_ART_BASE_URL = 'https://depth-ashen.vercel.app/uniforms';
+// Uniform art resolves origin-relative on web (DEP-406): a relative path makes next/image
+// serve from the current request origin, so local dev and Vercel preview render the
+// committed rasters in public/uniforms/ instead of round-tripping to production — the
+// pre-deploy verification blind spot that forced the helmet-art migration to substitute
+// direct raster inspection for a browser check (depth#717). The DB's image_path column
+// stores these same relative paths, so no future host migration ever touches it again.
+// iOS cannot use a relative URL (URLSession needs an absolute one) — UniformListing.swift's
+// UniformArt.baseURL mirrors this scheme against the canonical production origin.
 
 // A uniform row's id is its stable `${teamId}-${slug}-${yearStart}` slug, so the artifact name is
 // fully determined by the row. Rows without an artifact (a future kit whose WebP hasn't
 // been generated yet) simply keep the text-only fallback — degrade, don't fake.
 export function uniformArtURL(id: string): string {
-  return `${UNIFORM_ART_BASE_URL}/${id}.webp`;
+  return `/uniforms/${id}.webp`;
 }
 
 // The full-mannequin raster (helmet → cleats) backing the archive, distinct from the
@@ -30,7 +34,7 @@ export function uniformArtURL(id: string): string {
 // DEP-220 only produced the jersey crop, and pointing the archive at that square crop
 // stretches it into the broken mannequin (see UniformFigure's imagePath short-circuit).
 export function uniformArtFullURL(id: string): string {
-  return `${UNIFORM_ART_BASE_URL}/${id}-full.webp`;
+  return `/uniforms/${id}-full.webp`;
 }
 
 // Renders a kit's SVG to the deterministic WebP raster. `variant` selects which the
