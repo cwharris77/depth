@@ -23,6 +23,7 @@ import {
   BRONCOS_CRUSH_BAND_TOP_LEFT,
   BRONCOS_CRUSH_BAND_TOP_RIGHT,
   BRONCOS_CRUSH_DECAL_D_PATH,
+  BRONCOS_DECAL_EYE_PATH,
   BRONCOS_CRUSH_DECAL_KEYLINE_PATH,
   BRONCOS_DECAL_HORSE_PATH,
   BRONCOS_DECAL_MANE_PATH,
@@ -85,6 +86,7 @@ function horseDecal(): PartLayer[] {
   return [
     fill('broncos-decal-under', 'helmet', BRONCOS_DECAL_MANE_PATH, 'orange'),
     fill('broncos-decal-over', 'helmet', BRONCOS_DECAL_HORSE_PATH, 'white'),
+    fill('broncos-decal-eye', 'helmet', BRONCOS_DECAL_EYE_PATH, 'orange'),
   ];
 }
 
@@ -98,11 +100,11 @@ function crushDecal(): PartLayer[] {
 
 // The modern navy shell with the horse decal — one object, shared by home, away and orange-alt.
 //
-// White cage. The modern navy shell wears a white facemask (named sources; also the classic
-// navy-helmet era). The white cage reads cleanly against the navy shell.
+// The current-season GUD helmet composite shows a navy facemask on every modern kit; the
+// Orange Crush reference below is the exception and retains its light cage.
 const HELMET_NAVY_HORSE: UniformPart = {
   base: 'navy',
-  facemask: 'white',
+  facemask: 'navy',
   layers: horseDecal(),
 };
 
