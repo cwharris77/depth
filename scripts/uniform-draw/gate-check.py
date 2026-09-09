@@ -109,9 +109,10 @@ NOTES = {
     "raiders": "gate pass requires >=1200px render; the fine 'RAIDERS' text is the fragile part, "
                "and the helmet decal is the shield only (no text). Trace the shield region.",
     "patriots": "pass requires >=900px render; two elements merge below that. Use >=1200px.",
-    "rams": "the fetched file is the ram-head LOGO, but the helmet decal is the horn alone. "
-            "Draw the horn from the GUD helmet composite; the logo only shows where the horn "
-            "sits on the head.",
+    "rams": "DONE 2026-09-08. The fetched file is the LA lockup and the helmet decal is the horn "
+            "alone, which is not in it. Linework came from Commons File:Los Angeles Rams Uniforms "
+            "2025.png (~400px helmet, faces left so it is mirrored); placement from the GUD helmet "
+            "composite. See scripts/uniform-draw/rams_horn.py.",
     "broncos": "the fetched logo is the horse (current shell). The orange-crush shell wears the "
                "1990s D, which is NOT in this logo - use the era sheet "
                "(nfl-uniform-refs/broncos/broncos-orange-crush-era-1990.png).",
