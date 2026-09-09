@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { cacheLife, cacheTag } from 'next/cache';
+import { fetchWithRetry } from '@/lib/supabase/fetch-with-retry';
 import { tables } from '@/lib/supabase/tables';
 import type { Database } from '@/lib/database.types';
 import { getSupabaseUrl, getSupabaseAnonKey } from '@/lib/utils/env';
@@ -59,7 +60,12 @@ import type {
 let client: ReturnType<typeof createClient<Database>> | undefined;
 function supabase() {
   if (client) return client;
-  client = createClient<Database>(getSupabaseUrl(), getSupabaseAnonKey());
+  // `global.fetch` retries transient gateway timeouts (504/502) with backoff — next
+  // build bursts ~160 prerender queries and a single Supabase blip used to abort the
+  // whole build (see lib/supabase/fetch-with-retry.ts for the why and the 4xx boundary).
+  client = createClient<Database>(getSupabaseUrl(), getSupabaseAnonKey(), {
+    global: { fetch: fetchWithRetry },
+  });
   return client;
 }
 
