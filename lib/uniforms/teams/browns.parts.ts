@@ -3,11 +3,10 @@
 // instead of the kit row's shifting primary/secondary/accent.
 //
 // Cleveland's construction is defined by what it does NOT have: the shell carries no logo and no
-// center stripe, the white pants carry no stripe, the V-collar carries no trim, and the numerals
-// carry no keyline. Everything the uniform says, it says with one five-band stripe stack at the
-// end of each sleeve. The three kits combine two helmets (the bare orange shell home/away, and
-// the 1946 throwback's brown shell) and one shared white jersey — away and the 1946 both wear a
-// white body with the stack banded brown-over-orange — plus one pair of white pants for all three.
+// center stripe, the V-collar carries no trim, and the numerals carry no keyline. Everything the
+// uniform says, it says with one five-band stripe stack at the end of each sleeve and a three-band
+// pant stripe. The current composite's brown, orange and white pants are independently selectable;
+// the 1946 throwback keeps its existing white pants outside that current-uniform option set.
 
 import { BROWNS_SLEEVE_X_LEFT, BROWNS_SLEEVE_X_RIGHT, BROWNS_STRIPE_BOUNDS } from './browns';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
@@ -37,6 +36,46 @@ function sleeveStripes(band: string, gap: string): PartLayer[] {
     }
   }
   return out;
+}
+
+// The 2025 GUD composite's white and orange pants both carry the same orange-brown-orange stripe.
+// The shared mannequin band supplies the 16-unit orange outer field; a six-unit brown centre leaves
+// equal orange rails on each side. These are full front-leg bands, unlike side-seam-only details.
+function pantsStripes(): PartLayer[] {
+  return [
+    {
+      id: 'generic-pants-stripe-left',
+      surface: 'leg-left',
+      d: 'M118,807 H134 V1462 H118 Z',
+      clip: true,
+      kind: 'fill',
+      fill: 'orange',
+    },
+    {
+      id: 'generic-pants-stripe-right',
+      surface: 'leg-right',
+      d: 'M454,807 H470 V1462 H454 Z',
+      clip: true,
+      kind: 'fill',
+      fill: 'orange',
+    },
+    {
+      id: 'browns-pants-stripe-center-left',
+      surface: 'leg-left',
+      d: 'M123,807 H129 V1462 H123 Z',
+      clip: true,
+      kind: 'fill',
+      fill: 'brown',
+    },
+    {
+      id: 'browns-pants-stripe-center-right',
+      surface: 'leg-right',
+      d: 'M459,807 H465 V1462 H459 Z',
+      clip: true,
+      kind: 'fill',
+      fill: 'brown',
+    },
+  ];
 }
 
 // The bare orange shell — the club is the only one in the league with a bare helmet — shared by
@@ -74,8 +113,17 @@ const JERSEY_WHITE: UniformPart = {
   number: { fill: 'brown', outline: 'brown', outlineWidth: 10 },
 };
 
-// Plain white pants — one pair shared by all three kits.
-const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
+// White (P1) and orange (P2) pants: the 2025 GUD composite gives both the same
+// orange-brown-orange full-leg band.
+const PANTS_WHITE: UniformPart = { base: 'white', layers: pantsStripes() };
+const PANTS_ORANGE: UniformPart = { base: 'orange', layers: pantsStripes() };
+
+// Brown pants (P3): the 2025 color-rush figure is unstriped.
+const PANTS_BROWN: UniformPart = { base: 'brown', layers: [] };
+
+// The 1946 throwback is not represented in the current GUD composite, so retain its existing
+// unstriped white pant construction rather than importing an option from a different uniform era.
+const PANTS_1946_WHITE: UniformPart = { base: 'white', layers: [] };
 
 export const BROWNS_PARTS: TeamPartsDefinition = {
   teamId: 'browns',
@@ -92,11 +140,16 @@ export const BROWNS_PARTS: TeamPartsDefinition = {
     brown: JERSEY_BROWN,
     white: JERSEY_WHITE,
   },
-  pants: { white: PANTS_WHITE },
+  pants: {
+    white: PANTS_WHITE,
+    orange: PANTS_ORANGE,
+    brown: PANTS_BROWN,
+    '1946-white': PANTS_1946_WHITE,
+  },
   kits: {
-    home: { helmet: 'orange', jersey: 'brown', pants: 'white' },
-    away: { helmet: 'orange', jersey: 'white', pants: 'white' },
-    '1946-throwback': { helmet: 'brown', jersey: 'white', pants: 'white' },
+    home: { helmet: 'orange', jersey: 'brown', pants: ['white', 'orange', 'brown'] },
+    away: { helmet: 'orange', jersey: 'white', pants: ['white', 'orange'] },
+    '1946-throwback': { helmet: 'brown', jersey: 'white', pants: '1946-white' },
   },
 };
 
