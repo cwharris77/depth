@@ -17,11 +17,12 @@
  *
  *   1. A `-- IOS-COMPATIBILITY:` annotation on the migration naming the App Store
  *      build the change is safe after and the gate minimum it pairs with (shape in
- *      docs/ios-release-compatibility.md).
- *   2. A diff to docs/ios-release-compatibility.md — the release contract must be
+ *      ios-release-compatibility.md).
+ *   2. A diff to ios-release-compatibility.md — the release contract must be
  *      reviewable, not remembered.
  *
- * Passing here is not a license to ship. The sequencing in docs/forced-update-gate.md
+ * Passing here is not a license to ship. The sequencing in the vault's
+ * Reference/forced-update-gate.md
  * still governs: build LIVE in the App Store -> arm the gate -> only then break the
  * schema. This script only proves the PR is *aware and documented*, not that the
  * document's build is actually out.
@@ -43,7 +44,7 @@ import { compatibilityAnnotation, findDestructivePatterns } from '@/lib/supabase
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const MIGRATIONS_DIR = join(REPO_ROOT, 'supabase', 'migrations');
-const MANIFEST_PATH = 'docs/ios-release-compatibility.md';
+const MANIFEST_PATH = 'ios-release-compatibility.md'; // repo root — /docs/ is gitignored
 
 // --- CLI args ---------------------------------------------------------------
 
@@ -163,7 +164,7 @@ function main() {
     console.log(
       'check:ios-compat — FAIL: destructive migration(s) missing a complete compatibility annotation.'
     );
-    console.log('Annotation shape (docs/ios-release-compatibility.md):');
+    console.log('Annotation shape (ios-release-compatibility.md):');
     console.log('  -- IOS-COMPATIBILITY:');
     console.log('  -- Safe after App Store build <N> is LIVE.');
     console.log('  -- Gate minimum: <N>.');
@@ -192,7 +193,9 @@ function main() {
   console.log('');
   console.log('Remember: passing this guard is not approval to ship — the build must be');
   console.log('LIVE in the App Store and the forced-update gate armed first, per');
-  console.log('docs/forced-update-gate.md sequencing.');
+  console.log(
+    'the vault sequencing doc (../obsidian/Projects/depth/Reference/forced-update-gate.md).'
+  );
   console.log('✓ check:ios-compat PASSED.');
   process.exit(0);
 }

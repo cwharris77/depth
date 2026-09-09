@@ -10,7 +10,7 @@ name: CI
 # The ios-compat job runs the iOS backend-compatibility guard
 # (scripts/check-ios-compatibility.mts) on every run: it flags destructive migrations
 # that break installed App Store builds unless they carry a compatibility annotation
-# and update docs/ios-release-compatibility.md (CLAUDE.md invariant 11). It needs a
+# and update ios-release-compatibility.md (CLAUDE.md invariant 11). It needs a
 # full clone (fetch-depth: 0) so the PR base SHA resolves for the diff.
 
 on:

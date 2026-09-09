@@ -46,6 +46,15 @@ supabase migration new <snake_case_name>   # new file under supabase/migrations/
   `20260710140000_base_table_rls.sql`, `20260717081108_add_player_stats.sql`). The
   only remaining red flag is enabling RLS **without** a matching read policy — that's
   what breaks `dbRosterSource` for every visitor, not RLS itself.
+- **Destructive migrations trip the iOS compatibility guard.** CI runs
+  `npm run check:ios-compat` on every PR (`ios-compat` job). A migration that drops or
+  renames a column/table, alters a column type, drops a constraint/type, removes an
+  enum value, or adds a NOT NULL json/jsonb column without a default on an existing
+  table **must** carry a `-- IOS-COMPATIBILITY:` header (naming the App Store build
+  the change is safe after, gate minimum, and rollback) **and** update
+  `ios-release-compatibility.md` at the repo root in the same PR — or CI fails with no
+  escape hatch. This is CLAUDE.md invariant 11 mechanized (the 2026-08-24 TestFlight
+  failure was a dropped column an old binary still SELECTed).
 
 ### 2. Apply locally, regenerate types
 
@@ -85,6 +94,8 @@ In `lib/roster-source.db.ts`, each table has a `Pick<Tables["…"]["Row"], …>`
 
 ```bash
 npx tsc --noEmit
+npm run check:ios-compat   # destructive migrations need the IOS-COMPATIBILITY
+                           # annotation + ios-release-compatibility.md update
 npm test               # includes lib/__tests__/roster-source.db.test.ts —
                        # it SKIPS silently without SUPABASE_* env vars, so run it
                        # locally with .env.local present; CI green ≠ DB layer tested
@@ -123,6 +134,7 @@ prod; the hosted DB must stay reproducible from `supabase/migrations/`.
 | Need | Command / file |
 |---|---|
 | New migration | `supabase migration new <name>` |
+| iOS compatibility guard | `npm run check:ios-compat` — annotation + `ios-release-compatibility.md` update for destructive changes |
 | Rebuild local DB | `supabase db reset` |
 | Regenerate types | `npm run db:types` (local Postgres, not hosted) |
 | Read layer | `lib/roster-source.db.ts` — `Pick<>` + SELECT string, in lockstep |
@@ -133,6 +145,10 @@ prod; the hosted DB must stay reproducible from `supabase/migrations/`.
 
 - Editing `lib/database.types.ts` by hand, for any reason.
 - Editing a migration file that already has siblings after it.
+- A destructive migration (drop/rename column/table, alter type, drop constraint/type,
+  enum removal, NOT NULL jsonb without default) with no `-- IOS-COMPATIBILITY:`
+  annotation or no `ios-release-compatibility.md` update — CI's `ios-compat` job
+  fails, and the escape hatch is the annotation + manifest, not force-merging.
 - `ALTER ... ENABLE ROW LEVEL SECURITY` with no accompanying `"public read"` (or
   `auth.uid()`-scoped) policy in the same migration.
 - SQL run against the hosted project outside a migration.
