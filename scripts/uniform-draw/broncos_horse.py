@@ -33,6 +33,7 @@ MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'b
 BOX = Box(200.0, 152.0, 375.9, 192.7)
 MIN_REGION = 100
 EPS = 3.0
+EYE_SCALE_X = 1.6
 
 
 def render_reference():
@@ -86,13 +87,25 @@ def build():
     orange_mask, white_mask, w, h = shared_masks()
     orange_regions = components(orange_mask, w, h, MIN_REGION)
     mane_cells = {cell for region in orange_regions[:3] for cell in region}
-    eye_cells = set(orange_regions[3])
+    source_eye = set(orange_regions[3])
+    eye_center = sum(x for x, _ in source_eye) / len(source_eye)
+    eye_cells = {
+        (round(eye_center + (x - eye_center) * EYE_SCALE_X), y) for x, y in source_eye
+    }
+    eye_cells = {
+        (x, y)
+        for y in {row for _, row in eye_cells}
+        for x in range(
+            min(x0 for x0, y0 in eye_cells if y0 == y),
+            max(x1 for x1, y1 in eye_cells if y1 == y) + 1,
+        )
+    }
     to_mask = lambda cells: [
         [1 if (x, y) in cells else 0 for x in range(w)] for y in range(h)
     ]
     return {
         'BRONCOS_DECAL_MANE_PATH': trace(to_mask(mane_cells), w, h, BOX, eps=EPS, minsize=MIN_REGION),
-        'BRONCOS_DECAL_EYE_PATH': trace(to_mask(eye_cells), w, h, BOX, eps=EPS, minsize=MIN_REGION),
+        'BRONCOS_DECAL_EYE_PATH': trace(to_mask(eye_cells), w, h, BOX, eps=EPS, minsize=10),
         'BRONCOS_DECAL_HORSE_PATH': trace(white_mask, w, h, BOX, eps=EPS, minsize=MIN_REGION),
     }
 
