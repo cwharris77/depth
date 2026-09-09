@@ -19,8 +19,9 @@ and the postmortem this guard exists because of,
 
 ## Current contract
 
-- **Current App Store build (`CFBundleVersion`):** <!-- fill in from App Store Connect -->
-- **Minimum supported build (`app_config.minimum_supported_build`):** <!-- fill in; 1 until armed — the gate shipped in T5 (7c4d88d, #355) and only protects builds that contain it -->
+- **Current App Store build (`CFBundleVersion`):** **587** — submitted for review, **not yet LIVE** (as of 2026-09-08)
+- **Minimum supported build (`app_config.minimum_supported_build`):** **1** — the gate is **not armed** (build 587 is not live; arming before the listing is public would lock out the only channel with installs — see `Reference/forced-update-gate.md`, "Do not arm before the listing is public")
+- **Gateable floor:** build 321 (T5, #355 — `c6a66bc`). Any build ≥ 321 contains the forced-update gate; the current submission (587) **is gateable**. Once 587 (or a later build) is LIVE, the flow is: ship the new build → confirm the listing is public → **only then** arm the gate by raising `app_config.minimum_supported_build` to that build → after it's live and blocking, destructive backend changes may ship.
 - **Backend contract facts** (as of the current schema, `supabase/migrations/`):
   - `teams` no longer carries `pending_home_colors` (dropped by
     `20260824102000_drop_pending_home_colors.sql` — the migration implicated in the
