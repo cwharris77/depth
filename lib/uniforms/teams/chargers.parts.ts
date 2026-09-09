@@ -2,11 +2,15 @@
 // file only restates WHICH parts each kit combines, and names every color from the team palette
 // instead of the kit row's shifting primary/secondary/accent.
 //
-// All three kits are ONE construction, and the whole uniform is two marks: a lightning bolt on each
-// shoulder cap and a much larger one on the shell, each a solid gold body inside a contrasting
-// keyline. No sleeve stripe, no collar trim, no pant stripe. The three kits combine one helmet (the
-// white shell), two jerseys (powder-blue shared by home + powder-blue, white for away), and one pair
-// of gold pants.
+// All three kits are ONE construction, and the uniform is bolts: one on each shoulder cap and a much
+// larger one on the shell, each a solid body inside a contrasting keyline. No sleeve stripe and no
+// collar trim. The three kits combine one helmet (the white shell), two jerseys (powder-blue shared
+// by home + powder-blue, white for away), and three pants — every jersey in the 2025 reference is
+// worn with gold, white and powder-blue legs.
+//
+// The pants are plain here on purpose. Los Angeles wears a bolt down each leg, but on the SIDE seam,
+// which a front-on mannequin cannot show; drawing it onto the leg's face would put a mark where the
+// real pant has none. Everything invisible from the front stays out of the figure.
 //
 // NOTE: home and powder-blue render IDENTICALLY by design — both rows store primary #0080C6 over
 // gold, differing only in accent — and the 2025 reference draws exactly one powder-blue jersey. The
@@ -88,12 +92,14 @@ const JERSEY_WHITE: UniformPart = {
   number: { fill: 'powderBlue', outline: 'gold', outlineWidth: 12 },
 };
 
-// The 2025 GUD composite shows gold, white, powder-blue, and navy pants. Gold is canonical for
-// every current Chargers kit, preserving the existing raster; the other colors remain available
-// data until the archive UI presents pant options.
+// The three legs the current kits are worn with, plus the navy the alternate needs. Plain colour —
+// see the side-seam note in the header for why no bolt is drawn on them.
 const PANTS_GOLD: UniformPart = { base: 'gold', layers: [] };
 const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
 const PANTS_POWDER: UniformPart = { base: 'powderBlue', layers: [] };
+// Navy is worn only with the navy alternate jersey and its navy shell, neither of which is in the
+// archive yet, so no kit below references this part. It stays because the pant exists and the
+// measurement is done; the kit that wears it is a separate curation ticket.
 const PANTS_NAVY: UniformPart = { base: 'navy', layers: [] };
 
 export const CHARGERS_PARTS: TeamPartsDefinition = {
@@ -118,14 +124,13 @@ export const CHARGERS_PARTS: TeamPartsDefinition = {
     powder: PANTS_POWDER,
     navy: PANTS_NAVY,
   },
+  // Canonical first, so the compiled definition and the committed raster are unchanged. The rest are
+  // the options each jersey is actually drawn with on the 2025 composite — gold, white and powder
+  // for both jerseys, and navy for neither: navy legs appear only under the navy alternate top.
   kits: {
-    home: { helmet: 'white', jersey: 'powder', pants: ['gold', 'white', 'powder', 'navy'] },
-    away: { helmet: 'white', jersey: 'white', pants: ['gold', 'white', 'powder', 'navy'] },
-    'powder-blue': {
-      helmet: 'white',
-      jersey: 'powder',
-      pants: ['gold', 'white', 'powder', 'navy'],
-    },
+    home: { helmet: 'white', jersey: 'powder', pants: ['gold', 'white', 'powder'] },
+    away: { helmet: 'white', jersey: 'white', pants: ['gold', 'white', 'powder'] },
+    'powder-blue': { helmet: 'white', jersey: 'powder', pants: ['gold', 'white', 'powder'] },
   },
 };
 
