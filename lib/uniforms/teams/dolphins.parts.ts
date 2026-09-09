@@ -117,10 +117,11 @@ const HELMET_WHITE: UniformPart = {
   layers: [...crownStripe('orange'), ...decal('orange', 'teal')],
 };
 
-// The navy rivalries shell (H2) with the orange stripe + sunburst.
+// The navy rivalries shell (H2) with the orange stripe + sunburst and dark navy cage, as shown
+// by the GUD dark alternate figure.
 const HELMET_NAVY: UniformPart = {
   base: 'navy',
-  facemask: 'white',
+  facemask: 'navy',
   layers: [...crownStripe('orange'), ...decal('orange', 'teal')],
 };
 
