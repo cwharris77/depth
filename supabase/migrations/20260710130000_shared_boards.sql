@@ -1,5 +1,5 @@
 -- Share-by-reference for custom depth charts (Phase C, share pass --
--- docs/superpowers/specs/2026-07-07-phase-c-auth-and-saved-boards-design.md, "Share-by-reference").
+-- the vault's `specs/2026-07-07-phase-c-auth-and-saved-boards-design.md`, "Share-by-reference").
 -- A share is a durable *reference* to the owner's live override for a team, not a snapshot:
 -- the link keeps resolving to whatever the owner currently has saved, so it updates as they
 -- keep editing. One live share per (user, team); the slug is the public handle (lib/slug.ts).

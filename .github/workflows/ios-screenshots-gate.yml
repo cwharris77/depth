@@ -58,7 +58,7 @@ jobs:
                 `then push again. It decides targets from the diff, captures before/after + a boxed visual diff, ` +
                 `uploads to Cloudinary, and fills the ## Screenshots table. ` +
                 `If it found no coverage (a map gap), it defaults to 'field'. ` +
-                `See docs/ios-pr-screenshots.md.`
+                `See Reference/ios-pr-screenshots.md in the vault.`
               );
             } else {
               console.log('Screenshots present in the body — gate passed.');

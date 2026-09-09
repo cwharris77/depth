@@ -184,7 +184,7 @@ export default function DepthChartFieldSurface({
       </div>
 
       {/* FTN Data is CC-BY-SA 4.0 -- attribution is the condition of surfacing it
-          (docs/nflverse.md). Shown whenever the active unit has real-formation data
+          (the vault's `Reference/nflverse.md`). Shown whenever the active unit has real-formation data
           on screen -- not only once a formation is picked, since the default pick
           is the team's top formation and the field renders FTN-sourced layouts
           from first paint. Historical seasons have no formation data, so none

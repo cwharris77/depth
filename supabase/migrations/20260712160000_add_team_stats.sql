@@ -1,4 +1,4 @@
--- Team stats page (Phase E, docs/superpowers/specs/2026-07-12-team-stats-page-design.md).
+-- Team stats page (Phase E, the vault's `specs/2026-07-12-team-stats-page-design.md`).
 -- Season record + standings detail, one row per team. Sourced from the same ESPN
 -- standings fetch already used for conference/division (lib/espn/standings.ts
 -- parseTeamStats) -- no new fetch, just more of the payload read. All nullable: a team

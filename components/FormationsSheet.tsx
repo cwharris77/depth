@@ -105,7 +105,7 @@ export default function FormationsSheet({
             )}
           </div>
           {/* FTN charting is CC-BY-SA 4.0 -- attribution is the condition of listing
-              these rows at all (docs/nflverse.md). Shared component, not a local
+              these rows at all (the vault's `Reference/nflverse.md`). Shared component, not a local
               string, so every surface that shows formation data says the same thing. */}
           <FTNAttribution className="pb-4 pt-1" />
         </>

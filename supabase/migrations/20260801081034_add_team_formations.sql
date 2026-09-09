@@ -1,5 +1,5 @@
--- Real per-team formations (Phase E, docs/superpowers/specs/2026-07-07-phase-e-real-
--- formations-design.md). One row per team's top-3 most-used (qbAlignment,
+-- Real per-team formations (Phase E, the vault's `specs/2026-07-07-phase-e-real-formations-design.md`).
+-- One row per team's top-3 most-used (qbAlignment,
 -- personnelCode) combos for the latest ingested season -- e.g. rank 1 = "SEA: Shotgun
 -- 11 personnel, 61% of snaps". `personnel` is the standard NFL shorthand
 -- `{RB count}{TE count}` (lib/nflverse/personnel.ts); `pct` is an integer share of the

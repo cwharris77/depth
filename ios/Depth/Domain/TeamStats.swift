@@ -64,8 +64,8 @@ struct TeamIncomingCoach: Equatable, Codable, Sendable {
     let name: String
 }
 
-// One team_stats row per ingested season (current + up to two prior, web's
-// docs/superpowers/specs/2026-07-14-multi-season-team-stats-design.md). Every field is
+// One team_stats row per ingested season (current + up to two prior, web's vault spec
+// `specs/2026-07-14-multi-season-team-stats-design.md`). Every field is
 // non-optional here because a present row was always written from a complete parse
 // (web's writeTeamStats skips the upsert on a partial entry); the mapper's `?? 0`
 // fallbacks guard only the nullable-by-schema DTO type.

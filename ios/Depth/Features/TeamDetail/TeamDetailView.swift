@@ -995,7 +995,7 @@ private struct RefreshFailedBanner: View {
 }
 
 // Mirrors components/FTNAttribution.tsx — the CC-BY-SA 4.0 license-mandated attribution
-// for surfacing FTN formation data (docs/nflverse.md). Shared by the field footer and the
+// for surfacing FTN formation data (the vault's `Reference/nflverse.md`). Shared by the field footer and the
 // Formations sheet (web reuses one component across surfaces) so the string lives in one
 // place.
 private struct FTNAttributionText: View {

@@ -9,7 +9,7 @@ import { buildTeam, pl } from './_build';
 //
 // The per-player entries below are stale point-in-time placeholders, NOT a live fallback.
 // The app renders live rosters from the DB (dbRosterSource); there is no hand-authored
-// roster fallback (see docs/espn.md). They persist only because the seed shape carries a
+// roster fallback (see the vault's `Reference/espn.md`). They persist only because the seed shape carries a
 // players array and tests use them as fixtures — don't trust or maintain them as real
 // roster data.
 //

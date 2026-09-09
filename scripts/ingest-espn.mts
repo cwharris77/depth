@@ -1,7 +1,7 @@
 // Fetches ESPN rosters/depthcharts, coaches, and multi-season team stats for all 32
 // teams, transforms them through the pure lib/espn/transform (+ standings) pipeline,
 // and upserts into Postgres (Supabase). Run by hand (or on a schedule -- see
-// docs/espn.md). Never part of `next build`.
+// the vault's `Reference/espn.md`). Never part of `next build`.
 //
 // Usage: npm run ingest:espn
 // Requires SUPABASE_URL + SUPABASE_SECRET_KEY in the environment (secret key
@@ -107,7 +107,7 @@ async function main() {
   const standingsJson = await getJson<EspnStandings>(STANDINGS);
   const divisions = parseStandings(standingsJson);
 
-  // The fetch set (docs/superpowers/specs/2026-07-14-multi-season-team-stats-design.md,
+  // The fetch set (the vault's `specs/2026-07-14-multi-season-team-stats-design.md`,
   // extended by 2026-08-19-espn-full-history-team-stats-design.md): the daily job
   // fetches current + last season by calendar; a `--seasons` backfill fetches exactly
   // the requested range. All in small chunks (never one giant Promise.all) and merged
@@ -343,7 +343,7 @@ async function writeTeam(
 }
 
 // team_stats is one row per (team, season) -- multi-season stats page,
-// docs/superpowers/specs/2026-07-14-multi-season-team-stats-design.md. An empty array
+// the vault's `specs/2026-07-14-multi-season-team-stats-design.md`. An empty array
 // means this team had no complete entry for any of the three fetched seasons this run
 // (bye-week gap, mid-season expansion) -- skip entirely; whatever rows already exist from
 // a prior run are left untouched. A single season missing from `stats` (but others

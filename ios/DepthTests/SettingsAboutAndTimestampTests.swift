@@ -6,7 +6,7 @@ import Testing
 
 // Task 8D coverage: About-section version/build formatting and `TeamDetailViewModel`'s
 // capture of the underlying cache timestamp (used for staleness tracking). See
-// `.superpowers/sdd/2026-08-14-native-ios-app/task-8d-settings-about-timestamps-brief.md`.
+// the vault's `specs/2026-08-14-native-ios-app-design.md`.
 
 @Test func versionAndBuildFormatsBothPresentValues() {
     #expect(formattedVersionAndBuild(version: "1.2.3", build: "42") == "1.2.3 (42)")

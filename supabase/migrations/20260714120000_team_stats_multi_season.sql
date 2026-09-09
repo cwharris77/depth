@@ -1,4 +1,4 @@
--- Multi-season team stats (docs/superpowers/specs/2026-07-14-multi-season-team-stats-design.md).
+-- Multi-season team stats (the vault's `specs/2026-07-14-multi-season-team-stats-design.md`).
 -- team_stats was 1:1 with teams (current season only); this extends it to one row per
 -- (team, season) so the stats page can offer a season switcher. Existing rows came from
 -- ESPN's unparameterized standings fetch, verified live on 2026-07-14 to embed

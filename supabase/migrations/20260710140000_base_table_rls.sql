@@ -1,5 +1,5 @@
 -- Full RLS rollout on the public base tables (Phase C, final pass -- closes the deferral in
--- docs/superpowers/specs/2026-07-07-phase-c-auth-and-saved-boards-design.md and docs/espn.md).
+-- the vault's `specs/2026-07-07-phase-c-auth-and-saved-boards-design.md` and `Reference/espn.md`).
 -- Turns RLS ON for the six base tables, so every table in the schema is now protected. Reads
 -- stay open where the app needs them: dbRosterSource reads teams / players / depth_chart_entries
 -- / special_teams_slots / uniforms with the anon key, so each gets a permissive public-read

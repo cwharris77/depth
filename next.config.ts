@@ -6,8 +6,8 @@ const nextConfig: NextConfig = {
   // cacheLife, replacing route-segment `revalidate`/`dynamic` exports. Adopted to fix
   // /team/[id] being forced fully dynamic by generateMetadata's searchParams read (the
   // `order` param for shared-link OG previews) — under Cache Components that read no
-  // longer taints the whole route, only the scope that touches it (docs/superpowers/
-  // specs; see vault ticket "Depth field slow to load — general performance pass").
+  // longer taints the whole route, only the scope that touches it (the vault's
+  // `specs/` folder; see vault ticket "Depth field slow to load — general performance pass").
   cacheComponents: true,
   cacheLife: {
     // The daily ESPN/nflverse ingests (scripts/ingest-espn.mts, scripts/ingest-nflverse.mts,

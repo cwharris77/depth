@@ -1,5 +1,5 @@
--- Defensive real formations (mirror of offense, docs/superpowers/specs/2026-07-07-phase-
--- e-real-formations-design.md's "later mirror" note; see the depth vault ticket "Expand
+-- Defensive real formations (mirror of offense, the vault's `specs/2026-07-07-phase-e-real-formations-design.md`'s
+-- "later mirror" note; see the depth vault ticket "Expand
 -- real formations beyond top-3" / DEP-141). `team_formations` gains a `unit` column
 -- instead of a new table -- same shape works for both: `alignment`/`personnel` just carry
 -- different vocabularies per unit (offense: SHOTGUN/UNDER CENTER/PISTOL + "{RB}{TE}" code;

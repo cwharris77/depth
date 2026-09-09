@@ -1,6 +1,6 @@
 // nflverse release assets are plain CSV files attached to tagged GitHub releases —
 // one tag per dataset (`players`, `player_stats`, `rosters`, ...), see
-// docs/nflverse.md. No API, no auth: a predictable URL per (tag, file).
+// the vault's `Reference/nflverse.md`. No API, no auth: a predictable URL per (tag, file).
 
 const RELEASE_BASE = 'https://github.com/nflverse/nflverse-data/releases/download';
 

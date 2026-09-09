@@ -50,7 +50,7 @@ function wl(wins: number, losses: number): string {
   return `${wins}-${losses}`;
 }
 
-// Coach treatment (design mock 1a, docs/superpowers/specs — Claude Design "Coach Treatment
+// Coach treatment (design mock 1a — see the vault's `specs/` folder, Claude Design "Coach Treatment
 // Options"): a real type hierarchy — bigger name, accent-colored meta caption — instead of
 // one flat 11px line.
 function CoachBadge({ name, meta, uiAccent }: { name: string; meta: string; uiAccent: string }) {
@@ -496,8 +496,8 @@ export default function TeamStatsView({
     : upcomingSeasonHasRealRow && active?.season === upcomingSeason;
   const showNextGame = !!nextGame?.opponent && (isViewingCurrentSeason || isViewingUpcomingSeason);
 
-  // Coach badge — season-scoped, keyed off the active season row (docs/superpowers/
-  // specs/2026-07-14-season-scoped-head-coach-design.md). Derived once instead of four
+  // Coach badge — season-scoped, keyed off the active season row (the vault's
+  // `specs/2026-07-14-season-scoped-head-coach-design.md`). Derived once instead of four
   // near-duplicate <CoachBadge> call sites that each recomputed the same name/meta pair
   // for a different index/incomingCoach combination.
   const coachBadge = active?.coach

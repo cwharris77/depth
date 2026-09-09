@@ -1,4 +1,4 @@
--- Team schedules + games (docs/superpowers/specs/2026-07-17-team-schedule-design.md).
+-- Team schedules + games (the vault's `specs/2026-07-17-team-schedule-design.md`).
 -- Sourced from nflverse's nfldata/games.csv via scripts/ingest-nflverse.mts, the second
 -- data source next to ESPN. Two tables:
 --

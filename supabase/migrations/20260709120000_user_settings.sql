@@ -1,5 +1,5 @@
 -- Per-user settings for the opt-in account system (Phase C, auth pass 1 --
--- docs/superpowers/specs/2026-07-09-auth-account-and-user-settings-design.md).
+-- the vault's `specs/2026-07-09-auth-account-and-user-settings-design.md`).
 -- One row per authenticated user, holding the two team preferences the app persists:
 -- the last team they viewed and an optional favorite. The home route resolves the
 -- startup team from these (favorite -> last -> default). Both are nullable team refs

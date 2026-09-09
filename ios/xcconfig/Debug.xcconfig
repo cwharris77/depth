@@ -5,7 +5,7 @@ APP_DISPLAY_NAME = The Sticks Dev
 APP_ICON_NAME = AppIconDev
 
 // Points Debug builds/tests at the local Supabase CLI instance (`supabase start`,
-// see docs/espn.md) instead of prod — DEP-270. PUBLISHABLE_KEY is Supabase's
+// see the vault's `Reference/espn.md`) instead of prod — DEP-270. PUBLISHABLE_KEY is Supabase's
 // deterministic local-dev demo key: derived from config.toml's project_id "depth"
 // plus the CLI's default JWT secret, so it's the same value on every machine
 // running `supabase start` against this repo (confirmed stable across restarts via

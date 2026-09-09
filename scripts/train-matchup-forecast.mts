@@ -20,7 +20,7 @@ export interface TrainArguments {
 const DEFAULT_ARGUMENTS: TrainArguments = {
   cacheDir: '.cache/matchup-forecast/sources',
   reportPath: '.cache/matchup-forecast/evaluation.json',
-  modelCardPath: 'docs/matchup-forecast-model-card.md',
+  modelCardPath: '.cache/matchup-forecast/model-card.md',
   artifactPath: 'models/matchup-forecast-v1.json',
   refresh: false,
   promote: false,

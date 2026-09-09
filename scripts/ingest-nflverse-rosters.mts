@@ -1,6 +1,6 @@
 // Fetches nflverse's season-scoped roster + player-stats + depth-chart CSVs, joins them through the
 // pure lib/nflverse pipeline (depth-chart positions + usage-based depth ranking,
-// docs/superpowers/specs/2026-07-07-phase-d-history-and-boards-design.md), and upserts
+// the vault's `specs/2026-07-07-phase-d-history-and-boards-design.md`), and upserts
 // `roster_history`. Run by hand for the one-time 1999-present backfill, or by the
 // daily job (current season only, no --seasons flag). Never part of `next build`.
 //

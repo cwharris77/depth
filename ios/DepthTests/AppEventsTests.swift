@@ -5,7 +5,7 @@ import Testing
 @testable import Depth
 
 // Task 8F coverage: privacy-minimal telemetry (design spec Milestone 2B item 26; full
-// App Privacy documentation at docs/ios-privacy-telemetry.md). Every case here proves
+// App Privacy documentation at `Reference/ios-privacy-telemetry.md` in the vault). Every case here proves
 // either that the right event fires exactly once, or that a repeated/background action
 // does NOT re-fire it — both matter for a usage-counter product metric.
 

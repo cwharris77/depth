@@ -1,6 +1,6 @@
 """Reusable toolkit for hand-drawing helmet marks.
 
-Companion to docs/uniform-hand-drawing.md, which is the procedure; this is the
+Companion to `Reference/uniform-hand-drawing.md` in the vault, which is the procedure; this is the
 machinery that procedure calls for. Nothing here is team-specific — the per-team
 curve lists live beside it (see texans_bull.py for the worked example).
 
