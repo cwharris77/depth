@@ -19,10 +19,6 @@
 // would repaint the mark.
 
 import {
-  RAVENS_DECAL_BEAK_PATH,
-  RAVENS_DECAL_HEAD_PATH,
-  RAVENS_DECAL_KEYLINE_PATH,
-  RAVENS_DECAL_LETTER_PATH,
   RAVENS_SHOULDER_INNER_LEFT,
   RAVENS_SHOULDER_INNER_RIGHT,
   RAVENS_SHOULDER_OUTER_LEFT,
@@ -30,18 +26,48 @@ import {
   RAVENS_SLEEVE_BAND_LEFT,
   RAVENS_SLEEVE_BAND_RIGHT,
 } from './ravens';
+import {
+  RAVENS_DECAL_SVG_01_PATH,
+  RAVENS_DECAL_SVG_02_PATH,
+  RAVENS_DECAL_SVG_03_PATH,
+  RAVENS_DECAL_SVG_04_PATH,
+  RAVENS_DECAL_SVG_05_PATH,
+  RAVENS_DECAL_SVG_06_PATH,
+  RAVENS_DECAL_SVG_07_PATH,
+  RAVENS_DECAL_SVG_08_PATH,
+  RAVENS_DECAL_SVG_09_PATH,
+  RAVENS_DECAL_SVG_10_PATH,
+  RAVENS_DECAL_SVG_11_PATH,
+  RAVENS_DECAL_SVG_12_PATH,
+  RAVENS_DECAL_SVG_13_PATH,
+  RAVENS_DECAL_SVG_14_PATH,
+  RAVENS_DECAL_SVG_15_PATH,
+  RAVENS_DECAL_SVG_16_PATH,
+} from './ravens-decal';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 import type { UniformSurface } from './types';
 
-// The raven head: gold keyline, purple head, gold "B", white beak, in that paint order. Fixed art
-// on every shell the club wears, so nothing here varies by kit.
+// The supplied SVG's original paint order. Source gold eye-ring path 12 is deliberately red;
+// its adjacent black pupil stays intact. Fixed art on every shell, so nothing varies by kit.
 function decal(): PartLayer[] {
   return (
     [
-      ['ravens-decal-keyline', RAVENS_DECAL_KEYLINE_PATH, 'decalGold'],
-      ['ravens-decal-head', RAVENS_DECAL_HEAD_PATH, 'purple'],
-      ['ravens-decal-letter', RAVENS_DECAL_LETTER_PATH, 'decalGold'],
-      ['ravens-decal-beak', RAVENS_DECAL_BEAK_PATH, 'white'],
+      ['ravens-decal-svg-01', RAVENS_DECAL_SVG_01_PATH, 'purple'],
+      ['ravens-decal-svg-02', RAVENS_DECAL_SVG_02_PATH, 'black'],
+      ['ravens-decal-svg-03', RAVENS_DECAL_SVG_03_PATH, 'decalGold'],
+      ['ravens-decal-svg-04', RAVENS_DECAL_SVG_04_PATH, 'white'],
+      ['ravens-decal-svg-05', RAVENS_DECAL_SVG_05_PATH, 'white'],
+      ['ravens-decal-svg-06', RAVENS_DECAL_SVG_06_PATH, 'decalGold'],
+      ['ravens-decal-svg-07', RAVENS_DECAL_SVG_07_PATH, 'decalGold'],
+      ['ravens-decal-svg-08', RAVENS_DECAL_SVG_08_PATH, 'purple'],
+      ['ravens-decal-svg-09', RAVENS_DECAL_SVG_09_PATH, 'white'],
+      ['ravens-decal-svg-10', RAVENS_DECAL_SVG_10_PATH, 'purple'],
+      ['ravens-decal-svg-11', RAVENS_DECAL_SVG_11_PATH, 'black'],
+      ['ravens-decal-svg-12', RAVENS_DECAL_SVG_12_PATH, 'red'],
+      ['ravens-decal-svg-13', RAVENS_DECAL_SVG_13_PATH, 'black'],
+      ['ravens-decal-svg-14', RAVENS_DECAL_SVG_14_PATH, 'black'],
+      ['ravens-decal-svg-15', RAVENS_DECAL_SVG_15_PATH, 'white'],
+      ['ravens-decal-svg-16', RAVENS_DECAL_SVG_16_PATH, 'purple'],
     ] as [string, string, string][]
   ).map(([id, d, fill]) => ({
     id,
@@ -112,14 +138,15 @@ const PANTS_PURPLE: UniformPart = { base: 'purple', layers: [] };
 
 export const RAVENS_PARTS: TeamPartsDefinition = {
   teamId: 'ravens',
-  // Jersey hexes from the curated rows (lib/uniforms/data.ts). `gold` is the row accent that trims
-  // the bars and numerals; `decalGold` is the mark's own deeper gold, traced off the GUD composite.
+  // Jersey hexes from the curated rows (lib/uniforms/data.ts). `gold` trims bars and numerals;
+  // `decalGold` and the explicit red eye come from the supplied club vector.
   palette: {
     purple: '#241773',
     black: '#000000',
     white: '#FFFFFF',
     gold: '#9E7C0C',
     decalGold: '#9A7611',
+    red: '#C60C30',
   },
   helmets: { black: HELMET_BLACK },
   jerseys: { purple: JERSEY_PURPLE, white: JERSEY_WHITE, black: JERSEY_BLACK },
