@@ -1,4 +1,4 @@
-// Jacksonville authored as composable parts. Geometry is imported unchanged from jaguars.ts — this
+// Jacksonville authored as composable parts. Geometry is imported from jaguars.ts — this
 // file only restates WHICH parts each kit combines, and names every color from the team palette
 // instead of the kit row's shifting primary/secondary/accent.
 //
@@ -6,12 +6,10 @@
 // What changes is how each is built: the current kits wear one solid band and a short arc down each
 // side of the neck opening, while the throwback wears a two-color band and a full V that closes at
 // the chest. No helmet stripe and no pant stripe. The jaguar-head decal (white jaw, gold crown,
-// teal tongue) is fixed art worn only on the BLACK shells — the teal throwback shell stays bare
-// (the crown spots would read wrong on teal).
+// teal tongue) is fixed art on the current black shell. Historical throwback art is separate.
 //
-// The kits combine two helmets (black shared by home/away/black-alt, teal bare throwback), four
-// jerseys (teal, white, teal-with-bands, black) and two pants (white shared by home/away/teal,
-// black for black-alt).
+// The kits combine two helmets, four jerseys, and three pants colors. Alternate pant options
+// preserve the canonical first pairing used by the committed rasters.
 
 import {
   JAGUARS_BAND_LEFT,
@@ -20,11 +18,7 @@ import {
   JAGUARS_COLLAR_ARC_LEFT,
   JAGUARS_COLLAR_ARC_RIGHT,
   JAGUARS_COLLAR_ARC_WIDTH,
-  JAGUARS_DECAL_CROWN_PATH,
-  JAGUARS_DECAL_GOLD,
-  JAGUARS_DECAL_JAW_PATH,
-  JAGUARS_DECAL_TEAL,
-  JAGUARS_DECAL_TONGUE_PATH,
+  JAGUARS_DECAL_PATHS,
   JAGUARS_TB_BAND_LOWER_LEFT,
   JAGUARS_TB_BAND_LOWER_RIGHT,
   JAGUARS_TB_BAND_UPPER_LEFT,
@@ -34,34 +28,16 @@ import {
 } from './jaguars';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 
-// The jaguar-head decal — white jaw, gold crown, teal tongue. Fixed art on the black shells.
+// Preserve the supplied SVG's paint order, including its black keyline and gold shading.
 function jaguarDecal(): PartLayer[] {
-  return [
-    {
-      id: 'jaguars-decal-jaw',
-      surface: 'helmet',
-      d: JAGUARS_DECAL_JAW_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'white',
-    },
-    {
-      id: 'jaguars-decal-crown',
-      surface: 'helmet',
-      d: JAGUARS_DECAL_CROWN_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'decalGold',
-    },
-    {
-      id: 'jaguars-decal-tongue',
-      surface: 'helmet',
-      d: JAGUARS_DECAL_TONGUE_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'decalTeal',
-    },
-  ];
+  return JAGUARS_DECAL_PATHS.map(({ d, fill }, index) => ({
+    id: `jaguars-decal-${index}`,
+    surface: 'helmet',
+    d,
+    clip: true,
+    kind: 'fill',
+    fill,
+  }));
 }
 
 // The current kits' single solid sleeve band.
@@ -208,6 +184,9 @@ const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
 // Black pants (P2, black-alt).
 const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };
 
+// GUD 2025 JAX composite: teal pants with both current teal and white jerseys.
+const PANTS_TEAL: UniformPart = { base: 'teal', layers: [] };
+
 export const JAGUARS_PARTS: TeamPartsDefinition = {
   teamId: 'jaguars',
   // Construction hexes from the module / curated rows. Teal/gold/black/white are the physical body
@@ -217,8 +196,8 @@ export const JAGUARS_PARTS: TeamPartsDefinition = {
     gold: '#D7A22A',
     black: JAGUARS_BLACK,
     white: '#FFFFFF',
-    decalGold: JAGUARS_DECAL_GOLD,
-    decalTeal: JAGUARS_DECAL_TEAL,
+    // Every decal hex comes directly from Cooper's supplied SVG, including minor shading.
+    ...Object.fromEntries(JAGUARS_DECAL_PATHS.map(({ fill }) => [fill, fill])),
   },
   helmets: { black: HELMET_BLACK, throwback: HELMET_TEAL },
   jerseys: {
@@ -227,10 +206,11 @@ export const JAGUARS_PARTS: TeamPartsDefinition = {
     tr: JERSEY_TR,
     blackAlt: JERSEY_BLACK_ALT,
   },
-  pants: { white: PANTS_WHITE, black: PANTS_BLACK },
+  pants: { white: PANTS_WHITE, black: PANTS_BLACK, teal: PANTS_TEAL },
   kits: {
-    home: { helmet: 'black', jersey: 'teal', pants: 'white' },
-    away: { helmet: 'black', jersey: 'white', pants: 'white' },
+    // GUD 2025 JAX: home white/teal; away white/teal/black. Canonical pairings stay first.
+    home: { helmet: 'black', jersey: 'teal', pants: ['white', 'teal'] },
+    away: { helmet: 'black', jersey: 'white', pants: ['white', 'teal', 'black'] },
     'teal-throwback': { helmet: 'throwback', jersey: 'tr', pants: 'white' },
     'black-alt': { helmet: 'black', jersey: 'blackAlt', pants: 'black' },
   },
