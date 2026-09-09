@@ -2,10 +2,10 @@
 // file only restates WHICH parts each kit combines, and names every color from the team palette
 // instead of the kit row's shifting primary/secondary/accent.
 //
-// Every kit is the same construction: the horn on the shell, and on each sleeve a broad band that
-// widens toward the hem with a thin tail splitting off toward the shoulder edge. No helmet stripe,
-// no collar trim, no pant stripe. What changes between kits is only which colors paint it — except
-// on Rivalries, where the tail is royal against a yellow band rather than matching it.
+// Every kit is the same construction: the horn on the shell, a widening band with a tail on each
+// sleeve, and a keylined stripe on each pant leg. No helmet stripe, no collar trim. What changes
+// between kits is only which colors paint it — except on Rivalries, where the tail is royal against
+// a yellow band rather than matching it.
 //
 // The measured target is 2 helmet / 4 jersey / 4 pants, and that is what this factors to. The
 // helmet saving is the interesting one: home, away and bone all wear the SAME royal shell with the
@@ -22,8 +22,16 @@ import {
   RAMS_SLEEVE_BAND_RIGHT,
   RAMS_SLEEVE_TAIL_LEFT,
   RAMS_SLEEVE_TAIL_RIGHT,
+  RAMS_STRIPE_BAND_LEFT,
+  RAMS_STRIPE_BAND_RIGHT,
 } from './rams';
-import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
+import {
+  compileParts,
+  fromGeneric,
+  type PartLayer,
+  type TeamPartsDefinition,
+  type UniformPart,
+} from './parts';
 import type { UniformSurface } from './types';
 
 // Band and tail take separate colors because Rivalries is the one kit where they differ.
@@ -96,11 +104,42 @@ const JERSEY_RIVALRIES: UniformPart = {
   number: { fill: 'white', outline: 'royal', outlineWidth: 14 },
 };
 
-// Pants — unbroken on every kit; four different colors, so four parts.
-const PANTS_GOLD: UniformPart = { base: 'gold', layers: [] };
-const PANTS_ROYAL: UniformPart = { base: 'royal', layers: [] };
-const PANTS_BONE: UniformPart = { base: 'bone', layers: [] };
-const PANTS_NAVY: UniformPart = { base: 'navy', layers: [] };
+// Every leg carries a keylined stripe: the mannequin's own 16-unit generic band painted as the
+// OUTER keyline, with the inboard 11 units painted over it. See rams.ts for the swatch measurement
+// this comes from — the figures themselves render the legs flat, so reading them alone is what made
+// an earlier pass record these pants as unbroken.
+function legStripe(keyline: string, band: string): PartLayer[] {
+  return [
+    fromGeneric('generic-pants-stripe-left', keyline),
+    fromGeneric('generic-pants-stripe-right', keyline),
+    {
+      id: 'rams-stripe-band-left',
+      surface: 'leg-left',
+      d: RAMS_STRIPE_BAND_LEFT,
+      clip: true,
+      kind: 'fill',
+      fill: band,
+    },
+    {
+      id: 'rams-stripe-band-right',
+      surface: 'leg-right',
+      d: RAMS_STRIPE_BAND_RIGHT,
+      clip: true,
+      kind: 'fill',
+      fill: band,
+    },
+  ];
+}
+
+// Pants — four colors, so four parts. The keyline is the modern gold on bone and Rivalries' own
+// yellow on black, which the composite cannot tell apart; each takes the token the rest of its kit
+// is authored in. Royal legs are the exception to the two-band shape: their stripe is a single
+// white-to-gold vertical ramp with no separate keyline, flattened here to plain white, so both the
+// generic band and the band over it take the same color.
+const PANTS_GOLD: UniformPart = { base: 'gold', layers: legStripe('white', 'royal') };
+const PANTS_ROYAL: UniformPart = { base: 'royal', layers: legStripe('white', 'white') };
+const PANTS_BONE: UniformPart = { base: 'bone', layers: legStripe('gold', 'white') };
+const PANTS_NAVY: UniformPart = { base: 'navy', layers: legStripe('yellow', 'royal') };
 
 export const RAMS_PARTS: TeamPartsDefinition = {
   teamId: 'rams',
@@ -122,11 +161,16 @@ export const RAMS_PARTS: TeamPartsDefinition = {
     rivalries: JERSEY_RIVALRIES,
   },
   pants: { gold: PANTS_GOLD, royal: PANTS_ROYAL, bone: PANTS_BONE, navy: PANTS_NAVY },
+  // Pants options per kit, canonical first — only the first compiles today, so the shipped raster is
+  // unchanged and the rest are declarative until the archive UI lands. Enumerated from the 2025
+  // composite: the royal jersey is worn with gold and with bone legs, the white jersey with royal and
+  // with gold. The sheet's blue-boxed royal-on-royal pair is labelled "Worn in Preseason only" and is
+  // therefore not an option here, the same call the Carolina pass made.
   kits: {
-    home: { helmet: 'royal', jersey: 'royal', pants: 'gold' },
-    away: { helmet: 'royal', jersey: 'white', pants: 'royal' },
-    bone: { helmet: 'royal', jersey: 'bone', pants: 'bone' },
-    'rivalries-2025': { helmet: 'rivalries', jersey: 'rivalries', pants: 'navy' },
+    home: { helmet: 'royal', jersey: 'royal', pants: ['gold', 'bone'] },
+    away: { helmet: 'royal', jersey: 'white', pants: ['royal', 'gold'] },
+    bone: { helmet: 'royal', jersey: 'bone', pants: ['bone'] },
+    'rivalries-2025': { helmet: 'rivalries', jersey: 'rivalries', pants: ['navy'] },
   },
 };
 
