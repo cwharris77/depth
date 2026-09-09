@@ -128,6 +128,9 @@ NOTES = {
               "decal (ring/T/stars) against the GUD helmet composite before tracing.",
     "dolphins": "thinnest strokes are 3px at 600 (the sunburst rays) and the mark only stays "
                 "component-stable at 600, not 1200. Trace at >=600px and watch the rays.",
+    "jets": "the fetched oval Jets lockup is a 1.67-aspect flat mark, while the helmet wordmark "
+            "is about 3.39 aspect. Trace the four white wordmark components from the GUD helmet "
+            "and reject the white facemask/background regions; see scripts/uniform-draw/jets_wordmark.py.",
 }
 
 # Teams whose decal re-authoring is already complete (no Phase 3 ticket / worked
