@@ -111,7 +111,7 @@ web UI is frozen.
     sufficient. The *mechanized* version of this rule: `npm run check:ios-compat` (CI
     job `ios-compat` in `.github/workflows/ci.yml`) flags destructive migrations on PRs —
     they must carry a `-- IOS-COMPATIBILITY:` annotation and update
-    `docs/ios-release-compatibility.md` (the release contract) in the same PR.
+    `ios-release-compatibility.md` (the release contract) in the same PR.
 
 ## 3. Conventions
 
@@ -372,7 +372,7 @@ when the diff touches the frozen web app or shared backend.
 - [ ] Ingest/seed writes are idempotent upserts; provenance scoping respected
 - [ ] RLS untouched (or the PR is the auth phase and ships read policies)
 - [ ] `npm run check:ios-compat` passes — destructive migrations carry a
-      `-- IOS-COMPATIBILITY:` annotation and update `docs/ios-release-compatibility.md`
+      `-- IOS-COMPATIBILITY:` annotation and update `ios-release-compatibility.md`
 
 **iOS app (additionally)** — see [`ios/CLAUDE.md`](ios/CLAUDE.md) for the full iOS
 operating manual (architecture, conventions, parity mechanisms). Quality-bar summary:

@@ -10,7 +10,7 @@
 // failure was a dropped column an old binary still SELECTed). When it finds a
 // destructive change it requires a `-- IOS-COMPATIBILITY:` annotation naming the
 // App Store build the change is safe after, and the release manifest
-// (docs/ios-release-compatibility.md) must move with the change — see the script.
+// (ios-release-compatibility.md) must move with the change — see the script.
 
 /** Strip line comments and block comments so a comment that merely *mentions* a
  *  destructive verb doesn't trip the guard (house style is comment-dense). */
