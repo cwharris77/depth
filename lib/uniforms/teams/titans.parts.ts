@@ -1,8 +1,8 @@
-// Tennessee authored as composable parts. Geometry is imported unchanged from titans.ts — this
+// Tennessee authored as composable parts. Geometry is imported from titans.ts — this
 // file only restates WHICH parts each kit combines, and names every color from the team palette
 // instead of the kit row's shifting primary/secondary/accent.
 //
-// The four kits resolve to two helmets: the navy shell wearing the circle-T (home, away, navy-alt
+// The four kits resolve to two helmets: the navy shell wearing the flaming-T (home, away, navy-alt
 // share it) and the oilers throwback.s light-blue shell (no decal — its mark is a different logo with
 // no figure on the sheet). The silver shoulder yoke is one construction in four colorways: the
 // yoke itself is always the silver literal, and the navy bar inside it is the kit's navy. The
@@ -16,13 +16,7 @@
 import {
   TITANS_BAR_LEFT,
   TITANS_BAR_RIGHT,
-  TITANS_DECAL_FIELD_PATH,
-  TITANS_DECAL_LIGHT_BLUE,
-  TITANS_DECAL_RED,
-  TITANS_DECAL_RING_INNER_PATH,
-  TITANS_DECAL_RING_OUTER_PATH,
-  TITANS_DECAL_STARS_PATH,
-  TITANS_DECAL_T_PATH,
+  TITANS_DECAL_PATHS,
   TITANS_SILVER,
   TITANS_YOKE_LEFT,
   TITANS_YOKE_RIGHT,
@@ -49,55 +43,20 @@ function shoulders(bar: string): PartLayer[] {
   }));
 }
 
-// The circle-T decal: light-blue ring, white ring, navy field, white T, red stars. Fixed art on
-// the navy shell — the mark is the same five colors wherever it is worn, so nothing here takes a
-// team token. The oilers throwback does NOT get it (its white shell carries a different mark).
+// The complete supplied flaming-T, in original SVG paint order and colors.
+// The historical Oilers helmet carries a different mark and does not receive this decal.
 function decal(): PartLayer[] {
-  return [
-    {
-      id: 'titans-decal-ring-outer',
-      surface: 'helmet',
-      d: TITANS_DECAL_RING_OUTER_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'decalLightBlue',
-    },
-    {
-      id: 'titans-decal-ring-inner',
-      surface: 'helmet',
-      d: TITANS_DECAL_RING_INNER_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'white',
-    },
-    {
-      id: 'titans-decal-field',
-      surface: 'helmet',
-      d: TITANS_DECAL_FIELD_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'decalNavy',
-    },
-    {
-      id: 'titans-decal-t',
-      surface: 'helmet',
-      d: TITANS_DECAL_T_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'white',
-    },
-    {
-      id: 'titans-decal-stars',
-      surface: 'helmet',
-      d: TITANS_DECAL_STARS_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'decalRed',
-    },
-  ];
+  return TITANS_DECAL_PATHS.map(({ d, fill }, index) => ({
+    id: `titans-decal-${index}`,
+    surface: 'helmet',
+    d,
+    clip: true,
+    kind: 'fill',
+    fill,
+  }));
 }
 
-// The navy shell with the circle-T — one object, shared by home, away and navy-alt.
+// The navy shell with the flaming-T — one object, shared by home, away and navy-alt.
 //
 // White cage. The Titans' navy shell wears a white facemask (named sources: the 2026 rebrand
 // "helmet is white with white facemask", and the pre-rebrand navy-shell era wore white/gray; the
@@ -161,9 +120,8 @@ export const TITANS_PARTS: TeamPartsDefinition = {
     red: '#C8102E',
     white: '#FFFFFF',
     silver: TITANS_SILVER,
-    decalLightBlue: TITANS_DECAL_LIGHT_BLUE,
-    decalRed: TITANS_DECAL_RED,
-    decalNavy: '#0C2340',
+    // Every decal hex is preserved from Cooper's supplied Tennessee-Titans-Logo.svg.
+    ...Object.fromEntries(TITANS_DECAL_PATHS.map(({ fill }) => [fill, fill])),
   },
   helmets: { 'navy-t': HELMET_NAVY_T, white: HELMET_WHITE },
   jerseys: {
@@ -173,11 +131,15 @@ export const TITANS_PARTS: TeamPartsDefinition = {
     'light-blue': JERSEY_LIGHT_BLUE,
   },
   pants: { navy: PANTS_NAVY, white: PANTS_WHITE, lightBlue: PANTS_LIGHT_BLUE },
+  // Pants colors: GUD 2025 shows white only; GUD 2024 supplies the archived navy/light-blue
+  // combinations and white Oilers pants. Preserve legacy canonical pairings first (including
+  // the Oilers light-blue pairing); this pass adds options without repainting those rasters.
+  // https://www.gridiron-uniforms.com/GUD/controller/controller.php?action=teams-season&team_id=TEN&year=2024
   kits: {
-    home: { helmet: 'navy-t', jersey: 'navy', pants: 'navy' },
-    away: { helmet: 'navy-t', jersey: 'white', pants: 'white' },
-    'navy-alt': { helmet: 'navy-t', jersey: 'navy-alt', pants: 'navy' },
-    'oilers-throwback': { helmet: 'white', jersey: 'light-blue', pants: 'lightBlue' },
+    home: { helmet: 'navy-t', jersey: 'navy', pants: ['navy', 'lightBlue'] },
+    away: { helmet: 'navy-t', jersey: 'white', pants: ['white', 'lightBlue'] },
+    'navy-alt': { helmet: 'navy-t', jersey: 'navy-alt', pants: ['navy', 'lightBlue'] },
+    'oilers-throwback': { helmet: 'white', jersey: 'light-blue', pants: ['lightBlue', 'white'] },
   },
 };
 
