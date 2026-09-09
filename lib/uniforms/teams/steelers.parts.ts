@@ -20,19 +20,9 @@ import {
   STEELERS_BUMBLEBEE_PINSTRIPE_XS,
   STEELERS_BUMBLEBEE_TORSO_PATH,
   STEELERS_DECAL_BLUE,
-  STEELERS_DECAL_BLUE_PATH,
   STEELERS_DECAL_DISC,
-  STEELERS_DECAL_DISC_PATH,
   STEELERS_DECAL_GOLD,
-  STEELERS_DECAL_GOLD_PATH,
   STEELERS_DECAL_RED,
-  STEELERS_DECAL_RED_PATH,
-  STEELERS_DECAL_RING,
-  STEELERS_DECAL_RING_PATH,
-  STEELERS_DECAL_SEPARATOR,
-  STEELERS_DECAL_SEPARATOR_PATH,
-  STEELERS_DECAL_WORDMARK,
-  STEELERS_DECAL_WORDMARK_PATH,
   STEELERS_GOLD,
   STEELERS_PANTS_BLACK_LEFT,
   STEELERS_PANTS_BLACK_RIGHT,
@@ -47,6 +37,12 @@ import {
   STEELERS_SLEEVE_WHITE_LEFT,
   STEELERS_SLEEVE_WHITE_RIGHT,
 } from './steelers';
+import {
+  STEELERS_DECAL_BLUE_PATH,
+  STEELERS_DECAL_DISC_PATH,
+  STEELERS_DECAL_GOLD_PATH,
+  STEELERS_DECAL_RED_PATH,
+} from './steelers-decal';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 
 const COLLAR_PATH = 'M206,388 L294,455 L386,388';
@@ -66,16 +62,13 @@ const fill = (
   fill: color,
 });
 
-// The complete source mark paints its white disc, grey ring, hypocycloids, separator, then
-// wordmark. It is fixed art on the black shell, so every color is a palette literal.
+// GUD's helmet shows the white disc and three hypocycloids only; the source lockup's grey ring
+// and wordmark are not helmet art. The four visible colors are fixed on the black shell.
 const DECAL: PartLayer[] = [
   fill('steelers-decal-disc', 'helmet', STEELERS_DECAL_DISC_PATH, 'decalDisc'),
-  fill('steelers-decal-ring', 'helmet', STEELERS_DECAL_RING_PATH, 'decalRing'),
   fill('steelers-decal-gold', 'helmet', STEELERS_DECAL_GOLD_PATH, 'decalGold'),
   fill('steelers-decal-red', 'helmet', STEELERS_DECAL_RED_PATH, 'decalRed'),
   fill('steelers-decal-blue', 'helmet', STEELERS_DECAL_BLUE_PATH, 'decalBlue'),
-  fill('steelers-decal-separator', 'helmet', STEELERS_DECAL_SEPARATOR_PATH, 'decalSeparator'),
-  fill('steelers-decal-wordmark', 'helmet', STEELERS_DECAL_WORDMARK_PATH, 'decalWordmark'),
 ];
 
 // The sleeve stripe set — black backing with gold/white/gold bands. Fixed construction, shared by
@@ -176,8 +169,10 @@ const JERSEY_BUMBLEBEE: UniformPart = {
   number: { fill: 'white', outline: 'black', outlineWidth: 26 },
 };
 
-// Gold pants with the stripe set (home + away).
+// Gold pants with the stripe set (home + away). GUD also shows black pants with the black home
+// jersey, so that option is represented by its own unstriped physical part.
 const PANTS_GOLD: UniformPart = { base: 'gold', layers: pantsStripes() };
+const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };
 
 // The bumblebee's khaki pants, unstriped.
 const PANTS_KHAKI: UniformPart = { base: 'khaki', layers: [] };
@@ -194,12 +189,9 @@ export const STEELERS_PARTS: TeamPartsDefinition = {
     khaki: STEELERS_BUMBLEBEE_KHAKI,
     // Exact source-mark colors, separate from the physical jersey/sleeve gold above.
     decalDisc: STEELERS_DECAL_DISC,
-    decalRing: STEELERS_DECAL_RING,
     decalGold: STEELERS_DECAL_GOLD,
     decalRed: STEELERS_DECAL_RED,
     decalBlue: STEELERS_DECAL_BLUE,
-    decalSeparator: STEELERS_DECAL_SEPARATOR,
-    decalWordmark: STEELERS_DECAL_WORDMARK,
   },
   helmets: { black: HELMET_BLACK, gold: HELMET_GOLD },
   jerseys: {
@@ -207,9 +199,9 @@ export const STEELERS_PARTS: TeamPartsDefinition = {
     white: JERSEY_WHITE,
     bumblebee: JERSEY_BUMBLEBEE,
   },
-  pants: { gold: PANTS_GOLD, khaki: PANTS_KHAKI },
+  pants: { gold: PANTS_GOLD, black: PANTS_BLACK, khaki: PANTS_KHAKI },
   kits: {
-    home: { helmet: 'black', jersey: 'black', pants: 'gold' },
+    home: { helmet: 'black', jersey: 'black', pants: ['gold', 'black'] },
     away: { helmet: 'black', jersey: 'white', pants: 'gold' },
     bumblebee: { helmet: 'gold', jersey: 'bumblebee', pants: 'khaki' },
   },
