@@ -104,11 +104,14 @@ def at_size(im: Image.Image, kind: str) -> dict:
 # Known exceptions, each verified against the team's helmet decal in
 # lib/uniforms/teams/*.parts.ts rather than the full logo.
 NOTES = {
-    "chargers": "DONE 2026-09-08. The fetched logo IS the helmet decal and it traces clean. Two "
-                "gotchas: the logo is three stacked shapes and its OUTER keyline is white, which "
-                "is invisible on the white shell but is needed for the navy alternate; and the "
-                "pant bolt is a different, straight bolt that is not in this file at all - it "
-                "comes from the GUD leg swatch. See scripts/uniform-draw/chargers_bolt.py.",
+    "chargers": "DONE 2026-09-08. The fetched logo traces clean and IS the club's bolt, but it "
+                "is NOT the decal: flat, it is 2.48 aspect with blunt tails against the shell "
+                "decal's 1.71 and swept ones, and fitting it to the decal's box thickens every "
+                "stroke. The shipped mark is traced from the GUD helmet itself (93px, upsampled "
+                "8x) instead. The logo's OUTER keyline is white - invisible on the white shell, "
+                "needed if the navy alternate is ever curated. The pant bolt is a different, "
+                "straight bolt and is not drawn at all: it lives on the side seam, which a "
+                "front-on figure cannot show. See scripts/uniform-draw/chargers_bolt.py.",
     "steelers": "gate pass requires >=1200px render. The helmet decal is the hypocycloid lockup's "
                 "disc + 3 lobes ONLY - no wordmark (a substitute mark was installed 2026-09-06).",
     "raiders": "gate pass requires >=1200px render; the fine 'RAIDERS' text is the fragile part, "

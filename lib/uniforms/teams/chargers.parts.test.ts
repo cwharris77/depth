@@ -1,7 +1,8 @@
-// Guards the two facts about Los Angeles that nothing else can catch: the shell mark and the leg
-// bolt are unions with no fill rule (an evenodd rule would hollow out the gold body inside its own
-// keyline), and the pant options enumerated from the GUD 2025 composite, of which only the canonical
-// entry compiles — so a wrong list is invisible in every raster.
+// Guards the two facts about Los Angeles that nothing else can catch: the shell mark is a union with
+// no fill rule (an evenodd rule would hollow out the gold body inside its own keyline), and the pant
+// options enumerated from the GUD 2025 composite, of which only the canonical entry compiles — so a
+// wrong list is invisible in every raster. The legs stay plain: the real pant's bolt is on the side
+// seam, which a front-on figure cannot show.
 import { describe, expect, it } from 'vitest';
 import { CHARGERS_PARTS } from './chargers.parts';
 
@@ -17,7 +18,7 @@ describe('Chargers helmet parts', () => {
         expect(layer).toMatchObject({ surface: 'helmet', kind: 'fill', clip: true });
         expect(layer).not.toHaveProperty('fillRule');
       }
-      // The logo is one connected shape, so each element is a single subpath.
+      // Keyline and body are each one connected region, so each is a single subpath.
       for (const layer of part.layers) expect(layer.d?.match(/Z/g)).toHaveLength(1);
     });
 
@@ -53,20 +54,8 @@ describe('Chargers pants parts', () => {
 
   // One `it` per leg so a failure names the offending pant, per the data-integrity convention.
   for (const [name, part] of Object.entries(CHARGERS_PARTS.pants)) {
-    it(`bolts the ${name} leg with a keyline and a body, both readable on it`, () => {
-      expect(part.layers.map((layer) => layer.id)).toEqual([
-        'chargers-leg-keyline-left',
-        'chargers-leg-keyline-right',
-        'chargers-leg-bolt-left',
-        'chargers-leg-bolt-right',
-      ]);
-      const fills = part.layers.map((layer) => (layer.kind === 'fill' ? layer.fill : layer.stroke));
-      const [keyline, , body] = fills;
-      // Three colors, three roles: neither mark color may be the leg it sits on, and the body has
-      // to read against its own keyline or the bolt collapses into one flat shape.
-      expect(keyline).not.toBe(part.base);
-      expect(body).not.toBe(part.base);
-      expect(keyline).not.toBe(body);
+    it(`leaves the ${name} leg plain — its bolt is on the side seam, invisible head-on`, () => {
+      expect(part.layers).toEqual([]);
     });
   }
 });

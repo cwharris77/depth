@@ -2,11 +2,15 @@
 // file only restates WHICH parts each kit combines, and names every color from the team palette
 // instead of the kit row's shifting primary/secondary/accent.
 //
-// All three kits are ONE construction, and the whole uniform is bolts: one on each shoulder cap, a
-// much larger one on the shell, and one down each pant leg, each a solid body inside a contrasting
-// keyline. No sleeve stripe and no collar trim. The three kits combine one helmet (the white shell),
-// two jerseys (powder-blue shared by home + powder-blue, white for away), and three pants — every
-// jersey in the 2025 reference is worn with gold, white and powder-blue legs.
+// All three kits are ONE construction, and the uniform is bolts: one on each shoulder cap and a much
+// larger one on the shell, each a solid body inside a contrasting keyline. No sleeve stripe and no
+// collar trim. The three kits combine one helmet (the white shell), two jerseys (powder-blue shared
+// by home + powder-blue, white for away), and three pants — every jersey in the 2025 reference is
+// worn with gold, white and powder-blue legs.
+//
+// The pants are plain here on purpose. Los Angeles wears a bolt down each leg, but on the SIDE seam,
+// which a front-on mannequin cannot show; drawing it onto the leg's face would put a mark where the
+// real pant has none. Everything invisible from the front stays out of the figure.
 //
 // NOTE: home and powder-blue render IDENTICALLY by design — both rows store primary #0080C6 over
 // gold, differing only in accent — and the 2025 reference draws exactly one powder-blue jersey. The
@@ -19,10 +23,6 @@ import {
   CHARGERS_BOLT_KEYLINE_RIGHT,
   CHARGERS_DECAL_BOLT_PATH,
   CHARGERS_DECAL_KEYLINE_PATH,
-  CHARGERS_LEG_BOLT_LEFT,
-  CHARGERS_LEG_BOLT_RIGHT,
-  CHARGERS_LEG_KEYLINE_LEFT,
-  CHARGERS_LEG_KEYLINE_RIGHT,
 } from './chargers';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 import type { UniformSurface } from './types';
@@ -92,34 +92,15 @@ const JERSEY_WHITE: UniformPart = {
   number: { fill: 'powderBlue', outline: 'gold', outlineWidth: 12 },
 };
 
-// The leg bolt, keyline first and body over it, same paint order as the other two marks.
-function legBolts(keyline: string, body: string): PartLayer[] {
-  const shapes: [string, UniformSurface, string, string][] = [
-    ['chargers-leg-keyline-left', 'leg-left', CHARGERS_LEG_KEYLINE_LEFT, keyline],
-    ['chargers-leg-keyline-right', 'leg-right', CHARGERS_LEG_KEYLINE_RIGHT, keyline],
-    ['chargers-leg-bolt-left', 'leg-left', CHARGERS_LEG_BOLT_LEFT, body],
-    ['chargers-leg-bolt-right', 'leg-right', CHARGERS_LEG_BOLT_RIGHT, body],
-  ];
-  return shapes.map(([id, surface, d, fill]) => ({
-    id,
-    surface,
-    d,
-    clip: true,
-    kind: 'fill',
-    fill,
-  }));
-}
-
-// The three legs the current kits are worn with, plus the navy the alternate needs. Each carries the
-// bolt in its own two colors, read off that pant's swatch on the 2025 composite: the body is always
-// the color the pant is NOT, and the keyline is whichever of the remaining two reads against it.
-const PANTS_GOLD: UniformPart = { base: 'gold', layers: legBolts('powderBlue', 'white') };
-const PANTS_WHITE: UniformPart = { base: 'white', layers: legBolts('powderBlue', 'gold') };
-const PANTS_POWDER: UniformPart = { base: 'powderBlue', layers: legBolts('white', 'gold') };
+// The three legs the current kits are worn with, plus the navy the alternate needs. Plain colour —
+// see the side-seam note in the header for why no bolt is drawn on them.
+const PANTS_GOLD: UniformPart = { base: 'gold', layers: [] };
+const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
+const PANTS_POWDER: UniformPart = { base: 'powderBlue', layers: [] };
 // Navy is worn only with the navy alternate jersey and its navy shell, neither of which is in the
 // archive yet, so no kit below references this part. It stays because the pant exists and the
 // measurement is done; the kit that wears it is a separate curation ticket.
-const PANTS_NAVY: UniformPart = { base: 'navy', layers: legBolts('gold', 'white') };
+const PANTS_NAVY: UniformPart = { base: 'navy', layers: [] };
 
 export const CHARGERS_PARTS: TeamPartsDefinition = {
   teamId: 'chargers',

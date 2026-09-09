@@ -1,82 +1,59 @@
-"""Regenerates the Los Angeles bolts in lib/uniforms/teams/chargers.ts.
+"""Regenerates the Los Angeles helmet bolt in lib/uniforms/teams/chargers.ts.
 
-    python3 scripts/uniform-draw/chargers_bolt.py            # print the six paths
+    python3 scripts/uniform-draw/chargers_bolt.py            # print the two paths
     python3 scripts/uniform-draw/chargers_bolt.py --check    # verify chargers.ts matches
 
 A CONTOUR TRACE rather than the hand-drawn geometry docs/uniform-hand-drawing.md
 produces — see that doc's "second route" section for the procedure and for what
-drawkit supplies. Both marks here are broad solid shapes with no fine interior
-detail, so the doc's negative-space warning does not apply and a trace is both
-stable and closer to the reference than an anchor list would be.
+drawkit supplies. The bolt is a broad solid shape with no fine interior detail,
+so the doc's negative-space warning does not apply and a trace is both stable
+and closer to the reference than an anchor list would be.
 
-TWO DIFFERENT BOLTS, which is the thing to know before touching this file. The
-helmet wears the club's arched logo bolt; the pants wear a straight, symmetric,
-double-tapered bolt that is a separate drawing, not the logo rotated. They come
-from different references for that reason.
+WHY NOT THE FETCHED MARK, which is the thing to know before touching this file.
+`File:Los Angeles Chargers logo.svg` traces clean and IS the club's bolt, and
+the first version of this script used it — placed in a box measured off the
+shell, which is the normal procedure. It reads wrong on the helmet, and the
+reason is that the flat logo and the decal are not the same drawing. The logo
+is 2.48 aspect with short blunt tails; the bolt GUD draws on the shell is 1.71
+aspect with long thin ones, because a decal applied around a curved shell
+arches far more in side profile than the flat mark does. Squeezing the logo
+into the decal's box gets the extents right and the drawing wrong: every stroke
+thickens with the stretch, so the mark lands fat and blunt where the reference
+is slender and swept. The linework here is therefore traced from the shell in
+the GUD 2025 composite itself — the same reference the placement comes from.
 
-  helmet   Commons `File:Los Angeles Chargers logo.svg`, public domain (the fetch
-           row is in nfl-uniform-refs/MARKS-FETCH.json, and gate-check.py clears
-           it: 577x233, 1 component, stable under 0.75x).
-  pants    the GUD 2025 composite's own leg swatch, because the logo file does
-           not contain this bolt at all.
+The trade is resolution: that helmet is 93px across and its bolt 76px, so the
+crop is upsampled 8x before tracing and EPS is set against the interpolated
+edge rather than a drawn one. That is the same bargain the Rams' horn made in
+reverse (there the GUD helmet was too coarse and a larger illustration existed;
+here no larger drawing of THIS bolt exists). The reference is not committed —
+it lives in the sibling nfl-uniform-refs/ checkout.
 
-Neither reference is committed here — both live in the sibling nfl-uniform-refs/
-checkout. Both references face the way the mannequin does, so nothing is mirrored
-for direction; the right leg is the left leg's trace reflected, so the two legs
-are one drawing.
+Topology, measured rather than assumed (docs step 3). The decal is two visible
+shapes, a blue keyline under a gold body, and the antialiased seam between them
+means they are NOT one 8-connected component — which is exactly why the keyline
+is traced from the filled union of the blue ring and not from the blue ink. Each
+is one component with no enclosed hole. One subpath per element, no fill rule.
+The real helmet carries a third, outer white keyline; it is invisible on a white
+shell and is not authored (a navy-shell kit would need it).
 
-Topology, measured rather than assumed (docs step 3). The logo is THREE stacked
-shapes — an outer white keyline, a blue keyline, a gold body — and on a white
-shell the outer white is invisible, so only two are authored (a navy-shell kit
-would need the third). The blue-plus-gold union is ONE component with no enclosed
-hole: its 1832px of apparent holes at a 1400px render are the antialiased seam
-between the two inks, which is exactly why the keyline is traced from the filled
-union and not from the blue alone. The gold body is one component with no holes.
-The leg bolt has the same two-part structure. No fill rule anywhere.
+Selecting the bolt out of the helmet needs care: the drawn jersey number is the
+same blue, and the facemask is a near-enough gold that a colour predicate alone
+picks up both. The bolt is found instead as the largest BLUE component, and the
+body as the one gold component that lies entirely inside its box.
 
-Placement (docs step 7) is measured from the GUD 2025 composite, not from the
-logo.
+Placement (docs step 7) is measured from that same helmet. The shell silhouette
+cannot be measured as "everything that is not white" — the shell IS white, and
+the facemask sits inside its bounding box, which reads the shell 14% too wide.
+It is measured instead as the largest ENCLOSED white region (flood the page
+white in from the border; what stays is the shell interior). Against that box
+the bolt is left 7.6%, width 87.3%, top 8.8%, height 50.4%.
 
-  Helmet. The shell silhouette cannot be measured as "everything that is not
-  white" — the shell IS white, and the gold facemask sits inside its bounding
-  box, which reads the shell 14% too wide. It is measured instead as the largest
-  ENCLOSED white region (flood the page white in from the border; what stays is
-  the shell interior), giving x15-108, y24-113 on the sheet. The bolt is the blue
-  keyline component plus the gold body component, at x23-98, y32-76 — separated
-  by colour, because the facemask's gold and the decal's gold are different
-  values (255,175,0 against 253,198,64) and the drawn jersey number is the same
-  blue as the keyline. That is left 8.6%, width 80.7%, top 9.0%, height 49.4% of
-  the shell box.
-
-  The mannequin's own shell silhouette is x139-701.5, y65-637.4 in raw helmet
-  space (HELMET_ART_CLIP through HELMET_ART_TRANSFORM), so those four fractions
-  transfer to HELMET_BOX. It stretches the logo vertically by about 47%: the flat
-  logo is 2.49 aspect and the box is 1.60. That difference is real and not a
-  measurement error — a helmet bolt is applied around a curved shell and arches
-  far more in side profile than the flat logo does, and this mannequin draws the
-  same side profile GUD does (0.98 shell aspect against GUD's 1.05).
-
-  Pants. GUD draws the leg bolt ONLY in the swatch beside each figure, never on
-  the figure, whose legs render flat — the trap that shipped Carolina without a
-  stripe. The swatch is drawn at the figure's own scale: its box is y283-406 and
-  the figure's pants run y284-409. The bolt inside it is 12x104px, so it is 27%
-  of a leg (45px below the crotch) and 83% of the pants' height, at 0.115 aspect.
-
-  Those two fractions cannot both hold here, because the mannequin's leg is
-  proportionally much longer than GUD's pant panel — the mannequin paints the
-  whole leg to the ankle in the pant colour, while GUD's pants stop below the
-  knee with socks under them. Width wins, per Box's own rule: take the width from
-  the reference and derive the height from the mark's true aspect. 27% of the
-  ~130-unit leg is 35 units, so the bolt is 35x304. Matching the height fraction
-  instead would have drawn it 62x542, half again as wide against the leg as the
-  reference has it.
-
-  The top sits 22% down the leg rather than the reference's 8% because the
-  mannequin's leg tapers hard toward the waist — its left edge is x176 at y807
-  but x113 by y1050 — and a bolt starting higher has its upper taper clipped off
-  square by the leg's own edge. LEG_BOX_RIGHT is LEG_BOX_LEFT reflected about
-  x=294, the mannequin's centre (its pants span x113-474 and the generic stripes
-  sit 176 units either side of it).
+The mannequin's own shell silhouette is x139-701.5, y65-637.4 in raw helmet
+space (HELMET_ART_CLIP through HELMET_ART_TRANSFORM), so those four fractions
+transfer directly to HELMET_BOX. Nothing is stretched on the way: the box is
+1.70 aspect and the traced bolt 1.71, because the reference already draws the
+mark at the proportion a shell puts it at.
 """
 
 import sys
@@ -86,95 +63,69 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from PIL import Image  # noqa: E402
 
-from drawkit import (  # noqa: E402
-    Box,
-    crop_to_art,
-    fill_holes,
-    main,
-    mask,
-    near,
-    render_flat,
-    trace,
-)
+from drawkit import Box, components, fill_holes, main, mask, trace  # noqa: E402
 
 REFS = Path.home() / 'Documents/GitHubProjects/nfl-uniform-refs/chargers'
-MARK = REFS / 'chargers-mark.svg'
 SHEET = REFS / 'chargers-current-season-2025.png'
 MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'chargers.ts'
 
-# Render width for the logo trace. 1400 crops to 1346px of art, so one source pixel
-# is a third of a unit in the placement box — finer than the renderer resolves.
-RENDER = 1400
-# The 2025 sheet's left leg swatch, interior only: the box's grey border and the
-# gold field's antialiased edge both fall outside this crop, so the bolt is the
-# only art in it.
-SWATCH = (176, 286, 202, 404)
-# The swatch is 26x118 source pixels. Without upsampling, one pixel is three units
-# of the placed bolt and every taper stair-steps.
-SWATCH_UPSCALE = 8
-# Douglas-Peucker tolerance, in the pixels of whichever trace is running. 0.9 on the
-# logo holds every notch while dropping antialias stair-steps; the upsampled swatch
-# needs more, because its edges were interpolated rather than drawn.
-EPS_MARK = 0.9
-EPS_SWATCH = 4.0
-MIN_REGION = 40
+# The 2025 sheet's left (home) helmet, with room around it so the flood fill that
+# finds the shell has a border of page to start from.
+HELMET = (40, 30, 175, 145)
+# The bolt is 76 source pixels wide against 491 units in the placement box, so one
+# source pixel is over six units. 8x puts the contour under the renderer's
+# resolution; without it every taper stair-steps.
+UPSCALE = 8
+# Douglas-Peucker tolerance in upsampled pixels. 3.5 holds all six notches while
+# dropping the ripple LANCZOS leaves along an interpolated edge; 2.0 keeps the
+# ripple and 5.0 starts rounding the notches off.
+EPS = 3.5
+# Drop anything smaller than a real part of the mark — at 8x, debris is large.
+MIN_REGION = 2000
 
-# The logo's two visible inks.
-BLUE = near((0, 128, 198), tol=45)
-GOLD = near((255, 194, 14), tol=45)
+# The sheet's two decal inks. GOLD is deliberately loose enough to take the seam
+# pixels where the body meets the keyline; a tight predicate leaves the body a
+# ring narrower than the reference draws it.
+BLUE = lambda c: abs(c[0] - 60) < 75 and abs(c[1] - 160) < 70 and abs(c[2] - 220) < 70  # noqa: E731
+GOLD = lambda c: c[0] > 200 and 140 < c[1] < 228 and c[2] < 150  # noqa: E731
 
-
-def field(c):
-    """The swatch's gold ground. Anything that is not the ground is bolt.
-
-    These are the SWATCH's colours, not the ones this paints with — on a blue
-    pant the same bolt is gold inside white. Only the shape comes from here; the
-    colours are named per pant in chargers.parts.ts.
-    """
-    return c[0] > 200 and 150 < c[1] < 235 and c[2] < 130
+HELMET_BOX = Box(181.8, 115.4, 491.1, 288.5)
 
 
-def white(c):
-    return c[0] > 235 and c[1] > 235 and c[2] > 235
-
-
-HELMET_BOX = Box(187.4, 116.5, 453.7, 283.0)
-LEG_BOX_LEFT = Box(126.0, 950.0, 35.0, 304.0)
-LEG_BOX_RIGHT = Box(2 * 294.0 - (126.0 + 35.0), 950.0, 35.0, 304.0)
+def bolt_masks():
+    """(keyline, body, w, h) for the shell bolt alone, cropped to its own box."""
+    im = Image.open(SHEET).convert('RGB').crop(HELMET)
+    im = im.resize((im.width * UPSCALE, im.height * UPSCALE), Image.LANCZOS)
+    blue, w, h = mask(im, BLUE)
+    gold, _, _ = mask(im, GOLD)
+    # The largest blue region is the keyline; the jersey number's strokes are the
+    # next two and an order of magnitude smaller.
+    ring = set(components(blue, w, h, MIN_REGION)[0])
+    xs = [x for x, _ in ring]
+    ys = [y for _, y in ring]
+    x0, y0, x1, y1 = min(xs), min(ys), max(xs) + 1, max(ys) + 1
+    sw, sh = x1 - x0, y1 - y0
+    inside = lambda c: x0 <= c[0] < x1 and y0 <= c[1] < y1  # noqa: E731
+    # The facemask is the larger gold region but straddles the box; the body is the
+    # one that lies wholly within it.
+    body_cells = next(
+        set(c) for c in components(gold, w, h, MIN_REGION) if all(inside(p) for p in c)
+    )
+    keyline = [[1 if (x + x0, y + y0) in ring else 0 for x in range(sw)] for y in range(sh)]
+    body = [[1 if (x + x0, y + y0) in body_cells else 0 for x in range(sw)] for y in range(sh)]
+    return keyline, body, sw, sh
 
 
 def build():
-    logo = crop_to_art(render_flat(MARK.read_text(), size=RENDER))
-    ink, w, h = mask(logo, lambda c: BLUE(c) or GOLD(c))
-    body, _, _ = mask(logo, GOLD)
-
-    swatch = Image.open(SHEET).convert('RGB').crop(SWATCH)
-    swatch = swatch.resize(
-        (swatch.width * SWATCH_UPSCALE, swatch.height * SWATCH_UPSCALE), Image.LANCZOS
-    )
-    leg_ink, lw, lh = mask(swatch, lambda c: not field(c))
-    leg_body, _, _ = mask(swatch, white)
-
-    out = {
+    keyline, body, w, h = bolt_masks()
+    return {
         'CHARGERS_DECAL_KEYLINE_PATH': trace(
-            fill_holes(ink, w, h), w, h, HELMET_BOX, eps=EPS_MARK, minsize=MIN_REGION
+            fill_holes(keyline, w, h), w, h, HELMET_BOX, eps=EPS, minsize=MIN_REGION
         ),
-        'CHARGERS_DECAL_BOLT_PATH': trace(body, w, h, HELMET_BOX, eps=EPS_MARK, minsize=MIN_REGION),
+        'CHARGERS_DECAL_BOLT_PATH': trace(
+            body, w, h, HELMET_BOX, eps=EPS, minsize=MIN_REGION
+        ),
     }
-    for side, box, mirror in (('LEFT', LEG_BOX_LEFT, False), ('RIGHT', LEG_BOX_RIGHT, True)):
-        out['CHARGERS_LEG_KEYLINE_%s' % side] = trace(
-            fill_holes(leg_ink, lw, lh),
-            lw,
-            lh,
-            box,
-            eps=EPS_SWATCH,
-            minsize=MIN_REGION,
-            mirror=mirror,
-        )
-        out['CHARGERS_LEG_BOLT_%s' % side] = trace(
-            leg_body, lw, lh, box, eps=EPS_SWATCH, minsize=MIN_REGION, mirror=mirror
-        )
-    return out
 
 
 if __name__ == '__main__':
