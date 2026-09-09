@@ -69,3 +69,11 @@ ios/fastlane/report.xml
 
 # Claude
 .claude/settings.local.json
+
+# Local workflow docs — purged from git history 2026-09-08, kept only on disk.
+# Documentation lives in the obsidian vault (../obsidian/Projects/depth), not this repo.
+/docs/
+/.impeccable/
+/.superpowers/
+/skill-observations/
+/skill-updates/
