@@ -108,7 +108,10 @@ web UI is frozen.
     compatible binary, confirm its App Store release, and use the existing forced-update
     flow to block older builds. Only then run the backfill or enable the new payload.
     A merged PR, TestFlight upload, or a configured-but-unenforced minimum build is not
-    sufficient.
+    sufficient. The *mechanized* version of this rule: `npm run check:ios-compat` (CI
+    job `ios-compat` in `.github/workflows/ci.yml`) flags destructive migrations on PRs —
+    they must carry a `-- IOS-COMPATIBILITY:` annotation and update
+    `docs/ios-release-compatibility.md` (the release contract) in the same PR.
 
 ## 3. Conventions
 
@@ -368,6 +371,8 @@ when the diff touches the frozen web app or shared backend.
 - [ ] `lib/roster-source.db.ts` `Pick<>` row types + SELECT strings updated together
 - [ ] Ingest/seed writes are idempotent upserts; provenance scoping respected
 - [ ] RLS untouched (or the PR is the auth phase and ships read policies)
+- [ ] `npm run check:ios-compat` passes — destructive migrations carry a
+      `-- IOS-COMPATIBILITY:` annotation and update `docs/ios-release-compatibility.md`
 
 **iOS app (additionally)** — see [`ios/CLAUDE.md`](ios/CLAUDE.md) for the full iOS
 operating manual (architecture, conventions, parity mechanisms). Quality-bar summary:

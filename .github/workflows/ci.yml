@@ -6,6 +6,12 @@ name: CI
 # RosterSource, which needs project secrets this workflow doesn't carry. The live DB
 # tests (lib/__tests__/roster-source.db.test.ts) skip gracefully without those env vars,
 # so the suite stays green on secretless PRs while still guarding the pure logic.
+#
+# The ios-compat job runs the iOS backend-compatibility guard
+# (scripts/check-ios-compatibility.mts) on every run: it flags destructive migrations
+# that break installed App Store builds unless they carry a compatibility annotation
+# and update docs/ios-release-compatibility.md (CLAUDE.md invariant 11). It needs a
+# full clone (fetch-depth: 0) so the PR base SHA resolves for the diff.
 
 on:
   pull_request:
@@ -31,3 +37,18 @@ jobs:
       - run: npm run format:check
       - run: npx tsc --noEmit
       - run: npm test
+
+  ios-compat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Guard migrations against installed App Store builds
+        run: npm run check:ios-compat -- --base ${{ github.event.pull_request.base.sha || github.event.before }}

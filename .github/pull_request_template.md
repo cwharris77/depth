@@ -20,6 +20,11 @@ the frozen web app/backend — see `AGENTS.md` §5._
 - [ ] Web-touching diff only: `npm run format:check` clean; `npx tsc --noEmit` exits 0
 - [ ] Web-touching diff only: `npm test` green — note the test count and new/updated test files
 - [ ] Diff contains only the stated concern — no unrelated reformatting
+- [ ] Schema/backend PRs only: `npm run check:ios-compat` passes — destructive migrations
+      carry a `-- IOS-COMPATIBILITY:` annotation and update `docs/ios-release-compatibility.md`
+- [ ] Schema/backend PRs only: sequencing per `docs/forced-update-gate.md` — a compatible
+      build is **LIVE in the App Store** (not TestFlight) and the gate is armed before any
+      destructive migration ships
 
 Verified live: _one concrete sentence of what was actually seen — UI changes only_
 
