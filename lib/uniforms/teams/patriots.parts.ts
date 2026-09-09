@@ -22,6 +22,7 @@ import {
   PATRIOTS_BANDS_RIGHT,
   PATRIOTS_DECAL_FACE_PATH,
   PATRIOTS_DECAL_KEYLINE_PATH,
+  PATRIOTS_DECAL_SILVER_PATH,
   PATRIOTS_DECAL_STAR_PATH,
   PATRIOTS_DECAL_STREAMERS_PATH,
 } from './patriots';
@@ -60,6 +61,7 @@ function decal(): PartLayer[] {
       ['patriots-decal-keyline', PATRIOTS_DECAL_KEYLINE_PATH, 'white'],
       ['patriots-decal-face', PATRIOTS_DECAL_FACE_PATH, 'navy'],
       ['patriots-decal-streamers', PATRIOTS_DECAL_STREAMERS_PATH, 'red'],
+      ['patriots-decal-silver', PATRIOTS_DECAL_SILVER_PATH, 'silver'],
       ['patriots-decal-star', PATRIOTS_DECAL_STAR_PATH, 'white'],
     ] as [string, string, string][]
   ).map(([id, d, fill]) => ({
@@ -86,10 +88,10 @@ const HELMET_SILVER: UniformPart = { base: 'silver', facemask: 'red', layers: de
 // which no figure on the sheet draws. Its white-shell figure in the boxed group wears a white cage.
 const HELMET_PAT: UniformPart = { base: 'patRed', facemask: 'white', layers: [] };
 
-// Rivalries shell (H4). The kit has no figure of its own on the sheet — the flat definition called
-// it inferred and this migration does not change that — so there is no cage to source and the
-// shell stays on GENERIC_UNIFORM_STYLE's shared neutral rather than borrowing the red one.
-const HELMET_RIVALRIES: UniformPart = { base: 'rivalNavy', layers: decal() };
+// Rivalries shell (H4). This is the modern Patriots navy-shell treatment, including the red cage;
+// the kit has no figure of its own on the sheet, so its helmet mark and placement are inherited from
+// the current-season modern figures rather than from the throwback group.
+const HELMET_RIVALRIES: UniformPart = { base: 'rivalNavy', facemask: 'red', layers: decal() };
 
 // Home jersey (J1): navy body, banded red/white/red, white numerals.
 const JERSEY_NAVY: UniformPart = {
@@ -125,6 +127,7 @@ const PANTS_NAVY: UniformPart = { base: 'navy', layers: [] };
 const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
 const PANTS_PAT: UniformPart = { base: 'patRed', layers: [] };
 const PANTS_RIVALRIES: UniformPart = { base: 'rivalNavy', layers: [] };
+const PANTS_SILVER: UniformPart = { base: 'silver', layers: [] };
 
 export const PATRIOTS_PARTS: TeamPartsDefinition = {
   teamId: 'patriots',
@@ -151,12 +154,22 @@ export const PATRIOTS_PARTS: TeamPartsDefinition = {
     pat: JERSEY_PAT,
     rivalries: JERSEY_RIVALRIES,
   },
-  pants: { navy: PANTS_NAVY, white: PANTS_WHITE, pat: PANTS_PAT, rivalries: PANTS_RIVALRIES },
+  pants: {
+    navy: PANTS_NAVY,
+    white: PANTS_WHITE,
+    pat: PANTS_PAT,
+    rivalries: PANTS_RIVALRIES,
+    silver: PANTS_SILVER,
+  },
   kits: {
-    home: { helmet: 'navy', jersey: 'navy', pants: 'navy' },
-    away: { helmet: 'silver', jersey: 'white', pants: 'white' },
-    'pat-patriot': { helmet: 'pat', jersey: 'pat', pants: 'pat' },
-    'rivalries-2025': { helmet: 'rivalries', jersey: 'rivalries', pants: 'rivalries' },
+    home: { helmet: 'navy', jersey: 'navy', pants: ['navy', 'silver'] },
+    away: { helmet: 'silver', jersey: 'white', pants: ['white', 'navy'] },
+    'pat-patriot': { helmet: 'pat', jersey: 'pat', pants: ['pat', 'white'] },
+    'rivalries-2025': {
+      helmet: 'rivalries',
+      jersey: 'rivalries',
+      pants: ['rivalries', 'silver'],
+    },
   },
 };
 
