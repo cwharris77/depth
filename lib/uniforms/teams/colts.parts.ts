@@ -10,7 +10,8 @@
 // contrast.
 
 import {
-  COLTS_DECAL_HORSESHOE_PATH,
+  COLTS_DECAL_HORSESHOE_NAVY_PATH,
+  COLTS_DECAL_HORSESHOE_WHITE_PATH,
   COLTS_SHOULDER_BAR_INNER_LEFT,
   COLTS_SHOULDER_BAR_INNER_RIGHT,
   COLTS_SHOULDER_BAR_OUTER_LEFT,
@@ -40,7 +41,7 @@ function shoulderBars(color: string): PartLayer[] {
 }
 
 // The white shell with the navy horseshoe decal — one object, shared by both kits. The horseshoe
-// is a closed band requiring evenodd so the tiny enclosed counter punches through.
+// is a source-derived band with its seven isolated rivets restored on top.
 //
 // Speedway-grey cage. The 2020 helmet update carries a "light gray facemask" (Riddell/sports
 // sources; the white shell + light cage is low-contrast in the GUD composite, which reads the
@@ -51,13 +52,20 @@ const HELMET_WHITE_HORSESHOE: UniformPart = {
   facemask: 'speedwayGrey',
   layers: [
     {
-      id: 'colts-helmet-horseshoe',
+      id: 'colts-helmet-horseshoe-band',
       surface: 'helmet',
-      d: COLTS_DECAL_HORSESHOE_PATH,
+      d: COLTS_DECAL_HORSESHOE_NAVY_PATH,
       clip: true,
       kind: 'fill',
       fill: 'navy',
-      fillRule: 'evenodd',
+    },
+    {
+      id: 'colts-helmet-horseshoe-rivets',
+      surface: 'helmet',
+      d: COLTS_DECAL_HORSESHOE_WHITE_PATH,
+      clip: true,
+      kind: 'fill',
+      fill: 'white',
     },
   ],
 };
