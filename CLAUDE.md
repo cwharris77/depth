@@ -43,16 +43,17 @@ ESPN unofficial APIs
       (web app/team/[id]/page.tsx → DepthChartField remain the frozen web reader)
 ```
 
-Design docs (specs) live in the Obsidian vault, not this repo:
-`../obsidian/Projects/depth/specs/` (dated `*-design.md` + an index). Implementation
-plans — checkbox task lists an agent executes against the code — live here instead, in
-`docs/superpowers/plans/`. The product roadmap is also in the vault
-(`../obsidian/Projects/depth/Roadmap.md`) — if you can't read the vault, the vault
-specs index + README status table are the fallback; do not guess at roadmap intent.
-Never write a new spec into this repo's `docs/` — that reintroduces the repo/vault
-copies drifting out of sync that this split exists to prevent.
-Handoff briefs follow the same rule — they live in the vault at
-`../obsidian/Projects/depth/specs/`, not in this repo's `docs/`.
+All documentation lives in the Obsidian vault, not this repo: design specs,
+implementation plans, handoff briefs, deep-dive source guides (ESPN/NFLverse data flow,
+the uniform model, iOS privacy/telemetry), model cards, research, and the product
+roadmap all live under `../obsidian/Projects/depth/`. This repo holds only its
+public-project docs — `README.md`, `CLAUDE.md`/`AGENTS.md`, `PRODUCT.md`, `DESIGN.md`,
+`ATTRIBUTIONS.md` — nothing else. The repo `docs/`, `.superpowers/`,
+`skill-observations/`, `skill-updates/`, and `.impeccable/` dirs were purged from history
+(2026-09-08) and are gitignored local state: **never re-add them, and never reference
+them from a committed file.** The vault (specs index + Roadmap.md + README status table)
+is the single source of truth; if you can't read the vault, stop and say so rather than
+guessing at docs intent.
 
 ## 2. Architecture invariants
 
@@ -100,7 +101,8 @@ web UI is frozen.
     `"public read"` policy so `dbRosterSource` reads them with the anon key; per-user
     tables are owner-only. Writes rely on the service-role ingest bypassing RLS. Never
     enable RLS on a *new* table without a read policy for whoever reads it (anon for
-    public data, `auth.uid()` for private), or that reader breaks (see `docs/espn.md`).
+    public data, `auth.uid()` for private), or that reader breaks (see the vault's
+    ESPN data-flow guide under `../obsidian/Projects/depth/Research/`).
 11. **Published data stays decodable by every supported app build.** Before an ingest,
     schema, or API change writes a value an installed client cannot decode, ship the
     compatible binary, confirm its App Store release, and use the existing forced-update
@@ -210,10 +212,21 @@ web UI is frozen.
   `npm run preview:bypass-url -- <preview-url>` and navigate to the printed URL first.
   It appends `x-vercel-protection-bypass` and `x-vercel-set-bypass-cookie=1` so Vercel
   sets the bypass cookie; later same-domain navigation can use the normal preview URL.
-- **Docs move with behavior.** A PR that changes data flow updates the matching source
-  guide (`docs/espn.md` or `docs/nflverse.md`); a PR that ships/kills a roadmap item
-  updates README's status table and, when relevant, the vault specs index
-  (`../obsidian/Projects/depth/specs/2026-07-07-roadmap-specs-index.md`).
+- **Documentation lives in the obsidian vault, not this repo.** `../obsidian/Projects/depth/`
+  is the one home for plans, specs, design docs, deep-dive source guides (ESPN/NFLverse data
+  flow, the uniform model, iOS privacy/telemetry), model cards, and shared research. This repo
+  keeps exactly the public-project docs — `README.md`, `CLAUDE.md`/`AGENTS.md`, `PRODUCT.md`,
+  `DESIGN.md`, `ATTRIBUTIONS.md` — and nothing else. The old `docs/`, `.superpowers/`,
+  `skill-observations/`, `skill-updates/`, and `.impeccable/` dirs were purged from history
+  (2026-09-08) and are now gitignored local state: **never commit them, and never reference
+  them from a committed file.**
+- **Docs move with behavior, and they move into the vault.** A PR that changes the data flow
+  updates the matching source guide in the vault; a PR that ships/kills a roadmap item updates
+  README's status table and the vault specs index.
+- **Not every change earns a doc.** Write one only if a future reader — you or an agent — still
+  needs it after the PR ships. If a PR description suffices, no doc. When you do write one, it
+  goes in the vault, is evergreen (no per-feature date stamp), and gets linked from the vault
+  index — never copied here.
 
 ## 4. Mistakes you will make here unless you follow these rules
 
@@ -379,7 +392,7 @@ operating manual (architecture, conventions, parity mechanisms). Quality-bar sum
 - [ ] Vault index (`*-roadmap-specs-index.md`) row added/updated
 
 **Implementation plan**
-- [ ] File is `docs/superpowers/plans/YYYY-MM-DD-<slug>.md` — this repo, not the vault
+- [ ] File is in the vault (`../obsidian/Projects/depth/`), never this repo's `docs/`
 - [ ] Header links the vault spec it implements (relative path)
 
 **Curated data (kits, seeds)**

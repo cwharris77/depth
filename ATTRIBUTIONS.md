@@ -25,7 +25,7 @@ the team only.
 Team names, logos, and uniform marks are trademarks of their respective clubs and of the National
 Football League. This project is not affiliated with, endorsed by, or sponsored by the NFL or any
 of its clubs. Attribution alone does not grant any right to reproduce these marks; see the
-disclaimer in the app footer and `docs/uniform-model-brief.md` for the trace-then-stylize workflow
+disclaimer in the app footer and the uniform-model brief (in the vault, `Projects/depth/`) for the trace-then-stylize workflow
 that is intended to replace traced marks with original stylized geometry.
 
 Manufacturer logos, league shields, chest wordmarks, and sponsor marks are reproduced nowhere in

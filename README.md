@@ -30,8 +30,8 @@ The product roadmap lives in the Obsidian vault — [`Projects/depth/Roadmap.md`
 
 Roster, schedule, and stats data live in Supabase Postgres, shared by both clients.
 Scheduled GitHub Actions ingest weekly ESPN identity/roster data and daily nflverse
-stats, schedules, and market lines. See [`docs/espn.md`](docs/espn.md) and
-[`docs/nflverse.md`](docs/nflverse.md). iOS reads through the `DepthRepository` seam
+stats, schedules, and market lines. Data-flow guides (ESPN/nflverse ingestion) live in the
+Obsidian vault under `Projects/depth/`. iOS reads through the `DepthRepository` seam
 (`ios/Depth/Data/DepthRepository.swift`); the frozen web app reads through the
 `RosterSource` seam (`lib/roster-source.ts`) with its Postgres implementation in
 `lib/roster-source.db.ts`. Cross-language domain fixtures (`fixtures/domain/*.json`)

@@ -25,8 +25,8 @@ The field experience. Depth-chart data exists elsewhere; depth renders the roste
   write Supabase Postgres; the app reads through its server-side data layer
   (`lib/roster-source.db.ts`). A failed ingest can leave source data stale but never
   blocks a deploy.
-- Uniform-archive curation is a measured craft workflow: reference images (internal-only, never committed or redistributed), 1–3 teams per pass, every hex cites its source (`docs/uniform-model-brief.md`).
-- Specs and roadmap live in the Obsidian vault (`../obsidian/Projects/depth/`); implementation plans live in this repo (`docs/superpowers/plans/`). Never write specs into this repo's `docs/`.
+- Uniform-archive curation is a measured craft workflow: reference images (internal-only, never committed or redistributed), 1–3 teams per pass, every hex cites its source (model brief in the vault, `Projects/depth/`).
+- All specs, implementation plans, and the roadmap live in the Obsidian vault (`../obsidian/Projects/depth/`); this repo keeps only its public-project docs. Never write specs into this repo's `docs/`.
 - Multi-surface parity process (vault spec, 2026-08-20): **reversed 2026-08-29** — a feature request with no named target defaults to **iOS only**. The web app is frozen and retained solely to host the privacy policy and support policy. See Decisions.md 2026-08-29.
 - The web app runs on Vercel (frozen; legal pages only); protected preview deployments use a bypass token kept out of the repo.
 
