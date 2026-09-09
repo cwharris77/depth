@@ -42,16 +42,14 @@ illustration's horn bbox is 1.11 aspect and the box is 1.02, which is the
 difference between the two drawings' shells and not a measurement error.
 """
 
-import re
 import sys
-from collections import deque
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from PIL import Image  # noqa: E402
 
-from drawkit import Box  # noqa: E402
+from drawkit import Box, main, trace  # noqa: E402
 
 REF = (
     Path.home()
@@ -92,126 +90,17 @@ def mask():
     return [[1 if yellow(px[x, y]) else 0 for x in range(w)] for y in range(h)], w, h
 
 
-def components(m, w, h, minsize=MIN_REGION):
-    """8-connected components, largest first."""
-    seen = [[False] * w for _ in range(h)]
-    out = []
-    for sy in range(h):
-        for sx in range(w):
-            if seen[sy][sx] or not m[sy][sx]:
-                continue
-            q = deque([(sx, sy)])
-            seen[sy][sx] = True
-            cells = []
-            while q:
-                x, y = q.popleft()
-                cells.append((x, y))
-                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)):
-                    nx, ny = x + dx, y + dy
-                    if 0 <= nx < w and 0 <= ny < h and not seen[ny][nx] and m[ny][nx]:
-                        seen[ny][nx] = True
-                        q.append((nx, ny))
-            if len(cells) >= minsize:
-                out.append(cells)
-    return sorted(out, key=len, reverse=True)
-
-
-_DIRS = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)]
-
-
-def outline(cells):
-    """Moore-neighbour boundary walk of one 8-connected component."""
-    filled = set(cells)
-    start = min(cells, key=lambda c: (c[1], c[0]))
-    contour = [start]
-    cur, back = start, 4
-    limit = 8 * len(cells) + 16
-    while len(contour) < limit:
-        for i in range(1, 9):
-            d = _DIRS[(back + i) % 8]
-            nb = (cur[0] + d[0], cur[1] + d[1])
-            if nb in filled:
-                back = _DIRS.index((-d[0], -d[1]))
-                cur = nb
-                break
-        else:
-            break
-        if cur == start:
-            break
-        contour.append(cur)
-    return contour
-
-
-def simplify(pts, eps=EPS):
-    """Douglas-Peucker, iterative so a long contour cannot blow the stack."""
-    if len(pts) < 3:
-        return pts
-    keep = [False] * len(pts)
-    keep[0] = keep[-1] = True
-    stack = [(0, len(pts) - 1)]
-    while stack:
-        a, b = stack.pop()
-        if b - a < 2:
-            continue
-        (x1, y1), (x2, y2) = pts[a], pts[b]
-        dx, dy = x2 - x1, y2 - y1
-        norm = (dx * dx + dy * dy) ** 0.5
-        best, bi = -1.0, None
-        for i in range(a + 1, b):
-            x, y = pts[i]
-            dist = abs(dy * x - dx * y + x2 * y1 - y2 * x1) / norm if norm else ((x - x1) ** 2 + (y - y1) ** 2) ** 0.5
-            if dist > best:
-                best, bi = dist, i
-        if best > eps:
-            keep[bi] = True
-            stack.append((a, bi))
-            stack.append((bi, b))
-    return [p for p, k in zip(pts, keep) if k]
-
-
 def build():
     m, w, h = mask()
-    regions = components(m, w, h)
-    # Design space is the horn's own bbox in 0..100, so the placement box lands the
-    # two components together rather than each on its own extents.
-    cells = [c for r in regions for c in r]
-    x0 = min(x for x, _ in cells)
-    x1 = max(x for x, _ in cells)
-    y0 = min(y for _, y in cells)
-    y1 = max(y for _, y in cells)
-    span_x = float(x1 - x0)
-    span_y = float(y1 - y0)
-    subpaths = []
-    for r in regions:
-        pts = simplify(outline(r))
-        if len(pts) < 3:
-            continue
-        # Mirror in u: the illustration faces left, the mannequin faces right.
-        design = [(100.0 - (x - x0) * 100.0 / span_x, (y - y0) * 100.0 / span_y) for x, y in pts]
-        mapped = BOX.map(design)
-        subpaths.append('M%.1f,%.1f ' % mapped[0] + ' '.join('L%.1f,%.1f' % p for p in mapped[1:]) + ' Z')
-    return {'RAMS_DECAL_HORN_PATH': ' '.join(subpaths)}
-
-
-def check(paths):
-    src = MODULE.read_text()
-    ok = True
-    for name, want in paths.items():
-        m = re.search(r"%s =\s*\n?\s*'([^']*)'" % name, src)
-        if not m:
-            print('MISSING  %s' % name)
-            ok = False
-        elif m.group(1) != want:
-            print('DIFFERS  %s' % name)
-            ok = False
-        else:
-            print('ok       %s' % name)
-    return ok
+    # space='art' so the placement box lands the horn's two components together
+    # rather than stretching each to its own extents; mirror because the
+    # illustration faces left and the mannequin faces right.
+    return {
+        'RAMS_DECAL_HORN_PATH': trace(
+            m, w, h, BOX, eps=EPS, minsize=MIN_REGION, space='art', mirror=True
+        )
+    }
 
 
 if __name__ == '__main__':
-    built = build()
-    if '--check' in sys.argv:
-        sys.exit(0 if check(built) else 1)
-    for name, d in built.items():
-        print('export const %s =\n  %r;' % (name, d))
+    main(build, MODULE)
