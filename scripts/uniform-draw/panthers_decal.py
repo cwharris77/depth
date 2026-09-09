@@ -41,14 +41,20 @@ aspect: this mannequin draws the same three-quarter shell GUD does, so the mark
 wraps and reads nearer 1.65 on both.
 """
 
-import re
 import sys
-from collections import deque
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from drawkit import Box, crop_to_art, render_flat  # noqa: E402
+from drawkit import (  # noqa: E402
+    Box,
+    crop_to_art,
+    fill_holes,
+    holes_of,
+    main,
+    render_flat,
+    trace,
+)
 
 REF = Path.home() / 'Documents/GitHubProjects/nfl-uniform-refs/panthers/panthers-mark.svg'
 MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'panthers.ts'
@@ -98,124 +104,8 @@ def mask_of(lab, w, h, keys):
     return [[1 if lab[y][x] in keys else 0 for x in range(w)] for y in range(h)]
 
 
-def fill_holes(m, w, h):
-    """The mask with every enclosed background area filled in."""
-    seen = [[False] * w for _ in range(h)]
-    q = deque()
-    for x in range(w):
-        for y in (0, h - 1):
-            if not m[y][x] and not seen[y][x]:
-                seen[y][x] = True
-                q.append((x, y))
-    for y in range(h):
-        for x in (0, w - 1):
-            if not m[y][x] and not seen[y][x]:
-                seen[y][x] = True
-                q.append((x, y))
-    while q:
-        x, y = q.popleft()
-        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            nx, ny = x + dx, y + dy
-            if 0 <= nx < w and 0 <= ny < h and not seen[ny][nx] and not m[ny][nx]:
-                seen[ny][nx] = True
-                q.append((nx, ny))
-    return [[1 if m[y][x] or not seen[y][x] else 0 for x in range(w)] for y in range(h)]
-
-
-def holes_of(m, w, h):
-    filled = fill_holes(m, w, h)
-    return [[1 if filled[y][x] and not m[y][x] else 0 for x in range(w)] for y in range(h)]
-
-
-def components(m, w, h, minsize=MIN_REGION):
-    """8-connected components, largest first."""
-    seen = [[False] * w for _ in range(h)]
-    out = []
-    for sy in range(h):
-        for sx in range(w):
-            if seen[sy][sx] or not m[sy][sx]:
-                continue
-            q = deque([(sx, sy)])
-            seen[sy][sx] = True
-            cells = []
-            while q:
-                x, y = q.popleft()
-                cells.append((x, y))
-                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)):
-                    nx, ny = x + dx, y + dy
-                    if 0 <= nx < w and 0 <= ny < h and not seen[ny][nx] and m[ny][nx]:
-                        seen[ny][nx] = True
-                        q.append((nx, ny))
-            if len(cells) >= minsize:
-                out.append(cells)
-    return sorted(out, key=len, reverse=True)
-
-
-_DIRS = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)]
-
-
-def outline(cells):
-    """Moore-neighbour boundary walk of one 8-connected component."""
-    filled = set(cells)
-    start = min(cells, key=lambda c: (c[1], c[0]))
-    contour = [start]
-    cur, back = start, 4
-    limit = 8 * len(cells) + 16
-    while len(contour) < limit:
-        for i in range(1, 9):
-            d = _DIRS[(back + i) % 8]
-            nb = (cur[0] + d[0], cur[1] + d[1])
-            if nb in filled:
-                back = _DIRS.index((-d[0], -d[1]))
-                cur = nb
-                break
-        else:
-            break
-        if cur == start:
-            break
-        contour.append(cur)
-    return contour
-
-
-def simplify(pts, eps=EPS):
-    """Douglas-Peucker, iterative so a 20k-point contour cannot blow the stack."""
-    if len(pts) < 3:
-        return pts
-    keep = [False] * len(pts)
-    keep[0] = keep[-1] = True
-    stack = [(0, len(pts) - 1)]
-    while stack:
-        a, b = stack.pop()
-        if b - a < 2:
-            continue
-        (x1, y1), (x2, y2) = pts[a], pts[b]
-        dx, dy = x2 - x1, y2 - y1
-        norm = (dx * dx + dy * dy) ** 0.5
-        best, bi = -1.0, None
-        for i in range(a + 1, b):
-            x, y = pts[i]
-            dist = abs(dy * x - dx * y + x2 * y1 - y2 * x1) / norm if norm else ((x - x1) ** 2 + (y - y1) ** 2) ** 0.5
-            if dist > best:
-                best, bi = dist, i
-        if best > eps:
-            keep[bi] = True
-            stack.append((a, bi))
-            stack.append((bi, b))
-    return [p for p, k in zip(pts, keep) if k]
-
-
-def emit(regions, w, h):
-    """Map traced contours into the placement box as one multi-subpath `d`."""
-    subpaths = []
-    for cells in regions:
-        pts = simplify(outline(cells))
-        if len(pts) < 3:
-            continue
-        mapped = BOX.map([(x * 100.0 / w, y * 100.0 / h) for x, y in pts])
-        subpaths.append(
-            'M%.1f,%.1f ' % mapped[0] + ' '.join('L%.1f,%.1f' % p for p in mapped[1:]) + ' Z'
-        )
-    return ' '.join(subpaths)
+def emit(m, w, h):
+    return trace(m, w, h, BOX, eps=EPS, minsize=MIN_REGION)
 
 
 def build():
@@ -223,32 +113,12 @@ def build():
     ink = mask_of(lab, w, h, {'blue', 'black', 'grey'})
     body = mask_of(lab, w, h, {'black', 'grey'})
     return {
-        'PANTHERS_DECAL_KEYLINE_PATH': emit(components(fill_holes(ink, w, h), w, h), w, h),
-        'PANTHERS_DECAL_BODY_PATH': emit(components(fill_holes(body, w, h), w, h), w, h),
-        'PANTHERS_DECAL_DETAIL_PATH': emit(components(holes_of(body, w, h), w, h), w, h),
-        'PANTHERS_DECAL_HIGHLIGHT_PATH': emit(components(mask_of(lab, w, h, {'grey'}), w, h), w, h),
+        'PANTHERS_DECAL_KEYLINE_PATH': emit(fill_holes(ink, w, h), w, h),
+        'PANTHERS_DECAL_BODY_PATH': emit(fill_holes(body, w, h), w, h),
+        'PANTHERS_DECAL_DETAIL_PATH': emit(holes_of(body, w, h), w, h),
+        'PANTHERS_DECAL_HIGHLIGHT_PATH': emit(mask_of(lab, w, h, {'grey'}), w, h),
     }
 
 
-def check(paths):
-    src = MODULE.read_text()
-    ok = True
-    for name, want in paths.items():
-        m = re.search(r"%s =\s*\n?\s*'([^']*)'" % name, src)
-        if not m:
-            print('MISSING  %s' % name)
-            ok = False
-        elif m.group(1) != want:
-            print('DIFFERS  %s' % name)
-            ok = False
-        else:
-            print('ok       %s' % name)
-    return ok
-
-
 if __name__ == '__main__':
-    built = build()
-    if '--check' in sys.argv:
-        sys.exit(0 if check(built) else 1)
-    for name, d in built.items():
-        print('export const %s =\n  %r;' % (name, d))
+    main(build, MODULE)
