@@ -118,7 +118,8 @@ const JERSEY_BLACK: UniformPart = {
   number: { fill: 'white', outline: 'white', outlineWidth: 10 },
 };
 
-// Pants — no pant stripe on any kit; each takes its body color.
+// Pants — no pant stripe on any kit. The composite shows green and white rotations for the
+// standard green/white jerseys; canonical entries stay first so the current raster is unchanged.
 const PANTS_GREEN: UniformPart = { base: 'green', layers: [] };
 const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
 const PANTS_RIV: UniformPart = { base: 'rivalGreen', layers: [] };
@@ -142,8 +143,8 @@ export const JETS_PARTS: TeamPartsDefinition = {
   },
   pants: { green: PANTS_GREEN, white: PANTS_WHITE, riv: PANTS_RIV, black: PANTS_BLACK },
   kits: {
-    home: { helmet: 'green', jersey: 'green', pants: 'green' },
-    away: { helmet: 'green', jersey: 'white', pants: 'white' },
+    home: { helmet: 'green', jersey: 'green', pants: ['green', 'white'] },
+    away: { helmet: 'green', jersey: 'white', pants: ['white', 'green'] },
     'rivalries-2025': { helmet: 'riv', jersey: 'riv', pants: 'riv' },
     'black-alt': { helmet: 'black', jersey: 'black', pants: 'black' },
   },

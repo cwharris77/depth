@@ -8,18 +8,21 @@ This is a CONTOUR TRACE rather than the hand-drawn geometry in
 cuts and a sweeping J/jet shape; tracing the visible helmet decal is less
 ambiguous than rebuilding those cuts as guessed anchors.
 
-SOURCE AND PLACEMENT. The attached standalone SVG contains the JETS wordmark
-as four green paths. The paths are rasterized locally only to feed drawkit's
-generic component/contour machinery; no source SVG or raster is committed. The
-internal 2025 uniform composite is used only to measure the helmet placement
-box, never as the wordmark source. The upstream mark is non-free and
-trademarked; the fair-use licence audit is recorded in the vault's Decisions.md,
-2026-09-03.
+SOURCE AND PLACEMENT. The approved SVG is the club's full oval lockup, so it is
+not safe to trace as a whole: it also contains ``NEW YORK`` and a football. The
+SVG is rasterized locally only to feed drawkit's generic contour machinery; no
+source SVG or raster is committed. The internal 2025 uniform composite is used
+only to measure helmet placement, never as the wordmark source. The upstream
+mark is non-free and trademarked; the fair-use licence audit is recorded in the
+vault's Decisions.md, 2026-09-03.
 
-TOPOLOGY, MEASURED BEFORE TRACING. The SVG wordmark contains four usable
-8-connected green components, with no enclosed holes. The four components are
-emitted as plain white fill subpaths without an evenodd rule. The SVG's other
-art is excluded by cropping to the wordmark's connected-component bounds.
+TOPOLOGY, MEASURED BEFORE TRACING. In the cropped JETS region, the approved
+render has five substantial white 8-connected components: four letter/jet
+components and one football. The wordmark is the four components whose row
+centroids are above the football; ``NEW YORK`` is outside the crop. None of the
+four selected components has an enclosed hole, so they are emitted as plain
+fill subpaths without an evenodd rule. This selection prevents the lockup's
+football or background border from becoming helmet artwork.
 
 PLACEMENT. The internal 2025 uniform composite's helmet shell is approximately
 x255-342, y25-114 and the wordmark is x265-326, y38-56: 11.5% left, 70.1% wide, 14.6% top, and 20.2%
@@ -39,37 +42,58 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from PIL import Image  # noqa: E402
 
-from drawkit import Box, components, crop_to_art, main, mask, trace  # noqa: E402
+from drawkit import Box, components, main, mask, trace  # noqa: E402
 
-REF = Path.home() / 'Downloads/New-York-Jets-Logo-New.svg'
+REF = Path('/Users/cwharris/Documents/GitHubProjects/nfl-uniform-refs/jets/jets-mark.svg')
 MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'jets.ts'
 
-MIN_REGION = 100
+MIN_REGION = 1000
 EPS = 1.2
+
+# The SVG is rendered at its true aspect before selecting the JETS region. These
+# fractions are measured from the 1200px-wide render: x=13.5..89.5%, y=36.2..72.7%.
+WORDMARK_CROP = (0.135, 0.362, 0.895, 0.727)
 
 # Preserve the established raw helmet-space placement while replacing its hand trace.
 BOX = Box(210.9, 154.2, 394.1, 118.6)
 
 
-def green(c):
-    """Match the attached SVG's green wordmark ink."""
-    return c[1] > 60 and c[1] > c[0] * 1.5 and c[1] > c[2] * 1.2
+def white(c):
+    """Match the white negative-space ink used by the supplied lockup."""
+    return min(c) > 220 and max(c) - min(c) < 15
 
 
 def wordmark_mask():
     # qlmanage crops wide SVG thumbnails on macOS; ImageMagick renders the
-    # attached 2048x1152 source at its true aspect before drawkit measures it.
+    # attached source at a fixed true aspect before drawkit measures it.
     with tempfile.TemporaryDirectory() as tmp:
         rendered = Path(tmp) / 'wordmark.png'
         subprocess.run(
-            ['magick', '-background', 'white', '-density', '150', str(REF), str(rendered)],
+            [
+                'magick',
+                '-background',
+                'white',
+                '-density',
+                '300',
+                str(REF),
+                '-resize',
+                '1200x',
+                str(rendered),
+            ],
             check=True,
             capture_output=True,
         )
-        im = crop_to_art(Image.open(rendered).convert('RGB'))
-    m, w, h = mask(im, green)
+        full = Image.open(rendered).convert('RGB')
+        w, h = full.size
+        x0, y0 = round(w * WORDMARK_CROP[0]), round(h * WORDMARK_CROP[1])
+        x1, y1 = round(w * WORDMARK_CROP[2]), round(h * WORDMARK_CROP[3])
+        im = full.crop((x0, y0, x1, y1))
+    m, w, h = mask(im, white)
     candidates = components(m, w, h, MIN_REGION)
-    wordmark = candidates
+    # The football is the only substantial component below this centroid line.
+    wordmark = [component for component in candidates if sum(y for _, y in component) / len(component) < h * 0.65]
+    if len(wordmark) != 4:
+        raise ValueError('expected four JETS components after excluding lockup artwork')
     all_cells = [cell for component in wordmark for cell in component]
     xs = [x for x, _ in all_cells]
     ys = [y for _, y in all_cells]
@@ -84,7 +108,7 @@ def wordmark_mask():
 
 def build():
     m, w, h = wordmark_mask()
-    return {'JETS_DECAL_PATH': trace(m, w, h, BOX, eps=EPS, minsize=MIN_REGION)}
+    return {'JETS_DECAL_PATH': trace(m, w, h, BOX, eps=EPS, minsize=MIN_REGION, space='art')}
 
 
 if __name__ == '__main__':
