@@ -10,13 +10,15 @@
 //
 // The kits combine three helmets (white shell, navy rivalries shell, white throwback shell with a
 // teal stripe), four jerseys (teal, white, navy, teal-with-bands), and three pants (white shared by
-// home + 1972, teal, navy).
+// home + 1972, teal, navy). The away kit carries both teal and white pants options; teal stays
+// canonical so its existing raster remains unchanged.
 
 import { HELMET_CROWN_STRIPE_PATH } from './shared';
 import {
   DOLPHINS_COLLAR_PATH,
   DOLPHINS_COLLAR_WIDTH,
   DOLPHINS_DECAL_DOLPHIN_PATH,
+  DOLPHINS_DECAL_NAVY_PATH,
   DOLPHINS_DECAL_SUNBURST_PATH,
   DOLPHINS_SLASH_LEFT,
   DOLPHINS_SLASH_RIGHT,
@@ -65,6 +67,18 @@ function decal(ring: string, dolphin: string, throwback = false): PartLayer[] {
       kind: 'fill',
       fill: dolphin,
     },
+    ...(!throwback
+      ? [
+          {
+            id: 'dolphins-decal-navy',
+            surface: 'helmet' as const,
+            d: DOLPHINS_DECAL_NAVY_PATH,
+            clip: true,
+            kind: 'fill' as const,
+            fill: 'navy',
+          },
+        ]
+      : []),
   ];
 }
 
@@ -103,10 +117,11 @@ const HELMET_WHITE: UniformPart = {
   layers: [...crownStripe('orange'), ...decal('orange', 'teal')],
 };
 
-// The navy rivalries shell (H2) with the orange stripe + sunburst.
+// The navy rivalries shell (H2) with the orange stripe + sunburst and dark navy cage, as shown
+// by the GUD dark alternate figure.
 const HELMET_NAVY: UniformPart = {
   base: 'navy',
-  facemask: 'white',
+  facemask: 'navy',
   layers: [...crownStripe('orange'), ...decal('orange', 'teal')],
 };
 
@@ -192,7 +207,7 @@ const JERSEY_1972: UniformPart = {
 // White pants (P1, shared by home + 1972).
 const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
 
-// Teal pants (P2, away).
+// Teal pants (P2, away canonical option).
 const PANTS_TEAL: UniformPart = { base: 'teal', layers: [] };
 
 // Navy pants (P3, rivalries).
@@ -218,7 +233,7 @@ export const DOLPHINS_PARTS: TeamPartsDefinition = {
   pants: { white: PANTS_WHITE, teal: PANTS_TEAL, navy: PANTS_NAVY },
   kits: {
     home: { helmet: 'white', jersey: 'teal', pants: 'white' },
-    away: { helmet: 'white', jersey: 'white', pants: 'teal' },
+    away: { helmet: 'white', jersey: 'white', pants: ['teal', 'white'] },
     'rivalries-2025': { helmet: 'navy', jersey: 'navy', pants: 'navy' },
     '1972-throwback': { helmet: 'white1972', jersey: '1972', pants: 'white' },
   },
