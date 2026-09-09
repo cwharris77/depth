@@ -3,7 +3,7 @@
     python3 scripts/uniform-draw/chargers_bolt.py            # print the two paths
     python3 scripts/uniform-draw/chargers_bolt.py --check    # verify chargers.ts matches
 
-A CONTOUR TRACE rather than the hand-drawn geometry docs/uniform-hand-drawing.md
+A CONTOUR TRACE rather than the hand-drawn geometry the vault's `Reference/uniform-hand-drawing.md`
 produces — see that doc's "second route" section for the procedure and for what
 drawkit supplies. The bolt is a broad solid shape with no fine interior detail,
 so the doc's negative-space warning does not apply and a trace is both stable

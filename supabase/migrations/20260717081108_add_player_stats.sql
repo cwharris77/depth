@@ -1,5 +1,5 @@
 -- nflverse ingestion scaffolding + player season stats (Phase D/E foundation,
--- docs/superpowers/specs/2026-07-07-nflverse-ingestion-and-player-stats-design.md).
+-- the vault's `specs/2026-07-07-nflverse-ingestion-and-player-stats-design.md`).
 -- One row per (player, season, season_type); v1 only ever writes season_type='REG'
 -- (scripts/ingest-nflverse.mts fetches stats_player_reg_<season>.csv), but the column
 -- is generalized now so a later POST/weekly enrichment doesn't need a schema change.

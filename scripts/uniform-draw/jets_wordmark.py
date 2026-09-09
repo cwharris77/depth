@@ -4,7 +4,7 @@
     python3 scripts/uniform-draw/jets_wordmark.py --check    # verify jets.ts matches
 
 This is a CONTOUR TRACE rather than the hand-drawn geometry in
-``docs/uniform-hand-drawing.md``. The wordmark has several small italic letter
+``Reference/uniform-hand-drawing.md`` (in the vault). The wordmark has several small italic letter
 cuts and a sweeping J/jet shape; tracing the visible helmet decal is less
 ambiguous than rebuilding those cuts as guessed anchors.
 

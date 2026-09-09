@@ -11,7 +11,7 @@
 // so scoping happens after parsing. By default only the two most recent seasons found
 // in the file are kept, mirroring the "current + previous season" rule the player-stats
 // ingest already applies; an explicit `minSeason` (the historic-backfill script's
-// --seasons flag, docs/nflverse.md) overrides that and keeps everything from that season
+// --seasons flag, the vault's `Reference/nflverse.md`) overrides that and keeps everything from that season
 // on. Older rows are dropped, not "skipped" (skipped means malformed).
 
 export interface ScheduleInsert {

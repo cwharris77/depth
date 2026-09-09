@@ -22,7 +22,7 @@ import XCTest
 //     -only-testing:DepthUITests/AppStoreScreenshotsUITests \
 //     -resultBundlePath /tmp/depth-screenshots.xcresult test
 //
-// See docs/ios-appstore-screenshots.md for the full workflow.
+// See `Reference/ios-appstore-screenshots.md` in the vault for the full workflow.
 //
 // The sequence was reselected 2026-08-28 (Cooper) around the surfaces that actually sell
 // the app — two depth-chart fields, stats, compare, uniforms — replacing the earlier

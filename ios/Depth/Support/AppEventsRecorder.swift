@@ -2,7 +2,7 @@ import Foundation
 import Supabase
 
 // Privacy-minimal native-app usage counters (design spec Milestone 2B item 26; full
-// App Privacy documentation lives at docs/ios-privacy-telemetry.md). `app_events`
+// App Privacy documentation lives at `Reference/ios-privacy-telemetry.md` in the vault). `app_events`
 // (supabase/migrations/20260815084146_add_app_events.sql) stores only a fixed event
 // name, non-sensitive error category, and marketing version — never a user id, device id, or session id
 // — so this type can never carry anything that identifies or tracks an individual.

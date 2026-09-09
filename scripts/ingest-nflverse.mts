@@ -1,6 +1,6 @@
 // Fetches nflverse's player id crosswalk + the latest two seasons of player season
 // stats, transforms them through the pure lib/nflverse pipeline, and upserts into
-// Postgres (Supabase). Run by hand (or on a schedule -- see docs/nflverse.md). Never
+// Postgres (Supabase). Run by hand (or on a schedule -- see the vault's `Reference/nflverse.md`). Never
 // part of `next build`.
 //
 // Usage:
@@ -9,9 +9,9 @@
 //                                                # current + previous season
 //   npm run ingest:nflverse -- --seasons 1999-2025
 //     backfills games/schedules/team_season_stats/player_stats for every season in the
-//     range (docs/nflverse.md). player_stats widens its gate for this flag -- a row
+//     range (the vault's `Reference/nflverse.md`). player_stats widens its gate for this flag -- a row
 //     writes on a crosswalk match alone, not requiring current-roster membership (see
-//     docs/superpowers/specs/2026-08-13-player-stats-historic-identity-design.md for
+//     the vault's `specs/2026-08-13-player-stats-historic-identity-design.md` for
 //     why).
 // Requires SUPABASE_URL + SUPABASE_SECRET_KEY in the environment (secret key
 // bypasses RLS-equivalent restrictions for writes; never expose it client-side).
@@ -65,7 +65,7 @@ const PLAYERS_FILE = 'players.csv';
 // nflverse renamed this release tag from `player_stats` to `stats_player` after the 2024
 // season (asset filenames are unchanged). The old tag stopped getting new season assets, so
 // `latestAvailableSeason` silently capped out at 2024 with no error -- no STRICT failure, just
-// a season that never got ingested. See docs/nflverse.md.
+// a season that never got ingested. See the vault's `Reference/nflverse.md`.
 const STATS_TAG = 'stats_player';
 const STATS_PREFIX = 'stats_player_reg_';
 // The schedule/results file lives in nfldata (one CSV, every season 1999+), not the
@@ -73,8 +73,8 @@ const STATS_PREFIX = 'stats_player_reg_';
 const GAMES_URL = 'https://github.com/nflverse/nfldata/raw/master/data/games.csv';
 // Supabase upsert payload cap: games is ~7.5k rows, chunk it so one call doesn't time out.
 const UPSERT_CHUNK = 1000;
-// Real per-team formations (docs/superpowers/specs/2026-07-07-phase-e-real-formations-
-// design.md). v1 only handles the FTN-charted vocabulary (2023+), so only the latest
+// Real per-team formations (the vault's `specs/2026-07-07-phase-e-real-formations-design.md`).
+// v1 only handles the FTN-charted vocabulary (2023+), so only the latest
 // available season is ever pulled -- the older NGS-sourced seasons use a different,
 // finer formation vocabulary this repo doesn't parse.
 const PARTICIPATION_TAG = 'pbp_participation';
@@ -519,7 +519,7 @@ async function main() {
   // not a fixed lookback -- unless --seasons is set, in which case player_stats
   // follows the same range as games/schedules/team_season_stats (gamesSeasons, set
   // above) and widens its knownPlayerIds gate accordingly (requireCurrentRoster below;
-  // see docs/superpowers/specs/2026-08-13-player-stats-historic-identity-design.md).
+  // see the vault's `specs/2026-08-13-player-stats-historic-identity-design.md`).
   const latestSeason = await latestAvailableSeason(STATS_TAG, STATS_PREFIX);
   const seasons = gamesSeasons ?? (latestSeason === null ? [] : [latestSeason, latestSeason - 1]);
   const requireCurrentRoster = gamesSeasons === null;

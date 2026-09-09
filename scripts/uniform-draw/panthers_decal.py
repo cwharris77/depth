@@ -3,7 +3,7 @@
     python3 scripts/uniform-draw/panthers_decal.py            # print the four paths
     python3 scripts/uniform-draw/panthers_decal.py --check    # verify panthers.ts matches
 
-This is a CONTOUR TRACE, not the hand-drawn geometry docs/uniform-hand-drawing.md
+This is a CONTOUR TRACE, not the hand-drawn geometry the vault's `Reference/uniform-hand-drawing.md`
 produces. The panther head is carried by fine positive detail — jaw, fangs,
 whisker slashes — that a hand-drawn anchor list cannot hold at helmet scale, and
 the mark's body contrasts with both shells, so the trace is stable where the doc's

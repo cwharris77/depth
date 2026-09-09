@@ -1,5 +1,5 @@
 -- Cross-device sync for custom depth-chart order (Phase C, override-sync pass --
--- docs/superpowers/specs/2026-07-07-phase-c-auth-and-saved-boards-design.md, "Overlay sync").
+-- the vault's `specs/2026-07-07-phase-c-auth-and-saved-boards-design.md`, "Overlay sync").
 -- One row per (user, team, position): the user's ordered player ids at that position,
 -- mirroring lib/depth-overrides.ts TeamDepthOverride (Partial<Record<Position, string[]>>).
 -- Until now the overlay lived only in localStorage (single device); this makes a signed-in

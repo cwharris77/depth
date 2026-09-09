@@ -9,7 +9,7 @@ anchors here and re-running, not hand-editing coordinate strings.
 
 Original geometry. The proportions were read off a percentage grid over a
 rendering of the club's mark; no path data was lifted from any source file. See
-docs/uniform-hand-drawing.md for the procedure and its licensing posture.
+the vault's `Reference/uniform-hand-drawing.md` for the procedure and its licensing posture.
 """
 
 import re

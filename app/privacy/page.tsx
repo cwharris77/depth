@@ -17,8 +17,8 @@ export const metadata: Metadata = {
 // adapted from a template: the share-link email exposure (supabase/migrations/
 // 20260710130000_shared_boards.sql's denormalized `owner_name`), the cascade behavior of
 // account deletion (the `on delete cascade` FKs on user_settings/depth_overrides/
-// shared_boards), the iOS-only analytics counters (docs/ios-privacy-telemetry.md and
-// ios/Depth/Support/AppEventsRecorder.swift), and the IP-keyed search rate limiter
+// shared_boards), the iOS-only analytics counters (the vault's `Reference/ios-privacy-telemetry.md`
+// and ios/Depth/Support/AppEventsRecorder.swift), and the IP-keyed search rate limiter
 // (lib/utils/rate-limit.ts). Structure follows the General Legal CC0 attorney-drafted
 // template's section checklist; the prose is Depth-specific because the template describes
 // practices this app does not have (ads, payments, marketing, geolocation).

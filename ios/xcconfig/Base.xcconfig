@@ -16,7 +16,7 @@ APP_ICON_NAME = AppIcon
 // shipping a link that opens nothing.
 //
 // Setting this does NOT arm the gate; it only makes the Update button reachable when the
-// gate is armed. Arming is a separate, deliberate migration (docs/forced-update-gate.md),
+// gate is armed. Arming is a separate, deliberate migration (the vault's `Reference/forced-update-gate.md`),
 // and is unsafe until the App Store listing is public — the deep link 404s for users
 // while the app is still in review.
 APP_STORE_ID = 6802480325

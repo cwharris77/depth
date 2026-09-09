@@ -15,12 +15,12 @@ import XCTest
 //     -only-testing:DepthUITests/PRScreenshotsUITests \
 //     -resultBundlePath /tmp/pr-ios-screenshots.xcresult test
 //
-// See docs/ios-pr-screenshots.md for the full local workflow and the GitHub Actions
+// See `Reference/ios-pr-screenshots.md` in the vault for the full local workflow and the GitHub Actions
 // workflow (`.github/workflows/ios-pr-screenshots.yml`) that packages this into a PR
 // comment/artifact.
 final class PRScreenshotsUITests: XCTestCase {
     // Same stable fixture team the App Store screenshot sequence walks (see
-    // docs/ios-appstore-screenshots.md). Screenshots land on a deterministic team's
+    // the vault's `Reference/ios-appstore-screenshots.md`). Screenshots land on a deterministic team's
     // chart so before/after diffs are meaningful across runs.
     private let teamId = "bills"
     private let teamQuery = "Bills"

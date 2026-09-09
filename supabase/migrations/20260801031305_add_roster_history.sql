@@ -1,5 +1,5 @@
--- Historical rosters (Phase D1, docs/superpowers/specs/2026-07-07-phase-d-history-and-
--- boards-design.md). One row per (season, team, player) from nflverse's roster_<season>.csv,
+-- Historical rosters (Phase D1, the vault's `specs/2026-07-07-phase-d-history-and-boards-design.md`).
+-- One row per (season, team, player) from nflverse's roster_<season>.csv,
 -- 1999-present -- no FK to `players` since most historical players never got an ESPN-backed
 -- row here (that table is keyed by ESPN athlete id; this one is keyed by nflverse's gsis_id).
 -- `depth_rank` is computed at ingest from that season's usage stats (scripts/ingest-nflverse-

@@ -369,7 +369,7 @@ enum LocalSupabase {
 }
 
 // Task 8F: app_events is insert-only for clients (design spec Milestone 2B item 26,
-// docs/ios-privacy-telemetry.md). No SELECT grant exists for anon/authenticated at
+// the vault's `Reference/ios-privacy-telemetry.md`). No SELECT grant exists for anon/authenticated at
 // all — same privilege-level (not RLS-level) denial shape as app_config's UPDATE case
 // above — so the only client-visible operation is a successful, unreadable insert.
 

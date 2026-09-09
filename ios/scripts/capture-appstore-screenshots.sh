@@ -3,7 +3,7 @@
 #
 # The one command that turns a clean checkout into the five raw App Store Connect PNGs
 # (design spec's Screenshots and metadata section, item 35-38; ticket DEP-162 blocker,
-# docs/ios-appstore-screenshots.md). Everything the capture needs to be reproducible
+# the vault's `Reference/ios-appstore-screenshots.md`). Everything the capture needs to be reproducible
 # lives here, so a human (or the ticket's "run the script on a clean checkout" acceptance
 # gate) never has to hand-edit project.yml:
 #
@@ -81,7 +81,7 @@ done
 # displays are used"), so a 6.5-inch-class set is sufficient. Re-check Apple's current
 # screenshot-spec page before a real submission — Apple periodically retires the oldest
 # accepted size class and simulator naming shifts with each generation
-# (docs/ios-appstore-screenshots.md records this same caveat).
+# (the vault's `Reference/ios-appstore-screenshots.md` records this same caveat).
 EXPECT_W=1284
 EXPECT_H=2778
 
@@ -139,7 +139,7 @@ xcrun simctl boot "$DEVICE_ID"
 xcrun simctl bootstatus "$DEVICE_ID" -b >/dev/null 2>&1 || true
 
 # ---- normalize the status bar so every capture shares the same time/signal ----
-# The canonical "always the same" status-bar baseline (docs/ios-appstore-screenshots.md).
+# The canonical "always the same" status-bar baseline (the vault's `Reference/ios-appstore-screenshots.md`).
 xcrun simctl status_bar "$DEVICE_ID" override \
   --time "9:41" --batteryState charged --batteryLevel 100 \
   --cellularBars 4 --wifiBars 3 >/dev/null 2>&1
@@ -225,4 +225,4 @@ echo "  - stale data or inconsistent status-bar time"
 echo "  - simulator chrome (bezel — should be none: the framebuffer excludes it)"
 echo "  - personal information (none expected: signed-out, public roster data only)"
 echo "  - unlicensed assets"
-echo "Optional marketing framing (bezel + caption) via frameit — see docs/ios-appstore-screenshots.md."
+echo "Optional marketing framing (bezel + caption) via frameit — see the vault's \`Reference/ios-appstore-screenshots.md\`."

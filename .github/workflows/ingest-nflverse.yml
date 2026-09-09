@@ -1,7 +1,8 @@
 name: Ingest nflverse data
 
 # Recurring nflverse ingestion (player season stats). Wraps `npm run ingest:nflverse`
-# (see docs/nflverse.md) on a daily schedule, plus a manual trigger. STRICT=1 so a
+# (see `Reference/nflverse.md` in the vault) on a daily schedule, plus a manual
+# trigger. STRICT=1 so a
 # partial run (a season failed to write) turns the workflow red instead of silently
 # going green with half-stale data.
 

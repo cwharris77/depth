@@ -1,6 +1,6 @@
 -- Privacy-minimal native-app product usage counters (Task 8F, design spec Milestone 2B
 -- item 26: "privacy-minimal analytics only after documenting their App Privacy
--- effects" -- see docs/ios-privacy-telemetry.md). Deliberately unlinked: no user id,
+-- effects" -- see the vault's `Reference/ios-privacy-telemetry.md`). Deliberately unlinked: no user id,
 -- device id, or session id is stored, only a fixed event name and a server timestamp
 -- -- this table can never identify or track an individual, by construction. A CHECK
 -- constraint on both columns closes the door on smuggling free-text/PII through the

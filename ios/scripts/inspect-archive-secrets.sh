@@ -9,7 +9,7 @@
 # secrets -- out of scope, see task-9c brief; the xcconfig values land in Info.plist
 # identically whether the build is signed or not) and greps both Info.plist and the
 # compiled binary's string table for any service-role-shaped secret. Runs standalone
-# (house convention for scripts -- see docs/espn.md, scripts/vercel-ignore-build.sh) so
+# (house convention for scripts -- see the vault's `Reference/espn.md`, scripts/vercel-ignore-build.sh) so
 # it works locally and from CI without duplicating this logic into ios-ci.yml.
 #
 # Usage:

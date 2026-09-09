@@ -4,7 +4,7 @@
     python3 scripts/uniform-draw/rams_horn.py --check    # verify rams.ts matches
 
 Like panthers_decal.py this is a CONTOUR TRACE rather than the hand-drawn geometry
-docs/uniform-hand-drawing.md produces. The horn is a single smooth spiral with no
+the vault's `Reference/uniform-hand-drawing.md` produces. The horn is a single smooth spiral with no
 fine interior detail, so the doc's negative-space warning does not apply and a
 trace is both stable and closer to the reference than an anchor list would be.
 

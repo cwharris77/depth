@@ -13,7 +13,7 @@ from **local** Postgres, so the order of operations matters — types come from 
 migration, code comes from the types. Skipping a step produces the repo's worst bug
 class: row-shape mismatches that pass typecheck and fail at runtime.
 
-**REQUIRED BACKGROUND:** `docs/espn.md` ("Generated types", "Deferred: RLS") and
+**REQUIRED BACKGROUND:** the vault's `Reference/espn.md` ("Generated types", "Deferred: RLS") and
 `AGENTS.md` §2 invariants 8–10.
 
 ## The dance, in order

@@ -1,4 +1,4 @@
--- nflverse team-season stat line (DEP-137, docs/nflverse.md). Every scalar column
+-- nflverse team-season stat line (DEP-137, the vault's `Reference/nflverse.md`). Every scalar column
 -- from the stats_team_reg_<season>.csv asset, plus the seven distance-list fields
 -- parsed from semicolon-delimited text into int[]. One row per (team, season),
 -- regular season only (season_type = REG). Sourced exclusively from nflverse,
