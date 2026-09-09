@@ -88,21 +88,24 @@ const JERSEY_ORANGE_TIGER: UniformPart = {
   number: { fill: 'readable-on-body', outline: 'black', outlineWidth: 26 },
 };
 
-// Plain black pants (home). Bengals kits do not carry the generic full-leg band.
-const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };
+// GUD's 2024 Bengals composite shows four interchangeable pants: black with orange outer-knee
+// claws, white with black claws, white with orange claws, and orange with black claws. The
+// claws sit on the lateral knee, so these are the only portions visible on this front-facing
+// mannequin; do not add the side-seam stripe panel from the composite.
+function pantsWithClaws(base: string, claw: string): UniformPart {
+  return {
+    base,
+    layers: [
+      fill('generic-pants-stripe-left', 'leg-left', BENGALS_PANTS_KNEE_ACCENT_LEFT, claw),
+      fill('generic-pants-stripe-right', 'leg-right', BENGALS_PANTS_KNEE_ACCENT_RIGHT, claw),
+    ],
+  };
+}
 
-// Plain white pants (away and orange alternate: away's white comes from primary, orange-alt's
-// from accent — the same physical pant).
-const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
-
-// White pants with the color-rush outer-knee claw accents (the only kit that wears them).
-const PANTS_WHITE_CLAW: UniformPart = {
-  base: 'white',
-  layers: [
-    fill('generic-pants-stripe-left', 'leg-left', BENGALS_PANTS_KNEE_ACCENT_LEFT, 'black'),
-    fill('generic-pants-stripe-right', 'leg-right', BENGALS_PANTS_KNEE_ACCENT_RIGHT, 'black'),
-  ],
-};
+const PANTS_BLACK_ORANGE = pantsWithClaws('black', 'orange');
+const PANTS_WHITE_BLACK = pantsWithClaws('white', 'black');
+const PANTS_WHITE_ORANGE = pantsWithClaws('white', 'orange');
+const PANTS_ORANGE_BLACK = pantsWithClaws('orange', 'black');
 
 export const BENGALS_PARTS: TeamPartsDefinition = {
   teamId: 'bengals',
@@ -120,15 +123,32 @@ export const BENGALS_PARTS: TeamPartsDefinition = {
     'orange-tiger': JERSEY_ORANGE_TIGER,
   },
   pants: {
-    black: PANTS_BLACK,
-    white: PANTS_WHITE,
-    'white-claw': PANTS_WHITE_CLAW,
+    'black-orange': PANTS_BLACK_ORANGE,
+    'white-black': PANTS_WHITE_BLACK,
+    'white-orange': PANTS_WHITE_ORANGE,
+    'orange-black': PANTS_ORANGE_BLACK,
   },
   kits: {
-    home: { helmet: 'orange', jersey: 'black', pants: 'black' },
-    away: { helmet: 'orange', jersey: 'white-tiger', pants: 'white' },
-    'orange-alt': { helmet: 'orange', jersey: 'orange-tiger', pants: 'white' },
-    'color-rush': { helmet: 'orange', jersey: 'white-tiger', pants: 'white-claw' },
+    home: {
+      helmet: 'orange',
+      jersey: 'black',
+      pants: ['black-orange', 'white-black', 'white-orange', 'orange-black'],
+    },
+    away: {
+      helmet: 'orange',
+      jersey: 'white-tiger',
+      pants: ['white-black', 'black-orange', 'white-orange', 'orange-black'],
+    },
+    'orange-alt': {
+      helmet: 'orange',
+      jersey: 'orange-tiger',
+      pants: ['white-orange', 'black-orange', 'white-black', 'orange-black'],
+    },
+    'color-rush': {
+      helmet: 'orange',
+      jersey: 'white-tiger',
+      pants: ['white-black', 'black-orange', 'white-orange', 'orange-black'],
+    },
   },
 };
 
