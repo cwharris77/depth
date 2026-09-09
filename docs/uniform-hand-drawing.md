@@ -166,13 +166,13 @@ Once the tables agree, render on the actual shell colour at both final size and 
 - `scripts/uniform-draw/drawkit.py` — everything above, as functions. Requires Pillow, and `qlmanage` for rendering on macOS. It is a manual dev tool: never imported by the app, never run in CI, deliberately not a package.json dependency.
 - `scripts/uniform-draw/texans_bull.py` — the Houston bull's actual anchor lists. The paths in the module are *emitted output*, so tuning the mark means editing anchors and re-running, not hand-editing coordinate strings.
 - `scripts/uniform-draw/helmet_base.py` — the shared shell, facemask and art transform, emitted into `lib/uniforms/helmet-art.ts`.
-- `scripts/uniform-draw/panthers_decal.py`, `rams_horn.py` — the traced marks. These take the second route below rather than the hand-drawn procedure above; each one's docstring carries its own reference, licence, measured topology and placement derivation.
+- `scripts/uniform-draw/panthers_decal.py`, `rams_horn.py`, `chargers_bolt.py` — the traced marks. These take the second route below rather than the hand-drawn procedure above; each one's docstring carries its own reference, licence, measured topology and placement derivation.
 - `scripts/uniform-draw/fetch-mark-refs.py` — resolves and downloads each team's Wikimedia mark reference into `nfl-uniform-refs/`, recording licence metadata per team. Run it before step 2.
 - `scripts/uniform-draw/gate-check.py` — measures those references against the decal resolution gate (thinnest stroke ≥ 2px; component count stable under a 0.75x downscale) and writes `nfl-uniform-refs/MARKS-GATE.md`. Its `NOTES` table carries the per-team traps found while auditing, e.g. that the Rams helmet decal is the horn alone and not the fetched ram-head logo.
 
 ### The second route: tracing
 
-Some marks cannot be hand-drawn at helmet scale — Carolina's whiskers and fangs, the Rams' horn — and for those the honest move is to trace the vector reference. That is a different procedure from §6, not a shortcut past the rest: §3's topology measurement still comes first, because the trace produces one mask per ink and you have to know whether an enclosed area is a hole or a concavity before you know how many elements the mark has.
+Some marks cannot be hand-drawn at helmet scale — Carolina's whiskers and fangs, the Rams' horn, the Chargers' bolt — and for those the honest move is to trace the vector reference. That is a different procedure from §6, not a shortcut past the rest: §3's topology measurement still comes first, because the trace produces one mask per ink and you have to know whether an enclosed area is a hole or a concavity before you know how many elements the mark has.
 
 `drawkit`'s tracing half is what a traced team script is built from — `mask` / `fill_holes` / `holes_of` / `components` / `trace` / `check_paths` / `main`. A team script supplies only the reference, the colour predicates that separate its inks, and the placement boxes; it must not carry its own copy of a flood fill or a curve simplifier. Two rules that cost real time when broken:
 
