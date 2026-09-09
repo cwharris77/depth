@@ -237,28 +237,11 @@ const JERSEY_BLUE: UniformPart = {
   number: { fill: 'readable-on-body', outline: 'red', outlineWidth: 26 },
 };
 
-// Away jersey: white body with the red pant stripe (the generic layers painted red, since the
-// white body needs the contrast). The red sleeve band lives in the shared HELMET_WHITE part.
+// Away jersey: white body. The red pant stripe lives on PANTS_WHITE so white pants remain a
+// reusable option for either standard jersey.
 const JERSEY_WHITE: UniformPart = {
   base: 'white',
-  layers: [
-    {
-      id: 'generic-pants-stripe-left',
-      surface: 'leg-left',
-      d: PANTS_STRIPE_PATH_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: 'red',
-    },
-    {
-      id: 'generic-pants-stripe-right',
-      surface: 'leg-right',
-      d: PANTS_STRIPE_PATH_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: 'red',
-    },
-  ],
+  layers: [],
   number: { fill: 'navy', outline: 'red', outlineWidth: 26 },
 };
 
@@ -292,8 +275,29 @@ const PANTS_BLUE: UniformPart = {
   ],
 };
 
-// Away pants, white with the red stripe (painted via JERSEY_WHITE's legs).
-const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
+// White pants are the canonical away option and the alternate home option; their red stripe is
+// part of the pants so this option remains correct when paired with either standard jersey.
+const PANTS_WHITE: UniformPart = {
+  base: 'white',
+  layers: [
+    {
+      id: 'generic-pants-stripe-left',
+      surface: 'leg-left',
+      d: PANTS_STRIPE_PATH_LEFT,
+      clip: true,
+      kind: 'fill',
+      fill: 'red',
+    },
+    {
+      id: 'generic-pants-stripe-right',
+      surface: 'leg-right',
+      d: PANTS_STRIPE_PATH_RIGHT,
+      clip: true,
+      kind: 'fill',
+      fill: 'red',
+    },
+  ],
+};
 
 // Rivalries pants, white, unbanded.
 const PANTS_RIVALRIES: UniformPart = { base: 'white', layers: [] };
@@ -318,8 +322,10 @@ export const BILLS_PARTS: TeamPartsDefinition = {
   },
   pants: { blue: PANTS_BLUE, white: PANTS_WHITE, rivalries: PANTS_RIVALRIES },
   kits: {
-    home: { helmet: 'white', jersey: 'blue', pants: 'blue' },
-    away: { helmet: 'white', jersey: 'white', pants: 'white' },
+    // The 2025 GUD composite shows both blue and white trousers with each modern top;
+    // canonical-first preserves the existing blue-over-blue and white-over-white rasters.
+    home: { helmet: 'white', jersey: 'blue', pants: ['blue', 'white'] },
+    away: { helmet: 'white', jersey: 'white', pants: ['white', 'blue'] },
     'rivalries-2025': { helmet: 'ice', jersey: 'rivalries', pants: 'rivalries' },
   },
 };
