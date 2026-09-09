@@ -9,7 +9,7 @@ The SVG is used only as the linework source and is never committed. The GUD 2025
 used only for placement measurements: on the home helmet the visible mark spans approximately
 x=37..159 and y=285..399, or 11.5% left, 70.1% wide, 14.6% top, and 20.2% high against the
 helmet shell. Transferred to the raw mannequin shell, that is the retained placement box
-``Box(294.0, 128.0, 328.0, 152.0)``; its 2.16 aspect intentionally follows the shell's
+    ``Box(236.0, 106.0, 430.0, 210.0)``; its 2.05 aspect intentionally follows the shell's
 foreshortened side view rather than squeezing the flat SVG to its own 2.03 aspect.
 
 TOPOLOGY, measured before tracing from a black-backed raster of the SVG: one 8-connected navy
@@ -42,7 +42,7 @@ from drawkit import Box, components, crop_to_art, main, mask, trace  # noqa: E40
 
 REF = Path.home() / 'Documents/GitHubProjects/nfl-uniform-refs/patriots/patriots-mark.svg'
 MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'patriots.ts'
-BOX = Box(294.0, 128.0, 328.0, 152.0)
+BOX = Box(236.0, 106.0, 430.0, 210.0)
 MIN_REGION = 100
 EPS = 1.2
 
