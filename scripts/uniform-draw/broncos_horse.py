@@ -30,7 +30,7 @@ from drawkit import Box, components, main, mask, trace  # noqa: E402
 
 REF = Path.home() / 'Documents/GitHubProjects/nfl-uniform-refs/broncos/broncos-mark.svg'
 MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'broncos.ts'
-BOX = Box(203.0, 147.6, 375.9, 192.7)
+BOX = Box(200.0, 152.0, 375.9, 192.7)
 MIN_REGION = 100
 EPS = 3.0
 
@@ -84,8 +84,15 @@ def shared_masks():
 
 def build():
     orange_mask, white_mask, w, h = shared_masks()
+    orange_regions = components(orange_mask, w, h, MIN_REGION)
+    mane_cells = {cell for region in orange_regions[:3] for cell in region}
+    eye_cells = set(orange_regions[3])
+    to_mask = lambda cells: [
+        [1 if (x, y) in cells else 0 for x in range(w)] for y in range(h)
+    ]
     return {
-        'BRONCOS_DECAL_MANE_PATH': trace(orange_mask, w, h, BOX, eps=EPS, minsize=MIN_REGION),
+        'BRONCOS_DECAL_MANE_PATH': trace(to_mask(mane_cells), w, h, BOX, eps=EPS, minsize=MIN_REGION),
+        'BRONCOS_DECAL_EYE_PATH': trace(to_mask(eye_cells), w, h, BOX, eps=EPS, minsize=MIN_REGION),
         'BRONCOS_DECAL_HORSE_PATH': trace(white_mask, w, h, BOX, eps=EPS, minsize=MIN_REGION),
     }
 
