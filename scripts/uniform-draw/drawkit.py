@@ -4,12 +4,16 @@ Companion to docs/uniform-hand-drawing.md, which is the procedure; this is the
 machinery that procedure calls for. Nothing here is team-specific — the per-team
 curve lists live beside it (see texans_bull.py for the worked example).
 
-Three groups of things, matching the steps in the doc:
+Four groups of things, matching the steps in the doc:
 
   Steps 2-4  render_flat / art_bbox / runs / extents   — look at a reference and
              turn it into numbers, working around the two rendering traps.
   Step 3     regions                                    — topology: how many
              shapes, and is each enclosed area a hole or a concavity.
+  Step 5     mask / fill_holes / trace / check_paths    — the other route: trace
+             a vector reference, for marks too fine to hand-draw at helmet
+             scale. A team script is then a reference, a set of colour
+             predicates and a placement box, and nothing else.
   Steps 6-7  Box / path / star / compare                — draw in a normalised
              box, then verify numerically against the reference.
 
@@ -21,7 +25,9 @@ CI, and deliberately not a package.json entry.
 from __future__ import annotations
 
 import math
+import re
 import subprocess
+import sys
 import tempfile
 from collections import deque
 from pathlib import Path
@@ -142,7 +148,11 @@ def _mask(im, pred):
     return [[1 if pred(p[x, y]) else 0 for x in range(w)] for y in range(h)], w, h
 
 
-def _components(m, w, h, minsize):
+_N4 = ((1, 0), (-1, 0), (0, 1), (0, -1))
+_N8 = _N4 + ((1, 1), (1, -1), (-1, 1), (-1, -1))
+
+
+def _components(m, w, h, minsize, conn=_N4):
     seen = [[False] * w for _ in range(h)]
     out = []
     for sy in range(h):
@@ -157,7 +167,7 @@ def _components(m, w, h, minsize):
                 cells.append((x, y))
                 if x in (0, w - 1) or y in (0, h - 1):
                     touches = True
-                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                for dx, dy in conn:
                     nx, ny = x + dx, y + dy
                     if 0 <= nx < w and 0 <= ny < h and not seen[ny][nx] and m[ny][nx]:
                         seen[ny][nx] = True
@@ -215,6 +225,214 @@ def region_rows(im, pred, index=0, step=5, minsize=60):
         if row:
             out[v] = (round(min(row) * 100.0 / w), round(max(row) * 100.0 / w))
     return out
+
+
+# --------------------------------------------------------------------------
+# Tracing (doc step 5, the alternative to drawing by hand)
+# --------------------------------------------------------------------------
+#
+# Some marks are not hand-drawable at helmet scale — Carolina's fangs and
+# whiskers, the Rams' horn — and for those the honest move is to trace a
+# vector reference instead of guessing anchors. That is a different procedure
+# from the rest of this file, not a shortcut past it: the topology still has to
+# be MEASURED first (regions, above), because what the trace produces is a
+# per-element mask and you have to know whether an enclosed area is a hole or a
+# concavity before you decide how many elements there are.
+#
+# Everything below is deliberately generic. A team script supplies the
+# reference, the colour predicates that separate its inks, and the placement
+# boxes; it should not carry its own copy of a flood fill or a curve simplifier
+# (three of them did, identically, before this section existed).
+
+
+def mask(im, pred):
+    """(grid, w, h) of 1/0 for every pixel matching pred."""
+    return _mask(im, pred)
+
+
+def fill_holes(m, w, h):
+    """The mask with every enclosed background area filled in.
+
+    This is what an outline element is traced from. Tracing the keyline ink
+    ALONE breaks it into slivers wherever the body ink touches it, and the
+    antialiased seam between two inks reads as neither, so the union-then-fill
+    is what keeps a keyline continuous.
+    """
+    seen = [[False] * w for _ in range(h)]
+    q = deque()
+    for x in range(w):
+        for y in (0, h - 1):
+            if not m[y][x] and not seen[y][x]:
+                seen[y][x] = True
+                q.append((x, y))
+    for y in range(h):
+        for x in (0, w - 1):
+            if not m[y][x] and not seen[y][x]:
+                seen[y][x] = True
+                q.append((x, y))
+    while q:
+        x, y = q.popleft()
+        for dx, dy in _N4:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < w and 0 <= ny < h and not seen[ny][nx] and not m[ny][nx]:
+                seen[ny][nx] = True
+                q.append((nx, ny))
+    return [[1 if m[y][x] or not seen[y][x] else 0 for x in range(w)] for y in range(h)]
+
+
+def holes_of(m, w, h):
+    """Only the enclosed background areas — the detail element painted back on top."""
+    filled = fill_holes(m, w, h)
+    return [[1 if filled[y][x] and not m[y][x] else 0 for x in range(w)] for y in range(h)]
+
+
+def components(m, w, h, minsize=40):
+    """8-connected components of a mask, largest first.
+
+    8-connected on purpose: a diagonal one-pixel bridge is a real connection in
+    a drawn mark, and treating it as a break scatters a mark into specks.
+    `minsize` drops antialias debris that would otherwise survive into the path
+    as visible dots.
+    """
+    return sorted((c for c, _ in _components(m, w, h, minsize, _N8)), key=len, reverse=True)
+
+
+_DIRS = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)]
+
+
+def outline(cells):
+    """Moore-neighbour boundary walk of one 8-connected component."""
+    filled = set(cells)
+    start = min(cells, key=lambda c: (c[1], c[0]))
+    contour = [start]
+    cur, back = start, 4
+    limit = 8 * len(cells) + 16
+    while len(contour) < limit:
+        for i in range(1, 9):
+            d = _DIRS[(back + i) % 8]
+            nb = (cur[0] + d[0], cur[1] + d[1])
+            if nb in filled:
+                back = _DIRS.index((-d[0], -d[1]))
+                cur = nb
+                break
+        else:
+            break
+        if cur == start:
+            break
+        contour.append(cur)
+    return contour
+
+
+def simplify(pts, eps):
+    """Douglas-Peucker, iterative so a 20k-point contour cannot blow the stack.
+
+    `eps` is in source pixels. Too tight and every antialias stair-step survives
+    into the path; too loose and the mark's own notches round off. Tune it
+    against the reference, not against the path's length.
+    """
+    if len(pts) < 3:
+        return pts
+    keep = [False] * len(pts)
+    keep[0] = keep[-1] = True
+    stack = [(0, len(pts) - 1)]
+    while stack:
+        a, b = stack.pop()
+        if b - a < 2:
+            continue
+        (x1, y1), (x2, y2) = pts[a], pts[b]
+        dx, dy = x2 - x1, y2 - y1
+        norm = (dx * dx + dy * dy) ** 0.5
+        best, bi = -1.0, None
+        for i in range(a + 1, b):
+            x, y = pts[i]
+            dist = (
+                abs(dy * x - dx * y + x2 * y1 - y2 * x1) / norm
+                if norm
+                else ((x - x1) ** 2 + (y - y1) ** 2) ** 0.5
+            )
+            if dist > best:
+                best, bi = dist, i
+        if best > eps:
+            keep[bi] = True
+            stack.append((a, bi))
+            stack.append((bi, b))
+    return [p for p, k in zip(pts, keep) if k]
+
+
+def trace(m, w, h, box, eps=0.9, minsize=40, space='image', mirror=False):
+    """One mask -> one multi-subpath `d`, placed in `box`.
+
+    `space` chooses what 0..100 means. 'image' spreads the whole rendered
+    reference across the box, which is right when the reference was cropped to
+    this element already. 'art' uses the bounding box of everything traced, so
+    several components keep their relative positions instead of each being
+    stretched to its own extents — the difference between a two-part mark
+    landing as one drawing and as two.
+
+    `mirror` reflects design u (u -> 100 - u), for a reference that faces the
+    other way from the mannequin, or for the opposite limb.
+    """
+    regions_ = components(m, w, h, minsize)
+    if space == 'art':
+        cells = [c for r in regions_ for c in r]
+        if not cells:
+            return ''
+        x0 = min(x for x, _ in cells)
+        x1 = max(x for x, _ in cells)
+        y0 = min(y for _, y in cells)
+        y1 = max(y for _, y in cells)
+        span_x, span_y = float(x1 - x0) or 1.0, float(y1 - y0) or 1.0
+    elif space == 'image':
+        x0, y0, span_x, span_y = 0.0, 0.0, float(w), float(h)
+    else:
+        raise ValueError('unknown space %r' % (space,))
+
+    subpaths = []
+    for cells in regions_:
+        pts = simplify(outline(cells), eps)
+        if len(pts) < 3:
+            continue
+        design = [((x - x0) * 100.0 / span_x, (y - y0) * 100.0 / span_y) for x, y in pts]
+        if mirror:
+            design = [(100.0 - u, v) for u, v in design]
+        mapped = box.map(design)
+        subpaths.append(
+            'M%.1f,%.1f ' % mapped[0] + ' '.join('L%.1f,%.1f' % p for p in mapped[1:]) + ' Z'
+        )
+    return ' '.join(subpaths)
+
+
+def check_paths(module, paths):
+    """True when every generated path is byte-identical to the one in `module`.
+
+    The point of a generator is that the committed path can be re-derived, so
+    every team script exposes this as `--check`: it is the thing that fails if
+    someone hand-edits a path, or if the mannequin's geometry moves under a
+    placement box that was measured against the old one.
+    """
+    src = Path(module).read_text()
+    ok = True
+    for name, want in paths.items():
+        m = re.search(r"%s =\s*\n?\s*'([^']*)'" % name, src)
+        if not m:
+            print('MISSING  %s' % name)
+            ok = False
+        elif m.group(1) != want:
+            print('DIFFERS  %s' % name)
+            ok = False
+        else:
+            print('ok       %s' % name)
+    return ok
+
+
+def main(build, module, argv=None):
+    """The whole of a team script's `if __name__ == '__main__'` block."""
+    argv = sys.argv if argv is None else argv
+    built = build()
+    if '--check' in argv:
+        raise SystemExit(0 if check_paths(module, built) else 1)
+    for name, d in built.items():
+        print('export const %s =\n  %r;' % (name, d))
 
 
 # --------------------------------------------------------------------------
