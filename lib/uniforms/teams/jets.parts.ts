@@ -64,7 +64,7 @@ function collar(color: string): PartLayer[] {
 }
 
 // The white wordmark — pinned, everywhere.
-function wordmark(): PartLayer[] {
+function wordmark(color: string): PartLayer[] {
   return [
     {
       id: 'jets-decal',
@@ -72,19 +72,23 @@ function wordmark(): PartLayer[] {
       d: JETS_DECAL_PATH,
       clip: true,
       kind: 'fill',
-      fill: 'white',
+      fill: color,
     },
   ];
 }
 
 // Home/away's green shell (H1) — #125740, the current green.
-const HELMET_GREEN: UniformPart = { base: 'green', facemask: 'white', layers: wordmark() };
+const HELMET_GREEN: UniformPart = { base: 'green', facemask: 'white', layers: wordmark('white') };
 
 // Rivalries' green shell (H2) — #115740, a distinct step.
-const HELMET_RIV_GREEN: UniformPart = { base: 'rivalGreen', facemask: 'white', layers: wordmark() };
+const HELMET_RIV_GREEN: UniformPart = {
+  base: 'rivalGreen',
+  facemask: 'white',
+  layers: wordmark('white'),
+};
 
 // Black-alt shell (H3).
-const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'white', layers: wordmark() };
+const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'white', layers: wordmark('green') };
 
 // Home jersey (J1): green body, white bands + collar, white numerals.
 const JERSEY_GREEN: UniformPart = {
