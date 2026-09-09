@@ -165,10 +165,18 @@ Once the tables agree, render on the actual shell colour at both final size and 
 
 - `scripts/uniform-draw/drawkit.py` — everything above, as functions. Requires Pillow, and `qlmanage` for rendering on macOS. It is a manual dev tool: never imported by the app, never run in CI, deliberately not a package.json dependency.
 - `scripts/uniform-draw/texans_bull.py` — the Houston bull's actual anchor lists. The paths in the module are *emitted output*, so tuning the mark means editing anchors and re-running, not hand-editing coordinate strings.
+- `scripts/uniform-draw/helmet_base.py` — the shared shell, facemask and art transform, emitted into `lib/uniforms/helmet-art.ts`.
+- `scripts/uniform-draw/panthers_decal.py` — the Carolina mark. A *contour trace* rather than the hand-drawn procedure above, so it is the exception documented in its own docstring, not the pattern to copy.
+- `scripts/uniform-draw/fetch-mark-refs.py` — resolves and downloads each team's Wikimedia mark reference into `nfl-uniform-refs/`, recording licence metadata per team. Run it before step 2.
+- `scripts/uniform-draw/gate-check.py` — measures those references against the decal resolution gate (thinnest stroke ≥ 2px; component count stable under a 0.75x downscale) and writes `nfl-uniform-refs/MARKS-GATE.md`. Its `NOTES` table carries the per-team traps found while auditing, e.g. that the Rams helmet decal is the horn alone and not the fetched ram-head logo.
+
+Every one of these is a manual dev tool on the same terms as `drawkit.py`: tracked because the module paths they emit are generated output that must be re-derived rather than hand-edited, but never imported by the app, never run in CI, and not a package.json dependency. They read and write `nfl-uniform-refs/`, which is a sibling reference folder and never committed.
 
 ```bash
 python3 scripts/uniform-draw/texans_bull.py            # print the paths
 python3 scripts/uniform-draw/texans_bull.py --check    # assert the module still matches
+python3 scripts/uniform-draw/fetch-mark-refs.py        # refresh nfl-uniform-refs/<team>/<team>-mark.*
+python3 scripts/uniform-draw/gate-check.py             # rewrite MARKS-GATE.md; exit 1 if any team fails
 ```
 
 ---
