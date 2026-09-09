@@ -6,7 +6,7 @@
 // raven head, a short tilted gold-keyline bar on each shoulder cap, a solid band filling the last
 // third of each sleeve, and trimmed numerals. No helmet stripe, no collar trim, no pant stripe.
 //
-// The measured target is 1 helmet / 3 jersey / 1 pants, and that is what this factors to. The
+// The measured target is 1 helmet / 3 jersey / 3 pants after enumerating the GUD options. The
 // single helmet is the whole point of the model here: the shell is black with the same four-layer
 // mark on every kit, but the flat definition reached it three different ways — `secondary` at
 // home, a literal away, and the implicit `primary` on the black alternate — because black moves
@@ -19,10 +19,10 @@
 // would repaint the mark.
 
 import {
-  RAVENS_DECAL_BEAK_PATH,
-  RAVENS_DECAL_HEAD_PATH,
-  RAVENS_DECAL_KEYLINE_PATH,
-  RAVENS_DECAL_LETTER_PATH,
+  RAVENS_DECAL_EYE_PATH,
+  RAVENS_DECAL_GOLD_PATH,
+  RAVENS_DECAL_PURPLE_PATH,
+  RAVENS_DECAL_WHITE_PATH,
   RAVENS_SHOULDER_INNER_LEFT,
   RAVENS_SHOULDER_INNER_RIGHT,
   RAVENS_SHOULDER_OUTER_LEFT,
@@ -33,15 +33,16 @@ import {
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 import type { UniformSurface } from './types';
 
-// The raven head: gold keyline, purple head, gold "B", white beak, in that paint order. Fixed art
-// on every shell the club wears, so nothing here varies by kit.
+// The raven head: gold silhouette, purple head, white details, then the red eye. Black gaps are
+// supplied by the shell, matching the source mark's negative space. Fixed art on every shell the
+// club wears, so nothing here varies by kit.
 function decal(): PartLayer[] {
   return (
     [
-      ['ravens-decal-keyline', RAVENS_DECAL_KEYLINE_PATH, 'decalGold'],
-      ['ravens-decal-head', RAVENS_DECAL_HEAD_PATH, 'purple'],
-      ['ravens-decal-letter', RAVENS_DECAL_LETTER_PATH, 'decalGold'],
-      ['ravens-decal-beak', RAVENS_DECAL_BEAK_PATH, 'white'],
+      ['ravens-decal-gold', RAVENS_DECAL_GOLD_PATH, 'decalGold'],
+      ['ravens-decal-purple', RAVENS_DECAL_PURPLE_PATH, 'purple'],
+      ['ravens-decal-white', RAVENS_DECAL_WHITE_PATH, 'white'],
+      ['ravens-decal-eye', RAVENS_DECAL_EYE_PATH, 'red'],
     ] as [string, string, string][]
   ).map(([id, d, fill]) => ({
     id,
@@ -107,8 +108,11 @@ const JERSEY_BLACK: UniformPart = {
   number: { fill: 'white', outline: 'gold', outlineWidth: 16 },
 };
 
-// The only pants (P1): purple and unbroken on every kit.
+// The GUD composite shows purple, black, and white pants with these jerseys. Purple is canonical
+// because it is the existing raster pairing; the other two remain available options.
 const PANTS_PURPLE: UniformPart = { base: 'purple', layers: [] };
+const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };
+const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
 
 export const RAVENS_PARTS: TeamPartsDefinition = {
   teamId: 'ravens',
@@ -120,14 +124,15 @@ export const RAVENS_PARTS: TeamPartsDefinition = {
     white: '#FFFFFF',
     gold: '#9E7C0C',
     decalGold: '#9A7611',
+    red: '#C8102E',
   },
   helmets: { black: HELMET_BLACK },
   jerseys: { purple: JERSEY_PURPLE, white: JERSEY_WHITE, black: JERSEY_BLACK },
-  pants: { purple: PANTS_PURPLE },
+  pants: { purple: PANTS_PURPLE, black: PANTS_BLACK, white: PANTS_WHITE },
   kits: {
-    home: { helmet: 'black', jersey: 'purple', pants: 'purple' },
-    away: { helmet: 'black', jersey: 'white', pants: 'purple' },
-    'black-alt': { helmet: 'black', jersey: 'black', pants: 'purple' },
+    home: { helmet: 'black', jersey: 'purple', pants: ['purple', 'black', 'white'] },
+    away: { helmet: 'black', jersey: 'white', pants: ['purple', 'black', 'white'] },
+    'black-alt': { helmet: 'black', jersey: 'black', pants: ['purple', 'black', 'white'] },
   },
 };
 
