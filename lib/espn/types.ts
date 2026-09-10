@@ -43,3 +43,21 @@ export interface EspnTeamInfo {
   alternateColor?: string;
   logos?: { href: string; rel?: string[] }[];
 }
+
+export interface EspnScheduleEvent {
+  id: string;
+  date?: string;
+  week?: { number?: number };
+  season?: { year?: number; type?: { id?: string } };
+  competitions?: {
+    competitors?: {
+      homeAway?: 'home' | 'away';
+      team?: { abbreviation?: string };
+      score?: string;
+    }[];
+  }[];
+}
+
+export interface EspnTeamSchedule {
+  events?: EspnScheduleEvent[];
+}

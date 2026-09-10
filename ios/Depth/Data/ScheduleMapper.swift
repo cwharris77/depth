@@ -10,8 +10,11 @@ enum ScheduleMapper {
         teamsById: [String: Team]
     ) throws -> TeamSchedule {
         var gamesByWeek: [Int: ScheduleGame] = [:]
+        var preseasonGames: [ScheduleGame] = []
+        var postseasonGames: [ScheduleGame] = []
 
-        for game in games where game.gameType == "REG" {
+        for game in games {
+            guard ["PRE", "REG", "WC", "DIV", "CON", "SB"].contains(game.gameType) else { continue }
             guard game.homeTeamId == schedule.teamId || game.awayTeamId == schedule.teamId else { continue }
             guard let week = game.week else { continue }
             guard week > 0 else {
@@ -25,8 +28,9 @@ enum ScheduleMapper {
             guard let opponent = teamsById[opponentId] else {
                 throw DepthError.decoding("game \(game.gameId): missing opponent \(opponentId)")
             }
-            gamesByWeek[week] = ScheduleGame(
+            let resolved = ScheduleGame(
                 week: week,
+                gameType: game.gameType,
                 isBye: false,
                 date: game.gameday,
                 isHome: isHome,
@@ -36,10 +40,21 @@ enum ScheduleMapper {
                 result: outcome(teamScore: teamScore, opponentScore: opponentScore),
                 market: mapMarket(game, isHome: isHome)
             )
+
+            switch game.gameType {
+            case "PRE": preseasonGames.append(resolved)
+            case "REG": gamesByWeek[week] = resolved
+            default: postseasonGames.append(resolved)
+            }
         }
 
         guard let maximumWeek = gamesByWeek.keys.max() else {
-            return TeamSchedule(season: schedule.season, games: [])
+            return TeamSchedule(
+                season: schedule.season,
+                games: [],
+                preseasonGames: preseasonGames.sorted { $0.week < $1.week },
+                postseasonGames: postseasonGames.sorted { $0.week < $1.week }
+            )
         }
 
         let resolvedGames = (1...maximumWeek).map { week in
@@ -54,7 +69,12 @@ enum ScheduleMapper {
                 result: nil
             )
         }
-        return TeamSchedule(season: schedule.season, games: resolvedGames)
+        return TeamSchedule(
+            season: schedule.season,
+            games: resolvedGames,
+            preseasonGames: preseasonGames.sorted { $0.week < $1.week },
+            postseasonGames: postseasonGames.sorted { $0.week < $1.week }
+        )
     }
 
     private static func outcome(teamScore: Int?, opponentScore: Int?) -> ScheduleResult? {

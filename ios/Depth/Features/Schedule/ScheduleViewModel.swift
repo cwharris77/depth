@@ -68,7 +68,9 @@ final class ScheduleViewModel {
             }
             selectedSeason = result.season
             schedule = result
-            loadState = result.games.isEmpty ? .empty : .loaded
+            loadState = result.games.isEmpty && result.preseasonGames.isEmpty && result.postseasonGames.isEmpty
+                ? .empty
+                : .loaded
         } catch let error as DepthError {
             guard requestID == latestRequestID else { return }
             schedule = nil

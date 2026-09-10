@@ -1,6 +1,6 @@
 import Foundation
 
-// Immutable regular-season schedule rendered by the Schedule feature. Scores and
+// Immutable season schedule rendered by the Schedule feature. Scores and
 // opponent identity remain optional because public source data can legitimately be
 // incomplete; callers show an explicit unavailable/no-result state instead of inventing
 // a score or opponent.
@@ -11,6 +11,32 @@ struct TeamSchedule: Equatable, Sendable, Codable {
     static let earliestSeason = 1999
     let season: Int
     let games: [ScheduleGame]
+    let preseasonGames: [ScheduleGame]
+    let postseasonGames: [ScheduleGame]
+
+    init(
+        season: Int,
+        games: [ScheduleGame],
+        preseasonGames: [ScheduleGame] = [],
+        postseasonGames: [ScheduleGame] = []
+    ) {
+        self.season = season
+        self.games = games
+        self.preseasonGames = preseasonGames
+        self.postseasonGames = postseasonGames
+    }
+
+    private enum CodingKeys: String, CodingKey { case season, games, preseasonGames, postseasonGames }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            season: try container.decode(Int.self, forKey: .season),
+            games: try container.decode([ScheduleGame].self, forKey: .games),
+            preseasonGames: try container.decodeIfPresent([ScheduleGame].self, forKey: .preseasonGames) ?? [],
+            postseasonGames: try container.decodeIfPresent([ScheduleGame].self, forKey: .postseasonGames) ?? []
+        )
+    }
 }
 
 enum ScheduleResult: String, Equatable, Sendable, Codable {
@@ -21,6 +47,7 @@ enum ScheduleResult: String, Equatable, Sendable, Codable {
 
 struct ScheduleGame: Equatable, Identifiable, Sendable, Codable {
     let week: Int
+    let gameType: String
     let isBye: Bool
     let date: String?
     let isHome: Bool
@@ -34,6 +61,7 @@ struct ScheduleGame: Equatable, Identifiable, Sendable, Codable {
 
     init(
         week: Int,
+        gameType: String = "REG",
         isBye: Bool,
         date: String?,
         isHome: Bool,
@@ -44,6 +72,7 @@ struct ScheduleGame: Equatable, Identifiable, Sendable, Codable {
         market: ScheduleGameMarket? = nil
     ) {
         self.week = week
+        self.gameType = gameType
         self.isBye = isBye
         self.date = date
         self.isHome = isHome
@@ -54,7 +83,38 @@ struct ScheduleGame: Equatable, Identifiable, Sendable, Codable {
         self.market = market
     }
 
+    private enum CodingKeys: String, CodingKey {
+        case week, gameType, isBye, date, isHome, opponent, teamScore, opponentScore, result, market
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            week: try container.decode(Int.self, forKey: .week),
+            gameType: try container.decodeIfPresent(String.self, forKey: .gameType) ?? "REG",
+            isBye: try container.decode(Bool.self, forKey: .isBye),
+            date: try container.decodeIfPresent(String.self, forKey: .date),
+            isHome: try container.decode(Bool.self, forKey: .isHome),
+            opponent: try container.decodeIfPresent(Team.self, forKey: .opponent),
+            teamScore: try container.decodeIfPresent(Int.self, forKey: .teamScore),
+            opponentScore: try container.decodeIfPresent(Int.self, forKey: .opponentScore),
+            result: try container.decodeIfPresent(ScheduleResult.self, forKey: .result),
+            market: try container.decodeIfPresent(ScheduleGameMarket.self, forKey: .market)
+        )
+    }
+
     var id: Int { week }
+
+    var phaseLabel: String {
+        switch gameType {
+        case "PRE": return "Preseason"
+        case "WC": return "Wild Card"
+        case "DIV": return "Divisional"
+        case "CON": return "Conference"
+        case "SB": return "Super Bowl"
+        default: return "Week \(week)"
+        }
+    }
 }
 
 // The current nflverse pregame market snapshot, oriented to the selected team. Raw

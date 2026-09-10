@@ -86,7 +86,7 @@ struct ScheduleView: View {
             ContentUnavailableView {
                 Label("No Schedule", systemImage: "calendar.badge.exclamationmark")
             } description: {
-                Text("No regular-season schedule is available for this season.")
+                Text("No season schedule is available for this season.")
             } actions: {
                 if viewModel.showsSeasonPicker {
                     seasonPicker
@@ -115,19 +115,12 @@ struct ScheduleView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 seasonPicker
-                LazyVGrid(
-                    columns: dynamicTypeSize.isAccessibilitySize
-                        ? [GridItem(.flexible())]
-                        : [GridItem(.adaptive(minimum: 144, maximum: 260), spacing: DesignTokens.Spacing.sm)],
-                    spacing: DesignTokens.Spacing.sm
-                ) {
-                    ForEach(schedule.games) { game in
-                        ScheduleGameCard(
-                            game: game,
-                            isPastSeason: viewModel.isPastSeason,
-                            onSelectOpponent: onSelectOpponent
-                        )
-                    }
+                if !schedule.preseasonGames.isEmpty {
+                    scheduleSection("PRESEASON", games: schedule.preseasonGames)
+                }
+                scheduleSection("REGULAR SEASON", games: schedule.games)
+                if !schedule.postseasonGames.isEmpty {
+                    scheduleSection("PLAYOFFS", games: schedule.postseasonGames)
                 }
             }
             .padding()
@@ -135,6 +128,29 @@ struct ScheduleView: View {
             .accessibilityIdentifier("schedule-content")
         }
         .scrollIndicators(.hidden)
+    }
+
+    private func scheduleSection(_ title: String, games: [ScheduleGame]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.caption.bold())
+                .tracking(0.8)
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+            LazyVGrid(
+                columns: dynamicTypeSize.isAccessibilitySize
+                    ? [GridItem(.flexible())]
+                    : [GridItem(.adaptive(minimum: 144, maximum: 260), spacing: DesignTokens.Spacing.sm)],
+                spacing: DesignTokens.Spacing.sm
+            ) {
+                ForEach(games) { game in
+                    ScheduleGameCard(
+                        game: game,
+                        isPastSeason: viewModel.isPastSeason,
+                        onSelectOpponent: onSelectOpponent
+                    )
+                }
+            }
+        }
     }
 
     private var seasonPicker: some View {
@@ -187,7 +203,7 @@ private struct ScheduleGameCard: View {
             // Eyebrow + title hierarchy matches the Stats page's NEXT GAME card
             // (TeamStatsView.swift's NextGameCard): caption2.bold eyebrow, subheadline
             // .heavy title.
-            Text("WEEK \(game.week)")
+            Text(game.phaseLabel.uppercased())
                 .font(.caption2.bold())
                 .tracking(0.8)
                 .foregroundStyle(DesignTokens.Colors.textMuted)

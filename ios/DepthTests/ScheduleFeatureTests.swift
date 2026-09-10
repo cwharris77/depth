@@ -199,6 +199,35 @@ private func scheduleGame(
     #expect(result.games[1].opponent == nil)
 }
 
+@Test func mapsPreseasonAndPostseasonIntoSeparateOrderedCollections() throws {
+    let result = try ScheduleMapper.map(
+        schedule: ScheduleDTO(teamId: "bills", season: 2025),
+        games: [
+            scheduleGame(id: "pre-2", week: 2, gameType: "PRE", homeTeamId: "bills", awayTeamId: "jets"),
+            scheduleGame(id: "post-sb", week: 5, gameType: "SB", homeTeamId: "bills", awayTeamId: "jets"),
+            scheduleGame(id: "post-wc", week: 1, gameType: "WC", homeTeamId: "jets", awayTeamId: "bills"),
+            scheduleGame(id: "reg-1", week: 1, gameType: "REG", homeTeamId: "bills", awayTeamId: "jets"),
+        ],
+        teamsById: ["jets": scheduleTeam(id: "jets", abbrev: "NYJ")]
+    )
+
+    #expect(result.games.map(\.gameType) == ["REG"])
+    #expect(result.preseasonGames.map(\.gameType) == ["PRE"])
+    #expect(result.postseasonGames.map(\.gameType) == ["WC", "SB"])
+    #expect(result.postseasonGames.map(\.phaseLabel) == ["Wild Card", "Super Bowl"])
+}
+
+@Test func decodesLegacyCachedScheduleWithoutSeasonTypeCollections() throws {
+    let data = Data("""
+    { "season": 2025, "games": [] }
+    """.utf8)
+
+    let result = try JSONDecoder().decode(TeamSchedule.self, from: data)
+
+    #expect(result.preseasonGames.isEmpty)
+    #expect(result.postseasonGames.isEmpty)
+}
+
 @Test func invalidWeekProducesTypedDecodingError() {
     #expect(throws: DepthError.decoding("game bad-week: invalid week 0")) {
         try ScheduleMapper.map(

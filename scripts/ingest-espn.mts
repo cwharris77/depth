@@ -30,7 +30,13 @@ import { notifyRevalidate } from '@/lib/utils/ingest/notify-revalidate';
 import { currentSeasonOf, nflSeasonState } from '@/lib/utils/team/season-state';
 import { TEAMS } from '@/lib/teams/index';
 import { parseSeasonsArg } from '@/lib/utils/ingest/seasons-arg';
-import type { EspnDepthcharts, EspnRoster, EspnTeamInfo } from '@/lib/espn/types';
+import type {
+  EspnDepthcharts,
+  EspnRoster,
+  EspnScheduleEvent,
+  EspnTeamInfo,
+  EspnTeamSchedule,
+} from '@/lib/espn/types';
 import type { TeamRoster, TeamStats } from '@/lib/types';
 import type { Database } from '@/lib/database.types';
 
@@ -86,6 +92,99 @@ async function espnTeamIndex(): Promise<Map<string, EspnTeamInfo>> {
     map.set(team.abbreviation.toUpperCase(), team);
   }
   return map;
+}
+
+type PreseasonGame = Database['public']['Tables']['games']['Insert'];
+type ScheduleRow = Database['public']['Tables']['schedules']['Insert'];
+
+function parseScore(value: string | undefined): number | null {
+  if (!value || !/^\d+$/.test(value)) return null;
+  return Number(value);
+}
+
+function preseasonGame(event: EspnScheduleEvent): PreseasonGame | null {
+  if (event.season?.type?.id !== '1') return null;
+  const competitors = event.competitions?.[0]?.competitors ?? [];
+  const home = competitors.find((competitor) => competitor.homeAway === 'home');
+  const away = competitors.find((competitor) => competitor.homeAway === 'away');
+  if (!home?.team?.abbreviation || !away?.team?.abbreviation || !event.week?.number) return null;
+  return {
+    game_id: event.id,
+    season: event.season.year ?? 0,
+    game_type: 'PRE',
+    week: event.week.number,
+    gameday: event.date?.slice(0, 10) ?? null,
+    gametime: event.date ?? null,
+    home_team_id: home.team.abbreviation.toLowerCase(),
+    away_team_id: away.team.abbreviation.toLowerCase(),
+    home_score: parseScore(home.score),
+    away_score: parseScore(away.score),
+    updated_at: new Date().toISOString(),
+  };
+}
+
+async function fetchPreseasonSchedules(
+  espnIndex: Map<string, EspnTeamInfo>,
+  season: number
+): Promise<{ games: PreseasonGame[]; schedules: ScheduleRow[]; errors: string[] }> {
+  const games = new Map<string, PreseasonGame>();
+  const scheduleKeys = new Set<string>();
+  const errors: string[] = [];
+  for (const roster of Object.values(TEAMS)) {
+    const abbrev =
+      ABBREV_ALIAS[roster.team.abbrev.toUpperCase()] ?? roster.team.abbrev.toUpperCase();
+    const info = espnIndex.get(abbrev);
+    if (!info) continue;
+    try {
+      const data = await getJson<EspnTeamSchedule>(
+        `${SITE}/teams/${abbrev.toLowerCase()}/schedule?season=${season}&seasontype=1`
+      );
+      for (const event of data.events ?? []) {
+        const game = preseasonGame(event);
+        if (!game || game.season !== season) continue;
+        const homeId = Object.values(TEAMS).find(
+          (entry) => entry.team.abbrev.toLowerCase() === game.home_team_id
+        )?.team.id;
+        const awayId = Object.values(TEAMS).find(
+          (entry) => entry.team.abbrev.toLowerCase() === game.away_team_id
+        )?.team.id;
+        if (!homeId || !awayId) continue;
+        game.home_team_id = homeId;
+        game.away_team_id = awayId;
+        games.set(game.game_id, game);
+        scheduleKeys.add(`${homeId}|${season}`);
+        scheduleKeys.add(`${awayId}|${season}`);
+      }
+    } catch (error) {
+      errors.push(`${roster.team.id}: ${(error as Error).message}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+  return {
+    games: [...games.values()],
+    schedules: [...scheduleKeys].map((key) => {
+      const [team_id, year] = key.split('|');
+      return { team_id, season: Number(year), updated_at: new Date().toISOString() };
+    }),
+    errors,
+  };
+}
+
+async function writePreseason(
+  supabase: SupabaseClient<Database>,
+  schedules: ScheduleRow[],
+  games: PreseasonGame[]
+): Promise<void> {
+  if (schedules.length) {
+    const { error } = await supabase
+      .from('schedules')
+      .upsert(schedules, { onConflict: 'team_id,season' });
+    if (error) throw new Error(`preseason schedules upsert: ${error.message}`);
+  }
+  if (games.length) {
+    const { error } = await supabase.from('games').upsert(games, { onConflict: 'game_id' });
+    if (error) throw new Error(`preseason games upsert: ${error.message}`);
+  }
 }
 
 async function main() {
@@ -200,6 +299,12 @@ async function main() {
     return;
   }
   if (!supabase) return; // unreachable (seedOut handled above); narrows the type below
+
+  const preseason = await fetchPreseasonSchedules(espnIndex, currentSeason);
+  if (preseason.errors.length) {
+    for (const message of preseason.errors) errors.push({ team: 'schedule', message });
+  }
+  await writePreseason(supabase, preseason.schedules, preseason.games);
 
   let teamsWritten = 0;
   for (const roster of Object.values(built)) {
