@@ -50,7 +50,8 @@ enum ScheduleMapper {
                 teamId: schedule.teamId,
                 teamsById: teamsById,
                 playoffSeed: playoffSeed
-            )
+            ),
+            conference: teamsById[schedule.teamId]?.conference
         )
     }
 

@@ -45,6 +45,12 @@ func isPlayoffSeed(_ seed: Int?, season: Int) -> Bool {
     return seed <= playoffSpotsPerConference(season: season)
 }
 
+/// True when `seed` skipped the Wild Card round: the top two seeds per conference in the
+/// six-team era, only the 1 seed since the field grew to seven in 2020.
+func earnsFirstRoundBye(seed: Int, season: Int) -> Bool {
+    seed >= 1 && seed <= (season >= sevenTeamFieldFrom ? 1 : 2)
+}
+
 /// ESPN writes "-" as the streak for a season with no games played. That is not a
 /// streak, and printing it left a stray dash in the hero.
 func displayStreak(_ streak: String?) -> String? {
