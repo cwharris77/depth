@@ -199,6 +199,35 @@ private func scheduleGame(
     #expect(result.games[1].opponent == nil)
 }
 
+@Test func mapsPostseasonRoundsIntoACompleteRunWithTerminalLoss() throws {
+    let result = try ScheduleMapper.map(
+        schedule: ScheduleDTO(teamId: "bills", season: 2025),
+        games: [
+            scheduleGame(
+                id: "wild-card", week: nil, gameType: "WC", homeTeamId: "bills", awayTeamId: "jets",
+                homeScore: 27, awayScore: 20, gameday: "2026-01-11"
+            ),
+            scheduleGame(
+                id: "divisional", week: nil, gameType: "DIV", homeTeamId: "eagles", awayTeamId: "bills",
+                homeScore: 24, awayScore: 17, gameday: "2026-01-18"
+            ),
+        ],
+        teamsById: [
+            "jets": scheduleTeam(id: "jets", abbrev: "NYJ"),
+            "eagles": scheduleTeam(id: "eagles", abbrev: "PHI"),
+        ],
+        playoffSeed: 5
+    )
+
+    let postseason = try #require(result.postseason)
+    #expect(postseason.seed == 5)
+    #expect(postseason.rounds.map(\.kind) == [.wildCard, .divisional, .conference, .superBowl])
+    #expect(postseason.rounds[0].game?.result == .win)
+    #expect(postseason.rounds[1].game?.result == .loss)
+    #expect(postseason.terminalRound == .divisional)
+    #expect(postseason.rounds[2].game == nil)
+}
+
 @Test func invalidWeekProducesTypedDecodingError() {
     #expect(throws: DepthError.decoding("game bad-week: invalid week 0")) {
         try ScheduleMapper.map(

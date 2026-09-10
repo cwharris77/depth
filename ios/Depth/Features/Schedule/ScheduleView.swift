@@ -9,6 +9,7 @@ struct ScheduleView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var viewModel: ScheduleViewModel
     @State private var showSeasonPicker = false
+    @State private var phase: SchedulePhase = .regular
     private let isEmbedded: Bool
     /// DEP-278 follow-up: Schedule fetches no team/uniform data of its own (lightweight
     /// read, invariant 5), so it reads the kit-resolved accent TeamDetailView publishes
@@ -115,18 +116,31 @@ struct ScheduleView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 seasonPicker
-                LazyVGrid(
-                    columns: dynamicTypeSize.isAccessibilitySize
-                        ? [GridItem(.flexible())]
-                        : [GridItem(.adaptive(minimum: 144, maximum: 260), spacing: DesignTokens.Spacing.sm)],
-                    spacing: DesignTokens.Spacing.sm
-                ) {
-                    ForEach(schedule.games) { game in
-                        ScheduleGameCard(
-                            game: game,
-                            isPastSeason: viewModel.isPastSeason,
-                            onSelectOpponent: onSelectOpponent
+                DepthSegmentedControl(
+                    options: SchedulePhase.allCases.map {
+                        DepthSegmentedOption(value: $0, label: $0.title, identifier: "schedule-phase-\($0.rawValue)")
+                    },
+                    selection: phase,
+                    onChange: { phase = $0 },
+                    activeColor: teamAccent,
+                    fullWidth: true
+                )
+
+                switch phase {
+                case .preseason:
+                    gameGrid(schedule.preseason, emptyMessage: "No preseason games are available for this season.")
+                case .regular:
+                    gameGrid(schedule.games, emptyMessage: "No regular-season schedule is available for this season.")
+                case .playoffs:
+                    if let postseason = schedule.postseason {
+                        PostseasonRunView(run: postseason)
+                    } else {
+                        ContentUnavailableView(
+                            "Missed the playoffs",
+                            systemImage: "flag.checkered",
+                            description: Text("No postseason run is available for this season.")
                         )
+                        .accessibilityIdentifier("schedule-playoffs-empty")
                     }
                 }
             }
@@ -135,6 +149,28 @@ struct ScheduleView: View {
             .accessibilityIdentifier("schedule-content")
         }
         .scrollIndicators(.hidden)
+    }
+
+    @ViewBuilder
+    private func gameGrid(_ games: [ScheduleGame], emptyMessage: String) -> some View {
+        if games.isEmpty {
+            ContentUnavailableView(emptyMessage, systemImage: "calendar")
+        } else {
+            LazyVGrid(
+                columns: dynamicTypeSize.isAccessibilitySize
+                    ? [GridItem(.flexible())]
+                    : [GridItem(.adaptive(minimum: 144, maximum: 260), spacing: DesignTokens.Spacing.sm)],
+                spacing: DesignTokens.Spacing.sm
+            ) {
+                ForEach(games) { game in
+                    ScheduleGameCard(
+                        game: game,
+                        isPastSeason: viewModel.isPastSeason,
+                        onSelectOpponent: onSelectOpponent
+                    )
+                }
+            }
+        }
     }
 
     private var seasonPicker: some View {
@@ -150,6 +186,14 @@ struct ScheduleView: View {
             showSeasonPicker = true
         }
     }
+}
+
+private enum SchedulePhase: String, CaseIterable {
+    case preseason
+    case regular
+    case playoffs
+
+    var title: String { rawValue.uppercased() }
 }
 
 private struct ScheduleGameCard: View {
@@ -259,6 +303,159 @@ private struct ScheduleGameCard: View {
     private var accessibilityLabel: String {
         if game.isBye { return "Week \(game.week), bye" }
         return "Week \(game.week), \(opponentLabel), \(detailLabel)"
+    }
+
+    private static let inputFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+}
+
+// 3c's postseason treatment: a fixed ladder makes the season's end visible at a glance.
+// The rail only reports source-backed results; unplayed rounds stay deliberately muted.
+private struct PostseasonRunView: View {
+    let run: PostseasonRun
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("SEED \(run.seed)")
+                    .font(.title2.bold())
+                Spacer()
+                Text("THE RUN")
+                    .font(.caption.bold())
+                    .tracking(0.8)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("schedule-playoffs-seed")
+
+            HStack(alignment: .top, spacing: 12) {
+                PostseasonRail(rounds: run.rounds, terminalRound: run.terminalRound)
+                VStack(spacing: DesignTokens.Spacing.sm) {
+                    ForEach(run.rounds) { round in
+                        PostseasonRoundCard(
+                            round: round,
+                            seed: run.seed,
+                            isTerminal: run.terminalRound == round.kind
+                        )
+                    }
+                }
+            }
+        }
+        .accessibilityIdentifier("schedule-playoffs-content")
+    }
+}
+
+private struct PostseasonRail: View {
+    let rounds: [PostseasonRound]
+    let terminalRound: PostseasonRoundKind?
+
+    var body: some View {
+        VStack(spacing: DesignTokens.Spacing.sm) {
+            ForEach(rounds) { round in
+                Circle()
+                    .fill(pipColor(for: round))
+                    .frame(width: round.kind == terminalRound ? 14 : 10, height: round.kind == terminalRound ? 14 : 10)
+                    .frame(height: 78)
+                    .frame(maxWidth: .infinity)
+                    .background(alignment: .center) {
+                        if round.kind != .superBowl {
+                            Rectangle()
+                                .fill(DesignTokens.Colors.borderDefault)
+                                .frame(width: 2)
+                                .padding(.top, 45)
+                        }
+                    }
+            }
+        }
+        .frame(width: 14)
+        .accessibilityHidden(true)
+    }
+
+    private func pipColor(for round: PostseasonRound) -> Color {
+        switch round.game?.result {
+        case .win: DesignTokens.Colors.statusWin
+        case .loss: DesignTokens.Colors.statusInjured
+        case .tie: DesignTokens.Colors.textMuted
+        case nil: DesignTokens.Colors.surfaceCard2
+        }
+    }
+}
+
+private struct PostseasonRoundCard: View {
+    let round: PostseasonRound
+    let seed: Int
+    let isTerminal: Bool
+
+    var body: some View {
+        HStack(spacing: DesignTokens.Spacing.sm) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+                Text(round.kind.title)
+                    .font(.caption2.bold())
+                    .tracking(0.8)
+                    .foregroundStyle(resultColor)
+                if let game = round.game, let opponent = game.opponent {
+                    HStack(spacing: 6) {
+                        TeamIconView(team: opponent)
+                        Text(game.isHome ? "vs \(opponent.abbrev)" : "at \(opponent.abbrev)")
+                            .font(.subheadline.weight(.heavy))
+                    }
+                } else if round.kind == .wildCard, seed == 1 {
+                    Text("FIRST-ROUND BYE")
+                        .font(.caption.bold())
+                        .foregroundStyle(DesignTokens.Colors.statusWin)
+                }
+            }
+            Spacer()
+            if let game = round.game {
+                VStack(alignment: .trailing, spacing: DesignTokens.Spacing.xs) {
+                    Text(scoreLabel(game))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(resultColor)
+                    Text(dateLabel(game))
+                        .font(.caption2.bold())
+                        .foregroundStyle(DesignTokens.Colors.textFaint)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, minHeight: 78, alignment: .leading)
+        .padding(.horizontal, 14)
+        .background(DesignTokens.Colors.surfaceCard, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.lg))
+        .overlay(alignment: .bottom) {
+            if isTerminal {
+                Capsule()
+                    .fill(resultColor)
+                    .frame(height: 3)
+                    .padding(.horizontal, 2)
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("schedule-playoffs-\(round.kind.rawValue)")
+    }
+
+    private var resultColor: Color {
+        switch round.game?.result {
+        case .win: DesignTokens.Colors.statusWin
+        case .loss: DesignTokens.Colors.statusInjured
+        case .tie: DesignTokens.Colors.textMuted
+        case nil: DesignTokens.Colors.textMuted
+        }
+    }
+
+    private func scoreLabel(_ game: ScheduleGame) -> String {
+        guard let result = game.result, let teamScore = game.teamScore, let opponentScore = game.opponentScore else {
+            return "Upcoming"
+        }
+        return "\(result.rawValue) \(teamScore)-\(opponentScore)"
+    }
+
+    private func dateLabel(_ game: ScheduleGame) -> String {
+        guard let date = game.date, let parsed = Self.inputFormatter.date(from: date) else { return "DATE TBD" }
+        return parsed.formatted(.dateTime.month(.abbreviated).day()).uppercased()
     }
 
     private static let inputFormatter: DateFormatter = {
