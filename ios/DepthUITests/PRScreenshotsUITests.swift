@@ -46,6 +46,16 @@ final class PRScreenshotsUITests: XCTestCase {
             attachScreenshot(name: "field")
         }
 
+        // `schedule` — the season timeline surface, including the distinct preseason and
+        // playoff sections added by the current PR.
+        if requested.contains("schedule") {
+            let scheduleTab = app.buttons["page-switcher-schedule"]
+            XCTAssertTrue(scheduleTab.waitForExistence(timeout: 15), "the team detail should expose Schedule")
+            scheduleTab.tap()
+            XCTAssertTrue(app.otherElements["schedule-content"].waitForExistence(timeout: 30), "the schedule should render")
+            attachScreenshot(name: "schedule")
+        }
+
         // `custom-order` creates the state that a generic field capture cannot show:
         // the field-level "Custom order · Reset all" chip after a local reorder.
         if requested.contains("custom-order") {
@@ -192,7 +202,7 @@ final class PRScreenshotsUITests: XCTestCase {
         } else {
             raw = ProcessInfo.processInfo.environment["SCREENSHOT_TARGETS"] ?? ""
         }
-        let valid: Set<String> = ["field", "custom-order", "field-footer", "formations", "teams", "uniform", "player", "settings"]
+        let valid: Set<String> = ["field", "schedule", "custom-order", "field-footer", "formations", "teams", "uniform", "player", "settings"]
         let tokens = raw.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         let requested = Set(tokens).intersection(valid)
         // `field` is the documented default (empty/missing env, or no valid token →
