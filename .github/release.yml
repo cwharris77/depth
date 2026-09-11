@@ -12,6 +12,10 @@
 # labels must stay above any broader label (see the '*' catch-all last).
 
 changelog:
+  # `automerge` (the opt-in auto-merge label, see .github/workflows/auto-merge.yml) is
+  # workflow metadata only. An extra label is ignored here, so it does not affect the
+  # generated release notes — do NOT add it to `categories` or `exclude.labels`, since
+  # excluding it would drop those PRs from the notes entirely.
   exclude:
     labels:
       - wontfix
