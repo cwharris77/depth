@@ -46,6 +46,22 @@ import Testing
         )
     }
 
+    @Test func depthChartFieldDefense() async throws {
+        let snapshot = try await repository.teamSnapshot(teamId: "bills")
+        assertSnapshot(
+            of: DepthChartFieldView(snapshot: snapshot, unit: .defense, onSelectPlayer: { _ in }),
+            as: .image(perceptualPrecision: 0.98, layout: .fixed(width: 393, height: 760))
+        )
+    }
+
+    @Test func depthChartFieldSpecialTeams() async throws {
+        let snapshot = try await repository.teamSnapshot(teamId: "bills")
+        assertSnapshot(
+            of: DepthChartFieldView(snapshot: snapshot, unit: .special, onSelectPlayer: { _ in }),
+            as: .image(perceptualPrecision: 0.98, layout: .fixed(width: 393, height: 760))
+        )
+    }
+
     /// The off-screen share card (600×315, half the web OG raster).
     @Test func shareCard() async throws {
         let snapshot = try await repository.teamSnapshot(teamId: "bills")
@@ -60,12 +76,34 @@ import Testing
     @Test func playerDetail() async throws {
         let snapshot = try await repository.teamSnapshot(teamId: "bills")
         let player = try #require(snapshot.players.first, "the Bills fixture roster should have players")
+        let depthChart = snapshot.players.filter { $0.position == player.position }
+        #expect(!depthChart.isEmpty)
+        #expect(depthChart.allSatisfy { $0.position == player.position })
         assertSnapshot(
             of: PlayerDetailView(
                 player: player,
                 team: snapshot.team,
                 repository: repository,
-                depthChart: snapshot.players
+                depthChart: depthChart
+            ),
+            as: .image(perceptualPrecision: 0.98, layout: Self.phone)
+        )
+    }
+
+    @Test func playerDetailWithNoBackups() async throws {
+        let snapshot = try await repository.teamSnapshot(teamId: "bills")
+        let player = try #require(
+            snapshot.players.first(where: { $0.position == .k }),
+            "the Bills fixture should include a kicker"
+        )
+        let depthChart = snapshot.players.filter { $0.position == player.position }
+        #expect(depthChart.count == 1)
+        assertSnapshot(
+            of: PlayerDetailView(
+                player: player,
+                team: snapshot.team,
+                repository: repository,
+                depthChart: depthChart
             ),
             as: .image(perceptualPrecision: 0.98, layout: Self.phone)
         )
