@@ -114,6 +114,38 @@ actor FixtureDepthRepository: DepthRepository {
         bundle.recentParticipation[teamId]
     }
 
+    /// Cross-team player search over every snapshot in the bundle. Without this the protocol
+    /// default (`[]`) applies, and the switcher's player search silently returns nothing on
+    /// the hermetic backend — which made the cross-team "jump to that player's team and open
+    /// the profile" path untestable off a live database. Mirrors the match kinds
+    /// SupabaseDepthRepository fans across Postgres (name, college, exact position, jersey
+    /// number, colloquial position group) with the same ranking and 8-hit limit, in memory.
+    func searchPlayers(query: String) async throws -> [PlayerHit] {
+        guard let normalized = PlayerSearch.normalizePlayerSearchQuery(query) else { return [] }
+        let needle = normalized.lowercased()
+        let number = Int(normalized)
+        let group = PlayerSearch.positionGroupPositions(normalized)
+        var byID: [String: PlayerHit] = [:]
+        for snapshot in bundle.snapshots.values {
+            for player in snapshot.players where byID[player.id] == nil {
+                let matches = player.name.lowercased().contains(needle)
+                    || player.college.lowercased().contains(needle)
+                    || player.position.rawValue.lowercased() == needle
+                    || number == player.number
+                    || group?.contains(player.position) == true
+                guard matches else { continue }
+                byID[player.id] = PlayerHit(
+                    id: player.id, name: player.name, number: player.number,
+                    position: player.position, college: player.college,
+                    photoUrl: player.photoUrl, team: snapshot.team
+                )
+            }
+        }
+        // Dictionary iteration order is unspecified; the name-prefix-first rank makes the
+        // returned order deterministic anyway, exactly as it does on the Supabase path.
+        return Array(PlayerSearch.rankByNameMatch(Array(byID.values), query: normalized).prefix(8))
+    }
+
     func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? {
         bundle.rosterLeaders["\(teamId):\(season)"]
     }

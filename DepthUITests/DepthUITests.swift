@@ -96,6 +96,49 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(quarterback.waitForExistence(timeout: 5), "one back tap should return to the field")
     }
 
+    /// Merge spec (2026-09-11): the switcher's cross-team player search must *push* the full
+    /// profile, not present the deleted card sheet. This is the one path where
+    /// `TeamDetailView.presentRequestedPlayer` runs from inside `.task` on a subtree
+    /// `.id(teamId)` has just rebuilt — picking a player on the already-current team goes
+    /// through the `onChange` branch instead — so the push it now drives needs its own cover.
+    func testSwitcherCrossTeamPlayerSearchPushesThatPlayersProfile() throws {
+        let app = XCUIApplication()
+        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+
+        let switcher = app.buttons["team-switcher-button"]
+        XCTAssertTrue(switcher.waitForExistence(timeout: 15), "the chart header should expose the team switcher")
+        switcher.tap()
+
+        let searchField = app.searchFields.firstMatch
+        XCTAssertTrue(searchField.waitForExistence(timeout: 10), "the switcher sheet should offer search")
+        // Sam Darnold is the fixture Seahawks' QB — a different team than the Bills chart on
+        // screen, so this hit exercises the team-switch-then-present path.
+        searchField.typeTextAfterFocusing("Darnold", in: app)
+
+        let hit = app.descendants(matching: .any)["player-hit-3912547"]
+        XCTAssertTrue(hit.waitForExistence(timeout: 15), "searching \"Darnold\" should surface the Seahawks QB")
+
+        let profile = app.descendants(matching: .any)["player-profile-full-content"]
+        XCTAssertTrue(
+            hit.tapUntil(timeout: 20) { profile.exists },
+            "picking a cross-team search hit should push that player's profile"
+        )
+        let name = app.staticTexts["player-profile-full-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 10), "the pushed profile should show the player's name")
+        XCTAssertEqual(name.label, "Sam Darnold", "the pushed profile should be the player that was searched for")
+
+        app.navigationBars.buttons["BackButton"].tap()
+        XCTAssertTrue(profile.waitForAbsence(timeout: 5), "one back tap should pop the profile")
+        XCTAssertTrue(app.waitForDepthChart(), "back should land on a field")
+        // The team switcher lives in the field's toolbar, which the pushed profile covers —
+        // so the "pushed on the hit's own team" half of the assertion waits until back has
+        // returned to the field underneath.
+        XCTAssertTrue(
+            switcher.waitForLabel(containing: "Seattle Seahawks"),
+            "the profile should have pushed on the hit's own team, got \"\(switcher.label)\""
+        )
+    }
+
     func testOpenTeamSchedule() throws {
         let app = XCUIApplication()
         XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")

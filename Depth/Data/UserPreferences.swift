@@ -105,12 +105,11 @@ struct UserPreferences: Sendable {
         defaults.set(store, forKey: Key.depthOverrides)
     }
 
-    // DEP-251: first-run tutorial "seen" flag, a one-time flag.
-    // OnboardingController checks this once at launch
-    // (startIfNeeded) and sets it the moment the welcome/coachmark flow is skipped or
-    // finished — never on every intermediate step — so a user who backgrounds the app
-    // mid-tour doesn't see it silently reset. Settings' "Take the tour" row bypasses this
-    // flag entirely (OnboardingController.replay()), it only gates the automatic
+    // DEP-251: first-run tutorial "seen" flag, a one-time flag. OnboardingController checks
+    // this once at launch (startIfNeeded) and sets it the moment the welcome/coachmark flow
+    // is skipped or finished — never on every intermediate step — so a user who backgrounds
+    // the app mid-tour doesn't see it silently reset. Settings' "Take the tour" row bypasses
+    // this flag entirely (OnboardingController.replay()), it only gates the automatic
     // first-launch trigger.
     var hasSeenOnboarding: Bool {
         defaults.bool(forKey: Key.seenOnboarding)
@@ -120,8 +119,8 @@ struct UserPreferences: Sendable {
         defaults.set(true, forKey: Key.seenOnboarding)
     }
 
-    /// Test-reset hook — UI_TESTING_RESET_STATE
-    /// restores this to its "unseen" default so onboarding UI tests start deterministic.
+    /// Test-reset hook — UI_TESTING_RESET_STATE restores this to its "unseen" default so
+    /// onboarding UI tests start deterministic.
     func clearOnboardingSeen() {
         defaults.removeObject(forKey: Key.seenOnboarding)
     }

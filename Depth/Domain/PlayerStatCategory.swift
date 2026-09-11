@@ -290,7 +290,15 @@ extension PlayerProfileDisplay {
             parts.append(PlayerVital(text: "\(weight) LB", spoken: "Weight \(weight) pounds"))
         }
         if let college = meaningful(college) {
-            parts.append(PlayerVital(text: college.uppercased(), spoken: "College, \(college)"))
+            // ESPN stores a transfer's schools as one ";"-separated string ("West Alabama;
+            // Garden City CC; Oklahoma State" — 44 characters). The strip is one line, and its
+            // parts carry equal layout priority, so a value that long shrinks AGE/EXP/height/
+            // weight too; show only the first school and leave the full list to VoiceOver
+            // (2026-09-11 merge-spec review ruling).
+            let first = college.split(separator: ";").first
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) } ?? ""
+            let shown = first.isEmpty ? college : first
+            parts.append(PlayerVital(text: shown.uppercased(), spoken: "College, \(college)"))
         }
         return parts
     }

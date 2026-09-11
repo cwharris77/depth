@@ -235,6 +235,11 @@ struct TeamDetailView: View {
                 editMode.exitForContextChange()
             }
             .onChange(of: historyViewModel.selectedSeason) { _, _ in
+                // Merge spec (2026-09-11): a season change pops the pushed profile, whose depth
+                // context belongs to the season that pushed it. The spec's other half — a team
+                // change pops it too — needs no code here: DepthChartsTab's `.id(teamId)`
+                // rebuilds this whole subtree, stack root included, when the switcher picks a
+                // different team.
                 selectedPlayer = nil
                 editMode.exitForContextChange()
             }

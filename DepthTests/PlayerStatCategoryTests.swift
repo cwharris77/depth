@@ -119,6 +119,26 @@ private func season(
     )
 }
 
+/// ESPN records a transfer's schools as one ";"-separated string, and the vitals strip is a
+/// single line whose parts share layout priority — so a 44-character college would shrink
+/// AGE/EXP/height/weight with it. The strip shows the first school; VoiceOver still reads
+/// every one (2026-09-11 merge-spec review ruling).
+@Test func profileDisplayVitalsShowFirstCollegeAndSpeakAllOfThem() {
+    let schools = "West Alabama; Garden City CC; Oklahoma State"
+    let parts = PlayerProfileDisplay.vitals(
+        age: 27, experience: 5, height: "6' 4\"", weight: 218, college: schools
+    )
+    #expect(parts.map(\.text) == ["AGE 27", "EXP 5 YRS", "6' 4\"", "218 LB", "WEST ALABAMA"])
+    #expect(parts.last?.spoken == "College, \(schools)")
+
+    // A single school is unchanged by the split — display and spoken both keep the whole value.
+    let single = PlayerProfileDisplay.vitals(
+        age: nil, experience: nil, height: nil, weight: nil, college: "Alabama"
+    )
+    #expect(single.map(\.text) == ["ALABAMA"])
+    #expect(single.last?.spoken == "College, Alabama")
+}
+
 @Test func profileDisplayBioHidesEmptyAndHistoricalBios() {
     #expect(PlayerProfileDisplay.bio("Accurate passer.", isHistorical: false) == "Accurate passer.")
     #expect(PlayerProfileDisplay.bio("  \n", isHistorical: false) == nil)

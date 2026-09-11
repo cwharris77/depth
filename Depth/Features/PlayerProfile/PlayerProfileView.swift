@@ -17,6 +17,7 @@ import SwiftUI
 // confirmed data source yet (DEP-533) and renders as an explicit empty state, kept last
 // so an empty section reads as a coda rather than a gap before more content (Cooper,
 // 2026-09-10).
+
 /// The position's depth chart as the field rendered it, handed in by TeamDetailView. Nil
 /// from Compare, which has no depth chart on screen, so the DEPTH CHART section hides.
 struct PlayerDepthContext {
@@ -386,7 +387,10 @@ private struct PlayerProfileScreen: View {
                         }
                     }
                     .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+                    // College rides in this strip (2026-09-11 merge spec) and real values run
+                    // long — a third of the roster's schools exceed 11 characters. 0.6 keeps
+                    // the whole line on one row instead of truncating the vitals ahead of it.
+                    .minimumScaleFactor(0.6)
                 }
             }
             .font(.caption2.weight(.bold))
