@@ -191,6 +191,13 @@ struct ScheduleGame: Equatable, Identifiable, Sendable, Codable {
     }
 
     var id: Int { week }
+
+    /// Card eyebrow and accessibility prefix. Week 0 only exists in the preseason: the
+    /// ESPN preseason ingest (lib/espn/preseason.ts) numbers the Hall of Fame game 0 and
+    /// "Preseason Week N" as N, while ScheduleMapper rejects a regular-season week below 1.
+    var weekTitle: String {
+        week == 0 ? "Hall of Fame" : "Week \(week)"
+    }
 }
 
 // The current nflverse pregame market snapshot, oriented to the selected team. Raw

@@ -5,7 +5,8 @@
 #
 # <targets> is a comma-separated list of capture targets from
 # ios/DepthUITests/PRScreenshotsUITests.swift (field, custom-order, field-footer, formations,
-# teams, uniform, player, settings, schedule) or the token `all` (= every target).
+# teams, uniform, player, settings, schedule, schedule-preseason) or the token `all`
+# (= every target).
 # <source-path-prefix> is a repo-root-relative path; a changed file matches when it
 # equals the prefix or lives under it.
 #
@@ -44,6 +45,6 @@ uniform	ios/Depth/Features/Uniforms/
 player	ios/Depth/Features/TeamDetail/PlayerDetailView.swift
 player	ios/Depth/Features/TeamDetail/PlayerProfileViewModel.swift
 settings	ios/Depth/Features/Settings/
-schedule	ios/Depth/Features/Schedule/
+schedule,schedule-preseason	ios/Depth/Features/Schedule/
 schedule	ios/Depth/Support/SeasonPicker.swift
-field,schedule	ios/Depth/Support/DepthUnitTabBar.swift
+field,schedule,schedule-preseason	ios/Depth/Support/DepthUnitTabBar.swift

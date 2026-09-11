@@ -256,7 +256,7 @@ private struct ScheduleGameCard: View {
             // Eyebrow + title hierarchy matches the Stats page's NEXT GAME card
             // (TeamStatsView.swift's NextGameCard): caption2.bold eyebrow, subheadline
             // .heavy title.
-            Text("WEEK \(game.week)")
+            Text(game.weekTitle.uppercased())
                 .font(.caption2.bold())
                 .tracking(0.8)
                 .foregroundStyle(DesignTokens.Colors.textMuted)
@@ -326,8 +326,8 @@ private struct ScheduleGameCard: View {
     }
 
     private var accessibilityLabel: String {
-        if game.isBye { return "Week \(game.week), bye" }
-        return "Week \(game.week), \(opponentLabel), \(detailLabel)"
+        if game.isBye { return "\(game.weekTitle), bye" }
+        return "\(game.weekTitle), \(opponentLabel), \(detailLabel)"
     }
 
     private static let inputFormatter: DateFormatter = {
