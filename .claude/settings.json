@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npm run typecheck",
+            "command": "cd web && npm run typecheck",
             "if": "Bash(git commit*)",
             "timeout": 60,
             "statusMessage": "Typechecking before commit..."
@@ -27,5 +27,5 @@
       }
     ]
   },
-  "description": "Runs `npm run typecheck` before every git commit so type errors never slip through. `npm run build` is intentionally excluded — it depends on .env.local (Supabase env vars) that fresh worktrees don't have, and would false-block commits; build verification stays part of the manual PR quality-bar checklist / CI. SessionStart runs .claude/scripts/worktree-bootstrap.sh, which gives a fresh git worktree node_modules (APFS copy-on-write clone from the main checkout) and a symlinked .env.local — without it, npm test/format and that typecheck hook fail in every worktree."
+  "description": "Runs `npm run typecheck` (in web/) before every git commit so type errors never slip through. `npm run build` is intentionally excluded — it depends on .env.local (Supabase env vars) that fresh worktrees don't have, and would false-block commits; build verification stays part of the manual PR quality-bar checklist / CI. SessionStart runs .claude/scripts/worktree-bootstrap.sh, which gives a fresh git worktree web/node_modules (APFS copy-on-write clone from the main checkout) and a symlinked web/.env.local — without it, npm test/format and that typecheck hook fail in every worktree."
 }

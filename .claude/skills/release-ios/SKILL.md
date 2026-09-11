@@ -1,6 +1,6 @@
 ---
 name: release-ios
-description: Use when an iOS build is going out — you archived a build and are uploading to App Store Connect / TestFlight, you submitted a build for review, a build went LIVE in the App Store, or you are about to arm the forced-update gate ahead of a breaking backend change. Covers recording the release in ios-release-compatibility.md, when the gate may (and may not) be armed, and the ordering that keeps installed builds decodable (CLAUDE.md invariant 11).
+description: Use when an iOS build is going out — you archived a build and are uploading to App Store Connect / TestFlight, you submitted a build for review, a build went LIVE in the App Store, or you are about to arm the forced-update gate ahead of a breaking backend change. Covers recording the release in ios-release-compatibility.md, when the gate may (and may not) be armed, and the ordering that keeps installed builds decodable (web/CLAUDE.md invariant 11).
 ---
 
 # iOS release & compatibility manifest protocol
@@ -11,13 +11,13 @@ Every App Store release ties a **build number** to the backend contract in
 `ios-release-compatibility.md` (repo root). A build's lifecycle touches that manifest
 **twice**: when you **submit** it, and when it goes **LIVE**. Getting the second
 moment right — and never arming the forced-update gate before it happens — is what
-keeps installed builds from breaking (CLAUDE.md invariant 11). Two incidents showed
+keeps installed builds from breaking (web/CLAUDE.md invariant 11). Two incidents showed
 instructions alone weren't enough, so the `ios-compat` CI job now blocks destructive
 migrations that don't update the manifest; this skill is the release-side half of that
 contract.
 
 **The build number is `CFBundleVersion`** — the integer auto-stamped at Archive time as
-the git commit count (`ios/project.yml`'s `Auto-increment build number` postbuild
+the git commit count (`project.yml`'s `Auto-increment build number` postbuild
 script, `git rev-list --count HEAD`). It is **not** `CFBundleShortVersionString` ("1.0").
 The two are different numbers and the gate never reads the second one. Read the
 authoritative value from the **App Store Connect build listing**, or compute it for any

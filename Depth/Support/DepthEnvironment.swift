@@ -1,0 +1,128 @@
+import Foundation
+import Supabase
+import SwiftData
+
+// Constructs the one shared SupabaseClient from the values baked into Info.plist by the
+// active .xcconfig (SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY — see xcconfig/). Only
+// the public publishable key ever reaches the app bundle; the secret key is never
+// referenced anywhere in the app target.
+enum DepthEnvironment {
+    static let supabaseClient: SupabaseClient = {
+        guard
+            let urlString = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String,
+            let url = URL(string: urlString),
+            let key = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_PUBLISHABLE_KEY") as? String
+        else {
+            fatalError("Missing SUPABASE_URL/SUPABASE_PUBLISHABLE_KEY in Info.plist — check the active .xcconfig")
+        }
+        return SupabaseClient(
+            supabaseURL: url,
+            supabaseKey: key,
+            // Opt in to emitting the locally stored session immediately as the initial
+            // session (supabase-swift #822). The legacy default refreshed the stored
+            // session before emitting it, which is the behavior Supabase is warning about
+            // here; sessionChanges() filters expired sessions, so an expired stored
+            // session is never surfaced as a signed-in user.
+            options: SupabaseClientOptions(
+                auth: SupabaseClientOptions.AuthOptions(
+                    emitLocalSessionAsInitialSession: true
+                )
+            )
+        )
+    }()
+
+    /// This cache is disposable — Supabase is always the source of truth (design spec's
+    /// "safe schema discard") — so a `ModelContainer` that fails to open (an
+    /// incompatible on-disk store from an old build, e.g. after this app's own
+    /// SwiftData model changes shape) must not crash-loop the app forever. One retry
+    /// against a freshly wiped store directory recovers from that; only a second
+    /// failure (a genuinely broken environment — disk full, sandbox issue) is fatal.
+    static let modelContainer: ModelContainer = {
+        let schema = Schema(DepthCacheSchema.models)
+        let storeURL = URL.applicationSupportDirectory.appending(path: "DepthCache.store")
+        let configuration = ModelConfiguration(schema: schema, url: storeURL)
+        do {
+            return try ModelContainer(for: schema, configurations: [configuration])
+        } catch {
+            // SQLite's WAL sidecar files are named by appending "-wal"/"-shm" to the
+            // full store filename, not a `.wal`/`.shm` extension.
+            for suffix in ["", "-wal", "-shm"] {
+                let sidecarURL = storeURL.deletingLastPathComponent()
+                    .appending(path: storeURL.lastPathComponent + suffix)
+                try? FileManager.default.removeItem(at: sidecarURL)
+            }
+            do {
+                return try ModelContainer(for: schema, configurations: [configuration])
+            } catch {
+                fatalError("Failed to create SwiftData ModelContainer even after clearing the store: \(error)")
+            }
+        }
+    }()
+
+    static let repository: CachingDepthRepository = {
+        #if UITEST_FIXTURES
+        // UI tests launch with UI_TESTING_FIXTURE_BACKEND to replay a checked-in fixture
+        // bundle instead of touching Supabase (spec: 2026-09-10-ios-test-data-and-
+        // snapshot-testing-design, locked decision 1). UITEST_FIXTURES is set on Debug and
+        // Staging (CI builds Staging) and absent from Release, so a shipped binary cannot
+        // be redirected by a launch argument.
+        if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FIXTURE_BACKEND") {
+            return CachingDepthRepository(
+                underlying: FixtureDepthRepository.load(),
+                store: CachedSnapshotStore(modelContainer: ephemeralFixtureContainer())
+            )
+        }
+        #endif
+        return CachingDepthRepository(
+            underlying: SupabaseDepthRepository(client: supabaseClient),
+            store: CachedSnapshotStore(modelContainer: modelContainer)
+        )
+    }()
+
+    #if UITEST_FIXTURES
+    /// A fresh in-memory cache for fixture mode — never the on-disk store, so a fixture run
+    /// can neither read a stale real snapshot from a prior manual run nor leak fixture data
+    /// into a later one. The schema-discard retry the on-disk path needs doesn't apply here.
+    private static func ephemeralFixtureContainer() -> ModelContainer {
+        let schema = Schema(DepthCacheSchema.models)
+        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        do {
+            return try ModelContainer(for: schema, configurations: [configuration])
+        } catch {
+            fatalError("Failed to create in-memory fixture ModelContainer: \(error)")
+        }
+    }
+    #endif
+
+    static let preferences = UserPreferences()
+    static let authService: any DepthAuthServicing =
+        SupabaseDepthAuthService(client: supabaseClient)
+    static let overrideService: any DepthOverrideServicing =
+        SupabaseDepthOverrideService(client: supabaseClient)
+    static let appEvents: any AppEventsRecording = SupabaseAppEventsRecorder(client: supabaseClient)
+    @MainActor static let authSessionStore = AuthSessionStore(service: authService)
+    /// DEP-319: shared favorite/start-on-favorite state. Backed by the user_settings row
+    /// (RLS-scoped to auth.uid()); reads/writes are gated on the live session so a stale
+    /// favorite never applies after a sign-out.
+    @MainActor static let userSettingsStore: UserSettingsStore = {
+        let remote: (any UserSettingsServicing)? = SupabaseUserSettingsService(client: supabaseClient)
+        return UserSettingsStore(remote: remote, sessionStore: authSessionStore)
+    }()
+    /// The current team's accent, published by DepthChartsTab and read by the root tab
+    /// bar for its `.tint` — app chrome adopts team color via TeamSurfaces.ring (DEP-424).
+    @MainActor static let currentTeamStore = CurrentTeamStore()
+    /// A cross-tab "open this team's depth chart" request — written by the uniform
+    /// archive's kit sheet, consumed by DepthChartsTab (see TeamRouteStore).
+    @MainActor static let teamRouteStore = TeamRouteStore()
+    /// DEP-405: a cross-tab "compare these two teams" request — written by the schedule
+    /// page's game-card tap (via RootTabView's tab switch), consumed by the Compare tab
+    /// (see CompareRouteStore).
+    @MainActor static let compareRouteStore = CompareRouteStore()
+    /// DEP-251 first-run tutorial state — owns the welcome/coachmark sequence, shared
+    /// between ContentView (mounts the overlay + fires the first-launch trigger) and
+    /// SettingsView ("Take the tour" row).
+    @MainActor static let onboarding = OnboardingController(preferences: preferences)
+    /// Live reachability, shared app-wide so the stale-data banner can tell "offline" apart
+    /// from "online but just hasn't refreshed yet" (see NetworkMonitor's header comment).
+    @MainActor static let networkMonitor = NetworkMonitor()
+}

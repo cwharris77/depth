@@ -1,6 +1,6 @@
 name: iOS CI
 
-# Builds and tests the native app (ios/) on every PR/push, plus a nightly full-suite run.
+# Builds and tests the native app on every PR/push, plus a nightly full-suite run.
 # A PR (and a plain push to main) runs a fast smoke set (unit tests + the flagship
 # journey + reorder/auth UI suites); the full unit + UI suite runs only on the nightly
 # schedule — the slow UI journeys (Accessibility/Performance/Share and the extra
@@ -17,29 +17,45 @@ name: iOS CI
 # per-test and previously always ran after unit tests finished. The one test leg runs on
 # a single current-flagship simulator. The "Staging" configuration is
 # DEBUG_BUILD_SETTINGS that targets the dedicated staging Supabase project
-# (djwrecczgudktgsooxti, see ios/xcconfig/Staging.xcconfig); Release stays on production
+# (djwrecczgudktgsooxti, see xcconfig/Staging.xcconfig); Release stays on production
 # (jiqoaqmzmvtovimnmbzl). The hermetic fixture-backend UI journeys never touch either; only
 # the live suites (Auth/Performance) read/write staging. RLS/native-auth integration suites
 # (DepthTests/SupabaseRLSIntegrationTests, DepthTests/NativeAuthIntegrationTests) need a
 # local Supabase stack (`supabase start`, which needs Docker); GitHub-hosted macOS
 # runners can't run Docker (no nested virtualization), so those suites self-gate on a
 # reachability probe and skip cleanly here — see LocalSupabase.isReachable in
-# ios/DepthTests/SupabaseRLSIntegrationTests.swift. Full coverage still runs locally
+# DepthTests/SupabaseRLSIntegrationTests.swift. Full coverage still runs locally
 # before every merge per the native iOS plan's verification command.
 
 on:
   pull_request:
     paths:
-      - 'ios/**'
+      - 'Depth/**'
+      - 'DepthTests/**'
+      - 'DepthUITests/**'
+      - 'project.yml'
+      - 'xcconfig/**'
+      - 'Gemfile'
+      - 'Gemfile.lock'
+      - 'fastlane/**'
+      - 'scripts/**'
       - '.github/workflows/ios-ci.yml'
   push:
     branches: [main]
     paths:
-      - 'ios/**'
+      - 'Depth/**'
+      - 'DepthTests/**'
+      - 'DepthUITests/**'
+      - 'project.yml'
+      - 'xcconfig/**'
+      - 'Gemfile'
+      - 'Gemfile.lock'
+      - 'fastlane/**'
+      - 'scripts/**'
       - '.github/workflows/ios-ci.yml'
   # Full DepthUITests suite, once a day — see the header comment above for why this
   # isn't on every push. Path filters don't apply to schedule triggers, so this always
-  # runs regardless of whether ios/ changed that day; harmless, it's one run.
+  # runs regardless of whether the iOS sources changed that day; harmless, it's one run.
   schedule:
     - cron: '0 8 * * *'
   # Manual full-suite run, on demand — same parallel fan-out as the nightly cron.
@@ -142,13 +158,12 @@ jobs:
         run: brew install xcodegen
 
       - name: Generate Xcode project from project.yml
-        working-directory: ios
         run: xcodegen generate
 
       - name: Verify checked-in project matches project.yml
         run: |
-          if ! git diff --exit-code -- ios/Depth.xcodeproj; then
-            echo "::error::ios/Depth.xcodeproj is out of sync with ios/project.yml — run 'xcodegen generate' in ios/ and commit the regenerated project."
+          if ! git diff --exit-code -- Depth.xcodeproj; then
+            echo "::error::Depth.xcodeproj is out of sync with project.yml — run 'xcodegen generate' at the repo root and commit the regenerated project."
             exit 1
           fi
 
@@ -161,8 +176,8 @@ jobs:
       - name: Restore DerivedData cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ios/DerivedData
-          key: ${{ runner.os }}-ios-deriveddata-${{ hashFiles('ios/**', '.github/workflows/ios-ci.yml') }}
+          path: DerivedData
+          key: ${{ runner.os }}-ios-deriveddata-${{ hashFiles('Depth/**', 'DepthTests/**', 'DepthUITests/**', 'project.yml', 'xcconfig/**', '.github/workflows/ios-ci.yml') }}
           restore-keys: |
             ${{ runner.os }}-ios-deriveddata-
 
@@ -173,18 +188,18 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild \
-            -project ios/Depth.xcodeproj \
+            -project Depth.xcodeproj \
             -scheme Depth \
             -configuration Staging \
             -destination "generic/platform=iOS Simulator" \
-            -derivedDataPath ios/DerivedData \
+            -derivedDataPath DerivedData \
             build-for-testing
 
       - name: Upload build products
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test-products
-          path: ios/DerivedData/Build/Products
+          path: DerivedData/Build/Products
           retention-days: 1
 
   test:
@@ -214,7 +229,7 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: test-products
-          path: ios/DerivedData/Build/Products
+          path: DerivedData/Build/Products
 
       # A PR and a plain push to main both get a fast smoke set: the unit tests plus the
       # single flagship chart→team→player journey, the reorder suite, and auth. The
@@ -291,7 +306,7 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: test-products
-          path: ios/DerivedData/Build/Products
+          path: DerivedData/Build/Products
 
       - name: Run DepthUITests slice (${{ matrix.slice }})
         uses: ./.github/actions/run-ios-suite
@@ -317,22 +332,21 @@ jobs:
         run: brew install xcodegen
 
       - name: Generate Xcode project from project.yml
-        working-directory: ios
         run: xcodegen generate
 
       - name: Verify checked-in project matches project.yml
         run: |
-          if ! git diff --exit-code -- ios/Depth.xcodeproj; then
-            echo "::error::ios/Depth.xcodeproj is out of sync with ios/project.yml — run 'xcodegen generate' in ios/ and commit the regenerated project."
+          if ! git diff --exit-code -- Depth.xcodeproj; then
+            echo "::error::Depth.xcodeproj is out of sync with project.yml — run 'xcodegen generate' at the repo root and commit the regenerated project."
             exit 1
           fi
 
       - name: Matcher self-test
-        run: ios/scripts/inspect-archive-secrets.sh --self-test
+        run: scripts/inspect-archive-secrets.sh --self-test
 
       # Builds an unsigned Release configuration for the simulator SDK and scans
       # Info.plist + the compiled binary for any service-role-shaped Supabase secret —
       # enforces the hard rule in AGENTS.md that no service-role key ever ships in the
-      # app bundle. See ios/scripts/inspect-archive-secrets.sh for the full rationale.
+      # app bundle. See scripts/inspect-archive-secrets.sh for the full rationale.
       - name: Inspect built archive for leaked secrets
-        run: ios/scripts/inspect-archive-secrets.sh
+        run: scripts/inspect-archive-secrets.sh

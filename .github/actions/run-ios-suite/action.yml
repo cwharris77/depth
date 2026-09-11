@@ -33,7 +33,7 @@ runs:
     # .app never pays. Observed as a multi-minute silent stall between xcodebuild
     # starting and the first test case actually running. Strip it before testing.
     - name: Clear quarantine attribute on downloaded build products
-      run: xattr -cr ios/DerivedData/Build/Products
+      run: xattr -cr DerivedData/Build/Products
       shell: bash
 
     - name: Boot ${{ inputs.sim-name }} simulator (${{ inputs.device }})
@@ -58,7 +58,7 @@ runs:
         TESTS: ${{ inputs.tests }}
       run: |
         set -o pipefail
-        XCTESTRUN=$(find ios/DerivedData/Build/Products -maxdepth 1 -name '*.xctestrun' | head -n1)
+        XCTESTRUN=$(find DerivedData/Build/Products -maxdepth 1 -name '*.xctestrun' | head -n1)
         if [ -z "$XCTESTRUN" ]; then
           echo "::error::No .xctestrun file found in downloaded build products."
           exit 1

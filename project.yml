@@ -1,0 +1,293 @@
+name: Depth
+options:
+  deploymentTarget:
+    iOS: '18.0'
+  createIntermediateGroups: true
+
+configs:
+  Debug: debug
+  Staging: debug
+  Release: release
+
+configFiles:
+  Debug: xcconfig/Debug.xcconfig
+  Staging: xcconfig/Staging.xcconfig
+  Release: xcconfig/Release.xcconfig
+
+# Xcode 26.6's "Update to recommended settings" proposal (DEP-246), applied
+# here instead of via Xcode's "Perform Changes" button so it survives the
+# next `xcodegen generate` rather than getting silently wiped by it.
+attributes:
+  LastUpgradeCheck: '2660'
+
+settings:
+  base:
+    # Cooper's Apple Developer Team ID at the project level so DepthTests/
+    # DepthUITests inherit it too, not just the Depth app target (which
+    # already sets it below). Public identifier, safe to commit.
+    DEVELOPMENT_TEAM: 63JZBB528Q
+    # DepthTests/DepthUITests have no Run Script build phases, so this project-level
+    # YES has nothing to break for them; the Depth app target overrides it to NO (see
+    # its own comment) because its build-number script needs full filesystem access.
+    # No .xcstrings catalog exists yet, so symbol generation is a no-op until one is added.
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    STRING_CATALOG_GENERATE_SYMBOLS: YES
+  configs:
+    # Hermetic UI-test fixtures (spec: 2026-09-10-ios-test-data-and-snapshot-testing-
+    # design). CI builds the app under Staging, not Debug, so the fixture seam must
+    # compile there too — a plain `#if DEBUG` would silently vanish in CI. A dedicated
+    # condition on Debug + Staging (and absent from Release) is the accurate gate:
+    # fixtures ship in neither the App Store binary nor a production-config build.
+    Debug:
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG UITEST_FIXTURES
+    Staging:
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: UITEST_FIXTURES
+
+packages:
+  # Exact pin, not `from:` — a reviewed version per the design spec, not an
+  # up-to-next-major range that could silently pick up an unreviewed release.
+  Supabase:
+    url: https://github.com/supabase/supabase-swift
+    exactVersion: 2.55.1
+  # Dev/test-only. SwiftUI visual-regression snapshots (spec 2026-09-10-ios-test-data-and-
+  # snapshot-testing-design, Phase 4) replace the retired PR-screenshot pipeline. Linked to
+  # DepthTests only — never the app bundle.
+  SnapshotTesting:
+    url: https://github.com/pointfreeco/swift-snapshot-testing
+    exactVersion: 1.19.4
+
+targets:
+  Depth:
+    type: application
+    platform: iOS
+    sources:
+      - path: Depth/App
+      - path: Depth/Domain
+      - path: Depth/Data
+      - path: Depth/Features
+      - path: Depth/Support
+      # Checked-in UI-test fixture bundle, replayed only under
+      # UI_TESTING_FIXTURE_BACKEND (#if DEBUG). Bundled unconditionally — the files are a
+      # few KB and inert in Release, where FixtureDepthRepository doesn't compile. Recorded
+      # from the local seeded stack by DepthTests/FixtureRecordingTests; see the spec
+      # 2026-09-10-ios-test-data-and-snapshot-testing-design.
+      - path: Depth/Fixtures
+      - path: Depth/Assets.xcassets
+      - path: Depth/LaunchScreen.storyboard
+      - path: Depth/LaunchMark.png
+      - path: Depth/PrivacyInfo.xcprivacy
+    info:
+      path: Depth/Info.plist
+      properties:
+        CFBundleDisplayName: $(APP_DISPLAY_NAME)
+        # Overrides xcodegen's default `$(PRODUCT_NAME)` reference (the Xcode target name,
+        # "Depth") with a configuration-driven display name. Keeping both plist keys on
+        # APP_DISPLAY_NAME preserves App Store name-uniqueness while letting Dev/Stage be
+        # unmistakable on-device; the built app and executable remain "Depth.app".
+        CFBundleName: $(APP_DISPLAY_NAME)
+        CFBundleShortVersionString: '1.0'
+        # Baseline for Debug/Staging runs; the archive-only postbuildScripts phase below
+        # overwrites this with the git commit count for every App Store/TestFlight build.
+        CFBundleVersion: '1'
+        # Native launch screen (DEP-160): a launch storyboard — the #0A0E1A background
+        # (LaunchBackground color set) with the depth mark centered on it. Storyboard
+        # rather than UILaunchScreen.UIImageName: the plist image key does not render on
+        # current iOS (verified on the iOS 26 simulator), while the storyboard's image
+        # view loads the same asset through the normal image-loading path.
+        UILaunchStoryboardName: LaunchScreen
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        # DEP-425: numeric App Store id for the forced-update gate's deep link.
+        # `0` (the Base.xcconfig default) means unset and hides the Update button.
+        APP_STORE_ID: $(APP_STORE_ID)
+        SUPABASE_URL: $(SUPABASE_URL)
+        SUPABASE_PUBLISHABLE_KEY: $(SUPABASE_PUBLISHABLE_KEY)
+        # App Store export-compliance question: Depth only uses standard HTTPS (Supabase),
+        # no custom/proprietary encryption, so it's exempt. Setting this avoids the manual
+        # "does your app use encryption" prompt on every App Store Connect upload.
+        ITSAppUsesNonExemptEncryption: false
+        # Local-networking allowance for Debug builds: Debug.xcconfig points Supabase at
+        # http://127.0.0.1:54321 (`supabase start`). Remote cleartext stays blocked.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: NO
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_IDENTIFIER)
+        ASSETCATALOG_COMPILER_APPICON_NAME: $(APP_ICON_NAME)
+        # Cooper's Apple Developer Team ID — needed to sign on-device/test builds. It's a
+        # public identifier (not a credential), so it's safe to commit; XcodeGen keeps the
+        # regenerated project in sync with this, so the CI project-sync check stays green.
+        DEVELOPMENT_TEAM: 63JZBB528Q
+        # Overrides the project-level YES for this target only. On Archive builds,
+        # BUILT_PRODUCTS_DIR/Depth.app is a symlink into the install location, and
+        # sandbox-exec resolves through it to a path the build-number script's declared
+        # outputFiles never covers — denying the write even though it's declared. The
+        # script only touches local build-time files, not the shipped app, so disabling
+        # sandboxing here has no product-security effect.
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+      configs:
+        Release:
+          # The UI-test fixture JSON is test-only. Excluding it here keeps ~300 KB of
+          # football data out of the shipped App Store binary; the replay code is already
+          # absent from Release via the missing UITEST_FIXTURES condition. Debug/Staging
+          # keep it so the hermetic suite can replay it.
+          EXCLUDED_SOURCE_FILE_NAMES: UITestFixtures.json
+    postbuildScripts:
+      # Auto-bumps CFBundleVersion for App Store/TestFlight uploads so it never has to be
+      # hand-edited in project.yml again. `runOnlyWhenInstalling` ties this to Archive
+      # builds only (Debug/Staging runs skip it); git commit count is monotonic and unique
+      # per commit, so every archive from a new commit gets a higher build number.
+      - name: Auto-increment build number (archive only)
+        runOnlyWhenInstalling: true
+        basedOnDependencyAnalysis: false
+        script: |
+          set -e
+          buildNumber=$(git -C "${SRCROOT}" rev-list --count HEAD)
+          # BUILT_PRODUCTS_DIR, not TARGET_BUILD_DIR: on Archive builds TARGET_BUILD_DIR
+          # points at the install destination, which the processed Info.plist hasn't been
+          # copied to yet at this point in the build phase order (that happens later, in
+          # the Install step) — BUILT_PRODUCTS_DIR is where "Process Info.plist File"
+          # actually wrote it.
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $buildNumber" "${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}"
+    dependencies:
+      - package: Supabase
+        product: Supabase
+
+  DepthTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: DepthTests
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_IDENTIFIER).tests
+    dependencies:
+      - target: Depth
+      - package: Supabase
+        product: Supabase
+      - package: SnapshotTesting
+        product: SnapshotTesting
+
+  DepthUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: DepthUITests
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_IDENTIFIER).uitests
+    dependencies:
+      - target: Depth
+
+schemes:
+  Depth:
+    build:
+      targets:
+        Depth: all
+        DepthTests: [test]
+        DepthUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - DepthTests
+        - name: DepthUITests
+          # AppStoreScreenshotsUITests is a slow, human-triggered release-prep tool
+          # (task-9d-screenshots-brief.md), not a correctness gate — excluded here so
+          # the default `xcodebuild test` run (this scheme's plain `test` action,
+          # which is what ios-ci.yml's `test` job runs) skips it. `-only-testing` at
+          # invocation time cannot override a scheme-level skip, so running it directly
+          # needs project.yml regenerated without this entry — see
+          # the vault's `Reference/ios-appstore-screenshots.md` for the documented local workflow.
+          skippedTests:
+            - AppStoreScreenshotsUITests
+    archive:
+      config: Release
+
+  # Discoverable local-development alias. The canonical Depth scheme keeps the same
+  # Debug actions for CI; this name makes the installed identity explicit in Xcode.
+  Depth Dev:
+    build:
+      targets:
+        Depth: all
+        DepthTests: [test]
+        DepthUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - DepthTests
+        - name: DepthUITests
+          skippedTests:
+            - AppStoreScreenshotsUITests
+    archive:
+      config: Debug
+
+  # Dedicated scheme for recording the hermetic UI-test fixture bundle from the local
+  # seeded stack (spec: 2026-09-10-ios-test-data-and-snapshot-testing-design). The normal
+  # Depth scheme skips recording, and a shell env var can't reach the test host
+  # (DEP-280) — a scheme TestAction EnvironmentVariable is the reliable transport.
+  # Run: `xcodebuild -scheme Depth-FixtureRecorder -only-testing:DepthTests/FixtureRecordingTests test`
+  # with `supabase start` up, then commit Depth/Fixtures/UITestFixtures.json.
+  Depth-FixtureRecorder:
+    build:
+      targets:
+        Depth: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - DepthTests
+      environmentVariables:
+        RECORD_UI_FIXTURES: '1'
+    archive:
+      config: Release
+
+  # Dedicated scheme for the deterministic App Store screenshot capture (T9D,
+  # the vault's `Reference/ios-appstore-screenshots.md`). The default Depth scheme skips
+  # AppStoreScreenshotsUITests via `skippedTests` so `xcodebuild test` (and ios-ci.yml)
+  # never run it — and `-only-testing` at invocation time cannot override a scheme-level
+  # skip, so running it used to require regenerating project.yml without the skip. This
+  # scheme includes the full DepthUITests target with NO skip, so
+  # `scripts/capture-appstore-screenshots.sh` (and manual runs) can invoke it with
+  # `-only-testing:DepthUITests/AppStoreScreenshotsUITests` straight from a clean
+  # checkout. Runs under Staging (the dedicated staging project, seeded from the checked-in
+  # supabase/seed*.sql — see xcconfig/Staging.xcconfig).
+  Depth-AppStoreScreenshots:
+    build:
+      targets:
+        Depth: all
+    run:
+      config: Staging
+    test:
+      config: Staging
+      targets:
+        - DepthUITests
+    archive:
+      config: Release
+
+  # Local running/archiving against the Staging config (prod Supabase, see
+  # xcconfig/Staging.xcconfig). This is the scheme to run on a physical device —
+  # Debug shares the simulator's localhost-backed Supabase (127.0.0.1) which is the
+  # device itself on hardware, so a phone build must use Staging to reach the hosted
+  # DB. Originally a hand-created scheme (not in project.yml) that was silently
+  # dropped on xcodegen regenerate; declared here so it's reproducible.
+  Depth Stage:
+    build:
+      targets:
+        Depth: all
+    run:
+      config: Staging
+    test:
+      config: Staging
+      targets:
+        - DepthTests
+        - DepthUITests
+    archive:
+      config: Staging

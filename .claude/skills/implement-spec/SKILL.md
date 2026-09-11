@@ -49,12 +49,12 @@ implementing from the spec's *description* of the code instead of the code itsel
 
 - **Locked decisions are settled.** If a locked decision looks wrong, implement it
   anyway and record your objection in the PR body — unless it would break tests,
-  types, or an AGENTS.md invariant, in which case stop and ask. Do not quietly build
+  types, or an web/CLAUDE.md invariant, in which case stop and ask. Do not quietly build
   the "better" version.
 - **Out of scope stays out.** The spec's Out-of-scope list is a fence, not a
   suggestion. Findings that tempt you across it go in the PR body as follow-ups.
 - **The spec's Tests section is the minimum test list.** Implement every bullet; add
-  malformed-input cases even when unlisted (AGENTS.md invariant 6).
+  malformed-input cases even when unlisted (web/CLAUDE.md invariant 6).
 - New pure logic goes in `lib/` with tests; components stay thin. New modules get a
   role-and-constraint header comment.
 - **A stateful/interactive acceptance bullet ("preserve X the same way it works today")

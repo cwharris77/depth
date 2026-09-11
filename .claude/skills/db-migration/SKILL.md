@@ -14,7 +14,11 @@ migration, code comes from the types. Skipping a step produces the repo's worst 
 class: row-shape mismatches that pass typecheck and fail at runtime.
 
 **REQUIRED BACKGROUND:** the vault's `Reference/espn.md` ("Generated types", "Deferred: RLS") and
-`AGENTS.md` §2 invariants 8–10.
+`web/CLAUDE.md` §2 invariants 8–10.
+
+> **Paths.** This skill covers the shared backend, which lives under `web/`. Every
+> `lib/…`, `supabase/…`, and `scripts/…` path below is relative to `web/`, and the
+> `npm run …` / `supabase …` commands run from `web/`.
 
 ## The dance, in order
 
@@ -53,7 +57,7 @@ supabase migration new <snake_case_name>   # new file under supabase/migrations/
   table **must** carry a `-- IOS-COMPATIBILITY:` header (naming the App Store build
   the change is safe after, gate minimum, and rollback) **and** update
   `ios-release-compatibility.md` at the repo root in the same PR — or CI fails with no
-  escape hatch. This is CLAUDE.md invariant 11 mechanized (the 2026-08-24 TestFlight
+  escape hatch. This is web/CLAUDE.md invariant 11 mechanized (the 2026-08-24 TestFlight
   failure was a dropped column an old binary still SELECTed).
 
 ### 2. Apply locally, regenerate types
@@ -109,7 +113,7 @@ a migration PR that changes grants/RLS does not leave the working tree until:
 - the migration's own SQL test runs clean under
   `supabase migration up --local` + the `supabase/tests/*.sql` harness, AND
 - the existing Swift contract tests pass: the RLS actor-matrix suite
-  (`ios/DepthTests/SupabaseRLSIntegrationTests.swift`, e.g.
+  (`DepthTests/SupabaseRLSIntegrationTests.swift`, e.g.
   `anonymousCannotReadAppEvents` / `anonymousCannotForgeAnEventTimestamp`) — a red
   one means the "contract" a migration claims is not actually enforced, and
 - if the contract is insert-only/owner-scoped, `\dp <table>` shows anon/authenticated

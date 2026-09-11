@@ -33,6 +33,10 @@ permissions:
 jobs:
   check:
     runs-on: [self-hosted, macos, arm64]
+    # Next.js app + shared backend live under web/ now (uniforms live in lib/uniforms).
+    defaults:
+      run:
+        working-directory: web
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
@@ -40,6 +44,7 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+          cache-dependency-path: web/package-lock.json
       - run: npm ci
       # The vault working copy on the self-hosted runner's host. Overridable with a repo
       # variable; otherwise the standard checkout location on Cooper's Mac, the only

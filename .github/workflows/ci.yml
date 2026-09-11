@@ -10,7 +10,7 @@ name: CI
 # The ios-compat job runs the iOS backend-compatibility guard
 # (scripts/check-ios-compatibility.mts) on every run: it flags destructive migrations
 # that break installed App Store builds unless they carry a compatibility annotation
-# and update ios-release-compatibility.md (CLAUDE.md invariant 11). It needs a
+# and update ios-release-compatibility.md (web/CLAUDE.md invariant 11). It needs a
 # full clone (fetch-depth: 0) so the PR base SHA resolves for the diff.
 
 on:
@@ -26,6 +26,10 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # The Next.js app + shared backend live under web/ now — see the header comment.
+    defaults:
+      run:
+        working-directory: web
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
@@ -33,6 +37,7 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+          cache-dependency-path: web/package-lock.json
       - run: npm ci
       - run: npm run format:check
       - run: npx tsc --noEmit
@@ -40,6 +45,9 @@ jobs:
 
   ios-compat:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
@@ -49,6 +57,7 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+          cache-dependency-path: web/package-lock.json
       - run: npm ci
       - name: Guard migrations against installed App Store builds
         run: npm run check:ios-compat -- --base ${{ github.event.pull_request.base.sha || github.event.before }}
