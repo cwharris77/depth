@@ -28,6 +28,12 @@ and the postmortem this guard exists because of,
     2026-08-24 TestFlight failure).
   - Team colors: `brand_colors` (ESPN-owned, ingest-overwritten) + `uniforms`
     (curated, append-only archive). Jersey palettes come only from `uniforms`.
+  - `games.game_type` carries `PRE` rows (ESPN-ingested preseason, ids
+    `<season>_PRE_<espnEventId>`, week 0 = Hall of Fame game) alongside nflverse's
+    `REG`/`WC`/`DIV`/`CON`/`SB`. Additive, no schema change: build 587's
+    `ScheduleMapper` keeps only `REG` rows and is its only `games` reader, so it never
+    sees them; newer builds render them under PRESEASON. Any future client reader of
+    `games` must filter by an explicit `game_type` allowlist, never "not REG".
   - `app_config` is frozen by contract — the gate reads exactly two columns
     (`minimum_supported_build`, `maintenance_message`) and may never depend on more.
 - **Safe to remove legacy columns / change decoded shapes:** only after the

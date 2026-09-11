@@ -1,0 +1,89 @@
+{
+  "leagues": [
+    {
+      "calendar": [
+        {
+          "label": "Preseason",
+          "value": "1",
+          "entries": [
+            {
+              "label": "Hall of Fame Weekend",
+              "value": "1",
+              "startDate": "2026-08-06T07:00Z",
+              "endDate": "2026-08-13T06:59Z"
+            },
+            {
+              "label": "Preseason Week 1",
+              "value": "2",
+              "startDate": "2026-08-13T07:00Z",
+              "endDate": "2026-08-20T06:59Z"
+            },
+            {
+              "label": "Preseason Week 2",
+              "value": "3",
+              "startDate": "2026-08-20T07:00Z",
+              "endDate": "2026-08-27T06:59Z"
+            },
+            {
+              "label": "Preseason Week 3",
+              "value": "4",
+              "startDate": "2026-08-27T07:00Z",
+              "endDate": "2026-09-06T06:59Z"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "season": {
+    "type": 1,
+    "year": 2026
+  },
+  "week": {
+    "number": 1
+  },
+  "events": [
+    {
+      "id": "401873271",
+      "date": "2026-08-07T00:00Z",
+      "name": "Carolina Panthers at Arizona Cardinals",
+      "season": {
+        "year": 2026,
+        "type": 1
+      },
+      "week": {
+        "number": 1
+      },
+      "competitions": [
+        {
+          "neutralSite": true,
+          "status": {
+            "type": {
+              "name": "STATUS_FINAL",
+              "state": "post",
+              "completed": true
+            }
+          },
+          "competitors": [
+            {
+              "homeAway": "home",
+              "score": "30",
+              "team": {
+                "id": "22",
+                "abbreviation": "ARI"
+              }
+            },
+            {
+              "homeAway": "away",
+              "score": "33",
+              "team": {
+                "id": "29",
+                "abbreviation": "CAR"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

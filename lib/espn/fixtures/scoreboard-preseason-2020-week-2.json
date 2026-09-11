@@ -1,0 +1,95 @@
+{
+  "leagues": [
+    {
+      "calendar": [
+        {
+          "label": "Preseason",
+          "value": "1",
+          "entries": [
+            {
+              "label": "Hall of Fame Weekend",
+              "value": "1",
+              "startDate": "2020-08-05T07:00Z",
+              "endDate": "2020-08-12T06:59Z"
+            },
+            {
+              "label": "Preseason Week 1",
+              "value": "2",
+              "startDate": "2020-08-12T07:00Z",
+              "endDate": "2020-08-19T06:59Z"
+            },
+            {
+              "label": "Preseason Week 2",
+              "value": "3",
+              "startDate": "2020-08-19T07:00Z",
+              "endDate": "2020-08-26T06:59Z"
+            },
+            {
+              "label": "Preseason Week 3",
+              "value": "4",
+              "startDate": "2020-08-26T07:00Z",
+              "endDate": "2020-09-02T06:59Z"
+            },
+            {
+              "label": "Preseason Week 4",
+              "value": "5",
+              "startDate": "2020-09-02T07:00Z",
+              "endDate": "2020-09-09T06:59Z"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "season": {
+    "type": 1,
+    "year": 2020
+  },
+  "week": {
+    "number": 2
+  },
+  "events": [
+    {
+      "id": "401223418",
+      "date": "2020-08-14T02:00Z",
+      "name": "Las Vegas Raiders at Seattle Seahawks",
+      "season": {
+        "year": 2020,
+        "type": 1
+      },
+      "week": {
+        "number": 2
+      },
+      "competitions": [
+        {
+          "neutralSite": false,
+          "status": {
+            "type": {
+              "name": "STATUS_CANCELED",
+              "state": "post",
+              "completed": false
+            }
+          },
+          "competitors": [
+            {
+              "homeAway": "home",
+              "score": "0",
+              "team": {
+                "id": "26",
+                "abbreviation": "SEA"
+              }
+            },
+            {
+              "homeAway": "away",
+              "score": "0",
+              "team": {
+                "id": "13",
+                "abbreviation": "LV"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

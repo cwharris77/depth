@@ -1,7 +1,7 @@
 name: Ingest ESPN data
 
-# Recurring ESPN ingestion (rosters, depth charts, coaches, and multi-season team
-# stats). Wraps `npm run ingest:espn` (see `Reference/espn.md` in the vault) on a daily
+# Recurring ESPN ingestion (rosters, depth charts, coaches, multi-season team stats,
+# and preseason games). Wraps `npm run ingest:espn` (see `Reference/espn.md` in the vault) on a daily
 # schedule, plus a
 # manual trigger. STRICT=1 so a partial run turns the workflow red instead of
 # silently going green with half-stale data.
@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       seasons:
-        description: 'Season range to backfill team_stats, e.g. 2002-2025. Empty = daily run (this + last season).'
+        description: 'Season range to backfill team_stats (2002+) and preseason games (2009+), e.g. 2009-2025. Empty = daily run (this + last season).'
         type: string
         required: false
         default: ''
@@ -39,7 +39,7 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      # Manual dispatch's `seasons` input backfills team_stats; empty input (the
+      # Manual dispatch's `seasons` input backfills team_stats and preseason games; empty input (the
       # scheduled daily run) falls through to the plain command -- this + last season.
       - run: |
           if [ -n "$SEASONS" ]; then
