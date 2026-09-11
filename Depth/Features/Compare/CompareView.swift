@@ -883,10 +883,9 @@ private struct PlayerCell: View {
     var body: some View {
         Group {
             if let player {
-                // DEP-385: Compare never shows PlayerDetailView's card, so this tap-through
-                // is the only door to that player's identity for anyone using Compare —
-                // unlike the card's own "Full stats & history" row, this isn't duplicating
-                // something already on screen.
+                // DEP-385: Compare's only door to a player's identity — the same PlayerProfileView
+                // the depth chart pushes, without depth context (Compare has no depth chart on
+                // screen).
                 NavigationLink {
                     PlayerProfileView(player: player, team: team, repository: repository)
                 } label: {

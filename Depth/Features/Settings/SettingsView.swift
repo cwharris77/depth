@@ -502,7 +502,7 @@ struct SettingsView: View {
 /// is loading. Mirrors the loaded row's layout (icon badge, label, value,
 /// chevron) so the transition to the real content is smooth with no layout
 /// shift. Uses the shared `surfacePlaceholder` fill and `redacted` pattern
-/// from `TeamRowSkeleton` and `PlayerStatsSkeleton`.
+/// from `TeamRowSkeleton`.
 private struct FavoriteTeamPickerSkeleton: View {
     var body: some View {
         HStack(spacing: DesignTokens.Spacing.md) {

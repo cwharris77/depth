@@ -23,9 +23,11 @@ import SwiftUI
 //   • `showClose: false` covers sheets that deliberately dismiss another way:
 //     UniformFilterSheet's "Show N kits" button, and AuthSheet's success step (which
 //     hides the X so the only path forward is "Manage account settings").
-//   • A title-less sheet still gets a `NavigationStack` when it hosts a toolbar close
-//     (PlayerDetailView) — the X needs a nav bar to sit in; only fully chrome-less
-//     sheets (uniform kit/filters) render plain content.
+//   • A title-less sheet still gets a `NavigationStack` when it hosts a toolbar close —
+//     the X needs a nav bar to sit in. No current call site exercises this (every
+//     title-less sheet today either suppresses the X or places it as an overlay via
+//     `closePlacement: .overlay`); only fully chrome-less sheets (uniform kit/filters)
+//     render plain content.
 //   • `.presentationBackground(background)` lives here so the old bg/`surfaceCard` split
 //     (and AuthSheet's `.background` instead of `.presentationBackground`) is a per-sheet
 //     `background:` prop, not a per-call-site modifier.

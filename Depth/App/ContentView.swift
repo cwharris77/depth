@@ -126,8 +126,8 @@ struct ContentView: View {
 // view (measured directly: identical inside a switcher-sheet team row across "large"
 // and "accessibility5" launches, while the same override reaches non-sheet tab content
 // correctly). Every `.sheet()` whose content is covered by an accessibility-size test
-// or design requirement (2026-08-15 nav-parity's `TeamSwitcherSheet`, T10's
-// `PlayerDetailView`) re-applies this modifier at its own presentation point rather than
+// or design requirement (2026-08-15 nav-parity's `TeamSwitcherSheet`, `PositionReorderSheet`
+// in TeamDetailView) re-applies this modifier at its own presentation point rather than
 // relying on inheritance through the sheet boundary.
 struct UITestingDynamicTypeOverride: ViewModifier {
     func body(content: Content) -> some View {
