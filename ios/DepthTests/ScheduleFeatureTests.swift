@@ -566,3 +566,30 @@ private actor DelayedScheduleRepository: DepthRepository {
         responseWaiters.removeValue(forKey: season)?.resume(returning: schedule)
     }
 }
+
+@Test func preseasonHallOfFameGameIsTitledByNameNotWeekZero() throws {
+    let schedule = ScheduleDTO(teamId: "cardinals", season: 2026)
+    let games = [
+        scheduleGame(
+            id: "2026_PRE_401873271", week: 0, gameType: "PRE", homeTeamId: "cardinals",
+            awayTeamId: "panthers", homeScore: 30, awayScore: 33, gameday: "2026-08-06",
+            location: "Neutral"
+        ),
+        scheduleGame(
+            id: "2026_PRE_401873640", week: 1, gameType: "PRE", homeTeamId: "raiders",
+            awayTeamId: "cardinals", homeScore: 14, awayScore: 27, gameday: "2026-08-13"
+        ),
+    ]
+
+    let result = try ScheduleMapper.map(
+        schedule: schedule,
+        games: games,
+        teamsById: [
+            "panthers": scheduleTeam(id: "panthers", abbrev: "CAR"),
+            "raiders": scheduleTeam(id: "raiders", abbrev: "LV"),
+        ]
+    )
+
+    #expect(result.preseason.map(\.weekTitle) == ["Hall of Fame", "Week 1"])
+    #expect(result.games.isEmpty)
+}

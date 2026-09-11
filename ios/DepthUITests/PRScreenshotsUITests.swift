@@ -200,11 +200,33 @@ final class PRScreenshotsUITests: XCTestCase {
             attachScreenshot(name: "schedule")
         }
 
+        // `schedule-preseason` — the Cardinals' current-season PRESEASON phase, which
+        // opens with the 2026 Hall of Fame game (week 0). The Bills fixture team has no
+        // Hall of Fame game, so this relaunches into a team that does; it runs after every
+        // Bills capture for that reason. Needs ESPN preseason rows (`npm run ingest:espn`).
+        if requested.contains("schedule-preseason") {
+            XCTAssertTrue(app.launch(intoTeam: "cardinals"), "the Cardinals chart should launch directly")
+            let scheduleTab = app.buttons["page-switcher-schedule"]
+            XCTAssertTrue(scheduleTab.waitForExistence(timeout: 15), "team detail should expose a Schedule page tab")
+            XCTAssertTrue(
+                scheduleTab.tapUntil { app.otherElements["schedule-content"].exists },
+                "the schedule should render"
+            )
+            let preseasonTab = app.buttons["schedule-phase-preseason"]
+            XCTAssertTrue(preseasonTab.waitForExistence(timeout: 15), "the schedule should expose its PRESEASON phase")
+            preseasonTab.tap()
+            XCTAssertTrue(
+                app.descendants(matching: .any)["schedule-week-0"].waitForExistence(timeout: 15),
+                "the Cardinals preseason should open with the Hall of Fame game"
+            )
+            attachScreenshot(name: "schedule-preseason")
+        }
+
         if requested.isEmpty {
             // `field` is the documented default (PRScreenshotsUITests.requestedTargets
             // returns ["field"] for empty/missing input), so this is unreachable — kept
             // as a defensive tripwire in case the default ever changes.
-            XCTFail("No recognized PR screenshot target requested — pass SCREENSHOT_TARGETS=field,custom-order,field-footer,formations,teams,uniform,player,settings,schedule")
+            XCTFail("No recognized PR screenshot target requested — pass SCREENSHOT_TARGETS=field,custom-order,field-footer,formations,teams,uniform,player,settings,schedule,schedule-preseason")
         }
     }
 
@@ -221,7 +243,7 @@ final class PRScreenshotsUITests: XCTestCase {
         } else {
             raw = ProcessInfo.processInfo.environment["SCREENSHOT_TARGETS"] ?? ""
         }
-        let valid: Set<String> = ["field", "custom-order", "field-footer", "formations", "teams", "uniform", "player", "settings", "schedule"]
+        let valid: Set<String> = ["field", "custom-order", "field-footer", "formations", "teams", "uniform", "player", "settings", "schedule", "schedule-preseason"]
         let tokens = raw.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         let requested = Set(tokens).intersection(valid)
         // `field` is the documented default (empty/missing env, or no valid token →
