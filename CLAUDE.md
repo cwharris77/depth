@@ -205,9 +205,10 @@ web UI is frozen.
   live: …" line describing what was actually seen in the browser. **Start every PR
   from the template** (`.github/pull_request_template.md`) and keep its sections —
   agents: `gh pr create` without `--body`, or pass `--body-file` on the template, so
-  the `## Screenshots` section stays in and any UI change fills it (web:
-  `/pr-screenshots`; iOS: `ios/scripts/pr-screenshots.sh --body-file <body>` — runs
-  automatically for every iOS UI PR via the `ship-pr` skill).
+  those sections stay in. The PR-screenshot driver and its CI gate were removed
+  (2026-09-10); iOS visual regression is snapshot tests (Phase 4, separate), and the
+  App Store capture flow (`ios/scripts/capture-appstore-screenshots.sh`) is the only
+  screenshot tooling left.
 - **Vercel preview browser QA starts with the bypass URL.** Protected preview
   deployments use Vercel's Protection Bypass for Automation. Keep the token only in
   `.env.local` as `X_VERCEL_PROTECTION_BYPASS`; never commit it. Before opening a
@@ -362,7 +363,9 @@ when the diff touches the frozen web app or shared backend.
 - [ ] New/changed modules carry a role-and-constraint header comment
 - [ ] Conventional-commit title with a scope from the list in §3
 - [ ] PR body starts from `.github/pull_request_template.md` (What/Why/Tests + footer);
-      the `## Screenshots` section is filled in for any UI change, not deleted
+      there is no `## Screenshots` section — the PR-screenshot driver and gate were
+      removed (2026-09-10). iOS visual regression is snapshot tests (Phase 4, separate);
+      `ios/scripts/capture-appstore-screenshots.sh` is the only screenshot tooling left
 - [ ] No new dependency (or explicit sign-off recorded in the PR body)
 
 **Schema change (additionally)**

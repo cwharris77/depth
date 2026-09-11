@@ -197,11 +197,6 @@ schemes:
           # the vault's `Reference/ios-appstore-screenshots.md` for the documented local workflow.
           skippedTests:
             - AppStoreScreenshotsUITests
-            # PRScreenshotsUITests is likewise an agent-triggered on-demand capture tool
-            # (the vault's `Reference/ios-pr-screenshots.md`), not a correctness gate — same skip rationale.
-            # It IS runnable, via the dedicated Depth-PRScreenshots scheme below (adding
-            # it to this skippedTests only keeps it out of the default `test` action).
-            - PRScreenshotsUITests
     archive:
       config: Release
 
@@ -222,7 +217,6 @@ schemes:
         - name: DepthUITests
           skippedTests:
             - AppStoreScreenshotsUITests
-            - PRScreenshotsUITests
     archive:
       config: Debug
 
@@ -244,34 +238,6 @@ schemes:
         - DepthTests
       environmentVariables:
         RECORD_UI_FIXTURES: '1'
-    archive:
-      config: Release
-
-  # Dedicated scheme for the agent-triggered PR screenshot capture. It includes the
-  # DepthUITests target WITHOUT the AppStore/PR screenshot skips, so the workflow (and
-  # local runs) can invoke it with `-only-testing:DepthUITests/PRScreenshotsUITests` —
-  # which cannot override a scheme-level skip. See the vault's `Reference/ios-pr-screenshots.md`.
-  #
-  # Target propagation: SCREENSHOT_TARGETS is injected INTO THE SCHEME as a TestAction
-  # EnvironmentVariable rather than passed to `xcodebuild`'s process env — the XCUITest
-  # runner does not inherit xcodebuild's shell environment, and reading
-  # ProcessInfo.processInfo.environment in the runner comes up empty (DEP-280). Scheme
-  # TestAction env vars DO reach the runner. The value below is the deterministic
-  # `field` default (keeps plain `xcodegen generate` reproducible for CI's sync check);
-  # the script/workflow sed the regenerated scheme's SCREENSHOT_TARGETS to the requested
-  # targets before each capture.
-  Depth-PRScreenshots:
-    build:
-      targets:
-        Depth: all
-    run:
-      config: Debug
-    test:
-      config: Debug
-      targets:
-        - DepthUITests
-      environmentVariables:
-        SCREENSHOT_TARGETS: field
     archive:
       config: Release
 

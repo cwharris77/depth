@@ -92,9 +92,6 @@
                <Test
                   Identifier = "AppStoreScreenshotsUITests">
                </Test>
-               <Test
-                  Identifier = "PRScreenshotsUITests">
-               </Test>
             </SkippedTests>
          </TestableReference>
       </Testables>

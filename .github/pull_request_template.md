@@ -28,23 +28,4 @@ the frozen web app/backend — see `AGENTS.md` §5._
 
 Verified live: _one concrete sentence of what was actually seen — UI changes only_
 
-## Screenshots
-
-_**Required for ALL UI changes** — iOS, or web only when the diff touches the frozen web app. Delete this section for non-UI PRs._
-
-- **iOS:** run `ios/scripts/pr-screenshots.sh --body-file <body>` before `gh pr create` — it
-  decides targets from the diff, captures before/after + a boxed visual diff, uploads to
-  Cloudinary, and fills this block automatically. CI enforces it for `ios/Depth/**` diffs.
-- **Web (frozen app PRs only):** run `/pr-screenshots` — it captures before/after and replaces the block
-  below with the generated route table.
-
-<!-- The sentinel comments match the markers both screenshot tools use, so this block
-     is replaced idempotently on re-run. Leave them in place. -->
-
-<!-- screenshots-start -->
-
-_Table auto-fills here after the screenshot pass._
-
-<!-- screenshots-end -->
-
 <!-- Agent tooling appends the "🤖 Generated with …" footer — manual PRs can leave it off. -->
