@@ -32,6 +32,16 @@ settings:
     # No .xcstrings catalog exists yet, so symbol generation is a no-op until one is added.
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     STRING_CATALOG_GENERATE_SYMBOLS: YES
+  configs:
+    # Hermetic UI-test fixtures (spec: 2026-09-10-ios-test-data-and-snapshot-testing-
+    # design). CI builds the app under Staging, not Debug, so the fixture seam must
+    # compile there too — a plain `#if DEBUG` would silently vanish in CI. A dedicated
+    # condition on Debug + Staging (and absent from Release) is the accurate gate:
+    # fixtures ship in neither the App Store binary nor a production-config build.
+    Debug:
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG UITEST_FIXTURES
+    Staging:
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: UITEST_FIXTURES
 
 packages:
   # Exact pin, not `from:` — a reviewed version per the design spec, not an
@@ -50,6 +60,12 @@ targets:
       - path: Depth/Data
       - path: Depth/Features
       - path: Depth/Support
+      # Checked-in UI-test fixture bundle, replayed only under
+      # UI_TESTING_FIXTURE_BACKEND (#if DEBUG). Bundled unconditionally — the files are a
+      # few KB and inert in Release, where FixtureDepthRepository doesn't compile. Recorded
+      # from the local seeded stack by DepthTests/FixtureRecordingTests; see the spec
+      # 2026-09-10-ios-test-data-and-snapshot-testing-design.
+      - path: Depth/Fixtures
       - path: Depth/Assets.xcassets
       - path: Depth/LaunchScreen.storyboard
       - path: Depth/LaunchMark.png
@@ -104,6 +120,13 @@ targets:
         # script only touches local build-time files, not the shipped app, so disabling
         # sandboxing here has no product-security effect.
         ENABLE_USER_SCRIPT_SANDBOXING: NO
+      configs:
+        Release:
+          # The UI-test fixture JSON is test-only. Excluding it here keeps ~300 KB of
+          # football data out of the shipped App Store binary; the replay code is already
+          # absent from Release via the missing UITEST_FIXTURES condition. Debug/Staging
+          # keep it so the hermetic suite can replay it.
+          EXCLUDED_SOURCE_FILE_NAMES: UITestFixtures.json
     postbuildScripts:
       # Auto-bumps CFBundleVersion for App Store/TestFlight uploads so it never has to be
       # hand-edited in project.yml again. `runOnlyWhenInstalling` ties this to Archive
@@ -202,6 +225,27 @@ schemes:
             - PRScreenshotsUITests
     archive:
       config: Debug
+
+  # Dedicated scheme for recording the hermetic UI-test fixture bundle from the local
+  # seeded stack (spec: 2026-09-10-ios-test-data-and-snapshot-testing-design). The normal
+  # Depth scheme skips recording, and a shell env var can't reach the test host
+  # (DEP-280) — a scheme TestAction EnvironmentVariable is the reliable transport.
+  # Run: `xcodebuild -scheme Depth-FixtureRecorder -only-testing:DepthTests/FixtureRecordingTests test`
+  # with `supabase start` up, then commit ios/Depth/Fixtures/UITestFixtures.json.
+  Depth-FixtureRecorder:
+    build:
+      targets:
+        Depth: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - DepthTests
+      environmentVariables:
+        RECORD_UI_FIXTURES: '1'
+    archive:
+      config: Release
 
   # Dedicated scheme for the agent-triggered PR screenshot capture. It includes the
   # DepthUITests target WITHOUT the AppStore/PR screenshot skips, so the workflow (and
