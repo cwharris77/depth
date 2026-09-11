@@ -413,7 +413,7 @@ final class DepthUITests: XCTestCase {
     /// non-default uniform on the roster should be reflected the moment Stats/Schedule
     /// next render, with no separate refetch. XCUITest can't assert a SwiftUI
     /// `foregroundStyle` color directly, so this attaches before/after screenshots for
-    /// visual confirmation (same approach as PRScreenshotsUITests) alongside asserting
+    /// visual confirmation alongside asserting
     /// the functional flow — kit picked, sheet dismissed, both pages still render —
     /// completes without regressing.
     func testKitPickFollowsOntoScheduleAndStats() throws {

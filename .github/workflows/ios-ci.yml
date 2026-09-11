@@ -254,10 +254,9 @@ jobs:
   # demand.
   #
   # Slice partition (each named slice covers disjoint classes; the union is the full
-  # DepthUITests target). AppStoreScreenshotsUITests and PRScreenshotsUITests are
-  # deliberately left out — they are on-demand capture tools with their own schemes, not
-  # correctness gates (see project.yml's skippedTests), so they never run in the nightly
-  # fan-out either.
+  # DepthUITests target). AppStoreScreenshotsUITests is deliberately left out — it is an
+  # on-demand capture tool with its own scheme, not a correctness gate (see project.yml's
+  # skippedTests), so it never runs in the nightly fan-out either.
   test-full-suite:
     needs: [resolve-devices, build-for-testing]
     runs-on: macos-latest

@@ -9,8 +9,8 @@
 #
 #   1. Picks the newest simulator device type in the 1284×2778 (6.5-inch display) class —
 #      iPhone 13 Pro Max, falling back to iPhone 12 Pro Max — and boots a DISPOSABLE
-#      instance of it (nothing is left booted afterward — same hygiene as
-#      screenshot-check.sh, so parallel worktrees don't pile up sims and exhaust RAM).
+#      instance of it (nothing is left booted afterward, so parallel worktrees don't
+#      pile up sims and exhaust RAM).
 #   2. Overrides the status bar via `simctl status_bar` — the same "9:41" / charged /
 #      full-signal baseline on every capture, since the XCUITest process runs inside the
 #      simulator and cannot call simctl itself. This is what makes the status-bar time
