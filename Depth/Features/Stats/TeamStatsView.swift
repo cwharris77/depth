@@ -2,10 +2,10 @@ import SwiftUI
 
 // Native round-4 Stats page — a literal port of the mobile-visible portion of web's
 // `web/components/TeamStatsView.tsx`: season-chips row, team name block, hero record,
-// HOME/ROAD · DIV/CONF · PTS FOR/PTS AGAINST · DIFF breakdown, footer ticker, degraded
-// upcoming-season hero, and the NEXT GAME card. Renders entirely from the cached
-// `TeamStatsPage` plus the derived next game; season selection is local state with no
-// refetch. Owns a feature-local `TeamStatsViewModel` and loads lazily on first visit.
+// HOME/ROAD · DIV/CONF · PTS FOR/PTS AGAINST · DIFF breakdown, footer ticker, and the
+// degraded upcoming-season hero. Renders entirely from the cached `TeamStatsPage`;
+// season selection is local state with no refetch. Owns a feature-local
+// `TeamStatsViewModel` and loads lazily on first visit.
 struct TeamStatsView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var viewModel: TeamStatsViewModel
@@ -116,9 +116,6 @@ struct TeamStatsView: View {
                         breakdownTable(active)
                     } else if let upcoming = viewModel.upcomingSeason {
                         degradedUpcomingHero(upcoming)
-                    }
-                    if viewModel.isViewingCurrentOrUpcomingSeason, let nextGame = viewModel.nextGame {
-                        NextGameCard(game: nextGame, accent: teamAccent)
                     }
                     if let active = viewModel.selectedSeasonStats {
                         metricSections(active)
@@ -525,8 +522,7 @@ struct TeamStatsView: View {
                 .frame(maxWidth: dynamicTypeSize.isAccessibilitySize ? .infinity : 170, alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing)
         }
         // Web parity: RowCardList's `px-3.5`/`py-3.5` (14pt), off the 8pt spacing scale —
-        // matched as a literal rather than snapped to `sm`/`md`, same as NextGameCard's
-        // fixed 28pt icon tile above.
+        // matched as a literal rather than snapped to `sm`/`md`.
         .padding(.horizontal, 14)
         .padding(.vertical, 14)
         .accessibilityElement(children: .combine)
@@ -575,8 +571,8 @@ struct TeamStatsView: View {
     }
 }
 
-/// DEP-265: the one eyebrow style shared by the team-name block, the NEXT GAME card, and
-/// the footer ticker — caption2.bold, tracking 0.8, textMuted.
+/// DEP-265: the one eyebrow style shared by the team-name block and the footer ticker —
+/// caption2.bold, tracking 0.8, textMuted.
 private struct StatsEyebrow: View {
     let text: String
 
@@ -586,78 +582,4 @@ private struct StatsEyebrow: View {
             .tracking(0.8)
             .foregroundStyle(DesignTokens.Colors.textMuted)
     }
-}
-
-/// Web's NEXT GAME card (lines 545-578): `depthCard()` fill/radius with an added
-/// accent-tinted border overlay (web parity — a plain `depthCard()` alone would drop the
-/// "this card is special" cue), the week/opponent/date line on the left and an
-/// opponent-abbrev color tile on the right.
-private struct NextGameCard: View {
-    let game: ScheduleGame
-    let accent: Color
-
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                StatsEyebrow(text: "NEXT GAME · WEEK \(game.week)")
-                HStack(spacing: 4) {
-                    Text(verbatim: opponentLabel)
-                        .font(.subheadline.weight(.heavy))
-                    if let date = formattedDate {
-                        Text(verbatim: "· \(date)")
-                            .font(.subheadline.weight(.heavy))
-                    }
-                }
-                .foregroundStyle(DesignTokens.Colors.textPrimary)
-            }
-            Spacer()
-            if let opponent = game.opponent {
-                // Team icon (logo) instead of the plain color square; the abbrev tile
-                // remains the fallback for a team with no logo URL.
-                if (opponent.logoDark ?? opponent.logo) != nil {
-                    // DEP-264: TeamIconView's default size (28), matching the schedule
-                    // game card's opponent icon.
-                    TeamIconView(team: opponent)
-                } else {
-                    Text(opponent.abbrev.uppercased())
-                        .font(.caption2.weight(.black))
-                        .foregroundStyle(Color(hex: readableTextOn(opponent.colors.primary)))
-                        .frame(width: 28, height: 28)
-                        .background(Color(hex: opponent.colors.primary))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 8)
-                                .strokeBorder(Color(hex: opponent.colors.secondary), lineWidth: 1)
-                        }
-                }
-            }
-        }
-        .depthCard()
-        .overlay {
-            RoundedRectangle(cornerRadius: DesignTokens.Radius.lg)
-                .strokeBorder(accent.opacity(0.20), lineWidth: 1)
-        }
-        .padding(.horizontal, DesignTokens.Spacing.md)
-        .padding(.top, DesignTokens.Spacing.md)
-        .accessibilityIdentifier("stats-next-game")
-    }
-
-    private var opponentLabel: String {
-        guard let opponent = game.opponent else { return "" }
-        return game.isHome ? "vs \(opponent.abbrev)" : "@ \(opponent.abbrev)"
-    }
-
-    private var formattedDate: String? {
-        guard let date = game.date, let parsed = Self.inputFormatter.date(from: date) else {
-            return nil
-        }
-        return parsed.formatted(.dateTime.month(.abbreviated).day())
-    }
-
-    private static let inputFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.calendar = Calendar(identifier: .gregorian)
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter
-    }()
 }
