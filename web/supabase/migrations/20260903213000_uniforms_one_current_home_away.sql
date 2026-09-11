@@ -2,7 +2,7 @@
 --
 -- Why this matters more than a duplicate archive row: iOS resolves a team's entire palette
 -- with `uniforms.first(where: { $0.kind == .home && $0.isCurrent })`
--- (Depth/Data/TeamSnapshotMapper.swift) over an UNORDERED PostgREST result. A second
+-- (ios/Depth/Data/TeamSnapshotMapper.swift) over an UNORDERED PostgREST result. A second
 -- current home row makes the team's colors -- field, badges, every accent -- nondeterministic
 -- and able to differ between fetches. The web resolves the same way.
 --

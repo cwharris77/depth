@@ -40,7 +40,11 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compatibilityAnnotation, findDestructivePatterns } from '@/lib/supabase/migration-compat';
+import {
+  changedMigrationsFromNameStatus,
+  compatibilityAnnotation,
+  findDestructivePatterns,
+} from '@/lib/supabase/migration-compat';
 
 // Layout note: this script lives in web/scripts/, so REPO_ROOT (its parent) is the web
 // app root — where supabase/ lives — while the release contract and the migrations git
@@ -69,7 +73,14 @@ function git(args: string[]): string {
   return execFileSync('git', args, { cwd: REPO_ROOT, encoding: 'utf-8' });
 }
 
-/** Names of migration files changed since the base ref, repo-root relative. */
+/**
+ * Names of migration files whose *content* changed since the base ref, relative to
+ * MIGRATIONS_DIR. Rename-aware: a pure move (`R100`) is skipped so a directory
+ * restructure doesn't re-report every historical migration as changed, while an
+ * edited rename, add, modify, or delete is still returned. A high `diff.renameLimit`
+ * keeps detection from being skipped on a large move (this repo moved ~1000 files at
+ * once); the parsing itself lives in the tested pure helper.
+ */
 function changedMigrationFiles(base: string, head: string): string[] {
   const baseSha = git(['rev-parse', '--verify', '--quiet', base]);
   if (!baseSha) {
@@ -78,12 +89,15 @@ function changedMigrationFiles(base: string, head: string): string[] {
     );
     process.exit(1);
   }
-  const names = git(['diff', '--name-only', `${base}...${head || 'HEAD'}`]).trim();
-  if (!names) return [];
-  return names
-    .split('\n')
-    .filter((f) => f.startsWith(MIGRATIONS_PREFIX) && f.endsWith('.sql'))
-    .map((f) => f.replace(MIGRATIONS_PREFIX, ''));
+  const status = git([
+    '-c',
+    'diff.renameLimit=20000',
+    'diff',
+    '--name-status',
+    '-M',
+    `${base}...${head || 'HEAD'}`,
+  ]).trim();
+  return changedMigrationsFromNameStatus(status, MIGRATIONS_PREFIX);
 }
 
 function defaultBase(): string {

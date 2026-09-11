@@ -6,6 +6,7 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  changedMigrationsFromNameStatus,
   compatibilityAnnotation,
   findDestructivePatterns,
   jsonNotNullWithoutDefault,
@@ -138,5 +139,50 @@ alter table teams drop column foo;`;
     const result = compatibilityAnnotation(sql);
     expect(result.present).toBe(true);
     expect(result.issues).toEqual([]);
+  });
+});
+
+describe('changedMigrationsFromNameStatus', () => {
+  const PREFIX = 'web/supabase/migrations/';
+
+  it('ignores a pure directory move (R100), so a restructure does not re-trip the guard', () => {
+    const diff = 'R100\tsupabase/migrations/001_a.sql\tweb/supabase/migrations/001_a.sql';
+    expect(changedMigrationsFromNameStatus(diff, PREFIX)).toEqual([]);
+  });
+
+  it('includes an edited rename (R<100) by its new path', () => {
+    const diff = 'R087\tsupabase/migrations/001_a.sql\tweb/supabase/migrations/001_a.sql';
+    expect(changedMigrationsFromNameStatus(diff, PREFIX)).toEqual(['001_a.sql']);
+  });
+
+  it('includes adds, modifies, type changes, and deletes under the prefix', () => {
+    const diff = [
+      'A\tweb/supabase/migrations/002_new.sql',
+      'M\tweb/supabase/migrations/003_edit.sql',
+      'T\tweb/supabase/migrations/005_type.sql',
+      'D\tweb/supabase/migrations/004_gone.sql',
+    ].join('\n');
+    expect(changedMigrationsFromNameStatus(diff, PREFIX)).toEqual([
+      '002_new.sql',
+      '003_edit.sql',
+      '005_type.sql',
+      '004_gone.sql',
+    ]);
+  });
+
+  it('ignores changes outside the migrations prefix and non-sql files', () => {
+    const diff = [
+      'A\tweb/lib/foo.ts',
+      'M\tweb/supabase/migrations/README.md',
+      'A\tDepth/App/DepthApp.swift',
+    ].join('\n');
+    expect(changedMigrationsFromNameStatus(diff, PREFIX)).toEqual([]);
+  });
+
+  it('tolerates an empty diff and CRLF line endings', () => {
+    expect(changedMigrationsFromNameStatus('', PREFIX)).toEqual([]);
+    expect(
+      changedMigrationsFromNameStatus('A\tweb/supabase/migrations/006_crlf.sql\r\n', PREFIX)
+    ).toEqual(['006_crlf.sql']);
   });
 });

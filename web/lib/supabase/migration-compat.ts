@@ -67,6 +67,38 @@ export interface CompatibilityAnnotation {
   issues: string[];
 }
 
+/**
+ * Parses `git diff --name-status -M` output and returns the migration files whose
+ * *content* changed, relative to `prefix` (e.g. `web/supabase/migrations/`).
+ *
+ * A pure rename (`R100`) is a move, not a schema change, so it is skipped: without
+ * this, moving the migrations directory (the 2026-09 repo restructure) reported every
+ * historical migration as changed and re-tripped the guard on destructive migrations
+ * that shipped long before the annotation convention existed. A rename that also
+ * edited the file (`R<100`) *is* a content change and is returned by its new path.
+ * Adds, modifies, and type changes are returned by path; deletes by their old path,
+ * so the caller still flags a deleted migration as a compatibility event.
+ */
+export function changedMigrationsFromNameStatus(nameStatus: string, prefix: string): string[] {
+  const changed: string[] = [];
+  for (const line of nameStatus.split('\n')) {
+    const trimmed = line.replace(/\r$/, '');
+    if (!trimmed) continue;
+    const [status, first, second] = trimmed.split('\t');
+    let path: string | undefined;
+    if (status.startsWith('R') || status.startsWith('C')) {
+      if (status.slice(1) === '100') continue; // move/copy with identical content
+      path = second; // edited rename — scan the new path
+    } else {
+      path = first; // A/M/D/T
+    }
+    if (path && path.startsWith(prefix) && path.endsWith('.sql')) {
+      changed.push(path.slice(prefix.length));
+    }
+  }
+  return changed;
+}
+
 /** Parses and validates a `-- IOS-COMPATIBILITY:` header block. */
 export function compatibilityAnnotation(content: string): CompatibilityAnnotation {
   // Annotation is a run of `-- ` comment lines immediately after the marker line.
