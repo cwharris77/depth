@@ -108,5 +108,26 @@ import Testing
             as: .image(perceptualPrecision: 0.98, layout: Self.phone)
         )
     }
+
+    /// The merged player profile as the depth chart pushes it: jersey band, vitals, and the
+    /// read-only DEPTH CHART section. Stats resolve in `.task`, so the ledger renders its
+    /// skeleton here — the section order and depth rows are what this guards.
+    @Test func playerProfileWithDepth() async throws {
+        let snapshot = try await repository.teamSnapshot(teamId: "bills")
+        let quarterbacks = snapshot.players.filter { $0.position == .qb }
+        let starter = try #require(quarterbacks.first, "the Bills fixture should include a QB")
+        #expect(quarterbacks.count >= 2)
+        assertSnapshot(
+            of: NavigationStack {
+                PlayerProfileView(
+                    player: starter,
+                    team: snapshot.team,
+                    repository: repository,
+                    depthContext: PlayerDepthContext(players: quarterbacks, isCustom: false)
+                )
+            },
+            as: .image(perceptualPrecision: 0.98, layout: Self.phone)
+        )
+    }
 }
 #endif
