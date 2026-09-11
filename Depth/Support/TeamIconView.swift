@@ -7,9 +7,8 @@ import SwiftUI
 // app is always dark; same reasoning as TeamBadge and the season-stats card's
 // logo_dark_url), falling back to the light logo. Renders nothing when neither URL is
 // present; the caller places it in its own container and provides its own fallback if it
-// needs one. Shared by the schedule card, the stats NEXT GAME card, and TeamBadge (the
-// team list/switcher) so the single "which URL + how to render a team icon" rule lives
-// in one place.
+// needs one. Shared by the schedule card and TeamBadge (the team list/switcher) so the
+// single "which URL + how to render a team icon" rule lives in one place.
 struct TeamIconView<Placeholder: View>: View {
     let team: Team
     var size: CGFloat = 28

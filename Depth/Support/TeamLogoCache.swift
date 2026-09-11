@@ -61,8 +61,8 @@ enum TeamLogoCache {
 // A team logo rendered from TeamLogoCache: synchronously from cache when present (no
 // "BUF → icon" flash), else `placeholder` while the first fetch completes. Replaces
 // AsyncImage for team artwork so repeat conference switches and offline use don't
-// re-download. Shared by TeamBadge (team list/switcher) and TeamIconView (schedule card,
-// stats NEXT GAME card) so the "which URL + cache policy" rule lives in one place.
+// re-download. Shared by TeamBadge (team list/switcher) and TeamIconView (schedule card)
+// so the "which URL + cache policy" rule lives in one place.
 @MainActor
 struct CachedTeamLogo<Placeholder: View, Content: View>: View {
     let url: URL

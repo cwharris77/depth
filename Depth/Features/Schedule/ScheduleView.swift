@@ -253,9 +253,7 @@ private struct ScheduleGameCard: View {
 
     private var cardContent: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Eyebrow + title hierarchy matches the Stats page's NEXT GAME card
-            // (TeamStatsView.swift's NextGameCard): caption2.bold eyebrow, subheadline
-            // .heavy title.
+            // Eyebrow + title hierarchy: caption2.bold eyebrow, subheadline .heavy title.
             Text(game.weekTitle.uppercased())
                 .font(.caption2.bold())
                 .tracking(0.8)
