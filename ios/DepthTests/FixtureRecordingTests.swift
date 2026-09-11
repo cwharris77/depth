@@ -21,9 +21,10 @@ struct FixtureRecordingTests {
     private static let shouldRecord = ProcessInfo.processInfo.environment["RECORD_UI_FIXTURES"] == "1"
 
     /// The teams the hermetic UI journeys open. Add one when a new journey opens a new team.
-    private let teamsToRecord = ["bills", "seahawks"]
-    /// The seasons the history/schedule journeys exercise.
-    private let seasonsToRecord = [2024, 2025]
+    private let teamsToRecord = ["bills", "seahawks", "dolphins"]
+    /// The historical-roster season the history journeys select. The local seed carries
+    /// roster_history only for 2025 (schedules/team_stats go further).
+    private let seasonsToRecord = [2025]
 
     @Test(.enabled(if: FixtureRecordingTests.shouldRecord))
     func recordFixtureBundle() async throws {
@@ -37,8 +38,21 @@ struct FixtureRecordingTests {
         bundle.appConfig = try? await repo.appConfig()
 
         for teamId in teamsToRecord {
-            bundle.snapshots[teamId] = try await repo.teamSnapshot(teamId: teamId)
+            let snapshot = try await repo.teamSnapshot(teamId: teamId)
+            bundle.snapshots[teamId] = snapshot
             bundle.teamStats[teamId] = try await repo.teamStats(teamId: teamId)
+            if let participation = try? await repo.recentParticipation(teamId: teamId) {
+                bundle.recentParticipation[teamId] = participation
+            }
+            // Player profiles open per-player stats; record them for every player on the
+            // recorded rosters so the detail sheet renders real rows, not an empty state.
+            for player in snapshot.players {
+                if let stats = try? await repo.playerStats(playerId: player.id, teamId: teamId),
+                    !stats.isEmpty
+                {
+                    bundle.playerStats[player.id] = stats
+                }
+            }
             if let schedule = try? await repo.teamSchedule(teamId: teamId, season: nil) {
                 bundle.schedules["\(teamId):default"] = schedule
             }

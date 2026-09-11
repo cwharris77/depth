@@ -49,7 +49,7 @@ final class FormationAttributionUITests: XCTestCase {
 
     private func launchBillsDepthChart() -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launchArguments = XCUIApplication.hermeticLaunchArguments
         app.launch()
 
         XCTAssertTrue(app.waitForDepthChart())

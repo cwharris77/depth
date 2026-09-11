@@ -4,9 +4,9 @@ import XCTest
 // search → team snapshot → position group → player detail). As of the 2026-08-15
 // navigation-parity spec the app launches straight into a depth chart rather than a team
 // list, so every journey opens the switcher sheet (`selectTeam`, UITestHelpers.swift)
-// instead of searching a root list. Runs against the production Supabase project
-// (ios/xcconfig/Debug.xcconfig — all configs point at it, there is no dedicated staging),
-// same as every other Debug-config run — no seeded/mocked data.
+// instead of searching a root list. Runs on the hermetic fixture backend
+// (UI_TESTING_FIXTURE_BACKEND) — a checked-in snapshot, not a live database — except
+// `testAppLaunches`, the one live smoke that boots against the configured backend.
 final class DepthUITests: XCTestCase {
     func testAppLaunches() throws {
         let app = XCUIApplication()
@@ -15,7 +15,7 @@ final class DepthUITests: XCTestCase {
 
     func testLaunchesIntoAChartThenSwitchesTeamAndOpensPlayerDetail() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launchArguments = XCUIApplication.hermeticLaunchArguments
         app.launch()
 
         // No stored preference → the default team's chart is the launch destination.
@@ -491,7 +491,7 @@ final class DepthUITests: XCTestCase {
     /// separately below.
     func testTabBarReachesAllThreeDestinations() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launchArguments = XCUIApplication.hermeticLaunchArguments
         app.launch()
         XCTAssertTrue(app.waitForDepthChart(), "Depth Charts should be the launch tab")
 
@@ -534,14 +534,15 @@ final class DepthUITests: XCTestCase {
     /// is the launch destination on the next launch, with no list-then-push transition.
     func testRelaunchRestoresTheLastViewedTeamAsTheLaunchDestination() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launchArguments = XCUIApplication.hermeticLaunchArguments
         app.launch()
         XCTAssertTrue(app.waitForDepthChart())
         app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
         app.terminate()
 
-        // No reset argument — this launch must inherit the stored preference.
-        app.launchArguments = []
+        // No reset argument — this launch must inherit the stored preference, but stays
+        // on the fixture backend so it doesn't reach for a live database.
+        app.launchArguments = XCUIApplication.hermeticRelaunchArguments
         app.launch()
         XCTAssertTrue(app.waitForDepthChart(), "relaunch should open a chart directly")
 
@@ -563,7 +564,7 @@ final class DepthUITests: XCTestCase {
     /// three lenses that remain instead of asserting the deleted ones exist.
     func testCompareRendersWebParityElements() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launchArguments = XCUIApplication.hermeticLaunchArguments
         app.launch()
         XCTAssertTrue(app.waitForDepthChart(), "Depth Charts should be the launch tab")
 
@@ -631,7 +632,7 @@ final class DepthUITests: XCTestCase {
     /// exact role — all resolvable by identifier (no swipe) on the position tab.
     func testMatchupRoomsReachEveryUnitWithoutHorizontalScrolling() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launchArguments = XCUIApplication.hermeticLaunchArguments
         app.launch()
         XCTAssertTrue(app.waitForDepthChart(), "Depth Charts should be the launch tab")
 

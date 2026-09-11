@@ -1,13 +1,13 @@
 import XCTest
 
 // Task 8E live journey: open a team, share the depth chart, and confirm the native
-// share sheet presents on real production data. Cancelling must leave
+// share sheet presents (on the hermetic fixture backend). Cancelling must leave
 // the team-detail screen unchanged (QA plan's "cancellation" case).
 final class ShareUITests: XCTestCase {
     @MainActor
     func testShareDepthChartPresentsTheNativeShareSheet() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launchArguments = XCUIApplication.hermeticLaunchArguments
         app.launch()
 
         XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")

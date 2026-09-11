@@ -28,7 +28,7 @@ final class TapTargetUITests: XCTestCase {
         XCTAssertTrue(app.textFields["auth-email"].waitForExistence(timeout: 15))
         capture("email-appearance")
         app.terminate()
-        app.launchArguments = ["UI_TESTING_RESET_STATE", "UI_TESTING_DELETE_TAP_TARGET"]
+        app.launchArguments = XCUIApplication.hermeticLaunchArguments + ["UI_TESTING_DELETE_TAP_TARGET"]
         app.launch()
         XCTAssertTrue(app.textFields["delete-code"].waitForExistence(timeout: 15))
         capture("deletion-appearance")
@@ -36,7 +36,7 @@ final class TapTargetUITests: XCTestCase {
 
     func testFilterSortWhitespaceSelectsOrder() {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launchArguments = XCUIApplication.hermeticLaunchArguments
         app.launch()
         let uniforms = app.tabBars.buttons["Uniforms"]
         XCTAssertTrue(uniforms.waitForExistence(timeout: 15))
@@ -86,14 +86,14 @@ final class TapTargetUITests: XCTestCase {
 
     func testDeletionCodePaddingFocusesField() {
         checkFieldEdges("delete-code", deletionFixture: true) { app in
-            app.launchArguments = ["UI_TESTING_RESET_STATE", "UI_TESTING_DELETE_TAP_TARGET"]
+            app.launchArguments = XCUIApplication.hermeticLaunchArguments + ["UI_TESTING_DELETE_TAP_TARGET"]
             app.launch()
         }
     }
 
     func testEmailPaddingFocusesField() {
         checkFieldEdges("auth-email") { app in
-            app.launchArguments = ["UI_TESTING_RESET_STATE"]
+            app.launchArguments = XCUIApplication.hermeticLaunchArguments
             app.launch()
             let account = app.buttons["account-button"]
             XCTAssertTrue(account.waitForExistence(timeout: 15))
