@@ -114,7 +114,7 @@ final class AccessibilityUITests: XCTestCase {
             XCTAssertGreaterThan(vitals.frame.height, 60, "vitals should stack at \(size)")
             reveal(vitals, in: app)
             attachScreenshot(app, named: "\(size)-vitals-reflow")
-            app.navigationBars.buttons.element(boundBy: 0).tap()
+            app.navigationBars.buttons["BackButton"].tap()
 
             let overflow = app.buttons["depth-chart-overflow"]
             XCTAssertTrue(overflow.waitForExistence(timeout: 10))
@@ -151,7 +151,7 @@ final class AccessibilityUITests: XCTestCase {
                 profile.swipeUp()
                 attachScreenshot(app, named: "\(size)-player-scroll-\(index)")
             }
-            let back = app.navigationBars.buttons.element(boundBy: 0)
+            let back = app.navigationBars.buttons["BackButton"]
             XCTAssertTrue(back.isHittable)
             back.tap()
             for page in ["schedule", "stats"] {
@@ -272,7 +272,7 @@ final class AccessibilityUITests: XCTestCase {
 
         attachScreenshot(app, named: "player-detail-accessibility-xxxl")
 
-        let back = app.navigationBars.buttons.element(boundBy: 0)
+        let back = app.navigationBars.buttons["BackButton"]
         XCTAssertTrue(back.waitForExistence(timeout: 5), "Back must remain reachable at Accessibility XXXL")
         back.tap()
 
@@ -398,7 +398,9 @@ final class AccessibilityUITests: XCTestCase {
                 slot.tap()
 
                 let stats = app.descendants(matching: .any)["player-profile-full-stats"]
-                let back = app.navigationBars.buttons.element(boundBy: 0)
+                // By identifier, not index 0: when the profile never pushed, index 0 is the
+                // chart's team-switcher-button, and tapping it would strand the walk in a sheet.
+                let back = app.navigationBars.buttons["BackButton"]
                 guard stats.waitForExistence(timeout: rowTimeout) else {
                     back.tapIfExists()
                     continue

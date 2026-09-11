@@ -59,7 +59,7 @@ final class DepthUITests: XCTestCase {
             "profile should resolve a stats state"
         )
 
-        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.navigationBars.buttons["BackButton"].tap()
         XCTAssertTrue(profile.waitForAbsence(timeout: 5), "back should pop the profile")
         XCTAssertTrue(playerSlot.waitForExistence(timeout: 5), "back should return to the depth chart")
     }
@@ -91,7 +91,7 @@ final class DepthUITests: XCTestCase {
         let swapped = expectation(for: NSPredicate(format: "label != %@", starterName), evaluatedWith: name)
         wait(for: [swapped], timeout: 5)
 
-        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.navigationBars.buttons["BackButton"].tap()
         XCTAssertTrue(name.waitForAbsence(timeout: 5), "no second profile should remain on the stack")
         XCTAssertTrue(quarterback.waitForExistence(timeout: 5), "one back tap should return to the field")
     }
@@ -279,7 +279,7 @@ final class DepthUITests: XCTestCase {
             app.descendants(matching: .any)["player-profile-full-bio"].exists,
             "historical rosters should not show a bio"
         )
-        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.navigationBars.buttons["BackButton"].tap()
         XCTAssertTrue(profile.waitForAbsence(timeout: 5))
 
         let backToToday = app.buttons["roster-history-season-trigger-back-to-current"]
