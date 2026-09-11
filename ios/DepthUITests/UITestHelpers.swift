@@ -28,12 +28,26 @@ extension XCUIApplication {
     /// the switcher-search prologue (`selectTeam`) entirely.
     static let uiTestingStartTeamArgPrefix = "UI_TESTING_START_TEAM="
 
-    /// Reset-state launch + start straight into `teamId`'s chart. The collapse of the
-    /// old `app.launch(); waitForDepthChart(); selectTeam(teamId, searching:…)`
+    /// The launch argument that makes `DepthEnvironment.repository` replay the checked-in
+    /// fixture bundle instead of Supabase (spec: 2026-09-10-ios-test-data-and-snapshot-
+    /// testing-design). A suite that must exercise the real backend (AuthUITests,
+    /// PerformanceUITests' cache journeys, the bare `testAppLaunches`) simply omits it.
+    static let fixtureBackendArgument = "UI_TESTING_FIXTURE_BACKEND"
+
+    /// Clean slate + hermetic fixture backend — the standard launch for a journey that
+    /// should not depend on a live database.
+    static let hermeticLaunchArguments = ["UI_TESTING_RESET_STATE", fixtureBackendArgument]
+
+    /// A relaunch that must *inherit* stored preferences (last-viewed team, saved overrides)
+    /// rather than reset them, while still staying on the fixture backend.
+    static let hermeticRelaunchArguments = [fixtureBackendArgument]
+
+    /// Reset-state launch + start straight into `teamId`'s chart, on the hermetic fixture
+    /// backend. The collapse of the old `app.launch(); waitForDepthChart(); selectTeam(…)`
     /// prologue for journeys that don't need to exercise the switcher itself.
     @discardableResult
     func launch(intoTeam teamId: String, timeout: TimeInterval = 15) -> Bool {
-        launchArguments = ["UI_TESTING_RESET_STATE", "\(Self.uiTestingStartTeamArgPrefix)\(teamId)"]
+        launchArguments = Self.hermeticLaunchArguments + ["\(Self.uiTestingStartTeamArgPrefix)\(teamId)"]
         launch()
         return waitForDepthChart(timeout: timeout)
     }

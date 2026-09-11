@@ -6,8 +6,8 @@ import XCTest
 // where layout regressions actually show up: a fixed-width frame or a fixed-size font
 // still passes a default-size run and only clips once the content size category grows.
 //
-// Runs against the production Supabase project (Debug/Staging/Release all point at it),
-// same as every other Debug-config run.
+// Runs on the hermetic fixture backend (UI_TESTING_FIXTURE_BACKEND), same as every other
+// fixture-backed journey.
 final class AccessibilityUITests: XCTestCase {
     // Run with simctl's real content_size setting, so sheet presentations and native
     // controls are covered independently of the app's launch-argument override.
@@ -189,7 +189,7 @@ final class AccessibilityUITests: XCTestCase {
         reduceMotion: Bool = false
     ) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        app.launchArguments = XCUIApplication.hermeticLaunchArguments
         if let dynamicTypeSize {
             app.launchArguments += ["UI_TESTING_DYNAMIC_TYPE", dynamicTypeSize]
         }
