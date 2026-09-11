@@ -5,6 +5,11 @@ name: Ingest nflverse data
 # trigger. STRICT=1 so a
 # partial run (a season failed to write) turns the workflow red instead of silently
 # going green with half-stale data.
+#
+# Runs production first, then the dedicated staging project (djwrecczgudktgsooxti) via
+# mirror steps that override SUPABASE_URL/SUPABASE_SECRET_KEY — see the staging steps'
+# comment. The staging run needs STAGING_SUPABASE_URL / STAGING_SUPABASE_SECRET_KEY;
+# until those secrets exist the steps fail loudly, while production is unaffected.
 
 on:
   schedule:
@@ -67,6 +72,9 @@ jobs:
           APP_URL: ${{ secrets.APP_URL }}
           INGEST_REVALIDATE_SECRET: ${{ secrets.INGEST_REVALIDATE_SECRET }}
           STRICT: '1'
+      # Production roster-history ingest. Runs before the staging mirrors so a staging
+      # failure can never skip it. Doesn't call revalidate itself — the ingest:nflverse
+      # step above already did (tagged ingest:nflverse, which covers roster-history reads).
       - run: |
           if [ -n "$SEASONS" ]; then
             npm run ingest:rosters -- --seasons "$SEASONS"
@@ -77,4 +85,33 @@ jobs:
           SEASONS: ${{ inputs.seasons }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          STRICT: '1'
+      # Staging mirrors — same two ingest commands against the dedicated staging project
+      # (djwrecczgudktgsooxti) so the staging-backed iOS suites and App Store captures
+      # read fresh data. Overrides the same two env vars the scripts read, so no script
+      # change. No APP_URL / INGEST_REVALIDATE_SECRET: staging has no deployed app, and
+      # notify-revalidate no-ops without them, so prod's cache is never revalidated here.
+      - name: Ingest nflverse data (staging)
+        run: |
+          if [ -n "$SEASONS" ]; then
+            npm run ingest:nflverse -- --seasons "$SEASONS"
+          else
+            npm run ingest:nflverse
+          fi
+        env:
+          SEASONS: ${{ inputs.seasons }}
+          SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.STAGING_SUPABASE_SECRET_KEY }}
+          STRICT: '1'
+      - name: Ingest rosters (staging)
+        run: |
+          if [ -n "$SEASONS" ]; then
+            npm run ingest:rosters -- --seasons "$SEASONS"
+          else
+            npm run ingest:rosters
+          fi
+        env:
+          SEASONS: ${{ inputs.seasons }}
+          SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.STAGING_SUPABASE_SECRET_KEY }}
           STRICT: '1'
