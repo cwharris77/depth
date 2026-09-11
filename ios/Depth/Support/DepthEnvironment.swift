@@ -59,10 +59,40 @@ enum DepthEnvironment {
         }
     }()
 
-    static let repository: CachingDepthRepository = CachingDepthRepository(
-        underlying: SupabaseDepthRepository(client: supabaseClient),
-        store: CachedSnapshotStore(modelContainer: modelContainer)
-    )
+    static let repository: CachingDepthRepository = {
+        #if UITEST_FIXTURES
+        // UI tests launch with UI_TESTING_FIXTURE_BACKEND to replay a checked-in fixture
+        // bundle instead of touching Supabase (spec: 2026-09-10-ios-test-data-and-
+        // snapshot-testing-design, locked decision 1). UITEST_FIXTURES is set on Debug and
+        // Staging (CI builds Staging) and absent from Release, so a shipped binary cannot
+        // be redirected by a launch argument.
+        if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FIXTURE_BACKEND") {
+            return CachingDepthRepository(
+                underlying: FixtureDepthRepository.load(),
+                store: CachedSnapshotStore(modelContainer: ephemeralFixtureContainer())
+            )
+        }
+        #endif
+        return CachingDepthRepository(
+            underlying: SupabaseDepthRepository(client: supabaseClient),
+            store: CachedSnapshotStore(modelContainer: modelContainer)
+        )
+    }()
+
+    #if UITEST_FIXTURES
+    /// A fresh in-memory cache for fixture mode — never the on-disk store, so a fixture run
+    /// can neither read a stale real snapshot from a prior manual run nor leak fixture data
+    /// into a later one. The schema-discard retry the on-disk path needs doesn't apply here.
+    private static func ephemeralFixtureContainer() -> ModelContainer {
+        let schema = Schema(DepthCacheSchema.models)
+        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        do {
+            return try ModelContainer(for: schema, configurations: [configuration])
+        } catch {
+            fatalError("Failed to create in-memory fixture ModelContainer: \(error)")
+        }
+    }
+    #endif
 
     static let preferences = UserPreferences()
     static let authService: any DepthAuthServicing =
