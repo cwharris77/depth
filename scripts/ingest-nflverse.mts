@@ -234,6 +234,9 @@ async function* textChunks(body: ReadableStream<Uint8Array>): AsyncGenerator<str
 // (lib/nflverse/participation.ts). A game with no score yet isn't "coverage", it's just
 // unplayed. Shared by both the live path (queries the full `games` table, already
 // season-filtered) and SEED_OUT mode (this run's freshly computed games, filtered here).
+// Preseason rows (`PRE`, ESPN-ingested by lib/espn/preseason.ts) are excluded at the query:
+// participation data never charts them, so counting them would shrink every team's
+// coverage and drop its formations for the first weeks of the season.
 function countGamesPlayed(
   rows: { home_team_id: string; away_team_id: string; home_score: number | null }[]
 ): Map<string, number> {
@@ -253,7 +256,8 @@ async function getGamesPlayedByTeamDb(
   const { data, error } = await supabase
     .from('games')
     .select('home_team_id, away_team_id, home_score')
-    .eq('season', season);
+    .eq('season', season)
+    .neq('game_type', 'PRE');
   if (error) throw new Error(`games query failed: ${error.message}`);
   return countGamesPlayed(data ?? []);
 }

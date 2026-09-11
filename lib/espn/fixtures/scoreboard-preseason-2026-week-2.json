@@ -1,0 +1,131 @@
+{
+  "leagues": [
+    {
+      "calendar": [
+        {
+          "label": "Preseason",
+          "value": "1",
+          "entries": [
+            {
+              "label": "Hall of Fame Weekend",
+              "value": "1",
+              "startDate": "2026-08-06T07:00Z",
+              "endDate": "2026-08-13T06:59Z"
+            },
+            {
+              "label": "Preseason Week 1",
+              "value": "2",
+              "startDate": "2026-08-13T07:00Z",
+              "endDate": "2026-08-20T06:59Z"
+            },
+            {
+              "label": "Preseason Week 2",
+              "value": "3",
+              "startDate": "2026-08-20T07:00Z",
+              "endDate": "2026-08-27T06:59Z"
+            },
+            {
+              "label": "Preseason Week 3",
+              "value": "4",
+              "startDate": "2026-08-27T07:00Z",
+              "endDate": "2026-09-06T06:59Z"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "season": {
+    "type": 1,
+    "year": 2026
+  },
+  "week": {
+    "number": 2
+  },
+  "events": [
+    {
+      "id": "401873277",
+      "date": "2026-08-14T23:00Z",
+      "name": "Miami Dolphins at Washington Commanders",
+      "season": {
+        "year": 2026,
+        "type": 1
+      },
+      "week": {
+        "number": 2
+      },
+      "competitions": [
+        {
+          "neutralSite": false,
+          "status": {
+            "type": {
+              "name": "STATUS_FINAL",
+              "state": "post",
+              "completed": true
+            }
+          },
+          "competitors": [
+            {
+              "homeAway": "home",
+              "score": "20",
+              "team": {
+                "id": "28",
+                "abbreviation": "WSH"
+              }
+            },
+            {
+              "homeAway": "away",
+              "score": "7",
+              "team": {
+                "id": "15",
+                "abbreviation": "MIA"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401873282",
+      "date": "2026-08-15T17:00Z",
+      "name": "Carolina Panthers at Buffalo Bills",
+      "season": {
+        "year": 2026,
+        "type": 1
+      },
+      "week": {
+        "number": 2
+      },
+      "competitions": [
+        {
+          "neutralSite": false,
+          "status": {
+            "type": {
+              "name": "STATUS_FINAL",
+              "state": "post",
+              "completed": true
+            }
+          },
+          "competitors": [
+            {
+              "homeAway": "home",
+              "score": "29",
+              "team": {
+                "id": "2",
+                "abbreviation": "BUF"
+              }
+            },
+            {
+              "homeAway": "away",
+              "score": "14",
+              "team": {
+                "id": "29",
+                "abbreviation": "CAR"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,8 @@
 // Fetches ESPN rosters/depthcharts, coaches, and multi-season team stats for all 32
-// teams, transforms them through the pure lib/espn/transform (+ standings) pipeline,
-// and upserts into Postgres (Supabase). Run by hand (or on a schedule -- see
-// the vault's `Reference/espn.md`). Never part of `next build`.
+// teams plus each season's preseason games (DEP-204), transforms them through the pure
+// lib/espn/transform (+ standings, preseason) pipeline, and upserts into Postgres
+// (Supabase). Run by hand (or on a schedule -- see the vault's `Reference/espn.md`).
+// Never part of `next build`.
 //
 // Usage: npm run ingest:espn
 // Requires SUPABASE_URL + SUPABASE_SECRET_KEY in the environment (secret key
@@ -26,6 +27,12 @@ import {
   ESPN_TEAM_STATS_SEASONS_MIN,
   type EspnStandings,
 } from '@/lib/espn/standings';
+import {
+  PRESEASON_SEASONS_MIN,
+  preseasonWeeks,
+  toPreseasonGameRows,
+  type EspnScoreboard,
+} from '@/lib/espn/preseason';
 import { notifyRevalidate } from '@/lib/utils/ingest/notify-revalidate';
 import { currentSeasonOf, nflSeasonState } from '@/lib/utils/team/season-state';
 import { TEAMS } from '@/lib/teams/index';
@@ -212,6 +219,27 @@ async function main() {
     }
   }
 
+  // Preseason games for the same season set as team_stats (daily: this + last season;
+  // `--seasons`: the backfill range). After the team upserts so the schedules rows' teams
+  // FK resolves. ESPN team ids are stable across relocations (the Raiders are 13 as OAK
+  // and LV), so a historical season maps through today's /teams index. A failed season
+  // marks the run partial like a failed team does. Seed mode never gets here -- the
+  // games/schedules seed belongs to seed-nflverse.sql, which loads after seed.sql.
+  const teamIdByEspnId = new Map<string, string>();
+  for (const { team } of Object.values(TEAMS)) {
+    const info = espnIndex.get(
+      ABBREV_ALIAS[team.abbrev.toUpperCase()] ?? team.abbrev.toUpperCase()
+    );
+    if (info) teamIdByEspnId.set(info.id, team.id);
+  }
+  for (const season of fetchSeasons.filter((s) => s >= PRESEASON_SEASONS_MIN)) {
+    try {
+      await writePreseason(supabase, season, (id) => teamIdByEspnId.get(id) ?? null);
+    } catch (e) {
+      errors.push({ team: `preseason ${season}`, message: (e as Error).message });
+    }
+  }
+
   const finishedAt = new Date().toISOString();
   const status = errors.length === 0 ? 'success' : teamsWritten > 0 ? 'partial' : 'failure';
 
@@ -376,6 +404,45 @@ async function writeTeamStats(
     { onConflict: 'team_id,season' }
   );
   if (error) throw new Error(`team_stats upsert: ${error.message}`);
+}
+
+// One season's preseason: the week-1 scoreboard carries the whole calendar, then one
+// scoreboard per remaining calendar week (~5 calls). Rows come from the pure
+// toPreseasonGameRows; schedules upsert first so the games' composite FKs resolve, same
+// order as ingest-nflverse. Idempotent: ids are ESPN event ids, so a rerun rewrites the
+// same rows (scores fill in as games finish) and never touches nflverse's rows.
+async function writePreseason(
+  supabase: SupabaseClient<Database>,
+  season: number,
+  resolveTeamId: (espnTeamId: string) => string | null
+): Promise<void> {
+  const url = (week: string) =>
+    `${SITE}/scoreboard?dates=${season}&seasontype=1&week=${week}&limit=100`;
+  const first = await getJson<EspnScoreboard>(url('1'));
+  const buckets = [];
+  for (const week of preseasonWeeks(first)) {
+    const scoreboard = week.value === '1' ? first : await getJson<EspnScoreboard>(url(week.value));
+    buckets.push({ week, scoreboard });
+    await new Promise((r) => setTimeout(r, 200)); // be polite to the unofficial API
+  }
+
+  const { games, schedules, skipped, cancelled } = toPreseasonGameRows(
+    season,
+    buckets,
+    resolveTeamId
+  );
+  if (games.length > 0) {
+    const { error: scheduleError } = await supabase
+      .from('schedules')
+      .upsert(schedules, { onConflict: 'team_id,season' });
+    if (scheduleError) throw new Error(`schedules upsert: ${scheduleError.message}`);
+    const { error } = await supabase.from('games').upsert(games, { onConflict: 'game_id' });
+    if (error) throw new Error(`games upsert: ${error.message}`);
+  }
+  console.log(
+    `preseason ${season}: wrote ${games.length} games across ${buckets.length} weeks, ` +
+      `skipped ${skipped}, cancelled ${cancelled}`
+  );
 }
 
 main().catch((e) => {
