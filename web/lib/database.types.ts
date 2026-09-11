@@ -378,16 +378,38 @@ export type Database = {
           attempts: number | null
           carries: number | null
           completions: number | null
+          def_fumbles_forced: number | null
           def_interceptions: number | null
+          def_pass_defended: number | null
+          def_qb_hits: number | null
           def_sacks: number | null
+          def_safeties: number | null
+          def_tackle_assists: number | null
+          def_tackles_for_loss: number | null
           def_tackles_solo: number | null
+          def_tds: number | null
+          defense_pct: number | null
+          defense_snaps: number | null
           fg_att: number | null
+          fg_long: number | null
           fg_made: number | null
+          fumble_recovery_opp: number | null
+          fumble_recovery_tds: number | null
           games: number | null
+          kickoff_return_yards: number | null
+          kickoff_returns: number | null
+          offense_pct: number | null
+          offense_snaps: number | null
           passing_interceptions: number | null
           passing_tds: number | null
           passing_yards: number | null
+          pat_att: number | null
+          pat_made: number | null
+          penalties: number | null
+          penalty_yards: number | null
           player_id: string
+          punt_return_yards: number | null
+          punt_returns: number | null
           receiving_tds: number | null
           receiving_yards: number | null
           receptions: number | null
@@ -395,6 +417,9 @@ export type Database = {
           rushing_yards: number | null
           season: number
           season_type: string
+          special_teams_pct: number | null
+          special_teams_snaps: number | null
+          special_teams_tds: number | null
           targets: number | null
           team_id: string | null
           updated_at: string
@@ -403,16 +428,38 @@ export type Database = {
           attempts?: number | null
           carries?: number | null
           completions?: number | null
+          def_fumbles_forced?: number | null
           def_interceptions?: number | null
+          def_pass_defended?: number | null
+          def_qb_hits?: number | null
           def_sacks?: number | null
+          def_safeties?: number | null
+          def_tackle_assists?: number | null
+          def_tackles_for_loss?: number | null
           def_tackles_solo?: number | null
+          def_tds?: number | null
+          defense_pct?: number | null
+          defense_snaps?: number | null
           fg_att?: number | null
+          fg_long?: number | null
           fg_made?: number | null
+          fumble_recovery_opp?: number | null
+          fumble_recovery_tds?: number | null
           games?: number | null
+          kickoff_return_yards?: number | null
+          kickoff_returns?: number | null
+          offense_pct?: number | null
+          offense_snaps?: number | null
           passing_interceptions?: number | null
           passing_tds?: number | null
           passing_yards?: number | null
+          pat_att?: number | null
+          pat_made?: number | null
+          penalties?: number | null
+          penalty_yards?: number | null
           player_id: string
+          punt_return_yards?: number | null
+          punt_returns?: number | null
           receiving_tds?: number | null
           receiving_yards?: number | null
           receptions?: number | null
@@ -420,6 +467,9 @@ export type Database = {
           rushing_yards?: number | null
           season: number
           season_type?: string
+          special_teams_pct?: number | null
+          special_teams_snaps?: number | null
+          special_teams_tds?: number | null
           targets?: number | null
           team_id?: string | null
           updated_at?: string
@@ -428,16 +478,38 @@ export type Database = {
           attempts?: number | null
           carries?: number | null
           completions?: number | null
+          def_fumbles_forced?: number | null
           def_interceptions?: number | null
+          def_pass_defended?: number | null
+          def_qb_hits?: number | null
           def_sacks?: number | null
+          def_safeties?: number | null
+          def_tackle_assists?: number | null
+          def_tackles_for_loss?: number | null
           def_tackles_solo?: number | null
+          def_tds?: number | null
+          defense_pct?: number | null
+          defense_snaps?: number | null
           fg_att?: number | null
+          fg_long?: number | null
           fg_made?: number | null
+          fumble_recovery_opp?: number | null
+          fumble_recovery_tds?: number | null
           games?: number | null
+          kickoff_return_yards?: number | null
+          kickoff_returns?: number | null
+          offense_pct?: number | null
+          offense_snaps?: number | null
           passing_interceptions?: number | null
           passing_tds?: number | null
           passing_yards?: number | null
+          pat_att?: number | null
+          pat_made?: number | null
+          penalties?: number | null
+          penalty_yards?: number | null
           player_id?: string
+          punt_return_yards?: number | null
+          punt_returns?: number | null
           receiving_tds?: number | null
           receiving_yards?: number | null
           receptions?: number | null
@@ -445,6 +517,9 @@ export type Database = {
           rushing_yards?: number | null
           season?: number
           season_type?: string
+          special_teams_pct?: number | null
+          special_teams_snaps?: number | null
+          special_teams_tds?: number | null
           targets?: number | null
           team_id?: string | null
           updated_at?: string

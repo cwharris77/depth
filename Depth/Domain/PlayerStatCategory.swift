@@ -7,9 +7,12 @@ import Foundation
 // lives in the tap-to-open detail strip, so the ledger stays scannable and nothing is dropped.
 //
 // Scoped to what `player_stats` really stores. The design mock also shows passer rating,
-// 4QC/GWD, pressures, snap share and missed tackles; none of those columns exist, and this
-// file never presents an invented value (same rule as PlayerProfileDisplay). Derived rates
-// (CMP%, YPA, per-game) are computed from stored columns only.
+// 4QC/GWD, pressures and missed tackles; those columns still do not exist (pressures and
+// missed tackles live in nflverse's separate pfr_advstats dataset, not ingested yet), and
+// this file never presents an invented value (same rule as PlayerProfileDisplay). Derived
+// rates (CMP%, YPA, per-game) are computed from stored columns only. Snap share now does
+// exist -- it is the one real line for O-line/long-snapper/punter, merged in from the
+// snap-counts dataset (DEP-538).
 
 /// One labelled value. `short` is the on-screen compact label; `spoken` is what VoiceOver
 /// reads, so no number is announced without the stat it belongs to.
@@ -20,17 +23,20 @@ struct PlayerStatFigure: Hashable {
 }
 
 enum PlayerStatCategory: String, CaseIterable, Hashable {
-    case passing, rushing, receiving, tackles, passRush, turnovers, kicking, games
+    case passing, rushing, receiving, returns, tackles, passRush, turnovers, kicking, snaps, penalties, games
 
     var title: String {
         switch self {
         case .passing: "PASSING"
         case .rushing: "RUSHING"
         case .receiving: "RECEIVING"
+        case .returns: "RETURNS"
         case .tackles: "TACKLES"
         case .passRush: "PASS RUSH"
         case .turnovers: "TURNOVERS"
         case .kicking: "KICKING"
+        case .snaps: "SNAPS"
+        case .penalties: "PENALTIES"
         case .games: "GAMES"
         }
     }
@@ -41,10 +47,13 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
         case .passing: "PASS YDS"
         case .rushing: "RUSH YDS"
         case .receiving: "REC YDS"
+        case .returns: "RETURN YDS"
         case .tackles: "SOLO TACKLES"
         case .passRush: "SACKS"
         case .turnovers: "INTERCEPTIONS"
         case .kicking: "FG MADE"
+        case .snaps: "SNAPS"
+        case .penalties: "PENALTIES"
         case .games: "GAMES"
         }
     }
@@ -54,10 +63,15 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
         case .passing: .passingYards
         case .rushing: .rushingYards
         case .receiving: .receivingYards
+        case .returns: .returnYards
         case .tackles: .tackles
         case .passRush: .sacks
         case .turnovers: .interceptions
         case .kicking: .fieldGoalsMade
+        // .snaps is unit-dependent (offense vs special teams); headline/primaryValue pick
+        // the right column per player. This nominal value is only a fallback.
+        case .snaps: .offenseSnaps
+        case .penalties: .penalties
         case .games: .games
         }
     }
@@ -68,10 +82,13 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
         case .passing: Double(stats.passingYards ?? 0)
         case .rushing: Double(stats.rushingYards ?? 0)
         case .receiving: Double(stats.receivingYards ?? 0)
+        case .returns: Double((stats.puntReturnYards ?? 0) + (stats.kickoffReturnYards ?? 0))
         case .tackles: Double(stats.defTacklesSolo ?? 0)
         case .passRush: stats.defSacks ?? 0
         case .turnovers: Double(stats.defInterceptions ?? 0)
         case .kicking: Double(stats.fgMade ?? 0)
+        case .snaps: Double(snapCount(stats))
+        case .penalties: Double(stats.penalties ?? 0)
         case .games: Double(stats.games ?? 0)
         }
     }
@@ -81,16 +98,56 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
         case .passing: (stats.attempts ?? 0) > 0 || (stats.passingYards ?? 0) != 0
         case .rushing: (stats.carries ?? 0) > 0 || (stats.rushingYards ?? 0) != 0
         case .receiving: (stats.receptions ?? 0) > 0 || (stats.targets ?? 0) > 0
-        case .tackles: (stats.defTacklesSolo ?? 0) > 0
-        case .passRush: (stats.defSacks ?? 0) > 0
-        case .turnovers: (stats.defInterceptions ?? 0) > 0
-        case .kicking: (stats.fgAtt ?? 0) > 0
+        case .returns: (stats.puntReturns ?? 0) > 0 || (stats.kickoffReturns ?? 0) > 0
+        case .tackles:
+            (stats.defTacklesSolo ?? 0) > 0 || (stats.defTackleAssists ?? 0) > 0
+                || (stats.defTacklesForLoss ?? 0) > 0
+        case .passRush: (stats.defSacks ?? 0) > 0 || (stats.defQbHits ?? 0) > 0
+        case .turnovers:
+            (stats.defInterceptions ?? 0) > 0 || (stats.defPassDefended ?? 0) > 0
+                || (stats.defFumblesForced ?? 0) > 0 || (stats.fumbleRecoveries ?? 0) > 0
+                || (stats.defTds ?? 0) > 0
+        case .kicking: (stats.fgAtt ?? 0) > 0 || (stats.patAtt ?? 0) > 0
+        case .snaps: snapCount(stats) > 0
+        case .penalties: (stats.penalties ?? 0) > 0
         case .games: stats.hasPlayedGames
         }
     }
 
     func headline(_ stats: PlayerSeasonStats) -> PlayerStatFigure {
-        figure(primaryColumn, stats)
+        switch self {
+        case .snaps: figure(snapColumn(stats), stats)
+        default: figure(primaryColumn, stats)
+        }
+    }
+
+    /// The unit a SNAPS tab reports for this player. Offensive linemen lead with offense;
+    /// long snappers and punters record only special-teams snaps. Picking the largest of
+    /// the three keeps a stray special-teams rep from displacing an O-lineman's offensive
+    /// load (and vice versa for a snapper who fills in on offense).
+    private func snapColumn(_ stats: PlayerSeasonStats) -> PlayerStatColumn {
+        let offense = stats.offenseSnaps ?? 0
+        let defense = stats.defenseSnaps ?? 0
+        let specialTeams = stats.specialTeamsSnaps ?? 0
+        if defense > offense, defense > specialTeams { return .defenseSnaps }
+        if specialTeams > offense, specialTeams > defense { return .specialTeamsSnaps }
+        return .offenseSnaps
+    }
+
+    private func snapShareColumn(_ column: PlayerStatColumn) -> PlayerStatColumn {
+        switch column {
+        case .defenseSnaps: .defenseSnapShare
+        case .specialTeamsSnaps: .specialTeamsSnapShare
+        default: .offenseSnapShare
+        }
+    }
+
+    private func snapCount(_ stats: PlayerSeasonStats) -> Int {
+        switch snapColumn(stats) {
+        case .defenseSnaps: stats.defenseSnaps ?? 0
+        case .specialTeamsSnaps: stats.specialTeamsSnaps ?? 0
+        default: stats.offenseSnaps ?? 0
+        }
     }
 
     /// The secondary figures that sit beside the headline ("31 TD · 9 INT"). Single-metric
@@ -112,9 +169,31 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
                 PlayerStatFigure(value: count(stats.receptions), short: "REC", spoken: "receptions"),
                 PlayerStatFigure(value: count(stats.receivingTds), short: "TD", spoken: "touchdowns"),
             ]
+        case .returns:
+            [
+                PlayerStatFigure(value: count(stats.puntReturns), short: "PR", spoken: "punt returns"),
+                PlayerStatFigure(value: count(stats.kickoffReturns), short: "KR", spoken: "kickoff returns"),
+            ]
+        case .tackles:
+            [
+                PlayerStatFigure(value: count(stats.defTackleAssists), short: "AST", spoken: "assists"),
+                PlayerStatFigure(value: count(stats.defTacklesForLoss), short: "TFL", spoken: "tackles for loss"),
+            ]
+        case .passRush:
+            [PlayerStatFigure(value: count(stats.defQbHits), short: "QBH", spoken: "quarterback hits")]
+        case .turnovers:
+            [
+                PlayerStatFigure(value: count(stats.defPassDefended), short: "PBU", spoken: "passes defended"),
+                PlayerStatFigure(value: count(stats.defFumblesForced), short: "FF", spoken: "forced fumbles"),
+            ]
         case .kicking:
-            [PlayerStatFigure(value: count(stats.fgAtt), short: "ATT", spoken: "attempts")]
-        case .tackles, .passRush, .turnovers, .games:
+            [
+                PlayerStatFigure(value: count(stats.fgAtt), short: "ATT", spoken: "attempts"),
+                PlayerStatFigure(value: count(stats.patMade), short: "PAT", spoken: "extra points"),
+            ]
+        case .penalties:
+            [PlayerStatFigure(value: count(stats.penaltyYards), short: "PEN YDS", spoken: "penalty yards")]
+        case .snaps, .games:
             [PlayerStatFigure(value: count(stats.games), short: "GP", spoken: "games played")]
         }
     }
@@ -145,16 +224,38 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
                 figure(.receivingYardsPerReception, stats),
                 figure(.games, stats),
             ]
-        case .tackles, .passRush, .turnovers:
+        case .returns:
+            [
+                figure(.puntReturnYards, stats),
+                figure(.kickoffReturnYards, stats),
+                figure(.specialTeamsTds, stats),
+                figure(.games, stats),
+            ]
+        case .tackles, .passRush:
             [
                 PlayerStatFigure(
                     value: perGame(primaryValue(stats), stats.games),
                     short: "PER GAME", spoken: "\(barMetricName.capitalized) per game"
                 ),
             ]
+        case .turnovers:
+            [
+                PlayerStatFigure(
+                    value: perGame(primaryValue(stats), stats.games),
+                    short: "PER GAME", spoken: "\(barMetricName.capitalized) per game"
+                ),
+                figure(.fumbleRecoveries, stats),
+                figure(.defensiveTds, stats),
+            ]
         case .kicking:
-            [figure(.fieldGoalPercentage, stats), figure(.games, stats)]
-        case .games:
+            [
+                figure(.fieldGoalPercentage, stats),
+                figure(.fieldGoalLong, stats),
+                figure(.games, stats),
+            ]
+        case .snaps:
+            [figure(snapShareColumn(snapColumn(stats)), stats)]
+        case .penalties, .games:
             []
         }
     }
@@ -167,8 +268,9 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
     }
 
     /// Tabs in position-relevance order, filtered to categories with data in any season.
-    /// `.games` is the fallback for players whose position records nothing else (O-line,
-    /// long snappers), so a loaded profile always has at least one tab.
+    /// `.games` is the fallback for players whose position records nothing else -- a
+    /// participation-only position before snap data exists, or a player who only has a
+    /// games figure -- so a loaded profile always has at least one tab.
     static func categories(for stats: [PlayerSeasonStats], position: Position) -> [PlayerStatCategory] {
         let present = order(for: position).filter { category in
             category != .games && stats.contains(where: category.hasData)
@@ -184,12 +286,15 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
     private static func order(for position: Position) -> [PlayerStatCategory] {
         switch position {
         case .qb: [.passing, .rushing, .receiving]
-        case .rb, .fb: [.rushing, .receiving, .passing]
-        case .wr, .te, .kr, .pr: [.receiving, .rushing, .passing]
+        case .rb, .fb: [.rushing, .receiving, .passing, .returns]
+        case .wr, .te: [.receiving, .rushing, .passing, .returns]
+        case .kr, .pr: [.returns, .receiving, .rushing]
         case .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb, .cb, .lcb, .rcb, .nb, .s, .ss, .fs:
-            [.tackles, .passRush, .turnovers]
-        case .k, .p: [.kicking]
-        case .lt, .lg, .c, .rg, .rt, .ot, .g, .ls: [.receiving, .rushing]
+            [.tackles, .passRush, .turnovers, .returns]
+        case .k: [.kicking]
+        case .p: [.snaps, .kicking]
+        case .lt, .lg, .c, .rg, .rt, .ot, .g, .ls:
+            [.snaps, .penalties, .receiving, .rushing]
         }
     }
 
@@ -228,7 +333,21 @@ enum PlayerStatLedger {
             receptions: sum(\.receptions), targets: sum(\.targets),
             receivingYards: sum(\.receivingYards), receivingTds: sum(\.receivingTds),
             defTacklesSolo: sum(\.defTacklesSolo), defSacks: sacks.isEmpty ? nil : sacks.reduce(0, +),
-            defInterceptions: sum(\.defInterceptions), fgMade: sum(\.fgMade), fgAtt: sum(\.fgAtt)
+            defInterceptions: sum(\.defInterceptions), fgMade: sum(\.fgMade), fgAtt: sum(\.fgAtt),
+            defTackleAssists: sum(\.defTackleAssists), defTacklesForLoss: sum(\.defTacklesForLoss),
+            defQbHits: sum(\.defQbHits), defPassDefended: sum(\.defPassDefended),
+            defFumblesForced: sum(\.defFumblesForced), defTds: sum(\.defTds),
+            defSafeties: sum(\.defSafeties), fumbleRecoveries: sum(\.fumbleRecoveries),
+            fumbleRecoveryTds: sum(\.fumbleRecoveryTds), puntReturns: sum(\.puntReturns),
+            puntReturnYards: sum(\.puntReturnYards), kickoffReturns: sum(\.kickoffReturns),
+            kickoffReturnYards: sum(\.kickoffReturnYards), specialTeamsTds: sum(\.specialTeamsTds),
+            penalties: sum(\.penalties), penaltyYards: sum(\.penaltyYards), patMade: sum(\.patMade),
+            patAtt: sum(\.patAtt), fgLong: sum(\.fgLong), offenseSnaps: sum(\.offenseSnaps),
+            // A summed share is meaningless and the career row never renders the share
+            // detail; leave the percentages absent rather than averaging incomparable
+            // denominators.
+            offensePct: nil, defenseSnaps: sum(\.defenseSnaps), defensePct: nil,
+            specialTeamsSnaps: sum(\.specialTeamsSnaps), specialTeamsPct: nil
         )
     }
 

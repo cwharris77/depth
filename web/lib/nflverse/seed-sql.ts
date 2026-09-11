@@ -12,6 +12,7 @@
 import { insertStatement } from '@/lib/utils/seed-sql';
 import { tables } from '@/lib/supabase/tables';
 import type { PlayerStatsInsert } from './transform';
+import type { SeasonSnapTotalsInsert } from './season-snaps';
 import type { ScheduleInsert, GameInsert } from './games';
 import type { RosterHistoryInsert } from './roster-history';
 import type { FormationTally } from './participation';
@@ -67,9 +68,60 @@ export function buildPlayerStatsSeedSql(rows: PlayerStatsInsert[]): string {
       'def_interceptions',
       'fg_made',
       'fg_att',
+      'def_tackle_assists',
+      'def_tackles_for_loss',
+      'def_qb_hits',
+      'def_pass_defended',
+      'def_fumbles_forced',
+      'def_tds',
+      'def_safeties',
+      'fumble_recovery_opp',
+      'fumble_recovery_tds',
+      'punt_returns',
+      'punt_return_yards',
+      'kickoff_returns',
+      'kickoff_return_yards',
+      'special_teams_tds',
+      'penalties',
+      'penalty_yards',
+      'pat_made',
+      'pat_att',
+      'fg_long',
     ],
     rows,
     'player_id,season,season_type'
+  );
+}
+
+// Season snap totals for one player-season, merged onto the row buildPlayerStatsSeedSql
+// already inserted above. Column-scoped `do update` so this second insert can only touch
+// the six snap columns -- it must never null out the box-score half of the same row.
+// Rows are always pre-filtered to player-seasons a player_stats row exists for, matching
+// the live ingest (no sparse snap-only rows).
+export function buildPlayerSeasonSnapsSeedSql(rows: SeasonSnapTotalsInsert[]): string {
+  return insertStatement(
+    tables.playerStats,
+    [
+      'player_id',
+      'season',
+      'season_type',
+      'offense_snaps',
+      'offense_pct',
+      'defense_snaps',
+      'defense_pct',
+      'special_teams_snaps',
+      'special_teams_pct',
+    ],
+    rows.map((row) => ({ ...row, season_type: 'REG' })),
+    'player_id,season,season_type',
+    [
+      'offense_snaps',
+      'offense_pct',
+      'defense_snaps',
+      'defense_pct',
+      'special_teams_snaps',
+      'special_teams_pct',
+    ]
   );
 }
 

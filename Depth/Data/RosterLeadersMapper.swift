@@ -21,7 +21,14 @@ enum RosterLeadersMapper {
                     passingInterceptions: nil, carries: row.carries, rushingYards: row.rushingYards,
                     rushingTds: row.rushingTds, receptions: row.receptions,
                     targets: nil, receivingYards: row.receivingYards, receivingTds: row.receivingTds,
-                    defTacklesSolo: nil, defSacks: nil, defInterceptions: nil, fgMade: nil, fgAtt: nil
+                    defTacklesSolo: nil, defSacks: nil, defInterceptions: nil, fgMade: nil, fgAtt: nil,
+                    defTackleAssists: nil, defTacklesForLoss: nil, defQbHits: nil,
+                    defPassDefended: nil, defFumblesForced: nil, defTds: nil, defSafeties: nil,
+                    fumbleRecoveries: nil, fumbleRecoveryTds: nil, puntReturns: nil,
+                    puntReturnYards: nil, kickoffReturns: nil, kickoffReturnYards: nil,
+                    specialTeamsTds: nil, penalties: nil, penaltyYards: nil, patMade: nil,
+                    patAtt: nil, fgLong: nil, offenseSnaps: nil, offensePct: nil, defenseSnaps: nil,
+                    defensePct: nil, specialTeamsSnaps: nil, specialTeamsPct: nil
                 )
             )
         }

@@ -36,6 +36,7 @@ import { parseCsv, parseCsvStream } from '@/lib/nflverse/csv';
 import { assetUrl, latestAvailableSeason } from '@/lib/nflverse/assets';
 import { buildCrosswalk, buildPfrCrosswalk } from '@/lib/nflverse/crosswalk';
 import { toPlayerStatsRows, type PlayerStatsInsert } from '@/lib/nflverse/transform';
+import { toSeasonSnapTotals, type SeasonSnapTotalsInsert } from '@/lib/nflverse/season-snaps';
 import { toScheduleAndGameRows, type GameInsert, type ScheduleInsert } from '@/lib/nflverse/games';
 import { toTeamStatsRows, type TeamStatsInsert } from '@/lib/nflverse/team-stats';
 import { toTeamRecords, type TeamAlignment, type TeamRecordInsert } from '@/lib/nflverse/records';
@@ -51,6 +52,7 @@ import { notifyRevalidate } from '@/lib/utils/ingest/notify-revalidate';
 import {
   extractPlayerIds,
   buildPlayerStatsSeedSql,
+  buildPlayerSeasonSnapsSeedSql,
   buildSchedulesAndGamesSeedSql,
   buildTeamFormationsSeedSql,
   buildTeamRecordsSeedSql,
@@ -560,6 +562,42 @@ async function main() {
     }
   }
 
+  // Season snap totals for the positions that record no box-score stats -- offensive
+  // line, long snapper, punter (DEP-538). Same nflverse snap_counts source
+  // player_recent_snaps already consumes, but aggregated per season and merged onto the
+  // player_stats row so the profile ledger can show participation. Column-scoped upsert:
+  // it can only touch the six snap columns, never the box score. Restricted to
+  // player-seasons a stats row was just written for, so it can't create a sparse
+  // snap-only row.
+  const seasonSnapTotals: SeasonSnapTotalsInsert[] = [];
+  const knownPlayerSeasons = new Set(allStatsRows.map((row) => `${row.player_id}|${row.season}`));
+  for (const season of seasons) {
+    try {
+      const csv = await getText(assetUrl(SNAP_COUNTS_TAG, `${SNAP_COUNTS_PREFIX}${season}.csv`));
+      const { rows, malformedRows, unresolvedRows } = toSeasonSnapTotals(
+        parseCsv(csv),
+        pfrCrosswalk
+      );
+      const matched = rows.filter((row) =>
+        knownPlayerSeasons.has(`${row.player_id}|${row.season}`)
+      );
+      if (supabase && matched.length) {
+        const { error } = await supabase.from('player_stats').upsert(
+          matched.map((row) => ({ ...row, season_type: 'REG' })),
+          { onConflict: 'player_id,season,season_type' }
+        );
+        if (error) throw new Error(`player_stats snaps upsert: ${error.message}`);
+      }
+      seasonSnapTotals.push(...matched);
+      console.log(
+        `snap-counts season ${season}: matched ${matched.length} player-seasons, ` +
+          `${malformedRows} malformed, ${unresolvedRows} unresolved`
+      );
+    } catch (e) {
+      failures.push({ season, message: `season snaps: ${(e as Error).message}` });
+    }
+  }
+
   // Schedules + games (nflverse nfldata/games.csv), a second dataset in the same run.
   const gamesResult = await ingestGames(supabase, gamesMinSeason, startedAt);
   if (gamesResult.failure) failures.push({ season: 'games', message: gamesResult.failure });
@@ -609,6 +647,7 @@ async function main() {
       '-- hand-edit; regenerate.',
       '',
       buildPlayerStatsSeedSql(allStatsRows),
+      buildPlayerSeasonSnapsSeedSql(seasonSnapTotals),
       buildSchedulesAndGamesSeedSql(gamesResult.schedules, gamesResult.games),
       buildTeamFormationsSeedSql(formationsResult.tallies),
       buildTeamStatsSeedSql(teamStatsResult.rows),
@@ -621,7 +660,8 @@ async function main() {
       recentSnapsResult.failures
     );
     console.log(
-      `\nWrote seed: ${allStatsRows.length} player-stat rows, ${gamesResult.games.length} games, ` +
+      `\nWrote seed: ${allStatsRows.length} player-stat rows, ${seasonSnapTotals.length} season-snap rows, ` +
+        `${gamesResult.games.length} games, ` +
         `${gamesResult.schedules.length} schedules, ${formationsResult.tallies.length} formation rows, ` +
         `${teamStatsResult.rows.length} team-stats rows, ${recentSnapsResult.rows.length} recent-snap rows ` +
         `across seasons ${recentSnapsResult.seasons.join(', ')} -> ${seedOut}`
@@ -642,6 +682,7 @@ async function main() {
     formationsResult.tallies.length +
     teamStatsResult.rows.length +
     recordsResult.rows.length +
+    seasonSnapTotals.length +
     recentSnapsResult.rowsWritten;
   const status = failures.length === 0 ? 'success' : totalWritten > 0 ? 'partial' : 'failure';
 
@@ -654,6 +695,7 @@ async function main() {
     errors: {
       seasons,
       player_stats_rows: rowsWritten,
+      player_season_snaps_rows: seasonSnapTotals.length,
       games_min_season: gamesMinSeason ?? null,
       games_written: gamesResult.games.length,
       schedules_written: gamesResult.schedules.length,
