@@ -199,6 +199,35 @@ private func scheduleGame(
     #expect(result.games[1].opponent == nil)
 }
 
+@Test func mapsPostseasonRoundsIntoACompleteRunWithTerminalLoss() throws {
+    let result = try ScheduleMapper.map(
+        schedule: ScheduleDTO(teamId: "bills", season: 2025),
+        games: [
+            scheduleGame(
+                id: "wild-card", week: nil, gameType: "WC", homeTeamId: "bills", awayTeamId: "jets",
+                homeScore: 27, awayScore: 20, gameday: "2026-01-11"
+            ),
+            scheduleGame(
+                id: "divisional", week: nil, gameType: "DIV", homeTeamId: "eagles", awayTeamId: "bills",
+                homeScore: 24, awayScore: 17, gameday: "2026-01-18"
+            ),
+        ],
+        teamsById: [
+            "jets": scheduleTeam(id: "jets", abbrev: "NYJ"),
+            "eagles": scheduleTeam(id: "eagles", abbrev: "PHI"),
+        ],
+        playoffSeed: 5
+    )
+
+    let postseason = try #require(result.postseason)
+    #expect(postseason.seed == 5)
+    #expect(postseason.rounds.map(\.kind) == [.wildCard, .divisional, .conference, .superBowl])
+    #expect(postseason.rounds[0].game?.result == .win)
+    #expect(postseason.rounds[1].game?.result == .loss)
+    #expect(postseason.terminalRound == .divisional)
+    #expect(postseason.rounds[2].game == nil)
+}
+
 @Test func invalidWeekProducesTypedDecodingError() {
     #expect(throws: DepthError.decoding("game bad-week: invalid week 0")) {
         try ScheduleMapper.map(
@@ -334,6 +363,115 @@ private func scheduleGame(
     #expect(await viewModel.selectedSeason == defaultSeason)
     #expect(await viewModel.isPastSeason == false)
     #expect(await viewModel.schedule?.season == 2025)
+}
+
+// Canvas 1d / DEP-120's trap on Schedule: no postseason run only means "missed" once the
+// season is decided. An upcoming or in-progress season says the playoffs haven't started,
+// even when team_stats' standings position currently reads as a playoff seed.
+private func playoffsSchedule(season: Int, result: ScheduleResult?, postseason: PostseasonRun?) -> TeamSchedule {
+    TeamSchedule(
+        season: season,
+        games: [
+            ScheduleGame(
+                week: 1, isBye: false, date: "\(season)-09-07", isHome: true,
+                opponent: scheduleTeam(id: "jets", abbrev: "NYJ"),
+                teamScore: result == nil ? nil : 24, opponentScore: result == nil ? nil : 17, result: result
+            ),
+        ],
+        postseason: postseason
+    )
+}
+
+private let emptyRun = PostseasonRun(
+    seed: 3,
+    rounds: PostseasonRoundKind.allCases.map { PostseasonRound(kind: $0, game: nil) }
+)
+
+@Test func upcomingSeasonWithoutARunSaysThePlayoffsHaveNotStarted() async {
+    let current = playoffsSchedule(season: 2026, result: nil, postseason: nil)
+    let viewModel = await ScheduleViewModel(
+        teamId: "bills", repository: ScheduleRepositoryFake(schedules: [nil: .success(current)])
+    )
+
+    await viewModel.load()
+
+    #expect(await viewModel.playoffsState == .notStarted)
+}
+
+@Test func inProgressSeasonHidesAStandingsPositionThatLooksLikeASeed() async {
+    let current = playoffsSchedule(season: 2026, result: nil, postseason: emptyRun)
+    let viewModel = await ScheduleViewModel(
+        teamId: "bills", repository: ScheduleRepositoryFake(schedules: [nil: .success(current)])
+    )
+
+    await viewModel.load()
+
+    #expect(await viewModel.playoffsState == .notStarted)
+}
+
+@Test func completedCurrentSeasonWithoutARunIsAMissedPostseason() async {
+    let current = playoffsSchedule(season: 2025, result: .loss, postseason: nil)
+    let viewModel = await ScheduleViewModel(
+        teamId: "bills", repository: ScheduleRepositoryFake(schedules: [nil: .success(current)])
+    )
+
+    await viewModel.load()
+
+    #expect(await viewModel.playoffsState == .missed)
+}
+
+@Test func pastSeasonWithAnUnscoredGameStillResolvesItsPlayoffs() async {
+    let current = playoffsSchedule(season: 2026, result: nil, postseason: nil)
+    let missed = playoffsSchedule(season: 2022, result: nil, postseason: nil)
+    let qualified = playoffsSchedule(season: 2021, result: nil, postseason: emptyRun)
+    let viewModel = await ScheduleViewModel(
+        teamId: "bills",
+        repository: ScheduleRepositoryFake(
+            schedules: [nil: .success(current), 2022: .success(missed), 2021: .success(qualified)]
+        )
+    )
+
+    await viewModel.load()
+    await viewModel.selectSeason(2022)
+    #expect(await viewModel.playoffsState == .missed)
+
+    await viewModel.selectSeason(2021)
+    #expect(await viewModel.playoffsState == .run(emptyRun))
+}
+
+@Test func regularSeasonRecordAndConferenceFeedThePostseasonHeader() throws {
+    let result = try ScheduleMapper.map(
+        schedule: ScheduleDTO(teamId: "bills", season: 2025),
+        games: [
+            scheduleGame(id: "w1", week: 1, homeTeamId: "bills", awayTeamId: "jets", homeScore: 24, awayScore: 17),
+            scheduleGame(id: "w2", week: 2, homeTeamId: "jets", awayTeamId: "bills", homeScore: 20, awayScore: 20),
+            scheduleGame(id: "w3", week: 3, homeTeamId: "jets", awayTeamId: "bills", homeScore: 30, awayScore: 10),
+        ],
+        teamsById: [
+            "bills": scheduleTeam(id: "bills", abbrev: "BUF"),
+            "jets": scheduleTeam(id: "jets", abbrev: "NYJ"),
+        ]
+    )
+
+    #expect(result.conference == "AFC")
+    #expect(result.regularSeasonRecord == "1-1-1")
+    #expect(result.isRegularSeasonComplete)
+}
+
+@Test func superBowlTitleCarriesItsGameNumber() {
+    #expect(PostseasonRoundKind.superBowl.title(season: 2025) == "SUPER BOWL LX")
+    #expect(PostseasonRoundKind.superBowl.title(season: 2013) == "SUPER BOWL XLVIII")
+    #expect(PostseasonRoundKind.superBowl.title(season: 2015) == "SUPER BOWL 50")
+    #expect(PostseasonRoundKind.superBowl.title(season: 1966) == "SUPER BOWL I")
+    #expect(PostseasonRoundKind.divisional.title(season: 2025) == "DIVISIONAL")
+}
+
+@Test func firstRoundByeFollowsTheFieldSize() {
+    #expect(earnsFirstRoundBye(seed: 1, season: 2025))
+    #expect(!earnsFirstRoundBye(seed: 2, season: 2025))
+    #expect(earnsFirstRoundBye(seed: 2, season: 2019))
+    #expect(!earnsFirstRoundBye(seed: 3, season: 2019))
+    #expect(!earnsFirstRoundBye(seed: 0, season: 2019))
 }
 
 private func testSchedule(season: Int) -> TeamSchedule {

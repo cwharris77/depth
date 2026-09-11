@@ -42,6 +42,19 @@ final class ScheduleViewModel {
         return selectedSeason < defaultSeason
     }
 
+    /// The PLAYOFFS phase's state. A season counts as decided once it is in the past or
+    /// its regular season is fully scored (a past season can carry an unscored, cancelled
+    /// game — 2022 BUF-CIN — so the date check covers it). A run with a postseason game
+    /// already on it always shows, whatever the regular-season rows say.
+    var playoffsState: PlayoffsState? {
+        guard let schedule else { return nil }
+        let isDecided = isPastSeason || schedule.isRegularSeasonComplete
+        if let run = schedule.postseason, isDecided || run.rounds.contains(where: { $0.game != nil }) {
+            return .run(run)
+        }
+        return isDecided ? .missed : .notStarted
+    }
+
     func load() async {
         await fetch(season: selectedSeason)
     }

@@ -1,60 +1,104 @@
 import Foundation
 
-// Resolves public game rows into weekly schedule cards from one team's perspective.
-// This is the native equivalent of lib/utils/schedule/schedule.ts: REG only, fill gaps
-// through the highest represented week as byes, and derive W/L/T solely from both scores.
+// Resolves public game rows into regular-season cards and 3c's fixed postseason ladder
+// from one team's perspective. Regular weeks fill gaps as byes; postseason rounds never
+// fabricate a matchup, so an absent game remains an unreached round or earned bye.
 enum ScheduleMapper {
     static func map(
         schedule: ScheduleDTO,
         games: [GameDTO],
-        teamsById: [String: Team]
+        teamsById: [String: Team],
+        playoffSeed: Int? = nil
     ) throws -> TeamSchedule {
         var gamesByWeek: [Int: ScheduleGame] = [:]
 
         for game in games where game.gameType == "REG" {
-            guard game.homeTeamId == schedule.teamId || game.awayTeamId == schedule.teamId else { continue }
             guard let week = game.week else { continue }
             guard week > 0 else {
                 throw DepthError.decoding("game \(game.gameId): invalid week \(week)")
             }
+            guard let resolved = try resolve(game, for: schedule.teamId, teamsById: teamsById) else { continue }
+            gamesByWeek[week] = resolved
+        }
 
-            let isHome = game.homeTeamId == schedule.teamId
-            let teamScore = isHome ? game.homeScore : game.awayScore
-            let opponentScore = isHome ? game.awayScore : game.homeScore
-            let opponentId = isHome ? game.awayTeamId : game.homeTeamId
-            guard let opponent = teamsById[opponentId] else {
-                throw DepthError.decoding("game \(game.gameId): missing opponent \(opponentId)")
+        let resolvedGames: [ScheduleGame]
+        if let maximumWeek = gamesByWeek.keys.max() {
+            resolvedGames = (1...maximumWeek).map { week in
+                gamesByWeek[week] ?? ScheduleGame(
+                    week: week,
+                    isBye: true,
+                    date: nil,
+                    isHome: false,
+                    opponent: nil,
+                    teamScore: nil,
+                    opponentScore: nil,
+                    result: nil
+                )
             }
-            gamesByWeek[week] = ScheduleGame(
-                week: week,
-                isBye: false,
-                date: game.gameday,
-                isHome: isHome,
-                opponent: opponent,
-                teamScore: teamScore,
-                opponentScore: opponentScore,
-                result: outcome(teamScore: teamScore, opponentScore: opponentScore),
-                market: mapMarket(game, isHome: isHome)
-            )
+        } else {
+            resolvedGames = []
         }
+        return TeamSchedule(
+            season: schedule.season,
+            games: resolvedGames,
+            preseason: try games.compactMap { game in
+                guard game.gameType == "PRE" else { return nil }
+                return try resolve(game, for: schedule.teamId, teamsById: teamsById)
+            }.sorted { ($0.date ?? "") < ($1.date ?? "") },
+            postseason: try mapPostseason(
+                games: games,
+                teamId: schedule.teamId,
+                teamsById: teamsById,
+                playoffSeed: playoffSeed
+            ),
+            conference: teamsById[schedule.teamId]?.conference
+        )
+    }
 
-        guard let maximumWeek = gamesByWeek.keys.max() else {
-            return TeamSchedule(season: schedule.season, games: [])
+    private static func mapPostseason(
+        games: [GameDTO],
+        teamId: String,
+        teamsById: [String: Team],
+        playoffSeed: Int?
+    ) throws -> PostseasonRun? {
+        guard let playoffSeed, isPlayoffSeed(playoffSeed, season: games.first?.season ?? 0) else { return nil }
+        var gamesByRound: [PostseasonRoundKind: ScheduleGame] = [:]
+        for game in games {
+            guard let kind = PostseasonRoundKind.from(gameType: game.gameType),
+                  let resolved = try resolve(game, for: teamId, teamsById: teamsById)
+            else { continue }
+            gamesByRound[kind] = resolved
         }
+        return PostseasonRun(
+            seed: playoffSeed,
+            rounds: PostseasonRoundKind.allCases.map { PostseasonRound(kind: $0, game: gamesByRound[$0]) }
+        )
+    }
 
-        let resolvedGames = (1...maximumWeek).map { week in
-            gamesByWeek[week] ?? ScheduleGame(
-                week: week,
-                isBye: true,
-                date: nil,
-                isHome: false,
-                opponent: nil,
-                teamScore: nil,
-                opponentScore: nil,
-                result: nil
-            )
+    private static func resolve(
+        _ game: GameDTO,
+        for teamId: String,
+        teamsById: [String: Team]
+    ) throws -> ScheduleGame? {
+        guard game.homeTeamId == teamId || game.awayTeamId == teamId else { return nil }
+        let isHome = game.homeTeamId == teamId
+        let teamScore = isHome ? game.homeScore : game.awayScore
+        let opponentScore = isHome ? game.awayScore : game.homeScore
+        let opponentId = isHome ? game.awayTeamId : game.homeTeamId
+        guard let opponent = teamsById[opponentId] else {
+            throw DepthError.decoding("game \(game.gameId): missing opponent \(opponentId)")
         }
-        return TeamSchedule(season: schedule.season, games: resolvedGames)
+        return ScheduleGame(
+            week: game.week ?? 0,
+            isBye: false,
+            date: game.gameday,
+            isHome: isHome,
+            opponent: opponent,
+            teamScore: teamScore,
+            opponentScore: opponentScore,
+            result: outcome(teamScore: teamScore, opponentScore: opponentScore),
+            market: mapMarket(game, isHome: isHome)
+        )
     }
 
     private static func outcome(teamScore: Int?, opponentScore: Int?) -> ScheduleResult? {

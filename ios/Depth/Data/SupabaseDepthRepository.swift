@@ -184,12 +184,20 @@ actor SupabaseDepthRepository: DepthRepository {
                 .eq("away_team_id", value: teamId)
                 .execute()
                 .value
-            let (home, away) = try await (homeGames, awayGames)
+            async let seasonStats: [TeamStatsRowDTO] = client
+                .from("team_stats")
+                .select(Self.teamStatsSelect)
+                .eq("team_id", value: teamId)
+                .eq("season", value: selectedSchedule.season)
+                .execute()
+                .value
+            let (home, away, stats) = try await (homeGames, awayGames, seasonStats)
             let allTeams = try await teams()
             return try ScheduleMapper.map(
                 schedule: selectedSchedule,
                 games: home + away,
-                teamsById: Dictionary(uniqueKeysWithValues: allTeams.map { ($0.id, $0) })
+                teamsById: Dictionary(uniqueKeysWithValues: allTeams.map { ($0.id, $0) }),
+                playoffSeed: stats.first?.playoffSeed
             )
         } catch let error as DepthError {
             throw error

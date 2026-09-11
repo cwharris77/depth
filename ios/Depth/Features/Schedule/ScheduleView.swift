@@ -9,6 +9,7 @@ struct ScheduleView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var viewModel: ScheduleViewModel
     @State private var showSeasonPicker = false
+    @State private var phase: SchedulePhase = .regular
     private let isEmbedded: Bool
     /// DEP-278 follow-up: Schedule fetches no team/uniform data of its own (lightweight
     /// read, invariant 5), so it reads the kit-resolved accent TeamDetailView publishes
@@ -113,21 +114,30 @@ struct ScheduleView: View {
 
     private func scheduleContent(_ schedule: TeamSchedule) -> some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 12) {
                 seasonPicker
-                LazyVGrid(
-                    columns: dynamicTypeSize.isAccessibilitySize
-                        ? [GridItem(.flexible())]
-                        : [GridItem(.adaptive(minimum: 144, maximum: 260), spacing: DesignTokens.Spacing.sm)],
-                    spacing: DesignTokens.Spacing.sm
-                ) {
-                    ForEach(schedule.games) { game in
-                        ScheduleGameCard(
-                            game: game,
-                            isPastSeason: viewModel.isPastSeason,
-                            onSelectOpponent: onSelectOpponent
-                        )
-                    }
+                // Canvas 1a: phase tabs share the roster page's underline row (not the
+                // filled page-switcher pill), so the two levels of navigation read apart.
+                DepthTabBar(
+                    options: SchedulePhase.allCases.map {
+                        DepthSegmentedOption(value: $0, label: $0.title, identifier: "schedule-phase-\($0.rawValue)")
+                    },
+                    selection: phase,
+                    onChange: { phase = $0 },
+                    activeColor: teamAccent
+                )
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(alignment: .bottom) {
+                    Rectangle().fill(DesignTokens.Colors.borderDefault).frame(height: 1)
+                }
+
+                switch phase {
+                case .preseason:
+                    gameGrid(schedule.preseason, emptyMessage: "No preseason games are available for this season.")
+                case .regular:
+                    gameGrid(schedule.games, emptyMessage: "No regular-season schedule is available for this season.")
+                case .playoffs:
+                    playoffsContent(schedule)
                 }
             }
             .padding()
@@ -135,6 +145,57 @@ struct ScheduleView: View {
             .accessibilityIdentifier("schedule-content")
         }
         .scrollIndicators(.hidden)
+    }
+
+    @ViewBuilder
+    private func playoffsContent(_ schedule: TeamSchedule) -> some View {
+        switch viewModel.playoffsState {
+        case .run(let run):
+            PostseasonRunView(
+                run: run,
+                season: schedule.season,
+                standing: [schedule.conference, schedule.regularSeasonRecord].compactMap { $0 }.joined(separator: " · "),
+                accent: teamAccent
+            )
+        case .missed:
+            ContentUnavailableView {
+                Label("Missed the playoffs", systemImage: "flag.checkered")
+            } description: {
+                Text(verbatim: "Finished \(schedule.regularSeasonRecord) in the \(schedule.season) regular season.")
+            }
+            .accessibilityIdentifier("schedule-playoffs-empty")
+        case .notStarted:
+            ContentUnavailableView {
+                Label("Playoffs haven't started", systemImage: "calendar.badge.clock")
+            } description: {
+                Text(verbatim: "The \(schedule.season) postseason begins after the regular season ends.")
+            }
+            .accessibilityIdentifier("schedule-playoffs-upcoming")
+        case nil:
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private func gameGrid(_ games: [ScheduleGame], emptyMessage: String) -> some View {
+        if games.isEmpty {
+            ContentUnavailableView(emptyMessage, systemImage: "calendar")
+        } else {
+            LazyVGrid(
+                columns: dynamicTypeSize.isAccessibilitySize
+                    ? [GridItem(.flexible())]
+                    : [GridItem(.adaptive(minimum: 144, maximum: 260), spacing: DesignTokens.Spacing.sm)],
+                spacing: DesignTokens.Spacing.sm
+            ) {
+                ForEach(games) { game in
+                    ScheduleGameCard(
+                        game: game,
+                        isPastSeason: viewModel.isPastSeason,
+                        onSelectOpponent: onSelectOpponent
+                    )
+                }
+            }
+        }
     }
 
     private var seasonPicker: some View {
@@ -150,6 +211,14 @@ struct ScheduleView: View {
             showSeasonPicker = true
         }
     }
+}
+
+private enum SchedulePhase: String, CaseIterable {
+    case preseason
+    case regular
+    case playoffs
+
+    var title: String { rawValue.uppercased() }
 }
 
 private struct ScheduleGameCard: View {
@@ -259,6 +328,340 @@ private struct ScheduleGameCard: View {
     private var accessibilityLabel: String {
         if game.isBye { return "Week \(game.week), bye" }
         return "Week \(game.week), \(opponentLabel), \(detailLabel)"
+    }
+
+    private static let inputFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+}
+
+// Canvas 3c's postseason treatment: a fixed four-round ladder with a rail that draws
+// itself down to the round where the run ended. The outcome lands on that round — its pip
+// grows a halo and a bar sweeps along its card's bottom edge — instead of being spelled
+// out in a banner. Unreached rounds stay static and muted; the rail only reports
+// source-backed results.
+private struct PostseasonRunView: View {
+    let run: PostseasonRun
+    let season: Int
+    /// "NFC · 11-6" — conference (when resolved) and regular-season record.
+    let standing: String
+    let accent: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // The season picker above already names the year, so the seed row carries only
+            // the seed and the standing that earned it.
+            HStack(alignment: .firstTextBaseline) {
+                Text(verbatim: "SEED \(run.seed)")
+                    .font(.title.bold())
+                Spacer(minLength: DesignTokens.Spacing.sm)
+                Text(verbatim: standing)
+                    .font(.caption.bold())
+                    .foregroundStyle(accent)
+            }
+            .padding(.bottom, 14)
+            .overlay(alignment: .bottom) {
+                Rectangle().fill(DesignTokens.Colors.borderInput).frame(height: 1)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("schedule-playoffs-seed")
+            .padding(.bottom, DesignTokens.Spacing.md)
+
+            PostseasonLadder(run: run, season: season, accent: accent)
+        }
+        .accessibilityIdentifier("schedule-playoffs-content")
+    }
+}
+
+/// Canvas 3c's choreography, derived from its two frames (a Divisional exit and a Super
+/// Bowl win): each reached round lands half a second after the one above, and the rail's
+/// single eased draw ends just as the terminal round's pip fills and its bar sweeps.
+private struct PostseasonLadderTiming {
+    let terminalIndex: Int?
+
+    static let railDelay = 0.1
+    private let step = 0.5
+
+    var railDuration: Double { 1.3 + 0.25 * Double(terminalIndex ?? 0) }
+    private var railEnd: Double { Self.railDelay + railDuration }
+
+    func cardDelay(_ index: Int) -> Double { 0.2 + step * Double(index) }
+
+    func pipDelay(_ index: Int) -> Double {
+        index == terminalIndex ? railEnd - 0.2 : 0.35 + step * Double(index)
+    }
+
+    var sweepDelay: Double { railEnd - 0.1 }
+}
+
+private enum PostseasonRoundStage {
+    case reached
+    case terminal
+    case unreached
+}
+
+private struct PostseasonLadder: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let run: PostseasonRun
+    let season: Int
+    let accent: Color
+    /// Flipped on appear, so every staged element animates from its entrance state. Reduce
+    /// Motion renders the settled state from the first frame instead.
+    @State private var hasPlayed = false
+
+    private var isShown: Bool { hasPlayed || reduceMotion }
+    private var timing: PostseasonLadderTiming { PostseasonLadderTiming(terminalIndex: run.terminalIndex) }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            // The rail's column; the rail itself is drawn in the overlay below so its pips
+            // can sit on each card's measured center, whatever height Dynamic Type gives it.
+            Color.clear.frame(width: 2)
+            VStack(spacing: DesignTokens.Spacing.sm) {
+                ForEach(Array(run.rounds.enumerated()), id: \.element.id) { index, round in
+                    PostseasonRoundCard(
+                        round: round,
+                        season: season,
+                        seed: run.seed,
+                        stage: stage(index),
+                        accent: accent,
+                        terminalColor: terminalColor,
+                        isShown: isShown,
+                        timing: timing,
+                        index: index
+                    )
+                    // Measured on a background so the card's rise-in offset never drags
+                    // its pip along with it.
+                    .background {
+                        Color.clear.anchorPreference(key: RoundBoundsKey.self, value: .bounds) { [index: $0] }
+                    }
+                }
+            }
+        }
+        .overlayPreferenceValue(RoundBoundsKey.self) { anchors in
+            GeometryReader { proxy in
+                rail(centers: anchors.mapValues { proxy[$0].midY })
+            }
+            .accessibilityHidden(true)
+        }
+        .onAppear { hasPlayed = true }
+    }
+
+    private func stage(_ index: Int) -> PostseasonRoundStage {
+        guard let terminal = run.terminalIndex, index <= terminal else { return .unreached }
+        return index == terminal ? .terminal : .reached
+    }
+
+    /// The decided round's color: a loss ends the run in the status red; a win (a title,
+    /// or the latest win of a run still in progress) stays in the team's own color.
+    private var terminalColor: Color {
+        guard let index = run.terminalIndex else { return accent }
+        switch run.rounds[index].game?.result {
+        case .loss: return DesignTokens.Colors.statusInjured
+        case .tie: return DesignTokens.Colors.textMuted
+        case .win, nil: return accent
+        }
+    }
+
+    private func rail(centers: [Int: CGFloat]) -> some View {
+        ZStack(alignment: .topLeading) {
+            // The line ends at the last decided round's pip — it never trails on past the
+            // run's final game, so a run that has not reached a decided round draws no line
+            // and its rounds show only their unreached pips.
+            if let terminal = run.terminalIndex, let end = centers[terminal] {
+                // The faint groove the accent fill grows into during the entrance draw.
+                Capsule()
+                    .fill(DesignTokens.Colors.borderDefault)
+                    .frame(width: 2, height: end)
+                Capsule()
+                    .fill(accent)
+                    .frame(width: 2, height: end)
+                    .scaleEffect(x: 1, y: isShown ? 1 : 0, anchor: .top)
+                    .animation(
+                        reduceMotion ? nil : .timingCurve(0.4, 0, 0.2, 1, duration: timing.railDuration)
+                            .delay(PostseasonLadderTiming.railDelay),
+                        value: isShown
+                    )
+            }
+            ForEach(run.rounds.indices, id: \.self) { index in
+                pip(index)
+                    .position(x: 1, y: centers[index] ?? 0)
+                    .opacity(centers[index] == nil ? 0 : 1)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func pip(_ index: Int) -> some View {
+        switch stage(index) {
+        case .unreached:
+            Circle()
+                .fill(DesignTokens.Colors.surfacePlaceholder)
+                .frame(width: 8, height: 8)
+        case .reached, .terminal:
+            let isTerminal = stage(index) == .terminal
+            let color = isTerminal ? terminalColor : accent
+            Circle()
+                .fill(color)
+                .frame(width: isTerminal ? 14 : 10, height: isTerminal ? 14 : 10)
+                .background {
+                    if isTerminal {
+                        Circle().fill(color.opacity(0.22)).padding(-3)
+                    }
+                }
+                .scaleEffect(isShown ? 1 : 0.35)
+                .opacity(isShown ? 1 : 0)
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.3).delay(timing.pipDelay(index)), value: isShown)
+        }
+    }
+}
+
+private struct RoundBoundsKey: PreferenceKey {
+    static var defaultValue: [Int: Anchor<CGRect>] { [:] }
+
+    static func reduce(value: inout [Int: Anchor<CGRect>], nextValue: () -> [Int: Anchor<CGRect>]) {
+        value.merge(nextValue()) { $1 }
+    }
+}
+
+private struct PostseasonRoundCard: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let round: PostseasonRound
+    let season: Int
+    let seed: Int
+    let stage: PostseasonRoundStage
+    let accent: Color
+    let terminalColor: Color
+    let isShown: Bool
+    let timing: PostseasonLadderTiming
+    let index: Int
+
+    /// An absent Wild Card game for a bye-earning seed is the bye, not an unreached round.
+    private var isBye: Bool {
+        round.kind == .wildCard && round.game == nil && earnsFirstRoundBye(seed: seed, season: season)
+    }
+
+    /// Only rounds with something to land rise in; empty future rounds are already there.
+    private var entersWithMotion: Bool { round.game != nil || isBye }
+
+    private var cardShape: RoundedRectangle {
+        RoundedRectangle(cornerRadius: DesignTokens.Radius.lg)
+    }
+
+    var body: some View {
+        content
+            .frame(maxWidth: .infinity, minHeight: 78, alignment: .leading)
+            .padding(.horizontal, 14)
+            .background(isEmptyRound ? DesignTokens.Colors.surfaceCard2 : DesignTokens.Colors.surfaceCard, in: cardShape)
+            .overlay(alignment: .bottom) {
+                if stage == .terminal {
+                    Rectangle()
+                        .fill(terminalColor)
+                        .frame(height: 3)
+                        .scaleEffect(x: isShown ? 1 : 0, y: 1, anchor: .leading)
+                        .animation(
+                            reduceMotion ? nil : .timingCurve(0.4, 0, 0.2, 1, duration: 0.5).delay(timing.sweepDelay),
+                            value: isShown
+                        )
+                }
+            }
+            .clipShape(cardShape)
+            .overlay {
+                if isBye {
+                    cardShape.strokeBorder(DesignTokens.Colors.borderInput, style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                } else {
+                    cardShape.strokeBorder(
+                        isEmptyRound ? DesignTokens.Colors.borderSubtle : DesignTokens.Colors.borderDefault,
+                        lineWidth: 1
+                    )
+                }
+            }
+            .opacity(entersWithMotion && !isShown ? 0 : 1)
+            .offset(y: entersWithMotion && !isShown ? 10 : 0)
+            .animation(
+                reduceMotion || !entersWithMotion ? nil : .easeOut(duration: 0.35).delay(timing.cardDelay(index)),
+                value: isShown
+            )
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("schedule-playoffs-\(round.kind.rawValue)")
+    }
+
+    private var isEmptyRound: Bool { round.game == nil }
+
+    @ViewBuilder
+    private var content: some View {
+        if isBye {
+            HStack {
+                roundTitle
+                Spacer()
+                Text("FIRST-ROUND BYE")
+                    .font(.caption2.bold())
+                    .foregroundStyle(accent)
+            }
+        } else if let game = round.game {
+            HStack(spacing: DesignTokens.Spacing.sm) {
+                VStack(alignment: .leading, spacing: 5) {
+                    roundTitle
+                    if let opponent = game.opponent {
+                        HStack(spacing: 6) {
+                            TeamIconView(team: opponent, size: 22)
+                            Text(verbatim: game.isHome ? "vs \(opponent.abbrev)" : "at \(opponent.abbrev)")
+                                .font(.subheadline.weight(.heavy))
+                        }
+                    }
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: DesignTokens.Spacing.xs) {
+                    Text(verbatim: scoreLabel(game))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(resultColor(game.result))
+                    Text(verbatim: dateLabel(game))
+                        .font(.caption2.bold())
+                        .foregroundStyle(DesignTokens.Colors.textFaint)
+                }
+            }
+        } else {
+            roundTitle
+        }
+    }
+
+    private var roundTitle: some View {
+        Text(verbatim: round.kind.title(season: season))
+            .font(.caption2.bold())
+            .tracking(0.8)
+            .foregroundStyle(titleColor)
+    }
+
+    private var titleColor: Color {
+        switch stage {
+        case .terminal: terminalColor
+        case .reached: DesignTokens.Colors.textMuted
+        case .unreached: isEmptyRound && !isBye ? DesignTokens.Colors.textFaintest : DesignTokens.Colors.textMuted
+        }
+    }
+
+    private func resultColor(_ result: ScheduleResult?) -> Color {
+        switch result {
+        case .win: DesignTokens.Colors.statusWin
+        case .loss: DesignTokens.Colors.statusInjured
+        case .tie, nil: DesignTokens.Colors.textMuted
+        }
+    }
+
+    private func scoreLabel(_ game: ScheduleGame) -> String {
+        guard let result = game.result, let teamScore = game.teamScore, let opponentScore = game.opponentScore else {
+            return "Upcoming"
+        }
+        return "\(result.rawValue) \(teamScore)-\(opponentScore)"
+    }
+
+    private func dateLabel(_ game: ScheduleGame) -> String {
+        guard let date = game.date, let parsed = Self.inputFormatter.date(from: date) else { return "DATE TBD" }
+        return parsed.formatted(.dateTime.month(.abbreviated).day()).uppercased()
     }
 
     private static let inputFormatter: DateFormatter = {

@@ -171,11 +171,40 @@ final class PRScreenshotsUITests: XCTestCase {
             if close.waitForExistence(timeout: 5) { close.tap() }
         }
 
+        // `schedule` — the Schedule page's PLAYOFFS phase for the fixture team's 2025
+        // season, the one screen that shows the phase tab bar and the postseason ladder
+        // together. Runs last: it leaves the roster page every earlier capture relies on.
+        if requested.contains("schedule") {
+            let scheduleTab = app.buttons["page-switcher-schedule"]
+            XCTAssertTrue(scheduleTab.waitForExistence(timeout: 15), "team detail should expose a Schedule page tab")
+            XCTAssertTrue(
+                scheduleTab.tapUntil { app.otherElements["schedule-content"].exists },
+                "the schedule should render"
+            )
+            let seasonTrigger = app.buttons["schedule-season-trigger"]
+            XCTAssertTrue(seasonTrigger.waitForExistence(timeout: 10), "the schedule should expose its season picker")
+            seasonTrigger.tap()
+            let season = app.descendants(matching: .any)["schedule-season-2025"]
+            XCTAssertTrue(season.waitForExistence(timeout: 10), "the season sheet should list 2025")
+            season.tap()
+            let playoffsTab = app.buttons["schedule-phase-playoffs"]
+            XCTAssertTrue(playoffsTab.waitForExistence(timeout: 15), "the 2025 schedule should expose its PLAYOFFS phase")
+            playoffsTab.tap()
+            XCTAssertTrue(
+                app.descendants(matching: .any)["schedule-playoffs-content"].waitForExistence(timeout: 15),
+                "the 2025 Bills postseason ladder should render"
+            )
+            // The ladder's entrance draw runs ~2s; capture its settled state, not a frame
+            // of the animation. No element signals the end of a SwiftUI animation.
+            Thread.sleep(forTimeInterval: 3)
+            attachScreenshot(name: "schedule")
+        }
+
         if requested.isEmpty {
             // `field` is the documented default (PRScreenshotsUITests.requestedTargets
             // returns ["field"] for empty/missing input), so this is unreachable — kept
             // as a defensive tripwire in case the default ever changes.
-            XCTFail("No recognized PR screenshot target requested — pass SCREENSHOT_TARGETS=field,custom-order,field-footer,formations,teams,uniform,player")
+            XCTFail("No recognized PR screenshot target requested — pass SCREENSHOT_TARGETS=field,custom-order,field-footer,formations,teams,uniform,player,settings,schedule")
         }
     }
 
@@ -192,7 +221,7 @@ final class PRScreenshotsUITests: XCTestCase {
         } else {
             raw = ProcessInfo.processInfo.environment["SCREENSHOT_TARGETS"] ?? ""
         }
-        let valid: Set<String> = ["field", "custom-order", "field-footer", "formations", "teams", "uniform", "player", "settings"]
+        let valid: Set<String> = ["field", "custom-order", "field-footer", "formations", "teams", "uniform", "player", "settings", "schedule"]
         let tokens = raw.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         let requested = Set(tokens).intersection(valid)
         // `field` is the documented default (empty/missing env, or no valid token →
