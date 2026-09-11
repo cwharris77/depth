@@ -101,3 +101,27 @@ private func season(
         == ["AGE 27", "EXP 5 YRS", "6' 4\"", "218 LB"])
     #expect(PlayerProfileDisplay.vitals(age: 0, experience: 0, height: "", weight: 0).map(\.text) == ["ROOKIE"])
 }
+
+@Test func profileDisplayVitalsAppendCollegeLast() {
+    let parts = PlayerProfileDisplay.vitals(
+        age: 27, experience: 5, height: "6' 4\"", weight: 218, college: "Alabama"
+    )
+    #expect(parts.map(\.text) == ["AGE 27", "EXP 5 YRS", "6' 4\"", "218 LB", "ALABAMA"])
+    #expect(parts.last?.spoken == "College, Alabama")
+    // ESPN's em-dash placeholder and blank strings mean "no college", not a part.
+    #expect(
+        PlayerProfileDisplay.vitals(age: nil, experience: nil, height: nil, weight: nil, college: " — ")
+            .isEmpty
+    )
+    #expect(
+        PlayerProfileDisplay.vitals(age: nil, experience: nil, height: nil, weight: nil, college: nil)
+            .isEmpty
+    )
+}
+
+@Test func profileDisplayBioHidesEmptyAndHistoricalBios() {
+    #expect(PlayerProfileDisplay.bio("Accurate passer.", isHistorical: false) == "Accurate passer.")
+    #expect(PlayerProfileDisplay.bio("  \n", isHistorical: false) == nil)
+    // HistoricalRosterMapper fills bio with "{season} · {city} {name}" filler.
+    #expect(PlayerProfileDisplay.bio("2019 · Buffalo Bills", isHistorical: true) == nil)
+}

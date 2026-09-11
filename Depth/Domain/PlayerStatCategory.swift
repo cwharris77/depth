@@ -267,9 +267,13 @@ extension PlayerProfileDisplay {
         return "\(first)\(last)".uppercased()
     }
 
-    /// The single-line vitals strip ("AGE 27 · EXP 5 YRS · 6'4\" · 218 LB"). Absent values
-    /// are left out rather than rendered as "AGE —".
-    static func vitals(age: Int?, experience: Int?, height: String?, weight: Int?) -> [PlayerVital] {
+    /// The single-line vitals strip ("AGE 27 · EXP 5 YRS · 6'4\" · 218 LB · ALABAMA").
+    /// Absent values are left out rather than rendered as "AGE —". College rides last: the
+    /// 2026-09-11 merge spec moved it off the deleted player card into this strip rather
+    /// than adding a labeled block to the profile.
+    static func vitals(
+        age: Int?, experience: Int?, height: String?, weight: Int?, college: String? = nil
+    ) -> [PlayerVital] {
         var parts: [PlayerVital] = []
         if let age, age > 0 {
             parts.append(PlayerVital(text: "AGE \(age)", spoken: "Age \(age)"))
@@ -285,7 +289,17 @@ extension PlayerProfileDisplay {
         if let weight, weight > 0 {
             parts.append(PlayerVital(text: "\(weight) LB", spoken: "Weight \(weight) pounds"))
         }
+        if let college = meaningful(college) {
+            parts.append(PlayerVital(text: college.uppercased(), spoken: "College, \(college)"))
+        }
         return parts
+    }
+
+    /// The profile's BIO text, or nil to hide the section. Historical rosters synthesize
+    /// bio as "{season} · {city} {name}" (HistoricalRosterMapper), which repeats what the
+    /// screen already shows, so it never renders there.
+    static func bio(_ value: String?, isHistorical: Bool) -> String? {
+        isHistorical ? nil : meaningful(value)
     }
 }
 
