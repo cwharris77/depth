@@ -49,6 +49,12 @@ packages:
   Supabase:
     url: https://github.com/supabase/supabase-swift
     exactVersion: 2.55.1
+  # Dev/test-only. SwiftUI visual-regression snapshots (spec 2026-09-10-ios-test-data-and-
+  # snapshot-testing-design, Phase 4) replace the retired PR-screenshot pipeline. Linked to
+  # DepthTests only — never the app bundle.
+  SnapshotTesting:
+    url: https://github.com/pointfreeco/swift-snapshot-testing
+    exactVersion: 1.19.4
 
 targets:
   Depth:
@@ -161,6 +167,8 @@ targets:
       - target: Depth
       - package: Supabase
         product: Supabase
+      - package: SnapshotTesting
+        product: SnapshotTesting
 
   DepthUITests:
     type: bundle.ui-testing
