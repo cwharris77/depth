@@ -317,7 +317,7 @@ final class AccessibilityUITests: XCTestCase {
     // cells announces bare numbers, so every value must arrive paired with its column's
     // spoken name (PlayerStatsAccessibility.rowLabel).
     //
-    // This suite runs against production Supabase, and the depth chart resolves *whichever*
+    // This suite runs on the hermetic fixture backend, and the depth chart resolves *whichever*
     // player the DB currently pins to a slot (DEP-329). That resolution can be a season-less
     // backup or a just-signed player before ESPN's ingest has a row for them, so the old
     // "the starting QB always has rows" assert hard-failed on real data mid-season. This

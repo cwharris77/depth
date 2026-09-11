@@ -123,12 +123,14 @@ ios/Depth/
   `DepthUITests`/`AccessibilityUITests`/`ShareUITests` use **XCTest**
   (`XCTestCase`/`XCUIApplication`) because XCUITest doesn't support Swift Testing yet.
   Match whichever framework the target you're adding to already uses.
-- **UI tests run against production Supabase.** Staging (`Depth Stage` scheme,
-  `ios/xcconfig/Staging.xcconfig`) points at the real prod project — there is no
-  dedicated staging environment (TODO(DEP-40 Lane B)) — and UI tests run under Staging.
-  Debug points at the local `supabase start` stack instead, so a `DepthUITests` run hits
-  real prod data, no seeded/mocked fixtures. Write UI tests accordingly (tolerant of real
-  data shape/counts, not asserting exact rows).
+- **UI tests: hermetic by default, staging for the rest.** Most `DepthUITests` journeys
+  launch with `UI_TESTING_FIXTURE_BACKEND` and replay the checked-in fixture bundle
+  (`ios/Depth/Fixtures/UITestFixtures.json`) — no backend at all. The suites that must hit
+  a live backend (`AuthUITests`, `PerformanceUITests`, the bare `testAppLaunches`) run
+  under Staging (`Depth Stage` scheme, `ios/xcconfig/Staging.xcconfig`), which points at
+  the dedicated staging project (`djwrecczgudktgsooxti`), not production. Debug points at
+  the local `supabase start` stack. See the spec
+  `2026-09-10-ios-test-data-and-snapshot-testing-design`.
 
 ## 4. Mistakes you will make here unless you follow these rules
 

@@ -283,8 +283,8 @@ schemes:
   # scheme includes the full DepthUITests target with NO skip, so
   # `ios/scripts/capture-appstore-screenshots.sh` (and manual runs) can invoke it with
   # `-only-testing:DepthUITests/AppStoreScreenshotsUITests` straight from a clean
-  # checkout. Runs under Staging (real prod data — no dedicated staging seed exists,
-  # per xcconfig/Staging.xcconfig's TODO(DEP-40 Lane B)).
+  # checkout. Runs under Staging (the dedicated staging project, seeded from the checked-in
+  # supabase/seed*.sql — see xcconfig/Staging.xcconfig).
   Depth-AppStoreScreenshots:
     build:
       targets:

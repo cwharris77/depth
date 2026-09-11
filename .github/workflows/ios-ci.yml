@@ -16,10 +16,10 @@ name: iOS CI
 # invocation — this is the dominant wall-time lever since UI tests relaunch the app
 # per-test and previously always ran after unit tests finished. The one test leg runs on
 # a single current-flagship simulator. The "Staging" configuration is
-# DEBUG_BUILD_SETTINGS: all of Debug/Staging/Release point at the single production
-# Supabase project (jiqoaqmzmvtovimnmbzl, see ios/xcconfig/Staging.xcconfig's DEP-40 Lane B
-# TODO) — there is no dedicated staging project, so every UI journey here reads/writes the
-# real production dataset. RLS/native-auth integration suites
+# DEBUG_BUILD_SETTINGS that targets the dedicated staging Supabase project
+# (djwrecczgudktgsooxti, see ios/xcconfig/Staging.xcconfig); Release stays on production
+# (jiqoaqmzmvtovimnmbzl). The hermetic fixture-backend UI journeys never touch either; only
+# the live suites (Auth/Performance) read/write staging. RLS/native-auth integration suites
 # (DepthTests/SupabaseRLSIntegrationTests, DepthTests/NativeAuthIntegrationTests) need a
 # local Supabase stack (`supabase start`, which needs Docker); GitHub-hosted macOS
 # runners can't run Docker (no nested virtualization), so those suites self-gate on a

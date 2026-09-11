@@ -12,15 +12,16 @@ final class PerformanceMetricsTests: XCTestCase {
     private func oneShotOptions() -> XCTMeasureOptions {
         // A real network round trip (the first test) shouldn't run the default 10x —
         // one measured iteration is enough to catch a regression without hammering
-        // the production Supabase project or tripling this suite's CI runtime.
+        // the staging Supabase project or tripling this suite's CI runtime.
         let options = XCTMeasureOptions()
         options.iterationCount = 1
         return options
     }
 
-    /// Real network hit against the same production Supabase project every other test in
-    /// this target and `DepthUITests` already exercises (Debug's `.xcconfig` bakes the
-    /// production URL/key into the hosted app's Info.plist that `DepthEnvironment` reads).
+    /// Real network hit against the same live backend the other network-backed tests use:
+    /// the dedicated staging project under CI's Staging config, or the local `supabase
+    /// start` stack under Debug (the active `.xcconfig` bakes the URL/key into the hosted
+    /// app's Info.plist that `DepthEnvironment` reads).
     /// Budget is intentionally looser than the design spec's 3s "constrained
     /// networking" ceiling — shared macOS CI runners add non-deterministic
     /// scheduling/network noise on top of the real request; 6s still catches an
