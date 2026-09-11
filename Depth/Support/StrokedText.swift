@@ -100,6 +100,12 @@ struct StrokedText: UIViewRepresentable {
             }
             string.append(NSAttributedString(string: run.text, attributes: attributes))
         }
+        // Kern is applied AFTER each character, so on the last one it only shrinks the
+        // measured width. With negative tracking the final glyph then draws past the view's
+        // bounds and its right edge is clipped (visible on the profile's 116pt numeral).
+        if string.length > 0 {
+            string.addAttribute(.kern, value: CGFloat(0), range: NSRange(location: string.length - 1, length: 1))
+        }
         return string
     }
 
