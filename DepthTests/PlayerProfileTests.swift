@@ -60,7 +60,14 @@ import Testing
         passingYards: 4_321, passingTds: 32, passingInterceptions: 9, carries: nil,
         rushingYards: nil, rushingTds: nil, receptions: nil, targets: nil,
         receivingYards: nil, receivingTds: nil, defTacklesSolo: nil, defSacks: nil,
-        defInterceptions: nil, fgMade: nil, fgAtt: nil, teams: TeamAbbreviationDTO(abbrev: "BUF")
+        defInterceptions: nil, fgMade: nil, fgAtt: nil,
+        defTackleAssists: nil, defTacklesForLoss: nil, defQbHits: nil, defPassDefended: nil,
+        defFumblesForced: nil, defTds: nil, defSafeties: nil, fumbleRecoveries: nil,
+        fumbleRecoveryTds: nil, puntReturns: nil, puntReturnYards: nil, kickoffReturns: nil,
+        kickoffReturnYards: nil, specialTeamsTds: nil, penalties: nil, penaltyYards: nil,
+        patMade: nil, patAtt: nil, fgLong: nil, offenseSnaps: nil, offensePct: nil,
+        defenseSnaps: nil, defensePct: nil, specialTeamsSnaps: nil, specialTeamsPct: nil,
+        teams: TeamAbbreviationDTO(abbrev: "BUF")
     )
 
     let mapped = TeamSnapshotMapper.mapPlayerSeasonStats(dto)
@@ -91,7 +98,13 @@ import Testing
         completions: 401, attempts: 580, passingYards: 4_321, passingTds: 32,
         passingInterceptions: 9, carries: nil, rushingYards: nil, rushingTds: nil,
         receptions: nil, targets: nil, receivingYards: nil, receivingTds: nil,
-        defTacklesSolo: nil, defSacks: nil, defInterceptions: nil, fgMade: nil, fgAtt: nil
+        defTacklesSolo: nil, defSacks: nil, defInterceptions: nil, fgMade: nil, fgAtt: nil,
+        defTackleAssists: nil, defTacklesForLoss: nil, defQbHits: nil, defPassDefended: nil,
+        defFumblesForced: nil, defTds: nil, defSafeties: nil, fumbleRecoveries: nil,
+        fumbleRecoveryTds: nil, puntReturns: nil, puntReturnYards: nil, kickoffReturns: nil,
+        kickoffReturnYards: nil, specialTeamsTds: nil, penalties: nil, penaltyYards: nil,
+        patMade: nil, patAtt: nil, fgLong: nil, offenseSnaps: nil, offensePct: nil,
+        defenseSnaps: nil, defensePct: nil, specialTeamsSnaps: nil, specialTeamsPct: nil
     )
 
     let columns = playerStatColumns(for: .qb)
@@ -124,7 +137,13 @@ import Testing
         completions: 401, attempts: 580, passingYards: 4_321, passingTds: 32,
         passingInterceptions: 9, carries: nil, rushingYards: nil, rushingTds: nil,
         receptions: nil, targets: nil, receivingYards: nil, receivingTds: nil,
-        defTacklesSolo: nil, defSacks: nil, defInterceptions: nil, fgMade: nil, fgAtt: nil
+        defTacklesSolo: nil, defSacks: nil, defInterceptions: nil, fgMade: nil, fgAtt: nil,
+        defTackleAssists: nil, defTacklesForLoss: nil, defQbHits: nil, defPassDefended: nil,
+        defFumblesForced: nil, defTds: nil, defSafeties: nil, fumbleRecoveries: nil,
+        fumbleRecoveryTds: nil, puntReturns: nil, puntReturnYards: nil, kickoffReturns: nil,
+        kickoffReturnYards: nil, specialTeamsTds: nil, penalties: nil, penaltyYards: nil,
+        patMade: nil, patAtt: nil, fgLong: nil, offenseSnaps: nil, offensePct: nil,
+        defenseSnaps: nil, defensePct: nil, specialTeamsSnaps: nil, specialTeamsPct: nil
     )
 
     let label = PlayerStatsAccessibility.rowLabel(for: stats, columns: playerStatColumns(for: .qb))

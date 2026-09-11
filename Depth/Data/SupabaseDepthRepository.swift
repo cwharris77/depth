@@ -80,7 +80,7 @@ actor SupabaseDepthRepository: DepthRepository {
     private static let gameSelect =
         "game_id, season, game_type, week, gameday, home_team_id, away_team_id, home_score, away_score, location, away_moneyline, home_moneyline, spread_line, away_spread_odds, home_spread_odds, total_line, under_odds, over_odds, market_updated_at"
     private static let playerStatsSelect =
-        "season, season_type, games, completions, attempts, passing_yards, passing_tds, passing_interceptions, carries, rushing_yards, rushing_tds, receptions, targets, receiving_yards, receiving_tds, def_tackles_solo, def_sacks, def_interceptions, fg_made, fg_att, teams(abbrev)"
+        "season, season_type, games, completions, attempts, passing_yards, passing_tds, passing_interceptions, carries, rushing_yards, rushing_tds, receptions, targets, receiving_yards, receiving_tds, def_tackles_solo, def_sacks, def_interceptions, fg_made, fg_att, def_tackle_assists, def_tackles_for_loss, def_qb_hits, def_pass_defended, def_fumbles_forced, def_tds, def_safeties, fumble_recovery_opp, fumble_recovery_tds, punt_returns, punt_return_yards, kickoff_returns, kickoff_return_yards, special_teams_tds, penalties, penalty_yards, pat_made, pat_att, fg_long, offense_snaps, offense_pct, defense_snaps, defense_pct, special_teams_snaps, special_teams_pct, teams(abbrev)"
     private static let rosterLeaderPlayersSelect = "id, name"
     private static let rosterLeaderStatsSelect =
         "player_id, season, completions, attempts, passing_yards, passing_tds, carries, rushing_yards, rushing_tds, receptions, receiving_yards, receiving_tds"

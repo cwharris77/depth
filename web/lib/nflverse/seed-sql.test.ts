@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   extractPlayerIds,
   buildPlayerStatsSeedSql,
+  buildPlayerSeasonSnapsSeedSql,
   buildSchedulesAndGamesSeedSql,
   buildTeamFormationsSeedSql,
   buildRosterHistorySeedSql,
@@ -116,6 +117,25 @@ function statsRow(over: Partial<PlayerStatsInsert> = {}): PlayerStatsInsert {
     def_interceptions: null,
     fg_made: null,
     fg_att: null,
+    def_tackle_assists: null,
+    def_tackles_for_loss: null,
+    def_qb_hits: null,
+    def_pass_defended: null,
+    def_fumbles_forced: null,
+    def_tds: null,
+    def_safeties: null,
+    fumble_recovery_opp: null,
+    fumble_recovery_tds: null,
+    punt_returns: null,
+    punt_return_yards: null,
+    kickoff_returns: null,
+    kickoff_return_yards: null,
+    special_teams_tds: null,
+    penalties: null,
+    penalty_yards: null,
+    pat_made: null,
+    pat_att: null,
+    fg_long: null,
     ...over,
   };
 }
@@ -130,6 +150,32 @@ describe('buildPlayerStatsSeedSql', () => {
 
   it('returns empty string for no rows', () => {
     expect(buildPlayerStatsSeedSql([])).toBe('');
+  });
+});
+
+describe('buildPlayerSeasonSnapsSeedSql', () => {
+  it('updates only the snap columns on conflict so it cannot null the box score', () => {
+    const sql = buildPlayerSeasonSnapsSeedSql([
+      {
+        player_id: 'p1',
+        season: 2025,
+        offense_snaps: 900,
+        offense_pct: 0.92,
+        defense_snaps: 0,
+        defense_pct: 0,
+        special_teams_snaps: 0,
+        special_teams_pct: null,
+      },
+    ]);
+    expect(sql).toContain('insert into player_stats');
+    expect(sql).toContain('on conflict (player_id,season,season_type) do update set');
+    expect(sql).toContain('offense_snaps = excluded.offense_snaps');
+    expect(sql).toContain('special_teams_pct = excluded.special_teams_pct');
+    expect(sql).not.toContain('games = excluded.games');
+  });
+
+  it('returns empty string for no rows', () => {
+    expect(buildPlayerSeasonSnapsSeedSql([])).toBe('');
   });
 });
 

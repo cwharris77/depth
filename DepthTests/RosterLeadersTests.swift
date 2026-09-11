@@ -17,7 +17,13 @@ private func stats(
         completions: completions, attempts: attempts, passingYards: passingYards, passingTds: passingTds,
         passingInterceptions: nil, carries: carries, rushingYards: rushingYards, rushingTds: rushingTds,
         receptions: receptions, targets: nil, receivingYards: receivingYards, receivingTds: receivingTds,
-        defTacklesSolo: defTacklesSolo, defSacks: nil, defInterceptions: nil, fgMade: nil, fgAtt: nil
+        defTacklesSolo: defTacklesSolo, defSacks: nil, defInterceptions: nil, fgMade: nil, fgAtt: nil,
+        defTackleAssists: nil, defTacklesForLoss: nil, defQbHits: nil, defPassDefended: nil,
+        defFumblesForced: nil, defTds: nil, defSafeties: nil, fumbleRecoveries: nil,
+        fumbleRecoveryTds: nil, puntReturns: nil, puntReturnYards: nil, kickoffReturns: nil,
+        kickoffReturnYards: nil, specialTeamsTds: nil, penalties: nil, penaltyYards: nil,
+        patMade: nil, patAtt: nil, fgLong: nil, offenseSnaps: nil, offensePct: nil,
+        defenseSnaps: nil, defensePct: nil, specialTeamsSnaps: nil, specialTeamsPct: nil
     )
 }
 

@@ -155,6 +155,31 @@ struct PlayerSeasonStatsDTO: Decodable {
     let defInterceptions: Int?
     let fgMade: Int?
     let fgAtt: Int?
+    let defTackleAssists: Int?
+    let defTacklesForLoss: Int?
+    let defQbHits: Int?
+    let defPassDefended: Int?
+    let defFumblesForced: Int?
+    let defTds: Int?
+    let defSafeties: Int?
+    let fumbleRecoveries: Int?
+    let fumbleRecoveryTds: Int?
+    let puntReturns: Int?
+    let puntReturnYards: Int?
+    let kickoffReturns: Int?
+    let kickoffReturnYards: Int?
+    let specialTeamsTds: Int?
+    let penalties: Int?
+    let penaltyYards: Int?
+    let patMade: Int?
+    let patAtt: Int?
+    let fgLong: Int?
+    let offenseSnaps: Int?
+    let offensePct: Double?
+    let defenseSnaps: Int?
+    let defensePct: Double?
+    let specialTeamsSnaps: Int?
+    let specialTeamsPct: Double?
     let teams: TeamAbbreviationDTO?
 
     enum CodingKeys: String, CodingKey {
@@ -172,6 +197,31 @@ struct PlayerSeasonStatsDTO: Decodable {
         case defInterceptions = "def_interceptions"
         case fgMade = "fg_made"
         case fgAtt = "fg_att"
+        case defTackleAssists = "def_tackle_assists"
+        case defTacklesForLoss = "def_tackles_for_loss"
+        case defQbHits = "def_qb_hits"
+        case defPassDefended = "def_pass_defended"
+        case defFumblesForced = "def_fumbles_forced"
+        case defTds = "def_tds"
+        case defSafeties = "def_safeties"
+        case fumbleRecoveries = "fumble_recovery_opp"
+        case fumbleRecoveryTds = "fumble_recovery_tds"
+        case puntReturns = "punt_returns"
+        case puntReturnYards = "punt_return_yards"
+        case kickoffReturns = "kickoff_returns"
+        case kickoffReturnYards = "kickoff_return_yards"
+        case specialTeamsTds = "special_teams_tds"
+        case penalties
+        case penaltyYards = "penalty_yards"
+        case patMade = "pat_made"
+        case patAtt = "pat_att"
+        case fgLong = "fg_long"
+        case offenseSnaps = "offense_snaps"
+        case offensePct = "offense_pct"
+        case defenseSnaps = "defense_snaps"
+        case defensePct = "defense_pct"
+        case specialTeamsSnaps = "special_teams_snaps"
+        case specialTeamsPct = "special_teams_pct"
     }
 }
 

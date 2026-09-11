@@ -30,6 +30,37 @@ struct PlayerSeasonStats: Codable, Hashable, Identifiable {
     let defInterceptions: Int?
     let fgMade: Int?
     let fgAtt: Int?
+    // Same-source nflverse columns added for the position groups that previously had no
+    // meaningful line (DEP-538): defensive counters beyond solo/sack/INT, return yards,
+    // special-teams scores, penalties, PAT/long-FG, and season snap totals for the
+    // participation-only positions (O-line, long snapper, punter). All optional so a row
+    // from before this shipped still decodes.
+    let defTackleAssists: Int?
+    let defTacklesForLoss: Int?
+    let defQbHits: Int?
+    let defPassDefended: Int?
+    let defFumblesForced: Int?
+    let defTds: Int?
+    let defSafeties: Int?
+    let fumbleRecoveries: Int?
+    let fumbleRecoveryTds: Int?
+    let puntReturns: Int?
+    let puntReturnYards: Int?
+    let kickoffReturns: Int?
+    let kickoffReturnYards: Int?
+    let specialTeamsTds: Int?
+    let penalties: Int?
+    let penaltyYards: Int?
+    let patMade: Int?
+    let patAtt: Int?
+    let fgLong: Int?
+    let offenseSnaps: Int?
+    /// nflverse's per-unit snap share, 0...1 (nil when the source couldn't compute it).
+    let offensePct: Double?
+    let defenseSnaps: Int?
+    let defensePct: Double?
+    let specialTeamsSnaps: Int?
+    let specialTeamsPct: Double?
 
     var id: String { "\(season)-\(seasonType.rawValue)" }
     var hasPlayedGames: Bool { (games ?? 0) > 0 }
@@ -40,7 +71,13 @@ struct PlayerSeasonStats: Codable, Hashable, Identifiable {
             completions: nil, attempts: nil, passingYards: nil, passingTds: nil,
             passingInterceptions: nil, carries: nil, rushingYards: nil, rushingTds: nil,
             receptions: nil, targets: nil, receivingYards: nil, receivingTds: nil,
-            defTacklesSolo: nil, defSacks: nil, defInterceptions: nil, fgMade: nil, fgAtt: nil
+            defTacklesSolo: nil, defSacks: nil, defInterceptions: nil, fgMade: nil, fgAtt: nil,
+            defTackleAssists: nil, defTacklesForLoss: nil, defQbHits: nil, defPassDefended: nil,
+            defFumblesForced: nil, defTds: nil, defSafeties: nil, fumbleRecoveries: nil,
+            fumbleRecoveryTds: nil, puntReturns: nil, puntReturnYards: nil, kickoffReturns: nil,
+            kickoffReturnYards: nil, specialTeamsTds: nil, penalties: nil, penaltyYards: nil,
+            patMade: nil, patAtt: nil, fgLong: nil, offenseSnaps: nil, offensePct: nil,
+            defenseSnaps: nil, defensePct: nil, specialTeamsSnaps: nil, specialTeamsPct: nil
         )
     }
 }
@@ -80,6 +117,12 @@ enum PlayerStatColumn: Hashable, CaseIterable {
     case carries, rushingYards, rushingTds, receptions, rushingYardsPerCarry
     case targets, receivingYards, receivingTds, receivingYardsPerReception
     case games, tackles, sacks, interceptions, fieldGoalsMade, fieldGoalsAttempted, fieldGoalPercentage
+    // DEP-538 additions: the counters that give stat-less position groups a real line.
+    case assists, tacklesForLoss, qbHits, passDefended, forcedFumbles, fumbleRecoveries, defensiveTds
+    case puntReturns, puntReturnYards, kickoffReturns, kickoffReturnYards, returnYards, specialTeamsTds
+    case penalties, penaltyYards, patMade, patAtt, fieldGoalLong
+    case offenseSnaps, offenseSnapShare, defenseSnaps, defenseSnapShare
+    case specialTeamsSnaps, specialTeamsSnapShare
 
     var header: String {
         switch self {
@@ -99,6 +142,30 @@ enum PlayerStatColumn: Hashable, CaseIterable {
         case .fieldGoalsMade: "FGM"
         case .fieldGoalsAttempted: "FGA"
         case .fieldGoalPercentage: "FG%"
+        case .assists: "AST"
+        case .tacklesForLoss: "TFL"
+        case .qbHits: "QBH"
+        case .passDefended: "PBU"
+        case .forcedFumbles: "FF"
+        case .fumbleRecoveries: "FR"
+        case .defensiveTds: "TD"
+        case .puntReturns: "PR"
+        case .puntReturnYards: "PR YDS"
+        case .kickoffReturns: "KR"
+        case .kickoffReturnYards: "KR YDS"
+        case .returnYards: "RET YDS"
+        case .specialTeamsTds: "ST TD"
+        case .penalties: "PEN"
+        case .penaltyYards: "PEN YDS"
+        case .patMade: "PAT"
+        case .patAtt: "PAT ATT"
+        case .fieldGoalLong: "LONG"
+        case .offenseSnaps: "OFF"
+        case .offenseSnapShare: "OFF %"
+        case .defenseSnaps: "DEF"
+        case .defenseSnapShare: "DEF %"
+        case .specialTeamsSnaps: "ST"
+        case .specialTeamsSnapShare: "ST %"
         }
     }
 
@@ -126,6 +193,30 @@ enum PlayerStatColumn: Hashable, CaseIterable {
         case .fieldGoalsAttempted: "\(integer(stats.fgAtt))"
         case .fieldGoalPercentage:
             fieldGoalPercentage(made: stats.fgMade, attempts: stats.fgAtt)
+        case .assists: "\(integer(stats.defTackleAssists))"
+        case .tacklesForLoss: "\(integer(stats.defTacklesForLoss))"
+        case .qbHits: "\(integer(stats.defQbHits))"
+        case .passDefended: "\(integer(stats.defPassDefended))"
+        case .forcedFumbles: "\(integer(stats.defFumblesForced))"
+        case .fumbleRecoveries: "\(integer(stats.fumbleRecoveries))"
+        case .defensiveTds: "\(integer(stats.defTds))"
+        case .puntReturns: "\(integer(stats.puntReturns))"
+        case .puntReturnYards: grouped(stats.puntReturnYards)
+        case .kickoffReturns: "\(integer(stats.kickoffReturns))"
+        case .kickoffReturnYards: grouped(stats.kickoffReturnYards)
+        case .returnYards: grouped((stats.puntReturnYards ?? 0) + (stats.kickoffReturnYards ?? 0))
+        case .specialTeamsTds: "\(integer(stats.specialTeamsTds))"
+        case .penalties: "\(integer(stats.penalties))"
+        case .penaltyYards: "\(integer(stats.penaltyYards))"
+        case .patMade: "\(integer(stats.patMade))"
+        case .patAtt: "\(integer(stats.patAtt))"
+        case .fieldGoalLong: "\(integer(stats.fgLong))"
+        case .offenseSnaps: grouped(stats.offenseSnaps)
+        case .offenseSnapShare: percentage(stats.offensePct)
+        case .defenseSnaps: grouped(stats.defenseSnaps)
+        case .defenseSnapShare: percentage(stats.defensePct)
+        case .specialTeamsSnaps: grouped(stats.specialTeamsSnaps)
+        case .specialTeamsSnapShare: percentage(stats.specialTeamsPct)
         }
     }
 
@@ -143,6 +234,13 @@ enum PlayerStatColumn: Hashable, CaseIterable {
     private func fieldGoalPercentage(made: Int?, attempts: Int?) -> String {
         guard let attempts, attempts > 0 else { return "—" }
         return "\(Int((Double(integer(made)) / Double(attempts) * 100).rounded()))"
+    }
+
+    /// A stored 0...1 share as one-decimal percent ("92.0"), or "—" when the source had
+    /// no denominator to divide by (never a fabricated 0%).
+    private func percentage(_ value: Double?) -> String {
+        guard let value else { return "—" }
+        return String(format: "%.1f", value * 100)
     }
 
     private func formatSacks(_ value: Double?) -> String {
@@ -190,6 +288,30 @@ extension PlayerStatColumn {
         case .fieldGoalsMade: "Field goals made"
         case .fieldGoalsAttempted: "Field goals attempted"
         case .fieldGoalPercentage: "Field goal percentage"
+        case .assists: "Assists"
+        case .tacklesForLoss: "Tackles for loss"
+        case .qbHits: "Quarterback hits"
+        case .passDefended: "Passes defended"
+        case .forcedFumbles: "Forced fumbles"
+        case .fumbleRecoveries: "Fumble recoveries"
+        case .defensiveTds: "Defensive touchdowns"
+        case .puntReturns: "Punt returns"
+        case .puntReturnYards: "Punt return yards"
+        case .kickoffReturns: "Kickoff returns"
+        case .kickoffReturnYards: "Kickoff return yards"
+        case .returnYards: "Return yards"
+        case .specialTeamsTds: "Special teams touchdowns"
+        case .penalties: "Penalties"
+        case .penaltyYards: "Penalty yards"
+        case .patMade: "Extra points made"
+        case .patAtt: "Extra points attempted"
+        case .fieldGoalLong: "Longest field goal"
+        case .offenseSnaps: "Offensive snaps"
+        case .offenseSnapShare: "Offensive snap share"
+        case .defenseSnaps: "Defensive snaps"
+        case .defenseSnapShare: "Defensive snap share"
+        case .specialTeamsSnaps: "Special teams snaps"
+        case .specialTeamsSnapShare: "Special teams snap share"
         }
     }
 }

@@ -123,7 +123,18 @@ enum TeamSnapshotMapper {
             receptions: dto.receptions, targets: dto.targets, receivingYards: dto.receivingYards,
             receivingTds: dto.receivingTds, defTacklesSolo: dto.defTacklesSolo,
             defSacks: dto.defSacks, defInterceptions: dto.defInterceptions, fgMade: dto.fgMade,
-            fgAtt: dto.fgAtt
+            fgAtt: dto.fgAtt, defTackleAssists: dto.defTackleAssists,
+            defTacklesForLoss: dto.defTacklesForLoss, defQbHits: dto.defQbHits,
+            defPassDefended: dto.defPassDefended, defFumblesForced: dto.defFumblesForced,
+            defTds: dto.defTds, defSafeties: dto.defSafeties,
+            fumbleRecoveries: dto.fumbleRecoveries, fumbleRecoveryTds: dto.fumbleRecoveryTds,
+            puntReturns: dto.puntReturns, puntReturnYards: dto.puntReturnYards,
+            kickoffReturns: dto.kickoffReturns, kickoffReturnYards: dto.kickoffReturnYards,
+            specialTeamsTds: dto.specialTeamsTds, penalties: dto.penalties,
+            penaltyYards: dto.penaltyYards, patMade: dto.patMade, patAtt: dto.patAtt,
+            fgLong: dto.fgLong, offenseSnaps: dto.offenseSnaps, offensePct: dto.offensePct,
+            defenseSnaps: dto.defenseSnaps, defensePct: dto.defensePct,
+            specialTeamsSnaps: dto.specialTeamsSnaps, specialTeamsPct: dto.specialTeamsPct
         )
     }
 

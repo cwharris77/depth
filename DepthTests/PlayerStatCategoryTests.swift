@@ -9,7 +9,14 @@ private func season(
     passingInterceptions: Int? = nil, carries: Int? = nil, rushingYards: Int? = nil,
     rushingTds: Int? = nil, receptions: Int? = nil, targets: Int? = nil,
     receivingYards: Int? = nil, receivingTds: Int? = nil, tackles: Int? = nil,
-    sacks: Double? = nil, interceptions: Int? = nil, fgMade: Int? = nil, fgAtt: Int? = nil
+    sacks: Double? = nil, interceptions: Int? = nil, fgMade: Int? = nil, fgAtt: Int? = nil,
+    assists: Int? = nil, tacklesForLoss: Int? = nil, qbHits: Int? = nil, passDefended: Int? = nil,
+    forcedFumbles: Int? = nil, fumbleRecoveries: Int? = nil, defensiveTds: Int? = nil,
+    puntReturns: Int? = nil, puntReturnYards: Int? = nil, kickoffReturns: Int? = nil,
+    kickoffReturnYards: Int? = nil, specialTeamsTds: Int? = nil, penalties: Int? = nil,
+    penaltyYards: Int? = nil, patMade: Int? = nil, patAtt: Int? = nil, fgLong: Int? = nil,
+    offenseSnaps: Int? = nil, offensePct: Double? = nil, specialTeamsSnaps: Int? = nil,
+    specialTeamsPct: Double? = nil
 ) -> PlayerSeasonStats {
     PlayerSeasonStats(
         season: year, seasonType: .regular, teamAbbrev: team, games: games,
@@ -18,7 +25,15 @@ private func season(
         rushingYards: rushingYards, rushingTds: rushingTds, receptions: receptions,
         targets: targets, receivingYards: receivingYards, receivingTds: receivingTds,
         defTacklesSolo: tackles, defSacks: sacks, defInterceptions: interceptions,
-        fgMade: fgMade, fgAtt: fgAtt
+        fgMade: fgMade, fgAtt: fgAtt, defTackleAssists: assists, defTacklesForLoss: tacklesForLoss,
+        defQbHits: qbHits, defPassDefended: passDefended, defFumblesForced: forcedFumbles,
+        defTds: defensiveTds, defSafeties: nil, fumbleRecoveries: fumbleRecoveries,
+        fumbleRecoveryTds: nil, puntReturns: puntReturns, puntReturnYards: puntReturnYards,
+        kickoffReturns: kickoffReturns, kickoffReturnYards: kickoffReturnYards,
+        specialTeamsTds: specialTeamsTds, penalties: penalties, penaltyYards: penaltyYards,
+        patMade: patMade, patAtt: patAtt, fgLong: fgLong, offenseSnaps: offenseSnaps,
+        offensePct: offensePct, defenseSnaps: nil, defensePct: nil,
+        specialTeamsSnaps: specialTeamsSnaps, specialTeamsPct: specialTeamsPct
     )
 }
 
@@ -56,9 +71,58 @@ private func season(
     let tackles = PlayerStatCategory.tackles
     let dtRow = season(2025, games: 16, tackles: 44)
     #expect(tackles.headline(dtRow).value == "44")
-    #expect(tackles.summary(dtRow).map { "\($0.value) \($0.short)" } == ["16 GP"])
+    #expect(tackles.summary(dtRow).map { "\($0.value) \($0.short)" } == ["0 AST", "0 TFL"])
     #expect(tackles.details(dtRow).map(\.value) == ["2.8"])
     #expect(tackles.details(season(2025, games: nil, tackles: 3)).map(\.value) == ["—"])
+}
+
+@Test func statlessPositionsGetParticipationAndPenaltyTabsInsteadOfGamesAlone() {
+    // An offensive lineman's real line is offensive snaps / share (nflverse snap counts),
+    // plus penalties -- not a bare GAMES tab.
+    let lineman = [season(2025, penalties: 8, penaltyYards: 65, offenseSnaps: 1_042, offensePct: 0.95)]
+    #expect(PlayerStatCategory.categories(for: lineman, position: .lg) == [.snaps, .penalties])
+    #expect(PlayerStatCategory.snaps.headline(lineman[0]).value == "1,042")
+    #expect(PlayerStatCategory.snaps.summary(lineman[0]).map { "\($0.value) \($0.short)" } == ["17 GP"])
+    #expect(PlayerStatCategory.snaps.details(lineman[0]).map(\.value) == ["95.0"])
+    #expect(PlayerStatCategory.penalties.headline(lineman[0]).value == "8")
+    #expect(PlayerStatCategory.penalties.summary(lineman[0]).map { "\($0.value) \($0.short)" } == ["65 PEN YDS"])
+
+    // A long snapper records only special-teams snaps; the SNAPS tab reports that unit.
+    let snapper = [season(2025, specialTeamsSnaps: 140, specialTeamsPct: 0.3)]
+    #expect(PlayerStatCategory.categories(for: snapper, position: .ls) == [.snaps])
+    #expect(PlayerStatCategory.snaps.headline(snapper[0]).value == "140")
+    #expect(PlayerStatCategory.snaps.details(snapper[0]).map(\.value) == ["30.0"])
+}
+
+@Test func defensiveTabsSurfaceAssistsTflQbHitsAndTakeaways() {
+    let edge = season(
+        2025, tackles: 44, sacks: 6.5, interceptions: 1, assists: 21, tacklesForLoss: 9,
+        qbHits: 18, passDefended: 5, forcedFumbles: 2, fumbleRecoveries: 1, defensiveTds: 1
+    )
+    #expect(PlayerStatCategory.categories(for: [edge], position: .dt) == [.tackles, .passRush, .turnovers])
+    #expect(PlayerStatCategory.tackles.summary(edge).map { "\($0.value) \($0.short)" } == ["21 AST", "9 TFL"])
+    #expect(PlayerStatCategory.passRush.summary(edge).map { "\($0.value) \($0.short)" } == ["18 QBH"])
+    #expect(PlayerStatCategory.turnovers.summary(edge).map { "\($0.value) \($0.short)" } == ["5 PBU", "2 FF"])
+    #expect(PlayerStatCategory.turnovers.details(edge).map(\.value) == ["0.1", "1", "1"])
+}
+
+@Test func returnersAndKickersGetTheirSeasonFigure() {
+    let returner = season(
+        2025, puntReturns: 30, puntReturnYards: 280, kickoffReturns: 12, kickoffReturnYards: 300,
+        specialTeamsTds: 1
+    )
+    #expect(PlayerStatCategory.categories(for: [returner], position: .pr) == [.returns])
+    #expect(PlayerStatCategory.returns.headline(returner).value == "580")
+    #expect(PlayerStatCategory.returns.summary(returner).map { "\($0.value) \($0.short)" } == ["30 PR", "12 KR"])
+    #expect(PlayerStatCategory.returns.details(returner).map(\.value) == ["280", "300", "1", "17"])
+
+    let kicker = season(2025, fgMade: 30, fgAtt: 34, patMade: 40, patAtt: 42, fgLong: 57)
+    #expect(PlayerStatCategory.kicking.summary(kicker).map { "\($0.value) \($0.short)" } == ["34 ATT", "40 PAT"])
+    #expect(PlayerStatCategory.kicking.details(kicker).map(\.value) == ["88", "57", "17"])
+
+    // A defensive back who returns kicks earns a RETURNS tab after his own-side tabs.
+    let corner = season(2025, tackles: 60, puntReturns: 4, puntReturnYards: 44)
+    #expect(PlayerStatCategory.categories(for: [corner], position: .cb) == [.tackles, .returns])
 }
 
 @Test func ledgerBarScalesToCareerBest() {
@@ -71,13 +135,16 @@ private func season(
 
 @Test func careerTotalsSumSeasonsAndKeepUnrecordedColumnsNil() {
     let career = PlayerStatLedger.careerTotals([
-        season(2025, games: 17, passingYards: 4_118, sacks: 1.5),
-        season(2024, games: 16, passingYards: 3_702, sacks: 2),
+        season(2025, games: 17, passingYards: 4_118, sacks: 1.5, offenseSnaps: 500, offensePct: 0.9),
+        season(2024, games: 16, passingYards: 3_702, sacks: 2, offenseSnaps: 600, offensePct: 0.8),
     ])
     #expect(career.games == 33)
     #expect(career.passingYards == 7_820)
     #expect(career.defSacks == 3.5)
     #expect(career.rushingYards == nil)
+    #expect(career.offenseSnaps == 1_100)
+    // A summed share is meaningless; the career row leaves it absent.
+    #expect(career.offensePct == nil)
     #expect(PlayerStatLedger.seasonCountLabel(1) == "REG · 1 SEASON")
     #expect(PlayerStatLedger.seasonCountLabel(5) == "REG · 5 SEASONS")
 }

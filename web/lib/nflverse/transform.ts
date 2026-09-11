@@ -39,6 +39,28 @@ export interface PlayerStatsInsert {
   def_interceptions: number | null;
   fg_made: number | null;
   fg_att: number | null;
+  // Same-source columns for positions the original frame dropped (DEP-538). Snap totals
+  // are NOT here: they come from the separate snap_counts dataset and are merged onto the
+  // row by scripts/ingest-nflverse.mts, so this transform never touches them.
+  def_tackle_assists: number | null;
+  def_tackles_for_loss: number | null;
+  def_qb_hits: number | null;
+  def_pass_defended: number | null;
+  def_fumbles_forced: number | null;
+  def_tds: number | null;
+  def_safeties: number | null;
+  fumble_recovery_opp: number | null;
+  fumble_recovery_tds: number | null;
+  punt_returns: number | null;
+  punt_return_yards: number | null;
+  kickoff_returns: number | null;
+  kickoff_return_yards: number | null;
+  special_teams_tds: number | null;
+  penalties: number | null;
+  penalty_yards: number | null;
+  pat_made: number | null;
+  pat_att: number | null;
+  fg_long: number | null;
 }
 
 // '' -> null (nflverse's empty-cell convention for "not applicable to this position"),
@@ -68,6 +90,25 @@ const NUMERIC_COLUMNS = [
   'def_interceptions',
   'fg_made',
   'fg_att',
+  'def_tackle_assists',
+  'def_tackles_for_loss',
+  'def_qb_hits',
+  'def_pass_defended',
+  'def_fumbles_forced',
+  'def_tds',
+  'def_safeties',
+  'fumble_recovery_opp',
+  'fumble_recovery_tds',
+  'punt_returns',
+  'punt_return_yards',
+  'kickoff_returns',
+  'kickoff_return_yards',
+  'special_teams_tds',
+  'penalties',
+  'penalty_yards',
+  'pat_made',
+  'pat_att',
+  'fg_long',
 ] as const;
 
 export function toPlayerStatsRows(
