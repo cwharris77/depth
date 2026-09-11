@@ -4,8 +4,8 @@ import SwiftUI
 // tabs generated from the player's own data, one hairline row per season with a bar scaled
 // to the career best, a tap-to-open detail strip, and a CAREER totals line. The vocabulary
 // (which metric, which figures) is PlayerStatCategory's -- this view only lays it out.
-// Replaces PlayerStatsTable on the full profile only; PlayerDetailView's quick-glance sheet
-// keeps the compact table.
+// The only season-stats rendering on the profile now — the old compact table was deleted
+// with the player card (2026-09-11 merge spec).
 struct PlayerStatsLedger: View {
     let stats: [PlayerSeasonStats]
     let position: Position

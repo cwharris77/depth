@@ -1,11 +1,11 @@
 import SwiftUI
 
-// The full-screen "everything about one player" destination (2026-09-10 design spec):
-// full season-by-season stats, and later draft history and accolades. Reachable from
-// PlayerDetailView's card (a "Full stats & history" row) and from Compare's PlayerCell.
-// Distinct from PlayerDetailView, which stays the quick-glance sheet — this is a
-// NavigationStack push, not a sheet, so it composes into whatever stack pushed it rather
-// than owning its own dismiss chrome.
+// The one "everything about one player" screen (2026-09-10 design spec; merged with the
+// player card by the 2026-09-11 merge spec): identity, vitals, the position's depth chart,
+// season-by-season stats, bio, and accolades. Pushed from the depth-chart field and from
+// Compare's PlayerCell — there is no quick-glance card any more, and reordering lives in
+// the edit-mode PositionReorderSheet. A NavigationStack push, not a sheet, so it composes
+// into whatever stack pushed it rather than owning its own dismiss chrome.
 //
 // Layout is Claude Design "Player Profile" option 2 (2026-09-11): a kit-colored jersey
 // band (surname over the numeral, sleeve stripe beneath), a name row, one hairline vitals
@@ -17,16 +17,74 @@ import SwiftUI
 // confirmed data source yet (DEP-533) and renders as an explicit empty state, kept last
 // so an empty section reads as a coda rather than a gap before more content (Cooper,
 // 2026-09-10).
+
+/// The position's depth chart as the field rendered it, handed in by TeamDetailView. Nil
+/// from Compare, which has no depth chart on screen, so the DEPTH CHART section hides.
+struct PlayerDepthContext {
+    /// Every player at the pushed player's position, depth-ordered with overrides applied.
+    let players: [Player]
+    /// The position carries the user's own order (a confirmed override on a live roster).
+    let isCustom: Bool
+}
+
 struct PlayerProfileView: View {
+    let team: Team?
+    /// The actively-selected kit when opened from the depth chart, else nil and the screen
+    /// falls back to `team?.colors.jersey` (Compare has no kit selection).
+    let kitColors: JerseyColors?
+    let depthContext: PlayerDepthContext?
+    let isHistorical: Bool
+    private let repository: DepthRepository
+
+    /// The player on screen. DEPTH CHART row taps replace it in place rather than pushing
+    /// another profile, so back always returns to wherever the first push came from (merge
+    /// spec: no QB1 → QB2 → QB3 stacks for back to unwind).
+    @State private var currentPlayer: Player
+
+    init(
+        player: Player,
+        team: Team?,
+        kitColors: JerseyColors? = nil,
+        repository: DepthRepository,
+        depthContext: PlayerDepthContext? = nil,
+        isHistorical: Bool = false
+    ) {
+        self.team = team
+        self.kitColors = kitColors
+        self.repository = repository
+        self.depthContext = depthContext
+        self.isHistorical = isHistorical
+        _currentPlayer = State(initialValue: player)
+    }
+
+    var body: some View {
+        PlayerProfileScreen(
+            player: currentPlayer,
+            team: team,
+            kitColors: kitColors,
+            repository: repository,
+            depthContext: depthContext,
+            isHistorical: isHistorical,
+            onSelectPlayer: { currentPlayer = $0 }
+        )
+        // A fresh identity per player resets the stats view model, section open state, and
+        // scroll position — the same reset the old card got from `.id(player.id)`.
+        .id(currentPlayer.id)
+    }
+}
+
+private struct PlayerProfileScreen: View {
     let player: Player
     let team: Team?
-    /// See PlayerDetailView's identical property: the actively-selected kit when opened
-    /// from the depth chart, else the team's own. Compare's entry point has no kit
-    /// selection, so it always passes nil and falls back to `team?.colors.jersey`.
     let kitColors: JerseyColors?
+    let depthContext: PlayerDepthContext?
+    let isHistorical: Bool
+    let onSelectPlayer: (Player) -> Void
 
     @State private var viewModel: PlayerProfileViewModel
+    @State private var depthOpen = true
     @State private var statsOpen = true
+    @State private var bioOpen = true
     @State private var accoladesOpen = true
 
     @ScaledMetric(relativeTo: .largeTitle) private var scaledNumberSize: CGFloat = 116
@@ -46,10 +104,21 @@ struct PlayerProfileView: View {
     }
     private var displayName: String { player.name.isEmpty ? "#\(player.number)" : player.name }
 
-    init(player: Player, team: Team?, kitColors: JerseyColors? = nil, repository: DepthRepository) {
+    init(
+        player: Player,
+        team: Team?,
+        kitColors: JerseyColors?,
+        repository: DepthRepository,
+        depthContext: PlayerDepthContext?,
+        isHistorical: Bool,
+        onSelectPlayer: @escaping (Player) -> Void
+    ) {
         self.player = player
         self.team = team
         self.kitColors = kitColors
+        self.depthContext = depthContext
+        self.isHistorical = isHistorical
+        self.onSelectPlayer = onSelectPlayer
         _viewModel = State(initialValue: PlayerProfileViewModel(
             playerID: player.id, teamID: team?.id, repository: repository
         ))
@@ -82,8 +151,14 @@ struct PlayerProfileView: View {
                         .padding(.top, 14)
                     vitals
                         .padding(.top, 14)
+                    // Merge spec order: the short depth list answers "where does he sit"
+                    // before the long ledger; bio is secondary prose; accolades stays the
+                    // coda. Depth and bio carry their own top padding because each can
+                    // render nothing.
+                    depthSection
                     statsSection
                         .padding(.top, DesignTokens.Spacing.sm)
+                    bioSection
                     accoladesSection
                         .padding(.top, 10)
                 }
@@ -289,7 +364,8 @@ struct PlayerProfileView: View {
     @ViewBuilder
     private var vitals: some View {
         let parts = PlayerProfileDisplay.vitals(
-            age: player.age, experience: player.experience, height: player.height, weight: player.weight
+            age: player.age, experience: player.experience, height: player.height,
+            weight: player.weight, college: player.college
         )
         if !parts.isEmpty {
             // One line with dot separators; at accessibility sizes that line wraps and strands
@@ -311,7 +387,10 @@ struct PlayerProfileView: View {
                         }
                     }
                     .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+                    // College rides in this strip (2026-09-11 merge spec) and real values run
+                    // long — a third of the roster's schools exceed 11 characters. 0.6 keeps
+                    // the whole line on one row instead of truncating the vitals ahead of it.
+                    .minimumScaleFactor(0.6)
                 }
             }
             .font(.caption2.weight(.bold))
@@ -377,6 +456,92 @@ struct PlayerProfileView: View {
         .accessibilityIdentifier("player-profile-full-stats")
     }
 
+    // Merge spec: the deleted card's POSITION DEPTH list, read-only here — reordering is
+    // the edit-mode PositionReorderSheet's job. Tapping another row swaps this screen to
+    // that player in place (onSelectPlayer); it never pushes.
+    @ViewBuilder
+    private var depthSection: some View {
+        if let depthContext {
+            VStack(alignment: .leading, spacing: 0) {
+                sectionHeader(
+                    PlayerProfileSection.depthChartTitle, meta: depthMeta(depthContext),
+                    isOpen: $depthOpen, identifier: "player-profile-full-depth-toggle"
+                )
+                if depthOpen {
+                    if depthContext.players.count <= 1 {
+                        Text("No backups available")
+                            .font(.footnote)
+                            .foregroundStyle(DesignTokens.Colors.textMuted)
+                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    } else {
+                        VStack(spacing: 0) {
+                            ForEach(depthContext.players) { p in
+                                depthRow(p)
+                                if p.id != depthContext.players.last?.id {
+                                    hairline
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(.top, DesignTokens.Spacing.sm)
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("player-profile-full-depth")
+        }
+    }
+
+    /// "QUARTERBACK", or "QUARTERBACK · CUSTOM" when the user reordered this position, so a
+    /// custom order stays legible even though editing moved to the reorder sheet.
+    private func depthMeta(_ context: PlayerDepthContext) -> String {
+        let position = player.position.fullName.uppercased()
+        return context.isCustom ? "\(position) · CUSTOM" : position
+    }
+
+    private func depthRow(_ p: Player) -> some View {
+        let isCurrent = p.id == player.id
+        return Button {
+            if !isCurrent { onSelectPlayer(p) }
+        } label: {
+            DepthRowContent(player: p, isCurrent: isCurrent, accent: markColor)
+                .padding(.vertical, DesignTokens.Spacing.sm)
+                .frame(minHeight: 44)
+                // DEP-395: the whole row accepts the tap, not just its glyphs.
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            "\(depthRankLabel(p.depthRank)), #\(p.number), \(p.name.isEmpty ? "#\(p.number)" : p.name)"
+        )
+        .accessibilityAddTraits(isCurrent ? [.isSelected] : [.isButton])
+        .accessibilityIdentifier("player-profile-full-depth-row-\(p.id)")
+    }
+
+    // Merge spec: the card's Bio block, collapsible like every other section here. Hidden
+    // when empty or historical (PlayerProfileDisplay.bio).
+    @ViewBuilder
+    private var bioSection: some View {
+        if let bio = PlayerProfileDisplay.bio(player.bio, isHistorical: isHistorical) {
+            VStack(alignment: .leading, spacing: 0) {
+                sectionHeader(
+                    PlayerProfileSection.bioTitle, meta: nil, isOpen: $bioOpen,
+                    identifier: "player-profile-full-bio-toggle"
+                )
+                if bioOpen {
+                    Text(bio)
+                        .font(.subheadline)
+                        .foregroundStyle(DesignTokens.Colors.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, DesignTokens.Spacing.xs)
+                }
+            }
+            .padding(.top, 10)
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("player-profile-full-bio")
+        }
+    }
+
     // DEP-533 (accolades data source) is unresolved — this stays a visible, explicit
     // empty state rather than a hidden section, per the design spec's locked decision:
     // the screen keeps its promise that accolades exist here, just not yet.
@@ -415,7 +580,7 @@ struct PlayerProfileView: View {
     }
 
     private func sectionHeader(
-        _ title: String, meta: String, isOpen: Binding<Bool>, identifier: String
+        _ title: String, meta: String?, isOpen: Binding<Bool>, identifier: String
     ) -> some View {
         Button {
             withAnimation(reduceMotion ? nil : DesignTokens.Motion.selection) {
@@ -426,21 +591,23 @@ struct PlayerProfileView: View {
                 .font(.caption2.weight(.heavy))
                 .tracking(1.4)
                 .foregroundStyle(DesignTokens.Colors.textMuted)
-            let metaText = Text(meta)
-                .font(.caption2)
-                .tracking(0.6)
-                .foregroundStyle(DesignTokens.Colors.textFaintest)
+            let metaText = meta.map {
+                Text($0)
+                    .font(.caption2)
+                    .tracking(0.6)
+                    .foregroundStyle(DesignTokens.Colors.textFaintest)
+            }
             HStack(spacing: DesignTokens.Spacing.sm) {
                 // Side by side, the meta squeezes the title into a mid-word hyphenation
                 // ("ACCO-LADES") at accessibility sizes, so the pair stacks there.
                 if dynamicTypeSize.isAccessibilitySize {
                     VStack(alignment: .leading, spacing: 2) {
                         titleText
-                        metaText
+                        if let metaText { metaText }
                     }
                 } else {
                     titleText
-                    metaText
+                    if let metaText { metaText }
                 }
                 Spacer(minLength: 0)
                 Image(systemName: isOpen.wrappedValue ? "chevron.up" : "chevron.down")
@@ -453,9 +620,29 @@ struct PlayerProfileView: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(title.capitalized), \(meta.lowercased())")
+        .accessibilityLabel(meta.map { "\(title.capitalized), \($0.lowercased())" } ?? title.capitalized)
         .accessibilityValue(isOpen.wrappedValue ? "Expanded" : "Collapsed")
         .accessibilityAddTraits(.isHeader)
         .accessibilityIdentifier(identifier)
     }
+}
+
+// Mirrors lib/utils/colors.ts statusColor: starter is team-driven, the rest are fixed
+// semantic colors shared by every team. DEP-424: the caller now passes a TeamSurfaces-
+// resolved color, so `starter` no longer resolves to the retired `uiAccent` — which made
+// it 2.12:1 on the Jets.
+func playerStatusColor(_ status: PlayerStatus, accent: Color) -> Color {
+    switch status {
+    case .starter: accent
+    case .backup: DesignTokens.Colors.textMuted
+    case .rookie: DesignTokens.Colors.statusRookie
+    case .injured: DesignTokens.Colors.statusInjured
+    }
+}
+
+enum PlayerProfileSection {
+    static let seasonStatsTitle = "SEASON STATS"
+    static let depthChartTitle = "DEPTH CHART"
+    static let bioTitle = "BIO"
+    static let accoladesTitle = "ACCOLADES"
 }

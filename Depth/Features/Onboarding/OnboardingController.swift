@@ -9,10 +9,9 @@ import Observation
 // the current/pending step, so RootTabView can switch there itself rather than every
 // coachmark target needing to exist on every tab.
 //
-// Persistence is UserPreferences.hasSeenOnboarding/markOnboardingSeen — the same
-// one-time-hint pattern as the depth-chart reorder hint (seenReorderHint). Settings'
-// "Take the tour" row (`replay()`) bypasses that flag entirely; it only gates the
-// automatic first-launch trigger (`startIfNeeded()`).
+// Persistence is UserPreferences.hasSeenOnboarding/markOnboardingSeen — a one-time flag
+// in UserPreferences. Settings' "Take the tour" row (`replay()`) bypasses that flag
+// entirely; it only gates the automatic first-launch trigger (`startIfNeeded()`).
 @MainActor
 @Observable
 final class OnboardingController {
@@ -124,7 +123,7 @@ struct CoachmarkStep: Identifiable {
         CoachmarkStep(
             id: .playerDot,
             title: "Tap any player",
-            message: "Every dot on the field opens that player's bio, stats, and spot on the depth chart."
+            message: "Every dot on the field opens that player's stats and spot on the depth chart."
         ),
         CoachmarkStep(
             id: .overflowMenu,

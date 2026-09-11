@@ -386,9 +386,13 @@ extension PlayerProfileDisplay {
         return "\(first)\(last)".uppercased()
     }
 
-    /// The single-line vitals strip ("AGE 27 · EXP 5 YRS · 6'4\" · 218 LB"). Absent values
-    /// are left out rather than rendered as "AGE —".
-    static func vitals(age: Int?, experience: Int?, height: String?, weight: Int?) -> [PlayerVital] {
+    /// The single-line vitals strip ("AGE 27 · EXP 5 YRS · 6'4\" · 218 LB · ALABAMA").
+    /// Absent values are left out rather than rendered as "AGE —". College rides last: the
+    /// 2026-09-11 merge spec moved it off the deleted player card into this strip rather
+    /// than adding a labeled block to the profile.
+    static func vitals(
+        age: Int?, experience: Int?, height: String?, weight: Int?, college: String? = nil
+    ) -> [PlayerVital] {
         var parts: [PlayerVital] = []
         if let age, age > 0 {
             parts.append(PlayerVital(text: "AGE \(age)", spoken: "Age \(age)"))
@@ -404,7 +408,25 @@ extension PlayerProfileDisplay {
         if let weight, weight > 0 {
             parts.append(PlayerVital(text: "\(weight) LB", spoken: "Weight \(weight) pounds"))
         }
+        if let college = meaningful(college) {
+            // ESPN stores a transfer's schools as one ";"-separated string ("West Alabama;
+            // Garden City CC; Oklahoma State" — 44 characters). The strip is one line, and its
+            // parts carry equal layout priority, so a value that long shrinks AGE/EXP/height/
+            // weight too; show only the first school and leave the full list to VoiceOver
+            // (2026-09-11 merge-spec review ruling).
+            let first = college.split(separator: ";").first
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) } ?? ""
+            let shown = first.isEmpty ? college : first
+            parts.append(PlayerVital(text: shown.uppercased(), spoken: "College, \(college)"))
+        }
         return parts
+    }
+
+    /// The profile's BIO text, or nil to hide the section. Historical rosters synthesize
+    /// bio as "{season} · {city} {name}" (HistoricalRosterMapper), which repeats what the
+    /// screen already shows, so it never renders there.
+    static func bio(_ value: String?, isHistorical: Bool) -> String? {
+        isHistorical ? nil : meaningful(value)
     }
 }
 

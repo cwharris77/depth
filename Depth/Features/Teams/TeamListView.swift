@@ -332,7 +332,7 @@ struct TeamListView: View {
         .listRowBackground(DesignTokens.Colors.surfaceCard2)
     }
 
-    // Real headshot when available (PlayerDetailView's `photo` pattern); falls back to
+    // Real headshot when available (PlayerProfileView's `photo` pattern); falls back to
     // the jersey-number-on-team-accent badge, matching this row's prior always-shown
     // treatment, rather than web NavSwitcher's neutral silhouette fallback — a jersey
     // number is more informative in a dense search-result list.

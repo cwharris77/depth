@@ -125,12 +125,6 @@ import Testing
     }
 }
 
-@Test func seasonStatsUseEqualCenteredColumns() {
-    #expect(PlayerStatsTableLayout.alignment == .center)
-    #expect(PlayerStatsTableLayout.containerAlignment == .center)
-    #expect(PlayerProfileSection.depthChartTitle == "DEPTH CHART")
-}
-
 @Test func statsRowAccessibilityLabelPairsEverySpokenNameWithItsValue() {
     let stats = PlayerSeasonStats(
         season: 2025, seasonType: .regular, teamAbbrev: "BUF", games: 17,

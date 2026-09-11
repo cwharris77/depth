@@ -96,27 +96,33 @@ final class AccessibilityUITests: XCTestCase {
         XCTAssertTrue(element.isHittable, "control must be reachable: \(element.identifier)")
     }
 
-    func testVitalsReflowAtAccessibilitySizes() throws {
+    // DEP-415 carried onto the merged profile: at accessibility sizes the vitals strip
+    // stacks one vital per line (PlayerProfileView's `vitals`) instead of squeezing one
+    // row, and the edit-mode reorder sheet's rows stay reachable.
+    func testProfileAndReorderSheetReflowAtAccessibilitySizes() throws {
         continueAfterFailure = false
         for size in ["accessibility1", "accessibility3", "accessibility5"] {
             let app = launchApp(dynamicTypeSize: size)
             XCTAssertTrue(app.waitForDepthChart(timeout: 30))
-            let profile = app.scrollViews["player-profile-content"]
-            XCTAssertTrue(app.buttons["player-slot-off-qb-0"].tapUntil { profile.exists })
-            var previousBottom: CGFloat?
-            for name in ["age", "experience", "height", "weight"] {
-                let vital = app.descendants(matching: .any)["player-vital-\(name)"]
-                XCTAssertTrue(vital.waitForExistence(timeout: 10))
-                // Accessibility bounds hug the text, not its full-width layout cell.
-                // Separate vertical ranges distinguish a stack from compressed columns.
-                if let previousBottom { XCTAssertGreaterThanOrEqual(vital.frame.minY, previousBottom) }
-                previousBottom = vital.frame.maxY
-            }
-            reveal(app.descendants(matching: .any)["player-vital-weight"], in: app)
+            let quarterback = app.buttons["player-slot-off-qb-0"]
+            let profile = app.descendants(matching: .any)["player-profile-full-content"]
+            XCTAssertTrue(quarterback.tapUntil { profile.exists })
+            let vitals = app.descendants(matching: .any)["player-profile-full-vitals"]
+            XCTAssertTrue(vitals.waitForExistence(timeout: 10))
+            // A single caption2 line plus the strip's 9pt vertical padding is ~40pt even at
+            // AX1; stacked, several vitals clear 60pt at every accessibility size.
+            XCTAssertGreaterThan(vitals.frame.height, 60, "vitals should stack at \(size)")
+            reveal(vitals, in: app)
             attachScreenshot(app, named: "\(size)-vitals-reflow")
-            let reorder = app.buttons["player-profile-depth-reorder-toggle"]
-            reveal(reorder, in: app)
-            reorder.tap()
+            app.navigationBars.buttons["BackButton"].tap()
+
+            let overflow = app.buttons["depth-chart-overflow"]
+            XCTAssertTrue(overflow.waitForExistence(timeout: 10))
+            overflow.tap()
+            let edit = app.buttons["edit-depth-order"]
+            XCTAssertTrue(edit.waitForExistence(timeout: 5))
+            edit.tap()
+            XCTAssertTrue(quarterback.tapUntil { app.scrollViews["position-reorder-sheet"].exists })
             let editRow = app.descendants(matching: .any).matching(
                 NSPredicate(format: "identifier BEGINSWITH 'player-profile-depth-reorder-row-'")
             ).firstMatch
@@ -137,7 +143,7 @@ final class AccessibilityUITests: XCTestCase {
             let app = launchApp(dynamicTypeSize: size)
             XCTAssertTrue(app.waitForDepthChart(timeout: 30))
             attachScreenshot(app, named: "\(size)-field")
-            let profile = app.scrollViews["player-profile-content"]
+            let profile = app.descendants(matching: .any)["player-profile-full-content"]
             XCTAssertTrue(app.buttons["player-slot-off-qb-0"].tapUntil { profile.exists })
             XCTAssertTrue(profile.waitForExistence(timeout: 10))
             attachScreenshot(app, named: "\(size)-player-header")
@@ -145,8 +151,9 @@ final class AccessibilityUITests: XCTestCase {
                 profile.swipeUp()
                 attachScreenshot(app, named: "\(size)-player-scroll-\(index)")
             }
-            XCTAssertTrue(app.buttons["Close"].isHittable)
-            app.buttons["Close"].tap()
+            let back = app.navigationBars.buttons["BackButton"]
+            XCTAssertTrue(back.isHittable)
+            back.tap()
             for page in ["schedule", "stats"] {
                 app.buttons["page-switcher-\(page)"].tap()
                 XCTAssertTrue(app.descendants(matching: .any)["\(page)-content"].waitForExistence(timeout: 20))
@@ -255,19 +262,19 @@ final class AccessibilityUITests: XCTestCase {
             playerSlot.frame.height, 44,
             "slot tap targets must not fall below the 44-point minimum"
         )
-        let profile = app.scrollViews["player-profile-content"]
+        let profile = app.descendants(matching: .any)["player-profile-full-content"]
         XCTAssertTrue(playerSlot.tapUntil { profile.exists })
-        XCTAssertTrue(profile.waitForExistence(timeout: 10), "player detail should open at Accessibility XXXL")
+        XCTAssertTrue(profile.waitForExistence(timeout: 10), "the player profile should open at Accessibility XXXL")
         XCTAssertTrue(
-            app.staticTexts["player-profile-name"].waitForExistence(timeout: 5),
+            app.staticTexts["player-profile-full-name"].waitForExistence(timeout: 5),
             "the player name must survive the larger layout rather than being clipped away"
         )
 
         attachScreenshot(app, named: "player-detail-accessibility-xxxl")
 
-        let close = app.buttons["Close"]
-        XCTAssertTrue(close.waitForExistence(timeout: 5), "Close must remain reachable at Accessibility XXXL")
-        close.tap()
+        let back = app.navigationBars.buttons["BackButton"]
+        XCTAssertTrue(back.waitForExistence(timeout: 5), "Back must remain reachable at Accessibility XXXL")
+        back.tap()
 
         attachScreenshot(app, named: "depth-chart-accessibility-xxxl")
     }
@@ -313,9 +320,9 @@ final class AccessibilityUITests: XCTestCase {
         add(attachment)
     }
 
-    // Regression guard for the stat table's spoken reading: a row combined from its raw
+    // Regression guard for the stats ledger's spoken reading: a row combined from its raw
     // cells announces bare numbers, so every value must arrive paired with its column's
-    // spoken name (PlayerStatsAccessibility.rowLabel).
+    // spoken name (PlayerStatLedger.rowLabel).
     //
     // This suite runs on the hermetic fixture backend, and the depth chart resolves *whichever*
     // player the DB currently pins to a slot (DEP-329). That resolution can be a season-less
@@ -348,7 +355,7 @@ final class AccessibilityUITests: XCTestCase {
 
     /// Asserts the stat-table spoken-label shape of a season row: every comma-separated
     /// segment after the season must pair a sentence-case spoken column name with a value,
-    /// exactly as `PlayerStatsAccessibility.rowLabel` builds it.
+    /// exactly as `PlayerStatLedger.rowLabel` builds it.
     private func assertSpokenLabelContract(
         _ label: String,
         file: StaticString = #filePath,
@@ -390,19 +397,22 @@ final class AccessibilityUITests: XCTestCase {
                 guard slot.exists, slot.isHittable else { continue }
                 slot.tap()
 
-                let stats = app.otherElements["player-profile-stats"]
+                let stats = app.descendants(matching: .any)["player-profile-full-stats"]
+                // By identifier, not index 0: when the profile never pushed, index 0 is the
+                // chart's team-switcher-button, and tapping it would strand the walk in a sheet.
+                let back = app.navigationBars.buttons["BackButton"]
                 guard stats.waitForExistence(timeout: rowTimeout) else {
-                    app.buttons["Close"].tapIfExists()
+                    back.tapIfExists()
                     continue
                 }
-                let seasonRow = stats.otherElements
+                let seasonRow = stats.descendants(matching: .any)
                     .matching(NSPredicate(format: "label CONTAINS ' season, '"))
                     .firstMatch
                 if seasonRow.waitForExistence(timeout: rowTimeout) {
                     return seasonRow
                 }
                 // No row for this player: back out to the chart and try the next slot.
-                app.buttons["Close"].tapIfExists()
+                back.tapIfExists()
             }
         }
         return nil

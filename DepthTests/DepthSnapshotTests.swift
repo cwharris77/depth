@@ -71,39 +71,52 @@ import Testing
         )
     }
 
-    /// The player card — header, vitals, bio, position depth (the async stats table is
-    /// deliberately not asserted here).
-    @Test func playerDetail() async throws {
+    /// The merged player profile as the depth chart pushes it: jersey band, vitals, and the
+    /// read-only DEPTH CHART section. Stats resolve in `.task`, so the ledger renders its
+    /// skeleton here — the section order and depth rows are what this guards.
+    @Test func playerProfileWithDepth() async throws {
         let snapshot = try await repository.teamSnapshot(teamId: "bills")
-        let player = try #require(snapshot.players.first, "the Bills fixture roster should have players")
-        let depthChart = snapshot.players.filter { $0.position == player.position }
-        #expect(!depthChart.isEmpty)
-        #expect(depthChart.allSatisfy { $0.position == player.position })
+        let quarterbacks = snapshot.players.filter { $0.position == .qb }
+        let starter = try #require(quarterbacks.first, "the Bills fixture should include a QB")
+        #expect(quarterbacks.count >= 2)
         assertSnapshot(
-            of: PlayerDetailView(
-                player: player,
-                team: snapshot.team,
-                repository: repository,
-                depthChart: depthChart
+            of: NavigationStack {
+                PlayerProfileView(
+                    player: starter,
+                    team: snapshot.team,
+                    repository: repository,
+                    depthContext: PlayerDepthContext(players: quarterbacks, isCustom: false)
+                )
+            },
+            as: .image(perceptualPrecision: 0.98, layout: Self.phone)
+        )
+    }
+
+    /// Edit mode's reorder surface for one position: drag rows, no CUSTOM state yet.
+    @Test func positionReorderSheet() async throws {
+        let snapshot = try await repository.teamSnapshot(teamId: "bills")
+        let quarterbacks = snapshot.players.filter { $0.position == .qb }
+        let starter = try #require(quarterbacks.first, "the Bills fixture should include a QB")
+        assertSnapshot(
+            of: PositionReorderSheet(
+                position: .qb, players: quarterbacks, defaultOrder: quarterbacks, isCustom: false,
+                highlightedPlayerID: starter.id, accent: DesignTokens.Colors.accent,
+                onReorder: { _ in }, onReset: {}
             ),
             as: .image(perceptualPrecision: 0.98, layout: Self.phone)
         )
     }
 
-    @Test func playerDetailWithNoBackups() async throws {
+    /// A reordered position: CUSTOM tag and Reset above the drag rows.
+    @Test func positionReorderSheetCustom() async throws {
         let snapshot = try await repository.teamSnapshot(teamId: "bills")
-        let player = try #require(
-            snapshot.players.first(where: { $0.position == .k }),
-            "the Bills fixture should include a kicker"
-        )
-        let depthChart = snapshot.players.filter { $0.position == player.position }
-        #expect(depthChart.count == 1)
+        let quarterbacks = snapshot.players.filter { $0.position == .qb }
+        let starter = try #require(quarterbacks.first, "the Bills fixture should include a QB")
         assertSnapshot(
-            of: PlayerDetailView(
-                player: player,
-                team: snapshot.team,
-                repository: repository,
-                depthChart: depthChart
+            of: PositionReorderSheet(
+                position: .qb, players: Array(quarterbacks.reversed()), defaultOrder: quarterbacks,
+                isCustom: true, highlightedPlayerID: starter.id, accent: DesignTokens.Colors.accent,
+                onReorder: { _ in }, onReset: {}
             ),
             as: .image(perceptualPrecision: 0.98, layout: Self.phone)
         )

@@ -135,7 +135,7 @@ enum DesignTokens {
     /// hierarchy naming is a design-system decision, not a mechanical fix), those are
     /// proposed in the PR body pending Cooper's sign-off rather than added here
     /// speculatively (YAGNI, per this enum's header comment above):
-    /// - skeleton placeholder cells (`PlayerDetailView.swift`, `TeamListView.swift`) — 4pt
+    /// - skeleton placeholder cells (`TeamListView.swift`) — 4pt
     /// - small icon-badge stroke (`TeamStatsView.swift`'s opponent-abbrev badge) — 8pt
     /// - decorative accent rail (`UniformsTab.swift`'s per-team gradient bar) — 2pt
     enum Radius {

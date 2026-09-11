@@ -1,56 +1,33 @@
 import XCTest
 
-// DEP-226: the player card's Position Depth section owns its reorder UI — Reorder/Done
-// toggle, one-time hint, CUSTOM tag + Reset once a custom order exists, and
-// drag-to-reorder rows. All writes go through the DEP-219 local-first override cache, so
-// the order survives a relaunch with no account. Runs on the hermetic fixture backend
-// (UI_TESTING_FIXTURE_BACKEND) like every other fixture-backed UI test.
-final class PlayerCardReorderUITests: XCTestCase {
-    func testPlayerCardReorderPersistsAcrossRelaunch() throws {
+// DEP-226 reorder persistence, reached through the 2026-09-11 merge spec's edit-mode
+// PositionReorderSheet: "Edit Depth Chart" on → tap a wiggling player → drag rows, CUSTOM
+// tag, Reset. Outside edit mode the same tap pushes the player profile. All writes go
+// through the DEP-219 local-first override cache, so the order survives a relaunch with no
+// account. Runs on the hermetic fixture backend (UI_TESTING_FIXTURE_BACKEND).
+final class PositionReorderUITests: XCTestCase {
+    func testReorderPersistsAcrossRelaunch() throws {
         let app = XCUIApplication()
         XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        openQuarterbackReorderSheet(app)
 
-        let quarterback = app.buttons["player-slot-off-qb-0"]
-        XCTAssertTrue(quarterback.waitForExistence(timeout: 10), "the Bills field should render its QB")
-        quarterback.tap()
-        XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 5))
-
-        // Fresh install: the one-time hint accompanies the Reorder toggle, and the
-        // toggle is still a Reorder pill (no CUSTOM state yet).
-        let hint = app.staticTexts["player-profile-depth-hint"]
-        XCTAssertTrue(hint.waitForExistence(timeout: 5), "a fresh install should show the reorder hint")
-
-        let reorderToggle = app.buttons["player-profile-depth-reorder-toggle"]
-        XCTAssertTrue(reorderToggle.waitForExistence(timeout: 5))
-        for _ in 0..<3 where !reorderToggle.isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(reorderToggle.isHittable, "the Reorder toggle should be reachable")
-        XCTAssertEqual(reorderToggle.label, "Reorder")
         XCTAssertFalse(app.buttons["player-profile-depth-reset"].exists, "no Reset before a custom order exists")
-        reorderToggle.tap()
-
-        // Edit mode: hint dismissed, grip-led drag rows replace the tap rows.
-        XCTAssertFalse(hint.exists, "entering edit mode should dismiss the hint")
-        let rows = app.descendants(matching: .any).matching(
-            NSPredicate(format: "identifier BEGINSWITH 'player-profile-depth-reorder-row-'")
-        )
-        XCTAssertGreaterThanOrEqual(rows.count, 2, "edit mode should show at least two reorder rows")
+        let rows = reorderRows(app)
+        XCTAssertGreaterThanOrEqual(rows.count, 2, "the reorder sheet should list at least two quarterbacks")
         for index in 0..<rows.count {
             XCTAssertTrue(rows.element(boundBy: index).label.contains("Quarterback, rank \(index + 1) of \(rows.count)"))
         }
 
         // Drag the first row onto the last: the long-press pick-up then slow drag reorders
         // one slot at a time; holding at the end makes the last crossing register before the
-        // lift. The Done pill commits once. The position becomes CUSTOM.
+        // lift. Release commits once, and the position becomes CUSTOM.
         let first = rows.firstMatch
         let lastIndex = rows.count - 1
-        let last = rows.element(boundBy: lastIndex)
         let draggedRowID = first.identifier
         attachScreenshot(app, named: "05-reorder-edit-mode")
         first.press(
             forDuration: 0.6,
-            thenDragTo: last,
+            thenDragTo: rows.element(boundBy: lastIndex),
             withVelocity: .slow,
             thenHoldForDuration: 0.5
         )
@@ -61,9 +38,6 @@ final class PlayerCardReorderUITests: XCTestCase {
         )
         XCTAssertTrue(rows.element(boundBy: lastIndex).label.contains("rank \(rows.count) of \(rows.count)"))
 
-        let done = app.buttons["player-profile-depth-reorder-toggle"]
-        XCTAssertEqual(done.label, "Done")
-        done.tap()
         XCTAssertTrue(
             app.staticTexts["player-profile-depth-custom"].waitForExistence(timeout: 5),
             "reordering should mark the position CUSTOM"
@@ -74,12 +48,8 @@ final class PlayerCardReorderUITests: XCTestCase {
             "a custom order should expose Reset"
         )
 
-        // Relaunch without the reset argument: the override + seen-hint flag must come
-        // back from the local cache.
         app.buttons["Close"].tap()
-        // DEP-433: the app-level reset action belongs to the status row, not the leading
-        // edge. Closing the player card exposes that row and lets the test assert the
-        // visual contract without reaching into TeamDetailView's private layout.
+        // DEP-433: the app-level reset action belongs to the status row, centered.
         let resetAll = app.buttons["custom-order-reset-all"]
         XCTAssertTrue(resetAll.waitForExistence(timeout: 5), "a custom team order should expose Reset all")
         XCTAssertEqual(
@@ -100,16 +70,7 @@ final class PlayerCardReorderUITests: XCTestCase {
             app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
         }
 
-        let qbAfterRelaunch = app.buttons["player-slot-off-qb-0"]
-        XCTAssertTrue(qbAfterRelaunch.waitForExistence(timeout: 10))
-        qbAfterRelaunch.tap()
-        XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 5))
-
-        // The reorder is read back (CUSTOM + Reset still there, hint not re-shown).
-        XCTAssertFalse(
-            app.staticTexts["player-profile-depth-hint"].exists,
-            "the hint is one-time; it should not reappear after relaunch"
-        )
+        openQuarterbackReorderSheet(app)
         XCTAssertTrue(
             app.staticTexts["player-profile-depth-custom"].waitForExistence(timeout: 5),
             "the saved custom order should survive relaunch"
@@ -125,22 +86,9 @@ final class PlayerCardReorderUITests: XCTestCase {
     func testResetRestoresDefaultOrderAndDropsTheOverride() throws {
         let app = XCUIApplication()
         XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        openQuarterbackReorderSheet(app)
 
-        let quarterback = app.buttons["player-slot-off-qb-0"]
-        XCTAssertTrue(quarterback.waitForExistence(timeout: 10))
-        quarterback.tap()
-        XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 5))
-
-        // Build a custom order, then Reset it.
-        let reorderToggle = app.buttons["player-profile-depth-reorder-toggle"]
-        XCTAssertTrue(reorderToggle.waitForExistence(timeout: 5))
-        for _ in 0..<3 where !reorderToggle.isHittable {
-            app.swipeUp()
-        }
-        reorderToggle.tap()
-        let rows = app.descendants(matching: .any).matching(
-            NSPredicate(format: "identifier BEGINSWITH 'player-profile-depth-reorder-row-'")
-        )
+        let rows = reorderRows(app)
         XCTAssertGreaterThanOrEqual(rows.count, 2)
         rows.firstMatch.press(
             forDuration: 0.6,
@@ -148,14 +96,13 @@ final class PlayerCardReorderUITests: XCTestCase {
             withVelocity: .slow,
             thenHoldForDuration: 0.5
         )
-        app.buttons["player-profile-depth-reorder-toggle"].tap()
 
         let reset = app.buttons["player-profile-depth-reset"]
         XCTAssertTrue(reset.waitForExistence(timeout: 5))
         reset.tap()
 
-        XCTAssertFalse(
-            app.staticTexts["player-profile-depth-custom"].exists,
+        XCTAssertTrue(
+            app.staticTexts["player-profile-depth-custom"].waitForAbsence(timeout: 5),
             "Reset should clear the CUSTOM tag"
         )
         XCTAssertFalse(
@@ -164,69 +111,39 @@ final class PlayerCardReorderUITests: XCTestCase {
         )
     }
 
-    // DEP-231: the app-level Edit Depth Chart toggle (web's globalEditMode) opens any
-    // player card already in reorder mode — no per-card Reorder tap. Toggling off restores
-    // plain tap-to-switch rows, and the per-card Reorder pill returns.
-    func testGlobalEditModeToggleShowsDragHandlesImmediately() throws {
+    // Merge spec: edit mode is the only way into reordering. On → a field tap opens the
+    // position's reorder sheet with drag rows immediately; off → the same tap pushes the
+    // player profile, whose DEPTH CHART rows are read-only.
+    func testEditModeTapOpensReorderSheetAndNormalTapOpensProfile() throws {
         let app = XCUIApplication()
         XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        openQuarterbackReorderSheet(app)
+        attachScreenshot(app, named: "position-reorder-sheet")
 
-        // Enable the app-level toggle from the overflow menu.
-        let overflow = app.buttons["depth-chart-overflow"]
-        XCTAssertTrue(overflow.waitForExistence(timeout: 10))
-        overflow.tap()
-        let editToggle = app.buttons["edit-depth-order"]
-        XCTAssertTrue(editToggle.waitForExistence(timeout: 5))
-        editToggle.tap()
-
-        let editingChip = app.buttons["depth-chart-editing-active"]
         XCTAssertTrue(
-            editingChip.waitForExistence(timeout: 5),
-            "active full-team editing should stay visible outside the overflow menu"
-        )
-        let activeAttachment = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
-        activeAttachment.name = "depth-chart-editing-active"
-        activeAttachment.lifetime = .keepAlways
-        add(activeAttachment)
-
-        // The menu dismisses; open a filled position slot.
-        let quarterback = app.buttons["player-slot-off-qb-0"]
-        XCTAssertTrue(quarterback.waitForExistence(timeout: 10))
-        quarterback.tap()
-        XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 5))
-
-        // Already reordering: grip-led rows present with no per-card Reorder tap, and the
-        // per-card pill is hidden as redundant.
-        let reorderRows = app.descendants(matching: .any).matching(
-            NSPredicate(format: "identifier BEGINSWITH 'player-profile-depth-reorder-row-'")
-        )
-        XCTAssertTrue(
-            reorderRows.firstMatch.waitForExistence(timeout: 5),
-            "global edit mode should show drag rows immediately"
+            reorderRows(app).firstMatch.waitForExistence(timeout: 5),
+            "the reorder sheet should show drag rows immediately"
         )
         XCTAssertFalse(
-            app.buttons["player-profile-depth-reorder-toggle"].exists,
-            "the per-card Reorder pill is redundant while the global toggle is on"
+            app.descendants(matching: .any)["player-profile-full-content"].exists,
+            "an edit-mode tap should not push the profile"
         )
         app.buttons["Close"].tap()
 
-        // The persistent Editing chip is the direct exit action. Reopen the card after
-        // tapping it: plain tap-to-switch rows, per-card Reorder pill back.
+        // The persistent Editing chip is the direct exit action.
+        let editingChip = app.buttons["depth-chart-editing-active"]
         editingChip.tap()
-        XCTAssertFalse(editingChip.exists, "explicit exit should remove the active-mode chip")
+        XCTAssertTrue(editingChip.waitForAbsence(timeout: 5), "explicit exit should remove the active-mode chip")
 
         let qbAgain = app.buttons["player-slot-off-qb-0"]
         XCTAssertTrue(qbAgain.waitForExistence(timeout: 10))
         qbAgain.tap()
-        XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 5))
-        XCTAssertFalse(
-            reorderRows.firstMatch.exists,
-            "toggling global edit off should restore plain tap-to-switch rows"
-        )
         XCTAssertTrue(
-            app.buttons["player-profile-depth-reorder-toggle"].waitForExistence(timeout: 5),
-            "the per-card Reorder pill returns once global mode is off"
+            app.descendants(matching: .any)["player-profile-full-depth"].waitForExistence(timeout: 5),
+            "a normal tap should push the profile with its depth section"
         )
+        XCTAssertFalse(app.scrollViews["position-reorder-sheet"].exists)
+        XCTAssertFalse(reorderRows(app).firstMatch.exists, "the profile's depth rows are read-only")
     }
 
     func testContextChangesExitGlobalEditMode() throws {
@@ -322,11 +239,9 @@ final class PlayerCardReorderUITests: XCTestCase {
         let quarterback = app.buttons["player-slot-off-qb-0"]
         XCTAssertTrue(quarterback.waitForExistence(timeout: 10))
         quarterback.tap()
-        XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.scrollViews["position-reorder-sheet"].waitForExistence(timeout: 5))
 
-        let rows = app.descendants(matching: .any).matching(
-            NSPredicate(format: "identifier BEGINSWITH 'player-profile-depth-reorder-row-'")
-        )
+        let rows = reorderRows(app)
         XCTAssertGreaterThanOrEqual(rows.count, 2)
         rows.firstMatch.press(
             forDuration: 0.6,
@@ -342,6 +257,36 @@ final class PlayerCardReorderUITests: XCTestCase {
         XCTAssertTrue(
             app.buttons["choose-formation"].waitForExistence(timeout: 5),
             "reordering players should preserve the active computed formation"
+        )
+    }
+
+    /// Turns on "Edit Depth Chart" from the overflow menu and taps the Bills QB, which in
+    /// edit mode opens the position's reorder sheet rather than the player profile.
+    private func openQuarterbackReorderSheet(
+        _ app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line
+    ) {
+        let overflow = app.buttons["depth-chart-overflow"]
+        XCTAssertTrue(overflow.waitForExistence(timeout: 10), file: file, line: line)
+        overflow.tap()
+        let editToggle = app.buttons["edit-depth-order"]
+        XCTAssertTrue(editToggle.waitForExistence(timeout: 5), file: file, line: line)
+        editToggle.tap()
+        XCTAssertTrue(
+            app.buttons["depth-chart-editing-active"].waitForExistence(timeout: 5),
+            "edit mode should be active", file: file, line: line
+        )
+        let quarterback = app.buttons["player-slot-off-qb-0"]
+        XCTAssertTrue(quarterback.waitForExistence(timeout: 10), "the Bills field should render its QB", file: file, line: line)
+        quarterback.tap()
+        XCTAssertTrue(
+            app.scrollViews["position-reorder-sheet"].waitForExistence(timeout: 5),
+            "an edit-mode tap should open the reorder sheet", file: file, line: line
+        )
+    }
+
+    private func reorderRows(_ app: XCUIApplication) -> XCUIElementQuery {
+        app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier BEGINSWITH 'player-profile-depth-reorder-row-'")
         )
     }
 
