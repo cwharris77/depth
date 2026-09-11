@@ -274,6 +274,12 @@ jobs:
   # skippedTests), so it never runs in the nightly fan-out either.
   test-full-suite:
     needs: [resolve-devices, build-for-testing]
+    # Nightly cron + manual dispatch only; PRs and pushes run the fast smoke set in the
+    # `test` job above. This job used to choose full-vs-smoke inline via
+    # `github.event_name`; #532 split it into `test` + `test-full-suite` but dropped the
+    # schedule condition instead of moving it here, so the full suite was running on
+    # every PR/push — the exact waste the header comment says it avoids.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
     timeout-minutes: 25
     strategy:
