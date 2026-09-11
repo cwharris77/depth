@@ -5,6 +5,11 @@ name: Ingest ESPN data
 # schedule, plus a
 # manual trigger. STRICT=1 so a partial run turns the workflow red instead of
 # silently going green with half-stale data.
+#
+# Runs production first, then the dedicated staging project (djwrecczgudktgsooxti) via a
+# second step that overrides SUPABASE_URL/SUPABASE_SECRET_KEY — see the staging step's
+# comment. The staging run needs STAGING_SUPABASE_URL / STAGING_SUPABASE_SECRET_KEY;
+# until those secrets exist the step fails loudly, while production is unaffected.
 
 on:
   schedule:
@@ -63,4 +68,22 @@ jobs:
           # silent no-op (notify-revalidate.ts), never a failed run.
           APP_URL: ${{ secrets.APP_URL }}
           INGEST_REVALIDATE_SECRET: ${{ secrets.INGEST_REVALIDATE_SECRET }}
+          STRICT: '1'
+      # Staging mirror — same ingest against the dedicated staging project
+      # (djwrecczgudktgsooxti) so the staging-backed iOS suites (Performance/Auth) and
+      # App Store captures read fresh data. Overrides the same two env vars the script
+      # reads, so no script change. No APP_URL / INGEST_REVALIDATE_SECRET: staging has no
+      # deployed app, and notify-revalidate no-ops without them, so prod's cache is never
+      # revalidated by this run.
+      - name: Ingest ESPN data (staging)
+        run: |
+          if [ -n "$SEASONS" ]; then
+            npm run ingest:espn -- --seasons "$SEASONS"
+          else
+            npm run ingest:espn
+          fi
+        env:
+          SEASONS: ${{ inputs.seasons }}
+          SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.STAGING_SUPABASE_SECRET_KEY }}
           STRICT: '1'
