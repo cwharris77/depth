@@ -65,6 +65,15 @@ private func attributes(
     #expect((attributes(runs, pass: .fill, at: 1)[.font] as? UIFont)?.pointSize == 64)
 }
 
+// Trailing kern only narrows the measured width; with negative tracking that clipped the last
+// glyph's right edge on the profile's large numeral.
+@MainActor @Test func lastCharacterCarriesNoTrailingKern() {
+    for pass in [StrokedText.Pass.outline, .fill] {
+        #expect(attributes([hollow, filled], pass: pass, at: 1)[.kern] as? CGFloat == -2)
+        #expect(attributes([hollow, filled], pass: pass, at: 2)[.kern] as? CGFloat == 0)
+    }
+}
+
 // Core Text centres a stroke on the glyph path, so half of it lands outside the typographic
 // bounds the text measures. Without padding, the view clips it — a shipped bug that cut the
 // first and last glyph once the numeral grew to 64pt.
