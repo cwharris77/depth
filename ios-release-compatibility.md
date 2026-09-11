@@ -1,9 +1,9 @@
 # iOS Release Compatibility Manifest
 
 The single source of truth for the contract between App Store builds and the Supabase
-backend. `scripts/check-ios-compatibility.mts` (CI job `ios-compat`) diffs this file on
+backend. `web/scripts/check-ios-compatibility.mts` (CI job `ios-compat`) diffs this file on
 every PR: a destructive migration must update it in the same PR or CI fails. This is
-what enforces CLAUDE.md invariant 11 — published data stays decodable by every
+what enforces web/CLAUDE.md invariant 11 — published data stays decodable by every
 supported app build — mechanically instead of by memory.
 
 Background (vault, not this repo): the forced-update gate design
@@ -22,7 +22,7 @@ and the postmortem this guard exists because of,
 - **Current App Store build (`CFBundleVersion`):** **587** — submitted for review, **not yet LIVE** (as of 2026-09-08)
 - **Minimum supported build (`app_config.minimum_supported_build`):** **1** — the gate is **not armed** (build 587 is not live; arming before the listing is public would lock out the only channel with installs — see `Reference/forced-update-gate.md`, "Do not arm before the listing is public")
 - **Gateable floor:** build 321 (T5, #355 — `c6a66bc`). Any build ≥ 321 contains the forced-update gate; the current submission (587) **is gateable**. Once 587 (or a later build) is LIVE, the flow is: ship the new build → confirm the listing is public → **only then** arm the gate by raising `app_config.minimum_supported_build` to that build → after it's live and blocking, destructive backend changes may ship.
-- **Backend contract facts** (as of the current schema, `supabase/migrations/`):
+- **Backend contract facts** (as of the current schema, `web/supabase/migrations/`):
   - `teams` no longer carries `pending_home_colors` (dropped by
     `20260824102000_drop_pending_home_colors.sql` — the migration implicated in the
     2026-08-24 TestFlight failure).
@@ -70,7 +70,7 @@ raise the minimum.
 
 ## Migration annotation contract
 
-Any destructive migration (anything `scripts/check-ios-compatibility.mts` flags —
+Any destructive migration (anything `web/scripts/check-ios-compatibility.mts` flags —
 drop/rename column, alter column type, drop constraint/table, enum value removal,
 NOT NULL json/jsonb without default on an existing table) **must** carry this header:
 
@@ -90,7 +90,7 @@ Example (the 2026-08-24 failure shape, for reference):
 -- Gate minimum: <N>.
 -- Old behavior preserved until then: no — this drops a column an old build SELECTs.
 -- Rollback: restore the dropped column and update the SELECT contract in
---           lib/roster-source.db.ts before lowering the gate.
+--           web/lib/roster-source.db.ts before lowering the gate.
 alter table teams drop column if exists pending_home_colors;
 ```
 

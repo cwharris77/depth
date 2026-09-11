@@ -1,21 +1,23 @@
 #!/bin/sh
-# Auto-formats staged files with Prettier before commit, so CI's format:check
+# Auto-formats staged web files with Prettier before commit, so CI's format:check
 # gate (see .github/workflows/ci.yml) never fails on formatting alone.
-staged=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx|js|jsx|json|css)$')
+#
+# The web app lives under web/ with its own package.json + Prettier config, so both the
+# formatter and the lint/typecheck gates run from there. `--relative` scopes the staged
+# list to web/ (paths relative to it) and drops iOS-only Swift changes, which the web
+# toolchain can't meaningfully gate and which shouldn't force node_modules into a
+# Swift-only worktree.
+cd "$(git rev-parse --show-toplevel)/web" || exit 1
 
-if [ -n "$staged" ]; then
-  echo "$staged" | xargs npx prettier --write --ignore-unknown
-  echo "$staged" | xargs git add
+staged=$(git diff --cached --name-only --diff-filter=ACM --relative)
+[ -z "$staged" ] && exit 0
+
+formattable=$(echo "$staged" | grep -E '\.(ts|tsx|js|jsx|json|css)$' || true)
+if [ -n "$formattable" ]; then
+  echo "$formattable" | xargs npx prettier --write --ignore-unknown
+  echo "$formattable" | xargs git add
 fi
 
-# The web lint/typecheck gates only apply when the commit touches web sources.
-# An iOS-only change (everything staged under ios/) is SwiftUI — the web gates can't
-# pass meaningfully on it and force the commit to need node_modules in the worktree.
-# Skip them when every staged file lives under ios/.
-outside_ios=$(git diff --cached --name-only --diff-filter=ACM | grep -v '^ios/' || true)
-
-if [ -n "$outside_ios" ]; then
-  # Run linting and type checking
-  npm run lint || exit 1
-  npm run typecheck || exit 1
-fi
+# Run linting and type checking
+npm run lint || exit 1
+npm run typecheck || exit 1

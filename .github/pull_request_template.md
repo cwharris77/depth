@@ -12,9 +12,9 @@ _The reason this exists; one short paragraph. Omit only if What already says it.
 ## Tests
 
 _Run all of these before opening the PR — the body reports what was seen, not what
-should happen. iOS-only PRs: the iOS checklist in `ios/CLAUDE.md` §5 (targeted
+should happen. iOS-only PRs: the iOS checklist in `CLAUDE.md` §5 (targeted
 `-only-testing:` runs). The web-toolchain checks below apply only when the diff touches
-the frozen web app/backend — see `AGENTS.md` §5._
+the frozen web app/backend (run them from `web/`) — see `web/CLAUDE.md` §5._
 
 - [ ] iOS: `xcodebuild … test -only-testing:` scoped to the suites this diff touches
 - [ ] Web-touching diff only: `npm run format:check` clean; `npx tsc --noEmit` exits 0

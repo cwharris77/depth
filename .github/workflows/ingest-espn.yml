@@ -28,6 +28,11 @@ concurrency:
 jobs:
   ingest:
     runs-on: ubuntu-latest
+    # The Next.js app and its shared backend (scripts/, lib/, supabase/) all live under
+    # web/ now — npm commands and the node 22 cache run from there.
+    defaults:
+      run:
+        working-directory: web
     # Sized for a full --seasons backfill (chunked standings fetches across 20+ seasons
     # plus retries), not just the unflagged daily run -- matches ingest-nflverse.yml's
     # timeout for the same reason.
@@ -38,6 +43,7 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+          cache-dependency-path: web/package-lock.json
       - run: npm ci
       # Manual dispatch's `seasons` input backfills team_stats and preseason games; empty input (the
       # scheduled daily run) falls through to the plain command -- this + last season.

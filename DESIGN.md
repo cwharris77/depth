@@ -367,7 +367,7 @@ Modal sheet for player cards and secondary views.
 
 - **Do** use the Five-Step Type Scale for all chrome labels (micro 9 / caption 10 / label 11 / body 12 / title 13 px). Same-purpose text, same step.
 - **Do** route team-color-dependent text and interactive elements through curated uiAccent/onAccent, never raw brand hexes (Two-Voice Rule).
-- **Do** compose every UI surface from `components/ui/` primitives. Before hand-rolling a styled element, check what exists — extend with a prop before forking a new component.
+- **Do** compose every UI surface from `web/components/ui/` primitives. Before hand-rolling a styled element, check what exists — extend with a prop before forking a new component.
 - **Do** use fill-based state changes for active/selected states — accent fill + on-accent text. No outlines, no glows, no scale bounces for state.
 - **Do** use white-alpha borders at 1 px to differentiate surfaces. Emphasis via opacity (6% → 14%), never width (Hairline Rule).
 - **Do** use the shared `Intent` vocabulary (`primary` / `secondary` / `ghost` / `danger`) across all component variant props. Never invent per-component visual names.
@@ -382,7 +382,7 @@ Modal sheet for player cards and secondary views.
 - **Don't** invent z-index values at the call site. Add a new tier to the scale instead.
 - **Don't** use arbitrary font sizes outside the five-step type scale for chrome text. Per-container one-offs (display numerals, field labels) are acceptable and deliberately outside the scale.
 - **Don't** add drop shadows to chrome surfaces. Shadows appear only on physically floating elements (Shadow Means Floating).
-- **Don't** hand-roll a styled `<button>` or `<div>` group when a `components/ui/` primitive covers the use case. "One-off" is how the same control gets rebuilt five different ways.
+- **Don't** hand-roll a styled `<button>` or `<div>` group when a `web/components/ui/` primitive covers the use case. "One-off" is how the same control gets rebuilt five different ways.
 - **Don't** commit without running `npm run format`. Prettier is the only style authority.
 - **Don't** delete curated archive rows. Retirement is a flag, never a delete — archives are append-only.
 - **Don't** enable RLS on a new table without shipping a read policy in the same migration.
