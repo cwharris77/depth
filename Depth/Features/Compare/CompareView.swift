@@ -422,7 +422,7 @@ struct CompareView: View {
         case .matchup:
             TeamMatchupSection(viewModel: viewModel)
         case .position:
-            PositionDepthSection(viewModel: viewModel)
+            PositionDepthSection(viewModel: viewModel, repository: repository)
         }
     }
 }
@@ -449,11 +449,12 @@ private struct TeamMatchupSection: View {
 
 // MARK: - Position tab
 
-/// Web's `PositionDepth` (web/components/CompareView.tsx): the two-step room→role position
+/// Web's `PositionDepth` (components/CompareView.tsx): the two-step room→role position
 /// picker (DEP-311, replacing the horizontal chip row) plus the rank-aligned depth table
 /// (or the prompt/same-team/empty states).
 private struct PositionDepthSection: View {
     let viewModel: CompareViewModel
+    let repository: DepthRepository
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
@@ -468,7 +469,8 @@ private struct PositionDepthSection: View {
             } else if let teamA = viewModel.teamA, let teamB = viewModel.teamB {
                 CompareRows(
                     a: (team: teamA, players: viewModel.positionGroupA),
-                    b: (team: teamB, players: viewModel.positionGroupB)
+                    b: (team: teamB, players: viewModel.positionGroupB),
+                    repository: repository
                 )
             } else {
                 // Unreachable given bothPicked, but degrade rather than crash (AGENTS.md
@@ -683,7 +685,7 @@ private struct RoomPositionPicker: View {
 
 // MARK: - Shared states
 
-/// Web's `ComparePrompt` (web/components/CompareView.tsx) — the no/partially-picked
+/// Web's `ComparePrompt` (components/CompareView.tsx) — the no/partially-picked
 /// placeholder, shown inside whichever tab is active with that tab's copy line.
 private struct ComparePrompt: View {
     let pickedCount: Int
@@ -691,7 +693,7 @@ private struct ComparePrompt: View {
 
     var body: some View {
         // Web's ComparePrompt is a dashed `borderSubtle` box on `surfaceCard2`
-        // (web/components/CompareView.tsx lines 250-264).
+        // (components/CompareView.tsx lines 250-264).
         CompareEmptyState(dashed: true) {
             Image(systemName: "rectangle.split.2x1")
                 .font(.title2)
@@ -713,7 +715,7 @@ private struct ComparePrompt: View {
 /// Web's `SameTeamBlock` — comparing a team against itself.
 private struct SameTeamBlock: View {
     var body: some View {
-        // Web's SameTeamBlock is a dashed `borderSubtle` box (web/components/CompareView.tsx
+        // Web's SameTeamBlock is a dashed `borderSubtle` box (components/CompareView.tsx
         // lines 266-280).
         CompareEmptyState(dashed: true) {
             Image(systemName: "arrow.left.and.right")
@@ -776,7 +778,7 @@ private struct CompareEmptyState<Content: View>: View {
         .background(DesignTokens.Colors.surfaceCard2)
         .overlay {
             // Web's dashed states use `borderSubtle`; the solid EmptyPositionState uses
-            // `borderDefault` (web/components/CompareView.tsx).
+            // `borderDefault` (components/CompareView.tsx).
             RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
                 .strokeBorder(
                     dashed ? DesignTokens.Colors.borderSubtle : DesignTokens.Colors.borderDefault,
@@ -787,7 +789,7 @@ private struct CompareEmptyState<Content: View>: View {
     }
 }
 
-/// Web's `CompareRows` (web/components/CompareView.tsx) — the two-column (one per team) depth
+/// Web's `CompareRows` (components/CompareView.tsx) — the two-column (one per team) depth
 /// table: a header cell per team, one row per depth rank. Uneven depth renders a dim "—" on
 /// the shorter side by leaving that player nil. Aug 2026: dropped the leading rank-number
 /// gutter column entirely (Cooper: "I don't like the gray column to the left of the first
@@ -797,6 +799,7 @@ private struct CompareRows: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let a: (team: Team, players: [Player])
     let b: (team: Team, players: [Player])
+    let repository: DepthRepository
 
     private var rowCount: Int { max(a.players.count, b.players.count) }
 
@@ -821,9 +824,9 @@ private struct CompareRows: View {
                     : AnyLayout(HStackLayout(spacing: 0))
                 layout {
                     if dynamicTypeSize.isAccessibilitySize { Text(a.team.abbrev).font(.caption.bold()) }
-                    PlayerCell(player: a.players[safe: rank])
+                    PlayerCell(player: a.players[safe: rank], team: a.team, repository: repository)
                     if dynamicTypeSize.isAccessibilitySize { Text(b.team.abbrev).font(.caption.bold()) }
-                    PlayerCell(player: b.players[safe: rank])
+                    PlayerCell(player: b.players[safe: rank], team: b.team, repository: repository)
                 }
                 .background(rank % 2 == 1 ? DesignTokens.Colors.surfaceCard2 : Color.clear)
                 .overlay(alignment: .top) {
@@ -842,7 +845,7 @@ private struct CompareRows: View {
     }
 }
 
-/// Web's `TeamHeaderCell` (web/components/CompareView.tsx) — the team abbrev + city tinted
+/// Web's `TeamHeaderCell` (components/CompareView.tsx) — the team abbrev + city tinted
 /// with that team's ring color.
 private struct TeamHeaderCell: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -874,14 +877,25 @@ private struct TeamHeaderCell: View {
 private struct PlayerCell: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let player: Player?
+    let team: Team
+    let repository: DepthRepository
 
     var body: some View {
         Group {
             if let player {
-                Text("#\(player.number) \(formatLastName(player.name))")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(DesignTokens.Colors.textPrimary)
-                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                // DEP-385: Compare never shows PlayerDetailView's card, so this tap-through
+                // is the only door to that player's identity for anyone using Compare —
+                // unlike the card's own "Full stats & history" row, this isn't duplicating
+                // something already on screen.
+                NavigationLink {
+                    PlayerProfileView(player: player, team: team, repository: repository)
+                } label: {
+                    Text("#\(player.number) \(formatLastName(player.name))")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(DesignTokens.Colors.textPrimary)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                }
+                .accessibilityIdentifier("compare-player-cell-\(player.id)")
             } else {
                 Text("—")
                     .font(.caption.weight(.bold))

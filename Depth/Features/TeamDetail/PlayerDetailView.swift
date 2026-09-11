@@ -37,6 +37,10 @@ struct PlayerDetailView: View {
     /// the overflow menu behind the sheet, so it can't change while the card is open.
     var globalEditMode = false
 
+    /// Kept (not just consumed by the view model init) so the "Full stats & history" row
+    /// can hand it to `PlayerProfileView`, which needs its own repository access.
+    private let repository: DepthRepository
+
     @State private var viewModel: PlayerProfileViewModel
 
     // DEP-226: edit/hint state resets when the sheet re-presents a different player —
@@ -189,6 +193,7 @@ struct PlayerDetailView: View {
         self.onReorder = onReorder
         self.onResetPosition = onResetPosition
         self.globalEditMode = globalEditMode
+        self.repository = repository
         _viewModel = State(initialValue: PlayerProfileViewModel(
             playerID: player.id, teamID: team?.id, repository: repository
         ))
@@ -219,6 +224,7 @@ struct PlayerDetailView: View {
                     }
                     positionDepth
                     statsSection
+                    fullProfileLink
                 }
                 .padding()
             }
@@ -243,7 +249,7 @@ struct PlayerDetailView: View {
             Text(player.name.isEmpty ? "#\(player.number)" : player.name)
                 .font(.title.bold())
                 .accessibilityIdentifier("player-profile-name")
-            // Web parity (web/components/PlayerCardHeader.tsx): position renders as a
+            // Web parity (components/PlayerCardHeader.tsx): position renders as a
             // Badge pill, not plain text, and the number isn't repeated here — the
             // watermark above already shows it (DEP-223). The position badge, full
             // name, and the depth-chart-order status read as one unit — "QB ·
@@ -340,6 +346,30 @@ struct PlayerDetailView: View {
         .accessibilityIdentifier("player-profile-stats")
     }
 
+    // DEP-369 entry point: the card's own quick-glance stats table stays as-is; this row
+    // is the one door to the full-screen destination (season-by-season stats, draft
+    // history, accolades) that a single card sheet has no room for.
+    private var fullProfileLink: some View {
+        NavigationLink {
+            PlayerProfileView(player: player, team: team, kitColors: kitColors, repository: repository)
+        } label: {
+            HStack {
+                Text("Full stats & history")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.bold())
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+            }
+            .padding(DesignTokens.Spacing.md)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .depthCard(dense: true, padded: false)
+        .accessibilityIdentifier("player-profile-full-stats-link")
+    }
+
     private func vital(_ label: String, _ value: String) -> some View {
         VStack(alignment: .center, spacing: 2) {
             Text(label.uppercased())
@@ -379,7 +409,7 @@ struct PlayerDetailView: View {
             .foregroundStyle(DesignTokens.Colors.textMuted)
     }
 
-    // Web parity (web/components/PlayerCardDepthList.tsx): the position's players in depth
+    // Web parity (components/PlayerCardDepthList.tsx): the position's players in depth
     // order, STARTER/BACKUP/RESERVE rank labels, current player highlighted with the
     // team accent + checkmark, others tappable to switch the card. DEP-226 adds the
     // card's own Reorder/Done toggle, one-time hint, CUSTOM tag, Reset, and drag rows.
@@ -627,7 +657,7 @@ struct PlayerDetailView: View {
         .accessibilityHidden(true)
     }
 
-    // Web parity (web/components/ui/Badge.tsx default variant): surfaceNavy fill,
+    // Web parity (components/ui/Badge.tsx default variant): surfaceNavy fill,
     // accent-colored text + border, rounded-full (DEP-223).
     private func positionBadge(accent: Color) -> some View {
         Text(player.position.rawValue)
@@ -672,11 +702,11 @@ struct PlayerDetailView: View {
     }
 }
 
-// Mirrors web/lib/utils/colors.ts statusColor: starter is team-driven, the rest are fixed
+// Mirrors lib/utils/colors.ts statusColor: starter is team-driven, the rest are fixed
 // semantic colors shared by every team. DEP-424: the caller now passes a TeamSurfaces-
 // resolved color, so `starter` no longer resolves to the retired `uiAccent` — which made
 // it 2.12:1 on the Jets.
-private func playerStatusColor(_ status: PlayerStatus, accent: Color) -> Color {
+func playerStatusColor(_ status: PlayerStatus, accent: Color) -> Color {
     switch status {
     case .starter: accent
     case .backup: DesignTokens.Colors.textMuted
@@ -966,156 +996,5 @@ struct DepthReorderAccessibility {
 enum PlayerProfileSection {
     static let seasonStatsTitle = "SEASON STATS"
     static let depthChartTitle = "DEPTH CHART"
-}
-
-// Season-stats columns share one centered width, whether they are labels or values. The table
-// uses its preferred readable width for sparse rows and grows only as far as the card allows
-// for stat-heavy rows (DEP-292). Every value still arrives paired with its spoken column name
-// via `PlayerStatsAccessibility.rowLabel`.
-enum PlayerStatsTableLayout {
-    enum ColumnAlignment: Equatable {
-        case center
-
-        var swiftUI: Alignment {
-            .center
-        }
-    }
-
-    static let alignment: ColumnAlignment = .center
-    static let containerAlignment: ColumnAlignment = .center
-}
-
-private struct PlayerStatsTable: View {
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    let stats: [PlayerSeasonStats]
-    let columns: [PlayerStatColumn]
-    let accent: Color
-
-    // Keeps short rows compact while leaving room for the widest compact stat labels and
-    // values. More columns use the card's available width instead.
-    @ScaledMetric(relativeTo: .footnote) private var preferredColumnWidth: CGFloat = 96
-
-    private var preferredTableWidth: CGFloat {
-        CGFloat(columns.count + 2) * preferredColumnWidth
-    }
-
-    var body: some View {
-        Group {
-            if dynamicTypeSize.isAccessibilitySize {
-                // Each season remains one unit, with its column names visible rather
-                // than compressed into a phone-width table (DEP-415).
-                VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
-                    ForEach(stats) { season in
-                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-                            Text("\(String(season.season)) · \(season.teamAbbrev ?? "—")")
-                                .font(.headline)
-                            ForEach(columns, id: \.self) { column in
-                                Text("\(column.header): \(column.value(for: season))")
-                                    .font(.body)
-                            }
-                        }
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel(PlayerStatsAccessibility.rowLabel(for: season, columns: columns))
-                    }
-                }
-                .padding(DesignTokens.Spacing.sm)
-            } else {
-                ViewThatFits(in: .horizontal) {
-                    table.frame(width: preferredTableWidth)
-                    table.frame(maxWidth: .infinity)
-                }
-            }
-        }
-        .depthCard(dense: true, padded: false)
-    }
-
-    private var table: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: DesignTokens.Spacing.sm) {
-                cell("SZN", header: true)
-                cell("TM", header: true)
-                ForEach(columns, id: \.self) { column in
-                    cell(column.header, header: true)
-                }
-            }
-            .padding(.horizontal, DesignTokens.Spacing.sm)
-            .padding(.vertical, DesignTokens.Spacing.sm)
-            // Web parity (web/components/PlayerCardSeasonStats.tsx): a hairline separates
-            // the header from data rows — missing before (DEP-227).
-            .overlay(alignment: .bottom) {
-                Rectangle().fill(DesignTokens.Colors.borderDefault).frame(height: 1)
-            }
-            // Each data row carries the full spoken label, so repeating the compact
-            // headers as their own VoiceOver stops is pure noise.
-            .accessibilityHidden(true)
-
-            ForEach(Array(stats.enumerated()), id: \.element.id) { index, season in
-                // Web parity: the most recent season (index 0 — `stats` arrives
-                // newest-first) is highlighted, its year colored accent (DEP-227).
-                let isCurrent = index == 0
-                HStack(spacing: DesignTokens.Spacing.sm) {
-                    cell("\(season.season)", valueColor: isCurrent ? accent : nil)
-                    cell(season.teamAbbrev ?? "—")
-                    ForEach(columns, id: \.self) { column in
-                        cell(column.value(for: season))
-                    }
-                }
-                .padding(.horizontal, DesignTokens.Spacing.sm)
-                .padding(.vertical, DesignTokens.Spacing.sm)
-                .background(isCurrent ? accent.opacity(0.05) : .clear)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(
-                    PlayerStatsAccessibility.rowLabel(for: season, columns: columns)
-                )
-            }
-        }
-    }
-
-    private func cell(_ value: String, header: Bool = false, valueColor: Color? = nil) -> some View {
-        Text(value)
-            .font(header ? .caption.bold() : .footnote.weight(.semibold))
-            .foregroundStyle(valueColor ?? (header ? DesignTokens.Colors.textMuted : DesignTokens.Colors.textPrimary))
-            .lineLimit(1)
-            .minimumScaleFactor(0.75)
-            .frame(
-                maxWidth: .infinity,
-                alignment: PlayerStatsTableLayout.alignment.swiftUI
-            )
-    }
-}
-
-// Sized against the same scaled metrics as the table it stands in for, so the section
-// doesn't resize when real rows land (AGENTS.md's flash-then-jump rule). Matches the
-// table's layout: two fixed-width label cells, then one flexible cell per stat column.
-private struct PlayerStatsSkeleton: View {
-    let columnCount: Int
-
-    // Matches the table's tightened DEP-234 metrics (labelWidth 36, row spacing 12).
-    @ScaledMetric(relativeTo: .footnote) private var cellWidth: CGFloat = 36
-    @ScaledMetric(relativeTo: .footnote) private var cellHeight: CGFloat = 14
-
-    var body: some View {
-        VStack(spacing: DesignTokens.Spacing.sm) {
-            ForEach(0..<2, id: \.self) { _ in
-                HStack(spacing: DesignTokens.Spacing.sm) {
-                    ForEach(0..<2, id: \.self) { _ in
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(DesignTokens.Colors.surfacePlaceholder)
-                            .frame(width: cellWidth, height: cellHeight)
-                    }
-                    ForEach(0..<columnCount, id: \.self) { _ in
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(DesignTokens.Colors.surfacePlaceholder)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: cellHeight)
-                    }
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, minHeight: 72)
-        .depthCard(dense: true)
-        .redacted(reason: .placeholder)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Loading season stats")
-    }
+    static let accoladesTitle = "ACCOLADES"
 }
