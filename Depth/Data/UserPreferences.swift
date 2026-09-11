@@ -15,7 +15,6 @@ struct UserPreferences: Sendable {
         static let lastUnit = "preferences.lastUnit"
         static let uniformSelections = "preferences.uniformSelections"
         static let depthOverrides = "preferences.depthOverrides"
-        static let depthSeenReorderHint = "preferences.depthSeenReorderHint"
         static let seenOnboarding = "preferences.seenOnboarding"
     }
 
@@ -106,26 +105,8 @@ struct UserPreferences: Sendable {
         defaults.set(store, forKey: Key.depthOverrides)
     }
 
-    // DEP-226: one-time reorder discoverability hint, literal port of web's
-    // seenReorderHint/markReorderHintSeen (web/lib/utils/depth-chart/depth-overrides.ts's
-    // STORAGE_KEY_DEPTH_SEEN_REORDER_HINT). Defaults to "seen" so the hint never shows
-    // where storage is unavailable.
-    var seenReorderHint: Bool {
-        defaults.bool(forKey: Key.depthSeenReorderHint)
-    }
-
-    func markReorderHintSeen() {
-        defaults.set(true, forKey: Key.depthSeenReorderHint)
-    }
-
-    /// Test-reset hook: restores the hint to its "unseen" default (UI_TESTING_RESET_STATE
-    /// wipes all override/reorder state so reorder UI tests start deterministic).
-    func clearReorderHint() {
-        defaults.removeObject(forKey: Key.depthSeenReorderHint)
-    }
-
-    // DEP-251: first-run tutorial "seen" flag, same one-time-hint pattern as
-    // seenReorderHint above. OnboardingController checks this once at launch
+    // DEP-251: first-run tutorial "seen" flag, a one-time flag.
+    // OnboardingController checks this once at launch
     // (startIfNeeded) and sets it the moment the welcome/coachmark flow is skipped or
     // finished — never on every intermediate step — so a user who backgrounds the app
     // mid-tour doesn't see it silently reset. Settings' "Take the tour" row bypasses this
@@ -139,7 +120,7 @@ struct UserPreferences: Sendable {
         defaults.set(true, forKey: Key.seenOnboarding)
     }
 
-    /// Test-reset hook, same convention as `clearReorderHint()` — UI_TESTING_RESET_STATE
+    /// Test-reset hook — UI_TESTING_RESET_STATE
     /// restores this to its "unseen" default so onboarding UI tests start deterministic.
     func clearOnboardingSeen() {
         defaults.removeObject(forKey: Key.seenOnboarding)

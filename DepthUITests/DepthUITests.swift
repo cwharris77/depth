@@ -30,35 +30,70 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(playerSlot.waitForExistence(timeout: 10), "at least one filled depth-chart slot should be tappable")
         playerSlot.tap()
 
-        let closeButton = app.buttons["Close"]
-        XCTAssertTrue(closeButton.waitForExistence(timeout: 5), "player detail sheet should present with a Close action")
-
-        let profile = app.scrollViews["player-profile-content"]
-        XCTAssertTrue(profile.waitForExistence(timeout: 5), "player detail should expose a scrollable complete profile")
+        // Merge spec (2026-09-11): a field tap pushes the full player profile — there is no
+        // card sheet in between.
+        let profile = app.descendants(matching: .any)["player-profile-full-content"]
+        XCTAssertTrue(profile.waitForExistence(timeout: 5), "tapping a player should push the player profile")
         XCTAssertTrue(
-            app.staticTexts["player-profile-name"].waitForExistence(timeout: 5),
+            app.staticTexts["player-profile-full-name"].waitForExistence(timeout: 5),
             "profile should show the player name"
         )
         XCTAssertTrue(
-            app.staticTexts["player-profile-position"].waitForExistence(timeout: 5),
-            "profile should show granular and full position"
+            app.staticTexts["player-profile-full-position"].waitForExistence(timeout: 5),
+            "profile should show the full position"
         )
         XCTAssertTrue(
-            app.staticTexts["player-profile-status"].waitForExistence(timeout: 5),
+            app.staticTexts["player-profile-full-status"].waitForExistence(timeout: 5),
             "profile should show player status"
         )
         XCTAssertTrue(
-            app.otherElements["player-profile-vitals"].waitForExistence(timeout: 5),
-            "profile should show age, experience, height, and weight"
+            app.descendants(matching: .any)["player-profile-full-vitals"].waitForExistence(timeout: 5),
+            "profile should show the vitals strip"
         )
         XCTAssertTrue(
-            app.otherElements["player-profile-depth"].waitForExistence(timeout: 5),
-            "profile should show the position depth list"
+            app.descendants(matching: .any)["player-profile-full-depth"].waitForExistence(timeout: 5),
+            "a profile opened from the depth chart should show the position depth list"
         )
-        XCTAssertTrue(app.otherElements["player-profile-stats"].waitForExistence(timeout: 10), "profile should resolve a stats state")
+        XCTAssertTrue(
+            app.descendants(matching: .any)["player-profile-full-stats"].waitForExistence(timeout: 10),
+            "profile should resolve a stats state"
+        )
 
-        closeButton.tap()
-        XCTAssertFalse(closeButton.waitForExistence(timeout: 2), "dismissing should close the player detail sheet")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(profile.waitForAbsence(timeout: 5), "back should pop the profile")
+        XCTAssertTrue(playerSlot.waitForExistence(timeout: 5), "back should return to the depth chart")
+    }
+
+    // Merge spec: the profile's DEPTH CHART rows swap the screen to another player in
+    // place. One back tap must land on the field — a pushed profile per row would need two.
+    func testProfileDepthRowSwapsPlayerInPlace() throws {
+        let app = XCUIApplication()
+        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+
+        let quarterback = app.buttons["player-slot-off-qb-0"]
+        XCTAssertTrue(quarterback.waitForExistence(timeout: 10), "the Bills field should render its QB")
+        quarterback.tap()
+
+        let name = app.staticTexts["player-profile-full-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        let starterName = name.label
+
+        let rows = app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier BEGINSWITH 'player-profile-full-depth-row-'")
+        )
+        XCTAssertGreaterThanOrEqual(rows.count, 2, "the Bills QB room should list a backup")
+        let backup = rows.element(boundBy: 1)
+        for _ in 0..<4 where !backup.isHittable {
+            app.swipeUp()
+        }
+        backup.tap()
+
+        let swapped = expectation(for: NSPredicate(format: "label != %@", starterName), evaluatedWith: name)
+        wait(for: [swapped], timeout: 5)
+
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(name.waitForAbsence(timeout: 5), "no second profile should remain on the stack")
+        XCTAssertTrue(quarterback.waitForExistence(timeout: 5), "one back tap should return to the field")
     }
 
     func testOpenTeamSchedule() throws {
@@ -232,13 +267,20 @@ final class DepthUITests: XCTestCase {
         quarterback.tap()
         // First tap dismisses the popover; the second opens the player. If the popover
         // was already gone (presentation behavior varies across iOS versions), the first
-        // tap already presented the sheet, so only tap again when it didn't.
-        if !app.scrollViews["player-profile-content"].waitForExistence(timeout: 2) {
+        // tap already pushed the profile, so only tap again when it didn't.
+        let profile = app.descendants(matching: .any)["player-profile-full-content"]
+        if !profile.waitForExistence(timeout: 2) {
             quarterback.tap()
         }
-        XCTAssertTrue(app.scrollViews["player-profile-content"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["player-profile-name"].waitForExistence(timeout: 5))
-        app.buttons["Close"].tap()
+        XCTAssertTrue(profile.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["player-profile-full-name"].waitForExistence(timeout: 5))
+        // Historical bios are synthesized "{season} · {team}" filler (merge spec).
+        XCTAssertFalse(
+            app.descendants(matching: .any)["player-profile-full-bio"].exists,
+            "historical rosters should not show a bio"
+        )
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(profile.waitForAbsence(timeout: 5))
 
         let backToToday = app.buttons["roster-history-season-trigger-back-to-current"]
         XCTAssertTrue(backToToday.waitForExistence(timeout: 5))

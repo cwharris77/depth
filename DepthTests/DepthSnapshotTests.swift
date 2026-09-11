@@ -71,44 +71,6 @@ import Testing
         )
     }
 
-    /// The player card — header, vitals, bio, position depth (the async stats table is
-    /// deliberately not asserted here).
-    @Test func playerDetail() async throws {
-        let snapshot = try await repository.teamSnapshot(teamId: "bills")
-        let player = try #require(snapshot.players.first, "the Bills fixture roster should have players")
-        let depthChart = snapshot.players.filter { $0.position == player.position }
-        #expect(!depthChart.isEmpty)
-        #expect(depthChart.allSatisfy { $0.position == player.position })
-        assertSnapshot(
-            of: PlayerDetailView(
-                player: player,
-                team: snapshot.team,
-                repository: repository,
-                depthChart: depthChart
-            ),
-            as: .image(perceptualPrecision: 0.98, layout: Self.phone)
-        )
-    }
-
-    @Test func playerDetailWithNoBackups() async throws {
-        let snapshot = try await repository.teamSnapshot(teamId: "bills")
-        let player = try #require(
-            snapshot.players.first(where: { $0.position == .k }),
-            "the Bills fixture should include a kicker"
-        )
-        let depthChart = snapshot.players.filter { $0.position == player.position }
-        #expect(depthChart.count == 1)
-        assertSnapshot(
-            of: PlayerDetailView(
-                player: player,
-                team: snapshot.team,
-                repository: repository,
-                depthChart: depthChart
-            ),
-            as: .image(perceptualPrecision: 0.98, layout: Self.phone)
-        )
-    }
-
     /// The merged player profile as the depth chart pushes it: jersey band, vitals, and the
     /// read-only DEPTH CHART section. Stats resolve in `.task`, so the ledger renders its
     /// skeleton here — the section order and depth rows are what this guards.

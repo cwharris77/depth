@@ -14,11 +14,20 @@ struct TeamDetailView: View {
     @State private var viewModel: TeamDetailViewModel
     @State private var unit: Unit
     @State private var page: TeamPage = .roster
+    /// The player whose profile is pushed (2026-09-11 merge spec) — a field tap outside edit
+    /// mode, or a cross-team search pick. Setting it back to nil pops to the field.
     @State private var selectedPlayer: Player?
-    /// DEP-231: the app-level edit-mode toggle (web's `globalEditMode`). When on, every
-    /// position group's player card opens already in reorder mode. Lives in the overflow
-    /// menu; disabled (not hidden) while viewing a historical season.
+    /// DEP-231: the app-level edit-mode toggle (web's `globalEditMode`). When on, a field tap
+    /// opens that position's PositionReorderSheet instead of the profile. Lives in the
+    /// overflow menu; disabled (not hidden) while viewing a historical season.
     @State private var editMode = DepthChartEditMode()
+    /// The player tapped while edit mode is on; drives the reorder sheet for its position.
+    @State private var reorderPlayer: Player?
+    /// `.task` re-runs every time this stack root reappears — including popping back from a
+    /// pushed player profile — so the initial load and sign-in merge run once per team
+    /// identity. DepthChartsTab's `.id(teamId)` resets this on a team switch; pull-to-refresh
+    /// and the requested-player/uniform `onChange` handlers cover everything else.
+    @State private var didInitialLoad = false
     /// DEP-323: the name-presentation style chosen in Settings. Shared with SettingsView
     /// through the same defaults key.
     @AppStorage(FieldNameMode.storageKey) private var fieldNameMode: FieldNameMode = .callouts
@@ -162,6 +171,8 @@ struct TeamDetailView: View {
             // (plain black in dark mode) instead of the app's dark-navy bg token.
             .background(DesignTokens.Colors.bg)
             .task {
+                guard !didInitialLoad else { return }
+                didInitialLoad = true
                 await viewModel.load()
                 // DEP-219: a cold launch already signed in never fires the
                 // sessionStore.user onChange below (it only sees transitions) — run
@@ -239,35 +250,40 @@ struct TeamDetailView: View {
                     showAccount = true
                 }
             }
-            .sheet(item: $selectedPlayer) { player in
-                let editable = !historyViewModel.isHistorical
-                let position = player.position
-                PlayerDetailView(
+            // Merge spec (2026-09-11): the player card sheet is gone — a tap pushes the full
+            // profile onto DepthChartsTab's stack. The depth context is per-position, so a
+            // depth-row swap inside the profile never needs this closure to re-run.
+            .navigationDestination(item: $selectedPlayer) { player in
+                PlayerProfileView(
                     player: player,
                     team: displayedSnapshot?.team,
                     kitColors: activeJerseyColors,
                     repository: repository,
-                    depthChart: players(for: position),
-                    onSelectPlayer: { selectedPlayer = $0 },
-                    // DEP-226: reorder/reset are wired only for the live roster — a
-                    // historical season is read-only, matching web's readOnly prop
-                    // omission. defaultDepthChart is the position's pre-override order,
-                    // which Reset restores to. DEP-231: global edit mode gates whether the
-                    // card opens already reordering.
-                    defaultDepthChart: defaultPlayers(for: position),
-                    preferences: preferences,
-                    isPositionCustom: editable ? confirmedOrders[position] != nil : false,
-                    onReorder: editable ? { _, ids in reorderPosition(position, ids) } : nil,
-                    onResetPosition: editable ? { _ in resetPosition(position) } : nil,
-                    globalEditMode: editable && editMode.isActive
+                    depthContext: PlayerDepthContext(
+                        players: players(for: player.position),
+                        isCustom: !historyViewModel.isHistorical && confirmedOrders[player.position] != nil
+                    ),
+                    isHistorical: historyViewModel.isHistorical
                 )
-                    .id(player.id)
-                    // `.sheet()` content gets a fresh UITraitCollection rather than
-                    // inheriting ContentView's UI_TESTING_DYNAMIC_TYPE override — see
-                    // that modifier's doc comment. Re-applied here so
-                    // `PlayerDetailView`'s accessibility-size header stacking (T10) is
-                    // actually driven by the override in both real use and tests.
-                    .modifier(UITestingDynamicTypeOverride())
+            }
+            // DEP-226/231 reorder, relocated by the merge spec: edit mode routes a field tap
+            // here. Edit mode is disabled for historical seasons, so this is live-roster only.
+            .sheet(item: $reorderPlayer) { player in
+                let position = player.position
+                PositionReorderSheet(
+                    position: position,
+                    players: players(for: position),
+                    defaultOrder: defaultPlayers(for: position),
+                    isCustom: confirmedOrders[position] != nil,
+                    highlightedPlayerID: player.id,
+                    accent: teamAccentColor,
+                    onReorder: { ids in reorderPosition(position, ids) },
+                    onReset: { resetPosition(position) }
+                )
+                // `.sheet()` content gets a fresh UITraitCollection rather than inheriting
+                // ContentView's UI_TESTING_DYNAMIC_TYPE override — see that modifier's doc
+                // comment. Re-applied so AccessibilityUITests' reorder-sheet reflow is real.
+                .modifier(UITestingDynamicTypeOverride())
             }
             .sheet(isPresented: $showAccount) {
                 // DEP-252: SettingsView's content is unchanged from its old tab-bar
@@ -508,12 +524,12 @@ struct TeamDetailView: View {
         Menu {
             // DEP-231: app-level edit-mode toggle, folded into the overflow menu instead of
             // its own row (web's FieldHeaderMenu.tsx single checked "Edit depth chart"
-            // item). Puts every position group's card into reorder mode at once — no
-            // per-card Reorder taps needed; off exits all of them together. Disabled (not
-            // omitted) while viewing a past season, matching web's disabled + disabledReason.
+            // item). While on, a field tap opens that position's PositionReorderSheet instead
+            // of the player profile; off returns taps to the profile. Disabled (not omitted)
+            // while viewing a past season, matching web's disabled + disabledReason.
             // Previously this was a per-position submenu opening OverrideEditorSheet —
-            // DEP-226 gave the player card inline reorder, so the toggle now drives that
-            // instead and the standalone editor is gone.
+            // DEP-226 moved reorder into the player card, and the 2026-09-11 merge spec moved
+            // it again into PositionReorderSheet when the card was deleted.
             Button {
                 editMode.toggle()
             } label: {
@@ -787,7 +803,11 @@ struct TeamDetailView: View {
                         nameMode: fieldNameMode,
                         isEditing: editMode.isActive
                     ) { player in
-                        selectedPlayer = player
+                        if editMode.isActive {
+                            reorderPlayer = player
+                        } else {
+                            selectedPlayer = player
+                        }
                     }
                     // The field is the screen's primary content, so it fills the
                     // available height instead of capping at a fixed ~1.4:1 aspect and
@@ -924,10 +944,10 @@ struct TeamDetailView: View {
     // DEP-219: no auth gate — reordering is local-first, matching web (which never
     // requires sign-in to enter edit mode; only cross-device sync needs an account).
 
-    // DEP-226: player-card reorder writes through the same local-first writer as the
+    // DEP-226: PositionReorderSheet writes through the same local-first writer as the
     // overflow-menu editor (DEP-219) — local cache always, server mirror fire-and-forget
     // when signed in. confirmedOrders updates immediately so the field behind the sheet
-    // re-renders the new order while the card stays open. DEP-231: the standalone
+    // re-renders the new order while the sheet stays open. DEP-231: the standalone
     // OverrideEditorViewModel is gone, so the overrideSaved event it used to fire on
     // save is recorded here instead — one per committed drop.
     private func reorderPosition(_ position: Position, _ orderedIds: [String]) {
@@ -964,7 +984,7 @@ struct TeamDetailView: View {
     // clears every overridden position at once. Reuses resetPosition per-position rather
     // than a bulk server call — DepthOverrideWriting only exposes a per-position clear,
     // and this keeps the local/remote sync path identical to the single-position Reset
-    // button in PlayerDetailView.
+    // button in PositionReorderSheet.
     private func resetAllOverrides() {
         for position in Array(confirmedOrders.keys) {
             resetPosition(position)

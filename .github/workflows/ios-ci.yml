@@ -244,7 +244,7 @@ jobs:
           if [ "${{ matrix.leg }}" = "unit" ]; then
             echo "tests=-only-testing:DepthTests" >> "$GITHUB_OUTPUT"
           else
-            echo "tests=-only-testing:DepthUITests/DepthUITests/testAppLaunches -only-testing:DepthUITests/DepthUITests/testLaunchesIntoAChartThenSwitchesTeamAndOpensPlayerDetail -only-testing:DepthUITests/PlayerCardReorderUITests -only-testing:DepthUITests/AuthUITests" >> "$GITHUB_OUTPUT"
+            echo "tests=-only-testing:DepthUITests/DepthUITests/testAppLaunches -only-testing:DepthUITests/DepthUITests/testLaunchesIntoAChartThenSwitchesTeamAndOpensPlayerDetail -only-testing:DepthUITests/PositionReorderUITests -only-testing:DepthUITests/AuthUITests" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run ${{ matrix.leg }} tests (Staging config)
@@ -293,7 +293,7 @@ jobs:
           # DEP-226 reorder persistence + edit-mode + formation: each test does a
           # production-backed drag gesture, the jankiest (and slowest) interaction here.
           - slice: reorder
-            tests: -only-testing:DepthUITests/PlayerCardReorderUITests
+            tests: -only-testing:DepthUITests/PositionReorderUITests
           # Dynamic-type/motion announcements: heavy simulator accessibility work.
           - slice: a11y
             tests: -only-testing:DepthUITests/AccessibilityUITests
