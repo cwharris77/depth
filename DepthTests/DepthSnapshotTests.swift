@@ -129,5 +129,35 @@ import Testing
             as: .image(perceptualPrecision: 0.98, layout: Self.phone)
         )
     }
+
+    /// Edit mode's reorder surface for one position: drag rows, no CUSTOM state yet.
+    @Test func positionReorderSheet() async throws {
+        let snapshot = try await repository.teamSnapshot(teamId: "bills")
+        let quarterbacks = snapshot.players.filter { $0.position == .qb }
+        let starter = try #require(quarterbacks.first, "the Bills fixture should include a QB")
+        assertSnapshot(
+            of: PositionReorderSheet(
+                position: .qb, players: quarterbacks, defaultOrder: quarterbacks, isCustom: false,
+                highlightedPlayerID: starter.id, accent: DesignTokens.Colors.accent,
+                onReorder: { _ in }, onReset: {}
+            ),
+            as: .image(perceptualPrecision: 0.98, layout: Self.phone)
+        )
+    }
+
+    /// A reordered position: CUSTOM tag and Reset above the drag rows.
+    @Test func positionReorderSheetCustom() async throws {
+        let snapshot = try await repository.teamSnapshot(teamId: "bills")
+        let quarterbacks = snapshot.players.filter { $0.position == .qb }
+        let starter = try #require(quarterbacks.first, "the Bills fixture should include a QB")
+        assertSnapshot(
+            of: PositionReorderSheet(
+                position: .qb, players: Array(quarterbacks.reversed()), defaultOrder: quarterbacks,
+                isCustom: true, highlightedPlayerID: starter.id, accent: DesignTokens.Colors.accent,
+                onReorder: { _ in }, onReset: {}
+            ),
+            as: .image(perceptualPrecision: 0.98, layout: Self.phone)
+        )
+    }
 }
 #endif
