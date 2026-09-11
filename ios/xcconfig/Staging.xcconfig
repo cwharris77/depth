@@ -5,7 +5,10 @@ APP_BUNDLE_IDENTIFIER = com.cwharris.depth.staging
 APP_DISPLAY_NAME = The Sticks Beta
 APP_ICON_NAME = AppIconStage
 
-// TODO(DEP-40 Lane B): points at production until a dedicated staging Supabase project
-// exists. Swap this URL/key once Lane B provisions persistent staging.
-SUPABASE_URL = https:/$()/jiqoaqmzmvtovimnmbzl.supabase.co
-SUPABASE_PUBLISHABLE_KEY = sb_publishable_JPsqvaeJbAGnX1JzkUGBqA_riP7wR9u
+// Dedicated staging project (djwrecczgudktgsooxti) — mutable, non-authoritative, seeded
+// from the checked-in supabase/seed*.sql. Test suites and CI UI journeys run here; the
+// production project stays ingest-only (users + real data). Closes DEP-40 Lane B, which
+// previously pointed Staging at production because no staging project existed.
+// "/$()/" breaks up "//" so xcconfig's line-comment parser doesn't truncate the URL.
+SUPABASE_URL = https:/$()/djwrecczgudktgsooxti.supabase.co
+SUPABASE_PUBLISHABLE_KEY = sb_publishable_SnZSUFxGFwdt-sPgpd0FIQ_WPgQemvw
