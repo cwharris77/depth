@@ -459,3 +459,22 @@ struct PlayerProfileView: View {
         .accessibilityIdentifier(identifier)
     }
 }
+
+// Mirrors lib/utils/colors.ts statusColor: starter is team-driven, the rest are fixed
+// semantic colors shared by every team. DEP-424: the caller now passes a TeamSurfaces-
+// resolved color, so `starter` no longer resolves to the retired `uiAccent` — which made
+// it 2.12:1 on the Jets.
+func playerStatusColor(_ status: PlayerStatus, accent: Color) -> Color {
+    switch status {
+    case .starter: accent
+    case .backup: DesignTokens.Colors.textMuted
+    case .rookie: DesignTokens.Colors.statusRookie
+    case .injured: DesignTokens.Colors.statusInjured
+    }
+}
+
+enum PlayerProfileSection {
+    static let seasonStatsTitle = "SEASON STATS"
+    static let depthChartTitle = "DEPTH CHART"
+    static let accoladesTitle = "ACCOLADES"
+}
