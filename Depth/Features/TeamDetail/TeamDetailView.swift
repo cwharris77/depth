@@ -26,7 +26,12 @@ struct TeamDetailView: View {
     /// `.task` re-runs every time this stack root reappears — including popping back from a
     /// pushed player profile — so the initial load and sign-in merge run once per team
     /// identity. DepthChartsTab's `.id(teamId)` resets this on a team switch; pull-to-refresh
-    /// and the requested-player/uniform `onChange` handlers cover everything else.
+    /// and the requested-player/uniform `onChange` handlers pick up later changes.
+    /// Latched only after a run that finished uncancelled: SwiftUI cancels `.task` when this
+    /// view leaves the screen (a tab switch mid-load), and a latched-but-incomplete run would
+    /// strand the chart on its error state with no overrides merged and a dropped
+    /// requested-player/uniform until a pull-to-refresh. An incomplete run therefore retries
+    /// in full on the next appearance; a completed one never re-runs.
     @State private var didInitialLoad = false
     /// DEP-323: the name-presentation style chosen in Settings. Shared with SettingsView
     /// through the same defaults key.
@@ -172,8 +177,11 @@ struct TeamDetailView: View {
             .background(DesignTokens.Colors.bg)
             .task {
                 guard !didInitialLoad else { return }
-                didInitialLoad = true
                 await viewModel.load()
+                // Leaving the tab mid-load cancels this task, and `load()` reports the
+                // cancellation as a failed state. Returning without latching lets the next
+                // appearance re-run the whole sequence instead of stranding that error.
+                guard !Task.isCancelled else { return }
                 // DEP-219: a cold launch already signed in never fires the
                 // sessionStore.user onChange below (it only sees transitions) — run
                 // the sign-in merge here too, matching web's effect (which re-runs on
@@ -190,6 +198,9 @@ struct TeamDetailView: View {
                 // so the depth chart shows the originating kit, not whatever was
                 // last persisted for this team.
                 presentRequestedUniform(requestedUniformId)
+                // Latch only now, with the whole sequence done: popping back from the pushed
+                // player profile must not re-run the load and the sign-in merge.
+                if !Task.isCancelled { didInitialLoad = true }
             }
             .onChange(of: requestedPlayerID) { _, id in
                 // Also covers picking a player on the already-current team, where
