@@ -9,12 +9,11 @@
 // (primary) — so the two shared pant parts are blue (home) and silver (away + gridiron).
 
 import {
-  LIONS_DECAL_BODY_PATH,
-  LIONS_DECAL_KEYLINE_PATH,
   LIONS_SLEEVE_X_LEFT,
   LIONS_SLEEVE_X_RIGHT,
   LIONS_STRIPE_BOUNDS,
 } from './lions';
+import { LIONS_DECAL_PATHS as GENERATED_LIONS_DECAL_PATHS } from './lions-decal';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 import type { UniformSurface } from './types';
 
@@ -55,22 +54,14 @@ const HELMET_SILVER_LION: UniformPart = {
   base: 'silver',
   facemask: 'silver',
   layers: [
-    {
-      id: 'lions-decal-keyline',
-      surface: 'helmet',
-      d: LIONS_DECAL_KEYLINE_PATH,
+    ...GENERATED_LIONS_DECAL_PATHS.map((layer, index) => ({
+      id: `lions-decal-${index}`,
+      surface: 'helmet' as const,
+      d: layer.d,
       clip: true,
-      kind: 'fill',
-      fill: 'white',
-    },
-    {
-      id: 'lions-decal-body',
-      surface: 'helmet',
-      d: LIONS_DECAL_BODY_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'blue',
-    },
+      kind: 'fill' as const,
+      fill: layer.fill,
+    })),
   ],
 };
 
