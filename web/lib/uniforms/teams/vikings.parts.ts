@@ -21,6 +21,7 @@ import {
   VIKINGS_BAND_UPPER_RIGHT,
   VIKINGS_COLLAR_PATH,
   VIKINGS_DECAL_CRESCENT_PATH,
+  VIKINGS_DECAL_HORN_FILL_PATH,
   VIKINGS_DECAL_HORN_PATH,
   VIKINGS_PANTS_INNER_LEFT,
   VIKINGS_PANTS_INNER_RIGHT,
@@ -82,12 +83,13 @@ function collar(outer: string, inner: string): PartLayer[] {
   }));
 }
 
-// Horn then crescent, both evenodd — a bold solid shape survives the small source where a thin
-// keyline would not.
+// Horn then crescent. The supplied horn uses the SVG default nonzero fill so its interior stays
+// solid; evenodd would punch the nested contour through to the helmet shell.
 function decal(horn: string, crescent: string): PartLayer[] {
   return (
     [
       ['vikings-decal-horn', VIKINGS_DECAL_HORN_PATH, horn],
+      ['vikings-decal-horn-fill', VIKINGS_DECAL_HORN_FILL_PATH, horn],
       ['vikings-decal-crescent', VIKINGS_DECAL_CRESCENT_PATH, crescent],
     ] as [string, string, string][]
   ).map(([id, d, fill]) => ({
@@ -96,7 +98,6 @@ function decal(horn: string, crescent: string): PartLayer[] {
     d,
     clip: true,
     kind: 'fill' as const,
-    fillRule: 'evenodd' as const,
     fill,
   }));
 }
