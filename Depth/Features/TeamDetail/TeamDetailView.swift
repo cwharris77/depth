@@ -492,7 +492,9 @@ struct TeamDetailView: View {
                 Circle()
                     .fill(teamAccentColor)
                     .frame(width: 6, height: 6)
-                Text("Editing")
+                // DEP-540: this is the edit-mode exit action, not a passive status tag.
+                // Naming the result prevents a tap from unexpectedly ending the mode.
+                Text("Done editing")
                     .font(.caption.weight(.semibold))
             }
             .foregroundStyle(teamAccentColor)
@@ -505,7 +507,7 @@ struct TeamDetailView: View {
         }
         .frame(minHeight: 44)
         .accessibilityIdentifier("depth-chart-editing-active")
-        .accessibilityLabel("Editing depth chart")
+        .accessibilityLabel("Done editing depth chart")
         .accessibilityValue(isMotionReduced ? "Motion reduced" : "Player dots moving")
         .accessibilityHint("Exits edit mode without discarding saved changes")
     }
