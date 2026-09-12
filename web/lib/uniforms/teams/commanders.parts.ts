@@ -14,7 +14,6 @@
 import {
   COMMANDERS_BOUNDS,
   COMMANDERS_DECAL_PATH,
-  COMMANDERS_DECAL_INNER_PATH,
   COMMANDERS_SLEEVE_X_LEFT,
   COMMANDERS_SLEEVE_X_RIGHT,
 } from './commanders';
@@ -46,8 +45,8 @@ function sleeveBand(band: string, line: string): PartLayer[] {
   return out;
 }
 
-// The supplied standalone SVG has a gold outer W and burgundy interior panels. Painting the
-// shell-colored panels over the gold preserves the full mark on any future non-burgundy shell.
+// The supplied standalone SVG's gold outer W is the helmet treatment; the source's burgundy
+// interior panels are omitted because the archive helmet mark is a solid gold W.
 function decal(which: string): PartLayer[] {
   return [
     {
@@ -57,14 +56,6 @@ function decal(which: string): PartLayer[] {
       clip: true,
       kind: 'fill',
       fill: which,
-    },
-    {
-      id: 'commanders-decal-inner',
-      surface: 'helmet',
-      d: COMMANDERS_DECAL_INNER_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'burgundy',
     },
   ];
 }

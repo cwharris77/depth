@@ -12,8 +12,7 @@
 export const COMMANDERS_WHITE = '#FFFFFF';
 
 // The placed outer and shell-colored inner layers are generated from the supplied SVG.
-import { COMMANDERS_DECAL_INNER_PATH, COMMANDERS_DECAL_OUTER_PATH } from './commanders-decal';
-export { COMMANDERS_DECAL_INNER_PATH };
+import { COMMANDERS_DECAL_OUTER_PATH } from './commanders-decal';
 export const COMMANDERS_DECAL_PATH = COMMANDERS_DECAL_OUTER_PATH;
 
 // The sleeve band, measured on the home figure. A column crosses gold y432-441, white y442-446 and
