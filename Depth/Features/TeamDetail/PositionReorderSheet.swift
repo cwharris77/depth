@@ -43,7 +43,13 @@ struct PositionReorderSheet: View {
     }
 
     var body: some View {
-        DepthSheet(title: position.fullName, sizing: .medium) {
+        // `.medium` resolves to `[.medium, .large]`, so the sheet can always be dragged up
+        // — but it *opens* at the first detent, and DepthReorderList's long-press drag does
+        // not autoscroll. A deep room (the WR/CB run of 8-10) shows ~4 rows at `.medium`,
+        // turning a rank-9-to-rank-1 move into repeated scroll/drag cycles; those rooms open
+        // full height, where the whole list is already on screen. Shallow rooms (QB, K, P)
+        // keep the compact detent rather than a wall of empty space.
+        DepthSheet(title: position.fullName, sizing: players.count > 5 ? .full : .medium) {
             // A ScrollView, not a List: DepthReorderList's long-press-then-drag gesture is
             // the disambiguator against this scroll (see its header), and a List would add
             // its own competing reorder and scroll behavior.
@@ -75,7 +81,10 @@ struct PositionReorderSheet: View {
     }
 
     // Web parity (Badge variant="tag"): accent text on a 10%-alpha accent fill with an
-    // accent-tinted border.
+    // accent-tinted border. The 6/2 inset is deliberately off the DesignTokens.Spacing
+    // 8-point scale — it is the Badge pill's own metric, carried verbatim from the deleted
+    // player card, and `xs`/`sm` (4/8) visibly over- or under-inflate a caption-sized
+    // capsule. Pill-specific, not a missing token.
     private var customTag: some View {
         Text("CUSTOM")
             .font(.caption.bold())
@@ -98,8 +107,8 @@ struct PositionReorderSheet: View {
                     .font(.caption.bold())
             }
             .foregroundStyle(DesignTokens.Colors.textMuted)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            .padding(.horizontal, DesignTokens.Spacing.sm)
+            .padding(.vertical, DesignTokens.Spacing.xs)
             // DEP-259: 44pt hit target without inflating the pill's visual size; DEP-395:
             // the shape sits on the label, after its frame.
             .frame(minWidth: 44, minHeight: 44)

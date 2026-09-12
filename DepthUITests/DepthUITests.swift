@@ -7,6 +7,7 @@ import XCTest
 // instead of searching a root list. Runs on the hermetic fixture backend
 // (UI_TESTING_FIXTURE_BACKEND) — a checked-in snapshot, not a live database — except
 // `testAppLaunches`, the one live smoke that boots against the configured backend.
+@MainActor
 final class DepthUITests: XCTestCase {
     func testAppLaunches() throws {
         let app = XCUIApplication()
@@ -57,6 +58,13 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(
             app.descendants(matching: .any)["player-profile-full-stats"].waitForExistence(timeout: 10),
             "profile should resolve a stats state"
+        )
+        // The counterpart to testOpenHistoricalRosterProfileAndReturnToToday's absence
+        // assertion: on a live roster the BIO section must actually render, so a regression
+        // that hid it everywhere could not pass as "correctly hidden for historical".
+        XCTAssertTrue(
+            app.descendants(matching: .any)["player-profile-full-bio"].waitForExistence(timeout: 5),
+            "a live-roster profile should show the BIO section"
         )
 
         app.navigationBars.buttons["BackButton"].tap()

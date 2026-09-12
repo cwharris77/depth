@@ -56,7 +56,10 @@ struct ScheduleView: View {
         .task { await viewModel.load() }
         .refreshable { await viewModel.load() }
         .sheet(isPresented: $showSeasonPicker) {
-            if let defaultSeason = viewModel.defaultSeason, let selectedSeason = viewModel.selectedSeason {
+            // `defaultSeason != nil` rather than a binding: the value itself is unused here
+            // (seasonOptions already derives from it and is empty without it), it is only the
+            // gate that a season range exists at all.
+            if viewModel.defaultSeason != nil, let selectedSeason = viewModel.selectedSeason {
                 SeasonPickerSheet(
                     items: viewModel.seasonOptions.map { SeasonPickerItem(season: $0) },
                     selectedSeason: selectedSeason,

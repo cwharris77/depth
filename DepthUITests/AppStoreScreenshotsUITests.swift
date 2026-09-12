@@ -34,6 +34,7 @@ import XCTest
 // Teams are pinned rather than incidental: Seahawks (already the launch default), Broncos
 // for defense, Chargers for stats, Chiefs/Eagles for compare. Pinning keeps reruns
 // byte-comparable and keeps one team from dominating the listing.
+@MainActor
 final class AppStoreScreenshotsUITests: XCTestCase {
     func testCaptureAppStoreScreenshotSequence() throws {
         let app = XCUIApplication()

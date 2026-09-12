@@ -414,7 +414,12 @@ extension PlayerProfileDisplay {
             // parts carry equal layout priority, so a value that long shrinks AGE/EXP/height/
             // weight too; show only the first school and leave the full list to VoiceOver
             // (2026-09-11 merge-spec review ruling).
-            let first = college.split(separator: ";").first
+            // omittingEmptySubsequences: false on purpose. The default drops a leading
+            // empty component, so a degenerate ";Oklahoma State" would silently promote the
+            // SECOND school as if it were the first; keeping the empty component makes that
+            // input fall through to the raw value below instead of quietly lying. Not
+            // reachable with real ESPN data — this is a correctness guard, not a fix.
+            let first = college.split(separator: ";", omittingEmptySubsequences: false).first
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) } ?? ""
             let shown = first.isEmpty ? college : first
             parts.append(PlayerVital(text: shown.uppercased(), spoken: "College, \(college)"))

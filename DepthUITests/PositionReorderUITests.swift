@@ -5,6 +5,7 @@ import XCTest
 // tag, Reset. Outside edit mode the same tap pushes the player profile. All writes go
 // through the DEP-219 local-first override cache, so the order survives a relaunch with no
 // account. Runs on the hermetic fixture backend (UI_TESTING_FIXTURE_BACKEND).
+@MainActor
 final class PositionReorderUITests: XCTestCase {
     func testReorderPersistsAcrossRelaunch() throws {
         let app = XCUIApplication()

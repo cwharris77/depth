@@ -92,6 +92,31 @@ import Testing
         )
     }
 
+    /// The same profile at an accessibility content size. This is the real guard on the
+    /// vitals strip reflowing to one vital per line: `AccessibilityUITests` can only measure
+    /// the strip's total height (a two-line wrap and a full stack both clear any threshold),
+    /// because the strip is a single accessibility element with no per-vital children to
+    /// query. A rendered reference compares the actual arrangement.
+    @Test func playerProfileAccessibilitySize() async throws {
+        let snapshot = try await repository.teamSnapshot(teamId: "bills")
+        let quarterbacks = snapshot.players.filter { $0.position == .qb }
+        let starter = try #require(quarterbacks.first, "the Bills fixture should include a QB")
+        assertSnapshot(
+            of: NavigationStack {
+                PlayerProfileView(
+                    player: starter,
+                    team: snapshot.team,
+                    repository: repository,
+                    depthContext: PlayerDepthContext(players: quarterbacks, isCustom: false)
+                )
+            }
+            .environment(\.dynamicTypeSize, .accessibility3),
+            // Taller than `phone`: at AX3 the jersey band alone pushes the vitals strip past
+            // an 852-point frame, and a clipped strip would prove nothing.
+            as: .image(perceptualPrecision: 0.98, layout: .fixed(width: 393, height: 1200))
+        )
+    }
+
     /// Edit mode's reorder surface for one position: drag rows, no CUSTOM state yet.
     @Test func positionReorderSheet() async throws {
         let snapshot = try await repository.teamSnapshot(teamId: "bills")
