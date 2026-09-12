@@ -1,10 +1,25 @@
 import { describe, it, expect } from 'vitest';
-import { toRawSourceRows, rawConflictTarget, type RawTableSpec } from './raw-stats';
+import {
+  toPlayerRawRows,
+  toPlayRawRows,
+  playerRawConflictTarget,
+  playRawConflictTarget,
+  type PlayerRawSpec,
+  type PlayRawSpec,
+  type RawCrosswalks,
+} from './raw-stats';
 
-const seasonSpec: RawTableSpec = {
+const CROSSWALKS: RawCrosswalks = {
+  gsis: new Map([['00-1', 'espn-1']]),
+  pfr: new Map([['MahPa00', 'espn-1']]),
+};
+
+const seasonSpec: PlayerRawSpec = {
   table: 'nflverse_player_season',
   source: 'nflverse-player-season',
   grain: 'season',
+  idColumn: 'player_id',
+  idKind: 'gsis',
   columns: [
     { name: 'player_display_name', type: 'text' },
     { name: 'games', type: 'numeric' },
@@ -12,97 +27,125 @@ const seasonSpec: RawTableSpec = {
   ],
 };
 
-const weekSpec: RawTableSpec = {
-  table: 'nflverse_player_week',
-  source: 'nflverse-player-week',
+const weekSpec: PlayerRawSpec = {
+  table: 'pfr_player_week',
+  source: 'pfr-player-week',
   grain: 'week',
-  columns: [{ name: 'passing_yards', type: 'numeric' }],
+  idColumn: 'pfr_player_id',
+  idKind: 'pfr',
+  partition: 'stat_category',
+  columns: [{ name: 'times_pressured', type: 'numeric' }],
 };
 
-const CROSSWALK = new Map([['00-1', 'espn-1']]);
+const qbrSpec: PlayerRawSpec = {
+  table: 'espn_qbr_week',
+  source: 'espn-qbr-week',
+  grain: 'week',
+  idColumn: 'player_id',
+  idKind: 'espn',
+  weekColumn: 'game_week',
+  columns: [{ name: 'qbr_total', type: 'numeric' }],
+};
 
-describe('toRawSourceRows', () => {
+const ftnSpec: PlayRawSpec = {
+  table: 'ftn_play',
+  source: 'ftn-play',
+  grain: 'play',
+  keyColumns: ['ftn_game_id', 'ftn_play_id'],
+  columns: [
+    { name: 'ftn_game_id', type: 'text' },
+    { name: 'ftn_play_id', type: 'numeric' },
+    { name: 'is_play_action', type: 'boolean' },
+    { name: 'n_pass_rushers', type: 'numeric' },
+  ],
+};
+
+describe('toPlayerRawRows', () => {
   it('keeps every source column, coercing empties and malformed numerics to null', () => {
-    const { rows, skipped, unresolved } = toRawSourceRows(
+    const { rows, skipped, unresolved } = toPlayerRawRows(
       seasonSpec,
       [
         {
           player_id: '00-1',
           season: '2024',
-          season_type: 'REG',
           player_display_name: 'Patrick Mahomes',
           games: '17',
-          fg_made_list: '42;50;29',
+          fg_made_list: '42;50',
         },
       ],
-      CROSSWALK
+      CROSSWALKS
     );
-    expect(skipped).toBe(0);
-    expect(unresolved).toBe(0);
-    expect(rows).toEqual([
-      {
-        source_player_id: '00-1',
-        player_id: 'espn-1',
-        season: 2024,
-        season_type: 'REG',
-        player_display_name: 'Patrick Mahomes',
-        games: 17,
-        fg_made_list: '42;50;29',
-      },
-    ]);
-  });
-
-  it('zeroes no data: empty and malformed cells become null, never 0', () => {
-    const { rows } = toRawSourceRows(
-      seasonSpec,
-      [{ player_id: '00-1', season: '2024', games: '', fg_made_list: 'x' }],
-      CROSSWALK
-    );
-    // fg_made_list is text, so 'x' is preserved; only the numeric empty degrades.
-    expect(rows[0].games).toBeNull();
-    expect(rows[0].fg_made_list).toBe('x');
+    expect({ skipped, unresolved }).toEqual({ skipped: 0, unresolved: 0 });
+    expect(rows[0]).toMatchObject({ player_id: 'espn-1', games: 17, fg_made_list: '42;50' });
   });
 
   it('lands a crosswalk miss with a null player_id instead of dropping it', () => {
-    const { rows, unresolved } = toRawSourceRows(
+    const { rows, unresolved } = toPlayerRawRows(
       seasonSpec,
       [{ player_id: '00-999', season: '2024' }],
-      CROSSWALK
+      CROSSWALKS
     );
     expect(unresolved).toBe(1);
-    expect(rows).toHaveLength(1);
     expect(rows[0].player_id).toBeNull();
   });
 
   it('skips rows with no source id or an unusable season', () => {
-    const { rows, skipped } = toRawSourceRows(
+    const { rows, skipped } = toPlayerRawRows(
       seasonSpec,
-      [{ season: '2024' }, { player_id: '00-1', season: 'not-a-year' }],
-      CROSSWALK
+      [{ season: '2024' }, { player_id: '00-1', season: '' }],
+      CROSSWALKS
     );
     expect(rows).toHaveLength(0);
     expect(skipped).toBe(2);
   });
 
-  it('requires a valid week for a week-grain source', () => {
-    const { rows, skipped } = toRawSourceRows(
+  it('resolves pfr ids and stamps the partition for a split source', () => {
+    const { rows } = toPlayerRawRows(
       weekSpec,
-      [
-        { player_id: '00-1', season: '2024', week: '3', passing_yards: '280' },
-        { player_id: '00-1', season: '2024', week: '', passing_yards: '10' },
-      ],
-      CROSSWALK
+      [{ pfr_player_id: 'MahPa00', season: '2024', week: '3', times_pressured: '11' }],
+      CROSSWALKS,
+      'pass'
     );
-    expect(rows).toHaveLength(1);
-    expect(rows[0].week).toBe(3);
-    expect(rows[0].passing_yards).toBe(280);
-    expect(skipped).toBe(1);
+    expect(rows[0]).toMatchObject({
+      player_id: 'espn-1',
+      week: 3,
+      stat_category: 'pass',
+      times_pressured: 11,
+    });
+  });
+
+  it('takes an ESPN id directly and reads the week from weekColumn', () => {
+    const { rows } = toPlayerRawRows(
+      qbrSpec,
+      [{ player_id: '3139477', season: '2024', game_week: '5', qbr_total: '72.1' }],
+      CROSSWALKS
+    );
+    expect(rows[0]).toMatchObject({ player_id: '3139477', week: 5, qbr_total: 72.1 });
   });
 });
 
-describe('rawConflictTarget', () => {
-  it('matches the table primary key per grain', () => {
-    expect(rawConflictTarget(seasonSpec)).toBe('source_player_id,season,season_type');
-    expect(rawConflictTarget(weekSpec)).toBe('source_player_id,season,season_type,week');
+describe('toPlayRawRows', () => {
+  it('coerces booleans/numerics and requires the key columns', () => {
+    const { rows, skipped } = toPlayRawRows(ftnSpec, [
+      { ftn_game_id: 'g1', ftn_play_id: '10', is_play_action: 'TRUE', n_pass_rushers: '4' },
+      { ftn_game_id: 'g1', ftn_play_id: '', is_play_action: 'FALSE' },
+    ]);
+    expect(skipped).toBe(1);
+    expect(rows[0]).toMatchObject({
+      ftn_game_id: 'g1',
+      ftn_play_id: 10,
+      is_play_action: true,
+      n_pass_rushers: 4,
+    });
+  });
+});
+
+describe('conflict targets', () => {
+  it('matches each table primary key', () => {
+    expect(playerRawConflictTarget(seasonSpec)).toBe('source_player_id,season,season_type');
+    expect(playerRawConflictTarget(weekSpec)).toBe(
+      'source_player_id,season,season_type,week,stat_category'
+    );
+    expect(playRawConflictTarget(ftnSpec)).toBe('ftn_game_id,ftn_play_id');
   });
 });

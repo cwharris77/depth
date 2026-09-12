@@ -191,6 +191,297 @@ export type Database = {
           },
         ]
       }
+      espn_qbr_season: {
+        Row: {
+          epa_total: number | null
+          exp_sack: number | null
+          game_week: number | null
+          headshot_href: string | null
+          name_display: string | null
+          name_first: string | null
+          name_last: string | null
+          name_short: string | null
+          pass: number | null
+          penalty: number | null
+          player_id: string | null
+          pts_added: number | null
+          qb_plays: number | null
+          qbr_raw: number | null
+          qbr_total: number | null
+          qualified: boolean | null
+          rank: number | null
+          run: number | null
+          sack: number | null
+          season: number
+          season_type: string
+          source_player_id: string
+          team: string | null
+          team_abb: string | null
+          updated_at: string
+        }
+        Insert: {
+          epa_total?: number | null
+          exp_sack?: number | null
+          game_week?: number | null
+          headshot_href?: string | null
+          name_display?: string | null
+          name_first?: string | null
+          name_last?: string | null
+          name_short?: string | null
+          pass?: number | null
+          penalty?: number | null
+          player_id?: string | null
+          pts_added?: number | null
+          qb_plays?: number | null
+          qbr_raw?: number | null
+          qbr_total?: number | null
+          qualified?: boolean | null
+          rank?: number | null
+          run?: number | null
+          sack?: number | null
+          season: number
+          season_type?: string
+          source_player_id: string
+          team?: string | null
+          team_abb?: string | null
+          updated_at?: string
+        }
+        Update: {
+          epa_total?: number | null
+          exp_sack?: number | null
+          game_week?: number | null
+          headshot_href?: string | null
+          name_display?: string | null
+          name_first?: string | null
+          name_last?: string | null
+          name_short?: string | null
+          pass?: number | null
+          penalty?: number | null
+          player_id?: string | null
+          pts_added?: number | null
+          qb_plays?: number | null
+          qbr_raw?: number | null
+          qbr_total?: number | null
+          qualified?: boolean | null
+          rank?: number | null
+          run?: number | null
+          sack?: number | null
+          season?: number
+          season_type?: string
+          source_player_id?: string
+          team?: string | null
+          team_abb?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      espn_qbr_week: {
+        Row: {
+          epa_total: number | null
+          exp_sack: number | null
+          game_id: string | null
+          game_week: number | null
+          headshot_href: string | null
+          name_display: string | null
+          name_first: string | null
+          name_last: string | null
+          name_short: string | null
+          opp_abb: string | null
+          opp_id: string | null
+          opp_name: string | null
+          opp_team: string | null
+          pass: number | null
+          penalty: number | null
+          player_id: string | null
+          pts_added: number | null
+          qb_plays: number | null
+          qbr_raw: number | null
+          qbr_total: number | null
+          qualified: boolean | null
+          rank: number | null
+          run: number | null
+          sack: number | null
+          season: number
+          season_type: string
+          source_player_id: string
+          team: string | null
+          team_abb: string | null
+          updated_at: string
+          week: number
+          week_num: number | null
+          week_text: string | null
+        }
+        Insert: {
+          epa_total?: number | null
+          exp_sack?: number | null
+          game_id?: string | null
+          game_week?: number | null
+          headshot_href?: string | null
+          name_display?: string | null
+          name_first?: string | null
+          name_last?: string | null
+          name_short?: string | null
+          opp_abb?: string | null
+          opp_id?: string | null
+          opp_name?: string | null
+          opp_team?: string | null
+          pass?: number | null
+          penalty?: number | null
+          player_id?: string | null
+          pts_added?: number | null
+          qb_plays?: number | null
+          qbr_raw?: number | null
+          qbr_total?: number | null
+          qualified?: boolean | null
+          rank?: number | null
+          run?: number | null
+          sack?: number | null
+          season: number
+          season_type?: string
+          source_player_id: string
+          team?: string | null
+          team_abb?: string | null
+          updated_at?: string
+          week: number
+          week_num?: number | null
+          week_text?: string | null
+        }
+        Update: {
+          epa_total?: number | null
+          exp_sack?: number | null
+          game_id?: string | null
+          game_week?: number | null
+          headshot_href?: string | null
+          name_display?: string | null
+          name_first?: string | null
+          name_last?: string | null
+          name_short?: string | null
+          opp_abb?: string | null
+          opp_id?: string | null
+          opp_name?: string | null
+          opp_team?: string | null
+          pass?: number | null
+          penalty?: number | null
+          player_id?: string | null
+          pts_added?: number | null
+          qb_plays?: number | null
+          qbr_raw?: number | null
+          qbr_total?: number | null
+          qualified?: boolean | null
+          rank?: number | null
+          run?: number | null
+          sack?: number | null
+          season?: number
+          season_type?: string
+          source_player_id?: string
+          team?: string | null
+          team_abb?: string | null
+          updated_at?: string
+          week?: number
+          week_num?: number | null
+          week_text?: string | null
+        }
+        Relationships: []
+      }
+      ftn_play: {
+        Row: {
+          date_pulled: string | null
+          ftn_game_id: string
+          ftn_play_id: number
+          is_catchable_ball: boolean | null
+          is_contested_ball: boolean | null
+          is_created_reception: boolean | null
+          is_drop: boolean | null
+          is_interception_worthy: boolean | null
+          is_motion: boolean | null
+          is_no_huddle: boolean | null
+          is_play_action: boolean | null
+          is_qb_fault_sack: boolean | null
+          is_qb_out_of_pocket: boolean | null
+          is_qb_sneak: boolean | null
+          is_rpo: boolean | null
+          is_screen_pass: boolean | null
+          is_throw_away: boolean | null
+          is_trick_play: boolean | null
+          n_blitzers: number | null
+          n_defense_box: number | null
+          n_offense_backfield: number | null
+          n_pass_rushers: number | null
+          nflverse_game_id: string | null
+          nflverse_play_id: string | null
+          qb_location: string | null
+          read_thrown: boolean | null
+          season: number | null
+          starting_hash: string | null
+          updated_at: string
+          week: number | null
+        }
+        Insert: {
+          date_pulled?: string | null
+          ftn_game_id: string
+          ftn_play_id: number
+          is_catchable_ball?: boolean | null
+          is_contested_ball?: boolean | null
+          is_created_reception?: boolean | null
+          is_drop?: boolean | null
+          is_interception_worthy?: boolean | null
+          is_motion?: boolean | null
+          is_no_huddle?: boolean | null
+          is_play_action?: boolean | null
+          is_qb_fault_sack?: boolean | null
+          is_qb_out_of_pocket?: boolean | null
+          is_qb_sneak?: boolean | null
+          is_rpo?: boolean | null
+          is_screen_pass?: boolean | null
+          is_throw_away?: boolean | null
+          is_trick_play?: boolean | null
+          n_blitzers?: number | null
+          n_defense_box?: number | null
+          n_offense_backfield?: number | null
+          n_pass_rushers?: number | null
+          nflverse_game_id?: string | null
+          nflverse_play_id?: string | null
+          qb_location?: string | null
+          read_thrown?: boolean | null
+          season?: number | null
+          starting_hash?: string | null
+          updated_at?: string
+          week?: number | null
+        }
+        Update: {
+          date_pulled?: string | null
+          ftn_game_id?: string
+          ftn_play_id?: number
+          is_catchable_ball?: boolean | null
+          is_contested_ball?: boolean | null
+          is_created_reception?: boolean | null
+          is_drop?: boolean | null
+          is_interception_worthy?: boolean | null
+          is_motion?: boolean | null
+          is_no_huddle?: boolean | null
+          is_play_action?: boolean | null
+          is_qb_fault_sack?: boolean | null
+          is_qb_out_of_pocket?: boolean | null
+          is_qb_sneak?: boolean | null
+          is_rpo?: boolean | null
+          is_screen_pass?: boolean | null
+          is_throw_away?: boolean | null
+          is_trick_play?: boolean | null
+          n_blitzers?: number | null
+          n_defense_box?: number | null
+          n_offense_backfield?: number | null
+          n_pass_rushers?: number | null
+          nflverse_game_id?: string | null
+          nflverse_play_id?: string | null
+          qb_location?: string | null
+          read_thrown?: boolean | null
+          season?: number | null
+          starting_hash?: string | null
+          updated_at?: string
+          week?: number | null
+        }
+        Relationships: []
+      }
       games: {
         Row: {
           away_moneyline: number | null
@@ -1232,6 +1523,348 @@ export type Database = {
           updated_at?: string
           week?: number
           wopr?: number | null
+        }
+        Relationships: []
+      }
+      ngs_player_week: {
+        Row: {
+          aggressiveness: number | null
+          attempts: number | null
+          avg_air_distance: string | null
+          avg_air_yards_differential: number | null
+          avg_air_yards_to_sticks: number | null
+          avg_completed_air_yards: number | null
+          avg_cushion: number | null
+          avg_expected_yac: number | null
+          avg_intended_air_yards: number | null
+          avg_rush_yards: number | null
+          avg_separation: number | null
+          avg_time_to_los: number | null
+          avg_time_to_throw: number | null
+          avg_yac: number | null
+          avg_yac_above_expectation: number | null
+          catch_percentage: number | null
+          completion_percentage: number | null
+          completion_percentage_above_expectation: number | null
+          completions: number | null
+          efficiency: number | null
+          expected_completion_percentage: number | null
+          expected_rush_yards: number | null
+          interceptions: number | null
+          max_air_distance: string | null
+          max_completed_air_distance: string | null
+          pass_touchdowns: number | null
+          pass_yards: number | null
+          passer_rating: number | null
+          percent_attempts_gte_eight_defenders: number | null
+          percent_share_of_intended_air_yards: number | null
+          player_display_name: string | null
+          player_first_name: string | null
+          player_id: string | null
+          player_jersey_number: number | null
+          player_last_name: string | null
+          player_position: string | null
+          player_short_name: string | null
+          rec_touchdowns: number | null
+          receptions: number | null
+          rush_attempts: number | null
+          rush_pct_over_expected: number | null
+          rush_touchdowns: number | null
+          rush_yards: number | null
+          rush_yards_over_expected: number | null
+          rush_yards_over_expected_per_att: number | null
+          season: number
+          season_type: string
+          source_player_id: string
+          stat_category: string
+          targets: number | null
+          team_abbr: string | null
+          updated_at: string
+          week: number
+          yards: number | null
+        }
+        Insert: {
+          aggressiveness?: number | null
+          attempts?: number | null
+          avg_air_distance?: string | null
+          avg_air_yards_differential?: number | null
+          avg_air_yards_to_sticks?: number | null
+          avg_completed_air_yards?: number | null
+          avg_cushion?: number | null
+          avg_expected_yac?: number | null
+          avg_intended_air_yards?: number | null
+          avg_rush_yards?: number | null
+          avg_separation?: number | null
+          avg_time_to_los?: number | null
+          avg_time_to_throw?: number | null
+          avg_yac?: number | null
+          avg_yac_above_expectation?: number | null
+          catch_percentage?: number | null
+          completion_percentage?: number | null
+          completion_percentage_above_expectation?: number | null
+          completions?: number | null
+          efficiency?: number | null
+          expected_completion_percentage?: number | null
+          expected_rush_yards?: number | null
+          interceptions?: number | null
+          max_air_distance?: string | null
+          max_completed_air_distance?: string | null
+          pass_touchdowns?: number | null
+          pass_yards?: number | null
+          passer_rating?: number | null
+          percent_attempts_gte_eight_defenders?: number | null
+          percent_share_of_intended_air_yards?: number | null
+          player_display_name?: string | null
+          player_first_name?: string | null
+          player_id?: string | null
+          player_jersey_number?: number | null
+          player_last_name?: string | null
+          player_position?: string | null
+          player_short_name?: string | null
+          rec_touchdowns?: number | null
+          receptions?: number | null
+          rush_attempts?: number | null
+          rush_pct_over_expected?: number | null
+          rush_touchdowns?: number | null
+          rush_yards?: number | null
+          rush_yards_over_expected?: number | null
+          rush_yards_over_expected_per_att?: number | null
+          season: number
+          season_type?: string
+          source_player_id: string
+          stat_category: string
+          targets?: number | null
+          team_abbr?: string | null
+          updated_at?: string
+          week: number
+          yards?: number | null
+        }
+        Update: {
+          aggressiveness?: number | null
+          attempts?: number | null
+          avg_air_distance?: string | null
+          avg_air_yards_differential?: number | null
+          avg_air_yards_to_sticks?: number | null
+          avg_completed_air_yards?: number | null
+          avg_cushion?: number | null
+          avg_expected_yac?: number | null
+          avg_intended_air_yards?: number | null
+          avg_rush_yards?: number | null
+          avg_separation?: number | null
+          avg_time_to_los?: number | null
+          avg_time_to_throw?: number | null
+          avg_yac?: number | null
+          avg_yac_above_expectation?: number | null
+          catch_percentage?: number | null
+          completion_percentage?: number | null
+          completion_percentage_above_expectation?: number | null
+          completions?: number | null
+          efficiency?: number | null
+          expected_completion_percentage?: number | null
+          expected_rush_yards?: number | null
+          interceptions?: number | null
+          max_air_distance?: string | null
+          max_completed_air_distance?: string | null
+          pass_touchdowns?: number | null
+          pass_yards?: number | null
+          passer_rating?: number | null
+          percent_attempts_gte_eight_defenders?: number | null
+          percent_share_of_intended_air_yards?: number | null
+          player_display_name?: string | null
+          player_first_name?: string | null
+          player_id?: string | null
+          player_jersey_number?: number | null
+          player_last_name?: string | null
+          player_position?: string | null
+          player_short_name?: string | null
+          rec_touchdowns?: number | null
+          receptions?: number | null
+          rush_attempts?: number | null
+          rush_pct_over_expected?: number | null
+          rush_touchdowns?: number | null
+          rush_yards?: number | null
+          rush_yards_over_expected?: number | null
+          rush_yards_over_expected_per_att?: number | null
+          season?: number
+          season_type?: string
+          source_player_id?: string
+          stat_category?: string
+          targets?: number | null
+          team_abbr?: string | null
+          updated_at?: string
+          week?: number
+          yards?: number | null
+        }
+        Relationships: []
+      }
+      pfr_player_week: {
+        Row: {
+          carries: number | null
+          def_adot: number | null
+          def_air_yards_completed: number | null
+          def_completion_pct: number | null
+          def_completions_allowed: number | null
+          def_ints: number | null
+          def_missed_tackle_pct: number | null
+          def_missed_tackles: number | null
+          def_passer_rating_allowed: number | null
+          def_pressures: number | null
+          def_receiving_td_allowed: number | null
+          def_sacks: number | null
+          def_tackles_combined: number | null
+          def_targets: number | null
+          def_times_blitzed: number | null
+          def_times_hitqb: number | null
+          def_times_hurried: number | null
+          def_yards_after_catch: number | null
+          def_yards_allowed: number | null
+          def_yards_allowed_per_cmp: number | null
+          def_yards_allowed_per_tgt: number | null
+          game_id: string | null
+          game_type: number | null
+          opponent: string | null
+          passing_bad_throw_pct: number | null
+          passing_bad_throws: number | null
+          passing_drop_pct: number | null
+          passing_drops: number | null
+          pfr_game_id: string | null
+          pfr_player_name: number | null
+          player_id: string | null
+          receiving_broken_tackles: number | null
+          receiving_drop: number | null
+          receiving_drop_pct: number | null
+          receiving_int: number | null
+          receiving_rat: number | null
+          rushing_broken_tackles: number | null
+          rushing_yards_after_contact: number | null
+          rushing_yards_after_contact_avg: number | null
+          rushing_yards_before_contact: number | null
+          rushing_yards_before_contact_avg: number | null
+          season: number
+          season_type: string
+          source_player_id: string
+          stat_category: string
+          team: string | null
+          times_blitzed: number | null
+          times_hit: number | null
+          times_hurried: number | null
+          times_pressured: number | null
+          times_pressured_pct: number | null
+          times_sacked: number | null
+          updated_at: string
+          week: number
+        }
+        Insert: {
+          carries?: number | null
+          def_adot?: number | null
+          def_air_yards_completed?: number | null
+          def_completion_pct?: number | null
+          def_completions_allowed?: number | null
+          def_ints?: number | null
+          def_missed_tackle_pct?: number | null
+          def_missed_tackles?: number | null
+          def_passer_rating_allowed?: number | null
+          def_pressures?: number | null
+          def_receiving_td_allowed?: number | null
+          def_sacks?: number | null
+          def_tackles_combined?: number | null
+          def_targets?: number | null
+          def_times_blitzed?: number | null
+          def_times_hitqb?: number | null
+          def_times_hurried?: number | null
+          def_yards_after_catch?: number | null
+          def_yards_allowed?: number | null
+          def_yards_allowed_per_cmp?: number | null
+          def_yards_allowed_per_tgt?: number | null
+          game_id?: string | null
+          game_type?: number | null
+          opponent?: string | null
+          passing_bad_throw_pct?: number | null
+          passing_bad_throws?: number | null
+          passing_drop_pct?: number | null
+          passing_drops?: number | null
+          pfr_game_id?: string | null
+          pfr_player_name?: number | null
+          player_id?: string | null
+          receiving_broken_tackles?: number | null
+          receiving_drop?: number | null
+          receiving_drop_pct?: number | null
+          receiving_int?: number | null
+          receiving_rat?: number | null
+          rushing_broken_tackles?: number | null
+          rushing_yards_after_contact?: number | null
+          rushing_yards_after_contact_avg?: number | null
+          rushing_yards_before_contact?: number | null
+          rushing_yards_before_contact_avg?: number | null
+          season: number
+          season_type?: string
+          source_player_id: string
+          stat_category: string
+          team?: string | null
+          times_blitzed?: number | null
+          times_hit?: number | null
+          times_hurried?: number | null
+          times_pressured?: number | null
+          times_pressured_pct?: number | null
+          times_sacked?: number | null
+          updated_at?: string
+          week: number
+        }
+        Update: {
+          carries?: number | null
+          def_adot?: number | null
+          def_air_yards_completed?: number | null
+          def_completion_pct?: number | null
+          def_completions_allowed?: number | null
+          def_ints?: number | null
+          def_missed_tackle_pct?: number | null
+          def_missed_tackles?: number | null
+          def_passer_rating_allowed?: number | null
+          def_pressures?: number | null
+          def_receiving_td_allowed?: number | null
+          def_sacks?: number | null
+          def_tackles_combined?: number | null
+          def_targets?: number | null
+          def_times_blitzed?: number | null
+          def_times_hitqb?: number | null
+          def_times_hurried?: number | null
+          def_yards_after_catch?: number | null
+          def_yards_allowed?: number | null
+          def_yards_allowed_per_cmp?: number | null
+          def_yards_allowed_per_tgt?: number | null
+          game_id?: string | null
+          game_type?: number | null
+          opponent?: string | null
+          passing_bad_throw_pct?: number | null
+          passing_bad_throws?: number | null
+          passing_drop_pct?: number | null
+          passing_drops?: number | null
+          pfr_game_id?: string | null
+          pfr_player_name?: number | null
+          player_id?: string | null
+          receiving_broken_tackles?: number | null
+          receiving_drop?: number | null
+          receiving_drop_pct?: number | null
+          receiving_int?: number | null
+          receiving_rat?: number | null
+          rushing_broken_tackles?: number | null
+          rushing_yards_after_contact?: number | null
+          rushing_yards_after_contact_avg?: number | null
+          rushing_yards_before_contact?: number | null
+          rushing_yards_before_contact_avg?: number | null
+          season?: number
+          season_type?: string
+          source_player_id?: string
+          stat_category?: string
+          team?: string | null
+          times_blitzed?: number | null
+          times_hit?: number | null
+          times_hurried?: number | null
+          times_pressured?: number | null
+          times_pressured_pct?: number | null
+          times_sacked?: number | null
+          updated_at?: string
+          week?: number
         }
         Relationships: []
       }

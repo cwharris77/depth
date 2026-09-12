@@ -1,21 +1,34 @@
-// GENERATED — do not edit by hand. Source: nflverse release headers (see scripts/).
-export type RawColumnType = 'text' | 'numeric';
+// GENERATED — do not edit by hand. Run `npm run gen:nflverse-raw-tables`.
+export type RawColumnType = 'text' | 'numeric' | 'boolean';
 export interface RawColumn {
   name: string;
   type: RawColumnType;
 }
-export interface RawTableSpec {
+export interface PlayerRawSpec {
   table: string;
   source: string;
   grain: 'season' | 'week';
+  idColumn: string;
+  idKind: 'gsis' | 'pfr' | 'espn';
+  weekColumn?: string;
+  partition?: string;
+  columns: RawColumn[];
+}
+export interface PlayRawSpec {
+  table: string;
+  source: string;
+  grain: 'play';
+  keyColumns: string[];
   columns: RawColumn[];
 }
 
-export const nflverseRawTables: RawTableSpec[] = [
+export const playerRawTables: PlayerRawSpec[] = [
   {
     table: 'nflverse_player_season',
     source: 'nflverse-player-season',
     grain: 'season',
+    idColumn: 'player_id',
+    idKind: 'gsis',
     columns: [
       {
         name: 'player_name',
@@ -603,6 +616,8 @@ export const nflverseRawTables: RawTableSpec[] = [
     table: 'nflverse_player_week',
     source: 'nflverse-player-week',
     grain: 'week',
+    idColumn: 'player_id',
+    idKind: 'gsis',
     columns: [
       {
         name: 'player_name',
@@ -1187,6 +1202,736 @@ export const nflverseRawTables: RawTableSpec[] = [
       {
         name: 'fantasy_points_ppr',
         type: 'numeric',
+      },
+    ],
+  },
+  {
+    table: 'pfr_player_week',
+    source: 'pfr-player-week',
+    grain: 'week',
+    idColumn: 'pfr_player_id',
+    idKind: 'pfr',
+    partition: 'stat_category',
+    columns: [
+      {
+        name: 'game_id',
+        type: 'text',
+      },
+      {
+        name: 'pfr_game_id',
+        type: 'text',
+      },
+      {
+        name: 'game_type',
+        type: 'numeric',
+      },
+      {
+        name: 'team',
+        type: 'text',
+      },
+      {
+        name: 'opponent',
+        type: 'text',
+      },
+      {
+        name: 'pfr_player_name',
+        type: 'numeric',
+      },
+      {
+        name: 'passing_drops',
+        type: 'numeric',
+      },
+      {
+        name: 'passing_drop_pct',
+        type: 'numeric',
+      },
+      {
+        name: 'receiving_drop',
+        type: 'numeric',
+      },
+      {
+        name: 'receiving_drop_pct',
+        type: 'numeric',
+      },
+      {
+        name: 'passing_bad_throws',
+        type: 'numeric',
+      },
+      {
+        name: 'passing_bad_throw_pct',
+        type: 'numeric',
+      },
+      {
+        name: 'times_sacked',
+        type: 'numeric',
+      },
+      {
+        name: 'times_blitzed',
+        type: 'numeric',
+      },
+      {
+        name: 'times_hurried',
+        type: 'numeric',
+      },
+      {
+        name: 'times_hit',
+        type: 'numeric',
+      },
+      {
+        name: 'times_pressured',
+        type: 'numeric',
+      },
+      {
+        name: 'times_pressured_pct',
+        type: 'numeric',
+      },
+      {
+        name: 'def_times_blitzed',
+        type: 'numeric',
+      },
+      {
+        name: 'def_times_hurried',
+        type: 'numeric',
+      },
+      {
+        name: 'def_times_hitqb',
+        type: 'numeric',
+      },
+      {
+        name: 'def_ints',
+        type: 'numeric',
+      },
+      {
+        name: 'def_targets',
+        type: 'numeric',
+      },
+      {
+        name: 'def_completions_allowed',
+        type: 'numeric',
+      },
+      {
+        name: 'def_completion_pct',
+        type: 'numeric',
+      },
+      {
+        name: 'def_yards_allowed',
+        type: 'numeric',
+      },
+      {
+        name: 'def_yards_allowed_per_cmp',
+        type: 'numeric',
+      },
+      {
+        name: 'def_yards_allowed_per_tgt',
+        type: 'numeric',
+      },
+      {
+        name: 'def_receiving_td_allowed',
+        type: 'numeric',
+      },
+      {
+        name: 'def_passer_rating_allowed',
+        type: 'numeric',
+      },
+      {
+        name: 'def_adot',
+        type: 'numeric',
+      },
+      {
+        name: 'def_air_yards_completed',
+        type: 'numeric',
+      },
+      {
+        name: 'def_yards_after_catch',
+        type: 'numeric',
+      },
+      {
+        name: 'def_sacks',
+        type: 'numeric',
+      },
+      {
+        name: 'def_pressures',
+        type: 'numeric',
+      },
+      {
+        name: 'def_tackles_combined',
+        type: 'numeric',
+      },
+      {
+        name: 'def_missed_tackles',
+        type: 'numeric',
+      },
+      {
+        name: 'def_missed_tackle_pct',
+        type: 'numeric',
+      },
+      {
+        name: 'carries',
+        type: 'numeric',
+      },
+      {
+        name: 'rushing_yards_before_contact',
+        type: 'numeric',
+      },
+      {
+        name: 'rushing_yards_before_contact_avg',
+        type: 'numeric',
+      },
+      {
+        name: 'rushing_yards_after_contact',
+        type: 'numeric',
+      },
+      {
+        name: 'rushing_yards_after_contact_avg',
+        type: 'numeric',
+      },
+      {
+        name: 'rushing_broken_tackles',
+        type: 'numeric',
+      },
+      {
+        name: 'receiving_broken_tackles',
+        type: 'numeric',
+      },
+      {
+        name: 'receiving_int',
+        type: 'numeric',
+      },
+      {
+        name: 'receiving_rat',
+        type: 'numeric',
+      },
+    ],
+  },
+  {
+    table: 'ngs_player_week',
+    source: 'ngs-player-week',
+    grain: 'week',
+    idColumn: 'player_gsis_id',
+    idKind: 'gsis',
+    partition: 'stat_category',
+    columns: [
+      {
+        name: 'player_display_name',
+        type: 'text',
+      },
+      {
+        name: 'player_position',
+        type: 'text',
+      },
+      {
+        name: 'team_abbr',
+        type: 'text',
+      },
+      {
+        name: 'avg_time_to_throw',
+        type: 'numeric',
+      },
+      {
+        name: 'avg_completed_air_yards',
+        type: 'numeric',
+      },
+      {
+        name: 'avg_intended_air_yards',
+        type: 'numeric',
+      },
+      {
+        name: 'avg_air_yards_differential',
+        type: 'numeric',
+      },
+      {
+        name: 'aggressiveness',
+        type: 'numeric',
+      },
+      {
+        name: 'max_completed_air_distance',
+        type: 'text',
+      },
+      {
+        name: 'avg_air_yards_to_sticks',
+        type: 'numeric',
+      },
+      {
+        name: 'attempts',
+        type: 'numeric',
+      },
+      {
+        name: 'pass_yards',
+        type: 'numeric',
+      },
+      {
+        name: 'pass_touchdowns',
+        type: 'numeric',
+      },
+      {
+        name: 'interceptions',
+        type: 'numeric',
+      },
+      {
+        name: 'passer_rating',
+        type: 'numeric',
+      },
+      {
+        name: 'completions',
+        type: 'numeric',
+      },
+      {
+        name: 'completion_percentage',
+        type: 'numeric',
+      },
+      {
+        name: 'expected_completion_percentage',
+        type: 'numeric',
+      },
+      {
+        name: 'completion_percentage_above_expectation',
+        type: 'numeric',
+      },
+      {
+        name: 'avg_air_distance',
+        type: 'text',
+      },
+      {
+        name: 'max_air_distance',
+        type: 'text',
+      },
+      {
+        name: 'player_first_name',
+        type: 'text',
+      },
+      {
+        name: 'player_last_name',
+        type: 'text',
+      },
+      {
+        name: 'player_jersey_number',
+        type: 'numeric',
+      },
+      {
+        name: 'player_short_name',
+        type: 'text',
+      },
+      {
+        name: 'efficiency',
+        type: 'numeric',
+      },
+      {
+        name: 'percent_attempts_gte_eight_defenders',
+        type: 'numeric',
+      },
+      {
+        name: 'avg_time_to_los',
+        type: 'numeric',
+      },
+      {
+        name: 'rush_attempts',
+        type: 'numeric',
+      },
+      {
+        name: 'rush_yards',
+        type: 'numeric',
+      },
+      {
+        name: 'expected_rush_yards',
+        type: 'numeric',
+      },
+      {
+        name: 'rush_yards_over_expected',
+        type: 'numeric',
+      },
+      {
+        name: 'avg_rush_yards',
+        type: 'numeric',
+      },
+      {
+        name: 'rush_yards_over_expected_per_att',
+        type: 'numeric',
+      },
+      {
+        name: 'rush_pct_over_expected',
+        type: 'numeric',
+      },
+      {
+        name: 'rush_touchdowns',
+        type: 'numeric',
+      },
+      {
+        name: 'avg_cushion',
+        type: 'numeric',
+      },
+      {
+        name: 'avg_separation',
+        type: 'numeric',
+      },
+      {
+        name: 'percent_share_of_intended_air_yards',
+        type: 'numeric',
+      },
+      {
+        name: 'receptions',
+        type: 'numeric',
+      },
+      {
+        name: 'targets',
+        type: 'numeric',
+      },
+      {
+        name: 'catch_percentage',
+        type: 'numeric',
+      },
+      {
+        name: 'yards',
+        type: 'numeric',
+      },
+      {
+        name: 'rec_touchdowns',
+        type: 'numeric',
+      },
+      {
+        name: 'avg_yac',
+        type: 'numeric',
+      },
+      {
+        name: 'avg_expected_yac',
+        type: 'numeric',
+      },
+      {
+        name: 'avg_yac_above_expectation',
+        type: 'numeric',
+      },
+    ],
+  },
+  {
+    table: 'espn_qbr_week',
+    source: 'espn-qbr-week',
+    grain: 'week',
+    idColumn: 'player_id',
+    idKind: 'espn',
+    weekColumn: 'game_week',
+    columns: [
+      {
+        name: 'game_id',
+        type: 'text',
+      },
+      {
+        name: 'game_week',
+        type: 'numeric',
+      },
+      {
+        name: 'week_text',
+        type: 'text',
+      },
+      {
+        name: 'team_abb',
+        type: 'text',
+      },
+      {
+        name: 'name_short',
+        type: 'text',
+      },
+      {
+        name: 'rank',
+        type: 'numeric',
+      },
+      {
+        name: 'qbr_total',
+        type: 'numeric',
+      },
+      {
+        name: 'pts_added',
+        type: 'numeric',
+      },
+      {
+        name: 'qb_plays',
+        type: 'numeric',
+      },
+      {
+        name: 'epa_total',
+        type: 'numeric',
+      },
+      {
+        name: 'pass',
+        type: 'numeric',
+      },
+      {
+        name: 'run',
+        type: 'numeric',
+      },
+      {
+        name: 'exp_sack',
+        type: 'numeric',
+      },
+      {
+        name: 'penalty',
+        type: 'numeric',
+      },
+      {
+        name: 'qbr_raw',
+        type: 'numeric',
+      },
+      {
+        name: 'sack',
+        type: 'numeric',
+      },
+      {
+        name: 'name_first',
+        type: 'text',
+      },
+      {
+        name: 'name_last',
+        type: 'text',
+      },
+      {
+        name: 'name_display',
+        type: 'text',
+      },
+      {
+        name: 'headshot_href',
+        type: 'text',
+      },
+      {
+        name: 'team',
+        type: 'text',
+      },
+      {
+        name: 'opp_id',
+        type: 'text',
+      },
+      {
+        name: 'opp_abb',
+        type: 'text',
+      },
+      {
+        name: 'opp_team',
+        type: 'text',
+      },
+      {
+        name: 'opp_name',
+        type: 'text',
+      },
+      {
+        name: 'week_num',
+        type: 'numeric',
+      },
+      {
+        name: 'qualified',
+        type: 'boolean',
+      },
+    ],
+  },
+  {
+    table: 'espn_qbr_season',
+    source: 'espn-qbr-season',
+    grain: 'season',
+    idColumn: 'player_id',
+    idKind: 'espn',
+    columns: [
+      {
+        name: 'game_week',
+        type: 'numeric',
+      },
+      {
+        name: 'team_abb',
+        type: 'text',
+      },
+      {
+        name: 'name_short',
+        type: 'text',
+      },
+      {
+        name: 'rank',
+        type: 'numeric',
+      },
+      {
+        name: 'qbr_total',
+        type: 'numeric',
+      },
+      {
+        name: 'pts_added',
+        type: 'numeric',
+      },
+      {
+        name: 'qb_plays',
+        type: 'numeric',
+      },
+      {
+        name: 'epa_total',
+        type: 'numeric',
+      },
+      {
+        name: 'pass',
+        type: 'numeric',
+      },
+      {
+        name: 'run',
+        type: 'numeric',
+      },
+      {
+        name: 'exp_sack',
+        type: 'numeric',
+      },
+      {
+        name: 'penalty',
+        type: 'numeric',
+      },
+      {
+        name: 'qbr_raw',
+        type: 'numeric',
+      },
+      {
+        name: 'sack',
+        type: 'numeric',
+      },
+      {
+        name: 'name_first',
+        type: 'text',
+      },
+      {
+        name: 'name_last',
+        type: 'text',
+      },
+      {
+        name: 'name_display',
+        type: 'text',
+      },
+      {
+        name: 'headshot_href',
+        type: 'text',
+      },
+      {
+        name: 'team',
+        type: 'text',
+      },
+      {
+        name: 'qualified',
+        type: 'boolean',
+      },
+    ],
+  },
+];
+
+export const playRawTables: PlayRawSpec[] = [
+  {
+    table: 'ftn_play',
+    source: 'ftn-play',
+    grain: 'play',
+    keyColumns: ['ftn_game_id', 'ftn_play_id'],
+    columns: [
+      {
+        name: 'ftn_game_id',
+        type: 'text',
+      },
+      {
+        name: 'nflverse_game_id',
+        type: 'text',
+      },
+      {
+        name: 'season',
+        type: 'numeric',
+      },
+      {
+        name: 'week',
+        type: 'numeric',
+      },
+      {
+        name: 'ftn_play_id',
+        type: 'numeric',
+      },
+      {
+        name: 'nflverse_play_id',
+        type: 'text',
+      },
+      {
+        name: 'starting_hash',
+        type: 'text',
+      },
+      {
+        name: 'qb_location',
+        type: 'text',
+      },
+      {
+        name: 'n_offense_backfield',
+        type: 'numeric',
+      },
+      {
+        name: 'n_defense_box',
+        type: 'numeric',
+      },
+      {
+        name: 'is_no_huddle',
+        type: 'boolean',
+      },
+      {
+        name: 'is_motion',
+        type: 'boolean',
+      },
+      {
+        name: 'is_play_action',
+        type: 'boolean',
+      },
+      {
+        name: 'is_screen_pass',
+        type: 'boolean',
+      },
+      {
+        name: 'is_rpo',
+        type: 'boolean',
+      },
+      {
+        name: 'is_trick_play',
+        type: 'boolean',
+      },
+      {
+        name: 'is_qb_out_of_pocket',
+        type: 'boolean',
+      },
+      {
+        name: 'is_interception_worthy',
+        type: 'boolean',
+      },
+      {
+        name: 'is_throw_away',
+        type: 'boolean',
+      },
+      {
+        name: 'read_thrown',
+        type: 'boolean',
+      },
+      {
+        name: 'is_catchable_ball',
+        type: 'boolean',
+      },
+      {
+        name: 'is_contested_ball',
+        type: 'boolean',
+      },
+      {
+        name: 'is_created_reception',
+        type: 'boolean',
+      },
+      {
+        name: 'is_drop',
+        type: 'boolean',
+      },
+      {
+        name: 'is_qb_sneak',
+        type: 'boolean',
+      },
+      {
+        name: 'n_blitzers',
+        type: 'numeric',
+      },
+      {
+        name: 'n_pass_rushers',
+        type: 'numeric',
+      },
+      {
+        name: 'is_qb_fault_sack',
+        type: 'boolean',
+      },
+      {
+        name: 'date_pulled',
+        type: 'text',
       },
     ],
   },
