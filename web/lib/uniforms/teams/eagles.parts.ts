@@ -5,9 +5,9 @@
 // The current kits (home, away) are one construction: a deep collar yoke and a solid band at the
 // sleeve hem. The kelly-green throwback drops the cuff entirely (its sleeve runs unbroken to the
 // hem) and keeps only the collar. No helmet stripe, no pant stripe on any kit. All four shells wear
-// the same wing: white over a black outline, so neither color moves with the palette. The four kits
-// combine three helmets (green shell, kelly shell, black shell) and four jerseys/pants (green,
-// white, black, kelly).
+// the same wing: white, black and silver layers in source paint order, so none of its colors moves
+// with the shell. The four kits combine three helmets (green shell, kelly shell, black shell) and
+// four jerseys/pants (green, white, black, kelly).
 
 import {
   EAGLES_BLACK,
@@ -15,29 +15,39 @@ import {
   EAGLES_COLLAR_WIDTH,
   EAGLES_CUFF_LEFT,
   EAGLES_CUFF_RIGHT,
-  EAGLES_DECAL_BODY_PATH,
-  EAGLES_DECAL_OUTLINE_PATH,
+  EAGLES_DECAL_BLACK_PATH,
+  EAGLES_DECAL_SILVER_PATH,
+  EAGLES_DECAL_WHITE_PATH,
 } from './eagles';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 
-// The wing — white over a black outline, the same decal on every shell. Fixed literals.
+// The wing — source paint order is white substrate, black feather channels, then silver body.
+// Every shell shares this exact placement and fixed palette.
 function wing(): PartLayer[] {
   return [
     {
-      id: 'eagles-decal-outline',
+      id: 'eagles-decal-white',
       surface: 'helmet',
-      d: EAGLES_DECAL_OUTLINE_PATH,
+      d: EAGLES_DECAL_WHITE_PATH,
+      clip: true,
+      kind: 'fill',
+      fill: 'white',
+    },
+    {
+      id: 'eagles-decal-black',
+      surface: 'helmet',
+      d: EAGLES_DECAL_BLACK_PATH,
       clip: true,
       kind: 'fill',
       fill: 'black',
     },
     {
-      id: 'eagles-decal-body',
+      id: 'eagles-decal-silver',
       surface: 'helmet',
-      d: EAGLES_DECAL_BODY_PATH,
+      d: EAGLES_DECAL_SILVER_PATH,
       clip: true,
       kind: 'fill',
-      fill: 'white',
+      fill: 'silver',
     },
   ];
 }
