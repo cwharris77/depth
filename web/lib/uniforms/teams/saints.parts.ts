@@ -8,7 +8,12 @@
 // a BLACK body (home over gold pants, color-rush over black), and away is the white body (over
 // black). The fleur is black on every kit.
 
-import { SAINTS_COLLAR_WIDTH, SAINTS_DECAL_PATH } from './saints';
+import {
+  SAINTS_COLLAR_WIDTH,
+  SAINTS_DECAL_BLACK_PATH,
+  SAINTS_DECAL_GOLD_PATH,
+  SAINTS_DECAL_WHITE_PATH,
+} from './saints';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 
 const COLLAR_PATH = 'M206,388 L294,455 L386,388';
@@ -40,12 +45,28 @@ const HELMET_GOLD_FLEUR: UniformPart = {
   facemask: 'gold',
   layers: [
     {
-      id: 'saints-decal',
+      id: 'saints-decal-black',
       surface: 'helmet',
-      d: SAINTS_DECAL_PATH,
+      d: SAINTS_DECAL_BLACK_PATH,
       clip: true,
       kind: 'fill',
       fill: 'black',
+    },
+    {
+      id: 'saints-decal-gold',
+      surface: 'helmet',
+      d: SAINTS_DECAL_GOLD_PATH,
+      clip: true,
+      kind: 'fill',
+      fill: 'gold',
+    },
+    {
+      id: 'saints-decal-white',
+      surface: 'helmet',
+      d: SAINTS_DECAL_WHITE_PATH,
+      clip: true,
+      kind: 'fill',
+      fill: 'white',
     },
   ],
 };
