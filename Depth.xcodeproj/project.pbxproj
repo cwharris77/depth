@@ -27,6 +27,7 @@
 		1B3A154597D7689EA37856B2 /* CompareMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7055D78D442259C7EC5A883 /* CompareMetrics.swift */; };
 		1E8765E566DE5866EF53BB33 /* FormationAttributionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D5CEA9E4551B2004154E97F /* FormationAttributionUITests.swift */; };
 		1EAD5ECB38956C0395E81458 /* DepthChartFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14888EF10F7F9A82139F0BD /* DepthChartFieldView.swift */; };
+		20633CBFFBC75F52B5DDF13E /* playerProfileAccessibilitySize.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 4D5052C464D98848939A7409 /* playerProfileAccessibilitySize.1.png */; };
 		216287DC1BC170297F969DCA /* CompareLensesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A7CEE9684BD4F4D123BB2A /* CompareLensesView.swift */; };
 		2661E1BF50815374697138E1 /* TeamStatsMetricCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD96534B7946BF3DA420CEE9 /* TeamStatsMetricCatalog.swift */; };
 		28BE2E5939AE5607BB4CC133 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4163276566B599870A6F754E /* Assets.xcassets */; };
@@ -285,6 +286,7 @@
 		4A43E560AF96AAD2A6546726 /* TeamStatsMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamStatsMapper.swift; sourceTree = "<group>"; };
 		4AC3E8EEA6B447DF7C704B0D /* UniformKitBadges.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniformKitBadges.swift; sourceTree = "<group>"; };
 		4C20C08065BC045F4A9C3C2D /* PerformanceUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceUITests.swift; sourceTree = "<group>"; };
+		4D5052C464D98848939A7409 /* playerProfileAccessibilitySize.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = playerProfileAccessibilitySize.1.png; sourceTree = "<group>"; };
 		4E08CA3C995029A6BAC0AB0E /* DepthUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DepthUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F264CCAAD3DD2BD01CFF1D9 /* CachingDepthRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingDepthRepository.swift; sourceTree = "<group>"; };
 		50938E38F00E79484F436B49 /* AppBuildInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBuildInfo.swift; sourceTree = "<group>"; };
@@ -806,6 +808,7 @@
 				D5DBEB9EBB4EB9FACD7831AD /* depthChartFieldDefense.1.png */,
 				15E05C8017C7EC40B861ADFD /* depthChartFieldOffense.1.png */,
 				ADC7C6160D2AAD621CC59403 /* depthChartFieldSpecialTeams.1.png */,
+				4D5052C464D98848939A7409 /* playerProfileAccessibilitySize.1.png */,
 				137895A43E1668FB447C784F /* playerProfileWithDepth.1.png */,
 				2FEA5DA93BB4480DE56E0749 /* positionReorderSheet.1.png */,
 				EC63E43016FBCC97287ED6A5 /* positionReorderSheetCustom.1.png */,
@@ -988,6 +991,7 @@
 				E5A79C017E2170CAE7826380 /* depthChartFieldDefense.1.png in Resources */,
 				920991D6E0C70BD6521A6B04 /* depthChartFieldOffense.1.png in Resources */,
 				D57CAE4A2030848BD5C934CA /* depthChartFieldSpecialTeams.1.png in Resources */,
+				20633CBFFBC75F52B5DDF13E /* playerProfileAccessibilitySize.1.png in Resources */,
 				A6914D1957C0BFDA4012096F /* playerProfileWithDepth.1.png in Resources */,
 				F5355B3DF83B1F31B4E362E6 /* positionReorderSheet.1.png in Resources */,
 				B833267E69680DECE7E93DF4 /* positionReorderSheetCustom.1.png in Resources */,

@@ -498,24 +498,42 @@ private struct PlayerProfileScreen: View {
         return context.isCustom ? "\(position) · CUSTOM" : position
     }
 
+    // The row for the player already on screen is inert: it is a destination, not a
+    // control. Rendering it as a Button with a no-op action would make VoiceOver announce
+    // "button, selected" on something that does nothing (.isSelected *adds to* the
+    // inherent button trait rather than replacing it), so the current row is a plain view.
+    @ViewBuilder
     private func depthRow(_ p: Player) -> some View {
         let isCurrent = p.id == player.id
-        return Button {
-            if !isCurrent { onSelectPlayer(p) }
-        } label: {
-            DepthRowContent(player: p, isCurrent: isCurrent, accent: markColor)
-                .padding(.vertical, DesignTokens.Spacing.sm)
-                .frame(minHeight: 44)
-                // DEP-395: the whole row accepts the tap, not just its glyphs.
-                .contentShape(Rectangle())
+        if isCurrent {
+            depthRowAccessibility(depthRowLabel(p, isCurrent: true), p, traits: [.isSelected])
+        } else {
+            depthRowAccessibility(
+                Button { onSelectPlayer(p) } label: { depthRowLabel(p, isCurrent: false) }
+                    .buttonStyle(.plain),
+                p, traits: [.isButton]
+            )
         }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(
-            "\(depthRankLabel(p.depthRank)), #\(p.number), \(p.name.isEmpty ? "#\(p.number)" : p.name)"
-        )
-        .accessibilityAddTraits(isCurrent ? [.isSelected] : [.isButton])
-        .accessibilityIdentifier("player-profile-full-depth-row-\(p.id)")
+    }
+
+    private func depthRowLabel(_ p: Player, isCurrent: Bool) -> some View {
+        DepthRowContent(player: p, isCurrent: isCurrent, accent: markColor)
+            .padding(.vertical, DesignTokens.Spacing.sm)
+            .frame(minHeight: 44)
+            // DEP-395: the whole row accepts the tap, not just its glyphs.
+            .contentShape(Rectangle())
+    }
+
+    private func depthRowAccessibility<V: View>(
+        _ row: V, _ p: Player, traits: AccessibilityTraits
+    ) -> some View {
+        row
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(
+                "\(depthRankLabel(p.depthRank)), #\(p.number), \(p.name.isEmpty ? "#\(p.number)" : p.name)"
+            )
+            .accessibilityAddTraits(traits)
+            .accessibilityIdentifier("player-profile-full-depth-row-\(p.id)")
     }
 
     // Merge spec: the card's Bio block, collapsible like every other section here. Hidden

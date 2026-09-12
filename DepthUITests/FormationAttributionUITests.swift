@@ -3,6 +3,7 @@ import XCTest
 // The FTN notice belongs to the content it attributes, not to the viewport chrome.
 // These regressions pin both placements: after the field on the team page and after
 // every formation row in the picker sheet.
+@MainActor
 final class FormationAttributionUITests: XCTestCase {
     func testFieldAttributionScrollsAfterTheField() throws {
         let app = launchBillsDepthChart()

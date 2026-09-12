@@ -102,6 +102,10 @@ private actor FakeDepthRepository: DepthRepository {
         scheduleResults[scheduleCacheKey(teamId: teamId, season: season)] = result
     }
 
+    func setUniformsResult(_ result: Result<[UniformListing], Error>) {
+        uniformsResult = result
+    }
+
     func callCount(forTeam teamId: String) -> Int {
         teamSnapshotCallCount[teamId, default: 0]
     }
@@ -519,7 +523,17 @@ private func uniformListing(id: String = "bills-home") -> UniformListing {
     let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
 
     _ = try await repository.listUniforms() // primes the cache
+
+    // The underlying goes dark after priming. `listUniforms` is cache-first + background
+    // refresh (CachingDepthRepository's header), so the warm read must be served from the
+    // store and must not block on — or fail with — the underlying; the refresh it kicks
+    // off is fire-and-forget and swallows this error.
+    //
+    // This used to assert `uniformsCallCount == 1`, which is not the contract: that
+    // background Task legitimately makes a second call, and the expectation only passed
+    // while the task happened not to have run yet. Any change to suite scheduling flipped
+    // it — asserting the value served, not the call count, tests the real invariant.
+    await underlying.setUniformsResult(.failure(DepthError.notFound))
     let cached = try await repository.listUniforms()
     #expect(cached.count == 1)
-    #expect(await underlying.uniformsCallCount == 1, "a warm uniform list must not refetch")
 }

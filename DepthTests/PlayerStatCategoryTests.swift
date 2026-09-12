@@ -204,6 +204,15 @@ private func season(
     )
     #expect(single.map(\.text) == ["ALABAMA"])
     #expect(single.last?.spoken == "College, Alabama")
+
+    // Degenerate leading separator: there is no first school, so the strip shows the raw
+    // value rather than silently promoting the second one as if it were first. Not reachable
+    // with real ESPN data — this pins the `omittingEmptySubsequences: false` guard.
+    let leadingEmpty = PlayerProfileDisplay.vitals(
+        age: nil, experience: nil, height: nil, weight: nil, college: ";Oklahoma State"
+    )
+    #expect(leadingEmpty.map(\.text) == [";OKLAHOMA STATE"])
+    #expect(leadingEmpty.last?.spoken == "College, ;Oklahoma State")
 }
 
 @Test func profileDisplayBioHidesEmptyAndHistoricalBios() {

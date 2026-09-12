@@ -8,6 +8,7 @@ import XCTest
 //
 // Runs on the hermetic fixture backend (UI_TESTING_FIXTURE_BACKEND), same as every other
 // fixture-backed journey.
+@MainActor
 final class AccessibilityUITests: XCTestCase {
     // Run with simctl's real content_size setting, so sheet presentations and native
     // controls are covered independently of the app's launch-argument override.
@@ -59,7 +60,9 @@ final class AccessibilityUITests: XCTestCase {
         reveal(app.buttons["uniform-kit-open-depth-chart"], in: app)
         attachScreenshot(app, named: "system-kit-action")
         app.buttons["Close"].tap()
-        app.navigationBars.buttons.element(boundBy: 0).tap()
+        // By identifier, not index 0: index 0 resolves to the depth chart's
+        // team-switcher-button whenever this screen isn't pushed (d9cd9453).
+        app.navigationBars.buttons["BackButton"].tap()
         app.buttons["uniforms-filter-button"].tap()
         XCTAssertTrue(app.buttons["filter-reset"].waitForExistence(timeout: 10))
         attachScreenshot(app, named: "system-filters")
@@ -109,9 +112,13 @@ final class AccessibilityUITests: XCTestCase {
             XCTAssertTrue(quarterback.tapUntil { profile.exists })
             let vitals = app.descendants(matching: .any)["player-profile-full-vitals"]
             XCTAssertTrue(vitals.waitForExistence(timeout: 10))
-            // A single caption2 line plus the strip's 9pt vertical padding is ~40pt even at
-            // AX1; stacked, several vitals clear 60pt at every accessibility size.
-            XCTAssertGreaterThan(vitals.frame.height, 60, "vitals should stack at \(size)")
+            // A coarse smoke check only: the strip is a single accessibility element, so a
+            // two-line wrap and a full one-vital-per-line stack are indistinguishable from
+            // here — anything over one line clears 60pt. The arrangement itself is asserted
+            // by DepthSnapshotTests.playerProfileAccessibilitySize(), which compares a
+            // rendered reference; this assertion only catches the strip failing to grow at
+            // all.
+            XCTAssertGreaterThan(vitals.frame.height, 60, "vitals should reflow at \(size)")
             reveal(vitals, in: app)
             attachScreenshot(app, named: "\(size)-vitals-reflow")
             app.navigationBars.buttons["BackButton"].tap()

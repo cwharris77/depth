@@ -327,7 +327,7 @@ enum LocalSupabase {
         try await client.from("teams").update(["name": original]).eq("id", value: "bills").execute()
         #expect(writeResponse == [NameOnly(id: "bills", name: "RLS Test Write")])
     } catch {
-        try? await client.from("teams").update(["name": original]).eq("id", value: "bills").execute()
+        _ = try? await client.from("teams").update(["name": original]).eq("id", value: "bills").execute()
         throw error
     }
 }
