@@ -10,7 +10,12 @@
 // (white at home, red away).
 
 import {
-  CHIEFS_DECAL_ARROWHEAD_PATH,
+  CHIEFS_DECAL_CROSSBAR_PATH,
+  CHIEFS_DECAL_C_PATH,
+  CHIEFS_DECAL_FIELD_PATH,
+  CHIEFS_DECAL_K_PATH,
+  CHIEFS_DECAL_LETTER_KEYLINE_PATH,
+  CHIEFS_DECAL_OUTLINE_PATH,
   CHIEFS_SLEEVE_X_LEFT,
   CHIEFS_SLEEVE_X_RIGHT,
   CHIEFS_STRIPE_BOUNDS,
@@ -44,9 +49,7 @@ function sleeveStripes(outer: string, middle: string): PartLayer[] {
   return out;
 }
 
-// The red shell with the white arrowhead decal — one object, shared by both kits. The arrowhead
-// is a white region whose counters let the shell read through, so only the white is traced (see
-// chiefs.ts); the shell color behind it is the part's base.
+// The red shell with the complete four-color arrowhead construction, shared by both kits.
 //
 // Grey cage, sampled from the GUD helmet composite (nfl-uniform-refs/chiefs): the facemask bar
 // reads #868686 against the red shell / white background, on both archived helmets. Matches the
@@ -57,13 +60,39 @@ const HELMET_RED_ARROWHEAD: UniformPart = {
   facemask: 'grey',
   layers: [
     {
-      id: 'chiefs-decal-arrowhead',
+      id: 'chiefs-decal-outline',
       surface: 'helmet' as const,
-      d: CHIEFS_DECAL_ARROWHEAD_PATH,
+      d: CHIEFS_DECAL_OUTLINE_PATH,
+      clip: true,
+      kind: 'fill',
+      fill: 'black',
+    },
+    {
+      id: 'chiefs-decal-field',
+      surface: 'helmet' as const,
+      d: CHIEFS_DECAL_FIELD_PATH,
       clip: true,
       kind: 'fill',
       fill: 'white',
     },
+    {
+      id: 'chiefs-decal-letter-keyline',
+      surface: 'helmet' as const,
+      d: CHIEFS_DECAL_LETTER_KEYLINE_PATH,
+      clip: true,
+      kind: 'fill',
+      fill: 'black',
+    },
+    ...[CHIEFS_DECAL_K_PATH, CHIEFS_DECAL_C_PATH, CHIEFS_DECAL_CROSSBAR_PATH].map(
+      (d, index): PartLayer => ({
+        id: `chiefs-decal-letter-red-${index + 1}`,
+        surface: 'helmet',
+        d,
+        clip: true,
+        kind: 'fill',
+        fill: 'red',
+      })
+    ),
   ],
 };
 
@@ -84,6 +113,7 @@ const JERSEY_WHITE: UniformPart = {
 // Plain white pants, shared by both kits. Home reaches this through a white literal in the flat
 // form (its palette is red over gold), away through its primary; here it is one palette entry.
 const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
+const PANTS_RED: UniformPart = { base: 'red', layers: [] };
 
 export const CHIEFS_PARTS: TeamPartsDefinition = {
   teamId: 'chiefs',
@@ -93,6 +123,7 @@ export const CHIEFS_PARTS: TeamPartsDefinition = {
     red: '#E31837',
     gold: '#FFB81C',
     white: '#FFFFFF',
+    black: '#010101',
     // The facemask cage grey — no token in the red/gold Chiefs palette. Sampled from the GUD
     // helmet composite (see the helmet part note); matches the documented light-grey cage.
     grey: '#868686',
@@ -102,10 +133,12 @@ export const CHIEFS_PARTS: TeamPartsDefinition = {
     red: JERSEY_RED,
     white: JERSEY_WHITE,
   },
-  pants: { white: PANTS_WHITE },
+  pants: { white: PANTS_WHITE, red: PANTS_RED },
   kits: {
     home: { helmet: 'red-arrowhead', jersey: 'red', pants: 'white' },
-    away: { helmet: 'red-arrowhead', jersey: 'white', pants: 'white' },
+    // The current-season composite shows both white and red trousers with the away top;
+    // canonical-first preserves the existing all-white raster.
+    away: { helmet: 'red-arrowhead', jersey: 'white', pants: ['white', 'red'] },
   },
 };
 
