@@ -112,6 +112,56 @@ final class PositionReorderUITests: XCTestCase {
         )
     }
 
+    // DEP-542: a drag that returns the roster to its original order is equivalent to Reset.
+    // Persisting that redundant array previously left the screen marked CUSTOM after close.
+    func testReturningToTheDefaultOrderDropsTheCustomState() throws {
+        let app = XCUIApplication()
+        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        openQuarterbackReorderSheet(app)
+
+        // The fixture backend intentionally preserves local preferences between launches.
+        // Start from the raw roster order so this test proves the return-to-default path,
+        // not a return to a prior test run's persisted custom order.
+        let existingReset = app.buttons["player-profile-depth-reset"]
+        if existingReset.exists {
+            existingReset.tap()
+            XCTAssertTrue(app.staticTexts["player-profile-depth-custom"].waitForAbsence(timeout: 5))
+        }
+        let rows = reorderRows(app)
+        XCTAssertGreaterThanOrEqual(rows.count, 2)
+        let originalFirstID = rows.firstMatch.identifier
+        let firstBackup = rows.element(boundBy: 1)
+        rows.firstMatch.press(
+            forDuration: 0.6,
+            thenDragTo: firstBackup,
+            withVelocity: .slow,
+            thenHoldForDuration: 0.5
+        )
+        XCTAssertTrue(
+            app.staticTexts["player-profile-depth-custom"].waitForExistence(timeout: 5),
+            "a reordered position should become CUSTOM before it is restored"
+        )
+
+        rows.element(boundBy: 1).press(
+            forDuration: 0.6,
+            thenDragTo: rows.firstMatch,
+            withVelocity: .slow,
+            thenHoldForDuration: 0.5
+        )
+        XCTAssertEqual(rows.firstMatch.identifier, originalFirstID, "the second drag should restore the default order")
+        XCTAssertTrue(
+            app.staticTexts["player-profile-depth-custom"].waitForAbsence(timeout: 5),
+            "returning to the default order should remove the CUSTOM state immediately"
+        )
+        XCTAssertFalse(app.buttons["player-profile-depth-reset"].exists)
+
+        app.buttons["Close"].tap()
+        XCTAssertFalse(
+            app.buttons["custom-order-reset-all"].waitForExistence(timeout: 1),
+            "closing a restored position should not leave the team marked as custom"
+        )
+    }
+
     // Merge spec: edit mode is the only way into reordering. On → a field tap opens the
     // position's reorder sheet with drag rows immediately; off → the same tap pushes the
     // player profile, whose DEPTH CHART rows are read-only.
@@ -131,7 +181,7 @@ final class PositionReorderUITests: XCTestCase {
         )
         app.buttons["Close"].tap()
 
-        // The persistent Editing chip is the direct exit action.
+        // The persistent Done editing chip is the direct exit action.
         let editingChip = app.buttons["depth-chart-editing-active"]
         editingChip.tap()
         XCTAssertTrue(editingChip.waitForAbsence(timeout: 5), "explicit exit should remove the active-mode chip")

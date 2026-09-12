@@ -967,6 +967,12 @@ struct TeamDetailView: View {
     // OverrideEditorViewModel is gone, so the overrideSaved event it used to fire on
     // save is recorded here instead — one per committed drop.
     private func reorderPosition(_ position: Position, _ orderedIds: [String]) {
+        // DEP-542: dragging a player away and back to its original slot is not a custom
+        // order. Drop the redundant override rather than leaving the chart labelled CUSTOM.
+        guard orderedIds != defaultPlayers(for: position).map(\.id) else {
+            resetPosition(position)
+            return
+        }
         confirmedOrders[position] = orderedIds
         let writer = LocalFirstOverrideWriter(
             preferences: preferences,

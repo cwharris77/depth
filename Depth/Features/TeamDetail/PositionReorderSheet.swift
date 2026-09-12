@@ -119,9 +119,19 @@ struct PositionReorderSheet: View {
 
     private func commit(_ ordered: [Player]) {
         let reranked = rerankedPlayers(ordered)
-        onReorder(reranked.map(\.id))
-        players = reranked
-        isCustom = true
+        let orderedIDs = reranked.map(\.id)
+        // DEP-542: returning a starter to their original slot restores the default depth
+        // chart. This sheet owns the visible CUSTOM flag, so it must make the same decision
+        // as its persistence callback instead of marking every completed drag as custom.
+        if orderedIDs == defaultOrder.map(\.id) {
+            onReset()
+            players = defaultOrder
+            isCustom = false
+        } else {
+            onReorder(orderedIDs)
+            players = reranked
+            isCustom = true
+        }
     }
 
     private func reset() {
