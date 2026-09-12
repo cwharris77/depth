@@ -8,8 +8,10 @@ describe('Vikings helmet parts', () => {
     for (const helmet of Object.values(VIKINGS_PARTS.helmets)) {
       expect(helmet.layers.map((layer) => layer.id)).toEqual([
         'vikings-decal-horn',
+        'vikings-decal-horn-fill',
         'vikings-decal-crescent',
       ]);
+      for (const layer of helmet.layers) expect(layer).not.toHaveProperty('fillRule');
     }
   });
 
@@ -17,12 +19,12 @@ describe('Vikings helmet parts', () => {
     for (const helmet of [VIKINGS_PARTS.helmets.purple, VIKINGS_PARTS.helmets.classic]) {
       expect(
         helmet.layers.map((layer) => (layer.kind === 'fill' ? layer.fill : undefined))
-      ).toEqual(['white', 'gold']);
+      ).toEqual(['white', 'white', 'gold']);
     }
     expect(
       VIKINGS_PARTS.helmets.white.layers.map((layer) =>
         layer.kind === 'fill' ? layer.fill : undefined
       )
-    ).toEqual(['purple', 'gold']);
+    ).toEqual(['purple', 'purple', 'gold']);
   });
 });
