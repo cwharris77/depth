@@ -14,6 +14,7 @@
 import {
   COMMANDERS_BOUNDS,
   COMMANDERS_DECAL_PATH,
+  COMMANDERS_DECAL_INNER_PATH,
   COMMANDERS_SLEEVE_X_LEFT,
   COMMANDERS_SLEEVE_X_RIGHT,
 } from './commanders';
@@ -45,17 +46,25 @@ function sleeveBand(band: string, line: string): PartLayer[] {
   return out;
 }
 
-// The gold "W" — one layer, four subpaths, no keyline. Gold is the mark's color on every kit; the
-// jersey supplies which palette color that is.
+// The supplied standalone SVG has a gold outer W and burgundy interior panels. Painting the
+// shell-colored panels over the gold preserves the full mark on any future non-burgundy shell.
 function decal(which: string): PartLayer[] {
   return [
     {
-      id: 'commanders-decal',
+      id: 'commanders-decal-outer',
       surface: 'helmet',
       d: COMMANDERS_DECAL_PATH,
       clip: true,
       kind: 'fill',
       fill: which,
+    },
+    {
+      id: 'commanders-decal-inner',
+      surface: 'helmet',
+      d: COMMANDERS_DECAL_INNER_PATH,
+      clip: true,
+      kind: 'fill',
+      fill: 'burgundy',
     },
   ];
 }
