@@ -87,6 +87,10 @@ const TEAM_STATS_TAG = 'stats_team';
 const TEAM_STATS_PREFIX = 'stats_team_reg_';
 const SNAP_COUNTS_TAG = 'snap_counts';
 const SNAP_COUNTS_PREFIX = 'snap_counts_';
+// snap_counts is published from 2012 onward (Pro Football Reference). A --seasons
+// backfill whose range reaches further back must not request the earlier seasons at all —
+// those player-seasons simply have no snap line. A floor, not a failure.
+const SNAP_COUNTS_MIN_SEASON = 2012;
 // SEED_OUT mode has no live `players` table to query -- it reads known player ids from
 // this already-committed file instead (see the header comment above).
 const ESPN_SEED_PATH = 'supabase/seed.sql';
@@ -572,6 +576,9 @@ async function main() {
   const seasonSnapTotals: SeasonSnapTotalsInsert[] = [];
   const knownPlayerSeasons = new Set(allStatsRows.map((row) => `${row.player_id}|${row.season}`));
   for (const season of seasons) {
+    // The snap-counts dataset starts in 2012; a broad --seasons backfill that reaches
+    // earlier must not fetch (and 404 on) the seasons before it.
+    if (season < SNAP_COUNTS_MIN_SEASON) continue;
     try {
       const csv = await getText(assetUrl(SNAP_COUNTS_TAG, `${SNAP_COUNTS_PREFIX}${season}.csv`));
       const { rows, malformedRows, unresolvedRows } = toSeasonSnapTotals(
@@ -594,7 +601,14 @@ async function main() {
           `${malformedRows} malformed, ${unresolvedRows} unresolved`
       );
     } catch (e) {
-      failures.push({ season, message: `season snaps: ${(e as Error).message}` });
+      const message = (e as Error).message;
+      // A season with no published snap asset (a gap in the source, or a range that
+      // predates the dataset) is a skip, not a run failure -- the box score still writes.
+      if (/^404\b/.test(message)) {
+        console.log(`snap-counts season ${season}: no source asset, skipped`);
+        continue;
+      }
+      failures.push({ season, message: `season snaps: ${message}` });
     }
   }
 
