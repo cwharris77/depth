@@ -449,7 +449,10 @@ private struct FieldPlayerButtonStyle: ButtonStyle {
 // policy decides whether it runs and supplies the stable stagger.
 private struct PlayerDotWiggleModifier: ViewModifier {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var isAtPositiveAngle = false
+    /// The dot's current rotation, and the only animated value. Driving `rotationEffect`
+    /// from one number (rather than mapping a Bool through the live policy) is what lets
+    /// the stop below animate the rotation back to rest.
+    @State private var wiggleAngle: Double = 0
 
     let isEditing: Bool
     let index: Int
@@ -465,27 +468,31 @@ private struct PlayerDotWiggleModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .rotationEffect(
-                .degrees(motion.map { isAtPositiveAngle ? $0.angle : -$0.angle } ?? 0),
-                anchor: .bottom
-            )
+            .rotationEffect(.degrees(wiggleAngle), anchor: .bottom)
             .onAppear { updateAnimation() }
             .onChange(of: isEditing) { _, _ in updateAnimation() }
             .onChange(of: reduceMotion) { _, _ in updateAnimation() }
     }
 
+    /// DEP-541: a `repeatForever` animation is only ended by changing the animated value
+    /// again under a *non-repeating* animation. Both earlier forms — a bare
+    /// `flag = false`, and `.animation(_:value:)` — left the repeating transaction
+    /// attached, so the dots kept wiggling after edit mode ended. Stopping here animates
+    /// this dot back to 0 and replaces the repeating animation with a one-shot.
     private func updateAnimation() {
         guard let motion else {
-            isAtPositiveAngle = false
+            withAnimation(.easeInOut(duration: 0.12)) {
+                wiggleAngle = 0
+            }
             return
         }
-        isAtPositiveAngle = false
+        wiggleAngle = -motion.angle
         withAnimation(
             .easeInOut(duration: motion.duration)
                 .delay(motion.delay)
                 .repeatForever(autoreverses: true)
         ) {
-            isAtPositiveAngle = true
+            wiggleAngle = motion.angle
         }
     }
 }
