@@ -9,41 +9,20 @@
 // silver at home and black away. Only the jersey body actually differs: black at home, white away,
 // with the away numerals black to match.
 
-import {
-  RAIDERS_DECAL_FACE_PATH,
-  RAIDERS_DECAL_KEYLINE_PATH,
-  RAIDERS_DECAL_SHIELD_PATH,
-} from './raiders';
+import { RAIDERS_DECAL_PATHS } from './raiders';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 
-// The shield decal: white keyline, black shield, white face. Fixed art — black and white on both
-// silver shells, so nothing here takes a team token.
-const DECAL: PartLayer[] = [
-  {
-    id: 'raiders-decal-keyline',
-    surface: 'helmet',
-    d: RAIDERS_DECAL_KEYLINE_PATH,
-    clip: true,
-    kind: 'fill',
-    fill: 'white',
-  },
-  {
-    id: 'raiders-decal-shield',
-    surface: 'helmet',
-    d: RAIDERS_DECAL_SHIELD_PATH,
-    clip: true,
-    kind: 'fill',
-    fill: 'black',
-  },
-  {
-    id: 'raiders-decal-face',
-    surface: 'helmet',
-    d: RAIDERS_DECAL_FACE_PATH,
-    clip: true,
-    kind: 'fill',
-    fill: 'white',
-  },
-];
+// The complete supplied mark in its original paint order: shield and keyline, wordmark, crossed
+// sabres, helmeted face, and interior shading. Its source greys collapse to the team silver so the
+// detail remains legible and deterministic at the archive's helmet scale.
+const DECAL: PartLayer[] = RAIDERS_DECAL_PATHS.map(({ d, fill }, index) => ({
+  id: `raiders-decal-svg-${String(index + 1).padStart(2, '0')}`,
+  surface: 'helmet',
+  d,
+  clip: true,
+  kind: 'fill',
+  fill,
+}));
 
 // The silver shell with the shield decal — one object, shared by both kits.
 //
