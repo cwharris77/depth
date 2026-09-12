@@ -77,8 +77,12 @@ extension XCUIApplication {
         let teamRow = buttons["team-row-\(teamId)"]
         // The switcher fetches the 32-team list from production on a fresh launch (no
         // cache with UI_TESTING_RESET_STATE), so the row can lag well past the other
-        // waits on a cold run.
-        XCTAssertTrue(teamRow.waitForExistence(timeout: 20), "searching \"\(query)\" should surface the \(teamId) row", file: file, line: line)
+        // waits on a cold run. A 20s budget was not enough: under CI load the production
+        // fetch plus 32-row render blew past it and the row never appeared, failing the
+        // team-switch step (CI 2026-09-12, PositionReorderUITests, twice on cold runners
+        // at a different staging test each time). 60s keeps this a real assertion while
+        // covering a slow cold fetch; the assert still fails if the row never renders.
+        XCTAssertTrue(teamRow.waitForExistence(timeout: 60), "searching \"\(query)\" should surface the \(teamId) row", file: file, line: line)
         teamRow.tap()
 
         XCTAssertTrue(
