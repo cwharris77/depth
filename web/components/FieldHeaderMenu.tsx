@@ -59,6 +59,11 @@ export default function FieldHeaderMenu({ activeColors, unit, menu }: Props) {
             onClick: menu.onChooseUniform,
           },
           {
+            // divider metadata renders the row separator the old index-positioned
+            // borderTop drew between every pair of rows (DEP-187 restyles them as
+            // item data); each flag travels with its item so reorder/removal keeps
+            // the right lines.
+            divider: true,
             icon: <History size={14} color={activeColors.uiAccent} />,
             label: 'Seasons',
             onClick: menu.season.onOpen,
@@ -77,6 +82,7 @@ export default function FieldHeaderMenu({ activeColors, unit, menu }: Props) {
             disabledReason: historicalMode
               ? "Historical seasons don't have formation data"
               : undefined,
+            divider: true,
           },
           {
             icon: menu.share.copied ? (
@@ -86,6 +92,7 @@ export default function FieldHeaderMenu({ activeColors, unit, menu }: Props) {
             ),
             label: menu.share.copied ? 'Link copied' : 'Share roster',
             onClick: menu.share.onShare,
+            divider: true,
           },
           // App-level edit toggle, folded into the overflow menu instead of its own
           // row: on puts every position group's card into reorder mode at once (no
@@ -110,6 +117,7 @@ export default function FieldHeaderMenu({ activeColors, unit, menu }: Props) {
             accent: activeColors.uiAccent,
             onClick: menu.editMode.onToggle,
             disabled: menu.editMode.previewing || historicalMode,
+            divider: true,
             disabledReason: menu.editMode.previewing
               ? "Shared boards are read-only — apply the order to your own team's chart to edit it"
               : `Historical seasons are read-only`,
