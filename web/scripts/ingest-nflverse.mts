@@ -37,6 +37,13 @@ import { assetUrl, latestAvailableSeason } from '@/lib/nflverse/assets';
 import { buildCrosswalk, buildPfrCrosswalk } from '@/lib/nflverse/crosswalk';
 import { toPlayerStatsRows, type PlayerStatsInsert } from '@/lib/nflverse/transform';
 import { toSeasonSnapTotals, type SeasonSnapTotalsInsert } from '@/lib/nflverse/season-snaps';
+import {
+  toRawSourceRows,
+  rawConflictTarget,
+  type RawSourceRow,
+  type RawTableSpec,
+} from '@/lib/nflverse/raw-stats';
+import { nflverseRawTables } from '@/lib/nflverse/raw-tables.generated';
 import { toScheduleAndGameRows, type GameInsert, type ScheduleInsert } from '@/lib/nflverse/games';
 import { toTeamStatsRows, type TeamStatsInsert } from '@/lib/nflverse/team-stats';
 import { toTeamRecords, type TeamAlignment, type TeamRecordInsert } from '@/lib/nflverse/records';
@@ -119,6 +126,34 @@ async function getText(url: string, attempts = 3): Promise<string> {
     }
   }
   throw lastError;
+}
+
+// Raw source tables are addressed dynamically (one generic step drives every source), so
+// the generated typed client can't resolve the table name. Narrow the builder to the small
+// upsert surface this uses rather than casting at each call.
+interface RawUpsertBuilder {
+  upsert(
+    rows: unknown[],
+    options: { onConflict: string }
+  ): Promise<{ error: { message: string } | null }>;
+}
+async function upsertRawRows(
+  supabase: SupabaseClient<Database>,
+  table: string,
+  rows: unknown[],
+  onConflict: string
+): Promise<void> {
+  const builder = supabase.from(table as never) as unknown as RawUpsertBuilder;
+  const { error } = await builder.upsert(rows, { onConflict });
+  if (error) throw new Error(`${table} upsert: ${error.message}`);
+}
+
+// The generated spec list is the schema's source of truth; a missing entry is a build
+// error we want to hear about, not a silent skip.
+function rawTableSpec(table: string): RawTableSpec {
+  const spec = nflverseRawTables.find((t) => t.table === table);
+  if (!spec) throw new Error(`missing generated raw-table spec: ${table}`);
+  return spec;
 }
 
 // Fetch + transform the nflverse schedule/results file (pure), then upsert schedules
@@ -566,6 +601,52 @@ async function main() {
     }
   }
 
+  // Layer-1 source tables (DEP-541, full-stat-surface design): the complete box score,
+  // one typed table per source grain, verbatim. Separate from the curated player_stats
+  // path above -- these keep every source column and land a crosswalk miss with a null
+  // player_id rather than dropping it. The app never reads these; the canonical layer
+  // (DEP-544) consolidates them.
+  const rawSourceRows = new Map<string, RawSourceRow[]>();
+  const rawSources = [
+    {
+      spec: rawTableSpec('nflverse_player_season'),
+      tag: 'stats_player',
+      prefix: 'stats_player_regpost_',
+    },
+    {
+      spec: rawTableSpec('nflverse_player_week'),
+      tag: 'stats_player',
+      prefix: 'stats_player_week_',
+    },
+  ];
+  for (const season of seasons) {
+    for (const { spec, tag, prefix } of rawSources) {
+      try {
+        const csv = await getText(assetUrl(tag, `${prefix}${season}.csv`));
+        const {
+          rows,
+          skipped: rawSkipped,
+          unresolved,
+        } = toRawSourceRows(spec, parseCsv(csv), crosswalk);
+        skipped += rawSkipped;
+        if (supabase && rows.length) {
+          for (let i = 0; i < rows.length; i += UPSERT_CHUNK) {
+            await upsertRawRows(
+              supabase,
+              spec.table,
+              rows.slice(i, i + UPSERT_CHUNK),
+              rawConflictTarget(spec)
+            );
+          }
+        }
+        rawSourceRows.set(spec.table, [...(rawSourceRows.get(spec.table) ?? []), ...rows]);
+        console.log(`${spec.table} ${season}: ${rows.length} rows, ${unresolved} unresolved`);
+      } catch (e) {
+        failures.push({ season, message: `${spec.table}: ${(e as Error).message}` });
+      }
+    }
+  }
+
   // Season snap totals for the positions that record no box-score stats -- offensive
   // line, long snapper, punter (DEP-538). Same nflverse snap_counts source
   // player_recent_snaps already consumes, but aggregated per season and merged onto the
@@ -710,6 +791,7 @@ async function main() {
       seasons,
       player_stats_rows: rowsWritten,
       player_season_snaps_rows: seasonSnapTotals.length,
+      raw_source_rows: Object.fromEntries([...rawSourceRows].map(([t, r]) => [t, r.length])),
       games_min_season: gamesMinSeason ?? null,
       games_written: gamesResult.games.length,
       schedules_written: gamesResult.schedules.length,
