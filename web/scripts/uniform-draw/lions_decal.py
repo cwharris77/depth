@@ -43,11 +43,12 @@ def path(d: str, transform: str | None) -> str:
 source = SOURCE.read_bytes(); root = ET.fromstring(source)
 items = []
 for element in root:
-    if element.tag.rsplit('}', 1)[-1] != 'path' or element.attrib.get('transform') == 'translate(0)':
+    if element.tag.rsplit('}', 1)[-1] != 'path':
         continue
-    if element.attrib.get('transform') == 'translate(2008)':
+    # These source paths draw the 2048px canvas and its right/bottom border artifacts.
+    if element.attrib.get('transform') in {'translate(0)', 'translate(2008)', 'translate(2047,1)'}:
         continue
-items.append((element.attrib['fill'], path(element.attrib['d'], element.attrib.get('transform'))))
+    items.append((element.attrib['fill'], path(element.attrib['d'], element.attrib.get('transform'))))
 header = ("// Provenance: user-supplied lions_leaping_lion.svg (DEP-475), club trademark/non-free art.\n"
           f"// Source SHA-256: {hashlib.sha256(source).hexdigest()}\n"
           "// Direct source paths in original paint order; canvas and border paths are omitted.\n"
