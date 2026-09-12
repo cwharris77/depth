@@ -16,6 +16,7 @@
 import { HELMET_CROWN_STRIPE_PATH } from './shared';
 import {
   NINERS_DECAL_BLACK,
+  NINERS_DECAL_OUTER_RING_PATH,
   NINERS_DECAL_FIELD_PATH,
   NINERS_DECAL_GOLD_RING_PATH,
   NINERS_DECAL_LETTERS_PATH,
@@ -69,7 +70,7 @@ function helmetMarks(field: string): PartLayer[] {
     {
       id: 'niners-decal-ring',
       surface: 'helmet',
-      d: NINERS_DECAL_RING_PATH,
+      d: NINERS_DECAL_OUTER_RING_PATH,
       clip: true,
       kind: 'fill',
       fill: 'decalBlack',
