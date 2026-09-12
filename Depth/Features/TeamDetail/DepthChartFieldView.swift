@@ -469,6 +469,17 @@ private struct PlayerDotWiggleModifier: ViewModifier {
                 .degrees(motion.map { isAtPositiveAngle ? $0.angle : -$0.angle } ?? 0),
                 anchor: .bottom
             )
+            // DEP-541: an animation derived from the active policy is removed when edit
+            // mode ends. The previous `withAnimation(...repeatForever)` transaction kept
+            // driving the dot's presentation layer after its logical edit state changed.
+            .animation(
+                motion.map {
+                    .easeInOut(duration: $0.duration)
+                        .delay($0.delay)
+                        .repeatForever(autoreverses: true)
+                },
+                value: isAtPositiveAngle
+            )
             .onAppear { updateAnimation() }
             .onChange(of: isEditing) { _, _ in updateAnimation() }
             .onChange(of: reduceMotion) { _, _ in updateAnimation() }
@@ -480,12 +491,6 @@ private struct PlayerDotWiggleModifier: ViewModifier {
             return
         }
         isAtPositiveAngle = false
-        withAnimation(
-            .easeInOut(duration: motion.duration)
-                .delay(motion.delay)
-                .repeatForever(autoreverses: true)
-        ) {
-            isAtPositiveAngle = true
-        }
+        isAtPositiveAngle = true
     }
 }
