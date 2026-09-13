@@ -38,6 +38,7 @@ import { assetUrl, latestAvailableSeason } from '@/lib/nflverse/assets';
 import { buildCrosswalk, buildPfrCrosswalk } from '@/lib/nflverse/crosswalk';
 import { toPlayerStatsRows, type PlayerStatsInsert } from '@/lib/nflverse/transform';
 import { toSeasonSnapTotals, type SeasonSnapTotalsInsert } from '@/lib/nflverse/season-snaps';
+import { upsertChunkSize } from '@/lib/nflverse/upsert-chunks';
 import {
   toPlayerRawRows,
   toPlayRawRows,
@@ -85,8 +86,12 @@ const STATS_PREFIX = 'stats_player_reg_';
 // The schedule/results file lives in nfldata (one CSV, every season 1999+), not the
 // season-suffixed nflverse-data release assets -- so it has its own raw URL, not assetUrl.
 const GAMES_URL = 'https://github.com/nflverse/nfldata/raw/master/data/games.csv';
-// Supabase upsert payload cap: games is ~7.5k rows, chunk it so one call doesn't time out.
-const UPSERT_CHUNK = 1000;
+// Small pause between chunks so a full backfill is a steady stream instead of one long
+// burst that starves the database's disk I/O. Override with NFLVERSE_UPSERT_DELAY_MS
+// (0 disables). The daily two-season job has few chunks, so the cost is negligible.
+// Chunk sizing (rows x columns per statement) lives in lib/nflverse/upsert-chunks.ts.
+const UPSERT_DELAY_MS = Math.max(0, Number(process.env.NFLVERSE_UPSERT_DELAY_MS ?? 40));
+const UPSERT_MAX_ATTEMPTS = 4;
 // Real per-team formations (the vault's `specs/2026-07-07-phase-e-real-formations-design.md`).
 // v1 only handles the FTN-charted vocabulary (2023+), so only the latest
 // available season is ever pulled -- the older NGS-sourced seasons use a different,
@@ -146,6 +151,62 @@ interface RawUpsertBuilder {
     options: { onConflict: string }
   ): Promise<{ error: { message: string } | null }>;
 }
+// Every write in this script goes through the helpers below: width-bounded chunks, an
+// idempotent retry that splits a statement-timeout chunk in half (down to one row) and
+// backs off on transient errors, and a small pause between chunks so a full backfill
+// doesn't hammer the instance's disk I/O (DEP-557 follow-up).
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Postgres/network rejections worth retrying the same chunk (a size timeout is split). */
+function isTransientUpsertError(message: string): boolean {
+  return /timeout|connection|ECONNRESET|ETIMEDOUT|socket hang up|fetch failed|\b5\d\d\b/i.test(
+    message
+  );
+}
+
+async function upsertWithRetry<T>(
+  label: string,
+  chunk: T[],
+  upsertChunk: (chunk: T[]) => Promise<{ error: { message: string } | null }>,
+  attempt = 0
+): Promise<void> {
+  try {
+    const { error } = await upsertChunk(chunk);
+    if (error) throw new Error(`${label} upsert: ${error.message}`);
+  } catch (e) {
+    const message = (e as Error).message;
+    // A statement timeout on a multi-row chunk is a size problem, not a broken statement:
+    // the upsert is idempotent, so split and retry each half, down to a single row.
+    if (/statement timeout/i.test(message) && chunk.length > 1) {
+      const mid = Math.ceil(chunk.length / 2);
+      await upsertWithRetry(label, chunk.slice(0, mid), upsertChunk);
+      await upsertWithRetry(label, chunk.slice(mid), upsertChunk);
+      return;
+    }
+    if (isTransientUpsertError(message) && attempt < UPSERT_MAX_ATTEMPTS - 1) {
+      await sleep(500 * 2 ** attempt);
+      return upsertWithRetry(label, chunk, upsertChunk, attempt + 1);
+    }
+    throw e;
+  }
+}
+
+/** Idempotent chunked upsert with width-aware sizing, timeout-split retry, and pacing. */
+async function upsertChunked<T>(
+  label: string,
+  rows: T[],
+  upsertChunk: (chunk: T[]) => Promise<{ error: { message: string } | null }>,
+  opts: { chunkSize?: number } = {}
+): Promise<void> {
+  if (rows.length === 0) return;
+  const size = opts.chunkSize ?? upsertChunkSize(rows[0]);
+  for (let i = 0; i < rows.length; i += size) {
+    await upsertWithRetry(label, rows.slice(i, i + size), upsertChunk);
+    if (UPSERT_DELAY_MS > 0 && i + size < rows.length) await sleep(UPSERT_DELAY_MS);
+  }
+}
+
 async function upsertRawRows(
   supabase: SupabaseClient<Database>,
   table: string,
@@ -153,24 +214,7 @@ async function upsertRawRows(
   onConflict: string
 ): Promise<void> {
   const builder = supabase.from(table as never) as unknown as RawUpsertBuilder;
-  try {
-    const { error } = await builder.upsert(rows, { onConflict });
-    if (error) throw new Error(`${table} upsert: ${error.message}`);
-  } catch (e) {
-    // The widest sources hold ~146 columns per row, and a full-backfill chunk can still
-    // trip Postgres's statement_timeout (2024's nflverse_player_week did on the first
-    // complete backfill). The upsert is idempotent, so on a timeout split the chunk and
-    // retry each half -- down to one row, where a timeout is a genuine failure -- rather
-    // than aborting the whole run (DEP-557).
-    const message = (e as Error).message;
-    if (/statement timeout/i.test(message) && rows.length > 1) {
-      const mid = Math.ceil(rows.length / 2);
-      await upsertRawRows(supabase, table, rows.slice(0, mid), onConflict);
-      await upsertRawRows(supabase, table, rows.slice(mid), onConflict);
-      return;
-    }
-    throw e;
-  }
+  await upsertChunked(table, rows, (chunk) => builder.upsert(chunk, { onConflict }));
 }
 
 // The generated spec list is the schema's source of truth; a missing entry is a build
@@ -229,16 +273,17 @@ async function ingestGames(
     );
 
     if (supabase) {
-      const { error: schedError } = await supabase
-        .from('schedules')
-        .upsert(schedules, { onConflict: 'team_id,season' });
-      if (schedError) throw new Error(`schedules upsert: ${schedError.message}`);
-
-      for (let i = 0; i < games.length; i += UPSERT_CHUNK) {
-        const chunk = games.slice(i, i + UPSERT_CHUNK);
-        const { error } = await supabase.from('games').upsert(chunk, { onConflict: 'game_id' });
-        if (error) throw new Error(`games upsert: ${error.message}`);
-      }
+      const db = supabase;
+      await upsertChunked('schedules', schedules, async (chunk) => {
+        const { error } = await db
+          .from('schedules')
+          .upsert(chunk, { onConflict: 'team_id,season' });
+        return { error };
+      });
+      await upsertChunked('games', games, async (chunk) => {
+        const { error } = await db.from('games').upsert(chunk, { onConflict: 'game_id' });
+        return { error };
+      });
     }
 
     console.log(
@@ -284,13 +329,13 @@ async function ingestTeamRecords(
     const rows = toTeamRecords(games, alignments);
 
     if (supabase && rows.length) {
-      for (let i = 0; i < rows.length; i += UPSERT_CHUNK) {
-        const chunk = rows.slice(i, i + UPSERT_CHUNK);
-        const { error } = await supabase
+      const db = supabase;
+      await upsertChunked('team_stats', rows, async (chunk) => {
+        const { error } = await db
           .from('team_stats')
           .upsert(chunk, { onConflict: 'team_id,season' });
-        if (error) throw new Error(`team_stats upsert: ${error.message}`);
-      }
+        return { error };
+      });
     }
 
     console.log(`records: ${supabase ? 'wrote' : 'computed'} ${rows.length} team-season records`);
@@ -413,10 +458,13 @@ async function ingestFormations(
     const skippedRows = offenseAcc.skipped + defenseAcc.skipped;
 
     if (supabase && tallies.length) {
-      const { error } = await supabase
-        .from('team_formations')
-        .upsert(tallies, { onConflict: 'team_id,season,unit,rank' });
-      if (error) throw new Error(`team_formations upsert: ${error.message}`);
+      const db = supabase;
+      await upsertChunked('team_formations', tallies, async (chunk) => {
+        const { error } = await db
+          .from('team_formations')
+          .upsert(chunk, { onConflict: 'team_id,season,unit,rank' });
+        return { error };
+      });
     }
 
     console.log(
@@ -462,10 +510,13 @@ async function ingestTeamStats(
       skipped += seasonSkipped;
 
       if (supabase && rows.length) {
-        const { error } = await supabase
-          .from('team_season_stats')
-          .upsert(rows, { onConflict: 'team_id,season' });
-        if (error) throw new Error(`team_season_stats upsert: ${error.message}`);
+        const db = supabase;
+        await upsertChunked('team_season_stats', rows, async (chunk) => {
+          const { error } = await db
+            .from('team_season_stats')
+            .upsert(chunk, { onConflict: 'team_id,season' });
+          return { error };
+        });
       }
       allRows.push(...rows);
       console.log(`team-stats ${season}: ${rows.length} rows, skipped ${seasonSkipped}`);
@@ -510,10 +561,13 @@ async function ingestRecentSnaps(
       updatedAt: startedAt,
       upsert: supabase
         ? async (seasonRows) => {
-            const { error } = await supabase
-              .from('player_recent_snaps')
-              .upsert(seasonRows, { onConflict: 'team_id,season,player_id' });
-            if (error) throw new Error(`player_recent_snaps upsert: ${error.message}`);
+            const db = supabase;
+            await upsertChunked('player_recent_snaps', seasonRows, async (chunk) => {
+              const { error } = await db
+                .from('player_recent_snaps')
+                .upsert(chunk, { onConflict: 'team_id,season,player_id' });
+              return { error };
+            });
           }
         : undefined,
     })
@@ -635,10 +689,13 @@ async function main() {
       );
       skipped += seasonSkipped;
       if (supabase && rows.length) {
-        const { error } = await supabase
-          .from('player_stats')
-          .upsert(rows, { onConflict: 'player_id,season,season_type' });
-        if (error) throw new Error(`player_stats upsert: ${error.message}`);
+        const db = supabase;
+        await upsertChunked('player_stats', rows, async (chunk) => {
+          const { error } = await db
+            .from('player_stats')
+            .upsert(chunk, { onConflict: 'player_id,season,season_type' });
+          return { error };
+        });
       }
       allStatsRows.push(...rows);
       rowsWritten += rows.length;
@@ -736,9 +793,7 @@ async function main() {
         conflict = playerRawConflictTarget(spec);
       }
       if (supabase && rows.length) {
-        for (let i = 0; i < rows.length; i += UPSERT_CHUNK) {
-          await upsertRawRows(supabase, task.table, rows.slice(i, i + UPSERT_CHUNK), conflict);
-        }
+        await upsertRawRows(supabase, task.table, rows, conflict);
       }
       if (task.table === 'ftn_play') {
         // A play file is per-season and its rows carry no usable season column, so
@@ -783,11 +838,17 @@ async function main() {
         knownPlayerSeasons.has(`${row.player_id}|${row.season}`)
       );
       if (supabase && matched.length) {
-        const { error } = await supabase.from('player_stats').upsert(
+        const db = supabase;
+        await upsertChunked(
+          'player_stats snaps',
           matched.map((row) => ({ ...row, season_type: 'REG' })),
-          { onConflict: 'player_id,season,season_type' }
+          async (chunk) => {
+            const { error } = await db
+              .from('player_stats')
+              .upsert(chunk, { onConflict: 'player_id,season,season_type' });
+            return { error };
+          }
         );
-        if (error) throw new Error(`player_stats snaps upsert: ${error.message}`);
       }
       seasonSnapTotals.push(...matched);
       console.log(

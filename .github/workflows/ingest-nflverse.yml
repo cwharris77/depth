@@ -44,6 +44,10 @@ jobs:
     # staging mirror). The pre-source-layer run finished in under a minute; 30 minutes is
     # not enough headroom for the backfill (DEP-557).
     timeout-minutes: 90
+    env:
+      # A full backfill parses a whole season of wide source files; the default V8 heap
+      # ceiling (~4 GB) leaves little headroom even with the accumulation fix (DEP-557).
+      NODE_OPTIONS: '--max-old-space-size=6144'
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
