@@ -8,11 +8,7 @@
 // white body over silver pants (accent), and gridiron-gray a silver body over silver pants
 // (primary) — so the two shared pant parts are blue (home) and silver (away + gridiron).
 
-import {
-  LIONS_SLEEVE_X_LEFT,
-  LIONS_SLEEVE_X_RIGHT,
-  LIONS_STRIPE_BOUNDS,
-} from './lions';
+import { LIONS_SLEEVE_X_LEFT, LIONS_SLEEVE_X_RIGHT, LIONS_STRIPE_BOUNDS } from './lions';
 import { LIONS_DECAL_PATHS as GENERATED_LIONS_DECAL_PATHS } from './lions-decal';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 import type { UniformSurface } from './types';
