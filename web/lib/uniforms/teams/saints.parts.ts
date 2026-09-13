@@ -8,7 +8,12 @@
 // a BLACK body (home over gold pants, color-rush over black), and away is the white body (over
 // black). The fleur is black on every kit.
 
-import { SAINTS_COLLAR_WIDTH, SAINTS_DECAL_PATH } from './saints';
+import {
+  SAINTS_COLLAR_WIDTH,
+  SAINTS_DECAL_BLACK_OUTER_PATH,
+  SAINTS_DECAL_GOLD_PATH,
+  SAINTS_DECAL_WHITE_PATH,
+} from './saints';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 
 const COLLAR_PATH = 'M206,388 L294,455 L386,388';
@@ -28,8 +33,7 @@ function collar(stroke: string): PartLayer[] {
   ];
 }
 
-// The black shell with the fleur-de-lis (black, one solid fill — the interior white line is too
-// fine to trace, see saints.ts) — one object, shared by every kit.
+// The gold shell carries the source fleur's four exact paint layers, shared by every kit.
 //
 // Gold cage. The Saints' gold shell carries a gold facemask (named sources; the GUD composite
 // cannot separate a gold cage from the same-toned shell, so the named source and the team's gold
@@ -40,12 +44,28 @@ const HELMET_GOLD_FLEUR: UniformPart = {
   facemask: 'gold',
   layers: [
     {
-      id: 'saints-decal',
+      id: 'saints-decal-black',
       surface: 'helmet',
-      d: SAINTS_DECAL_PATH,
+      d: SAINTS_DECAL_BLACK_OUTER_PATH,
       clip: true,
       kind: 'fill',
-      fill: 'black',
+      fill: 'decal-black',
+    },
+    {
+      id: 'saints-decal-gold',
+      surface: 'helmet',
+      d: SAINTS_DECAL_GOLD_PATH,
+      clip: true,
+      kind: 'fill',
+      fill: 'decal-gold',
+    },
+    {
+      id: 'saints-decal-white',
+      surface: 'helmet',
+      d: SAINTS_DECAL_WHITE_PATH,
+      clip: true,
+      kind: 'fill',
+      fill: 'decal-white',
     },
   ],
 };
@@ -78,6 +98,9 @@ export const SAINTS_PARTS: TeamPartsDefinition = {
     gold: '#D3BC8D',
     black: '#101820',
     white: '#FFFFFF',
+    'decal-black': '#010001',
+    'decal-gold': '#D1BB8F',
+    'decal-white': '#F9F9F9',
   },
   helmets: { 'gold-fleur': HELMET_GOLD_FLEUR },
   jerseys: {
