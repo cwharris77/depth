@@ -15,11 +15,11 @@ import {
   GIANTS_AWAY_STRIPE_BANDS,
   GIANTS_COLLAR_CORE_WIDTH,
   GIANTS_COLLAR_OUTER_WIDTH,
-  GIANTS_DECAL_MONOGRAM_PATH,
   GIANTS_THROWBACK_SLEEVE_X_LEFT,
   GIANTS_THROWBACK_SLEEVE_X_RIGHT,
   GIANTS_THROWBACK_STRIPE_BANDS,
 } from './giants';
+import { GIANTS_DECAL_MODERN_PATHS } from './giants-decal';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 import type { UniformSurface } from './types';
 
@@ -64,7 +64,7 @@ const HELMET_BLUE_MONOGRAM: UniformPart = {
     {
       id: 'giants-decal-monogram',
       surface: 'helmet',
-      d: GIANTS_DECAL_MONOGRAM_PATH,
+      d: GIANTS_DECAL_MODERN_PATHS.map((path) => path.d).join(' '),
       clip: true,
       kind: 'fill',
       fill: 'white',
