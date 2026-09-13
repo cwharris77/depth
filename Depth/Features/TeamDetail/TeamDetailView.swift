@@ -223,7 +223,7 @@ struct TeamDetailView: View {
                 if historyViewModel.isHistorical {
                     await historyViewModel.retry()
                 } else {
-                    await viewModel.load()
+                    await viewModel.load(forceRefresh: true)
                     await loadOverrides()
                 }
             }

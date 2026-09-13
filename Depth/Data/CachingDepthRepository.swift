@@ -103,6 +103,14 @@ actor CachingDepthRepository: DepthRepository {
         try? await store.teamSnapshotCachedAt(teamId: teamId)
     }
 
+    /// Pull-to-refresh path: bypasses the cache and fetches directly from the network,
+    /// updating the cached row with the fresh result. Retains the existing cached value
+    /// on failure — matching the "last good snapshot" contract (design spec's failure-
+    /// mode table), since the caller is showing data that was already on screen.
+    func forceRefreshTeamSnapshot(teamId: String) async throws -> TeamSnapshot {
+        try await refreshSnapshot(teamId: teamId)
+    }
+
     /// Historical rosters are immutable on-demand reads. Delegating avoids persisting
     /// dozens of rarely opened seasons in the current snapshot cache.
     func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
@@ -269,8 +277,14 @@ actor CachingDepthRepository: DepthRepository {
         now.timeIntervalSince(cachedAt) > staleAfter
     }
 
+    /// Forces a fresh snapshot fetch that bypasses the cache — the underlying repository
+    /// (network) is always called, and on success the result is saved to the store.
+    /// Pull-to-refresh on the field screen uses this to guarantee the UI reflects the
+    /// latest data once the gesture completes, rather than serving the cached roster
+    /// (DEP-207 cache-first read path). In-flight fetches for the same team are
+    /// deduplicated, matching `teamSnapshot`'s dedup pattern.
     @discardableResult
-    private func refreshSnapshot(teamId: String) async throws -> TeamSnapshot {
+    func refreshSnapshot(teamId: String) async throws -> TeamSnapshot {
         if let existing = inFlightSnapshotFetches[teamId] {
             return try await existing.value
         }
