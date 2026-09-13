@@ -8,6 +8,15 @@
 // `accent`.
 export const BUCCANEERS_WHITE = '#FFFFFF';
 
+// The high-resolution source paths live in ./buccaneers-decal and replace this module's former
+// composite trace. The generator drops only each source SVG's full-canvas white backdrop.
+export {
+  BUCCANEERS_CREAMSICLE_DECAL_PATHS_COLORS,
+  BUCCANEERS_CREAMSICLE_DECAL_PATHS,
+  BUCCANEERS_FLAG_DECAL_PATHS_COLORS,
+  BUCCANEERS_FLAG_DECAL_PATHS,
+} from './buccaneers-decal';
+
 // Provenance: contour trace of the club's mark from the GUD composite — a reproduction
 // of a third-party mark, not original geometry. The mark is NON-FREE upstream
 // (Wikimedia `File:Tampa Bay Buccaneers logo.svg`, fair use; trademarked). Licence audit: the

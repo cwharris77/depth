@@ -15,13 +15,10 @@ import {
   BUCCANEERS_CREAM_BOUNDS,
   BUCCANEERS_CUFF_LEFT,
   BUCCANEERS_CUFF_RIGHT,
-  BUCCANEERS_DECAL_BALL_PATH,
-  BUCCANEERS_DECAL_FIELD_PATH,
-  BUCCANEERS_DECAL_KEYLINE_PATH,
-  BUCCANEERS_DECAL_SKULL_PATH,
-  BUCCANEERS_FLAG_KEYLINE,
-  BUCCANEERS_FLAG_ORANGE,
-  BUCCANEERS_FLAG_RED,
+  BUCCANEERS_CREAMSICLE_DECAL_PATHS,
+  BUCCANEERS_CREAMSICLE_DECAL_PATHS_COLORS,
+  BUCCANEERS_FLAG_DECAL_PATHS,
+  BUCCANEERS_FLAG_DECAL_PATHS_COLORS,
   BUCCANEERS_SLEEVE_X_LEFT,
   BUCCANEERS_SLEEVE_X_RIGHT,
 } from './buccaneers';
@@ -92,44 +89,30 @@ function collar(color: string): PartLayer[] {
   ];
 }
 
-// The flag decal: KEYLINE, red field, white skull, orange football. Fixed art on both pewter
-// shells — the same four colors everywhere, so nothing takes a team token. The creamsicle's white
-// shell does NOT get it.
+// The supplied flag SVG, excluding its demonstrable full-canvas backdrop. Source paint order and
+// every foreground color are retained so its small skull, staff, and shadow details survive.
 function flagDecal(): PartLayer[] {
-  return [
-    {
-      id: 'buccaneers-decal-keyline',
-      surface: 'helmet',
-      d: BUCCANEERS_DECAL_KEYLINE_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'flagKeyline',
-    },
-    {
-      id: 'buccaneers-decal-field',
-      surface: 'helmet',
-      d: BUCCANEERS_DECAL_FIELD_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'flagRed',
-    },
-    {
-      id: 'buccaneers-decal-skull',
-      surface: 'helmet',
-      d: BUCCANEERS_DECAL_SKULL_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'white',
-    },
-    {
-      id: 'buccaneers-decal-ball',
-      surface: 'helmet',
-      d: BUCCANEERS_DECAL_BALL_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'flagOrange',
-    },
-  ];
+  return BUCCANEERS_FLAG_DECAL_PATHS.map(({ d, fill }, index) => ({
+    id: `buccaneers-flag-svg-${String(index + 1).padStart(3, '0')}`,
+    surface: 'helmet',
+    d,
+    clip: true,
+    kind: 'fill',
+    fill,
+  }));
+}
+
+// The supplied creamsicle SVG has its own foreground mark. Its white canvas path is excluded,
+// while its white paint remains present as individual skull, face, and flag details.
+function creamsicleDecal(): PartLayer[] {
+  return BUCCANEERS_CREAMSICLE_DECAL_PATHS.map(({ d, fill }, index) => ({
+    id: `buccaneers-creamsicle-svg-${String(index + 1).padStart(2, '0')}`,
+    surface: 'helmet',
+    d,
+    clip: true,
+    kind: 'fill',
+    fill,
+  }));
 }
 
 // The pewter shell with the flag decal — shared by home and away.
@@ -143,9 +126,8 @@ const HELMET_PEWTER_FLAG: UniformPart = {
   layers: flagDecal(),
 };
 
-// The creamsicle's white shell, bare (its Bucco Bruce mark fails the trace test), with the same
-// white cage as the pewter shell.
-const HELMET_WHITE: UniformPart = { base: 'white', facemask: 'white', layers: [] };
+// The creamsicle's white shell carries its supplied orange/red/white source decal and white cage.
+const HELMET_WHITE: UniformPart = { base: 'white', facemask: 'white', layers: creamsicleDecal() };
 
 // Home jersey: red body, pewter cuff and collar, white numerals ringed orange (two-ring trim
 // approximated to the single orange outline, see buccaneers.ts).
@@ -187,9 +169,8 @@ export const BUCCANEERS_PARTS: TeamPartsDefinition = {
     // The creamsicle's own orange (its primary #FF8200), distinct from the modern orange.
     creamOrange: '#FF8200',
     white: BUCCANEERS_WHITE,
-    flagKeyline: BUCCANEERS_FLAG_KEYLINE,
-    flagRed: BUCCANEERS_FLAG_RED,
-    flagOrange: BUCCANEERS_FLAG_ORANGE,
+    ...BUCCANEERS_FLAG_DECAL_PATHS_COLORS,
+    ...BUCCANEERS_CREAMSICLE_DECAL_PATHS_COLORS,
   },
   helmets: { 'pewter-flag': HELMET_PEWTER_FLAG, white: HELMET_WHITE },
   jerseys: {
