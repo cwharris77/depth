@@ -14,42 +14,29 @@
 import {
   COWBOYS_COLLAR_CORE_WIDTH,
   COWBOYS_COLLAR_OUTER_WIDTH,
-  COWBOYS_DECAL_STAR_BODY_PATH,
-  COWBOYS_DECAL_STAR_OUTER_PATH,
   COWBOYS_HELMET_SILVER,
   COWBOYS_NECK_BAND_CORE,
   COWBOYS_NECK_BAND_OUTER,
   COWBOYS_SLEEVE_CAP_LEFT,
   COWBOYS_SLEEVE_CAP_RIGHT,
 } from './cowboys';
+import { COWBOYS_DECAL_PATHS as GENERATED_COWBOYS_DECAL_PATHS } from './cowboys-decal';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 
 const COLLAR_PATH = 'M206,388 L294,455 L386,388';
 
-// The navy star: the full silhouette painted white and the star body over it reproduces the white
-// keyline as the gap between them (see cowboys.ts — the outer keyline hairline is dropped). Both
-// paths need fill-rule evenodd for the star's counters.
-function star(body: string): PartLayer[] {
-  return [
-    {
-      id: 'cowboys-decal-star-keyline',
-      surface: 'helmet',
-      d: COWBOYS_DECAL_STAR_OUTER_PATH,
-      clip: true,
-      kind: 'fill',
-      fillRule: 'evenodd',
-      fill: 'white',
-    },
-    {
-      id: 'cowboys-decal-star-body',
-      surface: 'helmet',
-      d: COWBOYS_DECAL_STAR_BODY_PATH,
-      clip: true,
-      kind: 'fill',
-      fillRule: 'evenodd',
-      fill: body,
-    },
-  ];
+// The complete navy/white star is generated from the supplied SVG in its original paint order.
+// The generator excludes only that file's canvas/frame export artifacts; its coordinates preserve
+// the existing GUD-measured helmet envelope.
+function star(): PartLayer[] {
+  return GENERATED_COWBOYS_DECAL_PATHS.map((layer, index) => ({
+    id: `cowboys-decal-${index}`,
+    surface: 'helmet',
+    d: layer.d,
+    clip: true,
+    kind: 'fill',
+    fill: layer.fill,
+  }));
 }
 
 // The silver shell with the navy star — one object, shared by both kits. The "Blue Metallic" shell
@@ -62,7 +49,7 @@ function star(body: string): PartLayer[] {
 const HELMET_SILVER_STAR: UniformPart = {
   base: 'helmetSilver',
   facemask: 'steelGrey',
-  layers: star('navy'),
+  layers: star(),
 };
 
 // Home jersey: navy body, white/silver neck band, white-over-silver V-collar, white numerals.
@@ -143,6 +130,10 @@ export const COWBOYS_PARTS: TeamPartsDefinition = {
   palette: {
     navy: '#003594',
     white: '#FFFFFF',
+    // Exact colors retained from the supplied star source; they are intentionally separate from
+    // the jersey navy/white palette values.
+    sourceNavy: '#032343',
+    sourceWhite: '#FCFCFC',
     silver: '#869397',
     // The published helmet "Blue Metallic" — the shell is several steps lighter than the jersey
     // silver (see cowboys.ts).
