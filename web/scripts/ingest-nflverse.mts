@@ -153,8 +153,24 @@ async function upsertRawRows(
   onConflict: string
 ): Promise<void> {
   const builder = supabase.from(table as never) as unknown as RawUpsertBuilder;
-  const { error } = await builder.upsert(rows, { onConflict });
-  if (error) throw new Error(`${table} upsert: ${error.message}`);
+  try {
+    const { error } = await builder.upsert(rows, { onConflict });
+    if (error) throw new Error(`${table} upsert: ${error.message}`);
+  } catch (e) {
+    // The widest sources hold ~146 columns per row, and a full-backfill chunk can still
+    // trip Postgres's statement_timeout (2024's nflverse_player_week did on the first
+    // complete backfill). The upsert is idempotent, so on a timeout split the chunk and
+    // retry each half -- down to one row, where a timeout is a genuine failure -- rather
+    // than aborting the whole run (DEP-557).
+    const message = (e as Error).message;
+    if (/statement timeout/i.test(message) && rows.length > 1) {
+      const mid = Math.ceil(rows.length / 2);
+      await upsertRawRows(supabase, table, rows.slice(0, mid), onConflict);
+      await upsertRawRows(supabase, table, rows.slice(mid), onConflict);
+      return;
+    }
+    throw e;
+  }
 }
 
 // The generated spec list is the schema's source of truth; a missing entry is a build
