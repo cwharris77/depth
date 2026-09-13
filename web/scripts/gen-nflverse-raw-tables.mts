@@ -31,6 +31,15 @@ export interface PlayerRawSpec {
   /** CSV column holding the week (default 'week'); QBR week uses 'game_week'. */
   weekColumn?: string;
   partition?: string;
+  /**
+   * Fixed `season_type` for a source whose file labels season **coverage** rather than
+   * grain. `stats_player_regpost_<season>.csv` holds one row per player-season tagged
+   * `REG` (no postseason berth), `REG+POST` (berth), or `POST` (postseason-only); no
+   * player has both REG and REG+POST, so the file's `season_type` must not read as a
+   * grain or a `REG` filter drops every playoff participant. The table's declared grain
+   * is REG+POST, so the transform overrides the source value with this constant.
+   */
+  seasonType?: string;
   columns: RawColumn[];
 }
 export interface PlayRawSpec {
@@ -110,6 +119,8 @@ interface SourceConfig {
   idKind?: PlayerRawSpec['idKind'];
   weekColumn?: string;
   partition?: string;
+  /** See PlayerRawSpec.seasonType. */
+  seasonType?: string;
   keyColumns?: string[];
   urls: string[];
 }
@@ -132,6 +143,10 @@ const SOURCES: SourceConfig[] = [
     grain: 'season',
     idColumn: 'player_id',
     idKind: 'gsis',
+    // The regpost file's own season_type is a coverage flag (REG / REG+POST / POST), not a
+    // grain -- one row per player-season. Pin it to the table's declared REG+POST grain so
+    // a reader filtering REG can't silently drop every playoff participant (DEP-558).
+    seasonType: 'REG+POST',
     urls: [`${BASE}/stats_player/stats_player_regpost_2024.csv`],
   },
   {
@@ -202,7 +217,7 @@ function identitySql(cfg: SourceConfig): { cols: string[]; pk: string } {
     'source_player_id text not null',
     'player_id text',
     'season smallint not null',
-    "season_type text not null default 'REG'",
+    `season_type text not null default '${cfg.seasonType ?? 'REG'}'`,
   ];
   const pkParts = ['source_player_id', 'season', 'season_type'];
   if (cfg.grain === 'week') {
@@ -268,6 +283,7 @@ async function main() {
         idKind,
         ...(cfg.weekColumn ? { weekColumn: cfg.weekColumn } : {}),
         ...(cfg.partition ? { partition: cfg.partition } : {}),
+        ...(cfg.seasonType ? { seasonType: cfg.seasonType } : {}),
         columns,
       });
     }
@@ -278,7 +294,7 @@ async function main() {
     '// GENERATED — do not edit by hand. Run `npm run gen:nflverse-raw-tables`.\n' +
     'export type RawColumnType = "text" | "numeric" | "boolean";\n' +
     'export interface RawColumn { name: string; type: RawColumnType }\n' +
-    'export interface PlayerRawSpec { table: string; source: string; grain: "season" | "week"; idColumn: string; idKind: "gsis" | "pfr" | "espn"; weekColumn?: string; partition?: string; columns: RawColumn[] }\n' +
+    'export interface PlayerRawSpec { table: string; source: string; grain: "season" | "week"; idColumn: string; idKind: "gsis" | "pfr" | "espn"; weekColumn?: string; partition?: string; seasonType?: string; columns: RawColumn[] }\n' +
     'export interface PlayRawSpec { table: string; source: string; grain: "play"; keyColumns: string[]; columns: RawColumn[] }\n\n' +
     `export const playerRawTables: PlayerRawSpec[] = ${JSON.stringify(playerSpecs, null, 2)};\n\n` +
     `export const playRawTables: PlayRawSpec[] = ${JSON.stringify(playSpecs, null, 2)};\n`;

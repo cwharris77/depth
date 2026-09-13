@@ -12,6 +12,7 @@ export interface PlayerRawSpec {
   idKind: 'gsis' | 'pfr' | 'espn';
   weekColumn?: string;
   partition?: string;
+  seasonType?: string;
   columns: RawColumn[];
 }
 export interface PlayRawSpec {
@@ -29,6 +30,7 @@ export const playerRawTables: PlayerRawSpec[] = [
     grain: 'season',
     idColumn: 'player_id',
     idKind: 'gsis',
+    seasonType: 'REG+POST',
     columns: [
       {
         name: 'player_name',

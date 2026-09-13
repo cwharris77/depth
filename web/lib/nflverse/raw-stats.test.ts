@@ -20,6 +20,7 @@ const seasonSpec: PlayerRawSpec = {
   grain: 'season',
   idColumn: 'player_id',
   idKind: 'gsis',
+  seasonType: 'REG+POST',
   columns: [
     { name: 'player_display_name', type: 'text' },
     { name: 'games', type: 'numeric' },
@@ -121,6 +122,39 @@ describe('toPlayerRawRows', () => {
       CROSSWALKS
     );
     expect(rows[0]).toMatchObject({ player_id: '3139477', week: 5, qbr_total: 72.1 });
+  });
+
+  // DEP-558: the regpost file's season_type is a coverage flag (REG = no postseason berth,
+  // REG+POST = berth, POST = postseason-only), not a grain. Landing it verbatim left the
+  // season table mixed, so a canonical read filtering REG dropped every playoff player.
+  it('pins a coverage-flag season_type to the table grain', () => {
+    const { rows } = toPlayerRawRows(
+      seasonSpec,
+      [
+        { player_id: '00-1', season: '2024', season_type: 'REG' },
+        { player_id: '00-2', season: '2024', season_type: 'POST' },
+        { player_id: '00-1', season: '2024' },
+      ],
+      CROSSWALKS
+    );
+    expect(rows.map((row) => row.season_type)).toEqual(['REG+POST', 'REG+POST', 'REG+POST']);
+  });
+
+  it('keeps the source season_type when a spec does not pin one', () => {
+    const { rows } = toPlayerRawRows(
+      weekSpec,
+      [
+        {
+          pfr_player_id: 'MahPa00',
+          season: '2024',
+          week: '3',
+          season_type: 'POST',
+        },
+      ],
+      CROSSWALKS,
+      'pass'
+    );
+    expect(rows[0].season_type).toBe('POST');
   });
 });
 
