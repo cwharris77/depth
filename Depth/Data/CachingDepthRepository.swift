@@ -284,7 +284,7 @@ actor CachingDepthRepository: DepthRepository {
     /// (DEP-207 cache-first read path). In-flight fetches for the same team are
     /// deduplicated, matching `teamSnapshot`'s dedup pattern.
     @discardableResult
-    func refreshSnapshot(teamId: String) async throws -> TeamSnapshot {
+    private func refreshSnapshot(teamId: String) async throws -> TeamSnapshot {
         if let existing = inFlightSnapshotFetches[teamId] {
             return try await existing.value
         }
