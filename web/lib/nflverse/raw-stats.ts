@@ -88,7 +88,10 @@ export function toPlayerRawRows(
       source_player_id: sourcePlayerId,
       player_id: playerId,
       season,
-      season_type: row.season_type?.trim() || 'REG',
+      // `seasonType` pins a source whose file labels season coverage rather than grain
+      // (nflverse_player_season's REG / REG+POST / POST) to its table's declared grain,
+      // so a REG-filtered reader can't silently drop playoff players (DEP-558).
+      season_type: spec.seasonType ?? (row.season_type?.trim() || 'REG'),
     };
     if (spec.grain === 'week') {
       const weekRaw = row[spec.weekColumn ?? 'week']?.trim();

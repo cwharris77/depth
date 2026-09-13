@@ -39,7 +39,11 @@ jobs:
     defaults:
       run:
         working-directory: web
-    timeout-minutes: 30
+    # A full `--seasons 1999-2026` backfill now also lands every Layer-1 source table
+    # (~250 source downloads + several hundred thousand upsert rows, twice: prod then the
+    # staging mirror). The pre-source-layer run finished in under a minute; 30 minutes is
+    # not enough headroom for the backfill (DEP-557).
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5

@@ -871,6 +871,15 @@ async function main() {
       player_stats_rows: rowsWritten,
       player_season_snaps_rows: seasonSnapTotals.length,
       raw_source_rows: Object.fromEntries([...rawSourceRows].map(([t, r]) => [t, r.length])),
+      // The seasons actually landed per source. A backfill that silently covers only the
+      // daily window (DEP-557: the last full run predated the source layer) is then visible
+      // on the run record instead of only in the table counts.
+      raw_source_seasons: Object.fromEntries(
+        [...rawSourceRows].map(([t, rows]) => [
+          t,
+          [...new Set(rows.map((r) => r.season))].sort((a, b) => a - b),
+        ])
+      ),
       games_min_season: gamesMinSeason ?? null,
       games_written: gamesResult.games.length,
       schedules_written: gamesResult.schedules.length,
