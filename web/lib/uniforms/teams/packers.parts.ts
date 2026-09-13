@@ -13,8 +13,6 @@
 
 import {
   PACKERS_COLLAR_WIDTHS,
-  PACKERS_DECAL_FIELD_PATH,
-  PACKERS_DECAL_OVAL_PATH,
   PACKERS_HELMET_STRIPE_INNER_PATH,
   PACKERS_HELMET_STRIPE_PATH,
   PACKERS_PANTS_GREEN_LEFT,
@@ -28,6 +26,7 @@ import {
   PACKERS_SLEEVE_WHITE_LEFT,
   PACKERS_SLEEVE_WHITE_RIGHT,
 } from './packers';
+import { PACKERS_G_MARK_LAYERS } from './packers-g';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 import type { UniformSurface } from './types';
 
@@ -144,28 +143,16 @@ function helmetStripe(): PartLayer[] {
   ];
 }
 
-// The G decal: white field over a green oval; the green glyph reads through the evenodd counter.
+// The supplied three-color G, in source paint order. The compiler resolves each literal source
+// color through the palette below so this shared helmet part remains independent of kit-row colors.
 function decal(): PartLayer[] {
-  return [
-    {
-      id: 'packers-decal-oval',
-      surface: 'helmet',
-      d: PACKERS_DECAL_OVAL_PATH,
-      clip: true,
-      kind: 'fill',
-      fillRule: 'evenodd',
-      fill: 'green',
-    },
-    {
-      id: 'packers-decal-field',
-      surface: 'helmet',
-      d: PACKERS_DECAL_FIELD_PATH,
-      clip: true,
-      kind: 'fill',
-      fillRule: 'evenodd',
-      fill: 'white',
-    },
-  ];
+  return PACKERS_G_MARK_LAYERS.map((layer): PartLayer => ({
+    ...layer,
+    surface: 'helmet',
+    clip: true,
+    kind: 'fill',
+    fill: layer.fill,
+  }));
 }
 
 // The gold shell with the stripe set and the G decal — shared by home and away.
@@ -300,6 +287,11 @@ export const PACKERS_PARTS: TeamPartsDefinition = {
     green: '#203731',
     gold: '#FFB612',
     white: '#FFFFFF',
+    // Exact foreground colors from the supplied Packers G SVG, kept separate from construction
+    // colors because the source green, white, and gold are each visibly distinct.
+    '#213832': '#213832',
+    '#FCFCFC': '#FCFCFC',
+    '#FEB415': '#FEB415',
     // The 1923 leather shell and pants, sampled from the composite (no token; see packers.ts).
     leather: '#7B4A2A',
     // The modern gold/white shell's cage — mid-grey, sampled from the GUD composite (packers
