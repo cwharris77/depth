@@ -1,6 +1,6 @@
 """Generate the Saints fleur paths directly from the supplied SVG reference.
 
-The supplied 2048px SVG contains four fleur paths: black outer, gold, black inner, and white.
+The supplied 2048px SVG contains three retained fleur paths: black outer, gold, and white.
 This script applies each path's translation and maps its coordinates into the established raw
 helmet envelope (x321..500, y196..372) without rasterizing, tracing, merging, or simplifying it.
 The white canvas and grey export-frame artifacts are outside the fleur and deliberately excluded.
@@ -19,12 +19,12 @@ SVG_NS = '{http://www.w3.org/2000/svg}'
 TOKEN = re.compile(r'[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?')
 TRANSLATE = re.compile(r'^translate\(\s*([-+]?\d+(?:\.\d+)?)\s*(?:,?\s*([-+]?\d+(?:\.\d+)?))?\s*\)$')
 
-# The first path is the white canvas; paths 1..4 are the fleur in SVG paint order. Remaining
-# paths are the screenshot/export frame at the viewBox edge, not helmet-decal geometry.
+# The first path is the white canvas; paths 1, 2, and 4 are the retained fleur layers in paint
+# order. Path 3 is the detached black fleur beside the ear opening and is deliberately omitted.
+# Remaining paths are the screenshot/export frame at the viewBox edge, not helmet-decal geometry.
 DECAL_PATHS = (
     ('SAINTS_DECAL_BLACK_OUTER_PATH', '#010001', 1),
     ('SAINTS_DECAL_GOLD_PATH', '#D1BB8F', 2),
-    ('SAINTS_DECAL_BLACK_INNER_PATH', '#010001', 3),
     ('SAINTS_DECAL_WHITE_PATH', '#F9F9F9', 4),
 )
 
@@ -119,7 +119,7 @@ def write() -> None:
     source = MODULE.read_text()
     start = '// BEGIN GENERATED SAINTS FLEUR PATHS'
     end = '// END GENERATED SAINTS FLEUR PATHS'
-    block = f'''// The source's four fleur paths are transformed directly by saints_fleur.py. The source canvas
+    block = f'''// The source's three retained fleur paths are transformed directly by saints_fleur.py. The source canvas
 // and its export-frame remnants are intentionally not decal geometry; every actual fleur path
 // retains its original fill, paint order, and points within the established helmet envelope.
 {start}

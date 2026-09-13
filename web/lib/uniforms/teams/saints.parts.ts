@@ -10,7 +10,6 @@
 
 import {
   SAINTS_COLLAR_WIDTH,
-  SAINTS_DECAL_BLACK_INNER_PATH,
   SAINTS_DECAL_BLACK_OUTER_PATH,
   SAINTS_DECAL_GOLD_PATH,
   SAINTS_DECAL_WHITE_PATH,
@@ -59,14 +58,6 @@ const HELMET_GOLD_FLEUR: UniformPart = {
       clip: true,
       kind: 'fill',
       fill: 'decal-gold',
-    },
-    {
-      id: 'saints-decal-black-inner',
-      surface: 'helmet',
-      d: SAINTS_DECAL_BLACK_INNER_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'decal-black',
     },
     {
       id: 'saints-decal-white',
