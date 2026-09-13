@@ -219,14 +219,6 @@ struct TeamDetailView: View {
                     currentTeamStore.refine(colors: colors)
                 }
             }
-            .refreshable {
-                if historyViewModel.isHistorical {
-                    await historyViewModel.retry()
-                } else {
-                    await viewModel.load()
-                    await loadOverrides()
-                }
-            }
             .onChange(of: unit) { _, newValue in
                 preferences.lastUnit = newValue
                 editMode.exitForContextChange()
@@ -738,12 +730,43 @@ struct TeamDetailView: View {
 
     @ViewBuilder
     private func rosterContent(snapshot: TeamSnapshot, historical: Bool) -> some View {
-        if dynamicTypeSize.isAccessibilitySize {
-            ScrollView {
-                rosterStack(snapshot: snapshot, historical: historical)
+        // NB: the scroll content uses `.frame(height:)` (exact) for the standard layout
+        // and `.frame(minHeight:)` (flexible) for a11y so the field fills available space
+        // even inside a ScrollView — see the DEP-207 height-fill comment in rosterStack.
+        GeometryReader { proxy in
+            if dynamicTypeSize.isAccessibilitySize {
+                ScrollView {
+                    rosterStack(snapshot: snapshot, historical: historical)
+                        .frame(minHeight: proxy.size.height, alignment: .top)
+                }
+                .refreshable { await refreshRoster(historical: historical) }
+            } else {
+                ScrollView {
+                    rosterStack(snapshot: snapshot, historical: historical)
+                        .frame(height: proxy.size.height, alignment: .top)
+                }
+                .scrollBounceBehavior(.always)
+                .refreshable { await refreshRoster(historical: historical) }
             }
+        }
+    }
+
+    /// Pull-to-refresh action for the roster page. Historical seasons retry the on-demand
+    /// fetch (no cache layer bypass needed since historical rosters are never cached — see
+    /// CachingDepthRepository.teamSeason). Modern snapshots use the force-refresh path
+    /// that bypasses the cache and guarantees fresh data on gesture completion.
+    ///
+    /// The same cache-first issue exists on the other data-driven tabs (stats, schedule,
+    /// compare, team-list): they already have `.refreshable` wired to cache-first
+    /// `load()`. Extending those to use `forceRefresh` is follow-up work split out per
+    /// the ticket's decision item — no scope creep into this commit.
+    @MainActor
+    private func refreshRoster(historical: Bool) async {
+        if historical {
+            await historyViewModel.retry()
         } else {
-            rosterStack(snapshot: snapshot, historical: historical)
+            await viewModel.load(forceRefresh: true)
+            await loadOverrides()
         }
     }
 

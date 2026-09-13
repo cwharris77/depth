@@ -37,13 +37,15 @@ final class TeamDetailViewModel {
         return CachingDepthRepository.isStale(cachedAt)
     }
 
-    func load() async {
+    func load(forceRefresh: Bool = false) async {
         let firstLoad = snapshot == nil
         if snapshot == nil {
             loadState = .loading
         }
         do {
-            let result = try await repository.teamSnapshot(teamId: teamId)
+            let result = forceRefresh
+                ? try await repository.forceRefreshTeamSnapshot(teamId: teamId)
+                : try await repository.teamSnapshot(teamId: teamId)
             snapshot = result
             cachedAt = await repository.teamSnapshotCachedAt(teamId: teamId)
             loadState = .loaded

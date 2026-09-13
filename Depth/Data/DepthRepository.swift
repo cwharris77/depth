@@ -49,6 +49,12 @@ protocol DepthRepository: Sendable {
     /// "Database evolution and update gate"). Callers cache the last known value and
     /// fall back to it when this throws.
     func appConfig() async throws -> AppConfig
+
+    /// Forces a network-first refresh of the team snapshot, bypassing any cached data.
+    /// The cache is updated with the fresh result on success. Default implementation
+    /// delegates to `teamSnapshot` for repositories that don't distinguish cache vs.
+    /// network (e.g. FixtureDepthRepository).
+    func forceRefreshTeamSnapshot(teamId: String) async throws -> TeamSnapshot
 }
 
 extension DepthRepository {
@@ -56,4 +62,8 @@ extension DepthRepository {
     func searchPlayers(query: String) async throws -> [PlayerHit] { [] }
     func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? { nil }
     func listUniforms() async throws -> [UniformListing] { [] }
+
+    func forceRefreshTeamSnapshot(teamId: String) async throws -> TeamSnapshot {
+        try await teamSnapshot(teamId: teamId)
+    }
 }
