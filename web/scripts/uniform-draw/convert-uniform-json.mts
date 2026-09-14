@@ -136,11 +136,8 @@ const jerseys = Object.fromEntries(
   Object.entries(authoredJerseys).map(([id, jersey]) => {
     const layers = [...jersey.layers, ...wordmarkLayers];
     const number = jersey.number ? { ...jersey.number } : undefined;
-    if (number) {
-      // The canonical archive proof uses the shared 3 unless a kit explicitly supplies another
-      // glyph. Number styling remains model-authored; glyph geometry remains deterministic here.
-      const text = typeof number.text === 'string' ? number.text : '3';
-      number.glyphPath = outline(text, FONTS['athletic-numeral'], 155, 294, 694, 0);
+    if (number && typeof number.text === 'string') {
+      number.glyphPath = outline(number.text, FONTS['athletic-numeral'], 155, 294, 694, 0);
       delete number.text;
     }
     return [id, { ...jersey, layers, number }];
