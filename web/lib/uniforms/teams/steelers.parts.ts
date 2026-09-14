@@ -48,6 +48,7 @@ import {
   STEELERS_SLEEVE_WHITE_RIGHT,
 } from './steelers';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
+import { LEGACY_ROUNDED_COLLAR_PATH } from './shared';
 
 const COLLAR_PATH = 'M206,388 L294,455 L386,388';
 
@@ -166,7 +167,7 @@ const JERSEY_BUMBLEBEE: UniformPart = {
     {
       id: 'steelers-bumblebee-collar',
       surface: 'collar',
-      d: COLLAR_PATH,
+      d: LEGACY_ROUNDED_COLLAR_PATH,
       clip: true,
       kind: 'stroke',
       stroke: 'gold',

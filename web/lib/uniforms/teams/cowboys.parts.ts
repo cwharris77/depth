@@ -22,8 +22,9 @@ import {
 } from './cowboys';
 import { COWBOYS_DECAL_PATHS as GENERATED_COWBOYS_DECAL_PATHS } from './cowboys-decal';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
+import { LEGACY_ROUNDED_COLLAR_PATH } from './shared';
 
-const COLLAR_PATH = 'M206,388 L294,455 L386,388';
+const COLLAR_PATH = LEGACY_ROUNDED_COLLAR_PATH;
 
 // The complete navy/white star is generated from the supplied SVG in its original paint order.
 // The generator excludes only that file's canvas/frame export artifacts; its coordinates preserve

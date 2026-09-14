@@ -20,6 +20,7 @@ import {
   EAGLES_DECAL_WHITE_PATH,
 } from './eagles';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
+import { LEGACY_ROUNDED_COLLAR_PATH } from './shared';
 
 // The wing — source paint order is white substrate, black feather channels, then silver body.
 // Every shell shares this exact placement and fixed palette.
@@ -75,12 +76,12 @@ function cuff(color: string): PartLayer[] {
 }
 
 // The deep collar yoke (deeper than the generic chevron).
-function collar(color: string): PartLayer[] {
+function collar(color: string, path = EAGLES_COLLAR_PATH): PartLayer[] {
   return [
     {
       id: 'eagles-collar',
       surface: 'collar',
-      d: EAGLES_COLLAR_PATH,
+      d: path,
       clip: true,
       kind: 'stroke',
       stroke: color,
@@ -122,7 +123,7 @@ const JERSEY_BLACK: UniformPart = {
 // Kelly-green jersey (J2): kelly body, NO cuff, white collar, white numerals keylined silver.
 const JERSEY_KELLY: UniformPart = {
   base: 'kelly',
-  layers: [...collar('white')],
+  layers: [...collar('white', LEGACY_ROUNDED_COLLAR_PATH)],
   number: { fill: 'white', outline: 'silver', outlineWidth: 14 },
 };
 
