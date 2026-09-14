@@ -6,6 +6,7 @@ import {
   isValidHexColor,
   isValidPathData,
   jerseySurfaceIssues,
+  resolveAuthoredJersey,
   validateAuthoredDefinition,
 } from './validate';
 
@@ -204,6 +205,58 @@ describe('authoredJerseys', () => {
   it('keys a single jersey by its target id', () => {
     const jersey = { base: 'navy', layers: [] };
     expect(authoredJerseys({ target: { id: 'home' }, jersey })).toEqual({ home: jersey });
+  });
+});
+
+describe('resolveAuthoredJersey', () => {
+  it('resolves the jersey named by target.id, not the first in the input', () => {
+    const away = { base: 'navy', layers: [] };
+    const resolved = resolveAuthoredJersey({
+      teamId: 'seahawks',
+      target: { kind: 'jersey', id: 'away' },
+      jerseys: { home: { base: 'navy', layers: [] }, away },
+    });
+    expect(resolved.issues).toEqual([]);
+    expect(resolved.id).toBe('away');
+    expect(resolved.jersey).toBe(away);
+  });
+
+  it('resolves a single jersey keyed by its target id', () => {
+    const jersey = { base: 'navy', layers: [] };
+    const resolved = resolveAuthoredJersey({ target: { kind: 'jersey', id: 'home' }, jersey });
+    expect(resolved.issues).toEqual([]);
+    expect(resolved.id).toBe('home');
+    expect(resolved.jersey).toBe(jersey);
+  });
+
+  it('requires an explicit target.id', () => {
+    const resolved = resolveAuthoredJersey({ jerseys: { home: { base: 'navy', layers: [] } } });
+    expect(resolved.issues.map((issue) => issue.path)).toContain('target.id');
+  });
+
+  it('rejects a target.id that resolves to no authored jersey', () => {
+    const resolved = resolveAuthoredJersey({
+      target: { kind: 'jersey', id: 'nope' },
+      jerseys: { home: { base: 'navy', layers: [] } },
+    });
+    expect(resolved.issues.map((issue) => issue.path)).toContain('target.id');
+  });
+
+  it('rejects an unsupported target kind', () => {
+    const resolved = resolveAuthoredJersey({
+      target: { kind: 'helmet', id: 'home' },
+      jerseys: { home: { base: 'navy', layers: [] } },
+    });
+    expect(resolved.issues.map((issue) => issue.path)).toContain('target.kind');
+  });
+
+  it('rejects ambiguous input carrying both jersey and jerseys', () => {
+    const resolved = resolveAuthoredJersey({
+      target: { kind: 'jersey', id: 'home' },
+      jersey: { base: 'navy', layers: [] },
+      jerseys: { home: { base: 'navy', layers: [] } },
+    });
+    expect(resolved.issues.some((issue) => /ambiguous/.test(issue.message))).toBe(true);
   });
 });
 

@@ -8,8 +8,11 @@ import {
   authoredJerseys,
   formatValidationIssues,
   jerseySurfaceIssues,
+  resolveAuthoredJersey,
   validateAuthoredDefinition,
 } from '@/lib/uniforms/teams/validate';
+import { renderGeneratedPartialModule, type GeneratedPartial } from '@/lib/uniforms/teams/partial';
+import type { UniformPart } from '@/lib/uniforms/teams/parts';
 
 type JsonLayer = {
   id: string;
@@ -43,7 +46,13 @@ type JsonDefinition = {
       width: number;
       height: number;
       transform?: string;
-      gradient?: { stops: Array<{ color: string }> };
+      gradient?: {
+        x1: number;
+        y1: number;
+        x2: number;
+        y2: number;
+        stops: Array<{ offset: number; color: string }>;
+      };
       shapes: Array<{ d: string; fill?: string }>;
     }
   >;
@@ -185,22 +194,32 @@ const parts = {
   kits: definition.kits ?? {},
 };
 
-// A full definition's first jersey is its canonical output. A partial update must name the
-// jersey it replaces: the earlier code selected `Object.keys(jerseys)[0]`, so a multi-jersey
-// input silently updated the wrong part.
-let selectedJersey = Object.keys(jerseys)[0];
+const generatedPatterns = parts.patterns;
+
 if (partial) {
-  const targetId = definition.target?.id;
-  if (!targetId) throw new Error('--partial requires target.id');
-  if (!Object.prototype.hasOwnProperty.call(jerseys, targetId)) {
-    throw new Error(`--partial target.id "${targetId}" does not resolve to an authored jersey`);
+  // A partial update must name the jersey it replaces: the earlier code selected
+  // `Object.keys(jerseys)[0]`, so a multi-jersey input silently updated the wrong part. The
+  // resolver rejects an absent, non-resolving, or ambiguous target before anything is emitted.
+  const resolution = resolveAuthoredJersey(definition as unknown as Record<string, unknown>);
+  if (resolution.issues.length > 0) {
+    throw new Error(`invalid partial update:\n${formatValidationIssues(resolution.issues)}`);
   }
+  const targetId = resolution.id as string;
   const surfaceIssues = jerseySurfaceIssues(`jerseys.${targetId}`, authoredJerseyParts[targetId]);
   if (surfaceIssues.length > 0) throw new Error(formatValidationIssues(surfaceIssues));
-  selectedJersey = targetId;
+
+  // Self-describing: the integration command and the importing team module read one object.
+  const generated: GeneratedPartial = {
+    teamId: definition.teamId,
+    target: { kind: 'jersey', id: targetId },
+    palette: definition.palette,
+    patterns: generatedPatterns,
+    // validateAuthoredDefinition already guaranteed every surface, path, and paint value; the
+    // converter's JSON types stay loose because they mirror the untrusted document.
+    jersey: jerseys[targetId] as unknown as UniformPart,
+  };
+  writeFileSync(resolve(output), renderGeneratedPartialModule(generated));
+} else {
+  const source = `// Generated from model authoring JSON. Do not hand-edit outlined paths.\nimport type { TeamPartsDefinition } from './parts';\n\nexport const ${definition.teamId.toUpperCase()}_PARTS: TeamPartsDefinition = ${js(parts)};\n`;
+  writeFileSync(resolve(output), source);
 }
-const generatedPatterns = parts.patterns;
-const source = partial
-  ? `// Generated from model authoring JSON. Do not hand-edit outlined paths.\nimport type { UniformPart } from './parts';\nimport type { PatternDef } from './types';\n\nexport const ${definition.teamId.toUpperCase()}_PATTERNS: Record<string, PatternDef> = ${js(generatedPatterns)};\n\nexport const ${definition.teamId.toUpperCase()}_${selectedJersey.replace(/[^a-z0-9]+/gi, '_').toUpperCase()}_JERSEY: UniformPart = ${js(jerseys[selectedJersey])};\n`
-  : `// Generated from model authoring JSON. Do not hand-edit outlined paths.\nimport type { TeamPartsDefinition } from './parts';\n\nexport const ${definition.teamId.toUpperCase()}_PARTS: TeamPartsDefinition = ${js(parts)};\n`;
-writeFileSync(resolve(output), source);
