@@ -15,6 +15,14 @@ const seahawksRivalries: TeamColors = {
   onAccent: '#0a0e1a',
 };
 
+const eaglesKelly: TeamColors = {
+  primary: '#046A38',
+  secondary: '#A5ACAF',
+  accent: '#FFFFFF',
+  uiAccent: '#046A38',
+  onAccent: '#0a0e1a',
+};
+
 describe('uniformArtURL', () => {
   it('derives a kit URL from its stable id', () => {
     expect(uniformArtURL('bengals-color-rush')).toBe('/uniforms/bengals-color-rush.webp');
@@ -79,6 +87,26 @@ describe('renderUniformThumbSVG', () => {
       getTeamUniformDefinition('seahawks')
     );
     expect(a).toBe(b);
+  });
+
+  it('uses an explicit construction key instead of deriving Eagles Kelly Green from its id', () => {
+    const definition = getTeamUniformDefinition('eagles');
+    const original = renderUniformThumbSVG(
+      eaglesKelly,
+      'eagles-kelly-green-1987',
+      definition,
+      'jersey',
+      'kelly-green-original'
+    );
+    const modern = renderUniformThumbSVG(
+      eaglesKelly,
+      'eagles-kelly-green-modern-2023',
+      definition,
+      'jersey',
+      'kelly-green-modern'
+    );
+
+    expect(original).not.toBe(modern);
   });
 
   it('renders a generic kit when the team has no definition', () => {

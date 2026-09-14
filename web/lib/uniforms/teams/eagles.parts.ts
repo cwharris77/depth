@@ -4,10 +4,10 @@
 //
 // The current kits (home, away) are one construction: a deep collar yoke and a solid band at the
 // sleeve hem. The kelly-green throwback drops the cuff entirely (its sleeve runs unbroken to the
-// hem) and keeps only the collar. No helmet stripe, no pant stripe on any kit. All four shells wear
+// hem) and keeps only the collar. No helmet stripe, no pant stripe on any kit. All shells wear
 // the same wing: white, black and silver layers in source paint order, so none of its colors moves
-// with the shell. The four kits combine three helmets (green shell, kelly shell, black shell) and
-// four jerseys/pants (green, white, black, kelly).
+// with the shell. The five kits combine three helmets (green shell, kelly shell, black shell),
+// five jersey constructions (green, white, black, original kelly, modern kelly), and four pants.
 
 import {
   EAGLES_BLACK,
@@ -120,10 +120,19 @@ const JERSEY_BLACK: UniformPart = {
   number: { fill: 'white', outline: 'silver', outlineWidth: 14 },
 };
 
-// Kelly-green jersey (J2): kelly body, NO cuff, white collar, white numerals keylined silver.
-const JERSEY_KELLY: UniformPart = {
+// Original Kelly-green jersey (J2): kelly body, NO cuff, white collar, white numerals keylined
+// silver. The 1987 construction keeps its rounded collar instead of the modern deep yoke.
+const JERSEY_KELLY_ORIGINAL: UniformPart = {
   base: 'kelly',
   layers: [...collar('white', LEGACY_ROUNDED_COLLAR_PATH)],
+  number: { fill: 'white', outline: 'silver', outlineWidth: 14 },
+};
+
+// Modern Kelly-green jersey: the current throwback construction uses the same body, sleeve and
+// number treatment as the original, but restores the Eagles deep collar yoke.
+const JERSEY_KELLY_MODERN: UniformPart = {
+  base: 'kelly',
+  layers: [...collar('white')],
   number: { fill: 'white', outline: 'silver', outlineWidth: 14 },
 };
 
@@ -149,14 +158,16 @@ export const EAGLES_PARTS: TeamPartsDefinition = {
     green: JERSEY_GREEN,
     white: JERSEY_WHITE,
     black: JERSEY_BLACK,
-    kelly: JERSEY_KELLY,
+    'kelly-original': JERSEY_KELLY_ORIGINAL,
+    'kelly-modern': JERSEY_KELLY_MODERN,
   },
   pants: { green: PANTS_GREEN, white: PANTS_WHITE, black: PANTS_BLACK, kelly: PANTS_KELLY },
   kits: {
     home: { helmet: 'green', jersey: 'green', pants: 'green' },
     away: { helmet: 'green', jersey: 'white', pants: 'white' },
     'black-alt': { helmet: 'black', jersey: 'black', pants: 'black' },
-    'kelly-green': { helmet: 'kelly', jersey: 'kelly', pants: 'kelly' },
+    'kelly-green-original': { helmet: 'kelly', jersey: 'kelly-original', pants: 'kelly' },
+    'kelly-green-modern': { helmet: 'kelly', jersey: 'kelly-modern', pants: 'kelly' },
   },
 };
 
