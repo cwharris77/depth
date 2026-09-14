@@ -172,6 +172,13 @@ export function compileParts(def: TeamPartsDefinition): TeamUniformDefinition {
           id,
           {
             ...pattern,
+            gradient: pattern.gradient && {
+              ...pattern.gradient,
+              stops: pattern.gradient.stops.map((stop) => ({
+                ...stop,
+                color: hex(palette, stop.color, teamId) as ColorRef,
+              })),
+            },
             shapes: pattern.shapes.map((shape) => ({
               ...shape,
               fill: hex(palette, shape.fill, teamId) as ColorRef,

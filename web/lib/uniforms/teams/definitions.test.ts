@@ -13,6 +13,7 @@ import { getAllTeamUniformDefinitions, getTeamUniformDefinition } from '@/lib/un
 
 const SEMANTIC_COLORS = new Set<ColorRef>(['primary', 'secondary', 'accent', 'readable-on-body']);
 const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/;
+const PATTERN_REF = /^pattern:[A-Za-z0-9_-]+$/;
 // This mirrors the current curated Seahawks home palette. Keeping wolf grey as the third token
 // protects the shoulder band from accidentally resolving to action green.
 const SEAHAWKS_COLORS: TeamColors = {
@@ -24,7 +25,7 @@ const SEAHAWKS_COLORS: TeamColors = {
 };
 
 function expectValidColor(color: ColorRef) {
-  expect(SEMANTIC_COLORS.has(color) || HEX_COLOR.test(color)).toBe(true);
+  expect(SEMANTIC_COLORS.has(color) || HEX_COLOR.test(color) || PATTERN_REF.test(color)).toBe(true);
 }
 
 function validateOverride(name: string, override: UniformStyleOverride) {

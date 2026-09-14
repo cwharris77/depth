@@ -105,6 +105,26 @@ const HELMET_1976_SILVER: UniformPart = {
 
 export const SEAHAWKS_PARTS: TeamPartsDefinition = {
   teamId: 'seahawks',
+  patterns: {
+    rivalDashes: {
+      width: 24,
+      height: 22,
+      gradient: {
+        x1: 0,
+        y1: 0,
+        x2: 24,
+        y2: 22,
+        stops: [
+          { offset: 0, color: 'green' },
+          { offset: 1, color: 'rivalriesCopper' },
+        ],
+      },
+      shapes: [
+        { d: 'M3,3 C6,1 11,2 13,5 C11,8 7,9 4,7 Z', fill: 'green' },
+        { d: 'M15,13 C18,11 22,12 23,15 C21,18 17,19 14,17 Z', fill: 'green' },
+      ],
+    },
+  },
   // Jersey hexes from the curated rows (teamcolorcodes); crownWedge is the re-based tonal step
   // documented in seahawks.ts, not a sampled hex.
   palette: {
@@ -121,6 +141,7 @@ export const SEAHAWKS_PARTS: TeamPartsDefinition = {
     rivalriesTeal: '#023A4D',
     rivalriesSilver: '#C6D3DC',
     rivalriesPine: '#29594C',
+    rivalriesCopper: '#B87333',
     royal76: '#003087',
     green76: '#046A38',
     silver76: '#8A8D8F',
@@ -204,6 +225,14 @@ export const SEAHAWKS_PARTS: TeamPartsDefinition = {
         fromGeneric('generic-sleeve-stripe-left', 'navy'),
         fromGeneric('generic-sleeve-stripe-right', 'navy'),
         fromGeneric('generic-collar', 'navy'),
+        {
+          id: 'seahawks-rivalries-dash-field',
+          surface: 'jersey',
+          d: 'M30,383 H210 L294,455 L250,490 L180,450 L120,430 L30,450 Z M558,383 H378 L294,455 L338,490 L408,450 L468,430 L558,450 Z',
+          clip: true,
+          kind: 'fill',
+          fill: 'pattern:rivalDashes',
+        },
       ],
       number: { fill: 'rivalriesPine', outline: 'navy', outlineWidth: 26 },
     },

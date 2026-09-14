@@ -276,11 +276,32 @@ export default function UniformFigure({
             height={pattern.height}
             patternUnits="userSpaceOnUse"
             patternTransform={pattern.transform}>
+            {pattern.gradient && (
+              <linearGradient
+                id={`${uid}-gradient-${id}`}
+                gradientUnits="userSpaceOnUse"
+                x1={pattern.gradient.x1}
+                y1={pattern.gradient.y1}
+                x2={pattern.gradient.x2}
+                y2={pattern.gradient.y2}>
+                {pattern.gradient.stops.map((stop) => (
+                  <stop
+                    key={stop.offset}
+                    offset={stop.offset}
+                    stopColor={resolveColor(stop.color, colors, model.jerseyColor)}
+                  />
+                ))}
+              </linearGradient>
+            )}
             {pattern.shapes.map((shape, index) => (
               <path
                 key={index}
                 d={shape.d}
-                fill={resolveColor(shape.fill, colors, model.jerseyColor)}
+                fill={
+                  pattern.gradient
+                    ? `url(#${uid}-gradient-${id})`
+                    : resolveColor(shape.fill, colors, model.jerseyColor)
+                }
               />
             ))}
           </pattern>
