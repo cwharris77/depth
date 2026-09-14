@@ -166,6 +166,8 @@ export const EAGLES_PARTS: TeamPartsDefinition = {
     home: { helmet: 'green', jersey: 'green', pants: 'green' },
     away: { helmet: 'green', jersey: 'white', pants: 'white' },
     'black-alt': { helmet: 'black', jersey: 'black', pants: 'black' },
+    // Existing archive IDs derive this legacy slug; it remains the original-era construction.
+    'kelly-green': { helmet: 'kelly', jersey: 'kelly-original', pants: 'kelly' },
     'kelly-green-original': { helmet: 'kelly', jersey: 'kelly-original', pants: 'kelly' },
     'kelly-green-modern': { helmet: 'kelly', jersey: 'kelly-modern', pants: 'kelly' },
   },

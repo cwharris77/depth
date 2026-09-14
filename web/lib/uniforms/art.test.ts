@@ -109,6 +109,20 @@ describe('renderUniformThumbSVG', () => {
     expect(original).not.toBe(modern);
   });
 
+  it('keeps the existing Eagles Kelly Green archive id on the original construction fallback', () => {
+    const definition = getTeamUniformDefinition('eagles');
+    const fallback = renderUniformThumbSVG(eaglesKelly, 'eagles-kelly-green-1987', definition);
+    const original = renderUniformThumbSVG(
+      eaglesKelly,
+      'eagles-kelly-green-1987',
+      definition,
+      'jersey',
+      'kelly-green-original'
+    );
+
+    expect(fallback).toBe(original);
+  });
+
   it('renders a generic kit when the team has no definition', () => {
     const svg = renderUniformThumbSVG(seahawksRivalries, 'seahawks-rivalries-2025');
     expect(svg).toContain('viewBox="20 372 560 452"');
