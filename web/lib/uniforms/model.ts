@@ -6,6 +6,7 @@ import type {
   UniformLayer,
   UniformStyle,
   UniformStyleOverride,
+  PatternDef,
 } from '@/lib/uniforms/teams/types';
 
 // Resolves generic, team, and kit uniform construction data into paint-ready SVG values. The
@@ -100,6 +101,7 @@ type ResolvedUniformLayer =
   | (Omit<Extract<UniformLayer, { kind: 'stroke' }>, 'stroke'> & { stroke: string });
 
 export interface ResolvedUniformStyle {
+  patterns: Record<string, PatternDef>;
   helmetColor: string;
   facemaskColor: string;
   jerseyColor: string;
@@ -109,6 +111,7 @@ export interface ResolvedUniformStyle {
 }
 
 export function resolveColor(ref: unknown, colors: JerseyColors, bodyColor: string): string {
+  if (typeof ref === 'string' && ref.startsWith('pattern:')) return ref;
   if (ref === 'primary' || ref === 'secondary' || ref === 'accent') return colors[ref];
   if (ref === 'readable-on-body') return readableTextOn(bodyColor);
   if (typeof ref === 'string' && ref.startsWith('#')) return ref;
@@ -175,6 +178,7 @@ export function resolveUniformModel(
   const jerseyColor = resolveColor(style.jerseyColor, colors, colors.primary);
 
   return {
+    patterns: definition?.patterns ?? {},
     helmetColor: resolveColor(style.helmetColor, colors, jerseyColor),
     facemaskColor: resolveColor(style.facemaskColor, colors, jerseyColor),
     jerseyColor,

@@ -24,6 +24,7 @@ import type {
   UniformLayer,
   UniformStyleOverride,
   UniformSurface,
+  PatternDef,
 } from './types';
 
 // A palette key is any name the team module chooses ('navy', 'orange', 'white'). Parts refer to
@@ -78,6 +79,7 @@ export interface KitRef {
 
 export interface TeamPartsDefinition {
   teamId: string;
+  patterns?: Record<string, PatternDef>;
   palette: Record<string, string>;
   helmets: Record<string, UniformPart>;
   jerseys: Record<string, UniformPart>;
@@ -105,6 +107,7 @@ export function fromGeneric(id: string, color: PaletteRef): PartLayer {
 
 function hex(palette: Record<string, string>, ref: PaletteRef, teamId: string): string {
   if (ref === 'readable-on-body') return ref;
+  if (ref.startsWith('pattern:')) return ref;
   const value = palette[ref];
   // A typo in a palette key would otherwise resolve to colors.primary at render time and paint
   // a plausible-but-wrong color, which no test would catch. Fail at authoring time instead.
@@ -163,5 +166,19 @@ export function compileParts(def: TeamPartsDefinition): TeamUniformDefinition {
     };
   }
 
-  return { teamId, kits };
+  const patterns = def.patterns
+    ? Object.fromEntries(
+        Object.entries(def.patterns).map(([id, pattern]) => [
+          id,
+          {
+            ...pattern,
+            shapes: pattern.shapes.map((shape) => ({
+              ...shape,
+              fill: hex(palette, shape.fill, teamId) as ColorRef,
+            })),
+          },
+        ])
+      )
+    : undefined;
+  return { teamId, patterns, kits };
 }
