@@ -724,6 +724,24 @@ async function main() {
   };
   const crosswalks: RawCrosswalks = { gsis: crosswalk, pfr: pfrCrosswalk };
 
+  // Weekly-grain raw sources are bounded to a recent window even under a full --seasons
+  // backfill: nothing serves weekly history (canonical v1 is season-grain, DEP-544), and
+  // nflverse_player_week alone is ~314 MB at full depth -- most of a 500 MB free-tier cap.
+  // The season-grain source keeps full history. Override with
+  // NFLVERSE_WEEKLY_RETENTION_SEASONS. (Player-grain only; ftn_play is 2022+ and tiny.)
+  const weeklyRetentionSeasons = Math.max(
+    1,
+    Number(process.env.NFLVERSE_WEEKLY_RETENTION_SEASONS ?? 4)
+  );
+  const weeklyMinSeason =
+    latestSeason === null ? -Infinity : latestSeason - (weeklyRetentionSeasons - 1);
+  if (latestSeason !== null) {
+    console.log(
+      `raw weekly sources: keeping seasons ${weeklyMinSeason}-${latestSeason} only ` +
+        `(${weeklyRetentionSeasons}-season window)`
+    );
+  }
+
   const rawTasks: { table: string; season: number; url: string; partition?: string }[] = [];
   for (const season of seasons) {
     rawTasks.push({
@@ -731,26 +749,28 @@ async function main() {
       season,
       url: assetUrl('stats_player', `stats_player_regpost_${season}.csv`),
     });
-    rawTasks.push({
-      table: 'nflverse_player_week',
-      season,
-      url: assetUrl('stats_player', `stats_player_week_${season}.csv`),
-    });
-    for (const family of ['pass', 'def', 'rush', 'rec']) {
+    if (season >= weeklyMinSeason) {
       rawTasks.push({
-        table: 'pfr_player_week',
+        table: 'nflverse_player_week',
         season,
-        partition: family,
-        url: assetUrl('pfr_advstats', `advstats_week_${family}_${season}.csv`),
+        url: assetUrl('stats_player', `stats_player_week_${season}.csv`),
       });
-    }
-    for (const family of ['passing', 'rushing', 'receiving']) {
-      rawTasks.push({
-        table: 'ngs_player_week',
-        season,
-        partition: family,
-        url: assetUrl(NGS_TAG, `ngs_${season}_${family}.csv.gz`),
-      });
+      for (const family of ['pass', 'def', 'rush', 'rec']) {
+        rawTasks.push({
+          table: 'pfr_player_week',
+          season,
+          partition: family,
+          url: assetUrl('pfr_advstats', `advstats_week_${family}_${season}.csv`),
+        });
+      }
+      for (const family of ['passing', 'rushing', 'receiving']) {
+        rawTasks.push({
+          table: 'ngs_player_week',
+          season,
+          partition: family,
+          url: assetUrl(NGS_TAG, `ngs_${season}_${family}.csv.gz`),
+        });
+      }
     }
     if (season >= FTN_MIN_SEASON) {
       rawTasks.push({
