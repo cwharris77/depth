@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { renderUniformThumbSVG, uniformArtURL, uniformArtFullURL } from '@/lib/uniforms/art';
+import { UNIFORMS } from '@/lib/uniforms/data';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
+import { buildRowsFromCatalog } from '../../scripts/gen-uniform-thumbs.mts';
 import type { TeamColors } from '@/lib/types';
 
 // DEP-220: the artifact pipeline's pure half. These tests lock the two contracts the
@@ -31,6 +33,19 @@ describe('uniformArtURL', () => {
   it('is origin-relative so web art resolves against the current request origin', () => {
     expect(uniformArtURL('bengals-color-rush')).toMatch(/^\/uniforms\//);
     expect(uniformArtURL('bengals-color-rush')).not.toMatch(/^https?:\/\//);
+  });
+});
+
+describe('uniform thumbnail catalog rows', () => {
+  it('projects the committed catalog into stable raster inputs', () => {
+    expect(buildRowsFromCatalog()).toEqual(
+      UNIFORMS.map((uniform) => ({
+        id: `${uniform.teamId}-${uniform.slug}-${uniform.yearStart}`,
+        teamId: uniform.teamId,
+        constructionKey: uniform.constructionKey,
+        colors: uniform.colors,
+      })).sort((left, right) => left.id.localeCompare(right.id))
+    );
   });
 });
 

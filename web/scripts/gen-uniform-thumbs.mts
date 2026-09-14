@@ -1,7 +1,6 @@
 // Generates the prerendered uniform thumbnails for the native iOS picker (DEP-220) from
-// the exact rows that picker renders. The hosted `uniforms` table is the authoritative
-// source when credentials exist. Without credentials it falls back to data.ts, the same
-// complete curated archive the migration seeds. Both paths cover every row kind uniformly.
+// the exact committed rows that picker renders. data.ts is the complete curated archive the
+// migration seeds, so raster output is independent of local credentials or hosted data.
 //
 // Outputs: `public/uniforms/<id>.webp` per row (id = `<teamId>-<slug>-<yearStart>`),
 // deterministically rendered from the shared UniformFigure jersey crop (the same SVG the
@@ -11,22 +10,15 @@
 // (see the backfill migration and lib/uniforms/seed-sql.ts).
 //
 // Usage: npm run gen:uniform-thumbs
-// Requires SUPABASE_URL + SUPABASE_SECRET_KEY to regenerate from live rows (reads only);
-// runs without them from the committed seed sources. Pure rendering lives in
-// lib/uniforms/art.tsx — this script is I/O glue.
-import dotenv from 'dotenv';
+// Pure rendering lives in lib/uniforms/art.tsx — this script is I/O glue.
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createClient } from '@supabase/supabase-js';
 import sharp from 'sharp';
 import { renderUniformThumbSVG } from '@/lib/uniforms/art';
 import { UNIFORMS } from '@/lib/uniforms/data';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
-import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/utils/env';
 import type { JerseyColors } from '@/lib/types';
-
-dotenv.config({ path: '.env.local' });
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT_DIR = join(ROOT, 'public', 'uniforms');
@@ -41,50 +33,18 @@ const VARIANTS = {
 
 type UniformRow = {
   id: string;
-  team_id: string;
+  teamId: string;
+  constructionKey: string;
   colors: JerseyColors;
 };
 
-// Live-rows mode: every `uniforms` row with the colors the picker reads.
-async function buildRowsFromDb(): Promise<UniformRow[]> {
-  const supabase = createClient(getSupabaseUrl(), getSupabaseSecretKey());
-  const { data, error } = await supabase
-    .from('uniforms')
-    .select('id, team_id, color_primary, color_secondary, color_accent, ui_accent, on_accent')
-    .order('id')
-    .returns<
-      {
-        id: string;
-        team_id: string;
-        color_primary: string;
-        color_secondary: string;
-        color_accent: string;
-        ui_accent: string;
-        on_accent: string;
-      }[]
-    >();
-  if (error) throw new Error(`uniforms read failed: ${error.message}`);
-  if (!data || data.length === 0) throw new Error('uniforms read returned no rows');
-  return data.map((row) => ({
-    id: row.id,
-    team_id: row.team_id,
-    colors: {
-      primary: row.color_primary,
-      secondary: row.color_secondary,
-      accent: row.color_accent,
-      uiAccent: row.ui_accent,
-      onAccent: row.on_accent,
-    },
-  }));
-}
-
-// Seed mode (no credentials): the complete curated archive, using the same deterministic
-// ids as the seed migration.
-function buildRowsFromSeed(): UniformRow[] {
-  return UNIFORMS.map((kit) => ({
-    id: `${kit.teamId}-${kit.slug}-${kit.yearStart}`,
-    team_id: kit.teamId,
-    colors: kit.colors,
+// The complete committed catalog, using the same deterministic ids as the seed migration.
+export function buildRowsFromCatalog(): UniformRow[] {
+  return UNIFORMS.map((uniform) => ({
+    id: `${uniform.teamId}-${uniform.slug}-${uniform.yearStart}`,
+    teamId: uniform.teamId,
+    constructionKey: uniform.constructionKey,
+    colors: uniform.colors,
   })).sort((a, b) => a.id.localeCompare(b.id));
 }
 
@@ -95,8 +55,9 @@ async function writeRows(rows: UniformRow[]) {
       const svg = renderUniformThumbSVG(
         row.colors,
         row.id,
-        getTeamUniformDefinition(row.team_id),
-        variant
+        getTeamUniformDefinition(row.teamId),
+        variant,
+        row.constructionKey
       );
       const outPath = join(OUT_DIR, `${row.id}${suffix}.webp`);
       await sharp(Buffer.from(svg)).webp({ quality: 90 }).toFile(outPath);
@@ -107,20 +68,12 @@ async function writeRows(rows: UniformRow[]) {
 }
 
 async function main() {
-  const hasCreds = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_KEY);
-  if (hasCreds) {
-    const rows = await buildRowsFromDb();
-    await writeRows(rows);
-  } else {
-    console.warn(
-      'SUPABASE_URL/SUPABASE_SECRET_KEY not set — generating from the committed seed ' +
-        '(see the script header for what that covers). Set both to regenerate from live rows.'
-    );
-    await writeRows(buildRowsFromSeed());
-  }
+  await writeRows(buildRowsFromCatalog());
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exitCode = 1;
-});
+if (fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((err) => {
+    console.error(err);
+    process.exitCode = 1;
+  });
+}
