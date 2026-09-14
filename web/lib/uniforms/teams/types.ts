@@ -8,6 +8,13 @@ export interface PatternDef {
   width: number;
   height: number;
   transform?: string;
+  gradient?: {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+    stops: Array<{ offset: number; color: string }>;
+  };
   shapes: Array<{ d: string; fill: string }>;
 }
 

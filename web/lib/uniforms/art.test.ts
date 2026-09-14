@@ -45,6 +45,17 @@ describe('renderUniformThumbSVG', () => {
     expect(svg).toContain('fill="#C6D3DC"');
   });
 
+  it('emits the Rivalries dash pattern and applies it to the jersey field', () => {
+    const svg = renderUniformThumbSVG(
+      seahawksRivalries,
+      'seahawks-rivalries-2025',
+      getTeamUniformDefinition('seahawks')
+    );
+    expect(svg).toContain('data-layer-id="seahawks-rivalries-dash-field"');
+    expect(svg).toContain('pattern-rivalDashes');
+    expect(svg).toContain('gradient-rivalDashes');
+  });
+
   it('uses vector numerals without a rasterizer font dependency', () => {
     const svg = renderUniformThumbSVG(
       seahawksRivalries,
