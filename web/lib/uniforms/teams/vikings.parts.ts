@@ -20,6 +20,7 @@ import {
   VIKINGS_BAND_UPPER_LEFT,
   VIKINGS_BAND_UPPER_RIGHT,
   VIKINGS_COLLAR_PATH,
+  VIKINGS_CLASSIC_COLLAR_PATH,
   VIKINGS_DECAL_CRESCENT_PATH,
   VIKINGS_DECAL_HORN_FILL_PATH,
   VIKINGS_DECAL_HORN_PATH,
@@ -66,7 +67,7 @@ function pantsStripes(outer: string, inner: string): PartLayer[] {
   }));
 }
 
-function collar(outer: string, inner: string): PartLayer[] {
+function collar(outer: string, inner: string, path = VIKINGS_COLLAR_PATH): PartLayer[] {
   return (
     [
       ['vikings-collar-outer', outer, 18],
@@ -75,7 +76,7 @@ function collar(outer: string, inner: string): PartLayer[] {
   ).map(([id, stroke, strokeWidth]) => ({
     id,
     surface: 'collar' as const,
-    d: VIKINGS_COLLAR_PATH,
+    d: path,
     clip: true,
     kind: 'stroke' as const,
     stroke,
@@ -135,6 +136,15 @@ const JERSEY_PURPLE: UniformPart = {
   number: { fill: 'white', outline: 'gold', outlineWidth: 14 },
 };
 
+const JERSEY_PURPLE_CLASSIC: UniformPart = {
+  base: 'purple',
+  layers: [
+    ...sleeveBands('white', 'gold'),
+    ...collar('white', 'gold', VIKINGS_CLASSIC_COLLAR_PATH),
+  ],
+  number: { fill: 'white', outline: 'gold', outlineWidth: 14 },
+};
+
 // White jersey (J2) — away and Winter Warrior. The bands invert to purple over gold so the upper
 // one reads against the body.
 const JERSEY_WHITE: UniformPart = {
@@ -172,13 +182,13 @@ export const VIKINGS_PARTS: TeamPartsDefinition = {
     black: '#000000',
   },
   helmets: { purple: HELMET_PURPLE, classic: HELMET_PURPLE_CLASSIC, white: HELMET_WHITE },
-  jerseys: { purple: JERSEY_PURPLE, white: JERSEY_WHITE },
+  jerseys: { purple: JERSEY_PURPLE, 'purple-classic': JERSEY_PURPLE_CLASSIC, white: JERSEY_WHITE },
   pants: { purpleWhite: PANTS_PURPLE_WHITE, purpleGold: PANTS_PURPLE_GOLD, white: PANTS_WHITE },
   kits: {
     home: { helmet: 'purple', jersey: 'purple', pants: 'purpleWhite' },
     away: { helmet: 'purple', jersey: 'white', pants: 'purpleGold' },
     'winter-warrior': { helmet: 'white', jersey: 'white', pants: 'white' },
-    'purple-classic': { helmet: 'classic', jersey: 'purple', pants: 'white' },
+    'purple-classic': { helmet: 'classic', jersey: 'purple-classic', pants: 'white' },
   },
 };
 

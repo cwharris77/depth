@@ -15,8 +15,7 @@ import {
   SAINTS_DECAL_WHITE_PATH,
 } from './saints';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
-
-const COLLAR_PATH = 'M206,388 L294,455 L386,388';
+import { GENERIC_COLLAR_PATH } from './shared';
 
 // The gold V-collar — the same bold band on every kit.
 function collar(stroke: string): PartLayer[] {
@@ -24,7 +23,7 @@ function collar(stroke: string): PartLayer[] {
     {
       id: 'saints-collar',
       surface: 'collar',
-      d: COLLAR_PATH,
+      d: GENERIC_COLLAR_PATH,
       clip: true,
       kind: 'stroke',
       stroke,

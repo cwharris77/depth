@@ -23,7 +23,8 @@ import {
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 import type { UniformSurface } from './types';
 
-const COLLAR_PATH = 'M206,388 L294,455 L386,388';
+const BEARS_MODERN_COLLAR_PATH = 'M216,388 Q216,412 238,431 L294,478 L350,431 Q372,412 372,388';
+const BEARS_CLASSIC_COLLAR_PATH = 'M229,388 Q229,405 246,414 L294,414 L342,414 Q359,405 359,388';
 
 function sleeveStripes(edge: string, core: string): PartLayer[] {
   const out: PartLayer[] = [];
@@ -58,14 +59,14 @@ function sleeveStripes(edge: string, core: string): PartLayer[] {
   return out;
 }
 
-function collar(outer: string, inner: string): PartLayer[] {
+function collar(outer: string, inner: string, path: string): PartLayer[] {
   return [
     { id: 'bears-collar-outer', stroke: outer, strokeWidth: 20 },
     { id: 'bears-collar-inner', stroke: inner, strokeWidth: 9 },
   ].map((s): PartLayer => ({
     ...s,
     surface: 'collar',
-    d: COLLAR_PATH,
+    d: path,
     clip: true,
     kind: 'stroke',
   }));
@@ -73,10 +74,16 @@ function collar(outer: string, inner: string): PartLayer[] {
 
 // One jersey shape, three colorways. `edge` bands the stripe set and the numeral outline;
 // `core` fills them.
-function jersey(base: string, edge: string, core: string, numberFill: string): UniformPart {
+function jersey(
+  base: string,
+  edge: string,
+  core: string,
+  numberFill: string,
+  collarPath: string
+): UniformPart {
   return {
     base,
-    layers: [...sleeveStripes(edge, core), ...collar(edge, core)],
+    layers: [...sleeveStripes(edge, core), ...collar(edge, core, collarPath)],
     number: { fill: numberFill, outline: core, outlineWidth: 26 },
   };
 }
@@ -139,9 +146,9 @@ export const BEARS_PARTS: TeamPartsDefinition = {
   palette: { navy: '#0B162A', orange: '#C83803', white: '#FFFFFF' },
   helmets: { 'navy-c': HELMET_NAVY_C },
   jerseys: {
-    navy: jersey('navy', 'white', 'orange', 'white'),
-    white: jersey('white', 'navy', 'orange', 'navy'),
-    orange: jersey('orange', 'white', 'navy', 'white'),
+    navy: jersey('navy', 'white', 'orange', 'white', BEARS_CLASSIC_COLLAR_PATH),
+    white: jersey('white', 'navy', 'orange', 'navy', BEARS_CLASSIC_COLLAR_PATH),
+    orange: jersey('orange', 'white', 'navy', 'white', BEARS_MODERN_COLLAR_PATH),
   },
   pants: { navy: PANTS_NAVY },
   kits: {
