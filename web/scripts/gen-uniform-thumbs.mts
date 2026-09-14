@@ -18,6 +18,10 @@ import sharp from 'sharp';
 import { renderUniformThumbSVG } from '@/lib/uniforms/art';
 import { UNIFORMS } from '@/lib/uniforms/data';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
+import {
+  findUnrecordedConstructions,
+  findUnsourcedConstructions,
+} from '@/lib/uniforms/teams/provenance';
 import { findUnresolvedConstructions } from '@/lib/uniforms/teams/validate';
 import type { JerseyColors } from '@/lib/types';
 
@@ -83,6 +87,30 @@ async function main() {
         unresolved
           .map((row) => `  - ${row.id}: no kit "${row.constructionKey}" for ${row.teamId}`)
           .join('\n')
+    );
+  }
+  // A row whose construction has no provenance record at all is a shipping blocker: the
+  // historical-accuracy ledger must carry either a sourced record or an explicit UNSOURCED
+  // marker before its art is published (review item 6).
+  const unrecorded = findUnrecordedConstructions(rows);
+  if (unrecorded.length > 0) {
+    throw new Error(
+      'curated rows have no provenance record:\n' +
+        unrecorded
+          .map(
+            (row) =>
+              `  - ${row.id}: add a record or an explicit UNSOURCED marker for "${row.constructionKey}"`
+          )
+          .join('\n')
+    );
+  }
+  // Unsourced constructions are allowed to ship — the backfill is tractable precisely because
+  // the placeholder exists — but they are flagged as needing review on every generation run.
+  const unsourced = findUnsourcedConstructions(rows);
+  if (unsourced.length > 0) {
+    console.warn(
+      `\n${unsourced.length} constructions carry the UNSOURCED placeholder (needs review):\n` +
+        unsourced.map((row) => `  - ${row.id}`).join('\n')
     );
   }
   await writeRows(rows);
