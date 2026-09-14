@@ -21,7 +21,9 @@ type JsonLayer = {
 
 type JsonDefinition = {
   teamId: string;
+  target?: { kind: string; id: string };
   palette: Record<string, string>;
+  jersey?: { base: string; layers: JsonLayer[]; number?: Record<string, unknown> };
   jerseys: Record<string, { base: string; layers: JsonLayer[]; number?: Record<string, unknown> }>;
   patterns?: Record<
     string,
@@ -122,12 +124,16 @@ const args = process.argv.filter((arg) => arg !== '--partial');
 const [input, output] = args.slice(2);
 if (!input || !output) throw new Error('usage: convert-uniform-json.mts <input.json> <output.ts>');
 const definition = JSON.parse(readFileSync(resolve(input), 'utf8')) as JsonDefinition;
-if (!definition.teamId || !definition.palette || !definition.jerseys)
+if (!definition.teamId || !definition.palette || (!definition.jerseys && !definition.jersey))
   throw new Error('invalid TeamPartsDefinition JSON');
+
+const authoredJerseys = definition.jerseys ?? {
+  [definition.target?.id ?? 'authored']: definition.jersey!,
+};
 
 const wordmarkLayers = (definition.wordmarks ?? []).map(layerFromWordmark);
 const jerseys = Object.fromEntries(
-  Object.entries(definition.jerseys).map(([id, jersey]) => {
+  Object.entries(authoredJerseys).map(([id, jersey]) => {
     const layers = [...jersey.layers, ...wordmarkLayers];
     const number = jersey.number ? { ...jersey.number } : undefined;
     if (number) {
@@ -166,6 +172,6 @@ const parts = {
 
 const selectedJersey = Object.keys(jerseys)[0];
 const source = partial
-  ? `// Generated from model authoring JSON. Do not hand-edit outlined paths.\nimport type { UniformPart } from './parts';\n\nexport const ${definition.teamId.toUpperCase()}_${selectedJersey.replace(/[^a-z0-9]+/gi, '_').toUpperCase()}_JERSEY: UniformPart = ${js(jerseys[selectedJersey])};\n`
+  ? `// Generated from model authoring JSON. Do not hand-edit outlined paths.\nimport type { UniformPart } from './parts';\nimport type { PatternDef } from './types';\n\nexport const ${definition.teamId.toUpperCase()}_PATTERNS: Record<string, PatternDef> = ${js(parts.patterns)};\n\nexport const ${definition.teamId.toUpperCase()}_${selectedJersey.replace(/[^a-z0-9]+/gi, '_').toUpperCase()}_JERSEY: UniformPart = ${js(jerseys[selectedJersey])};\n`
   : `// Generated from model authoring JSON. Do not hand-edit outlined paths.\nimport type { TeamPartsDefinition } from './parts';\n\nexport const ${definition.teamId.toUpperCase()}_PARTS: TeamPartsDefinition = ${js(parts)};\n`;
 writeFileSync(resolve(output), source);
