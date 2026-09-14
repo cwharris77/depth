@@ -150,6 +150,7 @@ const parts = {
         width: pattern.width,
         height: pattern.height,
         transform: pattern.transform,
+        gradient: pattern.gradient,
         shapes: pattern.shapes.map((shape) => ({
           d: shape.d,
           fill: shape.fill ?? pattern.gradient?.stops[0]?.color ?? '#000000',
@@ -165,7 +166,8 @@ const parts = {
 };
 
 const selectedJersey = Object.keys(jerseys)[0];
+const generatedPatterns = parts.patterns;
 const source = partial
-  ? `// Generated from model authoring JSON. Do not hand-edit outlined paths.\nimport type { UniformPart } from './parts';\n\nexport const ${definition.teamId.toUpperCase()}_${selectedJersey.replace(/[^a-z0-9]+/gi, '_').toUpperCase()}_JERSEY: UniformPart = ${js(jerseys[selectedJersey])};\n`
+  ? `// Generated from model authoring JSON. Do not hand-edit outlined paths.\nimport type { UniformPart } from './parts';\nimport type { PatternDef } from './types';\n\nexport const ${definition.teamId.toUpperCase()}_PATTERNS: Record<string, PatternDef> = ${js(generatedPatterns)};\n\nexport const ${definition.teamId.toUpperCase()}_${selectedJersey.replace(/[^a-z0-9]+/gi, '_').toUpperCase()}_JERSEY: UniformPart = ${js(jerseys[selectedJersey])};\n`
   : `// Generated from model authoring JSON. Do not hand-edit outlined paths.\nimport type { TeamPartsDefinition } from './parts';\n\nexport const ${definition.teamId.toUpperCase()}_PARTS: TeamPartsDefinition = ${js(parts)};\n`;
 writeFileSync(resolve(output), source);
