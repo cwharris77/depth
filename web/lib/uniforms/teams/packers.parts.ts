@@ -29,6 +29,7 @@ import {
 import { PACKERS_G_MARK_LAYERS } from './packers-g';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 import type { UniformSurface } from './types';
+import { LEGACY_ROUNDED_COLLAR_PATH } from './shared';
 
 const COLLAR_PATH = 'M206,388 L294,455 L386,388';
 
@@ -241,7 +242,7 @@ const JERSEY_NAVY: UniformPart = {
     {
       id: 'packers-collar-outer',
       surface: 'collar',
-      d: COLLAR_PATH,
+      d: LEGACY_ROUNDED_COLLAR_PATH,
       clip: true,
       kind: 'stroke',
       stroke: 'bronze',

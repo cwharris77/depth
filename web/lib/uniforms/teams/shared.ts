@@ -12,3 +12,8 @@ export const HELMET_CROWN_STRIPE_PATH =
 // The canonical shallow V used by the modern mannequin. Teams own the band widths, colors, and
 // layer IDs; only this exact mannequin path is shared.
 export const GENERIC_COLLAR_PATH = 'M206,388 L294,455 L386,388';
+
+// Closed rounded collar used by period uniforms that predate the modern V templates. Era-specific
+// teams still own their trim widths and colors; this only centralizes the mannequin fit.
+export const LEGACY_ROUNDED_COLLAR_PATH =
+  'M229,388 Q229,405 246,414 L294,414 L342,414 Q359,405 359,388';
