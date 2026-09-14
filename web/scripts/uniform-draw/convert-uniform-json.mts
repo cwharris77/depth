@@ -21,7 +21,9 @@ type JsonLayer = {
 
 type JsonDefinition = {
   teamId: string;
+  target?: { kind: string; id: string };
   palette: Record<string, string>;
+  jersey?: { base: string; layers: JsonLayer[]; number?: Record<string, unknown> };
   jerseys: Record<string, { base: string; layers: JsonLayer[]; number?: Record<string, unknown> }>;
   patterns?: Record<
     string,
@@ -122,19 +124,20 @@ const args = process.argv.filter((arg) => arg !== '--partial');
 const [input, output] = args.slice(2);
 if (!input || !output) throw new Error('usage: convert-uniform-json.mts <input.json> <output.ts>');
 const definition = JSON.parse(readFileSync(resolve(input), 'utf8')) as JsonDefinition;
-if (!definition.teamId || !definition.palette || !definition.jerseys)
+if (!definition.teamId || !definition.palette || (!definition.jerseys && !definition.jersey))
   throw new Error('invalid TeamPartsDefinition JSON');
+
+const authoredJerseys = definition.jerseys ?? {
+  [definition.target?.id ?? 'authored']: definition.jersey!,
+};
 
 const wordmarkLayers = (definition.wordmarks ?? []).map(layerFromWordmark);
 const jerseys = Object.fromEntries(
-  Object.entries(definition.jerseys).map(([id, jersey]) => {
+  Object.entries(authoredJerseys).map(([id, jersey]) => {
     const layers = [...jersey.layers, ...wordmarkLayers];
     const number = jersey.number ? { ...jersey.number } : undefined;
-    if (number) {
-      // The canonical archive proof uses the shared 3 unless a kit explicitly supplies another
-      // glyph. Number styling remains model-authored; glyph geometry remains deterministic here.
-      const text = typeof number.text === 'string' ? number.text : '3';
-      number.glyphPath = outline(text, FONTS['athletic-numeral'], 155, 294, 694, 0);
+    if (number && typeof number.text === 'string') {
+      number.glyphPath = outline(number.text, FONTS['athletic-numeral'], 155, 294, 694, 0);
       delete number.text;
     }
     return [id, { ...jersey, layers, number }];
