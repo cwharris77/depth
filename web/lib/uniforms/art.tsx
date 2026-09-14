@@ -24,8 +24,17 @@ import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
 // A uniform row's id is its stable `${teamId}-${slug}-${yearStart}` slug, so the artifact name is
 // fully determined by the row. Rows without an artifact (a future kit whose WebP hasn't
 // been generated yet) simply keep the text-only fallback — degrade, don't fake.
-export function uniformArtURL(id: string): string {
-  return `/uniforms/${id}.webp`;
+//
+// `revision` is the row's cache-busting identity from public/uniforms/manifest.json (see
+// lib/uniforms/manifest.ts). A client that cached an old artifact re-requests the same
+// origin-relative path with `?rev=<revision>`, so corrected bytes miss the stale cache entry.
+// Omitted, the path stays the unversioned committed URL — the pre-manifest behaviour.
+function withArtifactRevision(path: string, revision?: string): string {
+  return revision ? `${path}?rev=${encodeURIComponent(revision)}` : path;
+}
+
+export function uniformArtURL(id: string, revision?: string): string {
+  return withArtifactRevision(`/uniforms/${id}.webp`, revision);
 }
 
 // The full-mannequin raster (helmet → cleats) backing the archive, distinct from the
@@ -33,8 +42,8 @@ export function uniformArtURL(id: string): string {
 // archive shows the whole uniform, matching the pre-DEP-220 inline SVG it replaced —
 // DEP-220 only produced the jersey crop, and pointing the archive at that square crop
 // stretches it into the broken mannequin (see UniformFigure's imagePath short-circuit).
-export function uniformArtFullURL(id: string): string {
-  return `/uniforms/${id}-full.webp`;
+export function uniformArtFullURL(id: string, revision?: string): string {
+  return withArtifactRevision(`/uniforms/${id}-full.webp`, revision);
 }
 
 // Renders a kit's SVG to the deterministic WebP raster. `variant` selects which the
