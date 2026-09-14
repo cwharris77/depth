@@ -1,7 +1,15 @@
 // Declarative uniform definitions separate team construction facts from the shared SVG renderer.
 // Stable layer IDs make overrides and SVG keys independent of authoring order.
 
-export type ColorRef = 'primary' | 'secondary' | 'accent' | 'readable-on-body' | `#${string}`;
+export type ColorRef =
+  'primary' | 'secondary' | 'accent' | 'readable-on-body' | `#${string}` | `pattern:${string}`;
+
+export interface PatternDef {
+  width: number;
+  height: number;
+  transform?: string;
+  shapes: Array<{ d: string; fill: ColorRef }>;
+}
 
 export type UniformSurface =
   | 'helmet'
@@ -64,6 +72,7 @@ export interface UniformStyleOverride {
 
 export interface TeamUniformDefinition {
   teamId: string;
+  patterns?: Record<string, PatternDef>;
   defaults?: UniformStyleOverride;
   kits: Record<string, UniformStyleOverride>;
 }

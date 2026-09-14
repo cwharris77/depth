@@ -11,7 +11,7 @@ import {
 } from '@/lib/uniforms/helmet-art';
 import { shadeFor } from '@/lib/uniforms/helmet-shading';
 import { JERSEY_NUMBER_THREE } from '@/lib/uniforms/jersey-art';
-import { resolveUniformModel, type ResolvedUniformStyle } from '@/lib/uniforms/model';
+import { resolveColor, resolveUniformModel, type ResolvedUniformStyle } from '@/lib/uniforms/model';
 import type { TeamUniformDefinition, UniformSurface } from '@/lib/uniforms/teams/types';
 
 // The raster variants the prerender pipeline (lib/uniforms/art.tsx) emits: 'jersey' (picker
@@ -149,13 +149,19 @@ function clipPathForSurface(surface: UniformSurface, uid: string) {
 // through resolveColor by resolveUniformModel.
 function UniformLayerPath({ layer, uid }: { layer: ResolvedLayer; uid: string }) {
   const clipPath = layer.clip ? clipPathForSurface(layer.surface, uid) : undefined;
+  const fill =
+    layer.kind === 'fill' && layer.fill.startsWith('pattern:')
+      ? `url(#${uid}-pattern-${layer.fill.slice('pattern:'.length)})`
+      : layer.kind === 'fill'
+        ? layer.fill
+        : undefined;
 
   return layer.kind === 'fill' ? (
     <path
       data-layer-id={layer.id}
       clipPath={clipPath}
       d={layer.d}
-      fill={layer.fill}
+      fill={fill}
       fillRule={layer.fillRule}
       stroke="none"
     />
@@ -262,6 +268,23 @@ export default function UniformFigure({
       aria-label={title}
       aria-hidden={title ? undefined : true}>
       <defs>
+        {Object.entries(model.patterns).map(([id, pattern]) => (
+          <pattern
+            key={id}
+            id={`${uid}-pattern-${id}`}
+            width={pattern.width}
+            height={pattern.height}
+            patternUnits="userSpaceOnUse"
+            patternTransform={pattern.transform}>
+            {pattern.shapes.map((shape, index) => (
+              <path
+                key={index}
+                d={shape.d}
+                fill={resolveColor(shape.fill, colors, model.jerseyColor)}
+              />
+            ))}
+          </pattern>
+        ))}
         {hasJersey && (
           <>
             <clipPath id={`${uid}-jersey`}>

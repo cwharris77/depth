@@ -23,6 +23,16 @@ type JsonDefinition = {
   teamId: string;
   palette: Record<string, string>;
   jerseys: Record<string, { base: string; layers: JsonLayer[]; number?: Record<string, unknown> }>;
+  patterns?: Record<
+    string,
+    {
+      width: number;
+      height: number;
+      transform?: string;
+      gradient?: { stops: Array<{ color: string }> };
+      shapes: Array<{ d: string; fill?: string }>;
+    }
+  >;
   helmets?: Record<string, unknown>;
   pants?: Record<string, unknown>;
   kits?: Record<string, unknown>;
@@ -133,6 +143,20 @@ const jerseys = Object.fromEntries(
 
 const parts = {
   teamId: definition.teamId,
+  patterns: Object.fromEntries(
+    Object.entries(definition.patterns ?? {}).map(([id, pattern]) => [
+      id,
+      {
+        width: pattern.width,
+        height: pattern.height,
+        transform: pattern.transform,
+        shapes: pattern.shapes.map((shape) => ({
+          d: shape.d,
+          fill: shape.fill ?? pattern.gradient?.stops[0]?.color ?? '#000000',
+        })),
+      },
+    ])
+  ),
   palette: definition.palette,
   helmets: definition.helmets ?? {},
   jerseys,
