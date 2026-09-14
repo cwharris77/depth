@@ -8,3 +8,7 @@
 // identically for every team; each team supplies only its own color.
 export const HELMET_CROWN_STRIPE_PATH =
   'M236,127 L252,115 L302,91 L334,79 L374,69 L402,65 L455,65 L509,73 L547,85 L593,109 L631,137 L625,146 L589,119 L545,96 L508,85 L455,78 L402,79 L375,84 L336,95 L305,108 L257,133 L242,146 Z';
+
+// The canonical shallow V used by the modern mannequin. Teams own the band widths, colors, and
+// layer IDs; only this exact mannequin path is shared.
+export const GENERIC_COLLAR_PATH = 'M206,388 L294,455 L386,388';

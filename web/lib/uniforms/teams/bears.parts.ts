@@ -22,8 +22,7 @@ import {
 } from './bears';
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 import type { UniformSurface } from './types';
-
-const COLLAR_PATH = 'M206,388 L294,455 L386,388';
+import { GENERIC_COLLAR_PATH } from './shared';
 
 function sleeveStripes(edge: string, core: string): PartLayer[] {
   const out: PartLayer[] = [];
@@ -65,7 +64,7 @@ function collar(outer: string, inner: string): PartLayer[] {
   ].map((s): PartLayer => ({
     ...s,
     surface: 'collar',
-    d: COLLAR_PATH,
+    d: GENERIC_COLLAR_PATH,
     clip: true,
     kind: 'stroke',
   }));

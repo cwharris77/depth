@@ -9,6 +9,8 @@
 // the one-time gate). The collar path was a module-private const; it is now exported for the parts
 // file.
 
+import { GENERIC_COLLAR_PATH } from './shared';
+
 // The generic outline width of 26 is tuned for a keyline that reads at swatch size; Minnesota's
 // numerals carry a thin trim over a contrasting face, and at 26 the trim swallowed the face and
 // every number rendered as solid gold. Each kit below pins outlineWidth to 14.
@@ -48,4 +50,4 @@ export const VIKINGS_PANTS_OUTER_RIGHT = 'M448,807 H476 V1462 H448 Z';
 export const VIKINGS_PANTS_INNER_LEFT = 'M122,807 H130 V1462 H122 Z';
 export const VIKINGS_PANTS_INNER_RIGHT = 'M458,807 H466 V1462 H458 Z';
 
-export const VIKINGS_COLLAR_PATH = 'M206,388 L294,455 L386,388';
+export const VIKINGS_COLLAR_PATH = GENERIC_COLLAR_PATH;
