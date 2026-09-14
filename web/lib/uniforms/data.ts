@@ -43,7 +43,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'ravens',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 1996,
@@ -58,7 +58,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'bengals',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2021,
@@ -73,7 +73,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'browns',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2020,
@@ -88,7 +88,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'steelers',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 1997,
@@ -103,7 +103,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'bills',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2011,
@@ -118,7 +118,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'dolphins',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2018,
@@ -133,7 +133,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'patriots',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2020,
@@ -148,7 +148,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'jets',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2024,
@@ -163,7 +163,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'texans',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2024,
@@ -178,7 +178,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'colts',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2004,
@@ -193,7 +193,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'jaguars',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2018,
@@ -208,7 +208,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'titans',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2018,
@@ -223,7 +223,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'broncos',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2024,
@@ -238,7 +238,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'chiefs',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 1963,
@@ -253,7 +253,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'raiders',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 1963,
@@ -268,7 +268,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'chargers',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2020,
@@ -283,7 +283,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'bears',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 1984,
@@ -298,7 +298,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'lions',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2024,
@@ -313,7 +313,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'packers',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 1959,
@@ -328,7 +328,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'vikings',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2013,
@@ -343,7 +343,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'cowboys',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 1964,
@@ -358,7 +358,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'giants',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2000,
@@ -373,7 +373,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'eagles',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 1996,
@@ -388,7 +388,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'commanders',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2022,
@@ -403,7 +403,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'falcons',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2020,
@@ -418,7 +418,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'panthers',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2012,
@@ -433,7 +433,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'saints',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2002,
@@ -448,7 +448,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'buccaneers',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2020,
@@ -463,7 +463,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'cardinals',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2023,
@@ -478,7 +478,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'rams',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2020,
@@ -493,7 +493,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: '49ers',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2022,
@@ -508,7 +508,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'seahawks',
     slug: 'home',
-    constructionKey: 'standard',
+    constructionKey: 'home',
     kind: 'home',
     name: 'Home',
     yearStart: 2012,
@@ -527,7 +527,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'seahawks',
     slug: '1976-throwback',
-    constructionKey: 'standard',
+    constructionKey: '1976-throwback',
     kind: 'throwback',
     name: '1976 Throwback',
     yearStart: 1976,
@@ -546,7 +546,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'buccaneers',
     slug: 'creamsicle',
-    constructionKey: 'standard',
+    constructionKey: 'creamsicle',
     kind: 'throwback',
     name: 'Creamsicle',
     yearStart: 1976,
@@ -599,7 +599,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'broncos',
     slug: 'orange-crush',
-    constructionKey: 'standard',
+    constructionKey: 'orange-crush',
     kind: 'throwback',
     name: 'Orange Crush',
     yearStart: 1968,
@@ -620,7 +620,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'seahawks',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2012,
@@ -635,7 +635,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'bills',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2011,
@@ -650,7 +650,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'dolphins',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2018,
@@ -665,7 +665,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'patriots',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2020,
@@ -680,7 +680,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'jets',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2024,
@@ -695,7 +695,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'cardinals',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2023,
@@ -710,7 +710,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'rams',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2020,
@@ -725,7 +725,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: '49ers',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2022,
@@ -743,7 +743,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'ravens',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 1996,
@@ -758,7 +758,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'bengals',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2021,
@@ -773,7 +773,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'browns',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2020,
@@ -788,7 +788,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'steelers',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 1997,
@@ -803,7 +803,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'texans',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2024,
@@ -818,7 +818,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'colts',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2004,
@@ -833,7 +833,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'jaguars',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2018,
@@ -848,7 +848,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'titans',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2018,
@@ -863,7 +863,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'broncos',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2024,
@@ -878,7 +878,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'chiefs',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 1963,
@@ -893,7 +893,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'raiders',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 1963,
@@ -908,7 +908,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'chargers',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2020,
@@ -923,7 +923,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'cowboys',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 1964,
@@ -938,7 +938,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'giants',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2000,
@@ -953,7 +953,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'eagles',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 1996,
@@ -968,7 +968,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'commanders',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2022,
@@ -983,7 +983,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'bears',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 1984,
@@ -998,7 +998,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'lions',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2024,
@@ -1013,7 +1013,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'packers',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 1959,
@@ -1028,7 +1028,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'vikings',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2013,
@@ -1043,7 +1043,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'falcons',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2020,
@@ -1058,7 +1058,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'panthers',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2012,
@@ -1073,7 +1073,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'saints',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2002,
@@ -1088,7 +1088,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'buccaneers',
     slug: 'away',
-    constructionKey: 'standard',
+    constructionKey: 'away',
     kind: 'away',
     name: 'Away',
     yearStart: 2020,
@@ -1106,7 +1106,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'chargers',
     slug: 'powder-blue',
-    constructionKey: 'standard',
+    constructionKey: 'powder-blue',
     kind: 'alternate',
     name: 'Powder Blue',
     yearStart: 1960,
@@ -1122,7 +1122,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'titans',
     slug: 'oilers-throwback',
-    constructionKey: 'standard',
+    constructionKey: 'oilers-throwback',
     kind: 'throwback',
     name: 'Oilers Throwback',
     yearStart: 1960,
@@ -1138,7 +1138,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'bears',
     slug: 'orange-alternate',
-    constructionKey: 'standard',
+    constructionKey: 'orange-alternate',
     kind: 'alternate',
     name: 'Orange Alternate',
     yearStart: 2005,
@@ -1154,7 +1154,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'saints',
     slug: 'color-rush',
-    constructionKey: 'standard',
+    constructionKey: 'color-rush',
     kind: 'color-rush',
     name: 'Color Rush',
     yearStart: 2022,
@@ -1176,7 +1176,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'jaguars',
     slug: 'teal-throwback',
-    constructionKey: 'standard',
+    constructionKey: 'teal-throwback',
     kind: 'throwback',
     name: 'Prowler Throwback',
     yearStart: 1998,
@@ -1192,7 +1192,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'commanders',
     slug: '70s-burgundy',
-    constructionKey: 'standard',
+    constructionKey: '70s-burgundy',
     kind: 'throwback',
     name: '70s Burgundy',
     yearStart: 1972,
@@ -1209,7 +1209,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'vikings',
     slug: 'purple-classic',
-    constructionKey: 'standard',
+    constructionKey: 'purple-classic',
     kind: 'throwback',
     name: 'Purple Classic',
     yearStart: 1961,
@@ -1225,7 +1225,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'packers',
     slug: '1923-throwback',
-    constructionKey: 'standard',
+    constructionKey: '1923-throwback',
     kind: 'throwback',
     name: '1923 Throwback',
     yearStart: 1923,
@@ -1243,7 +1243,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'bills',
     slug: 'rivalries-2025',
-    constructionKey: 'standard',
+    constructionKey: 'rivalries-2025',
     kind: 'alternate',
     name: 'Rivalries',
     yearStart: 2025,
@@ -1259,7 +1259,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'dolphins',
     slug: 'rivalries-2025',
-    constructionKey: 'standard',
+    constructionKey: 'rivalries-2025',
     kind: 'alternate',
     name: 'Rivalries',
     yearStart: 2025,
@@ -1275,7 +1275,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'patriots',
     slug: 'rivalries-2025',
-    constructionKey: 'standard',
+    constructionKey: 'rivalries-2025',
     kind: 'alternate',
     name: 'Rivalries',
     yearStart: 2025,
@@ -1291,7 +1291,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'jets',
     slug: 'rivalries-2025',
-    constructionKey: 'standard',
+    constructionKey: 'rivalries-2025',
     kind: 'alternate',
     name: 'Rivalries',
     yearStart: 2025,
@@ -1313,7 +1313,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'cardinals',
     slug: 'rivalries-2025',
-    constructionKey: 'standard',
+    constructionKey: 'rivalries-2025',
     kind: 'alternate',
     name: 'Rivalries',
     yearStart: 2025,
@@ -1329,7 +1329,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'rams',
     slug: 'rivalries-2025',
-    constructionKey: 'standard',
+    constructionKey: 'rivalries-2025',
     kind: 'alternate',
     name: 'Rivalries',
     yearStart: 2025,
@@ -1345,7 +1345,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: '49ers',
     slug: 'rivalries-2025',
-    constructionKey: 'standard',
+    constructionKey: 'rivalries-2025',
     kind: 'alternate',
     name: 'Rivalries',
     yearStart: 2025,
@@ -1369,7 +1369,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'seahawks',
     slug: 'rivalries-2025',
-    constructionKey: 'standard',
+    constructionKey: 'rivalries-2025',
     kind: 'alternate',
     name: 'Rivalries',
     yearStart: 2025,
@@ -1387,7 +1387,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'dolphins',
     slug: '1972-throwback',
-    constructionKey: 'standard',
+    constructionKey: '1972-throwback',
     kind: 'throwback',
     name: '1972 Throwback',
     yearStart: 1966,
@@ -1403,7 +1403,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'patriots',
     slug: 'pat-patriot',
-    constructionKey: 'standard',
+    constructionKey: 'pat-patriot',
     kind: 'throwback',
     name: 'Pat Patriot',
     yearStart: 1961,
@@ -1419,7 +1419,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'jets',
     slug: 'black-alt',
-    constructionKey: 'standard',
+    constructionKey: 'black-alt',
     kind: 'alternate',
     name: 'Black Alternate',
     yearStart: 2024,
@@ -1435,7 +1435,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'steelers',
     slug: 'bumblebee',
-    constructionKey: 'standard',
+    constructionKey: 'bumblebee',
     kind: 'throwback',
     name: 'Bumblebee',
     yearStart: 1933,
@@ -1451,7 +1451,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'browns',
     slug: '1946-throwback',
-    constructionKey: 'standard',
+    constructionKey: '1946-throwback',
     kind: 'throwback',
     name: '1946 Throwback',
     yearStart: 1946,
@@ -1467,7 +1467,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'bengals',
     slug: 'orange-alt',
-    constructionKey: 'standard',
+    constructionKey: 'orange-alt',
     kind: 'alternate',
     name: 'Orange Alternate',
     yearStart: 2021,
@@ -1485,7 +1485,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'bengals',
     slug: 'color-rush',
-    constructionKey: 'standard',
+    constructionKey: 'color-rush',
     kind: 'color-rush',
     name: 'Color Rush',
     yearStart: 2016,
@@ -1501,7 +1501,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'ravens',
     slug: 'black-alt',
-    constructionKey: 'standard',
+    constructionKey: 'black-alt',
     kind: 'alternate',
     name: 'Black Alternate',
     yearStart: 2004,
@@ -1517,7 +1517,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'texans',
     slug: 'battle-red',
-    constructionKey: 'standard',
+    constructionKey: 'battle-red',
     kind: 'alternate',
     name: 'Battle Red',
     yearStart: 2024,
@@ -1533,7 +1533,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'jaguars',
     slug: 'black-alt',
-    constructionKey: 'standard',
+    constructionKey: 'black-alt',
     kind: 'alternate',
     name: 'Black Alternate',
     yearStart: 2018,
@@ -1549,7 +1549,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'titans',
     slug: 'navy-alt',
-    constructionKey: 'standard',
+    constructionKey: 'navy-alt',
     kind: 'alternate',
     name: 'Navy Alternate',
     yearStart: 2018,
@@ -1565,7 +1565,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'broncos',
     slug: 'orange-alt',
-    constructionKey: 'standard',
+    constructionKey: 'orange-alt',
     kind: 'alternate',
     name: 'Orange Alternate',
     yearStart: 2024,
@@ -1581,7 +1581,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'giants',
     slug: '1980s-throwback',
-    constructionKey: 'standard',
+    constructionKey: '1980s-throwback',
     kind: 'throwback',
     name: '1980s Throwback',
     yearStart: 1980,
@@ -1597,7 +1597,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'eagles',
     slug: 'black-alt',
-    constructionKey: 'standard',
+    constructionKey: 'black-alt',
     kind: 'alternate',
     name: 'Black Alternate',
     yearStart: 2003,
@@ -1613,7 +1613,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'lions',
     slug: 'gridiron-gray',
-    constructionKey: 'standard',
+    constructionKey: 'gridiron-gray',
     kind: 'alternate',
     name: 'Gridiron Gray',
     yearStart: 2017,
@@ -1629,7 +1629,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'vikings',
     slug: 'winter-warrior',
-    constructionKey: 'standard',
+    constructionKey: 'winter-warrior',
     kind: 'alternate',
     name: 'Winter Warrior',
     yearStart: 2024,
@@ -1645,7 +1645,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'packers',
     slug: 'winter-warning',
-    constructionKey: 'standard',
+    constructionKey: 'winter-warning',
     kind: 'alternate',
     name: 'Winter Warning',
     yearStart: 2025,
@@ -1661,7 +1661,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'falcons',
     slug: 'red-alt',
-    constructionKey: 'standard',
+    constructionKey: 'red-alt',
     kind: 'alternate',
     name: 'Red Alternate',
     yearStart: 2020,
@@ -1677,7 +1677,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'panthers',
     slug: 'black-alt',
-    constructionKey: 'standard',
+    constructionKey: 'black-alt',
     kind: 'alternate',
     name: 'Black Alternate',
     yearStart: 2012,
@@ -1693,7 +1693,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'cardinals',
     slug: 'black-alt',
-    constructionKey: 'standard',
+    constructionKey: 'black-alt',
     kind: 'alternate',
     name: 'Black Alternate',
     yearStart: 2023,
@@ -1709,7 +1709,7 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'rams',
     slug: 'bone',
-    constructionKey: 'standard',
+    constructionKey: 'bone',
     kind: 'alternate',
     name: 'Bone',
     yearStart: 2020,

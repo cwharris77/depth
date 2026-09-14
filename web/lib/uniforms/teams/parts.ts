@@ -1,8 +1,7 @@
 // Composable uniform parts: an AUTHORING layer over TeamUniformDefinition, not a new
 // runtime. A team declares a named palette plus independent helmet/jersey/pants parts, and
-// `compileParts` assembles a kit's three references into the flat definition the renderer
-// already consumes — so UniformFigure, resolveUniformModel and every caller are untouched,
-// and teams migrate one at a time.
+// `compileParts` assembles a kit's three references into the existing flat runtime definition
+// shape consumed by the renderer, and teams migrate one at a time.
 //
 // Why parts exist: a kit is physically a combination (an alternate is often the away top over
 // home pants with the home helmet), but the flat definition spells every kit out in full, so

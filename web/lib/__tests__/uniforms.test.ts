@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { UNIFORMS, type UniformSeed } from '@/lib/uniforms/data';
+import { renderUniformThumbSVG } from '@/lib/uniforms/art';
 import { LEGACY_ACCENTS } from '@/lib/uniforms/legacy-accents';
+import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
 import { contrastRatio, DARK_BG } from '@/lib/utils/colors';
 
 // Uniforms are the curated jersey authority, so every kit must carry complete era data
@@ -57,6 +59,42 @@ describe('uniform seed — integrity', () => {
 
   it('requires explicit construction identity', () => {
     expect(UNIFORMS.every((uniform) => uniform.constructionKey.trim() !== '')).toBe(true);
+  });
+
+  it('maps every catalog construction key to a registered team kit', () => {
+    for (const uniform of UNIFORMS) {
+      const definition = getTeamUniformDefinition(uniform.teamId);
+      expect(
+        definition?.kits,
+        `${uniform.teamId}-${uniform.slug}-${uniform.yearStart}`
+      ).toHaveProperty(uniform.constructionKey);
+    }
+  });
+
+  it('renders a registered construction key independently of the archive id', () => {
+    const uniform = UNIFORMS.find(
+      ({ teamId, slug, yearStart }) =>
+        teamId === 'eagles' && slug === 'kelly-green-modern' && yearStart === 2023
+    );
+    expect(uniform).toBeDefined();
+    if (!uniform) throw new Error('Expected the Eagles 2023 Kelly Green catalog row');
+
+    const definition = getTeamUniformDefinition('eagles');
+    const explicit = renderUniformThumbSVG(
+      uniform.colors,
+      'eagles-unrelated-archive-id',
+      definition,
+      'jersey',
+      uniform.constructionKey
+    );
+    const fallback = renderUniformThumbSVG(
+      uniform.colors,
+      'eagles-unrelated-archive-id',
+      definition,
+      'jersey'
+    );
+
+    expect(explicit).not.toBe(fallback);
   });
 
   it('keeps original and modern Eagles Kelly Green separate', () => {
