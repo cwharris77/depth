@@ -66,6 +66,30 @@ describe('compileParts', () => {
     ];
     expect(compileParts(def).kits.home.layers?.map((l) => l.id)).toEqual(['h', 'j', 'p']);
   });
+
+  it('compiles pattern shape colors without flattening the pattern reference', () => {
+    const def = structuredClone(base);
+    def.patterns = {
+      knit: {
+        width: 8,
+        height: 8,
+        shapes: [{ d: 'M0,0 H2 V8 H0 Z', fill: 'navy' }],
+      },
+    };
+    def.jerseys.plain.layers = [
+      {
+        id: 'knit',
+        surface: 'collar',
+        d: 'M0,0',
+        clip: true,
+        kind: 'fill',
+        fill: 'pattern:knit',
+      },
+    ];
+    const compiled = compileParts(def);
+    expect(compiled.patterns?.knit.shapes[0].fill).toBe('#001122');
+    expect(compiled.kits.home.layers?.[0]).toMatchObject({ fill: 'pattern:knit' });
+  });
 });
 
 describe('fromGeneric', () => {

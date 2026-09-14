@@ -8,7 +8,7 @@ export interface PatternDef {
   width: number;
   height: number;
   transform?: string;
-  shapes: Array<{ d: string; fill: ColorRef }>;
+  shapes: Array<{ d: string; fill: string }>;
 }
 
 export type UniformSurface =
