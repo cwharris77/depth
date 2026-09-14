@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { UNIFORMS } from '@/lib/uniforms/data';
+import { UNIFORMS, type UniformSeed } from '@/lib/uniforms/data';
 import { LEGACY_ACCENTS } from '@/lib/uniforms/legacy-accents';
 import { contrastRatio, DARK_BG } from '@/lib/utils/colors';
 
@@ -38,6 +38,23 @@ describe('legacy accents — legibility for shipped iOS builds', () => {
 });
 
 describe('uniform seed — integrity', () => {
+  it('rejects catalog rows without construction identity', () => {
+    const incompleteCatalogRow = {
+      teamId: 'eagles',
+      slug: 'incomplete',
+      kind: 'throwback' as const,
+      name: 'Incomplete',
+      yearStart: 2026,
+      yearEnd: null,
+      isCurrent: false,
+      colors: { primary: '#000000', secondary: '#FFFFFF', accent: '#FFFFFF' },
+    };
+
+    // @ts-expect-error Catalog rows must declare their renderer construction identity.
+    const rejectedCatalogRow: UniformSeed = incompleteCatalogRow;
+    expect(rejectedCatalogRow.slug).toBe('incomplete');
+  });
+
   it('requires explicit construction identity', () => {
     expect(UNIFORMS.every((uniform) => uniform.constructionKey.trim() !== '')).toBe(true);
   });
