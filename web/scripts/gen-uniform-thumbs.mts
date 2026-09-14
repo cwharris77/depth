@@ -18,6 +18,7 @@ import sharp from 'sharp';
 import { renderUniformThumbSVG } from '@/lib/uniforms/art';
 import { UNIFORMS } from '@/lib/uniforms/data';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
+import { findUnresolvedConstructions } from '@/lib/uniforms/teams/validate';
 import type { JerseyColors } from '@/lib/types';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -68,7 +69,23 @@ async function writeRows(rows: UniformRow[]) {
 }
 
 async function main() {
-  await writeRows(buildRowsFromCatalog());
+  const rows = buildRowsFromCatalog();
+  // A row whose construction key is not a registered kit renders the generic fallback — fine
+  // in the running app, never acceptable for a published raster. Fail the whole run instead of
+  // committing art that silently degrades to the mannequin default.
+  const unresolved = findUnresolvedConstructions(
+    rows,
+    (teamId) => getTeamUniformDefinition(teamId)?.kits
+  );
+  if (unresolved.length > 0) {
+    throw new Error(
+      'curated rows resolve to no registered construction:\n' +
+        unresolved
+          .map((row) => `  - ${row.id}: no kit "${row.constructionKey}" for ${row.teamId}`)
+          .join('\n')
+    );
+  }
+  await writeRows(rows);
 }
 
 if (fileURLToPath(import.meta.url) === process.argv[1]) {
