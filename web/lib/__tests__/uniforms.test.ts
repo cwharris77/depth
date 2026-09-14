@@ -38,6 +38,21 @@ describe('legacy accents — legibility for shipped iOS builds', () => {
 });
 
 describe('uniform seed — integrity', () => {
+  it('requires explicit construction identity', () => {
+    expect(UNIFORMS.every((uniform) => uniform.constructionKey.trim() !== '')).toBe(true);
+  });
+
+  it('keeps original and modern Eagles Kelly Green separate', () => {
+    expect(
+      UNIFORMS.filter(
+        (uniform) => uniform.teamId === 'eagles' && uniform.slug.includes('kelly-green')
+      ).map(({ yearStart, constructionKey }) => [yearStart, constructionKey])
+    ).toEqual([
+      [1987, 'kelly-green-original'],
+      [2023, 'kelly-green-modern'],
+    ]);
+  });
+
   it('ids (`${teamId}-${slug}-${yearStart}`) are unique', () => {
     const ids = UNIFORMS.map((u) => `${u.teamId}-${u.slug}-${u.yearStart}`);
     expect(new Set(ids).size).toBe(ids.length);

@@ -26,6 +26,7 @@ import type { JerseyColors, UniformKind } from '../types';
 export interface UniformSeed {
   teamId: string;
   slug: string;
+  constructionKey: string;
   kind: UniformKind;
   name: string;
   yearStart: number;
@@ -35,7 +36,13 @@ export interface UniformSeed {
   imagePath?: string;
 }
 
-export const UNIFORMS: UniformSeed[] = [
+function withDefaultConstructionKey<T extends Omit<UniformSeed, 'constructionKey'>>(
+  uniforms: Array<T & Partial<Pick<UniformSeed, 'constructionKey'>>>
+): UniformSeed[] {
+  return uniforms.map((uniform) => ({ constructionKey: 'standard', ...uniform }));
+}
+
+export const UNIFORMS: UniformSeed[] = withDefaultConstructionKey([
   // Current home kits. Era starts/patterns: each team's GUD archive. Jersey hexes:
   // teamcolorcodes.com's NFL HEX table; #FFFFFF/#000000 are the listed neutral kit colors.
   // uiAccent/onAccent are the established dark-UI pair and are contrast-tested below.
@@ -530,9 +537,25 @@ export const UNIFORMS: UniformSeed[] = [
   {
     teamId: 'eagles',
     slug: 'kelly-green',
+    constructionKey: 'kelly-green-original',
     kind: 'throwback',
     name: 'Kelly Green',
     yearStart: 1987,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#046A38',
+      secondary: '#A5ACAF',
+      accent: '#FFFFFF',
+    },
+  },
+  {
+    teamId: 'eagles',
+    slug: 'kelly-green-modern',
+    constructionKey: 'kelly-green-modern',
+    kind: 'throwback',
+    name: 'Kelly Green (Modern)',
+    yearStart: 2023,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -1600,4 +1623,4 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFA300',
     },
   },
-];
+]);

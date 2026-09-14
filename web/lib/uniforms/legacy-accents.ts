@@ -64,6 +64,7 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   'seahawks-1976-throwback-1976': { uiAccent: '#3DB06A', onAccent: '#0a0e1a' },
   'buccaneers-creamsicle-1976': { uiAccent: '#FF8200', onAccent: '#0a0e1a' },
   'eagles-kelly-green-1987': { uiAccent: '#2BB673', onAccent: '#0a0e1a' },
+  'eagles-kelly-green-modern-2023': { uiAccent: '#2BB673', onAccent: '#0a0e1a' },
   'broncos-orange-crush-1968': { uiAccent: '#FA4616', onAccent: '#0a0e1a' },
   'seahawks-away-2012': { uiAccent: '#69BE28', onAccent: '#0a0e1a' },
   'bills-away-2011': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },

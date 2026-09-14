@@ -37,6 +37,8 @@ function sqlVal(v: string | number | boolean | null): string {
 }
 
 function rowValues(u: (typeof UNIFORMS)[number]): string {
+  // Construction identity selects the renderer geometry only. It intentionally stays out of
+  // the shipped schema so this append-only seed preserves its stable database row IDs.
   const id = `${u.teamId}-${u.slug}-${u.yearStart}`;
   const legacy = LEGACY_ACCENTS[id];
   // A new kit with no legacy pair would emit NULLs and break every installed build's decode,
