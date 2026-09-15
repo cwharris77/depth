@@ -367,9 +367,17 @@ private func recentParticipation() -> RecentParticipation {
     let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
 
     _ = try await repository.teamStats(teamId: "bills") // primes the cache
+
+    // The underlying goes dark after priming. `teamStats` is cache-first + background
+    // refresh, so the warm read must be served from the store and must not block on — or
+    // fail with — the underlying; the refresh it kicks off is fire-and-forget and swallows
+    // this error. Asserting the value served, not the call count, is the real invariant:
+    // that background Task legitimately makes a second call, so a `== 1` expectation only
+    // passed while the task happened not to have run yet (same reasoning as the
+    // uniform-list warm read below).
+    await underlying.setStatsResult(.failure(DepthError.server("boom")), forTeam: "bills")
     let cached = try await repository.teamStats(teamId: "bills")
-    #expect(cached.team.id == "bills")
-    #expect(await underlying.statsCallCount(forTeam: "bills") == 1, "a warm cache must not issue a second blocking fetch")
+    #expect(cached.team.id == "bills", "a warm cache must serve the last good page without blocking on the network")
 }
 
 @Test func failedStatsBackgroundRefreshRetainsLastGoodPage() async throws {
@@ -452,9 +460,14 @@ private func recentParticipation() -> RecentParticipation {
     let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
 
     _ = try await repository.teamSchedule(teamId: "bills", season: nil) // primes the cache
+
+    // Same contract as the uniform-list and teamStats warm reads: the underlying goes dark
+    // after priming, and the within-TTL read must be served from the store without blocking
+    // on — or failing with — the underlying. The refresh it fires is fire-and-forget and
+    // swallows this error; a call-count assertion would race that Task.
+    await underlying.setScheduleResult(.failure(DepthError.server("boom")), teamId: "bills", season: nil)
     let cached = try await repository.teamSchedule(teamId: "bills", season: nil)
-    #expect(cached.season == 2026)
-    #expect(await underlying.scheduleCallCount(teamId: "bills", season: nil) == 1, "a warm cache within TTL must not issue a blocking fetch")
+    #expect(cached.season == 2026, "a warm cache within TTL must serve the last good schedule without blocking on the network")
 }
 
 @Test func expiredTeamScheduleTTLGoesNetworkFirst() async throws {
