@@ -9,14 +9,31 @@
 // per DEP-406); the DB's `uniforms.image_path` column points each row at its artifact
 // (see the backfill migration and lib/uniforms/seed-sql.ts).
 //
+// Also emits `public/uniforms/manifest.json` (review item 7): per catalog row, its
+// construction key, each WebP's SHA-256, the SHA-256 build digest of the committed inputs,
+// and a content-addressed delivery revision. The manifest is committed next to the rasters,
+// so `manifest.test.ts` can fail a changed raster with a stale manifest. Publication order:
+// the corrected WebP + manifest must be live before any catalog row references the
+// construction (see lib/uniforms/manifest.ts's header for the full contract).
+//
 // Usage: npm run gen:uniform-thumbs
 // Pure rendering lives in lib/uniforms/art.tsx — this script is I/O glue.
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { renderUniformThumbSVG } from '@/lib/uniforms/art';
 import { UNIFORMS } from '@/lib/uniforms/data';
+import {
+  ARTIFACT_MANIFEST_RELATIVE_PATH,
+  artifactPath,
+  buildArtifactManifest,
+  computeSourceDigest,
+  serializeArtifactManifest,
+  sha256Hex,
+  type ArtifactRecord,
+  type ManifestRowInput,
+} from '@/lib/uniforms/manifest';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
 import {
   findUnrecordedConstructions,
@@ -54,10 +71,16 @@ export function buildRowsFromCatalog(): UniformRow[] {
   })).sort((a, b) => a.id.localeCompare(b.id));
 }
 
-async function writeRows(rows: UniformRow[]) {
+// Renders and commits each raster, returning the hashed inputs the manifest needs. The WebP
+// bytes are hashed before they hit disk; reading back the written file would make the digest
+// depend on the filesystem rather than on what sharp produced.
+async function writeRasters(rows: UniformRow[]): Promise<ManifestRowInput[]> {
   mkdirSync(OUT_DIR, { recursive: true });
+  const inputs: ManifestRowInput[] = [];
   for (const row of rows) {
-    for (const { suffix, variant } of Object.values(VARIANTS)) {
+    const artifacts = {} as Record<keyof typeof VARIANTS, ArtifactRecord>;
+    for (const key of Object.keys(VARIANTS) as Array<keyof typeof VARIANTS>) {
+      const { suffix, variant } = VARIANTS[key];
       const svg = renderUniformThumbSVG(
         row.colors,
         row.id,
@@ -65,12 +88,24 @@ async function writeRows(rows: UniformRow[]) {
         variant,
         row.constructionKey
       );
-      const outPath = join(OUT_DIR, `${row.id}${suffix}.webp`);
-      await sharp(Buffer.from(svg)).webp({ quality: 90 }).toFile(outPath);
+      const fileName = `${row.id}${suffix}.webp`;
+      const outPath = join(OUT_DIR, fileName);
+      const raster = await sharp(Buffer.from(svg)).webp({ quality: 90 }).toBuffer();
+      writeFileSync(outPath, raster);
+      artifacts[key] = {
+        path: artifactPath(fileName),
+        sha256: sha256Hex(raster),
+      };
       console.log(`wrote ${outPath}`);
     }
+    inputs.push({
+      catalogId: row.id,
+      constructionKey: row.constructionKey,
+      jersey: artifacts.jersey,
+      full: artifacts.full,
+    });
   }
-  console.log(`\n${rows.length} uniform rasters (jersey + full) -> ${OUT_DIR}`);
+  return inputs;
 }
 
 async function main() {
@@ -117,7 +152,15 @@ async function main() {
         unsourced.map((row) => `  - ${row.id}`).join('\n')
     );
   }
-  await writeRows(rows);
+  const artifactInputs = await writeRasters(rows);
+  const manifest = buildArtifactManifest(computeSourceDigest(ROOT), artifactInputs);
+  const manifestPath = join(ROOT, ARTIFACT_MANIFEST_RELATIVE_PATH);
+  writeFileSync(manifestPath, serializeArtifactManifest(manifest));
+  console.log(`wrote ${manifestPath}`);
+  console.log(`\n${rows.length} uniform rasters (jersey + full) -> ${OUT_DIR}`);
+  console.log(
+    `artifact revision ${manifest.revision} (source ${manifest.sourceDigest.slice(0, 12)})`
+  );
 }
 
 if (fileURLToPath(import.meta.url) === process.argv[1]) {

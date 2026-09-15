@@ -34,6 +34,13 @@ describe('uniformArtURL', () => {
     expect(uniformArtURL('bengals-color-rush')).toMatch(/^\/uniforms\//);
     expect(uniformArtURL('bengals-color-rush')).not.toMatch(/^https?:\/\//);
   });
+
+  it('carries the manifest revision as a cache-busting query while staying origin-relative', () => {
+    const url = uniformArtURL('bengals-color-rush', '0123456789abcdef');
+    expect(url).toBe('/uniforms/bengals-color-rush.webp?rev=0123456789abcdef');
+    expect(url).toMatch(/^\/uniforms\//);
+    expect(url).not.toMatch(/^https?:\/\//);
+  });
 });
 
 describe('uniform thumbnail catalog rows', () => {
@@ -149,6 +156,12 @@ describe('uniformArtFullURL', () => {
   it('derives the full-mannequin URL from a kit id, distinct from the jersey crop', () => {
     expect(uniformArtFullURL('bengals-color-rush')).toBe('/uniforms/bengals-color-rush-full.webp');
     expect(uniformArtFullURL('bengals-color-rush')).not.toBe(uniformArtURL('bengals-color-rush'));
+  });
+
+  it('carries the revision on the full-mannequin URL too', () => {
+    expect(uniformArtFullURL('bengals-color-rush', '0123456789abcdef')).toBe(
+      '/uniforms/bengals-color-rush-full.webp?rev=0123456789abcdef'
+    );
   });
 });
 
