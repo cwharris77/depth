@@ -562,11 +562,12 @@ private struct PlayerProfileScreen: View {
 
     // DEP-533 (accolades data source) is unresolved — this stays a visible, explicit
     // empty state rather than a hidden section, per the design spec's locked decision:
-    // the screen keeps its promise that accolades exist here, just not yet.
+    // the screen keeps its promise that accolades exist here, just not yet. The copy says
+    // "coming soon" rather than "not tracked yet" so the section reads as planned, not broken.
     private var accoladesSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             sectionHeader(
-                PlayerProfileSection.accoladesTitle, meta: "NONE YET", isOpen: $accoladesOpen,
+                PlayerProfileSection.accoladesTitle, meta: "COMING SOON", isOpen: $accoladesOpen,
                 identifier: "player-profile-full-accolades-toggle"
             )
             if accoladesOpen {
@@ -586,7 +587,7 @@ private struct PlayerProfileScreen: View {
                         }
                     }
                     .accessibilityHidden(true)
-                    Text("Pro Bowls, All-Pro selections and franchise records land here. Not tracked yet.")
+                    Text("Player accolades coming soon!")
                         .font(.caption)
                         .foregroundStyle(DesignTokens.Colors.textFaint)
                 }
