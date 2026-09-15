@@ -19,15 +19,23 @@
       "title": { "text": "Offense, defense and special teams" }
     },
     {
-      "filter": "03-team-stats",
+      "filter": "03-player-profile",
+      "title": { "text": "Player stats, season by season" }
+    },
+    {
+      "filter": "04-team-stats",
       "title": { "text": "Team stats, records and rankings" }
     },
     {
-      "filter": "04-compare",
+      "filter": "05-postseason",
+      "title": { "text": "Relive every playoff run" }
+    },
+    {
+      "filter": "06-compare",
       "title": { "text": "Compare any two teams head to head" }
     },
     {
-      "filter": "05-uniform-archive",
+      "filter": "07-uniform-archive",
       "title": { "text": "See your team’s look across the eras" }
     }
   ]

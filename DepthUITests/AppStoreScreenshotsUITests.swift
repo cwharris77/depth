@@ -1,12 +1,12 @@
 import XCTest
 
 // Deterministic App Store screenshot capture (task-9d-screenshots-brief.md, DEP-162
-// blocker). Not part of the default `xcodebuild test` run — excluded via project.yml's
-// scheme `skippedTests` because it's a slow, human-triggered release-prep tool, not a
-// correctness gate. Run it via the one-command capture script (which boots a disposable
-// 6.9-inch simulator, normalizes the status bar, runs the test against the dedicated
-// Depth-AppStoreScreenshots scheme — no project.yml editing needed — and exports the
-// PNGs):
+// blocker; refreshed for the post-rejection resubmission, DEP-565). Not part of the
+// default `xcodebuild test` run — excluded via project.yml's scheme `skippedTests`
+// because it's a slow, human-triggered release-prep tool, not a correctness gate. Run it
+// via the one-command capture script (which boots a disposable 1284×2778-class simulator,
+// normalizes the status bar, runs the test against the dedicated Depth-AppStoreScreenshots
+// scheme — no project.yml editing needed — and exports the PNGs):
 //
 //   scripts/capture-appstore-screenshots.sh
 //
@@ -30,6 +30,12 @@ import XCTest
 // the search shot rendered one result row above ~70% empty black while captioned "Every
 // team", and the reorder shot reused the same player card as the player-detail shot, so
 // two of five slots showed what read as the same image.
+//
+// Refreshed 2026-09-14 (DEP-565 resubmission): the field and several surfaces changed
+// materially, and two genuinely new screens had shipped since the 2026-08-28 set — the
+// merged player profile (jersey header + season ledger) and the postseason ladder — so the
+// set grew from five to seven (slots 3 and 5 below). The pinned teams/season are unchanged
+// apart from adding the Patriots for the postseason shot.
 //
 // Teams are pinned rather than incidental: Seahawks (already the launch default), Broncos
 // for defense, Chargers for stats, Chiefs/Eagles for compare. Pinning keeps reruns
@@ -75,7 +81,27 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         )
         attachScreenshot(name: "02-depth-chart-defense")
 
-        // 3. Team stats.
+        // 3. Player profile — the merged jersey-header + season-ledger destination that
+        // replaced the old player card sheet (2026-09-11 merge spec). Reached by tapping a
+        // filled field slot with the unit on Offense; the current team is still the Broncos
+        // from the defense shot above. The starting QB is a deterministic, stat-rich
+        // subject (`player-slot-off-qb-0` is the identifier AccessibilityUITests already
+        // uses), so the ledger has real content rather than an empty state.
+        let offenseTab = app.buttons["unit-tab-offense"]
+        XCTAssertTrue(offenseTab.waitForExistence(timeout: 15), "the unit tab bar should offer Offense")
+        offenseTab.tap()
+        let qbSlot = app.buttons["player-slot-off-qb-0"]
+        XCTAssertTrue(qbSlot.waitForExistence(timeout: 20), "the offense should expose the starting QB slot")
+        qbSlot.tap()
+        let profile = element(app, identifier: "player-profile-full-content")
+        XCTAssertTrue(profile.waitForExistence(timeout: 20), "tapping a filled slot should push the player profile")
+        attachScreenshot(name: "03-player-profile")
+        let backButton = app.navigationBars.buttons["BackButton"]
+        XCTAssertTrue(backButton.waitForExistence(timeout: 10), "the profile should offer a back button")
+        backButton.tap()
+        XCTAssertTrue(qbSlot.waitForExistence(timeout: 15), "back should return to the depth chart")
+
+        // 4. Team stats.
         selectTeam(named: "Chargers", rowIdentifier: "team-row-chargers", switcher: switcher, app: app)
         let statsTab = app.buttons["page-switcher-stats"]
         XCTAssertTrue(statsTab.waitForExistence(timeout: 15), "team detail should expose a Stats page tab")
@@ -107,9 +133,39 @@ final class AppStoreScreenshotsUITests: XCTestCase {
             element(app, identifier: "stats-content").waitForExistence(timeout: 20),
             "the stats page should re-render for the selected season"
         )
-        attachScreenshot(name: "03-team-stats")
+        attachScreenshot(name: "04-team-stats")
 
-        // 4. Compare, on the "By team" (matchup) tab with both slots filled.
+        // 5. Postseason ladder — the newest schedule surface. The Patriots ran the full
+        // WC → DIV → CON → SB ladder in 2025, so the pinned season has every round to show
+        // (the other pinned teams would render a shorter run). Pin the completed season for
+        // the same reason the stats shot does: the current season is before week 1.
+        selectTeam(named: "Patriots", rowIdentifier: "team-row-patriots", switcher: switcher, app: app)
+        let scheduleTab = app.buttons["page-switcher-schedule"]
+        XCTAssertTrue(scheduleTab.waitForExistence(timeout: 15), "team detail should expose a Schedule page tab")
+        scheduleTab.tap()
+        XCTAssertTrue(
+            element(app, identifier: "schedule-content").waitForExistence(timeout: 20),
+            "the schedule page should render content"
+        )
+        let scheduleSeasonTrigger = app.buttons["schedule-season-trigger"]
+        XCTAssertTrue(scheduleSeasonTrigger.waitForExistence(timeout: 10), "the schedule should expose a season picker")
+        scheduleSeasonTrigger.tap()
+        let scheduleSeason = app.buttons["schedule-season-2025"]
+        XCTAssertTrue(
+            scheduleSeason.waitForExistence(timeout: 10),
+            "the schedule season sheet should offer 2025 — bump this year once the current season has data"
+        )
+        scheduleSeason.tap()
+        let playoffsTab = app.buttons["schedule-phase-playoffs"]
+        XCTAssertTrue(playoffsTab.waitForExistence(timeout: 10), "the schedule should offer a Playoffs phase")
+        playoffsTab.tap()
+        XCTAssertTrue(
+            element(app, identifier: "schedule-playoffs-content").waitForExistence(timeout: 20),
+            "the Patriots' 2025 postseason run should render the bracket content"
+        )
+        attachScreenshot(name: "05-postseason")
+
+        // 6. Compare, on the "By team" (matchup) tab with both slots filled.
         let tabs = app.tabBars.firstMatch
         XCTAssertTrue(tabs.waitForExistence(timeout: 10), "the app should present a bottom tab bar")
         tabs.buttons["Compare"].tap()
@@ -124,9 +180,9 @@ final class AppStoreScreenshotsUITests: XCTestCase {
             element(app, identifier: "compare-content").waitForExistence(timeout: 20),
             "compare should render its comparison content once both slots are filled"
         )
-        attachScreenshot(name: "04-compare")
+        attachScreenshot(name: "06-compare")
 
-        // 5. Uniform archive — the top-level grid, not drilled into a team.
+        // 7. Uniform archive — the top-level grid, not drilled into a team.
         tabs.buttons["Uniforms"].tap()
         XCTAssertTrue(
             app.navigationBars["Uniforms"].waitForExistence(timeout: 15),
@@ -138,7 +194,7 @@ final class AppStoreScreenshotsUITests: XCTestCase {
             NSPredicate(format: "identifier BEGINSWITH 'uniforms-team-'")
         ).firstMatch
         XCTAssertTrue(uniformTeam.waitForExistence(timeout: 20), "the archive should render at least one team's kits")
-        attachScreenshot(name: "05-uniform-archive")
+        attachScreenshot(name: "07-uniform-archive")
     }
 
     // MARK: - Helpers
