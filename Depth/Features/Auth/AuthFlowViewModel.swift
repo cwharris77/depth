@@ -57,7 +57,15 @@ final class AuthFlowViewModel {
             resendAvailableAt = now().addingTimeInterval(60)
             events.record(.authStarted)
         } catch let authError as DepthAuthError {
-            error = authError
+            if case .rateLimited(let retryAfterSeconds) = authError {
+                // Another app instance may have sent a valid code already. Let this one
+                // accept it while honoring the server's email-wide resend cooldown.
+                step = .code
+                resendAvailableAt = now().addingTimeInterval(TimeInterval(retryAfterSeconds))
+                error = nil
+            } else {
+                error = authError
+            }
             events.record(.error(category: authError.telemetryCategory))
         } catch {
             self.error = .server

@@ -49,13 +49,15 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
 }
 
 @Test func historySeasonOptionsStartWithLiveRosterThenDescendTo1999() {
-    #expect(historySeasonOptions(currentSeason: 2026) == [
+    let expected: [HistorySeason] = [
         .current(2026), .past(2025), .past(2024), .past(2023), .past(2022), .past(2021),
         .past(2020), .past(2019), .past(2018), .past(2017), .past(2016), .past(2015),
         .past(2014), .past(2013), .past(2012), .past(2011), .past(2010), .past(2009),
         .past(2008), .past(2007), .past(2006), .past(2005), .past(2004), .past(2003),
         .past(2002), .past(2001), .past(2000), .past(1999),
-    ])
+    ]
+
+    #expect(historySeasonOptions(currentSeason: 2026) == expected)
 }
 
 @Test func historicalMapperUsesTypedIdentityStoredProfileFieldsAndNoRemoteImage() throws {
