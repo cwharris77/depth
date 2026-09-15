@@ -24,6 +24,7 @@ import {
 } from '@/lib/uniforms/teams/provenance';
 import { findUnresolvedConstructions } from '@/lib/uniforms/teams/validate';
 import type { JerseyColors } from '@/lib/types';
+import { assertRasterToolchain } from './uniform-draw/toolchain-preflight.mts';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT_DIR = join(ROOT, 'public', 'uniforms');
@@ -73,6 +74,9 @@ async function writeRows(rows: UniformRow[]) {
 }
 
 async function main() {
+  // Refuse to rasterize from an unpinned toolchain: sharp's version is part of the
+  // determinism contract in the design spec's "committed inputs only" rule.
+  await assertRasterToolchain();
   const rows = buildRowsFromCatalog();
   // A row whose construction key is not a registered kit renders the generic fallback — fine
   // in the running app, never acceptable for a published raster. Fail the whole run instead of

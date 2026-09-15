@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { TOOLCHAIN_LOCK } from '@/lib/uniforms/toolchain';
 import {
   authoredJerseys,
   formatValidationIssues,
@@ -13,6 +14,7 @@ import {
 } from '@/lib/uniforms/teams/validate';
 import { renderGeneratedPartialModule, type GeneratedPartial } from '@/lib/uniforms/teams/partial';
 import type { UniformPart } from '@/lib/uniforms/teams/parts';
+import { WORDMARK_PY, assertOutlineToolchain } from './toolchain-preflight.mts';
 
 type JsonLayer = {
   id: string;
@@ -63,18 +65,16 @@ type JsonDefinition = {
 };
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const PYTHON = process.env.WORDMARK_PY ?? '/tmp/fontvenv/bin/python';
+const PYTHON = WORDMARK_PY;
 const OUTLINER = join(HERE, 'outline-wordmark.py');
-const FONTS: Record<string, string> = {
-  'chest-wordmark': '/System/Library/Fonts/Supplemental/Copperplate.ttc',
-  'collar-label': '/System/Library/Fonts/Supplemental/Arial Narrow Bold.ttf',
-  'athletic-numeral': '/System/Library/Fonts/Supplemental/DIN Alternate Bold.ttf',
-};
-const FONT_NUMBERS: Record<string, number> = {
-  'chest-wordmark': 0,
-  'collar-label': 0,
-  'athletic-numeral': 0,
-};
+// Font paths and collection indices come from the lock so the inputs the check pins and the
+// inputs the outliner reads cannot drift apart.
+const FONTS: Record<string, string> = Object.fromEntries(
+  Object.entries(TOOLCHAIN_LOCK.fonts).map(([role, pin]) => [role, pin.path])
+);
+const FONT_NUMBERS: Record<string, number> = Object.fromEntries(
+  Object.entries(TOOLCHAIN_LOCK.fonts).map(([role, pin]) => [role, pin.index])
+);
 
 function requiredString(value: unknown, field: string): string {
   if (typeof value !== 'string' || value.length === 0) throw new Error(`invalid ${field}`);
@@ -144,6 +144,12 @@ const partial = process.argv.includes('--partial');
 const args = process.argv.filter((arg) => arg !== '--partial');
 const [input, output] = args.slice(2);
 if (!input || !output) throw new Error('usage: convert-uniform-json.mts <input.json> <output.ts>');
+
+// Fail before reading input, outlining, or emitting anything: a font or outliner version
+// that differs from the lock would produce geometry nobody can reproduce. See
+// lib/uniforms/toolchain.ts.
+assertOutlineToolchain();
+
 const definition = JSON.parse(readFileSync(resolve(input), 'utf8')) as JsonDefinition;
 
 // Fail before outlining or emitting anything: an unresolved palette key or an invalid path

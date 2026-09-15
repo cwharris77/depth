@@ -1,0 +1,26 @@
+{
+  "note": "Pinned inputs for deterministic uniform art (design spec, 'Determinism: committed inputs only'). Font binaries are intentionally NOT committed -- licensing forbids shipping them -- so this records the SHA-256 of each macOS system font the outliner reads plus the exact versions of the tools that outline (Python, fontTools, Node) and rasterize (sharp, Node) the artifacts. The converter verifies the font/outline half and the generator verifies the raster half; both fail loudly on a mismatch. Regenerate only alongside regenerated, reviewed artifacts. Set UNIFORM_TOOLCHAIN_OVERRIDE=1 to skip the check for local experimentation -- never for artifacts that will be committed. See lib/uniforms/toolchain.ts and scripts/uniform-draw/toolchain-preflight.mts.",
+  "fonts": {
+    "chest-wordmark": {
+      "path": "/System/Library/Fonts/Supplemental/Copperplate.ttc",
+      "index": 0,
+      "sha256": "2a14817d53238ac7a25688b4f7e0f0bd1c4c6e4fe84c72be7198151db5d2df22"
+    },
+    "collar-label": {
+      "path": "/System/Library/Fonts/Supplemental/Arial Narrow Bold.ttf",
+      "index": 0,
+      "sha256": "fcf34b330033e26c06e9bd466bea5a3e4b2f39272972275369beb7d8b257ed57"
+    },
+    "athletic-numeral": {
+      "path": "/System/Library/Fonts/Supplemental/DIN Alternate Bold.ttf",
+      "index": 0,
+      "sha256": "78e816b9938fc40dd5383f4a91b598494798e2fa1d526abbd9e7ff7e5b9bf0ee"
+    }
+  },
+  "tools": {
+    "node": "24.18.1",
+    "python": "3.14.7",
+    "fontTools": "4.65.0",
+    "sharp": "0.34.5"
+  }
+}
