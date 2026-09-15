@@ -1,6 +1,6 @@
 // Runtime-neutral account-deletion handler. Dependencies isolate verified-claim lookup and
 // the one privileged admin operation so policy and failure responses stay directly testable.
-import { hasFreshOtp } from '../../../lib/utils/auth/fresh-otp.ts';
+import { hasFreshAuthentication } from '../../../lib/utils/auth/fresh-authentication.ts';
 
 export interface AccountDeletionDependencies {
   nowSeconds(): number;
@@ -34,7 +34,7 @@ export async function handleAccountDeletion(
     return Response.json({ error: 'unauthorized' }, { status: 401 });
   }
 
-  if (!hasFreshOtp(claims.amr, dependencies.nowSeconds())) {
+  if (!hasFreshAuthentication(claims.amr, dependencies.nowSeconds())) {
     return Response.json({ error: 'reauthentication_required' }, { status: 403 });
   }
 

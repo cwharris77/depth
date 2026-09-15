@@ -34,6 +34,29 @@ describe('handleAccountDeletion', () => {
     expect(deletedUserIds).toEqual(['11111111-1111-4111-8111-111111111111']);
   });
 
+  // DEP-562: the review demo account authenticates by password grant, so its recent
+  // password AMR must authorize deletion exactly like a fresh OTP.
+  it('deletes after recent password authentication', async () => {
+    const deletedUserIds: string[] = [];
+    const response = await handleAccountDeletion(
+      new Request('http://localhost/account-delete', {
+        method: 'POST',
+        headers: { authorization: 'Bearer valid-user-jwt' },
+      }),
+      dependencies({
+        verifyJwt: async () => ({
+          sub: '11111111-1111-4111-8111-111111111111',
+          amr: [{ method: 'password', timestamp: 1_999_999_900 }],
+        }),
+        deleteUser: async (userId) => void deletedUserIds.push(userId),
+      })
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ ok: true });
+    expect(deletedUserIds).toEqual(['11111111-1111-4111-8111-111111111111']);
+  });
+
   it('rejects a refreshed JWT when its OTP authentication is stale', async () => {
     const deletedUserIds: string[] = [];
     const response = await handleAccountDeletion(
