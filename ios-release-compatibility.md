@@ -19,9 +19,13 @@ and the postmortem this guard exists because of,
 
 ## Current contract
 
-- **Current App Store build (`CFBundleVersion`):** **587** — submitted for review, **not yet LIVE** (as of 2026-09-08)
-- **Minimum supported build (`app_config.minimum_supported_build`):** **1** — the gate is **not armed** (build 587 is not live; arming before the listing is public would lock out the only channel with installs — see `Reference/forced-update-gate.md`, "Do not arm before the listing is public")
-- **Gateable floor:** build 321 (T5, #355 — `c6a66bc`). Any build ≥ 321 contains the forced-update gate; the current submission (587) **is gateable**. Once 587 (or a later build) is LIVE, the flow is: ship the new build → confirm the listing is public → **only then** arm the gate by raising `app_config.minimum_supported_build` to that build → after it's live and blocking, destructive backend changes may ship.
+- **Current App Store build (`CFBundleVersion`):** **587** — **rejected** under Guideline 2.1(a)
+  (cross-device OTP cooldown, see [[Tickets/App Store resubmission after rejection|DEP-565]]),
+  never LIVE. A rejected binary cannot be resubmitted; the next archive (§G of DEP-565) will be
+  build **588 or higher**, auto-derived from git commit count at archive time — not yet cut, so
+  the exact number isn't known until that step runs.
+- **Minimum supported build (`app_config.minimum_supported_build`):** **1** — the gate is **not armed** (no build has ever been LIVE; arming before the listing is public would lock out the only channel with installs — see `Reference/forced-update-gate.md`, "Do not arm before the listing is public")
+- **Gateable floor:** build 321 (T5, #355 — `c6a66bc`). Any build ≥ 321 contains the forced-update gate; the resubmission build (588+) **is gateable**. Once it's LIVE, the flow is: ship the new build → confirm the listing is public → **only then** arm the gate by raising `app_config.minimum_supported_build` to that build → after it's live and blocking, destructive backend changes may ship.
 - **Backend contract facts** (as of the current schema, `web/supabase/migrations/`):
   - `teams` no longer carries `pending_home_colors` (dropped by
     `20260824102000_drop_pending_home_colors.sql` — the migration implicated in the
@@ -30,10 +34,26 @@ and the postmortem this guard exists because of,
     (curated, append-only archive). Jersey palettes come only from `uniforms`.
   - `games.game_type` carries `PRE` rows (ESPN-ingested preseason, ids
     `<season>_PRE_<espnEventId>`, week 0 = Hall of Fame game) alongside nflverse's
-    `REG`/`WC`/`DIV`/`CON`/`SB`. Additive, no schema change: build 587's
+    `REG`/`WC`/`DIV`/`CON`/`SB`. Additive, no schema change: the resubmission build's
     `ScheduleMapper` keeps only `REG` rows and is its only `games` reader, so it never
     sees them; newer builds render them under PRESEASON. Any future client reader of
     `games` must filter by an explicit `game_type` allowlist, never "not REG".
+  - `player_stats` (the legacy table — still the one the resubmission build reads via
+    `SupabaseDepthRepository.swift`, `.from("player_stats")`) gained 24 nullable columns in
+    `20260911120000_add_player_stats_position_columns.sql`: defensive box-score counters
+    (`def_tackle_assists`, `def_tackles_for_loss`, `def_qb_hits`, `def_pass_defended`,
+    `def_fumbles_forced`, `def_tds`, `def_safeties`, `fumble_recovery_opp`,
+    `fumble_recovery_tds`), return/special-teams (`punt_returns`, `punt_return_yards`,
+    `kickoff_returns`, `kickoff_return_yards`, `special_teams_tds`), penalties
+    (`penalties`, `penalty_yards`), kicking (`pat_made`, `pat_att`, `fg_long`), and snap
+    totals/shares (`offense_snaps`, `offense_pct`, `defense_snaps`, `defense_pct`,
+    `special_teams_snaps`, `special_teams_pct`). Additive only — the resubmission build's
+    explicit column SELECT simply ignores them; no IOS-COMPATIBILITY annotation needed.
+  - No restored position vocabulary in this cycle — DEP-486 (`OT`/`G` restoration) is still
+    Backlog, blocked on a released build that decodes those values plus an armed gate.
+  - The canonical `player_season_stats` table (DEP-544/542) has **not** landed; the
+    resubmission build still reads the legacy `player_stats` table exclusively — see
+    "Retirement order" below.
   - `app_config` is frozen by contract — the gate reads exactly two columns
     (`minimum_supported_build`, `maintenance_message`) and may never depend on more.
 - **Safe to remove legacy columns / change decoded shapes:** only after the
@@ -46,7 +66,22 @@ and the postmortem this guard exists because of,
 
 | Build | Date | Change | Gate armed? |
 | --- | --- | --- | --- |
+| 587 → 588+ | 2026-09-11 to 2026-09-14 | Six migrations landed since build 587 was recorded: `player_stats` gained 24 nullable columns (position-vocabulary stat lines, DEP-538); four migrations added/normalized nflverse source tables (`pfr`, NGS, FTN, QBR, box score) feeding the future `player_season_stats` consolidation (not yet read by any client); `uniforms` reseeded. All additive/non-destructive per `check:ios-compat` — no `IOS-COMPATIBILITY` annotations required. | No (never armed) |
 <!-- add a row per release that changes the client/backend contract -->
+
+**Retirement order for the backwards-compat scaffolding** (decided with Cooper, 2026-09-15):
+the resubmission build (588+) reads only the legacy `player_stats` table — confirmed via
+`Depth/Data/SupabaseDepthRepository.swift`'s `.from("player_stats")` calls; no code path reads
+`player_season_stats` yet. The dependency chain is already fixed by each ticket's `blocked-by`
+and does not need reordering: DEP-544 (consolidate into canonical `player_season_stats`, legacy
+table stays populated) → DEP-542 (iOS switches its reader to `player_season_stats`) → DEP-545
+(drop legacy `player_stats`, requires the DEP-542 build LIVE + gate armed at or above it).
+DEP-486 (restore `OT`/`G`) is independent of that chain — also blocked on a released build that
+decodes the values plus an armed gate — and can proceed in parallel once its own precondition is
+met. None of the four are unblocked today: no build has ever been LIVE, so the gate has nothing
+to arm against yet. This resubmission (588+) does not change that — it is expected to be the
+*first* LIVE build, so the earliest any of DEP-544/542/545/486 can proceed is after 588+ is
+confirmed LIVE (§H of DEP-565).
 
 ## Release sequencing checklist
 
