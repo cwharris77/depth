@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 2,
+  "appName": "The Sticks",
+  "themeId": "dark-bold",
+  "connectedCanvas": true,
+  "locales": [
+    "en"
+  ],
+  "locale": "en",
+  "device": "iphone",
+  "orientation": "portrait",
+  "appIcon": "/app-icon.png",
+  "slidesByDevice": {
+    "iphone": [
+      {
+        "id": "s_sticks_1",
+        "layout": "hero",
+        "label": {
+          "en": "PRO FOOTBALL DEPTH CHARTS"
+        },
+        "headline": {
+          "en": "Depth charts\nfor every team."
+        },
+        "screenshot": "/screenshots/apple/iphone/en/01.png",
+        "transforms": {
+          "device": {
+            "x": 140,
+            "y": 699,
+            "width": 1040,
+            "height": 2118.67,
+            "rotation": 0,
+            "zIndex": 3
+          }
+        }
+      },
+      {
+        "id": "s_sticks_2",
+        "layout": "device-bottom",
+        "label": {
+          "en": "OFFENSE · DEFENSE · SPECIAL TEAMS"
+        },
+        "headline": {
+          "en": "Know who's\nnext up."
+        },
+        "screenshot": "/screenshots/apple/iphone/en/02.png",
+        "transforms": {
+          "device": {
+            "x": 96.34183673469397,
+            "y": 747.3418367346939,
+            "width": 1000,
+            "height": 2037.18,
+            "rotation": 4,
+            "zIndex": 1
+          },
+          "caption": {
+            "x": 105.60000000000001,
+            "y": 229.44,
+            "width": 1108.8,
+            "height": 803.0400000000001,
+            "rotation": 0,
+            "zIndex": 2
+          }
+        },
+        "textElements": []
+      },
+      {
+        "id": "s_sticks_3",
+        "layout": "two-devices",
+        "label": {
+          "en": "HEAD TO HEAD"
+        },
+        "headline": {
+          "en": "Compare any\ntwo teams."
+        },
+        "screenshot": "/screenshots/apple/iphone/en/03.png",
+        "screenshotSecondary": "/screenshots/apple/iphone/en/04.png",
+        "transforms": {
+          "caption": {
+            "x": 105.6,
+            "y": 229.44,
+            "width": 1108.8,
+            "height": 803,
+            "rotation": 0,
+            "zIndex": 4
+          },
+          "deviceSecondary": {
+            "x": 120,
+            "y": 1047,
+            "width": 720,
+            "height": 1466.77,
+            "rotation": -8,
+            "zIndex": 2
+          },
+          "device": {
+            "x": 470,
+            "y": 875,
+            "width": 820,
+            "height": 1670.49,
+            "rotation": 0,
+            "zIndex": 3
+          }
+        }
+      },
+      {
+        "id": "s_sticks_4",
+        "layout": "device-top",
+        "label": {
+          "en": "UNIFORM ARCHIVE"
+        },
+        "headline": {
+          "en": "See the uniforms\nyour team wears."
+        },
+        "screenshot": "/screenshots/apple/iphone/en/05.png",
+        "inverted": true,
+        "transforms": {
+          "caption": {
+            "x": 105.6,
+            "y": 2120,
+            "width": 1108.8,
+            "height": 600,
+            "rotation": 0,
+            "zIndex": 4
+          },
+          "device": {
+            "x": 170,
+            "y": 40,
+            "width": 980,
+            "height": 1996.44,
+            "rotation": 0,
+            "zIndex": 3
+          }
+        }
+      },
+      {
+        "id": "s_sticks_5",
+        "layout": "no-device",
+        "label": {
+          "en": "THE FULL PLAYBOOK"
+        },
+        "headline": {
+          "en": "Built for\nthe obsessed."
+        },
+        "screenshot": "",
+        "transforms": {
+          "caption": {
+            "x": 105.6,
+            "y": 200,
+            "width": 1108.8,
+            "height": 600,
+            "rotation": 0,
+            "zIndex": 4
+          }
+        },
+        "textElements": [
+          {
+            "id": "feat-depth",
+            "text": {
+              "en": "DEPTH CHARTS"
+            },
+            "transform": {
+              "x": 160,
+              "y": 1000,
+              "width": 1000,
+              "height": 280,
+              "zIndex": 5
+            },
+            "fontSize": 110,
+            "fontWeight": 800,
+            "align": "center"
+          },
+          {
+            "id": "feat-stats",
+            "text": {
+              "en": "TEAM STATS"
+            },
+            "transform": {
+              "x": 160,
+              "y": 1340,
+              "width": 1000,
+              "height": 280,
+              "zIndex": 5
+            },
+            "fontSize": 110,
+            "fontWeight": 800,
+            "align": "center"
+          },
+          {
+            "id": "feat-compare",
+            "text": {
+              "en": "COMPARE"
+            },
+            "transform": {
+              "x": 160,
+              "y": 1680,
+              "width": 1000,
+              "height": 280,
+              "zIndex": 5
+            },
+            "fontSize": 110,
+            "fontWeight": 800,
+            "align": "center"
+          },
+          {
+            "id": "feat-uniforms",
+            "text": {
+              "en": "UNIFORMS"
+            },
+            "transform": {
+              "x": 160,
+              "y": 2020,
+              "width": 1000,
+              "height": 280,
+              "zIndex": 5
+            },
+            "fontSize": 110,
+            "fontWeight": 800,
+            "align": "center"
+          }
+        ]
+      }
+    ],
+    "android": [],
+    "ipad": [],
+    "android-7": [],
+    "android-10": [],
+    "feature-graphic": []
+  },
+  "crossScreenMockupsByDevice": {
+    "iphone": [],
+    "ipad": [],
+    "android": [],
+    "android-7": [],
+    "android-10": [],
+    "feature-graphic": []
+  }
+}

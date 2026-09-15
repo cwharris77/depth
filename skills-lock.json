@@ -7,6 +7,12 @@
       "skillPath": "engineering-team/a11y-audit/skills/a11y-audit/SKILL.md",
       "computedHash": "2e7cb3414714d755126afccc0b3e6d05074826aca42dd0d52ff9b6b48d1c7c21"
     },
+    "app-store-screenshots": {
+      "source": "ParthJadhav/app-store-screenshots",
+      "sourceType": "github",
+      "skillPath": "skills/app-store-screenshots/SKILL.md",
+      "computedHash": "31fe3ed0d459bf3bab2a4fa9432599a46a66a8f134131c74e4b70addae6dfde4"
+    },
     "framer-motion-animator": {
       "source": "patricio0312rev/skills",
       "sourceType": "github",

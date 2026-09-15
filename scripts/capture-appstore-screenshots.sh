@@ -18,23 +18,26 @@
 #   3. Runs AppStoreScreenshotsUITests against the dedicated Depth-AppStoreScreenshots
 #      scheme (which does NOT carry the default-run `skippedTests` entry the Depth scheme
 #      has, so `-only-testing:` works without regenerating project.yml).
-#   4. Exports the five XCTAttachment PNGs from the .xcresult and writes them raw — no
-#      bezel, no frameit, no caption — to a deterministic output directory:
+#   4. Exports the seven XCTAttachment PNGs from the .xcresult and writes them raw — no
+#      bezel, no framing, no caption — to a deterministic output directory:
 #
 #          Screenshots/<device>/01-depth-chart-offense.png
 #          Screenshots/<device>/02-depth-chart-defense.png
-#          Screenshots/<device>/03-team-stats.png
-#          Screenshots/<device>/04-compare.png
-#          Screenshots/<device>/05-uniform-archive.png
+#          Screenshots/<device>/03-player-profile.png
+#          Screenshots/<device>/04-team-stats.png
+#          Screenshots/<device>/05-postseason.png
+#          Screenshots/<device>/06-compare.png
+#          Screenshots/<device>/07-uniform-archive.png
 #
-#   5. Verifies the artifacts automatically: exactly five files, each at the exact current
+#   5. Verifies the artifacts automatically: exactly seven files, each at the exact current
 #      App Store Connect 6.5-inch-display portrait resolution (1284×2778) with no alpha
 #      channel. The remaining checks in the spec's item 38 (clipping, stale data, placeholder
 #      artifacts, simulator chrome, personal information, unlicensed assets) are visual
 #      and stay a human-in-the-loop step — the script prints the checklist when done.
 #
 # The captured PNGs are release artifacts, never source — they're written under a
-# gitignored directory and are safe to hand straight to App Store Connect / frameit.
+# gitignored directory and are safe to hand straight to App Store Connect, or to the
+# connected-canvas editor that frames them (app-store-screenshots/).
 #
 # Usage:
 #   scripts/capture-appstore-screenshots.sh [-d <derivedDataDir>] [-o <outRoot>] [-h]
@@ -48,11 +51,14 @@
 #
 # Dependencies: xcodegen, xcodebuild, xcrun (simctl/xcresulttool), jq, sips.
 #
-# Staging config: runs against real production Supabase (xcconfig/Staging.xcconfig's
-# TODO(DEP-40 Lane B) — no dedicated staging project exists), same as every other
-# DepthUITests run. "Stable staging seed" means pinned real teams (Seahawks, Broncos,
-# Chargers, and Chiefs/Eagles for compare) rather than fabricated fixture data, so reruns
-# stay byte-comparable; the screenshots never show a signed-in session or real credentials.
+# Staging config: runs against the dedicated staging Supabase project
+# (`xcconfig/Staging.xcconfig` → djwrecczgudktgsooxti), same as every other DepthUITests
+# run — DEP-40 Lane B closed 2026-09-14 when that project was seeded from the checked-in
+# `supabase/seed*.sql`. "Stable staging seed" means pinned real teams (Seahawks for the
+# offense hero, Broncos for defense + the QB profile, Chargers for stats, Patriots for the
+# 2025 postseason ladder, and Chiefs/Eagles for compare) rather than fabricated fixture
+# data, so reruns stay byte-comparable; the screenshots never show a signed-in session or
+# real credentials.
 set -euo pipefail
 
 # ---- flags ----
@@ -174,9 +180,11 @@ xcrun xcresulttool export attachments --path "$XCRESULT" --output-path "$EXPORT_
 declare -a NAMES=(
   "01-depth-chart-offense"
   "02-depth-chart-defense"
-  "03-team-stats"
-  "04-compare"
-  "05-uniform-archive"
+  "03-player-profile"
+  "04-team-stats"
+  "05-postseason"
+  "06-compare"
+  "07-uniform-archive"
 )
 rm -rf "$OUT_DIR"/*.png 2>/dev/null || true
 for name in "${NAMES[@]}"; do
@@ -187,7 +195,7 @@ for name in "${NAMES[@]}"; do
   cp "$EXPORT_DIR/$exported" "$OUT_DIR/$name.png"
 done
 
-# ---- verify: exactly five, exact resolution, no alpha ----
+# ---- verify: exactly seven, exact resolution, no alpha ----
 PASS=1
 COUNT=0
 for f in "$OUT_DIR"/*.png; do
@@ -206,8 +214,8 @@ for f in "$OUT_DIR"/*.png; do
     PASS=0
   fi
 done
-if [ "$COUNT" -ne 5 ]; then
-  echo "ERROR: expected 5 screenshots, found $COUNT" >&2
+if [ "$COUNT" -ne 7 ]; then
+  echo "ERROR: expected 7 screenshots, found $COUNT" >&2
   PASS=0
 fi
 [ "$PASS" -eq 1 ] || { echo "FAILED verification — fix and re-run." >&2; exit 1; }
@@ -225,4 +233,5 @@ echo "  - stale data or inconsistent status-bar time"
 echo "  - simulator chrome (bezel — should be none: the framebuffer excludes it)"
 echo "  - personal information (none expected: signed-out, public roster data only)"
 echo "  - unlicensed assets"
-echo "Optional marketing framing (bezel + caption) via frameit — see the vault's \`Reference/ios-appstore-screenshots.md\`."
+echo "Marketing framing (bezel, copy, backgrounds) is now the connected-canvas editor:"
+echo "  cd app-store-screenshots && bun install && bun dev   # http://localhost:3000"
