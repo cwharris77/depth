@@ -1,8 +1,7 @@
 // Composable uniform parts: an AUTHORING layer over TeamUniformDefinition, not a new
 // runtime. A team declares a named palette plus independent helmet/jersey/pants parts, and
-// `compileParts` assembles a kit's three references into the flat definition the renderer
-// already consumes — so UniformFigure, resolveUniformModel and every caller are untouched,
-// and teams migrate one at a time.
+// `compileParts` assembles a kit's three references into the existing flat runtime definition
+// shape consumed by the renderer, and teams migrate one at a time.
 //
 // Why parts exist: a kit is physically a combination (an alternate is often the away top over
 // home pants with the home helmet), but the flat definition spells every kit out in full, so
@@ -115,6 +114,15 @@ function hex(palette: Record<string, string>, ref: PaletteRef, teamId: string): 
   return value;
 }
 
+// Pattern shape and gradient colors may be a palette key OR a literal hex (validate.ts accepts
+// both). Unlike a part layer, a pattern color is a tile-local literal, so a hex passes through:
+// the converter emits gradient-derived hex fills that must compile unchanged.
+const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+
+function patternPaint(palette: Record<string, string>, ref: string, teamId: string): string {
+  return HEX_COLOR.test(ref) ? ref : hex(palette, ref, teamId);
+}
+
 function compileLayers(part: UniformPart, palette: Record<string, string>, teamId: string) {
   return part.layers.map((layer): UniformLayer => {
     const to = (ref: PaletteRef) => hex(palette, ref, teamId) as ColorRef;
@@ -176,12 +184,12 @@ export function compileParts(def: TeamPartsDefinition): TeamUniformDefinition {
               ...pattern.gradient,
               stops: pattern.gradient.stops.map((stop) => ({
                 ...stop,
-                color: hex(palette, stop.color, teamId) as ColorRef,
+                color: patternPaint(palette, stop.color, teamId) as ColorRef,
               })),
             },
             shapes: pattern.shapes.map((shape) => ({
               ...shape,
-              fill: hex(palette, shape.fill, teamId) as ColorRef,
+              fill: patternPaint(palette, shape.fill, teamId) as ColorRef,
             })),
           },
         ])

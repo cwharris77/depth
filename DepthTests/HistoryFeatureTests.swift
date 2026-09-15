@@ -49,9 +49,6 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
 }
 
 @Test func historySeasonOptionsStartWithLiveRosterThenDescendTo1999() {
-    // Bound before the comparison: as a direct `#expect(... == [literal])` argument the
-    // 28-element array exceeded the type-checker's budget on recent Xcode toolchains
-    // ("unable to type-check this expression in reasonable time").
     let expected: [HistorySeason] = [
         .current(2026), .past(2025), .past(2024), .past(2023), .past(2022), .past(2021),
         .past(2020), .past(2019), .past(2018), .past(2017), .past(2016), .past(2015),

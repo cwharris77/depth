@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { renderUniformThumbSVG, uniformArtURL, uniformArtFullURL } from '@/lib/uniforms/art';
+import { UNIFORMS } from '@/lib/uniforms/data';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
+import { buildRowsFromCatalog } from '../../scripts/gen-uniform-thumbs.mts';
 import type { TeamColors } from '@/lib/types';
 
 // DEP-220: the artifact pipeline's pure half. These tests lock the two contracts the
@@ -15,6 +17,14 @@ const seahawksRivalries: TeamColors = {
   onAccent: '#0a0e1a',
 };
 
+const eaglesKelly: TeamColors = {
+  primary: '#046A38',
+  secondary: '#A5ACAF',
+  accent: '#FFFFFF',
+  uiAccent: '#046A38',
+  onAccent: '#0a0e1a',
+};
+
 describe('uniformArtURL', () => {
   it('derives a kit URL from its stable id', () => {
     expect(uniformArtURL('bengals-color-rush')).toBe('/uniforms/bengals-color-rush.webp');
@@ -23,6 +33,26 @@ describe('uniformArtURL', () => {
   it('is origin-relative so web art resolves against the current request origin', () => {
     expect(uniformArtURL('bengals-color-rush')).toMatch(/^\/uniforms\//);
     expect(uniformArtURL('bengals-color-rush')).not.toMatch(/^https?:\/\//);
+  });
+
+  it('carries the manifest revision as a cache-busting query while staying origin-relative', () => {
+    const url = uniformArtURL('bengals-color-rush', '0123456789abcdef');
+    expect(url).toBe('/uniforms/bengals-color-rush.webp?rev=0123456789abcdef');
+    expect(url).toMatch(/^\/uniforms\//);
+    expect(url).not.toMatch(/^https?:\/\//);
+  });
+});
+
+describe('uniform thumbnail catalog rows', () => {
+  it('projects the committed catalog into stable raster inputs', () => {
+    expect(buildRowsFromCatalog()).toEqual(
+      UNIFORMS.map((uniform) => ({
+        id: `${uniform.teamId}-${uniform.slug}-${uniform.yearStart}`,
+        teamId: uniform.teamId,
+        constructionKey: uniform.constructionKey,
+        colors: uniform.colors,
+      })).sort((left, right) => left.id.localeCompare(right.id))
+    );
   });
 });
 
@@ -81,6 +111,40 @@ describe('renderUniformThumbSVG', () => {
     expect(a).toBe(b);
   });
 
+  it('uses an explicit construction key instead of deriving Eagles Kelly Green from its id', () => {
+    const definition = getTeamUniformDefinition('eagles');
+    const original = renderUniformThumbSVG(
+      eaglesKelly,
+      'eagles-kelly-green-1987',
+      definition,
+      'jersey',
+      'kelly-green-original'
+    );
+    const modern = renderUniformThumbSVG(
+      eaglesKelly,
+      'eagles-kelly-green-modern-2023',
+      definition,
+      'jersey',
+      'kelly-green-modern'
+    );
+
+    expect(original).not.toBe(modern);
+  });
+
+  it('keeps the existing Eagles Kelly Green archive id on the original construction fallback', () => {
+    const definition = getTeamUniformDefinition('eagles');
+    const fallback = renderUniformThumbSVG(eaglesKelly, 'eagles-kelly-green-1987', definition);
+    const original = renderUniformThumbSVG(
+      eaglesKelly,
+      'eagles-kelly-green-1987',
+      definition,
+      'jersey',
+      'kelly-green-original'
+    );
+
+    expect(fallback).toBe(original);
+  });
+
   it('renders a generic kit when the team has no definition', () => {
     const svg = renderUniformThumbSVG(seahawksRivalries, 'seahawks-rivalries-2025');
     expect(svg).toContain('viewBox="20 372 560 452"');
@@ -92,6 +156,12 @@ describe('uniformArtFullURL', () => {
   it('derives the full-mannequin URL from a kit id, distinct from the jersey crop', () => {
     expect(uniformArtFullURL('bengals-color-rush')).toBe('/uniforms/bengals-color-rush-full.webp');
     expect(uniformArtFullURL('bengals-color-rush')).not.toBe(uniformArtURL('bengals-color-rush'));
+  });
+
+  it('carries the revision on the full-mannequin URL too', () => {
+    expect(uniformArtFullURL('bengals-color-rush', '0123456789abcdef')).toBe(
+      '/uniforms/bengals-color-rush-full.webp?rev=0123456789abcdef'
+    );
   });
 });
 

@@ -67,7 +67,7 @@ func appEventOmitsUnavailableOrInvalidVersion(version: String?) throws {
         (.invalidEmail, "validation"),
         (.invalidCode, "validation"),
         (.expiredCode, "validation"),
-        (.rateLimited, "validation"),
+        (.rateLimited(), "validation"),
         (.freshOtpRequired, "validation"),
         (.offline, "offline"),
         (.unauthenticated, "unauthenticated"),
@@ -238,7 +238,7 @@ private actor FakeAuthService: DepthAuthServicing {
 @Test @MainActor func authSendFailureRecordsAnErrorEventNotAuthStarted() async {
     let recorder = RecordingAppEventsRecorder()
     let service = FakeAuthService()
-    await service.setSendError(.rateLimited)
+    await service.setSendError(.rateLimited())
     let store = AuthSessionStore(service: service)
     let model = AuthFlowViewModel(service: service, sessionStore: store, events: recorder)
     model.email = "owner@example.com"

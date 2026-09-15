@@ -121,6 +121,9 @@ struct AuthSheet: View {
             Text("We sent a 6-digit code to \(viewModel.normalizedEmail).")
                 .font(.footnote)
                 .foregroundStyle(DesignTokens.Colors.textMuted)
+            Text("Use the newest code. Codes can only be used once, and requesting another code replaces the previous one.")
+                .font(.caption)
+                .foregroundStyle(DesignTokens.Colors.textFaint)
 
             OtpCodeField(
                 code: $viewModel.code, disabled: viewModel.isSubmitting,

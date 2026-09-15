@@ -1,4 +1,5 @@
 import Foundation
+import Supabase
 import Testing
 
 @testable import Depth
@@ -13,6 +14,7 @@ private actor FakeAuthService: DepthAuthServicing {
     var refreshError: DepthAuthError?
     var deletionError: DepthAuthError?
     var signedOut = false
+    var sendCalls = 0
     var deletionCalls = 0
     let user = DepthUser(id: UUID(), email: "owner@example.com")
 
@@ -26,6 +28,7 @@ private actor FakeAuthService: DepthAuthServicing {
     func currentUser() -> DepthUser? { nil }
 
     func sendEmailOtp(to email: String, shouldCreateUser: Bool) throws {
+        sendCalls += 1
         if let sendError { throw sendError }
         sentEmails.append((email, shouldCreateUser))
     }
@@ -49,11 +52,13 @@ private actor FakeAuthService: DepthAuthServicing {
     }
 
     func setVerifyError(_ error: DepthAuthError?) { verifyError = error }
+    func setSendError(_ error: DepthAuthError?) { sendError = error }
     func setRefreshError(_ error: DepthAuthError?) { refreshError = error }
     func setDeletionError(_ error: DepthAuthError?) { deletionError = error }
     func sentEmailValues() -> [(String, Bool)] { sentEmails }
     func verifiedCodeValues() -> [(String, String)] { verifiedCodes }
     func didSignOut() -> Bool { signedOut }
+    func sendCallCount() -> Int { sendCalls }
     func deletionCallCount() -> Int { deletionCalls }
 }
 
@@ -91,13 +96,41 @@ private actor AsyncCounter {
 }
 
 @Test func otpCooldownMapsToWaitAMomentMessage() {
-    let cooldown = NSError(
-        domain: "GoTrue",
-        code: 0,
-        userInfo: [NSLocalizedDescriptionKey: "For security purposes, you can only request this after 60 seconds."]
+    let cooldown = AuthError.api(
+        message: "For security purposes, you can only request this after 18 seconds.",
+        errorCode: .overEmailSendRateLimit,
+        underlyingData: Data(),
+        underlyingResponse: HTTPURLResponse(
+            url: URL(string: "https://example.supabase.co/auth/v1/otp")!,
+            statusCode: 429,
+            httpVersion: nil,
+            headerFields: nil
+        )!
     )
 
-    #expect(SupabaseDepthAuthService.map(cooldown) == .rateLimited)
+    #expect(SupabaseDepthAuthService.map(cooldown) == .rateLimited(retryAfterSeconds: 19))
+}
+
+@Test @MainActor func serverCooldownRecoversOnCodeStepAndBlocksAnotherSend() async {
+    let service = FakeAuthService()
+    await service.setSendError(.rateLimited(retryAfterSeconds: 19))
+    let store = AuthSessionStore(service: service)
+    let now = Date(timeIntervalSince1970: 100)
+    let model = AuthFlowViewModel(service: service, sessionStore: store, now: { now })
+    model.email = "owner@example.com"
+
+    await model.sendCode()
+    await model.sendCode()
+
+    #expect(model.step == .code)
+    #expect(model.error == nil)
+    #expect(model.resendAvailableAt == Date(timeIntervalSince1970: 119))
+    #expect(!model.canResend(at: Date(timeIntervalSince1970: 118)))
+    #expect(model.canResend(at: Date(timeIntervalSince1970: 119)))
+    #expect(await service.sendCallCount() == 1)
+
+    model.code = "123456"
+    #expect(await model.verifyCode())
 }
 
 // DEP-562: the App Review demo account is recognized by email so the typed code is treated
