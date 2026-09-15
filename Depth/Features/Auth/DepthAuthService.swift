@@ -13,7 +13,7 @@ enum DepthAuthError: Error, Equatable, Sendable {
     case invalidEmail
     case invalidCode
     case expiredCode
-    case rateLimited
+    case rateLimited(retryAfterSeconds: Int = 60)
     case offline
     case unauthenticated
     case freshOtpRequired
@@ -163,16 +163,35 @@ actor SupabaseDepthAuthService: DepthAuthServicing {
         if let urlError = error as? URLError, urlError.isNetworkUnavailable {
             return .offline
         }
-        if let authError = error as? AuthError, authError == .sessionMissing {
-            return .unauthenticated
+        if let authError = error as? AuthError {
+            if authError == .sessionMissing { return .unauthenticated }
+            if authError.errorCode == .overEmailSendRateLimit {
+                return .rateLimited(retryAfterSeconds: retryAfterSeconds(in: authError.message))
+            }
         }
 
         let message = error.localizedDescription.lowercased()
         if message.contains("rate") || message.contains("429") || message.contains("only request this after") {
-            return .rateLimited
+            return .rateLimited(retryAfterSeconds: retryAfterSeconds(in: message))
         }
         if message.contains("expired") { return .expiredCode }
         if message.contains("invalid") || message.contains("token") { return .invalidCode }
         return .server
+    }
+
+    private static func retryAfterSeconds(in message: String) -> Int {
+        guard
+            let expression = try? NSRegularExpression(
+                pattern: #"(\d+)\s+seconds?"#, options: .caseInsensitive),
+            let match = expression.firstMatch(
+                in: message, range: NSRange(message.startIndex..., in: message)),
+            let range = Range(match.range(at: 1), in: message),
+            let seconds = Int(message[range])
+        else {
+            return 60
+        }
+        // GoTrue reports whole seconds after truncating a sub-second duration. Waiting
+        // one additional second avoids reopening resend just before the server does.
+        return max(1, seconds + 1)
     }
 }
