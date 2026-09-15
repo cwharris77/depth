@@ -100,6 +100,28 @@ private actor AsyncCounter {
     #expect(SupabaseDepthAuthService.map(cooldown) == .rateLimited)
 }
 
+// DEP-562: the App Review demo account is recognized by email so the typed code is treated
+// as its password instead of an emailed OTP. Matching must be normalized and exact — a
+// lookalike domain must not accidentally take the password path.
+@Test func reviewDemoAccountMatchesOnlyTheReviewerEmail() {
+    #expect(ReviewDemoAccount.matches("sticksdemo@cooper-harris.site"))
+    #expect(ReviewDemoAccount.matches(" SticksDemo@Cooper-Harris.Site "))
+    #expect(!ReviewDemoAccount.matches("owner@example.com"))
+    #expect(!ReviewDemoAccount.matches("sticksdemo@cooper-harris.site.evil.com"))
+}
+
+// The demo path relies on GoTrue's wrong-password response reading as a bad code so the
+// reviewer sees the same "check the code and try again" error as a bad OTP.
+@Test func wrongPasswordSignInMapsToInvalidCode() {
+    let invalidCredentials = NSError(
+        domain: "GoTrue",
+        code: 0,
+        userInfo: [NSLocalizedDescriptionKey: "Invalid login credentials"]
+    )
+
+    #expect(SupabaseDepthAuthService.map(invalidCredentials) == .invalidCode)
+}
+
 @Test @MainActor func expiredOtpKeepsRetryableCodeState() async {
     let service = FakeAuthService()
     await service.setVerifyError(.expiredCode)

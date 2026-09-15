@@ -49,6 +49,54 @@ import Testing
     }
 }
 
+// DEP-562: the App Review demo account signs in with a fixed code and needs no mailbox.
+// Proves both service branches against a real local GoTrue: the send step is a no-op (no
+// Mailpit message for that address appears) and verification is a password grant, not an
+// OTP check. `enable_confirmations` is false locally, so signUp alone yields a session and
+// no service-role key is needed.
+@Test(.enabled(if: LocalSupabase.isReachable)) func reviewDemoAccountSignsInWithTheFixedCodeAndNoEmail()
+    async throws
+{
+    let email = ReviewDemoAccount.email
+    let code = "123456"
+    let setupClient = LocalSupabase.client(key: LocalSupabase.anonKey)
+    // The address is fixed and this DB is shared across runs, so a prior run may already
+    // own it — signUp then fails and a plain sign-in is the path.
+    if (try? await setupClient.auth.signUp(email: email, password: code)) == nil {
+        _ = try await setupClient.auth.signIn(email: email, password: code)
+    }
+
+    let service = SupabaseDepthAuthService(client: LocalSupabase.client(key: LocalSupabase.anonKey))
+
+    try await service.sendEmailOtp(to: email, shouldCreateUser: false)
+
+    #expect(try await localMailpitRecipients().contains(email) == false)
+
+    let user = try await service.verifyEmailOtp(email: email, code: code)
+    #expect(user.email == email)
+}
+
+private func localMailpitRecipients() async throws -> [String] {
+    struct Inbox: Decodable { let messages: [Message] }
+    struct Message: Decodable {
+        let to: [Recipient]
+        enum CodingKeys: String, CodingKey { case to = "To" }
+    }
+    struct Recipient: Decodable {
+        let address: String
+        enum CodingKeys: String, CodingKey { case address = "Address" }
+    }
+
+    let (data, response) = try await URLSession.shared.data(
+        from: URL(string: "http://127.0.0.1:54324/api/v1/messages")!
+    )
+    guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+        throw DepthError.server("Mailpit unavailable")
+    }
+    return try JSONDecoder().decode(Inbox.self, from: data)
+        .messages.flatMap { $0.to.map(\.address) }
+}
+
 private func localMailpitCode(for email: String) async throws -> String {
     struct Inbox: Decodable { let messages: [Message] }
     struct Message: Decodable {

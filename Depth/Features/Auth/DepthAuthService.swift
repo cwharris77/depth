@@ -9,6 +9,20 @@ struct DepthUser: Equatable, Sendable {
     let email: String
 }
 
+/// Apple's App Review demo account (DEP-562). A reviewer can't read a code delivered to
+/// the app's own mailbox, so this one address is signed in with the typed code used as its
+/// Supabase password rather than a verified emailed OTP. Only the email ships in the
+/// binary; the code is typed at runtime and set on the Supabase user, so it never enters
+/// the build and can be rotated without a new one. The user is created/reset by
+/// `web/scripts/seed-review-demo-user.mts`.
+enum ReviewDemoAccount {
+    static let email = "sticksdemo@cooper-harris.site"
+
+    static func matches(_ email: String) -> Bool {
+        email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == Self.email
+    }
+}
+
 enum DepthAuthError: Error, Equatable, Sendable {
     case invalidEmail
     case invalidCode
@@ -94,6 +108,9 @@ actor SupabaseDepthAuthService: DepthAuthServicing {
     }
 
     func sendEmailOtp(to email: String, shouldCreateUser: Bool) async throws {
+        // The review demo account has no mailbox and a fixed code, so nothing is sent —
+        // advancing straight to the code step is the whole point. See ReviewDemoAccount.
+        if ReviewDemoAccount.matches(email) { return }
         do {
             try await client.auth.signInWithOTP(email: email, shouldCreateUser: shouldCreateUser)
         } catch {
@@ -103,9 +120,16 @@ actor SupabaseDepthAuthService: DepthAuthServicing {
 
     func verifyEmailOtp(email: String, code: String) async throws -> DepthUser {
         do {
-            let response = try await client.auth.verifyOTP(email: email, token: code, type: .email)
-            guard let user = Self.depthUser(response.user) else { throw DepthAuthError.server }
-            return user
+            let user: User
+            if ReviewDemoAccount.matches(email) {
+                // The typed review code is the demo account's Supabase password, so there
+                // is no emailed OTP to verify. See ReviewDemoAccount.
+                user = try await client.auth.signIn(email: email, password: code).user
+            } else {
+                user = try await client.auth.verifyOTP(email: email, token: code, type: .email).user
+            }
+            guard let depthUser = Self.depthUser(user) else { throw DepthAuthError.server }
+            return depthUser
         } catch {
             throw Self.map(error)
         }
