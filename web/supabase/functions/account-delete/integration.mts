@@ -1,6 +1,7 @@
 // Local-runtime contract test for the privileged adapter. It creates only random users
-// and user-owned rows, derives test JWTs from real local Auth sessions, and proves both
-// stale-OTP rejection and the Auth/database cascades after a fresh-OTP deletion.
+// and user-owned rows, derives test JWTs from real local Auth sessions, and proves stale
+// authentication rejection, the password-grant path the App Review demo account uses
+// (DEP-562), and the Auth/database cascades after a fresh deletion.
 import assert from 'node:assert/strict';
 import { createHmac, randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
@@ -142,8 +143,34 @@ try {
     shared_boards: 0,
   });
 
+  // The demo path uses signInWithPassword, so the token's real amr method is "password" —
+  // invoke with the untouched access token to prove that path deletes without an OTP.
+  const passwordFresh = await createFixture();
+  fixtures.push(passwordFresh);
+  const passwordResponse = await invoke(passwordFresh.accessToken);
+  assert.equal(passwordResponse.status, 200, await passwordResponse.text());
+
+  const { data: passwordDeletedUser, error: passwordDeletedError } =
+    await admin.auth.admin.getUserById(passwordFresh.userId);
+  assert.ok(
+    passwordDeletedError || !passwordDeletedUser.user,
+    'auth user still exists after password-grant deletion'
+  );
+  const passwordCascadeCounts = await ownedRowCounts(passwordFresh.userId);
+  assert.deepEqual(passwordCascadeCounts, {
+    user_settings: 0,
+    depth_overrides: 0,
+    shared_boards: 0,
+  });
+
   console.log(
-    JSON.stringify({ staleStatus: staleResponse.status, freshStatus: freshResponse.status, cascadeCounts })
+    JSON.stringify({
+      staleStatus: staleResponse.status,
+      freshStatus: freshResponse.status,
+      passwordStatus: passwordResponse.status,
+      cascadeCounts,
+      passwordCascadeCounts,
+    })
   );
 } finally {
   await Promise.all(fixtures.map(({ userId }) => admin.auth.admin.deleteUser(userId).catch(() => {})));

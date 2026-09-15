@@ -22,6 +22,7 @@
     "gen:uniform-thumbs": "tsx scripts/gen-uniform-thumbs.mts",
     "gen:team-seed": "tsx scripts/gen-team-seed.mts",
     "gen:icons": "tsx scripts/gen-icons.mts",
+    "seed:review-demo-user": "tsx scripts/seed-review-demo-user.mts",
     "db:types": "supabase gen types typescript --local > lib/database.types.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
