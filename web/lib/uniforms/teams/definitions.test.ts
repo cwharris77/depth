@@ -24,6 +24,14 @@ const SEAHAWKS_COLORS: TeamColors = {
   onAccent: '#0a0e1a',
 };
 
+const EAGLES_KELLY_COLORS: TeamColors = {
+  primary: '#046A38',
+  secondary: '#A5ACAF',
+  accent: '#FFFFFF',
+  uiAccent: '#046A38',
+  onAccent: '#0a0e1a',
+};
+
 function expectValidColor(color: ColorRef) {
   expect(SEMANTIC_COLORS.has(color) || HEX_COLOR.test(color) || PATTERN_REF.test(color)).toBe(true);
 }
@@ -202,6 +210,16 @@ describe('team uniform definitions', () => {
     // That era used an entirely different mark, so the traced modern hawk must not leak onto it.
     expect(model.layers.some((layer) => layer.id.startsWith('seahawks-helmet-hawk'))).toBe(false);
     expect(model.layers.some((layer) => layer.id === 'seahawks-1976-helmet-royal')).toBe(true);
+  });
+
+  it('keeps original and modern Eagles Kelly Green collars distinct', () => {
+    const definition = getTeamUniformDefinition('eagles');
+    const original = resolveUniformModel(definition, 'kelly-green-original', EAGLES_KELLY_COLORS);
+    const modern = resolveUniformModel(definition, 'kelly-green-modern', EAGLES_KELLY_COLORS);
+
+    expect(original.layers.find((layer) => layer.id === 'eagles-collar')?.d).not.toBe(
+      modern.layers.find((layer) => layer.id === 'eagles-collar')?.d
+    );
   });
 
   const definitions = Object.values(getAllTeamUniformDefinitions()).filter(

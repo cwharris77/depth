@@ -48,7 +48,8 @@ export function renderUniformThumbSVG(
   colors: JerseyColors,
   kitId: string,
   definition?: TeamUniformDefinition,
-  variant: UniformArtVariant = 'jersey'
+  variant: UniformArtVariant = 'jersey',
+  constructionKey?: string
 ): string {
   return renderToStaticMarkup(
     <UniformFigure
@@ -56,6 +57,7 @@ export function renderUniformThumbSVG(
       variant={variant}
       size={560}
       kitId={kitId}
+      constructionKey={constructionKey}
       definition={definition}
     />
   );

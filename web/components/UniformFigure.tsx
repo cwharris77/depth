@@ -208,6 +208,7 @@ export default function UniformFigure({
   title,
   sharedDefs = false,
   kitId,
+  constructionKey,
   definition,
 }: {
   colors: JerseyColors;
@@ -222,6 +223,9 @@ export default function UniformFigure({
   // start-year suffix are stripped before model resolution; omitted or unmatched kits retain
   // the team's defaults.
   kitId?: string;
+  // The catalog's construction identity selects the geometry independently of its display slug.
+  // Omitted callers retain the id-derived lookup used by existing web fallbacks.
+  constructionKey?: string;
   definition?: TeamUniformDefinition;
 }) {
   const rawId = useId();
@@ -245,7 +249,12 @@ export default function UniformFigure({
   // Try the exact slug first so legacy ids whose geometry key itself ends in a year
   // (`rivalries-2025`) keep working. New ids add one final era year, which is stripped only
   // when the exact value is not a registered geometry key.
-  const kitSlug = definition?.kits[rawKitSlug] ? rawKitSlug : rawKitSlug.replace(/-\d{4}$/, '');
+  const kitSlug =
+    constructionKey && definition?.kits[constructionKey]
+      ? constructionKey
+      : definition?.kits[rawKitSlug]
+        ? rawKitSlug
+        : rawKitSlug.replace(/-\d{4}$/, '');
   const model = resolveUniformModel(definition, kitSlug, colors);
   const pantsLayers = model.layers.filter((layer) =>
     ['pants', 'leg-left', 'leg-right'].includes(layer.surface)

@@ -4,6 +4,12 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  authoredJerseys,
+  formatValidationIssues,
+  jerseySurfaceIssues,
+  validateAuthoredDefinition,
+} from '@/lib/uniforms/teams/validate';
 
 type JsonLayer = {
   id: string;
@@ -19,12 +25,18 @@ type JsonLayer = {
   fillRule?: 'nonzero' | 'evenodd';
 };
 
+type JsonJersey = {
+  base: string;
+  layers: JsonLayer[];
+  number?: Record<string, unknown>;
+};
+
 type JsonDefinition = {
   teamId: string;
   target?: { kind: string; id: string };
   palette: Record<string, string>;
-  jersey?: { base: string; layers: JsonLayer[]; number?: Record<string, unknown> };
-  jerseys: Record<string, { base: string; layers: JsonLayer[]; number?: Record<string, unknown> }>;
+  jersey?: JsonJersey;
+  jerseys: Record<string, JsonJersey>;
   patterns?: Record<
     string,
     {
@@ -124,16 +136,21 @@ const args = process.argv.filter((arg) => arg !== '--partial');
 const [input, output] = args.slice(2);
 if (!input || !output) throw new Error('usage: convert-uniform-json.mts <input.json> <output.ts>');
 const definition = JSON.parse(readFileSync(resolve(input), 'utf8')) as JsonDefinition;
-if (!definition.teamId || !definition.palette || (!definition.jerseys && !definition.jersey))
-  throw new Error('invalid TeamPartsDefinition JSON');
 
-const authoredJerseys = definition.jerseys ?? {
-  [definition.target?.id ?? 'authored']: definition.jersey!,
-};
+// Fail before outlining or emitting anything: an unresolved palette key or an invalid path
+// would otherwise produce plausible-but-wrong geometry that no downstream test would catch.
+const issues = validateAuthoredDefinition(definition);
+if (issues.length > 0) {
+  throw new Error(`invalid authored uniform JSON:\n${formatValidationIssues(issues)}`);
+}
+
+const authoredJerseyParts = authoredJerseys(
+  definition as unknown as Record<string, unknown>
+) as Record<string, JsonJersey>;
 
 const wordmarkLayers = (definition.wordmarks ?? []).map(layerFromWordmark);
 const jerseys = Object.fromEntries(
-  Object.entries(authoredJerseys).map(([id, jersey]) => {
+  Object.entries(authoredJerseyParts).map(([id, jersey]) => {
     const layers = [...jersey.layers, ...wordmarkLayers];
     const number = jersey.number ? { ...jersey.number } : undefined;
     if (number && typeof number.text === 'string') {
@@ -168,7 +185,20 @@ const parts = {
   kits: definition.kits ?? {},
 };
 
-const selectedJersey = Object.keys(jerseys)[0];
+// A full definition's first jersey is its canonical output. A partial update must name the
+// jersey it replaces: the earlier code selected `Object.keys(jerseys)[0]`, so a multi-jersey
+// input silently updated the wrong part.
+let selectedJersey = Object.keys(jerseys)[0];
+if (partial) {
+  const targetId = definition.target?.id;
+  if (!targetId) throw new Error('--partial requires target.id');
+  if (!Object.prototype.hasOwnProperty.call(jerseys, targetId)) {
+    throw new Error(`--partial target.id "${targetId}" does not resolve to an authored jersey`);
+  }
+  const surfaceIssues = jerseySurfaceIssues(`jerseys.${targetId}`, authoredJerseyParts[targetId]);
+  if (surfaceIssues.length > 0) throw new Error(formatValidationIssues(surfaceIssues));
+  selectedJersey = targetId;
+}
 const generatedPatterns = parts.patterns;
 const source = partial
   ? `// Generated from model authoring JSON. Do not hand-edit outlined paths.\nimport type { UniformPart } from './parts';\nimport type { PatternDef } from './types';\n\nexport const ${definition.teamId.toUpperCase()}_PATTERNS: Record<string, PatternDef> = ${js(generatedPatterns)};\n\nexport const ${definition.teamId.toUpperCase()}_${selectedJersey.replace(/[^a-z0-9]+/gi, '_').toUpperCase()}_JERSEY: UniformPart = ${js(jerseys[selectedJersey])};\n`
