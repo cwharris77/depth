@@ -356,6 +356,45 @@ export function authoredJerseys(input: Record<string, unknown>): Record<string, 
   return {};
 }
 
+// Resolves the one jersey a partial update names. A partial must carry an explicit `target.id`
+// that matches exactly one authored jersey (from either the `jersey` or `jerseys` spelling);
+// selecting the first jersey in the input silently updated the wrong part, so that is rejected
+// here rather than in the converter. Returns the resolved id plus any problem, never throws.
+export function resolveAuthoredJersey(input: Record<string, unknown>): {
+  id?: string;
+  jersey?: unknown;
+  issues: ValidationIssue[];
+} {
+  const issues: ValidationIssue[] = [];
+  if (isRecord(input.jersey) && isRecord(input.jerseys)) {
+    issues.push({
+      path: 'jerseys',
+      message: 'provide either "jersey" or "jerseys", not both (ambiguous partial input)',
+    });
+  }
+
+  const jerseys = authoredJerseys(input);
+  const target = isRecord(input.target) ? input.target : undefined;
+  const targetId = target && isNonEmptyString(target.id) ? target.id.trim() : undefined;
+  if (target && isNonEmptyString(target.kind) && target.kind !== 'jersey') {
+    issues.push({
+      path: 'target.kind',
+      message: `"${String(target.kind)}" is not a supported partial target (expected "jersey")`,
+    });
+  }
+  if (!targetId) {
+    issues.push({ path: 'target.id', message: 'a partial update requires an explicit target.id' });
+  } else if (!Object.prototype.hasOwnProperty.call(jerseys, targetId)) {
+    issues.push({
+      path: 'target.id',
+      message: `target.id "${targetId}" does not resolve to an authored jersey`,
+    });
+  }
+
+  if (issues.length > 0) return { issues };
+  return { id: targetId, jersey: jerseys[targetId as string], issues };
+}
+
 // Validates the model-authored JSON before the converter outlines or emits anything. Returns
 // every problem rather than the first, so a model can be corrected in one round.
 export function validateAuthoredDefinition(input: unknown): ValidationIssue[] {

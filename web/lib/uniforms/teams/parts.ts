@@ -114,6 +114,15 @@ function hex(palette: Record<string, string>, ref: PaletteRef, teamId: string): 
   return value;
 }
 
+// Pattern shape and gradient colors may be a palette key OR a literal hex (validate.ts accepts
+// both). Unlike a part layer, a pattern color is a tile-local literal, so a hex passes through:
+// the converter emits gradient-derived hex fills that must compile unchanged.
+const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+
+function patternPaint(palette: Record<string, string>, ref: string, teamId: string): string {
+  return HEX_COLOR.test(ref) ? ref : hex(palette, ref, teamId);
+}
+
 function compileLayers(part: UniformPart, palette: Record<string, string>, teamId: string) {
   return part.layers.map((layer): UniformLayer => {
     const to = (ref: PaletteRef) => hex(palette, ref, teamId) as ColorRef;
@@ -175,12 +184,12 @@ export function compileParts(def: TeamPartsDefinition): TeamUniformDefinition {
               ...pattern.gradient,
               stops: pattern.gradient.stops.map((stop) => ({
                 ...stop,
-                color: hex(palette, stop.color, teamId) as ColorRef,
+                color: patternPaint(palette, stop.color, teamId) as ColorRef,
               })),
             },
             shapes: pattern.shapes.map((shape) => ({
               ...shape,
-              fill: hex(palette, shape.fill, teamId) as ColorRef,
+              fill: patternPaint(palette, shape.fill, teamId) as ColorRef,
             })),
           },
         ])
