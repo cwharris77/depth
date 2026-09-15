@@ -35,9 +35,6 @@ on:
       - 'DepthUITests/**'
       - 'project.yml'
       - 'xcconfig/**'
-      - 'Gemfile'
-      - 'Gemfile.lock'
-      - 'fastlane/**'
       - 'scripts/**'
       - '.github/workflows/ios-ci.yml'
   push:
@@ -48,9 +45,6 @@ on:
       - 'DepthUITests/**'
       - 'project.yml'
       - 'xcconfig/**'
-      - 'Gemfile'
-      - 'Gemfile.lock'
-      - 'fastlane/**'
       - 'scripts/**'
       - '.github/workflows/ios-ci.yml'
   # Full DepthUITests suite, once a day — see the header comment above for why this

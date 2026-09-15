@@ -19,7 +19,7 @@
 #      scheme (which does NOT carry the default-run `skippedTests` entry the Depth scheme
 #      has, so `-only-testing:` works without regenerating project.yml).
 #   4. Exports the seven XCTAttachment PNGs from the .xcresult and writes them raw — no
-#      bezel, no frameit, no caption — to a deterministic output directory:
+#      bezel, no framing, no caption — to a deterministic output directory:
 #
 #          Screenshots/<device>/01-depth-chart-offense.png
 #          Screenshots/<device>/02-depth-chart-defense.png
@@ -36,7 +36,8 @@
 #      and stay a human-in-the-loop step — the script prints the checklist when done.
 #
 # The captured PNGs are release artifacts, never source — they're written under a
-# gitignored directory and are safe to hand straight to App Store Connect / frameit.
+# gitignored directory and are safe to hand straight to App Store Connect, or to the
+# connected-canvas editor that frames them (app-store-screenshots/).
 #
 # Usage:
 #   scripts/capture-appstore-screenshots.sh [-d <derivedDataDir>] [-o <outRoot>] [-h]
@@ -232,4 +233,5 @@ echo "  - stale data or inconsistent status-bar time"
 echo "  - simulator chrome (bezel — should be none: the framebuffer excludes it)"
 echo "  - personal information (none expected: signed-out, public roster data only)"
 echo "  - unlicensed assets"
-echo "Optional marketing framing (bezel + caption) via frameit — see the vault's \`Reference/ios-appstore-screenshots.md\`."
+echo "Marketing framing (bezel, copy, backgrounds) is now the connected-canvas editor:"
+echo "  cd app-store-screenshots && bun install && bun dev   # http://localhost:3000"

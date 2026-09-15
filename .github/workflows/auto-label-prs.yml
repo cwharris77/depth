@@ -61,10 +61,7 @@ jobs:
                                   f.startsWith('DepthUITests/') ||
                                   f === 'project.yml' ||
                                   f.startsWith('xcconfig/') ||
-                                  f.startsWith('fastlane/') ||
-                                  f.startsWith('scripts/') ||
-                                  f === 'Gemfile' ||
-                                  f === 'Gemfile.lock'],
+                                  f.startsWith('scripts/')],
               // The curated uniforms archive is its own area, not "backend": it is the
               // single busiest stream of PRs here and reviewers filter for it by name.
               // Its seed/thumb/draw scripts count too, so a kit PR that regenerates the
