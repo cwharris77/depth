@@ -405,8 +405,17 @@ private enum PostseasonRoundStage {
     case unreached
 }
 
+// UI_TESTING_REDUCE_MOTION is the screenshot/accessibility suites' launch-argument
+// convention (TeamDetailView and DepthChartFieldView read it the same way). It is not the
+// accessibility environment value, so the ladder has to consult it explicitly — otherwise
+// its staggered entrance leaves the terminal round at opacity 0 when a capture fires,
+// which is exactly what dropped the Super Bowl row from the 2026-09-14 screenshots.
+private func settlesMotion(_ environmentValue: Bool) -> Bool {
+    environmentValue || ProcessInfo.processInfo.arguments.contains("UI_TESTING_REDUCE_MOTION")
+}
+
 private struct PostseasonLadder: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var environmentReduceMotion
     let run: PostseasonRun
     let season: Int
     let accent: Color
@@ -414,6 +423,7 @@ private struct PostseasonLadder: View {
     /// Motion renders the settled state from the first frame instead.
     @State private var hasPlayed = false
 
+    private var reduceMotion: Bool { settlesMotion(environmentReduceMotion) }
     private var isShown: Bool { hasPlayed || reduceMotion }
     private var timing: PostseasonLadderTiming { PostseasonLadderTiming(terminalIndex: run.terminalIndex) }
 
@@ -530,7 +540,7 @@ private struct RoundBoundsKey: PreferenceKey {
 }
 
 private struct PostseasonRoundCard: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var environmentReduceMotion
     let round: PostseasonRound
     let season: Int
     let seed: Int
@@ -540,6 +550,8 @@ private struct PostseasonRoundCard: View {
     let isShown: Bool
     let timing: PostseasonLadderTiming
     let index: Int
+
+    private var reduceMotion: Bool { settlesMotion(environmentReduceMotion) }
 
     /// An absent Wild Card game for a bye-earning seed is the bye, not an unreached round.
     private var isBye: Bool {
