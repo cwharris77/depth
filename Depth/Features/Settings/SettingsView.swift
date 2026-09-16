@@ -5,7 +5,10 @@ import SwiftUI
 // The About section satisfies design spec Gate 0 item 9 (in-app non-affiliation
 // disclaimer) and DEP-160's Apple requirement that the privacy policy be reachable from
 // within the app — the row links to the live production /privacy page
-// (AppBuildInfo.privacyPolicyURL) via the system browser. A "Send Feedback" row opens a
+// (AppBuildInfo.privacyPolicyURL) via the system browser. Terms of Service links the
+// same way (AppBuildInfo.termsOfServiceURL) — sign-in already presents it at the point
+// of consent (AuthSheet), but signed-out browsing has no other path to it, so it's
+// mirrored here for parity with Privacy Policy. A "Send Feedback" row opens a
 // pre-addressed mailto (AppBuildInfo.feedbackMailtoURL) — the app's only feedback
 // channel, since there's no in-app form or analytics dashboard to otherwise surface
 // user-reported issues.
@@ -383,6 +386,13 @@ struct SettingsView: View {
                         aboutRow("Privacy Policy", icon: "shield.fill")
                     }
                     .accessibilityIdentifier("settings-about-privacy")
+                    Divider().overlay(DesignTokens.Colors.borderSubtle)
+                }
+                if let url = AppBuildInfo.termsOfServiceURL {
+                    Link(destination: url) {
+                        aboutRow("Terms of Service", icon: "doc.text.fill")
+                    }
+                    .accessibilityIdentifier("settings-about-terms")
                     Divider().overlay(DesignTokens.Colors.borderSubtle)
                 }
                 if let url = AppBuildInfo.feedbackMailtoURL {
