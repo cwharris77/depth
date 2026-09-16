@@ -680,7 +680,7 @@ struct TeamDetailView: View {
             Button("Reset", role: .destructive, action: resetAllOverrides)
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("All \(confirmedOrders.count) edited position\(confirmedOrders.count == 1 ? "" : "s") go back to \(displayedSnapshot?.team.city ?? "the team")'s published depth chart.")
+            Text("All \(confirmedOrders.count) edited position\(confirmedOrders.count == 1 ? "" : "s") \(confirmedOrders.count == 1 ? "goes" : "go") back to \(displayedSnapshot?.team.city ?? "the team")'s published depth chart.")
         }
     }
 
