@@ -241,12 +241,53 @@ private struct PlayerProfileScreen: View {
     }
 
     // A ghost reads by barely separating from the fill, so its tint follows the fill: white
-    // on dark bodies (the design's Seattle navy), near-black on light ones. White on Denver's
-    // orange washed out entirely. Dark-on-light needs more alpha to register the same.
+    // on dark bodies (the design's Seattle navy), near-black on light ones. Two fixed alphas
+    // (0.14 dark-ink / 0.055 light-ink) used to stand in for "how much alpha reads as a ghost
+    // on this fill," which only holds at the near-black/near-white extremes. Mid-luminance,
+    // saturated fills fall through it: Tampa Bay's red (#D50A0A) and Atlanta's (#A71930) both
+    // picked white ink correctly but rendered it at a contrast ratio against their own fill of
+    // ~1.04-1.10 -- indistinguishable from the fill itself (DEP-395 follow-up). Solving directly
+    // for the alpha that hits a fixed target contrast ratio against the *actual* fill fixes this
+    // for every kit at once instead of re-bucketing by hand.
     private var wordmarkGhost: Color {
         guard let jersey else { return .white.opacity(0.055) }
-        let ink = readableTextOn(TeamSurfaces.fill(jersey))
-        return Color(hex: ink).opacity(ink == darkBackgroundHex ? 0.14 : 0.055)
+        let fill = TeamSurfaces.fill(jersey)
+        let ink = readableTextOn(fill)
+        return Color(hex: ink).opacity(ghostAlpha(ink: ink, overFill: fill))
+    }
+
+    // A ghost only needs to be barely perceptible, not legible -- 1.20 is well under WCAG's
+    // 3.0 graphical-object floor, but reliably separates from the fill regardless of the
+    // fill's own luminance (verified across all 105 committed kits: alpha lands in 0.059-0.18,
+    // no outliers). Contrast ratio isn't linear in alpha, so bisect the real composited color
+    // rather than solving a closed form.
+    private func ghostAlpha(ink: String, overFill fill: String, targetRatio: Double = 1.20) -> Double {
+        var lo = 0.0
+        var hi = 0.6
+        for _ in 0..<24 {
+            let mid = (lo + hi) / 2
+            if contrastRatio(blendedHex(ink, over: fill, alpha: mid), fill) >= targetRatio {
+                hi = mid
+            } else {
+                lo = mid
+            }
+        }
+        return hi
+    }
+
+    private func blendedHex(_ inkHex: String, over fillHex: String, alpha: Double) -> String {
+        func components(_ hex: String) -> (Double, Double, Double) {
+            let cleaned = hex.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "#", with: "")
+            var value: UInt64 = 0
+            Scanner(string: cleaned).scanHexInt64(&value)
+            return (Double((value >> 16) & 0xFF), Double((value >> 8) & 0xFF), Double(value & 0xFF))
+        }
+        let (ir, ig, ib) = components(inkHex)
+        let (fr, fg, fb) = components(fillHex)
+        let r = ir * alpha + fr * (1 - alpha)
+        let g = ig * alpha + fg * (1 - alpha)
+        let b = ib * alpha + fb * (1 - alpha)
+        return String(format: "#%02X%02X%02X", Int(r.rounded()), Int(g.rounded()), Int(b.rounded()))
     }
 
     @ViewBuilder
