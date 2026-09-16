@@ -234,10 +234,10 @@ struct TeamDetailView: View {
             }
             .onChange(of: unit) { _, newValue in
                 preferences.lastUnit = newValue
-                editMode.exitForContextChange()
+                setEditMode { editMode.exitForContextChange() }
             }
             .onChange(of: page) { _, _ in
-                editMode.exitForContextChange()
+                setEditMode { editMode.exitForContextChange() }
             }
             .onChange(of: historyViewModel.selectedSeason) { _, _ in
                 // Merge spec (2026-09-11): a season change pops the pushed profile, whose depth
@@ -246,7 +246,7 @@ struct TeamDetailView: View {
                 // rebuilds this whole subtree, stack root included, when the switcher picks a
                 // different team.
                 selectedPlayer = nil
-                editMode.exitForContextChange()
+                setEditMode { editMode.exitForContextChange() }
             }
             .onDisappear {
                 editMode.exitForContextChange()
@@ -406,10 +406,38 @@ struct TeamDetailView: View {
             }
         }
         .toolbar(editMode.isActive ? .hidden : .visible, for: .tabBar)
-        .animation(
-            reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection,
-            value: editMode.isActive
-        )
+        // 1C follow-up (design review, screenshot pass): no implicit `.animation(value:)`
+        // here. That modifier only drove this view's own inset — the TabView animated the
+        // tab bar's disappearance on its own curve, so the field resized twice out of step
+        // and visibly snapped. Every edit-mode mutation now goes through `setEditMode`, so
+        // the tab-bar swap and the bar's insertion resolve in one transaction.
+        //
+        // An alert, not a confirmationDialog. A confirmationDialog raised from the ••• menu
+        // presents as a source-anchored popover here, and UIKit deliberately omits the
+        // cancel action from a popover-presented action sheet ("tap outside" is the cancel)
+        // — so the first build shipped a Reset-only bubble with no visible way back.
+        // Moving the modifier off the Menu onto `content` did not change that; the
+        // presentation style is the cause, not the anchor. An alert always renders every
+        // button it is given, which is the requirement for a destructive confirmation.
+        .alert(
+            "Reset custom order?",
+            isPresented: $showResetConfirmation
+        ) {
+            Button("Reset", role: .destructive, action: resetAllOverrides)
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("All \(confirmedOrders.count) edited position\(confirmedOrders.count == 1 ? "" : "s") \(confirmedOrders.count == 1 ? "goes" : "go") back to \(displayedSnapshot?.team.city ?? "the team")'s published depth chart.")
+        }
+    }
+
+    /// The one entry point for changing edit mode. See the `content` comment above: the
+    /// tab-bar swap and the edit bar's insertion must resolve in the same transaction or
+    /// they desync. `formation` (0.36s smooth) rather than `selection` (0.24s snappy)
+    /// because this resizes the whole field, not a control-sized element.
+    private func setEditMode(_ mutate: () -> Void) {
+        withAnimation(reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.formation) {
+            mutate()
+        }
     }
 
     private enum TeamPage: String, CaseIterable {
@@ -512,7 +540,7 @@ struct TeamDetailView: View {
             }
             Spacer()
             Button {
-                editMode.exitForContextChange()
+                setEditMode { editMode.exitForContextChange() }
             } label: {
                 Text("Done")
                     .font(.subheadline.weight(.semibold))
@@ -556,7 +584,7 @@ struct TeamDetailView: View {
             // DEP-226 moved reorder into the player card, and the 2026-09-11 merge spec moved
             // it again into PositionReorderSheet when the card was deleted.
             Button {
-                editMode.toggle()
+                setEditMode { editMode.toggle() }
             } label: {
                 // 1C (`edit-status-redesign-spec.md` §2a): the label now renames to "Done
                 // Editing" alongside the glyph flip — a checkmark alone is ambiguous in a
@@ -589,12 +617,15 @@ struct TeamDetailView: View {
                 Button {
                     showResetConfirmation = true
                 } label: {
-                    HStack {
-                        Label("Reset Custom Order", systemImage: "arrow.counterclockwise")
-                        Spacer()
-                        Text("\(confirmedOrders.count) position\(confirmedOrders.count == 1 ? "" : "s")")
-                            .foregroundStyle(.secondary)
-                    }
+                    // The count is in the title, not a trailing `Text`. A SwiftUI Menu row
+                    // renders as a UIKit `UIAction`, which carries only title + image — an
+                    // `HStack { Label; Spacer; Text }` is flattened to the Label and the
+                    // trailing text is silently dropped (it never rendered in the first
+                    // build; the Formations row below had the same bug).
+                    Label(
+                        "Reset \(confirmedOrders.count) Custom Position\(confirmedOrders.count == 1 ? "" : "s")",
+                        systemImage: "arrow.counterclockwise"
+                    )
                 }
                 .accessibilityIdentifier("reset-custom-order")
             }
@@ -619,13 +650,9 @@ struct TeamDetailView: View {
                 Button {
                     showFormations = true
                 } label: {
-                    HStack {
-                        Label("Formations", systemImage: "square.grid.2x2")
-                        Spacer()
-                        Text(formationsMeta)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
+                    // Same UIAction flattening as the Reset row above — the current pick
+                    // has to be part of the title or it does not render at all.
+                    Label("Formations: \(formationsMeta)", systemImage: "square.grid.2x2")
                 }
                 .accessibilityIdentifier("choose-formation")
             }
@@ -672,16 +699,6 @@ struct TeamDetailView: View {
         .accessibilityIdentifier("depth-chart-overflow")
         // DEP-251: first-run tutorial's overflow-menu coachmark target.
         .coachmarkAnchor(.overflowMenu)
-        .confirmationDialog(
-            "Reset custom order?",
-            isPresented: $showResetConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Reset", role: .destructive, action: resetAllOverrides)
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("All \(confirmedOrders.count) edited position\(confirmedOrders.count == 1 ? "" : "s") \(confirmedOrders.count == 1 ? "goes" : "go") back to \(displayedSnapshot?.team.city ?? "the team")'s published depth chart.")
-        }
     }
 
     @ViewBuilder
