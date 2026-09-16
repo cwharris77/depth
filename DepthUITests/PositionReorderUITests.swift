@@ -50,15 +50,16 @@ final class PositionReorderUITests: XCTestCase {
         )
 
         app.buttons["Close"].tap()
-        // DEP-433: the app-level reset action belongs to the status row, centered.
-        let resetAll = app.buttons["custom-order-reset-all"]
-        XCTAssertTrue(resetAll.waitForExistence(timeout: 5), "a custom team order should expose Reset all")
-        XCTAssertEqual(
-            resetAll.frame.midX,
-            app.windows.firstMatch.frame.midX,
-            accuracy: 1,
-            "Reset all should be centered within the depth chart status row"
+        // 1C: the app-level reset action moved into the ••• menu, directly under Edit
+        // Depth Chart, shown only while a custom order exists.
+        let overflowAfterReorder = app.buttons["depth-chart-overflow"]
+        XCTAssertTrue(overflowAfterReorder.waitForExistence(timeout: 5))
+        overflowAfterReorder.tap()
+        XCTAssertTrue(
+            app.buttons["reset-custom-order"].waitForExistence(timeout: 5),
+            "a custom team order should expose Reset Custom Order in the overflow menu"
         )
+        app.swipeDown()
         app.terminate()
         // Relaunch inherits the saved override (no reset) but stays on the fixture backend.
         app.launchArguments = XCUIApplication.hermeticRelaunchArguments
@@ -156,10 +157,14 @@ final class PositionReorderUITests: XCTestCase {
         XCTAssertFalse(app.buttons["player-profile-depth-reset"].exists)
 
         app.buttons["Close"].tap()
+        let overflowAfterRestore = app.buttons["depth-chart-overflow"]
+        XCTAssertTrue(overflowAfterRestore.waitForExistence(timeout: 5))
+        overflowAfterRestore.tap()
         XCTAssertFalse(
-            app.buttons["custom-order-reset-all"].waitForExistence(timeout: 1),
+            app.buttons["reset-custom-order"].waitForExistence(timeout: 1),
             "closing a restored position should not leave the team marked as custom"
         )
+        app.swipeDown()
     }
 
     // Merge spec: edit mode is the only way into reordering. On → a field tap opens the
@@ -236,17 +241,10 @@ final class PositionReorderUITests: XCTestCase {
             "returning to the roster page should restore the overflow menu"
         )
 
-        enterEditing()
-        let tabs = app.tabBars.firstMatch
-        XCTAssertTrue(
-            tabs.buttons["Compare"].tapUntil { app.scrollViews["compare-content"].exists },
-            "the Compare tab should render its content"
-        )
-        XCTAssertTrue(
-            tabs.buttons["Depth Charts"].tapUntil { app.buttons["depth-chart-overflow"].exists },
-            "returning to the Depth Charts tab should restore the overflow menu"
-        )
-        assertEditingEnded("leaving the Depth Charts tab")
+        // 1C: the edit bar covers the tab bar for the duration of an edit session (the accepted
+        // tradeoff in `edit-status-redesign-spec.md` §3), so switching tabs mid-edit is no
+        // longer a reachable UI action to test here — `onDisappear`'s exit still covers a
+        // tab switch driven any other way.
 
         enterEditing()
         app.selectTeam("seahawks", searching: "Seahawks", expectedDisplayName: "Seattle Seahawks")

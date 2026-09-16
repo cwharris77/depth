@@ -31,4 +31,23 @@ final class CurrentTeamStore {
     func refine(colors newColors: JerseyColors) {
         colors = newColors
     }
+
+    /// DEP-565 (1C edit-status redesign): the depth-chart edit bar, while edit mode is on.
+    /// Same publish-up shape as `colors` — TeamDetailView owns edit mode, but the bar has to
+    /// be drawn by RootTabView, over the tab bar, because hiding the tab bar from inside the
+    /// tab re-lays-out the whole page on a UIKit animation (the edit-mode "bounce").
+    private(set) var editBar: DepthChartEditBarRequest?
+
+    func showEditBar(_ request: DepthChartEditBarRequest?) {
+        editBar = request
+    }
+}
+
+/// What RootTabView needs to draw the depth-chart edit bar over the tab bar.
+struct DepthChartEditBarRequest {
+    /// The tab bar's footprint (the tab content's bottom safe-area inset), measured by
+    /// TeamDetailView — the region the bar and its backing cover.
+    let tabBarInset: CGFloat
+    let isMotionReduced: Bool
+    let onDone: @MainActor () -> Void
 }

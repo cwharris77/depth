@@ -55,11 +55,22 @@ struct PositionReorderSheet: View {
             // its own competing reorder and scroll behavior.
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-                    if isCustom {
-                        HStack(spacing: DesignTokens.Spacing.sm) {
-                            customTag
-                            Spacer()
-                            resetButton
+                    // The row's height is reserved unconditionally (Cooper, 1C review): the
+                    // CUSTOM tag and Reset appear the moment a drag commits, and gating the
+                    // whole row on `isCustom` pushed the list you were just dragging in
+                    // down by its height mid-interaction. `Color.clear` at the Reset
+                    // button's 44pt hit target holds the lane open so nothing moves.
+                    // Still conditional *content*, not opacity — the reorder tests assert
+                    // the tag and Reset are absent from the accessibility tree when the
+                    // position is not custom.
+                    ZStack(alignment: .leading) {
+                        Color.clear.frame(height: 44)
+                        if isCustom {
+                            HStack(spacing: DesignTokens.Spacing.sm) {
+                                customTag
+                                Spacer()
+                                resetButton
+                            }
                         }
                     }
                     DepthReorderList(

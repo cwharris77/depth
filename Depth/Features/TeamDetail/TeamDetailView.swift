@@ -55,6 +55,14 @@ struct TeamDetailView: View {
     /// nil for a given unit means "use the unit's top formation as the default".
     @State private var selectedFormations: [Unit: TeamFormation] = [:]
     @State private var confirmedOrders: [Position: [String]] = [:]
+    /// DEP-565 design-review follow-up (1C, `edit-status-redesign-spec.md`): the reset
+    /// action moved from a one-tap status chip into the ••• menu, so it now needs its
+    /// own confirmation — a menu tap has no visible "undo everything" cost the way the
+    /// chip did.
+    @State private var showResetConfirmation = false
+    /// The content's bottom safe-area inset — the tab bar's footprint — handed to
+    /// RootTabView so the edit bar covers exactly that region.
+    @State private var tabBarBottomInset: CGFloat = 0
 
     private let preferences: UserPreferences
     private let repository: CachingDepthRepository
@@ -245,6 +253,10 @@ struct TeamDetailView: View {
             }
             .onDisappear {
                 editMode.exitForContextChange()
+                // Cleared directly, not through `onChange(of: editMode.isActive)`: a team
+                // switch rebuilds this view via `.id(teamId)`, and the torn-down view never
+                // delivers that change, which would strand the bar over the tab bar.
+                currentTeamStore.showEditBar(nil)
             }
             .onChange(of: sessionStore.user) { _, user in
                 if user == nil {
@@ -388,6 +400,39 @@ struct TeamDetailView: View {
                 .transition(.opacity)
         }
         .frame(maxHeight: .infinity)
+        // 1C §3: while editing, the edit bar replaces the tab bar for the session. It is
+        // drawn by RootTabView *over* the tab bar rather than by hiding the tab bar here:
+        // `.toolbar(.hidden, for: .tabBar)` makes UIKit re-lay-out the whole tab page on its
+        // own animation, which SwiftUI cannot join. Measured at 60fps (1C review round 2),
+        // the page dropped ~50pt in one frame and then animated back up — a bounce no
+        // transaction or inset arithmetic here could remove, because SwiftUI's own layout
+        // never changed. Covering the tab bar leaves the page's layout untouched, so the
+        // field and the licence-mandated FTN attribution never move.
+        //
+        // The bottom inset is the tab bar's footprint (it is never hidden now), which is
+        // exactly the region the edit bar has to cover.
+        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.bottom } action: { inset in
+            tabBarBottomInset = inset
+        }
+        .onChange(of: editMode.isActive) { _, isActive in
+            publishEditBar(isActive: isActive)
+        }
+        // An alert, not a confirmationDialog. A confirmationDialog raised from the ••• menu
+        // presents as a source-anchored popover here, and UIKit deliberately omits the
+        // cancel action from a popover-presented action sheet ("tap outside" is the cancel)
+        // — so the first build shipped a Reset-only bubble with no visible way back.
+        // Moving the modifier off the Menu onto `content` did not change that; the
+        // presentation style is the cause, not the anchor. An alert always renders every
+        // button it is given, which is the requirement for a destructive confirmation.
+        .alert(
+            "Reset custom order?",
+            isPresented: $showResetConfirmation
+        ) {
+            Button("Reset", role: .destructive, action: resetAllOverrides)
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("All \(confirmedOrders.count) edited position\(confirmedOrders.count == 1 ? "" : "s") \(confirmedOrders.count == 1 ? "goes" : "go") back to \(displayedSnapshot?.team.city ?? "the team")'s published depth chart.")
+        }
     }
 
     private enum TeamPage: String, CaseIterable {
@@ -460,77 +505,22 @@ struct TeamDetailView: View {
         .accessibilityIdentifier("page-switcher")
     }
 
-    /// Web parity (web/components/ui/ActionChip.tsx as used by FieldHeader.tsx): an
-    /// accent-outlined pill, same visual language as `teamSwitcherPill`'s ring treatment
-    /// but team-accent rather than team-primary since this is an interactive control, not
-    /// a brand surface (web/CLAUDE.md invariant 4).
-    private var customOrderChip: some View {
-        Button(action: resetAllOverrides) {
-            HStack(spacing: 6) {
-                Image(systemName: "arrow.counterclockwise")
-                    .font(.caption2.weight(.bold))
-                Text("Custom order · Reset all")
-                    .font(.caption.weight(.semibold))
-            }
-            .foregroundStyle(teamAccentColor)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(Capsule().fill(teamAccentColor.opacity(0.12)))
-            .overlay {
-                Capsule().strokeBorder(teamAccentColor.opacity(0.4), lineWidth: 1)
-            }
-        }
-        .frame(minHeight: 44)
-        .accessibilityIdentifier("custom-order-reset-all")
-    }
-
-    private var editingChip: some View {
-        Button {
-            editMode.exitForContextChange()
-        } label: {
-            HStack(spacing: 6) {
-                Circle()
-                    .fill(teamAccentColor)
-                    .frame(width: 6, height: 6)
-                // DEP-540: this is the edit-mode exit action, not a passive status tag.
-                // Naming the result prevents a tap from unexpectedly ending the mode.
-                Text("Done editing")
-                    .font(.caption.weight(.semibold))
-            }
-            .foregroundStyle(teamAccentColor)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(Capsule().fill(teamAccentColor.opacity(0.12)))
-            .overlay {
-                Capsule().strokeBorder(teamAccentColor.opacity(0.4), lineWidth: 1)
-            }
-        }
-        .frame(minHeight: 44)
-        .accessibilityIdentifier("depth-chart-editing-active")
-        .accessibilityLabel("Done editing depth chart")
-        .accessibilityValue(isMotionReduced ? "Motion reduced" : "Player dots moving")
-        .accessibilityHint("Exits edit mode without discarding saved changes")
-    }
-
     private var isMotionReduced: Bool {
         reduceMotion || ProcessInfo.processInfo.arguments.contains("UI_TESTING_REDUCE_MOTION")
     }
 
-    private var editStatusRow: some View {
-        // DEP-433: a custom order is a screen-level status, so its reset control stays
-        // centered even when the optional trailing Editing exit control is absent.
-        ZStack {
-            if !confirmedOrders.isEmpty {
-                customOrderChip
-            }
-            HStack {
-                Spacer()
-                if editMode.isActive {
-                    editingChip
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
+    /// Hands the edit bar to RootTabView (see the `content` comment on why it is drawn
+    /// there). `nil` removes it.
+    private func publishEditBar(isActive: Bool) {
+        currentTeamStore.showEditBar(
+            isActive
+                ? DepthChartEditBarRequest(
+                    tabBarInset: tabBarBottomInset,
+                    isMotionReduced: isMotionReduced,
+                    onDone: { editMode.exitForContextChange() }
+                )
+                : nil
+        )
     }
 
     /// Web parity (web/components/FieldHeaderMenu.tsx): actions beyond the page switcher's
@@ -551,16 +541,17 @@ struct TeamDetailView: View {
             Button {
                 editMode.toggle()
             } label: {
-                // Web parity (FieldHeaderMenu's "Edit depth chart" row): the label stays
-                // constant and the leading glyph flips to a Check while active — no
-                // redundant "Done Editing" rename. While a past season is selected the row
-                // is disabled (not hidden), and a muted second line states *why* — the iOS
-                // equivalent of web's `disabledReason` tooltip, which would otherwise be
-                // silent on a bare disabled item.
+                // 1C (`edit-status-redesign-spec.md` §2a): the label now renames to "Done
+                // Editing" alongside the glyph flip — a checkmark alone is ambiguous in a
+                // menu that already uses checkmarks for picks (Formations), and the label
+                // is the only thing VoiceOver reads. While a past season is selected the
+                // row is disabled (not hidden), and a muted second line states *why* — the
+                // iOS equivalent of web's `disabledReason` tooltip, which would otherwise
+                // be silent on a bare disabled item.
                 HStack(spacing: 8) {
                     Image(systemName: editMode.isActive ? "checkmark" : "pencil")
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Edit Depth Chart")
+                        Text(editMode.isActive ? "Done Editing" : "Edit Depth Chart")
                             .font(.body)
                         if historyViewModel.isHistorical {
                             Text("Historical seasons are read-only")
@@ -573,6 +564,26 @@ struct TeamDetailView: View {
             }
             .disabled(historyViewModel.isHistorical)
             .accessibilityIdentifier("edit-depth-order")
+
+            // 1C §2b: the app-level reset action, moved out of the status chip and into
+            // this row directly under Edit Depth Chart — same subject, same group. Shown
+            // only under the exact condition that gated the old chip.
+            if !confirmedOrders.isEmpty && !historyViewModel.isHistorical {
+                Button {
+                    showResetConfirmation = true
+                } label: {
+                    // The count is in the title, not a trailing `Text`. A SwiftUI Menu row
+                    // renders as a UIKit `UIAction`, which carries only title + image — an
+                    // `HStack { Label; Spacer; Text }` is flattened to the Label and the
+                    // trailing text is silently dropped (it never rendered in the first
+                    // build; the Formations row below had the same bug).
+                    Label(
+                        "Reset \(confirmedOrders.count) Custom Position\(confirmedOrders.count == 1 ? "" : "s")",
+                        systemImage: "arrow.counterclockwise"
+                    )
+                }
+                .accessibilityIdentifier("reset-custom-order")
+            }
 
             // Live snapshot only — historical rosters carry no uniforms
             // (SupabaseDepthRepository.teamSeason returns uniforms: []).
@@ -594,13 +605,9 @@ struct TeamDetailView: View {
                 Button {
                     showFormations = true
                 } label: {
-                    HStack {
-                        Label("Formations", systemImage: "square.grid.2x2")
-                        Spacer()
-                        Text(formationsMeta)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
+                    // Same UIAction flattening as the Reset row above — the current pick
+                    // has to be part of the title or it does not render at all.
+                    Label("Formations: \(formationsMeta)", systemImage: "square.grid.2x2")
                 }
                 .accessibilityIdentifier("choose-formation")
             }
@@ -628,8 +635,22 @@ struct TeamDetailView: View {
                 // itself, opens the menu.
                 .frame(minWidth: 44, minHeight: 44)
                 .contentShape(Rectangle())
+                // 1C §2d: with the status row gone, this dot is what carries "this
+                // chart is edited" on the field itself — sits inside the existing
+                // 44×44 box, so no layout change and no new hit target.
+                .overlay(alignment: .topTrailing) {
+                    if !confirmedOrders.isEmpty && !historyViewModel.isHistorical {
+                        Circle()
+                            .fill(teamAccentColor)
+                            .frame(width: 9, height: 9)
+                            .overlay { Circle().strokeBorder(DesignTokens.Colors.bg, lineWidth: 2) }
+                            .offset(x: -6, y: 6)
+                    }
+                }
         }
-        .accessibilityLabel("More")
+        .accessibilityLabel(
+            confirmedOrders.isEmpty || historyViewModel.isHistorical ? "More" : "More, custom order active"
+        )
         .accessibilityIdentifier("depth-chart-overflow")
         // DEP-251: first-run tutorial's overflow-menu coachmark target.
         .coachmarkAnchor(.overflowMenu)
@@ -802,15 +823,6 @@ struct TeamDetailView: View {
                     .padding(.horizontal)
                     .overlay(alignment: .bottom) {
                         Rectangle().fill(DesignTokens.Colors.borderDefault).frame(height: 1)
-                    }
-
-                    // Web parity (FieldHeader.tsx's "Custom order · Reset all" chip): tells
-                    // the user this team's depth is their own edited order, with one-tap
-                    // revert. Hidden for a past season, same as web (neither order is
-                    // theirs to reset).
-                    if !historical && (!confirmedOrders.isEmpty || editMode.isActive) {
-                        editStatusRow
-                            .padding(.horizontal)
                     }
 
                     DepthChartFieldView(
@@ -1161,6 +1173,70 @@ private struct FormationsSheetView: View {
 // DEP-309: the team-detail screen owns one temporary edit session. Keeping the state in
 // a small value type makes the entry/exit contract testable without widening it into an
 // app-level store; saved player orders continue to live in UserPreferences.
+/// 1C (`edit-status-redesign-spec.md` §3): the edit-mode bar that takes over the tab bar
+/// for an edit session — the iOS convention for a modal editing state — so the field, the
+/// attribution, and the layout above it never move for it, the way the old status row did.
+/// `Done` is the same exit action the old editing chip was. Drawn by RootTabView over the
+/// tab bar; TeamDetailView publishes it through `CurrentTeamStore.editBar`.
+struct DepthChartEditBar: View {
+    /// The current kit's colors, from `CurrentTeamStore` — the same colors TeamDetailView
+    /// refines there, so the accent matches the field and page switcher.
+    let colors: JerseyColors?
+    let isMotionReduced: Bool
+    let onDone: () -> Void
+
+    private var accentColor: Color {
+        colors.map { Color(hex: TeamSurfaces.mark($0)) } ?? DesignTokens.Colors.accent
+    }
+
+    /// The Done label on the accent fill — same derivation as the page switcher's
+    /// `activeTextColor`, just against the accent instead of the switcher's fill.
+    private var doneTextColor: Color {
+        colors.map { Color(hex: readableTextOn(TeamSurfaces.mark($0))) } ?? DesignTokens.Colors.onAccent
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(accentColor)
+                .frame(width: 7, height: 7)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Editing depth chart")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                Text("Tap a player to reorder their position")
+                    .font(.caption)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+            }
+            Spacer()
+            Button(action: onDone) {
+                Text("Done")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(doneTextColor)
+                    .padding(.horizontal, 16)
+                    .frame(minHeight: 44)
+                    .background(Capsule().fill(accentColor))
+            }
+            .accessibilityIdentifier("depth-chart-editing-active")
+            .accessibilityLabel("Done editing depth chart")
+            .accessibilityValue(isMotionReduced ? "Motion reduced" : "Player dots moving")
+            .accessibilityHint("Exits edit mode without discarding saved changes")
+        }
+        .padding(.horizontal, DesignTokens.Spacing.md)
+        .padding(.vertical, DesignTokens.Spacing.sm)
+        .background(
+            RoundedRectangle(cornerRadius: DesignTokens.Radius.lg)
+                .fill(DesignTokens.Colors.surfaceCard)
+                .overlay {
+                    RoundedRectangle(cornerRadius: DesignTokens.Radius.lg)
+                        .strokeBorder(accentColor.opacity(0.4), lineWidth: 1)
+                }
+                .shadow(color: .black.opacity(0.5), radius: 16, x: 0, y: -8)
+        )
+        .padding(.horizontal)
+    }
+}
+
 struct DepthChartEditMode: Equatable {
     private(set) var isActive = false
 
