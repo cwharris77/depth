@@ -35,6 +35,7 @@ struct RootTabView: View {
     /// DEP-251: two-way bound to the TabView's `selection` below so Settings' "Take the
     /// tour" row can jump to Depth Charts before starting the coachmark sequence.
     @Bindable var onboarding: OnboardingController
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         TabView(selection: $onboarding.activeTab) {
@@ -95,5 +96,37 @@ struct RootTabView: View {
         // iOS version without a UIKit appearance bridge — left at the system default
         // deliberately rather than reaching for private API.
         .tint(currentTeamStore.colors.map { Color(hex: TeamSurfaces.mark($0)) } ?? DesignTokens.Colors.accent)
+        // DEP-565 (1C): the depth-chart edit bar replaces the tab bar for an edit session by
+        // covering it, not hiding it — see CurrentTeamStore.editBar. Drawn here because an
+        // overlay on the TabView sits above its tab bar; nothing inside a tab can. The solid
+        // backing fills the tab bar's whole footprint so no part of the floating bar shows
+        // around the card and no tab can be tapped through it.
+        .overlay {
+            // A full-height stack, not a bottom-aligned overlay: only a view that spans to
+            // the screen edge actually extends past the bottom safe area, and the backing
+            // has to end at the screen edge for `tabBarInset` to land on the tab bar's top
+            // (a hugging container left it 34pt high, over the FTN attribution). The Spacer
+            // draws nothing, so the page above stays tappable.
+            VStack(spacing: 0) {
+                Spacer(minLength: 0)
+                if let editBar = currentTeamStore.editBar {
+                    DepthChartEditBar(
+                        colors: currentTeamStore.colors,
+                        isMotionReduced: editBar.isMotionReduced,
+                        onDone: editBar.onDone
+                    )
+                    .frame(maxWidth: .infinity)
+                    .frame(height: editBar.tabBarInset, alignment: .top)
+                    .background(DesignTokens.Colors.bg)
+                    .contentShape(Rectangle())
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .animation(
+                reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.formation,
+                value: currentTeamStore.editBar != nil
+            )
+            .ignoresSafeArea(.container, edges: .bottom)
+        }
     }
 }

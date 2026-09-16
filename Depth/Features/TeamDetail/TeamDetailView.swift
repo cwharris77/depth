@@ -60,6 +60,9 @@ struct TeamDetailView: View {
     /// own confirmation — a menu tap has no visible "undo everything" cost the way the
     /// chip did.
     @State private var showResetConfirmation = false
+    /// The content's bottom safe-area inset — the tab bar's footprint — handed to
+    /// RootTabView so the edit bar covers exactly that region.
+    @State private var tabBarBottomInset: CGFloat = 0
 
     private let preferences: UserPreferences
     private let repository: CachingDepthRepository
@@ -234,10 +237,10 @@ struct TeamDetailView: View {
             }
             .onChange(of: unit) { _, newValue in
                 preferences.lastUnit = newValue
-                setEditMode { editMode.exitForContextChange() }
+                editMode.exitForContextChange()
             }
             .onChange(of: page) { _, _ in
-                setEditMode { editMode.exitForContextChange() }
+                editMode.exitForContextChange()
             }
             .onChange(of: historyViewModel.selectedSeason) { _, _ in
                 // Merge spec (2026-09-11): a season change pops the pushed profile, whose depth
@@ -246,10 +249,14 @@ struct TeamDetailView: View {
                 // rebuilds this whole subtree, stack root included, when the switcher picks a
                 // different team.
                 selectedPlayer = nil
-                setEditMode { editMode.exitForContextChange() }
+                editMode.exitForContextChange()
             }
             .onDisappear {
                 editMode.exitForContextChange()
+                // Cleared directly, not through `onChange(of: editMode.isActive)`: a team
+                // switch rebuilds this view via `.id(teamId)`, and the torn-down view never
+                // delivers that change, which would strand the bar over the tab bar.
+                currentTeamStore.showEditBar(nil)
             }
             .onChange(of: sessionStore.user) { _, user in
                 if user == nil {
@@ -393,25 +400,23 @@ struct TeamDetailView: View {
                 .transition(.opacity)
         }
         .frame(maxHeight: .infinity)
-        // 1C §3: while editing, this bar replaces the tab bar for the session instead of
-        // reserving a lane above the field — it must never overlay the field or the FTN
-        // attribution, both of which were checked and rejected as unsafe (the offense RB
-        // and special-teams returner live in the field's bottom band; the attribution is
-        // licence-mandated).
-        .safeAreaInset(edge: .bottom) {
-            if editMode.isActive {
-                editModeBar
-                    .padding(.bottom, 8)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-        }
-        .toolbar(editMode.isActive ? .hidden : .visible, for: .tabBar)
-        // 1C follow-up (design review, screenshot pass): no implicit `.animation(value:)`
-        // here. That modifier only drove this view's own inset — the TabView animated the
-        // tab bar's disappearance on its own curve, so the field resized twice out of step
-        // and visibly snapped. Every edit-mode mutation now goes through `setEditMode`, so
-        // the tab-bar swap and the bar's insertion resolve in one transaction.
+        // 1C §3: while editing, the edit bar replaces the tab bar for the session. It is
+        // drawn by RootTabView *over* the tab bar rather than by hiding the tab bar here:
+        // `.toolbar(.hidden, for: .tabBar)` makes UIKit re-lay-out the whole tab page on its
+        // own animation, which SwiftUI cannot join. Measured at 60fps (1C review round 2),
+        // the page dropped ~50pt in one frame and then animated back up — a bounce no
+        // transaction or inset arithmetic here could remove, because SwiftUI's own layout
+        // never changed. Covering the tab bar leaves the page's layout untouched, so the
+        // field and the licence-mandated FTN attribution never move.
         //
+        // The bottom inset is the tab bar's footprint (it is never hidden now), which is
+        // exactly the region the edit bar has to cover.
+        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.bottom } action: { inset in
+            tabBarBottomInset = inset
+        }
+        .onChange(of: editMode.isActive) { _, isActive in
+            publishEditBar(isActive: isActive)
+        }
         // An alert, not a confirmationDialog. A confirmationDialog raised from the ••• menu
         // presents as a source-anchored popover here, and UIKit deliberately omits the
         // cancel action from a popover-presented action sheet ("tap outside" is the cancel)
@@ -427,16 +432,6 @@ struct TeamDetailView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("All \(confirmedOrders.count) edited position\(confirmedOrders.count == 1 ? "" : "s") \(confirmedOrders.count == 1 ? "goes" : "go") back to \(displayedSnapshot?.team.city ?? "the team")'s published depth chart.")
-        }
-    }
-
-    /// The one entry point for changing edit mode. See the `content` comment above: the
-    /// tab-bar swap and the edit bar's insertion must resolve in the same transaction or
-    /// they desync. `formation` (0.36s smooth) rather than `selection` (0.24s snappy)
-    /// because this resizes the whole field, not a control-sized element.
-    private func setEditMode(_ mutate: () -> Void) {
-        withAnimation(reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.formation) {
-            mutate()
         }
     }
 
@@ -514,58 +509,18 @@ struct TeamDetailView: View {
         reduceMotion || ProcessInfo.processInfo.arguments.contains("UI_TESTING_REDUCE_MOTION")
     }
 
-    /// The Done button's label color on the team-accent fill — same derivation as
-    /// `pageSwitcher`'s `activeTextColor`, just against `teamAccentColor` instead of the
-    /// page switcher's fill color.
-    private var doneButtonTextColor: Color {
-        activeJerseyColors.map { Color(hex: readableTextOn(TeamSurfaces.mark($0))) } ?? DesignTokens.Colors.onAccent
-    }
-
-    /// 1C (`edit-status-redesign-spec.md` §3): while edit mode is active, this bar takes
-    /// over the tab bar for the session — the iOS convention for a modal editing state —
-    /// so the field, the attribution, and the layout above it never move for it, the way
-    /// the old status row did. `Done` is the same exit action the old editing chip was.
-    private var editModeBar: some View {
-        HStack(spacing: 12) {
-            Circle()
-                .fill(teamAccentColor)
-                .frame(width: 7, height: 7)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Editing depth chart")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(DesignTokens.Colors.textPrimary)
-                Text("Tap a player to reorder their position")
-                    .font(.caption)
-                    .foregroundStyle(DesignTokens.Colors.textMuted)
-            }
-            Spacer()
-            Button {
-                setEditMode { editMode.exitForContextChange() }
-            } label: {
-                Text("Done")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(doneButtonTextColor)
-                    .padding(.horizontal, 16)
-                    .frame(minHeight: 44)
-                    .background(Capsule().fill(teamAccentColor))
-            }
-            .accessibilityIdentifier("depth-chart-editing-active")
-            .accessibilityLabel("Done editing depth chart")
-            .accessibilityValue(isMotionReduced ? "Motion reduced" : "Player dots moving")
-            .accessibilityHint("Exits edit mode without discarding saved changes")
-        }
-        .padding(.horizontal, DesignTokens.Spacing.md)
-        .padding(.vertical, DesignTokens.Spacing.sm)
-        .background(
-            RoundedRectangle(cornerRadius: DesignTokens.Radius.lg)
-                .fill(DesignTokens.Colors.surfaceCard)
-                .overlay {
-                    RoundedRectangle(cornerRadius: DesignTokens.Radius.lg)
-                        .strokeBorder(teamAccentColor.opacity(0.4), lineWidth: 1)
-                }
-                .shadow(color: .black.opacity(0.5), radius: 16, x: 0, y: -8)
+    /// Hands the edit bar to RootTabView (see the `content` comment on why it is drawn
+    /// there). `nil` removes it.
+    private func publishEditBar(isActive: Bool) {
+        currentTeamStore.showEditBar(
+            isActive
+                ? DepthChartEditBarRequest(
+                    tabBarInset: tabBarBottomInset,
+                    isMotionReduced: isMotionReduced,
+                    onDone: { editMode.exitForContextChange() }
+                )
+                : nil
         )
-        .padding(.horizontal)
     }
 
     /// Web parity (web/components/FieldHeaderMenu.tsx): actions beyond the page switcher's
@@ -584,7 +539,7 @@ struct TeamDetailView: View {
             // DEP-226 moved reorder into the player card, and the 2026-09-11 merge spec moved
             // it again into PositionReorderSheet when the card was deleted.
             Button {
-                setEditMode { editMode.toggle() }
+                editMode.toggle()
             } label: {
                 // 1C (`edit-status-redesign-spec.md` §2a): the label now renames to "Done
                 // Editing" alongside the glyph flip — a checkmark alone is ambiguous in a
@@ -1218,6 +1173,70 @@ private struct FormationsSheetView: View {
 // DEP-309: the team-detail screen owns one temporary edit session. Keeping the state in
 // a small value type makes the entry/exit contract testable without widening it into an
 // app-level store; saved player orders continue to live in UserPreferences.
+/// 1C (`edit-status-redesign-spec.md` §3): the edit-mode bar that takes over the tab bar
+/// for an edit session — the iOS convention for a modal editing state — so the field, the
+/// attribution, and the layout above it never move for it, the way the old status row did.
+/// `Done` is the same exit action the old editing chip was. Drawn by RootTabView over the
+/// tab bar; TeamDetailView publishes it through `CurrentTeamStore.editBar`.
+struct DepthChartEditBar: View {
+    /// The current kit's colors, from `CurrentTeamStore` — the same colors TeamDetailView
+    /// refines there, so the accent matches the field and page switcher.
+    let colors: JerseyColors?
+    let isMotionReduced: Bool
+    let onDone: () -> Void
+
+    private var accentColor: Color {
+        colors.map { Color(hex: TeamSurfaces.mark($0)) } ?? DesignTokens.Colors.accent
+    }
+
+    /// The Done label on the accent fill — same derivation as the page switcher's
+    /// `activeTextColor`, just against the accent instead of the switcher's fill.
+    private var doneTextColor: Color {
+        colors.map { Color(hex: readableTextOn(TeamSurfaces.mark($0))) } ?? DesignTokens.Colors.onAccent
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(accentColor)
+                .frame(width: 7, height: 7)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Editing depth chart")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                Text("Tap a player to reorder their position")
+                    .font(.caption)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+            }
+            Spacer()
+            Button(action: onDone) {
+                Text("Done")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(doneTextColor)
+                    .padding(.horizontal, 16)
+                    .frame(minHeight: 44)
+                    .background(Capsule().fill(accentColor))
+            }
+            .accessibilityIdentifier("depth-chart-editing-active")
+            .accessibilityLabel("Done editing depth chart")
+            .accessibilityValue(isMotionReduced ? "Motion reduced" : "Player dots moving")
+            .accessibilityHint("Exits edit mode without discarding saved changes")
+        }
+        .padding(.horizontal, DesignTokens.Spacing.md)
+        .padding(.vertical, DesignTokens.Spacing.sm)
+        .background(
+            RoundedRectangle(cornerRadius: DesignTokens.Radius.lg)
+                .fill(DesignTokens.Colors.surfaceCard)
+                .overlay {
+                    RoundedRectangle(cornerRadius: DesignTokens.Radius.lg)
+                        .strokeBorder(accentColor.opacity(0.4), lineWidth: 1)
+                }
+                .shadow(color: .black.opacity(0.5), radius: 16, x: 0, y: -8)
+        )
+        .padding(.horizontal)
+    }
+}
+
 struct DepthChartEditMode: Equatable {
     private(set) var isActive = false
 

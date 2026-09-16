@@ -241,7 +241,7 @@ final class PositionReorderUITests: XCTestCase {
             "returning to the roster page should restore the overflow menu"
         )
 
-        // 1C: the tab bar is hidden for the duration of an edit session (the accepted
+        // 1C: the edit bar covers the tab bar for the duration of an edit session (the accepted
         // tradeoff in `edit-status-redesign-spec.md` §3), so switching tabs mid-edit is no
         // longer a reachable UI action to test here — `onDisappear`'s exit still covers a
         // tab switch driven any other way.
