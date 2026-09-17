@@ -1,15 +1,21 @@
 import CoreGraphics
 import Foundation
 
-// Pure geometry for the offense's true-scale mode (design "Field Scale Options", turn 2).
-// The depth chart stays the fill-width chart — reading the whole unit at a glance is its
-// job — and true scale is a separate place you go: one yard is `pointsPerYard` on BOTH
-// axes, drawn over a measured NFL field, panned inside a window narrower than the
-// formation. Free of SwiftUI so the alignment table, pan clamping, and edge-chip rules are
-// unit-testable without a view; `TrueScaleFieldView` only draws what this returns.
+// Pure geometry for true-scale mode (design "Field Scale Options", turn 2; defense added
+// by DEP-572). The depth chart stays the fill-width chart — reading the whole unit at a
+// glance is its job — and true scale is a separate place you go: one yard is
+// `pointsPerYard` on BOTH axes, drawn over a measured NFL field, panned inside a window
+// narrower than the formation. Free of SwiftUI so the alignment table, pan clamping, and
+// edge-chip rules are unit-testable without a view; `TrueScaleFieldView` only draws what
+// this returns.
+//
+// One layout serves both units (DEP-572: same view, not a fork). `unit` selects the
+// alignment table, how much field is drawn on each side of the line, and the opening
+// framing — the offense's depth grows down-screen into its backfield, the defense's grows
+// up-screen into its secondary, so the same geometry just mirrors about the line.
 //
 // Coordinates: "content" space is the whole field surface (sideline-to-sideline plus
-// out-of-bounds grass, `aheadYards` in front of the line to `behindYards` behind it). A
+// out-of-bounds grass, `aheadYards` downfield of the line to `behindYards` behind it). A
 // `pan` is the content's offset inside the playfield window, so a content point p is drawn
 // at p + pan. Pans are always ≤ 0 on both axes (the window never shows past the surface).
 struct TrueScaleFieldLayout {
@@ -20,8 +26,24 @@ struct TrueScaleFieldLayout {
     /// Reserved beside the playfield for edge chips, so a chip can never cover a player
     /// who is actually in view.
     static let gutter: CGFloat = 30
-    static let aheadYards: CGFloat = 10
-    static let behindYards: CGFloat = 15
+    /// Field drawn on the unit's OWN side of the line — the offense's backfield below it,
+    /// the defense's secondary above it. Both reach about 11 yd (a shotgun QB at 4.7, a
+    /// free safety at 10.5), so 15 leaves grass past the deepest man in either direction.
+    static let ownSideYards: CGFloat = 15
+    /// Field drawn on the far side of the line, where the unit has nobody: enough to read
+    /// as a real field with a 5-yd line and a numeral in it.
+    static let farSideYards: CGFloat = 10
+
+    /// Yards drawn above the line (downfield, toward the offense's goal): the defense's
+    /// own side, the offense's far one.
+    static func aheadYards(for unit: Unit) -> CGFloat {
+        unit == .defense ? ownSideYards : farSideYards
+    }
+
+    /// Yards drawn below the line (the offense's backfield).
+    static func behindYards(for unit: Unit) -> CGFloat {
+        unit == .defense ? farSideYards : ownSideYards
+    }
     /// Edge chips per side before the last one collapses into "+N".
     static let maxChipsPerSide = 5
     static let chipSpacing: CGFloat = 32
@@ -74,6 +96,71 @@ struct TrueScaleFieldLayout {
         static let chartedPercentPerYard: CGFloat = 6.2
     }
 
+    /// The defense's half of the same convention (DEP-572). The charted defense is as
+    /// schematic as the offense — `buildRealDefenseFormation` spreads the front evenly
+    /// between fixed percentages — so again the chart supplies SIDE and ORDER and these
+    /// numbers supply magnitude, named by the technique each one is. Read against the
+    /// offense's 17/9 receiver ladder they line a real defense up over a real offense.
+    enum RealDefenseX {
+        /// A nose shaded off the centre; a nose charted dead on the ball stays at 0 (a
+        /// head-up 0-technique), the same way a dead-centre back does on offense.
+        static let noseYards: CGFloat = 0.5
+        /// 3-technique, outside shoulder of the guard.
+        static let interiorYards: CGFloat = 1.5
+        /// 5-technique, outside shoulder of the tackle.
+        static let edgeYards: CGFloat = 3.5
+        /// Nickel back in the slot, over the offense's 9-yd inside receiver.
+        static let nickelYards: CGFloat = 9
+        /// Split safeties; a lone safety is charted dead-centre and stays on the ball.
+        static let safetyYards: CGFloat = 6
+        /// Linebackers per side, innermost first: an inside backer in the A/B gap, then
+        /// outside backers on the edge. Monotonic, so the charted order never inverts.
+        static let insideBackerYards: CGFloat = 2
+        static let outsideBackerYards: CGFloat = 4.5
+        static let backerStepYards: CGFloat = 1.5
+        static func backerLadder(count: Int) -> [CGFloat] {
+            (0..<count).map { (i: Int) -> CGFloat in
+                guard i > 0 else { return insideBackerYards }
+                return outsideBackerYards + CGFloat(i - 1) * backerStepYards
+            }
+        }
+    }
+
+    /// What a defensive label lines up as. Kept separate from the magnitude table so the
+    /// personnel summary ("4-2-5") and the alignment table read the same labels the same
+    /// way. nil is an unmapped label, which falls back to the charted x rather than being
+    /// dropped or guessed at.
+    enum DefenseRole {
+        case nose, interior, edge, backer, nickel, corner, safety
+
+        var group: Group {
+            switch self {
+            case .nose, .interior, .edge: return .line
+            case .backer: return .backers
+            case .nickel, .corner, .safety: return .secondary
+            }
+        }
+
+        enum Group { case line, backers, secondary }
+    }
+
+    /// Labels come from `buildRealDefenseFormation`/`baseDefense`: LDE/NT/RDE/DT/DE,
+    /// WLB/MLB/SLB/LILB/RILB/LB, LCB/RCB/CB/NB/SS/FS/S. The suffix rules catch the
+    /// side-tagged variants without listing every permutation.
+    static func defenseRole(_ label: String) -> DefenseRole? {
+        switch label {
+        case "NT": return .nose
+        case "DT": return .interior
+        case "DE", "LDE", "RDE": return .edge
+        case "NB": return .nickel
+        case "S", "SS", "FS": return .safety
+        default:
+            if label.hasSuffix("LB") { return .backer }
+            if label.hasSuffix("CB") { return .corner }
+            return nil
+        }
+    }
+
     struct Dot: Identifiable {
         let key: String
         let label: String
@@ -81,7 +168,8 @@ struct TrueScaleFieldLayout {
         let onLine: Bool
         /// Content-space centre.
         let center: CGPoint
-        /// Real yards behind the line of scrimmage.
+        /// Real yards off the line of scrimmage on the unit's own side — behind it for the
+        /// offense, downfield of it for the defense. Always ≥ 0 for a player in his unit.
         let depthYards: CGFloat
         /// Tight rows alternate labels above/below instead of nudging dots apart — at 1:1
         /// a dot is exactly where the data puts it.
@@ -103,30 +191,39 @@ struct TrueScaleFieldLayout {
         let overflowCount: Int
     }
 
+    let unit: Unit
     let dots: [Dot]
     let contentSize: CGSize
     /// Content-space y of the line of scrimmage.
     let lineOfScrimmageY: CGFloat
 
-    init(slots: [RenderSlot]) {
+    /// Defaults to offense so the offense's call sites and tests read unchanged.
+    init(slots: [RenderSlot], unit: Unit = .offense) {
+        self.unit = unit
         let ppy = Self.pointsPerYard
+        let ahead = Self.aheadYards(for: unit)
+        let behind = Self.behindYards(for: unit)
         let contentWidth = (Field.widthYards + Field.outOfBoundsYards * 2) * ppy
-        let losY = Self.aheadYards * ppy
-        contentSize = CGSize(width: contentWidth, height: (Self.aheadYards + Self.behindYards) * ppy)
+        let losY = ahead * ppy
+        contentSize = CGSize(width: contentWidth, height: (ahead + behind) * ppy)
         lineOfScrimmageY = losY
 
         let filled = slots.filter { $0.player != nil }
-        let lateral = Self.realLateralYards(slots: filled)
+        let lateral = Self.realLateralYards(slots: filled, unit: unit)
+        // Charted y runs down-screen for both units, so the drawn y is the same expression
+        // either way; only the REPORTED depth flips sign, so `depthYards` stays "yards off
+        // the line on my own side" for a defender the way it already is for a back.
+        let ownSideSign: CGFloat = unit == .defense ? -1 : 1
         var dots = filled.map { slot in
-            let depth = CGFloat((slot.y - FieldYardScale.lineOfScrimmage) / Double(FieldYardScale.chartedUnitsPerYard))
+            let charted = CGFloat((slot.y - FieldYardScale.lineOfScrimmage) / Double(FieldYardScale.chartedUnitsPerYard))
             let x = lateral[slot.key] ?? 0
             return Dot(
                 key: slot.key,
                 label: slot.label,
                 player: slot.player!,
                 onLine: slot.onLine ?? false,
-                center: CGPoint(x: contentWidth / 2 + x * ppy, y: losY + depth * ppy),
-                depthYards: depth
+                center: CGPoint(x: contentWidth / 2 + x * ppy, y: losY + charted * ppy),
+                depthYards: charted * ownSideSign
             )
         }
 
@@ -155,9 +252,17 @@ struct TrueScaleFieldLayout {
         self.dots = dots
     }
 
-    /// Side and order from the charted x; magnitude from `RealX`.
-    static func realLateralYards(slots: [RenderSlot]) -> [String: CGFloat] {
-        func side(_ slot: RenderSlot) -> CGFloat { slot.x == 50 ? 0 : (slot.x < 50 ? -1 : 1) }
+    /// Side and order from the charted x; magnitude from `RealX` / `RealDefenseX`.
+    static func realLateralYards(slots: [RenderSlot], unit: Unit = .offense) -> [String: CGFloat] {
+        unit == .defense ? defenseLateralYards(slots: slots) : offenseLateralYards(slots: slots)
+    }
+
+    private static func chartedSide(_ slot: RenderSlot) -> CGFloat {
+        slot.x == 50 ? 0 : (slot.x < 50 ? -1 : 1)
+    }
+
+    private static func offenseLateralYards(slots: [RenderSlot]) -> [String: CGFloat] {
+        let side = chartedSide
         var out: [String: CGFloat] = [:]
         for slot in slots {
             switch slot.label {
@@ -191,6 +296,51 @@ struct TrueScaleFieldLayout {
         return out
     }
 
+    /// The defense's mirror of `offenseLateralYards`. Corners reuse the offense's receiver
+    /// ladder outright — a corner is aligned over the receiver he covers, so one corner a
+    /// side lands at ±17 and a third corner drops into the slot at 9 rather than stacking
+    /// on the boundary man.
+    private static func defenseLateralYards(slots: [RenderSlot]) -> [String: CGFloat] {
+        let side = chartedSide
+        var out: [String: CGFloat] = [:]
+        for slot in slots {
+            switch defenseRole(slot.label) {
+            case .nose: out[slot.key] = side(slot) * RealDefenseX.noseYards
+            case .interior: out[slot.key] = side(slot) * RealDefenseX.interiorYards
+            case .edge: out[slot.key] = side(slot) * RealDefenseX.edgeYards
+            case .safety: out[slot.key] = side(slot) * RealDefenseX.safetyYards
+            case .nickel:
+                // The generated nickel back is always charted dead-centre, so there is no
+                // side to take and no offense drawn to take one from. He goes to the
+                // defense's left, the same side the chart's own DB order starts on
+                // (LCB before RCB, SS before FS) — deterministic, not meaningful.
+                out[slot.key] = (side(slot) == 0 ? -1 : side(slot)) * RealDefenseX.nickelYards
+            case .backer, .corner: break  // laddered per side below
+            case nil: out[slot.key] = CGFloat(slot.x - 50) / RealX.chartedPercentPerYard
+            }
+        }
+        for dir: CGFloat in [-1, 1] {
+            let backers = slots.filter { defenseRole($0.label) == .backer && side($0) == dir }
+                .sorted { a, b in abs(a.x - 50) < abs(b.x - 50) }
+            let backerLadder = RealDefenseX.backerLadder(count: backers.count)
+            for (i, slot) in backers.enumerated() {
+                out[slot.key] = dir * backerLadder[i]
+            }
+            let corners = slots.filter { defenseRole($0.label) == .corner && side($0) == dir }
+                .sorted { a, b in abs(a.x - 50) > abs(b.x - 50) }
+            let cornerLadder = RealX.receiverLadder(count: corners.count)
+            for (i, slot) in corners.enumerated() {
+                out[slot.key] = dir * cornerLadder[i]
+            }
+        }
+        // A mike backer or single-high safety charted dead-centre has no side: he belongs
+        // on the ball, which is where this leaves him.
+        for slot in slots where out[slot.key] == nil {
+            out[slot.key] = 0
+        }
+        return out
+    }
+
     /// Approximate label width (11pt bold last name), used for row tightness and for
     /// clamping a label inside the playfield.
     static func labelWidth(for dot: Dot) -> CGFloat {
@@ -210,13 +360,18 @@ struct TrueScaleFieldLayout {
         var clearHeight: CGFloat { max(0, size.height - topInset - bottomInset) }
     }
 
-    /// Opens with the ball centred and the line a third of the way down the uncovered part
-    /// of the window, so the backfield has room below it.
+    /// Where the line of scrimmage opens, as a fraction DOWN the uncovered part of the
+    /// window. The offense opens near the top (0.34), leaving the screen below the line
+    /// for its backfield; the defense opens near the bottom (0.66), leaving the screen
+    /// above the line for its secondary.
+    var homeLineFraction: CGFloat { unit == .defense ? 0.66 : 0.34 }
+
+    /// Opens with the ball centred and the line placed so the unit's own depth is on screen.
     func initialPan(window: Window) -> CGPoint {
         clampPan(
             CGPoint(
                 x: window.size.width / 2 - contentSize.width / 2,
-                y: window.topInset + window.clearHeight * 0.34 - lineOfScrimmageY
+                y: window.topInset + window.clearHeight * homeLineFraction - lineOfScrimmageY
             ),
             window: window
         )
@@ -302,11 +457,25 @@ struct TrueScaleFieldLayout {
         dot.onLine || dot.depthYards <= 0.05 ? "On the line" : "Off the line"
     }
 
-    /// "3WR 1TE" from the resolved dots, so it's right for any personnel.
+    /// The plain-text header when there's no formation to name: "3WR 1TE" for the offense,
+    /// the DL-LB-DB count ("4-2-5") for the defense, both read off the resolved dots so
+    /// they're right for any personnel. Empty when nothing is recognized, so the header
+    /// omits the label rather than showing a stub.
     var personnelSummary: String {
+        guard unit != .defense else { return defensePersonnelSummary }
         let wr = dots.filter { $0.label == "WR" }.count
         let te = dots.filter { $0.label == "TE" }.count
         return [wr > 0 ? "\(wr)WR" : nil, te > 0 ? "\(te)TE" : nil].compactMap { $0 }.joined(separator: " ")
+    }
+
+    private var defensePersonnelSummary: String {
+        var counts: [DefenseRole.Group: Int] = [:]
+        for dot in dots {
+            guard let group = Self.defenseRole(dot.label)?.group else { continue }
+            counts[group, default: 0] += 1
+        }
+        guard !counts.isEmpty else { return "" }
+        return "\(counts[.line] ?? 0)-\(counts[.backers] ?? 0)-\(counts[.secondary] ?? 0)"
     }
 
     // MARK: Field furniture
@@ -343,7 +512,7 @@ struct TrueScaleFieldLayout {
         var ticks: [CGRect] = []
         var numerals: [Furniture.Numeral] = []
 
-        for yardsAhead in -Int(Self.behindYards)...Int(Self.aheadYards) {
+        for yardsAhead in -Int(Self.behindYards(for: unit))...Int(Self.aheadYards(for: unit)) {
             let yardLine = Field.lineOfScrimmageYardLine + yardsAhead
             let y = lineOfScrimmageY - CGFloat(yardsAhead) * ppy
             if yardLine % 5 == 0 {

@@ -382,12 +382,13 @@ struct TeamDetailView: View {
                     TrueScaleFieldView(
                         slots: DepthChartFieldView.resolvedSlots(
                             snapshot: snapshot,
-                            unit: .offense,
+                            unit: unit,
                             formation: activeFormation
                         ),
+                        unit: unit,
                         colors: fieldColors ?? snapshot.team.colors,
                         formation: activeFormation,
-                        formations: snapshot.formations.filter { $0.unit == .offense },
+                        formations: currentUnitFormations,
                         onSelectFormation: selectFormation
                     )
                     // A new formation is a new picture: reopen framed on the ball with
@@ -397,11 +398,12 @@ struct TeamDetailView: View {
             }
     }
 
-    /// True scale is an offense-only secondary action: its alignment table covers offensive
-    /// positions only, positioned dots don't exist at accessibility text sizes (DEP-415), and
-    /// edit mode's taps belong to reordering.
+    /// True scale is a secondary action on offense and defense (DEP-572), the two units
+    /// with a real alignment table. Special teams has no formation data at all, positioned
+    /// dots don't exist at accessibility text sizes (DEP-415), and edit mode's taps belong
+    /// to reordering.
     private var showsTrueScaleEntry: Bool {
-        unit == .offense && !editMode.isActive && !dynamicTypeSize.isAccessibilitySize
+        unit != .special && !editMode.isActive && !dynamicTypeSize.isAccessibilitySize
     }
 
     // DEP-228: a plain VStack sizes each child to its "ideal" height rather than
@@ -886,9 +888,10 @@ struct TeamDetailView: View {
                     // it sits as close to the screen edges as possible (the roster chrome
                     // above it keeps its own inset, so only the field goes edge-to-edge).
                     .frame(maxHeight: .infinity)
-                    // The backfield's right corner is the emptiest grass in every offensive
-                    // formation, so the control never covers a player. Chrome styling, no
-                    // label, no accent fill — the chart stays the primary thing on screen.
+                    // The bottom-right corner is the emptiest grass in both units — the
+                    // offense's backfield edge, and the field behind the defense's line —
+                    // so the control never covers a player. Chrome styling, no label, no
+                    // accent fill — the chart stays the primary thing on screen.
                     .overlay(alignment: .bottomTrailing) {
                         if showsTrueScaleEntry {
                             TrueScaleEntryButton {
