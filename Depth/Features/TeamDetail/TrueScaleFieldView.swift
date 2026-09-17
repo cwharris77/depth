@@ -1,8 +1,10 @@
 import SwiftUI
 
-// The offense's true-scale mode (design "Field Scale Options", turn 2): a full-screen
-// cover opened from the field's corner expand button. There is no backdrop to tap, so
-// leaving is always the explicit X, and the chart underneath is exactly as it was left.
+// True-scale mode (design "Field Scale Options", turn 2; defense added by DEP-572): a
+// full-screen cover opened from the field's corner expand button. There is no backdrop to
+// tap, so leaving is always the explicit X, and the chart underneath is exactly as it was
+// left. Offense and defense share this one view — `unit` only reaches
+// `TrueScaleFieldLayout` and the header's formation name; nothing else here is per-unit.
 //
 // Everything here is drawn at one scale on both axes (`TrueScaleFieldLayout.pointsPerYard`)
 // over a measured NFL field that runs edge to edge. The only chrome is a floating Liquid
@@ -16,6 +18,8 @@ struct TrueScaleFieldView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let slots: [RenderSlot]
+    /// Which unit's alignment table, framing and formation naming to use.
+    let unit: Unit
     let colors: TeamColors
     /// The formation on the field, and the unit's others to switch between without leaving
     /// true scale. Empty for historical / no-data snapshots, which draw the generic layout.
@@ -36,7 +40,7 @@ struct TrueScaleFieldView: View {
     /// Height of the floating header row; the field below it stays visible through the glass.
     private static let headerHeight: CGFloat = 44
 
-    private var layout: TrueScaleFieldLayout { TrueScaleFieldLayout(slots: slots) }
+    private var layout: TrueScaleFieldLayout { TrueScaleFieldLayout(slots: slots, unit: unit) }
 
     var body: some View {
         let layout = layout
@@ -155,16 +159,16 @@ struct TrueScaleFieldView: View {
                         onSelectFormation(option)
                     } label: {
                         if option == formation {
-                            Label(Self.formationTitle(option), systemImage: "checkmark")
+                            Label(formationTitle(option), systemImage: "checkmark")
                         } else {
-                            Text(verbatim: Self.formationTitle(option))
+                            Text(verbatim: formationTitle(option))
                         }
                         Text(verbatim: "\(option.pct)% of snaps")
                     }
                 }
             } label: {
                 HStack(spacing: 6) {
-                    Text(verbatim: Self.formationTitle(formation))
+                    Text(verbatim: formationTitle(formation))
                         .font(.subheadline.weight(.semibold))
                     Image(systemName: "chevron.down")
                         .font(.caption.weight(.bold))
@@ -175,11 +179,11 @@ struct TrueScaleFieldView: View {
                 .contentShape(Capsule())
                 .glassCapsule()
             }
-            .accessibilityLabel("Formation, \(Self.formationTitle(formation))")
+            .accessibilityLabel("Formation, \(formationTitle(formation))")
             .accessibilityHint("Switches the formation shown at true scale")
             .accessibilityIdentifier("true-scale-formation")
         } else {
-            let title = formation.map(Self.formationTitle) ?? layout.personnelSummary
+            let title = formation.map(formationTitle) ?? layout.personnelSummary
             if !title.isEmpty {
                 Text(verbatim: title)
                     .font(.subheadline.weight(.semibold))
@@ -190,9 +194,18 @@ struct TrueScaleFieldView: View {
         }
     }
 
-    /// "Shotgun 11" — the same name the overflow menu's Formations row uses.
-    static func formationTitle(_ formation: TeamFormation) -> String {
-        "\(alignmentLabel(formation.alignment)) \(formation.personnel)"
+    /// "Shotgun 11" / "Nickel 4-2-5" — the same name the overflow menu's Formations row
+    /// uses. The defense's stored alignment is already its display name ("Nickel"); only
+    /// the offense's QB alignment needs mapping through `alignmentLabel`.
+    func formationTitle(_ formation: TeamFormation) -> String {
+        Self.formationTitle(formation, unit: unit)
+    }
+
+    static func formationTitle(_ formation: TeamFormation, unit: Unit) -> String {
+        switch unit {
+        case .offense: return "\(alignmentLabel(formation.alignment)) \(formation.personnel)"
+        case .defense, .special: return "\(formation.alignment) \(formation.personnel)"
+        }
     }
 
     /// Recentre and close share one glass bar — one control cluster instead of two floating
