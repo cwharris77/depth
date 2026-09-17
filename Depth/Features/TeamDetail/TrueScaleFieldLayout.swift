@@ -115,8 +115,14 @@ struct TrueScaleFieldLayout {
         static let safetyYards: CGFloat = 6
         /// Linebackers per side, innermost first: an inside backer in the A/B gap, then
         /// outside backers on the edge. Monotonic, so the charted order never inverts.
+        static let insideBackerYards: CGFloat = 2
+        static let outsideBackerYards: CGFloat = 4.5
+        static let backerStepYards: CGFloat = 1.5
         static func backerLadder(count: Int) -> [CGFloat] {
-            (0..<count).map { $0 == 0 ? 2.0 : 4.5 + CGFloat($0 - 1) * 1.5 }
+            (0..<count).map { (i: Int) -> CGFloat in
+                guard i > 0 else { return insideBackerYards }
+                return outsideBackerYards + CGFloat(i - 1) * backerStepYards
+            }
         }
     }
 
