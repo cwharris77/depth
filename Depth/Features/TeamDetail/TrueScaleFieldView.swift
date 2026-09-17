@@ -17,6 +17,11 @@ struct TrueScaleFieldView: View {
 
     let slots: [RenderSlot]
     let colors: TeamColors
+    /// The formation on the field, and the unit's others to switch between without leaving
+    /// true scale. Empty for historical / no-data snapshots, which draw the generic layout.
+    var formation: TeamFormation? = nil
+    var formations: [TeamFormation] = []
+    var onSelectFormation: (TeamFormation) -> Void = { _ in }
 
     /// nil until the user pans: the opening position depends on the window size, which is
     /// only known inside the GeometryReader.
@@ -128,20 +133,66 @@ struct TrueScaleFieldView: View {
     private func header(layout: TrueScaleFieldLayout, pan: CGPoint, window: TrueScaleFieldLayout.Window) -> some View {
         let offCentre = layout.isOffCentre(pan: pan, window: window)
         return HStack(spacing: DesignTokens.Spacing.sm) {
-            if !layout.personnelSummary.isEmpty {
-                Text(verbatim: layout.personnelSummary)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(DesignTokens.Colors.textPrimary)
-                    .padding(.horizontal, DesignTokens.Spacing.md)
-                    .frame(height: 36)
-                    .glassCapsule()
-                    .accessibilityLabel("Personnel \(layout.personnelSummary)")
-            }
+            formationControl(layout: layout)
 
             Spacer(minLength: 0)
 
             controlBar(layout: layout, window: window, offCentre: offCentre)
         }
+    }
+
+    /// The formation is a real control, so it earns glass: "Shotgun 11 ▾" opens a menu of the
+    /// unit's formations with their usage. With nothing to switch to it drops to a plain
+    /// label — a glass capsule that does nothing on tap reads as broken (Cooper, 2026-09-16).
+    @ViewBuilder
+    private func formationControl(layout: TrueScaleFieldLayout) -> some View {
+        if let formation, formations.count > 1 {
+            Menu {
+                // Buttons rather than an inline Picker: menu Picker rows drop the subtitle,
+                // and usage is what tells you which formation matters.
+                ForEach(formations.sorted { $0.rank < $1.rank }, id: \.self) { option in
+                    Button {
+                        onSelectFormation(option)
+                    } label: {
+                        if option == formation {
+                            Label(Self.formationTitle(option), systemImage: "checkmark")
+                        } else {
+                            Text(verbatim: Self.formationTitle(option))
+                        }
+                        Text(verbatim: "\(option.pct)% of snaps")
+                    }
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(verbatim: Self.formationTitle(formation))
+                        .font(.subheadline.weight(.semibold))
+                    Image(systemName: "chevron.down")
+                        .font(.caption.weight(.bold))
+                }
+                .foregroundStyle(DesignTokens.Colors.textPrimary)
+                .padding(.horizontal, DesignTokens.Spacing.md)
+                .frame(height: 44)
+                .contentShape(Capsule())
+                .glassCapsule()
+            }
+            .accessibilityLabel("Formation, \(Self.formationTitle(formation))")
+            .accessibilityHint("Switches the formation shown at true scale")
+            .accessibilityIdentifier("true-scale-formation")
+        } else {
+            let title = formation.map(Self.formationTitle) ?? layout.personnelSummary
+            if !title.isEmpty {
+                Text(verbatim: title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    .shadow(color: .black.opacity(0.6), radius: 3, y: 1)
+                    .accessibilityIdentifier("true-scale-formation")
+            }
+        }
+    }
+
+    /// "Shotgun 11" — the same name the overflow menu's Formations row uses.
+    static func formationTitle(_ formation: TeamFormation) -> String {
+        "\(alignmentLabel(formation.alignment)) \(formation.personnel)"
     }
 
     /// Recentre and close share one glass bar — one control cluster instead of two floating

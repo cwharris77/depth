@@ -385,8 +385,14 @@ struct TeamDetailView: View {
                             unit: .offense,
                             formation: activeFormation
                         ),
-                        colors: fieldColors ?? snapshot.team.colors
+                        colors: fieldColors ?? snapshot.team.colors,
+                        formation: activeFormation,
+                        formations: snapshot.formations.filter { $0.unit == .offense },
+                        onSelectFormation: selectFormation
                     )
+                    // A new formation is a new picture: reopen framed on the ball with
+                    // nothing selected rather than keeping a stale pan/selection.
+                    .id(activeFormation)
                 }
             }
     }
