@@ -71,7 +71,10 @@ function toNullableNumber(value: string | undefined): number | null {
   return Number.isNaN(n) ? null : n;
 }
 
-const NUMERIC_COLUMNS = [
+// Exported as the source contract's required-column list (DEP-579): the header check
+// must require exactly the columns this transform reads, so a rename can't silently
+// become a null. Keep the two in lockstep.
+export const NUMERIC_COLUMNS = [
   'games',
   'completions',
   'attempts',

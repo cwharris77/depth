@@ -56,6 +56,25 @@ describe('toTeamStatsRows', () => {
     expect(rows[0].completions).toBe(392);
   });
 
+  it('reads the source 50-yard bucket for the legacy truncated table column', () => {
+    // nflverse publishes `fg_made_50_59`; `team_season_stats` kept the truncated
+    // `fg_made_50_`. Reading the table name left the column null forever (DEP-579).
+    const { rows } = toTeamStatsRows(
+      [
+        {
+          team: 'KC',
+          season: '2024',
+          season_type: 'REG',
+          fg_made_50_59: '7',
+          fg_missed_50_59: '2',
+        },
+      ],
+      resolveCode
+    );
+    expect(rows[0].fg_made_50_).toBe(7);
+    expect(rows[0].fg_missed_50_).toBe(2);
+  });
+
   it('coerces empty-string scalars to null', () => {
     const { rows } = toTeamStatsRows(
       [

@@ -16,6 +16,15 @@ export function parseCsv(text: string): Record<string, string>[] {
   });
 }
 
+// The header line alone, unquoted-split. nflverse machine output never quotes a header
+// cell, so a plain first-line split is exact for these files and avoids re-parsing a
+// multi-megabyte body just to run a source-contract check before the transform.
+export function parseCsvHeader(text: string): string[] {
+  const end = text.indexOf('\n');
+  const line = (end === -1 ? text : text.slice(0, end)).replace(/\r$/, '');
+  return line.split(',').map((column) => column.trim());
+}
+
 // Streaming variant for large files (e.g. pbp_participation, ~50MB/season) — same
 // RFC-4180 field handling as parseCsv, but consumes an async sequence of text chunks
 // and calls `onRow` per record instead of returning a full array, so a caller can fold
@@ -26,7 +35,8 @@ export function parseCsv(text: string): Record<string, string>[] {
 // produce (their quoted fields hold plain comma-separated text, no literal quotes).
 export async function parseCsvStream(
   chunks: AsyncIterable<string>,
-  onRow: (row: Record<string, string>) => void
+  onRow: (row: Record<string, string>) => void,
+  onHeader?: (header: string[]) => void
 ): Promise<void> {
   let header: string[] | null = null;
   let row: string[] = [];
@@ -43,6 +53,9 @@ export async function parseCsvStream(
     if (finishedRow.length === 1 && finishedRow[0] === '') return; // blank line
     if (!header) {
       header = finishedRow;
+      // Fires before any data row, so a caller can header-check (and throw) before it
+      // transforms anything — the streaming analogue of parseCsvHeader for huge files.
+      onHeader?.(finishedRow);
       return;
     }
     const record: Record<string, string> = {};
