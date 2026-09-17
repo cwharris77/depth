@@ -81,8 +81,6 @@ struct TrueScaleFieldLayout {
         let onLine: Bool
         /// Content-space centre.
         let center: CGPoint
-        /// Signed real yards from the ball; positive is the offense's right (screen right).
-        let lateralYards: CGFloat
         /// Real yards behind the line of scrimmage.
         let depthYards: CGFloat
         /// Tight rows alternate labels above/below instead of nudging dots apart — at 1:1
@@ -128,7 +126,6 @@ struct TrueScaleFieldLayout {
                 player: slot.player!,
                 onLine: slot.onLine ?? false,
                 center: CGPoint(x: contentWidth / 2 + x * ppy, y: losY + depth * ppy),
-                lateralYards: x,
                 depthYards: depth
             )
         }
@@ -202,69 +199,81 @@ struct TrueScaleFieldLayout {
 
     // MARK: Viewport
 
-    /// Opens with the ball centred and the line a third of the way down, so the backfield
-    /// has room below it.
-    func initialPan(viewport: CGSize) -> CGPoint {
+    /// The playfield window: its full size (the field runs edge to edge, under the floating
+    /// header) plus how much of its top and bottom that chrome and the system bars cover.
+    /// Framing and chips respect the insets; panning and clamping use the full size.
+    struct Window: Equatable {
+        var size: CGSize
+        var topInset: CGFloat = 0
+        var bottomInset: CGFloat = 0
+
+        var clearHeight: CGFloat { max(0, size.height - topInset - bottomInset) }
+    }
+
+    /// Opens with the ball centred and the line a third of the way down the uncovered part
+    /// of the window, so the backfield has room below it.
+    func initialPan(window: Window) -> CGPoint {
         clampPan(
-            CGPoint(x: viewport.width / 2 - contentSize.width / 2, y: viewport.height * 0.34 - lineOfScrimmageY),
-            viewport: viewport
+            CGPoint(
+                x: window.size.width / 2 - contentSize.width / 2,
+                y: window.topInset + window.clearHeight * 0.34 - lineOfScrimmageY
+            ),
+            window: window
         )
     }
 
-    func clampPan(_ pan: CGPoint, viewport: CGSize) -> CGPoint {
-        func clamp(_ value: CGFloat, content: CGFloat, window: CGFloat) -> CGFloat {
+    func clampPan(_ pan: CGPoint, window: Window) -> CGPoint {
+        func clamp(_ value: CGFloat, content: CGFloat, length: CGFloat) -> CGFloat {
             // A window larger than the surface (iPad) centres it instead of pinning to 0.
-            guard content > window else { return (window - content) / 2 }
-            return min(0, max(window - content, value))
+            guard content > length else { return (length - content) / 2 }
+            return min(0, max(length - content, value))
         }
         return CGPoint(
-            x: clamp(pan.x, content: contentSize.width, window: viewport.width),
-            y: clamp(pan.y, content: contentSize.height, window: viewport.height)
+            x: clamp(pan.x, content: contentSize.width, length: window.size.width),
+            y: clamp(pan.y, content: contentSize.height, length: window.size.height)
         )
     }
 
-    func centeringPan(on dot: Dot, viewport: CGSize) -> CGPoint {
+    func centeringPan(on dot: Dot, window: Window) -> CGPoint {
         clampPan(
-            CGPoint(x: viewport.width / 2 - dot.center.x, y: viewport.height / 2 - dot.center.y),
-            viewport: viewport
+            CGPoint(
+                x: window.size.width / 2 - dot.center.x,
+                y: window.topInset + window.clearHeight / 2 - dot.center.y
+            ),
+            window: window
         )
     }
 
     /// A dot whose centre is in the window is drawn whole (its overhang may cross into the
     /// gutter); otherwise it's an edge chip — never sliced in half. Centre, not full extent,
     /// so the in-line TE at 3.6 yd stays on the field in a phone-width window.
-    func isVisible(_ dot: Dot, pan: CGPoint, viewport: CGSize) -> Bool {
+    func isVisible(_ dot: Dot, pan: CGPoint, window: Window) -> Bool {
         let x = dot.center.x + pan.x
-        return x >= 0 && x <= viewport.width
+        return x >= 0 && x <= window.size.width
     }
 
-    func isOffCentre(pan: CGPoint, viewport: CGSize) -> Bool {
-        let home = initialPan(viewport: viewport)
+    func isOffCentre(pan: CGPoint, window: Window) -> Bool {
+        let home = initialPan(window: window)
         return abs(pan.x - home.x) > Self.recentreThreshold || abs(pan.y - home.y) > Self.recentreThreshold
     }
 
-    /// Signed real yards from the ball to the window's centre; positive is right.
-    func windowOffsetYards(pan: CGPoint, viewport: CGSize) -> CGFloat {
-        (viewport.width / 2 - pan.x - contentSize.width / 2) / Self.pointsPerYard
-    }
-
     /// Chips for players off either side, tracking their real depth, clamped into the
-    /// window and spaced so two receivers on one side never stack. Capped per side with a
-    /// "+N" overflow so panning to a sideline can't build a wall of chips.
-    func edgeChips(pan: CGPoint, viewport: CGSize) -> [EdgeChip] {
+    /// uncovered window and spaced so two receivers on one side never stack. Capped per side
+    /// with a "+N" overflow so panning to a sideline can't build a wall of chips.
+    func edgeChips(pan: CGPoint, window: Window) -> [EdgeChip] {
         var chips: [EdgeChip] = []
         for side in [EdgeChip.Side.leading, .trailing] {
             let hidden = dots
                 .filter { dot in
-                    guard !isVisible(dot, pan: pan, viewport: viewport) else { return false }
+                    guard !isVisible(dot, pan: pan, window: window) else { return false }
                     let x = dot.center.x + pan.x
-                    return side == .leading ? x < viewport.width / 2 : x >= viewport.width / 2
+                    return side == .leading ? x < window.size.width / 2 : x >= window.size.width / 2
                 }
                 .sorted { $0.center.y < $1.center.y }
             let overflow = hidden.count > Self.maxChipsPerSide
             let shown = overflow ? Array(hidden.prefix(Self.maxChipsPerSide - 1)) : hidden
-            let top: CGFloat = 14
-            let bottom = max(top, viewport.height - 26)
+            let top = window.topInset + 14
+            let bottom = max(top, window.size.height - window.bottomInset - 26)
             var lastY = -CGFloat.infinity
             for dot in shown {
                 let y = max(min(bottom, max(top, dot.center.y + pan.y)), lastY + Self.chipSpacing)
@@ -286,27 +295,11 @@ struct TrueScaleFieldLayout {
         return chips
     }
 
-    // MARK: Readout
+    // MARK: Callout
 
-    static func formatYards(_ yards: CGFloat) -> String {
-        String(format: "%.1f yd", Double(abs(yards)))
-    }
-
-    /// "3.9 yd right of the ball · 1.1 yd off the line" — the sentence true scale exists for.
-    static func alignmentDescription(for dot: Dot) -> String {
-        let lateral = abs(dot.lateralYards) < 0.05
-            ? "Over the ball"
-            : "\(formatYards(dot.lateralYards)) \(dot.lateralYards > 0 ? "right" : "left") of the ball"
-        let depth = dot.onLine || dot.depthYards <= 0.05
-            ? "on the line"
-            : "\(formatYards(dot.depthYards)) off the line"
-        return "\(lateral) · \(depth)"
-    }
-
-    static func windowDescription(offsetYards: CGFloat) -> String {
-        abs(offsetYards) < 0.6
-            ? "Centred on the ball"
-            : "\(formatYards(offsetYards)) \(offsetYards > 0 ? "right" : "left") of the ball"
+    /// The selected player's callout line: whether he's on the line of scrimmage.
+    static func lineStatus(for dot: Dot) -> String {
+        dot.onLine || dot.depthYards <= 0.05 ? "On the line" : "Off the line"
     }
 
     /// "3WR 1TE" from the resolved dots, so it's right for any personnel.

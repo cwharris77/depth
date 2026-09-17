@@ -7,7 +7,7 @@ import Testing
 // alignment convention keeps charted side and order, the pan never shows past the surface,
 // and every hidden player is reachable through an edge chip.
 struct TrueScaleFieldLayoutTests {
-    private let phoneWindow = CGSize(width: 333, height: 640)
+    private let phoneWindow = TrueScaleFieldLayout.Window(size: CGSize(width: 342, height: 874), topInset: 114, bottomInset: 34)
 
     private func player(_ number: Int, _ name: String) -> Player {
         Player(id: "p\(number)", name: name, position: .wr, depthRank: 1, number: number)
@@ -70,49 +70,53 @@ struct TrueScaleFieldLayoutTests {
 
     @Test func panNeverShowsPastTheSurface() {
         let layout = TrueScaleFieldLayout(slots: shotgunEleven)
-        let far = layout.clampPan(CGPoint(x: 10_000, y: -10_000), viewport: phoneWindow)
+        let far = layout.clampPan(CGPoint(x: 10_000, y: -10_000), window: phoneWindow)
         #expect(far.x == 0)
-        #expect(far.y == phoneWindow.height - layout.contentSize.height)
-        let home = layout.initialPan(viewport: phoneWindow)
-        #expect(!layout.isOffCentre(pan: home, viewport: phoneWindow))
-        #expect(abs(layout.windowOffsetYards(pan: home, viewport: phoneWindow)) < 0.01)
+        #expect(far.y == phoneWindow.size.height - layout.contentSize.height)
+        let home = layout.initialPan(window: phoneWindow)
+        #expect(!layout.isOffCentre(pan: home, window: phoneWindow))
+        // Opens with the ball centred and the line below the floating header.
+        #expect(abs(home.x + layout.contentSize.width / 2 - phoneWindow.size.width / 2) < 0.01)
+        #expect(home.y + layout.lineOfScrimmageY > phoneWindow.topInset)
     }
 
     @Test func everyHiddenPlayerHasAChipAndChipsDoNotStack() {
         let layout = TrueScaleFieldLayout(slots: shotgunEleven)
-        let pan = layout.initialPan(viewport: phoneWindow)
-        let hidden = layout.dots.filter { !layout.isVisible($0, pan: pan, viewport: phoneWindow) }
-        let chips = layout.edgeChips(pan: pan, viewport: phoneWindow)
+        let pan = layout.initialPan(window: phoneWindow)
+        let hidden = layout.dots.filter { !layout.isVisible($0, pan: pan, window: phoneWindow) }
+        let chips = layout.edgeChips(pan: pan, window: phoneWindow)
         // Receivers at ±17 and 9 yd are off a 333pt window; the in-line TE stays on the field.
         #expect(Set(hidden.map(\.key)) == ["wr0", "wr1", "wr2"])
         #expect(Set(chips.compactMap { $0.dot?.key }) == Set(hidden.map(\.key)))
         for side in [TrueScaleFieldLayout.EdgeChip.Side.leading, .trailing] {
             let ys = chips.filter { $0.side == side }.map(\.y)
             #expect(zip(ys, ys.dropFirst()).allSatisfy { $1 - $0 >= TrueScaleFieldLayout.chipSpacing })
+            // Chips never tuck under the floating header.
+            #expect(ys.allSatisfy { $0 >= phoneWindow.topInset })
         }
         // Centring on a chip's player brings him into view.
         for chip in chips {
-            let target = layout.centeringPan(on: chip.target, viewport: phoneWindow)
-            #expect(layout.isVisible(chip.target, pan: target, viewport: phoneWindow))
+            let target = layout.centeringPan(on: chip.target, window: phoneWindow)
+            #expect(layout.isVisible(chip.target, pan: target, window: phoneWindow))
         }
     }
 
     @Test func chipsOverflowIntoPlusN() {
         let wide = (0..<7).map { i in slot("wr\(i)", "WR", 5 + Double(i), 51 + Double(i) * 4, onLine: false, 10 + i) }
         let layout = TrueScaleFieldLayout(slots: wide)
-        let chips = layout.edgeChips(pan: CGPoint(x: -layout.contentSize.width + phoneWindow.width, y: 0), viewport: phoneWindow)
+        let chips = layout.edgeChips(pan: CGPoint(x: -layout.contentSize.width + phoneWindow.size.width, y: 0), window: phoneWindow)
         let leading = chips.filter { $0.side == .leading }
         #expect(leading.count == TrueScaleFieldLayout.maxChipsPerSide)
         #expect(leading.last?.dot == nil)
         #expect(leading.last?.overflowCount == 7 - (TrueScaleFieldLayout.maxChipsPerSide - 1))
     }
 
-    @Test func readoutDescribesRealAlignment() {
+    @Test func calloutSaysOnOrOffTheLine() {
         let layout = TrueScaleFieldLayout(slots: shotgunEleven)
         let rb = layout.dots.first { $0.key == "rb0" }!
-        #expect(TrueScaleFieldLayout.alignmentDescription(for: rb) == "1.2 yd right of the ball · 5.3 yd off the line")
+        #expect(TrueScaleFieldLayout.lineStatus(for: rb) == "Off the line")
         let lt = layout.dots.first { $0.key == "lt" }!
-        #expect(TrueScaleFieldLayout.alignmentDescription(for: lt) == "2.6 yd left of the ball · on the line")
+        #expect(TrueScaleFieldLayout.lineStatus(for: lt) == "On the line")
         #expect(layout.personnelSummary == "3WR 1TE")
     }
 

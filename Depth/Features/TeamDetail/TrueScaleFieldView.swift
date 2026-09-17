@@ -5,10 +5,12 @@ import SwiftUI
 // leaving is always the explicit X, and the chart underneath is exactly as it was left.
 //
 // Everything here is drawn at one scale on both axes (`TrueScaleFieldLayout.pointsPerYard`)
-// over a measured NFL field. The formation is wider than the phone, so the playfield pans
-// on both axes inside a window with a chip gutter each side: a receiver out of view becomes
-// a tappable edge chip that eases the field over to him and selects him. Selecting a dot
-// fills the footer with his real alignment — that sentence is the reason to come here.
+// over a measured NFL field that runs edge to edge. The only chrome is a floating Liquid
+// Glass header (personnel, recentre, close) — no opaque bars (Cooper, 2026-09-16). The
+// formation is wider than the phone, so the playfield pans on both axes inside a window
+// with a chip gutter each side: a receiver out of view becomes a tappable edge chip that
+// eases the field over to him and selects him. Selecting a dot opens a callout on a leader
+// line — full name and on/off the line — in place of the old footer readout.
 struct TrueScaleFieldView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -22,41 +24,49 @@ struct TrueScaleFieldView: View {
     @State private var dragOrigin: CGPoint?
     @State private var selectedKey: String?
 
-    private static let headerHeight: CGFloat = 52
-    private static let footerHeight: CGFloat = 68
+    /// Height of the floating header row; the field below it stays visible through the glass.
+    private static let headerHeight: CGFloat = 44
 
     private var layout: TrueScaleFieldLayout { TrueScaleFieldLayout(slots: slots) }
 
     var body: some View {
         let layout = layout
         GeometryReader { proxy in
-            let viewport = CGSize(
-                width: max(0, proxy.size.width - TrueScaleFieldLayout.gutter * 2),
-                height: max(0, proxy.size.height - Self.headerHeight - Self.footerHeight)
+            let insets = proxy.safeAreaInsets
+            let fullSize = CGSize(
+                width: proxy.size.width + insets.leading + insets.trailing,
+                height: proxy.size.height + insets.top + insets.bottom
             )
-            let currentPan = pan ?? layout.initialPan(viewport: viewport)
+            let window = TrueScaleFieldLayout.Window(
+                size: CGSize(width: max(0, fullSize.width - TrueScaleFieldLayout.gutter * 2), height: fullSize.height),
+                topInset: insets.top + Self.headerHeight + DesignTokens.Spacing.sm,
+                bottomInset: insets.bottom
+            )
+            let currentPan = pan ?? layout.initialPan(window: window)
 
-            VStack(spacing: 0) {
-                header(layout: layout, pan: currentPan, viewport: viewport)
-                    .frame(height: Self.headerHeight)
-
+            ZStack(alignment: .top) {
                 TrueScaleSurface(
                     layout: layout,
                     pan: currentPan,
-                    viewport: viewport,
+                    window: window,
                     colors: colors,
                     selectedKey: selectedKey,
                     onSelect: { key in
-                        withAnimation(DesignTokens.Motion.feedback) {
+                        withAnimation(DesignTokens.Motion.selection) {
                             selectedKey = selectedKey == key ? nil : key
                         }
                     },
+                    onDeselect: {
+                        withAnimation(DesignTokens.Motion.selection) { selectedKey = nil }
+                    },
                     onChip: { chip in
-                        selectedKey = chip.dot == nil ? nil : chip.target.key
-                        move(to: layout.centeringPan(on: chip.target, viewport: viewport))
+                        withAnimation(DesignTokens.Motion.selection) {
+                            selectedKey = chip.dot == nil ? nil : chip.target.key
+                        }
+                        move(to: layout.centeringPan(on: chip.target, window: window))
                     }
                 )
-                .frame(height: viewport.height)
+                .frame(width: fullSize.width, height: fullSize.height)
                 .background(fieldGradient)
                 .contentShape(Rectangle())
                 .gesture(
@@ -69,25 +79,20 @@ struct TrueScaleFieldView: View {
                                     x: origin.x + value.translation.width,
                                     y: origin.y + value.translation.height
                                 ),
-                                viewport: viewport
+                                window: window
                             )
                         }
                         .onEnded { _ in dragOrigin = nil }
                 )
                 .accessibilityIdentifier("true-scale-field")
+                .offset(x: -insets.leading, y: -insets.top)
 
-                footer(layout: layout, pan: currentPan, viewport: viewport)
-                    .frame(height: Self.footerHeight)
+                header(layout: layout, pan: currentPan, window: window)
+                    .frame(height: Self.headerHeight)
+                    .padding(.horizontal, DesignTokens.Spacing.md)
             }
         }
-        .background(
-            LinearGradient(
-                colors: [DesignTokens.Colors.navy, DesignTokens.Colors.bg],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-        )
+        .background(DesignTokens.Colors.surfaceField1.ignoresSafeArea())
         .preferredColorScheme(.dark)
     }
 
@@ -110,99 +115,85 @@ struct TrueScaleFieldView: View {
         }
     }
 
-    private func header(layout: TrueScaleFieldLayout, pan: CGPoint, viewport: CGSize) -> some View {
-        HStack(spacing: DesignTokens.Spacing.sm) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("TRUE SCALE")
-                    .font(.caption.weight(.semibold))
-                    .tracking(0.9)
-                    .foregroundStyle(DesignTokens.Colors.textMuted)
-                Text(verbatim: [layout.personnelSummary, "drag to walk the field"]
-                    .filter { !$0.isEmpty }
-                    .joined(separator: " · "))
-                    .font(.caption2)
-                    .foregroundStyle(DesignTokens.Colors.textFaint)
+    private func header(layout: TrueScaleFieldLayout, pan: CGPoint, window: TrueScaleFieldLayout.Window) -> some View {
+        let offCentre = layout.isOffCentre(pan: pan, window: window)
+        return HStack(spacing: DesignTokens.Spacing.sm) {
+            if !layout.personnelSummary.isEmpty {
+                Text(verbatim: layout.personnelSummary)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    .padding(.horizontal, DesignTokens.Spacing.md)
+                    .frame(height: 36)
+                    .glassCapsule()
+                    .accessibilityLabel("Personnel \(layout.personnelSummary)")
             }
-            .accessibilityElement(children: .combine)
-            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Spacer(minLength: 0)
 
             // Appears only once you're lost, and eases back to the opening framing.
-            if layout.isOffCentre(pan: pan, viewport: viewport) {
-                headerButton(systemImage: "scope", label: "Recentre on the ball", identifier: "true-scale-recentre") {
-                    selectedKey = nil
-                    move(to: layout.initialPan(viewport: viewport))
+            if offCentre {
+                Button {
+                    withAnimation(DesignTokens.Motion.selection) { selectedKey = nil }
+                    move(to: layout.initialPan(window: window))
+                } label: {
+                    Image(systemName: "scope")
+                        .foregroundStyle(DesignTokens.Colors.textPrimary)
+                        .frame(minWidth: 30, minHeight: 30)
+                        .contentShape(Rectangle())
                 }
+                .glassButton()
+                .accessibilityLabel("Recentre on the ball")
+                .accessibilityIdentifier("true-scale-recentre")
                 .transition(.opacity)
             }
 
-            headerButton(systemImage: "xmark", label: "Close true scale", identifier: "true-scale-close") {
-                dismiss()
-            }
+            CloseButton(action: { dismiss() }, placement: .overlay, identifier: "true-scale-close")
         }
-        .padding(.horizontal, DesignTokens.Spacing.sm)
-        .animation(DesignTokens.Motion.feedback, value: layout.isOffCentre(pan: pan, viewport: viewport))
-    }
-
-    private func headerButton(
-        systemImage: String,
-        label: String,
-        identifier: String,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.body.weight(.semibold))
-                .foregroundStyle(DesignTokens.Colors.textPrimary)
-                .frame(width: 44, height: 44)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(label)
-        .accessibilityIdentifier(identifier)
-    }
-
-    private func footer(layout: TrueScaleFieldLayout, pan: CGPoint, viewport: CGSize) -> some View {
-        let selected = layout.dots.first { $0.key == selectedKey }
-        return VStack(alignment: .leading, spacing: 3) {
-            if let selected {
-                Text(verbatim: "#\(selected.player.number)  \(selected.player.name)")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(DesignTokens.Colors.textPrimary)
-                    .lineLimit(1)
-                Text(verbatim: TrueScaleFieldLayout.alignmentDescription(for: selected))
-                    .font(.caption)
-                    .foregroundStyle(DesignTokens.Colors.textMuted)
-            } else {
-                Text("True scale · 1 yd = 44pt")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(DesignTokens.Colors.textPrimary)
-                Text(verbatim: TrueScaleFieldLayout.windowDescription(
-                    offsetYards: layout.windowOffsetYards(pan: pan, viewport: viewport)
-                ))
-                .font(.caption)
-                .foregroundStyle(DesignTokens.Colors.textMuted)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, DesignTokens.Spacing.md)
-        .accessibilityElement(children: .combine)
-        .accessibilityIdentifier("true-scale-readout")
+        .animation(DesignTokens.Motion.feedback, value: offCentre)
     }
 }
 
-/// The panned field, dots, and edge chips. `Animatable` over the pan so a chip tap or a
-/// recentre eases every layer together — the Canvas, the dot visibility filter, and the
-/// chips all recompute per animation frame instead of jumping to the destination.
+private extension View {
+    /// A non-interactive Liquid Glass capsule, with the opaque chip standing in pre-iOS 26
+    /// (same fallback `CloseButton` uses).
+    @ViewBuilder
+    func glassCapsule() -> some View {
+        if #available(iOS 26.0, *) {
+            glassEffect(.regular, in: Capsule())
+        } else {
+            background(.ultraThinMaterial, in: Capsule())
+        }
+    }
+
+    /// Matches `CloseButton(placement: .overlay)` so the header's controls read as a set.
+    @ViewBuilder
+    func glassButton() -> some View {
+        if #available(iOS 26.0, *) {
+            buttonStyle(.glass)
+        } else {
+            background(Capsule().fill(DesignTokens.Colors.surfaceChip))
+        }
+    }
+}
+
+/// The panned field, dots, callout, and edge chips. `Animatable` over the pan so a chip tap
+/// or a recentre eases every layer together — the Canvas, the dot visibility filter, the
+/// callout, and the chips all recompute per animation frame instead of jumping.
 private struct TrueScaleSurface: View, @MainActor Animatable {
     let layout: TrueScaleFieldLayout
     var pan: CGPoint
-    let viewport: CGSize
+    let window: TrueScaleFieldLayout.Window
     let colors: TeamColors
     let selectedKey: String?
     let onSelect: (String) -> Void
+    let onDeselect: () -> Void
     let onChip: (TrueScaleFieldLayout.EdgeChip) -> Void
 
     private static let labelHeight: CGFloat = 28
+    private static let calloutHeight: CGFloat = 40
+    /// Gap between the selected dot's edge and its callout, spanned by the leader line.
+    private static let leaderLength: CGFloat = 22
+    private static let selectedScale: CGFloat = 1.18
 
     var animatableData: AnimatablePair<CGFloat, CGFloat> {
         get { AnimatablePair(pan.x, pan.y) }
@@ -211,32 +202,46 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
 
     var body: some View {
         let gutter = TrueScaleFieldLayout.gutter
+        let visible = layout.dots.filter { layout.isVisible($0, pan: pan, window: window) }
+        let selected = visible.first { $0.key == selectedKey }
         ZStack(alignment: .topLeading) {
             ZStack(alignment: .topLeading) {
                 TrueScaleFurniture(layout: layout, pan: pan)
-                ForEach(layout.dots.filter { layout.isVisible($0, pan: pan, viewport: viewport) }) { dot in
-                    label(for: dot)
+                // Tapping open grass dismisses the callout; a drag still pans (the parent's
+                // DragGesture wins once the touch moves).
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture { onDeselect() }
+                ForEach(visible) { dot in
+                    // The callout carries the selected player's name, so his label steps aside.
+                    if dot.key != selectedKey {
+                        label(for: dot)
+                    }
                     dotButton(dot)
                 }
+                if let selected {
+                    callout(for: selected)
+                        .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                }
             }
-            .frame(width: viewport.width, height: viewport.height, alignment: .topLeading)
+            .frame(width: window.size.width, height: window.size.height, alignment: .topLeading)
             // Clip vertically at the window, but let a visible dot near the edge overhang
             // into the gutter by up to its radius rather than be sliced.
             .mask(
                 Rectangle()
-                    .frame(width: viewport.width + TrueScaleFieldLayout.dotSize, height: viewport.height)
+                    .frame(width: window.size.width + TrueScaleFieldLayout.dotSize, height: window.size.height)
             )
             .offset(x: gutter)
 
-            ForEach(layout.edgeChips(pan: pan, viewport: viewport)) { chip in
+            ForEach(layout.edgeChips(pan: pan, window: window)) { chip in
                 chipButton(chip)
                     .position(
-                        x: chip.side == .leading ? gutter / 2 : gutter * 1.5 + viewport.width,
+                        x: chip.side == .leading ? gutter / 2 : gutter * 1.5 + window.size.width,
                         y: chip.y
                     )
             }
         }
-        .frame(width: viewport.width + gutter * 2, height: viewport.height, alignment: .topLeading)
+        .frame(width: window.size.width + gutter * 2, height: window.size.height, alignment: .topLeading)
     }
 
     private func label(for dot: TrueScaleFieldLayout.Dot) -> some View {
@@ -244,7 +249,7 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
         let width = TrueScaleFieldLayout.labelWidth(for: dot)
         // Centred on the dot, then pinned inside the window so panning never slices a
         // name against the gutter.
-        let x = min(viewport.width - width / 2 - 4, max(width / 2 + 4, dot.center.x + pan.x))
+        let x = min(window.size.width - width / 2 - 4, max(width / 2 + 4, dot.center.x + pan.x))
         return VStack(spacing: 1) {
             Text(verbatim: dot.label)
                 .font(.system(size: 10, weight: .semibold))
@@ -266,6 +271,56 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
         .accessibilityHidden(true)
     }
 
+    /// The selected player's name tag on a short leader line — the same tag-and-line
+    /// language the depth chart uses for names that don't fit under a dot. It opens on the
+    /// side his label occupied (so it doesn't land on a tight row's alternating labels) and
+    /// flips if that side is under the header or off the bottom.
+    private func callout(for dot: TrueScaleFieldLayout.Dot) -> some View {
+        let center = CGPoint(x: dot.center.x + pan.x, y: dot.center.y + pan.y)
+        let radius = TrueScaleFieldLayout.dotSize / 2 * Self.selectedScale
+        let reach = radius + Self.leaderLength + Self.calloutHeight
+        var above = dot.labelAbove
+        if above && center.y - reach < window.topInset { above = false }
+        if !above && center.y + reach > window.size.height - window.bottomInset { above = true }
+        let direction: CGFloat = above ? -1 : 1
+        let lineStart = CGPoint(x: center.x, y: center.y + direction * (radius + 2))
+        let lineEnd = CGPoint(x: center.x, y: center.y + direction * (radius + Self.leaderLength))
+        let tagY = lineEnd.y + direction * Self.calloutHeight / 2
+        let name = dot.player.name.isEmpty ? "#\(dot.player.number)" : "#\(dot.player.number) \(dot.player.name)"
+        // Estimated width only to keep the tag inside the window; the tag sizes itself.
+        let halfWidth = (CGFloat(name.count) * 7 + 24) / 2
+        let tagX = min(window.size.width - halfWidth - 4, max(halfWidth + 4, center.x))
+
+        return ZStack(alignment: .topLeading) {
+            Path { path in
+                path.move(to: lineStart)
+                path.addLine(to: lineEnd)
+            }
+            .stroke(Color.white.opacity(0.5), lineWidth: 1)
+
+            VStack(spacing: 2) {
+                Text(verbatim: name)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                Text(verbatim: TrueScaleFieldLayout.lineStatus(for: dot))
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+            }
+            .lineLimit(1)
+            .fixedSize()
+            .padding(.horizontal, 10)
+            .frame(height: Self.calloutHeight)
+            .background(Color.black.opacity(0.72), in: RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
+            .overlay(
+                RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
+                    .strokeBorder(Color.white.opacity(0.16))
+            )
+            .position(x: tagX, y: tagY)
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
     private func dotButton(_ dot: TrueScaleFieldLayout.Dot) -> some View {
         let selected = dot.key == selectedKey
         let fill = selected ? colors.secondary : colors.primary
@@ -281,14 +336,14 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
                         .foregroundStyle(Color(hex: readableTextOn(fill)))
                 }
                 .frame(width: TrueScaleFieldLayout.dotSize, height: TrueScaleFieldLayout.dotSize)
-                .scaleEffect(selected ? 1.18 : 1)
+                .scaleEffect(selected ? Self.selectedScale : 1)
                 .frame(width: 44, height: 44)
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
         .position(x: dot.center.x + pan.x, y: dot.center.y + pan.y)
         .accessibilityLabel("\(dot.label), \(dot.player.name)")
-        .accessibilityValue(TrueScaleFieldLayout.alignmentDescription(for: dot))
+        .accessibilityValue(TrueScaleFieldLayout.lineStatus(for: dot))
         .accessibilityAddTraits(selected ? .isSelected : [])
         .accessibilityIdentifier("true-scale-dot-\(dot.key)")
     }
@@ -400,8 +455,12 @@ private struct TrueScaleFurniture: View {
                 }
             }
 
+            // Sideline to sideline, like the broadcast line — not across the out-of-bounds grass.
             context.fill(
-                Path(CGRect(x: 0, y: layout.lineOfScrimmageY - 1, width: content.width, height: 2)),
+                Path(CGRect(
+                    x: furniture.fieldMinX, y: layout.lineOfScrimmageY - 1,
+                    width: furniture.fieldMaxX - furniture.fieldMinX, height: 2
+                )),
                 with: .color(DesignTokens.Colors.fieldLineOfScrimmage)
             )
         }
