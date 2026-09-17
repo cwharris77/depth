@@ -23,6 +23,10 @@ struct TrueScaleFieldView: View {
     @State private var pan: CGPoint?
     @State private var dragOrigin: CGPoint?
     @State private var selectedKey: String?
+    /// Bumped by a deliberate jump (chip tap, recentre) to fire one light impact. Continuous
+    /// dragging stays silent — haptics mark discrete events, the same restraint the unit tab
+    /// bar and reorder list use (app-wide vocabulary: DEP-569).
+    @State private var jumpFeedbackCount = 0
 
     /// Height of the floating header row; the field below it stays visible through the glass.
     private static let headerHeight: CGFloat = 44
@@ -63,7 +67,9 @@ struct TrueScaleFieldView: View {
                         withAnimation(DesignTokens.Motion.selection) {
                             selectedKey = chip.dot == nil ? nil : chip.target.key
                         }
-                        move(to: layout.centeringPan(on: chip.target, window: window))
+                        // A player chip already ticks through the selection change; only the
+                        // "+N" chip (no selection) needs the jump impact.
+                        move(to: layout.centeringPan(on: chip.target, window: window), feedback: chip.dot == nil)
                     }
                 )
                 .frame(width: fullSize.width, height: fullSize.height)
@@ -92,6 +98,9 @@ struct TrueScaleFieldView: View {
                     .padding(.horizontal, DesignTokens.Spacing.md)
             }
         }
+        // Selecting a player is a selection tick, like the unit tabs; deselecting is silent.
+        .sensoryFeedback(.selection, trigger: selectedKey) { _, new in new != nil }
+        .sensoryFeedback(.impact(weight: .light), trigger: jumpFeedbackCount)
         .background(DesignTokens.Colors.surfaceField1.ignoresSafeArea())
         .preferredColorScheme(.dark)
     }
@@ -109,7 +118,8 @@ struct TrueScaleFieldView: View {
         )
     }
 
-    private func move(to target: CGPoint) {
+    private func move(to target: CGPoint, feedback: Bool = true) {
+        if feedback { jumpFeedbackCount += 1 }
         withAnimation(reduceMotion ? nil : .easeOut(duration: 0.26)) {
             pan = target
         }
@@ -130,48 +140,65 @@ struct TrueScaleFieldView: View {
 
             Spacer(minLength: 0)
 
-            // Appears only once you're lost, and eases back to the opening framing.
-            if offCentre {
-                Button {
-                    withAnimation(DesignTokens.Motion.selection) { selectedKey = nil }
-                    move(to: layout.initialPan(window: window))
-                } label: {
-                    Image(systemName: "scope")
-                        .foregroundStyle(DesignTokens.Colors.textPrimary)
-                        .frame(minWidth: 30, minHeight: 30)
-                        .contentShape(Rectangle())
-                }
-                .glassButton()
-                .accessibilityLabel("Recentre on the ball")
-                .accessibilityIdentifier("true-scale-recentre")
-                .transition(.opacity)
-            }
-
-            CloseButton(action: { dismiss() }, placement: .overlay, identifier: "true-scale-close")
+            controlBar(layout: layout, window: window, offCentre: offCentre)
         }
-        .animation(DesignTokens.Motion.feedback, value: offCentre)
+    }
+
+    /// Recentre and close share one glass bar — one control cluster instead of two floating
+    /// buttons. Recentre is always present so the bar never changes shape; it dims while the
+    /// view is already on its opening framing, where tapping it would do nothing.
+    private func controlBar(
+        layout: TrueScaleFieldLayout,
+        window: TrueScaleFieldLayout.Window,
+        offCentre: Bool
+    ) -> some View {
+        HStack(spacing: 0) {
+            barButton(systemImage: "scope", label: "Recentre on the ball", identifier: "true-scale-recentre") {
+                withAnimation(DesignTokens.Motion.selection) { selectedKey = nil }
+                move(to: layout.initialPan(window: window))
+            }
+            .disabled(!offCentre)
+            .opacity(offCentre ? 1 : 0.4)
+            .animation(DesignTokens.Motion.feedback, value: offCentre)
+
+            Rectangle()
+                .fill(DesignTokens.Colors.borderInput)
+                .frame(width: 1, height: 20)
+
+            barButton(systemImage: "xmark", label: "Close", identifier: "true-scale-close") {
+                dismiss()
+            }
+        }
+        .glassCapsule()
+    }
+
+    private func barButton(
+        systemImage: String,
+        label: String,
+        identifier: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.body.weight(.medium))
+                .foregroundStyle(DesignTokens.Colors.textPrimary)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+        .accessibilityIdentifier(identifier)
     }
 }
 
 private extension View {
-    /// A non-interactive Liquid Glass capsule, with the opaque chip standing in pre-iOS 26
-    /// (same fallback `CloseButton` uses).
+    /// A Liquid Glass capsule, with a material standing in pre-iOS 26.
     @ViewBuilder
     func glassCapsule() -> some View {
         if #available(iOS 26.0, *) {
-            glassEffect(.regular, in: Capsule())
+            glassEffect(.regular.interactive(), in: Capsule())
         } else {
             background(.ultraThinMaterial, in: Capsule())
-        }
-    }
-
-    /// Matches `CloseButton(placement: .overlay)` so the header's controls read as a set.
-    @ViewBuilder
-    func glassButton() -> some View {
-        if #available(iOS 26.0, *) {
-            buttonStyle(.glass)
-        } else {
-            background(Capsule().fill(DesignTokens.Colors.surfaceChip))
         }
     }
 }
