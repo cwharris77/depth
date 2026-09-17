@@ -138,6 +138,13 @@ Depth/
 1. **Editing `project.yml` without regenerating.** CI fails with "`Depth.xcodeproj`
    is out of sync with `project.yml`." *Rule: `xcodegen generate` at the repo root,
    commit both files together, every time.*
+   The same CI failure also comes from the other direction: `xcodebuild` builds and test
+   runs can re-serialize `Depth.xcodeproj/xcshareddata/xcschemes/Depth.xcscheme` (dropping
+   `onlyGenerateCoverageForSpecifiedTargets`/`parallelizable` and empty
+   `<CommandLineArguments>`), and a later `git add -A` commits that rewrite even when
+   XcodeGen and `project.yml` are identical to CI's (PR #834). *Rule: re-run `xcodegen
+   generate` right before committing, and never `git add -A` over `Depth.xcodeproj` —
+   if `git status` shows a scheme change your diff didn't intend, `git checkout` it.*
 2. **Changing `formations.ts`/`roster.ts` without regenerating fixtures.** Swift tests
    keep passing against stale JSON while web's actual output has silently diverged.
    *Rule: `npx tsx fixtures/generate.mts` (from `web/`) and commit
