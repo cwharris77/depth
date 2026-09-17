@@ -39,6 +39,11 @@ struct TeamDetailView: View {
     @State private var showHistory = false
     @State private var showUniformPicker = false
     @State private var showFormations = false
+    /// Turn 2 of the field-scale design: the offense's true-scale mode, a full-screen
+    /// cover opened from the field's corner expand button.
+    @State private var showTrueScale = false
+    /// The one-line tip under the field retires itself — "Got it", or opening true scale.
+    @AppStorage("trueScaleTipDismissed") private var trueScaleTipDismissed = false
     /// DEP-252: Account moved out of the tab bar (a personal affordance, not a content
     /// section) into the nav-bar trailing slot DEP-236 freed.
     @State private var showAccount = false
@@ -372,6 +377,25 @@ struct TeamDetailView: View {
                     onClose: { showFormations = false }
                 )
             }
+            .fullScreenCover(isPresented: $showTrueScale) {
+                if let snapshot = displayedSnapshot {
+                    TrueScaleFieldView(
+                        slots: DepthChartFieldView.resolvedSlots(
+                            snapshot: snapshot,
+                            unit: .offense,
+                            formation: activeFormation
+                        ),
+                        colors: fieldColors ?? snapshot.team.colors
+                    )
+                }
+            }
+    }
+
+    /// True scale is an offense-only secondary action: its alignment table covers offensive
+    /// positions only, positioned dots don't exist at accessibility text sizes (DEP-415), and
+    /// edit mode's taps belong to reordering.
+    private var showsTrueScaleEntry: Bool {
+        unit == .offense && !editMode.isActive && !dynamicTypeSize.isAccessibilitySize
     }
 
     // DEP-228: a plain VStack sizes each child to its "ideal" height rather than
@@ -856,6 +880,34 @@ struct TeamDetailView: View {
                     // it sits as close to the screen edges as possible (the roster chrome
                     // above it keeps its own inset, so only the field goes edge-to-edge).
                     .frame(maxHeight: .infinity)
+                    // The backfield's right corner is the emptiest grass in every offensive
+                    // formation, so the control never covers a player. Chrome styling, no
+                    // label, no accent fill — the chart stays the primary thing on screen.
+                    .overlay(alignment: .bottomTrailing) {
+                        if showsTrueScaleEntry {
+                            TrueScaleEntryButton {
+                                trueScaleTipDismissed = true
+                                showTrueScale = true
+                            }
+                            .padding(6)
+                        }
+                    }
+
+                    if showsTrueScaleEntry && !trueScaleTipDismissed {
+                        HStack(spacing: DesignTokens.Spacing.sm) {
+                            Text("Tip: tap the expand icon to walk the formation at true scale.")
+                                .font(.caption2)
+                                .foregroundStyle(DesignTokens.Colors.textFaint)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Button("Got it") { trueScaleTipDismissed = true }
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(DesignTokens.Colors.textMuted)
+                                .frame(minWidth: 44, minHeight: 44)
+                                .contentShape(Rectangle())
+                                .accessibilityIdentifier("true-scale-tip-dismiss")
+                        }
+                        .padding(.horizontal)
+                    }
 
                     // FTN charting is CC-BY-SA 4.0, so the notice follows the field
                     // content it attributes. Keep it in the scroll stack rather than
@@ -1269,5 +1321,29 @@ enum PlayerDotWigglePolicy {
             delay: Double(index % 4) * 0.035,
             duration: 0.23
         )
+    }
+}
+
+/// The field's corner entry into true scale: a 36pt chrome icon button on a faint scrim so
+/// it stays legible on grass without becoming the first thing you notice. The 44pt hit
+/// area is shaped on the label (CLAUDE.md §4.8).
+private struct TrueScaleEntryButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "arrow.up.left.and.arrow.down.right")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+                .frame(width: 36, height: 36)
+                .background(Circle().fill(DesignTokens.Colors.surfaceChip))
+                .overlay(Circle().strokeBorder(DesignTokens.Colors.accent.opacity(0.4), lineWidth: 1))
+                .background(Circle().fill(Color.black.opacity(0.45)))
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("View at true scale")
+        .accessibilityIdentifier("true-scale-open")
     }
 }

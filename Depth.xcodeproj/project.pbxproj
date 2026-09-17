@@ -13,12 +13,14 @@
 		0645399F2BF2F1C1DAFE3717 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = F87A526593CF512547212A32 /* SnapshotTesting */; };
 		09BD2BFEAB3286C0B9A21C00 /* TeamStatsDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B4CCC7EF85474CB7B8269A1 /* TeamStatsDTO.swift */; };
 		0A476DD65C57C553CAA0A3AF /* UITestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A33972CBA3A43968B410F6 /* UITestHelpers.swift */; };
+		0AB7D14DBFF9D4147603FDB0 /* TrueScaleFieldLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ABBD274BFCC6B40D56AFC17 /* TrueScaleFieldLayout.swift */; };
 		0AE16FEB0CC82155EB87714A /* DepthChartsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC28FD5A3D6B31E76BAA669 /* DepthChartsTab.swift */; };
 		0BD09D2E45126C5940E668DC /* PlayerProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D559A422271B3E5CD0E2054C /* PlayerProfileViewModel.swift */; };
 		0C5839F354A2C1DB41FB0D66 /* AccessibilityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15AED7FA002B19217B8B64B4 /* AccessibilityUITests.swift */; };
 		0CC455D8CA174BBB060DE8ED /* CachedSnapshotModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD58C5053B074511EA4E2608 /* CachedSnapshotModels.swift */; };
 		0ED095A5109FAA596E882C1D /* PlayerStatCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988E586BEEDE38EA19005DE /* PlayerStatCategory.swift */; };
 		0F6FD5C287B8974874D6F67E /* DepthEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCEB2197DF04D84335401768 /* DepthEnvironment.swift */; };
+		0FA95965A1D7ED86B04FD999 /* TrueScaleFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6D7230B41B621CE969EEB0C /* TrueScaleFieldView.swift */; };
 		13C435D8467AB04645A9546A /* UniformArchiveViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17204145C78040EBF5A20FDC /* UniformArchiveViewModel.swift */; };
 		16168662B8CF4E7B450CA34B /* ScheduleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FC6EE7ED8FF20B422D809B /* ScheduleViewModel.swift */; };
 		165B8462111535F8104EAC3E /* PlayerHit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A35742201EFBCBE63AB585 /* PlayerHit.swift */; };
@@ -166,6 +168,7 @@
 		C34BDFEA64ECB80BA1EE640C /* AppStoreScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69C97D21FFB3852484D4E4F2 /* AppStoreScreenshotsUITests.swift */; };
 		C6774AD4734B5807018BB215 /* RecentParticipation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FBC40FB24D7A0A22945354 /* RecentParticipation.swift */; };
 		C8CCEA1A7BCF1B48488ABFC3 /* AuthSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E235B4DBA71FCAE9FC954FF4 /* AuthSessionStore.swift */; };
+		C8EB41135F8B5E7875D4089E /* TrueScaleFieldLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D703EFE66BF2EA55C07DFB9 /* TrueScaleFieldLayoutTests.swift */; };
 		C94A267254E947FE46A23F3F /* shareCard.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 06FC9AE0FE9F71DD3213239C /* shareCard.1.png */; };
 		CB4FD1096A9B377BFD07C517 /* PerformanceUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C20C08065BC045F4A9C3C2D /* PerformanceUITests.swift */; };
 		CE37A62D32D6BAF182ABFC77 /* FixtureRecordingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAE996664C16F6F40F35ED7B /* FixtureRecordingTests.swift */; };
@@ -271,10 +274,12 @@
 		35D6A549002DA47A8FDFBB04 /* FieldMarkings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldMarkings.swift; sourceTree = "<group>"; };
 		3673307E51066FAF204F5421 /* UniformsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniformsTab.swift; sourceTree = "<group>"; };
 		3757D55E58A34FC37F1E6C19 /* Roster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Roster.swift; sourceTree = "<group>"; };
+		3ABBD274BFCC6B40D56AFC17 /* TrueScaleFieldLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrueScaleFieldLayout.swift; sourceTree = "<group>"; };
 		3B564462941A2C403AA7E112 /* UniformListing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniformListing.swift; sourceTree = "<group>"; };
 		3B89B6B59045A4D78F932026 /* FeaturedStarters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeaturedStarters.swift; sourceTree = "<group>"; };
 		3C89B84763FF4CDE45B5A7D9 /* ScheduleFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleFeatureTests.swift; sourceTree = "<group>"; };
 		3CCF617758D4C50F929F0399 /* NameFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameFormat.swift; sourceTree = "<group>"; };
+		3D703EFE66BF2EA55C07DFB9 /* TrueScaleFieldLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrueScaleFieldLayoutTests.swift; sourceTree = "<group>"; };
 		3E4ABA72E3E79758B2719A8A /* PositionReorderUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionReorderUITests.swift; sourceTree = "<group>"; };
 		3EF23A4738905D53A9740E41 /* UpdateGateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateGateViewModel.swift; sourceTree = "<group>"; };
 		4163276566B599870A6F754E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -381,6 +386,7 @@
 		C55F5110D99F3D93E1168F2B /* TeamRouteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamRouteStore.swift; sourceTree = "<group>"; };
 		C59A8DA266DD9C02DE5EE8C8 /* TeamStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamStatsView.swift; sourceTree = "<group>"; };
 		C62ABB8FA352722CEF133910 /* FormationsParityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormationsParityTests.swift; sourceTree = "<group>"; };
+		C6D7230B41B621CE969EEB0C /* TrueScaleFieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrueScaleFieldView.swift; sourceTree = "<group>"; };
 		C73AF9C348A6717B3BCD620A /* CoachmarkOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachmarkOverlayView.swift; sourceTree = "<group>"; };
 		C97FD1B3B972D4063D8A72A2 /* DepthAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthAuthService.swift; sourceTree = "<group>"; };
 		CA629F12F994F6278119BF12 /* FixtureDepthRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureDepthRepositoryTests.swift; sourceTree = "<group>"; };
@@ -563,6 +569,8 @@
 				D6771B4C1584D803E4135013 /* PositionReorderSheet.swift */,
 				16777E464D29CE02F612C8FD /* TeamDetailView.swift */,
 				ED8C07254AA1A7D5B8F4DB53 /* TeamDetailViewModel.swift */,
+				3ABBD274BFCC6B40D56AFC17 /* TrueScaleFieldLayout.swift */,
+				C6D7230B41B621CE969EEB0C /* TrueScaleFieldView.swift */,
 				81C2EA6E8FFCA933708611EF /* UniformPickerSheet.swift */,
 			);
 			path = TeamDetail;
@@ -692,6 +700,7 @@
 				44DD0C5F4F909F2A6EF1C1F1 /* TeamStatsMapperTests.swift */,
 				08A7AA5AC78BC8E8D00BA433 /* TeamStatsMetricCatalogTests.swift */,
 				BDC3AE532CA3C5BF8515CEB9 /* TeamSurfacesTests.swift */,
+				3D703EFE66BF2EA55C07DFB9 /* TrueScaleFieldLayoutTests.swift */,
 				024C498B597CE26F3EB1EDB3 /* UniformArchiveTests.swift */,
 				0A077A842222B55869BC9E86 /* UpdateGateTests.swift */,
 				FE00D91918FC8ECB279A4098 /* URLErrorOfflineTests.swift */,
@@ -1069,6 +1078,7 @@
 				5A99B02FB1618D720580A9C1 /* TeamStatsMapperTests.swift in Sources */,
 				85D92EE2258E160A715C399E /* TeamStatsMetricCatalogTests.swift in Sources */,
 				3BF44E4F06F29FDD2334E064 /* TeamSurfacesTests.swift in Sources */,
+				C8EB41135F8B5E7875D4089E /* TrueScaleFieldLayoutTests.swift in Sources */,
 				2F42DE35421AF81749E5CE75 /* URLErrorOfflineTests.swift in Sources */,
 				F97239B4E27EA3AF15080E7F /* UniformArchiveTests.swift in Sources */,
 				BBBAEAE2E0BC00B15CE5C273 /* UpdateGateTests.swift in Sources */,
@@ -1192,6 +1202,8 @@
 				7057DAAC54DD2A43CCF1EC59 /* TeamSurfaces.swift in Sources */,
 				8B37305D22C2894A2F233F40 /* TeamSwitcherSheet.swift in Sources */,
 				D52A5D3F74C221C005E6C99E /* Timestamp.swift in Sources */,
+				0AB7D14DBFF9D4147603FDB0 /* TrueScaleFieldLayout.swift in Sources */,
+				0FA95965A1D7ED86B04FD999 /* TrueScaleFieldView.swift in Sources */,
 				13C435D8467AB04645A9546A /* UniformArchiveViewModel.swift in Sources */,
 				9909E89DE38E775D5969B145 /* UniformFilterSheet.swift in Sources */,
 				BB97D01EB7A7CF8DA748868A /* UniformKitBadges.swift in Sources */,
