@@ -82,18 +82,23 @@ struct TeamSnapshot: Equatable, Codable {
     let specialTeams: [SpecialSlot]
     let uniforms: [Uniform]
     let formations: [TeamFormation]
+    /// Where each athlete lines up, kept separate from who they are (DEP-585). Nil for a
+    /// historical season, which has no depth_chart_entries to read -- see seatsOf.
+    let depthChart: [DepthSeat]?
 
     init(
         team: Team,
         players: [Player],
         specialTeams: [SpecialSlot],
         uniforms: [Uniform],
-        formations: [TeamFormation] = []
+        formations: [TeamFormation] = [],
+        depthChart: [DepthSeat]? = nil
     ) {
         self.team = team
         self.players = players
         self.specialTeams = specialTeams
         self.uniforms = uniforms
         self.formations = formations
+        self.depthChart = depthChart
     }
 }

@@ -25,11 +25,30 @@ private struct FixtureSpecialSlot: Decodable {
     var domain: SpecialSlot { SpecialSlot(id: id, playerId: playerId, x: x, y: y, label: label) }
 }
 
+private struct FixtureSeat: Decodable {
+    let position: Position
+    let depthRank: Int
+    let playerId: String
+
+    var domain: DepthSeat {
+        DepthSeat(position: position, depthRank: depthRank, playerId: playerId)
+    }
+}
+
 private struct FixtureRoster: Decodable {
     let players: [FixturePlayer]
     let specialTeams: [FixtureSpecialSlot]
+    /// Null in a fixture means the roster has no depth chart, so seats derive from the
+    /// players themselves — the historical-season path (DEP-585).
+    let depthChart: [FixtureSeat]?
 
-    var domain: Roster { Roster(players: players.map(\.domain), specialTeams: specialTeams.map(\.domain)) }
+    var domain: Roster {
+        Roster(
+            players: players.map(\.domain),
+            specialTeams: specialTeams.map(\.domain),
+            depthChart: depthChart?.map(\.domain)
+        )
+    }
 }
 
 private struct FixtureFormationSlot: Decodable {

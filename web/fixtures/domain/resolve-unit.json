@@ -19,7 +19,8 @@
           "order": null
         }
       ],
-      "specialTeams": []
+      "specialTeams": [],
+      "depthChart": null
     },
     "realFormation": null,
     "resolved": [
@@ -118,7 +119,8 @@
     "unit": "defense",
     "roster": {
       "players": [],
-      "specialTeams": []
+      "specialTeams": [],
+      "depthChart": null
     },
     "realFormation": null,
     "resolved": [
@@ -240,7 +242,8 @@
           "y": 18,
           "label": "PR"
         }
-      ]
+      ],
+      "depthChart": null
     },
     "realFormation": null,
     "resolved": [
@@ -275,7 +278,8 @@
           "order": null
         }
       ],
-      "specialTeams": []
+      "specialTeams": [],
+      "depthChart": null
     },
     "realFormation": null,
     "resolved": [
@@ -424,7 +428,8 @@
           "order": null
         }
       ],
-      "specialTeams": []
+      "specialTeams": [],
+      "depthChart": null
     },
     "realFormation": [
       {
@@ -688,7 +693,8 @@
           "order": null
         }
       ],
-      "specialTeams": []
+      "specialTeams": [],
+      "depthChart": null
     },
     "realFormation": [
       {
@@ -987,7 +993,8 @@
           "order": null
         }
       ],
-      "specialTeams": []
+      "specialTeams": [],
+      "depthChart": null
     },
     "realFormation": null,
     "resolved": [
@@ -1078,6 +1085,256 @@
         "label": "RDE",
         "onLine": true,
         "playerId": "de2"
+      }
+    ]
+  },
+  {
+    "description": "one athlete seated at two positions (DEP-585): a swing tackle holding LT2 and RT1 fills the RT slot as well, and the LT slot still goes to the LT1",
+    "unit": "offense",
+    "roster": {
+      "players": [
+        {
+          "id": "lt1",
+          "position": "LT",
+          "depthRank": 1,
+          "number": 77,
+          "order": null
+        },
+        {
+          "id": "swing",
+          "position": "LT",
+          "depthRank": 2,
+          "number": 70,
+          "order": null
+        }
+      ],
+      "specialTeams": [],
+      "depthChart": [
+        {
+          "position": "LT",
+          "depthRank": 1,
+          "playerId": "lt1"
+        },
+        {
+          "position": "LT",
+          "depthRank": 2,
+          "playerId": "swing"
+        },
+        {
+          "position": "RT",
+          "depthRank": 1,
+          "playerId": "swing"
+        }
+      ]
+    },
+    "realFormation": null,
+    "resolved": [
+      {
+        "key": "off-wr-0",
+        "x": 88,
+        "y": 51,
+        "label": "WR",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-1",
+        "x": 12,
+        "y": 55,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-2",
+        "x": 24,
+        "y": 56,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-te-0",
+        "x": 74,
+        "y": 51,
+        "label": "TE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-lt-0",
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true,
+        "playerId": "lt1"
+      },
+      {
+        "key": "off-lg-0",
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-c-0",
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-rg-0",
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-rt-0",
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true,
+        "playerId": "swing"
+      },
+      {
+        "key": "off-qb-0",
+        "x": 50,
+        "y": 66,
+        "label": "QB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-rb-0",
+        "x": 50,
+        "y": 78,
+        "label": "RB",
+        "onLine": false,
+        "playerId": null
+      }
+    ]
+  },
+  {
+    "description": "a seat pointing at an athlete the roster does not carry is skipped, not faked (DEP-585)",
+    "unit": "offense",
+    "roster": {
+      "players": [
+        {
+          "id": "lt1",
+          "position": "LT",
+          "depthRank": 1,
+          "number": 77,
+          "order": null
+        }
+      ],
+      "specialTeams": [],
+      "depthChart": [
+        {
+          "position": "LT",
+          "depthRank": 1,
+          "playerId": "lt1"
+        },
+        {
+          "position": "RT",
+          "depthRank": 1,
+          "playerId": "ghost"
+        }
+      ]
+    },
+    "realFormation": null,
+    "resolved": [
+      {
+        "key": "off-wr-0",
+        "x": 88,
+        "y": 51,
+        "label": "WR",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-1",
+        "x": 12,
+        "y": 55,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-2",
+        "x": 24,
+        "y": 56,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-te-0",
+        "x": 74,
+        "y": 51,
+        "label": "TE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-lt-0",
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true,
+        "playerId": "lt1"
+      },
+      {
+        "key": "off-lg-0",
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-c-0",
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-rg-0",
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-rt-0",
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-qb-0",
+        "x": 50,
+        "y": 66,
+        "label": "QB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-rb-0",
+        "x": 50,
+        "y": 78,
+        "label": "RB",
+        "onLine": false,
+        "playerId": null
       }
     ]
   }

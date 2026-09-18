@@ -24,8 +24,10 @@ private func positionGroup(_ position: Position) -> PositionGroup? {
     positionGroupMap[position] ?? nil
 }
 
+// Seats, not player rows: an athlete holding two seats belongs in the pool once per
+// seat, tagged with that seat's position (DEP-585).
 private func players(in roster: Roster, group: PositionGroup) -> [Player] {
-    roster.players.filter { positionGroup($0.position) == group }.sorted(by: byDepthOrder)
+    playersInSeats(in: roster) { positionGroup($0) == group }
 }
 
 /// Assigns players to a set of same-group slots: a slot with `preferredPosition` claims

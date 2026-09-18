@@ -14,13 +14,36 @@ enum TeamSnapshotMapper {
             logo: dto.logoUrl, logoDark: dto.logoDarkUrl
         )
 
-        // Depth-chart players first (real depthRank), then special-teams-only players
-        // get a nominal depthRank 3 — mirrors the web app's dbRosterSource assembly
-        // (fetchTeamRoster) exactly, including silently skipping a special-teams slot
-        // with no player and never duplicating a player already seated on the chart.
+        // Identity and seat are separate (DEP-585). `players` keeps exactly one row per
+        // athlete, built from the `players` join; `depthChart` records every slot the
+        // chart publishes. One athlete can hold two — ESPN cross-lists a swing tackle at
+        // LT2 and RT1 — so seating off `players.position` used to leave the second slot
+        // empty and the formation a man short.
+        //
+        // Special-teams-only players are appended afterwards with a nominal depthRank 3,
+        // as before: a returner ranked outside the top 3 at his own position still has to
+        // exist for the special-teams slot to resolve.
         var players: [Player] = []
+        var depthChart: [DepthSeat] = []
         var seenPlayerIds = Set<String>()
         for entry in dto.depthChartEntries {
+            guard let seatPosition = Position(rawValue: entry.position) else {
+                throw DepthError.decoding(
+                    "depth chart entry \(entry.teamId)/\(entry.position): unknown position"
+                )
+            }
+            guard (1...3).contains(entry.depthRank) else {
+                throw DepthError.decoding(
+                    "depth chart entry \(entry.teamId)/\(entry.position): "
+                        + "depthRank \(entry.depthRank) out of range 1...3"
+                )
+            }
+            depthChart.append(
+                DepthSeat(
+                    position: seatPosition, depthRank: entry.depthRank, playerId: entry.playerId
+                )
+            )
+            guard !seenPlayerIds.contains(entry.playerId) else { continue }
             let player = try mapPlayer(entry.player, depthRank: entry.depthRank)
             players.append(player)
             seenPlayerIds.insert(player.id)
@@ -38,7 +61,8 @@ enum TeamSnapshotMapper {
 
         return TeamSnapshot(
             team: team, players: players, specialTeams: specialTeams,
-            uniforms: uniforms, formations: mapFormations(dto.teamFormations)
+            uniforms: uniforms, formations: mapFormations(dto.teamFormations),
+            depthChart: depthChart
         )
     }
 

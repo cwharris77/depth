@@ -560,6 +560,22 @@
     }
   },
   {
+    "id": "eagles-kelly-green-modern-2023",
+    "colors": {
+      "primary": "#046A38",
+      "secondary": "#A5ACAF",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#046A38",
+      "ring": "#A5ACAF",
+      "mark": "#A5ACAF",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#046A38",
+      "numeralStroke": "#A5ACAF"
+    }
+  },
+  {
     "id": "broncos-orange-crush-1968",
     "colors": {
       "primary": "#001489",
