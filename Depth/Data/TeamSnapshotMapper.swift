@@ -1,11 +1,54 @@
 import Foundation
+import OSLog
 
 // DTO → domain mapping for the team-snapshot query. Every conversion is explicit and
-// fails loudly (DepthError.decoding) rather than silently coercing bad data — the
-// existing web `dbRosterSource` conflating "not found" with "unavailable" is exactly the
-// failure mode the design spec calls out to not reproduce here.
+// never silently coerces bad data — the existing web `dbRosterSource` conflating "not
+// found" with "unavailable" is exactly the failure mode the design spec calls out to not
+// reproduce here.
+//
+// "Explicit" is not the same as "fatal", and this file used to conflate those too. A row
+// the build cannot represent degrades that one seat or athlete and is counted; only a
+// payload that yields nothing at all is an error. The strict version made every new value
+// in `depth_chart_entries` or `players` a client-compatibility event on the app's launch
+// screen — one unrecognized position, rank or status took the whole team down. That is the
+// same mechanism that forced DEP-486's generic OT/G rollback, and it is why storing ESPN's
+// real status designations (`specs/2026-09-17-historical-data-and-source-boundaries-design.md`,
+// step 8) would otherwise break every installed build the moment the ingest changed.
+//
+// What is deliberately *not* tolerated: `mapUniform`'s unknown kind still throws. A kit is
+// shown with a label, so skipping one could surface a wrongly-labeled uniform, and the
+// snapshot's uniforms only feed team colors — a different trade from a roster row.
 enum TeamSnapshotMapper {
+    /// Why a row could not become a seat or an athlete. Carries the identifying key so a
+    /// drop is actionable rather than a bare count, matching HistoricalRosterMapper.
+    struct DroppedRow: Equatable {
+        let id: String
+        let reason: Reason
+
+        enum Reason: Equatable {
+            case unknownSeatPosition(String)
+            case invalidSeatDepthRank(Int)
+            case unknownPlayerPosition(String)
+            case invalidPlayerDepthRank(Int)
+        }
+    }
+
+    private static let logger = Logger(
+        subsystem: Bundle.main.bundleIdentifier ?? "com.cwharris.depth",
+        category: "team-snapshot"
+    )
+
     static func map(_ dto: TeamDTO) throws -> TeamSnapshot {
+        let result = try mapWithDiagnostics(dto)
+        for drop in result.dropped {
+            logger.error("team snapshot drop \(drop.id, privacy: .public): \(String(describing: drop.reason), privacy: .public)")
+        }
+        return result.snapshot
+    }
+
+    /// The same mapping, with the dropped rows returned instead of only logged, so the
+    /// degrade path is assertable in tests.
+    static func mapWithDiagnostics(_ dto: TeamDTO) throws -> (snapshot: TeamSnapshot, dropped: [DroppedRow]) {
         let uniforms = try dto.uniforms.map(mapUniform)
         let team = Team(
             id: dto.id, city: dto.city, name: dto.name, abbrev: dto.abbrev,
@@ -26,17 +69,19 @@ enum TeamSnapshotMapper {
         var players: [Player] = []
         var depthChart: [DepthSeat] = []
         var seenPlayerIds = Set<String>()
+        var dropped: [DroppedRow] = []
         for entry in dto.depthChartEntries {
+            let seatId = "\(entry.teamId)/\(entry.position)"
             guard let seatPosition = Position(rawValue: entry.position) else {
-                throw DepthError.decoding(
-                    "depth chart entry \(entry.teamId)/\(entry.position): unknown position"
-                )
+                dropped.append(DroppedRow(id: seatId, reason: .unknownSeatPosition(entry.position)))
+                continue
             }
-            guard (1...3).contains(entry.depthRank) else {
-                throw DepthError.decoding(
-                    "depth chart entry \(entry.teamId)/\(entry.position): "
-                        + "depthRank \(entry.depthRank) out of range 1...3"
-                )
+            // No upper bound on purpose: the 1...3 cap is a property of today's ingest and
+            // its CHECK constraint, not of the domain, and removing it must not require a
+            // gated client release. A rank below 1 is still malformed.
+            guard entry.depthRank >= 1 else {
+                dropped.append(DroppedRow(id: seatId, reason: .invalidSeatDepthRank(entry.depthRank)))
+                continue
             }
             depthChart.append(
                 DepthSeat(
@@ -44,26 +89,39 @@ enum TeamSnapshotMapper {
                 )
             )
             guard !seenPlayerIds.contains(entry.playerId) else { continue }
-            let player = try mapPlayer(entry.player, depthRank: entry.depthRank)
+            // A seat whose athlete cannot be decoded stays in the chart: `playersInSeats`
+            // already skips a seat whose player is absent, so the rest of the unit renders.
+            guard let player = mapPlayer(entry.player, depthRank: entry.depthRank, dropped: &dropped)
+            else { continue }
             players.append(player)
             seenPlayerIds.insert(player.id)
         }
         for slot in dto.specialTeamsSlots {
             guard let playerDTO = slot.player, !seenPlayerIds.contains(playerDTO.id) else { continue }
-            let player = try mapPlayer(playerDTO, depthRank: 3)
+            guard let player = mapPlayer(playerDTO, depthRank: 3, dropped: &dropped) else { continue }
             players.append(player)
             seenPlayerIds.insert(player.id)
+        }
+
+        // An empty chart is a legitimate payload (a team with no published depth chart yet);
+        // a chart that had rows and decoded to none is a real failure, because a blank field
+        // reads as a broken screen rather than a state the user can act on.
+        guard !(players.isEmpty && !dto.depthChartEntries.isEmpty) else {
+            throw DepthError.decoding(
+                "team snapshot \(dto.id): no decodable roster rows (\(dropped.count) dropped)"
+            )
         }
 
         let specialTeams = dto.specialTeamsSlots.map { slot in
             SpecialSlot(id: slot.id, playerId: slot.playerId, x: slot.x, y: slot.y, label: slot.label)
         }
 
-        return TeamSnapshot(
+        let snapshot = TeamSnapshot(
             team: team, players: players, specialTeams: specialTeams,
             uniforms: uniforms, formations: mapFormations(dto.teamFormations),
             depthChart: depthChart
         )
+        return (snapshot, dropped)
     }
 
     static func mapTeamListRow(_ dto: TeamListRowDTO) -> Team {
@@ -116,19 +174,28 @@ enum TeamSnapshotMapper {
         AppConfig(minimumSupportedBuild: dto.minimumSupportedBuild, maintenanceMessage: dto.maintenanceMessage)
     }
 
-    static func mapPlayer(_ dto: PlayerDTO, depthRank: Int) throws -> Player {
+    /// `nil` when the athlete cannot be represented at all — an unknown position (nothing
+    /// can seat or group him) or a rank below 1. Everything else degrades in place:
+    ///
+    /// - A missing jersey number becomes 0, matching `mapPlayerHit` and the historical
+    ///   mapper. Dropping a rostered athlete because ESPN omitted his number would lose
+    ///   more than it protects.
+    /// - An unrecognized status falls back to the rank-derived one, the same derivation
+    ///   history already uses. This is what lets the ingest start storing ESPN's real
+    ///   `Questionable`/`Doubtful`/`Out`/`IR` designations without a gated client release:
+    ///   an older build shows the athlete at his correct rank instead of failing the team.
+    static func mapPlayer(_ dto: PlayerDTO, depthRank: Int, dropped: inout [DroppedRow]) -> Player? {
         guard let position = Position(rawValue: dto.position) else {
-            throw DepthError.decoding("player \(dto.id): unknown position \"\(dto.position)\"")
+            dropped.append(DroppedRow(id: dto.id, reason: .unknownPlayerPosition(dto.position)))
+            return nil
         }
-        guard let number = dto.number else {
-            throw DepthError.decoding("player \(dto.id): missing jersey number")
+        guard depthRank >= 1 else {
+            dropped.append(DroppedRow(id: dto.id, reason: .invalidPlayerDepthRank(depthRank)))
+            return nil
         }
-        guard (1...3).contains(depthRank) else {
-            throw DepthError.decoding("player \(dto.id): depthRank \(depthRank) out of range 1...3")
-        }
-        guard let status = PlayerStatus(rawValue: dto.status ?? "backup") else {
-            throw DepthError.decoding("player \(dto.id): unknown status \"\(dto.status ?? "")\"")
-        }
+        let number = dto.number ?? 0
+        let status = PlayerStatus(rawValue: dto.status ?? "backup")
+            ?? (depthRank == 1 ? .starter : .backup)
         return Player(
             id: dto.id, name: dto.name, position: position, depthRank: depthRank, number: number,
             status: status, age: dto.age ?? 0, college: dto.college ?? "",
