@@ -13,10 +13,16 @@ name: Ingest nflverse data
 
 on:
   schedule:
-    # 1pm PT daily (21:00 UTC) — an hour after the ESPN ingest (ingest-espn.yml, Noon
-    # PT / 20:00 UTC) so the two runs don't interleave in ingestion_runs. Cron is fixed
-    # UTC, so both this and ESPN's cron drift together with DST -- the 1-hour stagger
-    # between them holds regardless.
+    # Twice daily, each slot an hour after the matching ESPN ingest run
+    # (ingest-espn.yml, 15:00 and 20:00 UTC) so the two never interleave in
+    # ingestion_runs. Cron is fixed UTC, so these drift together with ESPN's under DST
+    # — the 1-hour stagger holds regardless.
+    #
+    # 9am PT morning run, added with ESPN's (DEP-595) so night-game results land before
+    # morning instead of waiting for the next afternoon. See ingest-espn.yml's schedule
+    # comment for the measured nflverse publish lag that makes this slot safe.
+    - cron: '0 16 * * *'
+    # 1pm PT afternoon run — the original daily slot.
     - cron: '0 21 * * *'
   workflow_dispatch:
     inputs:

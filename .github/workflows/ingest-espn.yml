@@ -13,8 +13,18 @@ name: Ingest ESPN data
 
 on:
   schedule:
-    # Noon PT daily (PST; cron is fixed UTC, so this drifts to ~1pm during PDT --
-    # acceptable for a daily refresh, not worth a DST-aware cron for this).
+    # Twice daily (DEP-595). Cron is fixed UTC, so both slots drift an hour with DST --
+    # acceptable for a daily refresh, not worth a DST-aware cron for this.
+    #
+    # 8am PT morning run. The afternoon slot alone left every Thursday/Sunday/Monday
+    # night game stale until the next afternoon (~20 hours): TNF/SNF finish around
+    # 03:30 UTC and MNF around 04:30 UTC, both after the previous afternoon run.
+    # nflverse publishes a final score into its games asset ~5 minutes after the final
+    # whistle (measured over three night games, DEP-595), so 15:00 UTC clears them with
+    # hours to spare even allowing for the routine GitHub Actions scheduling delay
+    # (these crons have been firing ~2.5h late on the free plan).
+    - cron: '0 15 * * *'
+    # Noon PT afternoon run -- the original daily slot.
     - cron: '0 20 * * *'
   workflow_dispatch:
     inputs:
