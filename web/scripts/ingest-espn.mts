@@ -19,7 +19,12 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/utils/env';
 
 dotenv.config({ path: '.env.local' });
-import { toCoach, toDepthChartRows, toTeamRoster, type Coach } from '@/lib/espn/transform';
+import { toCoach, toTeamRoster, type Coach, type DepthChartSlot } from '@/lib/espn/transform';
+
+// The transform now emits depth-chart slots directly from ESPN's position keys, so one
+// athlete can hold a slot at more than one position (DEP-585). Carry them through
+// alongside the roster rather than re-deriving them from players.position.
+type BuiltRoster = TeamRoster & { depthChartSlots: DepthChartSlot[] };
 import { buildSeedSql, type SeedEntry } from '@/lib/espn/seed-sql';
 import {
   parseStandings,
@@ -143,7 +148,7 @@ async function main() {
     }
   }
 
-  const built: Record<string, TeamRoster> = {};
+  const built: Record<string, BuiltRoster> = {};
   const coachByTeamId: Record<string, Coach | null> = {};
   const statsByTeamId: Record<string, TeamStats[]> = {};
   const errors: { team: string; message: string }[] = [];
@@ -273,10 +278,10 @@ async function main() {
 
 async function writeTeam(
   supabase: SupabaseClient<Database>,
-  roster: TeamRoster,
+  roster: BuiltRoster,
   coach: Coach | null
 ): Promise<void> {
-  const { team, players, specialTeams } = roster;
+  const { team, players, specialTeams, depthChartSlots } = roster;
 
   const { error: teamError } = await supabase.from('teams').upsert(
     {
@@ -341,7 +346,7 @@ async function writeTeam(
     .eq('team_id', team.id);
   if (deleteDepthError) throw new Error(`depth_chart_entries delete: ${deleteDepthError.message}`);
 
-  const depthRows = toDepthChartRows(players).map((row) => ({
+  const depthRows = depthChartSlots.map((row) => ({
     team_id: team.id,
     position: row.position,
     depth_rank: row.depthRank,

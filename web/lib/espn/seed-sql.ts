@@ -6,7 +6,7 @@
 // re-run, except `teams`: 20260707190000_seed_teams.sql pre-seeds a bare identity row
 // per team for FK purposes, so teams uses `do update set` to overwrite that stub with
 // the real ESPN data instead of silently no-oping.
-import { toDepthChartRows } from './transform';
+import { toDepthChartRows, type DepthChartSlot } from './transform';
 import type { Coach } from './transform';
 import type { TeamRoster, TeamStats } from '../types';
 // Escaping/serialization lives in lib/seed-sql.ts, shared with lib/nflverse/seed-sql.ts.
@@ -14,7 +14,11 @@ import { insertStatement, type Val } from '@/lib/utils/seed-sql';
 import { tables } from '@/lib/supabase/tables';
 
 export interface SeedEntry {
-  roster: TeamRoster;
+  // Carries `depthChartSlots` when built by the ESPN ingest (DEP-585): slots come
+  // straight from ESPN's position keys, so one athlete can hold slots at two positions.
+  // Optional so a caller assembling a bare TeamRoster still works -- it then falls back
+  // to re-deriving one slot per player, which cannot represent a cross-listed lineman.
+  roster: TeamRoster & { depthChartSlots?: DepthChartSlot[] };
   coach: Coach | null;
   stats: TeamStats[];
 }
@@ -74,7 +78,7 @@ export function buildSeedSql(entries: SeedEntry[]): string {
       });
     }
 
-    for (const row of toDepthChartRows(roosterPlayers)) {
+    for (const row of roster.depthChartSlots ?? toDepthChartRows(roosterPlayers)) {
       depth.push({
         team_id: team.id,
         position: row.position,

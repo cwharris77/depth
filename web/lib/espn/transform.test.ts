@@ -342,3 +342,71 @@ describe('toDepthChartRows', () => {
     expect(rows).toHaveLength(2);
   });
 });
+
+describe('toTeamRoster: an athlete cross-listed at two positions (DEP-585)', () => {
+  // ESPN routinely lists the same lineman under both sides -- a swing tackle at `lt` and
+  // `rt`, an interior lineman at `lg` and `rg`. The depth-chart loop's team-wide `seen`
+  // set used to let the first key iterated claim the athlete permanently, so the second
+  // slot emitted nothing. In production that left the Chiefs with zero RT entries (a
+  // ten-man offense) and the league 15-18 entries short at RT and RG versus LT and LG,
+  // while cross-list-free positions (LDE/RDE, LCB/RCB) stayed balanced.
+  const ref = (id: string) => ({
+    $ref: `http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2025/athletes/${id}?lang=en`,
+  });
+
+  const roster: EspnRoster = {
+    season: { year: 2025 },
+    athletes: [
+      {
+        position: 'offense',
+        items: [
+          {
+            id: '2001',
+            fullName: 'Swing Tackle',
+            jersey: '70',
+            position: { abbreviation: 'OT' },
+          } as EspnRoster['athletes'][number]['items'][number],
+          {
+            id: '2002',
+            fullName: 'Starting Left Tackle',
+            jersey: '71',
+            position: { abbreviation: 'OT' },
+          } as EspnRoster['athletes'][number]['items'][number],
+        ],
+      },
+    ],
+  };
+
+  const depthcharts: EspnDepthcharts = {
+    items: [
+      {
+        name: 'Base O',
+        positions: {
+          lt: {
+            athletes: [
+              { rank: 1, athlete: ref('2002') },
+              { rank: 2, athlete: ref('2001') },
+            ],
+          },
+          // The swing tackle is the only right tackle ESPN lists -- exactly the Chiefs' shape.
+          rt: { athletes: [{ rank: 1, athlete: ref('2001') }] },
+        },
+      },
+    ],
+  };
+
+  it('emits a depth-chart slot for every position ESPN lists him at, not just the first', () => {
+    const result = toTeamRoster({ meta: META, roster, depthcharts, teamInfo: TEAM_INFO });
+
+    const slots = result.depthChartSlots.map((s) => `${s.position}:${s.depthRank}:${s.playerId}`);
+    expect(slots).toContain('LT:1:2002');
+    expect(slots).toContain('LT:2:2001');
+    // The regression: RT used to be empty because 2001 was already in `seen` from `lt`.
+    expect(slots).toContain('RT:1:2001');
+  });
+
+  it('still lists the athlete only once in players, with one canonical position', () => {
+    const result = toTeamRoster({ meta: META, roster, depthcharts, teamInfo: TEAM_INFO });
+    expect(result.players.filter((p) => p.id === '2001')).toHaveLength(1);
+  });
+});
