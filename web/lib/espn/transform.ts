@@ -43,6 +43,69 @@ export function parseAthleteId(ref: string): string | null {
   return m ? m[1] : null;
 }
 
+export function parseTeamId(ref: string | undefined): string | null {
+  if (!ref) return null;
+  const m = ref.match(/teams\/(\d+)/);
+  return m ? m[1] : null;
+}
+
+// Athletes ESPN publishes on the depth chart but leaves out of the site roster (DEP-585).
+//
+// The two are different slices of ESPN's data and they disagree. The Chiefs' chart lists
+// Josh Simmons at LT1 -- so does chiefs.com -- but neither the site roster nor the core
+// team-athlete list contains him, because his athlete record still carries a stale
+// `status: Free Agent`. His record's own `team` ref points at Kansas City and `active` is
+// true. Twenty athletes across nine teams are in this state, four of them rank-1
+// starters; dropping them is what left formations short.
+//
+// Pure, so it is testable on its own: the ingest resolves the returned ids against the
+// core API and decides which to admit. Special-teams-only keys are included -- a K or P
+// missing from the roster leaves the same hole.
+export function missingRosterAthleteIds(args: {
+  roster: EspnRoster;
+  depthcharts: EspnDepthcharts;
+}): string[] {
+  const { roster, depthcharts } = args;
+  const onRoster = new Set<string>();
+  for (const group of roster.athletes ?? []) {
+    for (const a of group.items ?? []) onRoster.add(a.id);
+  }
+
+  const missing: string[] = [];
+  const seen = new Set<string>();
+  for (const item of depthcharts.items ?? []) {
+    for (const posData of Object.values(item.positions ?? {})) {
+      for (const entry of posData.athletes ?? []) {
+        // Mirror the cap the transform applies, so we never fetch an athlete the
+        // transform would discard anyway.
+        if ((entry.rank ?? entry.slot ?? 1) > 3) continue;
+        const id = parseAthleteId(entry.athlete.$ref);
+        if (!id || onRoster.has(id) || seen.has(id)) continue;
+        seen.add(id);
+        missing.push(id);
+      }
+    }
+  }
+  return missing;
+}
+
+// Whether a hydrated core-API athlete record may be admitted to `teamEspnId`'s roster.
+//
+// The season-scoped `team` ref is the gate: ESPN asserting the athlete's team, not us
+// overriding ESPN. A genuinely departed player's record points elsewhere and is still
+// rejected -- that is how Jordan Phillips (ESPN: Buffalo) stays off Miami's chart and
+// Jaylon Jones (ESPN: Indianapolis) off Tennessee's. A record carrying no team ref at
+// all is rejected too; those are ESPN's own degenerate rows (id 3043133 on Philadelphia's
+// chart has no name position, jersey or team).
+//
+// Deliberately ignores both `status.type` (see statusOf) and `active`. Gating on
+// `active` was tried and dropped: Chamarri Conner's record is `active: false` with a
+// team ref pointing at Kansas City, and chiefs.com lists him as their starting safety.
+// The depth chart and the team ref agreeing beats one stale boolean disagreeing.
+export function belongsToTeam(a: EspnAthlete, teamEspnId: string): boolean {
+  return parseTeamId(a.team?.$ref) === teamEspnId;
+}
+
 function hex(value: string | undefined, fallback: string): string {
   if (!value) return fallback;
   return value.startsWith('#') ? value : `#${value}`;
@@ -88,9 +151,14 @@ function collegeName(c: EspnAthlete['college']): string {
   return typeof c === 'string' ? c : (c.name ?? '—');
 }
 
+// Injury comes from ESPN's `injuries` collection, never from `status.type` (DEP-585).
+// `status.type` is roster bookkeeping, not health: league-wide it reads `active` (1726),
+// `practice-squad` (499), `day-to-day` (249) and `news` (8). Treating every non-`active`
+// value as injured badged all 499 practice-squad players INJURED though only 5 of them
+// carry an injury -- while missing the 154 `active` players who do. The `injuries` array
+// is right on all four: its entries are `Questionable`, `Out` and `Injured Reserve`.
 function statusOf(a: EspnAthlete, depthRank: number): PlayerStatus {
-  const t = a.status?.type;
-  if (t && t !== 'active') return 'injured';
+  if ((a.injuries?.length ?? 0) > 0) return 'injured';
   if ((a.experience?.years ?? 0) === 0) return 'rookie';
   return depthRank > 1 ? 'backup' : 'starter';
 }
@@ -177,7 +245,7 @@ export function toTeamRoster(args: {
   roster: EspnRoster;
   depthcharts: EspnDepthcharts;
   teamInfo: EspnTeamInfo;
-}): TeamRoster & { depthChartSlots: DepthChartSlot[] } {
+}): TeamRoster & { depthChartSlots: DepthChartSlot[]; unseatedAthleteIds: string[] } {
   const { meta, roster, depthcharts, teamInfo } = args;
 
   // Bio lookup by athlete id (from the flat site roster).
@@ -196,6 +264,10 @@ export function toTeamRoster(args: {
   // right tackle at all and the league 15-18 entries short at RT/RG. Identity dedupes
   // here; slots must not.
   const rawSlots: { position: Position; rank: number; playerId: string; number: number }[] = [];
+  // Depth-chart athletes we still could not seat because nothing in `bios` names them.
+  // Reported by the ingest instead of vanishing: a run that drops a player must not
+  // record `status: success` (DEP-585).
+  const unseated = new Set<string>();
   const special: Record<string, string | null> = {
     k: null,
     p: null,
@@ -229,7 +301,10 @@ export function toTeamRoster(args: {
             const pid = parseAthleteId(entry.athlete.$ref);
             if (!pid) continue;
             const bio = bios.get(pid);
-            if (!bio) continue;
+            if (!bio) {
+              unseated.add(pid);
+              continue;
+            }
             rawSlots.push({
               position: rosterPosition,
               rank,
@@ -253,7 +328,12 @@ export function toTeamRoster(args: {
         const id = parseAthleteId(entry.athlete.$ref);
         if (!id) continue;
         const bio = bios.get(id);
-        if (!bio) continue; // depthchart athlete not in roster → skip, no crash
+        if (!bio) {
+          // Depth-chart athlete the roster never named, even after the ingest's
+          // core-API hydration pass. Record him rather than dropping him silently.
+          unseated.add(id);
+          continue;
+        }
         rawSlots.push({
           position,
           rank,
@@ -333,6 +413,7 @@ export function toTeamRoster(args: {
     players,
     specialTeams,
     depthChartSlots,
+    unseatedAthleteIds: [...unseated],
     // Uniforms are a separate hand-curated domain (lib/uniforms), ingested on their own.
     // The ESPN ingest doesn't own them, so it emits none here.
     uniforms: [],
