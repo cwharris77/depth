@@ -124,6 +124,15 @@ function toPlayer(a: EspnAthlete, position: Position, depthRank: 1 | 2 | 3): Pla
   };
 }
 
+// One `depth_chart_entries` row: a position slot, its 1..3 rank, and who fills it.
+// Emitted per ESPN slot, so one athlete may hold slots at more than one position
+// (DEP-585) -- unlike `players`, which keeps exactly one identity row per athlete.
+export interface DepthChartSlot {
+  position: Position;
+  depthRank: 1 | 2 | 3;
+  playerId: string;
+}
+
 // depth_chart_entries has a unique (team_id, position, depth_rank) constraint, but
 // multiple ESPN depthchart keys can still collapse into one Position for the handful of
 // codes with no side/role in ESPN's data (e.g. lb+mlb -> LB), each independently ranked
@@ -168,7 +177,7 @@ export function toTeamRoster(args: {
   roster: EspnRoster;
   depthcharts: EspnDepthcharts;
   teamInfo: EspnTeamInfo;
-}): TeamRoster {
+}): TeamRoster & { depthChartSlots: DepthChartSlot[] } {
   const { meta, roster, depthcharts, teamInfo } = args;
 
   // Bio lookup by athlete id (from the flat site roster).
@@ -179,6 +188,14 @@ export function toTeamRoster(args: {
 
   const players: Player[] = [];
   const seen = new Set<string>();
+  // Every (position, rank, athlete) ESPN publishes, recorded independently of `seen`
+  // (DEP-585). `seen` exists to keep one identity row per athlete in `players`, but it
+  // used to gate slot emission too, so an athlete ESPN cross-lists -- a swing tackle at
+  // `lt` and `rt`, an interior lineman at `lg` and `rg` -- was claimed by whichever key
+  // iterated first and silently vanished from the other. That left the Chiefs with no
+  // right tackle at all and the league 15-18 entries short at RT/RG. Identity dedupes
+  // here; slots must not.
+  const rawSlots: { position: Position; rank: number; playerId: string; number: number }[] = [];
   const special: Record<string, string | null> = {
     k: null,
     p: null,
@@ -210,9 +227,16 @@ export function toTeamRoster(args: {
             const rank = entry.rank ?? entry.slot ?? 1;
             if (rank > 3) continue;
             const pid = parseAthleteId(entry.athlete.$ref);
-            if (!pid || seen.has(pid)) continue;
+            if (!pid) continue;
             const bio = bios.get(pid);
             if (!bio) continue;
+            rawSlots.push({
+              position: rosterPosition,
+              rank,
+              playerId: pid,
+              number: Number(bio.jersey ?? 0) || 0,
+            });
+            if (seen.has(pid)) continue;
             seen.add(pid);
             players.push(toPlayer(bio, rosterPosition, rank as 1 | 2 | 3));
           }
@@ -227,9 +251,16 @@ export function toTeamRoster(args: {
         const rank = entry.rank ?? entry.slot ?? 1;
         if (rank > 3) continue;
         const id = parseAthleteId(entry.athlete.$ref);
-        if (!id || seen.has(id)) continue;
+        if (!id) continue;
         const bio = bios.get(id);
         if (!bio) continue; // depthchart athlete not in roster → skip, no crash
+        rawSlots.push({
+          position,
+          rank,
+          playerId: id,
+          number: Number(bio.jersey ?? 0) || 0,
+        });
+        if (seen.has(id)) continue;
         seen.add(id);
         players.push(toPlayer(bio, position, rank as 1 | 2 | 3));
       }
@@ -252,6 +283,37 @@ export function toTeamRoster(args: {
     players.push(toPlayer(bio, fallbackPosition, 3));
   }
 
+  // Collapse the raw slots into the DB's shape: unique (position, depth_rank), ranks
+  // 1..3. Same re-ranking toDepthChartRows did, but driven by ESPN's own slots rather
+  // than re-derived from players.position -- which is what let one athlete hold only one
+  // position. Every emitted slot's player is in `players` (identity was recorded on his
+  // first appearance), so depth_chart_entries.player_id's FK is always satisfied.
+  const slotsByPosition = new Map<Position, typeof rawSlots>();
+  const seenSlot = new Set<string>();
+  for (const slot of rawSlots) {
+    if (!seen.has(slot.playerId)) continue;
+    // ESPN can repeat an athlete inside one position group across depth-chart items
+    // (e.g. a base and a sub package); one row per (position, athlete).
+    const key = `${slot.position}:${slot.playerId}`;
+    if (seenSlot.has(key)) continue;
+    seenSlot.add(key);
+    const group = slotsByPosition.get(slot.position) ?? [];
+    group.push(slot);
+    slotsByPosition.set(slot.position, group);
+  }
+
+  const depthChartSlots: DepthChartSlot[] = [];
+  for (const [position, group] of slotsByPosition) {
+    const ranked = [...group].sort((a, b) => a.rank - b.rank || a.number - b.number);
+    ranked.slice(0, 3).forEach((slot, i) => {
+      depthChartSlots.push({
+        position,
+        depthRank: (i + 1) as 1 | 2 | 3,
+        playerId: slot.playerId,
+      });
+    });
+  }
+
   const specialTeams: SpecialSlot[] = SPECIAL_LAYOUT.map(({ slot, id, x, y, label }) => ({
     id,
     playerId: special[slot] ?? null, // missing returner → empty slot, never a guess
@@ -270,6 +332,7 @@ export function toTeamRoster(args: {
     },
     players,
     specialTeams,
+    depthChartSlots,
     // Uniforms are a separate hand-curated domain (lib/uniforms), ingested on their own.
     // The ESPN ingest doesn't own them, so it emits none here.
     uniforms: [],
