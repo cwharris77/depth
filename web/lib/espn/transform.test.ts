@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import roster from './fixtures/roster-sea.json';
 import depthcharts from './fixtures/depthchart-sea.json';
 import {
+  belongsToTeam,
+  missingRosterAthleteIds,
   parseAthleteId,
   toBrandColors,
   toCoach,
@@ -408,5 +410,206 @@ describe('toTeamRoster: an athlete cross-listed at two positions (DEP-585)', () 
   it('still lists the athlete only once in players, with one canonical position', () => {
     const result = toTeamRoster({ meta: META, roster, depthcharts, teamInfo: TEAM_INFO });
     expect(result.players.filter((p) => p.id === '2001')).toHaveLength(1);
+  });
+});
+
+describe('depth-chart athletes the site roster omits (DEP-585)', () => {
+  const ref = (id: string) => ({
+    $ref: `http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2025/athletes/${id}?lang=en`,
+  });
+  const ON_ROSTER = '7000001';
+  const CHART_ONLY = '7000002';
+  const TOO_DEEP = '7000003';
+
+  const thinRoster: EspnRoster = {
+    season: { year: 2025 },
+    athletes: [
+      {
+        position: 'offense',
+        items: [
+          {
+            id: ON_ROSTER,
+            fullName: 'Listed Tackle',
+            jersey: '70',
+            position: { abbreviation: 'OT' },
+          } as EspnRoster['athletes'][number]['items'][number],
+        ],
+      },
+    ],
+  };
+
+  const thinCharts: EspnDepthcharts = {
+    items: [
+      {
+        name: '3WR 1TE',
+        positions: {
+          lt: {
+            athletes: [
+              { rank: 1, athlete: ref(CHART_ONLY) },
+              { rank: 2, athlete: ref(ON_ROSTER) },
+              { rank: 4, athlete: ref(TOO_DEEP) },
+            ],
+          },
+        },
+      },
+    ],
+  };
+
+  it('reports only the athletes the roster never names', () => {
+    expect(missingRosterAthleteIds({ roster: thinRoster, depthcharts: thinCharts })).toEqual([
+      CHART_ONLY,
+    ]);
+  });
+
+  it('ignores athletes ranked past the top-3 cap the transform applies', () => {
+    const missing = missingRosterAthleteIds({ roster: thinRoster, depthcharts: thinCharts });
+    expect(missing).not.toContain(TOO_DEEP);
+  });
+
+  it('records an unseatable athlete instead of dropping him silently', () => {
+    const result = toTeamRoster({
+      meta: META,
+      roster: thinRoster,
+      depthcharts: thinCharts,
+      teamInfo: TEAM_INFO,
+    });
+    expect(result.unseatedAthleteIds).toContain(CHART_ONLY);
+    expect(result.unseatedAthleteIds).not.toContain(ON_ROSTER);
+  });
+
+  it('seats the athlete once the ingest hydrates him into the roster', () => {
+    const hydrated: EspnRoster = {
+      ...thinRoster,
+      athletes: [
+        ...thinRoster.athletes,
+        {
+          position: 'depthchart-only',
+          items: [
+            {
+              id: CHART_ONLY,
+              fullName: 'Chart Only Tackle',
+              jersey: '71',
+              position: { abbreviation: 'OT' },
+            } as EspnRoster['athletes'][number]['items'][number],
+          ],
+        },
+      ],
+    };
+    const result = toTeamRoster({
+      meta: META,
+      roster: hydrated,
+      depthcharts: thinCharts,
+      teamInfo: TEAM_INFO,
+    });
+    expect(result.unseatedAthleteIds).toEqual([]);
+    expect(
+      result.depthChartSlots.find((s) => s.position === 'LT' && s.depthRank === 1)?.playerId
+    ).toBe(CHART_ONLY);
+  });
+});
+
+describe('belongsToTeam: ESPN must place the athlete on this team (DEP-585)', () => {
+  const teamRef = (id: string) => ({
+    $ref: `http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2025/teams/${id}?lang=en`,
+  });
+
+  it('admits a stale "Free Agent" whose own record still points at the team', () => {
+    // Josh Simmons' real shape: ESPN's depth chart starts him at LT for Kansas City and
+    // his record's team ref agrees, while status.type lags at free-agent.
+    expect(
+      belongsToTeam(
+        {
+          id: '4569659',
+          fullName: 'Josh Simmons',
+          active: true,
+          status: { type: 'free-agent' },
+          team: teamRef('12'),
+        },
+        '12'
+      )
+    ).toBe(true);
+  });
+
+  it('rejects an athlete ESPN places on another team', () => {
+    expect(
+      belongsToTeam({ id: '1', fullName: 'Traded Away', active: true, team: teamRef('21') }, '12')
+    ).toBe(false);
+  });
+
+  it('rejects a record carrying no team ref at all', () => {
+    expect(belongsToTeam({ id: '2', fullName: 'Unattached', active: true }, '12')).toBe(false);
+  });
+
+  it('admits an `active: false` record whose team ref still points at the team', () => {
+    // Chamarri Conner's real shape: chiefs.com lists him as the starting safety while
+    // ESPN's athlete record reads active: false. Gating on `active` dropped a starter.
+    expect(
+      belongsToTeam(
+        { id: '4361964', fullName: 'Chamarri Conner', active: false, team: teamRef('12') },
+        '12'
+      )
+    ).toBe(true);
+  });
+});
+
+describe('statusOf: injury comes from injuries, not status.type (DEP-585)', () => {
+  const ref = (id: string) => ({
+    $ref: `http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2025/athletes/${id}?lang=en`,
+  });
+  const PRACTICE_SQUAD = '8000001';
+  const HURT_STARTER = '8000002';
+
+  const roster: EspnRoster = {
+    season: { year: 2025 },
+    athletes: [
+      {
+        position: 'offense',
+        items: [
+          {
+            id: PRACTICE_SQUAD,
+            fullName: 'Practice Squad Guard',
+            jersey: '60',
+            position: { abbreviation: 'OG' },
+            experience: { years: 3 },
+            status: { type: 'practice-squad' },
+          },
+          {
+            id: HURT_STARTER,
+            fullName: 'Questionable Guard',
+            jersey: '61',
+            position: { abbreviation: 'OG' },
+            experience: { years: 5 },
+            status: { type: 'active' },
+            injuries: [{ status: 'Questionable' }],
+          },
+        ] as EspnRoster['athletes'][number]['items'],
+      },
+    ],
+  };
+
+  const depthcharts: EspnDepthcharts = {
+    items: [
+      {
+        name: '3WR 1TE',
+        positions: {
+          lg: {
+            athletes: [
+              { rank: 1, athlete: ref(HURT_STARTER) },
+              { rank: 2, athlete: ref(PRACTICE_SQUAD) },
+            ],
+          },
+        },
+      },
+    ],
+  };
+
+  it('does not badge a healthy practice-squad player as injured', () => {
+    const result = toTeamRoster({ meta: META, roster, depthcharts, teamInfo: TEAM_INFO });
+    expect(result.players.find((p) => p.id === PRACTICE_SQUAD)?.status).toBe('backup');
+  });
+
+  it('badges an active player who is actually carrying an injury', () => {
+    const result = toTeamRoster({ meta: META, roster, depthcharts, teamInfo: TEAM_INFO });
+    expect(result.players.find((p) => p.id === HURT_STARTER)?.status).toBe('injured');
   });
 });

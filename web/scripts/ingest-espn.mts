@@ -19,7 +19,14 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/utils/env';
 
 dotenv.config({ path: '.env.local' });
-import { toCoach, toTeamRoster, type Coach, type DepthChartSlot } from '@/lib/espn/transform';
+import {
+  belongsToTeam,
+  missingRosterAthleteIds,
+  toCoach,
+  toTeamRoster,
+  type Coach,
+  type DepthChartSlot,
+} from '@/lib/espn/transform';
 
 // The transform now emits depth-chart slots directly from ESPN's position keys, so one
 // athlete can hold a slot at more than one position (DEP-585). Carry them through
@@ -42,7 +49,7 @@ import { notifyRevalidate } from '@/lib/utils/ingest/notify-revalidate';
 import { currentSeasonOf, nflSeasonState } from '@/lib/utils/team/season-state';
 import { TEAMS } from '@/lib/teams/index';
 import { parseSeasonsArg } from '@/lib/utils/ingest/seasons-arg';
-import type { EspnDepthcharts, EspnRoster, EspnTeamInfo } from '@/lib/espn/types';
+import type { EspnAthlete, EspnDepthcharts, EspnRoster, EspnTeamInfo } from '@/lib/espn/types';
 import type { TeamRoster, TeamStats } from '@/lib/types';
 import type { Database } from '@/lib/database.types';
 
@@ -87,6 +94,39 @@ async function fetchStandingsInChunks(seasons: number[]): Promise<EspnStandings[
     results.push(...chunkResults);
   }
   return results;
+}
+
+// ESPN's site roster and its depth chart are different slices that disagree: an athlete
+// can hold a starting slot on the chart and be absent from the roster (DEP-585). The
+// transform can only name athletes the roster gave it, so those slots used to vanish --
+// the Chiefs lost Josh Simmons at LT1, and three other teams lost a rank-1 starter.
+//
+// Fill the gap from the core `athletes/{id}` endpoint, which carries everything toPlayer
+// needs, and admit a record only when ESPN's own data puts the athlete on this team
+// (belongsToTeam). A fetch that fails or a record that belongs elsewhere is left out and
+// reported, never guessed at. Bounded work: roughly 20 requests across all 32 teams.
+async function hydrateMissingAthletes(
+  ids: string[],
+  season: number,
+  teamEspnId: string
+): Promise<{ athletes: EspnAthlete[]; elsewhere: string[]; unreachable: string[] }> {
+  const athletes: EspnAthlete[] = [];
+  // Kept apart because they mean different things: `elsewhere` is ESPN's data
+  // disagreeing with itself (a stale chart entry), `unreachable` is our fetch failing.
+  // Reporting them under one message would hide an API outage as a data problem.
+  const elsewhere: string[] = [];
+  const unreachable: string[] = [];
+  for (const id of ids) {
+    try {
+      const a = await getJson<EspnAthlete>(`${CORE}/seasons/${season}/athletes/${id}`);
+      if (belongsToTeam(a, teamEspnId)) athletes.push(a);
+      else elsewhere.push(id);
+    } catch {
+      unreachable.push(id);
+    }
+    await new Promise((r) => setTimeout(r, 100)); // be polite to the unofficial API
+  }
+  return { athletes, elsewhere, unreachable };
 }
 
 async function espnTeamIndex(): Promise<Map<string, EspnTeamInfo>> {
@@ -176,7 +216,43 @@ async function main() {
       const depthcharts = await getJson<EspnDepthcharts>(
         `${CORE}/seasons/${season}/teams/${info.id}/depthcharts`
       );
-      const roster2 = toTeamRoster({ meta, roster: espnRoster, depthcharts, teamInfo: info });
+      // Pull in any depth-chart athlete the site roster omits before transforming, so
+      // toTeamRoster stays pure and unchanged.
+      const missingIds = missingRosterAthleteIds({ roster: espnRoster, depthcharts });
+      const {
+        athletes: hydrated,
+        elsewhere,
+        unreachable,
+      } = missingIds.length
+        ? await hydrateMissingAthletes(missingIds, season, info.id)
+        : { athletes: [], elsewhere: [], unreachable: [] };
+      const fullRoster: EspnRoster = hydrated.length
+        ? {
+            ...espnRoster,
+            athletes: [...espnRoster.athletes, { position: 'depthchart-only', items: hydrated }],
+          }
+        : espnRoster;
+      if (elsewhere.length) {
+        errors.push({
+          team: meta.id,
+          message: `depth-chart athletes ESPN does not place on this team: ${elsewhere.join(', ')}`,
+        });
+      }
+      if (unreachable.length) {
+        errors.push({
+          team: meta.id,
+          message: `could not fetch depth-chart athletes: ${unreachable.join(', ')}`,
+        });
+      }
+
+      const roster2 = toTeamRoster({ meta, roster: fullRoster, depthcharts, teamInfo: info });
+      // A run must never report success while dropping a player it was told about.
+      if (roster2.unseatedAthleteIds.length) {
+        errors.push({
+          team: meta.id,
+          message: `unseated depth-chart athletes: ${roster2.unseatedAthleteIds.join(', ')}`,
+        });
+      }
       if (roster2.players.length < 15) {
         errors.push({
           team: meta.id,
@@ -188,7 +264,8 @@ async function main() {
       coachByTeamId[meta.id] = toCoach(espnRoster);
       statsByTeamId[meta.id] = teamStatsByEspnId.get(info.id) ?? [];
 
-      console.log(`fetched ${meta.id} (${roster2.players.length} players)`);
+      const hydratedNote = hydrated.length ? `, +${hydrated.length} hydrated` : '';
+      console.log(`fetched ${meta.id} (${roster2.players.length} players${hydratedNote})`);
     } catch (e) {
       errors.push({ team: meta.id, message: (e as Error).message });
     }
