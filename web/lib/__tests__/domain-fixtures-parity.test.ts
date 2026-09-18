@@ -23,7 +23,7 @@ import {
   buildRecentParticipation,
   type PlayerRecentSnapsRow,
 } from '@/lib/utils/compare/recent-participation';
-import type { Player, TeamRoster, FormationSlot, Position } from '@/lib/types';
+import type { DepthSeat, Player, TeamRoster, FormationSlot, Position } from '@/lib/types';
 
 const fixturesDir = join(process.cwd(), 'fixtures/domain');
 
@@ -55,7 +55,11 @@ function player(p: {
   };
 }
 
-function roster(players: Player[], specialTeams: TeamRoster['specialTeams'] = []): TeamRoster {
+function roster(
+  players: Player[],
+  specialTeams: TeamRoster['specialTeams'] = [],
+  depthChart?: DepthSeat[]
+): TeamRoster {
   return {
     team: {
       id: 't',
@@ -74,6 +78,7 @@ function roster(players: Player[], specialTeams: TeamRoster['specialTeams'] = []
     },
     players,
     specialTeams,
+    depthChart,
     uniforms: [],
   };
 }
@@ -148,6 +153,9 @@ describe('domain fixtures parity (drift guard)', () => {
         roster: {
           players: Parameters<typeof player>[0][];
           specialTeams: TeamRoster['specialTeams'];
+          // Null means the fixture roster has no depth chart, so seats derive from the
+          // players themselves — the historical-season path (DEP-585).
+          depthChart: DepthSeat[] | null;
         };
         realFormation: FormationSlot[] | null;
         resolved: {
@@ -161,7 +169,11 @@ describe('domain fixtures parity (drift guard)', () => {
       }[]
     >('resolve-unit');
     for (const c of cases) {
-      const r = roster(c.roster.players.map(player), c.roster.specialTeams);
+      const r = roster(
+        c.roster.players.map(player),
+        c.roster.specialTeams,
+        c.roster.depthChart ?? undefined
+      );
       const actual = resolveUnit(r, c.unit, c.realFormation ?? undefined);
       const slim = actual.map((s) => ({
         key: s.key,

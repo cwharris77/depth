@@ -25,7 +25,7 @@ import {
 } from '@/lib/utils/compare/recent-participation';
 import { UNIFORMS } from '@/lib/uniforms/data';
 import { teamFill, teamRing, kitMark, textOnFill, numeralColors } from '@/lib/utils/team-surfaces';
-import type { Player, TeamRoster, FormationSlot } from '@/lib/types';
+import type { DepthSeat, Player, TeamRoster, FormationSlot } from '@/lib/types';
 
 const outDir = join(dirname(fileURLToPath(import.meta.url)), 'domain');
 mkdirSync(outDir, { recursive: true });
@@ -51,7 +51,11 @@ function player(
   } as Player;
 }
 
-function roster(players: Player[], specialTeams: TeamRoster['specialTeams'] = []): TeamRoster {
+function roster(
+  players: Player[],
+  specialTeams: TeamRoster['specialTeams'] = [],
+  depthChart?: DepthSeat[]
+): TeamRoster {
   return {
     team: {
       id: 't',
@@ -70,6 +74,7 @@ function roster(players: Player[], specialTeams: TeamRoster['specialTeams'] = []
     },
     players,
     specialTeams,
+    depthChart,
     uniforms: [],
   };
 }
@@ -98,6 +103,9 @@ function slimRoster(r: TeamRoster) {
       order: p.order ?? null,
     })),
     specialTeams: r.specialTeams,
+    // null rather than omitted so Swift's decoder sees the same optionality the TS type
+    // has: absent means "derive one seat per player" (DEP-585).
+    depthChart: r.depthChart ?? null,
   };
 }
 
@@ -261,6 +269,7 @@ const resolveUnitCases: {
   players: Player[];
   specialTeams?: TeamRoster['specialTeams'];
   realFormation?: FormationSlot[];
+  depthChart?: DepthSeat[];
 }[] = [
   {
     description: 'generic offense: fills each slot by position+index, no crash on missing players',
@@ -336,12 +345,36 @@ const resolveUnitCases: {
       player({ id: 's2', position: 'S', depthRank: 1, number: 33 }),
     ],
   },
+  {
+    description:
+      'one athlete seated at two positions (DEP-585): a swing tackle holding LT2 and RT1 fills the RT slot as well, and the LT slot still goes to the LT1',
+    unit: 'offense',
+    players: [
+      player({ id: 'lt1', position: 'LT', depthRank: 1, number: 77 }),
+      player({ id: 'swing', position: 'LT', depthRank: 2, number: 70 }),
+    ],
+    depthChart: [
+      { position: 'LT', depthRank: 1, playerId: 'lt1' },
+      { position: 'LT', depthRank: 2, playerId: 'swing' },
+      { position: 'RT', depthRank: 1, playerId: 'swing' },
+    ],
+  },
+  {
+    description:
+      'a seat pointing at an athlete the roster does not carry is skipped, not faked (DEP-585)',
+    unit: 'offense',
+    players: [player({ id: 'lt1', position: 'LT', depthRank: 1, number: 77 })],
+    depthChart: [
+      { position: 'LT', depthRank: 1, playerId: 'lt1' },
+      { position: 'RT', depthRank: 1, playerId: 'ghost' },
+    ],
+  },
 ];
 
 write(
   'resolve-unit',
   resolveUnitCases.map((c) => {
-    const r = roster(c.players, c.specialTeams ?? []);
+    const r = roster(c.players, c.specialTeams ?? [], c.depthChart);
     return {
       description: c.description,
       unit: c.unit,

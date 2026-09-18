@@ -216,3 +216,81 @@ private func team(
     #expect(snapshot.formations.count == 1)
     #expect(snapshot.formations[0].unit == .special)
 }
+
+// Identity vs seat (DEP-585). ESPN cross-lists a swing tackle at LT2 and RT1, so one
+// athlete can hold two depth-chart entries. `players` must stay one row per athlete
+// while `depthChart` keeps both seats — seating off `players.position` is what left the
+// second slot empty and the formation a man short.
+@Suite struct CrossPositionSeatingTests {
+    private func seatedTackles() -> TeamDTO {
+        team(depthChartEntries: [
+            DepthChartEntryDTO(
+                teamId: "bills", position: "LT", depthRank: 1, playerId: "lt1",
+                player: player(id: "lt1", position: "LT")),
+            DepthChartEntryDTO(
+                teamId: "bills", position: "LT", depthRank: 2, playerId: "swing",
+                player: player(id: "swing", position: "LT")),
+            DepthChartEntryDTO(
+                teamId: "bills", position: "RT", depthRank: 1, playerId: "swing",
+                player: player(id: "swing", position: "LT")),
+        ])
+    }
+
+    @Test func oneAthleteHoldingTwoSeatsStaysOneIdentityRow() throws {
+        let snapshot = try TeamSnapshotMapper.map(seatedTackles())
+
+        #expect(snapshot.players.count == 2)
+        #expect(snapshot.players.filter { $0.id == "swing" }.count == 1)
+    }
+
+    @Test func bothSeatsSurviveIntoTheDepthChart() throws {
+        let snapshot = try TeamSnapshotMapper.map(seatedTackles())
+
+        #expect(snapshot.depthChart?.count == 3)
+        #expect(
+            snapshot.depthChart?.contains(
+                DepthSeat(position: .rt, depthRank: 1, playerId: "swing")) == true)
+    }
+
+    @Test func theSwingTackleFillsTheRightTackleSlot() throws {
+        let snapshot = try TeamSnapshotMapper.map(seatedTackles())
+        let roster = Roster(
+            players: snapshot.players, specialTeams: snapshot.specialTeams,
+            depthChart: snapshot.depthChart)
+
+        // The seat's position wins over the player row's canonical LT.
+        #expect(getPlayers(in: roster, at: .rt).map(\.id) == ["swing"])
+        #expect(getPlayers(in: roster, at: .lt).map(\.id) == ["lt1", "swing"])
+    }
+
+    @Test func aRosterWithNoDepthChartStillSeatsFromThePlayersThemselves() {
+        // The historical-season path: roster_history has no depth_chart_entries.
+        let roster = Roster(players: [
+            Player(id: "qb1", position: .qb, depthRank: 1, number: 7),
+            Player(id: "qb2", position: .qb, depthRank: 2, number: 9),
+        ])
+
+        #expect(getPlayers(in: roster, at: .qb).map(\.id) == ["qb1", "qb2"])
+    }
+
+    @Test func aSeatNamingAnAbsentAthleteIsSkippedNotFaked() {
+        let roster = Roster(
+            players: [Player(id: "lt1", position: .lt, depthRank: 1, number: 77)],
+            depthChart: [
+                DepthSeat(position: .lt, depthRank: 1, playerId: "lt1"),
+                DepthSeat(position: .rt, depthRank: 1, playerId: "ghost"),
+            ])
+
+        #expect(getPlayers(in: roster, at: .rt).isEmpty)
+    }
+
+    @Test func anUnknownSeatPositionFailsLoudly() {
+        let dto = team(depthChartEntries: [
+            DepthChartEntryDTO(
+                teamId: "bills", position: "XX", depthRank: 1, playerId: "p1",
+                player: player(id: "p1", position: "QB"))
+        ])
+
+        #expect(throws: DepthError.self) { try TeamSnapshotMapper.map(dto) }
+    }
+}

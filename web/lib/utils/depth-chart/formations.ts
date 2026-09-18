@@ -7,7 +7,7 @@ import type {
   TeamRosterSeed,
   Unit,
 } from '@/lib/types';
-import { byDepthOrder, getPlayerById, getPlayersByPosition } from '@/lib/utils/roster/roster';
+import { getPlayerById, getPlayersByPosition, playersInSeats } from '@/lib/utils/roster/roster';
 
 // Maps a granular Position to the broad group nflverse's count-only personnel data can
 // resolve against (lib/types.ts's PositionGroup doc comment). Used only by the real-
@@ -61,7 +61,9 @@ function positionGroup(position: Position): PositionGroup | undefined {
 }
 
 function getPlayersByPositionGroup(roster: TeamRosterSeed, group: PositionGroup): Player[] {
-  return roster.players.filter((p) => positionGroup(p.position) === group).sort(byDepthOrder);
+  // Seats, not player rows: an athlete holding two seats belongs in the pool once per
+  // seat, tagged with that seat's position (DEP-585).
+  return playersInSeats(roster, (p) => positionGroup(p) === group);
 }
 
 // Assigns players to a set of same-group slots: a slot with `preferredPosition` claims

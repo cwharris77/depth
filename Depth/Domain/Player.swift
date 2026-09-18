@@ -57,14 +57,46 @@ struct SpecialSlot: Codable, Equatable {
     let label: String
 }
 
+extension Player {
+    /// This athlete as seen from one seat on the depth chart.
+    ///
+    /// Identity stays single; `position`/`depthRank` come from the seat, so a swing tackle
+    /// can appear in the LT pool ranked 2 and the RT pool ranked 1 (DEP-585).
+    func seated(at position: Position, depthRank: Int) -> Player {
+        Player(
+            id: id, name: name, position: position, depthRank: depthRank, number: number,
+            order: order, status: status, age: age, college: college, experience: experience,
+            height: height, weight: weight, bio: bio, photoUrl: photoUrl
+        )
+    }
+}
+
+// One seat on the depth chart: a position slot, its rank, and who fills it. Mirrors a
+// `depth_chart_entries` row and TS's DepthSeat.
+//
+// Identity and seat are separate concerns (DEP-585). `Player` carries exactly one row per
+// athlete; a seat says where that athlete lines up. An athlete can hold more than one --
+// ESPN cross-lists a swing tackle at LT2 and RT1 -- which `Player.position` alone cannot
+// express, and which is why formations used to come up a man short.
+struct DepthSeat: Codable, Equatable, Hashable {
+    let position: Position
+    let depthRank: Int
+    let playerId: String
+}
+
 // A minimal roster shape (mirrors TS's TeamRosterSeed) — just enough for formation
 // resolution. Team identity/colors join when the data layer needs them.
 struct Roster {
     let players: [Player]
     let specialTeams: [SpecialSlot]
+    /// Where each athlete lines up. Nil means "derive one seat per player", which is what
+    /// keeps historical seasons working: roster_history has no depth_chart_entries, so a
+    /// 2001 roster behaves exactly as it did before seats existed. Mirrors seatsOf.
+    let depthChart: [DepthSeat]?
 
-    init(players: [Player], specialTeams: [SpecialSlot] = []) {
+    init(players: [Player], specialTeams: [SpecialSlot] = [], depthChart: [DepthSeat]? = nil) {
         self.players = players
         self.specialTeams = specialTeams
+        self.depthChart = depthChart
     }
 }

@@ -306,16 +306,36 @@ export interface TeamRoster {
   // The team's kits: synthesized Home first (from team.colors), then hand-curated
   // alternates/throwbacks. Default rendered kit is uniforms[0].
   uniforms: Uniform[];
+  // Where each athlete lines up, kept separate from who they are (DEP-585). Optional for
+  // the same reason as TeamRosterSeed's -- see seatsOf.
+  depthChart?: DepthSeat[];
 }
 
 // The bundled registry (lib/teams) is a build-time seed for the ESPN ingestion, not the
 // app's source of truth. It omits conference/division because those come from ESPN's
 // standings at ingest time (see lib/espn/standings.ts), not hand-curated.
 export type TeamSeed = Omit<Team, 'conference' | 'division'>;
+// One seat on the depth chart: a position slot, its rank, and who fills it. Mirrors a
+// `depth_chart_entries` row.
+//
+// Identity and seat are separate concerns (DEP-585). `Player` carries exactly one row per
+// athlete; a seat says where that athlete lines up. An athlete can hold more than one --
+// ESPN cross-lists a swing tackle at LT2 and RT1 -- which `Player.position` alone cannot
+// express, and which is why formations used to come up a man short.
+export interface DepthSeat {
+  position: Position;
+  depthRank: 1 | 2 | 3;
+  playerId: string;
+}
+
 export interface TeamRosterSeed {
   team: TeamSeed;
   players: Player[];
   specialTeams: SpecialSlot[];
+  // Optional: historical rosters (roster_history) have no depth_chart_entries to read,
+  // so they fall back to one seat per player derived from Player.position/depthRank --
+  // see seatsOf in lib/utils/roster/roster.ts.
+  depthChart?: DepthSeat[];
 }
 
 // One of every real formation a team ran that season, per unit (Phase E, nflverse

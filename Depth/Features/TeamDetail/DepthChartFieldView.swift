@@ -71,7 +71,9 @@ struct DepthChartFieldView: View {
     /// Shared with `TrueScaleFieldView` so the true-scale mode draws exactly the players
     /// the chart it was opened from shows.
     static func resolvedSlots(snapshot: TeamSnapshot, unit: Unit, formation: TeamFormation?) -> [RenderSlot] {
-        let roster = Roster(players: snapshot.players, specialTeams: snapshot.specialTeams)
+        let roster = Roster(
+            players: snapshot.players, specialTeams: snapshot.specialTeams,
+            depthChart: snapshot.depthChart)
         // DEP-221: pass the caller's selected real formation (formationSlots builds its
         // layout from the TeamFormation) so the field renders the team's actual FTN-charted
         // alignment instead of the generic synthetic layout. nil (no data, special, or

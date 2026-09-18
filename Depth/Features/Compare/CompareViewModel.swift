@@ -303,7 +303,9 @@ final class CompareViewModel {
 
     private func roster(of teamId: String?) -> Roster? {
         guard let teamId, let snapshot = snapshots[teamId] else { return nil }
-        return Roster(players: snapshot.players, specialTeams: snapshot.specialTeams)
+        return Roster(
+            players: snapshot.players, specialTeams: snapshot.specialTeams,
+            depthChart: snapshot.depthChart)
     }
 
     func load() async {
