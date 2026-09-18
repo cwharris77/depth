@@ -191,7 +191,20 @@ async function main() {
   const built: Record<string, BuiltRoster> = {};
   const coachByTeamId: Record<string, Coach | null> = {};
   const statsByTeamId: Record<string, TeamStats[]> = {};
+  // Two separate channels, deliberately.
+  //
+  // `errors` are failures: a team that did not write, a preseason season that threw. They
+  // decide the run's status, and under STRICT they turn the workflow red.
+  //
+  // `diagnostics` are data-quality notes: ESPN listing an athlete on a depth chart it
+  // does not place on that team, or one the transform still could not seat. They are
+  // recorded so a run can never look clean while dropping a player (DEP-585), but they
+  // must not fail the run -- they describe ESPN disagreeing with itself, they persist
+  // night after night, and nothing in this repo can resolve them. Conflating the two
+  // turned a fully successful 32-team write into a red `partial` whose own message
+  // ("some teams did not write") was false.
   const errors: { team: string; message: string }[] = [];
+  const diagnostics: { team: string; message: string }[] = [];
 
   for (const roster of Object.values(TEAMS)) {
     const seed = roster.team;
@@ -233,13 +246,13 @@ async function main() {
           }
         : espnRoster;
       if (elsewhere.length) {
-        errors.push({
+        diagnostics.push({
           team: meta.id,
           message: `depth-chart athletes ESPN does not place on this team: ${elsewhere.join(', ')}`,
         });
       }
       if (unreachable.length) {
-        errors.push({
+        diagnostics.push({
           team: meta.id,
           message: `could not fetch depth-chart athletes: ${unreachable.join(', ')}`,
         });
@@ -248,7 +261,7 @@ async function main() {
       const roster2 = toTeamRoster({ meta, roster: fullRoster, depthcharts, teamInfo: info });
       // A run must never report success while dropping a player it was told about.
       if (roster2.unseatedAthleteIds.length) {
-        errors.push({
+        diagnostics.push({
           team: meta.id,
           message: `unseated depth-chart athletes: ${roster2.unseatedAthleteIds.join(', ')}`,
         });
@@ -285,6 +298,10 @@ async function main() {
     if (errors.length) {
       console.log('Skips:');
       for (const e of errors) console.log(`  ${e.team}: ${e.message}`);
+    }
+    if (diagnostics.length) {
+      console.log('Data notes:');
+      for (const d of diagnostics) console.log(`  ${d.team}: ${d.message}`);
     }
     return;
   }
@@ -325,13 +342,19 @@ async function main() {
   const finishedAt = new Date().toISOString();
   const status = errors.length === 0 ? 'success' : teamsWritten > 0 ? 'partial' : 'failure';
 
+  // Both channels are recorded, tagged by kind, so the row still shows every dropped
+  // player even on a run whose status is `success`.
+  const recorded = [
+    ...errors.map((e) => ({ ...e, kind: 'error' as const })),
+    ...diagnostics.map((d) => ({ ...d, kind: 'diagnostic' as const })),
+  ];
   const { error: runError } = await supabase.from('ingestion_runs').insert({
     source: 'espn',
     started_at: startedAt,
     finished_at: finishedAt,
     status,
     teams_written: teamsWritten,
-    errors: errors.length ? errors : null,
+    errors: recorded.length ? recorded : null,
   });
   if (runError) throw new Error(`failed to record ingestion_runs: ${runError.message}`);
 
@@ -343,6 +366,10 @@ async function main() {
   if (errors.length) {
     console.log(`Errors/skips:`);
     for (const e of errors) console.log(`  ${e.team}: ${e.message}`);
+  }
+  if (diagnostics.length) {
+    console.log(`Data notes (recorded, not failures):`);
+    for (const d of diagnostics) console.log(`  ${d.team}: ${d.message}`);
   }
   if (status === 'failure') process.exit(1);
   // In scheduled runs (STRICT set) a partial run is a half-stale DB, so fail loud
