@@ -180,8 +180,19 @@ func applyingDepthOverrides(
     guard !orders.isEmpty else { return snapshot }
     var playersById = Dictionary(uniqueKeysWithValues: snapshot.players.map { ($0.id, $0) })
 
+    // The position's pool comes from its seats, not from filtering players by their single
+    // canonical position (DEP-585). The Chiefs list Kahlil Benson at LT2 and RT1: filtering
+    // found only the one athlete canonically tagged RT, so reordering RT moved the wrong
+    // list and the profile's ladder read "No backups available" behind him.
+    let sourceRoster = Roster(
+        players: snapshot.players, specialTeams: snapshot.specialTeams,
+        depthChart: snapshot.depthChart
+    )
+    var seats = seatsOf(sourceRoster)
+
     for (position, playerIds) in orders {
-        let group = snapshot.players.filter { $0.position == position }
+        let group = getPlayers(in: sourceRoster, at: position)
+        guard !group.isEmpty else { continue }
         var remaining = Dictionary(uniqueKeysWithValues: group.map { ($0.id, $0) })
         var ordered: [Player] = []
         for playerId in playerIds {
@@ -191,7 +202,24 @@ func applyingDepthOverrides(
         }
         ordered.append(contentsOf: remaining.values.sorted(by: byDepthOrder))
 
-        for (_, player) in rerankedPlayers(ordered).enumerated() {
+        let reranked = rerankedPlayers(ordered)
+        // Move this position's seats, which is what the field actually renders from. A
+        // cross-listed athlete's other seats are untouched: reordering RT must not
+        // reshuffle LT.
+        var rankByPlayerId: [String: Int] = [:]
+        for player in reranked { rankByPlayerId[player.id] = player.depthRank }
+        seats = seats.map { seat in
+            guard seat.position == position, let rank = rankByPlayerId[seat.playerId] else {
+                return seat
+            }
+            return DepthSeat(position: position, depthRank: rank, playerId: seat.playerId)
+        }
+
+        // Identity rows still carry the reranked status/order for the player card. For an
+        // athlete holding seats at two overridden positions the last one wins here; the
+        // seat above is what decides where he lines up, so the field stays correct either
+        // way.
+        for player in reranked {
             playersById[player.id] = player
         }
     }
@@ -201,7 +229,11 @@ func applyingDepthOverrides(
         players: snapshot.players.compactMap { playersById[$0.id] },
         specialTeams: snapshot.specialTeams,
         uniforms: snapshot.uniforms,
-        formations: snapshot.formations
+        formations: snapshot.formations,
+        // Carried through explicitly: rebuilding a TeamSnapshot without this silently drops
+        // every seat, so any saved custom order reverted the whole field to seating players
+        // by their canonical position — the exact bug this ticket fixed.
+        depthChart: snapshot.depthChart == nil ? nil : seats
     )
 }
 

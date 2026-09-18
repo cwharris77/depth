@@ -958,16 +958,26 @@ struct TeamDetailView: View {
         }
     }
 
+    /// The position's pool, seated from the depth chart rather than filtered by each
+    /// player's canonical position (DEP-585) — an athlete can hold seats at two positions,
+    /// and filtering dropped him from every pool but his canonical one.
     private func players(for position: Position) -> [Player] {
-        displayedSnapshot?.players.filter { $0.position == position }.sorted(by: byDepthOrder)
-            ?? []
+        guard let snapshot = displayedSnapshot else { return [] }
+        return getPlayers(in: roster(of: snapshot), at: position)
+    }
+
+    private func roster(of snapshot: TeamSnapshot) -> Roster {
+        Roster(
+            players: snapshot.players, specialTeams: snapshot.specialTeams,
+            depthChart: snapshot.depthChart
+        )
     }
 
     /// The position's default roster order, before any user override (web's
     /// `getPlayersByPosition` on the un-overridden roster). Reset restores to this.
     private func defaultPlayers(for position: Position) -> [Player] {
-        viewModel.snapshot?.players.filter { $0.position == position }.sorted(by: byDepthOrder)
-            ?? []
+        guard let snapshot = viewModel.snapshot else { return [] }
+        return getPlayers(in: roster(of: snapshot), at: position)
     }
 
     private var displayedSnapshot: TeamSnapshot? {
