@@ -42,7 +42,8 @@ import Testing
         photoUrl: "https://example.com/player.png"
     )
 
-    let mapped = try TeamSnapshotMapper.mapPlayer(dto, depthRank: 1)
+    var dropped: [TeamSnapshotMapper.DroppedRow] = []
+    let mapped = try #require(TeamSnapshotMapper.mapPlayer(dto, depthRank: 1, dropped: &dropped))
 
     #expect(mapped.status == .injured)
     #expect(mapped.age == 27)

@@ -118,27 +118,69 @@ private func team(
     #expect(snapshot.specialTeams[0].playerId == nil)
 }
 
-@Test func unknownPositionThrowsDecodingError() {
+@Test func anUnknownPositionDropsThatRowAndKeepsTheRestOfTheTeam() throws {
+    // The launch screen must survive a value this build doesn't know. Strictness here is
+    // what made every new position/rank/status a gated client release (DEP-486).
     let dto = team(depthChartEntries: [
-        DepthChartEntryDTO(teamId: "bills", position: "XX", depthRank: 1, playerId: "p1", player: player(id: "p1", position: "XX")),
+        DepthChartEntryDTO(teamId: "bills", position: "QB", depthRank: 1, playerId: "p1", player: player(id: "p1", position: "QB")),
+        DepthChartEntryDTO(teamId: "bills", position: "XX", depthRank: 1, playerId: "p2", player: player(id: "p2", position: "XX")),
     ])
-    #expect(throws: DepthError.self) {
-        try TeamSnapshotMapper.map(dto)
-    }
+
+    let result = try TeamSnapshotMapper.mapWithDiagnostics(dto)
+
+    #expect(result.snapshot.players.map(\.id) == ["p1"])
+    #expect(result.snapshot.depthChart?.map(\.position) == [.qb])
+    #expect(result.dropped == [
+        TeamSnapshotMapper.DroppedRow(id: "bills/XX", reason: .unknownSeatPosition("XX")),
+    ])
 }
 
-@Test func missingJerseyNumberThrowsDecodingError() {
+@Test func aMissingJerseyNumberDefaultsToZeroRatherThanDroppingThePlayer() throws {
+    // Matches mapPlayerHit and the historical mapper's `?? 0`. Losing a rostered athlete
+    // because ESPN omitted his number costs more than it protects.
     let dto = team(depthChartEntries: [
         DepthChartEntryDTO(teamId: "bills", position: "QB", depthRank: 1, playerId: "p1", player: player(id: "p1", number: nil)),
     ])
-    #expect(throws: DepthError.self) {
-        try TeamSnapshotMapper.map(dto)
-    }
+
+    let result = try TeamSnapshotMapper.mapWithDiagnostics(dto)
+
+    #expect(result.snapshot.players.map(\.number) == [0])
+    #expect(result.dropped.isEmpty)
 }
 
-@Test func outOfRangeDepthRankThrowsDecodingError() {
+@Test func aDepthRankPastThirdIsAcceptedNotRejected() throws {
+    // The 1...3 cap is a property of today's ingest and its CHECK constraint, not of the
+    // domain — this build already decodes an uncapped chart.
     let dto = team(depthChartEntries: [
         DepthChartEntryDTO(teamId: "bills", position: "QB", depthRank: 7, playerId: "p1", player: player(id: "p1")),
+    ])
+
+    let result = try TeamSnapshotMapper.mapWithDiagnostics(dto)
+
+    #expect(result.snapshot.players.map(\.depthRank) == [7])
+    #expect(result.snapshot.depthChart?.map(\.depthRank) == [7])
+    #expect(result.dropped.isEmpty)
+}
+
+@Test func anUnrecognizedStatusFallsBackToTheRankDerivedOne() throws {
+    // The prerequisite for storing ESPN's real designations: an older build shows the
+    // athlete at his correct rank instead of failing the whole team.
+    let dto = team(depthChartEntries: [
+        DepthChartEntryDTO(teamId: "bills", position: "QB", depthRank: 1, playerId: "p1", player: player(id: "p1", status: "Questionable")),
+        DepthChartEntryDTO(teamId: "bills", position: "RB", depthRank: 2, playerId: "p2", player: player(id: "p2", position: "RB", status: "Doubtful")),
+    ])
+
+    let result = try TeamSnapshotMapper.mapWithDiagnostics(dto)
+
+    #expect(result.snapshot.players.map(\.status) == [.starter, .backup])
+    #expect(result.dropped.isEmpty)
+}
+
+@Test func aChartThatDecodesToNothingIsStillAnError() {
+    // A blank field reads as a broken screen; an empty chart that was empty upstream does
+    // not, and stays a valid snapshot (covered separately).
+    let dto = team(depthChartEntries: [
+        DepthChartEntryDTO(teamId: "bills", position: "XX", depthRank: 1, playerId: "p1", player: player(id: "p1", position: "XX")),
     ])
     #expect(throws: DepthError.self) {
         try TeamSnapshotMapper.map(dto)
@@ -284,13 +326,24 @@ private func team(
         #expect(getPlayers(in: roster, at: .rt).isEmpty)
     }
 
-    @Test func anUnknownSeatPositionFailsLoudly() {
+    @Test func anUnknownSeatPositionDropsTheSeatAndKeepsTheAthlete() throws {
+        // The seat can't be placed, but the athlete is still on the roster — he keeps his
+        // other seats and stays in list surfaces rather than vanishing with the bad row.
         let dto = team(depthChartEntries: [
             DepthChartEntryDTO(
+                teamId: "bills", position: "QB", depthRank: 1, playerId: "p1",
+                player: player(id: "p1", position: "QB")),
+            DepthChartEntryDTO(
                 teamId: "bills", position: "XX", depthRank: 1, playerId: "p1",
-                player: player(id: "p1", position: "QB"))
+                player: player(id: "p1", position: "QB")),
         ])
 
-        #expect(throws: DepthError.self) { try TeamSnapshotMapper.map(dto) }
+        let result = try TeamSnapshotMapper.mapWithDiagnostics(dto)
+
+        #expect(result.snapshot.depthChart?.map(\.position) == [.qb])
+        #expect(result.snapshot.players.map(\.id) == ["p1"])
+        #expect(result.dropped == [
+            TeamSnapshotMapper.DroppedRow(id: "bills/XX", reason: .unknownSeatPosition("XX")),
+        ])
     }
 }

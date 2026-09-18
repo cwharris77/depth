@@ -95,12 +95,42 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
     #expect(player.status == .backup)
 }
 
-@Test func historicalMapperRejectsMalformedPositionAndRank() {
-    #expect(throws: DepthError.decoding("historical player 00-0031234: unknown position \"XX\"")) {
-        try HistoricalRosterMapper.map(team: historyTeam(), rows: [historyRow(position: "XX")])
-    }
-    #expect(throws: DepthError.decoding("historical player 00-0031234: depthRank 4 out of range 1...3")) {
-        try HistoricalRosterMapper.map(team: historyTeam(), rows: [historyRow(depthRank: 4)])
+@Test func historicalMapperDropsAnUnreadableRowWithoutLosingTheSeason() throws {
+    // The point of the tolerant decode: a row this build cannot represent costs that one
+    // player, never the season. The strict version is what made every new roster_history
+    // value a client-compatibility event (DEP-486's generic OT/G rollback).
+    let result = try HistoricalRosterMapper.mapWithDiagnostics(team: historyTeam(), rows: [
+        historyRow(gsisId: "good", name: "Readable", position: "QB"),
+        historyRow(gsisId: "bad-pos", position: "XX"),
+        historyRow(gsisId: "bad-rank", depthRank: 0),
+    ])
+
+    #expect(result.snapshot.players.map(\.name) == ["Readable"])
+    #expect(result.dropped == [
+        HistoricalRosterMapper.DroppedRow(gsisId: "bad-pos", reason: .unknownPosition("XX")),
+        HistoricalRosterMapper.DroppedRow(gsisId: "bad-rank", reason: .invalidDepthRank(0)),
+    ])
+}
+
+@Test func historicalMapperAcceptsADepthRankPastThird() throws {
+    // The 1...3 cap is a property of today's ingest (depth-heuristic.ts clamps with
+    // Math.min(rank, 3) while player_order keeps the full ordering), not of the domain.
+    // Decoding an uncapped season correctly is what removes the next gated release.
+    let roster = try HistoricalRosterMapper.map(team: historyTeam(), rows: [historyRow(depthRank: 7)])
+    let player = try #require(roster.players.first)
+
+    #expect(player.depthRank == 7)
+    #expect(player.status == .backup)
+}
+
+@Test func historicalMapperStillFailsWhenNothingDecodes() {
+    // A wholly unreadable season stays an error: an empty snapshot renders as a blank
+    // field rather than a state the user can act on.
+    #expect(throws: DepthError.decoding("historical roster for seahawks: no decodable rows (2 of 2 dropped)")) {
+        try HistoricalRosterMapper.map(team: historyTeam(), rows: [
+            historyRow(gsisId: "a", position: "XX"),
+            historyRow(gsisId: "b", position: "YY"),
+        ])
     }
 }
 
