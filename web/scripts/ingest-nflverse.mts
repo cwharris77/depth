@@ -33,8 +33,11 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseUrl, getSupabaseSecretKey } from '@/lib/utils/env';
 
 dotenv.config({ path: '.env.local' });
-import { parseCsv, parseCsvStream } from '@/lib/nflverse/csv';
+import { parseCsv, parseCsvHeader, parseCsvStream } from '@/lib/nflverse/csv';
 import { assetUrl, latestAvailableSeason } from '@/lib/nflverse/assets';
+import { assertHeader, sourceContract, type SourceId } from '@/lib/nflverse/source-contract';
+import { classifyMissingAsset } from '@/lib/nflverse/source-coverage';
+import { fetchRawGroup } from '@/lib/nflverse/raw-group-guard';
 import { buildCrosswalk, buildPfrCrosswalk } from '@/lib/nflverse/crosswalk';
 import { toPlayerStatsRows, type PlayerStatsInsert } from '@/lib/nflverse/transform';
 import { toSeasonSnapTotals, type SeasonSnapTotalsInsert } from '@/lib/nflverse/season-snaps';
@@ -57,6 +60,7 @@ import { FormationAccumulator, type ParticipationRow } from '@/lib/nflverse/part
 import { DefenseFormationAccumulator } from '@/lib/nflverse/defense-participation';
 import { resolveTeamCode } from '@/lib/nflverse/team-codes';
 import { parseSeasonsArg } from '@/lib/utils/ingest/seasons-arg';
+import { nflSeasonState } from '@/lib/utils/team/season-state';
 import { SEASONS_MIN } from '@/lib/nflverse/roster-history';
 import { ingestRecentSnapSeason, ingestRecentSnapSeasons } from '@/lib/nflverse/snap-counts-ingest';
 import type { RecentSnapSummaryInsert, SnapCountsDiagnostics } from '@/lib/nflverse/snap-counts';
@@ -112,6 +116,9 @@ const SNAP_COUNTS_MIN_SEASON = 2012;
 const NGS_TAG = 'nextgen_stats';
 // FTN charting is published from 2022 onward; an older backfill skips it (404 -> skip).
 const FTN_MIN_SEASON = 2022;
+// Header-contract checks (DEP-579) report a source's new upstream columns once per
+// process, however many seasons/files it is fetched across.
+const loggedNewColumnSources = new Set<string>();
 // SEED_OUT mode has no live `players` table to query -- it reads known player ids from
 // this already-committed file instead (see the header comment above).
 const ESPN_SEED_PATH = 'supabase/seed.sql';
@@ -265,6 +272,7 @@ async function ingestGames(
 }> {
   try {
     const csv = await getText(GAMES_URL);
+    assertHeader(sourceContract('games'), parseCsvHeader(csv), loggedNewColumnSources);
     const { games, schedules, skipped } = toScheduleAndGameRows(
       parseCsv(csv),
       resolveTeamCode,
@@ -436,17 +444,23 @@ async function ingestFormations(
 
     const offenseAcc = new FormationAccumulator(resolveTeamCode);
     const defenseAcc = new DefenseFormationAccumulator(resolveTeamCode);
-    await parseCsvStream(textChunks(res.body), (record) => {
-      const row: ParticipationRow = {
-        nflverse_game_id: record.nflverse_game_id ?? '',
-        possession_team: record.possession_team ?? '',
-        offense_formation: record.offense_formation ?? '',
-        offense_personnel: record.offense_personnel ?? '',
-        defense_personnel: record.defense_personnel ?? '',
-      };
-      offenseAcc.addRow(row);
-      defenseAcc.addRow(row);
-    });
+    await parseCsvStream(
+      textChunks(res.body),
+      (record) => {
+        const row: ParticipationRow = {
+          nflverse_game_id: record.nflverse_game_id ?? '',
+          possession_team: record.possession_team ?? '',
+          offense_formation: record.offense_formation ?? '',
+          offense_personnel: record.offense_personnel ?? '',
+          defense_personnel: record.defense_personnel ?? '',
+        };
+        offenseAcc.addRow(row);
+        defenseAcc.addRow(row);
+      },
+      // The check runs on the streamed header before any row is folded in, so a shape
+      // change throws before a single tally is written.
+      (header) => assertHeader(sourceContract('pbp_participation'), header, loggedNewColumnSources)
+    );
 
     const offenseResult = offenseAcc.finish(season, gamesPlayedByTeam);
     const defenseResult = defenseAcc.finish(season, gamesPlayedByTeam);
@@ -505,6 +519,7 @@ async function ingestTeamStats(
   for (const season of seasons) {
     try {
       const csvText = await getText(assetUrl(TEAM_STATS_TAG, `${TEAM_STATS_PREFIX}${season}.csv`));
+      assertHeader(sourceContract('stats_team'), parseCsvHeader(csvText), loggedNewColumnSources);
       const parsed = parseCsv(csvText);
       const { rows, skipped: seasonSkipped } = toTeamStatsRows(parsed, undefined, { updatedAt });
       skipped += seasonSkipped;
@@ -555,7 +570,11 @@ async function ingestRecentSnaps(
   const result = await ingestRecentSnapSeasons(seasons, (season) =>
     ingestRecentSnapSeason({
       season,
-      fetchCsv: () => getText(assetUrl(SNAP_COUNTS_TAG, `${SNAP_COUNTS_PREFIX}${season}.csv`)),
+      fetchCsv: async () => {
+        const csv = await getText(assetUrl(SNAP_COUNTS_TAG, `${SNAP_COUNTS_PREFIX}${season}.csv`));
+        assertHeader(sourceContract('snap_counts'), parseCsvHeader(csv), loggedNewColumnSources);
+        return csv;
+      },
       pfrToEspn: pfrCrosswalk,
       resolveTeam: resolveTeamCode,
       updatedAt: startedAt,
@@ -621,6 +640,10 @@ async function main() {
 
   const startedAt = new Date().toISOString();
   const failures: { season: number | string; message: string }[] = [];
+  // The calendar's most recent completed season (never a source's own label). A 404 for a
+  // later season is the in-progress one before its first release, so it is a skip rather
+  // than a shape-change failure (DEP-579, source-coverage.ts).
+  const latestCompletedSeason = nflSeasonState().completedSeason;
 
   // --seasons scopes games/schedules, team_season_stats, and player_stats alike (see
   // the usage comment above and the player_stats season-selection comment below). Not
@@ -632,6 +655,7 @@ async function main() {
   }
 
   const playersCsv = await getText(assetUrl(PLAYERS_TAG, PLAYERS_FILE));
+  assertHeader(sourceContract('players'), parseCsvHeader(playersCsv), loggedNewColumnSources);
   const playerRows = parseCsv(playersCsv);
   const crosswalk = buildCrosswalk(playerRows);
   const pfrCrosswalk = buildPfrCrosswalk(playerRows);
@@ -680,6 +704,13 @@ async function main() {
   for (const season of seasons) {
     try {
       const statsCsv = await getText(assetUrl(STATS_TAG, `${STATS_PREFIX}${season}.csv`));
+      // Checked before transforming: a renamed canonical column fails the season and
+      // writes nothing, instead of landing as a null in every row (DEP-579).
+      assertHeader(
+        sourceContract('stats_player_reg'),
+        parseCsvHeader(statsCsv),
+        loggedNewColumnSources
+      );
       const { rows, skipped: seasonSkipped } = toPlayerStatsRows(
         parseCsv(statsCsv),
         crosswalk,
@@ -742,22 +773,32 @@ async function main() {
     );
   }
 
-  const rawTasks: { table: string; season: number; url: string; partition?: string }[] = [];
+  interface RawTask {
+    table: string;
+    source: SourceId;
+    season: number;
+    url: string;
+    partition?: string;
+  }
+  const rawTasks: RawTask[] = [];
   for (const season of seasons) {
     rawTasks.push({
       table: 'nflverse_player_season',
+      source: 'stats_player_regpost',
       season,
       url: assetUrl('stats_player', `stats_player_regpost_${season}.csv`),
     });
     if (season >= weeklyMinSeason) {
       rawTasks.push({
         table: 'nflverse_player_week',
+        source: 'stats_player_week',
         season,
         url: assetUrl('stats_player', `stats_player_week_${season}.csv`),
       });
       for (const family of ['pass', 'def', 'rush', 'rec']) {
         rawTasks.push({
           table: 'pfr_player_week',
+          source: 'pfr_advstats',
           season,
           partition: family,
           url: assetUrl('pfr_advstats', `advstats_week_${family}_${season}.csv`),
@@ -766,6 +807,7 @@ async function main() {
       for (const family of ['passing', 'rushing', 'receiving']) {
         rawTasks.push({
           table: 'ngs_player_week',
+          source: 'nextgen_stats',
           season,
           partition: family,
           url: assetUrl(NGS_TAG, `ngs_${season}_${family}.csv.gz`),
@@ -775,6 +817,7 @@ async function main() {
     if (season >= FTN_MIN_SEASON) {
       rawTasks.push({
         table: 'ftn_play',
+        source: 'ftn_charting',
         season,
         url: assetUrl('ftn_charting', `ftn_charting_${season}.csv`),
       });
@@ -783,55 +826,94 @@ async function main() {
   // QBR is a single whole-history file per grain, not per season.
   rawTasks.push({
     table: 'espn_qbr_week',
+    source: 'espn_qbr_week',
     season: seasons[0] ?? 0,
     url: assetUrl('espn_data', 'qbr_week_level.csv'),
   });
   rawTasks.push({
     table: 'espn_qbr_season',
+    source: 'espn_qbr_season',
     season: seasons[0] ?? 0,
     url: assetUrl('espn_data', 'qbr_season_level.csv'),
   });
 
+  // One group per (table, season). A partitioned source splits a single contract across
+  // several files (pfr_advstats' pass/def/rush/rec, nextgen_stats' passing/rushing/
+  // receiving) and the generated contract is the union of their headers, so the whole
+  // group fetches first and its header union is checked before any row is written.
+  const rawTaskGroups: {
+    source: SourceId;
+    table: string;
+    season: number;
+    tasks: RawTask[];
+  }[] = [];
+  const rawGroupIndex = new Map<string, number>();
   for (const task of rawTasks) {
+    const key = `${task.table}|${task.season}`;
+    let index = rawGroupIndex.get(key);
+    if (index === undefined) {
+      index = rawTaskGroups.length;
+      rawGroupIndex.set(key, index);
+      rawTaskGroups.push({
+        source: task.source,
+        table: task.table,
+        season: task.season,
+        tasks: [],
+      });
+    }
+    rawTaskGroups[index].tasks.push(task);
+  }
+
+  for (const group of rawTaskGroups) {
+    // Fetch + header-check first: a shape change or renamed asset never reaches the
+    // transform (DEP-579, raw-group-guard.ts).
+    const guarded = await fetchRawGroup(group, {
+      fetchCsv: getTextMaybeGzip,
+      latestCompletedSeason,
+      loggedNewColumns: loggedNewColumnSources,
+    });
+    if (guarded.status === 'skip') continue;
+    if (guarded.status === 'failure') {
+      failures.push({ season: group.season, message: guarded.message });
+      continue;
+    }
     try {
-      const csv = await getTextMaybeGzip(task.url);
-      let rows: Record<string, unknown>[];
-      let unresolved = 0;
-      let conflict: string;
-      if (task.table === 'ftn_play') {
-        const spec = playSpec(task.table);
-        const result = toPlayRawRows(spec, parseCsv(csv));
-        rows = result.rows;
-        skipped += result.skipped;
-        conflict = playRawConflictTarget(spec);
-      } else {
-        const spec = playerSpec(task.table);
-        const result = toPlayerRawRows(spec, parseCsv(csv), crosswalks, task.partition);
-        rows = result.rows;
-        skipped += result.skipped;
-        unresolved = result.unresolved;
-        conflict = playerRawConflictTarget(spec);
+      for (const { task, csv } of guarded.fetched) {
+        let rows: Record<string, unknown>[];
+        let unresolved = 0;
+        let conflict: string;
+        if (group.table === 'ftn_play') {
+          const spec = playSpec(group.table);
+          const result = toPlayRawRows(spec, parseCsv(csv));
+          rows = result.rows;
+          skipped += result.skipped;
+          conflict = playRawConflictTarget(spec);
+        } else {
+          const spec = playerSpec(group.table);
+          const result = toPlayerRawRows(spec, parseCsv(csv), crosswalks, task.partition);
+          rows = result.rows;
+          skipped += result.skipped;
+          unresolved = result.unresolved;
+          conflict = playerRawConflictTarget(spec);
+        }
+        if (supabase && rows.length) {
+          await upsertRawRows(supabase, group.table, rows, conflict);
+        }
+        if (group.table === 'ftn_play') {
+          // A play file is per-season and its rows carry no usable season column, so
+          // attribute the task's season.
+          recordRawSource(group.table, [task.season], rows.length);
+        } else {
+          recordRawSource(
+            group.table,
+            (rows as RawSourceRow[]).map((row) => row.season),
+            rows.length
+          );
+        }
+        console.log(`${group.table} ${task.season}: ${rows.length} rows, ${unresolved} unresolved`);
       }
-      if (supabase && rows.length) {
-        await upsertRawRows(supabase, task.table, rows, conflict);
-      }
-      if (task.table === 'ftn_play') {
-        // A play file is per-season and its rows carry no usable season column, so
-        // attribute the task's season.
-        recordRawSource(task.table, [task.season], rows.length);
-      } else {
-        recordRawSource(
-          task.table,
-          (rows as RawSourceRow[]).map((row) => row.season),
-          rows.length
-        );
-      }
-      console.log(`${task.table} ${task.season}: ${rows.length} rows, ${unresolved} unresolved`);
     } catch (e) {
-      const message = (e as Error).message;
-      // A source that doesn't publish a season (advstats < 2018, ngs/ftn gaps) is a skip.
-      if (/^404\b/.test(message)) continue;
-      failures.push({ season: task.season, message: `${task.table}: ${message}` });
+      failures.push({ season: group.season, message: `${group.table}: ${(e as Error).message}` });
     }
   }
 
@@ -850,6 +932,7 @@ async function main() {
     if (season < SNAP_COUNTS_MIN_SEASON) continue;
     try {
       const csv = await getText(assetUrl(SNAP_COUNTS_TAG, `${SNAP_COUNTS_PREFIX}${season}.csv`));
+      assertHeader(sourceContract('snap_counts'), parseCsvHeader(csv), loggedNewColumnSources);
       const { rows, malformedRows, unresolvedRows } = toSeasonSnapTotals(
         parseCsv(csv),
         pfrCrosswalk
@@ -877,10 +960,15 @@ async function main() {
       );
     } catch (e) {
       const message = (e as Error).message;
-      // A season with no published snap asset (a gap in the source, or a range that
-      // predates the dataset) is a skip, not a run failure -- the box score still writes.
+      // A missing snap asset is a skip only outside the source's published range (2012+)
+      // or for the in-progress season; inside the range it is a renamed release asset --
+      // an error naming the URL (DEP-579). The box score still writes either way.
       if (/^404\b/.test(message)) {
-        console.log(`snap-counts season ${season}: no source asset, skipped`);
+        if (classifyMissingAsset('snap_counts', season, latestCompletedSeason) === 'skip') {
+          console.log(`snap-counts season ${season}: no source asset, skipped`);
+          continue;
+        }
+        failures.push({ season, message: `season snaps: ${message}` });
         continue;
       }
       failures.push({ season, message: `season snaps: ${message}` });
