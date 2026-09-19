@@ -51,12 +51,14 @@ struct DepthFlowLayout: Layout {
         var current = Row()
         for index in subviews.indices {
             let size = subviews[index].sizeThatFits(.unspecified)
-            let projected = current.indices.isEmpty ? size.width : current.width + spacing + size.width
+            let projected =
+                current.indices.isEmpty ? size.width : current.width + spacing + size.width
             if !current.indices.isEmpty && projected > maxWidth {
                 rows.append(current)
                 current = Row()
             }
-            current.width = current.indices.isEmpty ? size.width : current.width + spacing + size.width
+            current.width =
+                current.indices.isEmpty ? size.width : current.width + spacing + size.width
             current.height = max(current.height, size.height)
             current.indices.append(index)
         }

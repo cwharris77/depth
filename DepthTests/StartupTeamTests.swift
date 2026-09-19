@@ -19,7 +19,8 @@ import Testing
 }
 
 @Test func fallsBackToDefaultWhenLastTeamIsNoLongerALiveTeam() {
-    #expect(StartupTeam.resolve(lastTeamId: "oilers", validIds: ["bills", "seahawks"]) == "seahawks")
+    #expect(
+        StartupTeam.resolve(lastTeamId: "oilers", validIds: ["bills", "seahawks"]) == "seahawks")
 }
 
 @Test func fallsBackToDefaultOnBlankOrWhitespacePreference() {

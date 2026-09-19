@@ -28,7 +28,8 @@ final class TapTargetUITests: XCTestCase {
         XCTAssertTrue(app.textFields["auth-email"].waitForExistence(timeout: 15))
         capture("email-appearance")
         app.terminate()
-        app.launchArguments = XCUIApplication.hermeticLaunchArguments + ["UI_TESTING_DELETE_TAP_TARGET"]
+        app.launchArguments =
+            XCUIApplication.hermeticLaunchArguments + ["UI_TESTING_DELETE_TAP_TARGET"]
         app.launch()
         XCTAssertTrue(app.textFields["delete-code"].waitForExistence(timeout: 15))
         capture("deletion-appearance")
@@ -86,7 +87,8 @@ final class TapTargetUITests: XCTestCase {
 
     func testDeletionCodePaddingFocusesField() {
         checkFieldEdges("delete-code", deletionFixture: true) { app in
-            app.launchArguments = XCUIApplication.hermeticLaunchArguments + ["UI_TESTING_DELETE_TAP_TARGET"]
+            app.launchArguments =
+                XCUIApplication.hermeticLaunchArguments + ["UI_TESTING_DELETE_TAP_TARGET"]
             app.launch()
         }
     }
@@ -120,14 +122,18 @@ final class TapTargetUITests: XCTestCase {
                 // Anchor to the DRAWN bounds instead: this fixture has 16pt screen +
                 // 16pt card insets, and a 22pt text line with 16pt vertical padding.
                 // These points stay 8pt inside the same corners before and after the fix.
-                app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(
-                    dx: right ? app.frame.width - 40 : 40,
-                    dy: field.frame.midY + (right ? -19 : 19)
-                )).tap()
+                app.coordinate(withNormalizedOffset: .zero).withOffset(
+                    CGVector(
+                        dx: right ? app.frame.width - 40 : 40,
+                        dy: field.frame.midY + (right ? -19 : 19)
+                    )
+                ).tap()
             } else {
-                field.coordinate(withNormalizedOffset: CGVector(
-                    dx: right ? 0.98 : 0.02, dy: right ? 0.15 : 0.85
-                )).tap()
+                field.coordinate(
+                    withNormalizedOffset: CGVector(
+                        dx: right ? 0.98 : 0.02, dy: right ? 0.15 : 0.85
+                    )
+                ).tap()
             }
             XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
             field.typeText("1")
@@ -139,9 +145,11 @@ final class TapTargetUITests: XCTestCase {
 
     private func selectAtEdge(_ button: XCUIElement, right: Bool = false) {
         XCTAssertTrue(button.waitForExistence(timeout: 20))
-        button.coordinate(withNormalizedOffset: CGVector(
-            dx: right ? 0.95 : 0.05, dy: right ? 0.85 : 0.15
-        )).tap()
+        button.coordinate(
+            withNormalizedOffset: CGVector(
+                dx: right ? 0.95 : 0.05, dy: right ? 0.85 : 0.15
+            )
+        ).tap()
         XCTAssertTrue(button.isSelected, "Edge tap should select \(button.identifier)")
     }
 

@@ -39,7 +39,10 @@ struct ShareCardView: View {
             }
         }
         .padding(ShareCardMetrics.cardPadding)
-        .frame(width: ShareCardMetrics.cardWidth, height: ShareCardMetrics.cardHeight, alignment: .topLeading)
+        .frame(
+            width: ShareCardMetrics.cardWidth, height: ShareCardMetrics.cardHeight,
+            alignment: .topLeading
+        )
         .background(Color(hex: team.colors.primary))
     }
 
@@ -47,7 +50,9 @@ struct ShareCardView: View {
         HStack(spacing: ShareCardMetrics.eyebrowSpacing) {
             RoundedRectangle(cornerRadius: ShareCardMetrics.eyebrowBarRadius)
                 .fill(Color(hex: team.colors.secondary))
-                .frame(width: ShareCardMetrics.eyebrowBarSize.width, height: ShareCardMetrics.eyebrowBarSize.height)
+                .frame(
+                    width: ShareCardMetrics.eyebrowBarSize.width,
+                    height: ShareCardMetrics.eyebrowBarSize.height)
             Text("DEPTH CHART")
                 .font(.system(size: ShareCardMetrics.eyebrowTextSize, weight: .bold))
                 .tracking(ShareCardMetrics.eyebrowTracking)
@@ -67,7 +72,8 @@ struct ShareCardView: View {
         }
         .padding(.horizontal, ShareCardMetrics.starterPaddingHorizontal)
         .padding(.vertical, ShareCardMetrics.starterPaddingVertical)
-        .background(panelBackground, in: RoundedRectangle(cornerRadius: ShareCardMetrics.starterRadius))
+        .background(
+            panelBackground, in: RoundedRectangle(cornerRadius: ShareCardMetrics.starterRadius))
     }
 }
 
@@ -104,8 +110,8 @@ enum SharePreviewMetrics {
 /// spacing, uniform padding), the shipped native value is kept and flagged below so the
 /// two can be audited at a glance (DEP-269).
 enum ShareCardMetrics {
-    static let cardWidth: CGFloat = 600 // web 1200
-    static let cardHeight: CGFloat = 315 // web 630
+    static let cardWidth: CGFloat = 600  // web 1200
+    static let cardHeight: CGFloat = 315  // web 630
 
     /// Uniform card inset; web uses `padding: '76px 80px'` (top/bottom 76, left/right
     /// 80) — the shipped native value of 38 kept as-is, skirting web's 76/2 vs 80/2
@@ -119,23 +125,23 @@ enum ShareCardMetrics {
     /// Eyebrow bar↔label gap. Web margin-right is 20 (half: 10); the shipped native
     /// value 12 is kept, not 10 — a slightly wider label offset than the exact half.
     static let eyebrowSpacing: CGFloat = 12
-    static let eyebrowBarRadius: CGFloat = 3 // web 6
-    static let eyebrowBarSize = CGSize(width: 28, height: 6) // web 56×12
-    static let eyebrowTextSize: CGFloat = 15 // web 26
-    static let eyebrowTracking: CGFloat = 4 // web 8
+    static let eyebrowBarRadius: CGFloat = 3  // web 6
+    static let eyebrowBarSize = CGSize(width: 28, height: 6)  // web 56×12
+    static let eyebrowTextSize: CGFloat = 15  // web 26
+    static let eyebrowTracking: CGFloat = 4  // web 8
 
-    static let cityTextSize: CGFloat = 22 // web 44
-    static let cityTracking: CGFloat = 2 // web 4
-    static let teamNameSize: CGFloat = 66 // web 132
+    static let cityTextSize: CGFloat = 22  // web 44
+    static let cityTracking: CGFloat = 2  // web 4
+    static let teamNameSize: CGFloat = 66  // web 132
 
-    static let starterSpacing: CGFloat = 10 // web gap 20
-    static let starterRadius: CGFloat = 9 // web 18
-    static let starterPaddingHorizontal: CGFloat = 13 // web 26
-    static let starterPaddingVertical: CGFloat = 9 // web 18
+    static let starterSpacing: CGFloat = 10  // web gap 20
+    static let starterRadius: CGFloat = 9  // web 18
+    static let starterPaddingHorizontal: CGFloat = 13  // web 26
+    static let starterPaddingVertical: CGFloat = 9  // web 18
     /// Gap between the starter's label and name rows. Web's panel is a flex column
     /// with no explicit gap (0); the shipped native value of 2 is kept as a slight
     /// text separation, not a web half.
     static let starterTextSpacing: CGFloat = 2
-    static let starterLabelSize: CGFloat = 13 // web 26
-    static let starterNameSize: CGFloat = 19 // web 38
+    static let starterLabelSize: CGFloat = 13  // web 26
+    static let starterNameSize: CGFloat = 19  // web 38
 }

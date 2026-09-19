@@ -200,9 +200,12 @@ struct DepthChartFieldLayout: Equatable {
                 yardScale: .fullField(height: max(fieldSize.height, 1))
             )
         }
-        let base = fillWidth
-            ? fillingLayout(slots: slots, width: width, height: fieldSize.height, zoomToUnit: zoomToUnit)
-            : standardLayout(slots: slots, width: width, height: fieldSize.height, zoomToUnit: zoomToUnit)
+        let base =
+            fillWidth
+            ? fillingLayout(
+                slots: slots, width: width, height: fieldSize.height, zoomToUnit: zoomToUnit)
+            : standardLayout(
+                slots: slots, width: width, height: fieldSize.height, zoomToUnit: zoomToUnit)
         // Only the leader-line variant draws callouts. The other two want the same
         // geometry with no callout points at all — and because a slot renders its name
         // inline exactly when it has NO callout, `inlineOnly` needs the crowded slots
@@ -344,7 +347,8 @@ struct DepthChartFieldLayout: Equatable {
 
         func center(_ slot: RenderSlot) -> CGPoint {
             let p = positions[slot.key]!
-            return CGPoint(x: p.x, y: p.y + lineOffset(y: slot.y, onLine: slot.onLine, dotSize: dotSize))
+            return CGPoint(
+                x: p.x, y: p.y + lineOffset(y: slot.y, onLine: slot.onLine, dotSize: dotSize))
         }
         func dotRect(_ slot: RenderSlot) -> CGRect {
             let c = center(slot)
@@ -382,7 +386,8 @@ struct DepthChartFieldLayout: Equatable {
             let hitsDot = zip(named, allDots).contains { other, r in
                 other.key != slot.key && r.intersects(rect)
             }
-            let fits = field.contains(rect) && !hitsDot && !placedLabels.contains { $0.intersects(rect) }
+            let fits =
+                field.contains(rect) && !hitsDot && !placedLabels.contains { $0.intersects(rect) }
             if fits {
                 placedLabels.append(rect)
             } else {
@@ -503,7 +508,8 @@ struct DepthChartFieldLayout: Equatable {
         // space, so a point on screen is a fixed number of real yards. x is untouched —
         // five linemen occupy 6.2 measured yards, which is 43pt at the field's true
         // horizontal scale, so width has to stay stretched for the dots to be separable.
-        let yardScale = zoomToUnit
+        let yardScale =
+            zoomToUnit
             ? yardScaleFitting(slots: slots, dotSize: dotSize, height: height)
             : .fullField(height: height)
 
@@ -575,7 +581,8 @@ struct DepthChartFieldLayout: Equatable {
                     let edgeInset = dotSize / 2 + 4
 
                     for side in [-1.0, 1.0] {
-                        let group = side < 0
+                        let group =
+                            side < 0
                             ? receivers.filter { $0.x < interiorRealXs.min()! }
                                 .sorted { $0.x < $1.x }
                             : receivers.filter { $0.x > interiorRealXs.max()! }
@@ -590,13 +597,15 @@ struct DepthChartFieldLayout: Equatable {
                         // straight on the sideline, which is how a slot receiver ended up
                         // stacked underneath the split end already standing there.
                         let outer = side < 0 ? edgeInset : width - edgeInset
-                        let inner = side < 0
+                        let inner =
+                            side < 0
                             ? clusterLeft - receiverClearance - dotSize / 2
                             : clusterRight + receiverClearance + dotSize / 2
                         let chartedEdge = side < 0 ? interiorRealXs.min()! : interiorRealXs.max()!
 
                         var placed: [(key: String, x: CGFloat, y: Double)] = group.map { wr in
-                            let t = side < 0
+                            let t =
+                                side < 0
                                 ? (chartedEdge <= 0 ? 1 : CGFloat(wr.x) / CGFloat(chartedEdge))
                                 : (chartedEdge >= 100
                                     ? 1
@@ -625,7 +634,8 @@ struct DepthChartFieldLayout: Equatable {
                 // Anything still overlapping (a receiver the strip could not hold, an odd
                 // formation) slides outward by the minimum, as before.
                 let interiorXsPct = interior.map { centers[$0.key]!.x / width * 100 }
-                let center = interiorXsPct.isEmpty
+                let center =
+                    interiorXsPct.isEmpty
                     ? 50
                     : interiorXsPct.reduce(0, +) / CGFloat(interiorXsPct.count)
                 var placedXsPct = interiorXsPct
@@ -656,7 +666,8 @@ struct DepthChartFieldLayout: Equatable {
         // dot clear of a tag can walk it into a THIRD slot's tag zone) — iterate to a
         // fixed point rather than trusting one pass to converge.
         for _ in 0..<4 {
-            centers = resolvingLabelOverlaps(centers, slots: slots, dotSize: dotSize, width: width, height: height)
+            centers = resolvingLabelOverlaps(
+                centers, slots: slots, dotSize: dotSize, width: width, height: height)
             centers = resolvingOverlaps(centers, slots: slots, dotSize: dotSize, width: width)
         }
         return DepthChartFieldLayout(
@@ -717,7 +728,6 @@ struct DepthChartFieldLayout: Equatable {
     /// Grass (yards) kept beyond the outermost player and beyond the line of scrimmage, so
     /// the unit isn't flush against the card edge and the line reads as a line.
     static let windowMarginYards: CGFloat = 1.4
-
 
     /// Crops the card to a window around this unit and returns the resulting scale.
     ///
@@ -854,7 +864,8 @@ struct DepthChartFieldLayout: Equatable {
         let requiredDy = dotSize / 2 + labelTopGap + labelBlockHeight + dotSize / 2
         func rendered(_ slot: RenderSlot) -> CGPoint? {
             centers[slot.key].map {
-                CGPoint(x: $0.x, y: $0.y + lineOffset(y: slot.y, onLine: slot.onLine, dotSize: dotSize))
+                CGPoint(
+                    x: $0.x, y: $0.y + lineOffset(y: slot.y, onLine: slot.onLine, dotSize: dotSize))
             }
         }
         // The one shared row every on-line slot is already snapped to (at most one such
@@ -870,7 +881,8 @@ struct DepthChartFieldLayout: Equatable {
             )
             for b in slots where b.key != a.key && !fixed.contains(b.key) {
                 guard let pb = rendered(b) else { continue }
-                let dotRect = CGRect(x: pb.x - dotSize / 2, y: pb.y - dotSize / 2, width: dotSize, height: dotSize)
+                let dotRect = CGRect(
+                    x: pb.x - dotSize / 2, y: pb.y - dotSize / 2, width: dotSize, height: dotSize)
                 guard tagZone.intersects(dotRect) else { continue }
                 if b.onLine != true {
                     var targetY = max(centers[b.key]?.y ?? pb.y, pa.y + requiredDy)
@@ -890,7 +902,9 @@ struct DepthChartFieldLayout: Equatable {
     }
 
     private static func withX(_ slot: RenderSlot, _ x: Double) -> RenderSlot {
-        RenderSlot(key: slot.key, x: x, y: slot.y, label: slot.label, player: slot.player, onLine: slot.onLine)
+        RenderSlot(
+            key: slot.key, x: x, y: slot.y, label: slot.label, player: slot.player,
+            onLine: slot.onLine)
     }
 
     /// The DEP-244 fill-width layout. Every slot keeps its original coordinate EXCEPT the
@@ -925,7 +939,8 @@ struct DepthChartFieldLayout: Equatable {
             adjusted[right] = withX(slots[right], 100 - marginPct)
         }
 
-        let base = standardLayout(slots: adjusted, width: width, height: height, zoomToUnit: zoomToUnit)
+        let base = standardLayout(
+            slots: adjusted, width: width, height: height, zoomToUnit: zoomToUnit)
 
         // Re-pin the edge WRs to the field edges after the standard layout's re-spread.
         // Only x is re-pinned: y must keep whatever the standard pass decided, which is
@@ -949,7 +964,8 @@ struct DepthChartFieldLayout: Equatable {
         if let right, right != left { pinned.insert(slots[right].key) }
         for _ in 0..<4 {
             positions = resolvingLabelOverlaps(
-                positions, slots: slots, dotSize: base.dotSize, width: width, height: height, fixed: pinned
+                positions, slots: slots, dotSize: base.dotSize, width: width, height: height,
+                fixed: pinned
             )
             positions = resolvingOverlaps(
                 positions, slots: slots, dotSize: base.dotSize, width: width, fixed: pinned

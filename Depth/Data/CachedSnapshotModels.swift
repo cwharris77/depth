@@ -48,7 +48,8 @@ final class CachedTeamListEntry {
 
     var team: Team {
         Team(
-            id: id, city: city, name: name, abbrev: abbrev, conference: conference, division: division,
+            id: id, city: city, name: name, abbrev: abbrev, conference: conference,
+            division: division,
             colors: TeamColors(
                 primary: colorPrimary, secondary: colorSecondary, accent: colorAccent),
             logo: logoUrl, logoDark: logoDarkUrl
@@ -95,7 +96,8 @@ final class CachedAppConfig {
     }
 
     var config: AppConfig {
-        AppConfig(minimumSupportedBuild: minimumSupportedBuild, maintenanceMessage: maintenanceMessage)
+        AppConfig(
+            minimumSupportedBuild: minimumSupportedBuild, maintenanceMessage: maintenanceMessage)
     }
 }
 

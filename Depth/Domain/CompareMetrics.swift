@@ -270,143 +270,204 @@ enum CompareMetricCatalog {
     // MARK: Offense
 
     private static let offense: [CompareMetricGroup] = [
-        CompareMetricGroup(id: "offense-efficiency", title: "EFFICIENCY", metrics: [
-            CompareMetricSpec(id: "epa-per-play", label: "EPA / PLAY", direction: .higher) {
-                metricValue($0.offensiveEPAPerPlay) { CompareValueFormat.signed($0, digits: 2) }
-            },
-            CompareMetricSpec(id: "pass-epa", label: "PASS EPA", direction: .higher) {
-                metricValue($0.passingEPA) { CompareValueFormat.decimal($0, digits: 1) }
-            },
-            CompareMetricSpec(id: "rush-epa", label: "RUSH EPA", direction: .higher) {
-                metricValue($0.rushingEPA) { CompareValueFormat.decimal($0, digits: 1) }
-            },
-            CompareMetricSpec(id: "offensive-plays", label: "OFFENSIVE PLAYS", direction: .neutral) {
-                metricValue($0.offensivePlays) { CompareValueFormat.integer($0) }
-            },
-        ]),
-        CompareMetricGroup(id: "offense-ball-security", title: "BALL SECURITY", metrics: [
-            CompareMetricSpec(id: "giveaways", label: "GIVEAWAYS", direction: .lower) {
-                metricValue($0.giveaways) { CompareValueFormat.integer($0) }
-            },
-            CompareMetricSpec(id: "interceptions-thrown", label: "INTERCEPTIONS", direction: .lower) {
-                metricValue($0.passingInterceptions) { CompareValueFormat.integer($0) }
-            },
-            CompareMetricSpec(id: "fumbles-lost", label: "FUMBLES LOST", direction: .lower) {
-                metricValue($0.fumblesLost) { CompareValueFormat.integer($0) }
-            },
-            // Derived: takeaways won minus giveaways conceded. Both sides of the subtraction
-            // are ingested fields; a missing half makes the row absent, not zero.
-            CompareMetricSpec(id: "turnover-margin", label: "TURNOVER MARGIN", direction: .higher) { metrics in
-                guard let takeaways = metrics.defensiveTakeaways, let giveaways = metrics.giveaways
-                else { return nil }
-                let margin = takeaways - giveaways
-                return CompareMetricValue(
-                    comparable: Double(margin),
-                    display: CompareValueFormat.signedInteger(margin)
-                )
-            },
-        ]),
-        CompareMetricGroup(id: "offense-protection", title: "PROTECTION", metrics: [
-            CompareMetricSpec(id: "sacks-allowed", label: "SACKS ALLOWED", direction: .lower) {
-                metricValue($0.sacksSuffered) { CompareValueFormat.integer($0) }
-            },
-            // Derived: sacks as a share of dropbacks. The denominator is attempts + sacks,
-            // because a sack ends a dropback without recording a pass attempt.
-            CompareMetricSpec(id: "sack-rate", label: "SACK RATE", direction: .lower) { metrics in
-                guard let sacks = metrics.sacksSuffered, let attempts = metrics.passAttempts else { return nil }
-                let dropbacks = attempts + sacks
-                guard dropbacks > 0 else { return nil }
-                let rate = Double(sacks) / Double(dropbacks) * 100
-                return CompareMetricValue(comparable: rate, display: CompareValueFormat.percent(rate))
-            },
-            CompareMetricSpec(id: "pass-attempts", label: "PASS ATTEMPTS", direction: .neutral) {
-                metricValue($0.passAttempts) { CompareValueFormat.integer($0) }
-            },
-            CompareMetricSpec(id: "rush-attempts", label: "RUSH ATTEMPTS", direction: .neutral) {
-                metricValue($0.rushAttempts) { CompareValueFormat.integer($0) }
-            },
-        ]),
+        CompareMetricGroup(
+            id: "offense-efficiency", title: "EFFICIENCY",
+            metrics: [
+                CompareMetricSpec(id: "epa-per-play", label: "EPA / PLAY", direction: .higher) {
+                    metricValue($0.offensiveEPAPerPlay) { CompareValueFormat.signed($0, digits: 2) }
+                },
+                CompareMetricSpec(id: "pass-epa", label: "PASS EPA", direction: .higher) {
+                    metricValue($0.passingEPA) { CompareValueFormat.decimal($0, digits: 1) }
+                },
+                CompareMetricSpec(id: "rush-epa", label: "RUSH EPA", direction: .higher) {
+                    metricValue($0.rushingEPA) { CompareValueFormat.decimal($0, digits: 1) }
+                },
+                CompareMetricSpec(
+                    id: "offensive-plays", label: "OFFENSIVE PLAYS", direction: .neutral
+                ) {
+                    metricValue($0.offensivePlays) { CompareValueFormat.integer($0) }
+                },
+            ]),
+        CompareMetricGroup(
+            id: "offense-ball-security", title: "BALL SECURITY",
+            metrics: [
+                CompareMetricSpec(id: "giveaways", label: "GIVEAWAYS", direction: .lower) {
+                    metricValue($0.giveaways) { CompareValueFormat.integer($0) }
+                },
+                CompareMetricSpec(
+                    id: "interceptions-thrown", label: "INTERCEPTIONS", direction: .lower
+                ) {
+                    metricValue($0.passingInterceptions) { CompareValueFormat.integer($0) }
+                },
+                CompareMetricSpec(id: "fumbles-lost", label: "FUMBLES LOST", direction: .lower) {
+                    metricValue($0.fumblesLost) { CompareValueFormat.integer($0) }
+                },
+                // Derived: takeaways won minus giveaways conceded. Both sides of the subtraction
+                // are ingested fields; a missing half makes the row absent, not zero.
+                CompareMetricSpec(
+                    id: "turnover-margin", label: "TURNOVER MARGIN", direction: .higher
+                ) { metrics in
+                    guard let takeaways = metrics.defensiveTakeaways,
+                        let giveaways = metrics.giveaways
+                    else { return nil }
+                    let margin = takeaways - giveaways
+                    return CompareMetricValue(
+                        comparable: Double(margin),
+                        display: CompareValueFormat.signedInteger(margin)
+                    )
+                },
+            ]),
+        CompareMetricGroup(
+            id: "offense-protection", title: "PROTECTION",
+            metrics: [
+                CompareMetricSpec(id: "sacks-allowed", label: "SACKS ALLOWED", direction: .lower) {
+                    metricValue($0.sacksSuffered) { CompareValueFormat.integer($0) }
+                },
+                // Derived: sacks as a share of dropbacks. The denominator is attempts + sacks,
+                // because a sack ends a dropback without recording a pass attempt.
+                CompareMetricSpec(id: "sack-rate", label: "SACK RATE", direction: .lower) {
+                    metrics in
+                    guard let sacks = metrics.sacksSuffered, let attempts = metrics.passAttempts
+                    else { return nil }
+                    let dropbacks = attempts + sacks
+                    guard dropbacks > 0 else { return nil }
+                    let rate = Double(sacks) / Double(dropbacks) * 100
+                    return CompareMetricValue(
+                        comparable: rate, display: CompareValueFormat.percent(rate))
+                },
+                CompareMetricSpec(id: "pass-attempts", label: "PASS ATTEMPTS", direction: .neutral)
+                {
+                    metricValue($0.passAttempts) { CompareValueFormat.integer($0) }
+                },
+                CompareMetricSpec(id: "rush-attempts", label: "RUSH ATTEMPTS", direction: .neutral)
+                {
+                    metricValue($0.rushAttempts) { CompareValueFormat.integer($0) }
+                },
+            ]),
     ]
 
     // MARK: Defense
 
     private static let defense: [CompareMetricGroup] = [
-        CompareMetricGroup(id: "defense-pressure", title: "PRESSURE", metrics: [
-            CompareMetricSpec(id: "sacks", label: "SACKS", direction: .higher) {
-                metricValue($0.defensiveSacks) { CompareValueFormat.decimal($0, digits: 1) }
-            },
-            CompareMetricSpec(id: "qb-hits", label: "QB HITS", direction: .higher) {
-                metricValue($0.quarterbackHits) { CompareValueFormat.integer($0) }
-            },
-            CompareMetricSpec(id: "qb-hits-per-game", label: "QB HITS / GAME", direction: .higher) {
-                metricValue($0.quarterbackHitsPerGame) { CompareValueFormat.decimal($0, digits: 1) }
-            },
-        ]),
-        CompareMetricGroup(id: "defense-takeaways", title: "TAKEAWAYS", metrics: [
-            CompareMetricSpec(id: "takeaways", label: "TAKEAWAYS", direction: .higher) {
-                metricValue($0.defensiveTakeaways) { CompareValueFormat.integer($0) }
-            },
-            CompareMetricSpec(id: "takeaways-per-game", label: "TAKEAWAYS / GAME", direction: .higher) {
-                metricValue($0.defensiveTakeawaysPerGame) { CompareValueFormat.decimal($0, digits: 1) }
-            },
-            CompareMetricSpec(id: "interceptions", label: "INTERCEPTIONS", direction: .higher) {
-                metricValue($0.defensiveInterceptions) { CompareValueFormat.integer($0) }
-            },
-            CompareMetricSpec(id: "fumbles-forced", label: "FUMBLES FORCED", direction: .higher) {
-                metricValue($0.defensiveFumblesForced) { CompareValueFormat.integer($0) }
-            },
-            CompareMetricSpec(id: "fumbles-recovered", label: "FUMBLES RECOVERED", direction: .higher) {
-                metricValue($0.defensiveFumbleRecoveries) { CompareValueFormat.integer($0) }
-            },
-        ]),
+        CompareMetricGroup(
+            id: "defense-pressure", title: "PRESSURE",
+            metrics: [
+                CompareMetricSpec(id: "sacks", label: "SACKS", direction: .higher) {
+                    metricValue($0.defensiveSacks) { CompareValueFormat.decimal($0, digits: 1) }
+                },
+                CompareMetricSpec(id: "qb-hits", label: "QB HITS", direction: .higher) {
+                    metricValue($0.quarterbackHits) { CompareValueFormat.integer($0) }
+                },
+                CompareMetricSpec(
+                    id: "qb-hits-per-game", label: "QB HITS / GAME", direction: .higher
+                ) {
+                    metricValue($0.quarterbackHitsPerGame) {
+                        CompareValueFormat.decimal($0, digits: 1)
+                    }
+                },
+            ]),
+        CompareMetricGroup(
+            id: "defense-takeaways", title: "TAKEAWAYS",
+            metrics: [
+                CompareMetricSpec(id: "takeaways", label: "TAKEAWAYS", direction: .higher) {
+                    metricValue($0.defensiveTakeaways) { CompareValueFormat.integer($0) }
+                },
+                CompareMetricSpec(
+                    id: "takeaways-per-game", label: "TAKEAWAYS / GAME", direction: .higher
+                ) {
+                    metricValue($0.defensiveTakeawaysPerGame) {
+                        CompareValueFormat.decimal($0, digits: 1)
+                    }
+                },
+                CompareMetricSpec(id: "interceptions", label: "INTERCEPTIONS", direction: .higher) {
+                    metricValue($0.defensiveInterceptions) { CompareValueFormat.integer($0) }
+                },
+                CompareMetricSpec(id: "fumbles-forced", label: "FUMBLES FORCED", direction: .higher)
+                {
+                    metricValue($0.defensiveFumblesForced) { CompareValueFormat.integer($0) }
+                },
+                CompareMetricSpec(
+                    id: "fumbles-recovered", label: "FUMBLES RECOVERED", direction: .higher
+                ) {
+                    metricValue($0.defensiveFumbleRecoveries) { CompareValueFormat.integer($0) }
+                },
+            ]),
     ]
 
     // MARK: Special teams
 
     private static let special: [CompareMetricGroup] = [
-        CompareMetricGroup(id: "special-kicking", title: "KICKING", metrics: [
-            CompareMetricSpec(id: "field-goal-pct", label: "FIELD GOAL %", direction: .higher) {
-                metricValue($0.fieldGoalPercentage) { CompareValueFormat.percent(fromRatio: $0) }
-            },
-            // Made-attempted is a pair, not a magnitude: it prints for context and never
-            // ranks (the percentage row above is the comparable form of the same fact).
-            CompareMetricSpec(id: "field-goals", label: "FG MADE – ATT", direction: .neutral) { metrics in
-                guard let made = metrics.fieldGoalsMade, let attempted = metrics.fieldGoalsAttempted
-                else { return nil }
-                return CompareMetricValue(
-                    comparable: nil,
-                    display: "\(CompareValueFormat.integer(made)) / \(CompareValueFormat.integer(attempted))"
-                )
-            },
-        ]),
-        CompareMetricGroup(id: "special-punting", title: "PUNTING", metrics: [
-            CompareMetricSpec(id: "net-punt-per-attempt", label: "NET PUNT / ATT", direction: .higher) {
-                metricValue($0.netPuntYardsPerAttempt) { CompareValueFormat.decimal($0, digits: 1) }
-            },
-            CompareMetricSpec(id: "punt-attempts", label: "PUNT ATTEMPTS", direction: .neutral) {
-                metricValue($0.puntAttempts) { CompareValueFormat.integer($0) }
-            },
-            CompareMetricSpec(id: "net-punt-yards", label: "NET PUNT YARDS", direction: .neutral) {
-                metricValue($0.netPuntYards) { CompareValueFormat.integer($0) }
-            },
-        ]),
-        CompareMetricGroup(id: "special-returns", title: "RETURNS", metrics: [
-            CompareMetricSpec(id: "punt-return-per-attempt", label: "PUNT RET / ATT", direction: .higher) {
-                metricValue($0.puntReturnYardsPerAttempt) { CompareValueFormat.decimal($0, digits: 1) }
-            },
-            CompareMetricSpec(id: "kick-return-per-attempt", label: "KICK RET / ATT", direction: .higher) {
-                metricValue($0.kickoffReturnYardsPerAttempt) { CompareValueFormat.decimal($0, digits: 1) }
-            },
-            CompareMetricSpec(id: "punt-returns", label: "PUNT RETURNS", direction: .neutral) {
-                metricValue($0.puntReturns) { CompareValueFormat.integer($0) }
-            },
-            CompareMetricSpec(id: "kick-returns", label: "KICK RETURNS", direction: .neutral) {
-                metricValue($0.kickoffReturns) { CompareValueFormat.integer($0) }
-            },
-            CompareMetricSpec(id: "special-teams-td", label: "SPECIAL TEAMS TD", direction: .higher) {
-                metricValue($0.specialTeamsTouchdowns) { CompareValueFormat.integer($0) }
-            },
-        ]),
+        CompareMetricGroup(
+            id: "special-kicking", title: "KICKING",
+            metrics: [
+                CompareMetricSpec(id: "field-goal-pct", label: "FIELD GOAL %", direction: .higher) {
+                    metricValue($0.fieldGoalPercentage) {
+                        CompareValueFormat.percent(fromRatio: $0)
+                    }
+                },
+                // Made-attempted is a pair, not a magnitude: it prints for context and never
+                // ranks (the percentage row above is the comparable form of the same fact).
+                CompareMetricSpec(id: "field-goals", label: "FG MADE – ATT", direction: .neutral) {
+                    metrics in
+                    guard let made = metrics.fieldGoalsMade,
+                        let attempted = metrics.fieldGoalsAttempted
+                    else { return nil }
+                    return CompareMetricValue(
+                        comparable: nil,
+                        display:
+                            "\(CompareValueFormat.integer(made)) / \(CompareValueFormat.integer(attempted))"
+                    )
+                },
+            ]),
+        CompareMetricGroup(
+            id: "special-punting", title: "PUNTING",
+            metrics: [
+                CompareMetricSpec(
+                    id: "net-punt-per-attempt", label: "NET PUNT / ATT", direction: .higher
+                ) {
+                    metricValue($0.netPuntYardsPerAttempt) {
+                        CompareValueFormat.decimal($0, digits: 1)
+                    }
+                },
+                CompareMetricSpec(id: "punt-attempts", label: "PUNT ATTEMPTS", direction: .neutral)
+                {
+                    metricValue($0.puntAttempts) { CompareValueFormat.integer($0) }
+                },
+                CompareMetricSpec(
+                    id: "net-punt-yards", label: "NET PUNT YARDS", direction: .neutral
+                ) {
+                    metricValue($0.netPuntYards) { CompareValueFormat.integer($0) }
+                },
+            ]),
+        CompareMetricGroup(
+            id: "special-returns", title: "RETURNS",
+            metrics: [
+                CompareMetricSpec(
+                    id: "punt-return-per-attempt", label: "PUNT RET / ATT", direction: .higher
+                ) {
+                    metricValue($0.puntReturnYardsPerAttempt) {
+                        CompareValueFormat.decimal($0, digits: 1)
+                    }
+                },
+                CompareMetricSpec(
+                    id: "kick-return-per-attempt", label: "KICK RET / ATT", direction: .higher
+                ) {
+                    metricValue($0.kickoffReturnYardsPerAttempt) {
+                        CompareValueFormat.decimal($0, digits: 1)
+                    }
+                },
+                CompareMetricSpec(id: "punt-returns", label: "PUNT RETURNS", direction: .neutral) {
+                    metricValue($0.puntReturns) { CompareValueFormat.integer($0) }
+                },
+                CompareMetricSpec(id: "kick-returns", label: "KICK RETURNS", direction: .neutral) {
+                    metricValue($0.kickoffReturns) { CompareValueFormat.integer($0) }
+                },
+                CompareMetricSpec(
+                    id: "special-teams-td", label: "SPECIAL TEAMS TD", direction: .higher
+                ) {
+                    metricValue($0.specialTeamsTouchdowns) { CompareValueFormat.integer($0) }
+                },
+            ]),
     ]
 }
 
@@ -456,11 +517,13 @@ enum CompareRecordCatalog {
             ),
             splitRow(
                 id: "home", label: "HOME",
-                a: (statsA.homeWins, statsA.homeLosses, 0), b: (statsB.homeWins, statsB.homeLosses, 0)
+                a: (statsA.homeWins, statsA.homeLosses, 0),
+                b: (statsB.homeWins, statsB.homeLosses, 0)
             ),
             splitRow(
                 id: "road", label: "ROAD",
-                a: (statsA.roadWins, statsA.roadLosses, 0), b: (statsB.roadWins, statsB.roadLosses, 0)
+                a: (statsA.roadWins, statsA.roadLosses, 0),
+                b: (statsB.roadWins, statsB.roadLosses, 0)
             ),
             splitRow(
                 id: "division", label: "DIVISION",

@@ -34,12 +34,15 @@ struct UniformPickerSheet: View {
         self.uniforms = uniforms
         self.selectedID = selectedID
         self.onSelect = onSelect
-        let startIndex = selectedID.flatMap { id in uniforms.firstIndex(where: { $0.id == id }) } ?? 0
+        let startIndex =
+            selectedID.flatMap { id in uniforms.firstIndex(where: { $0.id == id }) } ?? 0
         _currentIndex = State(initialValue: startIndex)
     }
 
     var body: some View {
-        DepthSheet(title: "Choose Uniform", sizing: dynamicTypeSize.isAccessibilitySize ? .full : .medium) {
+        DepthSheet(
+            title: "Choose Uniform", sizing: dynamicTypeSize.isAccessibilitySize ? .full : .medium
+        ) {
             VStack(spacing: 0) {
                 TabView(selection: $currentIndex) {
                     ForEach(Array(uniforms.enumerated()), id: \.element.id) { index, uniform in
@@ -50,7 +53,7 @@ struct UniformPickerSheet: View {
                                 card(for: uniform)
                             }
                         }
-                            .tag(index)
+                        .tag(index)
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
@@ -72,8 +75,10 @@ struct UniformPickerSheet: View {
 
     private func card(for uniform: Uniform) -> some View {
         VStack(spacing: DesignTokens.Spacing.sm) {
-            UniformThumb(url: UniformArt.jerseyURL(for: uniform.id), size: 140, heightMultiplier: 0.81)
-                .padding(.top, DesignTokens.Spacing.md)
+            UniformThumb(
+                url: UniformArt.jerseyURL(for: uniform.id), size: 140, heightMultiplier: 0.81
+            )
+            .padding(.top, DesignTokens.Spacing.md)
 
             VStack(spacing: DesignTokens.Spacing.xs) {
                 Text(uniform.name)
@@ -108,10 +113,14 @@ struct UniformPickerSheet: View {
                     currentIndex = index
                 } label: {
                     Capsule()
-                        .fill(index == currentIndex ? DesignTokens.Colors.accent : DesignTokens.Colors.textFaint)
+                        .fill(
+                            index == currentIndex
+                                ? DesignTokens.Colors.accent : DesignTokens.Colors.textFaint
+                        )
                         .frame(width: index == currentIndex ? 24 : 8, height: 8)
                         .shadow(
-                            color: index == currentIndex ? DesignTokens.Colors.accent.opacity(0.6) : .clear,
+                            color: index == currentIndex
+                                ? DesignTokens.Colors.accent.opacity(0.6) : .clear,
                             radius: 4
                         )
                 }

@@ -89,7 +89,8 @@ struct TrueScaleFieldLayout {
             switch count {
             case 1: return [17.0]
             case 2: return [17.0, 9.0]
-            default: return [17.0, 12.5, 9.0] + (0..<max(0, count - 3)).map { 6.5 - CGFloat($0) * 1.5 }
+            default:
+                return [17.0, 12.5, 9.0] + (0..<max(0, count - 3)).map { 6.5 - CGFloat($0) * 1.5 }
             }
         }
         /// Fallback for a label this table doesn't know: DEP-432's charted-%-per-yard.
@@ -215,7 +216,9 @@ struct TrueScaleFieldLayout {
         // the line on my own side" for a defender the way it already is for a back.
         let ownSideSign: CGFloat = unit == .defense ? -1 : 1
         var dots = filled.map { slot in
-            let charted = CGFloat((slot.y - FieldYardScale.lineOfScrimmage) / Double(FieldYardScale.chartedUnitsPerYard))
+            let charted = CGFloat(
+                (slot.y - FieldYardScale.lineOfScrimmage)
+                    / Double(FieldYardScale.chartedUnitsPerYard))
             let x = lateral[slot.key] ?? 0
             return Dot(
                 key: slot.key,
@@ -232,7 +235,8 @@ struct TrueScaleFieldLayout {
         var rows: [[Int]] = []
         for index in order {
             if let first = rows.last?.first,
-                abs(dots[index].depthYards - dots[first].depthYards) * FieldYardScale.chartedUnitsPerYard <= 3
+                abs(dots[index].depthYards - dots[first].depthYards)
+                    * FieldYardScale.chartedUnitsPerYard <= 3
             {
                 rows[rows.count - 1].append(index)
             } else {
@@ -409,7 +413,8 @@ struct TrueScaleFieldLayout {
 
     func isOffCentre(pan: CGPoint, window: Window) -> Bool {
         let home = initialPan(window: window)
-        return abs(pan.x - home.x) > Self.recentreThreshold || abs(pan.y - home.y) > Self.recentreThreshold
+        return abs(pan.x - home.x) > Self.recentreThreshold
+            || abs(pan.y - home.y) > Self.recentreThreshold
     }
 
     /// Chips for players off either side, tracking their real depth, clamped into the
@@ -418,7 +423,8 @@ struct TrueScaleFieldLayout {
     func edgeChips(pan: CGPoint, window: Window) -> [EdgeChip] {
         var chips: [EdgeChip] = []
         for side in [EdgeChip.Side.leading, .trailing] {
-            let hidden = dots
+            let hidden =
+                dots
                 .filter { dot in
                     guard !isVisible(dot, pan: pan, window: window) else { return false }
                     let x = dot.center.x + pan.x
@@ -433,18 +439,21 @@ struct TrueScaleFieldLayout {
             for dot in shown {
                 let y = max(min(bottom, max(top, dot.center.y + pan.y)), lastY + Self.chipSpacing)
                 lastY = y
-                chips.append(EdgeChip(id: dot.key, side: side, y: y, dot: dot, target: dot, overflowCount: 0))
+                chips.append(
+                    EdgeChip(id: dot.key, side: side, y: y, dot: dot, target: dot, overflowCount: 0)
+                )
             }
             if overflow {
                 let rest = hidden.dropFirst(Self.maxChipsPerSide - 1)
-                chips.append(EdgeChip(
-                    id: "\(side)-more",
-                    side: side,
-                    y: max(top, lastY + Self.chipSpacing),
-                    dot: nil,
-                    target: rest.first!,
-                    overflowCount: rest.count
-                ))
+                chips.append(
+                    EdgeChip(
+                        id: "\(side)-more",
+                        side: side,
+                        y: max(top, lastY + Self.chipSpacing),
+                        dot: nil,
+                        target: rest.first!,
+                        overflowCount: rest.count
+                    ))
             }
         }
         return chips
@@ -465,7 +474,8 @@ struct TrueScaleFieldLayout {
         guard unit != .defense else { return defensePersonnelSummary }
         let wr = dots.filter { $0.label == "WR" }.count
         let te = dots.filter { $0.label == "TE" }.count
-        return [wr > 0 ? "\(wr)WR" : nil, te > 0 ? "\(te)TE" : nil].compactMap { $0 }.joined(separator: " ")
+        return [wr > 0 ? "\(wr)WR" : nil, te > 0 ? "\(te)TE" : nil].compactMap { $0 }.joined(
+            separator: " ")
     }
 
     private var defensePersonnelSummary: String {
@@ -518,10 +528,12 @@ struct TrueScaleFieldLayout {
             if yardLine % 5 == 0 {
                 lines.append(y)
                 // Alternating mow bands, each running five yards toward the offense's goal.
-                bands.append(.init(
-                    rect: CGRect(x: fieldMinX, y: y, width: fieldMaxX - fieldMinX, height: 5 * ppy),
-                    light: (yardLine / 5) % 2 == 1
-                ))
+                bands.append(
+                    .init(
+                        rect: CGRect(
+                            x: fieldMinX, y: y, width: fieldMaxX - fieldMinX, height: 5 * ppy),
+                        light: (yardLine / 5) % 2 == 1
+                    ))
                 if yardLine % 10 == 0 {
                     let goalIsDown = yardLine < 50
                     for side: CGFloat in [-1, 1] {
@@ -529,12 +541,15 @@ struct TrueScaleFieldLayout {
                         // rotate(-90°) puts the right column's up it, so the arrow flips
                         // glyph side to keep pointing at the nearer goal line.
                         let plusXIsDown = side < 0
-                        numerals.append(.init(
-                            center: CGPoint(x: centreX + side * Field.numeralFromCentreYards * ppy, y: y),
-                            text: String(yardLine > 50 ? 100 - yardLine : yardLine),
-                            degrees: side < 0 ? 90 : -90,
-                            arrowOnPositiveSide: yardLine == 50 ? nil : goalIsDown == plusXIsDown
-                        ))
+                        numerals.append(
+                            .init(
+                                center: CGPoint(
+                                    x: centreX + side * Field.numeralFromCentreYards * ppy, y: y),
+                                text: String(yardLine > 50 ? 100 - yardLine : yardLine),
+                                degrees: side < 0 ? 90 : -90,
+                                arrowOnPositiveSide: yardLine == 50
+                                    ? nil : goalIsDown == plusXIsDown
+                            ))
                     }
                 }
             } else {

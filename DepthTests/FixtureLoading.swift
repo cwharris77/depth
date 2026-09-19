@@ -6,8 +6,8 @@ import Foundation
 /// regenerate-and-copy step to forget.
 func loadFixture<T: Decodable>(_ name: String, as type: T.Type) throws -> T {
     let fileURL = URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent() // FixtureLoading.swift -> DepthTests/
-        .deletingLastPathComponent() // DepthTests/ -> repo root
+        .deletingLastPathComponent()  // FixtureLoading.swift -> DepthTests/
+        .deletingLastPathComponent()  // DepthTests/ -> repo root
         .appendingPathComponent("web/fixtures/domain/\(name).json")
     let data = try Data(contentsOf: fileURL)
     return try JSONDecoder().decode(T.self, from: data)

@@ -28,10 +28,13 @@ import Testing
     let player = Player(id: "p", name: "Test Player", position: .rb, depthRank: 3, number: 22)
     let row = DepthReorderAccessibility(player: player, index: 0, count: 4)
     #expect(row.label == "Test Player, number 22, Running Back, rank 1 of 4, Starter")
-    #expect(row.moveAnnouncement == "Moved Test Player, number 22 to Running Back, rank 1 of 4, Starter")
+    #expect(
+        row.moveAnnouncement == "Moved Test Player, number 22 to Running Back, rank 1 of 4, Starter"
+    )
     let unnamed = Player(id: "unknown", position: .rb, depthRank: 3, number: 22)
-    #expect(DepthReorderAccessibility(player: unnamed, index: 3, count: 4).label
-        == "Number 22, Running Back, rank 4 of 4, Reserve")
+    #expect(
+        DepthReorderAccessibility(player: unnamed, index: 3, count: 4).label
+            == "Number 22, Running Back, rank 4 of 4, Reserve")
 }
 
 @Test func playerMapperPreservesCompleteProfileFields() throws {
@@ -154,7 +157,8 @@ import Testing
 
     #expect(PlayerStatsAccessibility.rowLabel(for: stats, columns: []) == "2024 season")
     #expect(
-        PlayerStatsAccessibility.rowLabel(for: stats, columns: [.games]) == "2024 season, Games played 3"
+        PlayerStatsAccessibility.rowLabel(for: stats, columns: [.games])
+            == "2024 season, Games played 3"
     )
 }
 
@@ -163,9 +167,10 @@ import Testing
         .success([
             PlayerSeasonStats.empty(season: 2025),
             PlayerSeasonStats.empty(season: 2024, games: 14),
-        ]),
+        ])
     ])
-    let viewModel = await PlayerProfileViewModel(playerID: "p1", teamID: nil, repository: repository)
+    let viewModel = await PlayerProfileViewModel(
+        playerID: "p1", teamID: nil, repository: repository)
 
     await viewModel.load()
 
@@ -174,8 +179,11 @@ import Testing
 }
 
 @Test func profileViewModelShowsEmptyAfterAResolvedNoStatsRead() async {
-    let repository = PlayerStatsRepositoryFake(results: [.success([PlayerSeasonStats.empty(season: 2025)])])
-    let viewModel = await PlayerProfileViewModel(playerID: "p1", teamID: nil, repository: repository)
+    let repository = PlayerStatsRepositoryFake(results: [
+        .success([PlayerSeasonStats.empty(season: 2025)])
+    ])
+    let viewModel = await PlayerProfileViewModel(
+        playerID: "p1", teamID: nil, repository: repository)
 
     await viewModel.load()
 
@@ -190,9 +198,10 @@ import Testing
 
     await viewModel.load()
 
-    #expect(await repository.requests == [
-        PlayerStatsRequest(playerID: "gsis:00-0031234@2013", teamID: "seahawks"),
-    ])
+    #expect(
+        await repository.requests == [
+            PlayerStatsRequest(playerID: "gsis:00-0031234@2013", teamID: "seahawks")
+        ])
 }
 
 @Test func profileViewModelRetainsProfileAndRecoversWithRetryAfterStatsFailure() async {
@@ -200,7 +209,8 @@ import Testing
         .failure(.offline),
         .success([PlayerSeasonStats.empty(season: 2025, games: 17)]),
     ])
-    let viewModel = await PlayerProfileViewModel(playerID: "p1", teamID: nil, repository: repository)
+    let viewModel = await PlayerProfileViewModel(
+        playerID: "p1", teamID: nil, repository: repository)
 
     await viewModel.load()
     #expect(await viewModel.statsState == .failed(.offline))
@@ -212,7 +222,8 @@ import Testing
 
 @Test func staleProfileStatsResponseCannotOverwriteANewerLoad() async {
     let repository = DelayedPlayerStatsRepository()
-    let viewModel = await PlayerProfileViewModel(playerID: "p1", teamID: nil, repository: repository)
+    let viewModel = await PlayerProfileViewModel(
+        playerID: "p1", teamID: nil, repository: repository)
 
     let firstLoad = Task { @MainActor in await viewModel.load() }
     await repository.waitForRequest(1)
@@ -242,10 +253,16 @@ private actor PlayerStatsRepositoryFake: DepthRepository {
 
     func teams() async throws -> [Team] { [] }
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot { throw DepthError.notFound }
-    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot { throw DepthError.notFound }
-    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        throw DepthError.notFound
+    }
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        throw DepthError.notFound
+    }
     func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
-    func appConfig() async throws -> AppConfig { AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil) }
+    func appConfig() async throws -> AppConfig {
+        AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)
+    }
 
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] {
         requests.append(PlayerStatsRequest(playerID: playerId, teamID: teamId))
@@ -261,10 +278,16 @@ private actor DelayedPlayerStatsRepository: DepthRepository {
 
     func teams() async throws -> [Team] { [] }
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot { throw DepthError.notFound }
-    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot { throw DepthError.notFound }
-    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        throw DepthError.notFound
+    }
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        throw DepthError.notFound
+    }
     func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
-    func appConfig() async throws -> AppConfig { AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil) }
+    func appConfig() async throws -> AppConfig {
+        AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)
+    }
 
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] {
         requestCount += 1
@@ -284,8 +307,10 @@ private actor DelayedPlayerStatsRepository: DepthRepository {
 
     func complete(_ request: Int, with result: Result<[PlayerSeasonStats], DepthError>) {
         switch result {
-        case .success(let stats): responseWaiters.removeValue(forKey: request)?.resume(returning: stats)
-        case .failure(let error): responseWaiters.removeValue(forKey: request)?.resume(throwing: error)
+        case .success(let stats):
+            responseWaiters.removeValue(forKey: request)?.resume(returning: stats)
+        case .failure(let error):
+            responseWaiters.removeValue(forKey: request)?.resume(throwing: error)
         }
     }
 }

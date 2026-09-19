@@ -52,7 +52,9 @@ final class AccessibilityUITests: XCTestCase {
         XCTAssertTrue(app.buttons["uniforms-team-bills"].waitForExistence(timeout: 20))
         app.buttons["uniforms-team-bills"].tap()
         attachScreenshot(app, named: "system-uniform-team")
-        let kit = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'uniform-kit-row-'")).firstMatch
+        let kit = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'uniform-kit-row-'")
+        ).firstMatch
         XCTAssertTrue(kit.waitForExistence(timeout: 10))
         kit.tap()
         XCTAssertTrue(app.buttons["Close"].waitForExistence(timeout: 10))
@@ -77,7 +79,9 @@ final class AccessibilityUITests: XCTestCase {
         app.buttons["Sign In"].tap()
         XCTAssertTrue(app.textFields["auth-email"].waitForExistence(timeout: 10))
         attachScreenshot(app, named: "system-sign-in")
-        app.buttons.matching(identifier: "Close").element(boundBy: app.buttons.matching(identifier: "Close").count - 1).tap()
+        app.buttons.matching(identifier: "Close").element(
+            boundBy: app.buttons.matching(identifier: "Close").count - 1
+        ).tap()
         for _ in 0..<5 { app.swipeDown() }
         let tour = app.buttons["settings-take-the-tour"]
         reveal(tour, in: app)
@@ -163,7 +167,9 @@ final class AccessibilityUITests: XCTestCase {
             back.tap()
             for page in ["schedule", "stats"] {
                 app.buttons["page-switcher-\(page)"].tap()
-                XCTAssertTrue(app.descendants(matching: .any)["\(page)-content"].waitForExistence(timeout: 20))
+                XCTAssertTrue(
+                    app.descendants(matching: .any)["\(page)-content"].waitForExistence(timeout: 20)
+                )
                 attachScreenshot(app, named: "\(size)-\(page)")
                 app.swipeUp()
                 attachScreenshot(app, named: "\(size)-\(page)-scroll")
@@ -221,14 +227,19 @@ final class AccessibilityUITests: XCTestCase {
     /// team list, so this opens the switcher and searches — it only needs the row to
     /// exist, not to actually select a team.
     private func firstTeamRowHeight(_ app: XCUIApplication) -> CGFloat {
-        XCTAssertTrue(app.waitForDepthChart(timeout: 15), "the app should launch straight into a depth chart")
+        XCTAssertTrue(
+            app.waitForDepthChart(timeout: 15), "the app should launch straight into a depth chart")
         let switcher = app.buttons["team-switcher-button"]
-        XCTAssertTrue(switcher.waitForExistence(timeout: 15), "the depth chart header should expose the team switcher")
+        XCTAssertTrue(
+            switcher.waitForExistence(timeout: 15),
+            "the depth chart header should expose the team switcher")
         switcher.tap()
 
         let row = app.buttons["team-row-bills"]
         let searchField = app.searchFields.firstMatch
-        XCTAssertTrue(searchField.waitForExistence(timeout: 15), "the switcher sheet should offer team search")
+        XCTAssertTrue(
+            searchField.waitForExistence(timeout: 15), "the switcher sheet should offer team search"
+        )
         searchField.typeTextAfterFocusing("Bills", in: app)
         XCTAssertTrue(row.waitForExistence(timeout: 10), "Bills row should exist")
         return row.frame.height
@@ -237,7 +248,8 @@ final class AccessibilityUITests: XCTestCase {
     /// The app launches into the default team's chart; this switches to Bills via the
     /// header switcher sheet rather than searching from a root list.
     private func openBillsDepthChart(_ app: XCUIApplication) {
-        XCTAssertTrue(app.waitForDepthChart(timeout: 15), "the app should launch straight into a depth chart")
+        XCTAssertTrue(
+            app.waitForDepthChart(timeout: 15), "the app should launch straight into a depth chart")
         app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
     }
 
@@ -260,18 +272,27 @@ final class AccessibilityUITests: XCTestCase {
         openBillsDepthChart(app)
 
         let unitTab = app.buttons["unit-tab-offense"]
-        XCTAssertTrue(unitTab.waitForExistence(timeout: 10), "unit tab bar should render at Accessibility XXXL")
+        XCTAssertTrue(
+            unitTab.waitForExistence(timeout: 10),
+            "unit tab bar should render at Accessibility XXXL")
 
-        let playerSlot = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'player-slot-'")).firstMatch
-        XCTAssertTrue(playerSlot.waitForExistence(timeout: 10), "a filled slot should still render at Accessibility XXXL")
-        XCTAssertTrue(playerSlot.isHittable, "depth-chart slots must stay tappable at Accessibility XXXL")
+        let playerSlot = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'player-slot-'")
+        ).firstMatch
+        XCTAssertTrue(
+            playerSlot.waitForExistence(timeout: 10),
+            "a filled slot should still render at Accessibility XXXL")
+        XCTAssertTrue(
+            playerSlot.isHittable, "depth-chart slots must stay tappable at Accessibility XXXL")
         XCTAssertGreaterThanOrEqual(
             playerSlot.frame.height, 44,
             "slot tap targets must not fall below the 44-point minimum"
         )
         let profile = app.descendants(matching: .any)["player-profile-full-content"]
         XCTAssertTrue(playerSlot.tapUntil { profile.exists })
-        XCTAssertTrue(profile.waitForExistence(timeout: 10), "the player profile should open at Accessibility XXXL")
+        XCTAssertTrue(
+            profile.waitForExistence(timeout: 10),
+            "the player profile should open at Accessibility XXXL")
         XCTAssertTrue(
             app.staticTexts["player-profile-full-name"].waitForExistence(timeout: 5),
             "the player name must survive the larger layout rather than being clipped away"
@@ -280,7 +301,8 @@ final class AccessibilityUITests: XCTestCase {
         attachScreenshot(app, named: "player-detail-accessibility-xxxl")
 
         let back = app.navigationBars.buttons["BackButton"]
-        XCTAssertTrue(back.waitForExistence(timeout: 5), "Back must remain reachable at Accessibility XXXL")
+        XCTAssertTrue(
+            back.waitForExistence(timeout: 5), "Back must remain reachable at Accessibility XXXL")
         back.tap()
 
         attachScreenshot(app, named: "depth-chart-accessibility-xxxl")
@@ -368,8 +390,12 @@ final class AccessibilityUITests: XCTestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        let statSegments = label.components(separatedBy: ", ").dropFirst().filter { $0.contains(" ") }
-        XCTAssertFalse(statSegments.isEmpty, "a season row should announce at least one stat: \(label)", file: file, line: line)
+        let statSegments = label.components(separatedBy: ", ").dropFirst().filter {
+            $0.contains(" ")
+        }
+        XCTAssertFalse(
+            statSegments.isEmpty, "a season row should announce at least one stat: \(label)",
+            file: file, line: line)
         for segment in statSegments {
             XCTAssertNotNil(
                 segment.rangeOfCharacter(from: .lowercaseLetters),
@@ -377,7 +403,8 @@ final class AccessibilityUITests: XCTestCase {
                 file: file, line: line
             )
             XCTAssertNotNil(
-                segment.rangeOfCharacter(from: .decimalDigits.union(CharacterSet(charactersIn: "—"))),
+                segment.rangeOfCharacter(
+                    from: .decimalDigits.union(CharacterSet(charactersIn: "—"))),
                 "\"\(segment)\" announces a column name with no value — full label: \(label)",
                 file: file, line: line
             )
@@ -398,7 +425,8 @@ final class AccessibilityUITests: XCTestCase {
             guard tab.waitForExistence(timeout: 5), tab.isHittable else { continue }
             tab.tap()
 
-            let slots = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'player-slot-'"))
+            let slots = app.buttons.matching(
+                NSPredicate(format: "identifier BEGINSWITH 'player-slot-'"))
             for index in 0..<slots.count {
                 let slot = slots.element(boundBy: index)
                 guard slot.exists, slot.isHittable else { continue }
@@ -430,9 +458,12 @@ final class AccessibilityUITests: XCTestCase {
     // now lives inside the switcher sheet rather than at the app root.
     func testTeamListAnnouncesItsLoadingState() throws {
         let app = launchApp()
-        XCTAssertTrue(app.waitForDepthChart(timeout: 15), "the app should launch straight into a depth chart")
+        XCTAssertTrue(
+            app.waitForDepthChart(timeout: 15), "the app should launch straight into a depth chart")
         let switcher = app.buttons["team-switcher-button"]
-        XCTAssertTrue(switcher.waitForExistence(timeout: 15), "the depth chart header should expose the team switcher")
+        XCTAssertTrue(
+            switcher.waitForExistence(timeout: 15),
+            "the depth chart header should expose the team switcher")
         switcher.tap()
 
         let loading = app.otherElements["team-list-loading"]
@@ -442,7 +473,9 @@ final class AccessibilityUITests: XCTestCase {
         if loading.waitForExistence(timeout: 2) {
             XCTAssertEqual(loading.label, "Loading teams")
         } else {
-            XCTAssertTrue(searchField.waitForExistence(timeout: 15), "the switcher sheet should reach a loaded state")
+            XCTAssertTrue(
+                searchField.waitForExistence(timeout: 15),
+                "the switcher sheet should reach a loaded state")
         }
     }
 }

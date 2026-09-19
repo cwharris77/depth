@@ -36,7 +36,8 @@ struct SeasonPickerTrigger: View {
     var body: some View {
         // `Spacer()` only appears when the back-to-current button does, so a single
         // trigger still just hugs its own content (leading) instead of centering.
-        let layout = dynamicTypeSize.isAccessibilitySize
+        let layout =
+            dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.xs))
             : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.xs))
         layout {
@@ -144,7 +145,9 @@ struct SeasonPickerSheet: View {
                 }
                 .frame(minHeight: 44)
                 .accessibilityIdentifier("\(identifierPrefix)-season-\(item.season)")
-                .accessibilityLabel("\(item.season)\(item.season == selectedSeason ? ", selected" : "")")
+                .accessibilityLabel(
+                    "\(item.season)\(item.season == selectedSeason ? ", selected" : "")"
+                )
                 // Rounded top corners on the first row and bottom corners on the last —
                 // interior rows stay square so they read as one continuous card, not a
                 // stack of separately-rounded pills. Softens the flat edges that used to
@@ -164,7 +167,8 @@ struct SeasonPickerSheet: View {
                 // matching TeamListView's TeamSearchRowPresentation treatment.
                 .listRowSeparator(index == 0 ? .hidden : .visible, edges: .top)
                 .listRowSeparator(
-                    TeamSearchRowPresentation.showsSeparator(after: index, count: items.count) ? .visible : .hidden,
+                    TeamSearchRowPresentation.showsSeparator(after: index, count: items.count)
+                        ? .visible : .hidden,
                     edges: .bottom
                 )
             }

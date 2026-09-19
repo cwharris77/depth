@@ -251,7 +251,8 @@ struct CompareView: View {
             SeasonPickerTrigger(
                 season: viewModel.resolvedSeason,
                 identifier: "compare-season-trigger",
-                isHistorical: viewModel.resolvedSeason != nil && viewModel.resolvedSeason != viewModel.currentSeason,
+                isHistorical: viewModel.resolvedSeason != nil
+                    && viewModel.resolvedSeason != viewModel.currentSeason,
                 onBackToCurrent: {
                     if let currentSeason = viewModel.currentSeason {
                         viewModel.selectSeason(currentSeason)
@@ -268,7 +269,8 @@ struct CompareView: View {
         // clear enough way to change a pick now that both slots carry one ("it'll be a couple
         // more clicks, but I'm not worried about it"). That also buys back the vertical space
         // this row used to spend on a label.
-        let layout = dynamicTypeSize.isAccessibilitySize
+        let layout =
+            dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(spacing: DesignTokens.Spacing.sm))
             : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.sm))
         return layout {
@@ -305,7 +307,10 @@ struct CompareView: View {
                 }
                 Text(slotLabel(team))
                     .font(.footnote.weight(.bold))
-                    .foregroundStyle(team != nil ? DesignTokens.Colors.textPrimary : DesignTokens.Colors.textFaint)
+                    .foregroundStyle(
+                        team != nil
+                            ? DesignTokens.Colors.textPrimary : DesignTokens.Colors.textFaint
+                    )
                     .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
                 if team != nil {
                     slotRecord(slot)
@@ -317,17 +322,19 @@ struct CompareView: View {
             .padding(.vertical, team != nil ? DesignTokens.Spacing.sm : DesignTokens.Spacing.lg)
             .background(
                 team.map { Color(hex: TeamSurfaces.mark($0.colors.jersey)).opacity(0.10) }
-                    ??
+
                     // DEP-266: the unpicked slot is a dashed `borderInput` border on
                     // transparent — web parity — so it reads as a "fill this in" hole
                     // rather than a solid-but-wrong slot. The `.overlay` below draws it.
-                    Color.clear,
+                    ?? Color.clear,
                 in: RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
             )
             .overlay {
                 if let team {
                     RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
-                        .strokeBorder(Color(hex: TeamSurfaces.mark(team.colors.jersey)).opacity(0.33), lineWidth: 1)
+                        .strokeBorder(
+                            Color(hex: TeamSurfaces.mark(team.colors.jersey)).opacity(0.33),
+                            lineWidth: 1)
                 } else {
                     RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
                         .strokeBorder(
@@ -403,8 +410,12 @@ struct CompareView: View {
             options: [
                 // DEP-266: web's tab copy is "By team"/"By position" — the first port
                 // used all-caps "MATCHUP"/"BY POSITION"; restored to the web labels.
-                DepthSegmentedOption(value: CompareViewModel.Tab.matchup, label: "By team", identifier: "compare-tab-matchup"),
-                DepthSegmentedOption(value: CompareViewModel.Tab.position, label: "By position", identifier: "compare-tab-position"),
+                DepthSegmentedOption(
+                    value: CompareViewModel.Tab.matchup, label: "By team",
+                    identifier: "compare-tab-matchup"),
+                DepthSegmentedOption(
+                    value: CompareViewModel.Tab.position, label: "By position",
+                    identifier: "compare-tab-position"),
             ],
             selection: viewModel.tab,
             onChange: { viewModel.selectTab($0) },
@@ -435,14 +446,18 @@ private struct TeamMatchupSection: View {
 
     var body: some View {
         if !viewModel.bothPicked {
-            ComparePrompt(pickedCount: viewModel.pickedCount, copy: "Offense, defense, and special teams metrics line up side by side.")
+            ComparePrompt(
+                pickedCount: viewModel.pickedCount,
+                copy: "Offense, defense, and special teams metrics line up side by side.")
         } else if viewModel.sameTeam {
             SameTeamBlock()
         } else if viewModel.teamA != nil, viewModel.teamB != nil {
             CompareLensesView(viewModel: viewModel)
         } else {
             // Unreachable given bothPicked, but degrade rather than crash.
-            ComparePrompt(pickedCount: viewModel.pickedCount, copy: "Offense, defense, and special teams metrics line up side by side.")
+            ComparePrompt(
+                pickedCount: viewModel.pickedCount,
+                copy: "Offense, defense, and special teams metrics line up side by side.")
         }
     }
 }
@@ -461,7 +476,11 @@ private struct PositionDepthSection: View {
             RoomPositionPicker(viewModel: viewModel)
 
             if !viewModel.bothPicked {
-                ComparePrompt(pickedCount: viewModel.pickedCount, copy: "Their depth at the selected position lines up side by side, rank for rank.")
+                ComparePrompt(
+                    pickedCount: viewModel.pickedCount,
+                    copy:
+                        "Their depth at the selected position lines up side by side, rank for rank."
+                )
             } else if viewModel.sameTeam {
                 SameTeamBlock()
             } else if viewModel.positionGroupA.isEmpty && viewModel.positionGroupB.isEmpty {
@@ -475,7 +494,11 @@ private struct PositionDepthSection: View {
             } else {
                 // Unreachable given bothPicked, but degrade rather than crash (AGENTS.md
                 // invariant 6): a team slot that somehow went nil after bothPicked.
-                ComparePrompt(pickedCount: viewModel.pickedCount, copy: "Their depth at the selected position lines up side by side, rank for rank.")
+                ComparePrompt(
+                    pickedCount: viewModel.pickedCount,
+                    copy:
+                        "Their depth at the selected position lines up side by side, rank for rank."
+                )
             }
         }
     }
@@ -529,7 +552,8 @@ private struct RoomPositionPicker: View {
         // NB: no `.accessibilityIdentifier` on this container — DepthUnitTabBar's buttons
         // carry their own `unit-tab-*` ids, and a container-level identifier on the VStack
         // overrode those (probed under DEP-311), leaving every lens unreachable by id.
-        .animation(reduceMotion ? nil : DesignTokens.Motion.selection, value: viewModel.expandedRoomID)
+        .animation(
+            reduceMotion ? nil : DesignTokens.Motion.selection, value: viewModel.expandedRoomID)
     }
 
     // MARK: Unit lens
@@ -567,27 +591,38 @@ private struct RoomPositionPicker: View {
     private func roomTile(_ room: CompareRoom) -> some View {
         let isActive = room == viewModel.activeRoom
         return Button {
-            withAnimation(reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection) {
+            withAnimation(
+                reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection
+            ) {
                 viewModel.selectRoom(room)
             }
         } label: {
             HStack(spacing: DesignTokens.Spacing.sm) {
                 Text(room.name)
                     .font(.footnote.weight(.bold))
-                    .foregroundStyle(isActive ? DesignTokens.Colors.onAccent : DesignTokens.Colors.textPrimary)
+                    .foregroundStyle(
+                        isActive ? DesignTokens.Colors.onAccent : DesignTokens.Colors.textPrimary)
                 Spacer(minLength: 0)
                 Text("\(room.positions.count)")
                     .font(.caption2.weight(.bold))
-                    .foregroundStyle(isActive ? DesignTokens.Colors.onAccent.opacity(0.7) : DesignTokens.Colors.textFaint)
+                    .foregroundStyle(
+                        isActive
+                            ? DesignTokens.Colors.onAccent.opacity(0.7)
+                            : DesignTokens.Colors.textFaint)
             }
             .padding(.horizontal, DesignTokens.Spacing.md)
             .padding(.vertical, DesignTokens.Spacing.md)
             .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
-            .background(isActive ? DesignTokens.Colors.accent : DesignTokens.Colors.surfaceCard2, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
+            .background(
+                isActive ? DesignTokens.Colors.accent : DesignTokens.Colors.surfaceCard2,
+                in: RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
+            )
             .overlay {
                 RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
                     .strokeBorder(
-                        isActive ? DesignTokens.Colors.onAccent.opacity(0.40) : DesignTokens.Colors.borderDefault,
+                        isActive
+                            ? DesignTokens.Colors.onAccent.opacity(0.40)
+                            : DesignTokens.Colors.borderDefault,
                         lineWidth: isActive ? 2 : 1
                     )
             }
@@ -629,7 +664,8 @@ private struct RoomPositionPicker: View {
         // (Line, Defensive Line, Linebackers), which fits one row at this size, so the
         // grid/HStack branch that used to switch on role count is gone too: it exists only
         // when tiles are wide enough to wrap.
-        let layout = dynamicTypeSize.isAccessibilitySize
+        let layout =
+            dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(DepthFlowLayout(spacing: DesignTokens.Spacing.xs + 2))
             : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.xs + 2))
         return layout {
@@ -649,7 +685,8 @@ private struct RoomPositionPicker: View {
             HStack(spacing: DesignTokens.Spacing.xs) {
                 Text(pos.rawValue)
                     .font(.caption2.weight(.bold))
-                    .foregroundStyle(isSelected ? DesignTokens.Colors.onAccent : DesignTokens.Colors.textPrimary)
+                    .foregroundStyle(
+                        isSelected ? DesignTokens.Colors.onAccent : DesignTokens.Colors.textPrimary)
                 if isSelected {
                     Image(systemName: "checkmark")
                         .font(.caption2.weight(.black))
@@ -819,13 +856,18 @@ private struct CompareRows: View {
             .background(DesignTokens.Colors.surfaceCard2)
 
             ForEach(0..<rowCount, id: \.self) { rank in
-                let layout = dynamicTypeSize.isAccessibilitySize
+                let layout =
+                    dynamicTypeSize.isAccessibilitySize
                     ? AnyLayout(VStackLayout(spacing: 0))
                     : AnyLayout(HStackLayout(spacing: 0))
                 layout {
-                    if dynamicTypeSize.isAccessibilitySize { Text(a.team.abbrev).font(.caption.bold()) }
+                    if dynamicTypeSize.isAccessibilitySize {
+                        Text(a.team.abbrev).font(.caption.bold())
+                    }
                     PlayerCell(player: a.players[safe: rank], team: a.team, repository: repository)
-                    if dynamicTypeSize.isAccessibilitySize { Text(b.team.abbrev).font(.caption.bold()) }
+                    if dynamicTypeSize.isAccessibilitySize {
+                        Text(b.team.abbrev).font(.caption.bold())
+                    }
                     PlayerCell(player: b.players[safe: rank], team: b.team, repository: repository)
                 }
                 .background(rank % 2 == 1 ? DesignTokens.Colors.surfaceCard2 : Color.clear)

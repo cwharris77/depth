@@ -21,7 +21,8 @@ private actor RecordingSettingsService: UserSettingsServicing {
     func recordedPatches() -> [UserSettingsPatch] { patches }
 
     func store(favorite: String?, startOnFavorite: Bool) {
-        stored = UserSettings(favoriteTeamId: favorite, lastTeamId: nil, startOnFavorite: startOnFavorite)
+        stored = UserSettings(
+            favoriteTeamId: favorite, lastTeamId: nil, startOnFavorite: startOnFavorite)
     }
 }
 
@@ -29,7 +30,9 @@ private actor RecordingSettingsService: UserSettingsServicing {
 /// `accept` takes a non-optional DepthUser, so the signed-out case settles via `refresh()`
 /// failing as unauthenticated (the same path a real expired/none session takes).
 @MainActor
-private func settledSession(user: DepthUser? = DepthUser(id: UUID(), email: "owner@example.com")) async -> AuthSessionStore {
+private func settledSession(user: DepthUser? = DepthUser(id: UUID(), email: "owner@example.com"))
+    async -> AuthSessionStore
+{
     let service = StubAuthService(user: user)
     let store = AuthSessionStore(service: service)
     if let user {

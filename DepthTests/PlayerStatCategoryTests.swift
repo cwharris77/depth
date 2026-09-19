@@ -39,15 +39,23 @@ private func season(
 
 @Test func ledgerTabsFollowPositionAndOnlyIncludeCategoriesWithData() {
     // A QB's post-interception tackle doesn't earn a defensive tab.
-    let qb = [season(2025, attempts: 580, passingYards: 4_118, carries: 62, rushingYards: 341, tackles: 2)]
+    let qb = [
+        season(2025, attempts: 580, passingYards: 4_118, carries: 62, rushingYards: 341, tackles: 2)
+    ]
     #expect(PlayerStatCategory.categories(for: qb, position: .qb) == [.passing, .rushing])
 
     // An RB with a trick-play pass still leads with rushing.
-    let rb = [season(2025, attempts: 1, passingYards: 12, carries: 200, rushingYards: 900, receptions: 30, targets: 40)]
-    #expect(PlayerStatCategory.categories(for: rb, position: .rb) == [.rushing, .receiving, .passing])
+    let rb = [
+        season(
+            2025, attempts: 1, passingYards: 12, carries: 200, rushingYards: 900, receptions: 30,
+            targets: 40)
+    ]
+    #expect(
+        PlayerStatCategory.categories(for: rb, position: .rb) == [.rushing, .receiving, .passing])
 
     let dt = [season(2025, tackles: 44, sacks: 6.5), season(2024, tackles: 51, interceptions: 1)]
-    #expect(PlayerStatCategory.categories(for: dt, position: .dt) == [.tackles, .passRush, .turnovers])
+    #expect(
+        PlayerStatCategory.categories(for: dt, position: .dt) == [.tackles, .passRush, .turnovers])
 
     let kicker = [season(2025, tackles: 2, fgMade: 30, fgAtt: 34)]
     #expect(PlayerStatCategory.categories(for: kicker, position: .k) == [.kicking])
@@ -61,7 +69,9 @@ private func season(
 }
 
 @Test func ledgerHeadlineSummaryAndDetailsUseStoredColumnsOnly() {
-    let row = season(2025, completions: 401, attempts: 580, passingYards: 4_118, passingTds: 31, passingInterceptions: 9)
+    let row = season(
+        2025, completions: 401, attempts: 580, passingYards: 4_118, passingTds: 31,
+        passingInterceptions: 9)
     let passing = PlayerStatCategory.passing
     #expect(passing.headline(row).value == "4,118")
     #expect(passing.summary(row).map { "\($0.value) \($0.short)" } == ["31 TD", "9 INT"])
@@ -79,13 +89,19 @@ private func season(
 @Test func statlessPositionsGetParticipationAndPenaltyTabsInsteadOfGamesAlone() {
     // An offensive lineman's real line is offensive snaps / share (nflverse snap counts),
     // plus penalties -- not a bare GAMES tab.
-    let lineman = [season(2025, penalties: 8, penaltyYards: 65, offenseSnaps: 1_042, offensePct: 0.95)]
+    let lineman = [
+        season(2025, penalties: 8, penaltyYards: 65, offenseSnaps: 1_042, offensePct: 0.95)
+    ]
     #expect(PlayerStatCategory.categories(for: lineman, position: .lg) == [.snaps, .penalties])
     #expect(PlayerStatCategory.snaps.headline(lineman[0]).value == "1,042")
-    #expect(PlayerStatCategory.snaps.summary(lineman[0]).map { "\($0.value) \($0.short)" } == ["17 GP"])
+    #expect(
+        PlayerStatCategory.snaps.summary(lineman[0]).map { "\($0.value) \($0.short)" } == ["17 GP"])
     #expect(PlayerStatCategory.snaps.details(lineman[0]).map(\.value) == ["95.0"])
     #expect(PlayerStatCategory.penalties.headline(lineman[0]).value == "8")
-    #expect(PlayerStatCategory.penalties.summary(lineman[0]).map { "\($0.value) \($0.short)" } == ["65 PEN YDS"])
+    #expect(
+        PlayerStatCategory.penalties.summary(lineman[0]).map { "\($0.value) \($0.short)" } == [
+            "65 PEN YDS"
+        ])
 
     // A long snapper records only special-teams snaps; the SNAPS tab reports that unit.
     let snapper = [season(2025, specialTeamsSnaps: 140, specialTeamsPct: 0.3)]
@@ -99,10 +115,20 @@ private func season(
         2025, tackles: 44, sacks: 6.5, interceptions: 1, assists: 21, tacklesForLoss: 9,
         qbHits: 18, passDefended: 5, forcedFumbles: 2, fumbleRecoveries: 1, defensiveTds: 1
     )
-    #expect(PlayerStatCategory.categories(for: [edge], position: .dt) == [.tackles, .passRush, .turnovers])
-    #expect(PlayerStatCategory.tackles.summary(edge).map { "\($0.value) \($0.short)" } == ["21 AST", "9 TFL"])
-    #expect(PlayerStatCategory.passRush.summary(edge).map { "\($0.value) \($0.short)" } == ["18 QBH"])
-    #expect(PlayerStatCategory.turnovers.summary(edge).map { "\($0.value) \($0.short)" } == ["5 PBU", "2 FF"])
+    #expect(
+        PlayerStatCategory.categories(for: [edge], position: .dt) == [
+            .tackles, .passRush, .turnovers,
+        ])
+    #expect(
+        PlayerStatCategory.tackles.summary(edge).map { "\($0.value) \($0.short)" } == [
+            "21 AST", "9 TFL",
+        ])
+    #expect(
+        PlayerStatCategory.passRush.summary(edge).map { "\($0.value) \($0.short)" } == ["18 QBH"])
+    #expect(
+        PlayerStatCategory.turnovers.summary(edge).map { "\($0.value) \($0.short)" } == [
+            "5 PBU", "2 FF",
+        ])
     #expect(PlayerStatCategory.turnovers.details(edge).map(\.value) == ["0.1", "1", "1"])
 }
 
@@ -113,11 +139,17 @@ private func season(
     )
     #expect(PlayerStatCategory.categories(for: [returner], position: .pr) == [.returns])
     #expect(PlayerStatCategory.returns.headline(returner).value == "580")
-    #expect(PlayerStatCategory.returns.summary(returner).map { "\($0.value) \($0.short)" } == ["30 PR", "12 KR"])
+    #expect(
+        PlayerStatCategory.returns.summary(returner).map { "\($0.value) \($0.short)" } == [
+            "30 PR", "12 KR",
+        ])
     #expect(PlayerStatCategory.returns.details(returner).map(\.value) == ["280", "300", "1", "17"])
 
     let kicker = season(2025, fgMade: 30, fgAtt: 34, patMade: 40, patAtt: 42, fgLong: 57)
-    #expect(PlayerStatCategory.kicking.summary(kicker).map { "\($0.value) \($0.short)" } == ["34 ATT", "40 PAT"])
+    #expect(
+        PlayerStatCategory.kicking.summary(kicker).map { "\($0.value) \($0.short)" } == [
+            "34 ATT", "40 PAT",
+        ])
     #expect(PlayerStatCategory.kicking.details(kicker).map(\.value) == ["88", "57", "17"])
 
     // A defensive back who returns kicks earns a RETURNS tab after his own-side tabs.
@@ -126,16 +158,22 @@ private func season(
 }
 
 @Test func ledgerBarScalesToCareerBest() {
-    let seasons = [season(2025, rushingYards: 341), season(2024, rushingYards: 404), season(2023, rushingYards: 0)]
+    let seasons = [
+        season(2025, rushingYards: 341), season(2024, rushingYards: 404),
+        season(2023, rushingYards: 0),
+    ]
     #expect(PlayerStatCategory.rushing.barFraction(seasons[1], among: seasons) == 1)
-    #expect(abs(PlayerStatCategory.rushing.barFraction(seasons[0], among: seasons) - 341.0 / 404.0) < 0.0001)
+    #expect(
+        abs(PlayerStatCategory.rushing.barFraction(seasons[0], among: seasons) - 341.0 / 404.0)
+            < 0.0001)
     #expect(PlayerStatCategory.rushing.barFraction(seasons[2], among: seasons) == 0)
     #expect(PlayerStatCategory.passing.barFraction(seasons[0], among: seasons) == 0)
 }
 
 @Test func careerTotalsSumSeasonsAndKeepUnrecordedColumnsNil() {
     let career = PlayerStatLedger.careerTotals([
-        season(2025, games: 17, passingYards: 4_118, sacks: 1.5, offenseSnaps: 500, offensePct: 0.9),
+        season(
+            2025, games: 17, passingYards: 4_118, sacks: 1.5, offenseSnaps: 500, offensePct: 0.9),
         season(2024, games: 16, passingYards: 3_702, sacks: 2, offenseSnaps: 600, offensePct: 0.8),
     ])
     #expect(career.games == 33)
@@ -151,8 +189,9 @@ private func season(
 
 @Test func ledgerRowLabelPairsEveryNumberWithItsStat() {
     let row = season(2025, passingYards: 4_118, passingTds: 31, passingInterceptions: 9)
-    #expect(PlayerStatLedger.rowLabel(for: row, category: .passing)
-        == "2025 season, SEA, Passing yards 4,118, 31 touchdowns, 9 interceptions")
+    #expect(
+        PlayerStatLedger.rowLabel(for: row, category: .passing)
+            == "2025 season, SEA, Passing yards 4,118, 31 touchdowns, 9 interceptions")
 }
 
 @Test func profileDisplayJerseyNameInitialsAndVitals() {
@@ -164,9 +203,14 @@ private func season(
     #expect(PlayerProfileDisplay.initials("Pelé") == "P")
     #expect(PlayerProfileDisplay.initials("") == nil)
 
-    #expect(PlayerProfileDisplay.vitals(age: 27, experience: 5, height: "6' 4\"", weight: 218).map(\.text)
-        == ["AGE 27", "EXP 5 YRS", "6' 4\"", "218 LB"])
-    #expect(PlayerProfileDisplay.vitals(age: 0, experience: 0, height: "", weight: 0).map(\.text) == ["ROOKIE"])
+    #expect(
+        PlayerProfileDisplay.vitals(age: 27, experience: 5, height: "6' 4\"", weight: 218).map(
+            \.text)
+            == ["AGE 27", "EXP 5 YRS", "6' 4\"", "218 LB"])
+    #expect(
+        PlayerProfileDisplay.vitals(age: 0, experience: 0, height: "", weight: 0).map(\.text) == [
+            "ROOKIE"
+        ])
 }
 
 @Test func profileDisplayVitalsAppendCollegeLast() {
@@ -177,12 +221,16 @@ private func season(
     #expect(parts.last?.spoken == "College, Alabama")
     // ESPN's em-dash placeholder and blank strings mean "no college", not a part.
     #expect(
-        PlayerProfileDisplay.vitals(age: nil, experience: nil, height: nil, weight: nil, college: " — ")
-            .isEmpty
+        PlayerProfileDisplay.vitals(
+            age: nil, experience: nil, height: nil, weight: nil, college: " — "
+        )
+        .isEmpty
     )
     #expect(
-        PlayerProfileDisplay.vitals(age: nil, experience: nil, height: nil, weight: nil, college: nil)
-            .isEmpty
+        PlayerProfileDisplay.vitals(
+            age: nil, experience: nil, height: nil, weight: nil, college: nil
+        )
+        .isEmpty
     )
 }
 

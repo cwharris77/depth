@@ -31,7 +31,8 @@ private actor FakeDepthRepository: DepthRepository {
         statsResults: [String: Result<TeamStatsPage, Error>] = [:],
         scheduleResults: [String: Result<TeamSchedule, Error>] = [:],
         recentParticipationResult: RecentParticipation? = nil,
-        appConfigResult: Result<AppConfig, Error> = .success(AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)),
+        appConfigResult: Result<AppConfig, Error> = .success(
+            AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)),
         uniformsResult: Result<[UniformListing], Error> = .success([])
     ) {
         self.teamsResult = teamsResult
@@ -235,7 +236,7 @@ private func recentParticipation() -> RecentParticipation {
     let underlying = FakeDepthRepository(snapshotResults: ["bills": .success(snapshot())])
     let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
 
-    _ = try await repository.teamSnapshot(teamId: "bills") // primes the cache
+    _ = try await repository.teamSnapshot(teamId: "bills")  // primes the cache
     let cached = try await repository.teamSnapshot(teamId: "bills")
     #expect(cached.team.id == "bills")
 }
@@ -244,7 +245,7 @@ private func recentParticipation() -> RecentParticipation {
     let underlying = FakeDepthRepository(snapshotResults: ["bills": .success(snapshot())])
     let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
 
-    _ = try await repository.teamSnapshot(teamId: "bills") // primes the cache with a good snapshot
+    _ = try await repository.teamSnapshot(teamId: "bills")  // primes the cache with a good snapshot
     await underlying.setSnapshotResult(.failure(DepthError.server("boom")), forTeam: "bills")
 
     // Cache-hit path fires a background refresh; give it a moment to run and fail.
@@ -252,7 +253,9 @@ private func recentParticipation() -> RecentParticipation {
     try await Task.sleep(nanoseconds: 200_000_000)
 
     let stillCached = try await repository.teamSnapshot(teamId: "bills")
-    #expect(stillCached.team.id == "bills", "a failed refresh must not clear the previously cached snapshot")
+    #expect(
+        stillCached.team.id == "bills",
+        "a failed refresh must not clear the previously cached snapshot")
 }
 
 @Test func concurrentTeamSnapshotCallsWithNoCacheDedupToOneUnderlyingFetch() async throws {
@@ -263,7 +266,9 @@ private func recentParticipation() -> RecentParticipation {
     async let second = repository.teamSnapshot(teamId: "bills")
     _ = try await (first, second)
 
-    #expect(await underlying.callCount(forTeam: "bills") == 1, "concurrent refreshes for the same team must be deduplicated")
+    #expect(
+        await underlying.callCount(forTeam: "bills") == 1,
+        "concurrent refreshes for the same team must be deduplicated")
 }
 
 @Test func teamsReturnsCachedListOnCacheHit() async throws {
@@ -278,17 +283,23 @@ private func recentParticipation() -> RecentParticipation {
 
 @Test func appConfigPrefersFreshNetworkValueOverCache() async throws {
     let store = inMemoryStore()
-    try await store.saveAppConfig(AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil), cachedAt: Date())
-    let underlying = FakeDepthRepository(appConfigResult: .success(AppConfig(minimumSupportedBuild: 5, maintenanceMessage: nil)))
+    try await store.saveAppConfig(
+        AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil), cachedAt: Date())
+    let underlying = FakeDepthRepository(
+        appConfigResult: .success(AppConfig(minimumSupportedBuild: 5, maintenanceMessage: nil)))
     let repository = CachingDepthRepository(underlying: underlying, store: store)
 
     let config = try await repository.appConfig()
-    #expect(config.minimumSupportedBuild == 5, "app_config must try the network first, never serve a stale cached minimum when the network succeeds")
+    #expect(
+        config.minimumSupportedBuild == 5,
+        "app_config must try the network first, never serve a stale cached minimum when the network succeeds"
+    )
 }
 
 @Test func appConfigFallsBackToCacheWhenNetworkFails() async throws {
     let store = inMemoryStore()
-    try await store.saveAppConfig(AppConfig(minimumSupportedBuild: 3, maintenanceMessage: nil), cachedAt: Date())
+    try await store.saveAppConfig(
+        AppConfig(minimumSupportedBuild: 3, maintenanceMessage: nil), cachedAt: Date())
     let underlying = FakeDepthRepository(appConfigResult: .failure(DepthError.offline))
     let repository = CachingDepthRepository(underlying: underlying, store: store)
 
@@ -312,7 +323,10 @@ private func recentParticipation() -> RecentParticipation {
     // Write directly with a version this build doesn't recognize — "safe schema
     // discard" (design spec) means the read path must treat this as no cache at all,
     // not attempt to decode a payload shape that may no longer match.
-    context.insert(CachedTeamSnapshot(teamId: "bills", payload: payload, schemaVersion: depthCacheSchemaVersion + 1, cachedAt: Date()))
+    context.insert(
+        CachedTeamSnapshot(
+            teamId: "bills", payload: payload, schemaVersion: depthCacheSchemaVersion + 1,
+            cachedAt: Date()))
     try context.save()
 
     let store = CachedSnapshotStore(modelContainer: container)
@@ -322,28 +336,37 @@ private func recentParticipation() -> RecentParticipation {
     let underlying = FakeDepthRepository(snapshotResults: ["bills": .success(snapshot())])
     let repository = CachingDepthRepository(underlying: underlying, store: store)
     let result = try await repository.teamSnapshot(teamId: "bills")
-    #expect(result.team.id == "bills", "a discarded incompatible row falls through to a real network fetch")
+    #expect(
+        result.team.id == "bills",
+        "a discarded incompatible row falls through to a real network fetch")
 }
 
 @Test func teamSnapshotCachedAtReturnsNilForARowTeamSnapshotWouldDiscard() async throws {
     let container = inMemoryContainer()
     let context = ModelContext(container)
     let payload = try JSONEncoder().encode(snapshot())
-    context.insert(CachedTeamSnapshot(teamId: "bills", payload: payload, schemaVersion: depthCacheSchemaVersion + 1, cachedAt: Date()))
+    context.insert(
+        CachedTeamSnapshot(
+            teamId: "bills", payload: payload, schemaVersion: depthCacheSchemaVersion + 1,
+            cachedAt: Date()))
     try context.save()
 
     let store = CachedSnapshotStore(modelContainer: container)
     let cachedAt = try await store.teamSnapshotCachedAt(teamId: "bills")
-    #expect(cachedAt == nil, "a stale-label caller must never see a cache date for a row teamSnapshot() treats as missing")
+    #expect(
+        cachedAt == nil,
+        "a stale-label caller must never see a cache date for a row teamSnapshot() treats as missing"
+    )
 }
 
 @Test func incompatibleAppConfigSchemaVersionIsDiscardedAsCacheMiss() async throws {
     let container = inMemoryContainer()
     let context = ModelContext(container)
-    context.insert(CachedAppConfig(
-        config: AppConfig(minimumSupportedBuild: 7, maintenanceMessage: nil),
-        schemaVersion: depthCacheSchemaVersion + 1, cachedAt: Date()
-    ))
+    context.insert(
+        CachedAppConfig(
+            config: AppConfig(minimumSupportedBuild: 7, maintenanceMessage: nil),
+            schemaVersion: depthCacheSchemaVersion + 1, cachedAt: Date()
+        ))
     try context.save()
 
     let store = CachedSnapshotStore(modelContainer: container)
@@ -366,7 +389,7 @@ private func recentParticipation() -> RecentParticipation {
     let underlying = FakeDepthRepository(statsResults: ["bills": .success(statsPage())])
     let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
 
-    _ = try await repository.teamStats(teamId: "bills") // primes the cache
+    _ = try await repository.teamStats(teamId: "bills")  // primes the cache
 
     // The underlying goes dark after priming. `teamStats` is cache-first + background
     // refresh, so the warm read must be served from the store and must not block on — or
@@ -377,14 +400,16 @@ private func recentParticipation() -> RecentParticipation {
     // uniform-list warm read below).
     await underlying.setStatsResult(.failure(DepthError.server("boom")), forTeam: "bills")
     let cached = try await repository.teamStats(teamId: "bills")
-    #expect(cached.team.id == "bills", "a warm cache must serve the last good page without blocking on the network")
+    #expect(
+        cached.team.id == "bills",
+        "a warm cache must serve the last good page without blocking on the network")
 }
 
 @Test func failedStatsBackgroundRefreshRetainsLastGoodPage() async throws {
     let underlying = FakeDepthRepository(statsResults: ["bills": .success(statsPage())])
     let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
 
-    _ = try await repository.teamStats(teamId: "bills") // primes the cache with a good page
+    _ = try await repository.teamStats(teamId: "bills")  // primes the cache with a good page
     await underlying.setStatsResult(.failure(DepthError.server("boom")), forTeam: "bills")
 
     // Cache-hit path fires a background refresh; give it a moment to run and fail.
@@ -392,14 +417,19 @@ private func recentParticipation() -> RecentParticipation {
     try await Task.sleep(nanoseconds: 200_000_000)
 
     let stillCached = try await repository.teamStats(teamId: "bills")
-    #expect(stillCached.team.id == "bills", "a failed refresh must not clear the previously cached stats page")
+    #expect(
+        stillCached.team.id == "bills",
+        "a failed refresh must not clear the previously cached stats page")
 }
 
 @Test func incompatibleStatsSchemaVersionRowIsDiscardedAsCacheMiss() async throws {
     let container = inMemoryContainer()
     let context = ModelContext(container)
     let payload = try JSONEncoder().encode(statsPage())
-    context.insert(CachedTeamStats(teamId: "bills", payload: payload, schemaVersion: depthCacheSchemaVersion + 1, cachedAt: Date()))
+    context.insert(
+        CachedTeamStats(
+            teamId: "bills", payload: payload, schemaVersion: depthCacheSchemaVersion + 1,
+            cachedAt: Date()))
     try context.save()
 
     let store = CachedSnapshotStore(modelContainer: container)
@@ -409,7 +439,9 @@ private func recentParticipation() -> RecentParticipation {
     let underlying = FakeDepthRepository(statsResults: ["bills": .success(statsPage())])
     let repository = CachingDepthRepository(underlying: underlying, store: store)
     let result = try await repository.teamStats(teamId: "bills")
-    #expect(result.team.id == "bills", "a discarded incompatible row falls through to a real network fetch")
+    #expect(
+        result.team.id == "bills",
+        "a discarded incompatible row falls through to a real network fetch")
 }
 
 // Regression coverage for the stale-record bug caught in a live QA pass: a team's W-L
@@ -421,23 +453,31 @@ private func recentParticipation() -> RecentParticipation {
 // rosters" staleness problem as a schedule.
 @Test func expiredTeamStatsTTLGoesNetworkFirst() async throws {
     let store = inMemoryStore()
-    try await store.saveTeamStats(statsPage(), teamId: "bills", cachedAt: Date().addingTimeInterval(-CachingDepthRepository.statsTTL - 1))
+    try await store.saveTeamStats(
+        statsPage(), teamId: "bills",
+        cachedAt: Date().addingTimeInterval(-CachingDepthRepository.statsTTL - 1))
     let underlying = FakeDepthRepository(statsResults: ["bills": .success(statsPage())])
     let repository = CachingDepthRepository(underlying: underlying, store: store)
 
     let result = try await repository.teamStats(teamId: "bills")
     #expect(result.team.id == "bills")
-    #expect(await underlying.statsCallCount(forTeam: "bills") == 1, "an expired stats page must refresh from the network, not serve the stale record")
+    #expect(
+        await underlying.statsCallCount(forTeam: "bills") == 1,
+        "an expired stats page must refresh from the network, not serve the stale record")
 }
 
 @Test func expiredTeamStatsFallsBackToCacheWhenNetworkFails() async throws {
     let store = inMemoryStore()
-    try await store.saveTeamStats(statsPage(), teamId: "bills", cachedAt: Date().addingTimeInterval(-CachingDepthRepository.statsTTL - 1))
+    try await store.saveTeamStats(
+        statsPage(), teamId: "bills",
+        cachedAt: Date().addingTimeInterval(-CachingDepthRepository.statsTTL - 1))
     let underlying = FakeDepthRepository(statsResults: ["bills": .failure(DepthError.offline)])
     let repository = CachingDepthRepository(underlying: underlying, store: store)
 
     let result = try await repository.teamStats(teamId: "bills")
-    #expect(result.team.id == "bills", "an expired page whose refresh fails must still fall back to the last good cached page")
+    #expect(
+        result.team.id == "bills",
+        "an expired page whose refresh fails must still fall back to the last good cached page")
 }
 
 // MARK: - Team schedule cache (DEP-248)
@@ -459,20 +499,25 @@ private func recentParticipation() -> RecentParticipation {
     ])
     let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
 
-    _ = try await repository.teamSchedule(teamId: "bills", season: nil) // primes the cache
+    _ = try await repository.teamSchedule(teamId: "bills", season: nil)  // primes the cache
 
     // Same contract as the uniform-list and teamStats warm reads: the underlying goes dark
     // after priming, and the within-TTL read must be served from the store without blocking
     // on — or failing with — the underlying. The refresh it fires is fire-and-forget and
     // swallows this error; a call-count assertion would race that Task.
-    await underlying.setScheduleResult(.failure(DepthError.server("boom")), teamId: "bills", season: nil)
+    await underlying.setScheduleResult(
+        .failure(DepthError.server("boom")), teamId: "bills", season: nil)
     let cached = try await repository.teamSchedule(teamId: "bills", season: nil)
-    #expect(cached.season == 2026, "a warm cache within TTL must serve the last good schedule without blocking on the network")
+    #expect(
+        cached.season == 2026,
+        "a warm cache within TTL must serve the last good schedule without blocking on the network")
 }
 
 @Test func expiredTeamScheduleTTLGoesNetworkFirst() async throws {
     let store = inMemoryStore()
-    try await store.saveTeamSchedule(schedule(), teamId: "bills", season: nil, cachedAt: Date().addingTimeInterval(-CachingDepthRepository.scheduleTTL - 1))
+    try await store.saveTeamSchedule(
+        schedule(), teamId: "bills", season: nil,
+        cachedAt: Date().addingTimeInterval(-CachingDepthRepository.scheduleTTL - 1))
     let underlying = FakeDepthRepository(scheduleResults: [
         scheduleCacheKey(teamId: "bills", season: nil): .success(schedule(season: 2026))
     ])
@@ -480,12 +525,16 @@ private func recentParticipation() -> RecentParticipation {
 
     let result = try await repository.teamSchedule(teamId: "bills", season: nil)
     #expect(result.season == 2026)
-    #expect(await underlying.scheduleCallCount(teamId: "bills", season: nil) == 1, "an expired schedule must refresh from the network, not serve the stale week")
+    #expect(
+        await underlying.scheduleCallCount(teamId: "bills", season: nil) == 1,
+        "an expired schedule must refresh from the network, not serve the stale week")
 }
 
 @Test func expiredTeamScheduleFallsBackToCacheWhenNetworkFails() async throws {
     let store = inMemoryStore()
-    try await store.saveTeamSchedule(schedule(), teamId: "bills", season: nil, cachedAt: Date().addingTimeInterval(-CachingDepthRepository.scheduleTTL - 1))
+    try await store.saveTeamSchedule(
+        schedule(), teamId: "bills", season: nil,
+        cachedAt: Date().addingTimeInterval(-CachingDepthRepository.scheduleTTL - 1))
     let underlying = FakeDepthRepository(scheduleResults: [
         scheduleCacheKey(teamId: "bills", season: nil): .failure(DepthError.offline)
     ])
@@ -501,10 +550,12 @@ private func recentParticipation() -> RecentParticipation {
     ])
     let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
 
-    _ = try await repository.teamSchedule(teamId: "bills", season: nil) // primes default + 2026
+    _ = try await repository.teamSchedule(teamId: "bills", season: nil)  // primes default + 2026
     let concrete = try await repository.teamSchedule(teamId: "bills", season: 2026)
     #expect(concrete.season == 2026)
-    #expect(await underlying.scheduleCallCount(teamId: "bills", season: 2026) == 0, "the resolved concrete season should be warm after a nil-season fetch")
+    #expect(
+        await underlying.scheduleCallCount(teamId: "bills", season: 2026) == 0,
+        "the resolved concrete season should be warm after a nil-season fetch")
 }
 
 // MARK: - Uniform archive list cache
@@ -535,7 +586,7 @@ private func uniformListing(id: String = "bills-home") -> UniformListing {
     let underlying = FakeDepthRepository(uniformsResult: .success([uniformListing()]))
     let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
 
-    _ = try await repository.listUniforms() // primes the cache
+    _ = try await repository.listUniforms()  // primes the cache
 
     // The underlying goes dark after priming. `listUniforms` is cache-first + background
     // refresh (CachingDepthRepository's header), so the warm read must be served from the

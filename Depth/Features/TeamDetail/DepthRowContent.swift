@@ -10,7 +10,8 @@ struct DepthRowContent: View {
     let accent: Color
 
     var body: some View {
-        let layout = dynamicTypeSize.isAccessibilitySize
+        let layout =
+            dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
             : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.sm))
         layout {

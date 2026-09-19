@@ -12,7 +12,8 @@ struct UniformKitBadges: View {
     var prominent = false
 
     var body: some View {
-        let layout = dynamicTypeSize.isAccessibilitySize
+        let layout =
+            dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.xs + 2))
             : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.xs + 2))
         layout {

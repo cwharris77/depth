@@ -40,7 +40,10 @@ final class UpdateGateViewModel {
     /// straight past it on the cached fast path.
     var isChecking: Bool { state == .checking }
 
-    init(repository: CachingDepthRepository, currentBuild: Int = UpdateGateViewModel.installedBuildNumber()) {
+    init(
+        repository: CachingDepthRepository,
+        currentBuild: Int = UpdateGateViewModel.installedBuildNumber()
+    ) {
         self.repository = repository
         self.currentBuild = currentBuild
     }
@@ -75,7 +78,7 @@ final class UpdateGateViewModel {
             let raw = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
             let build = Int(raw)
         else {
-            return Int.max // Fail open in a dev/test environment with no build number set.
+            return Int.max  // Fail open in a dev/test environment with no build number set.
         }
         return build
     }

@@ -40,7 +40,8 @@ struct PlayerStatsLedger: View {
                 DepthTabBar(
                     options: categories.map {
                         DepthSegmentedOption(
-                            value: $0, label: $0.title, identifier: "player-profile-full-tab-\($0.rawValue)"
+                            value: $0, label: $0.title,
+                            identifier: "player-profile-full-tab-\($0.rawValue)"
                         )
                     },
                     selection: category,
@@ -64,15 +65,17 @@ struct PlayerStatsLedger: View {
 
     private func caption(_ category: PlayerStatCategory) -> some View {
         Text("\(category.barMetricName) VS BEST")
-        .font(.caption2.weight(.bold))
-        .tracking(0.9)
-        .foregroundStyle(DesignTokens.Colors.textFaintest)
-        .padding(.top, 10)
-        .padding(.bottom, 4)
-        .accessibilityHidden(true)
+            .font(.caption2.weight(.bold))
+            .tracking(0.9)
+            .foregroundStyle(DesignTokens.Colors.textFaintest)
+            .padding(.top, 10)
+            .padding(.bottom, 4)
+            .accessibilityHidden(true)
     }
 
-    private func row(_ season: PlayerSeasonStats, index: Int, category: PlayerStatCategory) -> some View {
+    private func row(_ season: PlayerSeasonStats, index: Int, category: PlayerStatCategory)
+        -> some View
+    {
         let key = "\(category.rawValue)-\(season.id)"
         let isOpen = expanded.contains(key)
         let details = category.details(season)
@@ -92,7 +95,8 @@ struct PlayerStatsLedger: View {
                     )
                     bar(
                         fraction: category.barFraction(season, among: stats),
-                        color: isNewest ? mark : isCurrentTeam ? mark.opacity(0.5) : Color.white.opacity(0.22)
+                        color: isNewest
+                            ? mark : isCurrentTeam ? mark.opacity(0.5) : Color.white.opacity(0.22)
                     )
                 }
                 .padding(.vertical, 10)
@@ -126,7 +130,8 @@ struct PlayerStatsLedger: View {
             .foregroundStyle(isNewest ? mark : DesignTokens.Colors.textPrimary)
         let team = Text(season.teamAbbrev ?? "—")
             .font(.caption)
-            .foregroundStyle(isCurrentTeam ? DesignTokens.Colors.textMuted : DesignTokens.Colors.textFaint)
+            .foregroundStyle(
+                isCurrentTeam ? DesignTokens.Colors.textMuted : DesignTokens.Colors.textFaint)
         let headline = Text(category.headline(season).value)
             .font(.footnote.weight(.heavy))
             .foregroundStyle(DesignTokens.Colors.textPrimary)
@@ -195,10 +200,14 @@ struct PlayerStatsLedger: View {
     // gaps between them read as rules. Four figures lay out 2x2 rather than 3+1; any other
     // short final row is padded with blank cells so the backing never shows as a gray block.
     private func detailStrip(_ figures: [PlayerStatFigure]) -> some View {
-        let columnCount = dynamicTypeSize.isAccessibilitySize ? 1
+        let columnCount =
+            dynamicTypeSize.isAccessibilitySize
+            ? 1
             : figures.count == 4 ? 2 : min(3, figures.count)
-        let padded = figures.map(Optional.some)
-            + Array(repeating: nil, count: (columnCount - figures.count % columnCount) % columnCount)
+        let padded =
+            figures.map(Optional.some)
+            + Array(
+                repeating: nil, count: (columnCount - figures.count % columnCount) % columnCount)
         return LazyVGrid(
             columns: Array(repeating: GridItem(.flexible(), spacing: 1), count: columnCount),
             spacing: 1
@@ -240,7 +249,9 @@ struct PlayerStatsLedger: View {
                 .font(.caption2.weight(.heavy))
                 .tracking(0.9)
                 .foregroundStyle(mark)
-                .frame(width: dynamicTypeSize.isAccessibilitySize ? nil : careerLabelWidth, alignment: .leading)
+                .frame(
+                    width: dynamicTypeSize.isAccessibilitySize ? nil : careerLabelWidth,
+                    alignment: .leading)
             Text("\(games) GP")
                 .font(.caption)
                 .foregroundStyle(DesignTokens.Colors.textFaint)
@@ -256,7 +267,10 @@ struct PlayerStatsLedger: View {
         .overlay(alignment: .top) { hairline(mark.opacity(0.45)) }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
-            (["Career, \(games) games played", "\(category.headline(career).spoken) \(category.headline(career).value)"]
+            ([
+                "Career, \(games) games played",
+                "\(category.headline(career).spoken) \(category.headline(career).value)",
+            ]
                 + summary.map { "\($0.value) \($0.spoken)" })
                 .joined(separator: ", ")
         )
@@ -278,9 +292,11 @@ struct PlayerStatsLedgerSkeleton: View {
             ForEach(0..<3, id: \.self) { _ in
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
                     HStack {
-                        Capsule().fill(DesignTokens.Colors.surfacePlaceholder).frame(width: 64, height: 12)
+                        Capsule().fill(DesignTokens.Colors.surfacePlaceholder).frame(
+                            width: 64, height: 12)
                         Spacer()
-                        Capsule().fill(DesignTokens.Colors.surfacePlaceholder).frame(width: 96, height: 12)
+                        Capsule().fill(DesignTokens.Colors.surfacePlaceholder).frame(
+                            width: 96, height: 12)
                     }
                     Capsule().fill(DesignTokens.Colors.borderSubtle).frame(height: 6)
                 }

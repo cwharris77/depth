@@ -74,7 +74,10 @@ struct DepthSearchField: View {
         // HIG minimum, and a text field is no less of a touch target than a chip.
         .padding(.vertical, dynamicTypeSize.isAccessibilitySize ? DesignTokens.Spacing.sm : 0)
         .frame(minHeight: 44)
-        .background(DesignTokens.Colors.surfaceChip, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
+        .background(
+            DesignTokens.Colors.surfaceChip,
+            in: RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
+        )
         .overlay {
             RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
                 .strokeBorder(

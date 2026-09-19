@@ -49,7 +49,9 @@ final class ScheduleViewModel {
     var playoffsState: PlayoffsState? {
         guard let schedule else { return nil }
         let isDecided = isPastSeason || schedule.isRegularSeasonComplete
-        if let run = schedule.postseason, isDecided || run.rounds.contains(where: { $0.game != nil }) {
+        if let run = schedule.postseason,
+            isDecided || run.rounds.contains(where: { $0.game != nil })
+        {
             return .run(run)
         }
         return isDecided ? .missed : .notStarted
@@ -60,7 +62,8 @@ final class ScheduleViewModel {
     }
 
     func selectSeason(_ season: Int) async {
-        guard let defaultSeason, (TeamSchedule.earliestSeason...defaultSeason).contains(season) else {
+        guard let defaultSeason, (TeamSchedule.earliestSeason...defaultSeason).contains(season)
+        else {
             loadState = .failed(.validation("season"))
             return
         }

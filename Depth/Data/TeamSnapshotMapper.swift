@@ -41,14 +41,18 @@ enum TeamSnapshotMapper {
     static func map(_ dto: TeamDTO) throws -> TeamSnapshot {
         let result = try mapWithDiagnostics(dto)
         for drop in result.dropped {
-            logger.error("team snapshot drop \(drop.id, privacy: .public): \(String(describing: drop.reason), privacy: .public)")
+            logger.error(
+                "team snapshot drop \(drop.id, privacy: .public): \(String(describing: drop.reason), privacy: .public)"
+            )
         }
         return result.snapshot
     }
 
     /// The same mapping, with the dropped rows returned instead of only logged, so the
     /// degrade path is assertable in tests.
-    static func mapWithDiagnostics(_ dto: TeamDTO) throws -> (snapshot: TeamSnapshot, dropped: [DroppedRow]) {
+    static func mapWithDiagnostics(_ dto: TeamDTO) throws -> (
+        snapshot: TeamSnapshot, dropped: [DroppedRow]
+    ) {
         let uniforms = try dto.uniforms.map(mapUniform)
         let team = Team(
             id: dto.id, city: dto.city, name: dto.name, abbrev: dto.abbrev,
@@ -80,7 +84,8 @@ enum TeamSnapshotMapper {
             // its CHECK constraint, not of the domain, and removing it must not require a
             // gated client release. A rank below 1 is still malformed.
             guard entry.depthRank >= 1 else {
-                dropped.append(DroppedRow(id: seatId, reason: .invalidSeatDepthRank(entry.depthRank)))
+                dropped.append(
+                    DroppedRow(id: seatId, reason: .invalidSeatDepthRank(entry.depthRank)))
                 continue
             }
             depthChart.append(
@@ -91,14 +96,19 @@ enum TeamSnapshotMapper {
             guard !seenPlayerIds.contains(entry.playerId) else { continue }
             // A seat whose athlete cannot be decoded stays in the chart: `playersInSeats`
             // already skips a seat whose player is absent, so the rest of the unit renders.
-            guard let player = mapPlayer(entry.player, depthRank: entry.depthRank, dropped: &dropped)
+            guard
+                let player = mapPlayer(entry.player, depthRank: entry.depthRank, dropped: &dropped)
             else { continue }
             players.append(player)
             seenPlayerIds.insert(player.id)
         }
         for slot in dto.specialTeamsSlots {
-            guard let playerDTO = slot.player, !seenPlayerIds.contains(playerDTO.id) else { continue }
-            guard let player = mapPlayer(playerDTO, depthRank: 3, dropped: &dropped) else { continue }
+            guard let playerDTO = slot.player, !seenPlayerIds.contains(playerDTO.id) else {
+                continue
+            }
+            guard let player = mapPlayer(playerDTO, depthRank: 3, dropped: &dropped) else {
+                continue
+            }
             players.append(player)
             seenPlayerIds.insert(player.id)
         }
@@ -113,7 +123,8 @@ enum TeamSnapshotMapper {
         }
 
         let specialTeams = dto.specialTeamsSlots.map { slot in
-            SpecialSlot(id: slot.id, playerId: slot.playerId, x: slot.x, y: slot.y, label: slot.label)
+            SpecialSlot(
+                id: slot.id, playerId: slot.playerId, x: slot.x, y: slot.y, label: slot.label)
         }
 
         let snapshot = TeamSnapshot(
@@ -156,7 +167,8 @@ enum TeamSnapshotMapper {
     /// to nil the same way. Missing jersey number defaults to 0 (web's `?? 0`).
     static func mapPlayerHit(_ dto: PlayerSearchRowDTO) -> PlayerHit? {
         guard let team = dto.teams.map(mapTeamListRow),
-              let position = Position(rawValue: dto.position) else {
+            let position = Position(rawValue: dto.position)
+        else {
             return nil
         }
         return PlayerHit(
@@ -171,7 +183,9 @@ enum TeamSnapshotMapper {
     }
 
     static func mapAppConfig(_ dto: AppConfigDTO) -> AppConfig {
-        AppConfig(minimumSupportedBuild: dto.minimumSupportedBuild, maintenanceMessage: dto.maintenanceMessage)
+        AppConfig(
+            minimumSupportedBuild: dto.minimumSupportedBuild,
+            maintenanceMessage: dto.maintenanceMessage)
     }
 
     /// `nil` when the athlete cannot be represented at all — an unknown position (nothing
@@ -184,7 +198,8 @@ enum TeamSnapshotMapper {
     ///   history already uses. This is what lets the ingest start storing ESPN's real
     ///   `Questionable`/`Doubtful`/`Out`/`IR` designations without a gated client release:
     ///   an older build shows the athlete at his correct rank instead of failing the team.
-    static func mapPlayer(_ dto: PlayerDTO, depthRank: Int, dropped: inout [DroppedRow]) -> Player? {
+    static func mapPlayer(_ dto: PlayerDTO, depthRank: Int, dropped: inout [DroppedRow]) -> Player?
+    {
         guard let position = Position(rawValue: dto.position) else {
             dropped.append(DroppedRow(id: dto.id, reason: .unknownPlayerPosition(dto.position)))
             return nil
@@ -194,7 +209,8 @@ enum TeamSnapshotMapper {
             return nil
         }
         let number = dto.number ?? 0
-        let status = PlayerStatus(rawValue: dto.status ?? "backup")
+        let status =
+            PlayerStatus(rawValue: dto.status ?? "backup")
             ?? (depthRank == 1 ? .starter : .backup)
         return Player(
             id: dto.id, name: dto.name, position: position, depthRank: depthRank, number: number,
@@ -248,7 +264,8 @@ enum TeamSnapshotMapper {
     /// never possible FK-enforced, but the remote read is untrusted) is skipped, not
     /// thrown, exactly like web's `flatMap` skip. An unknown kind throws so one bad row
     /// can't surface a wrongly-labeled kit.
-    static func mapUniformListing(_ dto: UniformListingRowDTO, team: Team) throws -> UniformListing {
+    static func mapUniformListing(_ dto: UniformListingRowDTO, team: Team) throws -> UniformListing
+    {
         guard let kind = UniformKind(rawValue: dto.kind) else {
             throw DepthError.decoding("uniform listing \(dto.id): unknown kind \"\(dto.kind)\"")
         }
@@ -272,7 +289,8 @@ enum TeamSnapshotMapper {
     /// field treats as "no real formation data → generic layout".
     static func mapFormations(_ dtos: [TeamFormationDTO]) -> [TeamFormation] {
         guard let latest = dtos.map(\.season).max() else { return [] }
-        return dtos
+        return
+            dtos
             .filter { $0.season == latest }
             .compactMap { dto in
                 guard let unit = Unit(rawValue: dto.unit) else { return nil }

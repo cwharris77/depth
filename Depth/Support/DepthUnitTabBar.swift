@@ -19,7 +19,8 @@ struct DepthTabBar<Selection: Hashable>: View {
     var activeColor: Color = DesignTokens.Colors.accent
 
     var body: some View {
-        let layout = dynamicTypeSize.isAccessibilitySize
+        let layout =
+            dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: 0))
             : AnyLayout(HStackLayout(spacing: 16))
         layout {
@@ -33,13 +34,17 @@ struct DepthTabBar<Selection: Hashable>: View {
     private func tab(_ option: DepthSegmentedOption<Selection>) -> some View {
         let isActive = option.value == selection
         return Button {
-            withAnimation(reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection) {
+            withAnimation(
+                reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection
+            ) {
                 onChange(option.value)
             }
         } label: {
             Text(option.label)
                 .font(.caption.weight(.bold))
-                .foregroundStyle(isActive ? DesignTokens.Colors.textPrimary : DesignTokens.Colors.textFaint)
+                .foregroundStyle(
+                    isActive ? DesignTokens.Colors.textPrimary : DesignTokens.Colors.textFaint
+                )
                 // DEP-230: hug the label's own width (web's TabBar.tsx is `flex gap-4`,
                 // no stretch) instead of evenly filling the row — that's what was
                 // spreading OFFENSE/DEFENSE/SPECIAL across the full screen width.
@@ -87,7 +92,8 @@ struct DepthUnitTabBar: View {
     var body: some View {
         DepthTabBar(
             options: [(Unit.offense, "OFFENSE"), (.defense, "DEFENSE"), (.special, "SPECIAL")].map {
-                DepthSegmentedOption(value: $0.0, label: $0.1, identifier: "\(identifierPrefix)-\($0.0.rawValue)")
+                DepthSegmentedOption(
+                    value: $0.0, label: $0.1, identifier: "\(identifierPrefix)-\($0.0.rawValue)")
             },
             selection: selection,
             onChange: onChange,

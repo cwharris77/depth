@@ -51,7 +51,9 @@ struct TrueScaleFieldView: View {
                 height: proxy.size.height + insets.top + insets.bottom
             )
             let window = TrueScaleFieldLayout.Window(
-                size: CGSize(width: max(0, fullSize.width - TrueScaleFieldLayout.gutter * 2), height: fullSize.height),
+                size: CGSize(
+                    width: max(0, fullSize.width - TrueScaleFieldLayout.gutter * 2),
+                    height: fullSize.height),
                 topInset: insets.top + Self.headerHeight + DesignTokens.Spacing.sm,
                 bottomInset: insets.bottom
             )
@@ -78,7 +80,9 @@ struct TrueScaleFieldView: View {
                         }
                         // A player chip already ticks through the selection change; only the
                         // "+N" chip (no selection) needs the jump impact.
-                        move(to: layout.centeringPan(on: chip.target, window: window), feedback: chip.dot == nil)
+                        move(
+                            to: layout.centeringPan(on: chip.target, window: window),
+                            feedback: chip.dot == nil)
                     }
                 )
                 .frame(width: fullSize.width, height: fullSize.height)
@@ -134,7 +138,9 @@ struct TrueScaleFieldView: View {
         }
     }
 
-    private func header(layout: TrueScaleFieldLayout, pan: CGPoint, window: TrueScaleFieldLayout.Window) -> some View {
+    private func header(
+        layout: TrueScaleFieldLayout, pan: CGPoint, window: TrueScaleFieldLayout.Window
+    ) -> some View {
         let offCentre = layout.isOffCentre(pan: pan, window: window)
         return HStack(spacing: DesignTokens.Spacing.sm) {
             formationControl(layout: layout)
@@ -217,7 +223,10 @@ struct TrueScaleFieldView: View {
         offCentre: Bool
     ) -> some View {
         HStack(spacing: 0) {
-            barButton(systemImage: "scope", label: "Recentre on the ball", identifier: "true-scale-recentre") {
+            barButton(
+                systemImage: "scope", label: "Recentre on the ball",
+                identifier: "true-scale-recentre"
+            ) {
                 withAnimation(DesignTokens.Motion.selection) { selectedKey = nil }
                 move(to: layout.initialPan(window: window))
             }
@@ -320,7 +329,9 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
             // into the gutter by up to its radius rather than be sliced.
             .mask(
                 Rectangle()
-                    .frame(width: window.size.width + TrueScaleFieldLayout.dotSize, height: window.size.height)
+                    .frame(
+                        width: window.size.width + TrueScaleFieldLayout.dotSize,
+                        height: window.size.height)
             )
             .offset(x: gutter)
 
@@ -332,7 +343,9 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
                     )
             }
         }
-        .frame(width: window.size.width + gutter * 2, height: window.size.height, alignment: .topLeading)
+        .frame(
+            width: window.size.width + gutter * 2, height: window.size.height,
+            alignment: .topLeading)
     }
 
     private func label(for dot: TrueScaleFieldLayout.Dot) -> some View {
@@ -357,7 +370,8 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
         // Hangs below the dot, or above it for alternate dots in a tight row.
         .position(
             x: x,
-            y: dot.center.y + pan.y + (size / 2 + 4 + Self.labelHeight / 2) * (dot.labelAbove ? -1 : 1)
+            y: dot.center.y + pan.y + (size / 2 + 4 + Self.labelHeight / 2)
+                * (dot.labelAbove ? -1 : 1)
         )
         .accessibilityHidden(true)
     }
@@ -377,7 +391,9 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
         let lineStart = CGPoint(x: center.x, y: center.y + direction * (radius + 2))
         let lineEnd = CGPoint(x: center.x, y: center.y + direction * (radius + Self.leaderLength))
         let tagY = lineEnd.y + direction * Self.calloutHeight / 2
-        let name = dot.player.name.isEmpty ? "#\(dot.player.number)" : "#\(dot.player.number) \(dot.player.name)"
+        let name =
+            dot.player.name.isEmpty
+            ? "#\(dot.player.number)" : "#\(dot.player.number) \(dot.player.name)"
         // Estimated width only to keep the tag inside the window; the tag sizes itself.
         let halfWidth = (CGFloat(name.count) * 7 + 24) / 2
         let tagX = min(window.size.width - halfWidth - 4, max(halfWidth + 4, center.x))
@@ -401,7 +417,10 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
             .fixedSize()
             .padding(.horizontal, 10)
             .frame(height: Self.calloutHeight)
-            .background(Color.black.opacity(0.72), in: RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
+            .background(
+                Color.black.opacity(0.72),
+                in: RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
                     .strokeBorder(Color.white.opacity(0.16))
@@ -415,11 +434,14 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
     private func dotButton(_ dot: TrueScaleFieldLayout.Dot) -> some View {
         let selected = dot.key == selectedKey
         let fill = selected ? colors.secondary : colors.primary
-        return Button { onSelect(dot.key) } label: {
+        return Button {
+            onSelect(dot.key)
+        } label: {
             Circle()
                 .fill(Color(hex: fill))
                 .overlay {
-                    Circle().strokeBorder(selected ? Color.white : Color(hex: colors.secondary), lineWidth: 2)
+                    Circle().strokeBorder(
+                        selected ? Color.white : Color(hex: colors.secondary), lineWidth: 2)
                 }
                 .overlay {
                     Text(verbatim: "\(dot.player.number)")
@@ -444,7 +466,9 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
         let title = chip.dot.map { "\(arrow)\($0.player.number)" } ?? "+\(chip.overflowCount)"
         let subtitle = chip.dot?.label ?? "MORE"
         let accent = Color(hex: colors.secondary)
-        return Button { onChip(chip) } label: {
+        return Button {
+            onChip(chip)
+        } label: {
             VStack(spacing: 1) {
                 Text(verbatim: title)
                     .font(.system(size: 11, weight: .bold))
@@ -467,7 +491,9 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(
-            chip.dot.map { "\($0.label) \($0.player.name), off screen \(chip.side == .leading ? "left" : "right")" }
+            chip.dot.map {
+                "\($0.label) \($0.player.name), off screen \(chip.side == .leading ? "left" : "right")"
+            }
                 ?? "\(chip.overflowCount) more players off screen \(chip.side == .leading ? "left" : "right")"
         )
         .accessibilityHint("Pans the field to the player")
@@ -494,10 +520,11 @@ private struct TrueScaleFurniture: View {
                 with: .color(.black.opacity(0.2))
             )
             context.fill(
-                Path(CGRect(
-                    x: furniture.fieldMaxX, y: 0,
-                    width: content.width - furniture.fieldMaxX, height: content.height
-                )),
+                Path(
+                    CGRect(
+                        x: furniture.fieldMaxX, y: 0,
+                        width: content.width - furniture.fieldMaxX, height: content.height
+                    )),
                 with: .color(.black.opacity(0.2))
             )
             for band in furniture.bands {
@@ -517,18 +544,21 @@ private struct TrueScaleFurniture: View {
             }
             for y in furniture.yardLineYs {
                 context.fill(
-                    Path(CGRect(
-                        x: furniture.fieldMinX, y: y - 1,
-                        width: furniture.fieldMaxX - furniture.fieldMinX, height: 2
-                    )),
+                    Path(
+                        CGRect(
+                            x: furniture.fieldMinX, y: y - 1,
+                            width: furniture.fieldMaxX - furniture.fieldMinX, height: 2
+                        )),
                     with: .color(chalk.opacity(0.78))
                 )
             }
 
             let numeralColor = chalk.opacity(0.62)
-            let numeralFont = Font.system(size: furniture.numeralFontSize, weight: .heavy).width(.condensed)
+            let numeralFont = Font.system(size: furniture.numeralFontSize, weight: .heavy).width(
+                .condensed)
             for numeral in furniture.numerals {
-                let text = context.resolve(Text(verbatim: numeral.text).font(numeralFont).foregroundStyle(numeralColor))
+                let text = context.resolve(
+                    Text(verbatim: numeral.text).font(numeralFont).foregroundStyle(numeralColor))
                 let textSize = text.measure(in: CGSize(width: 1000, height: 1000))
                 context.drawLayer { layer in
                     layer.translateBy(x: numeral.center.x, y: numeral.center.y)
@@ -541,17 +571,20 @@ private struct TrueScaleFurniture: View {
                                 .foregroundStyle(numeralColor)
                         )
                         let offset = textSize.width / 2 + furniture.numeralFontSize * 0.16
-                        layer.draw(arrow, at: CGPoint(x: positive ? offset : -offset, y: 0), anchor: .center)
+                        layer.draw(
+                            arrow, at: CGPoint(x: positive ? offset : -offset, y: 0),
+                            anchor: .center)
                     }
                 }
             }
 
             // Sideline to sideline, like the broadcast line — not across the out-of-bounds grass.
             context.fill(
-                Path(CGRect(
-                    x: furniture.fieldMinX, y: layout.lineOfScrimmageY - 1,
-                    width: furniture.fieldMaxX - furniture.fieldMinX, height: 2
-                )),
+                Path(
+                    CGRect(
+                        x: furniture.fieldMinX, y: layout.lineOfScrimmageY - 1,
+                        width: furniture.fieldMaxX - furniture.fieldMinX, height: 2
+                    )),
                 with: .color(DesignTokens.Colors.fieldLineOfScrimmage)
             )
         }

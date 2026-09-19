@@ -41,14 +41,17 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
         // highlight inside the control instead of a second oversized button. The selected
         // surface moves as one piece between options, preserving spatial continuity.
         // DEP-415: full labels need their own row at accessibility sizes.
-        let layout = dynamicTypeSize.isAccessibilitySize
+        let layout =
+            dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(spacing: 4))
             : AnyLayout(HStackLayout(spacing: 4))
         layout {
             ForEach(options, id: \.value) { option in
                 let isActive = option.value == selection
                 Button {
-                    withAnimation(reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection) {
+                    withAnimation(
+                        reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection
+                    ) {
                         onChange(option.value)
                     }
                 } label: {
@@ -75,7 +78,10 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
         }
         .frame(maxWidth: fullWidth ? .infinity : nil)
         .padding(.horizontal, 4)
-        .background(DesignTokens.Colors.surfaceChip, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
+        .background(
+            DesignTokens.Colors.surfaceChip,
+            in: RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
+        )
         .sensoryFeedback(.selection, trigger: selection)
     }
 

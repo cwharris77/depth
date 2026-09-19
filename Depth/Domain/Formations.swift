@@ -91,15 +91,18 @@ private func resolveGroupedSlots(roster: Roster, slots: [FormationSlot]) -> [Pla
 
 let offenseFormation: [FormationSlot] = [
     FormationSlot(id: "off-wr-0", position: .wr, index: 0, x: 88, y: 51, label: "WR", onLine: true),
-    FormationSlot(id: "off-wr-1", position: .wr, index: 1, x: 12, y: 55, label: "WR", onLine: false),
-    FormationSlot(id: "off-wr-2", position: .wr, index: 2, x: 24, y: 56, label: "WR", onLine: false),
+    FormationSlot(
+        id: "off-wr-1", position: .wr, index: 1, x: 12, y: 55, label: "WR", onLine: false),
+    FormationSlot(
+        id: "off-wr-2", position: .wr, index: 2, x: 24, y: 56, label: "WR", onLine: false),
     FormationSlot(id: "off-te-0", position: .te, index: 0, x: 74, y: 51, label: "TE", onLine: true),
     FormationSlot(id: "off-lt-0", position: .lt, index: 0, x: 34, y: 51, label: "LT", onLine: true),
     FormationSlot(id: "off-lg-0", position: .lg, index: 0, x: 42, y: 51, label: "LG", onLine: true),
     FormationSlot(id: "off-c-0", position: .c, index: 0, x: 50, y: 51, label: "C", onLine: true),
     FormationSlot(id: "off-rg-0", position: .rg, index: 0, x: 58, y: 51, label: "RG", onLine: true),
     FormationSlot(id: "off-rt-0", position: .rt, index: 0, x: 66, y: 51, label: "RT", onLine: true),
-    FormationSlot(id: "off-qb-0", position: .qb, index: 0, x: 50, y: 66, label: "QB", onLine: false),
+    FormationSlot(
+        id: "off-qb-0", position: .qb, index: 0, x: 50, y: 66, label: "QB", onLine: false),
     // group: .rb + preferredPosition: .rb — prefers an exact RB tag but falls back to
     // the roster's best-ranked FB when the team has no player tagged RB at all.
     FormationSlot(
@@ -167,7 +170,8 @@ let baseDefense: [FormationSlot] = [
 /// Resolve a unit to render-ready slots for a given roster. `realFormation` lets a
 /// caller swap in a real per-team layout for offense/defense — ignored for special.
 /// Mirrors resolveUnit exactly.
-func resolveUnit(roster: Roster, unit: Unit, realFormation: [FormationSlot]? = nil) -> [RenderSlot] {
+func resolveUnit(roster: Roster, unit: Unit, realFormation: [FormationSlot]? = nil) -> [RenderSlot]
+{
     if unit == .special {
         return roster.specialTeams.map { slot in
             RenderSlot(
@@ -183,12 +187,14 @@ func resolveUnit(roster: Roster, unit: Unit, realFormation: [FormationSlot]? = n
     let groupedPlayers = resolveGroupedSlots(roster: roster, slots: formation)
 
     return formation.enumerated().map { i, slot in
-        let player: Player? = slot.group != nil
+        let player: Player? =
+            slot.group != nil
             ? groupedPlayers[i]
             : getPlayers(in: roster, at: slot.position)[safe: slot.index]
         // An RB-group slot that actually resolved to a fullback reads as "FB", not "RB".
         let label = (slot.group == .rb && player?.position == .fb) ? "FB" : slot.label
-        return RenderSlot(key: slot.id, x: slot.x, y: slot.y, label: label, player: player, onLine: slot.onLine)
+        return RenderSlot(
+            key: slot.id, x: slot.x, y: slot.y, label: label, player: player, onLine: slot.onLine)
     }
 }
 
@@ -268,7 +274,7 @@ private func isDigits03(_ s: Substring) -> Bool {
 /// promotion loop and the 2nd-TE placement rule.
 func buildRealFormation(alignment: String, code: String) -> [FormationSlot] {
     guard code.count == 2, isDigits03(code[code.startIndex...code.startIndex]),
-          isDigits03(code[code.index(after: code.startIndex)...])
+        isDigits03(code[code.index(after: code.startIndex)...])
     else { return offenseFormation }
 
     let chars = Array(code)
@@ -279,24 +285,29 @@ func buildRealFormation(alignment: String, code: String) -> [FormationSlot] {
 
     let wrSlots: [SkillSlot] = (0..<wr).map { i in
         let spot = wrSpots[i]
-        return SkillSlot(position: .wr, index: i, x: spot.x, y: spot.y, onLine: spot.onLine, label: "WR")
+        return SkillSlot(
+            position: .wr, index: i, x: spot.x, y: spot.y, onLine: spot.onLine, label: "WR")
     }
 
     var teSlots: [SkillSlot] = []
     if te >= 1 {
-        teSlots.append(SkillSlot(position: .te, index: 0, x: 71, y: lineY, onLine: true, label: "TE"))
+        teSlots.append(
+            SkillSlot(position: .te, index: 0, x: 71, y: lineY, onLine: true, label: "TE"))
     }
     if te >= 2 {
         // A 2nd in-line TE only when there's no WR to flex out wide; otherwise it wings
         // off the line next to the 1st TE.
         if wr < 1 {
-            teSlots.append(SkillSlot(position: .te, index: 1, x: 29, y: lineY, onLine: true, label: "TE"))
+            teSlots.append(
+                SkillSlot(position: .te, index: 1, x: 29, y: lineY, onLine: true, label: "TE"))
         } else {
-            teSlots.append(SkillSlot(position: .te, index: 1, x: 76, y: wingY, onLine: false, label: "TE"))
+            teSlots.append(
+                SkillSlot(position: .te, index: 1, x: 76, y: wingY, onLine: false, label: "TE"))
         }
     }
     if te >= 3 {
-        teSlots.append(SkillSlot(position: .te, index: 2, x: 24, y: wingY, onLine: false, label: "TE"))
+        teSlots.append(
+            SkillSlot(position: .te, index: 2, x: 24, y: wingY, onLine: false, label: "TE"))
     }
 
     // Exactly 7 onLine total (5 OL + 2 skill) — promote off-line WRs, then TEs, in fill
@@ -314,13 +325,16 @@ func buildRealFormation(alignment: String, code: String) -> [FormationSlot] {
     let isShotgun = alignment == QbAlignment.shotgun.rawValue
     var rbSlots: [SkillSlot] = []
     if rb >= 1 {
-        rbSlots.append(SkillSlot(
-            position: .rb, group: .rb, index: 0,
-            x: isShotgun ? 58 : 50, y: isShotgun ? 70 : 76, onLine: false, label: "RB"
-        ))
+        rbSlots.append(
+            SkillSlot(
+                position: .rb, group: .rb, index: 0,
+                x: isShotgun ? 58 : 50, y: isShotgun ? 70 : 76, onLine: false, label: "RB"
+            ))
     }
     if rb >= 2 {
-        rbSlots.append(SkillSlot(position: .rb, group: .rb, index: 1, x: 42, y: 70, onLine: false, label: "RB"))
+        rbSlots.append(
+            SkillSlot(position: .rb, group: .rb, index: 1, x: 42, y: 70, onLine: false, label: "RB")
+        )
     }
 
     let qbSlot = SkillSlot(
@@ -386,7 +400,8 @@ private func buildDlSlots(_ dl: Int) -> [FormationSlot] {
             dtCount += 1
         }
         return FormationSlot(
-            id: "", position: position, index: index, group: .dl, preferredPosition: preferredPosition,
+            id: "", position: position, index: index, group: .dl,
+            preferredPosition: preferredPosition,
             x: x, y: dlY, label: label, onLine: true
         )
     }
@@ -408,7 +423,7 @@ private func buildLbSlots(_ lb: Int) -> [FormationSlot] {
 
 // Fixed spots, filled in order as the DB count grows past the base 4.
 private struct DbSpot {
-    let position: Position // .cb or .s (generic group-match position)
+    let position: Position  // .cb or .s (generic group-match position)
     let label: String
     let preferredPosition: Position?
     let x: Double
@@ -443,7 +458,8 @@ private func buildDbSlots(_ db: Int) -> [FormationSlot] {
         }
         return FormationSlot(
             id: "", position: spot.position, index: index, group: group,
-            preferredPosition: spot.preferredPosition, x: spot.x, y: spot.y, label: spot.label, onLine: false
+            preferredPosition: spot.preferredPosition, x: spot.x, y: spot.y, label: spot.label,
+            onLine: false
         )
     }
 }
@@ -454,16 +470,17 @@ private func buildDbSlots(_ db: Int) -> [FormationSlot] {
 func buildRealDefenseFormation(_ code: String) -> [FormationSlot] {
     let parts = code.split(separator: "-", omittingEmptySubsequences: false)
     guard parts.count == 3,
-          let dl = Int(parts[0]), parts[0].allSatisfy({ $0.isNumber }), !parts[0].isEmpty,
-          let lb = Int(parts[1]), parts[1].allSatisfy({ $0.isNumber }), !parts[1].isEmpty,
-          let db = Int(parts[2]), parts[2].allSatisfy({ $0.isNumber }), !parts[2].isEmpty
+        let dl = Int(parts[0]), parts[0].allSatisfy({ $0.isNumber }), !parts[0].isEmpty,
+        let lb = Int(parts[1]), parts[1].allSatisfy({ $0.isNumber }), !parts[1].isEmpty,
+        let db = Int(parts[2]), parts[2].allSatisfy({ $0.isNumber }), !parts[2].isEmpty
     else { return baseDefense }
     guard dl + lb + db == 11, db <= dbSlots.count else { return baseDefense }
 
     let slots = buildDlSlots(dl) + buildLbSlots(lb) + buildDbSlots(db)
     return slots.map { s in
         FormationSlot(
-            id: "def-\(s.position.rawValue.lowercased())-\(s.index)", position: s.position, index: s.index,
+            id: "def-\(s.position.rawValue.lowercased())-\(s.index)", position: s.position,
+            index: s.index,
             group: s.group, preferredPosition: s.preferredPosition,
             x: s.x, y: s.y, label: s.label, onLine: s.onLine
         )

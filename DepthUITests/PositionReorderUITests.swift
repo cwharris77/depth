@@ -9,14 +9,21 @@ import XCTest
 final class PositionReorderUITests: XCTestCase {
     func testReorderPersistsAcrossRelaunch() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "bills"),
+            "the app should launch straight into the Bills depth chart")
         openQuarterbackReorderSheet(app)
 
-        XCTAssertFalse(app.buttons["player-profile-depth-reset"].exists, "no Reset before a custom order exists")
+        XCTAssertFalse(
+            app.buttons["player-profile-depth-reset"].exists,
+            "no Reset before a custom order exists")
         let rows = reorderRows(app)
-        XCTAssertGreaterThanOrEqual(rows.count, 2, "the reorder sheet should list at least two quarterbacks")
+        XCTAssertGreaterThanOrEqual(
+            rows.count, 2, "the reorder sheet should list at least two quarterbacks")
         for index in 0..<rows.count {
-            XCTAssertTrue(rows.element(boundBy: index).label.contains("Quarterback, rank \(index + 1) of \(rows.count)"))
+            XCTAssertTrue(
+                rows.element(boundBy: index).label.contains(
+                    "Quarterback, rank \(index + 1) of \(rows.count)"))
         }
 
         // Drag the first row onto the last: the long-press pick-up then slow drag reorders
@@ -37,7 +44,8 @@ final class PositionReorderUITests: XCTestCase {
             draggedRowID,
             "a slow drag to the final slot should leave the dragged player there deterministically"
         )
-        XCTAssertTrue(rows.element(boundBy: lastIndex).label.contains("rank \(rows.count) of \(rows.count)"))
+        XCTAssertTrue(
+            rows.element(boundBy: lastIndex).label.contains("rank \(rows.count) of \(rows.count)"))
 
         XCTAssertTrue(
             app.staticTexts["player-profile-depth-custom"].waitForExistence(timeout: 5),
@@ -87,7 +95,9 @@ final class PositionReorderUITests: XCTestCase {
     // (clears the local cache + mirrors a row delete to the server when signed in).
     func testResetRestoresDefaultOrderAndDropsTheOverride() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "bills"),
+            "the app should launch straight into the Bills depth chart")
         openQuarterbackReorderSheet(app)
 
         let rows = reorderRows(app)
@@ -117,7 +127,9 @@ final class PositionReorderUITests: XCTestCase {
     // Persisting that redundant array previously left the screen marked CUSTOM after close.
     func testReturningToTheDefaultOrderDropsTheCustomState() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "bills"),
+            "the app should launch straight into the Bills depth chart")
         openQuarterbackReorderSheet(app)
 
         // The fixture backend intentionally preserves local preferences between launches.
@@ -149,7 +161,9 @@ final class PositionReorderUITests: XCTestCase {
             withVelocity: .slow,
             thenHoldForDuration: 0.5
         )
-        XCTAssertEqual(rows.firstMatch.identifier, originalFirstID, "the second drag should restore the default order")
+        XCTAssertEqual(
+            rows.firstMatch.identifier, originalFirstID,
+            "the second drag should restore the default order")
         XCTAssertTrue(
             app.staticTexts["player-profile-depth-custom"].waitForAbsence(timeout: 5),
             "returning to the default order should remove the CUSTOM state immediately"
@@ -172,7 +186,9 @@ final class PositionReorderUITests: XCTestCase {
     // player profile, whose DEPTH CHART rows are read-only.
     func testEditModeTapOpensReorderSheetAndNormalTapOpensProfile() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "bills"),
+            "the app should launch straight into the Bills depth chart")
         openQuarterbackReorderSheet(app)
         attachScreenshot(app, named: "position-reorder-sheet")
 
@@ -189,13 +205,16 @@ final class PositionReorderUITests: XCTestCase {
         // The persistent Done editing chip is the direct exit action.
         let editingChip = app.buttons["depth-chart-editing-active"]
         editingChip.tap()
-        XCTAssertTrue(editingChip.waitForAbsence(timeout: 5), "explicit exit should remove the active-mode chip")
+        XCTAssertTrue(
+            editingChip.waitForAbsence(timeout: 5),
+            "explicit exit should remove the active-mode chip")
 
         let qbAgain = app.buttons["player-slot-off-qb-0"]
         XCTAssertTrue(qbAgain.waitForExistence(timeout: 10))
         qbAgain.tap()
         XCTAssertTrue(
-            app.descendants(matching: .any)["player-profile-full-depth"].waitForExistence(timeout: 5),
+            app.descendants(matching: .any)["player-profile-full-depth"].waitForExistence(
+                timeout: 5),
             "a normal tap should push the profile with its depth section"
         )
         XCTAssertFalse(app.scrollViews["position-reorder-sheet"].exists)
@@ -204,7 +223,9 @@ final class PositionReorderUITests: XCTestCase {
 
     func testContextChangesExitGlobalEditMode() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "bills"),
+            "the app should launch straight into the Bills depth chart")
 
         let editingChip = app.buttons["depth-chart-editing-active"]
         func enterEditing() {
@@ -232,12 +253,16 @@ final class PositionReorderUITests: XCTestCase {
 
         enterEditing()
         XCTAssertTrue(
-            app.buttons["page-switcher-schedule"].tapUntil { app.otherElements["schedule-content"].exists },
+            app.buttons["page-switcher-schedule"].tapUntil {
+                app.otherElements["schedule-content"].exists
+            },
             "the schedule page should render once switched from Roster"
         )
         assertEditingEnded("leaving the roster page")
         XCTAssertTrue(
-            app.buttons["page-switcher-roster"].tapUntil { app.buttons["depth-chart-overflow"].exists },
+            app.buttons["page-switcher-roster"].tapUntil {
+                app.buttons["depth-chart-overflow"].exists
+            },
             "returning to the roster page should restore the overflow menu"
         )
 
@@ -274,7 +299,9 @@ final class PositionReorderUITests: XCTestCase {
     // menu loses the active Formations row as soon as a drag commits.
     func testPlayerReorderPreservesActiveFormation() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "bills"),
+            "the app should launch straight into the Bills depth chart")
 
         let overflow = app.buttons["depth-chart-overflow"]
         XCTAssertTrue(overflow.waitForExistence(timeout: 10))
@@ -325,7 +352,9 @@ final class PositionReorderUITests: XCTestCase {
             "edit mode should be active", file: file, line: line
         )
         let quarterback = app.buttons["player-slot-off-qb-0"]
-        XCTAssertTrue(quarterback.waitForExistence(timeout: 10), "the Bills field should render its QB", file: file, line: line)
+        XCTAssertTrue(
+            quarterback.waitForExistence(timeout: 10), "the Bills field should render its QB",
+            file: file, line: line)
         quarterback.tap()
         XCTAssertTrue(
             app.scrollViews["position-reorder-sheet"].waitForExistence(timeout: 5),

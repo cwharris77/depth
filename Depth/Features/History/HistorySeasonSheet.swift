@@ -33,7 +33,9 @@ struct HistorySeasonSheet: View {
                 }
                 .frame(minHeight: 44)
                 .accessibilityIdentifier("history-season-\(season.year)")
-                .accessibilityLabel("\(label(for: season))\(season == selectedSeason ? ", selected" : "")")
+                .accessibilityLabel(
+                    "\(label(for: season))\(season == selectedSeason ? ", selected" : "")"
+                )
                 .listRowBackground(DesignTokens.Colors.surfaceCard2)
             }
             .listStyle(.plain)

@@ -15,7 +15,8 @@ enum RecentParticipationMapper {
             return (row: row, timestamp: timestamp)
         }
         guard let winningTimestamp = timestampedRows.map(\.timestamp).max() else { return nil }
-        let winningRows = timestampedRows
+        let winningRows =
+            timestampedRows
             .filter { $0.timestamp == winningTimestamp }
             .map(\.row)
         guard let first = winningRows.first,

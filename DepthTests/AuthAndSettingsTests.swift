@@ -442,13 +442,17 @@ struct FieldNameModePreferenceTests {
         // Relaunch: a brand-new defaults handle reads back exactly what was stored —
         // same suite, same persisted plist.
         let relaunched = UserDefaults(suiteName: suiteName)!
-        #expect(FieldNameMode(rawValue: relaunched.string(forKey: FieldNameMode.storageKey) ?? "") == .off)
+        #expect(
+            FieldNameMode(rawValue: relaunched.string(forKey: FieldNameMode.storageKey) ?? "")
+                == .off)
 
         // Every style round-trips, not just one.
         for mode in FieldNameMode.allCases {
             relaunched.set(mode.rawValue, forKey: FieldNameMode.storageKey)
             let reread = UserDefaults(suiteName: suiteName)!
-            #expect(FieldNameMode(rawValue: reread.string(forKey: FieldNameMode.storageKey) ?? "") == mode)
+            #expect(
+                FieldNameMode(rawValue: reread.string(forKey: FieldNameMode.storageKey) ?? "")
+                    == mode)
         }
 
         defaults.removePersistentDomain(forName: suiteName)
@@ -491,7 +495,8 @@ struct FieldNameModePreferenceTests {
 
     #expect(model.error == nil)
     #expect(model.step == .code)
-    #expect(await service.sentEmailValues().map(\.0) == ["owner@example.com", "owner+1@example.com"])
+    #expect(
+        await service.sentEmailValues().map(\.0) == ["owner@example.com", "owner+1@example.com"])
 }
 
 @Test @MainActor func resendWaitCountsWholeSecondsAndNeverReadsZero() async {

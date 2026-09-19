@@ -68,7 +68,8 @@ struct YearLabelTests {
     }
 
     @Test func compactRangeKeepsBothCenturiesWhenTheyDiffer() {
-        #expect(UniformArchive.years(listing(id: "a", yearStart: 1998, yearEnd: 2001)) == "1998–2001")
+        #expect(
+            UniformArchive.years(listing(id: "a", yearStart: 1998, yearEnd: 2001)) == "1998–2001")
     }
 
     @Test func openEndedAndSingleSeasonAndUndated() {
@@ -78,7 +79,9 @@ struct YearLabelTests {
     }
 
     @Test func longRangeNeverAbbreviates() {
-        #expect(UniformArchive.yearsLong(listing(id: "a", yearStart: 1970, yearEnd: 1976)) == "1970–1976")
+        #expect(
+            UniformArchive.yearsLong(listing(id: "a", yearStart: 1970, yearEnd: 1976))
+                == "1970–1976")
         #expect(UniformArchive.yearsLong(listing(id: "a", yearStart: nil, yearEnd: nil)) == "—")
     }
 }
@@ -114,7 +117,8 @@ struct ArchiveFilterTests {
     }
 
     @Test func currentOnlyExcludesRetiredKits() {
-        let retired = listing(id: "a", kind: .throwback, yearStart: 1965, yearEnd: 1968, isCurrent: false)
+        let retired = listing(
+            id: "a", kind: .throwback, yearStart: 1965, yearEnd: 1968, isCurrent: false)
         #expect(!UniformArchive.matchesFilters(retired, UniformArchive.Filters(currentOnly: true)))
         #expect(UniformArchive.matchesFilters(retired, UniformArchive.Filters()))
     }
@@ -150,7 +154,8 @@ struct ArchiveSearchTests {
     }
 
     @Test func kitMatchesOnNameKindDecadeAndYear() {
-        let kit = listing(id: "a", kind: .throwback, name: "Creamsicle", yearStart: 1976, yearEnd: 1996)
+        let kit = listing(
+            id: "a", kind: .throwback, name: "Creamsicle", yearStart: 1976, yearEnd: 1996)
         #expect(UniformArchive.matchesQuery(kit, query: "cream", teamMatches: false))
         #expect(UniformArchive.matchesQuery(kit, query: "throwback", teamMatches: false))
         #expect(UniformArchive.matchesQuery(kit, query: "1970s", teamMatches: false))
@@ -167,8 +172,10 @@ struct ArchiveSearchTests {
 
 @Suite("UniformArchive sorting")
 struct ArchiveSortTests {
-    private let old = listing(id: "old", kind: .throwback, name: "Old", yearStart: 1965, yearEnd: 1970)
-    private let mid = listing(id: "mid", kind: .alternate, name: "Mid", yearStart: 1995, yearEnd: 2000)
+    private let old = listing(
+        id: "old", kind: .throwback, name: "Old", yearStart: 1965, yearEnd: 1970)
+    private let mid = listing(
+        id: "mid", kind: .alternate, name: "Mid", yearStart: 1995, yearEnd: 2000)
 
     @Test func kitOrderLeavesTheCallersOrderAlone() {
         let input = [mid, old, bills]
@@ -177,14 +184,18 @@ struct ArchiveSortTests {
 
     @Test func newestAndOldestOrderByStartYear() {
         let input = [mid, bills, old]
-        #expect(UniformArchive.sortKits(input, by: .newest).map(\.id) == ["bills-home", "mid", "old"])
-        #expect(UniformArchive.sortKits(input, by: .oldest).map(\.id) == ["old", "mid", "bills-home"])
+        #expect(
+            UniformArchive.sortKits(input, by: .newest).map(\.id) == ["bills-home", "mid", "old"])
+        #expect(
+            UniformArchive.sortKits(input, by: .oldest).map(\.id) == ["old", "mid", "bills-home"])
     }
 
     @Test func undatedKitsSortLastOldestFirstAndFirstNewestFirst() {
         let undated = listing(id: "undated", yearStart: nil)
-        #expect(UniformArchive.sortKits([undated, old], by: .oldest).map(\.id) == ["old", "undated"])
-        #expect(UniformArchive.sortKits([undated, old], by: .newest).map(\.id) == ["old", "undated"])
+        #expect(
+            UniformArchive.sortKits([undated, old], by: .oldest).map(\.id) == ["old", "undated"])
+        #expect(
+            UniformArchive.sortKits([undated, old], by: .newest).map(\.id) == ["old", "undated"])
     }
 
     @Test func emptyInputIsEmpty() {
@@ -281,11 +292,21 @@ private struct StubUniformRepository: DepthRepository {
     }
 
     func teams() async throws -> [Team] { throw DepthError.server("unused") }
-    func teamSnapshot(teamId: String) async throws -> TeamSnapshot { throw DepthError.server("unused") }
-    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot { throw DepthError.server("unused") }
-    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.server("unused") }
-    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { throw DepthError.server("unused") }
-    func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.server("unused") }
+    func teamSnapshot(teamId: String) async throws -> TeamSnapshot {
+        throw DepthError.server("unused")
+    }
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        throw DepthError.server("unused")
+    }
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        throw DepthError.server("unused")
+    }
+    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] {
+        throw DepthError.server("unused")
+    }
+    func teamStats(teamId: String) async throws -> TeamStatsPage {
+        throw DepthError.server("unused")
+    }
     func appConfig() async throws -> AppConfig { throw DepthError.server("unused") }
 }
 

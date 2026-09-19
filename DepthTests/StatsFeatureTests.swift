@@ -54,16 +54,25 @@ private actor StatsRepositoryFake: DepthRepository {
 
     func teams() async throws -> [Team] { [] }
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot { throw DepthError.notFound }
-    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot { throw DepthError.notFound }
-    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        throw DepthError.notFound
+    }
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        throw DepthError.notFound
+    }
     func teamStats(teamId: String) async throws -> TeamStatsPage { page }
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
-    func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? { leadersBySeason[season] }
-    func appConfig() async throws -> AppConfig { AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil) }
+    func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? {
+        leadersBySeason[season]
+    }
+    func appConfig() async throws -> AppConfig {
+        AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)
+    }
 }
 
 @Test func pastSeasonSelectionFlagsBackToCurrentAndReturnsOnDemand() async {
-    let viewModel = await TeamStatsViewModel(teamId: "bills", repository: StatsRepositoryFake(page: statsPage()))
+    let viewModel = await TeamStatsViewModel(
+        teamId: "bills", repository: StatsRepositoryFake(page: statsPage()))
     await viewModel.load()
 
     // Defaults to the newest real season (web parity) — the current tab, no escape needed.

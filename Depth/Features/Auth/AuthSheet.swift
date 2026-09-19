@@ -17,7 +17,8 @@ struct AuthSheet: View {
         events: any AppEventsRecording = NoOpAppEventsRecorder()
     ) {
         _viewModel = State(
-            initialValue: AuthFlowViewModel(service: service, sessionStore: sessionStore, events: events))
+            initialValue: AuthFlowViewModel(
+                service: service, sessionStore: sessionStore, events: events))
     }
 
     var body: some View {
@@ -127,9 +128,11 @@ struct AuthSheet: View {
             Text("We sent a 6-digit code to \(viewModel.normalizedEmail).")
                 .font(.footnote)
                 .foregroundStyle(DesignTokens.Colors.textMuted)
-            Text("Use the newest code. Codes can only be used once, and requesting another code replaces the previous one.")
-                .font(.caption)
-                .foregroundStyle(DesignTokens.Colors.textFaint)
+            Text(
+                "Use the newest code. Codes can only be used once, and requesting another code replaces the previous one."
+            )
+            .font(.caption)
+            .foregroundStyle(DesignTokens.Colors.textFaint)
 
             OtpCodeField(
                 code: $viewModel.code, disabled: viewModel.isSubmitting,
@@ -188,10 +191,12 @@ struct AuthSheet: View {
                 Text("You're signed in")
                     .font(.title3.bold())
                     .foregroundStyle(DesignTokens.Colors.textPrimary)
-                Text("Signed in as \(viewModel.normalizedEmail). Your favorite team and settings now sync across devices.")
-                    .font(.footnote)
-                    .foregroundStyle(DesignTokens.Colors.textMuted)
-                    .multilineTextAlignment(.center)
+                Text(
+                    "Signed in as \(viewModel.normalizedEmail). Your favorite team and settings now sync across devices."
+                )
+                .font(.footnote)
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+                .multilineTextAlignment(.center)
             }
 
             Button {

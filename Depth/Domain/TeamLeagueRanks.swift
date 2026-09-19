@@ -57,9 +57,10 @@ enum TeamLeagueRanks {
         value: (Row) -> Value?
     ) -> Int? {
         guard let teamRow = rows.first(where: { id($0) == teamId }),
-              let teamValue = value(teamRow)
+            let teamValue = value(teamRow)
         else { return nil }
-        let values = rows
+        let values =
+            rows
             .compactMap(value)
             .sorted { order == .descending ? $0 > $1 : $0 < $1 }
         guard let index = values.firstIndex(of: teamValue) else { return nil }
@@ -111,7 +112,8 @@ extension TeamLeagueRanks {
         return recordBySeason.reduce(into: [:]) { result, entry in
             let (season, recordRows) = entry
             let rows = nflverseBySeason[season] ?? []
-            let espnRank = { (order: Order, value: @escaping (TeamSeasonRecordRankValues) -> Double?) in
+            let espnRank = {
+                (order: Order, value: @escaping (TeamSeasonRecordRankValues) -> Double?) in
                 rank(recordRows, teamId: teamId, id: \.teamId, order: order, value: value)
             }
             let nflRank = { (order: Order, value: @escaping (TeamSeasonRankValues) -> Double?) in
@@ -133,18 +135,28 @@ extension TeamLeagueRanks {
                 sackRate: nflRank(.ascending) { $0.derived.sackRate },
                 passingEPA: nflRank(.descending) { $0.passingEPA },
                 rushingEPA: nflRank(.descending) { $0.rushingEPA },
-                passingInterceptions: nflRank(.ascending) { $0.passingInterceptions.map(Double.init) },
+                passingInterceptions: nflRank(.ascending) {
+                    $0.passingInterceptions.map(Double.init)
+                },
                 fumblesLost: nflRank(.ascending) { $0.fumblesLost.map(Double.init) },
                 // Defense
                 defensiveSacks: nflRank(.descending) { $0.defensiveSacks },
                 quarterbackHitsPerGame: nflRank(.descending) { $0.derived.quarterbackHitsPerGame },
-                defensiveTakeaways: nflRank(.descending) { $0.derived.defensiveTakeaways.map(Double.init) },
-                defensiveInterceptions: nflRank(.descending) { $0.defensiveInterceptions.map(Double.init) },
+                defensiveTakeaways: nflRank(.descending) {
+                    $0.derived.defensiveTakeaways.map(Double.init)
+                },
+                defensiveInterceptions: nflRank(.descending) {
+                    $0.defensiveInterceptions.map(Double.init)
+                },
                 // Special teams
                 fieldGoalPercentage: nflRank(.descending) { $0.derived.fieldGoalPercentage },
                 netPuntYardsPerAttempt: nflRank(.descending) { $0.derived.netPuntYardsPerAttempt },
-                puntReturnYardsPerAttempt: nflRank(.descending) { $0.derived.puntReturnYardsPerAttempt },
-                kickoffReturnYardsPerAttempt: nflRank(.descending) { $0.derived.kickoffReturnYardsPerAttempt }
+                puntReturnYardsPerAttempt: nflRank(.descending) {
+                    $0.derived.puntReturnYardsPerAttempt
+                },
+                kickoffReturnYardsPerAttempt: nflRank(.descending) {
+                    $0.derived.kickoffReturnYardsPerAttempt
+                }
             )
         }
     }

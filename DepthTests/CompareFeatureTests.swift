@@ -30,10 +30,14 @@ private func comparePlayer(
 
 private func compareSnapshot(team: Team, qbCount: Int) -> TeamSnapshot {
     let qbs = (0..<qbCount).map { i in
-        comparePlayer(id: "\(team.id)-qb-\(i)", name: "Qb \(team.abbrev) \(i + 1)", position: .qb, rank: i + 1, number: i + 1)
+        comparePlayer(
+            id: "\(team.id)-qb-\(i)", name: "Qb \(team.abbrev) \(i + 1)", position: .qb,
+            rank: i + 1, number: i + 1)
     }
     let wrs = (0..<2).map { i in
-        comparePlayer(id: "\(team.id)-wr-\(i)", name: "Wr \(team.abbrev) \(i + 1)", position: .wr, rank: i + 1, number: 10 + i)
+        comparePlayer(
+            id: "\(team.id)-wr-\(i)", name: "Wr \(team.abbrev) \(i + 1)", position: .wr,
+            rank: i + 1, number: 10 + i)
     }
     return TeamSnapshot(team: team, players: qbs + wrs, specialTeams: [], uniforms: [])
 }
@@ -65,7 +69,8 @@ private func compareMatchupMetrics(season: Int, offensiveEPAPerPlay: Double) -> 
         games: nil, passingEPA: nil, rushingEPA: nil, passAttempts: nil, rushAttempts: nil,
         sacksSuffered: nil, offensiveEPA: nil, offensivePlays: nil,
         offensiveEPAPerPlay: offensiveEPAPerPlay, sackRate: nil, passingInterceptions: nil,
-        fumblesLost: nil, giveaways: nil, turnoverMargin: nil, defensiveSacks: nil, quarterbackHits: nil, quarterbackHitsPerGame: nil,
+        fumblesLost: nil, giveaways: nil, turnoverMargin: nil, defensiveSacks: nil,
+        quarterbackHits: nil, quarterbackHitsPerGame: nil,
         defensiveInterceptions: nil, defensiveFumbleRecoveries: nil, defensiveFumblesForced: nil,
         defensiveTakeaways: nil, defensiveTakeawaysPerGame: nil, fieldGoalsMade: nil,
         fieldGoalsAttempted: nil, fieldGoalPercentage: nil, puntAttempts: nil, netPuntYards: nil,
@@ -120,7 +125,8 @@ private actor CompareRepositoryFake: DepthRepository {
 @Test func comparePositionsExcludeSpecialTeamsKeys() {
     // KR/PR/LS are editorial special-teams slots, not depth groups (web's
     // COMPARE_POSITIONS). Every other Position case is present, in web's display order.
-    let expected = "QB,RB,FB,WR,TE,LT,LG,C,RG,RT,DE,LDE,RDE,DT,NT,LB,WLB,LILB,RILB,SLB,CB,LCB,RCB,NB,S,SS,FS,K,P"
+    let expected =
+        "QB,RB,FB,WR,TE,LT,LG,C,RG,RT,DE,LDE,RDE,DT,NT,LB,WLB,LILB,RILB,SLB,CB,LCB,RCB,NB,S,SS,FS,K,P"
     #expect(COMPARE_POSITIONS.map(\.rawValue).joined(separator: ",") == expected)
 }
 
@@ -159,7 +165,8 @@ private actor CompareRepositoryFake: DepthRepository {
     #expect(codes(CompareMatchRooms.rooms.first { $0.id == "receivers" }!) == "WR,TE")
     #expect(codes(CompareMatchRooms.rooms.first { $0.id == "line" }!) == "LT,LG,C,RG,RT")
     #expect(codes(CompareMatchRooms.rooms.first { $0.id == "front" }!) == "DE,LDE,RDE,DT,NT")
-    #expect(codes(CompareMatchRooms.rooms.first { $0.id == "linebackers" }!) == "LB,WLB,LILB,RILB,SLB")
+    #expect(
+        codes(CompareMatchRooms.rooms.first { $0.id == "linebackers" }!) == "LB,WLB,LILB,RILB,SLB")
     #expect(codes(CompareMatchRooms.rooms.first { $0.id == "corners" }!) == "CB,LCB,RCB,NB")
     #expect(codes(CompareMatchRooms.rooms.first { $0.id == "safeties" }!) == "S,SS,FS")
     #expect(codes(CompareMatchRooms.rooms.first { $0.id == "specialists" }!) == "K,P")
@@ -187,8 +194,8 @@ private actor CompareRepositoryFake: DepthRepository {
 
 @Test func compareFreshnessMarksEvidenceOlderThanOneDayAsStale() {
     let now = Date(timeIntervalSince1970: 2_000_000)
-    let current = "1970-01-24T03:33:20Z" // 2,000,000 seconds since epoch
-    let stale = "1970-01-22T03:33:20Z" // 172,800 seconds before `now`
+    let current = "1970-01-24T03:33:20Z"  // 2,000,000 seconds since epoch
+    let stale = "1970-01-22T03:33:20Z"  // 172,800 seconds before `now`
 
     #expect(compareFreshness(updatedAt: current, now: now) == .current)
     #expect(compareFreshness(updatedAt: stale, now: now) == .stale)
@@ -198,7 +205,8 @@ private actor CompareRepositoryFake: DepthRepository {
 // MARK: - View model
 
 @Test func compareLensesPageInTheApprovedOrderAndKeepSelection() async {
-    let viewModel = await CompareViewModel(repository: CompareRepositoryFake(teams: [], snapshots: [:], stats: [:]))
+    let viewModel = await CompareViewModel(
+        repository: CompareRepositoryFake(teams: [], snapshots: [:], stats: [:]))
 
     #expect(
         CompareViewModel.Lens.allCases.map(\.accessibilityLabel)
@@ -344,8 +352,13 @@ private actor CompareRepositoryFake: DepthRepository {
     let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
     let repo = CompareRepositoryFake(
         teams: [hawks, niners],
-        snapshots: [hawks.id: compareSnapshot(team: hawks, qbCount: 1), niners.id: compareSnapshot(team: niners, qbCount: 3)],
-        stats: [hawks.id: statsPage(team: hawks, wins: 12), niners.id: statsPage(team: niners, wins: 9)]
+        snapshots: [
+            hawks.id: compareSnapshot(team: hawks, qbCount: 1),
+            niners.id: compareSnapshot(team: niners, qbCount: 3),
+        ],
+        stats: [
+            hawks.id: statsPage(team: hawks, wins: 12), niners.id: statsPage(team: niners, wins: 9),
+        ]
     )
     let viewModel = await CompareViewModel(repository: repo)
     await viewModel.load()
@@ -373,8 +386,13 @@ private actor CompareRepositoryFake: DepthRepository {
     let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
     let repo = CompareRepositoryFake(
         teams: [hawks, niners],
-        snapshots: [hawks.id: compareSnapshot(team: hawks, qbCount: 1), niners.id: compareSnapshot(team: niners, qbCount: 3)],
-        stats: [hawks.id: statsPage(team: hawks, wins: 12), niners.id: statsPage(team: niners, wins: 9)]
+        snapshots: [
+            hawks.id: compareSnapshot(team: hawks, qbCount: 1),
+            niners.id: compareSnapshot(team: niners, qbCount: 3),
+        ],
+        stats: [
+            hawks.id: statsPage(team: hawks, wins: 12), niners.id: statsPage(team: niners, wins: 9),
+        ]
     )
     let viewModel = await CompareViewModel(repository: repo)
     await viewModel.load()
@@ -397,7 +415,9 @@ private actor CompareRepositoryFake: DepthRepository {
     // Move the exact role to TE within the still-expanded room.
     await viewModel.selectPosition(.te)
     #expect(await viewModel.position == .te)
-    #expect(await viewModel.expandedRoomID == "receivers", "picking a role tile doesn't collapse its own panel")
+    #expect(
+        await viewModel.expandedRoomID == "receivers",
+        "picking a role tile doesn't collapse its own panel")
 
     // Picking a different room expands that one instead (only one room open at a time) and
     // resets to its first position.
@@ -412,8 +432,13 @@ private actor CompareRepositoryFake: DepthRepository {
     let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
     let repo = CompareRepositoryFake(
         teams: [hawks, niners],
-        snapshots: [hawks.id: compareSnapshot(team: hawks, qbCount: 1), niners.id: compareSnapshot(team: niners, qbCount: 3)],
-        stats: [hawks.id: statsPage(team: hawks, wins: 12), niners.id: statsPage(team: niners, wins: 9)]
+        snapshots: [
+            hawks.id: compareSnapshot(team: hawks, qbCount: 1),
+            niners.id: compareSnapshot(team: niners, qbCount: 3),
+        ],
+        stats: [
+            hawks.id: statsPage(team: hawks, wins: 12), niners.id: statsPage(team: niners, wins: 9),
+        ]
     )
     let viewModel = await CompareViewModel(repository: repo)
     await viewModel.load()
@@ -438,8 +463,13 @@ private actor CompareRepositoryFake: DepthRepository {
     let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
     let repo = CompareRepositoryFake(
         teams: [hawks, niners],
-        snapshots: [hawks.id: compareSnapshot(team: hawks, qbCount: 1), niners.id: compareSnapshot(team: niners, qbCount: 3)],
-        stats: [hawks.id: statsPage(team: hawks, wins: 12), niners.id: statsPage(team: niners, wins: 9)]
+        snapshots: [
+            hawks.id: compareSnapshot(team: hawks, qbCount: 1),
+            niners.id: compareSnapshot(team: niners, qbCount: 3),
+        ],
+        stats: [
+            hawks.id: statsPage(team: hawks, wins: 12), niners.id: statsPage(team: niners, wins: 9),
+        ]
     )
     let viewModel = await CompareViewModel(repository: repo)
     await viewModel.load()
@@ -455,7 +485,8 @@ private actor CompareRepositoryFake: DepthRepository {
     // forever." The depth table keeps showing TE, the last role picked.
     await viewModel.selectRoom(receivers)
     #expect(await viewModel.expandedRoom == nil)
-    #expect(await viewModel.position == .te, "collapsing a room must not reset its last-picked role")
+    #expect(
+        await viewModel.position == .te, "collapsing a room must not reset its last-picked role")
 
     // A third tap re-expands it, resetting to the room's first position (fresh-open behavior).
     await viewModel.selectRoom(receivers)
@@ -468,8 +499,13 @@ private actor CompareRepositoryFake: DepthRepository {
     let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
     let repo = CompareRepositoryFake(
         teams: [hawks, niners],
-        snapshots: [hawks.id: compareSnapshot(team: hawks, qbCount: 1), niners.id: compareSnapshot(team: niners, qbCount: 3)],
-        stats: [hawks.id: statsPage(team: hawks, wins: 12), niners.id: statsPage(team: niners, wins: 9)]
+        snapshots: [
+            hawks.id: compareSnapshot(team: hawks, qbCount: 1),
+            niners.id: compareSnapshot(team: niners, qbCount: 3),
+        ],
+        stats: [
+            hawks.id: statsPage(team: hawks, wins: 12), niners.id: statsPage(team: niners, wins: 9),
+        ]
     )
     let viewModel = await CompareViewModel(repository: repo)
     await viewModel.load()
@@ -588,8 +624,12 @@ private func multiSeasonPage(
 @Test func aSeasonStillBeingPlayedReadsAsLiveNotFinal() {
     // The distinction the sample guard depends on: `effectiveStats(for:)` promotes the live
     // season the moment one game's metrics land, so "completed" cannot be assumed.
-    #expect(compareSeasonStamp(metrics: fullMetrics(season: 2026, games: 1), isCompleted: false) == .live(games: 1))
-    #expect(compareSeasonStamp(metrics: fullMetrics(season: 2026, games: 8), isCompleted: false) == .live(games: 8))
+    #expect(
+        compareSeasonStamp(metrics: fullMetrics(season: 2026, games: 1), isCompleted: false)
+            == .live(games: 1))
+    #expect(
+        compareSeasonStamp(metrics: fullMetrics(season: 2026, games: 8), isCompleted: false)
+            == .live(games: 8))
 }
 
 @Test func aSeasonWithNoGamesPlayedReadsAsUpcoming() {
@@ -705,7 +745,9 @@ private func multiSeasonPage(
     // Sack rate = sacks / (attempts + sacks) — the denominator counts dropbacks, so a sack
     // is in it: 31 / (542 + 31) = 5.4%.
     #expect(row("sack-rate", a: fullMetrics(), b: fullMetrics())?.a == "5.4%")
-    #expect(row("sack-rate", a: fullMetrics(passAttempts: nil), b: fullMetrics(passAttempts: nil)) == nil)
+    #expect(
+        row("sack-rate", a: fullMetrics(passAttempts: nil), b: fullMetrics(passAttempts: nil))
+            == nil)
 }
 
 @Test func fieldGoalsMadeAttemptedPrintsAsAPairAndNeverRanks() {
@@ -801,7 +843,10 @@ private func twoSeasonViewModel() async -> CompareViewModel {
     ]
     let repo = CompareRepositoryFake(
         teams: [sea, sf],
-        snapshots: ["sea": compareSnapshot(team: sea, qbCount: 2), "sf": compareSnapshot(team: sf, qbCount: 2)],
+        snapshots: [
+            "sea": compareSnapshot(team: sea, qbCount: 2),
+            "sf": compareSnapshot(team: sf, qbCount: 2),
+        ],
         stats: [
             "sea": multiSeasonPage(team: sea, seasons: seasons, currentSeason: 2026),
             "sf": multiSeasonPage(team: sf, seasons: seasons, currentSeason: 2026),
@@ -818,7 +863,8 @@ private func twoSeasonViewModel() async -> CompareViewModel {
 @Test @MainActor func theDefaultSeasonStillFollowsEffectiveStatsUntilOneIsPicked() async {
     let viewModel = await twoSeasonViewModel()
     #expect(viewModel.selectedSeason == nil)
-    #expect(viewModel.resolvedSeason == 2025, "2026 is a metrics-less stub, so 2025 stays the default")
+    #expect(
+        viewModel.resolvedSeason == 2025, "2026 is a metrics-less stub, so 2025 stays the default")
     #expect(viewModel.seasonStamp == .final)
 }
 
@@ -852,19 +898,26 @@ private func twoSeasonViewModel() async -> CompareViewModel {
     let sf = compareTeam("sf", abbrev: "SF", city: "San Francisco")
     let repo = CompareRepositoryFake(
         teams: [sea, sf],
-        snapshots: ["sea": compareSnapshot(team: sea, qbCount: 1), "sf": compareSnapshot(team: sf, qbCount: 1)],
+        snapshots: [
+            "sea": compareSnapshot(team: sea, qbCount: 1),
+            "sf": compareSnapshot(team: sf, qbCount: 1),
+        ],
         stats: [
-            "sea": multiSeasonPage(team: sea, seasons: [
-                seasonStats(season: 2026, metrics: nil),
-                seasonStats(season: 2025, metrics: fullMetrics(season: 2025)),
-                seasonStats(season: 2024, metrics: fullMetrics(season: 2024)),
-            ], currentSeason: 2026),
+            "sea": multiSeasonPage(
+                team: sea,
+                seasons: [
+                    seasonStats(season: 2026, metrics: nil),
+                    seasonStats(season: 2025, metrics: fullMetrics(season: 2025)),
+                    seasonStats(season: 2024, metrics: fullMetrics(season: 2024)),
+                ], currentSeason: 2026),
             // SF never played 2025 as far as metrics are concerned.
-            "sf": multiSeasonPage(team: sf, seasons: [
-                seasonStats(season: 2026, metrics: nil),
-                seasonStats(season: 2025, metrics: nil),
-                seasonStats(season: 2024, metrics: fullMetrics(season: 2024)),
-            ], currentSeason: 2026),
+            "sf": multiSeasonPage(
+                team: sf,
+                seasons: [
+                    seasonStats(season: 2026, metrics: nil),
+                    seasonStats(season: 2025, metrics: nil),
+                    seasonStats(season: 2024, metrics: fullMetrics(season: 2024)),
+                ], currentSeason: 2026),
         ]
     )
     let viewModel = CompareViewModel(repository: repo)
@@ -917,7 +970,10 @@ private func twoSeasonViewModel() async -> CompareViewModel {
     }
     let repo = CompareRepositoryFake(
         teams: [sea, sf],
-        snapshots: ["sea": compareSnapshot(team: sea, qbCount: 1), "sf": compareSnapshot(team: sf, qbCount: 1)],
+        snapshots: [
+            "sea": compareSnapshot(team: sea, qbCount: 1),
+            "sf": compareSnapshot(team: sf, qbCount: 1),
+        ],
         stats: ["sea": page(sea, epa: 0.21), "sf": page(sf, epa: -0.06)]
     )
     let viewModel = CompareViewModel(repository: repo)
@@ -932,16 +988,23 @@ private func twoSeasonViewModel() async -> CompareViewModel {
     let week9 = CompareViewModel(
         repository: CompareRepositoryFake(
             teams: [sea, sf],
-            snapshots: ["sea": compareSnapshot(team: sea, qbCount: 1), "sf": compareSnapshot(team: sf, qbCount: 1)],
+            snapshots: [
+                "sea": compareSnapshot(team: sea, qbCount: 1),
+                "sf": compareSnapshot(team: sf, qbCount: 1),
+            ],
             stats: [
                 "sea": multiSeasonPage(
                     team: sea,
-                    seasons: [seasonStats(season: 2026, metrics: fullMetrics(season: 2026, games: 8))],
+                    seasons: [
+                        seasonStats(season: 2026, metrics: fullMetrics(season: 2026, games: 8))
+                    ],
                     currentSeason: 2026
                 ),
                 "sf": multiSeasonPage(
                     team: sf,
-                    seasons: [seasonStats(season: 2026, metrics: fullMetrics(season: 2026, games: 8))],
+                    seasons: [
+                        seasonStats(season: 2026, metrics: fullMetrics(season: 2026, games: 8))
+                    ],
                     currentSeason: 2026
                 ),
             ]

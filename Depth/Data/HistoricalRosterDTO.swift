@@ -42,18 +42,22 @@ func parseHistoricalPlayerReference(_ playerId: String) -> HistoricalPlayerRefer
     let prefix = "gsis:"
     guard playerId.hasPrefix(prefix) else { return nil }
     let remainder = playerId.dropFirst(prefix.count)
-    guard remainder.filter({ $0 == "@" }).count == 1, let at = remainder.firstIndex(of: "@") else { return nil }
+    guard remainder.filter({ $0 == "@" }).count == 1, let at = remainder.firstIndex(of: "@") else {
+        return nil
+    }
     let gsisId = String(remainder[..<at])
     let seasonText = remainder[remainder.index(after: at)...]
     guard !gsisId.isEmpty, !seasonText.isEmpty, seasonText.allSatisfy(\.isNumber),
-          let season = Int(seasonText) else { return nil }
+        let season = Int(seasonText)
+    else { return nil }
     return HistoricalPlayerReference(gsisId: gsisId, season: season)
 }
 
 func playerStatsLookup(for playerId: String, teamId: String?) -> PlayerStatsLookup {
     guard playerId.hasPrefix("gsis:") else { return .current(playerId: playerId) }
     guard let reference = parseHistoricalPlayerReference(playerId),
-          let teamId = teamId?.trimmingCharacters(in: .whitespacesAndNewlines), !teamId.isEmpty else {
+        let teamId = teamId?.trimmingCharacters(in: .whitespacesAndNewlines), !teamId.isEmpty
+    else {
         return .invalidHistorical
     }
     return .historical(reference, teamId: teamId)

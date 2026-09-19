@@ -57,9 +57,14 @@ enum CompareMatchRooms {
         // Defense (17 positions)
         // Cooper (Aug 25): "Front" read as unclear next to "Linebackers"/"Corners"/
         // "Safeties" — renamed to the room's actual football name; id kept stable.
-        CompareRoom(id: "front", name: "Defensive Line", unit: .defense, positions: [.de, .lde, .rde, .dt, .nt]),
-        CompareRoom(id: "linebackers", name: "Linebackers", unit: .defense, positions: [.lb, .wlb, .lilb, .rilb, .slb]),
-        CompareRoom(id: "corners", name: "Corners", unit: .defense, positions: [.cb, .lcb, .rcb, .nb]),
+        CompareRoom(
+            id: "front", name: "Defensive Line", unit: .defense,
+            positions: [.de, .lde, .rde, .dt, .nt]),
+        CompareRoom(
+            id: "linebackers", name: "Linebackers", unit: .defense,
+            positions: [.lb, .wlb, .lilb, .rilb, .slb]),
+        CompareRoom(
+            id: "corners", name: "Corners", unit: .defense, positions: [.cb, .lcb, .rcb, .nb]),
         CompareRoom(id: "safeties", name: "Safeties", unit: .defense, positions: [.s, .ss, .fs]),
         // Special Teams (2 specialists)
         CompareRoom(id: "specialists", name: "Specialists", unit: .special, positions: [.k, .p]),

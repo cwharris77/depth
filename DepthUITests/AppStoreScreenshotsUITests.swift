@@ -58,7 +58,9 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         // ("seahawks") on the default offense unit.
         XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
         let switcher = app.buttons["team-switcher-button"]
-        XCTAssertTrue(switcher.waitForExistence(timeout: 15), "the chart header should expose the team switcher")
+        XCTAssertTrue(
+            switcher.waitForExistence(timeout: 15),
+            "the chart header should expose the team switcher")
         XCTAssertTrue(
             switcher.waitForLabel(containing: "Seahawks"),
             "screenshot mode should start on the default team so this shot is deterministic"
@@ -71,9 +73,11 @@ final class AppStoreScreenshotsUITests: XCTestCase {
 
         // 2. Defensive depth chart — a different team and unit, so the two field shots
         // aren't near-duplicates of each other.
-        selectTeam(named: "Broncos", rowIdentifier: "team-row-broncos", switcher: switcher, app: app)
+        selectTeam(
+            named: "Broncos", rowIdentifier: "team-row-broncos", switcher: switcher, app: app)
         let defenseTab = app.buttons["unit-tab-defense"]
-        XCTAssertTrue(defenseTab.waitForExistence(timeout: 15), "the unit tab bar should offer Defense")
+        XCTAssertTrue(
+            defenseTab.waitForExistence(timeout: 15), "the unit tab bar should offer Defense")
         defenseTab.tap()
         XCTAssertTrue(
             waitForFilledSlot(in: app),
@@ -88,23 +92,30 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         // subject (`player-slot-off-qb-0` is the identifier AccessibilityUITests already
         // uses), so the ledger has real content rather than an empty state.
         let offenseTab = app.buttons["unit-tab-offense"]
-        XCTAssertTrue(offenseTab.waitForExistence(timeout: 15), "the unit tab bar should offer Offense")
+        XCTAssertTrue(
+            offenseTab.waitForExistence(timeout: 15), "the unit tab bar should offer Offense")
         offenseTab.tap()
         let qbSlot = app.buttons["player-slot-off-qb-0"]
-        XCTAssertTrue(qbSlot.waitForExistence(timeout: 20), "the offense should expose the starting QB slot")
+        XCTAssertTrue(
+            qbSlot.waitForExistence(timeout: 20), "the offense should expose the starting QB slot")
         qbSlot.tap()
         let profile = element(app, identifier: "player-profile-full-content")
-        XCTAssertTrue(profile.waitForExistence(timeout: 20), "tapping a filled slot should push the player profile")
+        XCTAssertTrue(
+            profile.waitForExistence(timeout: 20),
+            "tapping a filled slot should push the player profile")
         attachScreenshot(name: "03-player-profile")
         let backButton = app.navigationBars.buttons["BackButton"]
-        XCTAssertTrue(backButton.waitForExistence(timeout: 10), "the profile should offer a back button")
+        XCTAssertTrue(
+            backButton.waitForExistence(timeout: 10), "the profile should offer a back button")
         backButton.tap()
         XCTAssertTrue(qbSlot.waitForExistence(timeout: 15), "back should return to the depth chart")
 
         // 4. Team stats.
-        selectTeam(named: "Chargers", rowIdentifier: "team-row-chargers", switcher: switcher, app: app)
+        selectTeam(
+            named: "Chargers", rowIdentifier: "team-row-chargers", switcher: switcher, app: app)
         let statsTab = app.buttons["page-switcher-stats"]
-        XCTAssertTrue(statsTab.waitForExistence(timeout: 15), "team detail should expose a Stats page tab")
+        XCTAssertTrue(
+            statsTab.waitForExistence(timeout: 15), "team detail should expose a Stats page tab")
         statsTab.tap()
         XCTAssertTrue(
             element(app, identifier: "stats-content").waitForExistence(timeout: 20),
@@ -121,7 +132,9 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         // a stale constant than silently capturing whatever season happens to sort first.
         // Bump this once the current season has real data.
         let seasonTrigger = app.buttons["stats-season-trigger"]
-        XCTAssertTrue(seasonTrigger.waitForExistence(timeout: 10), "the stats page should expose a season picker")
+        XCTAssertTrue(
+            seasonTrigger.waitForExistence(timeout: 10),
+            "the stats page should expose a season picker")
         seasonTrigger.tap()
         let completedSeason = app.buttons["stats-season-2025"]
         XCTAssertTrue(
@@ -139,16 +152,21 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         // WC → DIV → CON → SB ladder in 2025, so the pinned season has every round to show
         // (the other pinned teams would render a shorter run). Pin the completed season for
         // the same reason the stats shot does: the current season is before week 1.
-        selectTeam(named: "Patriots", rowIdentifier: "team-row-patriots", switcher: switcher, app: app)
+        selectTeam(
+            named: "Patriots", rowIdentifier: "team-row-patriots", switcher: switcher, app: app)
         let scheduleTab = app.buttons["page-switcher-schedule"]
-        XCTAssertTrue(scheduleTab.waitForExistence(timeout: 15), "team detail should expose a Schedule page tab")
+        XCTAssertTrue(
+            scheduleTab.waitForExistence(timeout: 15),
+            "team detail should expose a Schedule page tab")
         scheduleTab.tap()
         XCTAssertTrue(
             element(app, identifier: "schedule-content").waitForExistence(timeout: 20),
             "the schedule page should render content"
         )
         let scheduleSeasonTrigger = app.buttons["schedule-season-trigger"]
-        XCTAssertTrue(scheduleSeasonTrigger.waitForExistence(timeout: 10), "the schedule should expose a season picker")
+        XCTAssertTrue(
+            scheduleSeasonTrigger.waitForExistence(timeout: 10),
+            "the schedule should expose a season picker")
         scheduleSeasonTrigger.tap()
         let scheduleSeason = app.buttons["schedule-season-2025"]
         XCTAssertTrue(
@@ -157,7 +175,8 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         )
         scheduleSeason.tap()
         let playoffsTab = app.buttons["schedule-phase-playoffs"]
-        XCTAssertTrue(playoffsTab.waitForExistence(timeout: 10), "the schedule should offer a Playoffs phase")
+        XCTAssertTrue(
+            playoffsTab.waitForExistence(timeout: 10), "the schedule should offer a Playoffs phase")
         playoffsTab.tap()
         XCTAssertTrue(
             element(app, identifier: "schedule-playoffs-content").waitForExistence(timeout: 20),
@@ -174,7 +193,8 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         // Select the matchup segment explicitly rather than trusting the default — the
         // capture is only meaningful on "By team".
         let byTeamTab = app.buttons["compare-tab-matchup"]
-        XCTAssertTrue(byTeamTab.waitForExistence(timeout: 10), "compare should offer the By team segment")
+        XCTAssertTrue(
+            byTeamTab.waitForExistence(timeout: 10), "compare should offer the By team segment")
         byTeamTab.tap()
         XCTAssertTrue(
             element(app, identifier: "compare-content").waitForExistence(timeout: 20),
@@ -193,7 +213,9 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         let uniformTeam = app.descendants(matching: .any).matching(
             NSPredicate(format: "identifier BEGINSWITH 'uniforms-team-'")
         ).firstMatch
-        XCTAssertTrue(uniformTeam.waitForExistence(timeout: 20), "the archive should render at least one team's kits")
+        XCTAssertTrue(
+            uniformTeam.waitForExistence(timeout: 20),
+            "the archive should render at least one team's kits")
         attachScreenshot(name: "07-uniform-archive")
     }
 
@@ -230,11 +252,15 @@ final class AppStoreScreenshotsUITests: XCTestCase {
     ) {
         switcher.tap()
         let searchField = app.searchFields.firstMatch
-        XCTAssertTrue(searchField.waitForExistence(timeout: 15), "the switcher sheet should offer team search")
+        XCTAssertTrue(
+            searchField.waitForExistence(timeout: 15), "the switcher sheet should offer team search"
+        )
         searchField.typeTextAfterFocusing(name, in: app)
 
         let row = app.buttons[rowIdentifier]
-        XCTAssertTrue(row.waitForExistence(timeout: 15), "searching \"\(name)\" should surface \(rowIdentifier)")
+        XCTAssertTrue(
+            row.waitForExistence(timeout: 15),
+            "searching \"\(name)\" should surface \(rowIdentifier)")
         row.tap()
         XCTAssertTrue(
             switcher.waitForLabel(containing: name),
@@ -251,15 +277,19 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         app: XCUIApplication
     ) {
         let slotButton = app.buttons["compare-slot-\(slot)"]
-        XCTAssertTrue(slotButton.waitForExistence(timeout: 15), "the \(slot) compare slot should exist")
+        XCTAssertTrue(
+            slotButton.waitForExistence(timeout: 15), "the \(slot) compare slot should exist")
         slotButton.tap()
 
         let searchField = app.searchFields.firstMatch
-        XCTAssertTrue(searchField.waitForExistence(timeout: 10), "the picker sheet should offer team search")
+        XCTAssertTrue(
+            searchField.waitForExistence(timeout: 10), "the picker sheet should offer team search")
         searchField.typeTextAfterFocusing(query, in: app)
 
         let row = app.buttons[rowIdentifier]
-        XCTAssertTrue(row.waitForExistence(timeout: 15), "searching \"\(query)\" should surface \(rowIdentifier)")
+        XCTAssertTrue(
+            row.waitForExistence(timeout: 15),
+            "searching \"\(query)\" should surface \(rowIdentifier)")
         row.tap()
     }
 

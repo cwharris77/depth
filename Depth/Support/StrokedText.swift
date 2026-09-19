@@ -56,14 +56,18 @@ struct StrokedText: UIViewRepresentable {
     }
 
     func updateUIView(_ label: StrokedLabel, context: Context) {
-        label.outlinePass = Self.attributedString(runs: runs, weight: weight, tracking: tracking, pass: .outline)
-        label.fillPass = Self.attributedString(runs: runs, weight: weight, tracking: tracking, pass: .fill)
+        label.outlinePass = Self.attributedString(
+            runs: runs, weight: weight, tracking: tracking, pass: .outline)
+        label.fillPass = Self.attributedString(
+            runs: runs, weight: weight, tracking: tracking, pass: .fill)
         label.overflow = Self.strokeOverflow(runs)
         label.invalidateIntrinsicContentSize()
         label.setNeedsDisplay()
     }
 
-    func sizeThatFits(_ proposal: ProposedViewSize, uiView: StrokedLabel, context: Context) -> CGSize? {
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView: StrokedLabel, context: Context)
+        -> CGSize?
+    {
         uiView.intrinsicContentSize
     }
 
@@ -104,7 +108,8 @@ struct StrokedText: UIViewRepresentable {
         // measured width. With negative tracking the final glyph then draws past the view's
         // bounds and its right edge is clipped (visible on the profile's 116pt numeral).
         if string.length > 0 {
-            string.addAttribute(.kern, value: CGFloat(0), range: NSRange(location: string.length - 1, length: 1))
+            string.addAttribute(
+                .kern, value: CGFloat(0), range: NSRange(location: string.length - 1, length: 1))
         }
         return string
     }

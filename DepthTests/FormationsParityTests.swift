@@ -12,7 +12,9 @@ private struct FixturePlayer: Decodable {
     let number: Int
     let order: Int?
 
-    var domain: Player { Player(id: id, position: position, depthRank: depthRank, number: number, order: order) }
+    var domain: Player {
+        Player(id: id, position: position, depthRank: depthRank, number: number, order: order)
+    }
 }
 
 private struct FixtureSpecialSlot: Decodable {
@@ -64,7 +66,8 @@ private struct FixtureFormationSlot: Decodable {
 
     var domain: FormationSlot {
         FormationSlot(
-            id: id, position: position, index: index, group: group, preferredPosition: preferredPosition,
+            id: id, position: position, index: index, group: group,
+            preferredPosition: preferredPosition,
             x: x, y: y, label: label, onLine: onLine
         )
     }
@@ -186,9 +189,11 @@ private struct AlignmentLabelCase: Decodable {
 // and from-selected-formation contracts the field relies on.
 
 private func formation(
-    _ unit: Unit, _ rank: Int, alignment: String = "SHOTGUN", personnel: String = "11", pct: Int = 50
+    _ unit: Unit, _ rank: Int, alignment: String = "SHOTGUN", personnel: String = "11",
+    pct: Int = 50
 ) -> TeamFormation {
-    TeamFormation(season: 2025, rank: rank, unit: unit, alignment: alignment, personnel: personnel, pct: pct)
+    TeamFormation(
+        season: 2025, rank: rank, unit: unit, alignment: alignment, personnel: personnel, pct: pct)
 }
 
 @Test func topFormationPicksTheUnitsLowestRank() {

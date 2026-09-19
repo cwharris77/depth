@@ -23,7 +23,8 @@ struct PlayerStatFigure: Hashable {
 }
 
 enum PlayerStatCategory: String, CaseIterable, Hashable {
-    case passing, rushing, receiving, returns, tackles, passRush, turnovers, kicking, snaps, penalties, games
+    case passing, rushing, receiving, returns, tackles, passRush, turnovers, kicking, snaps,
+        penalties, games
 
     var title: String {
         switch self {
@@ -157,7 +158,8 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
         case .passing:
             [
                 PlayerStatFigure(value: count(stats.passingTds), short: "TD", spoken: "touchdowns"),
-                PlayerStatFigure(value: count(stats.passingInterceptions), short: "INT", spoken: "interceptions"),
+                PlayerStatFigure(
+                    value: count(stats.passingInterceptions), short: "INT", spoken: "interceptions"),
             ]
         case .rushing:
             [
@@ -166,25 +168,36 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
             ]
         case .receiving:
             [
-                PlayerStatFigure(value: count(stats.receptions), short: "REC", spoken: "receptions"),
-                PlayerStatFigure(value: count(stats.receivingTds), short: "TD", spoken: "touchdowns"),
+                PlayerStatFigure(
+                    value: count(stats.receptions), short: "REC", spoken: "receptions"),
+                PlayerStatFigure(
+                    value: count(stats.receivingTds), short: "TD", spoken: "touchdowns"),
             ]
         case .returns:
             [
-                PlayerStatFigure(value: count(stats.puntReturns), short: "PR", spoken: "punt returns"),
-                PlayerStatFigure(value: count(stats.kickoffReturns), short: "KR", spoken: "kickoff returns"),
+                PlayerStatFigure(
+                    value: count(stats.puntReturns), short: "PR", spoken: "punt returns"),
+                PlayerStatFigure(
+                    value: count(stats.kickoffReturns), short: "KR", spoken: "kickoff returns"),
             ]
         case .tackles:
             [
-                PlayerStatFigure(value: count(stats.defTackleAssists), short: "AST", spoken: "assists"),
-                PlayerStatFigure(value: count(stats.defTacklesForLoss), short: "TFL", spoken: "tackles for loss"),
+                PlayerStatFigure(
+                    value: count(stats.defTackleAssists), short: "AST", spoken: "assists"),
+                PlayerStatFigure(
+                    value: count(stats.defTacklesForLoss), short: "TFL", spoken: "tackles for loss"),
             ]
         case .passRush:
-            [PlayerStatFigure(value: count(stats.defQbHits), short: "QBH", spoken: "quarterback hits")]
+            [
+                PlayerStatFigure(
+                    value: count(stats.defQbHits), short: "QBH", spoken: "quarterback hits")
+            ]
         case .turnovers:
             [
-                PlayerStatFigure(value: count(stats.defPassDefended), short: "PBU", spoken: "passes defended"),
-                PlayerStatFigure(value: count(stats.defFumblesForced), short: "FF", spoken: "forced fumbles"),
+                PlayerStatFigure(
+                    value: count(stats.defPassDefended), short: "PBU", spoken: "passes defended"),
+                PlayerStatFigure(
+                    value: count(stats.defFumblesForced), short: "FF", spoken: "forced fumbles"),
             ]
         case .kicking:
             [
@@ -192,7 +205,10 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
                 PlayerStatFigure(value: count(stats.patMade), short: "PAT", spoken: "extra points"),
             ]
         case .penalties:
-            [PlayerStatFigure(value: count(stats.penaltyYards), short: "PEN YDS", spoken: "penalty yards")]
+            [
+                PlayerStatFigure(
+                    value: count(stats.penaltyYards), short: "PEN YDS", spoken: "penalty yards")
+            ]
         case .snaps, .games:
             [PlayerStatFigure(value: count(stats.games), short: "GP", spoken: "games played")]
         }
@@ -236,7 +252,7 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
                 PlayerStatFigure(
                     value: perGame(primaryValue(stats), stats.games),
                     short: "PER GAME", spoken: "\(barMetricName.capitalized) per game"
-                ),
+                )
             ]
         case .turnovers:
             [
@@ -271,7 +287,9 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
     /// `.games` is the fallback for players whose position records nothing else -- a
     /// participation-only position before snap data exists, or a player who only has a
     /// games figure -- so a loaded profile always has at least one tab.
-    static func categories(for stats: [PlayerSeasonStats], position: Position) -> [PlayerStatCategory] {
+    static func categories(for stats: [PlayerSeasonStats], position: Position)
+        -> [PlayerStatCategory]
+    {
         let present = order(for: position).filter { category in
             category != .games && stats.contains(where: category.hasData)
         }
@@ -289,7 +307,8 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
         case .rb, .fb: [.rushing, .receiving, .passing, .returns]
         case .wr, .te: [.receiving, .rushing, .passing, .returns]
         case .kr, .pr: [.returns, .receiving, .rushing]
-        case .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb, .cb, .lcb, .rcb, .nb, .s, .ss, .fs:
+        case .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb, .cb, .lcb, .rcb, .nb, .s,
+            .ss, .fs:
             [.tackles, .passRush, .turnovers, .returns]
         case .k: [.kicking]
         case .p: [.snaps, .kicking]
@@ -298,8 +317,10 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
         }
     }
 
-    private func figure(_ column: PlayerStatColumn, _ stats: PlayerSeasonStats) -> PlayerStatFigure {
-        PlayerStatFigure(value: column.value(for: stats), short: column.header, spoken: column.accessibleName)
+    private func figure(_ column: PlayerStatColumn, _ stats: PlayerSeasonStats) -> PlayerStatFigure
+    {
+        PlayerStatFigure(
+            value: column.value(for: stats), short: column.header, spoken: column.accessibleName)
     }
 
     private func count(_ value: Int?) -> String { "\(value ?? 0)" }
@@ -332,7 +353,8 @@ enum PlayerStatLedger {
             rushingYards: sum(\.rushingYards), rushingTds: sum(\.rushingTds),
             receptions: sum(\.receptions), targets: sum(\.targets),
             receivingYards: sum(\.receivingYards), receivingTds: sum(\.receivingTds),
-            defTacklesSolo: sum(\.defTacklesSolo), defSacks: sacks.isEmpty ? nil : sacks.reduce(0, +),
+            defTacklesSolo: sum(\.defTacklesSolo),
+            defSacks: sacks.isEmpty ? nil : sacks.reduce(0, +),
             defInterceptions: sum(\.defInterceptions), fgMade: sum(\.fgMade), fgAtt: sum(\.fgAtt),
             defTackleAssists: sum(\.defTackleAssists), defTacklesForLoss: sum(\.defTacklesForLoss),
             defQbHits: sum(\.defQbHits), defPassDefended: sum(\.defPassDefended),
@@ -367,7 +389,9 @@ enum PlayerStatLedger {
 }
 
 extension PlayerProfileDisplay {
-    private static let nameSuffixes: Set<String> = ["jr", "jr.", "sr", "sr.", "ii", "iii", "iv", "v"]
+    private static let nameSuffixes: Set<String> = [
+        "jr", "jr.", "sr", "sr.", "ii", "iii", "iv", "v",
+    ]
 
     /// The name across the back of the jersey: the surname, skipping generational suffixes
     /// ("Marvin Harrison Jr." -> "HARRISON"). Nil when the player has no recorded name.
@@ -382,7 +406,9 @@ extension PlayerProfileDisplay {
         let words = name.split(separator: " ").map(String.init)
             .filter { !nameSuffixes.contains($0.lowercased()) }
         guard let first = words.first?.first else { return nil }
-        guard words.count > 1, let last = words.last?.first else { return String(first).uppercased() }
+        guard words.count > 1, let last = words.last?.first else {
+            return String(first).uppercased()
+        }
         return "\(first)\(last)".uppercased()
     }
 
@@ -419,7 +445,8 @@ extension PlayerProfileDisplay {
             // SECOND school as if it were the first; keeping the empty component makes that
             // input fall through to the raw value below instead of quietly lying. Not
             // reachable with real ESPN data — this is a correctness guard, not a fix.
-            let first = college.split(separator: ";", omittingEmptySubsequences: false).first
+            let first =
+                college.split(separator: ";", omittingEmptySubsequences: false).first
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) } ?? ""
             let shown = first.isEmpty ? college : first
             parts.append(PlayerVital(text: shown.uppercased(), spoken: "College, \(college)"))

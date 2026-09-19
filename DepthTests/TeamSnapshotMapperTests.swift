@@ -11,7 +11,8 @@ private func player(
 ) -> PlayerDTO {
     PlayerDTO(
         id: id, teamId: teamId, name: name, number: number, position: position, status: status,
-        age: 25, college: "Test U", experience: 1, height: "6'0\"", weight: 200, bio: "", photoUrl: nil
+        age: 25, college: "Test U", experience: 1, height: "6'0\"", weight: 200, bio: "",
+        photoUrl: nil
     )
 }
 
@@ -54,12 +55,14 @@ private func team(
         UniformDTO(
             id: "bills-home-2002", teamId: "bills", kind: "home", name: "Retired Home",
             yearStart: 2002, yearEnd: 2010, isCurrent: false,
-            colorPrimary: "#111111", colorSecondary: "#222222", colorAccent: "#333333", imagePath: nil
+            colorPrimary: "#111111", colorSecondary: "#222222", colorAccent: "#333333",
+            imagePath: nil
         ),
         UniformDTO(
             id: "bills-home-2011", teamId: "bills", kind: "home", name: "Current Home",
             yearStart: 2011, yearEnd: nil, isCurrent: true,
-            colorPrimary: "#00338D", colorSecondary: "#C60C30", colorAccent: "#C60C30", imagePath: nil
+            colorPrimary: "#00338D", colorSecondary: "#C60C30", colorAccent: "#C60C30",
+            imagePath: nil
         ),
     ])
     let snapshot = try TeamSnapshotMapper.map(dto)
@@ -75,7 +78,9 @@ private func team(
 
 @Test func mapsDepthChartPlayerWithRealDepthRank() throws {
     let dto = team(depthChartEntries: [
-        DepthChartEntryDTO(teamId: "bills", position: "QB", depthRank: 1, playerId: "p1", player: player(id: "p1", position: "QB")),
+        DepthChartEntryDTO(
+            teamId: "bills", position: "QB", depthRank: 1, playerId: "p1",
+            player: player(id: "p1", position: "QB"))
     ])
     let snapshot = try TeamSnapshotMapper.map(dto)
     #expect(snapshot.players.count == 1)
@@ -86,7 +91,9 @@ private func team(
 
 @Test func specialTeamsOnlyPlayerGetsNominalDepthRankThree() throws {
     let dto = team(specialTeamsSlots: [
-        SpecialTeamsSlotDTO(id: "st-kr", teamId: "bills", label: "KR", playerId: "p2", x: 30, y: 18, player: player(id: "p2", position: "RB")),
+        SpecialTeamsSlotDTO(
+            id: "st-kr", teamId: "bills", label: "KR", playerId: "p2", x: 30, y: 18,
+            player: player(id: "p2", position: "RB"))
     ])
     let snapshot = try TeamSnapshotMapper.map(dto)
     #expect(snapshot.players.count == 1)
@@ -97,20 +104,27 @@ private func team(
 @Test func playerOnBothDepthChartAndSpecialTeamsIsNotDuplicated() throws {
     let dto = team(
         depthChartEntries: [
-            DepthChartEntryDTO(teamId: "bills", position: "WR", depthRank: 2, playerId: "p3", player: player(id: "p3", position: "WR")),
+            DepthChartEntryDTO(
+                teamId: "bills", position: "WR", depthRank: 2, playerId: "p3",
+                player: player(id: "p3", position: "WR"))
         ],
         specialTeamsSlots: [
-            SpecialTeamsSlotDTO(id: "st-pr", teamId: "bills", label: "PR", playerId: "p3", x: 70, y: 18, player: player(id: "p3", position: "WR")),
+            SpecialTeamsSlotDTO(
+                id: "st-pr", teamId: "bills", label: "PR", playerId: "p3", x: 70, y: 18,
+                player: player(id: "p3", position: "WR"))
         ]
     )
     let snapshot = try TeamSnapshotMapper.map(dto)
     #expect(snapshot.players.count == 1)
-    #expect(snapshot.players[0].depthRank == 2, "keeps the real depth-chart rank, not the nominal special-teams one")
+    #expect(
+        snapshot.players[0].depthRank == 2,
+        "keeps the real depth-chart rank, not the nominal special-teams one")
 }
 
 @Test func nullPlayerOnASpecialTeamsSlotIsSkippedNotCrashed() throws {
     let dto = team(specialTeamsSlots: [
-        SpecialTeamsSlotDTO(id: "st-pr", teamId: "bills", label: "PR", playerId: nil, x: 70, y: 18, player: nil),
+        SpecialTeamsSlotDTO(
+            id: "st-pr", teamId: "bills", label: "PR", playerId: nil, x: 70, y: 18, player: nil)
     ])
     let snapshot = try TeamSnapshotMapper.map(dto)
     #expect(snapshot.players.isEmpty)
@@ -122,24 +136,31 @@ private func team(
     // The launch screen must survive a value this build doesn't know. Strictness here is
     // what made every new position/rank/status a gated client release (DEP-486).
     let dto = team(depthChartEntries: [
-        DepthChartEntryDTO(teamId: "bills", position: "QB", depthRank: 1, playerId: "p1", player: player(id: "p1", position: "QB")),
-        DepthChartEntryDTO(teamId: "bills", position: "XX", depthRank: 1, playerId: "p2", player: player(id: "p2", position: "XX")),
+        DepthChartEntryDTO(
+            teamId: "bills", position: "QB", depthRank: 1, playerId: "p1",
+            player: player(id: "p1", position: "QB")),
+        DepthChartEntryDTO(
+            teamId: "bills", position: "XX", depthRank: 1, playerId: "p2",
+            player: player(id: "p2", position: "XX")),
     ])
 
     let result = try TeamSnapshotMapper.mapWithDiagnostics(dto)
 
     #expect(result.snapshot.players.map(\.id) == ["p1"])
     #expect(result.snapshot.depthChart?.map(\.position) == [.qb])
-    #expect(result.dropped == [
-        TeamSnapshotMapper.DroppedRow(id: "bills/XX", reason: .unknownSeatPosition("XX")),
-    ])
+    #expect(
+        result.dropped == [
+            TeamSnapshotMapper.DroppedRow(id: "bills/XX", reason: .unknownSeatPosition("XX"))
+        ])
 }
 
 @Test func aMissingJerseyNumberDefaultsToZeroRatherThanDroppingThePlayer() throws {
     // Matches mapPlayerHit and the historical mapper's `?? 0`. Losing a rostered athlete
     // because ESPN omitted his number costs more than it protects.
     let dto = team(depthChartEntries: [
-        DepthChartEntryDTO(teamId: "bills", position: "QB", depthRank: 1, playerId: "p1", player: player(id: "p1", number: nil)),
+        DepthChartEntryDTO(
+            teamId: "bills", position: "QB", depthRank: 1, playerId: "p1",
+            player: player(id: "p1", number: nil))
     ])
 
     let result = try TeamSnapshotMapper.mapWithDiagnostics(dto)
@@ -152,7 +173,8 @@ private func team(
     // The 1...3 cap is a property of today's ingest and its CHECK constraint, not of the
     // domain — this build already decodes an uncapped chart.
     let dto = team(depthChartEntries: [
-        DepthChartEntryDTO(teamId: "bills", position: "QB", depthRank: 7, playerId: "p1", player: player(id: "p1")),
+        DepthChartEntryDTO(
+            teamId: "bills", position: "QB", depthRank: 7, playerId: "p1", player: player(id: "p1"))
     ])
 
     let result = try TeamSnapshotMapper.mapWithDiagnostics(dto)
@@ -166,8 +188,12 @@ private func team(
     // The prerequisite for storing ESPN's real designations: an older build shows the
     // athlete at his correct rank instead of failing the whole team.
     let dto = team(depthChartEntries: [
-        DepthChartEntryDTO(teamId: "bills", position: "QB", depthRank: 1, playerId: "p1", player: player(id: "p1", status: "Questionable")),
-        DepthChartEntryDTO(teamId: "bills", position: "RB", depthRank: 2, playerId: "p2", player: player(id: "p2", position: "RB", status: "Doubtful")),
+        DepthChartEntryDTO(
+            teamId: "bills", position: "QB", depthRank: 1, playerId: "p1",
+            player: player(id: "p1", status: "Questionable")),
+        DepthChartEntryDTO(
+            teamId: "bills", position: "RB", depthRank: 2, playerId: "p2",
+            player: player(id: "p2", position: "RB", status: "Doubtful")),
     ])
 
     let result = try TeamSnapshotMapper.mapWithDiagnostics(dto)
@@ -180,7 +206,9 @@ private func team(
     // A blank field reads as a broken screen; an empty chart that was empty upstream does
     // not, and stays a valid snapshot (covered separately).
     let dto = team(depthChartEntries: [
-        DepthChartEntryDTO(teamId: "bills", position: "XX", depthRank: 1, playerId: "p1", player: player(id: "p1", position: "XX")),
+        DepthChartEntryDTO(
+            teamId: "bills", position: "XX", depthRank: 1, playerId: "p1",
+            player: player(id: "p1", position: "XX"))
     ])
     #expect(throws: DepthError.self) {
         try TeamSnapshotMapper.map(dto)
@@ -192,8 +220,9 @@ private func team(
         UniformDTO(
             id: "bills-home", teamId: "bills", kind: "home", name: "Home",
             yearStart: nil, yearEnd: nil, isCurrent: true,
-            colorPrimary: "#00338D", colorSecondary: "#C60C30", colorAccent: "#C60C30", imagePath: nil
-        ),
+            colorPrimary: "#00338D", colorSecondary: "#C60C30", colorAccent: "#C60C30",
+            imagePath: nil
+        )
     ])
     let snapshot = try TeamSnapshotMapper.map(dto)
     #expect(snapshot.uniforms.count == 1)
@@ -207,7 +236,7 @@ private func team(
             id: "x", teamId: "bills", kind: "bogus", name: "X",
             yearStart: nil, yearEnd: nil, isCurrent: false,
             colorPrimary: "#000", colorSecondary: "#000", colorAccent: "#000", imagePath: nil
-        ),
+        )
     ])
     #expect(throws: DepthError.self) {
         try TeamSnapshotMapper.map(dto)
@@ -222,11 +251,17 @@ private func team(
 
 @Test func mapsRealFormationsForTheLatestSeasonOnly() throws {
     let dto = team(formations: [
-        TeamFormationDTO(season: 2025, rank: 1, unit: "offense", alignment: "SHOTGUN", personnel: "11", pct: 60),
-        TeamFormationDTO(season: 2025, rank: 2, unit: "offense", alignment: "UNDER CENTER", personnel: "21", pct: 25),
-        TeamFormationDTO(season: 2025, rank: 1, unit: "defense", alignment: "Nickel", personnel: "4-2-5", pct: 55),
+        TeamFormationDTO(
+            season: 2025, rank: 1, unit: "offense", alignment: "SHOTGUN", personnel: "11", pct: 60),
+        TeamFormationDTO(
+            season: 2025, rank: 2, unit: "offense", alignment: "UNDER CENTER", personnel: "21",
+            pct: 25),
+        TeamFormationDTO(
+            season: 2025, rank: 1, unit: "defense", alignment: "Nickel", personnel: "4-2-5", pct: 55
+        ),
         // An older season's rows are dropped — the field renders the latest ingested season.
-        TeamFormationDTO(season: 2024, rank: 1, unit: "offense", alignment: "SHOTGUN", personnel: "12", pct: 70),
+        TeamFormationDTO(
+            season: 2024, rank: 1, unit: "offense", alignment: "SHOTGUN", personnel: "12", pct: 70),
     ])
     let snapshot = try TeamSnapshotMapper.map(dto)
     #expect(snapshot.formations.count == 3)
@@ -239,8 +274,10 @@ private func team(
 
 @Test func formationWithInvalidUnitIsSkippedNotThrown() throws {
     let dto = team(formations: [
-        TeamFormationDTO(season: 2025, rank: 1, unit: "bogus", alignment: "X", personnel: "11", pct: 5),
-        TeamFormationDTO(season: 2025, rank: 1, unit: "offense", alignment: "SHOTGUN", personnel: "11", pct: 60),
+        TeamFormationDTO(
+            season: 2025, rank: 1, unit: "bogus", alignment: "X", personnel: "11", pct: 5),
+        TeamFormationDTO(
+            season: 2025, rank: 1, unit: "offense", alignment: "SHOTGUN", personnel: "11", pct: 60),
     ])
     let snapshot = try TeamSnapshotMapper.map(dto)
     #expect(snapshot.formations.count == 1)
@@ -252,7 +289,8 @@ private func team(
     // decodes fine and is carried through — it simply never affects the field (topFormationSlots
     // returns nil for .special, and the footer gate matches the active unit).
     let dto = team(formations: [
-        TeamFormationDTO(season: 2025, rank: 1, unit: "special", alignment: "X", personnel: "11", pct: 5),
+        TeamFormationDTO(
+            season: 2025, rank: 1, unit: "special", alignment: "X", personnel: "11", pct: 5)
     ])
     let snapshot = try TeamSnapshotMapper.map(dto)
     #expect(snapshot.formations.count == 1)
@@ -342,8 +380,9 @@ private func team(
 
         #expect(result.snapshot.depthChart?.map(\.position) == [.qb])
         #expect(result.snapshot.players.map(\.id) == ["p1"])
-        #expect(result.dropped == [
-            TeamSnapshotMapper.DroppedRow(id: "bills/XX", reason: .unknownSeatPosition("XX")),
-        ])
+        #expect(
+            result.dropped == [
+                TeamSnapshotMapper.DroppedRow(id: "bills/XX", reason: .unknownSeatPosition("XX"))
+            ])
     }
 }

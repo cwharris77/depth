@@ -116,10 +116,13 @@ enum PlayerStatColumn: Hashable, CaseIterable {
     case completionsAttempts, passingYards, passingTds, passingInterceptions, passingYardsPerAttempt
     case carries, rushingYards, rushingTds, receptions, rushingYardsPerCarry
     case targets, receivingYards, receivingTds, receivingYardsPerReception
-    case games, tackles, sacks, interceptions, fieldGoalsMade, fieldGoalsAttempted, fieldGoalPercentage
+    case games, tackles, sacks, interceptions, fieldGoalsMade, fieldGoalsAttempted,
+        fieldGoalPercentage
     // DEP-538 additions: the counters that give stat-less position groups a real line.
-    case assists, tacklesForLoss, qbHits, passDefended, forcedFumbles, fumbleRecoveries, defensiveTds
-    case puntReturns, puntReturnYards, kickoffReturns, kickoffReturnYards, returnYards, specialTeamsTds
+    case assists, tacklesForLoss, qbHits, passDefended, forcedFumbles, fumbleRecoveries,
+        defensiveTds
+    case puntReturns, puntReturnYards, kickoffReturns, kickoffReturnYards, returnYards,
+        specialTeamsTds
     case penalties, penaltyYards, patMade, patAtt, fieldGoalLong
     case offenseSnaps, offenseSnapShare, defenseSnaps, defenseSnapShare
     case specialTeamsSnaps, specialTeamsSnapShare
@@ -333,14 +336,18 @@ enum PlayerStatsAccessibility {
 func playerStatColumns(for position: Position) -> [PlayerStatColumn] {
     switch position {
     case .qb:
-        [.completionsAttempts, .passingYards, .passingTds, .passingInterceptions, .passingYardsPerAttempt]
+        [
+            .completionsAttempts, .passingYards, .passingTds, .passingInterceptions,
+            .passingYardsPerAttempt,
+        ]
     case .rb, .fb:
         [.carries, .rushingYards, .rushingTds, .receptions, .rushingYardsPerCarry]
     case .wr, .te:
         [.receptions, .targets, .receivingYards, .receivingTds, .receivingYardsPerReception]
     case .lt, .lg, .c, .rg, .rt, .ot, .g, .p, .ls, .kr, .pr:
         [.games]
-    case .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb, .cb, .lcb, .rcb, .nb, .s, .ss, .fs:
+    case .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb, .cb, .lcb, .rcb, .nb, .s, .ss,
+        .fs:
         [.tackles, .sacks, .interceptions]
     case .k:
         [.fieldGoalsMade, .fieldGoalsAttempted, .fieldGoalPercentage]

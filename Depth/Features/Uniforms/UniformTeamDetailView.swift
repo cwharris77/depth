@@ -70,7 +70,8 @@ struct UniformTeamDetailView: View {
         Button {
             onSelectKit(kit)
         } label: {
-            let layout = dynamicTypeSize.isAccessibilitySize
+            let layout =
+                dynamicTypeSize.isAccessibilitySize
                 ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.md))
                 : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.md))
             layout {

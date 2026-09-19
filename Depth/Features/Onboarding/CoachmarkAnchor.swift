@@ -48,7 +48,8 @@ extension View {
     func coachmarkAnchor(_ id: CoachmarkID) -> some View {
         background(
             GeometryReader { proxy in
-                Color.clear.preference(key: CoachmarkFrameKey.self, value: [id: proxy.frame(in: .global)])
+                Color.clear.preference(
+                    key: CoachmarkFrameKey.self, value: [id: proxy.frame(in: .global)])
             }
         )
     }
