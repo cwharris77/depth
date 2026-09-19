@@ -44,7 +44,9 @@ extension View {
     ///
     /// `radius` overrides the default `Radius.lg` (24); pass `DesignTokens.Radius.md`
     /// (16) for surfaces that must match web's `rounded-2xl` cards (DEP-266's Compare).
-    func depthCard(dense: Bool = false, padded: Bool = true, radius: CGFloat = DesignTokens.Radius.lg) -> some View {
+    func depthCard(
+        dense: Bool = false, padded: Bool = true, radius: CGFloat = DesignTokens.Radius.lg
+    ) -> some View {
         modifier(DepthCard(dense: dense, padded: padded, radius: radius))
     }
 }

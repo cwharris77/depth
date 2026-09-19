@@ -93,7 +93,7 @@ struct OnboardingControllerTests {
         let controller = OnboardingController(preferences: preferences)
         controller.startIfNeeded()
         controller.beginCoachmarks()
-        controller.advance() // now on the second step, not the first or last
+        controller.advance()  // now on the second step, not the first or last
 
         controller.skipCoachmarks()
 
@@ -121,6 +121,6 @@ struct OnboardingControllerTests {
         #expect(controller.currentStep == nil)
 
         controller.startIfNeeded()
-        #expect(controller.currentStep == nil) // .welcome, not .coachmark
+        #expect(controller.currentStep == nil)  // .welcome, not .coachmark
     }
 }

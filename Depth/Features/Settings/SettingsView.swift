@@ -234,7 +234,8 @@ struct SettingsView: View {
                     Button(mode.title) { fieldNameMode = mode }
                 }
             } label: {
-                let layout = dynamicTypeSize.isAccessibilitySize
+                let layout =
+                    dynamicTypeSize.isAccessibilitySize
                     ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
                     : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.md))
                 layout {
@@ -286,8 +287,10 @@ struct SettingsView: View {
                         Button("\(team.city) \(team.name)") { settingsStore.selectTeam(team.id) }
                     }
                 } label: {
-                    let layout = dynamicTypeSize.isAccessibilitySize
-                        ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
+                    let layout =
+                        dynamicTypeSize.isAccessibilitySize
+                        ? AnyLayout(
+                            VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
                         : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.md))
                     layout {
                         iconBadge("star.fill", tint: DesignTokens.Colors.accent)
@@ -437,11 +440,14 @@ struct SettingsView: View {
 
     // DEP-415: all About actions share the same full-width wrapping treatment.
     private func aboutRow(_ title: String, icon: String) -> some View {
-        let layout = dynamicTypeSize.isAccessibilitySize
+        let layout =
+            dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
             : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.md))
         return layout {
-            iconBadge(icon, tint: DesignTokens.Colors.textMuted, background: DesignTokens.Colors.surfaceChip)
+            iconBadge(
+                icon, tint: DesignTokens.Colors.textMuted,
+                background: DesignTokens.Colors.surfaceChip)
             Text(title)
                 .foregroundStyle(DesignTokens.Colors.textPrimary)
                 .fixedSize(horizontal: false, vertical: dynamicTypeSize.isAccessibilitySize)
@@ -460,7 +466,8 @@ struct SettingsView: View {
     // tint at 16% for the accent-tinted rows; the About tier's neutral rows pass
     // `DesignTokens.Colors.surfaceChip` explicitly (the mockup's About icons use a
     // plain white-at-7% fill rather than a colored tint).
-    private func iconBadge(_ systemName: String, tint: Color, background: Color? = nil) -> some View {
+    private func iconBadge(_ systemName: String, tint: Color, background: Color? = nil) -> some View
+    {
         ZStack {
             RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
                 .fill(background ?? tint.opacity(0.16))

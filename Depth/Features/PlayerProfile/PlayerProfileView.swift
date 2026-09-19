@@ -119,9 +119,10 @@ private struct PlayerProfileScreen: View {
         self.depthContext = depthContext
         self.isHistorical = isHistorical
         self.onSelectPlayer = onSelectPlayer
-        _viewModel = State(initialValue: PlayerProfileViewModel(
-            playerID: player.id, teamID: team?.id, repository: repository
-        ))
+        _viewModel = State(
+            initialValue: PlayerProfileViewModel(
+                playerID: player.id, teamID: team?.id, repository: repository
+            ))
     }
 
     var body: some View {
@@ -261,7 +262,9 @@ private struct PlayerProfileScreen: View {
     // fill's own luminance (verified across all 105 committed kits: alpha lands in 0.059-0.18,
     // no outliers). Contrast ratio isn't linear in alpha, so bisect the real composited color
     // rather than solving a closed form.
-    private func ghostAlpha(ink: String, overFill fill: String, targetRatio: Double = 1.20) -> Double {
+    private func ghostAlpha(ink: String, overFill fill: String, targetRatio: Double = 1.20)
+        -> Double
+    {
         var lo = 0.0
         var hi = 0.6
         for _ in 0..<24 {
@@ -277,7 +280,8 @@ private struct PlayerProfileScreen: View {
 
     private func blendedHex(_ inkHex: String, over fillHex: String, alpha: Double) -> String {
         func components(_ hex: String) -> (Double, Double, Double) {
-            let cleaned = hex.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "#", with: "")
+            let cleaned = hex.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(
+                of: "#", with: "")
             var value: UInt64 = 0
             Scanner(string: cleaned).scanHexInt64(&value)
             return (Double((value >> 16) & 0xFF), Double((value >> 8) & 0xFF), Double(value & 0xFF))
@@ -313,7 +317,7 @@ private struct PlayerProfileScreen: View {
                         fill: Color(hex: numeral.fill),
                         stroke: Color(hex: numeral.stroke),
                         strokeWidthPercent: 3
-                    ),
+                    )
                 ],
                 weight: .black,
                 tracking: numberSize * -0.05
@@ -371,7 +375,8 @@ private struct PlayerProfileScreen: View {
     private var photo: some View {
         let ring = jersey.map { Color(hex: TeamSurfaces.ring($0)) } ?? DesignTokens.Colors.accent
         let fill = jersey.map { Color(hex: TeamSurfaces.fill($0)) } ?? DesignTokens.Colors.accent
-        let onFill = jersey.map { Color(hex: readableTextOn(TeamSurfaces.fill($0))) }
+        let onFill =
+            jersey.map { Color(hex: readableTextOn(TeamSurfaces.fill($0))) }
             ?? DesignTokens.Colors.onAccent
         return ZStack {
             Circle().fill(fill)
@@ -550,8 +555,12 @@ private struct PlayerProfileScreen: View {
             depthRowAccessibility(depthRowLabel(p, isCurrent: true), p, traits: [.isSelected])
         } else {
             depthRowAccessibility(
-                Button { onSelectPlayer(p) } label: { depthRowLabel(p, isCurrent: false) }
-                    .buttonStyle(.plain),
+                Button {
+                    onSelectPlayer(p)
+                } label: {
+                    depthRowLabel(p, isCurrent: false)
+                }
+                .buttonStyle(.plain),
                 p, traits: [.isButton]
             )
         }
@@ -680,7 +689,9 @@ private struct PlayerProfileScreen: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(meta.map { "\(title.capitalized), \($0.lowercased())" } ?? title.capitalized)
+        .accessibilityLabel(
+            meta.map { "\(title.capitalized), \($0.lowercased())" } ?? title.capitalized
+        )
         .accessibilityValue(isOpen.wrappedValue ? "Expanded" : "Collapsed")
         .accessibilityAddTraits(.isHeader)
         .accessibilityIdentifier(identifier)

@@ -60,17 +60,19 @@ struct DepthChartsTab: View {
         self.userSettingsStore = userSettingsStore
         self.teamRouteStore = teamRouteStore
         self.onOpenCompare = onOpenCompare
-        _teamId = State(initialValue: StartupTeam.resolve(
-            favoriteTeamId: userSettingsStore.favoriteTeamId,
-            startOnFavorite: userSettingsStore.startOnFavorite,
-            lastTeamId: preferences.lastTeamId
-        ))
+        _teamId = State(
+            initialValue: StartupTeam.resolve(
+                favoriteTeamId: userSettingsStore.favoriteTeamId,
+                startOnFavorite: userSettingsStore.startOnFavorite,
+                lastTeamId: preferences.lastTeamId
+            ))
     }
 
     var body: some View {
         NavigationStack {
             TeamDetailView(
-                viewModel: TeamDetailViewModel(teamId: teamId, repository: repository, events: events),
+                viewModel: TeamDetailViewModel(
+                    teamId: teamId, repository: repository, events: events),
                 repository: repository,
                 preferences: preferences,
                 sessionStore: sessionStore,

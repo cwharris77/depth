@@ -67,7 +67,8 @@ struct UniformFilterSheet: View {
                 // go; disabled rather than hidden, which is also what tells you nothing
                 // is on.
                 .foregroundStyle(
-                    filters.isDefault ? DesignTokens.Colors.textFaintest : DesignTokens.Colors.accent
+                    filters.isDefault
+                        ? DesignTokens.Colors.textFaintest : DesignTokens.Colors.accent
                 )
                 .disabled(filters.isDefault)
                 .accessibilityIdentifier("filter-reset")
@@ -141,7 +142,9 @@ struct UniformFilterSheet: View {
                     .font(.caption.monospacedDigit())
                     .opacity(0.65)
             }
-            .foregroundStyle(isOn ? DesignTokens.Colors.accentSoft : DesignTokens.Colors.textSecondary)
+            .foregroundStyle(
+                isOn ? DesignTokens.Colors.accentSoft : DesignTokens.Colors.textSecondary
+            )
             .padding(.horizontal, DesignTokens.Spacing.md - 3)
             .frame(minHeight: 44)
             .background(
@@ -150,7 +153,9 @@ struct UniformFilterSheet: View {
             )
             .overlay {
                 Capsule().strokeBorder(
-                    isOn ? DesignTokens.Colors.accent.opacity(0.66) : DesignTokens.Colors.borderSubtle,
+                    isOn
+                        ? DesignTokens.Colors.accent.opacity(0.66)
+                        : DesignTokens.Colors.borderSubtle,
                     lineWidth: 1
                 )
             }

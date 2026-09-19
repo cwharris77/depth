@@ -109,7 +109,8 @@ struct TeamStatsView: View {
                     teamNameBlock(
                         page.team,
                         coach: viewModel.selectedSeasonStats?.coach,
-                        incomingCoach: viewModel.isViewingCurrentOrUpcomingSeason ? page.incomingCoach : nil
+                        incomingCoach: viewModel.isViewingCurrentOrUpcomingSeason
+                            ? page.incomingCoach : nil
                     )
                     if let active = viewModel.selectedSeasonStats {
                         heroRecord(active)
@@ -155,7 +156,8 @@ struct TeamStatsView: View {
         items += viewModel.seasons.map { stats in
             SeasonPickerItem(
                 season: stats.season,
-                isUpcoming: viewModel.upcomingSeasonHasRealRow && stats.season == viewModel.upcomingSeason
+                isUpcoming: viewModel.upcomingSeasonHasRealRow
+                    && stats.season == viewModel.upcomingSeason
             )
         }
         return items
@@ -163,7 +165,9 @@ struct TeamStatsView: View {
 
     /// Web parity: the eyebrow and the season-scoped coach are one block above the hero
     /// record, not a labelled section further down the page.
-    private func teamNameBlock(_ team: Team, coach: TeamSeasonCoach?, incomingCoach: TeamIncomingCoach?) -> some View {
+    private func teamNameBlock(
+        _ team: Team, coach: TeamSeasonCoach?, incomingCoach: TeamIncomingCoach?
+    ) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             StatsEyebrow(text: "\(team.city.uppercased()) \(team.name.uppercased())")
             if let coach {
@@ -222,14 +226,17 @@ struct TeamStatsView: View {
     /// mid-season would falsely claim they already had.
     private func heroRecord(_ stats: TeamSeasonStats) -> some View {
         heroSection {
-            let layout = dynamicTypeSize.isAccessibilitySize
+            let layout =
+                dynamicTypeSize.isAccessibilitySize
                 ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
                 : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
             layout {
                 Text(verbatim: record(stats))
                     .font(.largeTitle.bold())
                     .accessibilityIdentifier("stats-record")
-                if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: DesignTokens.Spacing.md) }
+                if !dynamicTypeSize.isAccessibilitySize {
+                    Spacer(minLength: DesignTokens.Spacing.md)
+                }
                 VStack(alignment: .trailing, spacing: 1) {
                     if let streak = displayStreak(stats.streak) {
                         Text(verbatim: streak)
@@ -243,7 +250,9 @@ struct TeamStatsView: View {
                             .font(.caption.bold())
                             .foregroundStyle(DesignTokens.Colors.textMuted)
                     }
-                    if let current = viewModel.currentSeason, stats.season < current, let team = viewModel.page?.team {
+                    if let current = viewModel.currentSeason, stats.season < current,
+                        let team = viewModel.page?.team
+                    {
                         Text(verbatim: playoffLine(stats, conference: team.conference))
                             .font(.caption)
                             .foregroundStyle(DesignTokens.Colors.textFaint)
@@ -258,7 +267,7 @@ struct TeamStatsView: View {
 
     private func playoffLine(_ stats: TeamSeasonStats, conference: String) -> String {
         guard isPlayoffSeed(stats.playoffSeed, season: stats.season),
-              let seed = stats.playoffSeed
+            let seed = stats.playoffSeed
         else {
             return "MISSED PLAYOFFS · \(conference)"
         }
@@ -302,7 +311,8 @@ struct TeamStatsView: View {
                 ),
                 right: StatCellSpec(
                     "PTS AGAINST", String(stats.pointsAgainst),
-                    rank: teamStatsRankLabel(r?.pointsAgainst, lastRank: leagueSize, qualifier: .least)
+                    rank: teamStatsRankLabel(
+                        r?.pointsAgainst, lastRank: leagueSize, qualifier: .least)
                 )
             )
             hairline(DesignTokens.Colors.borderStrong)
@@ -313,13 +323,15 @@ struct TeamStatsView: View {
                 left: StatCellSpec(
                     "DIFF", diffLabel(stats.pointDifferential),
                     color: diffColor(stats.pointDifferential),
-                    rank: teamStatsRankLabel(r?.pointDifferential, lastRank: leagueSize, qualifier: .most)
+                    rank: teamStatsRankLabel(
+                        r?.pointDifferential, lastRank: leagueSize, qualifier: .most)
                 ),
                 right: metrics?.turnoverMargin.map { margin in
                     StatCellSpec(
                         "TO MARGIN", diffLabel(margin), color: diffColor(margin),
                         rank: showMetricRanks(stats)
-                            ? teamStatsRankLabel(r?.turnoverMargin, lastRank: leagueSize, qualifier: .most)
+                            ? teamStatsRankLabel(
+                                r?.turnoverMargin, lastRank: leagueSize, qualifier: .most)
                             : nil
                     )
                 }
@@ -332,13 +344,15 @@ struct TeamStatsView: View {
                     left: stats.passingYards.map {
                         StatCellSpec(
                             "PASS YDS", String($0),
-                            rank: teamStatsRankLabel(r?.passingYards, lastRank: leagueSize, qualifier: .most)
+                            rank: teamStatsRankLabel(
+                                r?.passingYards, lastRank: leagueSize, qualifier: .most)
                         )
                     },
                     right: stats.rushingYards.map {
                         StatCellSpec(
                             "RUSH YDS", String($0),
-                            rank: teamStatsRankLabel(r?.rushingYards, lastRank: leagueSize, qualifier: .most)
+                            rank: teamStatsRankLabel(
+                                r?.rushingYards, lastRank: leagueSize, qualifier: .most)
                         )
                     }
                 )
@@ -363,7 +377,10 @@ struct TeamStatsView: View {
         var color: Color = DesignTokens.Colors.textPrimary
         var rank: String?
 
-        init(_ label: String, _ value: String, color: Color = DesignTokens.Colors.textPrimary, rank: String? = nil) {
+        init(
+            _ label: String, _ value: String, color: Color = DesignTokens.Colors.textPrimary,
+            rank: String? = nil
+        ) {
             self.label = label
             self.value = value
             self.color = color
@@ -374,17 +391,27 @@ struct TeamStatsView: View {
     /// A two-column row. A nil side leaves its half blank — the DIFF row has done this
     /// since DEP-265, and an odd-length metric group now does the same.
     private func statRow(left: StatCellSpec?, right: StatCellSpec?) -> some View {
-        let layout = dynamicTypeSize.isAccessibilitySize
+        let layout =
+            dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: 0))
             : AnyLayout(HStackLayout(alignment: .top, spacing: DesignTokens.Spacing.lg))
         return layout {
-            if let left { statCell(left) } else if !dynamicTypeSize.isAccessibilitySize { Color.clear }
-            if let right { statCell(right) } else if !dynamicTypeSize.isAccessibilitySize { Color.clear }
+            if let left {
+                statCell(left)
+            } else if !dynamicTypeSize.isAccessibilitySize {
+                Color.clear
+            }
+            if let right {
+                statCell(right)
+            } else if !dynamicTypeSize.isAccessibilitySize {
+                Color.clear
+            }
         }
     }
 
     private func statCell(_ spec: StatCellSpec) -> some View {
-        let layout = dynamicTypeSize.isAccessibilitySize
+        let layout =
+            dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
             : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
         return layout {
@@ -431,11 +458,14 @@ struct TeamStatsView: View {
                     .tracking(1.2)
                     .foregroundStyle(DesignTokens.Colors.textMuted)
                     .padding(.bottom, DesignTokens.Spacing.xs)
-                ForEach(Array(metricRows(group.metrics).enumerated()), id: \.offset) { index, pair in
+                ForEach(Array(metricRows(group.metrics).enumerated()), id: \.offset) {
+                    index, pair in
                     if index > 0 { hairline(DesignTokens.Colors.borderStrong) }
                     statRow(
                         left: StatCellSpec(pair.0.label, pair.0.display, rank: pair.0.rankCaption),
-                        right: pair.1.map { StatCellSpec($0.label, $0.display, rank: $0.rankCaption) }
+                        right: pair.1.map {
+                            StatCellSpec($0.label, $0.display, rank: $0.rankCaption)
+                        }
                     )
                 }
             }
@@ -495,7 +525,8 @@ struct TeamStatsView: View {
     }
 
     private func leaderRow(label: String, leader: Leader) -> some View {
-        let layout = dynamicTypeSize.isAccessibilitySize
+        let layout =
+            dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
             : AnyLayout(HStackLayout(alignment: .center, spacing: DesignTokens.Spacing.sm))
         return layout {
@@ -505,7 +536,10 @@ struct TeamStatsView: View {
                     .tracking(0.6)
                     .foregroundStyle(teamAccent)
                 Text(verbatim: leader.name)
-                    .font(dynamicTypeSize.isAccessibilitySize ? .subheadline.weight(.heavy) : .system(size: 15, weight: .heavy))
+                    .font(
+                        dynamicTypeSize.isAccessibilitySize
+                            ? .subheadline.weight(.heavy) : .system(size: 15, weight: .heavy)
+                    )
                     .foregroundStyle(DesignTokens.Colors.textPrimary)
                     .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
                     .minimumScaleFactor(dynamicTypeSize.isAccessibilitySize ? 1 : 0.8)
@@ -519,7 +553,9 @@ struct TeamStatsView: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(DesignTokens.Colors.textMuted)
                 .multilineTextAlignment(.trailing)
-                .frame(maxWidth: dynamicTypeSize.isAccessibilitySize ? .infinity : 170, alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing)
+                .frame(
+                    maxWidth: dynamicTypeSize.isAccessibilitySize ? .infinity : 170,
+                    alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing)
         }
         // Web parity: RowCardList's `px-3.5`/`py-3.5` (14pt), off the 8pt spacing scale —
         // matched as a literal rather than snapped to `sm`/`md`.

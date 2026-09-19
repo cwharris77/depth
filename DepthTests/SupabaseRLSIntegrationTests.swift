@@ -35,11 +35,12 @@ enum LocalSupabase {
     // with the value from `supabase status`, one line, no trailing newline.
     static func serviceRoleKey() throws -> String {
         let fileURL = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent() // DepthTests/
-            .deletingLastPathComponent() // repo root
+            .deletingLastPathComponent()  // DepthTests/
+            .deletingLastPathComponent()  // repo root
             .appendingPathComponent(".local-service-role-key")
-        guard let key = try? String(contentsOf: fileURL, encoding: .utf8)
-            .trimmingCharacters(in: .whitespacesAndNewlines), !key.isEmpty
+        guard
+            let key = try? String(contentsOf: fileURL, encoding: .utf8)
+                .trimmingCharacters(in: .whitespacesAndNewlines), !key.isEmpty
         else {
             throw DepthError.validation(
                 "Create .local-service-role-key (gitignored) at the repo root with the value from `supabase status` before running this suite."
@@ -96,14 +97,18 @@ enum LocalSupabase {
 
 // Anonymous actor — the app's real, default (unauthenticated) path.
 @Test(.enabled(if: LocalSupabase.isReachable)) func anonymousCanReadTeamSnapshot() async throws {
-    let repository = SupabaseDepthRepository(client: LocalSupabase.client(key: LocalSupabase.anonKey))
+    let repository = SupabaseDepthRepository(
+        client: LocalSupabase.client(key: LocalSupabase.anonKey))
     let snapshot = try await repository.teamSnapshot(teamId: "bills")
     #expect(snapshot.team.id == "bills")
     #expect(!snapshot.players.isEmpty)
 }
 
-@Test(.enabled(if: LocalSupabase.isReachable)) func anonymousCanReadNflverseMarketSchedule() async throws {
-    let repository = SupabaseDepthRepository(client: LocalSupabase.client(key: LocalSupabase.anonKey))
+@Test(.enabled(if: LocalSupabase.isReachable)) func anonymousCanReadNflverseMarketSchedule()
+    async throws
+{
+    let repository = SupabaseDepthRepository(
+        client: LocalSupabase.client(key: LocalSupabase.anonKey))
     let schedule = try await repository.teamSchedule(teamId: "bills", season: 2025)
     let market = try #require(schedule.games.first(where: { $0.week == 1 })?.market)
 
@@ -130,7 +135,8 @@ enum LocalSupabase {
 
 // Authenticated actor — same public-read policy as anon on these 5 tables; there is no
 // owner/non-owner distinction to test until depth_overrides ships (T7).
-@Test(.enabled(if: LocalSupabase.isReachable)) func authenticatedNonOwnerCanReadTeamSnapshotIdenticallyToAnon() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable))
+func authenticatedNonOwnerCanReadTeamSnapshotIdenticallyToAnon() async throws {
     let email = "t4-rls-\(UUID().uuidString)@example.com"
     let authClient = LocalSupabase.client(key: LocalSupabase.anonKey)
     _ = try await authClient.auth.signUp(email: email, password: "test-password-123")
@@ -140,7 +146,8 @@ enum LocalSupabase {
     #expect(snapshot.team.id == "bills")
 }
 
-@Test(.enabled(if: LocalSupabase.isReachable)) func authenticatedWriteToTeamsIsDenied() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func authenticatedWriteToTeamsIsDenied() async throws
+{
     let email = "t4-rls-\(UUID().uuidString)@example.com"
     let authClient = LocalSupabase.client(key: LocalSupabase.anonKey)
     _ = try await authClient.auth.signUp(email: email, password: "test-password-123")
@@ -155,7 +162,9 @@ enum LocalSupabase {
 // Owner-only override operation — one RPC call owns identity through auth.uid(), validates
 // the complete ordered group before writing, and leaves the prior group intact after a
 // rejected save. Random users isolate this test from parallel simulator runs.
-@Test(.enabled(if: LocalSupabase.isReachable)) func overrideActorMatrixAndAtomicValidation() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func overrideActorMatrixAndAtomicValidation()
+    async throws
+{
     let serviceClient = LocalSupabase.client(key: try LocalSupabase.serviceRoleKey())
     let anonymousClient = LocalSupabase.client(key: LocalSupabase.anonKey)
     let ownerClient = LocalSupabase.client(key: LocalSupabase.anonKey)
@@ -222,14 +231,15 @@ enum LocalSupabase {
             .select("user_id, team_id, position, player_ids")
             .eq("user_id", value: ownerAuth.user.id)
             .execute().value
-        #expect(serviceRows == [
-            OverrideRow(
-                userId: ownerAuth.user.id,
-                teamId: "bills",
-                position: "QB",
-                playerIds: ["player-a", "player-b"]
-            )
-        ])
+        #expect(
+            serviceRows == [
+                OverrideRow(
+                    userId: ownerAuth.user.id,
+                    teamId: "bills",
+                    position: "QB",
+                    playerIds: ["player-a", "player-b"]
+                )
+            ])
 
         let duplicate = UpsertParams(
             pTeamId: "bills",
@@ -245,14 +255,15 @@ enum LocalSupabase {
             .eq("team_id", value: "bills")
             .eq("position", value: "QB")
             .execute().value
-        #expect(ownerRows == [
-            OverrideRow(
-                userId: ownerAuth.user.id,
-                teamId: "bills",
-                position: "QB",
-                playerIds: ["player-a", "player-b"]
-            )
-        ])
+        #expect(
+            ownerRows == [
+                OverrideRow(
+                    userId: ownerAuth.user.id,
+                    teamId: "bills",
+                    position: "QB",
+                    playerIds: ["player-a", "player-b"]
+                )
+            ])
     } catch {
         try? await serviceClient.auth.admin.deleteUser(id: ownerAuth.user.id)
         try? await serviceClient.auth.admin.deleteUser(id: nonOwnerAuth.user.id)
@@ -271,7 +282,9 @@ enum LocalSupabase {
 // theoretical successful write would land under a row the real user's id could never
 // read back. This proves a real signed-in write both succeeds and round-trips through
 // a *second*, freshly-constructed service instance (simulating an app restart).
-@Test(.enabled(if: LocalSupabase.isReachable)) func favoriteSettingsSurviveARestartWhenSignedIn() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func favoriteSettingsSurviveARestartWhenSignedIn()
+    async throws
+{
     let serviceClient = LocalSupabase.client(key: try LocalSupabase.serviceRoleKey())
     let ownerClient = LocalSupabase.client(key: LocalSupabase.anonKey)
     let ownerAuth = try await ownerClient.auth.signUp(
@@ -289,7 +302,8 @@ enum LocalSupabase {
         #expect(restarted.favoriteTeamId == "bills")
         #expect(restarted.startOnFavorite == true)
 
-        struct SettingsRow: Decodable, Equatable { let userId: UUID
+        struct SettingsRow: Decodable, Equatable {
+            let userId: UUID
             enum CodingKeys: String, CodingKey { case userId = "user_id" }
         }
         let serviceRows: [SettingsRow] = try await serviceClient.from("user_settings")
@@ -327,7 +341,8 @@ enum LocalSupabase {
         try await client.from("teams").update(["name": original]).eq("id", value: "bills").execute()
         #expect(writeResponse == [NameOnly(id: "bills", name: "RLS Test Write")])
     } catch {
-        _ = try? await client.from("teams").update(["name": original]).eq("id", value: "bills").execute()
+        _ = try? await client.from("teams").update(["name": original]).eq("id", value: "bills")
+            .execute()
         throw error
     }
 }
@@ -335,7 +350,8 @@ enum LocalSupabase {
 // Not-found actor-independent behavior — confirms DepthError.notFound, not a crash or a
 // bare decoding failure, for a team id that doesn't exist.
 @Test(.enabled(if: LocalSupabase.isReachable)) func unknownTeamIdMapsToNotFound() async throws {
-    let repository = SupabaseDepthRepository(client: LocalSupabase.client(key: LocalSupabase.anonKey))
+    let repository = SupabaseDepthRepository(
+        client: LocalSupabase.client(key: LocalSupabase.anonKey))
     await #expect(throws: DepthError.notFound) {
         _ = try await repository.teamSnapshot(teamId: "does-not-exist")
     }
@@ -343,14 +359,16 @@ enum LocalSupabase {
 
 // T5 additions to the repository seam — same public-read RLS shape as teamSnapshot.
 @Test(.enabled(if: LocalSupabase.isReachable)) func anonymousCanReadTeamList() async throws {
-    let repository = SupabaseDepthRepository(client: LocalSupabase.client(key: LocalSupabase.anonKey))
+    let repository = SupabaseDepthRepository(
+        client: LocalSupabase.client(key: LocalSupabase.anonKey))
     let teams = try await repository.teams()
     #expect(teams.count == 32)
     #expect(teams.contains { $0.id == "bills" })
 }
 
 @Test(.enabled(if: LocalSupabase.isReachable)) func anonymousCanReadAppConfig() async throws {
-    let repository = SupabaseDepthRepository(client: LocalSupabase.client(key: LocalSupabase.anonKey))
+    let repository = SupabaseDepthRepository(
+        client: LocalSupabase.client(key: LocalSupabase.anonKey))
     let config = try await repository.appConfig()
     #expect(config.minimumSupportedBuild >= 1)
 }
@@ -359,7 +377,8 @@ enum LocalSupabase {
 // relies on RLS to filter the row out) — Postgres denies this at the privilege level
 // before RLS is even evaluated, so the failure mode here is a thrown error, not an
 // empty-array response.
-@Test(.enabled(if: LocalSupabase.isReachable)) func anonymousWriteToAppConfigIsDenied() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func anonymousWriteToAppConfigIsDenied() async throws
+{
     let client = LocalSupabase.client(key: LocalSupabase.anonKey)
     await #expect(throws: (any Error).self) {
         try await client.from("app_config")
@@ -382,7 +401,9 @@ enum LocalSupabase {
 // `created_at` explicitly, forging a timestamp that corrupts time-based aggregate
 // analytics. The grant is column-restricted to event_name/error_category, so any
 // attempt to also set created_at (or id) must be denied at the privilege level.
-@Test(.enabled(if: LocalSupabase.isReachable)) func anonymousCannotForgeAnEventTimestamp() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func anonymousCannotForgeAnEventTimestamp()
+    async throws
+{
     let client = LocalSupabase.client(key: LocalSupabase.anonKey)
     await #expect(throws: (any Error).self) {
         try await client.from("app_events")
@@ -398,14 +419,16 @@ enum LocalSupabase {
     }
 }
 
-@Test(.enabled(if: LocalSupabase.isReachable)) func insertingAnUnknownEventNameIsRejectedByTheCheckConstraint() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable))
+func insertingAnUnknownEventNameIsRejectedByTheCheckConstraint() async throws {
     let client = LocalSupabase.client(key: LocalSupabase.anonKey)
     await #expect(throws: (any Error).self) {
         try await client.from("app_events").insert(["event_name": "not_a_real_event"]).execute()
     }
 }
 
-@Test(.enabled(if: LocalSupabase.isReachable)) func insertingAnErrorCategoryWithoutTheErrorEventNameIsRejected() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable))
+func insertingAnErrorCategoryWithoutTheErrorEventNameIsRejected() async throws {
     let client = LocalSupabase.client(key: LocalSupabase.anonKey)
     await #expect(throws: (any Error).self) {
         try await client.from("app_events")
@@ -414,7 +437,9 @@ enum LocalSupabase {
     }
 }
 
-@Test(.enabled(if: LocalSupabase.isReachable)) func serviceRoleCanInsertAndReadAppEvents() async throws {
+@Test(.enabled(if: LocalSupabase.isReachable)) func serviceRoleCanInsertAndReadAppEvents()
+    async throws
+{
     let client = LocalSupabase.client(key: try LocalSupabase.serviceRoleKey())
     try await client.from("app_events").insert(["event_name": "override_saved"]).execute()
 

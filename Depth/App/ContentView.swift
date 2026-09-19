@@ -36,16 +36,19 @@ struct ContentView: View {
             } else if updateGate.isBlocked {
                 BlockingUpdateView(maintenanceMessage: updateGate.maintenanceMessage)
             } else {
-                RootTabView(sessionStore: authSessionStore, currentTeamStore: currentTeamStore, onboarding: onboarding)
-                    // Mounted at the tab-bar's own level (not further up, past
-                    // `.preferredColorScheme`/`.task` below) so `.coachmarkAnchor` tags
-                    // registered anywhere inside any tab's content still resolve —
-                    // SwiftUI preferences only bubble up through the view tree they're
-                    // attached to, and BlockingUpdateView's branch above never mounts
-                    // any tagged view anyway.
-                    .coachmarkOverlay { anchors, proxy in
-                        CoachmarkOverlayView(controller: onboarding, anchors: anchors, proxy: proxy)
-                    }
+                RootTabView(
+                    sessionStore: authSessionStore, currentTeamStore: currentTeamStore,
+                    onboarding: onboarding
+                )
+                // Mounted at the tab-bar's own level (not further up, past
+                // `.preferredColorScheme`/`.task` below) so `.coachmarkAnchor` tags
+                // registered anywhere inside any tab's content still resolve —
+                // SwiftUI preferences only bubble up through the view tree they're
+                // attached to, and BlockingUpdateView's branch above never mounts
+                // any tagged view anyway.
+                .coachmarkOverlay { anchors, proxy in
+                    CoachmarkOverlayView(controller: onboarding, anchors: anchors, proxy: proxy)
+                }
             }
         }
         .fullScreenCover(isPresented: $isWelcomeShowing) {

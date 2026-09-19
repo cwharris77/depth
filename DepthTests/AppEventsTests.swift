@@ -22,10 +22,13 @@ func appEventEncodesFullMarketingVersion(version: String) throws {
         AppEventPayload(event: .error(category: "offline"), appVersion: "1.4.2")
     )
     let payload = try #require(JSONSerialization.jsonObject(with: data) as? [String: String])
-    #expect(payload == ["event_name": "error", "error_category": "offline", "app_version": "1.4.2"])
+    #expect(
+        payload == ["event_name": "error", "error_category": "offline", "app_version": "1.4.2"])
 }
 
-@Test(arguments: [nil, "", "1.4.2 (123)", "iOS 26.5", "1.2.3.4", "1.4.2\n", String(repeating: "1", count: 33)])
+@Test(arguments: [
+    nil, "", "1.4.2 (123)", "iOS 26.5", "1.2.3.4", "1.4.2\n", String(repeating: "1", count: 33),
+])
 func appEventOmitsUnavailableOrInvalidVersion(version: String?) throws {
     let data = try JSONEncoder().encode(AppEventPayload(event: .appLaunch, appVersion: version))
     let payload = try #require(JSONSerialization.jsonObject(with: data) as? [String: String])
@@ -88,11 +91,17 @@ private actor FakeTeamsRepository: DepthRepository {
 
     func teams() async throws -> [Team] { try teamsResult.get() }
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot { throw DepthError.notFound }
-    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot { throw DepthError.notFound }
-    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        throw DepthError.notFound
+    }
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        throw DepthError.notFound
+    }
     func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
-    func appConfig() async throws -> AppConfig { AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil) }
+    func appConfig() async throws -> AppConfig {
+        AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)
+    }
 }
 
 private func inMemoryStore() -> CachedSnapshotStore {
@@ -137,18 +146,26 @@ private func team(id: String = "bills") -> Team {
 private actor FakeSnapshotRepository: DepthRepository {
     var snapshotResults: [String: Result<TeamSnapshot, Error>]
 
-    init(snapshotResults: [String: Result<TeamSnapshot, Error>]) { self.snapshotResults = snapshotResults }
+    init(snapshotResults: [String: Result<TeamSnapshot, Error>]) {
+        self.snapshotResults = snapshotResults
+    }
 
     func teams() async throws -> [Team] { [] }
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot {
         guard let result = snapshotResults[teamId] else { throw DepthError.notFound }
         return try result.get()
     }
-    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot { throw DepthError.notFound }
-    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        throw DepthError.notFound
+    }
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        throw DepthError.notFound
+    }
     func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
-    func appConfig() async throws -> AppConfig { AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil) }
+    func appConfig() async throws -> AppConfig {
+        AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)
+    }
 
     func setSnapshotResult(_ result: Result<TeamSnapshot, Error>, forTeam teamId: String) {
         snapshotResults[teamId] = result

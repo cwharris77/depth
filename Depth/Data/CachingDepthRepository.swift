@@ -147,7 +147,8 @@ actor CachingDepthRepository: DepthRepository {
         defer { inFlightScheduleFetches[dedupKey] = nil }
         let schedule = try await task.value
         if let season {
-            try? await store.saveTeamSchedule(schedule, teamId: teamId, season: season, cachedAt: Date())
+            try? await store.saveTeamSchedule(
+                schedule, teamId: teamId, season: season, cachedAt: Date())
         } else {
             // Prime the nil/default row AND the resolved concrete-season row so both the
             // first-visit path and a later explicit-season read are warm.

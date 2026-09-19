@@ -52,10 +52,11 @@ struct DepthOverrideMergeTests {
             ]
         )
         #expect(plan.pushes == ["giants"])
-        #expect(plan.pulls == [
-            "jets": [.wr: ["both-server"]],
-            "eagles": [.rb: ["server-only"]],
-        ])
+        #expect(
+            plan.pulls == [
+                "jets": [.wr: ["both-server"]],
+                "eagles": [.rb: ["server-only"]],
+            ])
     }
 }
 

@@ -14,7 +14,8 @@ private func channel(_ value: Double) -> Double {
 }
 
 private func luminance(_ hex: String) -> Double {
-    let cleaned = hex.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "#", with: "")
+    let cleaned = hex.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(
+        of: "#", with: "")
     var value: UInt64 = 0
     Scanner(string: cleaned).scanHexInt64(&value)
     let r = Double((value >> 16) & 0xFF)

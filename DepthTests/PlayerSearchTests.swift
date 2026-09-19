@@ -17,7 +17,7 @@ private func teamDTO(
             TeamColorUniformDTO(
                 kind: "home", isCurrent: true,
                 colorPrimary: "#00338d", colorSecondary: "#d50a0a", colorAccent: "#d50a0a"
-            ),
+            )
         ]
     )
 }
@@ -63,8 +63,11 @@ private func hit(
 
     @Test func normalizeRejectsInputPastTheLengthCapAfterNormalization() {
         let max = PlayerSearch.maxQueryLength
-        #expect(PlayerSearch.normalizePlayerSearchQuery(String(repeating: "x", count: max + 1)) == nil)
-        #expect(PlayerSearch.normalizePlayerSearchQuery(String(repeating: "x", count: max)) == String(repeating: "x", count: max))
+        #expect(
+            PlayerSearch.normalizePlayerSearchQuery(String(repeating: "x", count: max + 1)) == nil)
+        #expect(
+            PlayerSearch.normalizePlayerSearchQuery(String(repeating: "x", count: max))
+                == String(repeating: "x", count: max))
     }
 
     @Test func escapeLikeEscapesWildcardsSoInputMatchesLiterally() {
@@ -85,9 +88,13 @@ private func hit(
     }
 
     @Test func positionGroupResolvesSecondaryAndAcceptsSpacingAndHyphens() {
-        #expect(PlayerSearch.positionGroupPositions("secondary") == [.cb, .lcb, .rcb, .nb, .s, .ss, .fs])
+        #expect(
+            PlayerSearch.positionGroupPositions("secondary") == [
+                .cb, .lcb, .rcb, .nb, .s, .ss, .fs,
+            ])
         #expect(PlayerSearch.positionGroupPositions("D-Line") == [.de, .lde, .rde, .dt, .nt])
-        #expect(PlayerSearch.positionGroupPositions("  o line  ") == [.lt, .lg, .c, .rg, .rt, .ot, .g])
+        #expect(
+            PlayerSearch.positionGroupPositions("  o line  ") == [.lt, .lg, .c, .rg, .rt, .ot, .g])
     }
 
     @Test func positionGroupReturnsNilForANonGroupQuery() {

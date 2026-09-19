@@ -99,8 +99,12 @@ final class PerformanceMetricsTests: XCTestCase {
         // would still record a short duration and pass — asserting the round trip
         // actually succeeded, not just that it was fast, closes that gap.
         XCTAssertNil(thrown, "cache write/read round trip should succeed")
-        XCTAssertEqual(readSnapshot?.team.id, "bills", "the read should return the snapshot just written, not a cache miss")
-        XCTAssertLessThan(writeElapsed, .milliseconds(500), "an in-memory SwiftData cache write should be near-instant")
+        XCTAssertEqual(
+            readSnapshot?.team.id, "bills",
+            "the read should return the snapshot just written, not a cache miss")
+        XCTAssertLessThan(
+            writeElapsed, .milliseconds(500),
+            "an in-memory SwiftData cache write should be near-instant")
         XCTAssertLessThan(
             readElapsed, .milliseconds(200),
             "the warm-cache read alone should be a small fraction of the <1s end-to-end warm-launch budget"

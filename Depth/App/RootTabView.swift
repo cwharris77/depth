@@ -57,7 +57,8 @@ struct RootTabView: View {
                     // RootTabView owns both the tab selection and the route store the
                     // Compare tab consumes.
                     onOpenCompare: { teamAId, teamBId in
-                        DepthEnvironment.compareRouteStore.request(teamAId: teamAId, teamBId: teamBId)
+                        DepthEnvironment.compareRouteStore.request(
+                            teamAId: teamAId, teamBId: teamBId)
                         onboarding.activeTab = .compare
                     }
                 )
@@ -95,7 +96,10 @@ struct RootTabView: View {
         // tab color is not controllable through SwiftUI's public TabView/Tab API on this
         // iOS version without a UIKit appearance bridge — left at the system default
         // deliberately rather than reaching for private API.
-        .tint(currentTeamStore.colors.map { Color(hex: TeamSurfaces.mark($0)) } ?? DesignTokens.Colors.accent)
+        .tint(
+            currentTeamStore.colors.map { Color(hex: TeamSurfaces.mark($0)) }
+                ?? DesignTokens.Colors.accent
+        )
         // DEP-565 (1C): the depth-chart edit bar replaces the tab bar for an edit session by
         // covering it, not hiding it — see CurrentTeamStore.editBar. Drawn here because an
         // overlay on the TabView sits above its tab bar; nothing inside a tab can. The solid

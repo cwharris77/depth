@@ -119,6 +119,7 @@ Depth/
   bug you introduced by fighting the type system, not one it missed — don't add
   `@unchecked Sendable` or `nonisolated(unsafe)` to silence a warning without
   understanding why it fired.
+- **Swift style is fixed by tool, never gated (DEP-604).** `.swift-format` (4-space indent, 100 columns) is the only authority: `.githooks/pre-commit` rewrites and re-stages staged `.swift` files, and `scripts/format-swift.sh [files]` does the same by hand — run it, don't hand-format. There is deliberately **no CI format check** (`latest-stable` Xcode's swift-format can drift from a local one). `.swiftlint.yml` is a small set of *bug-pattern* rules (force unwrap/try/cast, unhandled throwing `Task`, weak delegates, unused closure parameters) that only warn — a new force unwrap needs a reason or a rewrite, not a `swiftlint:disable`. Enable the hook once per clone (shared by all worktrees): `git config core.hooksPath .githooks`, and `brew install swiftlint` for the lint half.
 - **Two test frameworks, split by target.** `DepthTests` (data/domain, unit-level) uses
   **Swift Testing** (`import Testing`, `@Test func …`, `#expect(...)`) — not XCTest.
   `DepthUITests`/`AccessibilityUITests`/`ShareUITests` use **XCTest**

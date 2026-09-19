@@ -42,7 +42,9 @@ enum HistoricalRosterMapper {
     static func map(team: Team, rows: [HistoricalRosterRowDTO]) throws -> TeamSnapshot {
         let result = try mapWithDiagnostics(team: team, rows: rows)
         for drop in result.dropped {
-            logger.error("historical roster drop \(drop.gsisId, privacy: .public): \(String(describing: drop.reason), privacy: .public)")
+            logger.error(
+                "historical roster drop \(drop.gsisId, privacy: .public): \(String(describing: drop.reason), privacy: .public)"
+            )
         }
         return result.snapshot
     }
@@ -58,18 +60,21 @@ enum HistoricalRosterMapper {
 
         for row in rows {
             guard let position = Position(rawValue: row.position) else {
-                dropped.append(DroppedRow(gsisId: row.gsisId, reason: .unknownPosition(row.position)))
+                dropped.append(
+                    DroppedRow(gsisId: row.gsisId, reason: .unknownPosition(row.position)))
                 continue
             }
             guard row.depthRank >= 1 else {
-                dropped.append(DroppedRow(gsisId: row.gsisId, reason: .invalidDepthRank(row.depthRank)))
+                dropped.append(
+                    DroppedRow(gsisId: row.gsisId, reason: .invalidDepthRank(row.depthRank)))
                 continue
             }
             players.append(
                 Player(
                     id: "gsis:\(row.gsisId)@\(row.season)", name: row.name, position: position,
                     depthRank: row.depthRank, number: row.number ?? 0, order: row.playerOrder,
-                    status: row.depthRank == 1 ? .starter : .backup, age: 0, college: row.college ?? "",
+                    status: row.depthRank == 1 ? .starter : .backup, age: 0,
+                    college: row.college ?? "",
                     experience: 0, height: row.height ?? "", weight: row.weight ?? 0,
                     bio: "\(row.season) · \(team.city) \(team.name)", photoUrl: nil
                 )
@@ -99,9 +104,11 @@ enum HistoricalRosterMapper {
             (.ls, "LS", 50, 68), (.k, "K", 38, 80), (.p, "P", 62, 80),
         ]
         return layout.compactMap { position, label, x, y in
-            guard let player = players.first(where: { $0.position == position && $0.depthRank == 1 })
+            guard
+                let player = players.first(where: { $0.position == position && $0.depthRank == 1 })
             else { return nil }
-            return SpecialSlot(id: "st-\(label.lowercased())", playerId: player.id, x: x, y: y, label: label)
+            return SpecialSlot(
+                id: "st-\(label.lowercased())", playerId: player.id, x: x, y: y, label: label)
         }
     }
 }

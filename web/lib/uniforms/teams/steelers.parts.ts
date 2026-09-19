@@ -50,8 +50,6 @@ import {
 import { compileParts, type PartLayer, type TeamPartsDefinition, type UniformPart } from './parts';
 import { LEGACY_ROUNDED_COLLAR_PATH } from './shared';
 
-const COLLAR_PATH = 'M206,388 L294,455 L386,388';
-
 const fill = (
   id: string,
   surface:

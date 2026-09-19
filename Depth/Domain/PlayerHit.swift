@@ -25,7 +25,8 @@ enum PlayerSearch {
     /// over the length cap — search is unauthenticated, so nothing user-supplied may
     /// reach Postgres unvetted.
     static func normalizePlayerSearchQuery(_ raw: String) -> String? {
-        let q = raw
+        let q =
+            raw
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .split(whereSeparator: \.isWhitespace)
             .joined(separator: " ")
@@ -64,7 +65,8 @@ enum PlayerSearch {
     /// member positions, or nil when the query isn't a known group. Keys are normalized
     /// (lowercased, spaces/hyphens stripped), matching web's POSITION_GROUPS.
     static func positionGroupPositions(_ query: String) -> [Position]? {
-        let key = query
+        let key =
+            query
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: "-", with: "")
             .filter { !$0.isWhitespace }

@@ -29,10 +29,12 @@ actor SupabaseDepthRepository: DepthRepository {
         // Signpost interval around the network query + JSON decode (Performance Review
         // #5/#6's "query, decode" budget: p95 <1.5s good Wi-Fi, <3s constrained).
         let signpostID = DepthSignposts.signposter.makeSignpostID()
-        let state = DepthSignposts.signposter.beginInterval(DepthSignposts.teamSnapshotQuery, id: signpostID)
+        let state = DepthSignposts.signposter.beginInterval(
+            DepthSignposts.teamSnapshotQuery, id: signpostID)
         defer { DepthSignposts.signposter.endInterval(DepthSignposts.teamSnapshotQuery, state) }
         do {
-            let dto: TeamDTO = try await client
+            let dto: TeamDTO =
+                try await client
                 .from("teams")
                 .select(Self.teamSnapshotSelect)
                 .eq("id", value: teamId)
@@ -60,7 +62,8 @@ actor SupabaseDepthRepository: DepthRepository {
 
     private static let teamStatsSelect =
         "season, overall_wins, overall_losses, overall_ties, win_percent, streak, playoff_seed, home_wins, home_losses, road_wins, road_losses, division_wins, division_losses, conference_wins, conference_losses, points_for, points_against, point_differential"
-    private static let teamStatsTeamSelect = "id, abbrev, city, name, conference, division, logo_url, logo_dark_url, coach_name, coach_experience, uniforms(kind, is_current, color_primary, color_secondary, color_accent)"
+    private static let teamStatsTeamSelect =
+        "id, abbrev, city, name, conference, division, logo_url, logo_dark_url, coach_name, coach_experience, uniforms(kind, is_current, color_primary, color_secondary, color_accent)"
     private static let teamMatchupMetricsSelect =
         "season, updated_at, passing_yards, rushing_yards, games, attempts, carries, sacks_suffered, passing_epa, rushing_epa, passing_interceptions, fumbles_lost_total, def_sacks, def_qb_hits, def_interceptions, def_fumbles, def_fumbles_forced, fg_made, fg_att, pt_att, pt_net_yards, punt_returns, punt_return_yards, kickoff_returns, kickoff_return_yards, special_teams_tds"
     private static let teamCoachSeasonsSelect = "season, coach_name, coach_experience"
@@ -97,7 +100,8 @@ actor SupabaseDepthRepository: DepthRepository {
 
     func teams() async throws -> [Team] {
         do {
-            let rows: [TeamListRowDTO] = try await client
+            let rows: [TeamListRowDTO] =
+                try await client
                 .from("teams")
                 .select(Self.teamStatsTeamSelect)
                 .order("city")
@@ -117,13 +121,15 @@ actor SupabaseDepthRepository: DepthRepository {
 
     func listUniforms() async throws -> [UniformListing] {
         do {
-            async let teamsResult: [TeamListRowDTO] = client
+            async let teamsResult: [TeamListRowDTO] =
+                client
                 .from("teams")
                 .select(Self.teamListSelect)
                 .order("city")
                 .execute()
                 .value
-            async let uniformRows: [UniformListingRowDTO] = client
+            async let uniformRows: [UniformListingRowDTO] =
+                client
                 .from("uniforms")
                 .select(Self.uniformListingSelect)
                 .order("team_id")
@@ -136,7 +142,9 @@ actor SupabaseDepthRepository: DepthRepository {
             var listings: [UniformListing] = []
             for row in uniRows {
                 guard let team = teamsById[row.teamId] else { continue }
-                listings.append(try TeamSnapshotMapper.mapUniformListing(row, team: TeamSnapshotMapper.mapTeamListRow(team)))
+                listings.append(
+                    try TeamSnapshotMapper.mapUniformListing(
+                        row, team: TeamSnapshotMapper.mapTeamListRow(team)))
             }
             return listings
         } catch let error as DepthError {
@@ -157,34 +165,40 @@ actor SupabaseDepthRepository: DepthRepository {
             throw DepthError.validation("season")
         }
         do {
-            let schedules: [ScheduleDTO] = try await client
+            let schedules: [ScheduleDTO] =
+                try await client
                 .from("schedules")
                 .select(Self.scheduleSelect)
                 .eq("team_id", value: teamId)
                 .order("season", ascending: false)
                 .execute()
                 .value
-            guard let selectedSchedule = season.map({ requested in
-                schedules.first(where: { $0.season == requested })
-            }) ?? schedules.first else {
+            guard
+                let selectedSchedule = season.map({ requested in
+                    schedules.first(where: { $0.season == requested })
+                }) ?? schedules.first
+            else {
                 throw DepthError.notFound
             }
 
-            async let homeGames: [GameDTO] = client
+            async let homeGames: [GameDTO] =
+                client
                 .from("games")
                 .select(Self.gameSelect)
                 .eq("season", value: selectedSchedule.season)
                 .eq("home_team_id", value: teamId)
                 .execute()
                 .value
-            async let awayGames: [GameDTO] = client
+            async let awayGames: [GameDTO] =
+                client
                 .from("games")
                 .select(Self.gameSelect)
                 .eq("season", value: selectedSchedule.season)
                 .eq("away_team_id", value: teamId)
                 .execute()
                 .value
-            async let seasonStats: [TeamStatsRowDTO] = client
+            async let seasonStats: [TeamStatsRowDTO] =
+                client
                 .from("team_stats")
                 .select(Self.teamStatsSelect)
                 .eq("team_id", value: teamId)
@@ -217,14 +231,16 @@ actor SupabaseDepthRepository: DepthRepository {
             throw DepthError.validation("season")
         }
         do {
-            let team: TeamListRowDTO = try await client
+            let team: TeamListRowDTO =
+                try await client
                 .from("teams")
                 .select(Self.teamListSelect)
                 .eq("id", value: teamId)
                 .single()
                 .execute()
                 .value
-            let rows: [HistoricalRosterRowDTO] = try await client
+            let rows: [HistoricalRosterRowDTO] =
+                try await client
                 .from("roster_history")
                 .select(Self.historicalRosterSelect)
                 .eq("team_id", value: teamId)
@@ -234,7 +250,8 @@ actor SupabaseDepthRepository: DepthRepository {
                 .execute()
                 .value
             guard !rows.isEmpty else { throw DepthError.notFound }
-            return try HistoricalRosterMapper.map(team: TeamSnapshotMapper.mapTeamListRow(team), rows: rows)
+            return try HistoricalRosterMapper.map(
+                team: TeamSnapshotMapper.mapTeamListRow(team), rows: rows)
         } catch let error as DepthError {
             throw error
         } catch let error as PostgrestError {
@@ -255,28 +272,32 @@ actor SupabaseDepthRepository: DepthRepository {
     /// states), not an error.
     func teamStats(teamId: String) async throws -> TeamStatsPage {
         do {
-            async let teamResult: TeamListRowDTO = client
+            async let teamResult: TeamListRowDTO =
+                client
                 .from("teams")
                 .select(Self.teamStatsTeamSelect)
                 .eq("id", value: teamId)
                 .single()
                 .execute()
                 .value
-            async let statsResult: [TeamStatsRowDTO] = client
+            async let statsResult: [TeamStatsRowDTO] =
+                client
                 .from("team_stats")
                 .select(Self.teamStatsSelect)
                 .eq("team_id", value: teamId)
                 .order("season", ascending: false)
                 .execute()
                 .value
-            async let matchupResult: [TeamMatchupMetricsDTO] = client
+            async let matchupResult: [TeamMatchupMetricsDTO] =
+                client
                 .from("team_season_stats")
                 .select(Self.teamMatchupMetricsSelect)
                 .eq("team_id", value: teamId)
                 .order("season", ascending: false)
                 .execute()
                 .value
-            async let coachResult: [TeamCoachSeasonDTO] = client
+            async let coachResult: [TeamCoachSeasonDTO] =
+                client
                 .from("team_coach_seasons")
                 .select(Self.teamCoachSeasonsSelect)
                 .eq("team_id", value: teamId)
@@ -300,7 +321,9 @@ actor SupabaseDepthRepository: DepthRepository {
                 rows: rows,
                 matchupRows: matchupRows,
                 coachRows: coachRows,
-                incomingCoach: team.coachName.flatMap { name in team.coachExperience == 0 ? TeamIncomingCoach(name: name) : nil },
+                incomingCoach: team.coachName.flatMap { name in
+                    team.coachExperience == 0 ? TeamIncomingCoach(name: name) : nil
+                },
                 recordRankRows: recordRankRows,
                 metricRankRows: metricRankRows,
                 teamId: teamId
@@ -325,11 +348,14 @@ actor SupabaseDepthRepository: DepthRepository {
     /// ranks with no error. Ordered by (team_id, season) so page boundaries are stable:
     /// PostgREST guarantees no row order without an explicit sort, so paging an
     /// unordered query can repeat or skip rows.
-    private func fetchAllRankRows<T: Decodable>(from table: String, select: String) async throws -> [T] {
+    private func fetchAllRankRows<T: Decodable>(from table: String, select: String) async throws
+        -> [T]
+    {
         var rows: [T] = []
         var offset = 0
         while true {
-            let page: [T] = try await client
+            let page: [T] =
+                try await client
                 .from(table)
                 .select(select)
                 .order("team_id")
@@ -351,7 +377,8 @@ actor SupabaseDepthRepository: DepthRepository {
         let state = TeamStatsMapper.nflSeasonState()
         let currentSeason = state.isOffseason ? state.upcomingSeason : state.upcomingSeason - 1
         do {
-            let rows: [RecentParticipationDTO] = try await client
+            let rows: [RecentParticipationDTO] =
+                try await client
                 .from("player_recent_snaps")
                 .select(Self.recentParticipationSelect)
                 .eq("team_id", value: teamId)
@@ -384,7 +411,8 @@ actor SupabaseDepthRepository: DepthRepository {
 
                     enum CodingKeys: String, CodingKey { case espnId = "espn_id" }
                 }
-                let row: HistoricalStatsPlayerDTO? = try await client
+                let row: HistoricalStatsPlayerDTO? =
+                    try await client
                     .from("roster_history")
                     .select("espn_id")
                     .eq("gsis_id", value: reference.gsisId)
@@ -398,7 +426,8 @@ actor SupabaseDepthRepository: DepthRepository {
             case .invalidHistorical:
                 return []
             }
-            let rows: [PlayerSeasonStatsDTO] = try await client
+            let rows: [PlayerSeasonStatsDTO] =
+                try await client
                 .from("player_stats")
                 .select(Self.playerStatsSelect)
                 .eq("player_id", value: resolvedId)
@@ -426,7 +455,8 @@ actor SupabaseDepthRepository: DepthRepository {
     /// throw — the page renders without the card, same posture as teamStats' try/catch).
     func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? {
         do {
-            let players: [RosterLeaderPlayerDTO] = try await client
+            let players: [RosterLeaderPlayerDTO] =
+                try await client
                 .from("players")
                 .select(Self.rosterLeaderPlayersSelect)
                 .eq("team_id", value: teamId)
@@ -434,7 +464,8 @@ actor SupabaseDepthRepository: DepthRepository {
                 .value
             guard !players.isEmpty else { return nil }
 
-            let stats: [RosterLeaderStatsDTO] = try await client
+            let stats: [RosterLeaderStatsDTO] =
+                try await client
                 .from("player_stats")
                 .select(Self.rosterLeaderStatsSelect)
                 .in("player_id", values: players.map(\.id))
@@ -461,15 +492,27 @@ actor SupabaseDepthRepository: DepthRepository {
         let limit = 8
 
         var searches: [Task<[PlayerSearchRowDTO], Error>] = [
-            Task { try await self.playersByName(escaped, limit: limit) },
-            Task { try await self.playersByCollege(escaped, limit: limit) },
-            Task { try await self.playersByPosition(escaped, limit: limit) },
+            Task<[PlayerSearchRowDTO], Error> {
+                try await self.playersByName(escaped, limit: limit)
+            },
+            Task<[PlayerSearchRowDTO], Error> {
+                try await self.playersByCollege(escaped, limit: limit)
+            },
+            Task<[PlayerSearchRowDTO], Error> {
+                try await self.playersByPosition(escaped, limit: limit)
+            },
         ]
         if let number = Int(normalized) {
-            searches.append(Task { try await self.playersByNumber(number, limit: limit) })
+            searches.append(
+                Task<[PlayerSearchRowDTO], Error> {
+                    try await self.playersByNumber(number, limit: limit)
+                })
         }
         if let group = PlayerSearch.positionGroupPositions(normalized) {
-            searches.append(Task { try await self.playersByPositions(group, limit: limit) })
+            searches.append(
+                Task<[PlayerSearchRowDTO], Error> {
+                    try await self.playersByPositions(group, limit: limit)
+                })
         }
 
         do {
@@ -508,7 +551,9 @@ actor SupabaseDepthRepository: DepthRepository {
             .value
     }
 
-    private func playersByCollege(_ pattern: String, limit: Int) async throws -> [PlayerSearchRowDTO] {
+    private func playersByCollege(_ pattern: String, limit: Int) async throws
+        -> [PlayerSearchRowDTO]
+    {
         try await client
             .from("players")
             .select(Self.playerSearchSelect)
@@ -518,7 +563,9 @@ actor SupabaseDepthRepository: DepthRepository {
             .value
     }
 
-    private func playersByPosition(_ pattern: String, limit: Int) async throws -> [PlayerSearchRowDTO] {
+    private func playersByPosition(_ pattern: String, limit: Int) async throws
+        -> [PlayerSearchRowDTO]
+    {
         try await client
             .from("players")
             .select(Self.playerSearchSelect)
@@ -538,7 +585,9 @@ actor SupabaseDepthRepository: DepthRepository {
             .value
     }
 
-    private func playersByPositions(_ positions: [Position], limit: Int) async throws -> [PlayerSearchRowDTO] {
+    private func playersByPositions(_ positions: [Position], limit: Int) async throws
+        -> [PlayerSearchRowDTO]
+    {
         try await client
             .from("players")
             .select(Self.playerSearchSelect)
@@ -550,7 +599,8 @@ actor SupabaseDepthRepository: DepthRepository {
 
     func appConfig() async throws -> AppConfig {
         do {
-            let dto: AppConfigDTO = try await client
+            let dto: AppConfigDTO =
+                try await client
                 .from("app_config")
                 .select("minimum_supported_build, maintenance_message")
                 .single()
@@ -573,9 +623,9 @@ actor SupabaseDepthRepository: DepthRepository {
     /// maps to `.server` rather than being silently swallowed.
     private static func mapPostgrestError(_ error: PostgrestError) -> DepthError {
         switch error.code {
-        case "PGRST116": // single() matched zero (or more than one) row
+        case "PGRST116":  // single() matched zero (or more than one) row
             return .notFound
-        case "42501": // insufficient_privilege — RLS denied
+        case "42501":  // insufficient_privilege — RLS denied
             return .permissionDenied
         default:
             return .server(error.message)

@@ -36,7 +36,8 @@ enum TeamLogoCache {
     /// already-seen logos render on the first frame instead of flashing initials.
     static func cachedImage(for url: URL) -> UIImage? {
         guard let cached = urlCache.cachedResponse(for: URLRequest(url: url)),
-              let image = UIImage(data: cached.data) else { return nil }
+            let image = UIImage(data: cached.data)
+        else { return nil }
         return image
     }
 

@@ -127,7 +127,10 @@ final class TeamStatsViewModel {
         await withTaskGroup(of: (Int, RosterLeaders?).self) { group in
             for stats in page.seasons {
                 group.addTask { [repository, teamId] in
-                    (stats.season, try? await repository.rosterLeaders(teamId: teamId, season: stats.season))
+                    (
+                        stats.season,
+                        try? await repository.rosterLeaders(teamId: teamId, season: stats.season)
+                    )
                 }
             }
             var result: [Int: RosterLeaders] = [:]

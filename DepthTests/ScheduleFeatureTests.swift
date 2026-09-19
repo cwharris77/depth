@@ -71,20 +71,22 @@ private func scheduleGame(
 }
 
 @Test func decodesScheduleAndGameDTOsFromSnakeCasePayloads() throws {
-    let scheduleData = Data("""
-    { "team_id": "bills", "season": 2025 }
-    """.utf8)
-    let gameData = Data("""
-    {
-      "game_id": "2025_01_BUF_NYJ", "season": 2025, "game_type": "REG", "week": 1,
-      "gameday": "2025-09-07", "home_team_id": "bills", "away_team_id": "jets",
-      "home_score": 20, "away_score": 20, "location": "Neutral",
-      "away_moneyline": 110, "home_moneyline": -130, "spread_line": 2.5,
-      "away_spread_odds": -108, "home_spread_odds": -112, "total_line": 44.5,
-      "under_odds": -105, "over_odds": -115,
-      "market_updated_at": "2026-08-24T20:00:00.000Z"
-    }
-    """.utf8)
+    let scheduleData = Data(
+        """
+        { "team_id": "bills", "season": 2025 }
+        """.utf8)
+    let gameData = Data(
+        """
+        {
+          "game_id": "2025_01_BUF_NYJ", "season": 2025, "game_type": "REG", "week": 1,
+          "gameday": "2025-09-07", "home_team_id": "bills", "away_team_id": "jets",
+          "home_score": 20, "away_score": 20, "location": "Neutral",
+          "away_moneyline": 110, "home_moneyline": -130, "spread_line": 2.5,
+          "away_spread_odds": -108, "home_spread_odds": -112, "total_line": 44.5,
+          "under_odds": -105, "over_odds": -115,
+          "market_updated_at": "2026-08-24T20:00:00.000Z"
+        }
+        """.utf8)
 
     let schedule = try JSONDecoder().decode(ScheduleDTO.self, from: scheduleData)
     let game = try JSONDecoder().decode(GameDTO.self, from: gameData)
@@ -114,7 +116,7 @@ private func scheduleGame(
                 spreadLine: 2.5, awaySpreadOdds: -108, homeSpreadOdds: -112,
                 totalLine: 44.5, underOdds: -105, overOdds: -115,
                 marketUpdatedAt: "2026-08-24T20:00:00.000Z"
-            ),
+            )
         ],
         teamsById: ["jets": scheduleTeam(id: "jets", abbrev: "NYJ")]
     )
@@ -145,7 +147,7 @@ private func scheduleGame(
                 homeMoneyline: -110, spreadLine: 0, awaySpreadOdds: -110,
                 homeSpreadOdds: -110, totalLine: 42.5,
                 marketUpdatedAt: "2026-08-24T20:00:00.000Z"
-            ),
+            )
         ],
         teamsById: ["jets": scheduleTeam(id: "jets", abbrev: "NYJ")]
     )
@@ -164,7 +166,7 @@ private func scheduleGame(
             scheduleGame(
                 id: "home-tie", week: 1, homeTeamId: "bills", awayTeamId: "jets",
                 homeScore: 20, awayScore: 20
-            ),
+            )
         ],
         teamsById: ["jets": scheduleTeam(id: "jets", abbrev: "NYJ")]
     )
@@ -208,7 +210,8 @@ private func scheduleGame(
                 homeScore: 27, awayScore: 20, gameday: "2026-01-11"
             ),
             scheduleGame(
-                id: "divisional", week: nil, gameType: "DIV", homeTeamId: "eagles", awayTeamId: "bills",
+                id: "divisional", week: nil, gameType: "DIV", homeTeamId: "eagles",
+                awayTeamId: "bills",
                 homeScore: 24, awayScore: 17, gameday: "2026-01-18"
             ),
         ],
@@ -242,7 +245,10 @@ private func scheduleGame(
     #expect(throws: DepthError.decoding("game missing-opponent: missing opponent jets")) {
         try ScheduleMapper.map(
             schedule: ScheduleDTO(teamId: "bills", season: 2025),
-            games: [scheduleGame(id: "missing-opponent", week: 1, homeTeamId: "bills", awayTeamId: "jets")],
+            games: [
+                scheduleGame(
+                    id: "missing-opponent", week: 1, homeTeamId: "bills", awayTeamId: "jets")
+            ],
             teamsById: [:]
         )
     }
@@ -256,7 +262,7 @@ private func scheduleGame(
                 week: 1, isBye: false, date: "2025-09-07", isHome: true,
                 opponent: scheduleTeam(id: "jets", abbrev: "NYJ"), teamScore: nil,
                 opponentScore: nil, result: nil
-            ),
+            )
         ]
     )
     let past = TeamSchedule(
@@ -266,7 +272,7 @@ private func scheduleGame(
                 week: 1, isBye: false, date: "2024-09-08", isHome: false,
                 opponent: scheduleTeam(id: "jets", abbrev: "NYJ"), teamScore: nil,
                 opponentScore: nil, result: nil
-            ),
+            )
         ]
     )
     let repository = ScheduleRepositoryFake(
@@ -368,15 +374,18 @@ private func scheduleGame(
 // Canvas 1d / DEP-120's trap on Schedule: no postseason run only means "missed" once the
 // season is decided. An upcoming or in-progress season says the playoffs haven't started,
 // even when team_stats' standings position currently reads as a playoff seed.
-private func playoffsSchedule(season: Int, result: ScheduleResult?, postseason: PostseasonRun?) -> TeamSchedule {
+private func playoffsSchedule(season: Int, result: ScheduleResult?, postseason: PostseasonRun?)
+    -> TeamSchedule
+{
     TeamSchedule(
         season: season,
         games: [
             ScheduleGame(
                 week: 1, isBye: false, date: "\(season)-09-07", isHome: true,
                 opponent: scheduleTeam(id: "jets", abbrev: "NYJ"),
-                teamScore: result == nil ? nil : 24, opponentScore: result == nil ? nil : 17, result: result
-            ),
+                teamScore: result == nil ? nil : 24, opponentScore: result == nil ? nil : 17,
+                result: result
+            )
         ],
         postseason: postseason
     )
@@ -443,9 +452,15 @@ private let emptyRun = PostseasonRun(
     let result = try ScheduleMapper.map(
         schedule: ScheduleDTO(teamId: "bills", season: 2025),
         games: [
-            scheduleGame(id: "w1", week: 1, homeTeamId: "bills", awayTeamId: "jets", homeScore: 24, awayScore: 17),
-            scheduleGame(id: "w2", week: 2, homeTeamId: "jets", awayTeamId: "bills", homeScore: 20, awayScore: 20),
-            scheduleGame(id: "w3", week: 3, homeTeamId: "jets", awayTeamId: "bills", homeScore: 30, awayScore: 10),
+            scheduleGame(
+                id: "w1", week: 1, homeTeamId: "bills", awayTeamId: "jets", homeScore: 24,
+                awayScore: 17),
+            scheduleGame(
+                id: "w2", week: 2, homeTeamId: "jets", awayTeamId: "bills", homeScore: 20,
+                awayScore: 20),
+            scheduleGame(
+                id: "w3", week: 3, homeTeamId: "jets", awayTeamId: "bills", homeScore: 30,
+                awayScore: 10),
         ],
         teamsById: [
             "bills": scheduleTeam(id: "bills", abbrev: "BUF"),
@@ -482,7 +497,7 @@ private func testSchedule(season: Int) -> TeamSchedule {
                 week: 1, isBye: false, date: "\(season)-09-07", isHome: true,
                 opponent: scheduleTeam(id: "jets", abbrev: "NYJ"), teamScore: nil,
                 opponentScore: nil, result: nil
-            ),
+            )
         ]
     )
 }

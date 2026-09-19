@@ -130,95 +130,105 @@ enum TeamStatsMetricFormat {
 
     /// Both rate metrics are stored 0-1 (see `TeamMatchupMetrics.sackRate`), so the
     /// multiply lives here rather than in every call site.
-    static let percent: @Sendable (Double) -> String = { value in String(format: "%.1f%%", value * 100) }
+    static let percent: @Sendable (Double) -> String = { value in
+        String(format: "%.1f%%", value * 100)
+    }
 }
 
 enum TeamStatsMetricCatalog {
     static let groups: [TeamStatsMetricGroup] = [
-        TeamStatsMetricGroup(id: "offense", title: "OFFENSE", metrics: [
-            TeamStatsMetricSpec(
-                id: "epa-per-play", label: "EPA / PLAY",
-                value: { $0.offensiveEPAPerPlay }, format: TeamStatsMetricFormat.signed(2),
-                rank: { $0.offensiveEPAPerPlay }, qualifier: .overall
-            ),
-            TeamStatsMetricSpec(
-                id: "sack-rate", label: "SACK RATE",
-                value: { $0.sackRate }, format: TeamStatsMetricFormat.percent,
-                rank: { $0.sackRate }, qualifier: .least
-            ),
-            TeamStatsMetricSpec(
-                id: "pass-epa", label: "PASS EPA",
-                value: { $0.passingEPA }, format: TeamStatsMetricFormat.decimal(1),
-                rank: { $0.passingEPA }, qualifier: .most
-            ),
-            TeamStatsMetricSpec(
-                id: "rush-epa", label: "RUSH EPA",
-                value: { $0.rushingEPA }, format: TeamStatsMetricFormat.decimal(1),
-                rank: { $0.rushingEPA }, qualifier: .most
-            ),
-            // Labelled INTS THROWN, not INTERCEPTIONS: DEFENSE carries its own
-            // INTERCEPTIONS row two groups down meaning the opposite thing. Compare's
-            // catalog labels both "INTERCEPTIONS" and gets away with it only because its
-            // unit lenses are never on screen together (Cooper, 2026-08-27).
-            TeamStatsMetricSpec(
-                id: "ints-thrown", label: "INTS THROWN",
-                value: { $0.passingInterceptions.map(Double.init) },
-                format: TeamStatsMetricFormat.integer,
-                rank: { $0.passingInterceptions }, qualifier: .least
-            ),
-            TeamStatsMetricSpec(
-                id: "fumbles-lost", label: "FUMBLES LOST",
-                value: { $0.fumblesLost.map(Double.init) },
-                format: TeamStatsMetricFormat.integer,
-                rank: { $0.fumblesLost }, qualifier: .least
-            ),
-        ]),
-        TeamStatsMetricGroup(id: "defense", title: "DEFENSE", metrics: [
-            TeamStatsMetricSpec(
-                id: "sacks", label: "SACKS",
-                value: { $0.defensiveSacks }, format: TeamStatsMetricFormat.decimal(1),
-                rank: { $0.defensiveSacks }, qualifier: .most
-            ),
-            TeamStatsMetricSpec(
-                id: "qb-hits-per-game", label: "QB HITS / GM",
-                value: { $0.quarterbackHitsPerGame }, format: TeamStatsMetricFormat.decimal(1),
-                rank: { $0.quarterbackHitsPerGame }, qualifier: .most
-            ),
-            TeamStatsMetricSpec(
-                id: "takeaways", label: "TAKEAWAYS",
-                value: { $0.defensiveTakeaways.map(Double.init) },
-                format: TeamStatsMetricFormat.integer,
-                rank: { $0.defensiveTakeaways }, qualifier: .most
-            ),
-            TeamStatsMetricSpec(
-                id: "interceptions", label: "INTERCEPTIONS",
-                value: { $0.defensiveInterceptions.map(Double.init) },
-                format: TeamStatsMetricFormat.integer,
-                rank: { $0.defensiveInterceptions }, qualifier: .most
-            ),
-        ]),
-        TeamStatsMetricGroup(id: "special", title: "SPECIAL TEAMS", metrics: [
-            TeamStatsMetricSpec(
-                id: "field-goal-pct", label: "FIELD GOAL %",
-                value: { $0.fieldGoalPercentage }, format: TeamStatsMetricFormat.percent,
-                rank: { $0.fieldGoalPercentage }, qualifier: .overall
-            ),
-            TeamStatsMetricSpec(
-                id: "net-punt-per-att", label: "NET PUNT / ATT",
-                value: { $0.netPuntYardsPerAttempt }, format: TeamStatsMetricFormat.decimal(1),
-                rank: { $0.netPuntYardsPerAttempt }, qualifier: .most
-            ),
-            TeamStatsMetricSpec(
-                id: "punt-ret-avg", label: "PUNT RET AVG",
-                value: { $0.puntReturnYardsPerAttempt }, format: TeamStatsMetricFormat.decimal(1),
-                rank: { $0.puntReturnYardsPerAttempt }, qualifier: .most
-            ),
-            TeamStatsMetricSpec(
-                id: "kick-ret-avg", label: "KICK RET AVG",
-                value: { $0.kickoffReturnYardsPerAttempt }, format: TeamStatsMetricFormat.decimal(1),
-                rank: { $0.kickoffReturnYardsPerAttempt }, qualifier: .most
-            ),
-        ]),
+        TeamStatsMetricGroup(
+            id: "offense", title: "OFFENSE",
+            metrics: [
+                TeamStatsMetricSpec(
+                    id: "epa-per-play", label: "EPA / PLAY",
+                    value: { $0.offensiveEPAPerPlay }, format: TeamStatsMetricFormat.signed(2),
+                    rank: { $0.offensiveEPAPerPlay }, qualifier: .overall
+                ),
+                TeamStatsMetricSpec(
+                    id: "sack-rate", label: "SACK RATE",
+                    value: { $0.sackRate }, format: TeamStatsMetricFormat.percent,
+                    rank: { $0.sackRate }, qualifier: .least
+                ),
+                TeamStatsMetricSpec(
+                    id: "pass-epa", label: "PASS EPA",
+                    value: { $0.passingEPA }, format: TeamStatsMetricFormat.decimal(1),
+                    rank: { $0.passingEPA }, qualifier: .most
+                ),
+                TeamStatsMetricSpec(
+                    id: "rush-epa", label: "RUSH EPA",
+                    value: { $0.rushingEPA }, format: TeamStatsMetricFormat.decimal(1),
+                    rank: { $0.rushingEPA }, qualifier: .most
+                ),
+                // Labelled INTS THROWN, not INTERCEPTIONS: DEFENSE carries its own
+                // INTERCEPTIONS row two groups down meaning the opposite thing. Compare's
+                // catalog labels both "INTERCEPTIONS" and gets away with it only because its
+                // unit lenses are never on screen together (Cooper, 2026-08-27).
+                TeamStatsMetricSpec(
+                    id: "ints-thrown", label: "INTS THROWN",
+                    value: { $0.passingInterceptions.map(Double.init) },
+                    format: TeamStatsMetricFormat.integer,
+                    rank: { $0.passingInterceptions }, qualifier: .least
+                ),
+                TeamStatsMetricSpec(
+                    id: "fumbles-lost", label: "FUMBLES LOST",
+                    value: { $0.fumblesLost.map(Double.init) },
+                    format: TeamStatsMetricFormat.integer,
+                    rank: { $0.fumblesLost }, qualifier: .least
+                ),
+            ]),
+        TeamStatsMetricGroup(
+            id: "defense", title: "DEFENSE",
+            metrics: [
+                TeamStatsMetricSpec(
+                    id: "sacks", label: "SACKS",
+                    value: { $0.defensiveSacks }, format: TeamStatsMetricFormat.decimal(1),
+                    rank: { $0.defensiveSacks }, qualifier: .most
+                ),
+                TeamStatsMetricSpec(
+                    id: "qb-hits-per-game", label: "QB HITS / GM",
+                    value: { $0.quarterbackHitsPerGame }, format: TeamStatsMetricFormat.decimal(1),
+                    rank: { $0.quarterbackHitsPerGame }, qualifier: .most
+                ),
+                TeamStatsMetricSpec(
+                    id: "takeaways", label: "TAKEAWAYS",
+                    value: { $0.defensiveTakeaways.map(Double.init) },
+                    format: TeamStatsMetricFormat.integer,
+                    rank: { $0.defensiveTakeaways }, qualifier: .most
+                ),
+                TeamStatsMetricSpec(
+                    id: "interceptions", label: "INTERCEPTIONS",
+                    value: { $0.defensiveInterceptions.map(Double.init) },
+                    format: TeamStatsMetricFormat.integer,
+                    rank: { $0.defensiveInterceptions }, qualifier: .most
+                ),
+            ]),
+        TeamStatsMetricGroup(
+            id: "special", title: "SPECIAL TEAMS",
+            metrics: [
+                TeamStatsMetricSpec(
+                    id: "field-goal-pct", label: "FIELD GOAL %",
+                    value: { $0.fieldGoalPercentage }, format: TeamStatsMetricFormat.percent,
+                    rank: { $0.fieldGoalPercentage }, qualifier: .overall
+                ),
+                TeamStatsMetricSpec(
+                    id: "net-punt-per-att", label: "NET PUNT / ATT",
+                    value: { $0.netPuntYardsPerAttempt }, format: TeamStatsMetricFormat.decimal(1),
+                    rank: { $0.netPuntYardsPerAttempt }, qualifier: .most
+                ),
+                TeamStatsMetricSpec(
+                    id: "punt-ret-avg", label: "PUNT RET AVG",
+                    value: { $0.puntReturnYardsPerAttempt },
+                    format: TeamStatsMetricFormat.decimal(1),
+                    rank: { $0.puntReturnYardsPerAttempt }, qualifier: .most
+                ),
+                TeamStatsMetricSpec(
+                    id: "kick-ret-avg", label: "KICK RET AVG",
+                    value: { $0.kickoffReturnYardsPerAttempt },
+                    format: TeamStatsMetricFormat.decimal(1),
+                    rank: { $0.kickoffReturnYardsPerAttempt }, qualifier: .most
+                ),
+            ]),
     ]
 
     /// Resolves every group against one season. Metrics whose source column is missing

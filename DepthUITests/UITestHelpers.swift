@@ -47,7 +47,8 @@ extension XCUIApplication {
     /// prologue for journeys that don't need to exercise the switcher itself.
     @discardableResult
     func launch(intoTeam teamId: String, timeout: TimeInterval = 15) -> Bool {
-        launchArguments = Self.hermeticLaunchArguments + ["\(Self.uiTestingStartTeamArgPrefix)\(teamId)"]
+        launchArguments =
+            Self.hermeticLaunchArguments + ["\(Self.uiTestingStartTeamArgPrefix)\(teamId)"]
         launch()
         return waitForDepthChart(timeout: timeout)
     }
@@ -67,11 +68,15 @@ extension XCUIApplication {
         file: StaticString = #filePath, line: UInt = #line
     ) {
         let switcher = buttons["team-switcher-button"]
-        XCTAssertTrue(switcher.waitForExistence(timeout: 15), "the depth chart header should expose the team switcher", file: file, line: line)
+        XCTAssertTrue(
+            switcher.waitForExistence(timeout: 15),
+            "the depth chart header should expose the team switcher", file: file, line: line)
         switcher.tap()
 
         let searchField = searchFields.firstMatch
-        XCTAssertTrue(searchField.waitForExistence(timeout: 10), "the switcher sheet should offer team search", file: file, line: line)
+        XCTAssertTrue(
+            searchField.waitForExistence(timeout: 10),
+            "the switcher sheet should offer team search", file: file, line: line)
         searchField.typeTextAfterFocusing(query, in: self)
 
         let teamRow = buttons["team-row-\(teamId)"]
@@ -82,7 +87,9 @@ extension XCUIApplication {
         // team-switch step (CI 2026-09-12, PositionReorderUITests, twice on cold runners
         // at a different staging test each time). 60s keeps this a real assertion while
         // covering a slow cold fetch; the assert still fails if the row never renders.
-        XCTAssertTrue(teamRow.waitForExistence(timeout: 60), "searching \"\(query)\" should surface the \(teamId) row", file: file, line: line)
+        XCTAssertTrue(
+            teamRow.waitForExistence(timeout: 60),
+            "searching \"\(query)\" should surface the \(teamId) row", file: file, line: line)
         teamRow.tap()
 
         XCTAssertTrue(
@@ -91,9 +98,12 @@ extension XCUIApplication {
         )
         XCTAssertTrue(
             switcher.waitForLabel(containing: expectedDisplayName),
-            "the switcher button should relabel for \(expectedDisplayName) once the switch completes", file: file, line: line
+            "the switcher button should relabel for \(expectedDisplayName) once the switch completes",
+            file: file, line: line
         )
-        XCTAssertTrue(waitForDepthChart(), "the chart should render for the newly selected team", file: file, line: line)
+        XCTAssertTrue(
+            waitForDepthChart(), "the chart should render for the newly selected team", file: file,
+            line: line)
     }
 }
 

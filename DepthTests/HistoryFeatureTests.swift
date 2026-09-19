@@ -45,7 +45,8 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
     expectedSeason: Int
 ) throws {
     let date = try #require(ISO8601DateFormatter().date(from: instant))
-    #expect(currentRosterSeason(at: date, calendar: Calendar(identifier: .gregorian)) == expectedSeason)
+    #expect(
+        currentRosterSeason(at: date, calendar: Calendar(identifier: .gregorian)) == expectedSeason)
 }
 
 @Test func historySeasonOptionsStartWithLiveRosterThenDescendTo1999() {
@@ -82,7 +83,10 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
 @Test func historicalMapperMapsBackupAndStoredMissingValuesWithoutCoercingOrder() throws {
     let roster = try HistoricalRosterMapper.map(
         team: historyTeam(),
-        rows: [historyRow(number: nil, college: nil, height: nil, weight: nil, depthRank: 3, playerOrder: 12)]
+        rows: [
+            historyRow(
+                number: nil, college: nil, height: nil, weight: nil, depthRank: 3, playerOrder: 12)
+        ]
     )
     let player = try #require(roster.players.first)
 
@@ -99,24 +103,28 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
     // The point of the tolerant decode: a row this build cannot represent costs that one
     // player, never the season. The strict version is what made every new roster_history
     // value a client-compatibility event (DEP-486's generic OT/G rollback).
-    let result = try HistoricalRosterMapper.mapWithDiagnostics(team: historyTeam(), rows: [
-        historyRow(gsisId: "good", name: "Readable", position: "QB"),
-        historyRow(gsisId: "bad-pos", position: "XX"),
-        historyRow(gsisId: "bad-rank", depthRank: 0),
-    ])
+    let result = try HistoricalRosterMapper.mapWithDiagnostics(
+        team: historyTeam(),
+        rows: [
+            historyRow(gsisId: "good", name: "Readable", position: "QB"),
+            historyRow(gsisId: "bad-pos", position: "XX"),
+            historyRow(gsisId: "bad-rank", depthRank: 0),
+        ])
 
     #expect(result.snapshot.players.map(\.name) == ["Readable"])
-    #expect(result.dropped == [
-        HistoricalRosterMapper.DroppedRow(gsisId: "bad-pos", reason: .unknownPosition("XX")),
-        HistoricalRosterMapper.DroppedRow(gsisId: "bad-rank", reason: .invalidDepthRank(0)),
-    ])
+    #expect(
+        result.dropped == [
+            HistoricalRosterMapper.DroppedRow(gsisId: "bad-pos", reason: .unknownPosition("XX")),
+            HistoricalRosterMapper.DroppedRow(gsisId: "bad-rank", reason: .invalidDepthRank(0)),
+        ])
 }
 
 @Test func historicalMapperAcceptsADepthRankPastThird() throws {
     // The 1...3 cap is a property of today's ingest (depth-heuristic.ts clamps with
     // Math.min(rank, 3) while player_order keeps the full ordering), not of the domain.
     // Decoding an uncapped season correctly is what removes the next gated release.
-    let roster = try HistoricalRosterMapper.map(team: historyTeam(), rows: [historyRow(depthRank: 7)])
+    let roster = try HistoricalRosterMapper.map(
+        team: historyTeam(), rows: [historyRow(depthRank: 7)])
     let player = try #require(roster.players.first)
 
     #expect(player.depthRank == 7)
@@ -126,23 +134,31 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
 @Test func historicalMapperStillFailsWhenNothingDecodes() {
     // A wholly unreadable season stays an error: an empty snapshot renders as a blank
     // field rather than a state the user can act on.
-    #expect(throws: DepthError.decoding("historical roster for seahawks: no decodable rows (2 of 2 dropped)")) {
-        try HistoricalRosterMapper.map(team: historyTeam(), rows: [
-            historyRow(gsisId: "a", position: "XX"),
-            historyRow(gsisId: "b", position: "YY"),
-        ])
+    #expect(
+        throws: DepthError.decoding(
+            "historical roster for seahawks: no decodable rows (2 of 2 dropped)")
+    ) {
+        try HistoricalRosterMapper.map(
+            team: historyTeam(),
+            rows: [
+                historyRow(gsisId: "a", position: "XX"),
+                historyRow(gsisId: "b", position: "YY"),
+            ])
     }
 }
 
 @Test func historicalSpecialTeamsUseOnlyRankOneKickerPunterAndLongSnapper() throws {
-    let roster = try HistoricalRosterMapper.map(team: historyTeam(), rows: [
-        historyRow(gsisId: "k1", name: "Kicker", position: "K", depthRank: 1),
-        historyRow(gsisId: "k2", name: "Backup Kicker", position: "K", depthRank: 2),
-        historyRow(gsisId: "p1", name: "Punter", position: "P", depthRank: 1),
-        historyRow(gsisId: "ls1", name: "Snapper", position: "LS", depthRank: 1),
-        historyRow(gsisId: "kr1", name: "Returner", position: "KR", depthRank: 1),
-    ])
-    let slots = Dictionary(uniqueKeysWithValues: roster.specialTeams.map { ($0.label, $0.playerId) })
+    let roster = try HistoricalRosterMapper.map(
+        team: historyTeam(),
+        rows: [
+            historyRow(gsisId: "k1", name: "Kicker", position: "K", depthRank: 1),
+            historyRow(gsisId: "k2", name: "Backup Kicker", position: "K", depthRank: 2),
+            historyRow(gsisId: "p1", name: "Punter", position: "P", depthRank: 1),
+            historyRow(gsisId: "ls1", name: "Snapper", position: "LS", depthRank: 1),
+            historyRow(gsisId: "kr1", name: "Returner", position: "KR", depthRank: 1),
+        ])
+    let slots = Dictionary(
+        uniqueKeysWithValues: roster.specialTeams.map { ($0.label, $0.playerId) })
 
     #expect(slots["K"] == "gsis:k1@2013")
     #expect(slots["P"] == "gsis:p1@2013")
@@ -155,9 +171,11 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
 }
 
 @Test func historicalSpecialTeamsOmitASlotThePastSeasonCannotSeat() throws {
-    let roster = try HistoricalRosterMapper.map(team: historyTeam(), rows: [
-        historyRow(gsisId: "p1", name: "Punter", position: "P", depthRank: 1),
-    ])
+    let roster = try HistoricalRosterMapper.map(
+        team: historyTeam(),
+        rows: [
+            historyRow(gsisId: "p1", name: "Punter", position: "P", depthRank: 1)
+        ])
     #expect(roster.specialTeams.map(\.label) == ["P"])
 }
 
@@ -189,7 +207,9 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
 }
 
 @Test func historicalPlayerReferenceParserRejectsMalformedReferences() {
-    #expect(parseHistoricalPlayerReference("gsis:00-0031234@2013") == HistoricalPlayerReference(gsisId: "00-0031234", season: 2013))
+    #expect(
+        parseHistoricalPlayerReference("gsis:00-0031234@2013")
+            == HistoricalPlayerReference(gsisId: "00-0031234", season: 2013))
     #expect(parseHistoricalPlayerReference("gsis:@2013") == nil)
     #expect(parseHistoricalPlayerReference("gsis:00-0031234@") == nil)
     #expect(parseHistoricalPlayerReference("gsis:00-0031234@2013@2014") == nil)
@@ -198,18 +218,26 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
 
 @Test func statsLookupRequiresHistoricalTeamContextAndKeepsCurrentIDs() {
     #expect(playerStatsLookup(for: "12345", teamId: nil) == .current(playerId: "12345"))
-    #expect(playerStatsLookup(for: "gsis:00-0031234@2013", teamId: "seahawks") == .historical(
-        HistoricalPlayerReference(gsisId: "00-0031234", season: 2013), teamId: "seahawks"
-    ))
+    #expect(
+        playerStatsLookup(for: "gsis:00-0031234@2013", teamId: "seahawks")
+            == .historical(
+                HistoricalPlayerReference(gsisId: "00-0031234", season: 2013), teamId: "seahawks"
+            ))
     #expect(playerStatsLookup(for: "gsis:00-0031234@2013", teamId: nil) == .invalidHistorical)
-    #expect(playerStatsLookup(for: "gsis:00-0031234@2013@2014", teamId: "seahawks") == .invalidHistorical)
+    #expect(
+        playerStatsLookup(for: "gsis:00-0031234@2013@2014", teamId: "seahawks")
+            == .invalidHistorical)
 }
 
 @Test func historyViewModelShowsHistoricalSuccessWithoutLiveSnapshot() async {
-    let repository = HistoryRepositoryFake(history: [2013: .success(try! HistoricalRosterMapper.map(
-        team: historyTeam(), rows: [historyRow()]
-    ))])
-    let viewModel = await HistoryViewModel(teamId: "seahawks", repository: repository, currentSeason: 2026)
+    let repository = HistoryRepositoryFake(history: [
+        2013: .success(
+            try! HistoricalRosterMapper.map(
+                team: historyTeam(), rows: [historyRow()]
+            ))
+    ])
+    let viewModel = await HistoryViewModel(
+        teamId: "seahawks", repository: repository, currentSeason: 2026)
 
     await viewModel.select(.past(2013))
 
@@ -220,7 +248,8 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
 
 @Test func immediateHistoricalSelectionClearsLiveContentBeforeTheReadCompletes() async {
     let repository = DelayedHistoryRepository()
-    let viewModel = await HistoryViewModel(teamId: "seahawks", repository: repository, currentSeason: 2026)
+    let viewModel = await HistoryViewModel(
+        teamId: "seahawks", repository: repository, currentSeason: 2026)
 
     await viewModel.selectImmediately(.past(2013))
 
@@ -233,7 +262,8 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
 
 @Test func historyViewModelTreatsMissingSeasonAsDistinctNoDataState() async {
     let repository = HistoryRepositoryFake(history: [2013: .failure(.notFound)])
-    let viewModel = await HistoryViewModel(teamId: "seahawks", repository: repository, currentSeason: 2026)
+    let viewModel = await HistoryViewModel(
+        teamId: "seahawks", repository: repository, currentSeason: 2026)
 
     await viewModel.select(.past(2013))
 
@@ -244,9 +274,10 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
 @Test func historyViewModelRetainsSelectedSeasonForFailureRetryAndBackToToday() async throws {
     let expected = try HistoricalRosterMapper.map(team: historyTeam(), rows: [historyRow()])
     let repository = HistoryRepositoryFake(historyResults: [
-        2013: [.failure(.offline), .success(expected)],
+        2013: [.failure(.offline), .success(expected)]
     ])
-    let viewModel = await HistoryViewModel(teamId: "seahawks", repository: repository, currentSeason: 2026)
+    let viewModel = await HistoryViewModel(
+        teamId: "seahawks", repository: repository, currentSeason: 2026)
 
     await viewModel.select(.past(2013))
     #expect(await viewModel.selectedSeason == .past(2013))
@@ -263,10 +294,13 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
 }
 
 @Test func staleHistoricalResponseCannotOverwriteANewerSeasonOrToday() async throws {
-    let first = try HistoricalRosterMapper.map(team: historyTeam(), rows: [historyRow(season: 2013)])
-    let second = try HistoricalRosterMapper.map(team: historyTeam(), rows: [historyRow(season: 2012, name: "Second")])
+    let first = try HistoricalRosterMapper.map(
+        team: historyTeam(), rows: [historyRow(season: 2013)])
+    let second = try HistoricalRosterMapper.map(
+        team: historyTeam(), rows: [historyRow(season: 2012, name: "Second")])
     let repository = DelayedHistoryRepository()
-    let viewModel = await HistoryViewModel(teamId: "seahawks", repository: repository, currentSeason: 2026)
+    let viewModel = await HistoryViewModel(
+        teamId: "seahawks", repository: repository, currentSeason: 2026)
 
     let firstSelection = Task { @MainActor in await viewModel.select(.past(2013)) }
     await repository.waitForRequest(season: 2013, count: 1)
@@ -303,15 +337,21 @@ private actor HistoryRepositoryFake: DepthRepository {
     func teams() async throws -> [Team] { [] }
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot { throw DepthError.notFound }
     func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
-        guard var results = historyResults[season], !results.isEmpty else { throw DepthError.notFound }
+        guard var results = historyResults[season], !results.isEmpty else {
+            throw DepthError.notFound
+        }
         let next = results.removeFirst()
         historyResults[season] = results
         return try next.get()
     }
-    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        throw DepthError.notFound
+    }
     func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
-    func appConfig() async throws -> AppConfig { AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil) }
+    func appConfig() async throws -> AppConfig {
+        AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)
+    }
 }
 
 private actor DelayedHistoryRepository: DepthRepository {
@@ -330,10 +370,14 @@ private actor DelayedHistoryRepository: DepthRepository {
             responseWaiters[key] = continuation
         }
     }
-    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        throw DepthError.notFound
+    }
     func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
-    func appConfig() async throws -> AppConfig { AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil) }
+    func appConfig() async throws -> AppConfig {
+        AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)
+    }
 
     func waitForRequest(season: Int, count: Int) async {
         guard requestCounts[season, default: 0] < count else { return }
@@ -342,7 +386,8 @@ private actor DelayedHistoryRepository: DepthRepository {
     }
 
     func complete(season: Int, count: Int, with result: Result<TeamSnapshot, DepthError>) {
-        let continuation = responseWaiters.removeValue(forKey: requestKey(season: season, count: count))
+        let continuation = responseWaiters.removeValue(
+            forKey: requestKey(season: season, count: count))
         switch result {
         case .success(let snapshot): continuation?.resume(returning: snapshot)
         case .failure(let error): continuation?.resume(throwing: error)

@@ -170,8 +170,10 @@ struct TeamListView: View {
             // conference picker's job is literally to distinguish AFC from NFC, so it
             // tints with the real NFL conference colors instead — matching web's
             // `CONFERENCE_COLORS`.
-            activeColor: conference == "AFC" ? DesignTokens.Colors.conferenceAFC : DesignTokens.Colors.conferenceNFC,
-            activeTextColor: Color(hex: readableTextOn(conference == "AFC" ? "#D50A0A" : "#013369")),
+            activeColor: conference == "AFC"
+                ? DesignTokens.Colors.conferenceAFC : DesignTokens.Colors.conferenceNFC,
+            activeTextColor: Color(
+                hex: readableTextOn(conference == "AFC" ? "#D50A0A" : "#013369")),
             // Web parity: the NavSwitcher conference picker is `fullWidth` (a standalone
             // bar over the division list), same as the Matchup/By-position and page
             // switchers.
@@ -193,7 +195,8 @@ struct TeamListView: View {
             List {
                 if !viewModel.filteredTeams.isEmpty {
                     Section(header: sectionHeader("TEAMS")) {
-                        ForEach(Array(viewModel.filteredTeams.enumerated()), id: \.element.id) { index, team in
+                        ForEach(Array(viewModel.filteredTeams.enumerated()), id: \.element.id) {
+                            index, team in
                             teamRow(team)
                                 .listRowSeparator(
                                     TeamSearchRowPresentation.showsSeparator(
@@ -220,7 +223,8 @@ struct TeamListView: View {
             List {
                 ForEach(divisions, id: \.division) { division in
                     Section(header: sectionHeader(divisionHeader(division.division))) {
-                        ForEach(Array(division.teams.enumerated()), id: \.element.id) { index, team in
+                        ForEach(Array(division.teams.enumerated()), id: \.element.id) {
+                            index, team in
                             teamRow(team)
                                 .listRowSeparator(
                                     TeamSearchRowPresentation.showsSeparator(
@@ -247,7 +251,8 @@ struct TeamListView: View {
         let divisionOrder = ["East", "North", "South", "West"]
         let confTeams = viewModel.filteredTeams.filter { $0.conference == conference }
         return divisionOrder.compactMap { division in
-            let teams = confTeams
+            let teams =
+                confTeams
                 .filter { $0.division == division }
                 .sorted { $0.city.localizedCaseInsensitiveCompare($1.city) == .orderedAscending }
             return teams.isEmpty ? nil : (division, teams)
@@ -417,7 +422,8 @@ private struct TeamRowSkeleton: View {
 
     var body: some View {
         HStack(spacing: DesignTokens.Spacing.sm) {
-            Circle().fill(DesignTokens.Colors.surfacePlaceholder).frame(width: badgeSize, height: badgeSize)
+            Circle().fill(DesignTokens.Colors.surfacePlaceholder).frame(
+                width: badgeSize, height: badgeSize)
             RoundedRectangle(cornerRadius: 4)
                 .fill(DesignTokens.Colors.surfacePlaceholder)
                 .frame(maxWidth: 140, maxHeight: titleHeight)
@@ -447,7 +453,8 @@ struct TeamBadge: View {
     var body: some View {
         let backgroundColor = Color(hex: TeamBadgeOverride.backgroundColorHex(for: team))
         let ringColor = Color(hex: TeamBadgeOverride.ringColorHex(for: team))
-        let onBackground = Color(hex: readableTextOn(TeamBadgeOverride.backgroundColorHex(for: team)))
+        let onBackground = Color(
+            hex: readableTextOn(TeamBadgeOverride.backgroundColorHex(for: team)))
         ZStack {
             Circle().fill(backgroundColor)
             if (team.logoDark ?? team.logo).flatMap(URL.init(string:)) != nil {

@@ -17,23 +17,25 @@ enum ScheduleMapper {
             guard week > 0 else {
                 throw DepthError.decoding("game \(game.gameId): invalid week \(week)")
             }
-            guard let resolved = try resolve(game, for: schedule.teamId, teamsById: teamsById) else { continue }
+            guard let resolved = try resolve(game, for: schedule.teamId, teamsById: teamsById)
+            else { continue }
             gamesByWeek[week] = resolved
         }
 
         let resolvedGames: [ScheduleGame]
         if let maximumWeek = gamesByWeek.keys.max() {
             resolvedGames = (1...maximumWeek).map { week in
-                gamesByWeek[week] ?? ScheduleGame(
-                    week: week,
-                    isBye: true,
-                    date: nil,
-                    isHome: false,
-                    opponent: nil,
-                    teamScore: nil,
-                    opponentScore: nil,
-                    result: nil
-                )
+                gamesByWeek[week]
+                    ?? ScheduleGame(
+                        week: week,
+                        isBye: true,
+                        date: nil,
+                        isHome: false,
+                        opponent: nil,
+                        teamScore: nil,
+                        opponentScore: nil,
+                        result: nil
+                    )
             }
         } else {
             resolvedGames = []
@@ -61,17 +63,21 @@ enum ScheduleMapper {
         teamsById: [String: Team],
         playoffSeed: Int?
     ) throws -> PostseasonRun? {
-        guard let playoffSeed, isPlayoffSeed(playoffSeed, season: games.first?.season ?? 0) else { return nil }
+        guard let playoffSeed, isPlayoffSeed(playoffSeed, season: games.first?.season ?? 0) else {
+            return nil
+        }
         var gamesByRound: [PostseasonRoundKind: ScheduleGame] = [:]
         for game in games {
             guard let kind = PostseasonRoundKind.from(gameType: game.gameType),
-                  let resolved = try resolve(game, for: teamId, teamsById: teamsById)
+                let resolved = try resolve(game, for: teamId, teamsById: teamsById)
             else { continue }
             gamesByRound[kind] = resolved
         }
         return PostseasonRun(
             seed: playoffSeed,
-            rounds: PostseasonRoundKind.allCases.map { PostseasonRound(kind: $0, game: gamesByRound[$0]) }
+            rounds: PostseasonRoundKind.allCases.map {
+                PostseasonRound(kind: $0, game: gamesByRound[$0])
+            }
         )
     }
 
@@ -118,16 +124,18 @@ enum ScheduleMapper {
 
         let teamMoneyline = isHome ? game.homeMoneyline : game.awayMoneyline
         let opponentMoneyline = isHome ? game.awayMoneyline : game.homeMoneyline
-        let favoriteTeamId: String? = if let spread = game.spreadLine, spread != 0 {
-            spread > 0 ? game.homeTeamId : game.awayTeamId
-        } else {
-            nil
-        }
-        let teamSpread: Double? = if let spread = game.spreadLine {
-            spread == 0 ? 0 : (isHome ? -spread : spread)
-        } else {
-            nil
-        }
+        let favoriteTeamId: String? =
+            if let spread = game.spreadLine, spread != 0 {
+                spread > 0 ? game.homeTeamId : game.awayTeamId
+            } else {
+                nil
+            }
+        let teamSpread: Double? =
+            if let spread = game.spreadLine {
+                spread == 0 ? 0 : (isHome ? -spread : spread)
+            } else {
+                nil
+            }
 
         return ScheduleGameMarket(
             teamMoneyline: teamMoneyline,
@@ -147,9 +155,10 @@ enum ScheduleMapper {
         )
     }
 
-    private static func vigFreeProbability(_ teamOdds: Double?, _ opponentOdds: Double?) -> Double? {
+    private static func vigFreeProbability(_ teamOdds: Double?, _ opponentOdds: Double?) -> Double?
+    {
         guard let team = americanOddsProbability(teamOdds),
-              let opponent = americanOddsProbability(opponentOdds)
+            let opponent = americanOddsProbability(opponentOdds)
         else { return nil }
         return team / (team + opponent)
     }

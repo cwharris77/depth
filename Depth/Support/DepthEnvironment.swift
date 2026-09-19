@@ -11,9 +11,12 @@ enum DepthEnvironment {
         guard
             let urlString = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String,
             let url = URL(string: urlString),
-            let key = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_PUBLISHABLE_KEY") as? String
+            let key = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_PUBLISHABLE_KEY")
+                as? String
         else {
-            fatalError("Missing SUPABASE_URL/SUPABASE_PUBLISHABLE_KEY in Info.plist — check the active .xcconfig")
+            fatalError(
+                "Missing SUPABASE_URL/SUPABASE_PUBLISHABLE_KEY in Info.plist — check the active .xcconfig"
+            )
         }
         return SupabaseClient(
             supabaseURL: url,
@@ -54,24 +57,26 @@ enum DepthEnvironment {
             do {
                 return try ModelContainer(for: schema, configurations: [configuration])
             } catch {
-                fatalError("Failed to create SwiftData ModelContainer even after clearing the store: \(error)")
+                fatalError(
+                    "Failed to create SwiftData ModelContainer even after clearing the store: \(error)"
+                )
             }
         }
     }()
 
     static let repository: CachingDepthRepository = {
         #if UITEST_FIXTURES
-        // UI tests launch with UI_TESTING_FIXTURE_BACKEND to replay a checked-in fixture
-        // bundle instead of touching Supabase (spec: 2026-09-10-ios-test-data-and-
-        // snapshot-testing-design, locked decision 1). UITEST_FIXTURES is set on Debug and
-        // Staging (CI builds Staging) and absent from Release, so a shipped binary cannot
-        // be redirected by a launch argument.
-        if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FIXTURE_BACKEND") {
-            return CachingDepthRepository(
-                underlying: FixtureDepthRepository.load(),
-                store: CachedSnapshotStore(modelContainer: ephemeralFixtureContainer())
-            )
-        }
+            // UI tests launch with UI_TESTING_FIXTURE_BACKEND to replay a checked-in fixture
+            // bundle instead of touching Supabase (spec: 2026-09-10-ios-test-data-and-
+            // snapshot-testing-design, locked decision 1). UITEST_FIXTURES is set on Debug and
+            // Staging (CI builds Staging) and absent from Release, so a shipped binary cannot
+            // be redirected by a launch argument.
+            if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FIXTURE_BACKEND") {
+                return CachingDepthRepository(
+                    underlying: FixtureDepthRepository.load(),
+                    store: CachedSnapshotStore(modelContainer: ephemeralFixtureContainer())
+                )
+            }
         #endif
         return CachingDepthRepository(
             underlying: SupabaseDepthRepository(client: supabaseClient),
@@ -80,18 +85,18 @@ enum DepthEnvironment {
     }()
 
     #if UITEST_FIXTURES
-    /// A fresh in-memory cache for fixture mode — never the on-disk store, so a fixture run
-    /// can neither read a stale real snapshot from a prior manual run nor leak fixture data
-    /// into a later one. The schema-discard retry the on-disk path needs doesn't apply here.
-    private static func ephemeralFixtureContainer() -> ModelContainer {
-        let schema = Schema(DepthCacheSchema.models)
-        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-        do {
-            return try ModelContainer(for: schema, configurations: [configuration])
-        } catch {
-            fatalError("Failed to create in-memory fixture ModelContainer: \(error)")
+        /// A fresh in-memory cache for fixture mode — never the on-disk store, so a fixture run
+        /// can neither read a stale real snapshot from a prior manual run nor leak fixture data
+        /// into a later one. The schema-discard retry the on-disk path needs doesn't apply here.
+        private static func ephemeralFixtureContainer() -> ModelContainer {
+            let schema = Schema(DepthCacheSchema.models)
+            let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            do {
+                return try ModelContainer(for: schema, configurations: [configuration])
+            } catch {
+                fatalError("Failed to create in-memory fixture ModelContainer: \(error)")
+            }
         }
-    }
     #endif
 
     static let preferences = UserPreferences()
@@ -105,7 +110,8 @@ enum DepthEnvironment {
     /// (RLS-scoped to auth.uid()); reads/writes are gated on the live session so a stale
     /// favorite never applies after a sign-out.
     @MainActor static let userSettingsStore: UserSettingsStore = {
-        let remote: (any UserSettingsServicing)? = SupabaseUserSettingsService(client: supabaseClient)
+        let remote: (any UserSettingsServicing)? = SupabaseUserSettingsService(
+            client: supabaseClient)
         return UserSettingsStore(remote: remote, sessionStore: authSessionStore)
     }()
     /// The current team's accent, published by DepthChartsTab and read by the root tab

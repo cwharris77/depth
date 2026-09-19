@@ -8,14 +8,19 @@ import Testing
 // and every hidden player is reachable through an edge chip. The defense cases mirror the
 // offense ones — same assertions, mirrored about the line of scrimmage.
 struct TrueScaleFieldLayoutTests {
-    private let phoneWindow = TrueScaleFieldLayout.Window(size: CGSize(width: 342, height: 874), topInset: 114, bottomInset: 34)
+    private let phoneWindow = TrueScaleFieldLayout.Window(
+        size: CGSize(width: 342, height: 874), topInset: 114, bottomInset: 34)
 
     private func player(_ number: Int, _ name: String) -> Player {
         Player(id: "p\(number)", name: name, position: .wr, depthRank: 1, number: number)
     }
 
-    private func slot(_ key: String, _ label: String, _ x: Double, _ y: Double, onLine: Bool, _ number: Int) -> RenderSlot {
-        RenderSlot(key: key, x: x, y: y, label: label, player: player(number, "Player \(number)"), onLine: onLine)
+    private func slot(
+        _ key: String, _ label: String, _ x: Double, _ y: Double, onLine: Bool, _ number: Int
+    ) -> RenderSlot {
+        RenderSlot(
+            key: key, x: x, y: y, label: label, player: player(number, "Player \(number)"),
+            onLine: onLine)
     }
 
     /// Seattle's most-used offense from the design: shotgun 11 personnel.
@@ -65,7 +70,8 @@ struct TrueScaleFieldLayoutTests {
     @Test func depthIsTrueScale() {
         let layout = TrueScaleFieldLayout(slots: shotgunEleven)
         let qb = layout.dots.first { $0.key == "qb0" }!
-        let drawnYards = (qb.center.y - layout.lineOfScrimmageY) / TrueScaleFieldLayout.pointsPerYard
+        let drawnYards =
+            (qb.center.y - layout.lineOfScrimmageY) / TrueScaleFieldLayout.pointsPerYard
         #expect(abs(drawnYards - 18.0 / 3.8) < 0.001)
     }
 
@@ -91,7 +97,8 @@ struct TrueScaleFieldLayoutTests {
         #expect(Set(chips.compactMap { $0.dot?.key }) == Set(hidden.map(\.key)))
         for side in [TrueScaleFieldLayout.EdgeChip.Side.leading, .trailing] {
             let ys = chips.filter { $0.side == side }.map(\.y)
-            #expect(zip(ys, ys.dropFirst()).allSatisfy { $1 - $0 >= TrueScaleFieldLayout.chipSpacing })
+            #expect(
+                zip(ys, ys.dropFirst()).allSatisfy { $1 - $0 >= TrueScaleFieldLayout.chipSpacing })
             // Chips never tuck under the floating header.
             #expect(ys.allSatisfy { $0 >= phoneWindow.topInset })
         }
@@ -103,9 +110,13 @@ struct TrueScaleFieldLayoutTests {
     }
 
     @Test func chipsOverflowIntoPlusN() {
-        let wide = (0..<7).map { i in slot("wr\(i)", "WR", 5 + Double(i), 51 + Double(i) * 4, onLine: false, 10 + i) }
+        let wide = (0..<7).map { i in
+            slot("wr\(i)", "WR", 5 + Double(i), 51 + Double(i) * 4, onLine: false, 10 + i)
+        }
         let layout = TrueScaleFieldLayout(slots: wide)
-        let chips = layout.edgeChips(pan: CGPoint(x: -layout.contentSize.width + phoneWindow.size.width, y: 0), window: phoneWindow)
+        let chips = layout.edgeChips(
+            pan: CGPoint(x: -layout.contentSize.width + phoneWindow.size.width, y: 0),
+            window: phoneWindow)
         let leading = chips.filter { $0.side == .leading }
         #expect(leading.count == TrueScaleFieldLayout.maxChipsPerSide)
         #expect(leading.last?.dot == nil)
@@ -180,7 +191,8 @@ struct TrueScaleFieldLayoutTests {
         #expect(dot("fs").center.y < dot("lde").center.y)
         #expect(dot("lde").center.y < layout.lineOfScrimmageY)
         // Every defender fits on the surface drawn for him.
-        #expect(layout.dots.allSatisfy { $0.center.y >= 0 && $0.center.y <= layout.contentSize.height })
+        #expect(
+            layout.dots.allSatisfy { $0.center.y >= 0 && $0.center.y <= layout.contentSize.height })
     }
 
     @Test func defensePanNeverShowsPastTheSurface() {
@@ -212,7 +224,8 @@ struct TrueScaleFieldLayoutTests {
         #expect(Set(chips.compactMap { $0.dot?.key }) == Set(hidden.map(\.key)))
         for side in [TrueScaleFieldLayout.EdgeChip.Side.leading, .trailing] {
             let ys = chips.filter { $0.side == side }.map(\.y)
-            #expect(zip(ys, ys.dropFirst()).allSatisfy { $1 - $0 >= TrueScaleFieldLayout.chipSpacing })
+            #expect(
+                zip(ys, ys.dropFirst()).allSatisfy { $1 - $0 >= TrueScaleFieldLayout.chipSpacing })
             #expect(ys.allSatisfy { $0 >= phoneWindow.topInset })
         }
         // Centring on a chip's player brings him into view.
@@ -229,7 +242,8 @@ struct TrueScaleFieldLayoutTests {
         #expect(TrueScaleFieldLayout.lineStatus(for: lde) == "On the line")
         let lb = layout.dots.first { $0.key == "lb0" }!
         #expect(TrueScaleFieldLayout.lineStatus(for: lb) == "Off the line")
-        let formation = TeamFormation(season: 2025, rank: 0, unit: .defense, alignment: "Nickel", personnel: "4-2-5", pct: 62)
+        let formation = TeamFormation(
+            season: 2025, rank: 0, unit: .defense, alignment: "Nickel", personnel: "4-2-5", pct: 62)
         #expect(TrueScaleFieldView.formationTitle(formation, unit: .defense) == "Nickel 4-2-5")
     }
 
@@ -253,8 +267,10 @@ struct TrueScaleFieldLayoutTests {
         #expect(x["def-lcb-0"] == -17 && x["def-rcb-0"] == 17)
         #expect(x["def-ss-0"] == -6 && x["def-fs-0"] == 6)
         // Everyone fits on the surface, and the opening framing is on-centre.
-        #expect(layout.dots.allSatisfy { $0.center.y >= 0 && $0.center.y <= layout.contentSize.height })
-        #expect(!layout.isOffCentre(pan: layout.initialPan(window: phoneWindow), window: phoneWindow))
+        #expect(
+            layout.dots.allSatisfy { $0.center.y >= 0 && $0.center.y <= layout.contentSize.height })
+        #expect(
+            !layout.isOffCentre(pan: layout.initialPan(window: phoneWindow), window: phoneWindow))
     }
 
     @Test func numeralsPointAtTheNearerGoal() {

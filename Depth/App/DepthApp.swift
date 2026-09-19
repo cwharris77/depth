@@ -47,7 +47,8 @@ struct DepthApp: App {
         {
             // Trim both the prefix and whitespace so whitespace-separated launch-arg arrays
             // pass the value cleanly.
-            let teamName = startTeamArg
+            let teamName =
+                startTeamArg
                 .replacingOccurrences(of: "UI_TESTING_START_TEAM=", with: "")
                 .trimmingCharacters(in: .whitespacesAndNewlines)
             if !teamName.isEmpty {
@@ -91,14 +92,15 @@ struct DepthApp: App {
     var body: some Scene {
         WindowGroup {
             #if targetEnvironment(simulator)
-            if ProcessInfo.processInfo.arguments.contains("UI_TESTING_RESET_STATE"),
-                ProcessInfo.processInfo.arguments.contains("UI_TESTING_DELETE_TAP_TARGET") {
-                TapTargetAuditFixture()
-            } else {
-                ContentView()
-            }
+                if ProcessInfo.processInfo.arguments.contains("UI_TESTING_RESET_STATE"),
+                    ProcessInfo.processInfo.arguments.contains("UI_TESTING_DELETE_TAP_TARGET")
+                {
+                    TapTargetAuditFixture()
+                } else {
+                    ContentView()
+                }
             #else
-            ContentView()
+                ContentView()
             #endif
         }
         .modelContainer(DepthEnvironment.modelContainer)

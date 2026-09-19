@@ -28,7 +28,8 @@ struct FieldMarkings: View {
 
             ZStack(alignment: .topLeading) {
                 ForEach(-maxYardsEitherSide...maxYardsEitherSide, id: \.self) { yard in
-                    let y = yardScale.screenY(charted: FieldYardScale.charted(yardsFromLine: CGFloat(yard)))
+                    let y = yardScale.screenY(
+                        charted: FieldYardScale.charted(yardsFromLine: CGFloat(yard)))
                     if y >= 0, y <= h {
                         marking(yard: yard, y: y, width: w)
                     }

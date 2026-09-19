@@ -26,7 +26,9 @@ final class TeamListViewModel {
     /// request-invalidation pattern as PlayerProfileViewModel).
     private var searchRequestID = 0
 
-    init(repository: CachingDepthRepository, events: any AppEventsRecording = NoOpAppEventsRecorder()) {
+    init(
+        repository: CachingDepthRepository, events: any AppEventsRecording = NoOpAppEventsRecorder()
+    ) {
         self.repository = repository
         self.events = events
     }

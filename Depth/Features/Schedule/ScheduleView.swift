@@ -40,7 +40,8 @@ struct ScheduleView: View {
     /// The season-chip row's accent. DEP-424: the ring color — a real kit color, the same
     /// one the field dots and the tab tint use, with legibility deliberately not gated.
     private var teamAccent: Color {
-        currentTeamStore.colors.map { Color(hex: TeamSurfaces.mark($0)) } ?? DesignTokens.Colors.accent
+        currentTeamStore.colors.map { Color(hex: TeamSurfaces.mark($0)) }
+            ?? DesignTokens.Colors.accent
     }
 
     var body: some View {
@@ -123,7 +124,8 @@ struct ScheduleView: View {
                 // filled page-switcher pill), so the two levels of navigation read apart.
                 DepthTabBar(
                     options: SchedulePhase.allCases.map {
-                        DepthSegmentedOption(value: $0, label: $0.title, identifier: "schedule-phase-\($0.rawValue)")
+                        DepthSegmentedOption(
+                            value: $0, label: $0.title, identifier: "schedule-phase-\($0.rawValue)")
                     },
                     selection: phase,
                     onChange: { phase = $0 },
@@ -136,9 +138,13 @@ struct ScheduleView: View {
 
                 switch phase {
                 case .preseason:
-                    gameGrid(schedule.preseason, emptyMessage: "No preseason games are available for this season.")
+                    gameGrid(
+                        schedule.preseason,
+                        emptyMessage: "No preseason games are available for this season.")
                 case .regular:
-                    gameGrid(schedule.games, emptyMessage: "No regular-season schedule is available for this season.")
+                    gameGrid(
+                        schedule.games,
+                        emptyMessage: "No regular-season schedule is available for this season.")
                 case .playoffs:
                     playoffsContent(schedule)
                 }
@@ -157,21 +163,27 @@ struct ScheduleView: View {
             PostseasonRunView(
                 run: run,
                 season: schedule.season,
-                standing: [schedule.conference, schedule.regularSeasonRecord].compactMap { $0 }.joined(separator: " · "),
+                standing: [schedule.conference, schedule.regularSeasonRecord].compactMap { $0 }
+                    .joined(separator: " · "),
                 accent: teamAccent
             )
         case .missed:
             ContentUnavailableView {
                 Label("Missed the playoffs", systemImage: "flag.checkered")
             } description: {
-                Text(verbatim: "Finished \(schedule.regularSeasonRecord) in the \(schedule.season) regular season.")
+                Text(
+                    verbatim:
+                        "Finished \(schedule.regularSeasonRecord) in the \(schedule.season) regular season."
+                )
             }
             .accessibilityIdentifier("schedule-playoffs-empty")
         case .notStarted:
             ContentUnavailableView {
                 Label("Playoffs haven't started", systemImage: "calendar.badge.clock")
             } description: {
-                Text(verbatim: "The \(schedule.season) postseason begins after the regular season ends.")
+                Text(
+                    verbatim:
+                        "The \(schedule.season) postseason begins after the regular season ends.")
             }
             .accessibilityIdentifier("schedule-playoffs-upcoming")
         case nil:
@@ -187,7 +199,10 @@ struct ScheduleView: View {
             LazyVGrid(
                 columns: dynamicTypeSize.isAccessibilitySize
                     ? [GridItem(.flexible())]
-                    : [GridItem(.adaptive(minimum: 144, maximum: 260), spacing: DesignTokens.Spacing.sm)],
+                    : [
+                        GridItem(
+                            .adaptive(minimum: 144, maximum: 260), spacing: DesignTokens.Spacing.sm)
+                    ],
                 spacing: DesignTokens.Spacing.sm
             ) {
                 ForEach(games) { game in
@@ -303,7 +318,9 @@ private struct ScheduleGameCard: View {
     }
 
     private var detailLabel: String {
-        if let result = game.result, let teamScore = game.teamScore, let opponentScore = game.opponentScore {
+        if let result = game.result, let teamScore = game.teamScore,
+            let opponentScore = game.opponentScore
+        {
             return "\(result.rawValue) \(teamScore)-\(opponentScore)"
         }
         if isPastSeason { return "No result" }
@@ -425,7 +442,9 @@ private struct PostseasonLadder: View {
 
     private var reduceMotion: Bool { settlesMotion(environmentReduceMotion) }
     private var isShown: Bool { hasPlayed || reduceMotion }
-    private var timing: PostseasonLadderTiming { PostseasonLadderTiming(terminalIndex: run.terminalIndex) }
+    private var timing: PostseasonLadderTiming {
+        PostseasonLadderTiming(terminalIndex: run.terminalIndex)
+    }
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -448,7 +467,9 @@ private struct PostseasonLadder: View {
                     // Measured on a background so the card's rise-in offset never drags
                     // its pip along with it.
                     .background {
-                        Color.clear.anchorPreference(key: RoundBoundsKey.self, value: .bounds) { [index: $0] }
+                        Color.clear.anchorPreference(key: RoundBoundsKey.self, value: .bounds) {
+                            [index: $0]
+                        }
                     }
                 }
             }
@@ -493,8 +514,10 @@ private struct PostseasonLadder: View {
                     .frame(width: 2, height: end)
                     .scaleEffect(x: 1, y: isShown ? 1 : 0, anchor: .top)
                     .animation(
-                        reduceMotion ? nil : .timingCurve(0.4, 0, 0.2, 1, duration: timing.railDuration)
-                            .delay(PostseasonLadderTiming.railDelay),
+                        reduceMotion
+                            ? nil
+                            : .timingCurve(0.4, 0, 0.2, 1, duration: timing.railDuration)
+                                .delay(PostseasonLadderTiming.railDelay),
                         value: isShown
                     )
             }
@@ -526,7 +549,9 @@ private struct PostseasonLadder: View {
                 }
                 .scaleEffect(isShown ? 1 : 0.35)
                 .opacity(isShown ? 1 : 0)
-                .animation(reduceMotion ? nil : .easeOut(duration: 0.3).delay(timing.pipDelay(index)), value: isShown)
+                .animation(
+                    reduceMotion ? nil : .easeOut(duration: 0.3).delay(timing.pipDelay(index)),
+                    value: isShown)
         }
     }
 }
@@ -555,7 +580,8 @@ private struct PostseasonRoundCard: View {
 
     /// An absent Wild Card game for a bye-earning seed is the bye, not an unreached round.
     private var isBye: Bool {
-        round.kind == .wildCard && round.game == nil && earnsFirstRoundBye(seed: seed, season: season)
+        round.kind == .wildCard && round.game == nil
+            && earnsFirstRoundBye(seed: seed, season: season)
     }
 
     /// Only rounds with something to land rise in; empty future rounds are already there.
@@ -569,7 +595,10 @@ private struct PostseasonRoundCard: View {
         content
             .frame(maxWidth: .infinity, minHeight: 78, alignment: .leading)
             .padding(.horizontal, 14)
-            .background(isEmptyRound ? DesignTokens.Colors.surfaceCard2 : DesignTokens.Colors.surfaceCard, in: cardShape)
+            .background(
+                isEmptyRound ? DesignTokens.Colors.surfaceCard2 : DesignTokens.Colors.surfaceCard,
+                in: cardShape
+            )
             .overlay(alignment: .bottom) {
                 if stage == .terminal {
                     Rectangle()
@@ -577,7 +606,10 @@ private struct PostseasonRoundCard: View {
                         .frame(height: 3)
                         .scaleEffect(x: isShown ? 1 : 0, y: 1, anchor: .leading)
                         .animation(
-                            reduceMotion ? nil : .timingCurve(0.4, 0, 0.2, 1, duration: 0.5).delay(timing.sweepDelay),
+                            reduceMotion
+                                ? nil
+                                : .timingCurve(0.4, 0, 0.2, 1, duration: 0.5).delay(
+                                    timing.sweepDelay),
                             value: isShown
                         )
                 }
@@ -585,10 +617,13 @@ private struct PostseasonRoundCard: View {
             .clipShape(cardShape)
             .overlay {
                 if isBye {
-                    cardShape.strokeBorder(DesignTokens.Colors.borderInput, style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                    cardShape.strokeBorder(
+                        DesignTokens.Colors.borderInput,
+                        style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
                 } else {
                     cardShape.strokeBorder(
-                        isEmptyRound ? DesignTokens.Colors.borderSubtle : DesignTokens.Colors.borderDefault,
+                        isEmptyRound
+                            ? DesignTokens.Colors.borderSubtle : DesignTokens.Colors.borderDefault,
                         lineWidth: 1
                     )
                 }
@@ -596,7 +631,8 @@ private struct PostseasonRoundCard: View {
             .opacity(entersWithMotion && !isShown ? 0 : 1)
             .offset(y: entersWithMotion && !isShown ? 10 : 0)
             .animation(
-                reduceMotion || !entersWithMotion ? nil : .easeOut(duration: 0.35).delay(timing.cardDelay(index)),
+                reduceMotion || !entersWithMotion
+                    ? nil : .easeOut(duration: 0.35).delay(timing.cardDelay(index)),
                 value: isShown
             )
             .accessibilityElement(children: .combine)
@@ -622,8 +658,11 @@ private struct PostseasonRoundCard: View {
                     if let opponent = game.opponent {
                         HStack(spacing: 6) {
                             TeamIconView(team: opponent, size: 22)
-                            Text(verbatim: game.isHome ? "vs \(opponent.abbrev)" : "at \(opponent.abbrev)")
-                                .font(.subheadline.weight(.heavy))
+                            Text(
+                                verbatim: game.isHome
+                                    ? "vs \(opponent.abbrev)" : "at \(opponent.abbrev)"
+                            )
+                            .font(.subheadline.weight(.heavy))
                         }
                     }
                 }
@@ -653,7 +692,9 @@ private struct PostseasonRoundCard: View {
         switch stage {
         case .terminal: terminalColor
         case .reached: DesignTokens.Colors.textMuted
-        case .unreached: isEmptyRound && !isBye ? DesignTokens.Colors.textFaintest : DesignTokens.Colors.textMuted
+        case .unreached:
+            isEmptyRound && !isBye
+                ? DesignTokens.Colors.textFaintest : DesignTokens.Colors.textMuted
         }
     }
 
@@ -666,14 +707,18 @@ private struct PostseasonRoundCard: View {
     }
 
     private func scoreLabel(_ game: ScheduleGame) -> String {
-        guard let result = game.result, let teamScore = game.teamScore, let opponentScore = game.opponentScore else {
+        guard let result = game.result, let teamScore = game.teamScore,
+            let opponentScore = game.opponentScore
+        else {
             return "Upcoming"
         }
         return "\(result.rawValue) \(teamScore)-\(opponentScore)"
     }
 
     private func dateLabel(_ game: ScheduleGame) -> String {
-        guard let date = game.date, let parsed = Self.inputFormatter.date(from: date) else { return "DATE TBD" }
+        guard let date = game.date, let parsed = Self.inputFormatter.date(from: date) else {
+            return "DATE TBD"
+        }
         return parsed.formatted(.dateTime.month(.abbreviated).day()).uppercased()
     }
 

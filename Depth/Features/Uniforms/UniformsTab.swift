@@ -54,7 +54,8 @@ struct UniformsTab: View {
                         ContentUnavailableView(
                             "No kits match",
                             systemImage: "tshirt",
-                            description: Text("This team has no kits left under the current filters.")
+                            description: Text(
+                                "This team has no kits left under the current filters.")
                         )
                         .background(DesignTokens.Colors.bg)
                     }
@@ -138,7 +139,8 @@ struct UniformsTab: View {
                 placeholder: "Team, kit or era",
                 identifier: "uniforms-search"
             )
-            let layout = dynamicTypeSize.isAccessibilitySize
+            let layout =
+                dynamicTypeSize.isAccessibilitySize
                 ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
                 : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.sm))
             layout {
@@ -188,11 +190,14 @@ struct UniformsTab: View {
                 }
             }
             .font(.caption.weight(isActive ? .semibold : .regular))
-            .foregroundStyle(isActive ? DesignTokens.Colors.accentSoft : DesignTokens.Colors.textSecondary)
+            .foregroundStyle(
+                isActive ? DesignTokens.Colors.accentSoft : DesignTokens.Colors.textSecondary
+            )
             .padding(.horizontal, DesignTokens.Spacing.sm + 4)
             .frame(minHeight: 44)
             .background(
-                isActive ? DesignTokens.Colors.accent.opacity(0.16) : DesignTokens.Colors.surfaceChip,
+                isActive
+                    ? DesignTokens.Colors.accent.opacity(0.16) : DesignTokens.Colors.surfaceChip,
                 in: Capsule()
             )
             .overlay {
@@ -247,10 +252,12 @@ struct UniformsTab: View {
                         .tracking(2)
                         .foregroundStyle(DesignTokens.Colors.textMuted)
                     LazyVGrid(
-                        columns: dynamicTypeSize.isAccessibilitySize ? [GridItem(.flexible())] : [
-                            GridItem(.flexible(), spacing: DesignTokens.Spacing.sm + 2),
-                            GridItem(.flexible(), spacing: DesignTokens.Spacing.sm + 2),
-                        ],
+                        columns: dynamicTypeSize.isAccessibilitySize
+                            ? [GridItem(.flexible())]
+                            : [
+                                GridItem(.flexible(), spacing: DesignTokens.Spacing.sm + 2),
+                                GridItem(.flexible(), spacing: DesignTokens.Spacing.sm + 2),
+                            ],
                         spacing: DesignTokens.Spacing.sm + 2
                     ) {
                         ForEach(group.teams) { team in
@@ -327,8 +334,10 @@ struct UniformsTab: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
             ForEach(viewModel.decades) { decade in
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm + 2) {
-                    let layout = dynamicTypeSize.isAccessibilitySize
-                        ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm + 2))
+                    let layout =
+                        dynamicTypeSize.isAccessibilitySize
+                        ? AnyLayout(
+                            VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm + 2))
                         : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.sm + 2))
                     layout {
                         Text(decade.label)
@@ -432,7 +441,9 @@ struct UniformsTab: View {
             Text(
                 "Uniform figures are original artwork; team marks are reproduced for identification only. Proportions modeled on the NFL uniform template by JohnnySeoul, used under CC BY 3.0 (modified)."
             )
-            Text("All kits shown here are drawn SVG references, not official NFL-owned images. For a more detailed uniform archive, see Gridiron Uniforms.")
+            Text(
+                "All kits shown here are drawn SVG references, not official NFL-owned images. For a more detailed uniform archive, see Gridiron Uniforms."
+            )
         }
         .font(.caption2)
         .foregroundStyle(DesignTokens.Colors.textFaintest)

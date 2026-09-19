@@ -25,16 +25,23 @@ final class DepthUITests: XCTestCase {
         app.selectTeam("bills", searching: "Bills", expectedDisplayName: "Buffalo Bills")
 
         let unitTab = app.buttons["unit-tab-offense"]
-        XCTAssertTrue(unitTab.waitForExistence(timeout: 10), "depth chart should render the unit tab bar once the team snapshot loads")
+        XCTAssertTrue(
+            unitTab.waitForExistence(timeout: 10),
+            "depth chart should render the unit tab bar once the team snapshot loads")
 
-        let playerSlot = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'player-slot-'")).firstMatch
-        XCTAssertTrue(playerSlot.waitForExistence(timeout: 10), "at least one filled depth-chart slot should be tappable")
+        let playerSlot = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'player-slot-'")
+        ).firstMatch
+        XCTAssertTrue(
+            playerSlot.waitForExistence(timeout: 10),
+            "at least one filled depth-chart slot should be tappable")
         playerSlot.tap()
 
         // Merge spec (2026-09-11): a field tap pushes the full player profile — there is no
         // card sheet in between.
         let profile = app.descendants(matching: .any)["player-profile-full-content"]
-        XCTAssertTrue(profile.waitForExistence(timeout: 5), "tapping a player should push the player profile")
+        XCTAssertTrue(
+            profile.waitForExistence(timeout: 5), "tapping a player should push the player profile")
         XCTAssertTrue(
             app.staticTexts["player-profile-full-name"].waitForExistence(timeout: 5),
             "profile should show the player name"
@@ -48,15 +55,18 @@ final class DepthUITests: XCTestCase {
             "profile should show player status"
         )
         XCTAssertTrue(
-            app.descendants(matching: .any)["player-profile-full-vitals"].waitForExistence(timeout: 5),
+            app.descendants(matching: .any)["player-profile-full-vitals"].waitForExistence(
+                timeout: 5),
             "profile should show the vitals strip"
         )
         XCTAssertTrue(
-            app.descendants(matching: .any)["player-profile-full-depth"].waitForExistence(timeout: 5),
+            app.descendants(matching: .any)["player-profile-full-depth"].waitForExistence(
+                timeout: 5),
             "a profile opened from the depth chart should show the position depth list"
         )
         XCTAssertTrue(
-            app.descendants(matching: .any)["player-profile-full-stats"].waitForExistence(timeout: 10),
+            app.descendants(matching: .any)["player-profile-full-stats"].waitForExistence(
+                timeout: 10),
             "profile should resolve a stats state"
         )
         // The counterpart to testOpenHistoricalRosterProfileAndReturnToToday's absence
@@ -69,17 +79,21 @@ final class DepthUITests: XCTestCase {
 
         app.navigationBars.buttons["BackButton"].tap()
         XCTAssertTrue(profile.waitForAbsence(timeout: 5), "back should pop the profile")
-        XCTAssertTrue(playerSlot.waitForExistence(timeout: 5), "back should return to the depth chart")
+        XCTAssertTrue(
+            playerSlot.waitForExistence(timeout: 5), "back should return to the depth chart")
     }
 
     // Merge spec: the profile's DEPTH CHART rows swap the screen to another player in
     // place. One back tap must land on the field — a pushed profile per row would need two.
     func testProfileDepthRowSwapsPlayerInPlace() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "bills"),
+            "the app should launch straight into the Bills depth chart")
 
         let quarterback = app.buttons["player-slot-off-qb-0"]
-        XCTAssertTrue(quarterback.waitForExistence(timeout: 10), "the Bills field should render its QB")
+        XCTAssertTrue(
+            quarterback.waitForExistence(timeout: 10), "the Bills field should render its QB")
         quarterback.tap()
 
         let name = app.staticTexts["player-profile-full-name"]
@@ -96,12 +110,15 @@ final class DepthUITests: XCTestCase {
         }
         backup.tap()
 
-        let swapped = expectation(for: NSPredicate(format: "label != %@", starterName), evaluatedWith: name)
+        let swapped = expectation(
+            for: NSPredicate(format: "label != %@", starterName), evaluatedWith: name)
         wait(for: [swapped], timeout: 5)
 
         app.navigationBars.buttons["BackButton"].tap()
-        XCTAssertTrue(name.waitForAbsence(timeout: 5), "no second profile should remain on the stack")
-        XCTAssertTrue(quarterback.waitForExistence(timeout: 5), "one back tap should return to the field")
+        XCTAssertTrue(
+            name.waitForAbsence(timeout: 5), "no second profile should remain on the stack")
+        XCTAssertTrue(
+            quarterback.waitForExistence(timeout: 5), "one back tap should return to the field")
     }
 
     /// Merge spec (2026-09-11): the switcher's cross-team player search must *push* the full
@@ -111,20 +128,27 @@ final class DepthUITests: XCTestCase {
     /// through the `onChange` branch instead — so the push it now drives needs its own cover.
     func testSwitcherCrossTeamPlayerSearchPushesThatPlayersProfile() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "bills"),
+            "the app should launch straight into the Bills depth chart")
 
         let switcher = app.buttons["team-switcher-button"]
-        XCTAssertTrue(switcher.waitForExistence(timeout: 15), "the chart header should expose the team switcher")
+        XCTAssertTrue(
+            switcher.waitForExistence(timeout: 15),
+            "the chart header should expose the team switcher")
         switcher.tap()
 
         let searchField = app.searchFields.firstMatch
-        XCTAssertTrue(searchField.waitForExistence(timeout: 10), "the switcher sheet should offer search")
+        XCTAssertTrue(
+            searchField.waitForExistence(timeout: 10), "the switcher sheet should offer search")
         // Sam Darnold is the fixture Seahawks' QB — a different team than the Bills chart on
         // screen, so this hit exercises the team-switch-then-present path.
         searchField.typeTextAfterFocusing("Darnold", in: app)
 
         let hit = app.descendants(matching: .any)["player-hit-3912547"]
-        XCTAssertTrue(hit.waitForExistence(timeout: 15), "searching \"Darnold\" should surface the Seahawks QB")
+        XCTAssertTrue(
+            hit.waitForExistence(timeout: 15),
+            "searching \"Darnold\" should surface the Seahawks QB")
 
         let profile = app.descendants(matching: .any)["player-profile-full-content"]
         XCTAssertTrue(
@@ -132,8 +156,11 @@ final class DepthUITests: XCTestCase {
             "picking a cross-team search hit should push that player's profile"
         )
         let name = app.staticTexts["player-profile-full-name"]
-        XCTAssertTrue(name.waitForExistence(timeout: 10), "the pushed profile should show the player's name")
-        XCTAssertEqual(name.label, "Sam Darnold", "the pushed profile should be the player that was searched for")
+        XCTAssertTrue(
+            name.waitForExistence(timeout: 10), "the pushed profile should show the player's name")
+        XCTAssertEqual(
+            name.label, "Sam Darnold",
+            "the pushed profile should be the player that was searched for")
 
         app.navigationBars.buttons["BackButton"].tap()
         XCTAssertTrue(profile.waitForAbsence(timeout: 5), "one back tap should pop the profile")
@@ -149,12 +176,16 @@ final class DepthUITests: XCTestCase {
 
     func testOpenTeamSchedule() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "bills"),
+            "the app should launch straight into the Bills depth chart")
 
         // Round-4 (DEP-217): Schedule is the middle tab of the ROSTER/SCHEDULE/STATS page
         // switcher, no longer a toolbar destination.
         let scheduleTab = app.buttons["page-switcher-schedule"]
-        XCTAssertTrue(scheduleTab.waitForExistence(timeout: 10), "team detail should expose a Schedule page tab")
+        XCTAssertTrue(
+            scheduleTab.waitForExistence(timeout: 10),
+            "team detail should expose a Schedule page tab")
         XCTAssertTrue(
             scheduleTab.tapUntil { app.otherElements["schedule-content"].exists },
             "the schedule should render production content"
@@ -163,7 +194,9 @@ final class DepthUITests: XCTestCase {
         let weekCard = app.descendants(matching: .any).matching(
             NSPredicate(format: "identifier BEGINSWITH 'schedule-week-'")
         ).firstMatch
-        XCTAssertTrue(weekCard.waitForExistence(timeout: 5), "the schedule should render at least one weekly card")
+        XCTAssertTrue(
+            weekCard.waitForExistence(timeout: 5),
+            "the schedule should render at least one weekly card")
     }
 
     /// DEP-405: a schedule-card tap lands on the Compare *tab* — the tab bar highlights
@@ -172,10 +205,14 @@ final class DepthUITests: XCTestCase {
     /// the pushed instance's back chevron) returns to the Depth Charts tab.
     func testScheduleCardTapSwitchesToCompareTab() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "bills"),
+            "the app should launch straight into the Bills depth chart")
 
         let scheduleTab = app.buttons["page-switcher-schedule"]
-        XCTAssertTrue(scheduleTab.waitForExistence(timeout: 10), "team detail should expose a Schedule page tab")
+        XCTAssertTrue(
+            scheduleTab.waitForExistence(timeout: 10),
+            "team detail should expose a Schedule page tab")
         XCTAssertTrue(
             scheduleTab.tapUntil { app.otherElements["schedule-content"].exists },
             "the schedule should render production content"
@@ -184,14 +221,19 @@ final class DepthUITests: XCTestCase {
         // The first tappable game card — a bye week or a past season renders the same
         // `schedule-week-N` identifier on a non-button element, so pick the first
         // button that is actually hittable (current-season, non-bye matchup).
-        let cards = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'schedule-week-'"))
-        XCTAssertTrue(cards.firstMatch.waitForExistence(timeout: 15), "the schedule should render at least one tappable weekly card")
+        let cards = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'schedule-week-'"))
+        XCTAssertTrue(
+            cards.firstMatch.waitForExistence(timeout: 15),
+            "the schedule should render at least one tappable weekly card")
         var index = 0
         while index < cards.count && !cards.element(boundBy: index).isHittable {
             index += 1
         }
         let weekCard = cards.element(boundBy: index)
-        XCTAssertTrue(weekCard.isHittable, "the Bills' current-season schedule should have a non-bye, tappable game card")
+        XCTAssertTrue(
+            weekCard.isHittable,
+            "the Bills' current-season schedule should have a non-bye, tappable game card")
         // The tab bar now reflects where we landed — Compare selected, not Depth Charts.
         let compareTab = app.tabBars.firstMatch.buttons["Compare"]
         XCTAssertTrue(
@@ -201,13 +243,19 @@ final class DepthUITests: XCTestCase {
 
         // The matchup pre-loaded into both slots (the offense lens renders once both
         // teams resolve) and the schedule-origin pill is present.
-        XCTAssertTrue(app.buttons["compare-back-to-schedule"].waitForExistence(timeout: 15), "the schedule-origin pill should render on the Compare tab")
-        XCTAssertTrue(app.buttons["compare-lens-offense"].waitForExistence(timeout: 20), "both compare slots should auto-fill with the matchup's teams")
+        XCTAssertTrue(
+            app.buttons["compare-back-to-schedule"].waitForExistence(timeout: 15),
+            "the schedule-origin pill should render on the Compare tab")
+        XCTAssertTrue(
+            app.buttons["compare-lens-offense"].waitForExistence(timeout: 20),
+            "both compare slots should auto-fill with the matchup's teams")
 
         // The pill returns to the Depth Charts tab, whose schedule page is still open.
         let depthChartsTab = app.tabBars.firstMatch.buttons["Depth Charts"]
         XCTAssertTrue(
-            app.buttons["compare-back-to-schedule"].tapUntil { depthChartsTab.exists && depthChartsTab.isSelected },
+            app.buttons["compare-back-to-schedule"].tapUntil {
+                depthChartsTab.exists && depthChartsTab.isSelected
+            },
             "Back to schedule should return to the Depth Charts tab"
         )
     }
@@ -217,10 +265,13 @@ final class DepthUITests: XCTestCase {
     /// the embedded schedule. Uses the Bills, a team with real ingested stats.
     func testPageSwitcherReachesAllThreePages() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "bills"),
+            "the app should launch straight into the Bills depth chart")
 
         let statsTab = app.buttons["page-switcher-stats"]
-        XCTAssertTrue(statsTab.waitForExistence(timeout: 10), "team detail should expose a Stats page tab")
+        XCTAssertTrue(
+            statsTab.waitForExistence(timeout: 10), "team detail should expose a Stats page tab")
         XCTAssertTrue(
             // 30s: a cold CI simulator's first Stats load crawls through a production
             // round-trip (flake 2026-08-29).
@@ -233,7 +284,9 @@ final class DepthUITests: XCTestCase {
         )
 
         let scheduleTab = app.buttons["page-switcher-schedule"]
-        XCTAssertTrue(scheduleTab.waitForExistence(timeout: 5), "the page switcher should still be reachable from Stats")
+        XCTAssertTrue(
+            scheduleTab.waitForExistence(timeout: 5),
+            "the page switcher should still be reachable from Stats")
         XCTAssertTrue(
             scheduleTab.tapUntil(timeout: 30) { app.otherElements["schedule-content"].exists },
             "the schedule page should render once switched from Stats"
@@ -251,7 +304,9 @@ final class DepthUITests: XCTestCase {
     /// the spec's Testing section requires the 44pt tap target survive the restyle.
     func testUnitTabsPreserveTapTargets() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "bills"),
+            "the app should launch straight into the Bills depth chart")
 
         for identifier in ["unit-tab-offense", "unit-tab-defense", "unit-tab-special"] {
             let tab = app.buttons[identifier]
@@ -266,16 +321,20 @@ final class DepthUITests: XCTestCase {
 
     func testOpenHistoricalRosterProfileAndReturnToToday() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "seahawks"), "the app should launch straight into the Seahawks depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "seahawks"),
+            "the app should launch straight into the Seahawks depth chart")
 
         // Seasons lives behind the ••• overflow menu (2026-08-15 visual-pass: the bare
         // icon row was removed).
         let overflow = app.buttons["depth-chart-overflow"]
-        XCTAssertTrue(overflow.waitForExistence(timeout: 10), "team detail should expose the overflow menu")
+        XCTAssertTrue(
+            overflow.waitForExistence(timeout: 10), "team detail should expose the overflow menu")
         overflow.tap()
 
         let historyButton = app.buttons["history-destination"]
-        XCTAssertTrue(historyButton.waitForExistence(timeout: 5), "the overflow menu should expose History")
+        XCTAssertTrue(
+            historyButton.waitForExistence(timeout: 5), "the overflow menu should expose History")
         historyButton.tap()
 
         // Pick the most recent past season (2025) for the historical journey. This
@@ -287,7 +346,8 @@ final class DepthUITests: XCTestCase {
         for _ in 0..<4 where !season.exists {
             app.swipeUp()
         }
-        XCTAssertTrue(season.waitForExistence(timeout: 5), "2025 should be available in the season picker")
+        XCTAssertTrue(
+            season.waitForExistence(timeout: 5), "2025 should be available in the season picker")
         season.tap()
 
         let seasonTrigger = app.buttons["roster-history-season-trigger"]
@@ -306,7 +366,9 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(overflow2.waitForExistence(timeout: 5))
         overflow2.tap()
         let editToggle = app.buttons["edit-depth-order"]
-        XCTAssertTrue(editToggle.waitForExistence(timeout: 5), "historical rosters still show the Edit toggle")
+        XCTAssertTrue(
+            editToggle.waitForExistence(timeout: 5), "historical rosters still show the Edit toggle"
+        )
         XCTAssertFalse(editToggle.isEnabled, "historical rosters are read-only — toggle disabled")
 
         // The popover must be dismissed before the QB interaction below: re-tapping the
@@ -314,7 +376,8 @@ final class DepthUITests: XCTestCase {
         // popover's non-hittable region, but the field's QB slot is outside the popover,
         // so a tap there is consumed by the popover dismissal.
         let quarterback = app.buttons["player-slot-off-qb-0"]
-        XCTAssertTrue(quarterback.waitForExistence(timeout: 10), "the historical field should render its QB")
+        XCTAssertTrue(
+            quarterback.waitForExistence(timeout: 10), "the historical field should render its QB")
         quarterback.tap()
         // First tap dismisses the popover; the second opens the player. If the popover
         // was already gone (presentation behavior varies across iOS versions), the first
@@ -347,22 +410,28 @@ final class DepthUITests: XCTestCase {
     /// both CI/Staging-prod and local-Debug stacks — see the sibling test's comment).
     func testBackToCurrentFromRosterTrigger() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "seahawks"), "the app should launch straight into the Seahawks depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "seahawks"),
+            "the app should launch straight into the Seahawks depth chart")
 
         let overflow = app.buttons["depth-chart-overflow"]
-        XCTAssertTrue(overflow.waitForExistence(timeout: 10), "team detail should expose the overflow menu")
+        XCTAssertTrue(
+            overflow.waitForExistence(timeout: 10), "team detail should expose the overflow menu")
         overflow.tap()
         app.buttons["history-destination"].tap()
 
         // The Seasons sheet uses the standardized "X" close, not a bespoke back-to-current.
         let sheetClose = app.buttons["history-season-close"]
-        XCTAssertTrue(sheetClose.waitForExistence(timeout: 5), "the Seasons sheet should expose the standardized close")
+        XCTAssertTrue(
+            sheetClose.waitForExistence(timeout: 5),
+            "the Seasons sheet should expose the standardized close")
 
         let season = app.buttons["history-season-2025"]
         for _ in 0..<4 where !season.exists {
             app.swipeUp()
         }
-        XCTAssertTrue(season.waitForExistence(timeout: 5), "2025 should be available in the season picker")
+        XCTAssertTrue(
+            season.waitForExistence(timeout: 5), "2025 should be available in the season picker")
         season.tap()
 
         let seasonTrigger = app.buttons["roster-history-season-trigger"]
@@ -386,8 +455,12 @@ final class DepthUITests: XCTestCase {
         )
         backToCurrent.tap()
 
-        XCTAssertFalse(backToCurrent.waitForExistence(timeout: 2), "Back to current should hide once on the current season")
-        XCTAssertFalse(seasonTrigger.waitForExistence(timeout: 2), "Back to current should leave the historical roster")
+        XCTAssertFalse(
+            backToCurrent.waitForExistence(timeout: 2),
+            "Back to current should hide once on the current season")
+        XCTAssertFalse(
+            seasonTrigger.waitForExistence(timeout: 2),
+            "Back to current should leave the historical roster")
     }
 
     /// DEP-278 follow-up: the Stats page's season chip row stopped scaling once
@@ -399,7 +472,9 @@ final class DepthUITests: XCTestCase {
     /// instead — reachable without reopening the sheet.
     func testBackToCurrentFromStatsPage() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "bills"),
+            "the app should launch straight into the Bills depth chart")
 
         let statsTab = app.buttons["page-switcher-stats"]
         XCTAssertTrue(statsTab.waitForExistence(timeout: 10))
@@ -415,11 +490,14 @@ final class DepthUITests: XCTestCase {
         // Every team has at least current + prior seasons ingested; select the second
         // row (the year before the newest, top of the list) so a completed past season
         // is active.
-        let rows = app.buttons.matching(NSPredicate(format: "identifier MATCHES 'stats-season-[0-9]+'"))
+        let rows = app.buttons.matching(
+            NSPredicate(format: "identifier MATCHES 'stats-season-[0-9]+'"))
         // The sheet is still presenting (and its list still populating) right after
         // `trigger.tap()` — poll for the settled row count rather than a single `count`
         // read right after the first row appears, which can still observe a partial list.
-        XCTAssertGreaterThanOrEqual(rows.waitForCount(atLeast: 2, timeout: 10), 2, "the stats picker should offer more than one season row")
+        XCTAssertGreaterThanOrEqual(
+            rows.waitForCount(atLeast: 2, timeout: 10), 2,
+            "the stats picker should offer more than one season row")
         let pastRow = rows.element(boundBy: 1)
         // Row label is "<year>" (or "<year>, selected") — strip the suffix so we can
         // check the trigger relabels to that same year below.
@@ -438,7 +516,9 @@ final class DepthUITests: XCTestCase {
         // Selecting a past season drops Stats into a full-page `.loading` state — the
         // trigger (and this button) only re-render once the past-season fetch lands. 5s
         // was too tight for that reload against production (flake 2026-08-29).
-        XCTAssertTrue(backToCurrent.waitForExistence(timeout: 20), "a past season should offer Back to current beside the trigger")
+        XCTAssertTrue(
+            backToCurrent.waitForExistence(timeout: 20),
+            "a past season should offer Back to current beside the trigger")
         backToCurrent.tap()
 
         XCTAssertTrue(
@@ -457,13 +537,16 @@ final class DepthUITests: XCTestCase {
     /// beside the trigger, same as Stats above.
     func testBackToCurrentFromSchedulePage() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "bills"),
+            "the app should launch straight into the Bills depth chart")
 
         let scheduleTab = app.buttons["page-switcher-schedule"]
         XCTAssertTrue(scheduleTab.waitForExistence(timeout: 10))
         // Cold CI simulator + production data: schedule payload loads over the network and
         // can exceed 15s on first load (flake 2026-08-29) — 30s budget.
-        XCTAssertTrue(scheduleTab.tapUntil(timeout: 30) { app.otherElements["schedule-content"].exists })
+        XCTAssertTrue(
+            scheduleTab.tapUntil(timeout: 30) { app.otherElements["schedule-content"].exists })
 
         let trigger = app.buttons["schedule-season-trigger"]
         XCTAssertTrue(trigger.waitForExistence(timeout: 10))
@@ -473,7 +556,8 @@ final class DepthUITests: XCTestCase {
         // newest) rather than the oldest — same choice as the Stats test above, and for
         // the same reason: a schedule far enough back can have no ingested games at all,
         // landing on the "No Schedule" empty state instead of a normal past season.
-        let rows = app.buttons.matching(NSPredicate(format: "identifier MATCHES 'schedule-season-[0-9]+'"))
+        let rows = app.buttons.matching(
+            NSPredicate(format: "identifier MATCHES 'schedule-season-[0-9]+'"))
         // The sheet is still presenting (and its list still populating) when `trigger.tap()`
         // returns — poll for the settled row count rather than a single `count` read right
         // after the first row appears, which can still observe a partial list mid-animation.
@@ -488,7 +572,9 @@ final class DepthUITests: XCTestCase {
         // trigger (and this button) only re-render once the past-season fetch lands. 5s
         // was too tight for that reload against production (flake 2026-08-29, reproduced
         // on unmodified main).
-        XCTAssertTrue(backToCurrent.waitForExistence(timeout: 20), "a past season should offer Back to current beside the trigger")
+        XCTAssertTrue(
+            backToCurrent.waitForExistence(timeout: 20),
+            "a past season should offer Back to current beside the trigger")
 
         // Screenshot the historical state before returning to current.
         let attachment = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
@@ -497,7 +583,9 @@ final class DepthUITests: XCTestCase {
         add(attachment)
 
         backToCurrent.tap()
-        XCTAssertFalse(app.buttons["schedule-season-trigger-back-to-current"].waitForExistence(timeout: 2), "Back to current should hide once on the current season")
+        XCTAssertFalse(
+            app.buttons["schedule-season-trigger-back-to-current"].waitForExistence(timeout: 2),
+            "Back to current should hide once on the current season")
     }
 
     /// DEP-278 follow-up: Stats and Schedule fetch no uniform data of their own
@@ -511,7 +599,9 @@ final class DepthUITests: XCTestCase {
     /// completes without regressing.
     func testKitPickFollowsOntoScheduleAndStats() throws {
         let app = XCUIApplication()
-        XCTAssertTrue(app.launch(intoTeam: "bills"), "the app should launch straight into the Bills depth chart")
+        XCTAssertTrue(
+            app.launch(intoTeam: "bills"),
+            "the app should launch straight into the Bills depth chart")
 
         let statsTab = app.buttons["page-switcher-stats"]
         XCTAssertTrue(statsTab.waitForExistence(timeout: 10))
@@ -529,7 +619,9 @@ final class DepthUITests: XCTestCase {
         )
         overflow.tap()
         let chooseUniform = app.buttons["choose-uniform"]
-        XCTAssertTrue(chooseUniform.waitForExistence(timeout: 5), "the Bills should have uniforms to pick from")
+        XCTAssertTrue(
+            chooseUniform.waitForExistence(timeout: 5),
+            "the Bills should have uniforms to pick from")
         chooseUniform.tap()
         XCTAssertTrue(app.otherElements["uniform-picker-sheet"].waitForExistence(timeout: 10))
 
@@ -548,8 +640,11 @@ final class DepthUITests: XCTestCase {
         // gesture isn't reliably drivable in XCUITest) rather than a row tap, and no
         // longer auto-dismisses the sheet — the sheet stays open so you can keep
         // paging and previewing the recolor live, closed explicitly via the X button.
-        let pageDots = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'uniform-dot-'"))
-        XCTAssertGreaterThanOrEqual(pageDots.count, 2, "the Bills should offer more than one uniform to distinguish a kit pick")
+        let pageDots = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'uniform-dot-'"))
+        XCTAssertGreaterThanOrEqual(
+            pageDots.count, 2,
+            "the Bills should offer more than one uniform to distinguish a kit pick")
         pageDots.element(boundBy: 1).tap()
 
         let carouselCard1 = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
@@ -558,10 +653,14 @@ final class DepthUITests: XCTestCase {
         add(carouselCard1)
 
         app.buttons["Close"].tap()
-        XCTAssertFalse(app.otherElements["uniform-picker-sheet"].waitForExistence(timeout: 5), "closing the picker should dismiss the sheet")
+        XCTAssertFalse(
+            app.otherElements["uniform-picker-sheet"].waitForExistence(timeout: 5),
+            "closing the picker should dismiss the sheet")
 
         statsTab.tap()
-        XCTAssertTrue(app.scrollViews["stats-content"].waitForExistence(timeout: 15), "Stats should still render after a kit pick")
+        XCTAssertTrue(
+            app.scrollViews["stats-content"].waitForExistence(timeout: 15),
+            "Stats should still render after a kit pick")
         let statsAfter = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
         statsAfter.name = "stats-after-kit-pick"
         statsAfter.lifetime = .keepAlways
@@ -616,7 +715,9 @@ final class DepthUITests: XCTestCase {
         // DEP-252: Account is now a nav-bar trailing icon on the team page, opening the
         // settings content as a sheet rather than switching tabs.
         let accountButton = app.buttons["account-button"]
-        XCTAssertTrue(accountButton.waitForExistence(timeout: 10), "Account should be reachable from the nav bar")
+        XCTAssertTrue(
+            accountButton.waitForExistence(timeout: 10),
+            "Account should be reachable from the nav bar")
         XCTAssertTrue(
             accountButton.tapUntil { app.staticTexts["settings-about-version"].exists },
             "Account should render the settings content"
@@ -674,8 +775,12 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(slotB.exists, "the B slot should exist")
 
         // "By team" / "By position" tab labels (web's CompareView SegmentedControl copy).
-        XCTAssertTrue(app.buttons["compare-tab-matchup"].exists, "the Matchup segment should render as 'By team'")
-        XCTAssertTrue(app.buttons["compare-tab-position"].exists, "the Position segment should render as 'By position'")
+        XCTAssertTrue(
+            app.buttons["compare-tab-matchup"].exists,
+            "the Matchup segment should render as 'By team'")
+        XCTAssertTrue(
+            app.buttons["compare-tab-position"].exists,
+            "the Position segment should render as 'By position'")
 
         // Pick two teams through the slot picker sheets.
         pickTeam(into: "a", query: "Bills", expectedRow: "team-row-bills", app: app)
@@ -685,7 +790,8 @@ final class DepthUITests: XCTestCase {
         // lens-selector buttons — no Forecast, no Roster. Selecting Defense pages the
         // content and reports the selection to VoiceOver rather than relying on color alone.
         let offenseLens = app.buttons["compare-lens-offense"]
-        XCTAssertTrue(offenseLens.waitForExistence(timeout: 20), "Offense should be the first compare lens")
+        XCTAssertTrue(
+            offenseLens.waitForExistence(timeout: 20), "Offense should be the first compare lens")
         XCTAssertFalse(app.buttons["compare-lens-forecast"].exists, "Forecast was removed outright")
         XCTAssertFalse(app.buttons["compare-lens-roster"].exists, "Roster was removed outright")
         let defenseLens = app.buttons["compare-lens-defense"]
@@ -696,28 +802,43 @@ final class DepthUITests: XCTestCase {
         // The lens now swaps grouped metric tables in place (Aug 26 redesign) rather than
         // paging a single evidence card, so Defense is confirmed by its own first group
         // rather than by a per-lens card identifier.
-        let pressureGroup = app.descendants(matching: .any)["compare-group-defense-pressure"].firstMatch
-        XCTAssertTrue(pressureGroup.waitForExistence(timeout: 10), "selecting Defense should swap in its metric groups")
-        XCTAssertTrue(defenseLens.isSelected, "the active lens should expose the selected accessibility trait")
+        let pressureGroup = app.descendants(matching: .any)["compare-group-defense-pressure"]
+            .firstMatch
+        XCTAssertTrue(
+            pressureGroup.waitForExistence(timeout: 10),
+            "selecting Defense should swap in its metric groups")
+        XCTAssertTrue(
+            defenseLens.isSelected, "the active lens should expose the selected accessibility trait"
+        )
 
         // Position tab: the DEP-311 room picker (unit lens + room grid). The old horizontal
         // `compare-position-row` scroller is gone.
         app.buttons["compare-tab-position"].tap()
         let lineupOffense = app.buttons["unit-tab-offense"]
-        XCTAssertTrue(lineupOffense.waitForExistence(timeout: 10), "the unit lens row should render on the position tab")
-        XCTAssertTrue(lineupOffense.isSelected || lineupOffense.frame.height >= 44 - 0.01, "the unit lens keeps its 44pt tap target")
+        XCTAssertTrue(
+            lineupOffense.waitForExistence(timeout: 10),
+            "the unit lens row should render on the position tab")
+        XCTAssertTrue(
+            lineupOffense.isSelected || lineupOffense.frame.height >= 44 - 0.01,
+            "the unit lens keeps its 44pt tap target")
         // The default unit (Offense) room grid: every room tile keeps the 44pt minimum and
         // is exposed without any horizontal scrolling.
         let firstRoom = app.buttons["compare-room-quarterback"]
-        XCTAssertTrue(firstRoom.waitForExistence(timeout: 5), "the offense Quarterback room tile should render")
-        XCTAssertGreaterThanOrEqual(firstRoom.frame.height, 44 - 0.01, "room tiles must meet the 44pt touch minimum")
+        XCTAssertTrue(
+            firstRoom.waitForExistence(timeout: 5),
+            "the offense Quarterback room tile should render")
+        XCTAssertGreaterThanOrEqual(
+            firstRoom.frame.height, 44 - 0.01, "room tiles must meet the 44pt touch minimum")
 
         // Quarterback is a single-position room — it selects directly with no exact-role
         // panel and no "compare-position-QB" role tile of its own.
-        XCTAssertFalse(app.buttons["compare-position-QB"].exists, "a single-position room has no role panel")
+        XCTAssertFalse(
+            app.buttons["compare-position-QB"].exists, "a single-position room has no role panel")
 
         let depthRows = app.descendants(matching: .any)["compare-rows"].firstMatch
-        XCTAssertTrue(depthRows.waitForExistence(timeout: 5), "the depth table should render for the default Quarterback selection")
+        XCTAssertTrue(
+            depthRows.waitForExistence(timeout: 5),
+            "the depth table should render for the default Quarterback selection")
     }
 
     /// DEP-311: every unit's last role is reachable through the two-step room→position
@@ -729,29 +850,42 @@ final class DepthUITests: XCTestCase {
         app.launch()
         XCTAssertTrue(app.waitForDepthChart(), "Depth Charts should be the launch tab")
 
-        XCTAssertTrue(app.tabBars.firstMatch.buttons["Compare"].tapUntil { app.scrollViews["compare-content"].exists })
+        XCTAssertTrue(
+            app.tabBars.firstMatch.buttons["Compare"].tapUntil {
+                app.scrollViews["compare-content"].exists
+            })
         pickTeam(into: "a", query: "Bills", expectedRow: "team-row-bills", app: app)
         pickTeam(into: "b", query: "Seahawks", expectedRow: "team-row-seahawks", app: app)
 
         app.buttons["compare-tab-position"].tap()
         // Offense was the launch unit; its room grid renders immediately.
-        XCTAssertTrue(app.buttons["compare-room-line"].waitForExistence(timeout: 10), "the offense Line room should render without horizontal scrolling")
+        XCTAssertTrue(
+            app.buttons["compare-room-line"].waitForExistence(timeout: 10),
+            "the offense Line room should render without horizontal scrolling")
 
         // Offense → Line room → RT (the last role in that room).
         app.buttons["compare-room-line"].tap()
         let rightTackle = app.buttons["compare-position-RT"]
-        XCTAssertTrue(rightTackle.waitForExistence(timeout: 5), "RT should be reachable in the Line exact-role panel")
-        XCTAssertGreaterThanOrEqual(rightTackle.frame.height, 44 - 0.01, "RT must keep the 44pt touch minimum")
+        XCTAssertTrue(
+            rightTackle.waitForExistence(timeout: 5),
+            "RT should be reachable in the Line exact-role panel")
+        XCTAssertGreaterThanOrEqual(
+            rightTackle.frame.height, 44 - 0.01, "RT must keep the 44pt touch minimum")
         rightTackle.tap()
 
         // Defense: unit lens → Safeties room → FS (last role).
         // The unit lens is the same DepthUnitTabBar treatment as the field (unit-tab-*).
         app.buttons["unit-tab-defense"].tap()
-        XCTAssertTrue(app.buttons["compare-room-safeties"].waitForExistence(timeout: 5), "the defense Safeties room should render in the grid")
+        XCTAssertTrue(
+            app.buttons["compare-room-safeties"].waitForExistence(timeout: 5),
+            "the defense Safeties room should render in the grid")
         app.buttons["compare-room-safeties"].tap()
         let freeSafety = app.buttons["compare-position-FS"]
-        XCTAssertTrue(freeSafety.waitForExistence(timeout: 5), "FS should be reachable from the Safeties exact-role panel")
-        XCTAssertGreaterThanOrEqual(freeSafety.frame.height, 44 - 0.01, "FS must keep the 44pt touch minimum")
+        XCTAssertTrue(
+            freeSafety.waitForExistence(timeout: 5),
+            "FS should be reachable from the Safeties exact-role panel")
+        XCTAssertGreaterThanOrEqual(
+            freeSafety.frame.height, 44 - 0.01, "FS must keep the 44pt touch minimum")
         freeSafety.tap()
 
         // Special Teams: Specialists is this unit's only room, and (Aug 2026: switching
@@ -761,27 +895,38 @@ final class DepthUITests: XCTestCase {
         // Aug 2026 pass made an already-expanded room collapse on a second tap), so unlike
         // the Line and Safeties rooms above, this one is asserted without an explicit tap.
         app.buttons["unit-tab-special"].tap()
-        XCTAssertTrue(app.buttons["compare-room-specialists"].waitForExistence(timeout: 5), "the Specialists room should render in special teams")
+        XCTAssertTrue(
+            app.buttons["compare-room-specialists"].waitForExistence(timeout: 5),
+            "the Specialists room should render in special teams")
         let kicker = app.buttons["compare-position-K"]
-        XCTAssertTrue(kicker.waitForExistence(timeout: 5), "K should be reachable from the Specialists exact-role panel")
-        XCTAssertGreaterThanOrEqual(kicker.frame.height, 44 - 0.01, "K must keep the 44pt touch minimum")
+        XCTAssertTrue(
+            kicker.waitForExistence(timeout: 5),
+            "K should be reachable from the Specialists exact-role panel")
+        XCTAssertGreaterThanOrEqual(
+            kicker.frame.height, 44 - 0.01, "K must keep the 44pt touch minimum")
         XCTAssertTrue(kicker.isHittable, "K should be tappable without horizontal scrolling")
         kicker.tap()
     }
 
     /// Picks a team into a compare slot: taps the slot, searches in the picker sheet,
     /// taps the matching row, and waits for the sheet to close.
-    private func pickTeam(into slot: String, query: String, expectedRow: String, app: XCUIApplication) {
+    private func pickTeam(
+        into slot: String, query: String, expectedRow: String, app: XCUIApplication
+    ) {
         let slotButton = app.buttons["compare-slot-\(slot)"]
-        XCTAssertTrue(slotButton.waitForExistence(timeout: 10), "the \(slot) compare slot should exist")
+        XCTAssertTrue(
+            slotButton.waitForExistence(timeout: 10), "the \(slot) compare slot should exist")
         slotButton.tap()
 
         let searchField = app.searchFields.firstMatch
-        XCTAssertTrue(searchField.waitForExistence(timeout: 10), "the picker sheet should offer team search")
+        XCTAssertTrue(
+            searchField.waitForExistence(timeout: 10), "the picker sheet should offer team search")
         searchField.typeTextAfterFocusing(query, in: app)
 
         let teamRow = app.buttons[expectedRow]
-        XCTAssertTrue(teamRow.waitForExistence(timeout: 15), "searching \"\(query)\" should surface \(expectedRow)")
+        XCTAssertTrue(
+            teamRow.waitForExistence(timeout: 15),
+            "searching \"\(query)\" should surface \(expectedRow)")
         teamRow.tap()
 
         XCTAssertTrue(

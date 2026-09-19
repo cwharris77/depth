@@ -40,7 +40,8 @@ struct UserPreferences: Sendable {
     }
 
     func setUniformSelection(_ uniformId: String?, for teamId: String) {
-        var selections = defaults.dictionary(forKey: Key.uniformSelections) as? [String: String] ?? [:]
+        var selections =
+            defaults.dictionary(forKey: Key.uniformSelections) as? [String: String] ?? [:]
         if let uniformId {
             selections[teamId] = uniformId
         } else {
@@ -100,7 +101,8 @@ struct UserPreferences: Sendable {
         if override.isEmpty {
             store[teamId] = nil
         } else {
-            store[teamId] = Dictionary(uniqueKeysWithValues: override.map { ($0.key.rawValue, $0.value) })
+            store[teamId] = Dictionary(
+                uniqueKeysWithValues: override.map { ($0.key.rawValue, $0.value) })
         }
         defaults.set(store, forKey: Key.depthOverrides)
     }
@@ -126,8 +128,9 @@ struct UserPreferences: Sendable {
     }
 
     private func decode(_ raw: [String: [String]]) -> [Position: [String]] {
-        Dictionary(uniqueKeysWithValues: raw.compactMap { key, ids in
-            Position(rawValue: key).map { ($0, ids) }
-        })
+        Dictionary(
+            uniqueKeysWithValues: raw.compactMap { key, ids in
+                Position(rawValue: key).map { ($0, ids) }
+            })
     }
 }

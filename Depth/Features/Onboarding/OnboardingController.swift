@@ -128,7 +128,8 @@ struct CoachmarkStep: Identifiable {
         CoachmarkStep(
             id: .overflowMenu,
             title: "More lives in here",
-            message: "Uniforms, past seasons, formations, and edit mode are all one tap away in this menu."
+            message:
+                "Uniforms, past seasons, formations, and edit mode are all one tap away in this menu."
         ),
         CoachmarkStep(
             id: .bottomTabs,

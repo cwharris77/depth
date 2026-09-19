@@ -113,7 +113,8 @@ actor SupabaseUserSettingsService: UserSettingsServicing {
                 startOnFavorite: row.startOnFavorite
             )
         } catch let error as URLError {
-            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server(error.localizedDescription)
+            throw error.isNetworkUnavailable
+                ? DepthError.offline : DepthError.server(error.localizedDescription)
         } catch let error as PostgrestError {
             throw Self.map(error)
         } catch {
@@ -144,7 +145,8 @@ actor SupabaseUserSettingsService: UserSettingsServicing {
                 .upsert(payload, onConflict: "user_id")
                 .execute()
         } catch let error as URLError {
-            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server(error.localizedDescription)
+            throw error.isNetworkUnavailable
+                ? DepthError.offline : DepthError.server(error.localizedDescription)
         } catch let error as PostgrestError {
             throw Self.map(error)
         } catch {

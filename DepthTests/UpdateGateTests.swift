@@ -31,8 +31,12 @@ private actor FakeConfigRepository: DepthRepository {
 
     func teams() async throws -> [Team] { [] }
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot { throw DepthError.notFound }
-    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot { throw DepthError.notFound }
-    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule { throw DepthError.notFound }
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        throw DepthError.notFound
+    }
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        throw DepthError.notFound
+    }
     func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
 
@@ -77,7 +81,9 @@ private func config(minimum: Int, message: String? = nil) -> AppConfig {
 
         await gate.check()
 
-        #expect(gate.state == .allowed, "the minimum is inclusive — a build AT the minimum is supported")
+        #expect(
+            gate.state == .allowed, "the minimum is inclusive — a build AT the minimum is supported"
+        )
     }
 
     @Test @MainActor func allowsWhenInstalledBuildIsAboveMinimum() async {
@@ -91,7 +97,8 @@ private func config(minimum: Int, message: String? = nil) -> AppConfig {
     }
 
     @Test @MainActor func surfacesMaintenanceMessageFromConfig() async {
-        let underlying = FakeConfigRepository(configResult: .success(config(minimum: 10, message: "Back at 5pm ET.")))
+        let underlying = FakeConfigRepository(
+            configResult: .success(config(minimum: 10, message: "Back at 5pm ET.")))
         let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
         let gate = UpdateGateViewModel(repository: repository, currentBuild: 9)
 
@@ -109,8 +116,12 @@ private func config(minimum: Int, message: String? = nil) -> AppConfig {
 
         await gate.check()
 
-        #expect(gate.state == .allowed, "a backend outage must never brick first launch — the gate fails open")
-        #expect(!gate.isChecking, "the gate must always reach a decision, never strand the app on the checking screen")
+        #expect(
+            gate.state == .allowed,
+            "a backend outage must never brick first launch — the gate fails open")
+        #expect(
+            !gate.isChecking,
+            "the gate must always reach a decision, never strand the app on the checking screen")
     }
 
     @Test @MainActor func blocksFromCacheWhenConfigIsUnreachable() async {
@@ -122,7 +133,9 @@ private func config(minimum: Int, message: String? = nil) -> AppConfig {
 
         await gate.check()
 
-        #expect(gate.state == .blocked, "an offline old build stays blocked — going offline must not be a way around the gate")
+        #expect(
+            gate.state == .blocked,
+            "an offline old build stays blocked — going offline must not be a way around the gate")
     }
 
     // MARK: - Ordering: the property DEP-425 exists for
@@ -132,7 +145,10 @@ private func config(minimum: Int, message: String? = nil) -> AppConfig {
         let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
         let gate = UpdateGateViewModel(repository: repository, currentBuild: 99)
 
-        #expect(gate.state == .checking, "the gate must not default to allowed — that is what let tabs mount and fetch before it resolved")
+        #expect(
+            gate.state == .checking,
+            "the gate must not default to allowed — that is what let tabs mount and fetch before it resolved"
+        )
         #expect(gate.isChecking)
     }
 
@@ -150,7 +166,9 @@ private func config(minimum: Int, message: String? = nil) -> AppConfig {
         while gate.isChecking {
             await Task.yield()
         }
-        #expect(gate.state == .blocked, "the cached config must decide the gate without waiting on the network")
+        #expect(
+            gate.state == .blocked,
+            "the cached config must decide the gate without waiting on the network")
 
         // Then wait for the live read to actually enter the (held) repository call. The
         // cached phase completing does NOT imply the network call has started — `check()`
@@ -177,7 +195,10 @@ private func config(minimum: Int, message: String? = nil) -> AppConfig {
 
         await gate.check()
 
-        #expect(gate.state == .blocked, "the live read must override a cached allow — the cache only ever decides earlier, never wins")
+        #expect(
+            gate.state == .blocked,
+            "the live read must override a cached allow — the cache only ever decides earlier, never wins"
+        )
     }
 
     @Test @MainActor func rechecksPickUpAServerSideFlipOnAlreadyRunningApp() async {
@@ -192,7 +213,9 @@ private func config(minimum: Int, message: String? = nil) -> AppConfig {
         await underlying.setConfigResult(.success(config(minimum: 10)))
         await gate.check()
 
-        #expect(gate.state == .blocked, "a foreground re-check must catch a minimum-build flip on an already-running install")
+        #expect(
+            gate.state == .blocked,
+            "a foreground re-check must catch a minimum-build flip on an already-running install")
     }
 }
 

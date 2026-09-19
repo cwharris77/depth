@@ -51,7 +51,8 @@ struct AppEventPayload: Encodable, Sendable {
         eventName = event.name
         errorCategory = event.errorCategory
         if let appVersion, appVersion.utf8.count <= 32,
-           appVersion.range(of: #"^[0-9]+(\.[0-9]+){0,2}\z"#, options: .regularExpression) != nil {
+            appVersion.range(of: #"^[0-9]+(\.[0-9]+){0,2}\z"#, options: .regularExpression) != nil
+        {
             self.appVersion = appVersion
         } else {
             self.appVersion = nil

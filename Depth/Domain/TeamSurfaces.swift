@@ -93,7 +93,9 @@ enum TeamSurfaces {
         {
             return clears
         }
-        return candidates.max { contrastRatio($0, darkBackgroundHex) < contrastRatio($1, darkBackgroundHex) }
+        return candidates.max {
+            contrastRatio($0, darkBackgroundHex) < contrastRatio($1, darkBackgroundHex)
+        }
             ?? colors.primary
     }
 

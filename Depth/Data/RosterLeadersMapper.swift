@@ -9,7 +9,8 @@ enum RosterLeadersMapper {
         players: [RosterLeaderPlayerDTO],
         stats: [RosterLeaderStatsDTO]
     ) -> [LeaderEntry] {
-        let nameById = Dictionary(players.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+        let nameById = Dictionary(
+            players.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
         return stats.map { row in
             LeaderEntry(
                 playerId: row.playerId,
@@ -20,8 +21,10 @@ enum RosterLeadersMapper {
                     passingYards: row.passingYards, passingTds: row.passingTds,
                     passingInterceptions: nil, carries: row.carries, rushingYards: row.rushingYards,
                     rushingTds: row.rushingTds, receptions: row.receptions,
-                    targets: nil, receivingYards: row.receivingYards, receivingTds: row.receivingTds,
-                    defTacklesSolo: nil, defSacks: nil, defInterceptions: nil, fgMade: nil, fgAtt: nil,
+                    targets: nil, receivingYards: row.receivingYards,
+                    receivingTds: row.receivingTds,
+                    defTacklesSolo: nil, defSacks: nil, defInterceptions: nil, fgMade: nil,
+                    fgAtt: nil,
                     defTackleAssists: nil, defTacklesForLoss: nil, defQbHits: nil,
                     defPassDefended: nil, defFumblesForced: nil, defTds: nil, defSafeties: nil,
                     fumbleRecoveries: nil, fumbleRecoveryTds: nil, puntReturns: nil,

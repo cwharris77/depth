@@ -49,7 +49,8 @@ struct TeamStatsPage: Equatable, Codable, Sendable {
         team = try container.decode(Team.self, forKey: .team)
         seasons = try container.decode([TeamSeasonStats].self, forKey: .seasons)
         upcomingSeason = try container.decodeIfPresent(Int.self, forKey: .upcomingSeason)
-        incomingCoach = try container.decodeIfPresent(TeamIncomingCoach.self, forKey: .incomingCoach)
+        incomingCoach = try container.decodeIfPresent(
+            TeamIncomingCoach.self, forKey: .incomingCoach)
         currentSeason = try container.decode(Int.self, forKey: .currentSeason)
         // decodeIfPresent, not decode: a cache written before ranks existed has no such
         // key, and that must degrade to "no ranks" rather than failing the whole read.

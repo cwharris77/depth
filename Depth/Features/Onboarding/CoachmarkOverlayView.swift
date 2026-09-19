@@ -105,7 +105,8 @@ struct CoachmarkOverlayView: View {
         let halfHeight = bubbleSize.height / 2
         let topInset = dynamicTypeSize.isAccessibilitySize ? proxy.safeAreaInsets.top : 0
         let bottomInset = dynamicTypeSize.isAccessibilitySize ? proxy.safeAreaInsets.bottom : 0
-        let bubbleY = showsBelow
+        let bubbleY =
+            showsBelow
             ? min(rect.maxY + spacing + halfHeight, proxy.size.height - bottomInset - halfHeight)
             : max(rect.minY - spacing - halfHeight, topInset + halfHeight)
 
@@ -147,13 +148,20 @@ struct CoachmarkOverlayView: View {
                 // DEP-415: keep Next/Skip reachable when the explanation is taller
                 // than the available viewport; the spotlight still names its target.
                 ScrollView { content }
-                    .frame(maxHeight: max(44, proxy.size.height - topInset - bottomInset - DesignTokens.Spacing.lg * 2))
+                    .frame(
+                        maxHeight: max(
+                            44,
+                            proxy.size.height - topInset - bottomInset - DesignTokens.Spacing.lg * 2
+                        ))
             } else {
                 content
             }
         }
         .frame(width: bubbleWidth, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: DesignTokens.Radius.md).fill(DesignTokens.Colors.surfaceCard))
+        .background(
+            RoundedRectangle(cornerRadius: DesignTokens.Radius.md).fill(
+                DesignTokens.Colors.surfaceCard)
+        )
         .overlay(
             RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
                 .strokeBorder(DesignTokens.Colors.borderDefault, lineWidth: 1)

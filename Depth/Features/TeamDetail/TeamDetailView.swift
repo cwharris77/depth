@@ -122,15 +122,15 @@ struct TeamDetailView: View {
         self.onOpenTeamSwitcher = onOpenTeamSwitcher
         self.onOpenCompare = onOpenCompare
         _unit = State(initialValue: preferences.lastUnit ?? .offense)
-        _selectedUniformID = State(initialValue: preferences.uniformSelection(for: viewModel.teamId))
-        _historyViewModel = State(initialValue: HistoryViewModel(teamId: viewModel.teamId, repository: repository))
+        _selectedUniformID = State(
+            initialValue: preferences.uniformSelection(for: viewModel.teamId))
+        _historyViewModel = State(
+            initialValue: HistoryViewModel(teamId: viewModel.teamId, repository: repository))
     }
 
     private var navigationTitleText: String {
         viewModel.snapshot.map { "\($0.team.city) \($0.team.name)" } ?? "Team"
     }
-
-
 
     /// The selected uniform's palette recolors the field dots (web's kit selection);
     /// nil keeps the team's own colors. Prefers the live-previewed kit (while the picker
@@ -138,7 +138,8 @@ struct TeamDetailView: View {
     /// field immediately without touching the saved pick.
     private var fieldColors: TeamColors? {
         guard let id = previewUniformID ?? selectedUniformID,
-              let uniform = displayedSnapshot?.uniforms.first(where: { $0.id == id }) else {
+            let uniform = displayedSnapshot?.uniforms.first(where: { $0.id == id })
+        else {
             return nil
         }
         return uniform.colors
@@ -294,7 +295,8 @@ struct TeamDetailView: View {
                     repository: repository,
                     depthContext: PlayerDepthContext(
                         players: players(for: player.position),
-                        isCustom: !historyViewModel.isHistorical && confirmedOrders[player.position] != nil
+                        isCustom: !historyViewModel.isHistorical
+                            && confirmedOrders[player.position] != nil
                     ),
                     isHistorical: historyViewModel.isHistorical
                 )
@@ -443,7 +445,9 @@ struct TeamDetailView: View {
         //
         // The bottom inset is the tab bar's footprint (it is never hidden now), which is
         // exactly the region the edit bar has to cover.
-        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.bottom } action: { inset in
+        .onGeometryChange(for: CGFloat.self) {
+            $0.safeAreaInsets.bottom
+        } action: { inset in
             tabBarBottomInset = inset
         }
         .onChange(of: editMode.isActive) { _, isActive in
@@ -463,7 +467,9 @@ struct TeamDetailView: View {
             Button("Reset", role: .destructive, action: resetAllOverrides)
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("All \(confirmedOrders.count) edited position\(confirmedOrders.count == 1 ? "" : "s") \(confirmedOrders.count == 1 ? "goes" : "go") back to \(displayedSnapshot?.team.city ?? "the team")'s published depth chart.")
+            Text(
+                "All \(confirmedOrders.count) edited position\(confirmedOrders.count == 1 ? "" : "s") \(confirmedOrders.count == 1 ? "goes" : "go") back to \(displayedSnapshot?.team.city ?? "the team")'s published depth chart."
+            )
         }
     }
 
@@ -483,7 +489,9 @@ struct TeamDetailView: View {
         let colors = viewModel.snapshot?.team.colors
         let fill = (colors?.primary).map(Color.init(hex:)) ?? DesignTokens.Colors.surfaceChip
         let ring = (colors?.secondary).map(Color.init(hex:)) ?? DesignTokens.Colors.accent
-        let textColor = (colors?.primary).map { Color(hex: readableTextOn($0)) } ?? DesignTokens.Colors.textPrimary
+        let textColor =
+            (colors?.primary).map { Color(hex: readableTextOn($0)) }
+            ?? DesignTokens.Colors.textPrimary
         return Button(action: onOpenTeamSwitcher) {
             HStack(spacing: 4) {
                 Text(navigationTitleText)
@@ -520,7 +528,8 @@ struct TeamDetailView: View {
     private var pageSwitcher: some View {
         DepthSegmentedControl(
             options: TeamPage.allCases.map {
-                DepthSegmentedOption(value: $0, label: $0.label, identifier: "page-switcher-\($0.rawValue)")
+                DepthSegmentedOption(
+                    value: $0, label: $0.label, identifier: "page-switcher-\($0.rawValue)")
             },
             selection: page,
             onChange: { page = $0 },
@@ -528,7 +537,8 @@ struct TeamDetailView: View {
             // Plain black/white against the fill rather than textOnFill's prefer-the-kit's-
             // own-contrast-color rule (Cooper 2026-09-01: "the text can just be black or
             // white, like the currently built app"), and always derived from that same fill.
-            activeTextColor: activeJerseyColors
+            activeTextColor:
+                activeJerseyColors
                 .map { Color(hex: readableTextOn(TeamSurfaces.fill($0))) }
                 ?? DesignTokens.Colors.onAccent,
             fullWidth: true
@@ -681,7 +691,8 @@ struct TeamDetailView: View {
                 }
         }
         .accessibilityLabel(
-            confirmedOrders.isEmpty || historyViewModel.isHistorical ? "More" : "More, custom order active"
+            confirmedOrders.isEmpty || historyViewModel.isHistorical
+                ? "More" : "More, custom order active"
         )
         .accessibilityIdentifier("depth-chart-overflow")
         // DEP-251: first-run tutorial's overflow-menu coachmark target.
@@ -698,7 +709,9 @@ struct TeamDetailView: View {
                 currentContent
             }
         case .stats:
-            TeamStatsView(teamId: viewModel.teamId, repository: repository, currentTeamStore: currentTeamStore)
+            TeamStatsView(
+                teamId: viewModel.teamId, repository: repository, currentTeamStore: currentTeamStore
+            )
         case .schedule:
             ScheduleView(
                 teamId: viewModel.teamId,
@@ -750,11 +763,13 @@ struct TeamDetailView: View {
             }
         case .empty:
             historyUnavailable(
-                title: "No roster data", description: "This season doesn't have a historical roster yet."
+                title: "No roster data",
+                description: "This season doesn't have a historical roster yet."
             )
         case .failed(let error):
             historyUnavailable(
-                title: "Couldn't load this season", description: error.recoveryDescription, retry: true
+                title: "Couldn't load this season", description: error.recoveryDescription,
+                retry: true
             )
         case .current:
             EmptyView()
@@ -801,145 +816,147 @@ struct TeamDetailView: View {
     }
 
     private func rosterStack(snapshot: TeamSnapshot, historical: Bool) -> some View {
-            VStack(spacing: 16) {
-                    if historical {
-                        // Web parity (DEP-245): rather than the roster's own bare "Back to
-                        // today" text button, use the same `SeasonPickerTrigger` Stats and
-                        // Schedule render — a glass capsule showing the picked season with a
-                        // "Back to current season" escape beside it, reachable without
-                        // reopening the Seasons sheet. The trigger opens the roster's own
-                        // HistorySeasonSheet (its current/past distinction), while the
-                        // escape returns to the live roster the same way the sheet's own
-                        // back-to-current does.
-                        SeasonPickerTrigger(
-                            season: historyViewModel.selectedSeason.year,
-                            identifier: "roster-history-season-trigger",
-                            isHistorical: true,
-                            onBackToCurrent: {
-                                historyViewModel.selectImmediately(.current(historyViewModel.currentSeason))
-                            }
-                        ) {
-                            showHistory = true
-                        }
-                        .padding(.horizontal)
+        VStack(spacing: 16) {
+            if historical {
+                // Web parity (DEP-245): rather than the roster's own bare "Back to
+                // today" text button, use the same `SeasonPickerTrigger` Stats and
+                // Schedule render — a glass capsule showing the picked season with a
+                // "Back to current season" escape beside it, reachable without
+                // reopening the Seasons sheet. The trigger opens the roster's own
+                // HistorySeasonSheet (its current/past distinction), while the
+                // escape returns to the live roster the same way the sheet's own
+                // back-to-current does.
+                SeasonPickerTrigger(
+                    season: historyViewModel.selectedSeason.year,
+                    identifier: "roster-history-season-trigger",
+                    isHistorical: true,
+                    onBackToCurrent: {
+                        historyViewModel.selectImmediately(.current(historyViewModel.currentSeason))
                     }
-                    // DEP-326: cache-first reads (CachingDepthRepository.teamSnapshot) already
-                    // kick off a background refresh on every visit, so a stale cache while
-                    // online resolves itself silently within moments — telling the user
-                    // "showing saved data, pull to refresh" in that case just describes an
-                    // implementation detail they can't act on. The banner only earns its
-                    // place when there's genuinely no network to refresh from.
-                    if !historical && viewModel.isStale && DepthEnvironment.networkMonitor.isOffline {
-                        StaleBanner()
-                    }
-                    if !historical, case .failed = viewModel.loadState {
-                        // Only reachable if a refresh failed after we already had data —
-                        // last-good snapshot stays on screen (design spec's failure-mode
-                        // table), this just surfaces that a background refresh didn't land.
-                        RefreshFailedBanner()
-                    }
-                    // DEP-230: unit tabs (left) + overflow menu (right) in one row,
-                    // matching web's FieldHeaderMenu.tsx `justify-between` — previously
-                    // the overflow menu lived in the nav-bar toolbar, a different row
-                    // entirely, and the tabs stretched full-width with no trailing
-                    // element to justify against.
-                    HStack {
-                        DepthUnitTabBar(
-                            selection: unit,
-                            onChange: { unit = $0 },
-                            activeColor: teamAccentColor
-                        )
-                        Spacer()
-                        overflowMenu
-                    }
-                    .padding(.horizontal)
-                    .overlay(alignment: .bottom) {
-                        Rectangle().fill(DesignTokens.Colors.borderDefault).frame(height: 1)
-                    }
-
-                    DepthChartFieldView(
-                        snapshot: snapshot,
-                        unit: unit,
-                        colors: fieldColors,
-                        formation: activeFormation,
-                        nameMode: fieldNameMode,
-                        isEditing: editMode.isActive
-                    ) { player in
-                        if editMode.isActive {
-                            reorderPlayer = player
-                        } else {
-                            selectedPlayer = player
-                        }
-                    }
-                    // The field is the screen's primary content, so it fills the
-                    // available height instead of capping at a fixed ~1.4:1 aspect and
-                    // leaving a large blank area beneath it (DEP-207). Width still comes
-                    // from the horizontal padding; only the vertical axis is sized here.
-                    //
-                    // `containerRelativeFrame(.vertical)` measured the ScrollView's full
-                    // viewport height and ignored the unit tabs / chips / attribution that
-                    // sit above the field — so on tall phones (iPhone 17) the field's
-                    // bottom rows (special teams, offense backfield) were pushed beneath
-                    // the tab bar. `frame(maxHeight: .infinity)` makes the field flex to
-                    // the *remaining* height inside the VStack, so it fills the space
-                    // between the chrome and the tab bar without ever extending under it.
-                    //
-                    // No horizontal padding: the field fills the full safe-area width so
-                    // it sits as close to the screen edges as possible (the roster chrome
-                    // above it keeps its own inset, so only the field goes edge-to-edge).
-                    .frame(maxHeight: .infinity)
-                    // The bottom-right corner is the emptiest grass in both units — the
-                    // offense's backfield edge, and the field behind the defense's line —
-                    // so the control never covers a player. Chrome styling, no label, no
-                    // accent fill — the chart stays the primary thing on screen.
-                    .overlay(alignment: .bottomTrailing) {
-                        if showsTrueScaleEntry {
-                            TrueScaleEntryButton {
-                                trueScaleTipDismissed = true
-                                showTrueScale = true
-                            }
-                            .padding(6)
-                        }
-                    }
-
-                    if showsTrueScaleEntry && !trueScaleTipDismissed {
-                        HStack(spacing: DesignTokens.Spacing.sm) {
-                            Text("Tip: tap the expand icon to walk the formation at true scale.")
-                                .font(.caption2)
-                                .foregroundStyle(DesignTokens.Colors.textFaint)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Button("Got it") { trueScaleTipDismissed = true }
-                                .font(.caption2.weight(.semibold))
-                                .foregroundStyle(DesignTokens.Colors.textMuted)
-                                .frame(minWidth: 44, minHeight: 44)
-                                .contentShape(Rectangle())
-                                .accessibilityIdentifier("true-scale-tip-dismiss")
-                        }
-                        .padding(.horizontal)
-                    }
-
-                    // FTN charting is CC-BY-SA 4.0, so the notice follows the field
-                    // content it attributes. Keep it in the scroll stack rather than
-                    // pinning it to the viewport, and omit it for historical snapshots
-                    // that carry no real formation data.
-                    if !historical && snapshot.formations.contains(where: { $0.unit == unit }) {
-                        FTNAttributionText()
-                            .padding(.top, DesignTokens.Spacing.sm)
-                            .padding(.horizontal)
-                            .accessibilityIdentifier("field-attribution")
-                    }
+                ) {
+                    showHistory = true
                 }
-                .padding(.vertical)
-                // Pin the stack to the page's available height (the parent already
-                // constrains it to the area above the tab bar) so the field's flexible
-                // `frame(maxHeight: .infinity)` resolves to the *remaining* space after
-                // the chrome above it. A ScrollView can't do this — it proposes an
-                // infinite height on its scroll axis, which collapses a flexible child to
-                // zero instead of filling (DEP-207 height fix, iPhone 17).
-                .frame(maxHeight: .infinity)
+                .padding(.horizontal)
+            }
+            // DEP-326: cache-first reads (CachingDepthRepository.teamSnapshot) already
+            // kick off a background refresh on every visit, so a stale cache while
+            // online resolves itself silently within moments — telling the user
+            // "showing saved data, pull to refresh" in that case just describes an
+            // implementation detail they can't act on. The banner only earns its
+            // place when there's genuinely no network to refresh from.
+            if !historical && viewModel.isStale && DepthEnvironment.networkMonitor.isOffline {
+                StaleBanner()
+            }
+            if !historical, case .failed = viewModel.loadState {
+                // Only reachable if a refresh failed after we already had data —
+                // last-good snapshot stays on screen (design spec's failure-mode
+                // table), this just surfaces that a background refresh didn't land.
+                RefreshFailedBanner()
+            }
+            // DEP-230: unit tabs (left) + overflow menu (right) in one row,
+            // matching web's FieldHeaderMenu.tsx `justify-between` — previously
+            // the overflow menu lived in the nav-bar toolbar, a different row
+            // entirely, and the tabs stretched full-width with no trailing
+            // element to justify against.
+            HStack {
+                DepthUnitTabBar(
+                    selection: unit,
+                    onChange: { unit = $0 },
+                    activeColor: teamAccentColor
+                )
+                Spacer()
+                overflowMenu
+            }
+            .padding(.horizontal)
+            .overlay(alignment: .bottom) {
+                Rectangle().fill(DesignTokens.Colors.borderDefault).frame(height: 1)
+            }
+
+            DepthChartFieldView(
+                snapshot: snapshot,
+                unit: unit,
+                colors: fieldColors,
+                formation: activeFormation,
+                nameMode: fieldNameMode,
+                isEditing: editMode.isActive
+            ) { player in
+                if editMode.isActive {
+                    reorderPlayer = player
+                } else {
+                    selectedPlayer = player
+                }
+            }
+            // The field is the screen's primary content, so it fills the
+            // available height instead of capping at a fixed ~1.4:1 aspect and
+            // leaving a large blank area beneath it (DEP-207). Width still comes
+            // from the horizontal padding; only the vertical axis is sized here.
+            //
+            // `containerRelativeFrame(.vertical)` measured the ScrollView's full
+            // viewport height and ignored the unit tabs / chips / attribution that
+            // sit above the field — so on tall phones (iPhone 17) the field's
+            // bottom rows (special teams, offense backfield) were pushed beneath
+            // the tab bar. `frame(maxHeight: .infinity)` makes the field flex to
+            // the *remaining* height inside the VStack, so it fills the space
+            // between the chrome and the tab bar without ever extending under it.
+            //
+            // No horizontal padding: the field fills the full safe-area width so
+            // it sits as close to the screen edges as possible (the roster chrome
+            // above it keeps its own inset, so only the field goes edge-to-edge).
+            .frame(maxHeight: .infinity)
+            // The bottom-right corner is the emptiest grass in both units — the
+            // offense's backfield edge, and the field behind the defense's line —
+            // so the control never covers a player. Chrome styling, no label, no
+            // accent fill — the chart stays the primary thing on screen.
+            .overlay(alignment: .bottomTrailing) {
+                if showsTrueScaleEntry {
+                    TrueScaleEntryButton {
+                        trueScaleTipDismissed = true
+                        showTrueScale = true
+                    }
+                    .padding(6)
+                }
+            }
+
+            if showsTrueScaleEntry && !trueScaleTipDismissed {
+                HStack(spacing: DesignTokens.Spacing.sm) {
+                    Text("Tip: tap the expand icon to walk the formation at true scale.")
+                        .font(.caption2)
+                        .foregroundStyle(DesignTokens.Colors.textFaint)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Button("Got it") { trueScaleTipDismissed = true }
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(DesignTokens.Colors.textMuted)
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
+                        .accessibilityIdentifier("true-scale-tip-dismiss")
+                }
+                .padding(.horizontal)
+            }
+
+            // FTN charting is CC-BY-SA 4.0, so the notice follows the field
+            // content it attributes. Keep it in the scroll stack rather than
+            // pinning it to the viewport, and omit it for historical snapshots
+            // that carry no real formation data.
+            if !historical && snapshot.formations.contains(where: { $0.unit == unit }) {
+                FTNAttributionText()
+                    .padding(.top, DesignTokens.Spacing.sm)
+                    .padding(.horizontal)
+                    .accessibilityIdentifier("field-attribution")
+            }
+        }
+        .padding(.vertical)
+        // Pin the stack to the page's available height (the parent already
+        // constrains it to the area above the tab bar) so the field's flexible
+        // `frame(maxHeight: .infinity)` resolves to the *remaining* space after
+        // the chrome above it. A ScrollView can't do this — it proposes an
+        // infinite height on its scroll axis, which collapses a flexible child to
+        // zero instead of filling (DEP-207 height fix, iPhone 17).
+        .frame(maxHeight: .infinity)
     }
 
-    private func historyUnavailable(title: String, description: String, retry: Bool = false) -> some View {
+    private func historyUnavailable(title: String, description: String, retry: Bool = false)
+        -> some View
+    {
         ContentUnavailableView {
             Label(title, systemImage: "clock.arrow.circlepath")
         } description: {
@@ -1005,7 +1022,8 @@ struct TeamDetailView: View {
         let plan = DepthOverrideMerge.plan(local: preferences.allOverrides(), server: server)
         for teamId in plan.pushes {
             for (position, ids) in preferences.teamOverride(for: teamId) {
-                try? await overrideService.save(teamId: teamId, position: position.rawValue, playerIds: ids)
+                try? await overrideService.save(
+                    teamId: teamId, position: position.rawValue, playerIds: ids)
             }
         }
         for (teamId, override) in plan.pulls {
@@ -1016,7 +1034,8 @@ struct TeamDetailView: View {
 
     private func presentRequestedPlayer(_ id: String?) {
         guard let id,
-              let player = displayedSnapshot?.players.first(where: { $0.id == id }) else {
+            let player = displayedSnapshot?.players.first(where: { $0.id == id })
+        else {
             return
         }
         selectedPlayer = player
@@ -1104,11 +1123,13 @@ struct TeamDetailView: View {
 // actually fix it instead.
 private struct StaleBanner: View {
     var body: some View {
-        Label("You're offline — showing saved data. Reconnect to refresh.", systemImage: "wifi.slash")
-            .font(.footnote)
-            .foregroundStyle(.secondary)
-            .padding(.horizontal)
-            .accessibilityIdentifier("stale-banner")
+        Label(
+            "You're offline — showing saved data. Reconnect to refresh.", systemImage: "wifi.slash"
+        )
+        .font(.footnote)
+        .foregroundStyle(.secondary)
+        .padding(.horizontal)
+        .accessibilityIdentifier("stale-banner")
     }
 }
 
@@ -1205,7 +1226,8 @@ private struct FormationsSheetView: View {
         return Button {
             onSelect(f)
         } label: {
-            let layout = dynamicTypeSize.isAccessibilitySize
+            let layout =
+                dynamicTypeSize.isAccessibilitySize
                 ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
                 : AnyLayout(HStackLayout())
             layout {
@@ -1263,7 +1285,8 @@ struct DepthChartEditBar: View {
     /// The Done label on the accent fill — same derivation as the page switcher's
     /// `activeTextColor`, just against the accent instead of the switcher's fill.
     private var doneTextColor: Color {
-        colors.map { Color(hex: readableTextOn(TeamSurfaces.mark($0))) } ?? DesignTokens.Colors.onAccent
+        colors.map { Color(hex: readableTextOn(TeamSurfaces.mark($0))) }
+            ?? DesignTokens.Colors.onAccent
     }
 
     var body: some View {
@@ -1356,7 +1379,9 @@ private struct TrueScaleEntryButton: View {
                 .foregroundStyle(DesignTokens.Colors.textMuted)
                 .frame(width: 36, height: 36)
                 .background(Circle().fill(DesignTokens.Colors.surfaceChip))
-                .overlay(Circle().strokeBorder(DesignTokens.Colors.accent.opacity(0.4), lineWidth: 1))
+                .overlay(
+                    Circle().strokeBorder(DesignTokens.Colors.accent.opacity(0.4), lineWidth: 1)
+                )
                 .background(Circle().fill(Color.black.opacity(0.45)))
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())

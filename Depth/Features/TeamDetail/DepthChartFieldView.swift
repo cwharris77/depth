@@ -70,7 +70,9 @@ struct DepthChartFieldView: View {
 
     /// Shared with `TrueScaleFieldView` so the true-scale mode draws exactly the players
     /// the chart it was opened from shows.
-    static func resolvedSlots(snapshot: TeamSnapshot, unit: Unit, formation: TeamFormation?) -> [RenderSlot] {
+    static func resolvedSlots(snapshot: TeamSnapshot, unit: Unit, formation: TeamFormation?)
+        -> [RenderSlot]
+    {
         let roster = Roster(
             players: snapshot.players, specialTeams: snapshot.specialTeams,
             depthChart: snapshot.depthChart)
@@ -90,7 +92,9 @@ struct DepthChartFieldView: View {
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
                 ForEach(slots, id: \.key) { slot in
                     if let player = slot.player {
-                        Button { onSelectPlayer(player) } label: {
+                        Button {
+                            onSelectPlayer(player)
+                        } label: {
                             VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
                                 Text("\(slot.label) · #\(player.number)")
                                     .font(.caption.bold())
@@ -152,7 +156,8 @@ struct DepthChartFieldView: View {
                     // dot even at the uniform size). Drawn first so dots layer on top.
                     ForEach(Array(layout.nameCallouts.keys), id: \.self) { key in
                         if let dot = layout.positions[key], let callout = layout.nameCallouts[key],
-                            let name = slots.first(where: { $0.key == key })?.player?.name, !name.isEmpty
+                            let name = slots.first(where: { $0.key == key })?.player?.name,
+                            !name.isEmpty
                         {
                             // THROWAWAY PROTOTYPE, per Cooper 2026-08-23: a leader line to a
                             // dot deep in the formation used to be drawn straight through
@@ -173,7 +178,9 @@ struct DepthChartFieldView: View {
                                 .foregroundStyle(DesignTokens.Colors.textPrimary)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(Color.black.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
+                                .background(
+                                    Color.black.opacity(0.5), in: RoundedRectangle(cornerRadius: 6)
+                                )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 6)
                                         .strokeBorder(Color.white.opacity(0.16))
@@ -277,7 +284,8 @@ struct DepthChartFieldView: View {
                 x: callout.x + (dot.x - callout.x) * t,
                 y: callout.y + (dot.y - callout.y) * t
             )
-            let blocked = blockers.contains { hypot(point.x - $0.x, point.y - $0.y) < clearance }
+            let blocked =
+                blockers.contains { hypot(point.x - $0.x, point.y - $0.y) < clearance }
                 || labelBlockers.contains { $0.contains(point) }
             if blocked {
                 if let start = runStart, let end = previous {
@@ -324,13 +332,15 @@ struct DepthChartFieldView: View {
                     showsName: showsName,
                     fieldHeight: fieldHeight
                 )
-                    // The visual dot shrinks with the geometry (DEP-207); the hit area
-                    // stays at the 44-point minimum, mirroring the web's 30px dot +
-                    // 44px hit-slop (web/components/PlayerDot.tsx).
-                    .frame(minWidth: 44, minHeight: 44)
-                    .contentShape(Rectangle())
+                // The visual dot shrinks with the geometry (DEP-207); the hit area
+                // stays at the 44-point minimum, mirroring the web's 30px dot +
+                // 44px hit-slop (web/components/PlayerDot.tsx).
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
             }
-            .accessibilityLabel("\(slot.label), \(player.name.isEmpty ? "number \(player.number)" : player.name)")
+            .accessibilityLabel(
+                "\(slot.label), \(player.name.isEmpty ? "number \(player.number)" : player.name)"
+            )
             .accessibilityHint("Opens player detail")
             .accessibilityIdentifier("player-slot-\(slot.key)")
             .buttonStyle(FieldPlayerButtonStyle())
@@ -397,10 +407,12 @@ struct DepthChartFieldView: View {
                 }
             }
             .frame(width: dotSize, height: dotSize)
-            .modifier(PlayerDotWiggleModifier(
-                isEditing: isEditing && wiggleIndex != nil,
-                index: wiggleIndex ?? 0
-            ))
+            .modifier(
+                PlayerDotWiggleModifier(
+                    isEditing: isEditing && wiggleIndex != nil,
+                    index: wiggleIndex ?? 0
+                )
+            )
             .overlay(alignment: .top) {
                 VStack(spacing: 2) {
                     // Web parity (web/components/PlayerDot.tsx): the position tag renders in
@@ -415,7 +427,9 @@ struct DepthChartFieldView: View {
                     // otherwise the name is drawn as a leader-line callout instead.
                     if showsName, let playerName, !playerName.isEmpty {
                         Text(verbatim: formatLastName(playerName))
-                            .font(.system(size: nameFontSize(fieldHeight: fieldHeight), weight: .bold))
+                            .font(
+                                .system(size: nameFontSize(fieldHeight: fieldHeight), weight: .bold)
+                            )
                             .foregroundStyle(DesignTokens.Colors.textPrimary)
                             .lineLimit(1)
                             .fixedSize()

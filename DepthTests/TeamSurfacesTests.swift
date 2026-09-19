@@ -58,7 +58,8 @@ private struct TeamSurfaceCase: Decodable {
     let cases = try loadFixture("team-surfaces", as: [TeamSurfaceCase].self)
     for c in cases {
         let numeral = TeamSurfaces.numeral(c.colors.domain)
-        #expect(numeral.fill.lowercased() != numeral.stroke.lowercased(), "\(c.id) — collapsed numeral")
+        #expect(
+            numeral.fill.lowercased() != numeral.stroke.lowercased(), "\(c.id) — collapsed numeral")
     }
 }
 
@@ -80,7 +81,9 @@ private struct TeamSurfaceCase: Decodable {
             numeral.stroke,
         ]
         for value in produced {
-            #expect(allowed.contains(value.lowercased()), "\(c.id) — \(value) is not one of this kit's colors")
+            #expect(
+                allowed.contains(value.lowercased()),
+                "\(c.id) — \(value) is not one of this kit's colors")
         }
     }
 }

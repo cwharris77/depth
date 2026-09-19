@@ -71,21 +71,21 @@ private func snapshot(players: [Player]) -> TeamSnapshot {
 // than as an off-contract raster nobody audits. The deliberate non-halves (padding,
 // eyebrow spacing, starter text gap) are asserted in their own test as a canary.
 @Test func shareCardMetricsMirrorTheWebOgRoute() {
-    #expect(ShareCardMetrics.cardWidth == 600) // web 1200
-    #expect(ShareCardMetrics.cardHeight == 315) // web 630
-    #expect(ShareCardMetrics.starterSpacing == 10) // web gap 20
-    #expect(ShareCardMetrics.starterRadius == 9) // web 18
-    #expect(ShareCardMetrics.starterPaddingHorizontal == 13) // web 26
-    #expect(ShareCardMetrics.starterPaddingVertical == 9) // web 18
-    #expect(ShareCardMetrics.starterLabelSize == 13) // web 26
-    #expect(ShareCardMetrics.starterNameSize == 19) // web 38
-    #expect(ShareCardMetrics.eyebrowBarRadius == 3) // web 6
-    #expect(ShareCardMetrics.eyebrowBarSize == CGSize(width: 28, height: 6)) // web 56×12
-    #expect(ShareCardMetrics.eyebrowTextSize == 15) // web 26
-    #expect(ShareCardMetrics.eyebrowTracking == 4) // web 8
-    #expect(ShareCardMetrics.cityTextSize == 22) // web 44
-    #expect(ShareCardMetrics.cityTracking == 2) // web 4
-    #expect(ShareCardMetrics.teamNameSize == 66) // web 132
+    #expect(ShareCardMetrics.cardWidth == 600)  // web 1200
+    #expect(ShareCardMetrics.cardHeight == 315)  // web 630
+    #expect(ShareCardMetrics.starterSpacing == 10)  // web gap 20
+    #expect(ShareCardMetrics.starterRadius == 9)  // web 18
+    #expect(ShareCardMetrics.starterPaddingHorizontal == 13)  // web 26
+    #expect(ShareCardMetrics.starterPaddingVertical == 9)  // web 18
+    #expect(ShareCardMetrics.starterLabelSize == 13)  // web 26
+    #expect(ShareCardMetrics.starterNameSize == 19)  // web 38
+    #expect(ShareCardMetrics.eyebrowBarRadius == 3)  // web 6
+    #expect(ShareCardMetrics.eyebrowBarSize == CGSize(width: 28, height: 6))  // web 56×12
+    #expect(ShareCardMetrics.eyebrowTextSize == 15)  // web 26
+    #expect(ShareCardMetrics.eyebrowTracking == 4)  // web 8
+    #expect(ShareCardMetrics.cityTextSize == 22)  // web 44
+    #expect(ShareCardMetrics.cityTracking == 2)  // web 4
+    #expect(ShareCardMetrics.teamNameSize == 66)  // web 132
 }
 
 @Test func shareCardMetricsPinShippedDivergencesFromExactWebHalves() {
@@ -95,7 +95,7 @@ private func snapshot(players: [Player]) -> TeamSnapshot {
     // should be revisited in the same diff.
     #expect(ShareCardMetrics.cardPadding == 38)
     #expect(ShareCardMetrics.eyebrowSpacing == 12)
-    #expect(ShareCardMetrics.starterTextSpacing == 2) // not a web half — web has no column gap
+    #expect(ShareCardMetrics.starterTextSpacing == 2)  // not a web half — web has no column gap
     // Deliberately not derived from a web CSS value at all (web uses flexbox
     // space-between); pinned purely as a contract against accidental drift.
     #expect(ShareCardMetrics.columnSpacing == 24)

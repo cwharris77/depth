@@ -58,7 +58,8 @@ enum DepthAuthError: Error, Equatable, Sendable {
     /// exhaustive enumeration of every UI error case.
     var telemetryCategory: String {
         switch self {
-        case .invalidEmail, .invalidCode, .expiredCode, .rateLimited, .freshOtpRequired: "validation"
+        case .invalidEmail, .invalidCode, .expiredCode, .rateLimited, .freshOtpRequired:
+            "validation"
         case .offline: "offline"
         case .unauthenticated: "unauthenticated"
         case .deletionFailed, .server: "server"
@@ -195,7 +196,9 @@ actor SupabaseDepthAuthService: DepthAuthServicing {
         }
 
         let message = error.localizedDescription.lowercased()
-        if message.contains("rate") || message.contains("429") || message.contains("only request this after") {
+        if message.contains("rate") || message.contains("429")
+            || message.contains("only request this after")
+        {
             return .rateLimited(retryAfterSeconds: retryAfterSeconds(in: message))
         }
         if message.contains("expired") { return .expiredCode }

@@ -1,23 +1,52 @@
 #!/bin/sh
-# Auto-formats staged web files with Prettier before commit, so CI's format:check
-# gate (see .github/workflows/ci.yml) never fails on formatting alone.
+# Auto-fixes staged files before commit, so CI never fails on formatting alone.
 #
-# The web app lives under web/ with its own package.json + Prettier config, so both the
-# formatter and the lint/typecheck gates run from there. `--relative` scopes the staged
-# list to web/ (paths relative to it) and drops iOS-only Swift changes, which the web
-# toolchain can't meaningfully gate and which shouldn't force node_modules into a
-# Swift-only worktree.
-cd "$(git rev-parse --show-toplevel)/web" || exit 1
+# Swift (iOS app, repo root): rewrites staged .swift files with swift-format
+# (scripts/format-swift.sh) and re-stages them, then runs the SwiftLint bug rules
+# (.swiftlint.yml) over staged app sources. The lint is advisory -- it prints warnings and
+# never blocks the commit; style is fixed by tool, not gated (DEP-604).
+#
+# Web (under web/, frozen): Prettier on staged files, then ESLint + typecheck. The web app has
+# its own package.json + Prettier config, so those run from web/. Every `git` call stays at the
+# repo root on purpose: inside a hook GIT_DIR is set, so after `cd web` git would treat web/ as
+# the work tree root and `git add` would stage root-relative paths as deletions.
+#
+# Enable once per clone (the setting is shared by every worktree): git config core.hooksPath .githooks
 
-staged=$(git diff --cached --name-only --diff-filter=ACM --relative)
+root=$(git rev-parse --show-toplevel) || exit 1
+cd "$root" || exit 1
+
+staged_swift() {
+  git diff --cached --name-only -z --diff-filter=ACM -- "$@"
+}
+
+if [ -n "$(staged_swift 'Depth/*.swift' 'DepthTests/*.swift' 'DepthUITests/*.swift' | tr -d '\0')" ]; then
+  if command -v xcrun >/dev/null 2>&1; then
+    staged_swift 'Depth/*.swift' 'DepthTests/*.swift' 'DepthUITests/*.swift' \
+      | xargs -0 scripts/format-swift.sh
+    staged_swift 'Depth/*.swift' 'DepthTests/*.swift' 'DepthUITests/*.swift' | xargs -0 git add
+  else
+    echo "pre-commit: xcrun not found -- skipping swift-format" >&2
+  fi
+
+  if command -v swiftlint >/dev/null 2>&1; then
+    # `|| true`: advisory only, a lint warning (or a tool hiccup) must never block a commit.
+    staged_swift 'Depth/*.swift' | xargs -0 swiftlint lint --quiet || true
+  else
+    echo "pre-commit: swiftlint not installed (brew install swiftlint) -- skipping bug lint" >&2
+  fi
+fi
+
+staged=$(git diff --cached --name-only --diff-filter=ACM -- web)
 [ -z "$staged" ] && exit 0
 
 formattable=$(echo "$staged" | grep -E '\.(ts|tsx|js|jsx|json|css)$' || true)
 if [ -n "$formattable" ]; then
-  echo "$formattable" | xargs npx prettier --write --ignore-unknown
+  # Prettier runs from web/ (its config and .prettierignore live there), so strip the prefix.
+  echo "$formattable" | sed 's#^web/##' | (cd web && xargs npx prettier --write --ignore-unknown)
   echo "$formattable" | xargs git add
 fi
 
 # Run linting and type checking
-npm run lint || exit 1
-npm run typecheck || exit 1
+(cd web && npm run lint) || exit 1
+(cd web && npm run typecheck) || exit 1

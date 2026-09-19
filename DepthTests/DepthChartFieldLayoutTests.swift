@@ -27,7 +27,10 @@ struct DepthChartFieldLayoutTests {
                 let pa = renderedPoint(for: a, layout: layout)
                 let pb = renderedPoint(for: b, layout: layout)
                 let distance = hypot(pa.x - pb.x, pa.y - pb.y)
-                #expect(distance + 0.001 >= layout.dotSize + DepthChartFieldLayout.gap, "\(a.key) and \(b.key) are too close: \(distance)pt", sourceLocation: sourceLocation)
+                #expect(
+                    distance + 0.001 >= layout.dotSize + DepthChartFieldLayout.gap,
+                    "\(a.key) and \(b.key) are too close: \(distance)pt",
+                    sourceLocation: sourceLocation)
             }
         }
     }
@@ -56,8 +59,9 @@ struct DepthChartFieldLayoutTests {
         context: String = "",
         sourceLocation: SourceLocation = #_sourceLocation
     ) {
-        guard let lineY = slots.first(where: { $0.onLine == true })
-            .map({ renderedPoint(for: $0, layout: layout).y })
+        guard
+            let lineY = slots.first(where: { $0.onLine == true })
+                .map({ renderedPoint(for: $0, layout: layout).y })
         else { return }
         for slot in slots where slot.onLine != true {
             let y = renderedPoint(for: slot, layout: layout).y
@@ -79,10 +83,13 @@ struct DepthChartFieldLayoutTests {
             for size in sizes {
                 let formation = buildRealDefenseFormation(code)
                 let slots = formation.map {
-                    RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+                    RenderSlot(
+                        key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil,
+                        onLine: $0.onLine)
                 }
                 let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: size)
-                assertNoLineCrossing(slots, layout: layout, context: "\(code) at \(size.width)x\(size.height)")
+                assertNoLineCrossing(
+                    slots, layout: layout, context: "\(code) at \(size.width)x\(size.height)")
             }
         }
     }
@@ -105,7 +112,9 @@ struct DepthChartFieldLayoutTests {
                 for size in sizes {
                     let formation = buildRealFormation(alignment: alignment, code: code)
                     let slots = formation.map {
-                        RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+                        RenderSlot(
+                            key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil,
+                            onLine: $0.onLine)
                     }
                     let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: size)
                     assertNoLabelOverlap(
@@ -120,10 +129,12 @@ struct DepthChartFieldLayoutTests {
     @Test("phone layouts use one readable dot size across units")
     func offenseDotsNeverTouch() {
         let offense = offenseFormation.map {
-            RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+            RenderSlot(
+                key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
         }
         let defense = baseDefense.map {
-            RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+            RenderSlot(
+                key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
         }
         let special = [
             slot("st-kr", 30, 18), slot("st-pr", 70, 18), slot("st-ls", 50, 68),
@@ -133,7 +144,8 @@ struct DepthChartFieldLayoutTests {
             DepthChartFieldLayout.compute(slots: $0, fieldSize: iphoneField)
         }
 
-        #expect(Set(layouts.map(\.dotSize)).count == 1, "every unit should use one uniform dot size")
+        #expect(
+            Set(layouts.map(\.dotSize)).count == 1, "every unit should use one uniform dot size")
         #expect(layouts.allSatisfy { $0.dotSize >= DepthChartFieldLayout.minDotSize })
         assertNoTouching(offense, layout: layouts[0])
         assertNoTouching(defense, layout: layouts[1])
@@ -143,7 +155,8 @@ struct DepthChartFieldLayoutTests {
     @Test("base defense dots never touch and cap at the max size")
     func defenseDotsCapAtMax() {
         let slots = baseDefense.map {
-            RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+            RenderSlot(
+                key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
         }
         let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField)
 
@@ -187,7 +200,9 @@ struct DepthChartFieldLayoutTests {
 
         let onLine = slots.filter { $0.onLine == true }
         let lineYs = onLine.map { renderedPoint(for: $0, layout: layout).y }
-        #expect(lineYs.allSatisfy { abs($0 - lineYs[0]) < 0.001 }, "on-line slots should render on one row")
+        #expect(
+            lineYs.allSatisfy { abs($0 - lineYs[0]) < 0.001 },
+            "on-line slots should render on one row")
 
         let offLine = slots.filter { $0.onLine != true }
         for slot in offLine {
@@ -201,13 +216,16 @@ struct DepthChartFieldLayoutTests {
         let interior = onLine.filter { $0.label != "WR" }
         for receiver in slots.filter({ $0.label == "WR" && $0.onLine != true }) {
             let receiverX = renderedPoint(for: receiver, layout: layout).x
-            guard let nearest = interior.min(by: {
-                abs(renderedPoint(for: $0, layout: layout).x - receiverX)
-                    < abs(renderedPoint(for: $1, layout: layout).x - receiverX)
-            }) else { continue }
+            guard
+                let nearest = interior.min(by: {
+                    abs(renderedPoint(for: $0, layout: layout).x - receiverX)
+                        < abs(renderedPoint(for: $1, layout: layout).x - receiverX)
+                })
+            else { continue }
             let interiorX = renderedPoint(for: nearest, layout: layout).x
             #expect(
-                abs(receiverX - interiorX) - layout.dotSize >= DepthChartFieldLayout.receiverClearance,
+                abs(receiverX - interiorX) - layout.dotSize
+                    >= DepthChartFieldLayout.receiverClearance,
                 "\(receiver.key) should keep a real gap from \(nearest.key)"
             )
         }
@@ -249,7 +267,8 @@ struct DepthChartFieldLayoutTests {
         for code in ["10", "11", "20", "21"] {
             let formation = buildRealFormation(alignment: "SHOTGUN", code: code)
             let slots = formation.map {
-                RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+                RenderSlot(
+                    key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
             }
             let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField)
             assertNoTouching(slots, layout: layout)
@@ -263,7 +282,8 @@ struct DepthChartFieldLayoutTests {
         // 26...74 — the outer LB slots land almost directly above the edge DL slots.
         let formation = buildRealDefenseFormation("4-3-4")
         let slots = formation.map {
-            RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+            RenderSlot(
+                key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
         }
         // The real device height from DEP-427's report, shorter than the generic
         // iphoneField fixture — this is where the overlap actually reproduced.
@@ -278,7 +298,8 @@ struct DepthChartFieldLayoutTests {
         for width in stride(from: 300.0, through: 430.0, by: 10.0) {
             let size = CGSize(width: width, height: 650)
             let slots = offenseFormation.map {
-                RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+                RenderSlot(
+                    key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
             }
             let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: size)
             #expect(layout.dotSize >= DepthChartFieldLayout.minDotSize)
@@ -290,25 +311,32 @@ struct DepthChartFieldLayoutTests {
     @Test("offense with fillWidth reaches the field edges (DEP-244)")
     func offenseFillWidthReachesEdges() {
         let slots = offenseFormation.map {
-            RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+            RenderSlot(
+                key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
         }
         let plain = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField)
-        let filled = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField, fillWidth: true, zoomToUnit: false)
+        let filled = DepthChartFieldLayout.compute(
+            slots: slots, fieldSize: iphoneField, fillWidth: true, zoomToUnit: false)
 
         // The outermost WRs (flanker off-wr-1 at x=12, split end off-wr-0 at x=88) are
         // pinned to the field edges — the offense takes the full width.
         let leftWR = filled.positions["off-wr-1"]?.x ?? .zero
         let rightWR = filled.positions["off-wr-0"]?.x ?? .zero
         #expect(leftWR < 40, "leftmost WR should be pinned to the left edge, got \(leftWR)")
-        #expect(rightWR > iphoneField.width - 40, "rightmost WR should be pinned to the right edge, got \(rightWR)")
+        #expect(
+            rightWR > iphoneField.width - 40,
+            "rightmost WR should be pinned to the right edge, got \(rightWR)")
 
         // The line keeps its real (clustered) spacing — the center is unchanged and the
         // dots stay as large as that spacing allows (same as plain, since the line isn't
         // re-spread at this width).
         let centerFilled = filled.positions["off-c-0"]?.x ?? .zero
         let centerPlain = plain.positions["off-c-0"]?.x ?? .zero
-        #expect(abs(centerFilled - centerPlain) < 2, "the offensive line should keep its original spacing")
-        #expect(filled.dotSize == plain.dotSize, "dots stay as large as the real line spacing allows")
+        #expect(
+            abs(centerFilled - centerPlain) < 2,
+            "the offensive line should keep its original spacing")
+        #expect(
+            filled.dotSize == plain.dotSize, "dots stay as large as the real line spacing allows")
 
         // The no-touch guarantee still holds.
         assertNoTouching(slots, layout: filled)
@@ -322,9 +350,11 @@ struct DepthChartFieldLayoutTests {
     func realShotgun11FillsWidth() {
         let formation = buildRealFormation(alignment: "SHOTGUN", code: "11")
         let slots = formation.map {
-            RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+            RenderSlot(
+                key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
         }
-        let filled = DepthChartFieldLayout.compute(slots: slots, fieldSize: iphoneField, fillWidth: true, zoomToUnit: false)
+        let filled = DepthChartFieldLayout.compute(
+            slots: slots, fieldSize: iphoneField, fillWidth: true, zoomToUnit: false)
 
         // The split end (off-wr-0, left) and flanker (off-wr-1, right) reach the field
         // edges — the first DEP-244 pass got this wrong because the tight on-line row
@@ -332,7 +362,9 @@ struct DepthChartFieldLayoutTests {
         let leftWR = filled.positions["off-wr-0"]?.x ?? .zero
         let rightWR = filled.positions["off-wr-1"]?.x ?? .zero
         #expect(leftWR < 40, "split end should be near the left edge, got \(leftWR)")
-        #expect(rightWR > iphoneField.width - 40, "flanker should be near the right edge, got \(rightWR)")
+        #expect(
+            rightWR > iphoneField.width - 40,
+            "flanker should be near the right edge, got \(rightWR)")
 
         // Dots stay as large as the real (clustered) line spacing allows — within the
         // safe range, not the max: the RT/TE gap is tight, so offense stays at the floor.
@@ -430,7 +462,8 @@ struct LeaderLineRoutingTests {
         let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: phoneField)
         let clearance = DepthChartFieldLayout.leaderLineClearance(dotSize: layout.dotSize)
 
-        #expect(!layout.nameCallouts.isEmpty, "a phone-width 3-4 should route some names to callouts")
+        #expect(
+            !layout.nameCallouts.isEmpty, "a phone-width 3-4 should route some names to callouts")
 
         for (key, callout) in layout.nameCallouts {
             guard let raw = layout.positions[key],
@@ -496,18 +529,28 @@ struct LeaderLineRoutingTests {
         let a = CGPoint(x: 0, y: 0)
         let b = CGPoint(x: 100, y: 0)
         // Directly above the midpoint: far from both endpoints, 10pt from the line.
-        #expect(abs(DepthChartFieldLayout.distance(from: CGPoint(x: 50, y: 10), toSegment: a, b) - 10) < 0.001)
+        #expect(
+            abs(DepthChartFieldLayout.distance(from: CGPoint(x: 50, y: 10), toSegment: a, b) - 10)
+                < 0.001)
         // Past the far endpoint: clamped to it rather than projected onto the infinite line.
-        #expect(abs(DepthChartFieldLayout.distance(from: CGPoint(x: 130, y: 0), toSegment: a, b) - 30) < 0.001)
+        #expect(
+            abs(DepthChartFieldLayout.distance(from: CGPoint(x: 130, y: 0), toSegment: a, b) - 30)
+                < 0.001)
         // Degenerate segment falls back to a plain point distance.
-        #expect(abs(DepthChartFieldLayout.distance(from: CGPoint(x: 3, y: 4), toSegment: a, a) - 5) < 0.001)
+        #expect(
+            abs(DepthChartFieldLayout.distance(from: CGPoint(x: 3, y: 4), toSegment: a, a) - 5)
+                < 0.001)
     }
 
     @Test("segment/rect test catches a crossing that misses both endpoints")
     func segmentAvoidanceCatchesMidCrossings() {
         let rect = CGRect(x: 40, y: -5, width: 20, height: 10)
-        #expect(!DepthChartFieldLayout.segment(CGPoint(x: 0, y: 0), CGPoint(x: 100, y: 0), avoids: rect))
-        #expect(DepthChartFieldLayout.segment(CGPoint(x: 0, y: 40), CGPoint(x: 100, y: 40), avoids: rect))
+        #expect(
+            !DepthChartFieldLayout.segment(CGPoint(x: 0, y: 0), CGPoint(x: 100, y: 0), avoids: rect)
+        )
+        #expect(
+            DepthChartFieldLayout.segment(
+                CGPoint(x: 0, y: 40), CGPoint(x: 100, y: 40), avoids: rect))
     }
 }
 
@@ -518,7 +561,10 @@ struct FieldYardScaleTests {
     private let phone = CGSize(width: 370, height: 650)
 
     private func slots(_ f: [FormationSlot]) -> [RenderSlot] {
-        f.map { RenderSlot(key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine) }
+        f.map {
+            RenderSlot(
+                key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
+        }
     }
 
     /// Depth in real yards from the on-line row, read off the points actually drawn.
@@ -534,9 +580,10 @@ struct FieldYardScaleTests {
     ) -> CGFloat? {
         func drawn(_ slot: RenderSlot) -> CGFloat? {
             layout.positions[slot.key].map {
-                $0.y + DepthChartFieldLayout.lineOffset(
-                    y: slot.y, onLine: slot.onLine, dotSize: layout.dotSize
-                )
+                $0.y
+                    + DepthChartFieldLayout.lineOffset(
+                        y: slot.y, onLine: slot.onLine, dotSize: layout.dotSize
+                    )
             }
         }
         guard let slot = slots.first(where: { $0.key == key }), let p = drawn(slot),
@@ -550,7 +597,8 @@ struct FieldYardScaleTests {
         for (alignment, code) in [("UNDER CENTER", "11"), ("SHOTGUN", "11"), ("PISTOL", "11")] {
             let formation = buildRealFormation(alignment: alignment, code: code)
             let s = slots(formation)
-            let layout = DepthChartFieldLayout.compute(slots: s, fieldSize: phone, fillWidth: true, zoomToUnit: false)
+            let layout = DepthChartFieldLayout.compute(
+                slots: s, fieldSize: phone, fillWidth: true, zoomToUnit: false)
             for slot in s where slot.onLine != true {
                 guard let drawn = renderedYards(slot.key, s, layout) else { continue }
                 let charted = FieldYardScale.yards(between: slot.y, and: 51)
@@ -576,7 +624,8 @@ struct FieldYardScaleTests {
     @Test("an under-centre quarterback is drawn a yard off his own centre, not ten")
     func underCentreQuarterbackSitsOnTopOfTheLine() {
         let s = slots(buildRealFormation(alignment: "UNDER CENTER", code: "11"))
-        let layout = DepthChartFieldLayout.compute(slots: s, fieldSize: phone, fillWidth: true, zoomToUnit: false)
+        let layout = DepthChartFieldLayout.compute(
+            slots: s, fieldSize: phone, fillWidth: true, zoomToUnit: false)
         // Measured reality is 1.0 yd. At the offense's full-field scale the fixed on-line
         // nudge alone is worth ~0.85 yd, so ~2.5 is the floor this can reach without
         // cropping the offense; 4 leaves headroom while still failing loudly on the
@@ -585,14 +634,16 @@ struct FieldYardScaleTests {
         #expect(qb < 4, "under-centre QB drawn \(qb) yd deep; measured reality is 1.0")
 
         let sg = slots(buildRealFormation(alignment: "SHOTGUN", code: "11"))
-        let sgLayout = DepthChartFieldLayout.compute(slots: sg, fieldSize: phone, fillWidth: true, zoomToUnit: false)
+        let sgLayout = DepthChartFieldLayout.compute(
+            slots: sg, fieldSize: phone, fillWidth: true, zoomToUnit: false)
         let sgQb = renderedYards("off-qb-0", sg, sgLayout) ?? 0
         // The two alignments must stay tellable apart. A ratio test is the wrong shape at
         // this scale — the fixed nudge lands on both but costs the shallow one proportionally
         // far more, so shotgun/under-centre reads ~1.75x here against ~4.4x in reality. The
         // separation in yards is what survives and is what a reader actually sees.
-        #expect(sgQb - qb > 1.5,
-                "shotgun QB (\(sgQb) yd) should read clearly deeper than under centre (\(qb) yd)")
+        #expect(
+            sgQb - qb > 1.5,
+            "shotgun QB (\(sgQb) yd) should read clearly deeper than under centre (\(qb) yd)")
     }
 
     @Test("every unit's window keeps the line of scrimmage on the card")
@@ -600,19 +651,26 @@ struct FieldYardScaleTests {
         let units: [(String, [RenderSlot])] = [
             ("offense", slots(offenseFormation)),
             ("defense", slots(baseDefense)),
-            ("special", [
-                RenderSlot(key: "st-kr", x: 30, y: 18, label: "KR", player: nil, onLine: nil),
-                RenderSlot(key: "st-pr", x: 70, y: 18, label: "PR", player: nil, onLine: nil),
-                RenderSlot(key: "st-ls", x: 50, y: 68, label: "LS", player: nil, onLine: nil),
-                RenderSlot(key: "st-k", x: 38, y: 80, label: "K", player: nil, onLine: nil),
-                RenderSlot(key: "st-p", x: 62, y: 80, label: "P", player: nil, onLine: nil),
-            ]),
+            (
+                "special",
+                [
+                    RenderSlot(key: "st-kr", x: 30, y: 18, label: "KR", player: nil, onLine: nil),
+                    RenderSlot(key: "st-pr", x: 70, y: 18, label: "PR", player: nil, onLine: nil),
+                    RenderSlot(key: "st-ls", x: 50, y: 68, label: "LS", player: nil, onLine: nil),
+                    RenderSlot(key: "st-k", x: 38, y: 80, label: "K", player: nil, onLine: nil),
+                    RenderSlot(key: "st-p", x: 62, y: 80, label: "P", player: nil, onLine: nil),
+                ]
+            ),
         ]
         for (name, s) in units {
             let layout = DepthChartFieldLayout.compute(slots: s, fieldSize: phone)
             let los = layout.yardScale.screenY(charted: FieldYardScale.lineOfScrimmage)
-            #expect(los >= 0 && los <= phone.height, "\(name) drew the line of scrimmage off-card at \(los)")
-            #expect(layout.yardScale.pointsPerYard > 20, "\(name) window too wide to read: \(layout.yardScale.pointsPerYard) pt/yd")
+            #expect(
+                los >= 0 && los <= phone.height,
+                "\(name) drew the line of scrimmage off-card at \(los)")
+            #expect(
+                layout.yardScale.pointsPerYard > 20,
+                "\(name) window too wide to read: \(layout.yardScale.pointsPerYard) pt/yd")
         }
     }
 }

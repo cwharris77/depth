@@ -20,9 +20,15 @@ struct DepthBrandMark: View {
             let frame = CGRect(x: 0, y: 0, width: 1024, height: 1024)
             context.fill(Path(frame), with: .color(DesignTokens.Colors.bg))
 
-            context.fill(circle(center: CGPoint(x: 270, y: 270), radius: 132), with: .color(Color(hex: "#FF6500")))
-            context.fill(circle(center: CGPoint(x: 270, y: 270), radius: 82), with: .color(DesignTokens.Colors.bg))
-            context.fill(circle(center: CGPoint(x: 270, y: 270), radius: 50), with: .color(Color(hex: "#FF6500")))
+            context.fill(
+                circle(center: CGPoint(x: 270, y: 270), radius: 132),
+                with: .color(Color(hex: "#FF6500")))
+            context.fill(
+                circle(center: CGPoint(x: 270, y: 270), radius: 82),
+                with: .color(DesignTokens.Colors.bg))
+            context.fill(
+                circle(center: CGPoint(x: 270, y: 270), radius: 50),
+                with: .color(Color(hex: "#FF6500")))
 
             var pole = Path()
             pole.move(to: CGPoint(x: 190, y: 405))
@@ -34,9 +40,13 @@ struct DepthBrandMark: View {
             pole.closeSubpath()
             context.drawLayer { layer in
                 layer.clip(to: pole)
-                layer.fill(Path(CGRect(x: 160, y: 405, width: 220, height: 470)), with: .color(Color(hex: "#FF6500")))
-                layer.fill(Path(CGRect(x: 160, y: 490, width: 220, height: 52)), with: .color(.white))
-                layer.fill(Path(CGRect(x: 160, y: 610, width: 220, height: 52)), with: .color(.white))
+                layer.fill(
+                    Path(CGRect(x: 160, y: 405, width: 220, height: 470)),
+                    with: .color(Color(hex: "#FF6500")))
+                layer.fill(
+                    Path(CGRect(x: 160, y: 490, width: 220, height: 52)), with: .color(.white))
+                layer.fill(
+                    Path(CGRect(x: 160, y: 610, width: 220, height: 52)), with: .color(.white))
             }
 
             context.fill(
@@ -56,11 +66,12 @@ struct DepthBrandMark: View {
     }
 
     private func circle(center: CGPoint, radius: CGFloat) -> Path {
-        Path(ellipseIn: CGRect(
-            x: center.x - radius,
-            y: center.y - radius,
-            width: radius * 2,
-            height: radius * 2
-        ))
+        Path(
+            ellipseIn: CGRect(
+                x: center.x - radius,
+                y: center.y - radius,
+                width: radius * 2,
+                height: radius * 2
+            ))
     }
 }

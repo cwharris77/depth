@@ -83,7 +83,9 @@ func selectRosterLeaders(_ entries: [LeaderEntry]) -> RosterLeaders? {
         passing: topBy(
             inSeason,
             yards: { $0.passingYards },
-            line: { "\(n($0.completions))/\(n($0.attempts)) · \(grp($0.passingYards)) yds · \(n($0.passingTds)) TD" }
+            line: {
+                "\(n($0.completions))/\(n($0.attempts)) · \(grp($0.passingYards)) yds · \(n($0.passingTds)) TD"
+            }
         ),
         rushing: topBy(
             inSeason,
@@ -93,7 +95,9 @@ func selectRosterLeaders(_ entries: [LeaderEntry]) -> RosterLeaders? {
         receiving: topBy(
             inSeason,
             yards: { $0.receivingYards },
-            line: { "\(n($0.receptions)) rec · \(grp($0.receivingYards)) yds · \(n($0.receivingTds)) TD" }
+            line: {
+                "\(n($0.receptions)) rec · \(grp($0.receivingYards)) yds · \(n($0.receivingTds)) TD"
+            }
         )
     )
 }

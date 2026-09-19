@@ -107,7 +107,10 @@ struct DepthReorderList: View {
         .contentShape(Rectangle())
         .zIndex(draggedPlayerID == p.id ? 1 : 0)
         .scaleEffect(draggedPlayerID == p.id && liftRow && !reduceMotion ? 1.03 : 1)
-        .shadow(color: draggedPlayerID == p.id && liftRow ? .black.opacity(0.18) : .clear, radius: 8, y: 3)
+        .shadow(
+            color: draggedPlayerID == p.id && liftRow ? .black.opacity(0.18) : .clear, radius: 8,
+            y: 3
+        )
         // Long-press pick-up = the ScrollView disambiguator: hold still briefly and the row
         // lifts; without it a moving finger is indistinguishable from a scroll.
         .gesture(
@@ -160,7 +163,8 @@ struct DepthReorderList: View {
     // use a stale rank. Share drag's move and commit paths, including local persistence.
     private func moveAccessibly(playerID: String, offset: Int) {
         guard draggedPlayerID == nil,
-              let from = players.firstIndex(where: { $0.id == playerID }) else { return }
+            let from = players.firstIndex(where: { $0.id == playerID })
+        else { return }
         let accessibility = DepthReorderAccessibility(
             player: players[from], index: from, count: players.count
         )
@@ -181,8 +185,9 @@ struct DepthReorderList: View {
     /// middle slot.
     private func updateSlot(fingerY: CGFloat) {
         guard let draggedID = draggedPlayerID,
-              let from = players.firstIndex(where: { $0.id == draggedID }),
-              frozenCenters.count == players.count else { return }
+            let from = players.firstIndex(where: { $0.id == draggedID }),
+            frozenCenters.count == players.count
+        else { return }
         // Moving down: cross the boundary below the current slot (with hysteresis).
         if from + 1 < players.count {
             let boundary = (frozenCenters[from] + frozenCenters[from + 1]) / 2
@@ -220,7 +225,8 @@ struct DepthReorderAccessibility {
 
     func destination(offset: Int) -> Int? {
         guard (offset == -1 || offset == 1), (0..<count).contains(index),
-              (0..<count).contains(index + offset) else { return nil }
+            (0..<count).contains(index + offset)
+        else { return nil }
         return index + offset
     }
 

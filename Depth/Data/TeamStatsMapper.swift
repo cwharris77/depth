@@ -24,9 +24,11 @@ enum TeamStatsMapper {
         let coachBySeason = Dictionary(uniqueKeysWithValues: coachRows.map { ($0.season, $0) })
         return TeamStatsPage(
             team: team,
-            seasons: rows
+            seasons:
+                rows
                 .map {
-                    mapSeason($0, matchup: matchupBySeason[$0.season], coach: coachBySeason[$0.season])
+                    mapSeason(
+                        $0, matchup: matchupBySeason[$0.season], coach: coachBySeason[$0.season])
                 }
                 .sorted { $0.season > $1.season },
             upcomingSeason: state.isOffseason ? state.upcomingSeason : nil,
@@ -126,7 +128,9 @@ enum TeamStatsMapper {
             // so a `?? 0` here would turn missing data into a claim.
             streak: row.streak,
             playoffSeed: row.playoffSeed,
-            coach: coach.map { TeamSeasonCoach(name: $0.coachName, experience: $0.coachExperience) },
+            coach: coach.map {
+                TeamSeasonCoach(name: $0.coachName, experience: $0.coachExperience)
+            },
             passingYards: matchup?.passingYards,
             rushingYards: matchup?.rushingYards
         )
@@ -185,15 +189,18 @@ enum TeamStatsMapper {
     /// runs Sep–Feb. Jan wraps up the prior year's postseason; Feb–Aug is the off-season
     /// (upcoming season = this calendar year); Sep–Dec is the regular season (upcoming =
     /// next calendar year). Kept as a pure function of `now` so tests can pin the date.
-    static func nflSeasonState(now: Date = .now) -> (completedSeason: Int, upcomingSeason: Int, isOffseason: Bool) {
-        let components = Calendar(identifier: .gregorian).dateComponents([.year, .month], from: now)
+    static func nflSeasonState(now: Date = .now) -> (
+        completedSeason: Int, upcomingSeason: Int, isOffseason: Bool
+    ) {
+        let components = Calendar(identifier: .gregorian).dateComponents(
+            [.year, .month], from: now)
         let year = components.year ?? 0
         let month = components.month ?? 0
-        if month >= 9 { // Sep–Dec: regular season of `year`
+        if month >= 9 {  // Sep–Dec: regular season of `year`
             return (completedSeason: year - 1, upcomingSeason: year + 1, isOffseason: false)
-        } else if month >= 2 { // Feb–Aug: off-season
+        } else if month >= 2 {  // Feb–Aug: off-season
             return (completedSeason: year - 1, upcomingSeason: year, isOffseason: true)
-        } else { // Jan: wrapping up `year - 1`'s postseason
+        } else {  // Jan: wrapping up `year - 1`'s postseason
             return (completedSeason: year - 1, upcomingSeason: year, isOffseason: false)
         }
     }

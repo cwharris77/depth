@@ -16,7 +16,9 @@ final class AuthUITests: XCTestCase {
         // animation + idle-wait seconds on top of per-query snapshot cost — 2026-08-23/24
         // runs lost here at both sheet boundaries with every query crawling 2-10s.
         let accountButton = app.buttons["account-button"]
-        XCTAssertTrue(accountButton.waitForExistence(timeout: 15), "Account should be reachable from the nav bar")
+        XCTAssertTrue(
+            accountButton.waitForExistence(timeout: 15),
+            "Account should be reachable from the nav bar")
         let version = app.staticTexts["settings-about-version"]
         XCTAssertTrue(
             accountButton.tapUntil(timeout: 15) { version.exists },
@@ -66,13 +68,17 @@ final class AuthUITests: XCTestCase {
         app.launch()
 
         let accountButton = app.buttons["account-button"]
-        XCTAssertTrue(accountButton.waitForExistence(timeout: 15), "Account should be reachable from the nav bar")
+        XCTAssertTrue(
+            accountButton.waitForExistence(timeout: 15),
+            "Account should be reachable from the nav bar")
         // The assertions below are all negative, so they would pass vacuously if the
         // settings sheet never opened (a synthesized tap that doesn't register — see
         // `tapUntil`). Prove the sheet is actually on screen before asserting what it
         // must *not* contain.
         XCTAssertTrue(
-            accountButton.tapUntil(timeout: 15) { app.staticTexts["settings-about-version"].exists },
+            accountButton.tapUntil(timeout: 15) {
+                app.staticTexts["settings-about-version"].exists
+            },
             "Account should open the settings sheet"
         )
 
@@ -84,7 +90,8 @@ final class AuthUITests: XCTestCase {
         let favoritePickerButton = app.buttons["settings-favorite-team"]
         let favoritePickerElement = app.pickers["settings-favorite-team"]
         XCTAssertFalse(
-            favoritePickerButton.waitForExistence(timeout: 2) || favoritePickerElement.waitForExistence(timeout: 2),
+            favoritePickerButton.waitForExistence(timeout: 2)
+                || favoritePickerElement.waitForExistence(timeout: 2),
             "the favorite team picker should not render for a signed-out visitor"
         )
         let startOnFavoriteToggle = app.switches["settings-start-on-favorite"]

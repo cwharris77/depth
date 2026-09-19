@@ -147,7 +147,8 @@ private func offseasonDate() -> Date {
                 matchupRows: [fixture.input],
                 now: offseasonDate()
             )
-            #expect(page.seasons.first?.matchupMetrics == fixture.expected, "\(fixture.description)")
+            #expect(
+                page.seasons.first?.matchupMetrics == fixture.expected, "\(fixture.description)")
         }
     }
 
@@ -250,20 +251,22 @@ private func offseasonDate() -> Date {
     }
 
     @Test func matchupLeaderLabelDegradesWhenEitherSideIsMissing() {
-        #expect(matchupLeaderLabel(
-            teamALabel: "Seattle", valueA: nil,
-            teamBLabel: "San Francisco", valueB: 0.03,
-            metricLabel: "offensive EPA/play"
-        ) == nil)
+        #expect(
+            matchupLeaderLabel(
+                teamALabel: "Seattle", valueA: nil,
+                teamBLabel: "San Francisco", valueB: 0.03,
+                metricLabel: "offensive EPA/play"
+            ) == nil)
     }
 
     @Test func matchupLeaderLabelSupportsLowerIsBetterMetrics() {
-        #expect(matchupLeaderLabel(
-            teamALabel: "Seattle", valueA: 12,
-            teamBLabel: "San Francisco", valueB: 17,
-            metricLabel: "giveaways",
-            direction: .lower
-        ) == "Seattle leads in giveaways")
+        #expect(
+            matchupLeaderLabel(
+                teamALabel: "Seattle", valueA: 12,
+                teamBLabel: "San Francisco", valueB: 17,
+                metricLabel: "giveaways",
+                direction: .lower
+            ) == "Seattle leads in giveaways")
     }
 
     @Test func matchupComparisonKeepsBothValuesBesideTheLeaderLabel() {
@@ -442,7 +445,9 @@ private func metricRankRow(
         let page = TeamStatsMapper.map(
             team: team(),
             rows: [row(season: 2026)],
-            coachRows: [TeamCoachSeasonDTO(season: 2026, coachName: "Joe Brady", coachExperience: 1)],
+            coachRows: [
+                TeamCoachSeasonDTO(season: 2026, coachName: "Joe Brady", coachExperience: 1)
+            ],
             incomingCoach: TeamIncomingCoach(name: "Joe Brady"),
             now: october
         )
@@ -455,7 +460,9 @@ private func metricRankRow(
         let page = TeamStatsMapper.map(
             team: team(),
             rows: [row(season: 2025), row(season: 2024)],
-            coachRows: [TeamCoachSeasonDTO(season: 2025, coachName: "Sean McDermott", coachExperience: 9)],
+            coachRows: [
+                TeamCoachSeasonDTO(season: 2025, coachName: "Sean McDermott", coachExperience: 9)
+            ],
             now: offseasonDate()
         )
         let current = page.seasons.first
@@ -492,9 +499,12 @@ private func metricRankRow(
 
 @Suite struct TeamLeagueRanksTests {
     private let espn = [
-        rankRow("bills", winPercent: 0.75, pointsFor: 402, pointsAgainst: 291, pointDifferential: 111),
-        rankRow("chiefs", winPercent: 0.88, pointsFor: 430, pointsAgainst: 280, pointDifferential: 150),
-        rankRow("jets", winPercent: 0.25, pointsFor: 250, pointsAgainst: 400, pointDifferential: -150),
+        rankRow(
+            "bills", winPercent: 0.75, pointsFor: 402, pointsAgainst: 291, pointDifferential: 111),
+        rankRow(
+            "chiefs", winPercent: 0.88, pointsFor: 430, pointsAgainst: 280, pointDifferential: 150),
+        rankRow(
+            "jets", winPercent: 0.25, pointsFor: 250, pointsAgainst: 400, pointDifferential: -150),
     ]
 
     private func ranks(_ rows: [TeamSeasonStatsRankDTO]) -> TeamStatsRanks? {
@@ -523,9 +533,15 @@ private func metricRankRow(
 
     @Test func ranksLowerIsBetterMetricsAscending() {
         let result = ranks([
-            metricRankRow("bills", attempts: 600, sacksSuffered: 30, passingInterceptions: 9, fumblesLostTotal: 5),
-            metricRankRow("chiefs", attempts: 600, sacksSuffered: 20, passingInterceptions: 6, fumblesLostTotal: 9),
-            metricRankRow("jets", attempts: 600, sacksSuffered: 50, passingInterceptions: 15, fumblesLostTotal: 12),
+            metricRankRow(
+                "bills", attempts: 600, sacksSuffered: 30, passingInterceptions: 9,
+                fumblesLostTotal: 5),
+            metricRankRow(
+                "chiefs", attempts: 600, sacksSuffered: 20, passingInterceptions: 6,
+                fumblesLostTotal: 9),
+            metricRankRow(
+                "jets", attempts: 600, sacksSuffered: 50, passingInterceptions: 15,
+                fumblesLostTotal: 12),
         ])
         // Fewer is better for all three.
         #expect(result?.sackRate == 2)
@@ -610,11 +626,11 @@ private func metricRankRow(
         // The cache is disposable, but a decode failure costs a live refetch on every
         // launch until it is wiped — so every field added here must be defaulted.
         let legacy = """
-        {"team":{"id":"bills","city":"Buffalo","name":"Bills","abbrev":"BUF",
-        "conference":"AFC","division":"East","colors":{"primary":"#00338d",
-        "secondary":"#d50a0a","accent":"#d50a0a"}},
-        "seasons":[],"currentSeason":2026}
-        """.data(using: .utf8)!
+            {"team":{"id":"bills","city":"Buffalo","name":"Bills","abbrev":"BUF",
+            "conference":"AFC","division":"East","colors":{"primary":"#00338d",
+            "secondary":"#d50a0a","accent":"#d50a0a"}},
+            "seasons":[],"currentSeason":2026}
+            """.data(using: .utf8)!
         let page = try JSONDecoder().decode(TeamStatsPage.self, from: legacy)
         #expect(page.leagueRanksBySeason.isEmpty)
         #expect(page.seasons.isEmpty)

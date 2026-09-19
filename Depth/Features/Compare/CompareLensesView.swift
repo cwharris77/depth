@@ -155,7 +155,8 @@ private struct CompareMetricTable: View {
     }
 
     private var header: some View {
-        let layout = dynamicTypeSize.isAccessibilitySize
+        let layout =
+            dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
             : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.sm))
         return layout {
@@ -181,7 +182,10 @@ private struct CompareMetricTable: View {
         Text(team?.abbrev.uppercased() ?? "—")
             .font(.caption.weight(.black))
             .tracking(0.6)
-            .foregroundStyle(team.map { Color(hex: TeamSurfaces.mark($0.colors.jersey)) } ?? DesignTokens.Colors.textFaint)
+            .foregroundStyle(
+                team.map { Color(hex: TeamSurfaces.mark($0.colors.jersey)) }
+                    ?? DesignTokens.Colors.textFaint
+            )
             .frame(width: valueColumnWidth, alignment: .trailing)
     }
 
@@ -232,7 +236,8 @@ private struct CompareMetricTable: View {
         guard let leader else { return DesignTokens.Colors.textPrimary }
         guard leader == side else { return DesignTokens.Colors.textFaint }
         let team = side == .a ? teamA : teamB
-        return team.map { Color(hex: TeamSurfaces.mark($0.colors.jersey)) } ?? DesignTokens.Colors.textPrimary
+        return team.map { Color(hex: TeamSurfaces.mark($0.colors.jersey)) }
+            ?? DesignTokens.Colors.textPrimary
     }
 
     /// Color alone can't carry the leader for VoiceOver, so the spoken row names it.
@@ -270,7 +275,10 @@ private struct CompareSampleCaution: View {
         }
         .padding(.horizontal, DesignTokens.Spacing.sm + 4)
         .padding(.vertical, DesignTokens.Spacing.sm + 2)
-        .background(DesignTokens.Colors.surfaceCard2, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
+        .background(
+            DesignTokens.Colors.surfaceCard2,
+            in: RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
+        )
         .overlay {
             RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
                 .strokeBorder(DesignTokens.Colors.borderDefault, lineWidth: 1)
@@ -282,7 +290,8 @@ private struct CompareSampleCaution: View {
     private var copy: String {
         guard case .live(let games) = stamp else { return "" }
         let played = games == 1 ? "One game" : "\(games) games"
-        return "\(played) played. Per-play rates swing hard at this sample size — no leader is called yet."
+        return
+            "\(played) played. Per-play rates swing hard at this sample size — no leader is called yet."
     }
 }
 
@@ -317,7 +326,8 @@ private struct CompareNoMetricsState: View {
                         .frame(minHeight: 36)
                         .background(DesignTokens.Colors.accent.opacity(0.14), in: Capsule())
                         .overlay {
-                            Capsule().strokeBorder(DesignTokens.Colors.accent.opacity(0.5), lineWidth: 1)
+                            Capsule().strokeBorder(
+                                DesignTokens.Colors.accent.opacity(0.5), lineWidth: 1)
                         }
                 }
                 .buttonStyle(.plain)
@@ -349,7 +359,8 @@ private struct CompareNoMetricsState: View {
         guard let fallback = viewModel.fallbackSeasonWithMetrics else {
             return "There are no comparable metrics for this season yet."
         }
-        return "The season hasn’t kicked off. \(String(fallback)) is the most recent completed season for both teams."
+        return
+            "The season hasn’t kicked off. \(String(fallback)) is the most recent completed season for both teams."
     }
 }
 
@@ -426,7 +437,10 @@ private struct CompareMetricsSkeleton: View {
         Text(team?.abbrev.uppercased() ?? "—")
             .font(.caption.weight(.black))
             .tracking(0.6)
-            .foregroundStyle(team.map { Color(hex: TeamSurfaces.mark($0.colors.jersey)) } ?? DesignTokens.Colors.textFaint)
+            .foregroundStyle(
+                team.map { Color(hex: TeamSurfaces.mark($0.colors.jersey)) }
+                    ?? DesignTokens.Colors.textFaint
+            )
             .frame(width: 74, alignment: .trailing)
     }
 

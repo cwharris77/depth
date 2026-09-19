@@ -94,7 +94,8 @@ enum UniformArchive {
         guard let space = name.firstIndex(of: " ") else { return name }
         let head = name[name.startIndex..<space]
         let digits = head.hasSuffix("s") ? head.dropLast() : head[...]
-        let isYearToken = digits.allSatisfy(\.isNumber)
+        let isYearToken =
+            digits.allSatisfy(\.isNumber)
             && (digits.count == 4 || (digits.count == 2 && head.hasSuffix("s")))
         guard isYearToken else { return name }
         return String(name[name.index(after: space)...])
@@ -178,7 +179,8 @@ enum UniformArchive {
     static func matchesTeam(_ kit: UniformListing, query: String) -> Bool {
         let q = normalized(query)
         guard !q.isEmpty else { return true }
-        let divisionTerms = "\(kit.conference) \(kit.division) \(kit.conference) \(divisionInitial(kit.division))"
+        let divisionTerms =
+            "\(kit.conference) \(kit.division) \(kit.conference) \(divisionInitial(kit.division))"
         return kit.teamName.lowercased().contains(q)
             || kit.teamAbbrev.lowercased().contains(q)
             || divisionTerms.lowercased().contains(q)
@@ -208,7 +210,8 @@ enum UniformArchive {
     static func compareKits(_ a: UniformListing, _ b: UniformListing) -> Bool {
         let ar = kindRank[a.kind] ?? 2
         let br = kindRank[b.kind] ?? 2
-        return ar != br ? ar < br : a.name.localizedCaseInsensitiveCompare(b.name) == .orderedAscending
+        return ar != br
+            ? ar < br : a.name.localizedCaseInsensitiveCompare(b.name) == .orderedAscending
     }
 
     /// `.kit` leaves the caller's existing order alone — it is already home → away → rest
@@ -296,7 +299,8 @@ enum UniformArchive {
                 teams.sort {
                     $0.teamName.localizedCaseInsensitiveCompare($1.teamName) == .orderedAscending
                 }
-                groups.append(DivisionGroup(conference: conference, division: division, teams: teams))
+                groups.append(
+                    DivisionGroup(conference: conference, division: division, teams: teams))
             }
         }
         return groups
@@ -310,7 +314,8 @@ enum UniformArchive {
         let buckets = Dictionary(grouping: kits) { kit in
             kit.yearStart.map { ($0 / 10) * 10 }
         }
-        return buckets
+        return
+            buckets
             .map { decade, kits in
                 DecadeGroup(
                     decade: decade,
