@@ -78,12 +78,16 @@ export interface UniformListing {
 // in 2023 is not the coach who leads it in 2025. `seasons` is always an array, empty
 // rather than undefined when no season has a complete entry, so callers don't need an
 // extra undefined check before rendering the "no stats" fallback. `incomingCoach` is a
-// distinct, separately-sourced signal: ESPN's live `teams.coach_name` reporting
-// `coach_experience: 0` for a team that just hired a new HC before that person has
-// coached a single game for them — the team_coach_seasons curated table has no row for
-// this person yet (there's no season for it to belong to), so without this field
-// they'd either be silently missing or wrongly attached to the latest played season.
-// Independent of `seasons` being empty or not.
+// distinct, separately-sourced signal, and an OFF-SEASON-ONLY one (DEP-597): ESPN's live
+// `teams.coach_name` reporting `coach_experience: 0` for a team that just hired a new HC
+// before that person has coached a game, in the window before the season they were hired
+// for has kicked off. It exists because that person has no season to belong to yet, so
+// without this field they'd either be silently missing or wrongly attached to the latest
+// played season. Once the season starts, ingest has written their 1st-season
+// `team_coach_seasons` row and that row is what renders — this field goes undefined
+// rather than labelling a coach "incoming" through the season he is coaching (ESPN's own
+// counter doesn't advance until the season completes, so it cannot be the signal for
+// "has started"). Independent of `seasons` being empty or not.
 //
 // `upcomingSeason` is set for ALL teams during the NFL off-season (roughly Mar–Aug),
 // not just teams with a coaching change. It lets the stats page's season switcher show

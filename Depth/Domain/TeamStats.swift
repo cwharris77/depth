@@ -59,7 +59,8 @@ struct TeamStatsPage: Equatable, Codable, Sendable {
     }
 }
 
-/// A newly hired coach reported by the live team record before they have a season result.
+/// A newly hired coach reported by the live team record before the season they were
+/// hired for has kicked off. Off-season only (DEP-597) -- see `TeamStatsMapper.map`.
 struct TeamIncomingCoach: Equatable, Codable, Sendable {
     let name: String
 }

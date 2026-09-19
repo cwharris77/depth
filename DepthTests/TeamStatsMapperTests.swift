@@ -431,6 +431,26 @@ private func metricRankRow(
         #expect(page.incomingCoach == TeamIncomingCoach(name: "Ben Johnson"))
     }
 
+    /// DEP-597: the Bills' Joe Brady sat at "HEAD COACH · INCOMING" well into the 2026
+    /// season because ESPN's `coach_experience` only advances once a season completes.
+    /// In-season the label is the coach's `team_coach_seasons` row, never this field.
+    @Test func dropsTheIncomingCoachOnceTheSeasonHasStarted() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let october = calendar.date(from: DateComponents(year: 2026, month: 10, day: 4))!
+
+        let page = TeamStatsMapper.map(
+            team: team(),
+            rows: [row(season: 2026)],
+            coachRows: [TeamCoachSeasonDTO(season: 2026, coachName: "Joe Brady", coachExperience: 1)],
+            incomingCoach: TeamIncomingCoach(name: "Joe Brady"),
+            now: october
+        )
+
+        #expect(page.incomingCoach == nil)
+        #expect(page.seasons.first?.coach == TeamSeasonCoach(name: "Joe Brady", experience: 1))
+    }
+
     @Test func mapsStreakSeedWinPercentAndSeasonScopedCoach() {
         let page = TeamStatsMapper.map(
             team: team(),
