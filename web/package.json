@@ -10,6 +10,7 @@
     "ingest:espn": "tsx scripts/ingest-espn.mts",
     "gen:espn-seed": "SEED_OUT=supabase/seed.sql tsx scripts/ingest-espn.mts",
     "ingest:nflverse": "tsx scripts/ingest-nflverse.mts",
+    "stat-files:build": "tsx scripts/build-stat-files.mts",
     "gen:nflverse-seed": "SEED_OUT=supabase/seed-nflverse.sql tsx scripts/ingest-nflverse.mts",
     "gen:nflverse-raw-tables": "tsx scripts/gen-nflverse-raw-tables.mts",
     "ingest:rosters": "tsx scripts/ingest-nflverse-rosters.mts",
