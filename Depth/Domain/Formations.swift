@@ -227,11 +227,13 @@ func alignmentLabel(_ alignment: String) -> String {
 private let lineY: Double = 51
 private let wingY: Double = 54
 
-private let qbY: [QbAlignment: Double] = [
-    .underCenter: 56,
-    .pistol: 63,
-    .shotgun: 68,
-]
+private func qbY(_ alignment: QbAlignment) -> Double {
+    switch alignment {
+    case .underCenter: 56
+    case .pistol: 63
+    case .shotgun: 68
+    }
+}
 
 private let wrSpots: [(x: Double, y: Double, onLine: Bool)] = [
     (10, lineY, true),
@@ -278,8 +280,9 @@ func buildRealFormation(alignment: String, code: String) -> [FormationSlot] {
     else { return offenseFormation }
 
     let chars = Array(code)
-    let rb = Int(String(chars[0]))!
-    let te = Int(String(chars[1]))!
+    guard let rb = Int(String(chars[0])), let te = Int(String(chars[1])) else {
+        return offenseFormation
+    }
     let wr = 5 - rb - te
     if wr < 0 || rb > 2 { return offenseFormation }
 
@@ -339,7 +342,7 @@ func buildRealFormation(alignment: String, code: String) -> [FormationSlot] {
 
     let qbSlot = SkillSlot(
         position: .qb, index: 0, x: 50,
-        y: qbY[QbAlignment(rawValue: alignment) ?? .shotgun] ?? qbY[.shotgun]!,
+        y: qbY(QbAlignment(rawValue: alignment) ?? .shotgun),
         onLine: false, label: "QB"
     )
 

@@ -36,6 +36,7 @@ on:
       - 'project.yml'
       - 'xcconfig/**'
       - 'scripts/**'
+      - '.swiftlint.yml'
       - '.github/workflows/ios-ci.yml'
   push:
     branches: [main]
@@ -46,6 +47,7 @@ on:
       - 'project.yml'
       - 'xcconfig/**'
       - 'scripts/**'
+      - '.swiftlint.yml'
       - '.github/workflows/ios-ci.yml'
   # Full DepthUITests suite, once a day — see the header comment above for why this
   # isn't on every push. Path filters don't apply to schedule triggers, so this always
@@ -133,6 +135,23 @@ jobs:
             ]}')
           echo "Resolved test device: $MATRIX"
           echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+
+  # Advisory bug-pattern lint (force unwraps, unhandled throwing Tasks, weak delegates, ...;
+  # rule list in .swiftlint.yml). Every rule there is a warning, so this never fails a PR --
+  # it surfaces risky patterns as annotations. Formatting is deliberately NOT checked in CI:
+  # `latest-stable` Xcode's swift-format can drift from a local one, and style is auto-fixed
+  # by the pre-commit hook instead (DEP-604).
+  swiftlint:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Lint app sources for bug patterns
+        run: swiftlint lint --reporter github-actions-logging
 
   build-for-testing:
     runs-on: macos-latest

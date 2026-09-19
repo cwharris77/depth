@@ -510,7 +510,7 @@ private struct TrueScaleFurniture: View {
 
     var body: some View {
         let furniture = layout.furniture
-        Canvas { context, size in
+        Canvas { context, _ in
             context.translateBy(x: pan.x, y: pan.y)
             let content = layout.contentSize
             let chalk = Color.white

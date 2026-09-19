@@ -492,15 +492,27 @@ actor SupabaseDepthRepository: DepthRepository {
         let limit = 8
 
         var searches: [Task<[PlayerSearchRowDTO], Error>] = [
-            Task { try await self.playersByName(escaped, limit: limit) },
-            Task { try await self.playersByCollege(escaped, limit: limit) },
-            Task { try await self.playersByPosition(escaped, limit: limit) },
+            Task<[PlayerSearchRowDTO], Error> {
+                try await self.playersByName(escaped, limit: limit)
+            },
+            Task<[PlayerSearchRowDTO], Error> {
+                try await self.playersByCollege(escaped, limit: limit)
+            },
+            Task<[PlayerSearchRowDTO], Error> {
+                try await self.playersByPosition(escaped, limit: limit)
+            },
         ]
         if let number = Int(normalized) {
-            searches.append(Task { try await self.playersByNumber(number, limit: limit) })
+            searches.append(
+                Task<[PlayerSearchRowDTO], Error> {
+                    try await self.playersByNumber(number, limit: limit)
+                })
         }
         if let group = PlayerSearch.positionGroupPositions(normalized) {
-            searches.append(Task { try await self.playersByPositions(group, limit: limit) })
+            searches.append(
+                Task<[PlayerSearchRowDTO], Error> {
+                    try await self.playersByPositions(group, limit: limit)
+                })
         }
 
         do {

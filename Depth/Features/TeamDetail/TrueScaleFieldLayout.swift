@@ -215,7 +215,8 @@ struct TrueScaleFieldLayout {
         // either way; only the REPORTED depth flips sign, so `depthYards` stays "yards off
         // the line on my own side" for a defender the way it already is for a back.
         let ownSideSign: CGFloat = unit == .defense ? -1 : 1
-        var dots = filled.map { slot in
+        var dots = filled.compactMap { slot -> Dot? in
+            guard let player = slot.player else { return nil }
             let charted = CGFloat(
                 (slot.y - FieldYardScale.lineOfScrimmage)
                     / Double(FieldYardScale.chartedUnitsPerYard))
@@ -223,7 +224,7 @@ struct TrueScaleFieldLayout {
             return Dot(
                 key: slot.key,
                 label: slot.label,
-                player: slot.player!,
+                player: player,
                 onLine: slot.onLine ?? false,
                 center: CGPoint(x: contentWidth / 2 + x * ppy, y: losY + charted * ppy),
                 depthYards: charted * ownSideSign
@@ -443,15 +444,15 @@ struct TrueScaleFieldLayout {
                     EdgeChip(id: dot.key, side: side, y: y, dot: dot, target: dot, overflowCount: 0)
                 )
             }
-            if overflow {
-                let rest = hidden.dropFirst(Self.maxChipsPerSide - 1)
+            let rest = hidden.dropFirst(Self.maxChipsPerSide - 1)
+            if overflow, let target = rest.first {
                 chips.append(
                     EdgeChip(
                         id: "\(side)-more",
                         side: side,
                         y: max(top, lastY + Self.chipSpacing),
                         dot: nil,
-                        target: rest.first!,
+                        target: target,
                         overflowCount: rest.count
                     ))
             }

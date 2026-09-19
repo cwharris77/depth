@@ -81,7 +81,7 @@ enum AppBuildInfo {
 /// Pure formatter so the missing/present branches are unit-testable without a real bundle.
 func formattedVersionAndBuild(version: String?, build: String?) -> String {
     let fallback = "\u{2014}"  // em dash
-    let versionText = (version?.isEmpty == false) ? version! : fallback
-    let buildText = (build?.isEmpty == false) ? build! : fallback
+    let versionText = version.flatMap { $0.isEmpty ? nil : $0 } ?? fallback
+    let buildText = build.flatMap { $0.isEmpty ? nil : $0 } ?? fallback
     return "\(versionText) (\(buildText))"
 }

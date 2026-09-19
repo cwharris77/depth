@@ -346,6 +346,8 @@ struct DepthChartFieldLayout: Equatable {
         guard !named.isEmpty else { return [:] }
 
         func center(_ slot: RenderSlot) -> CGPoint {
+            // Safe: `named` above keeps only slots whose key is in `positions`.
+            // swiftlint:disable:next force_unwrapping
             let p = positions[slot.key]!
             return CGPoint(
                 x: p.x, y: p.y + lineOffset(y: slot.y, onLine: slot.onLine, dotSize: dotSize))
@@ -573,6 +575,9 @@ struct DepthChartFieldLayout: Equatable {
                 // deliberate `receiverClearance` keeps the innermost off the line. Order and
                 // side are preserved; only the exact proportion gives way, which is the part
                 // that can't survive a phone's width anyway.
+                // Every force unwrap below indexes `centers` by a key this same pass placed, or
+                // takes min/max of a set the surrounding `isEmpty` check proved non-empty.
+                // swiftlint:disable force_unwrapping
                 if !interior.isEmpty && !receivers.isEmpty {
                     let interiorCenters = interior.map { centers[$0.key]!.x }
                     let clusterLeft = interiorCenters.min()! - dotSize / 2
@@ -657,6 +662,7 @@ struct DepthChartFieldLayout: Equatable {
                         y: yardScale.screenY(charted: wr.y)
                     )
                 }
+                // swiftlint:enable force_unwrapping
                 i = j + 1
             }
         }
