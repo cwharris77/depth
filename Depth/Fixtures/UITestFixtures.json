@@ -18426,9 +18426,6 @@
   "teamStats" : {
     "bills" : {
       "currentSeason" : 2026,
-      "incomingCoach" : {
-        "name" : "Joe Brady"
-      },
       "leagueRanksBySeason" : {
         "2024" : {
           "defensiveInterceptions" : 5,
@@ -18485,6 +18482,10 @@
       },
       "seasons" : [
         {
+          "coach" : {
+            "experience" : 1,
+            "name" : "Joe Brady"
+          },
           "conferenceLosses" : 0,
           "conferenceWins" : 0,
           "divisionLosses" : 0,
@@ -18655,9 +18656,6 @@
     },
     "dolphins" : {
       "currentSeason" : 2026,
-      "incomingCoach" : {
-        "name" : "Jeff Hafley"
-      },
       "leagueRanksBySeason" : {
         "2024" : {
           "defensiveInterceptions" : 22,
@@ -18714,6 +18712,10 @@
       },
       "seasons" : [
         {
+          "coach" : {
+            "experience" : 1,
+            "name" : "Jeff Hafley"
+          },
           "conferenceLosses" : 0,
           "conferenceWins" : 0,
           "divisionLosses" : 0,
@@ -18940,6 +18942,10 @@
       },
       "seasons" : [
         {
+          "coach" : {
+            "experience" : 3,
+            "name" : "Mike Macdonald"
+          },
           "conferenceLosses" : 0,
           "conferenceWins" : 0,
           "divisionLosses" : 0,

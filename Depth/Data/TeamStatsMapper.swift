@@ -30,7 +30,12 @@ enum TeamStatsMapper {
                 }
                 .sorted { $0.season > $1.season },
             upcomingSeason: state.isOffseason ? state.upcomingSeason : nil,
-            incomingCoach: incomingCoach,
+            // Off-season only, mirroring web's `fetchTeamStatsPage` (DEP-597). ESPN's
+            // `coach_experience` counts *completed* seasons, so it reads 0 all the way
+            // through a first-year coach's first season -- gating on the calendar is what
+            // stops the Bills' Joe Brady reading "INCOMING" in week 12. In-season his
+            // `team_coach_seasons` row (written by every ingest run) renders instead.
+            incomingCoach: state.isOffseason ? incomingCoach : nil,
             leagueRanksBySeason: mapRanks(
                 teamId: teamId ?? team.id,
                 recordRows: recordRankRows,

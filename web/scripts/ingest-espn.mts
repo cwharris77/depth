@@ -34,6 +34,11 @@ import {
 type BuiltRoster = TeamRoster & { depthChartSlots: DepthChartSlot[] };
 import { buildSeedSql, type SeedEntry } from '@/lib/espn/seed-sql';
 import {
+  coachSeasonExperience,
+  priorCoachSeason,
+  type CoachSeasonRow,
+} from '@/lib/espn/coach-seasons';
+import {
   parseStandings,
   parseTeamStats,
   ESPN_TEAM_STATS_SEASONS_MIN,
@@ -318,6 +323,15 @@ async function main() {
     }
   }
 
+  // After the team upserts so the (team_id) FK resolves for a team written this run.
+  // A failure here is an error like a failed team write -- the row is what keeps the
+  // stats page from showing a first-year coach as INCOMING all season (DEP-597).
+  try {
+    diagnostics.push(...(await writeCoachSeasons(supabase, currentSeason, coachByTeamId)));
+  } catch (e) {
+    errors.push({ team: 'coach seasons', message: (e as Error).message });
+  }
+
   // Preseason games for the same season set as team_stats (daily: this + last season;
   // `--seasons`: the backfill range). After the team upserts so the schedules rows' teams
   // FK resolves. ESPN team ids are stable across relocations (the Raiders are 13 as OAK
@@ -513,6 +527,69 @@ async function writeTeamStats(
     { onConflict: 'team_id,season' }
   );
   if (error) throw new Error(`team_stats upsert: ${error.message}`);
+}
+
+// The current season's `team_coach_seasons` row for every team ESPN gave us a coach for
+// (DEP-597). Before this, the table was populated once by a migration whose own header
+// admitted "This table does not self-update" -- so a first-year HC had no row for the
+// season being played, the stats page fell through to the INCOMING label, and it stayed
+// there all season (the 2026 Bills under Joe Brady).
+//
+// This rides the existing twice-daily run rather than a cron of its own: `teams` is
+// already rewritten with ESPN's live coach on every pass, so a new hire lands here
+// within ~12h with nothing to remember each off-season.
+//
+// One league-wide read of the prior history, not 32 (the table is ~one row per team per
+// season). `source: 'espn'` distinguishes these from the hand-curated 2023-25 rows the
+// same way `uniforms.source` does -- those were researched against a majority-of-games
+// rule this writer deliberately does not apply (see lib/espn/coach-seasons.ts).
+async function writeCoachSeasons(
+  supabase: SupabaseClient<Database>,
+  season: number,
+  coachByTeamId: Record<string, Coach | null>
+): Promise<{ team: string; message: string }[]> {
+  const notes: { team: string; message: string }[] = [];
+  const { data: history, error: historyError } = await supabase
+    .from('team_coach_seasons')
+    .select('team_id, season, coach_name, coach_experience')
+    .lt('season', season);
+  if (historyError) throw new Error(`team_coach_seasons read: ${historyError.message}`);
+
+  const historyByTeam = new Map<string, CoachSeasonRow[]>();
+  for (const row of history ?? []) {
+    const rows = historyByTeam.get(row.team_id) ?? [];
+    rows.push(row);
+    historyByTeam.set(row.team_id, rows);
+  }
+
+  const rows = [];
+  for (const [teamId, coach] of Object.entries(coachByTeamId)) {
+    if (!coach) continue;
+    const prior = priorCoachSeason(historyByTeam.get(teamId) ?? [], season);
+    // No history to count from means we genuinely cannot tell a continuing coach from a
+    // new hire, and guessing 1 would demote a 9-year coach to his 1st season. Record it
+    // and leave the row alone -- a diagnostic, not a failure (it describes missing
+    // curated history, which nothing in this run can resolve).
+    if (!prior) {
+      notes.push({ team: teamId, message: `no team_coach_seasons row before ${season}` });
+      continue;
+    }
+    rows.push({
+      team_id: teamId,
+      season,
+      coach_name: coach.name,
+      coach_experience: coachSeasonExperience(coach.name, prior),
+      source: 'espn',
+      updated_at: new Date().toISOString(),
+    });
+  }
+  if (rows.length) {
+    const { error } = await supabase
+      .from('team_coach_seasons')
+      .upsert(rows, { onConflict: 'team_id,season' });
+    if (error) throw new Error(`team_coach_seasons upsert: ${error.message}`);
+  }
+  return notes;
 }
 
 // One season's preseason: the week-1 scoreboard carries the whole calendar, then one

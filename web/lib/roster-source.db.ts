@@ -784,9 +784,12 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
     team: withHomeColors(toTeam(teamRow), homeRow ? [homeRow] : []),
     leagueRanksBySeason: buildLeagueRanks(teamId, rankRows, nflverseRankRows),
     // `coach_experience === 0` is ESPN's live signal for "hired, but hasn't coached a
-    // season for this team yet" — see TeamStatsPage.incomingCoach doc comment.
+    // season yet" — see TeamStatsPage.incomingCoach doc comment. Off-season only
+    // (DEP-597): ESPN's counter only advances once a season completes, so without the
+    // gate a first-year coach reads INCOMING through the whole season he is actually
+    // coaching. In-season, `team_coach_seasons` carries his 1st-season row instead.
     incomingCoach:
-      teamRow.coach_name && teamRow.coach_experience === 0
+      isOffseason && teamRow.coach_name && teamRow.coach_experience === 0
         ? { name: teamRow.coach_name }
         : undefined,
     // Show an upcoming-season chip for every team during the off-season, not just
