@@ -35,12 +35,26 @@ final class AccountDeletionViewModel {
     }
 
     func canResend(at date: Date) -> Bool {
-        guard let resendAvailableAt else { return true }
-        return date >= resendAvailableAt
+        resendWait(at: date) == nil
+    }
+
+    /// Whole seconds left on the resend cooldown at `date`, or nil once a send is
+    /// allowed. Mirrors `AuthFlowViewModel.resendWait(at:)` — same cooldown, same
+    /// rounding, so the two sheets never disagree by a second.
+    func resendWait(at date: Date) -> Int? {
+        guard let resendAvailableAt, date < resendAvailableAt else { return nil }
+        return max(1, Int(resendAvailableAt.timeIntervalSince(date).rounded(.up)))
     }
 
     func requestFreshCode() async {
-        guard !isSubmitting, canResend(at: now()) else { return }
+        guard !isSubmitting else { return }
+        // DEP-598: never return silently from the warning step — it has no countdown,
+        // so a swallowed tap reads as a dead "Continue" button. The code step already
+        // renders the countdown in place of its resend button.
+        if let wait = resendWait(at: now()) {
+            if step == .warning { error = .rateLimited(retryAfterSeconds: wait) }
+            return
+        }
         isSubmitting = true
         error = nil
         defer { isSubmitting = false }

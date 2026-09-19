@@ -92,16 +92,14 @@ struct AccountDeletionSheet: View {
                 }
             }
             TimelineView(.periodic(from: .now, by: 1)) { context in
-                if viewModel.canResend(at: context.date) {
+                if let wait = viewModel.resendWait(at: context.date) {
+                    Text("Send a new code in \(wait)s")
+                        .font(.footnote)
+                        .foregroundStyle(DesignTokens.Colors.textMuted)
+                } else {
                     destructiveButton(title: "Send a new code") {
                         Task { await viewModel.requestFreshCode() }
                     }
-                } else if let availableAt = viewModel.resendAvailableAt {
-                    Text(
-                        "Send a new code in \(max(1, Int(availableAt.timeIntervalSince(context.date).rounded(.up))))s"
-                    )
-                    .font(.footnote)
-                    .foregroundStyle(DesignTokens.Colors.textMuted)
                 }
             }
             if viewModel.step == .deleting {
