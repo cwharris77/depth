@@ -15,6 +15,11 @@ final class AuthFlowViewModel {
     private(set) var error: DepthAuthError?
     private(set) var resendAvailableAt: Date?
 
+    /// The address the most recent code actually reached. The resend cooldown is
+    /// email-wide and server-owned, so a cooldown alone does not mean a code is
+    /// waiting for whatever is currently typed — DEP-598.
+    private(set) var lastSentEmail: String?
+
     @ObservationIgnored private let service: any DepthAuthServicing
     @ObservationIgnored private let sessionStore: AuthSessionStore
     @ObservationIgnored private let now: @Sendable () -> Date
@@ -37,8 +42,15 @@ final class AuthFlowViewModel {
     }
 
     func canResend(at date: Date) -> Bool {
-        guard let resendAvailableAt else { return true }
-        return date >= resendAvailableAt
+        resendWait(at: date) == nil
+    }
+
+    /// Whole seconds left on the resend cooldown at `date`, or nil once a send is
+    /// allowed. Views render this so the cooldown is visible before it blocks a tap
+    /// (DEP-598); rounded up and floored at 1 so it never reads "0s".
+    func resendWait(at date: Date) -> Int? {
+        guard let resendAvailableAt, date < resendAvailableAt else { return nil }
+        return max(1, Int(resendAvailableAt.timeIntervalSince(date).rounded(.up)))
     }
 
     func sendCode(shouldCreateUser: Bool = true) async {
@@ -46,7 +58,17 @@ final class AuthFlowViewModel {
             error = .invalidEmail
             return
         }
-        guard !isSubmitting, canResend(at: now()) else { return }
+        guard !isSubmitting else { return }
+        // DEP-598: this used to return with no state change at all, so on the email step
+        // — which renders no countdown — "Email me a code" read as a dead button for the
+        // whole cooldown, including for an address the user had just switched to. The
+        // cooldown is email-wide and server-owned, so it still blocks; it just says so.
+        if let wait = resendWait(at: now()) {
+            // The code step already renders the countdown in place of its resend button,
+            // so only the email step needs the refusal spelled out.
+            if step == .email { error = .rateLimited(retryAfterSeconds: wait) }
+            return
+        }
 
         isSubmitting = true
         error = nil
@@ -54,15 +76,22 @@ final class AuthFlowViewModel {
         do {
             try await service.sendEmailOtp(to: normalizedEmail, shouldCreateUser: shouldCreateUser)
             step = .code
+            lastSentEmail = normalizedEmail
             resendAvailableAt = now().addingTimeInterval(60)
             events.record(.authStarted)
         } catch let authError as DepthAuthError {
             if case .rateLimited(let retryAfterSeconds) = authError {
-                // Another app instance may have sent a valid code already. Let this one
-                // accept it while honoring the server's email-wide resend cooldown.
-                step = .code
                 resendAvailableAt = now().addingTimeInterval(TimeInterval(retryAfterSeconds))
-                error = nil
+                if let lastSentEmail, lastSentEmail != normalizedEmail {
+                    // DEP-598: nothing has reached this address, so the code step would
+                    // claim a send that never happened. Stay put and show the wait.
+                    error = authError
+                } else {
+                    // Another app instance may have sent a valid code already. Let this
+                    // one accept it while honoring the server's email-wide resend cooldown.
+                    step = .code
+                    error = nil
+                }
             } else {
                 error = authError
             }

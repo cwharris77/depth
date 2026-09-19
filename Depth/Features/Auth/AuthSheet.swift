@@ -96,18 +96,24 @@ struct AuthSheet: View {
                     .accessibilityIdentifier("auth-legal-disclosure")
             }
 
-            Button {
-                Task { await viewModel.sendCode() }
-            } label: {
-                Text(viewModel.isSubmitting ? "Sending…" : "Email me a code")
-                    .frame(maxWidth: .infinity)
+            // DEP-598: the resend cooldown is email-wide, so it also blocks the first
+            // send after "Use a different email". Show it here the way the code step
+            // does instead of leaving a live-looking button that sendCode() will refuse.
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                let wait = viewModel.resendWait(at: context.date)
+                Button {
+                    Task { await viewModel.sendCode() }
+                } label: {
+                    Text(sendCodeLabel(wait: wait))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(DesignTokens.Colors.accent)
+                .foregroundStyle(DesignTokens.Colors.onAccent)
+                .disabled(viewModel.isSubmitting || wait != nil)
+                .frame(minHeight: 44)
+                .accessibilityIdentifier("auth-send-code")
             }
-            .buttonStyle(.borderedProminent)
-            .tint(DesignTokens.Colors.accent)
-            .foregroundStyle(DesignTokens.Colors.onAccent)
-            .disabled(viewModel.isSubmitting)
-            .frame(minHeight: 44)
-            .accessibilityIdentifier("auth-send-code")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .depthCard()
@@ -145,17 +151,15 @@ struct AuthSheet: View {
             .accessibilityIdentifier("auth-verify-code")
 
             TimelineView(.periodic(from: .now, by: 1)) { context in
-                if viewModel.canResend(at: context.date) {
+                if let wait = viewModel.resendWait(at: context.date) {
+                    Text("Send a new code in \(wait)s")
+                        .font(.footnote)
+                        .foregroundStyle(DesignTokens.Colors.textFaint)
+                } else {
                     Button("Send a new code") { Task { await viewModel.sendCode() } }
                         .foregroundStyle(DesignTokens.Colors.textSecondary)
                         .disabled(viewModel.isSubmitting)
                         .frame(minHeight: 44, alignment: .leading)
-                } else if let availableAt = viewModel.resendAvailableAt {
-                    Text(
-                        "Send a new code in \(max(1, Int(availableAt.timeIntervalSince(context.date).rounded(.up))))s"
-                    )
-                    .font(.footnote)
-                    .foregroundStyle(DesignTokens.Colors.textFaint)
                 }
             }
             Button("Use a different email") { viewModel.editEmail() }
@@ -205,6 +209,12 @@ struct AuthSheet: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, DesignTokens.Spacing.lg)
         .multilineTextAlignment(.center)
+    }
+
+    private func sendCodeLabel(wait: Int?) -> String {
+        if viewModel.isSubmitting { return "Sending…" }
+        if let wait { return "Email me a code in \(wait)s" }
+        return "Email me a code"
     }
 
     private func errorCard(_ error: DepthAuthError) -> some View {

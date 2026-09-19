@@ -1,5 +1,6 @@
 import Foundation
 import Supabase
+import Synchronization
 import Testing
 
 @testable import Depth
@@ -66,6 +67,19 @@ private actor AsyncCounter {
     private var count = 0
     func increment() { count += 1 }
     func value() -> Int { count }
+}
+
+/// Hand-advanced clock for the resend-cooldown assertions (DEP-598). The view models
+/// take `now` as a `@Sendable` closure, so the date lives behind a lock rather than in
+/// a captured `var`.
+private final class TestClock: Sendable {
+    private let date: Mutex<Date>
+
+    init(_ start: Date) { date = Mutex(start) }
+
+    var now: Date { date.withLock { $0 } }
+
+    func set(_ newValue: Date) { date.withLock { $0 = newValue } }
 }
 
 @Test @MainActor func authRejectsInvalidEmailBeforeNetwork() async {
@@ -447,4 +461,75 @@ struct FieldNameModePreferenceTests {
         // default (.callouts) — a migration would be required first.
         #expect(FieldNameMode.storageKey == "betaFieldNameMode")
     }
+}
+
+// DEP-598: the cooldown is email-wide, so it also blocks the first send to a newly
+// typed address. It must say so — the email step renders no countdown of its own when
+// the button is the only affordance, and a silent return read as a dead button.
+@Test @MainActor func resendCooldownSurfacesTheWaitInsteadOfSwallowingTheTap() async {
+    let service = FakeAuthService()
+    let store = AuthSessionStore(service: service)
+    let clock = TestClock(Date(timeIntervalSince1970: 100))
+    let model = AuthFlowViewModel(
+        service: service, sessionStore: store, now: { clock.now })
+    model.email = "owner@example.com"
+    await model.sendCode()
+    model.editEmail()
+
+    // A different address, still inside the 60s cooldown.
+    model.email = "owner+1@example.com"
+    clock.set(Date(timeIntervalSince1970: 130))
+    await model.sendCode()
+
+    #expect(model.error == .rateLimited(retryAfterSeconds: 30))
+    #expect(model.step == .email)
+    #expect(await service.sendCallCount() == 1)
+
+    // Once it expires the same tap goes through.
+    clock.set(Date(timeIntervalSince1970: 160))
+    await model.sendCode()
+
+    #expect(model.error == nil)
+    #expect(model.step == .code)
+    #expect(await service.sentEmailValues().map(\.0) == ["owner@example.com", "owner+1@example.com"])
+}
+
+@Test @MainActor func resendWaitCountsWholeSecondsAndNeverReadsZero() async {
+    let service = FakeAuthService()
+    let store = AuthSessionStore(service: service)
+    let now = Date(timeIntervalSince1970: 100)
+    let model = AuthFlowViewModel(service: service, sessionStore: store, now: { now })
+
+    #expect(model.resendWait(at: now) == nil)
+
+    model.email = "owner@example.com"
+    await model.sendCode()
+
+    #expect(model.resendWait(at: now) == 60)
+    #expect(model.resendWait(at: Date(timeIntervalSince1970: 130.4)) == 30)
+    #expect(model.resendWait(at: Date(timeIntervalSince1970: 159.9)) == 1)
+    #expect(model.resendWait(at: Date(timeIntervalSince1970: 160)) == nil)
+}
+
+// DEP-598: the rateLimited recovery jumps to the code step because a code may already
+// be waiting — but only for the address that code was sent to. After switching emails
+// that step would claim a send that never happened.
+@Test @MainActor func serverCooldownOnANewEmailStaysOnTheEmailStep() async {
+    let service = FakeAuthService()
+    let store = AuthSessionStore(service: service)
+    let clock = TestClock(Date(timeIntervalSince1970: 100))
+    let model = AuthFlowViewModel(
+        service: service, sessionStore: store, now: { clock.now })
+    model.email = "owner@example.com"
+    await model.sendCode()
+    model.editEmail()
+
+    clock.set(Date(timeIntervalSince1970: 200))
+    await service.setSendError(.rateLimited(retryAfterSeconds: 19))
+    model.email = "owner+1@example.com"
+    await model.sendCode()
+
+    #expect(model.step == .email)
+    #expect(model.error == .rateLimited(retryAfterSeconds: 19))
+    #expect(model.resendAvailableAt == Date(timeIntervalSince1970: 219))
 }
