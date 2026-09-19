@@ -12,6 +12,11 @@ export interface SourceCoverage {
   minSeason: number;
   /** Last season the source publishes, for a source that stopped. */
   maxSeason?: number;
+  /**
+   * One file holds every season (QBR), so its presence doesn't depend on the season the
+   * ingest happens to be running: a 404 is always an error, never an out-of-range skip.
+   */
+  wholeHistory?: boolean;
 }
 
 // Sole source of truth for each source's published range, keyed by the ingest's source
@@ -27,8 +32,8 @@ export const SOURCE_COVERAGE: Record<SourceId, SourceCoverage> = {
   nextgen_stats: { minSeason: 2016, maxSeason: 2024 },
   ftn_charting: { minSeason: 2022 },
   // QBR is a whole-history file per grain (`qbr_week_level.csv` / `qbr_season_level.csv`).
-  espn_qbr_week: { minSeason: 2006 },
-  espn_qbr_season: { minSeason: 2006 },
+  espn_qbr_week: { minSeason: 2006, wholeHistory: true },
+  espn_qbr_season: { minSeason: 2006, wholeHistory: true },
   snap_counts: { minSeason: 2012 },
   pbp_participation: { minSeason: 2016 },
 };
@@ -48,6 +53,7 @@ export function classifyMissingAsset(
   latestCompletedSeason: number
 ): MissingAssetClass {
   const coverage = SOURCE_COVERAGE[source];
+  if (coverage.wholeHistory) return 'error';
   if (season < coverage.minSeason) return 'skip';
   if (coverage.maxSeason !== undefined && season > coverage.maxSeason) return 'skip';
   if (season > latestCompletedSeason) return 'skip';

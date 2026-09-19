@@ -19,7 +19,6 @@ describe('classifyMissingAsset', () => {
     expect(classifyMissingAsset('nextgen_stats', 2015, COMPLETED)).toBe('skip');
     expect(classifyMissingAsset('ftn_charting', 2021, COMPLETED)).toBe('skip');
     expect(classifyMissingAsset('pbp_participation', 2015, COMPLETED)).toBe('skip');
-    expect(classifyMissingAsset('espn_qbr_week', 2005, COMPLETED)).toBe('skip');
   });
 
   it('is a skip above a source that stopped publishing', () => {
@@ -36,5 +35,10 @@ describe('classifyMissingAsset', () => {
     expect(classifyMissingAsset('pfr_advstats', 2018, COMPLETED)).toBe('error');
     expect(classifyMissingAsset('nextgen_stats', 2016, COMPLETED)).toBe('error');
     expect(classifyMissingAsset('snap_counts', 2012, COMPLETED)).toBe('error');
+  });
+
+  it('is always an error for a whole-history file, whatever season the run started at', () => {
+    expect(classifyMissingAsset('espn_qbr_week', 1999, COMPLETED)).toBe('error');
+    expect(classifyMissingAsset('espn_qbr_season', 2026, COMPLETED)).toBe('error');
   });
 });

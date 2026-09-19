@@ -37,6 +37,7 @@ import { parseCsv, parseCsvHeader, parseCsvStream } from '@/lib/nflverse/csv';
 import { assetUrl, latestAvailableSeason } from '@/lib/nflverse/assets';
 import { assertHeader, sourceContract, type SourceId } from '@/lib/nflverse/source-contract';
 import { classifyMissingAsset } from '@/lib/nflverse/source-coverage';
+import { fetchRawGroup } from '@/lib/nflverse/raw-group-guard';
 import { buildCrosswalk, buildPfrCrosswalk } from '@/lib/nflverse/crosswalk';
 import { toPlayerStatsRows, type PlayerStatsInsert } from '@/lib/nflverse/transform';
 import { toSeasonSnapTotals, type SeasonSnapTotalsInsert } from '@/lib/nflverse/season-snaps';
@@ -864,16 +865,20 @@ async function main() {
   }
 
   for (const group of rawTaskGroups) {
+    // Fetch + header-check first: a shape change or renamed asset never reaches the
+    // transform (DEP-579, raw-group-guard.ts).
+    const guarded = await fetchRawGroup(group, {
+      fetchCsv: getTextMaybeGzip,
+      latestCompletedSeason,
+      loggedNewColumns: loggedNewColumnSources,
+    });
+    if (guarded.status === 'skip') continue;
+    if (guarded.status === 'failure') {
+      failures.push({ season: group.season, message: guarded.message });
+      continue;
+    }
     try {
-      const fetched = await Promise.all(
-        group.tasks.map(async (task) => ({ task, csv: await getTextMaybeGzip(task.url) }))
-      );
-      // The union of every file in the group's header, checked against the source's
-      // generated contract. A failed check throws before any transform runs.
-      const headerUnion = [...new Set(fetched.flatMap(({ csv }) => parseCsvHeader(csv)))];
-      assertHeader(sourceContract(group.source), headerUnion, loggedNewColumnSources);
-
-      for (const { task, csv } of fetched) {
+      for (const { task, csv } of guarded.fetched) {
         let rows: Record<string, unknown>[];
         let unresolved = 0;
         let conflict: string;
@@ -908,18 +913,7 @@ async function main() {
         console.log(`${group.table} ${task.season}: ${rows.length} rows, ${unresolved} unresolved`);
       }
     } catch (e) {
-      const message = (e as Error).message;
-      // A missing asset is a skip only outside the source's published range (or for the
-      // in-progress season before its first release); inside the range it is a renamed
-      // release asset -- an error that names the URL (DEP-579).
-      if (/^404\b/.test(message)) {
-        if (classifyMissingAsset(group.source, group.season, latestCompletedSeason) === 'skip') {
-          continue;
-        }
-        failures.push({ season: group.season, message: `${group.source}: ${message}` });
-        continue;
-      }
-      failures.push({ season: group.season, message: `${group.table}: ${message}` });
+      failures.push({ season: group.season, message: `${group.table}: ${(e as Error).message}` });
     }
   }
 
