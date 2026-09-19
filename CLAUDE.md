@@ -205,10 +205,13 @@ Everything in `web/CLAUDE.md` §5's "Any code PR" checklist applies. Additionall
       scoped to the suites the diff touches — `DepthTests` for data/domain,
       `DepthUITests`/`AccessibilityUITests`/`ShareUITests` for the flows changed
       (`web/CLAUDE.md` §5's iOS bullet points here for the full rule).
-- [ ] **Visual/screen-touching change: no `## Screenshots` PR section exists anymore.**
-      The PR-screenshot driver and its CI gate were removed (2026-09-10); iOS visual
-      regression is snapshot tests (Phase 4, separate), and the App Store capture flow
-      (`scripts/capture-appstore-screenshots.sh`) is the only screenshot tooling left.
+- [ ] **Visual/screen-touching change: fill the PR's `## Screenshots` section.** The
+      screenshot CI gate was removed (2026-09-10) but the section was restored (#833): a
+      simple single-screen UI change gets `/ios-pr-screenshots`; a multi-screen or
+      logic-heavy change you verify in the simulator instead gets one sentence justifying
+      the skip. iOS visual regression is snapshot tests (Phase 4, separate), and the App
+      Store capture flow (`scripts/capture-appstore-screenshots.sh`) is separate tooling.
+      Full shipping steps: [`SHIPPING.md`](SHIPPING.md) (read by the global `ship-pr` skill).
 - [ ] For a behavior that already shipped on the frozen web app: reference the live site
       for what it *was* ("what did web do?") — see §6. New features define the iOS-native
       way; "web does it this way" is never a justification by itself.
