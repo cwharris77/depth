@@ -45,6 +45,7 @@ next-env.d.ts
 .gstack/
 /.worktrees/
 /web/.cache/matchup-forecast/
+/web/.stat-files/
 .env*.local
 __pycache__/
 

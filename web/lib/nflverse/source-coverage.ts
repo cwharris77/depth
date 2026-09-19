@@ -41,6 +41,18 @@ export const SOURCE_COVERAGE: Record<SourceId, SourceCoverage> = {
 export type MissingAssetClass = 'skip' | 'error';
 
 /**
+ * Whether `source` publishes `season` at all (inside its floor/ceiling). Says nothing about
+ * the in-progress season, which may or may not have a file yet: a caller decides whether to
+ * fetch with this, and classifies a 404 with `classifyMissingAsset`.
+ */
+export function isPublishedSeason(source: SourceId, season: number): boolean {
+  const coverage = SOURCE_COVERAGE[source];
+  if (coverage.wholeHistory) return true;
+  if (season < coverage.minSeason) return false;
+  return coverage.maxSeason === undefined || season <= coverage.maxSeason;
+}
+
+/**
  * Classify a 404 for `source`'s `season`: `skip` outside the published range and for an
  * in-progress season (its file isn't published until the first data exists), `error`
  * inside it. `latestCompletedSeason` is the canonical calendar value
@@ -54,8 +66,7 @@ export function classifyMissingAsset(
 ): MissingAssetClass {
   const coverage = SOURCE_COVERAGE[source];
   if (coverage.wholeHistory) return 'error';
-  if (season < coverage.minSeason) return 'skip';
-  if (coverage.maxSeason !== undefined && season > coverage.maxSeason) return 'skip';
+  if (!isPublishedSeason(source, season)) return 'skip';
   if (season > latestCompletedSeason) return 'skip';
   return 'error';
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { classifyMissingAsset } from './source-coverage';
+import { classifyMissingAsset, isPublishedSeason } from './source-coverage';
 
 // `latestCompletedSeason` is the calendar value (2025 while the 2026 season is in
 // progress), never a source's own label.
@@ -40,5 +40,21 @@ describe('classifyMissingAsset', () => {
   it('is always an error for a whole-history file, whatever season the run started at', () => {
     expect(classifyMissingAsset('espn_qbr_week', 1999, COMPLETED)).toBe('error');
     expect(classifyMissingAsset('espn_qbr_season', 2026, COMPLETED)).toBe('error');
+  });
+});
+
+describe('isPublishedSeason', () => {
+  it('is bounded by the floor and, for a source that stopped, the ceiling', () => {
+    expect(isPublishedSeason('pfr_advstats', 2017)).toBe(false);
+    expect(isPublishedSeason('pfr_advstats', 2018)).toBe(true);
+    expect(isPublishedSeason('nextgen_stats', 2015)).toBe(false);
+    expect(isPublishedSeason('nextgen_stats', 2024)).toBe(true);
+    expect(isPublishedSeason('nextgen_stats', 2025)).toBe(false);
+    expect(isPublishedSeason('snap_counts', 2011)).toBe(false);
+    expect(isPublishedSeason('snap_counts', 2026)).toBe(true);
+  });
+
+  it('is always true for a whole-history file', () => {
+    expect(isPublishedSeason('espn_qbr_week', 1999)).toBe(true);
   });
 });
