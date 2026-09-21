@@ -44,6 +44,7 @@ import type {
   TeamSchedule,
   TeamScheduleGame,
   TeamStats,
+  TeamLineStats,
   Uniform,
   UniformKind,
 } from '@/lib/types';
@@ -216,6 +217,50 @@ type TeamSeasonStatsValueRow = Pick<
 const TEAM_SEASON_STATS_VALUE_SELECT =
   'season, passing_yards, rushing_yards, updated_at, games, attempts, carries, sacks_suffered, passing_epa, rushing_epa, passing_interceptions, fumbles_lost_total, def_sacks, def_qb_hits, def_interceptions, def_fumbles, def_fumbles_forced, fg_made, fg_att, pt_att, pt_net_yards, punt_returns, punt_return_yards, kickoff_returns, kickoff_return_yards, special_teams_tds';
 
+// Team offensive-line metrics (team_line_stats; lib/nflverse/line-metrics.ts). One row
+// per (team, season), derived from nflverse play-by-play. The per-team value row mirrors
+// `TeamLineStats`; the league-wide rank row keeps only the columns a rank is built from.
+type TeamLineStatsValueRow = Pick<
+  Tables['team_line_stats']['Row'],
+  | 'season'
+  | 'updated_at'
+  | 'rushes'
+  | 'line_yards'
+  | 'adjusted_line_yards'
+  | 'stuffed_rate'
+  | 'power_success_rate'
+  | 'second_level_yards'
+  | 'second_level_yards_per_rush'
+  | 'open_field_yards'
+  | 'open_field_yards_per_rush'
+  | 'dropbacks'
+  | 'sacks_allowed'
+  | 'sack_rate'
+  | 'pressures_allowed'
+  | 'pressure_rate'
+  | 'avg_time_to_throw'
+  | 'avg_pass_rushers'
+>;
+const TEAM_LINE_STATS_VALUE_SELECT =
+  'season, updated_at, rushes, line_yards, adjusted_line_yards, stuffed_rate, power_success_rate, second_level_yards, second_level_yards_per_rush, open_field_yards, open_field_yards_per_rush, dropbacks, sacks_allowed, sack_rate, pressures_allowed, pressure_rate, avg_time_to_throw, avg_pass_rushers';
+
+type TeamLineStatsRankRow = Pick<
+  Tables['team_line_stats']['Row'],
+  | 'team_id'
+  | 'season'
+  | 'adjusted_line_yards'
+  | 'stuffed_rate'
+  | 'power_success_rate'
+  | 'second_level_yards_per_rush'
+  | 'open_field_yards_per_rush'
+  | 'sack_rate'
+  | 'pressure_rate'
+  | 'avg_time_to_throw'
+  | 'avg_pass_rushers'
+>;
+const TEAM_LINE_STATS_RANK_SELECT =
+  'team_id, season, adjusted_line_yards, stuffed_rate, power_success_rate, second_level_yards_per_rush, open_field_yards_per_rush, sack_rate, pressure_rate, avg_time_to_throw, avg_pass_rushers';
+
 type TeamCoachSeasonRow = Pick<
   Tables['team_coach_seasons']['Row'],
   'season' | 'coach_name' | 'coach_experience'
@@ -234,10 +279,12 @@ const TEAM_COACH_SEASONS_SELECT = 'season, coach_name, coach_experience';
 function toTeamStats(
   row: TeamStatsRow,
   coachBySeason: Map<number, TeamCoachSeasonRow>,
-  nflverseStatsBySeason?: Map<number, TeamSeasonStatsValueRow>
+  nflverseStatsBySeason?: Map<number, TeamSeasonStatsValueRow>,
+  lineStatsBySeason?: Map<number, TeamLineStatsValueRow>
 ): TeamStats {
   const coachRow = coachBySeason.get(row.season);
   const nflverse = nflverseStatsBySeason?.get(row.season);
+  const line = lineStatsBySeason?.get(row.season);
   return {
     season: row.season,
     coach: coachRow
@@ -263,6 +310,35 @@ function toTeamStats(
     passingYards: nflverse?.passing_yards ?? undefined,
     rushingYards: nflverse?.rushing_yards ?? undefined,
     matchupMetrics: buildMatchupMetrics(nflverse),
+    lineStats: line ? toTeamLineStats(line) : undefined,
+  };
+}
+
+// Maps a team_line_stats row to the `TeamLineStats` contract. A present row already
+// cleared the coverage gate in lib/nflverse/line-metrics.ts, so a null family here is a
+// genuinely empty sample (e.g. no short-yardage carries) — every field stays absent
+// rather than defaulting to zero.
+function toTeamLineStats(row: TeamLineStatsValueRow): TeamLineStats {
+  return {
+    source: 'nflverse',
+    season: row.season,
+    updatedAt: row.updated_at,
+    rushes: row.rushes ?? undefined,
+    lineYards: row.line_yards ?? undefined,
+    adjustedLineYards: row.adjusted_line_yards ?? undefined,
+    stuffedRate: row.stuffed_rate ?? undefined,
+    powerSuccessRate: row.power_success_rate ?? undefined,
+    secondLevelYards: row.second_level_yards ?? undefined,
+    secondLevelYardsPerRush: row.second_level_yards_per_rush ?? undefined,
+    openFieldYards: row.open_field_yards ?? undefined,
+    openFieldYardsPerRush: row.open_field_yards_per_rush ?? undefined,
+    dropbacks: row.dropbacks ?? undefined,
+    sacksAllowed: row.sacks_allowed ?? undefined,
+    sackRate: row.sack_rate ?? undefined,
+    pressuresAllowed: row.pressures_allowed ?? undefined,
+    pressureRate: row.pressure_rate ?? undefined,
+    avgTimeToThrow: row.avg_time_to_throw ?? undefined,
+    avgPassRushers: row.avg_pass_rushers ?? undefined,
   };
 }
 
@@ -286,7 +362,8 @@ function rankValue<T>(
 export function buildLeagueRanks(
   teamId: string,
   rows: TeamStatsRankRow[],
-  nflverseRows?: TeamSeasonStatsRankRow[]
+  nflverseRows?: TeamSeasonStatsRankRow[],
+  lineRows?: TeamLineStatsRankRow[]
 ): Record<number, TeamStatsRanks> {
   const bySeason = new Map<number, TeamStatsRankRow[]>();
   for (const row of rows) {
@@ -300,6 +377,14 @@ export function buildLeagueRanks(
       const seasonRows = nflverseBySeason.get(row.season) ?? [];
       seasonRows.push(row);
       nflverseBySeason.set(row.season, seasonRows);
+    }
+  }
+  const lineBySeason = new Map<number, TeamLineStatsRankRow[]>();
+  if (lineRows) {
+    for (const row of lineRows) {
+      const seasonRows = lineBySeason.get(row.season) ?? [];
+      seasonRows.push(row);
+      lineBySeason.set(row.season, seasonRows);
     }
   }
   return Object.fromEntries(
@@ -319,6 +404,7 @@ export function buildLeagueRanks(
         def_interceptions: row.def_interceptions,
         ...deriveTeamMetrics(row),
       }));
+      const line = lineBySeason.get(season) ?? [];
 
       return [
         season,
@@ -361,6 +447,21 @@ export function buildLeagueRanks(
             teamId,
             (row) => row.kickoffReturnYardsPerAttempt
           ),
+          // Offensive line (team_line_stats). ALY and the level-yard rates rank
+          // higher-first; stuffed/sack/pressure rates rank ascending — fewer is better.
+          adjustedLineYards: rankValue(line, teamId, (row) => row.adjusted_line_yards),
+          stuffedRate: rankValue(line, teamId, (row) => row.stuffed_rate, 'asc'),
+          powerSuccessRate: rankValue(line, teamId, (row) => row.power_success_rate),
+          secondLevelYardsPerRush: rankValue(
+            line,
+            teamId,
+            (row) => row.second_level_yards_per_rush
+          ),
+          openFieldYardsPerRush: rankValue(line, teamId, (row) => row.open_field_yards_per_rush),
+          lineSackRate: rankValue(line, teamId, (row) => row.sack_rate, 'asc'),
+          pressureRate: rankValue(line, teamId, (row) => row.pressure_rate, 'asc'),
+          avgTimeToThrow: rankValue(line, teamId, (row) => row.avg_time_to_throw, 'asc'),
+          avgPassRushers: rankValue(line, teamId, (row) => row.avg_pass_rushers),
         },
       ];
     })
@@ -714,6 +815,8 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
     rankRows,
     { data: nflverseStatsRows, error: nflverseStatsError },
     nflverseRankRows,
+    { data: lineStatsRows, error: lineStatsError },
+    lineRankRows,
     { data: homeRow, error: homeError },
   ] = await Promise.all([
     client
@@ -755,6 +858,20 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
         .range(from, to)
     ),
     client
+      .from(tables.teamLineStats)
+      .select(TEAM_LINE_STATS_VALUE_SELECT)
+      .eq('team_id', teamId)
+      .order('season', { ascending: false })
+      .returns<TeamLineStatsValueRow[]>(),
+    fetchAllRankRows<TeamLineStatsRankRow>((from, to) =>
+      client
+        .from(tables.teamLineStats)
+        .select(TEAM_LINE_STATS_RANK_SELECT)
+        .order('team_id')
+        .order('season')
+        .range(from, to)
+    ),
+    client
       .from(tables.uniforms)
       .select(UNIFORM_SELECT)
       .eq('team_id', teamId)
@@ -767,6 +884,7 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
   if (coachError) throw new Error(`team_coach_seasons query failed: ${coachError.message}`);
   if (nflverseStatsError)
     throw new Error(`team_season_stats query failed: ${nflverseStatsError.message}`);
+  if (lineStatsError) throw new Error(`team_line_stats query failed: ${lineStatsError.message}`);
   if (homeError) throw new Error(`home uniforms query failed: ${homeError.message}`);
   if (!teamRow) return undefined;
 
@@ -779,10 +897,13 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
   const currentSeason = currentSeasonOf({ isOffseason, upcomingSeason });
   const coachBySeason = new Map((coachRows ?? []).map((row) => [row.season, row]));
   const nflverseBySeason = new Map((nflverseStatsRows ?? []).map((row) => [row.season, row]));
-  const seasons = (statsRows ?? []).map((row) => toTeamStats(row, coachBySeason, nflverseBySeason));
+  const lineBySeason = new Map((lineStatsRows ?? []).map((row) => [row.season, row]));
+  const seasons = (statsRows ?? []).map((row) =>
+    toTeamStats(row, coachBySeason, nflverseBySeason, lineBySeason)
+  );
   return {
     team: withHomeColors(toTeam(teamRow), homeRow ? [homeRow] : []),
-    leagueRanksBySeason: buildLeagueRanks(teamId, rankRows, nflverseRankRows),
+    leagueRanksBySeason: buildLeagueRanks(teamId, rankRows, nflverseRankRows, lineRankRows),
     // `coach_experience === 0` is ESPN's live signal for "hired, but hasn't coached a
     // season yet" — see TeamStatsPage.incomingCoach doc comment. Off-season only
     // (DEP-597): ESPN's counter only advances once a season completes, so without the

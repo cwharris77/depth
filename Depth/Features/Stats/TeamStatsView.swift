@@ -120,6 +120,7 @@ struct TeamStatsView: View {
                     }
                     if let active = viewModel.selectedSeasonStats {
                         metricSections(active)
+                        lineMetricSections(active)
                     }
                     if let leaders = viewModel.selectedSeasonLeaders {
                         rosterLeadersCard(leaders)
@@ -452,28 +453,59 @@ struct TeamStatsView: View {
             showRanks: showMetricRanks(stats)
         )
         ForEach(groups) { group in
-            VStack(alignment: .leading, spacing: 0) {
-                Text(group.title)
-                    .font(.caption.weight(.semibold))
-                    .tracking(1.2)
-                    .foregroundStyle(DesignTokens.Colors.textMuted)
-                    .padding(.bottom, DesignTokens.Spacing.xs)
-                ForEach(Array(metricRows(group.metrics).enumerated()), id: \.offset) {
-                    index, pair in
-                    if index > 0 { hairline(DesignTokens.Colors.borderStrong) }
-                    statRow(
-                        left: StatCellSpec(pair.0.label, pair.0.display, rank: pair.0.rankCaption),
-                        right: pair.1.map {
-                            StatCellSpec($0.label, $0.display, rank: $0.rankCaption)
-                        }
-                    )
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, DesignTokens.Spacing.md)
-            .padding(.top, DesignTokens.Spacing.lg)
-            .accessibilityIdentifier("stats-metrics-\(group.id)")
+            metricGroup(group)
         }
+    }
+
+    /// The offensive line's metrics (team_line_stats; nflverse pbp with FTN-charted
+    /// pressure), rendered in the same vocabulary as the other unit sections and carrying
+    /// its source attribution. Absent entirely for a season with no derived row —
+    /// including one dropped by the coverage gate.
+    @ViewBuilder
+    private func lineMetricSections(_ stats: TeamSeasonStats) -> some View {
+        let groups = TeamLineMetricCatalog.resolve(
+            line: stats.lineStats,
+            ranks: ranks(for: stats),
+            lastRank: leagueSize,
+            showRanks: showMetricRanks(stats)
+        )
+        ForEach(groups) { group in
+            metricGroup(group)
+        }
+    }
+
+    /// One resolved metric group — heading, paired rows, and the optional source note.
+    /// Shared by the unit catalog and the offensive-line catalog so the two never drift.
+    @ViewBuilder
+    private func metricGroup(_ group: ResolvedTeamStatsGroup) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(group.title)
+                .font(.caption.weight(.semibold))
+                .tracking(1.2)
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+                .padding(.bottom, DesignTokens.Spacing.xs)
+            ForEach(Array(metricRows(group.metrics).enumerated()), id: \.offset) {
+                index, pair in
+                if index > 0 { hairline(DesignTokens.Colors.borderStrong) }
+                statRow(
+                    left: StatCellSpec(pair.0.label, pair.0.display, rank: pair.0.rankCaption),
+                    right: pair.1.map {
+                        StatCellSpec($0.label, $0.display, rank: $0.rankCaption)
+                    }
+                )
+            }
+            if let note = group.sourceNote {
+                Text(verbatim: note)
+                    .font(.caption2)
+                    .foregroundStyle(DesignTokens.Colors.textFaintest)
+                    .padding(.top, DesignTokens.Spacing.xs)
+                    .accessibilityIdentifier("stats-metrics-source-\(group.id)")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, DesignTokens.Spacing.md)
+        .padding(.top, DesignTokens.Spacing.lg)
+        .accessibilityIdentifier("stats-metrics-\(group.id)")
     }
 
     /// Pairs resolved metrics two per row; an odd count leaves the final right cell blank.

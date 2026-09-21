@@ -36,6 +36,10 @@ export const SOURCE_COVERAGE: Record<SourceId, SourceCoverage> = {
   espn_qbr_season: { minSeason: 2006, wholeHistory: true },
   snap_counts: { minSeason: 2012 },
   pbp_participation: { minSeason: 2016 },
+  // Full play-by-play (play_by_play_<season>.csv), the offensive-line fold's source.
+  // The file publishes back to 1999; the FTN-charted pressure columns inside it only
+  // start in 2022, and line-metrics degrades those to null outside that era.
+  pbp: { minSeason: 1999 },
 };
 
 export type MissingAssetClass = 'skip' | 'error';

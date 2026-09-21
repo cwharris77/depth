@@ -212,3 +212,82 @@ struct TeamCoachSeasonDTO: Decodable {
         case coachExperience = "coach_experience"
     }
 }
+
+// Exact PostgREST projection for the `team_line_stats` read (web:
+// TEAM_LINE_STATS_VALUE_SELECT). Team-level offensive-line metrics derived from nflverse
+// play-by-play; the pass-protection pressure columns are FTN-charted via pbp. Every
+// metric is optional: a present row cleared the derivation's coverage gate, and a null
+// family within it is a genuinely empty sample, not an error. Keep in sync with
+// SupabaseDepthRepository.teamLineStatsSelect.
+struct TeamLineStatsRowDTO: Decodable {
+    let season: Int
+    let updatedAt: String
+    let rushes: Int?
+    let lineYards: Double?
+    let adjustedLineYards: Double?
+    let stuffedRate: Double?
+    let powerSuccessRate: Double?
+    let secondLevelYards: Double?
+    let secondLevelYardsPerRush: Double?
+    let openFieldYards: Double?
+    let openFieldYardsPerRush: Double?
+    let dropbacks: Int?
+    let sacksAllowed: Int?
+    let sackRate: Double?
+    let pressuresAllowed: Int?
+    let pressureRate: Double?
+    let avgTimeToThrow: Double?
+    let avgPassRushers: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case season
+        case updatedAt = "updated_at"
+        case rushes
+        case lineYards = "line_yards"
+        case adjustedLineYards = "adjusted_line_yards"
+        case stuffedRate = "stuffed_rate"
+        case powerSuccessRate = "power_success_rate"
+        case secondLevelYards = "second_level_yards"
+        case secondLevelYardsPerRush = "second_level_yards_per_rush"
+        case openFieldYards = "open_field_yards"
+        case openFieldYardsPerRush = "open_field_yards_per_rush"
+        case dropbacks
+        case sacksAllowed = "sacks_allowed"
+        case sackRate = "sack_rate"
+        case pressuresAllowed = "pressures_allowed"
+        case pressureRate = "pressure_rate"
+        case avgTimeToThrow = "avg_time_to_throw"
+        case avgPassRushers = "avg_pass_rushers"
+    }
+}
+
+// League-wide rank read for the offensive-line metrics (web: TEAM_LINE_STATS_RANK_SELECT).
+// Unscoped by team — a rank needs all 32 — and keeps only the columns a rank is built
+// from. Keep in sync with SupabaseDepthRepository.teamLineStatsRankSelect.
+struct TeamLineStatsRankDTO: Decodable {
+    let teamId: String
+    let season: Int
+    let adjustedLineYards: Double?
+    let stuffedRate: Double?
+    let powerSuccessRate: Double?
+    let secondLevelYardsPerRush: Double?
+    let openFieldYardsPerRush: Double?
+    let sackRate: Double?
+    let pressureRate: Double?
+    let avgTimeToThrow: Double?
+    let avgPassRushers: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case teamId = "team_id"
+        case season
+        case adjustedLineYards = "adjusted_line_yards"
+        case stuffedRate = "stuffed_rate"
+        case powerSuccessRate = "power_success_rate"
+        case secondLevelYardsPerRush = "second_level_yards_per_rush"
+        case openFieldYardsPerRush = "open_field_yards_per_rush"
+        case sackRate = "sack_rate"
+        case pressureRate = "pressure_rate"
+        case avgTimeToThrow = "avg_time_to_throw"
+        case avgPassRushers = "avg_pass_rushers"
+    }
+}

@@ -636,3 +636,171 @@ private func metricRankRow(
         #expect(page.seasons.isEmpty)
     }
 }
+
+// MARK: - Offensive line metrics (team_line_stats)
+
+private func lineRow(
+    season: Int = 2025,
+    rushes: Int? = 420,
+    lineYards: Double? = 1_650,
+    adjustedLineYards: Double? = 3.93,
+    stuffedRate: Double? = 0.15,
+    powerSuccessRate: Double? = 0.72,
+    secondLevelYards: Double? = 720,
+    secondLevelYardsPerRush: Double? = 1.71,
+    openFieldYards: Double? = 540,
+    openFieldYardsPerRush: Double? = 1.29,
+    dropbacks: Int? = 610,
+    sacksAllowed: Int? = 28,
+    sackRate: Double? = 0.046,
+    pressuresAllowed: Int? = 152,
+    pressureRate: Double? = 0.25,
+    avgTimeToThrow: Double? = 2.72,
+    avgPassRushers: Double? = 4.31
+) -> TeamLineStatsRowDTO {
+    TeamLineStatsRowDTO(
+        season: season,
+        updatedAt: "2026-08-23T12:00:00.000Z",
+        rushes: rushes,
+        lineYards: lineYards,
+        adjustedLineYards: adjustedLineYards,
+        stuffedRate: stuffedRate,
+        powerSuccessRate: powerSuccessRate,
+        secondLevelYards: secondLevelYards,
+        secondLevelYardsPerRush: secondLevelYardsPerRush,
+        openFieldYards: openFieldYards,
+        openFieldYardsPerRush: openFieldYardsPerRush,
+        dropbacks: dropbacks,
+        sacksAllowed: sacksAllowed,
+        sackRate: sackRate,
+        pressuresAllowed: pressuresAllowed,
+        pressureRate: pressureRate,
+        avgTimeToThrow: avgTimeToThrow,
+        avgPassRushers: avgPassRushers
+    )
+}
+
+private func lineRankRow(
+    _ teamId: String,
+    season: Int = 2025,
+    adjustedLineYards: Double? = nil,
+    stuffedRate: Double? = nil,
+    powerSuccessRate: Double? = nil,
+    secondLevelYardsPerRush: Double? = nil,
+    openFieldYardsPerRush: Double? = nil,
+    sackRate: Double? = nil,
+    pressureRate: Double? = nil,
+    avgTimeToThrow: Double? = nil,
+    avgPassRushers: Double? = nil
+) -> TeamLineStatsRankDTO {
+    TeamLineStatsRankDTO(
+        teamId: teamId, season: season, adjustedLineYards: adjustedLineYards,
+        stuffedRate: stuffedRate, powerSuccessRate: powerSuccessRate,
+        secondLevelYardsPerRush: secondLevelYardsPerRush,
+        openFieldYardsPerRush: openFieldYardsPerRush, sackRate: sackRate,
+        pressureRate: pressureRate, avgTimeToThrow: avgTimeToThrow,
+        avgPassRushers: avgPassRushers
+    )
+}
+
+@Suite struct TeamLineStatsMapperTests {
+    @Test func carriesTheLineMetricsOntoTheMatchingSeason() {
+        let page = TeamStatsMapper.map(
+            team: team(),
+            rows: [row(season: 2025)],
+            lineRows: [lineRow()],
+            now: offseasonDate()
+        )
+        let line = page.seasons.first?.lineStats
+
+        #expect(line?.source == .nflverse)
+        #expect(line?.season == 2025)
+        #expect(line?.updatedAt == "2026-08-23T12:00:00.000Z")
+        #expect(line?.adjustedLineYards == 3.93)
+        #expect(line?.pressureRate == 0.25)
+        #expect(line?.sackRate == 0.046)
+        #expect(line?.avgTimeToThrow == 2.72)
+        #expect(line?.avgPassRushers == 4.31)
+    }
+
+    @Test func aSeasonWithNoLineRowHasNoLineMetrics() {
+        let page = TeamStatsMapper.map(
+            team: team(), rows: [row(season: 2025)], now: offseasonDate())
+        #expect(page.seasons.first?.lineStats == nil)
+    }
+
+    @Test func aNullFamilyStaysAbsentInsteadOfZero() {
+        // The row cleared the coverage gate but has no charted pressure sample and no
+        // short-yardage carries — both stay nil, never a fabricated zero.
+        let page = TeamStatsMapper.map(
+            team: team(),
+            rows: [row(season: 2025)],
+            lineRows: [
+                lineRow(
+                    powerSuccessRate: nil, pressuresAllowed: nil, pressureRate: nil,
+                    avgTimeToThrow: nil, avgPassRushers: nil)
+            ],
+            now: offseasonDate()
+        )
+        let line = page.seasons.first?.lineStats
+        #expect(line?.powerSuccessRate == nil)
+        #expect(line?.pressuresAllowed == nil)
+        #expect(line?.pressureRate == nil)
+        #expect(line?.avgTimeToThrow == nil)
+        #expect(line?.avgPassRushers == nil)
+    }
+
+    @Test func lineStatsSurviveTheCacheRoundTrip() throws {
+        let page = TeamStatsMapper.map(
+            team: team(),
+            rows: [row(season: 2025)],
+            lineRows: [lineRow()],
+            now: offseasonDate()
+        )
+        let decoded = try JSONDecoder().decode(
+            TeamStatsPage.self, from: JSONEncoder().encode(page))
+        #expect(decoded.seasons.first?.lineStats == page.seasons.first?.lineStats)
+    }
+
+    @Test func cachedSeasonWrittenBeforeLineStatsStillDecodes() throws {
+        let payload = try JSONEncoder().encode(
+            TeamStatsMapper.map(team: team(), rows: [row(season: 2025)], now: offseasonDate()))
+        var object = try #require(JSONSerialization.jsonObject(with: payload) as? [String: Any])
+        var seasons = try #require(object["seasons"] as? [[String: Any]])
+        seasons[0].removeValue(forKey: "lineStats")
+        object["seasons"] = seasons
+
+        let decoded = try JSONDecoder().decode(
+            TeamStatsPage.self, from: JSONSerialization.data(withJSONObject: object))
+        #expect(decoded.seasons.first?.lineStats == nil)
+    }
+
+    @Test func ranksLineMetricsInTheRightDirection() {
+        let ranks = TeamStatsMapper.mapRanks(
+            teamId: "bills",
+            recordRows: [
+                rankRow("bills", winPercent: 0.75, pointsFor: 402, pointsAgainst: 291),
+                rankRow("chiefs", winPercent: 0.88, pointsFor: 430, pointsAgainst: 280),
+                rankRow("jets", winPercent: 0.25, pointsFor: 250, pointsAgainst: 400),
+            ],
+            metricRows: [],
+            lineRows: [
+                lineRankRow(
+                    "bills", adjustedLineYards: 3.9, stuffedRate: 0.12, sackRate: 0.05,
+                    pressureRate: 0.20),
+                lineRankRow(
+                    "chiefs", adjustedLineYards: 4.3, stuffedRate: 0.18, sackRate: 0.04,
+                    pressureRate: 0.30),
+                lineRankRow(
+                    "jets", adjustedLineYards: 3.4, stuffedRate: 0.22, sackRate: 0.08,
+                    pressureRate: 0.35),
+            ]
+        )[2025]
+
+        // Higher ALY is better; lower pressure/sack/stuffed rates are better.
+        #expect(ranks?.adjustedLineYards == 2)
+        #expect(ranks?.pressureRate == 1)
+        #expect(ranks?.lineSackRate == 2)
+        #expect(ranks?.stuffedRate == 1)
+    }
+}

@@ -350,3 +350,87 @@ describe('buildLeagueRanks (Stats page team metrics)', () => {
     expect(ranks.turnoverMargin).toBeUndefined();
   });
 });
+
+// The Stats page's OFFENSIVE LINE section (team_line_stats). Same "rank in the right
+// direction, stay absent rather than guess" contract as the unit metrics above.
+type TeamLineStatsRankRow = Pick<
+  Tables['team_line_stats']['Row'],
+  | 'team_id'
+  | 'season'
+  | 'adjusted_line_yards'
+  | 'stuffed_rate'
+  | 'power_success_rate'
+  | 'second_level_yards_per_rush'
+  | 'open_field_yards_per_rush'
+  | 'sack_rate'
+  | 'pressure_rate'
+  | 'avg_time_to_throw'
+  | 'avg_pass_rushers'
+>;
+
+const lineRow = (
+  teamId: string,
+  overrides: Partial<TeamLineStatsRankRow> = {}
+): TeamLineStatsRankRow => ({
+  team_id: teamId,
+  season: 2024,
+  adjusted_line_yards: null,
+  stuffed_rate: null,
+  power_success_rate: null,
+  second_level_yards_per_rush: null,
+  open_field_yards_per_rush: null,
+  sack_rate: null,
+  pressure_rate: null,
+  avg_time_to_throw: null,
+  avg_pass_rushers: null,
+  ...overrides,
+});
+
+describe('buildLeagueRanks (offensive line)', () => {
+  const espnRows = [espn('kc', 300), espn('buf', 320), espn('sf', 280)];
+  const lineRanksFor = (rows: TeamLineStatsRankRow[]) =>
+    buildLeagueRanks('kc', espnRows, undefined, rows)[2024];
+
+  it('ranks ALY most-first and lower-is-better rates ascending', () => {
+    const ranks = lineRanksFor([
+      lineRow('kc', {
+        adjusted_line_yards: 3.9,
+        stuffed_rate: 0.12,
+        pressure_rate: 0.2,
+        sack_rate: 0.05,
+      }),
+      lineRow('buf', {
+        adjusted_line_yards: 4.3,
+        stuffed_rate: 0.18,
+        pressure_rate: 0.3,
+        sack_rate: 0.04,
+      }),
+      lineRow('sf', {
+        adjusted_line_yards: 3.4,
+        stuffed_rate: 0.22,
+        pressure_rate: 0.35,
+        sack_rate: 0.08,
+      }),
+    ]);
+    // Higher ALY is better; lower stuffed/pressure/sack rates are better.
+    expect(ranks.adjustedLineYards).toBe(2);
+    expect(ranks.stuffedRate).toBe(1);
+    expect(ranks.pressureRate).toBe(1);
+    expect(ranks.lineSackRate).toBe(2);
+  });
+
+  it('excludes a team with null line values from that rank', () => {
+    const ranks = lineRanksFor([
+      lineRow('kc', { adjusted_line_yards: null }),
+      lineRow('buf', { adjusted_line_yards: 4.3 }),
+    ]);
+    expect(ranks.adjustedLineYards).toBeUndefined();
+    expect(ranks.pressureRate).toBeUndefined();
+  });
+
+  it('keeps unit ranks intact when no line rows exist', () => {
+    const ranks = buildLeagueRanks('kc', espnRows, undefined, undefined)[2024];
+    expect(ranks.pointsFor).toBe(2);
+    expect(ranks.adjustedLineYards).toBeUndefined();
+  });
+});

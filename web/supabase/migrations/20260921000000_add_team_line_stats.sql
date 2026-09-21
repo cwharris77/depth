@@ -1,5 +1,5 @@
--- Team-level offensive-line metrics derived from nflverse play-by-play (DEP-XXX, the
--- vault's 2026-09-11-nflverse-full-stat-surface-design, Part 2). Offensive-line play has
+-- Team-level offensive-line metrics derived from nflverse play-by-play (the vault's
+-- 2026-09-11-nflverse-full-stat-surface-design, Part 2). Offensive-line play has
 -- no free per-player source, so these are *unit* metrics: Adjusted Line Yards, stuffed
 -- rate, power success, 2nd-level/open-field yards, and pass protection (sack rate,
 -- pressure rate allowed, time to throw, pass rushers faced). The pressure columns derive

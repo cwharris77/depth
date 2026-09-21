@@ -77,6 +77,12 @@ actor SupabaseDepthRepository: DepthRepository {
         "team_id, season, win_percent, points_for, points_against, point_differential"
     private static let teamSeasonStatsRankSelect =
         "team_id, season, passing_yards, rushing_yards, games, attempts, carries, sacks_suffered, passing_epa, rushing_epa, passing_interceptions, fumbles_lost_total, def_sacks, def_qb_hits, def_interceptions, def_fumbles, fg_made, fg_att, pt_att, pt_net_yards, punt_returns, punt_return_yards, kickoff_returns, kickoff_return_yards"
+    // The offensive-line value read (team_line_stats) and its league-wide rank read.
+    // Keep each in sync with TeamLineStatsRowDTO / TeamLineStatsRankDTO.
+    private static let teamLineStatsSelect =
+        "season, updated_at, rushes, line_yards, adjusted_line_yards, stuffed_rate, power_success_rate, second_level_yards, second_level_yards_per_rush, open_field_yards, open_field_yards_per_rush, dropbacks, sacks_allowed, sack_rate, pressures_allowed, pressure_rate, avg_time_to_throw, avg_pass_rushers"
+    private static let teamLineStatsRankSelect =
+        "team_id, season, adjusted_line_yards, stuffed_rate, power_success_rate, second_level_yards_per_rush, open_field_yards_per_rush, sack_rate, pressure_rate, avg_time_to_throw, avg_pass_rushers"
     private static let recentParticipationSelect =
         "team_id, season, player_id, window_start_week, window_end_week, window_game_ids, games, offense_snaps, offense_pct, defense_snaps, defense_pct, special_teams_snaps, special_teams_pct, source, updated_at"
     private static let scheduleSelect = "team_id, season"
@@ -304,6 +310,14 @@ actor SupabaseDepthRepository: DepthRepository {
                 .order("season", ascending: false)
                 .execute()
                 .value
+            async let lineResult: [TeamLineStatsRowDTO] =
+                client
+                .from("team_line_stats")
+                .select(Self.teamLineStatsSelect)
+                .eq("team_id", value: teamId)
+                .order("season", ascending: false)
+                .execute()
+                .value
             // Both rank reads are league-wide: a rank is meaningless scoped to one team.
             // They stay inside this same async-let group so the page still costs one
             // round trip, matching web's single Promise.all in fetchTeamStatsPage.
@@ -311,21 +325,27 @@ actor SupabaseDepthRepository: DepthRepository {
                 fetchAllRankRows(from: "team_stats", select: Self.teamStatsRankSelect)
             async let metricRankResult: [TeamSeasonStatsRankDTO] =
                 fetchAllRankRows(from: "team_season_stats", select: Self.teamSeasonStatsRankSelect)
-            let (team, rows, matchupRows, coachRows, recordRankRows, metricRankRows) =
-                try await (
-                    teamResult, statsResult, matchupResult,
-                    coachResult, recordRankResult, metricRankResult
-                )
+            async let lineRankResult: [TeamLineStatsRankDTO] =
+                fetchAllRankRows(from: "team_line_stats", select: Self.teamLineStatsRankSelect)
+            let (
+                team, rows, matchupRows, coachRows, lineRows, recordRankRows, metricRankRows,
+                lineRankRows
+            ) = try await (
+                teamResult, statsResult, matchupResult,
+                coachResult, lineResult, recordRankResult, metricRankResult, lineRankResult
+            )
             return TeamStatsMapper.map(
                 team: TeamSnapshotMapper.mapTeamListRow(team),
                 rows: rows,
                 matchupRows: matchupRows,
                 coachRows: coachRows,
+                lineRows: lineRows,
                 incomingCoach: team.coachName.flatMap { name in
                     team.coachExperience == 0 ? TeamIncomingCoach(name: name) : nil
                 },
                 recordRankRows: recordRankRows,
                 metricRankRows: metricRankRows,
+                lineRankRows: lineRankRows,
                 teamId: teamId
             )
         } catch let error as DepthError {

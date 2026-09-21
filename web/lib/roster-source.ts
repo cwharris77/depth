@@ -49,6 +49,18 @@ export interface TeamStatsRanks {
   netPuntYardsPerAttempt?: number;
   puntReturnYardsPerAttempt?: number;
   kickoffReturnYardsPerAttempt?: number;
+  // Offensive line (team_line_stats; nflverse pbp — pressure via FTN charting). ALY and
+  // the level-yard rates rank higher-first; stuffed/sack/pressure rates rank
+  // lower-first (fewer is better).
+  adjustedLineYards?: number;
+  stuffedRate?: number;
+  powerSuccessRate?: number;
+  secondLevelYardsPerRush?: number;
+  openFieldYardsPerRush?: number;
+  lineSackRate?: number;
+  pressureRate?: number;
+  avgTimeToThrow?: number;
+  avgPassRushers?: number;
 }
 
 // A single kit flattened with its team's identity, for the archive listing (Phase 7

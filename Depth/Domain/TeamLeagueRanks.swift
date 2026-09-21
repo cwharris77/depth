@@ -38,6 +38,18 @@ struct TeamStatsRanks: Equatable, Codable, Sendable {
     var netPuntYardsPerAttempt: Int?
     var puntReturnYardsPerAttempt: Int?
     var kickoffReturnYardsPerAttempt: Int?
+    // Offensive line (team_line_stats; nflverse pbp, pressure via FTN charting). ALY and
+    // the level-yard rates rank higher-first; stuffed/sack/pressure rates rank ascending
+    // (fewer is better).
+    var adjustedLineYards: Int?
+    var stuffedRate: Int?
+    var powerSuccessRate: Int?
+    var secondLevelYardsPerRush: Int?
+    var openFieldYardsPerRush: Int?
+    var lineSackRate: Int?
+    var pressureRate: Int?
+    var avgTimeToThrow: Int?
+    var avgPassRushers: Int?
 }
 
 enum TeamLeagueRanks {
@@ -97,6 +109,23 @@ struct TeamSeasonRecordRankValues: Equatable, Sendable {
     let pointDifferential: Int?
 }
 
+/// The offensive-line half of the rank inputs — one `team_line_stats` row per team-season
+/// (web: `TeamLineStatsRankRow`). Ranks are built from these same stored values the page
+/// renders, never a recomputation.
+struct TeamSeasonLineRankValues: Equatable, Sendable {
+    let teamId: String
+    let season: Int
+    let adjustedLineYards: Double?
+    let stuffedRate: Double?
+    let powerSuccessRate: Double?
+    let secondLevelYardsPerRush: Double?
+    let openFieldYardsPerRush: Double?
+    let sackRate: Double?
+    let pressureRate: Double?
+    let avgTimeToThrow: Double?
+    let avgPassRushers: Double?
+}
+
 extension TeamLeagueRanks {
     /// Ranks one team across every season present in `record`, mirroring web's
     /// `buildLeagueRanks`. Seasons are keyed off the ESPN rows: an nflverse season with
@@ -104,20 +133,27 @@ extension TeamLeagueRanks {
     static func build(
         teamId: String,
         record: [TeamSeasonRecordRankValues],
-        nflverse: [TeamSeasonRankValues]
+        nflverse: [TeamSeasonRankValues],
+        line: [TeamSeasonLineRankValues] = []
     ) -> [Int: TeamStatsRanks] {
         let recordBySeason = Dictionary(grouping: record, by: \.season)
         let nflverseBySeason = Dictionary(grouping: nflverse, by: \.season)
+        let lineBySeason = Dictionary(grouping: line, by: \.season)
 
         return recordBySeason.reduce(into: [:]) { result, entry in
             let (season, recordRows) = entry
             let rows = nflverseBySeason[season] ?? []
+            let lineRows = lineBySeason[season] ?? []
             let espnRank = {
                 (order: Order, value: @escaping (TeamSeasonRecordRankValues) -> Double?) in
                 rank(recordRows, teamId: teamId, id: \.teamId, order: order, value: value)
             }
             let nflRank = { (order: Order, value: @escaping (TeamSeasonRankValues) -> Double?) in
                 rank(rows, teamId: teamId, id: \.teamId, order: order, value: value)
+            }
+            let lineRank = {
+                (order: Order, value: @escaping (TeamSeasonLineRankValues) -> Double?) in
+                rank(lineRows, teamId: teamId, id: \.teamId, order: order, value: value)
             }
 
             result[season] = TeamStatsRanks(
@@ -156,7 +192,17 @@ extension TeamLeagueRanks {
                 },
                 kickoffReturnYardsPerAttempt: nflRank(.descending) {
                     $0.derived.kickoffReturnYardsPerAttempt
-                }
+                },
+                // Offensive line
+                adjustedLineYards: lineRank(.descending) { $0.adjustedLineYards },
+                stuffedRate: lineRank(.ascending) { $0.stuffedRate },
+                powerSuccessRate: lineRank(.descending) { $0.powerSuccessRate },
+                secondLevelYardsPerRush: lineRank(.descending) { $0.secondLevelYardsPerRush },
+                openFieldYardsPerRush: lineRank(.descending) { $0.openFieldYardsPerRush },
+                lineSackRate: lineRank(.ascending) { $0.sackRate },
+                pressureRate: lineRank(.ascending) { $0.pressureRate },
+                avgTimeToThrow: lineRank(.ascending) { $0.avgTimeToThrow },
+                avgPassRushers: lineRank(.descending) { $0.avgPassRushers }
             )
         }
     }
