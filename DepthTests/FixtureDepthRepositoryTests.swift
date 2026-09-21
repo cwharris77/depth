@@ -10,6 +10,12 @@
     /// `FixtureDepthRepository.load()` reads `Bundle.main` — under a hosted unit test that is
     /// the Depth app, so this also proves the JSON is actually bundled, not just present on disk.
     struct FixtureDepthRepositoryTests {
+        @Test func bundledFixtureDecodesDirectly() throws {
+            let url = try #require(
+                Bundle.main.url(forResource: "UITestFixtures", withExtension: "json"))
+            _ = try JSONDecoder().decode(UITestFixtureBundle.self, from: Data(contentsOf: url))
+        }
+
         @Test func bundleDecodesAndServesTheJourneyTeams() async throws {
             let repo = FixtureDepthRepository.load()
 

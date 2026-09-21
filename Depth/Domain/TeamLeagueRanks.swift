@@ -55,6 +55,63 @@ struct TeamStatsRanks: Equatable, Codable, Sendable {
     var lineRankPopulation: [String: Int] = [:]
 }
 
+extension TeamStatsRanks {
+    enum CodingKeys: String, CodingKey {
+        case winPercent, pointsFor, pointsAgainst, pointDifferential, passingYards, rushingYards
+        case turnoverMargin, offensiveEPAPerPlay, sackRate, passingEPA, rushingEPA
+        case passingInterceptions, fumblesLost, defensiveSacks, quarterbackHitsPerGame
+        case defensiveTakeaways, defensiveInterceptions, fieldGoalPercentage
+        case netPuntYardsPerAttempt, puntReturnYardsPerAttempt, kickoffReturnYardsPerAttempt
+        case adjustedLineYards, stuffedRate, powerSuccessRate, secondLevelYardsPerRush
+        case openFieldYardsPerRush, lineSackRate, pressureRate, avgTimeToThrow, avgPassRushers
+        case lineRankPopulation
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        winPercent = try container.decodeIfPresent(Int.self, forKey: .winPercent)
+        pointsFor = try container.decodeIfPresent(Int.self, forKey: .pointsFor)
+        pointsAgainst = try container.decodeIfPresent(Int.self, forKey: .pointsAgainst)
+        pointDifferential = try container.decodeIfPresent(Int.self, forKey: .pointDifferential)
+        passingYards = try container.decodeIfPresent(Int.self, forKey: .passingYards)
+        rushingYards = try container.decodeIfPresent(Int.self, forKey: .rushingYards)
+        turnoverMargin = try container.decodeIfPresent(Int.self, forKey: .turnoverMargin)
+        offensiveEPAPerPlay = try container.decodeIfPresent(Int.self, forKey: .offensiveEPAPerPlay)
+        sackRate = try container.decodeIfPresent(Int.self, forKey: .sackRate)
+        passingEPA = try container.decodeIfPresent(Int.self, forKey: .passingEPA)
+        rushingEPA = try container.decodeIfPresent(Int.self, forKey: .rushingEPA)
+        passingInterceptions = try container.decodeIfPresent(
+            Int.self, forKey: .passingInterceptions)
+        fumblesLost = try container.decodeIfPresent(Int.self, forKey: .fumblesLost)
+        defensiveSacks = try container.decodeIfPresent(Int.self, forKey: .defensiveSacks)
+        quarterbackHitsPerGame = try container.decodeIfPresent(
+            Int.self, forKey: .quarterbackHitsPerGame)
+        defensiveTakeaways = try container.decodeIfPresent(Int.self, forKey: .defensiveTakeaways)
+        defensiveInterceptions = try container.decodeIfPresent(
+            Int.self, forKey: .defensiveInterceptions)
+        fieldGoalPercentage = try container.decodeIfPresent(Int.self, forKey: .fieldGoalPercentage)
+        netPuntYardsPerAttempt = try container.decodeIfPresent(
+            Int.self, forKey: .netPuntYardsPerAttempt)
+        puntReturnYardsPerAttempt = try container.decodeIfPresent(
+            Int.self, forKey: .puntReturnYardsPerAttempt)
+        kickoffReturnYardsPerAttempt = try container.decodeIfPresent(
+            Int.self, forKey: .kickoffReturnYardsPerAttempt)
+        adjustedLineYards = try container.decodeIfPresent(Int.self, forKey: .adjustedLineYards)
+        stuffedRate = try container.decodeIfPresent(Int.self, forKey: .stuffedRate)
+        powerSuccessRate = try container.decodeIfPresent(Int.self, forKey: .powerSuccessRate)
+        secondLevelYardsPerRush = try container.decodeIfPresent(
+            Int.self, forKey: .secondLevelYardsPerRush)
+        openFieldYardsPerRush = try container.decodeIfPresent(
+            Int.self, forKey: .openFieldYardsPerRush)
+        lineSackRate = try container.decodeIfPresent(Int.self, forKey: .lineSackRate)
+        pressureRate = try container.decodeIfPresent(Int.self, forKey: .pressureRate)
+        avgTimeToThrow = try container.decodeIfPresent(Int.self, forKey: .avgTimeToThrow)
+        avgPassRushers = try container.decodeIfPresent(Int.self, forKey: .avgPassRushers)
+        lineRankPopulation =
+            try container.decodeIfPresent([String: Int].self, forKey: .lineRankPopulation) ?? [:]
+    }
+}
+
 enum TeamLeagueRanks {
     enum Order {
         case descending
