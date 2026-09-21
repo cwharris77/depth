@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { playerSeasonsKey, publishIndexKey } from './layout';
-import { createPublisher } from './publisher';
+import { createPublisher } from './publish';
 import { FileSystemStatFileTarget } from './targets';
 
 let root: string;

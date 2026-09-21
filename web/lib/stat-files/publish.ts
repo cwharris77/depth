@@ -4,9 +4,8 @@
 // changed, which is what keeps a batch job far below R2's Class-A operation budget.
 //
 // Targets are pluggable so the builders run without Cloudflare credentials: the
-// filesystem target is what `stat-files:build` and the local server use. An R2 target over
-// `@aws-sdk/client-s3` is DEP-575/DEP-577 scope; this module deliberately has no SDK
-// dependency.
+// filesystem target is what `stat-files:build` and the local server use, and the R2 target
+// over `@aws-sdk/client-s3` lives beside it in `targets.ts`. This module stays SDK-free.
 //
 // The change signal is the sha256 of the *uncompressed* JSON body (not the gzip bytes),
 // stored in `v1/_build/publish-index.json` under the object key. Body-hash rather than
