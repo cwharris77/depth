@@ -33,7 +33,7 @@ import {
   STAT_FILES_SCHEMA_VERSION,
   playerSeasonsKey,
 } from '@/lib/stat-files/layout';
-import { createPublisher, type StatFilesManifest } from '@/lib/stat-files/publisher';
+import { createPublisher, type StatFilesManifest } from '@/lib/stat-files/publish';
 import { FileSystemStatFileTarget } from '@/lib/stat-files/targets';
 import {
   buildPlayerSeasonsFile,
