@@ -58,6 +58,7 @@ import { toTeamStatsRows, type TeamStatsInsert } from '@/lib/nflverse/team-stats
 import { toTeamRecords, type TeamAlignment, type TeamRecordInsert } from '@/lib/nflverse/records';
 import { FormationAccumulator, type ParticipationRow } from '@/lib/nflverse/participation';
 import { DefenseFormationAccumulator } from '@/lib/nflverse/defense-participation';
+import { LineMetricsAccumulator, type TeamLineStatsInsert } from '@/lib/nflverse/line-metrics';
 import { resolveTeamCode } from '@/lib/nflverse/team-codes';
 import { parseSeasonsArg } from '@/lib/utils/ingest/seasons-arg';
 import { nflSeasonState } from '@/lib/utils/team/season-state';
@@ -102,6 +103,11 @@ const UPSERT_MAX_ATTEMPTS = 4;
 // finer formation vocabulary this repo doesn't parse.
 const PARTICIPATION_TAG = 'pbp_participation';
 const PARTICIPATION_PREFIX = 'pbp_participation_';
+// Team offensive-line metrics (lib/nflverse/line-metrics.ts). The full play-by-play
+// release; only the latest available season is pulled, same FTN-era constraint as
+// formations (the pressure columns are charted from 2022 onward).
+const PBP_TAG = 'pbp';
+const PBP_PREFIX = 'play_by_play_';
 // Team season stats — one row per (team, season), full 131-column stat line.
 // Asset naming mirrors the player-stats convention: stats_team_reg_<season>.csv.
 const TEAM_STATS_TAG = 'stats_team';
@@ -488,6 +494,70 @@ async function ingestFormations(
     return { season, tallies, skippedTeams, failure: null };
   } catch (e) {
     return { season, tallies: [], skippedTeams: 0, failure: (e as Error).message };
+  }
+}
+
+// Fetches the latest available play-by-play season and stream-parses it straight into a
+// LineMetricsAccumulator, then upserts the derived team-level offensive-line metrics
+// (lib/nflverse/line-metrics.ts). Same stream-never-materialize discipline as the
+// formations fold, and the same coverage bar: a team charted in fewer than half its
+// games gets no row at all rather than a partial metric. `getGamesPlayedByTeam` is
+// injected so the live path can query the DB and SEED_OUT mode can reuse this run's
+// freshly computed games (formations runs first, but either order works for coverage).
+async function ingestLineMetrics(
+  supabase: SupabaseClient<Database> | null,
+  getGamesPlayedByTeam: (season: number) => Promise<Map<string, number>>
+): Promise<{
+  season: number | null;
+  rows: TeamLineStatsInsert[];
+  skippedTeams: number;
+  failure: string | null;
+}> {
+  const season = await latestAvailableSeason(PBP_TAG, PBP_PREFIX);
+  if (season === null) {
+    return {
+      season: null,
+      rows: [],
+      skippedTeams: 0,
+      failure: 'no available pbp season found',
+    };
+  }
+
+  try {
+    const gamesPlayedByTeam = await getGamesPlayedByTeam(season);
+
+    const url = assetUrl(PBP_TAG, `${PBP_PREFIX}${season}.csv`);
+    const res = await fetch(url);
+    if (!res.ok || !res.body) throw new Error(`${res.status} ${url}`);
+
+    const acc = new LineMetricsAccumulator(resolveTeamCode);
+    await parseCsvStream(
+      textChunks(res.body),
+      (record) => acc.addRow(record),
+      // The check runs on the streamed header before any row is folded in, so a shape
+      // change throws before a single metric is written.
+      (header) => assertHeader(sourceContract('pbp'), header, loggedNewColumnSources)
+    );
+
+    const { rows, skippedTeams } = acc.finish(season, gamesPlayedByTeam);
+
+    if (supabase && rows.length) {
+      const db = supabase;
+      await upsertChunked('team_line_stats', rows, async (chunk) => {
+        const { error } = await db
+          .from('team_line_stats')
+          .upsert(chunk, { onConflict: 'team_id,season' });
+        return { error };
+      });
+    }
+
+    console.log(
+      `line-metrics: season ${season}, ${supabase ? 'wrote' : 'computed'} ${rows.length} rows ` +
+        `(${skippedTeams.length} team(s) below coverage, ${acc.skipped} rows skipped)`
+    );
+    return { season, rows, skippedTeams: skippedTeams.length, failure: null };
+  } catch (e) {
+    return { season, rows: [], skippedTeams: 0, failure: (e as Error).message };
   }
 }
 
@@ -999,6 +1069,20 @@ async function main() {
     });
   }
 
+  // Team offensive-line metrics (lib/nflverse/line-metrics.ts), also dependent on this
+  // run's games for the coverage denominator, so it shares the formations ordering.
+  const lineMetricsResult = await ingestLineMetrics(supabase, (season) =>
+    supabase
+      ? getGamesPlayedByTeamDb(supabase, season)
+      : Promise.resolve(gamesPlayedByTeamFromGames(gamesResult.games, season))
+  );
+  if (lineMetricsResult.failure) {
+    failures.push({
+      season: lineMetricsResult.season ?? 'line-metrics',
+      message: lineMetricsResult.failure,
+    });
+  }
+
   // Team season stats: backfill full --seasons range (FKs to teams, not players, so
   // no identity problem) or latest + previous with no flag. The --seasons scoping
   // is shared with games/schedules: gamesSeasons is set above from --seasons (or null
@@ -1057,6 +1141,7 @@ async function main() {
     gamesResult.games.length +
     gamesResult.schedules.length +
     formationsResult.tallies.length +
+    lineMetricsResult.rows.length +
     teamStatsResult.rows.length +
     recordsResult.rows.length +
     seasonSnapTotals.length +
@@ -1086,6 +1171,9 @@ async function main() {
       formations_season: formationsResult.season,
       formations_written: formationsResult.tallies.length,
       formations_teams_below_coverage: formationsResult.skippedTeams,
+      line_metrics_season: lineMetricsResult.season,
+      line_metrics_rows: lineMetricsResult.rows.length,
+      line_metrics_teams_below_coverage: lineMetricsResult.skippedTeams,
       team_stats_seasons: teamStatsSeasons,
       team_stats_rows: teamStatsResult.rows.length,
       team_stats_skipped: teamStatsResult.skipped,
@@ -1113,6 +1201,7 @@ async function main() {
     `\nWrote ${rowsWritten} player-stat rows across ${seasons.length} season(s), ` +
       `${gamesResult.games.length} games, ${gamesResult.schedules.length} schedules, ` +
       `${formationsResult.tallies.length} formation rows, ` +
+      `${lineMetricsResult.rows.length} line-metric rows, ` +
       `${teamStatsResult.rows.length} team-stats rows across ${teamStatsSeasons.length} season(s), ` +
       `${recentSnapsResult.rowsWritten} recent-snap rows across seasons ` +
       `${recentSnapsResult.seasons.join(', ')}. ` +
