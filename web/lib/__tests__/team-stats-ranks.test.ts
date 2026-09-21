@@ -428,6 +428,16 @@ describe('buildLeagueRanks (offensive line)', () => {
     expect(ranks.pressureRate).toBeUndefined();
   });
 
+  it("records each line metric's qualified-team population", () => {
+    const ranks = lineRanksFor([
+      lineRow('kc', { adjusted_line_yards: 3.9, pressure_rate: 0.2 }),
+      lineRow('buf', { adjusted_line_yards: 4.3, pressure_rate: null }),
+      lineRow('sf', { adjusted_line_yards: null, pressure_rate: 0.3 }),
+    ]);
+
+    expect(ranks.lineRankPopulation).toEqual({ adjustedLineYards: 2, pressureRate: 2 });
+  });
+
   it('keeps unit ranks intact when no line rows exist', () => {
     const ranks = buildLeagueRanks('kc', espnRows, undefined, undefined)[2024];
     expect(ranks.pointsFor).toBe(2);

@@ -803,4 +803,19 @@ private func lineRankRow(
         #expect(ranks?.lineSackRate == 2)
         #expect(ranks?.stuffedRate == 1)
     }
+
+    @Test func recordsTheQualifiedPopulationForEachLineMetric() {
+        let ranks = TeamStatsMapper.mapRanks(
+            teamId: "bills",
+            recordRows: [rankRow("bills"), rankRow("chiefs"), rankRow("jets")],
+            metricRows: [],
+            lineRows: [
+                lineRankRow("bills", adjustedLineYards: 3.9, pressureRate: 0.20),
+                lineRankRow("chiefs", adjustedLineYards: 4.3, pressureRate: nil),
+                lineRankRow("jets", adjustedLineYards: nil, pressureRate: 0.30),
+            ]
+        )[2025]
+
+        #expect(ranks?.lineRankPopulation == ["adjustedLineYards": 2, "pressureRate": 2])
+    }
 }

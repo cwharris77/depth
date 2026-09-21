@@ -72,9 +72,13 @@ enum TeamStatsRankQualifier: String, Sendable {
 func teamStatsRankLabel(
     _ rank: Int?,
     lastRank: Int,
-    qualifier: TeamStatsRankQualifier
+    qualifier: TeamStatsRankQualifier,
+    qualifiedTeams: Int? = nil
 ) -> String? {
     guard let rank, rank > 0 else { return nil }
+    if let qualifiedTeams, qualifiedTeams < lastRank {
+        return "\(ordinal(rank)) of \(qualifiedTeams) qualified teams"
+    }
     if rank == 1 { return "First in NFL" }
     if rank == lastRank { return "Last in NFL" }
     return "\(ordinal(rank)) \(qualifier.rawValue)"
@@ -287,6 +291,7 @@ enum TeamLineMetricCatalog {
         let value: @Sendable (TeamLineStats) -> Double?
         let format: @Sendable (Double) -> String
         let rank: @Sendable (TeamStatsRanks) -> Int?
+        let rankPopulation: @Sendable (TeamStatsRanks) -> Int?
         let qualifier: TeamStatsRankQualifier
     }
 
@@ -297,47 +302,62 @@ enum TeamLineMetricCatalog {
         TeamLineMetricSpec(
             id: "adj-line-yards", label: "ADJ LINE YDS",
             value: { $0.adjustedLineYards }, format: TeamStatsMetricFormat.decimal(2),
-            rank: { $0.adjustedLineYards }, qualifier: .most
+            rank: { $0.adjustedLineYards },
+            rankPopulation: { $0.lineRankPopulation["adjustedLineYards"] },
+            qualifier: .most
         ),
         TeamLineMetricSpec(
             id: "stuffed-rate", label: "STUFFED %",
             value: { $0.stuffedRate }, format: TeamStatsMetricFormat.percent,
-            rank: { $0.stuffedRate }, qualifier: .least
+            rank: { $0.stuffedRate }, rankPopulation: { $0.lineRankPopulation["stuffedRate"] },
+            qualifier: .least
         ),
         TeamLineMetricSpec(
             id: "power-success", label: "POWER SUCCESS",
             value: { $0.powerSuccessRate }, format: TeamStatsMetricFormat.percent,
-            rank: { $0.powerSuccessRate }, qualifier: .most
+            rank: { $0.powerSuccessRate },
+            rankPopulation: { $0.lineRankPopulation["powerSuccessRate"] },
+            qualifier: .most
         ),
         TeamLineMetricSpec(
             id: "second-level-per-rush", label: "2ND LEVEL / RUSH",
             value: { $0.secondLevelYardsPerRush }, format: TeamStatsMetricFormat.decimal(2),
-            rank: { $0.secondLevelYardsPerRush }, qualifier: .most
+            rank: { $0.secondLevelYardsPerRush },
+            rankPopulation: { $0.lineRankPopulation["secondLevelYardsPerRush"] },
+            qualifier: .most
         ),
         TeamLineMetricSpec(
             id: "open-field-per-rush", label: "OPEN FIELD / RUSH",
             value: { $0.openFieldYardsPerRush }, format: TeamStatsMetricFormat.decimal(2),
-            rank: { $0.openFieldYardsPerRush }, qualifier: .most
+            rank: { $0.openFieldYardsPerRush },
+            rankPopulation: { $0.lineRankPopulation["openFieldYardsPerRush"] },
+            qualifier: .most
         ),
         TeamLineMetricSpec(
             id: "line-sack-rate", label: "SACK RATE",
             value: { $0.sackRate }, format: TeamStatsMetricFormat.percent,
-            rank: { $0.lineSackRate }, qualifier: .least
+            rank: { $0.lineSackRate }, rankPopulation: { $0.lineRankPopulation["lineSackRate"] },
+            qualifier: .least
         ),
         TeamLineMetricSpec(
             id: "pressure-rate", label: "PRESSURE RATE",
             value: { $0.pressureRate }, format: TeamStatsMetricFormat.percent,
-            rank: { $0.pressureRate }, qualifier: .least
+            rank: { $0.pressureRate }, rankPopulation: { $0.lineRankPopulation["pressureRate"] },
+            qualifier: .least
         ),
         TeamLineMetricSpec(
             id: "time-to-throw", label: "TIME TO THROW",
             value: { $0.avgTimeToThrow }, format: TeamStatsMetricFormat.decimal(2),
-            rank: { $0.avgTimeToThrow }, qualifier: .overall
+            rank: { $0.avgTimeToThrow },
+            rankPopulation: { $0.lineRankPopulation["avgTimeToThrow"] },
+            qualifier: .overall
         ),
         TeamLineMetricSpec(
             id: "pass-rushers", label: "PASS RUSHERS",
             value: { $0.avgPassRushers }, format: TeamStatsMetricFormat.decimal(1),
-            rank: { $0.avgPassRushers }, qualifier: .overall
+            rank: { $0.avgPassRushers },
+            rankPopulation: { $0.lineRankPopulation["avgPassRushers"] },
+            qualifier: .overall
         ),
     ]
 
@@ -359,8 +379,8 @@ enum TeamLineMetricCatalog {
                 display: spec.format(value),
                 rankCaption: showRanks
                     ? teamStatsRankLabel(
-                        ranks.flatMap(spec.rank), lastRank: lastRank,
-                        qualifier: spec.qualifier
+                        ranks.flatMap(spec.rank), lastRank: lastRank, qualifier: spec.qualifier,
+                        qualifiedTeams: ranks.flatMap(spec.rankPopulation)
                     )
                     : nil
             )

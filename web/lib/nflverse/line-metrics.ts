@@ -47,6 +47,7 @@ const OPEN_FIELD_MIN = 11;
 // the header check rather than silently landing nil.
 export const PBP_REQUIRED_COLUMNS = [
   'game_id',
+  'season_type',
   'posteam',
   'rush_attempt',
   'qb_dropback',
@@ -72,6 +73,7 @@ export const PBP_CHARTED_COLUMNS = [
 // down/distance needed for power success; a dropback carries the charted pass-pro fields.
 export interface PlayByPlayRow {
   game_id: string;
+  season_type: string;
   posteam: string;
   rush_attempt: boolean;
   qb_dropback: boolean;
@@ -132,6 +134,7 @@ function toNullableBool(value: string | undefined): boolean | null {
 export function parsePlayByPlayRow(record: Record<string, string>): PlayByPlayRow {
   return {
     game_id: record.game_id ?? '',
+    season_type: record.season_type ?? '',
     posteam: record.posteam ?? '',
     rush_attempt: toBool(record.rush_attempt),
     qb_dropback: toBool(record.qb_dropback),
@@ -222,6 +225,12 @@ export class LineMetricsAccumulator {
   }
 
   addPlay(row: PlayByPlayRow): void {
+    // `play_by_play_<season>.csv` includes postseason rows. The canonical team stats layer
+    // is regular season only, so never let a playoff snap affect these team-season values.
+    if (row.season_type !== 'REG') {
+      this.skipped++;
+      return;
+    }
     const code = row.posteam.trim();
     const teamId = code ? this.resolveCode(code) : null;
     if (!teamId) {

@@ -359,6 +359,24 @@ function rankValue<T>(
   return values.findIndex((v) => v === teamValue) + 1 || undefined;
 }
 
+function rankWithPopulation<T>(
+  rows: T[],
+  teamId: string,
+  value: (row: T) => number | null | undefined,
+  order: 'asc' | 'desc' = 'desc'
+): { rank: number; population: number } | undefined {
+  const teamRow = rows.find((row) => (row as { team_id: string }).team_id === teamId);
+  if (!teamRow) return undefined;
+  const teamValue = value(teamRow);
+  if (teamValue === null || teamValue === undefined) return undefined;
+  const values = rows
+    .map(value)
+    .filter((v): v is number => typeof v === 'number')
+    .sort((a, b) => (order === 'desc' ? b - a : a - b));
+  const index = values.findIndex((v) => v === teamValue);
+  return index === -1 ? undefined : { rank: index + 1, population: values.length };
+}
+
 export function buildLeagueRanks(
   teamId: string,
   rows: TeamStatsRankRow[],
@@ -405,6 +423,25 @@ export function buildLeagueRanks(
         ...deriveTeamMetrics(row),
       }));
       const line = lineBySeason.get(season) ?? [];
+      const lineRanks = {
+        adjustedLineYards: rankWithPopulation(line, teamId, (row) => row.adjusted_line_yards),
+        stuffedRate: rankWithPopulation(line, teamId, (row) => row.stuffed_rate, 'asc'),
+        powerSuccessRate: rankWithPopulation(line, teamId, (row) => row.power_success_rate),
+        secondLevelYardsPerRush: rankWithPopulation(
+          line,
+          teamId,
+          (row) => row.second_level_yards_per_rush
+        ),
+        openFieldYardsPerRush: rankWithPopulation(
+          line,
+          teamId,
+          (row) => row.open_field_yards_per_rush
+        ),
+        lineSackRate: rankWithPopulation(line, teamId, (row) => row.sack_rate, 'asc'),
+        pressureRate: rankWithPopulation(line, teamId, (row) => row.pressure_rate, 'asc'),
+        avgTimeToThrow: rankWithPopulation(line, teamId, (row) => row.avg_time_to_throw, 'asc'),
+        avgPassRushers: rankWithPopulation(line, teamId, (row) => row.avg_pass_rushers),
+      };
 
       return [
         season,
@@ -449,19 +486,20 @@ export function buildLeagueRanks(
           ),
           // Offensive line (team_line_stats). ALY and the level-yard rates rank
           // higher-first; stuffed/sack/pressure rates rank ascending — fewer is better.
-          adjustedLineYards: rankValue(line, teamId, (row) => row.adjusted_line_yards),
-          stuffedRate: rankValue(line, teamId, (row) => row.stuffed_rate, 'asc'),
-          powerSuccessRate: rankValue(line, teamId, (row) => row.power_success_rate),
-          secondLevelYardsPerRush: rankValue(
-            line,
-            teamId,
-            (row) => row.second_level_yards_per_rush
+          adjustedLineYards: lineRanks.adjustedLineYards?.rank,
+          stuffedRate: lineRanks.stuffedRate?.rank,
+          powerSuccessRate: lineRanks.powerSuccessRate?.rank,
+          secondLevelYardsPerRush: lineRanks.secondLevelYardsPerRush?.rank,
+          openFieldYardsPerRush: lineRanks.openFieldYardsPerRush?.rank,
+          lineSackRate: lineRanks.lineSackRate?.rank,
+          pressureRate: lineRanks.pressureRate?.rank,
+          avgTimeToThrow: lineRanks.avgTimeToThrow?.rank,
+          avgPassRushers: lineRanks.avgPassRushers?.rank,
+          lineRankPopulation: Object.fromEntries(
+            Object.entries(lineRanks).flatMap(([metric, detail]) =>
+              detail ? [[metric, detail.population]] : []
+            )
           ),
-          openFieldYardsPerRush: rankValue(line, teamId, (row) => row.open_field_yards_per_rush),
-          lineSackRate: rankValue(line, teamId, (row) => row.sack_rate, 'asc'),
-          pressureRate: rankValue(line, teamId, (row) => row.pressure_rate, 'asc'),
-          avgTimeToThrow: rankValue(line, teamId, (row) => row.avg_time_to_throw, 'asc'),
-          avgPassRushers: rankValue(line, teamId, (row) => row.avg_pass_rushers),
         },
       ];
     })

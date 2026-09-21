@@ -61,6 +61,9 @@ export interface TeamStatsRanks {
   pressureRate?: number;
   avgTimeToThrow?: number;
   avgPassRushers?: number;
+  // The coverage gate can exclude a team from a line-metric rank. Keep each metric's
+  // actual eligible population so the UI never calls a partial field "First in NFL".
+  lineRankPopulation?: Record<string, number>;
 }
 
 // A single kit flattened with its team's identity, for the archive listing (Phase 7

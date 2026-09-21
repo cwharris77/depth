@@ -15,7 +15,7 @@ const GAMES = new Map([
 ]);
 
 function play(overrides: Record<string, string>): Record<string, string> {
-  return { game_id: 'g1', posteam: 'AAA', ...overrides };
+  return { game_id: 'g1', season_type: 'REG', posteam: 'AAA', ...overrides };
 }
 
 const FIXTURE: Record<string, string>[] = [
@@ -145,5 +145,23 @@ describe('toTeamLineStatsRows sparse families', () => {
     expect(row.pressure_rate).toBeNull();
     expect(row.avg_time_to_throw).toBeNull();
     expect(row.avg_pass_rushers).toBeNull();
+  });
+});
+
+describe('toTeamLineStatsRows season type', () => {
+  it('ignores postseason plays when deriving regular-season metrics', () => {
+    const rows = toTeamLineStatsRows(
+      [
+        play({ game_id: 'reg', season_type: 'REG', rush_attempt: '1', yards_gained: '4' }),
+        play({ game_id: 'post', season_type: 'POST', rush_attempt: '1', yards_gained: '80' }),
+      ],
+      2024,
+      resolve,
+      new Map([['team-a', 1]])
+    );
+
+    const row = findRow(rows.rows, 'team-a');
+    expect(row.rushes).toBe(1);
+    expect(row.line_yards).toBe(4);
   });
 });

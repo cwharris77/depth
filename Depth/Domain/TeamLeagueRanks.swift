@@ -50,6 +50,9 @@ struct TeamStatsRanks: Equatable, Codable, Sendable {
     var pressureRate: Int?
     var avgTimeToThrow: Int?
     var avgPassRushers: Int?
+    /// Per-metric populations after the line-stat coverage/null filters. This prevents a
+    /// qualified subset from being presented as a rank across all 32 NFL teams.
+    var lineRankPopulation: [String: Int] = [:]
 }
 
 enum TeamLeagueRanks {
@@ -77,6 +80,24 @@ enum TeamLeagueRanks {
             .sorted { order == .descending ? $0 > $1 : $0 < $1 }
         guard let index = values.firstIndex(of: teamValue) else { return nil }
         return index + 1
+    }
+
+    static func rankWithPopulation<Row, Value: Comparable>(
+        _ rows: [Row],
+        teamId: String,
+        id: (Row) -> String,
+        order: Order = .descending,
+        value: (Row) -> Value?
+    ) -> (rank: Int, population: Int)? {
+        guard let teamRow = rows.first(where: { id($0) == teamId }),
+            let teamValue = value(teamRow)
+        else { return nil }
+        let values =
+            rows
+            .compactMap(value)
+            .sorted { order == .descending ? $0 > $1 : $0 < $1 }
+        guard let index = values.firstIndex(of: teamValue) else { return nil }
+        return (rank: index + 1, population: values.count)
     }
 }
 
@@ -153,8 +174,18 @@ extension TeamLeagueRanks {
             }
             let lineRank = {
                 (order: Order, value: @escaping (TeamSeasonLineRankValues) -> Double?) in
-                rank(lineRows, teamId: teamId, id: \.teamId, order: order, value: value)
+                rankWithPopulation(
+                    lineRows, teamId: teamId, id: \.teamId, order: order, value: value)
             }
+            let adjustedLineYards = lineRank(.descending) { $0.adjustedLineYards }
+            let stuffedRate = lineRank(.ascending) { $0.stuffedRate }
+            let powerSuccessRate = lineRank(.descending) { $0.powerSuccessRate }
+            let secondLevelYardsPerRush = lineRank(.descending) { $0.secondLevelYardsPerRush }
+            let openFieldYardsPerRush = lineRank(.descending) { $0.openFieldYardsPerRush }
+            let lineSackRate = lineRank(.ascending) { $0.sackRate }
+            let pressureRate = lineRank(.ascending) { $0.pressureRate }
+            let avgTimeToThrow = lineRank(.ascending) { $0.avgTimeToThrow }
+            let avgPassRushers = lineRank(.descending) { $0.avgPassRushers }
 
             result[season] = TeamStatsRanks(
                 winPercent: espnRank(.descending) { $0.winPercent },
@@ -194,15 +225,26 @@ extension TeamLeagueRanks {
                     $0.derived.kickoffReturnYardsPerAttempt
                 },
                 // Offensive line
-                adjustedLineYards: lineRank(.descending) { $0.adjustedLineYards },
-                stuffedRate: lineRank(.ascending) { $0.stuffedRate },
-                powerSuccessRate: lineRank(.descending) { $0.powerSuccessRate },
-                secondLevelYardsPerRush: lineRank(.descending) { $0.secondLevelYardsPerRush },
-                openFieldYardsPerRush: lineRank(.descending) { $0.openFieldYardsPerRush },
-                lineSackRate: lineRank(.ascending) { $0.sackRate },
-                pressureRate: lineRank(.ascending) { $0.pressureRate },
-                avgTimeToThrow: lineRank(.ascending) { $0.avgTimeToThrow },
-                avgPassRushers: lineRank(.descending) { $0.avgPassRushers }
+                adjustedLineYards: adjustedLineYards?.rank,
+                stuffedRate: stuffedRate?.rank,
+                powerSuccessRate: powerSuccessRate?.rank,
+                secondLevelYardsPerRush: secondLevelYardsPerRush?.rank,
+                openFieldYardsPerRush: openFieldYardsPerRush?.rank,
+                lineSackRate: lineSackRate?.rank,
+                pressureRate: pressureRate?.rank,
+                avgTimeToThrow: avgTimeToThrow?.rank,
+                avgPassRushers: avgPassRushers?.rank,
+                lineRankPopulation: [
+                    "adjustedLineYards": adjustedLineYards?.population,
+                    "stuffedRate": stuffedRate?.population,
+                    "powerSuccessRate": powerSuccessRate?.population,
+                    "secondLevelYardsPerRush": secondLevelYardsPerRush?.population,
+                    "openFieldYardsPerRush": openFieldYardsPerRush?.population,
+                    "lineSackRate": lineSackRate?.population,
+                    "pressureRate": pressureRate?.population,
+                    "avgTimeToThrow": avgTimeToThrow?.population,
+                    "avgPassRushers": avgPassRushers?.population,
+                ].compactMapValues { $0 }
             )
         }
     }

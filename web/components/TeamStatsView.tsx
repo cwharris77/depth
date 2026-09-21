@@ -126,7 +126,7 @@ type MetricSpec = {
   // Undefined means the source column was missing — the row is dropped, never zeroed.
   value: (m: NonNullable<TeamStats['matchupMetrics']>) => number | undefined;
   format: (value: number) => string;
-  rank: keyof TeamStatsRanks;
+  rank: Exclude<keyof TeamStatsRanks, 'lineRankPopulation'>;
   // Feeds rankLabel's copy: "First in NFL" / "3rd most" / "6th least" / "4th overall".
   qualifier: 'overall' | 'most' | 'least';
 };

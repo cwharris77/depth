@@ -185,6 +185,16 @@ private func lineStats(
         #expect(groups.first?.sourceNote == "nflverse · pressure by FTN charting")
     }
 
+    @Test func namesTheQualifiedPopulationWhenCoverageDropsTeams() {
+        var ranks = TeamStatsRanks()
+        ranks.adjustedLineYards = 1
+        ranks.lineRankPopulation = ["adjustedLineYards": 29]
+        let groups = TeamLineMetricCatalog.resolve(
+            line: lineStats(adjustedLineYards: 3.93), ranks: ranks, lastRank: 32, showRanks: true)
+
+        #expect(groups.first?.metrics.first?.rankCaption == "1st of 29 qualified teams")
+    }
+
     @Test func suppressesEveryRankOnAThinSample() {
         var ranks = TeamStatsRanks()
         ranks.adjustedLineYards = 4
