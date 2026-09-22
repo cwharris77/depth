@@ -13,22 +13,26 @@ enum TeamStatsMapper {
         rows: [TeamStatsRowDTO],
         matchupRows: [TeamMatchupMetricsDTO] = [],
         coachRows: [TeamCoachSeasonDTO] = [],
+        lineRows: [TeamLineStatsRowDTO] = [],
         incomingCoach: TeamIncomingCoach? = nil,
         recordRankRows: [TeamStatsRankDTO] = [],
         metricRankRows: [TeamSeasonStatsRankDTO] = [],
+        lineRankRows: [TeamLineStatsRankDTO] = [],
         teamId: String? = nil,
         now: Date = .now
     ) -> TeamStatsPage {
         let state = nflSeasonState(now: now)
         let matchupBySeason = Dictionary(uniqueKeysWithValues: matchupRows.map { ($0.season, $0) })
         let coachBySeason = Dictionary(uniqueKeysWithValues: coachRows.map { ($0.season, $0) })
+        let lineBySeason = Dictionary(uniqueKeysWithValues: lineRows.map { ($0.season, $0) })
         return TeamStatsPage(
             team: team,
             seasons:
                 rows
                 .map {
                     mapSeason(
-                        $0, matchup: matchupBySeason[$0.season], coach: coachBySeason[$0.season])
+                        $0, matchup: matchupBySeason[$0.season], coach: coachBySeason[$0.season],
+                        line: lineBySeason[$0.season])
                 }
                 .sorted { $0.season > $1.season },
             upcomingSeason: state.isOffseason ? state.upcomingSeason : nil,
@@ -41,7 +45,8 @@ enum TeamStatsMapper {
             leagueRanksBySeason: mapRanks(
                 teamId: teamId ?? team.id,
                 recordRows: recordRankRows,
-                metricRows: metricRankRows
+                metricRows: metricRankRows,
+                lineRows: lineRankRows
             ),
             currentSeason: state.isOffseason ? state.upcomingSeason : state.upcomingSeason - 1
         )
@@ -52,7 +57,8 @@ enum TeamStatsMapper {
     static func mapRanks(
         teamId: String,
         recordRows: [TeamStatsRankDTO],
-        metricRows: [TeamSeasonStatsRankDTO]
+        metricRows: [TeamSeasonStatsRankDTO],
+        lineRows: [TeamLineStatsRankDTO] = []
     ) -> [Int: TeamStatsRanks] {
         guard !recordRows.isEmpty else { return [:] }
         return TeamLeagueRanks.build(
@@ -81,6 +87,21 @@ enum TeamStatsMapper {
                     defensiveInterceptions: $0.defensiveInterceptions,
                     derived: TeamMetrics.derive($0)
                 )
+            },
+            line: lineRows.map {
+                TeamSeasonLineRankValues(
+                    teamId: $0.teamId,
+                    season: $0.season,
+                    adjustedLineYards: $0.adjustedLineYards,
+                    stuffedRate: $0.stuffedRate,
+                    powerSuccessRate: $0.powerSuccessRate,
+                    secondLevelYardsPerRush: $0.secondLevelYardsPerRush,
+                    openFieldYardsPerRush: $0.openFieldYardsPerRush,
+                    sackRate: $0.sackRate,
+                    pressureRate: $0.pressureRate,
+                    avgTimeToThrow: $0.avgTimeToThrow,
+                    avgPassRushers: $0.avgPassRushers
+                )
             }
         )
     }
@@ -88,7 +109,8 @@ enum TeamStatsMapper {
     static func mapSeason(
         _ row: TeamStatsRowDTO,
         matchup: TeamMatchupMetricsDTO? = nil,
-        coach: TeamCoachSeasonDTO? = nil
+        coach: TeamCoachSeasonDTO? = nil,
+        line: TeamLineStatsRowDTO? = nil
     ) -> TeamSeasonStats {
         let matchupMetrics = matchup.map { mapMatchupMetrics($0) }
         let overallWins: Int = row.overallWins ?? 0
@@ -132,7 +154,36 @@ enum TeamStatsMapper {
                 TeamSeasonCoach(name: $0.coachName, experience: $0.coachExperience)
             },
             passingYards: matchup?.passingYards,
-            rushingYards: matchup?.rushingYards
+            rushingYards: matchup?.rushingYards,
+            lineStats: line.map(mapLineStats)
+        )
+    }
+
+    /// Maps a `team_line_stats` row to the domain contract. Unlike the record columns it
+    /// never defaults a null metric to zero — the row already cleared the derivation's
+    /// coverage gate, so an absent family is a genuinely empty sample (e.g. no
+    /// short-yardage carries), and zero would be a claim the source never made.
+    private static func mapLineStats(_ row: TeamLineStatsRowDTO) -> TeamLineStats {
+        TeamLineStats(
+            source: .nflverse,
+            season: row.season,
+            updatedAt: row.updatedAt,
+            rushes: row.rushes,
+            lineYards: row.lineYards,
+            adjustedLineYards: row.adjustedLineYards,
+            stuffedRate: row.stuffedRate,
+            powerSuccessRate: row.powerSuccessRate,
+            secondLevelYards: row.secondLevelYards,
+            secondLevelYardsPerRush: row.secondLevelYardsPerRush,
+            openFieldYards: row.openFieldYards,
+            openFieldYardsPerRush: row.openFieldYardsPerRush,
+            dropbacks: row.dropbacks,
+            sacksAllowed: row.sacksAllowed,
+            sackRate: row.sackRate,
+            pressuresAllowed: row.pressuresAllowed,
+            pressureRate: row.pressureRate,
+            avgTimeToThrow: row.avgTimeToThrow,
+            avgPassRushers: row.avgPassRushers
         )
     }
 

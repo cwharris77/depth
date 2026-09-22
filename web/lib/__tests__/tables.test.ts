@@ -27,6 +27,7 @@ describe('tables', () => {
       'special_teams_slots',
       'team_coach_seasons',
       'team_formations',
+      'team_line_stats',
       'team_season_stats',
       'team_stats',
       'teams',

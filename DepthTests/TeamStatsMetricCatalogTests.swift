@@ -129,6 +129,82 @@ private func metrics(
     }
 }
 
+// The offensive-line catalog (team_line_stats). Same drop-don't-zero and rank-caption
+// rules as the unit catalog, plus the source attribution the pass-pro metrics require.
+private func lineStats(
+    adjustedLineYards: Double? = nil,
+    stuffedRate: Double? = nil,
+    pressureRate: Double? = nil,
+    sackRate: Double? = nil
+) -> TeamLineStats {
+    TeamLineStats(
+        source: .nflverse, season: 2025, updatedAt: "2026-08-27T00:00:00Z",
+        rushes: nil, lineYards: nil, adjustedLineYards: adjustedLineYards,
+        stuffedRate: stuffedRate, powerSuccessRate: nil, secondLevelYards: nil,
+        secondLevelYardsPerRush: nil, openFieldYards: nil, openFieldYardsPerRush: nil,
+        dropbacks: nil, sacksAllowed: nil, sackRate: sackRate, pressuresAllowed: nil,
+        pressureRate: pressureRate, avgTimeToThrow: nil, avgPassRushers: nil
+    )
+}
+
+@Suite struct TeamLineMetricCatalogTests {
+    @Test func rendersNothingWithoutALineRow() {
+        let groups = TeamLineMetricCatalog.resolve(
+            line: nil, ranks: nil, lastRank: 32, showRanks: true)
+        #expect(groups.isEmpty)
+    }
+
+    @Test func dropsMetricsWhoseSourceColumnIsMissing() {
+        let groups = TeamLineMetricCatalog.resolve(
+            line: lineStats(adjustedLineYards: 3.9), ranks: nil, lastRank: 32, showRanks: true)
+        #expect(groups.count == 1)
+        #expect(groups.first?.title == "OFFENSIVE LINE")
+        #expect(groups.first?.metrics.map(\.label) == ["ADJ LINE YDS"])
+    }
+
+    @Test func formatsALYAndPressureRateInTheirOwnUnits() {
+        let groups = TeamLineMetricCatalog.resolve(
+            line: lineStats(adjustedLineYards: 3.93, pressureRate: 0.25),
+            ranks: nil, lastRank: 32, showRanks: true)
+        let byLabel = Dictionary(
+            uniqueKeysWithValues: groups.flatMap(\.metrics).map { ($0.label, $0.display) })
+        #expect(byLabel["ADJ LINE YDS"] == "3.93")
+        #expect(byLabel["PRESSURE RATE"] == "25.0%")
+    }
+
+    @Test func attachesTheRankCaptionAndTheSourceAttribution() {
+        var ranks = TeamStatsRanks()
+        ranks.adjustedLineYards = 4
+        ranks.pressureRate = 6
+        let groups = TeamLineMetricCatalog.resolve(
+            line: lineStats(adjustedLineYards: 3.93, pressureRate: 0.25),
+            ranks: ranks, lastRank: 32, showRanks: true)
+        let captions = groups.flatMap(\.metrics).map(\.rankCaption)
+        // ALY reads "most"; pressure rate "least" — fewer pressures is better.
+        #expect(captions == ["4th most", "6th least"])
+        #expect(groups.first?.sourceNote == "nflverse · pressure by FTN charting")
+    }
+
+    @Test func namesTheQualifiedPopulationWhenCoverageDropsTeams() {
+        var ranks = TeamStatsRanks()
+        ranks.adjustedLineYards = 1
+        ranks.lineRankPopulation = ["adjustedLineYards": 29]
+        let groups = TeamLineMetricCatalog.resolve(
+            line: lineStats(adjustedLineYards: 3.93), ranks: ranks, lastRank: 32, showRanks: true)
+
+        #expect(groups.first?.metrics.first?.rankCaption == "1st of 29 qualified teams")
+    }
+
+    @Test func suppressesEveryRankOnAThinSample() {
+        var ranks = TeamStatsRanks()
+        ranks.adjustedLineYards = 4
+        let groups = TeamLineMetricCatalog.resolve(
+            line: lineStats(adjustedLineYards: 3.93), ranks: ranks, lastRank: 32, showRanks: false)
+        #expect(groups.first?.metrics.first?.display == "3.93")
+        #expect(groups.first?.metrics.first?.rankCaption == nil)
+    }
+}
+
 // ESPN's playoffseed is a conference standings position, not a playoff seed. These are
 // the Swift twins of web/lib/utils/team/playoff-seed.test.ts.
 @Suite struct PlayoffSeedAndStreakTests {

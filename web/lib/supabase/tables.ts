@@ -15,6 +15,7 @@ export const tables = {
   specialTeamsSlots: 'special_teams_slots',
   teamCoachSeasons: 'team_coach_seasons',
   teamFormations: 'team_formations',
+  teamLineStats: 'team_line_stats',
   teamSeasonStats: 'team_season_stats',
   teamStats: 'team_stats',
   teams: 'teams',

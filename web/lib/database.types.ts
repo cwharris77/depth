@@ -2388,6 +2388,80 @@ export type Database = {
           },
         ]
       }
+      team_line_stats: {
+        Row: {
+          adjusted_line_yards: number | null
+          avg_pass_rushers: number | null
+          avg_time_to_throw: number | null
+          dropbacks: number | null
+          line_yards: number | null
+          open_field_yards: number | null
+          open_field_yards_per_rush: number | null
+          power_success_rate: number | null
+          pressure_rate: number | null
+          pressures_allowed: number | null
+          rushes: number | null
+          sack_rate: number | null
+          sacks_allowed: number | null
+          season: number
+          second_level_yards: number | null
+          second_level_yards_per_rush: number | null
+          stuffed_rate: number | null
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          adjusted_line_yards?: number | null
+          avg_pass_rushers?: number | null
+          avg_time_to_throw?: number | null
+          dropbacks?: number | null
+          line_yards?: number | null
+          open_field_yards?: number | null
+          open_field_yards_per_rush?: number | null
+          power_success_rate?: number | null
+          pressure_rate?: number | null
+          pressures_allowed?: number | null
+          rushes?: number | null
+          sack_rate?: number | null
+          sacks_allowed?: number | null
+          season: number
+          second_level_yards?: number | null
+          second_level_yards_per_rush?: number | null
+          stuffed_rate?: number | null
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          adjusted_line_yards?: number | null
+          avg_pass_rushers?: number | null
+          avg_time_to_throw?: number | null
+          dropbacks?: number | null
+          line_yards?: number | null
+          open_field_yards?: number | null
+          open_field_yards_per_rush?: number | null
+          power_success_rate?: number | null
+          pressure_rate?: number | null
+          pressures_allowed?: number | null
+          rushes?: number | null
+          sack_rate?: number | null
+          sacks_allowed?: number | null
+          season?: number
+          second_level_yards?: number | null
+          second_level_yards_per_rush?: number | null
+          stuffed_rate?: number | null
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_line_stats_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_season_stats: {
         Row: {
           attempts: number | null

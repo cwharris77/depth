@@ -22,6 +22,7 @@ import {
   type PlayRawSpec,
 } from './raw-tables.generated';
 import { NUMERIC_COLUMNS as PLAYER_STATS_NUMERIC_COLUMNS } from './transform';
+import { PBP_REQUIRED_COLUMNS, PBP_CHARTED_COLUMNS } from './line-metrics';
 import {
   NUMERIC_COLUMNS as TEAM_STATS_NUMERIC_COLUMNS,
   DISTANCE_LIST_COLUMNS as TEAM_STATS_DISTANCE_LIST_COLUMNS,
@@ -227,6 +228,14 @@ export const SOURCE_CONTRACTS = {
       'offense_personnel',
       'defense_personnel',
     ],
+  } satisfies SourceContract,
+  pbp: {
+    id: 'pbp',
+    // play_by_play_<season>.csv — the streamed offensive-line fold (line-metrics.ts).
+    // The three pressure columns are FTN-charted and legitimately absent outside the
+    // charted era; their absence degrades the pressure metrics to null, never zero.
+    columns: [...PBP_REQUIRED_COLUMNS],
+    optionalColumns: [...PBP_CHARTED_COLUMNS],
   } satisfies SourceContract,
   stats_player_regpost: playerRawContract('stats_player_regpost', 'nflverse_player_season'),
   stats_player_week: playerRawContract('stats_player_week', 'nflverse_player_week'),

@@ -106,6 +106,12 @@ struct TeamSeasonStats: Equatable, Codable, Sendable {
     var coach: TeamSeasonCoach?
     var passingYards: Int?
     var rushingYards: Int?
+    /// Team-level offensive-line metrics for this season (web: `TeamStats.lineStats`,
+    /// table `team_line_stats`). Optional at the object level like `matchupMetrics`: a
+    /// season with no derived row — including one dropped by the coverage gate — stays
+    /// absent rather than fabricating a partial metric. Also keeps caches written before
+    /// this additive field decodable.
+    var lineStats: TeamLineStats?
 }
 
 /// The hand-curated head coach for one season (web: `TeamStats.coach`, sourced from
@@ -113,6 +119,47 @@ struct TeamSeasonStats: Equatable, Codable, Sendable {
 struct TeamSeasonCoach: Equatable, Codable, Sendable {
     let name: String
     let experience: Int
+}
+
+/// Team-level offensive-line metrics derived from nflverse play-by-play, mirroring web's
+/// `TeamLineStats` (web/lib/types.ts) and the `team_line_stats` table. Offensive-line
+/// play has no free per-player source (PFF/SIS/FTN Data are paid, PFR is CAPTCHA-gated,
+/// ESPN's block win rates are proprietary), so these grade the *unit* rather than any
+/// individual lineman.
+///
+/// - Adjusted Line Yards and the run-family rates follow Football Outsiders' published
+///   depth coefficients (losses 120%, 0-4 yards 100%, 5-10 yards 50%, 11+ yards 0%).
+/// - The pass-protection pressure columns derive from nflverse pbp's FTN-charted
+///   `was_pressure`/`time_to_throw`/`number_of_pass_rushers`, so wherever they surface
+///   the UI must attribute them to nflverse / FTN charting.
+///
+/// Every value is optional: a family with no sample stays absent rather than zero. A
+/// team-season whose charted coverage is too sparse gets no row at all (the derivation's
+/// coverage gate), so it never surfaces here.
+struct TeamLineStats: Equatable, Codable, Sendable {
+    enum Source: String, Equatable, Codable, Sendable {
+        case nflverse
+    }
+
+    let source: Source
+    let season: Int
+    let updatedAt: String
+    let rushes: Int?
+    let lineYards: Double?
+    let adjustedLineYards: Double?
+    let stuffedRate: Double?
+    let powerSuccessRate: Double?
+    let secondLevelYards: Double?
+    let secondLevelYardsPerRush: Double?
+    let openFieldYards: Double?
+    let openFieldYardsPerRush: Double?
+    let dropbacks: Int?
+    let sacksAllowed: Int?
+    let sackRate: Double?
+    let pressuresAllowed: Int?
+    let pressureRate: Double?
+    let avgTimeToThrow: Double?
+    let avgPassRushers: Double?
 }
 
 // Auditable inputs for Compare's Offense, Defense, and Special Teams lenses (DEP-312).

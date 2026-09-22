@@ -72,9 +72,13 @@ enum TeamStatsRankQualifier: String, Sendable {
 func teamStatsRankLabel(
     _ rank: Int?,
     lastRank: Int,
-    qualifier: TeamStatsRankQualifier
+    qualifier: TeamStatsRankQualifier,
+    qualifiedTeams: Int? = nil
 ) -> String? {
     guard let rank, rank > 0 else { return nil }
+    if let qualifiedTeams, qualifiedTeams < lastRank {
+        return "\(ordinal(rank)) of \(qualifiedTeams) qualified teams"
+    }
     if rank == 1 { return "First in NFL" }
     if rank == lastRank { return "Last in NFL" }
     return "\(ordinal(rank)) \(qualifier.rawValue)"
@@ -111,6 +115,9 @@ struct ResolvedTeamStatsGroup: Identifiable, Sendable {
     let id: String
     let title: String
     let metrics: [ResolvedTeamStatsMetric]
+    /// Optional attribution line shown beneath the group (e.g. the offensive line's
+    /// nflverse / FTN-charting credit). Nil renders none.
+    var sourceNote: String? = nil
 }
 
 enum TeamStatsMetricFormat {
@@ -263,5 +270,127 @@ enum TeamStatsMetricCatalog {
                 ? nil
                 : ResolvedTeamStatsGroup(id: group.id, title: group.title, metrics: resolved)
         }
+    }
+}
+
+/// The offensive line is its own unit with its own source table (`team_line_stats`,
+/// derived from nflverse play-by-play by web/lib/nflverse/line-metrics.ts), so it gets a
+/// separate catalog rather than being folded into `TeamStatsMetricCatalog`'s
+/// `TeamMatchupMetrics`-keyed groups. Same resolve shape, same rank captions, same
+/// drop-don't-zero filtering.
+enum TeamLineMetricCatalog {
+    /// Attribution shown with the group. The run-family metrics derive from nflverse
+    /// play-by-play; the pressure columns are FTN-charted and shipped through the same
+    /// pbp release, so both sources are named wherever the pass-pro metrics appear.
+    static let sourceNote = "nflverse · pressure by FTN charting"
+
+    struct TeamLineMetricSpec: Identifiable, Sendable {
+        let id: String
+        let label: String
+        /// Nil means the source column was missing — the metric is dropped, never zeroed.
+        let value: @Sendable (TeamLineStats) -> Double?
+        let format: @Sendable (Double) -> String
+        let rank: @Sendable (TeamStatsRanks) -> Int?
+        let rankPopulation: @Sendable (TeamStatsRanks) -> Int?
+        let qualifier: TeamStatsRankQualifier
+    }
+
+    /// ALY and the level-yard rates are higher-is-better; stuffed/sack/pressure rates are
+    /// lower-is-better (fewer is better), so they rank ascending. Time to throw and
+    /// rushers faced are context, ranked without a better/worse qualifier.
+    static let metrics: [TeamLineMetricSpec] = [
+        TeamLineMetricSpec(
+            id: "adj-line-yards", label: "ADJ LINE YDS",
+            value: { $0.adjustedLineYards }, format: TeamStatsMetricFormat.decimal(2),
+            rank: { $0.adjustedLineYards },
+            rankPopulation: { $0.lineRankPopulation["adjustedLineYards"] },
+            qualifier: .most
+        ),
+        TeamLineMetricSpec(
+            id: "stuffed-rate", label: "STUFFED %",
+            value: { $0.stuffedRate }, format: TeamStatsMetricFormat.percent,
+            rank: { $0.stuffedRate }, rankPopulation: { $0.lineRankPopulation["stuffedRate"] },
+            qualifier: .least
+        ),
+        TeamLineMetricSpec(
+            id: "power-success", label: "POWER SUCCESS",
+            value: { $0.powerSuccessRate }, format: TeamStatsMetricFormat.percent,
+            rank: { $0.powerSuccessRate },
+            rankPopulation: { $0.lineRankPopulation["powerSuccessRate"] },
+            qualifier: .most
+        ),
+        TeamLineMetricSpec(
+            id: "second-level-per-rush", label: "2ND LEVEL / RUSH",
+            value: { $0.secondLevelYardsPerRush }, format: TeamStatsMetricFormat.decimal(2),
+            rank: { $0.secondLevelYardsPerRush },
+            rankPopulation: { $0.lineRankPopulation["secondLevelYardsPerRush"] },
+            qualifier: .most
+        ),
+        TeamLineMetricSpec(
+            id: "open-field-per-rush", label: "OPEN FIELD / RUSH",
+            value: { $0.openFieldYardsPerRush }, format: TeamStatsMetricFormat.decimal(2),
+            rank: { $0.openFieldYardsPerRush },
+            rankPopulation: { $0.lineRankPopulation["openFieldYardsPerRush"] },
+            qualifier: .most
+        ),
+        TeamLineMetricSpec(
+            id: "line-sack-rate", label: "SACK RATE",
+            value: { $0.sackRate }, format: TeamStatsMetricFormat.percent,
+            rank: { $0.lineSackRate }, rankPopulation: { $0.lineRankPopulation["lineSackRate"] },
+            qualifier: .least
+        ),
+        TeamLineMetricSpec(
+            id: "pressure-rate", label: "PRESSURE RATE",
+            value: { $0.pressureRate }, format: TeamStatsMetricFormat.percent,
+            rank: { $0.pressureRate }, rankPopulation: { $0.lineRankPopulation["pressureRate"] },
+            qualifier: .least
+        ),
+        TeamLineMetricSpec(
+            id: "time-to-throw", label: "TIME TO THROW",
+            value: { $0.avgTimeToThrow }, format: TeamStatsMetricFormat.decimal(2),
+            rank: { $0.avgTimeToThrow },
+            rankPopulation: { $0.lineRankPopulation["avgTimeToThrow"] },
+            qualifier: .overall
+        ),
+        TeamLineMetricSpec(
+            id: "pass-rushers", label: "PASS RUSHERS",
+            value: { $0.avgPassRushers }, format: TeamStatsMetricFormat.decimal(1),
+            rank: { $0.avgPassRushers },
+            rankPopulation: { $0.lineRankPopulation["avgPassRushers"] },
+            qualifier: .overall
+        ),
+    ]
+
+    /// Resolves the line group for one season. A season with no `team_line_stats` row
+    /// (including one below the derivation's coverage gate) yields nothing, so the
+    /// section is absent rather than partly filled.
+    static func resolve(
+        line: TeamLineStats?,
+        ranks: TeamStatsRanks?,
+        lastRank: Int,
+        showRanks: Bool
+    ) -> [ResolvedTeamStatsGroup] {
+        guard let line else { return [] }
+        let resolved = metrics.compactMap { spec -> ResolvedTeamStatsMetric? in
+            guard let value = spec.value(line) else { return nil }
+            return ResolvedTeamStatsMetric(
+                id: spec.id,
+                label: spec.label,
+                display: spec.format(value),
+                rankCaption: showRanks
+                    ? teamStatsRankLabel(
+                        ranks.flatMap(spec.rank), lastRank: lastRank, qualifier: spec.qualifier,
+                        qualifiedTeams: ranks.flatMap(spec.rankPopulation)
+                    )
+                    : nil
+            )
+        }
+        guard !resolved.isEmpty else { return [] }
+        return [
+            ResolvedTeamStatsGroup(
+                id: "offensive-line", title: "OFFENSIVE LINE", metrics: resolved,
+                sourceNote: sourceNote
+            )
+        ]
     }
 }

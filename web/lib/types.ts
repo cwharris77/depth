@@ -205,6 +205,41 @@ export interface TeamStats {
   // available beside derived rates so every displayed value is auditable; the whole
   // object is absent when the season has no nflverse row.
   matchupMetrics?: TeamMatchupMetrics;
+  // Team-level offensive-line metrics derived from nflverse play-by-play
+  // (team_line_stats; lib/nflverse/line-metrics.ts). Absent when the season has no row
+  // — including a season whose charted coverage was too sparse to derive one, which is
+  // a deliberate no-row rather than a partial metric.
+  lineStats?: TeamLineStats;
+}
+
+// The offensive line has no free per-player source (PFF/SIS/FTN Data are paid, PFR is
+// CAPTCHA-gated, ESPN's block win rates are proprietary), so these are *unit* metrics
+// derived from nflverse play-by-play (lib/nflverse/line-metrics.ts). Adjusted Line Yards
+// and the run-family rates follow Football Outsiders' published definitions. The
+// pass-protection pressure columns come from nflverse pbp's FTN-charted
+// `was_pressure`/`time_to_throw`/`number_of_pass_rushers`, so wherever they surface the
+// UI must attribute them to nflverse / FTN charting. Every value is nullable: a family
+// with no sample stays absent rather than zero.
+export interface TeamLineStats {
+  source: 'nflverse';
+  season: number;
+  updatedAt: string;
+  rushes?: number;
+  lineYards?: number;
+  adjustedLineYards?: number;
+  stuffedRate?: number;
+  powerSuccessRate?: number;
+  secondLevelYards?: number;
+  secondLevelYardsPerRush?: number;
+  openFieldYards?: number;
+  openFieldYardsPerRush?: number;
+  dropbacks?: number;
+  sacksAllowed?: number;
+  sackRate?: number;
+  pressuresAllowed?: number;
+  pressureRate?: number;
+  avgTimeToThrow?: number;
+  avgPassRushers?: number;
 }
 
 export interface TeamMatchupMetrics {
