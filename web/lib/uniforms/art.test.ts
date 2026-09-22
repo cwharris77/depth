@@ -72,18 +72,28 @@ describe('renderUniformThumbSVG', () => {
       'seahawks-rivalries-2025',
       getTeamUniformDefinition('seahawks')
     );
-    expect(svg).toContain('fill="#C6D3DC"');
+    expect(svg).toContain('fill="#AFB3B5"');
   });
 
-  it('emits the Rivalries dash pattern and applies it to the jersey field', () => {
+  it('renders the approved Rivalries soundwaves, collar, cuffs, and outlined wordmark', () => {
     const svg = renderUniformThumbSVG(
       seahawksRivalries,
       'seahawks-rivalries-2025',
       getTeamUniformDefinition('seahawks')
     );
-    expect(svg).toContain('data-layer-id="seahawks-rivalries-dash-field"');
-    expect(svg).toContain('pattern-rivalDashes');
-    expect(svg).toContain('gradient-rivalDashes');
+    for (const detail of [
+      'soundwave-0',
+      'soundwave-1',
+      'soundwave-2',
+      'cuffs',
+      'wordmark',
+      'neck-opening',
+      'collar-placket',
+    ]) {
+      expect(svg).toContain(`data-layer-id="seahawks-rivalries-${detail}"`);
+    }
+    expect(svg).not.toContain('data-layer-id="seahawks-rivalries-dash-field"');
+    expect(svg).not.toContain('data-layer-id="generic-sleeve-stripe-left"');
   });
 
   it('uses vector numerals without a rasterizer font dependency', () => {

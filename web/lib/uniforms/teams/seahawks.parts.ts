@@ -47,6 +47,11 @@ import {
 } from './parts';
 import type { UniformSurface } from './types';
 
+import {
+  SEAHAWKS_RIVALRIES_JERSEY,
+  SEAHAWKS_RIVALRIES_JERSEY_PALETTE,
+} from './seahawks-rivalries-jersey';
+
 const COLLAR_PATH = 'M206,388 L294,455 L386,388';
 
 const fill = (id: string, surface: UniformSurface, d: string, color: string): PartLayer => ({
@@ -105,29 +110,10 @@ const HELMET_1976_SILVER: UniformPart = {
 
 export const SEAHAWKS_PARTS: TeamPartsDefinition = {
   teamId: 'seahawks',
-  patterns: {
-    rivalDashes: {
-      width: 24,
-      height: 22,
-      gradient: {
-        x1: 0,
-        y1: 0,
-        x2: 24,
-        y2: 22,
-        stops: [
-          { offset: 0, color: 'green' },
-          { offset: 1, color: 'rivalriesCopper' },
-        ],
-      },
-      shapes: [
-        { d: 'M3,3 C6,1 11,2 13,5 C11,8 7,9 4,7 Z', fill: 'green' },
-        { d: 'M15,13 C18,11 22,12 23,15 C21,18 17,19 14,17 Z', fill: 'green' },
-      ],
-    },
-  },
   // Jersey hexes from the curated rows (teamcolorcodes); crownWedge is the re-based tonal step
   // documented in seahawks.ts, not a sampled hex.
   palette: {
+    ...SEAHAWKS_RIVALRIES_JERSEY_PALETTE,
     navy: '#002244',
     green: '#69BE28',
     // Wolf Grey is a construction fact of the modern kit, not a runtime body color: an
@@ -141,7 +127,6 @@ export const SEAHAWKS_PARTS: TeamPartsDefinition = {
     rivalriesTeal: '#023A4D',
     rivalriesSilver: '#C6D3DC',
     rivalriesPine: '#29594C',
-    rivalriesCopper: '#B87333',
     royal76: '#003087',
     green76: '#046A38',
     silver76: '#8A8D8F',
@@ -217,25 +202,7 @@ export const SEAHAWKS_PARTS: TeamPartsDefinition = {
       ],
       number: { fill: 'readable-on-body', outline: 'royal76', outlineWidth: 26 },
     },
-    // Rivalries is a print, not a construction: no shoulder marks. It keeps the generic sleeve
-    // stripes and collar, which the flat form inherited implicitly.
-    'rivalries-silver': {
-      base: 'rivalriesSilver',
-      layers: [
-        fromGeneric('generic-sleeve-stripe-left', 'navy'),
-        fromGeneric('generic-sleeve-stripe-right', 'navy'),
-        fromGeneric('generic-collar', 'navy'),
-        {
-          id: 'seahawks-rivalries-dash-field',
-          surface: 'jersey',
-          d: 'M30,383 H210 L294,455 L250,490 L180,450 L120,430 L30,450 Z M558,383 H378 L294,455 L338,490 L408,450 L468,430 L558,450 Z',
-          clip: true,
-          kind: 'fill',
-          fill: 'pattern:rivalDashes',
-        },
-      ],
-      number: { fill: 'rivalriesPine', outline: 'navy', outlineWidth: 26 },
-    },
+    'rivalries-silver': SEAHAWKS_RIVALRIES_JERSEY,
   },
   pants: {
     // Home keeps the generic stripe pair in green.
