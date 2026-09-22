@@ -68,38 +68,32 @@ export const UNSOURCED_PROVENANCE: ConstructionProvenance = {
   fidelity: 'unverified',
 };
 
-// Seattle's 2025 Rivalries kit is the one construction with a written evidence trail: the
-// 2026-09-13 authoring-model test ran a cheaper model against a product photo and the GUD sheet,
-// then listed exactly which features matched and which stayed coarse. Facts below are
-// transcribed from that record; no source beyond those two is asserted.
+// Approved 2026-09-21: Luna collected sources; Astra authored the jersey and Cooper
+// approved its final collar/cuff refinement. Approval does not imply exact material fidelity.
 const SEAHAWKS_RIVALRIES_2025: ConstructionProvenance = {
   sources: [
-    'Gridiron Uniform Database — 2025 Seahawks Rivalries sheet (layout and structure)',
-    '2025 Seahawks Rivalries product photo (external reference; facts only, never committed)',
+    'https://www.seahawks.com/news/2025-seahawks-nike-rivalries-uniform-announcement',
+    'https://www.seahawks.com/photos/2025-seahawks-nike-rivalries-uniform-detail-photos',
+    'https://static.clubs.nfl.com/image/upload/t_new_photo_album/seahawks/rwdy8rqamnkhcywmir9f.jpg',
+    'https://fanatics.frgimages.com/seattle-seahawks/mens-nike-jaxon-smith-njigba-gray-seattle-seahawks-rivalries-collection-stitched-limited-jersey_ss5_p-202666467%2Bpv-1%2Bu-erexofgxenl71aa9tlks%2Bv-md1ngazh9geawio6wwre.jpg?_hv=2&w=1018',
   ],
   observed: [
-    'Printed green-to-copper dash motif reads across the shoulders and sleeves; the center chest panel is plain.',
-    'Body reads as a darker wolf grey than the catalog render; the row used #C6D3DC.',
-    'Navy V-collar with a knit insert.',
-    'Sleeve cuffs span the full sleeve hem as bands.',
-    'Numeral reads as a muted, desaturated grey-green print, not the jersey action green.',
-    'Navy SEAHAWKS wordmark, positioned from the flat GUD sheet.',
+    'Soundwave dash motif uses long diagonal yoke marks and shorter sleeve lozenges; the central chest is plain.',
+    'Wolf Grey body, navy outlined green/olive numbers, and navy SEAHAWKS wordmark.',
+    'Curved V collar has grey edges, a navy inset, and a front insert; navy cuffs meet the sleeve hems.',
   ],
   inferred: [
-    'Helmet construction reuses the existing teal-hawk shell and its three decal layers; a jersey reference cannot show a helmet.',
-    'Dash-field tile pitch, rotation, and the shoulder-weighted fade are reconstructed parameters, not measured values.',
+    'Mark lengths, spacing, and collar curves are reconstructed on the shared flat mannequin, not measured garment patterns.',
+    'Helmet and pants retain the existing construction; this approval covers the jersey only.',
   ],
   approximations: [
-    'Dash field is a single parametric tile with a green-to-copper gradient; the reference print is finer, denser, and directional.',
-    'Wordmark is outlined Arial Bold (a proxy for Seattle custom letterforms) so rasters never depend on an installed font.',
-    'Numeral uses the archive single-glyph convention, not the worn number, and its micro-print fill is omitted.',
-    'Manufacturer marks (Nike swoosh, NFL shield, jock tag) are omitted by design.',
+    'Muted olive, green, and bronze flat colors approximate light-reactive material; hexes are visual estimates.',
+    'Outlined Arial Bold Italic substitutes the custom team wordmark without a runtime font dependency.',
+    'The canonical archive 3 replaces the worn number; repeating 12 microtexture and manufacturer/league marks are omitted.',
   ],
   unresolved: [
-    'Motif pitch and density: the authored tile reads coarser than the reference dash field.',
-    'Numeral fill: the muted grey-green print is unresolved; the authored pine reads dark.',
-    'Body grey: unresolved tone mismatch, authored lighter and cooler than the reference.',
-    'Sleeve silhouette: the shared mannequin sleeve is bulkier than the fitted reference garment.',
+    'Exact soundwave bar counts, custom lettering, and iridescence remain approximated.',
+    'Helmet and pants were not audited in this jersey-only pass.',
   ],
   review: { status: 'reviewed', approved: true },
   fidelity: 'approximate',

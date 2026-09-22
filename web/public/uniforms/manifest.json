@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "619f89750b4225d8916a5a0fe6251d107288e3ceae811b6f48be2a92e83d14ca",
-  "revision": "6d2a93e20c8af32a",
+  "sourceDigest": "2a4e799852203a1f80d92df62a59ef65868c8e04903d49fc45b0a6f007effefd",
+  "revision": "161ead38a0618509",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1371,15 +1371,15 @@
     {
       "catalogId": "seahawks-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "86a323d4b354c60f",
+      "revision": "77f862ba7bb30af8",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-rivalries-2025-2025.webp",
-          "sha256": "279be472cdb65daacf57745fec9c93f55decfa15bba499475dd583043429ac83"
+          "sha256": "74112655babe6202278cc308880a972c4bff97fdd4763d32b8adaa75b6980c76"
         },
         "full": {
           "path": "/uniforms/seahawks-rivalries-2025-2025-full.webp",
-          "sha256": "4dadfe84d61ccc2819b52f9dcf0917eacc24a9b97b615f10317e539135279dd6"
+          "sha256": "1b1a8f48e05c3f5bb211b6e543764607ee44bb65f446ce5e674fc4f67e1e31e0"
         }
       }
     },
