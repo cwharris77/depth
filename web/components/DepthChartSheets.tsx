@@ -2,7 +2,7 @@
 
 import { SEASONS_MIN } from '@/lib/nflverse/roster-history';
 import type { TeamFormation, Unit, Uniform } from '@/lib/types';
-import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
+import type { TeamUniformDefinition } from '@/lib/uniforms/teams/core/types';
 import BottomSheet from './BottomSheet';
 import FormationsSheet from './FormationsSheet';
 import SeasonSheet from './SeasonSheet';

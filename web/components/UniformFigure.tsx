@@ -12,7 +12,7 @@ import {
 import { shadeFor } from '@/lib/uniforms/helmet-shading';
 import { JERSEY_NUMBER_THREE } from '@/lib/uniforms/jersey-art';
 import { resolveColor, resolveUniformModel, type ResolvedUniformStyle } from '@/lib/uniforms/model';
-import type { TeamUniformDefinition, UniformSurface } from '@/lib/uniforms/teams/types';
+import type { TeamUniformDefinition, UniformSurface } from '@/lib/uniforms/teams/core/types';
 
 // The raster variants the prerender pipeline (lib/uniforms/art.tsx) emits: 'jersey' (picker
 // swatch) or 'full' (archive mannequin). Re-exported so art.tsx stays the single authority on

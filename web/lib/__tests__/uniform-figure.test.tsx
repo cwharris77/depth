@@ -9,7 +9,7 @@ import { HELMET_ART } from '@/lib/uniforms/helmet-art';
 import { shadeFor } from '@/lib/uniforms/helmet-shading';
 import { resolveUniformModel } from '@/lib/uniforms/model';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
-import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
+import type { TeamUniformDefinition } from '@/lib/uniforms/teams/core/types';
 
 const colors: TeamColors = {
   primary: '#002244',

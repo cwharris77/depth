@@ -11,9 +11,12 @@ import {
   jerseySurfaceIssues,
   resolveAuthoredJersey,
   validateAuthoredDefinition,
-} from '@/lib/uniforms/teams/validate';
-import { renderGeneratedPartialModule, type GeneratedPartial } from '@/lib/uniforms/teams/partial';
-import type { UniformPart } from '@/lib/uniforms/teams/parts';
+} from '@/lib/uniforms/teams/core/validate';
+import {
+  renderGeneratedPartialModule,
+  type GeneratedPartial,
+} from '@/lib/uniforms/teams/core/partial';
+import type { UniformPart } from '@/lib/uniforms/teams/core/parts';
 import { WORDMARK_PY, assertOutlineToolchain } from './toolchain-preflight.mts';
 
 type JsonLayer = {

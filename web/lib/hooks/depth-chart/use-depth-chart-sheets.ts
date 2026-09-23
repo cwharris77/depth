@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { TeamFormation, Unit, Uniform } from '@/lib/types';
-import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
+import type { TeamUniformDefinition } from '@/lib/uniforms/teams/core/types';
 
 // Open/closed state for the field's three overflow-menu sheets (uniform/season/
 // formations), plus the ready-to-spread prop bundles DepthChartSheets and FieldHeader's

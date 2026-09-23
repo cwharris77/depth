@@ -24,8 +24,8 @@ import {
   planPartialUpdate,
   renderGeneratedPartialModule,
   type GeneratedPartial,
-} from '@/lib/uniforms/teams/partial';
-import type { TeamPartsDefinition } from '@/lib/uniforms/teams/parts';
+} from '@/lib/uniforms/teams/core/partial';
+import type { TeamPartsDefinition } from '@/lib/uniforms/teams/core/parts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const GENERATED_DIR = join(HERE, '..', '..', 'lib', 'uniforms', 'teams', 'generated');

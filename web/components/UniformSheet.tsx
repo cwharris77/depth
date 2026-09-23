@@ -6,7 +6,7 @@ import { Check } from 'lucide-react';
 import { motion, type PanInfo } from 'framer-motion';
 import type { Uniform } from '@/lib/types';
 import { formatUniformYears } from '@/lib/utils/uniforms';
-import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
+import type { TeamUniformDefinition } from '@/lib/uniforms/teams/core/types';
 import JerseySwatch from './JerseySwatch';
 import SheetHeader from './ui/SheetHeader';
 import { colors as uiTokens, springSheet, typeScale } from '@/components/ui/tokens';

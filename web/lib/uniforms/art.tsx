@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import UniformFigure, { type UniformArtVariant } from '@/components/UniformFigure';
 import type { JerseyColors } from '@/lib/types';
-import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
+import type { TeamUniformDefinition } from '@/lib/uniforms/teams/core/types';
 
 // DEP-220 art pipeline: deterministic, prerendered uniform rasters for the native iOS
 // app (and, when image_path is populated, the web). SwiftUI has no SVG decoder and the
