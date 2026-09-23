@@ -21,20 +21,15 @@ import {
   COWBOYS_SLEEVE_CAP_RIGHT,
 } from './source';
 import { COWBOYS_DECAL_PATHS as GENERATED_COWBOYS_DECAL_PATHS } from './decal';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import { LEGACY_ROUNDED_COLLAR_PATH } from '../core/shared';
 
-const COLLAR_PATH = LEGACY_ROUNDED_COLLAR_PATH;
+export const COLLAR_PATH = LEGACY_ROUNDED_COLLAR_PATH;
 
 // The complete navy/white star is generated from the supplied SVG in its original paint order.
 // The generator excludes only that file's canvas/frame export artifacts; its coordinates preserve
 // the existing GUD-measured helmet envelope.
-function star(): PartLayer[] {
+export function star(): PartLayer[] {
   return GENERATED_COWBOYS_DECAL_PATHS.map((layer, index) => ({
     id: `cowboys-decal-${index}`,
     surface: 'helmet',
@@ -52,112 +47,12 @@ function star(): PartLayer[] {
 // Steel cage. The Cowboys' shell carries a steel/silver facemask (named sources; the GUD composite
 // reads the bars at #808080, darker than the shell itself). The shared neutral #4b5158 it replaces
 // is a near-black grey and reads differently against the silver shell.
-const HELMET_SILVER_STAR: UniformPart = {
+export const HELMET_SILVER_STAR: UniformPart = {
   base: 'helmetSilver',
   facemask: 'steelGrey',
   layers: star(),
 };
 
-// Home jersey: navy body, white/silver neck band, white-over-silver V-collar, white numerals.
-const JERSEY_NAVY: UniformPart = {
-  base: 'navy',
-  layers: [
-    {
-      id: 'cowboys-neck-band-outer',
-      surface: 'jersey',
-      d: COWBOYS_NECK_BAND_OUTER,
-      clip: true,
-      kind: 'fill',
-      fill: 'white',
-    },
-    {
-      id: 'cowboys-neck-band-core',
-      surface: 'jersey',
-      d: COWBOYS_NECK_BAND_CORE,
-      clip: true,
-      kind: 'fill',
-      fill: 'silver',
-    },
-    {
-      id: 'cowboys-collar-outer',
-      surface: 'collar',
-      d: COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'white',
-      strokeWidth: COWBOYS_COLLAR_OUTER_WIDTH,
-    },
-    {
-      id: 'cowboys-collar-core',
-      surface: 'collar',
-      d: COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'silver',
-      strokeWidth: COWBOYS_COLLAR_CORE_WIDTH,
-    },
-  ],
-  number: { fill: 'white', outline: 'white', outlineWidth: 10 },
-};
-
-// Away jersey: white body under navy sleeve caps, navy numerals.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [
-    {
-      id: 'cowboys-sleeve-cap-left',
-      surface: 'sleeve-left',
-      d: COWBOYS_SLEEVE_CAP_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: 'navy',
-    },
-    {
-      id: 'cowboys-sleeve-cap-right',
-      surface: 'sleeve-right',
-      d: COWBOYS_SLEEVE_CAP_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: 'navy',
-    },
-  ],
-  number: { fill: 'navy', outline: 'navy', outlineWidth: 10 },
-};
-
 // Plain white pants, shared by both kits. Home reaches this through a white literal in the flat
 // form; away through its primary.
-const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
-
-export const COWBOYS_PARTS: TeamPartsDefinition = {
-  teamId: 'cowboys',
-  // Jersey hexes from the curated rows (teamcolorcodes), plus the published helmet shell and the
-  // GUD-sampled cage. The away row reaches navy through its secondary and silver through accent;
-  // home reaches silver through secondary — each is one palette entry here.
-  palette: {
-    navy: '#003594',
-    white: '#FFFFFF',
-    // Exact colors retained from the supplied star source; they are intentionally separate from
-    // the jersey navy/white palette values.
-    sourceNavy: '#032343',
-    sourceWhite: '#FCFCFC',
-    silver: '#869397',
-    // The published helmet "Blue Metallic" — the shell is several steps lighter than the jersey
-    // silver (see cowboys.ts).
-    helmetSilver: COWBOYS_HELMET_SILVER,
-    // Sampled from the GUD composite (nfl-uniform-refs/cowboys): the cage bars read #808080
-    // against the shell's #B7C3CD. Steel/silver per named sources.
-    steelGrey: '#808080',
-  },
-  helmets: { 'silver-star': HELMET_SILVER_STAR },
-  jerseys: {
-    navy: JERSEY_NAVY,
-    white: JERSEY_WHITE,
-  },
-  pants: { white: PANTS_WHITE },
-  kits: {
-    home: { helmet: 'silver-star', jersey: 'navy', pants: 'white' },
-    away: { helmet: 'silver-star', jersey: 'white', pants: 'white' },
-  },
-};
-
-export const COWBOYS_UNIFORMS_FROM_PARTS = compileParts(COWBOYS_PARTS);
+export const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };

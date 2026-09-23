@@ -20,17 +20,12 @@ import {
   GIANTS_THROWBACK_STRIPE_BANDS,
 } from './source';
 import { GIANTS_DECAL_MODERN_PATHS } from './decal';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
-const COLLAR_PATH = 'M206,388 L294,455 L386,388';
+export const COLLAR_PATH = 'M206,388 L294,455 L386,388';
 
-function sleeveStripes(
+export function sleeveStripes(
   bands: [number, number][],
   xLeft: number[],
   xRight: number[],
@@ -62,7 +57,7 @@ function sleeveStripes(
 // Grey cage. The modern metallic-blue shell carries a grey facemask (named sources; the GUD
 // composite reads the bars at ~#9a9a9a against the blue shell). The shared neutral #4b5158 it
 // replaces is a noticeably darker grey.
-const HELMET_BLUE_MONOGRAM: UniformPart = {
+export const HELMET_BLUE_MONOGRAM: UniformPart = {
   base: 'royal',
   facemask: 'cageGrey',
   layers: [
@@ -84,90 +79,7 @@ const HELMET_BLUE_MONOGRAM: UniformPart = {
 // facemask (giantswire: "navy with a white facemask"; pocketprohelmets notes the 1975 switch from
 // grey to white). GUD cannot cleanly separate a white cage from the surrounding blues, so the
 // named sources are the source of truth here.
-const HELMET_BLUE_BARE: UniformPart = { base: 'royal', facemask: 'white', layers: [] };
-
-// Home jersey: royal body, no sleeve stripes, white numerals.
-const JERSEY_ROYAL: UniformPart = {
-  base: 'royal',
-  layers: [],
-  number: { fill: 'white', outline: 'white', outlineWidth: 10 },
-};
-
-// Away jersey: white body, thin/thick/thin red sleeve stripes, red numerals.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: sleeveStripes(
-    GIANTS_AWAY_STRIPE_BANDS,
-    GIANTS_AWAY_SLEEVE_X_LEFT,
-    GIANTS_AWAY_SLEEVE_X_RIGHT,
-    ['red', 'red', 'red']
-  ),
-  number: { fill: 'red', outline: 'red', outlineWidth: 10 },
-};
-
-// The 1980s throwback jersey: royal body, red/white/red cuff stripes, a red-over-white collar,
-// white numerals keylined red.
-const JERSEY_THROWBACK: UniformPart = {
-  base: 'royal',
-  layers: [
-    ...sleeveStripes(
-      GIANTS_THROWBACK_STRIPE_BANDS,
-      GIANTS_THROWBACK_SLEEVE_X_LEFT,
-      GIANTS_THROWBACK_SLEEVE_X_RIGHT,
-      ['red', 'white', 'red']
-    ),
-    {
-      id: 'giants-collar-outer',
-      surface: 'collar',
-      d: COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'red',
-      strokeWidth: GIANTS_COLLAR_OUTER_WIDTH,
-    },
-    {
-      id: 'giants-collar-core',
-      surface: 'collar',
-      d: COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'white',
-      strokeWidth: GIANTS_COLLAR_CORE_WIDTH,
-    },
-  ],
-  number: { fill: 'white', outline: 'red', outlineWidth: 14 },
-};
+export const HELMET_BLUE_BARE: UniformPart = { base: 'royal', facemask: 'white', layers: [] };
 
 // Plain white pants, shared by every kit.
-const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
-
-export const GIANTS_PARTS: TeamPartsDefinition = {
-  teamId: 'giants',
-  // Jersey hexes from the curated rows (teamcolorcodes). Royal and red are physical fixed colors
-  // that the three rows carry across different primary/secondary/accent slots (royal is home and
-  // throwback primary, away secondary; red is home and away accent, throwback secondary).
-  palette: {
-    royal: '#0B2265',
-    // White is a literal on home and the throwback (no white token on those rows); the away row
-    // carries it as primary.
-    white: '#FFFFFF',
-    red: '#A71930',
-    // The modern shell's cage grey — no token in the blue/red/white Giants palette. Sampled from
-    // the GUD composite (see the helmet note); matches the documented grey facemask.
-    cageGrey: '#9A9A9A',
-  },
-  helmets: { 'blue-monogram': HELMET_BLUE_MONOGRAM, 'blue-bare': HELMET_BLUE_BARE },
-  jerseys: {
-    royal: JERSEY_ROYAL,
-    white: JERSEY_WHITE,
-    throwback: JERSEY_THROWBACK,
-  },
-  pants: { white: PANTS_WHITE },
-  kits: {
-    home: { helmet: 'blue-monogram', jersey: 'royal', pants: 'white' },
-    away: { helmet: 'blue-monogram', jersey: 'white', pants: 'white' },
-    '1980s-throwback': { helmet: 'blue-bare', jersey: 'throwback', pants: 'white' },
-  },
-};
-
-export const GIANTS_UNIFORMS_FROM_PARTS = compileParts(GIANTS_PARTS);
+export const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };

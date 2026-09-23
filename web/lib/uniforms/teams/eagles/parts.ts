@@ -19,17 +19,12 @@ import {
   EAGLES_DECAL_SILVER_PATH,
   EAGLES_DECAL_WHITE_PATH,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import { LEGACY_ROUNDED_COLLAR_PATH } from '../core/shared';
 
 // The wing — source paint order is white substrate, black feather channels, then silver body.
 // Every shell shares this exact placement and fixed palette.
-function wing(): PartLayer[] {
+export function wing(): PartLayer[] {
   return [
     {
       id: 'eagles-decal-white',
@@ -59,7 +54,7 @@ function wing(): PartLayer[] {
 }
 
 // The solid sleeve cuff band at the hem.
-function cuff(color: string): PartLayer[] {
+export function cuff(color: string): PartLayer[] {
   return [
     {
       id: 'eagles-cuff-left',
@@ -81,7 +76,7 @@ function cuff(color: string): PartLayer[] {
 }
 
 // The deep collar yoke (deeper than the generic chevron).
-function collar(color: string, path = EAGLES_COLLAR_PATH): PartLayer[] {
+export function collar(color: string, path = EAGLES_COLLAR_PATH): PartLayer[] {
   return [
     {
       id: 'eagles-collar',
@@ -96,86 +91,16 @@ function collar(color: string, path = EAGLES_COLLAR_PATH): PartLayer[] {
 }
 
 // Green shell (H1) — shared by home and away.
-const HELMET_GREEN: UniformPart = { base: 'green', facemask: 'black', layers: wing() };
+export const HELMET_GREEN: UniformPart = { base: 'green', facemask: 'black', layers: wing() };
 
 // Kelly-green shell (H2).
-const HELMET_KELLY: UniformPart = { base: 'kelly', facemask: 'black', layers: wing() };
+export const HELMET_KELLY: UniformPart = { base: 'kelly', facemask: 'black', layers: wing() };
 
 // Black shell (H3, black-alt).
-const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'black', layers: wing() };
-
-// Home jersey (J1): midnight-green body, black cuff + collar, white numerals keylined black.
-const JERSEY_GREEN: UniformPart = {
-  base: 'green',
-  layers: [...cuff('black'), ...collar('black')],
-  number: { fill: 'white', outline: 'black', outlineWidth: 14 },
-};
-
-// Away jersey (J3): white body, black cuff + collar, green numerals keylined black.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [...cuff('black'), ...collar('black')],
-  number: { fill: 'green', outline: 'black', outlineWidth: 14 },
-};
-
-// Black-alt jersey (J4): black body, silver cuff + collar, white numerals keylined silver.
-const JERSEY_BLACK: UniformPart = {
-  base: 'black',
-  layers: [...cuff('silver'), ...collar('silver')],
-  number: { fill: 'white', outline: 'silver', outlineWidth: 14 },
-};
-
-// Original Kelly-green jersey (J2): kelly body, NO cuff, white collar, white numerals keylined
-// silver. The 1987 construction keeps its rounded collar instead of the modern deep yoke.
-const JERSEY_KELLY_ORIGINAL: UniformPart = {
-  base: 'kelly',
-  layers: [...collar('white', LEGACY_ROUNDED_COLLAR_PATH)],
-  number: { fill: 'white', outline: 'silver', outlineWidth: 14 },
-};
-
-// Modern Kelly-green jersey: the current throwback construction uses the same body, sleeve and
-// number treatment as the original, but restores the Eagles deep collar yoke.
-const JERSEY_KELLY_MODERN: UniformPart = {
-  base: 'kelly',
-  layers: [...collar('white')],
-  number: { fill: 'white', outline: 'silver', outlineWidth: 14 },
-};
+export const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'black', layers: wing() };
 
 // Pants — no pant stripe on any kit; each takes its body color.
-const PANTS_GREEN: UniformPart = { base: 'green', layers: [] };
-const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
-const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };
-const PANTS_KELLY: UniformPart = { base: 'kelly', layers: [] };
-
-export const EAGLES_PARTS: TeamPartsDefinition = {
-  teamId: 'eagles',
-  // Construction hexes from the module / curated rows. Green/kelly/black/white/silver are the
-  // physical colors carried in different primary/secondary/accent slots per row.
-  palette: {
-    green: '#004C54',
-    kelly: '#046A38',
-    black: EAGLES_BLACK,
-    white: '#FFFFFF',
-    silver: '#A5ACAF',
-  },
-  helmets: { green: HELMET_GREEN, kelly: HELMET_KELLY, black: HELMET_BLACK },
-  jerseys: {
-    green: JERSEY_GREEN,
-    white: JERSEY_WHITE,
-    black: JERSEY_BLACK,
-    'kelly-original': JERSEY_KELLY_ORIGINAL,
-    'kelly-modern': JERSEY_KELLY_MODERN,
-  },
-  pants: { green: PANTS_GREEN, white: PANTS_WHITE, black: PANTS_BLACK, kelly: PANTS_KELLY },
-  kits: {
-    home: { helmet: 'green', jersey: 'green', pants: 'green' },
-    away: { helmet: 'green', jersey: 'white', pants: 'white' },
-    'black-alt': { helmet: 'black', jersey: 'black', pants: 'black' },
-    // Existing archive IDs derive this legacy slug; it remains the original-era construction.
-    'kelly-green': { helmet: 'kelly', jersey: 'kelly-original', pants: 'kelly' },
-    'kelly-green-original': { helmet: 'kelly', jersey: 'kelly-original', pants: 'kelly' },
-    'kelly-green-modern': { helmet: 'kelly', jersey: 'kelly-modern', pants: 'kelly' },
-  },
-};
-
-export const EAGLES_UNIFORMS_FROM_PARTS = compileParts(EAGLES_PARTS);
+export const PANTS_GREEN: UniformPart = { base: 'green', layers: [] };
+export const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
+export const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };
+export const PANTS_KELLY: UniformPart = { base: 'kelly', layers: [] };

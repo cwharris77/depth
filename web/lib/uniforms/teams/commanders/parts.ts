@@ -17,16 +17,11 @@ import {
   COMMANDERS_SLEEVE_X_LEFT,
   COMMANDERS_SLEEVE_X_RIGHT,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 // The broad cap band split by a thinner line through its middle.
-function sleeveBand(band: string, line: string): PartLayer[] {
+export function sleeveBand(band: string, line: string): PartLayer[] {
   const out: PartLayer[] = [];
   const sides: [UniformSurface, number[]][] = [
     ['sleeve-left', COMMANDERS_SLEEVE_X_LEFT],
@@ -52,7 +47,7 @@ function sleeveBand(band: string, line: string): PartLayer[] {
 
 // The gold "W" — one layer, four subpaths, no keyline. Gold is the mark's color on every kit; the
 // jersey supplies which palette color that is.
-function decal(which: string): PartLayer[] {
+export function decal(which: string): PartLayer[] {
   return [
     {
       id: 'commanders-decal',
@@ -69,53 +64,14 @@ function decal(which: string): PartLayer[] {
 //
 // White cage. The burgundy Commanders shell wears a white facemask (named sources; the white cage
 // reads cleanly against the burgundy shell).
-const HELMET_BURGUNDY: UniformPart = {
+export const HELMET_BURGUNDY: UniformPart = {
   base: 'burgundy',
   facemask: 'white',
   layers: decal('gold'),
 };
 
-// Burgundy jersey (home + 70s-burgundy): burgundy body, gold band around a white line, gold
-// numerals keylined white.
-const JERSEY_BURGUNDY: UniformPart = {
-  base: 'burgundy',
-  layers: sleeveBand('gold', 'white'),
-  number: { fill: 'gold', outline: 'white', outlineWidth: 14 },
-};
-
-// Away jersey: white body, burgundy band around a gold line, burgundy numerals keylined gold.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: sleeveBand('burgundy', 'gold'),
-  number: { fill: 'burgundy', outline: 'gold', outlineWidth: 14 },
-};
-
 // Burgundy pants (home + 70s-burgundy).
-const PANTS_BURGUNDY: UniformPart = { base: 'burgundy', layers: [] };
+export const PANTS_BURGUNDY: UniformPart = { base: 'burgundy', layers: [] };
 
 // White pants (away).
-const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
-
-export const COMMANDERS_PARTS: TeamPartsDefinition = {
-  teamId: 'commanders',
-  // Jersey hexes from the curated rows (teamcolorcodes). Burgundy and gold are the physical body/
-  // trim colors; white is the band-line/number-literal that only the home row lacks as a token.
-  palette: {
-    burgundy: '#5A1414',
-    gold: '#FFB612',
-    white: '#FFFFFF',
-  },
-  helmets: { burgundy: HELMET_BURGUNDY },
-  jerseys: {
-    burgundy: JERSEY_BURGUNDY,
-    white: JERSEY_WHITE,
-  },
-  pants: { burgundy: PANTS_BURGUNDY, white: PANTS_WHITE },
-  kits: {
-    home: { helmet: 'burgundy', jersey: 'burgundy', pants: 'burgundy' },
-    away: { helmet: 'burgundy', jersey: 'white', pants: 'white' },
-    '70s-burgundy': { helmet: 'burgundy', jersey: 'burgundy', pants: 'burgundy' },
-  },
-};
-
-export const COMMANDERS_UNIFORMS_FROM_PARTS = compileParts(COMMANDERS_PARTS);
+export const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };

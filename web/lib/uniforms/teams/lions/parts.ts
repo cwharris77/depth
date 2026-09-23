@@ -10,16 +10,11 @@
 
 import { LIONS_SLEEVE_X_LEFT, LIONS_SLEEVE_X_RIGHT, LIONS_STRIPE_BOUNDS } from './source';
 import { LIONS_DECAL_PATHS as GENERATED_LIONS_DECAL_PATHS } from './decal';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 // Four contiguous sleeve bands, outer color and inner color alternating from the top down.
-function sleeveStripes(band: string, line: string): PartLayer[] {
+export function sleeveStripes(band: string, line: string): PartLayer[] {
   const out: PartLayer[] = [];
   const sides: [UniformSurface, number[]][] = [
     ['sleeve-left', LIONS_SLEEVE_X_LEFT],
@@ -51,7 +46,7 @@ function sleeveStripes(band: string, line: string): PartLayer[] {
 // polyvinyl-coated steel face mask"); GUD cannot separate a silver cage from the same-toned shell,
 // so the named source and the team's silver #B0B7BC are the source of truth here. The shared
 // neutral #4b5158 it replaces is a dark grey that reads as a hole in the silver shell.
-const HELMET_SILVER_LION: UniformPart = {
+export const HELMET_SILVER_LION: UniformPart = {
   base: 'silver',
   facemask: 'silver',
   layers: [
@@ -66,56 +61,8 @@ const HELMET_SILVER_LION: UniformPart = {
   ],
 };
 
-// Home jersey: blue body, silver/white four-band set, white numerals.
-const JERSEY_BLUE: UniformPart = {
-  base: 'blue',
-  layers: sleeveStripes('silver', 'white'),
-  number: { fill: 'white', outline: 'white', outlineWidth: 10 },
-};
-
-// Away jersey: white body, blue/silver four-band set (inverted), blue numerals. Band bounds are
-// the home figure's — the two-kit approximation noted in lions.ts.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: sleeveStripes('blue', 'silver'),
-  number: { fill: 'blue', outline: 'blue', outlineWidth: 10 },
-};
-
-// Gridiron-gray jersey: silver body, blue/white four-band set, white numerals ringed blue.
-// INFERRED — no silver jersey appears in the 2025 reference (see lions.ts).
-const JERSEY_GRAY: UniformPart = {
-  base: 'silver',
-  layers: sleeveStripes('blue', 'white'),
-  number: { fill: 'white', outline: 'blue', outlineWidth: 14 },
-};
-
 // Blue pants (home).
-const PANTS_BLUE: UniformPart = { base: 'blue', layers: [] };
+export const PANTS_BLUE: UniformPart = { base: 'blue', layers: [] };
 
 // Silver pants (away and gridiron — away reaches it through 'accent', gridiron through 'primary').
-const PANTS_SILVER: UniformPart = { base: 'silver', layers: [] };
-
-export const LIONS_PARTS: TeamPartsDefinition = {
-  teamId: 'lions',
-  // Jersey hexes from the curated rows (teamcolorcodes). Silver is the shell/body color that the
-  // rows carry across different primary/secondary/accent slots; blue is home/away's shared body.
-  palette: {
-    blue: '#0076B6',
-    white: '#FFFFFF',
-    silver: '#B0B7BC',
-  },
-  helmets: { 'silver-lion': HELMET_SILVER_LION },
-  jerseys: {
-    blue: JERSEY_BLUE,
-    white: JERSEY_WHITE,
-    gray: JERSEY_GRAY,
-  },
-  pants: { blue: PANTS_BLUE, silver: PANTS_SILVER },
-  kits: {
-    home: { helmet: 'silver-lion', jersey: 'blue', pants: 'blue' },
-    away: { helmet: 'silver-lion', jersey: 'white', pants: 'silver' },
-    'gridiron-gray': { helmet: 'silver-lion', jersey: 'gray', pants: 'silver' },
-  },
-};
-
-export const LIONS_UNIFORMS_FROM_PARTS = compileParts(LIONS_PARTS);
+export const PANTS_SILVER: UniformPart = { base: 'silver', layers: [] };

@@ -26,15 +26,10 @@ import {
   JAGUARS_TB_COLLAR_PATH,
   JAGUARS_TB_COLLAR_WIDTH,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 
 // Preserve the supplied SVG's paint order, including its black keyline and gold shading.
-function jaguarDecal(): PartLayer[] {
+export function jaguarDecal(): PartLayer[] {
   return JAGUARS_DECAL_PATHS.map(({ d, fill }, index) => ({
     id: `jaguars-decal-${index}`,
     surface: 'helmet',
@@ -46,7 +41,7 @@ function jaguarDecal(): PartLayer[] {
 }
 
 // The current kits' single solid sleeve band.
-function sleeveBand(color: string): PartLayer[] {
+export function sleeveBand(color: string): PartLayer[] {
   return [
     {
       id: 'jaguars-band-left',
@@ -68,7 +63,7 @@ function sleeveBand(color: string): PartLayer[] {
 }
 
 // The current kits' two short collar arcs (arms never meet — not a chevron).
-function collarArcs(color: string): PartLayer[] {
+export function collarArcs(color: string): PartLayer[] {
   return [
     {
       id: 'jaguars-collar-left',
@@ -92,7 +87,7 @@ function collarArcs(color: string): PartLayer[] {
 }
 
 // The throwback's two-color band and closing collar V.
-function throwbackBands(upper: string, lower: string): PartLayer[] {
+export function throwbackBands(upper: string, lower: string): PartLayer[] {
   return [
     {
       id: 'jaguars-band-upper-left',
@@ -142,7 +137,7 @@ function throwbackBands(upper: string, lower: string): PartLayer[] {
 //
 // Black cage. The black Jaguars shell wears a black facemask (named sources; the matte black shell
 // pairs a dark cage).
-const HELMET_BLACK: UniformPart = {
+export const HELMET_BLACK: UniformPart = {
   base: 'black',
   facemask: 'black',
   layers: jaguarDecal(),
@@ -152,73 +147,13 @@ const HELMET_BLACK: UniformPart = {
 // sets helmetColor to accent = black, so the shell is black and stays bare. The module note about
 // "teal shell" describes the hypothetical case; the actual accent is black. The jaguar decal is
 // therefore only on H1 (home/away/black-alt).
-const HELMET_TEAL: UniformPart = { base: 'black', facemask: 'black', layers: [] };
-
-// Home jersey (J1): teal body, black band + collar arcs, white numerals.
-const JERSEY_TEAL: UniformPart = {
-  base: 'teal',
-  layers: [...sleeveBand('black'), ...collarArcs('black')],
-  number: { fill: 'white', outline: 'white', outlineWidth: 10 },
-};
-
-// Away jersey (J2): white body, black band + collar arcs, black numerals.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [...sleeveBand('black'), ...collarArcs('black')],
-  number: { fill: 'black', outline: 'black', outlineWidth: 10 },
-};
-
-// Teal throwback jersey (J3): teal body, gold/black two-band + black collar V, white numerals
-// keylined gold.
-const JERSEY_TR: UniformPart = {
-  base: 'teal',
-  layers: throwbackBands('gold', 'black'),
-  number: { fill: 'white', outline: 'gold', outlineWidth: 16 },
-};
-
-// black-alt jersey (J4): black body, gold band + collar arcs, white numerals keylined gold.
-const JERSEY_BLACK_ALT: UniformPart = {
-  base: 'black',
-  layers: [...sleeveBand('gold'), ...collarArcs('gold')],
-  number: { fill: 'white', outline: 'gold', outlineWidth: 16 },
-};
+export const HELMET_TEAL: UniformPart = { base: 'black', facemask: 'black', layers: [] };
 
 // White pants (P1, home/away/teal-throwback).
-const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
+export const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
 
 // Black pants (P2, black-alt).
-const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };
+export const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };
 
 // GUD 2025 JAX composite: teal pants with both current teal and white jerseys.
-const PANTS_TEAL: UniformPart = { base: 'teal', layers: [] };
-
-export const JAGUARS_PARTS: TeamPartsDefinition = {
-  teamId: 'jaguars',
-  // Construction hexes from the module / curated rows. Teal/gold/black/white are the physical body
-  // colors; the decal gold/teal are fixed art.
-  palette: {
-    teal: '#006778',
-    gold: '#D7A22A',
-    black: JAGUARS_BLACK,
-    white: '#FFFFFF',
-    // Every decal hex comes directly from Cooper's supplied SVG, including minor shading.
-    ...Object.fromEntries(JAGUARS_DECAL_PATHS.map(({ fill }) => [fill, fill])),
-  },
-  helmets: { black: HELMET_BLACK, throwback: HELMET_TEAL },
-  jerseys: {
-    teal: JERSEY_TEAL,
-    white: JERSEY_WHITE,
-    tr: JERSEY_TR,
-    blackAlt: JERSEY_BLACK_ALT,
-  },
-  pants: { white: PANTS_WHITE, black: PANTS_BLACK, teal: PANTS_TEAL },
-  kits: {
-    // GUD 2025 JAX: home white/teal; away white/teal/black. Canonical pairings stay first.
-    home: { helmet: 'black', jersey: 'teal', pants: ['white', 'teal'] },
-    away: { helmet: 'black', jersey: 'white', pants: ['white', 'teal', 'black'] },
-    'teal-throwback': { helmet: 'throwback', jersey: 'tr', pants: 'white' },
-    'black-alt': { helmet: 'black', jersey: 'blackAlt', pants: 'black' },
-  },
-};
-
-export const JAGUARS_UNIFORMS_FROM_PARTS = compileParts(JAGUARS_PARTS);
+export const PANTS_TEAL: UniformPart = { base: 'teal', layers: [] };

@@ -27,19 +27,14 @@ import {
   PACKERS_SLEEVE_WHITE_RIGHT,
 } from './source';
 import { PACKERS_G_MARK_LAYERS } from './decal';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 import { LEGACY_ROUNDED_COLLAR_PATH } from '../core/shared';
 
-const COLLAR_PATH = 'M206,388 L294,455 L386,388';
+export const COLLAR_PATH = 'M206,388 L294,455 L386,388';
 
 // Gold/white/gold sleeve stripe set.
-function sleeveStripes(): PartLayer[] {
+export function sleeveStripes(): PartLayer[] {
   const shapes: { id: string; surface: UniformSurface; d: string; fill: string }[] = [
     {
       id: 'packers-sleeve-gold-upper-left',
@@ -82,7 +77,7 @@ function sleeveStripes(): PartLayer[] {
 }
 
 // Concentric gold/white/gold collar, widest gold first.
-function collar(): PartLayer[] {
+export function collar(): PartLayer[] {
   return [
     { id: 'packers-collar-outer', stroke: 'gold', strokeWidth: PACKERS_COLLAR_WIDTHS.gold },
     { id: 'packers-collar-mid', stroke: 'white', strokeWidth: PACKERS_COLLAR_WIDTHS.white },
@@ -97,7 +92,7 @@ function collar(): PartLayer[] {
 }
 
 // Green/white/green pant stripe set.
-function pantsStripes(): PartLayer[] {
+export function pantsStripes(): PartLayer[] {
   const shapes: { id: string; surface: UniformSurface; d: string; fill: string }[] = [
     {
       id: 'packers-pants-outer-left',
@@ -128,7 +123,7 @@ function pantsStripes(): PartLayer[] {
 }
 
 // The green/white/green crown stripe, hugging the shell silhouette.
-function helmetStripe(): PartLayer[] {
+export function helmetStripe(): PartLayer[] {
   return [
     {
       id: 'packers-helmet-stripe',
@@ -151,7 +146,7 @@ function helmetStripe(): PartLayer[] {
 
 // The supplied three-color G, in source paint order. The compiler resolves each literal source
 // color through the palette below so this shared helmet part remains independent of kit-row colors.
-function decal(): PartLayer[] {
+export function decal(): PartLayer[] {
   return PACKERS_G_MARK_LAYERS.map((layer): PartLayer => ({
     ...layer,
     surface: 'helmet',
@@ -166,7 +161,7 @@ function decal(): PartLayer[] {
 // Grey cage. The modern gold shell wears a grey/light-grey facemask (named sources); the GUD
 // composite reads it at #8f8f90 against the gold, clearly distinct from the shell. The shared
 // neutral #4b5158 it replaces is a darker grey than the real cage.
-const HELMET_GOLD: UniformPart = {
+export const HELMET_GOLD: UniformPart = {
   base: 'gold',
   facemask: 'cageGrey',
   layers: [...helmetStripe(), ...decal()],
@@ -174,155 +169,21 @@ const HELMET_GOLD: UniformPart = {
 
 // The 1923 throwback's leather shell, bare — no stripe, no decal (the era had neither), and no
 // documented cage (it predates the facemask). Left on the default.
-const HELMET_LEATHER: UniformPart = { base: 'leather', layers: [] };
+export const HELMET_LEATHER: UniformPart = { base: 'leather', layers: [] };
 
 // Winter Warning's white shell, carrying the same stripe and decal as the gold one, and the same
 // modern grey cage.
-const HELMET_WHITE: UniformPart = {
+export const HELMET_WHITE: UniformPart = {
   base: 'white',
   facemask: 'cageGrey',
   layers: [...helmetStripe(), ...decal()],
 };
 
-// Green body (home): gold/white/gold sleeve set, concentric collar, white numerals.
-const JERSEY_GREEN: UniformPart = {
-  base: 'green',
-  layers: [...sleeveStripes(), ...collar()],
-  number: { fill: 'white', outline: 'white', outlineWidth: 26 },
-};
-
-// White body (away + winter-warning): the same gold/white/gold sleeve set and collar, green
-// numerals. One part, two kits — the factoring the flat form spelled out twice.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [...sleeveStripes(), ...collar()],
-  number: { fill: 'green', outline: 'green', outlineWidth: 26 },
-};
-
-// The 1923 navy body: bronze sleeve bands and a bronze collar (the kit's stripped construction
-// keeps only those), bronze numerals.
-const JERSEY_NAVY: UniformPart = {
-  base: 'navy',
-  layers: [
-    ...(
-      [
-        {
-          id: 'packers-sleeve-gold-upper-left',
-          surface: 'sleeve-left' as const,
-          d: PACKERS_SLEEVE_GOLD_UPPER_LEFT,
-          fill: 'bronze',
-        },
-        {
-          id: 'packers-sleeve-gold-upper-right',
-          surface: 'sleeve-right' as const,
-          d: PACKERS_SLEEVE_GOLD_UPPER_RIGHT,
-          fill: 'bronze',
-        },
-        {
-          id: 'packers-sleeve-white-left',
-          surface: 'sleeve-left' as const,
-          d: PACKERS_SLEEVE_WHITE_LEFT,
-          fill: 'bronze',
-        },
-        {
-          id: 'packers-sleeve-white-right',
-          surface: 'sleeve-right' as const,
-          d: PACKERS_SLEEVE_WHITE_RIGHT,
-          fill: 'bronze',
-        },
-        {
-          id: 'packers-sleeve-gold-lower-left',
-          surface: 'sleeve-left' as const,
-          d: PACKERS_SLEEVE_GOLD_LOWER_LEFT,
-          fill: 'bronze',
-        },
-        {
-          id: 'packers-sleeve-gold-lower-right',
-          surface: 'sleeve-right' as const,
-          d: PACKERS_SLEEVE_GOLD_LOWER_RIGHT,
-          fill: 'bronze',
-        },
-      ] as const
-    ).map((s): PartLayer => ({ ...s, clip: true, kind: 'fill' })),
-    {
-      id: 'packers-collar-outer',
-      surface: 'collar',
-      d: LEGACY_ROUNDED_COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'bronze',
-      strokeWidth: PACKERS_COLLAR_WIDTHS.gold,
-    },
-    {
-      id: 'packers-collar-mid',
-      surface: 'collar',
-      d: COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'bronze',
-      strokeWidth: PACKERS_COLLAR_WIDTHS.white,
-    },
-    {
-      id: 'packers-collar-inner',
-      surface: 'collar',
-      d: COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'bronze',
-      strokeWidth: PACKERS_COLLAR_WIDTHS.goldInner,
-    },
-  ],
-  number: { fill: 'bronze', outline: 'bronze', outlineWidth: 26 },
-};
-
 // Gold pants with the green/white/green stripe (home + away).
-const PANTS_GOLD: UniformPart = { base: 'gold', layers: pantsStripes() };
+export const PANTS_GOLD: UniformPart = { base: 'gold', layers: pantsStripes() };
 
 // The 1923 throwback's leather pants, bare.
-const PANTS_LEATHER: UniformPart = { base: 'leather', layers: [] };
+export const PANTS_LEATHER: UniformPart = { base: 'leather', layers: [] };
 
 // Winter Warning's white pants with the green/white/green stripe.
-const PANTS_WHITE: UniformPart = { base: 'white', layers: pantsStripes() };
-
-export const PACKERS_PARTS: TeamPartsDefinition = {
-  teamId: 'packers',
-  // Construction hexes from the module (teamcolorcodes + the sampled 1923 leather). Green, gold
-  // and white are physical fixed colors the rows carry in different primary/secondary/accent
-  // slots; the 1923 navy body and bronze trim have their own row tokens.
-  palette: {
-    green: '#203731',
-    gold: '#FFB612',
-    white: '#FFFFFF',
-    // Exact foreground colors from the supplied Packers G SVG, kept separate from construction
-    // colors because the source green, white, and gold are each visibly distinct.
-    '#213832': '#213832',
-    '#FCFCFC': '#FCFCFC',
-    '#FEB415': '#FEB415',
-    // The 1923 leather shell and pants, sampled from the composite (no token; see packers.ts).
-    leather: '#7B4A2A',
-    // The modern gold/white shell's cage — mid-grey, sampled from the GUD composite (packers
-    // current-season 2025, reads #8f8f90 at the gold shell's face opening). Named sources
-    // describe the modern Packers mask as grey/light grey; the shared neutral #4b5158 it replaces
-    // is a darker grey than the real cage. The 1923 leather shell predates the facemask and stays
-    // on the default.
-    cageGrey: '#8F8F90',
-    // The 1923 navy body and bronze trim are the kit's own primary/secondary.
-    navy: '#1B2C4E',
-    bronze: '#CC8835',
-  },
-  helmets: { gold: HELMET_GOLD, leather: HELMET_LEATHER, white: HELMET_WHITE },
-  jerseys: {
-    green: JERSEY_GREEN,
-    white: JERSEY_WHITE,
-    navy: JERSEY_NAVY,
-  },
-  pants: { gold: PANTS_GOLD, leather: PANTS_LEATHER, white: PANTS_WHITE },
-  kits: {
-    home: { helmet: 'gold', jersey: 'green', pants: 'gold' },
-    away: { helmet: 'gold', jersey: 'white', pants: 'gold' },
-    'winter-warning': { helmet: 'white', jersey: 'white', pants: 'white' },
-    '1923-throwback': { helmet: 'leather', jersey: 'navy', pants: 'leather' },
-  },
-};
-
-export const PACKERS_UNIFORMS_FROM_PARTS = compileParts(PACKERS_PARTS);
+export const PANTS_WHITE: UniformPart = { base: 'white', layers: pantsStripes() };
