@@ -3,9 +3,8 @@ import SwiftData
 import Testing
 @testable import Depth
 
-// T5 cache-layer coverage: cache hit/miss, deduplicated refresh, retained last-good data
-// on a failed background refresh, and the app-config network-first/cache-fallback split
-// (design spec's "Required test suites" Repository/Build gate rows).
+// Cache-layer coverage: cache hit/miss, deduplicated refresh, retained last-good data
+// on a failed background refresh, and the app-config network-first/cache-fallback split.
 
 private actor FakeDepthRepository: DepthRepository {
     var teamsResult: Result<[Team], Error>
@@ -321,7 +320,7 @@ private func recentParticipation() -> RecentParticipation {
     let context = ModelContext(container)
     let payload = try JSONEncoder().encode(snapshot())
     // Write directly with a version this build doesn't recognize — "safe schema
-    // discard" (design spec) means the read path must treat this as no cache at all,
+    // discard" means the read path must treat this as no cache at all,
     // not attempt to decode a payload shape that may no longer match.
     context.insert(
         CachedTeamSnapshot(
@@ -374,7 +373,7 @@ private func recentParticipation() -> RecentParticipation {
     #expect(cached == nil)
 }
 
-// MARK: - Team stats cache (round-4 Stats page)
+// MARK: - Team stats cache
 
 @Test func teamStatsFetchesFromUnderlyingOnCacheMiss() async throws {
     let underlying = FakeDepthRepository(statsResults: ["bills": .success(statsPage())])
@@ -395,9 +394,8 @@ private func recentParticipation() -> RecentParticipation {
     // refresh, so the warm read must be served from the store and must not block on — or
     // fail with — the underlying; the refresh it kicks off is fire-and-forget and swallows
     // this error. Asserting the value served, not the call count, is the real invariant:
-    // that background Task legitimately makes a second call, so a `== 1` expectation only
-    // passed while the task happened not to have run yet (same reasoning as the
-    // uniform-list warm read below).
+    // that background Task legitimately makes a second call, so the contract is the value
+    // served rather than a call count.
     await underlying.setStatsResult(.failure(DepthError.server("boom")), forTeam: "bills")
     let cached = try await repository.teamStats(teamId: "bills")
     #expect(
@@ -444,8 +442,8 @@ private func recentParticipation() -> RecentParticipation {
         "a discarded incompatible row falls through to a real network fetch")
 }
 
-// Regression coverage for the stale-record bug caught in a live QA pass: a team's W-L
-// record/PF/PA visibly changed between two app launches with no indication either
+// Regression coverage for stale team records: a team's W-L record/PF/PA can change between
+// app launches with no indication that either
 // reading was stale, because teamStats originally served a cached page of any age
 // (same pattern as teamSnapshot). These three tests mirror the teamSchedule TTL tests
 // above exactly — teamStats now gets the identical TTL-bounded treatment, since a
@@ -480,7 +478,7 @@ private func recentParticipation() -> RecentParticipation {
         "an expired page whose refresh fails must still fall back to the last good cached page")
 }
 
-// MARK: - Team schedule cache (DEP-248)
+// MARK: - Team schedule cache
 
 @Test func teamScheduleFetchesFromUnderlyingOnCacheMiss() async throws {
     let underlying = FakeDepthRepository(scheduleResults: [
@@ -593,10 +591,8 @@ private func uniformListing(id: String = "bills-home") -> UniformListing {
     // store and must not block on — or fail with — the underlying; the refresh it kicks
     // off is fire-and-forget and swallows this error.
     //
-    // This used to assert `uniformsCallCount == 1`, which is not the contract: that
-    // background Task legitimately makes a second call, and the expectation only passed
-    // while the task happened not to have run yet. Any change to suite scheduling flipped
-    // it — asserting the value served, not the call count, tests the real invariant.
+    // The background Task may make a second call, so the contract is the value served rather
+    // than a call count.
     await underlying.setUniformsResult(.failure(DepthError.notFound))
     let cached = try await repository.listUniforms()
     #expect(cached.count == 1)

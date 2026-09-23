@@ -1,9 +1,8 @@
 import XCTest
 
-// Shared navigation helpers for the UI suites. Team selection moved out of the app root
-// and into the switcher sheet (2026-08-15 navigation-parity spec), so every journey that
-// used to "type in the root search field and tap a row" now goes through the same three
-// steps — worth one helper rather than four copies (AGENTS.md mistake #17).
+// Shared navigation helpers for the UI suites. Team selection lives in the switcher sheet, so
+// every journey that used to "type in the root search field and tap a row" goes through the same
+// three steps — worth one helper rather than four copies.
 extension XCUIApplication {
     /// The launch chart's first tappable player slot. The unit picker exists as soon as a
     /// snapshot resolves, but a slot is the accurate "chart rendered" signal.
@@ -29,8 +28,7 @@ extension XCUIApplication {
     static let uiTestingStartTeamArgPrefix = "UI_TESTING_START_TEAM="
 
     /// The launch argument that makes `DepthEnvironment.repository` replay the checked-in
-    /// fixture bundle instead of Supabase (spec: 2026-09-10-ios-test-data-and-snapshot-
-    /// testing-design). A suite that must exercise the real backend (AuthUITests,
+    /// fixture bundle instead of Supabase. A suite that must exercise the real backend (AuthUITests,
     /// PerformanceUITests' cache journeys, the bare `testAppLaunches`) simply omits it.
     static let fixtureBackendArgument = "UI_TESTING_FIXTURE_BACKEND"
 
@@ -82,11 +80,9 @@ extension XCUIApplication {
         let teamRow = buttons["team-row-\(teamId)"]
         // The switcher fetches the 32-team list from production on a fresh launch (no
         // cache with UI_TESTING_RESET_STATE), so the row can lag well past the other
-        // waits on a cold run. A 20s budget was not enough: under CI load the production
-        // fetch plus 32-row render blew past it and the row never appeared, failing the
-        // team-switch step (CI 2026-09-12, PositionReorderUITests, twice on cold runners
-        // at a different staging test each time). 60s keeps this a real assertion while
-        // covering a slow cold fetch; the assert still fails if the row never renders.
+        // waits on a cold run. A 20s budget can be too short for the production fetch plus
+        // 32-row render. 60s keeps this a real assertion while covering a slow cold fetch; the
+        // assert still fails if the row never renders.
         XCTAssertTrue(
             teamRow.waitForExistence(timeout: 60),
             "searching \"\(query)\" should surface the \(teamId) row", file: file, line: line)
@@ -141,14 +137,13 @@ extension XCUIElement {
     /// the proxy: it only appears once some field is actually focused.
     ///
     /// The budget is measured from *after* each `tap()` returns, and that is the whole
-    /// point of the loop's shape. The first cut of this helper took one deadline before
-    /// tapping, and `tap()` blocks while the app idles: on a loaded runner that call took
-    /// 49s against a 10s budget (CI 2026-09-02, AccessibilityXXXL), so the deadline was
-    /// already 46s stale when the keyboard was polled — exactly once, immediately after
-    /// the tap — and the helper then typed into a still-unfocused field, reproducing the
-    /// failure it was written to prevent. A timeout that a slow tap can spend is not a
-    /// timeout. When focus never lands, fail with this message rather than typing blindly
-    /// into whatever has focus instead.
+    /// point of the loop's shape. Using one deadline for the loop would let a slow tap consume
+    /// the timeout before the keyboard is polled, so the helper could type into a still-unfocused
+    /// field. The deadline is created immediately after each tap and the field is checked before
+    /// typing.
+    /// failure it was written to prevent. A timeout that a slow tap can spend is not a timeout.
+    /// When focus never lands, fail with this message rather than typing blindly into whatever
+    /// has focus instead.
     func typeTextAfterFocusing(
         _ text: String, in app: XCUIApplication, attempts: Int = 3, timeout: TimeInterval = 15,
         file: StaticString = #filePath, line: UInt = #line
@@ -175,19 +170,18 @@ extension XCUIElement {
     ///
     /// A synthesized tap is not guaranteed to register. XCUITest sends touch-down and
     /// touch-up as separate events and waits for the app to idle around them; on a loaded
-    /// CI runner that window stretches into tens of seconds (measured: 25-43s between
-    /// "Synthesize event" and the following step), long enough for the press to be
+    /// runner that window can stretch into tens of seconds between "Synthesize event" and the
+    /// following step, long enough for the press to be
     /// cancelled rather than delivered as a tap. The usual `tap()` + `waitForExistence`
     /// pair then polls an *unchanged* screen until it times out, and a longer timeout
-    /// cannot help because nothing is in flight — CI 2026-09-03 tapped
-    /// `page-switcher-roster`, waited 10s for `depth-chart-overflow`, and the failure
+    /// cannot help because nothing is in flight. If `page-switcher-roster` was tapped but
+    /// `depth-chart-overflow` never appeared, the failure
     /// hierarchy still showed SCHEDULE as the selected page. Re-sending the tap is the
     /// only thing that recovers it, so any navigation tap whose whole purpose is to bring
     /// a destination on screen goes through here instead.
     ///
-    /// Note this is a *test-harness* workaround, not cover for an app bug: a real touch
-    /// sequence from a finger is delivered normally, and the app has never been observed
-    /// dropping a page switch outside a synthesized tap under runner load.
+    /// This is a *test-harness* workaround for synthesized taps under runner load; a real touch
+    /// sequence from a finger is delivered normally.
     @discardableResult
     func tapUntil(
         attempts: Int = 3, timeout: TimeInterval = 10, _ condition: () -> Bool

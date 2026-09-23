@@ -10,9 +10,9 @@
     /// Run it locally with `supabase start` after any change to the seed data or to a Domain
     /// `Codable` shape, then commit the regenerated JSON. CI never records — it only replays.
     ///
-    ///   RECORD_UI_FIXTURES=1 xcodebuild -project Depth.xcodeproj -scheme Depth \
-    ///     -configuration Debug -destination 'platform=iOS Simulator,id=<sim-udid>' \
-    ///     -only-testing:DepthTests/FixtureRecordingTests test
+    /// RECORD_UI_FIXTURES=1 xcodebuild -project Depth.xcodeproj -scheme Depth \
+    /// -configuration Debug -destination 'platform=iOS Simulator,id=<sim-udid>' \
+    /// -only-testing:DepthTests/FixtureRecordingTests test
     ///
     /// The encoding is the point: it uses the same Domain `Codable` conformances the SwiftData
     /// cache persists, so the fixture shape cannot drift from the app. Add a team or season to

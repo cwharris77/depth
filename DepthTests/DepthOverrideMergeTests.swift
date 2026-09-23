@@ -1,7 +1,7 @@
 import Testing
 @testable import Depth
 
-// DEP-219: verifies the native port of web/lib/utils/depth-chart/overrides-sync.ts's
+// verifies the native port of web/lib/utils/depth-chart/overrides-sync.ts's
 // `planMerge` matches web's exact reconciliation policy — server wins per team,
 // local-only teams get pushed up, empty/absent teams produce no work.
 struct DepthOverrideMergeTests {
@@ -60,7 +60,7 @@ struct DepthOverrideMergeTests {
     }
 }
 
-// DEP-585: a user's custom order must not destroy the seat map. One athlete can hold
+// a user's custom order must not destroy the seat map. One athlete can hold
 // two seats (the Chiefs list Kahlil Benson at LT2 and RT1), so overrides have to reorder
 // that position's *seats* rather than filter players by their single canonical position.
 struct DepthOverrideSeatTests {

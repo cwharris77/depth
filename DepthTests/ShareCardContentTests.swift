@@ -3,7 +3,7 @@ import Testing
 
 @testable import Depth
 
-// Task 8E coverage: the pure, hex/roster-only building blocks of the native share card
+// Coverage for the pure, hex/roster-only building blocks of the native share card
 // (no SwiftUI/ImageRenderer dependency) — ported from web/lib/utils/colors.ts's
 // contrastRatio/readableTextOn and web/lib/utils/og.ts's featuredStarters. See
 // web/lib/__tests__/contrast.test.ts and web/lib/__tests__/og.test.ts for the TS oracle these
@@ -65,7 +65,7 @@ private func snapshot(players: [Player]) -> TeamSnapshot {
     #expect(featuredStarters(from: snap).isEmpty)
 }
 
-// DEP-269: the native share card renders at exactly half the web OG card's 1200×630
+// the native share card renders at exactly half the web OG card's 1200×630
 // raster, so its fixed metrics must each be the web route's value ÷ 2. These pin the
 // constants against web/app/team/[id]/og-image/route.tsx so a drift is caught here rather
 // than as an off-contract raster nobody audits. The deliberate non-halves (padding,
@@ -101,7 +101,7 @@ private func snapshot(players: [Player]) -> TeamSnapshot {
     #expect(ShareCardMetrics.columnSpacing == 24)
 }
 
-// DEP-296: the activity sheet may crop its preview thumbnail, so the wide transfer
+// the activity sheet may crop its preview thumbnail, so the wide transfer
 // raster is composed inside a square canvas with breathing room on every edge. These
 // assertions keep the preview contract separate from the unchanged shared-image size.
 @Test func sharePreviewCanvasFitsTheWholeCardWithSafeInsets() {

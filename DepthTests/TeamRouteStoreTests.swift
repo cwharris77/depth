@@ -2,7 +2,7 @@ import Testing
 @testable import Depth
 
 // TeamRouteStore is the cross-tab handoff for the uniform archive's kit sheet →
-// depth chart jump (DEP-329 added the uniform id alongside the pre-existing team id).
+// depth chart jump (added the uniform id alongside the pre-existing team id).
 // `consume()` is the one piece of behavior this fix actually depends on: it must
 // return both pending values exactly once and clear both, so a re-render can't
 // re-apply a stale request and a second consume can't resurrect one.

@@ -1,9 +1,9 @@
 import XCTest
 
-// DEP-226 reorder persistence, reached through the 2026-09-11 merge spec's edit-mode
+// Reorder persistence, reached through edit mode in the
 // PositionReorderSheet: "Edit Depth Chart" on → tap a wiggling player → drag rows, CUSTOM
 // tag, Reset. Outside edit mode the same tap pushes the player profile. All writes go
-// through the DEP-219 local-first override cache, so the order survives a relaunch with no
+// through the local-first override cache, so the order survives a relaunch with no
 // account. Runs on the hermetic fixture backend (UI_TESTING_FIXTURE_BACKEND).
 @MainActor
 final class PositionReorderUITests: XCTestCase {
@@ -91,7 +91,7 @@ final class PositionReorderUITests: XCTestCase {
         )
     }
 
-    // DEP-226: Reset restores the position's default order and drops the override
+    // Reset restores the position's default order and drops the override
     // (clears the local cache + mirrors a row delete to the server when signed in).
     func testResetRestoresDefaultOrderAndDropsTheOverride() throws {
         let app = XCUIApplication()
@@ -123,7 +123,7 @@ final class PositionReorderUITests: XCTestCase {
         )
     }
 
-    // DEP-542: a drag that returns the roster to its original order is equivalent to Reset.
+    // a drag that returns the roster to its original order is equivalent to Reset.
     // Persisting that redundant array previously left the screen marked CUSTOM after close.
     func testReturningToTheDefaultOrderDropsTheCustomState() throws {
         let app = XCUIApplication()
@@ -181,7 +181,7 @@ final class PositionReorderUITests: XCTestCase {
         app.swipeDown()
     }
 
-    // Merge spec: edit mode is the only way into reordering. On → a field tap opens the
+    // Edit mode is the only way into reordering. On → a field tap opens the
     // position's reorder sheet with drag rows immediately; off → the same tap pushes the
     // player profile, whose DEPTH CHART rows are read-only.
     func testEditModeTapOpensReorderSheetAndNormalTapOpensProfile() throws {
@@ -266,9 +266,8 @@ final class PositionReorderUITests: XCTestCase {
             "returning to the roster page should restore the overflow menu"
         )
 
-        // 1C: the edit bar covers the tab bar for the duration of an edit session (the accepted
-        // tradeoff in `edit-status-redesign-spec.md` §3), so switching tabs mid-edit is no
-        // longer a reachable UI action to test here — `onDisappear`'s exit still covers a
+        // 1C: the edit bar covers the tab bar for the duration of an edit session, so switching
+        // tabs mid-edit is not a reachable UI action here — `onDisappear`'s exit still covers a
         // tab switch driven any other way.
 
         enterEditing()
@@ -294,7 +293,7 @@ final class PositionReorderUITests: XCTestCase {
         assertEditingEnded("entering a historical roster")
     }
 
-    // DEP-291: projecting a saved player order must keep the team's formation data.
+    // projecting a saved player order must keep the team's formation data.
     // Otherwise the field silently falls back to its generic layout and the overflow
     // menu loses the active Formations row as soon as a drag commits.
     func testPlayerReorderPreservesActiveFormation() throws {

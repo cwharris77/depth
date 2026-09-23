@@ -69,7 +69,7 @@ private actor AsyncCounter {
     func value() -> Int { count }
 }
 
-/// Hand-advanced clock for the resend-cooldown assertions (DEP-598). The view models
+/// Hand-advanced clock for the resend-cooldown assertions. The view models
 /// take `now` as a `@Sendable` closure, so the date lives behind a lock rather than in
 /// a captured `var`.
 private final class TestClock: Sendable {
@@ -147,7 +147,7 @@ private final class TestClock: Sendable {
     #expect(await model.verifyCode())
 }
 
-// DEP-562: the App Review demo account is recognized by email so the typed code is treated
+// the test account is recognized by email so the typed code is treated
 // as its password instead of an emailed OTP. Matching must be normalized and exact — a
 // lookalike domain must not accidentally take the password path.
 @Test func reviewDemoAccountMatchesOnlyTheReviewerEmail() {
@@ -158,7 +158,7 @@ private final class TestClock: Sendable {
 }
 
 // The demo path relies on GoTrue's wrong-password response reading as a bad code so the
-// reviewer sees the same "check the code and try again" error as a bad OTP.
+// the user sees the same "check the code and try again" error as a bad OTP.
 @Test func wrongPasswordSignInMapsToInvalidCode() {
     let invalidCredentials = NSError(
         domain: "GoTrue",
@@ -209,7 +209,7 @@ private final class TestClock: Sendable {
     #expect(store.user == nil)
 }
 
-// `waitForRestore()` is the contract DEP-319's favorite tier depends on: `user` is nil
+// `waitForRestore()` keeps `user` nil during restoration so the favorite tier does not
 // for the whole restore window, so a caller that reads it early reports a signed-in
 // launch as signed out. These prove a parked caller resumes *after* the session settles
 // and therefore sees the real user — and that an already-settled store never parks.
@@ -383,7 +383,7 @@ private final class TestClock: Sendable {
 }
 
 @Test func rerankedPlayersPreservesProfileFieldsAndStatus() {
-    // DEP-226: the projection must carry every profile field through the rebuild — a
+    // the projection must carry every profile field through the rebuild — a
     // partial reconstruction silently wiped college/bio/vitals (the card opened from a
     // team with a custom order showed them blank).
     let college = Player(
@@ -427,7 +427,7 @@ private final class TestClock: Sendable {
     #expect(reranked.map(\.order) == [0, 1, 2, 3, 4])
 }
 
-// DEP-323: the field-name presentation is a permanent, persisted preference. The same
+// the field-name presentation is a permanent, persisted preference. The same
 // defaults key must survive a relaunch so a user's chosen style isn't lost, and every
 // style must round-trip through the storage the Settings picker and the field share.
 // Uses an isolated UserDefaults suite (same pattern as LocalFirstOverrideWriterTests) so
@@ -459,7 +459,7 @@ struct FieldNameModePreferenceTests {
     }
 
     @Test func storageKeyValueIsStableSoExistingChoicesSurvivePromotion() {
-        // The key was born as the beta experiment's key ("betaFieldNameMode"); DEP-323
+        // The persisted key remains "betaFieldNameMode" so existing stored values survive.
         // promotes the control without renaming it so a tester's existing stored value
         // keeps applying. If this ever changes, existing users silently reset to the
         // default (.callouts) — a migration would be required first.
@@ -467,7 +467,7 @@ struct FieldNameModePreferenceTests {
     }
 }
 
-// DEP-598: the cooldown is email-wide, so it also blocks the first send to a newly
+// the cooldown is email-wide, so it also blocks the first send to a newly
 // typed address. It must say so — the email step renders no countdown of its own when
 // the button is the only affordance, and a silent return read as a dead button.
 @Test @MainActor func resendCooldownSurfacesTheWaitInsteadOfSwallowingTheTap() async {
@@ -516,7 +516,7 @@ struct FieldNameModePreferenceTests {
     #expect(model.resendWait(at: Date(timeIntervalSince1970: 160)) == nil)
 }
 
-// DEP-598: the rateLimited recovery jumps to the code step because a code may already
+// the rateLimited recovery jumps to the code step because a code may already
 // be waiting — but only for the address that code was sent to. After switching emails
 // that step would claim a send that never happened.
 @Test @MainActor func serverCooldownOnANewEmailStaysOnTheEmailStep() async {

@@ -3,10 +3,10 @@ import SwiftData
 import Testing
 @testable import Depth
 
-// DEP-425 forced-update gate coverage. The gate is the one place the app deliberately
+// forced-update gate coverage. The gate is the one place the app deliberately
 // blocks rather than degrades, so its decision table is pinned here directly: block
 // below the minimum, allow at or above it, fail open when the config is unreachable and
-// nothing was ever cached, and — the property DEP-425 exists for — resolve from cache
+// nothing was ever cached, and — the property exists for — resolve from cache
 // before any network read so no other fetch can start ahead of it.
 
 /// Counts `appConfig()` calls and can be held open, so a test can observe the gate's
@@ -138,7 +138,7 @@ private func config(minimum: Int, message: String? = nil) -> AppConfig {
             "an offline old build stays blocked — going offline must not be a way around the gate")
     }
 
-    // MARK: - Ordering: the property DEP-425 exists for
+    // MARK: - Ordering: the property exists for
 
     @Test @MainActor func startsInCheckingStateBeforeAnyFetch() {
         let underlying = FakeConfigRepository(configResult: .success(config(minimum: 1)))
@@ -209,7 +209,8 @@ private func config(minimum: Int, message: String? = nil) -> AppConfig {
         await gate.check()
         #expect(gate.state == .allowed)
 
-        // Cooper flips app_config while the app is backgrounded; foregrounding re-checks.
+        // A server-side app_config change while the app is backgrounded is picked up when
+        // foregrounding triggers a re-check.
         await underlying.setConfigResult(.success(config(minimum: 10)))
         await gate.check()
 

@@ -3,8 +3,8 @@ import Testing
 @testable import Depth
 
 // Explicit mapper tests for the team-stats page conversion — every DTO → domain mapping,
-// including the nil-column → 0-0-record degrade path (round-4 spec Testing: "malformed/
-// missing season row → 0-0 record, not a crash", web/CLAUDE.md invariant 6), plus the
+// including the nil-column → 0-0-record degrade path (a malformed or missing season row yields
+// a 0-0 record rather than crashing), plus the
 // nfl-season date heuristic pinned against fixed dates (mirrors web's
 // web/lib/utils/team/nfl-season.ts).
 
@@ -434,7 +434,7 @@ private func metricRankRow(
         #expect(page.incomingCoach == TeamIncomingCoach(name: "Ben Johnson"))
     }
 
-    /// DEP-597: the Bills' Joe Brady sat at "HEAD COACH · INCOMING" well into the 2026
+    /// the Bills' Joe Brady sat at "HEAD COACH · INCOMING" well into the 2026
     /// season because ESPN's `coach_experience` only advances once a season completes.
     /// In-season the label is the coach's `team_coach_seasons` row, never this field.
     @Test func dropsTheIncomingCoachOnceTheSeasonHasStarted() {

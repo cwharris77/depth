@@ -130,7 +130,7 @@ private func metrics(
 }
 
 // The offensive-line catalog (team_line_stats). Same drop-don't-zero and rank-caption
-// rules as the unit catalog, plus the source attribution the pass-pro metrics require.
+// rules as the unit catalog, plus the source attribution the metrics require.
 private func lineStats(
     adjustedLineYards: Double? = nil,
     stuffedRate: Double? = nil,
@@ -218,7 +218,7 @@ private func lineStats(
         #expect(isPlayoffSeed(1, season: 2025))
         #expect(isPlayoffSeed(7, season: 2025))
         #expect(!isPlayoffSeed(8, season: 2025))
-        // The shipped bug: a 5-12 Browns team sat 13th in the AFC and read "SEED 13".
+        // A 5-12 Browns team must not be treated as a valid playoff seed.
         #expect(!isPlayoffSeed(13, season: 2025))
     }
 

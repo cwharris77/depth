@@ -2,7 +2,7 @@ import Testing
 @testable import Depth
 
 // CompareRouteStore is the cross-tab handoff for the schedule page's game-card tap →
-// Compare tab jump (DEP-405). `consume()` is the one piece of behavior the tab switch
+// Compare tab jump. `consume()` is the one piece of behavior the tab switch
 // depends on: it must return the pending matchup exactly once and clear it, so a re-render
 // or a re-appearance can't re-apply a stale request and a second consume can't resurrect one.
 

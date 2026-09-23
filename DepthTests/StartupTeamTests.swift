@@ -2,8 +2,8 @@ import Testing
 @testable import Depth
 
 // Startup resolution is the one piece of launch behavior with a branch worth testing
-// (spec's Testing section: "lastTeamId valid → that team; missing → default;
-// stale/unknown id → default", malformed case included). DEP-319 adds the favorite tier
+// (the startup contract: "lastTeamId valid → that team; missing → default;
+// stale/unknown id → default", malformed case included). adds the favorite tier
 // (favorite → last-viewed → default) honoring startOnFavorite.
 
 @Test func resolvesToDefaultWhenNoLastTeam() {
@@ -38,11 +38,11 @@ import Testing
 
 @Test func nativeDefaultMatchesTheWebDefaultTeamId() {
     // web/lib/teams/index.ts's DEFAULT_TEAM_ID — both clients must open the same team for a
-    // first-time visitor (spec's Architecture section).
+    // first-time visitor.
     #expect(StartupTeam.defaultTeamId == "seahawks")
 }
 
-// MARK: - DEP-319 favorite tier (web resolveStartupTeam parity: favorite → last → default)
+// MARK: - favorite tier (web resolveStartupTeam parity: favorite → last → default)
 
 @Test func favoriteBeatsLastViewedWhenStartOnFavoriteIsOn() {
     #expect(
@@ -82,7 +82,7 @@ import Testing
 
 @Test func favoriteFallsBackToLastViewedWhenTeamIsStale() {
     // Favorite names a team that no longer exists — corrupt/stale id degrades to
-    // last-viewed, never errors (web/CLAUDE.md invariant 6).
+    // last-viewed, and never errors.
     #expect(
         StartupTeam.resolve(
             favoriteTeamId: "oilers",

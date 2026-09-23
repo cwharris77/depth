@@ -1,9 +1,9 @@
 import XCTest
 
-// Critical-path UI journey (design spec's "TEAM JOURNEY": launch chart → switch team via
-// search → team snapshot → position group → player detail). As of the 2026-08-15
-// navigation-parity spec the app launches straight into a depth chart rather than a team
-// list, so every journey opens the switcher sheet (`selectTeam`, UITestHelpers.swift)
+// Critical-path UI journey: launch chart → switch team via
+// search → team snapshot → position group → player detail). The app launches straight into a
+// depth chart rather than a team list, so every journey opens the switcher sheet
+// (`selectTeam`, UITestHelpers.swift)
 // instead of searching a root list. Runs on the hermetic fixture backend
 // (UI_TESTING_FIXTURE_BACKEND) — a checked-in snapshot, not a live database — except
 // `testAppLaunches`, the one live smoke that boots against the configured backend.
@@ -37,7 +37,7 @@ final class DepthUITests: XCTestCase {
             "at least one filled depth-chart slot should be tappable")
         playerSlot.tap()
 
-        // Merge spec (2026-09-11): a field tap pushes the full player profile — there is no
+        // A field tap pushes the full player profile — there is no
         // card sheet in between.
         let profile = app.descendants(matching: .any)["player-profile-full-content"]
         XCTAssertTrue(
@@ -83,7 +83,7 @@ final class DepthUITests: XCTestCase {
             playerSlot.waitForExistence(timeout: 5), "back should return to the depth chart")
     }
 
-    // Merge spec: the profile's DEPTH CHART rows swap the screen to another player in
+    // The profile's DEPTH CHART rows swap the screen to another player in
     // place. One back tap must land on the field — a pushed profile per row would need two.
     func testProfileDepthRowSwapsPlayerInPlace() throws {
         let app = XCUIApplication()
@@ -121,7 +121,7 @@ final class DepthUITests: XCTestCase {
             quarterback.waitForExistence(timeout: 5), "one back tap should return to the field")
     }
 
-    /// Merge spec (2026-09-11): the switcher's cross-team player search must *push* the full
+    /// The switcher's cross-team player search must *push* the full
     /// profile, not present the deleted card sheet. This is the one path where
     /// `TeamDetailView.presentRequestedPlayer` runs from inside `.task` on a subtree
     /// `.id(teamId)` has just rebuilt — picking a player on the already-current team goes
@@ -180,7 +180,7 @@ final class DepthUITests: XCTestCase {
             app.launch(intoTeam: "bills"),
             "the app should launch straight into the Bills depth chart")
 
-        // Round-4 (DEP-217): Schedule is the middle tab of the ROSTER/SCHEDULE/STATS page
+        // Schedule is the middle tab of the ROSTER/SCHEDULE/STATS page
         // switcher, no longer a toolbar destination.
         let scheduleTab = app.buttons["page-switcher-schedule"]
         XCTAssertTrue(
@@ -199,9 +199,9 @@ final class DepthUITests: XCTestCase {
             "the schedule should render at least one weekly card")
     }
 
-    /// DEP-405: a schedule-card tap lands on the Compare *tab* — the tab bar highlights
+    /// a schedule-card tap lands on the Compare *tab* — the tab bar highlights
     /// Compare, the matchup pre-loads into both slots, and the schedule-origin "Back to
-    /// schedule" pill (the DEP-280 affordance, restored now that the tab switch removed
+    /// schedule" pill (the affordance, restored now that the tab switch removed
     /// the pushed instance's back chevron) returns to the Depth Charts tab.
     func testScheduleCardTapSwitchesToCompareTab() throws {
         let app = XCUIApplication()
@@ -260,7 +260,7 @@ final class DepthUITests: XCTestCase {
         )
     }
 
-    /// Round-4 (DEP-216/217): the ROSTER/SCHEDULE/STATS page switcher reaches all three
+    /// The ROSTER/SCHEDULE/STATS page switcher reaches all three
     /// pages, each rendering its own content — the roster chart, the Stats record, and
     /// the embedded schedule. Uses the Bills, a team with real ingested stats.
     func testPageSwitcherReachesAllThreePages() throws {
@@ -274,7 +274,7 @@ final class DepthUITests: XCTestCase {
             statsTab.waitForExistence(timeout: 10), "team detail should expose a Stats page tab")
         XCTAssertTrue(
             // 30s: a cold CI simulator's first Stats load crawls through a production
-            // round-trip (flake 2026-08-29).
+            // round-trip on a cold simulator.
             statsTab.tapUntil(timeout: 30) { app.scrollViews["stats-content"].exists },
             "the Stats page should render its record content"
         )
@@ -300,8 +300,7 @@ final class DepthUITests: XCTestCase {
         )
     }
 
-    /// Round-4 (DEP-218): the underline unit tabs replace the stock capsule Picker, and
-    /// the spec's Testing section requires the 44pt tap target survive the restyle.
+    /// The underline unit tabs replace the stock capsule Picker while preserving the 44pt tap target.
     func testUnitTabsPreserveTapTargets() throws {
         let app = XCUIApplication()
         XCTAssertTrue(
@@ -325,7 +324,7 @@ final class DepthUITests: XCTestCase {
             app.launch(intoTeam: "seahawks"),
             "the app should launch straight into the Seahawks depth chart")
 
-        // Seasons lives behind the ••• overflow menu (2026-08-15 visual-pass: the bare
+        // Seasons lives behind the ••• overflow menu (the bare
         // icon row was removed).
         let overflow = app.buttons["depth-chart-overflow"]
         XCTAssertTrue(
@@ -360,7 +359,7 @@ final class DepthUITests: XCTestCase {
             "the historical roster's season trigger should read 2025 SEASON"
         )
         // Historical rosters are read-only: reopen the overflow menu and confirm the
-        // Edit Depth Chart toggle is present but disabled (DEP-231 — disabled, not
+        // Edit Depth Chart toggle is present but disabled (— disabled, not
         // hidden, matching web's disabledReason treatment).
         let overflow2 = app.buttons["depth-chart-overflow"]
         XCTAssertTrue(overflow2.waitForExistence(timeout: 5))
@@ -388,7 +387,7 @@ final class DepthUITests: XCTestCase {
         }
         XCTAssertTrue(profile.waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["player-profile-full-name"].waitForExistence(timeout: 5))
-        // Historical bios are synthesized "{season} · {team}" filler (merge spec).
+        // Historical bios are synthesized "{season} · {team}" filler.
         XCTAssertFalse(
             app.descendants(matching: .any)["player-profile-full-bio"].exists,
             "historical rosters should not show a bio"
@@ -402,7 +401,7 @@ final class DepthUITests: XCTestCase {
         XCTAssertFalse(seasonTrigger.waitForExistence(timeout: 2))
     }
 
-    /// DEP-245: while a past season is selected, returning to the live roster is a
+    /// while a past season is selected, returning to the live roster is a
     /// one-tap "Back to current season" escape beside the page's season trigger (matching
     /// Stats/Schedule) — the Seasons sheet itself now uses only the standardized "X" close,
     /// not a bespoke in-sheet button. Reuses the 2025 selection so the flow is verified
@@ -463,11 +462,11 @@ final class DepthUITests: XCTestCase {
             "Back to current should leave the historical roster")
     }
 
-    /// DEP-278 follow-up: the Stats page's season chip row stopped scaling once
+    /// The Stats page's season chip row stopped scaling once
     /// team_stats ingest landed seasons back to 1999 (~25+ entries no longer fit a
     /// swipeable strip), so it moved behind a trigger + SeasonPickerSheet — the same
     /// sheet shape as History's HistorySeasonSheet, generalized off HistorySeason to a
-    /// plain Int season. Cooper report: the sheet's own "Back to current" toolbar
+    /// plain Int season. The sheet's own "Back to current" toolbar
     /// button rendered clipped, so it now lives beside the trigger in the page content
     /// instead — reachable without reopening the sheet.
     func testBackToCurrentFromStatsPage() throws {
@@ -479,7 +478,7 @@ final class DepthUITests: XCTestCase {
         let statsTab = app.buttons["page-switcher-stats"]
         XCTAssertTrue(statsTab.waitForExistence(timeout: 10))
         // Cold CI simulator + production data: the first Stats load can crawl past the
-        // tab's own 10s (flake 2026-08-29) — 30s budget covers the network round-trip.
+        // tab's own 10s — 30s covers the network round-trip on a cold simulator.
         XCTAssertTrue(statsTab.tapUntil(timeout: 30) { app.scrollViews["stats-content"].exists })
 
         let trigger = app.buttons["stats-season-trigger"]
@@ -504,7 +503,7 @@ final class DepthUITests: XCTestCase {
         let pastYear = pastRow.label.components(separatedBy: ",").first ?? pastRow.label
         pastRow.tap()
 
-        // The trigger itself is the only on-screen season indicator (DEP-282 removed the
+        // The trigger itself is the only on-screen season indicator (removed the
         // redundant "<year> season" line that just repeated the trigger's own label) — a
         // past season relabels the trigger to the picked year.
         XCTAssertTrue(
@@ -515,7 +514,7 @@ final class DepthUITests: XCTestCase {
         let backToCurrent = app.buttons["stats-season-trigger-back-to-current"]
         // Selecting a past season drops Stats into a full-page `.loading` state — the
         // trigger (and this button) only re-render once the past-season fetch lands. 5s
-        // was too tight for that reload against production (flake 2026-08-29).
+        // was too tight for that reload against production.
         XCTAssertTrue(
             backToCurrent.waitForExistence(timeout: 20),
             "a past season should offer Back to current beside the trigger")
@@ -531,9 +530,9 @@ final class DepthUITests: XCTestCase {
         )
     }
 
-    /// DEP-278 follow-up: same trigger + SeasonPickerSheet conversion as Stats, applied
-    /// to Schedule — replacing the flat chip row DEP-263 originally promoted out of
-    /// Stats. Cooper report: "Back to current" moved out of the sheet's toolbar to
+    /// The same trigger + SeasonPickerSheet conversion as Stats is applied
+    /// to Schedule — replacing the flat chip row originally promoted out of
+    /// Stats. "Back to current" moved out of the sheet's toolbar to
     /// beside the trigger, same as Stats above.
     func testBackToCurrentFromSchedulePage() throws {
         let app = XCUIApplication()
@@ -544,7 +543,7 @@ final class DepthUITests: XCTestCase {
         let scheduleTab = app.buttons["page-switcher-schedule"]
         XCTAssertTrue(scheduleTab.waitForExistence(timeout: 10))
         // Cold CI simulator + production data: schedule payload loads over the network and
-        // can exceed 15s on first load (flake 2026-08-29) — 30s budget.
+        // can exceed 15s on first load — 30s covers the cold-load budget.
         XCTAssertTrue(
             scheduleTab.tapUntil(timeout: 30) { app.otherElements["schedule-content"].exists })
 
@@ -570,8 +569,7 @@ final class DepthUITests: XCTestCase {
         let backToCurrent = app.buttons["schedule-season-trigger-back-to-current"]
         // Selecting a past season drops Schedule into a full-page `.loading` state — the
         // trigger (and this button) only re-render once the past-season fetch lands. 5s
-        // was too tight for that reload against production (flake 2026-08-29, reproduced
-        // on unmodified main).
+        // was too tight for that reload against production.
         XCTAssertTrue(
             backToCurrent.waitForExistence(timeout: 20),
             "a past season should offer Back to current beside the trigger")
@@ -588,7 +586,7 @@ final class DepthUITests: XCTestCase {
             "Back to current should hide once on the current season")
     }
 
-    /// DEP-278 follow-up: Stats and Schedule fetch no uniform data of their own
+    /// Stats and Schedule fetch no uniform data of their own
     /// (invariant 5), so their accent comes from `CurrentTeamStore` — refined by
     /// TeamDetailView whenever the roster page resolves a picked kit. Picking a
     /// non-default uniform on the roster should be reflected the moment Stats/Schedule
@@ -625,7 +623,7 @@ final class DepthUITests: XCTestCase {
         chooseUniform.tap()
         XCTAssertTrue(app.otherElements["uniform-picker-sheet"].waitForExistence(timeout: 10))
 
-        // DEP-256 visual evidence: capture the carousel's first card (the deterministic
+        // visual evidence: capture the carousel's first card (the deterministic
         // opening page — see UniformPickerSheet's `init`, which seeds `currentIndex`
         // from `selectedID`) before interacting with it.
         let carouselCard0 = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
@@ -635,7 +633,7 @@ final class DepthUITests: XCTestCase {
 
         // Card 0 is the team's current/home kit (nothing pre-checked on a fresh reset
         // state); card 1 is a genuinely different kit, so its color should differ from
-        // the base team accent seen in `statsBefore`. DEP-256: the picker is now a
+        // the base team accent seen in `statsBefore`. the picker is now a
         // swipeable carousel, so selection happens via the page dots (a real swipe
         // gesture isn't reliably drivable in XCUITest) rather than a row tap, and no
         // longer auto-dismisses the sheet — the sheet stays open so you can keep
@@ -677,7 +675,7 @@ final class DepthUITests: XCTestCase {
         add(scheduleAfter)
     }
 
-    /// Locked decisions #1/#2/#6/#7, updated by DEP-252: the tab bar exists and its two
+    /// The tab bar exists and its two
     /// content tabs (Depth Charts, Compare) plus the Uniforms tab are reachable. Account
     /// is no longer a tab — it's a nav-bar trailing icon on the team page, covered
     /// separately below.
@@ -690,7 +688,7 @@ final class DepthUITests: XCTestCase {
         let tabs = app.tabBars.firstMatch
         XCTAssertTrue(tabs.waitForExistence(timeout: 10), "the app should present a bottom tab bar")
 
-        // DEP-258: the real compare UI renders the two team-slot pickers + the
+        // the real compare UI renders the two team-slot pickers + the
         // Matchup/By-position switcher, plus the "Pick two teams to compare" prompt
         // (no teams picked on a fresh launch — the placeholder "coming soon" is gone).
         XCTAssertTrue(
@@ -712,7 +710,7 @@ final class DepthUITests: XCTestCase {
             "returning to Depth Charts should show the chart again"
         )
 
-        // DEP-252: Account is now a nav-bar trailing icon on the team page, opening the
+        // Account is now a nav-bar trailing icon on the team page, opening the
         // settings content as a sheet rather than switching tabs.
         let accountButton = app.buttons["account-button"]
         XCTAssertTrue(
@@ -724,7 +722,7 @@ final class DepthUITests: XCTestCase {
         )
     }
 
-    /// Locked decision #3 plus the spec's restoration requirement: the last-viewed team
+    /// The last-viewed team is restored on the next launch
     /// is the launch destination on the next launch, with no list-then-push transition.
     func testRelaunchRestoresTheLastViewedTeamAsTheLaunchDestination() throws {
         let app = XCUIApplication()
@@ -748,10 +746,10 @@ final class DepthUITests: XCTestCase {
         )
     }
 
-    /// DEP-266 (Compare page unification) — the web-parity elements the first port
+    /// (Compare page unification) — the web-parity elements the first port
     /// dropped must render once both teams are picked: the VS capsule, the "By team"/
     /// "By position" tab labels, the 44pt position chips, and the dashed unpicked slot
-    /// (verified before picking). Aug 2026 feedback pass: Forecast and Roster were
+    /// (verified before picking). Forecast and Roster were
     /// removed outright (not just reworded) and the depth table's rank-dot legend went
     /// with them — see CompareViewModel.swift's `Lens` doc comment and
     /// CompareView.swift's `CompareRows` doc comment for why. This test now covers the
@@ -799,7 +797,7 @@ final class DepthUITests: XCTestCase {
         XCTAssertTrue(app.buttons["compare-lens-special"].exists)
 
         defenseLens.tap()
-        // The lens now swaps grouped metric tables in place (Aug 26 redesign) rather than
+        // The lens now swaps grouped metric tables in place rather than
         // paging a single evidence card, so Defense is confirmed by its own first group
         // rather than by a per-lens card identifier.
         let pressureGroup = app.descendants(matching: .any)["compare-group-defense-pressure"]
@@ -811,7 +809,7 @@ final class DepthUITests: XCTestCase {
             defenseLens.isSelected, "the active lens should expose the selected accessibility trait"
         )
 
-        // Position tab: the DEP-311 room picker (unit lens + room grid). The old horizontal
+        // Position tab: the room picker (unit lens + room grid). The old horizontal
         // `compare-position-row` scroller is gone.
         app.buttons["compare-tab-position"].tap()
         let lineupOffense = app.buttons["unit-tab-offense"]
@@ -841,7 +839,7 @@ final class DepthUITests: XCTestCase {
             "the depth table should render for the default Quarterback selection")
     }
 
-    /// DEP-311: every unit's last role is reachable through the two-step room→position
+    /// every unit's last role is reachable through the two-step room→position
     /// picker without horizontal scrolling. Picks a room in each unit and taps its final
     /// exact role — all resolvable by identifier (no swipe) on the position tab.
     func testMatchupRoomsReachEveryUnitWithoutHorizontalScrolling() throws {
@@ -888,11 +886,10 @@ final class DepthUITests: XCTestCase {
             freeSafety.frame.height, 44 - 0.01, "FS must keep the 44pt touch minimum")
         freeSafety.tap()
 
-        // Special Teams: Specialists is this unit's only room, and (Aug 2026: switching
-        // units now jumps straight to the new unit's first room, expanded — see
-        // CompareViewModel.swift's `selectUnit` doc comment) it's already expanded by the
-        // unit-tab tap alone. Tapping it again here would collapse it instead (the same
-        // Aug 2026 pass made an already-expanded room collapse on a second tap), so unlike
+        // Special Teams: Specialists is this unit's only room. Switching units jumps straight
+        // to the new unit's first room, expanded — see
+        // CompareViewModel.swift's `selectUnit` doc comment. It's already expanded by the
+        // unit-tab tap alone. Tapping it again would collapse it, so unlike
         // the Line and Safeties rooms above, this one is asserted without an explicit tap.
         app.buttons["unit-tab-special"].tap()
         XCTAssertTrue(

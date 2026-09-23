@@ -1,7 +1,7 @@
 import Testing
 @testable import Depth
 
-// Cross-language parity coverage for DEP-313. The fixture's expected values come from
+// Cross-language parity coverage. The fixture's expected values come from
 // TypeScript's live buildRecentParticipation implementation, while the direct cases
 // pin Swift-only boundary behavior for no rows and internally mixed winning windows.
 private struct RecentParticipationFixtureCase: Decodable {

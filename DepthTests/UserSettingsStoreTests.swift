@@ -3,7 +3,7 @@ import Testing
 
 @testable import Depth
 
-// DEP-319 coverage for the favorite/start-on-favorite store: the partial-upsert write
+// coverage for the favorite/start-on-favorite store: the partial-upsert write
 // semantics (only the patched column changes), the first-favorite opt-in, and the
 // signed-out cut (account-gated by RLS, so no server round-trip should happen).
 

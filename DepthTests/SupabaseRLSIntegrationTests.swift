@@ -4,8 +4,8 @@ import Supabase
 import Testing
 @testable import Depth
 
-// RLS actor-matrix tests against a real local Supabase (design spec's "Local Supabase
-// for integration tests" locked decision #4 — mocks alone can't validate authorization).
+// RLS actor-matrix tests against a real local Supabase; mocks alone cannot validate
+// authorization.
 // Requires `supabase start` in the depth repo first; run `npm run db:types`-adjacent
 // setup is not needed here since these hit PostgREST directly, not the generated types.
 //
@@ -25,9 +25,8 @@ enum LocalSupabase {
     static let anonKey =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
 
-    // The service-role key is never committed, even a well-known local-only default —
-    // CLAUDE.md's blanket rule ("never commit a service-role key") has no local-vs-prod
-    // carve-out, and a token that *looks* like a real service-role JWT defeats the point
+    // The service-role key is never committed, even a well-known local-only default. A token
+    // that *looks* like a real service-role JWT defeats the point
     // of that rule for anyone scanning history later. `xcodebuild test` does not forward
     // host shell environment variables (or `SIMCTL_CHILD_*`) into the simulator test
     // process, so — same pattern as DepthTests/FixtureLoading.swift — this reads a
@@ -70,8 +69,8 @@ enum LocalSupabase {
     // this file (and NativeAuthIntegrationTests, which shares this type) on a real
     // reachability probe of the local API port — the same "skip gracefully without
     // the infra" shape as the web CI's DB-dependent tests (.github/workflows/ci.yml).
-    // Full RLS/auth coverage still runs locally before every merge per AGENTS.md's
-    // verification command.
+    // Full RLS/auth coverage runs locally; the guard above only skips cleanly when Docker or
+    // Supabase is unavailable.
     static let isReachable: Bool = {
         let fd = socket(AF_INET, SOCK_STREAM, 0)
         guard fd >= 0 else { return false }
@@ -274,8 +273,8 @@ func authenticatedNonOwnerCanReadTeamSnapshotIdenticallyToAnon() async throws {
     try await serviceClient.auth.admin.deleteUser(id: nonOwnerAuth.user.id)
 }
 
-// Regression for the favorite-team settings row never surviving restart: an earlier
-// version of SupabaseUserSettingsService.update wrote a fresh random UUID as `user_id`
+// Regression for the favorite-team settings row surviving restart: the update path must write
+// the authenticated user's UUID as `user_id`
 // instead of the signed-in user's own id, which the "own settings" RLS policy
 // (auth.uid() = user_id) silently rejects as a normal PostgrestError — surfacing as
 // UserSettingsStore's "will sync when back online" hint even while online — and even a
@@ -331,7 +330,7 @@ func authenticatedNonOwnerCanReadTeamSnapshotIdenticallyToAnon() async throws {
     // sequentially after the assertion — the original version restored only after
     // `#expect`, which would have skipped it entirely had the write itself thrown,
     // leaving the shared seed row permanently renamed for every other test/local dev
-    // session (caught in review, depth#352).
+    // session.
     let original = snapshot.team.name
     struct NameOnly: Decodable, Equatable { let id: String; let name: String }
     do {
@@ -387,8 +386,7 @@ func authenticatedNonOwnerCanReadTeamSnapshotIdenticallyToAnon() async throws {
     }
 }
 
-// Task 8F: app_events is insert-only for clients (design spec Milestone 2B item 26,
-// the vault's `Reference/ios-privacy-telemetry.md`). No SELECT grant exists for anon/authenticated at
+// app_events is insert-only for clients. No SELECT grant exists for anon/authenticated at
 // all — same privilege-level (not RLS-level) denial shape as app_config's UPDATE case
 // above — so the only client-visible operation is a successful, unreadable insert.
 
@@ -397,7 +395,7 @@ func authenticatedNonOwnerCanReadTeamSnapshotIdenticallyToAnon() async throws {
     try await client.from("app_events").insert(["event_name": "app_launch"]).execute()
 }
 
-// Greptile review on depth#368: an unrestricted INSERT grant would let a client set
+// an unrestricted INSERT grant would let a client set
 // `created_at` explicitly, forging a timestamp that corrupts time-based aggregate
 // analytics. The grant is column-restricted to event_name/error_category, so any
 // attempt to also set created_at (or id) must be denied at the privilege level.

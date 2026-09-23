@@ -7,7 +7,7 @@ import UIKit
 // The player-card jersey numeral is drawn in two passes — outline first, fill over it —
 // because the system font builds `#` from four overlapping bars, and stroking on top of a
 // fill traces the segments buried inside those intersections, drawing trim straight through
-// the glyph. That failure survived two rounds of visual review before its cause was found,
+// the glyph. The test keeps the stroke-width calculation from regressing,
 // so the pass structure is pinned here rather than left to a screenshot diff.
 
 private let filled = StrokedText.Run(
@@ -28,7 +28,7 @@ private func attributes(
 @MainActor @Test func outlinePassStrokesOnlyAndNeverFills() {
     let attrs = attributes([filled], pass: .outline, at: 0)
     // A POSITIVE width strokes without filling; a negative one fills and strokes, which is
-    // the single-pass behaviour this design replaced.
+    // the single-pass behavior would fill and stroke the glyph together.
     #expect(attrs[.strokeWidth] as? CGFloat == 6, "outline pass doubles the visible weight")
     #expect(attrs[.foregroundColor] as? UIColor == UIColor.clear, "outline pass must not fill")
 }
@@ -75,8 +75,8 @@ private func attributes(
 }
 
 // Core Text centres a stroke on the glyph path, so half of it lands outside the typographic
-// bounds the text measures. Without padding, the view clips it — a shipped bug that cut the
-// first and last glyph once the numeral grew to 64pt.
+// bounds the text measures. Without padding, the view clips the first and last glyph when the
+// numeral grows to 64pt.
 @MainActor @Test func strokeOverflowUsesTheHeaviestRunInPoints() {
     // 3% of 64 = 1.92pt beats 3% of 32 = 0.96pt: the percentage is per-run, not global.
     #expect(StrokedText.strokeOverflow([hollow, filled]) == 1.92)

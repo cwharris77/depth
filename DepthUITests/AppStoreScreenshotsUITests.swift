@@ -1,14 +1,14 @@
 import XCTest
 
-// Deterministic App Store screenshot capture (task-9d-screenshots-brief.md, DEP-162
-// blocker; refreshed for the post-rejection resubmission, DEP-565). Not part of the
+// Deterministic App Store screenshot capture.
+// Not part of the
 // default `xcodebuild test` run — excluded via project.yml's scheme `skippedTests`
 // because it's a slow, human-triggered release-prep tool, not a correctness gate. Run it
 // via the one-command capture script (which boots a disposable 1284×2778-class simulator,
 // normalizes the status bar, runs the test against the dedicated Depth-AppStoreScreenshots
 // scheme — no project.yml editing needed — and exports the PNGs):
 //
-//   scripts/capture-appstore-screenshots.sh
+// scripts/capture-appstore-screenshots.sh
 //
 // (boots a disposable 1284×2778-class iPhone 13 Pro Max simulator, normalizes the status
 // bar, runs the test against the dedicated Depth-AppStoreScreenshots scheme — no project.yml
@@ -16,25 +16,22 @@ import XCTest
 // default Depth scheme's scheme-level `skippedTests` cannot be overridden by `-only-testing`
 // at the command line):
 //
-//   xcodebuild -project Depth.xcodeproj -scheme Depth-AppStoreScreenshots \
-//     -configuration Staging \
-//     -destination 'platform=iOS Simulator,id=<an iPhone 13 Pro Max simulator UDID>' \
-//     -only-testing:DepthUITests/AppStoreScreenshotsUITests \
-//     -resultBundlePath /tmp/depth-screenshots.xcresult test
+// xcodebuild -project Depth.xcodeproj -scheme Depth-AppStoreScreenshots \
+// -configuration Staging \
+// -destination 'platform=iOS Simulator,id=<an iPhone 13 Pro Max simulator UDID>' \
+// -only-testing:DepthUITests/AppStoreScreenshotsUITests \
+// -resultBundlePath /tmp/depth-screenshots.xcresult test
 //
-// See `Reference/ios-appstore-screenshots.md` in the vault for the full workflow.
+// The sequence covers the primary surfaces and uses fixed teams and seasons for repeatability.
 //
-// The sequence was reselected 2026-08-28 (Cooper) around the surfaces that actually sell
-// the app — two depth-chart fields, stats, compare, uniforms — replacing the earlier
-// team-search / player-detail / reorder / schedule set. Two of those were actively weak:
+// The sequence covers the primary surfaces — two depth-chart fields, stats, compare, and
+// uniforms — plus player profile and postseason views. The selected surfaces are deterministic:
 // the search shot rendered one result row above ~70% empty black while captioned "Every
 // team", and the reorder shot reused the same player card as the player-detail shot, so
 // two of five slots showed what read as the same image.
 //
-// Refreshed 2026-09-14 (DEP-565 resubmission): the field and several surfaces changed
-// materially, and two genuinely new screens had shipped since the 2026-08-28 set — the
-// merged player profile (jersey header + season ledger) and the postseason ladder — so the
-// set grew from five to seven (slots 3 and 5 below). The pinned teams/season are unchanged
+// The set contains seven screenshots, including the player profile (jersey header + season
+// ledger) and postseason ladder (slots 3 and 5 below). The pinned teams/season are unchanged
 // apart from adding the Patriots for the postseason shot.
 //
 // Teams are pinned rather than incidental: Seahawks (already the launch default), Broncos
@@ -47,7 +44,7 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         // UI_TESTING_APPSTORE_SCREENSHOTS drives the deterministic app state (clean
         // team/unit, onboarding seen, forced sign-out). UI_TESTING_REDUCE_MOTION settles
         // the volatile UI for the duration of the mode — the same launch-argument
-        // convention the accessibility suite uses — so the edit-mode dot wiggle (DEP-309)
+        // convention the accessibility suite uses — so the edit-mode dot wiggle
         // and button press-scale are still/static in every capture instead of mid-animation
         // at an arbitrary frame.
         app.launchArguments = ["UI_TESTING_APPSTORE_SCREENSHOTS", "UI_TESTING_REDUCE_MOTION"]
@@ -85,8 +82,7 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         )
         attachScreenshot(name: "02-depth-chart-defense")
 
-        // 3. Player profile — the merged jersey-header + season-ledger destination that
-        // replaced the old player card sheet (2026-09-11 merge spec). Reached by tapping a
+        // 3. Player profile — the jersey-header + season-ledger destination reached by tapping a
         // filled field slot with the unit on Offense; the current team is still the Broncos
         // from the defense shot above. The starting QB is a deterministic, stat-rich
         // subject (`player-slot-off-qb-0` is the identifier AccessibilityUITests already
@@ -299,7 +295,7 @@ final class AppStoreScreenshotsUITests: XCTestCase {
     /// `XCUIApplication.screenshot()`, which is scoped to the app's own window frame.
     /// For App Store Connect's exact-pixel-resolution requirement (1284×2778 on the
     /// iPhone 13 Pro Max this test targets — the accepted 6.5-inch display class), the
-    /// full-screen API is the one that's guaranteed to match the published spec.
+    /// full-screen API is the one that's guaranteed to match the published requirement.
     private func attachScreenshot(name: String) {
         let screenshot = XCUIScreen.main.screenshot()
         let attachment = XCTAttachment(screenshot: screenshot)

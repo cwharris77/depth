@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import Depth
 
-// DEP-245: the Stats page's "Back to current" affordance. The view model must tell the
+// the Stats page's "Back to current" affordance. The view model must tell the
 // view when a completed past season is selected (vs. the current/upcoming tab) and
 // return to the current season on demand — the same one-tap contract the roster's
 // existing "Back to today" (`HistoryViewModel.selectImmediately(.current(...))`) has.
