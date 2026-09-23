@@ -125,12 +125,12 @@ web UI is frozen.
   (`lib/database.types.ts`), `lib/espn/fixtures/`, markdown, and `supabase/` — keep it
   that way. Note it does **not** cover `fixtures/domain/`, so regenerating the
   cross-language fixtures always leaves a format diff until `npm run format` runs.
-- **Comment density is deliberately high, and it's "why"-comments.** Every `lib/`
-  module opens with a header comment stating its role and the design constraint it
-  satisfies. Inline comments state contracts and cross-file couplings ("see
-  lib/espn/transform.ts's fallback"), never line narration. When you write a module
-  with no header comment, or a comment that restates the next line, you've missed the
-  house style in opposite directions.
+- **Public-source comments explain implementation, not internal process.** Add a concise
+  role comment only when it helps; inline comments may explain concrete behavior,
+  constraints, API or library choices, workarounds, stable contracts, and cross-file
+  technical couplings. Do not include ticket IDs, vault/spec paths, agent instructions,
+  private product or design rationale, research/review provenance, or temporary planning
+  history. Put internal context in the Obsidian vault, not source comments.
 - **Pure logic lives in `lib/` with colocated tests** (`lib/__tests__/` or next to the
   file in `lib/espn/`). Components stay thin; anything worth testing gets extracted
   into a pure function first. `lib/` itself is area-scoped: React hooks live under
@@ -278,10 +278,10 @@ cached-read crashes, reaching around `DepthRepository`) are in [`../CLAUDE.md`](
     to satisfy the advisor, and its reader silently gets zero rows. *Rule: ship the read
     policy in the same migration as `enable row level security` — anon for public data,
     `auth.uid()` for per-user (invariant 10).*
-11. **Comment-stripping and terse modules.** Generic "clean code" instincts delete
-    the rationale comments that are this repo's documentation. *Rule: preserve
-    existing comments through refactors and write a role-and-constraint header on
-    every new module (§3).*
+11. **Internal process leaking into public comments.** Ticket IDs, vault paths, agent
+    instructions, private decisions, research/review provenance, and temporary planning
+    history do not belong in source. *Rule: keep comments only when they explain
+    implementation behavior or a stable public fact (§3).*
 12. **Kitchen-sink PRs.** You fix the task plus three things you noticed. *Rule: one
     concern per PR; out-of-scope findings go in the PR body or a spec, not the diff.*
 13. **Claiming done without evidence.** "Should work now." *Rule: the quality bar in
@@ -361,7 +361,8 @@ when the diff touches the frozen web app or shared backend.
 - [ ] No div structure or conditional-text logic pasted a second time in the same file
       (mistake #17) — extracted into a local component or a single derived value instead
 - [ ] Diff contains only the stated concern; no unrelated reformatting
-- [ ] New/changed modules carry a role-and-constraint header comment
+- [ ] New/changed comments explain implementation behavior or a stable public fact and
+      contain no internal ticket, vault, agent, product-decision, or review provenance
 - [ ] Conventional-commit title with a scope from the list in §3
 - [ ] PR body starts from `../.github/pull_request_template.md` (What/Why/Tests + footer);
       there is no `## Screenshots` section — the PR-screenshot driver and gate were
