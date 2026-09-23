@@ -1,4 +1,4 @@
--- Historical rosters (Phase D1, the vault's `specs/2026-07-07-phase-d-history-and-boards-design.md`).
+-- Historical rosters.
 -- One row per (season, team, player) from nflverse's roster_<season>.csv,
 -- 1999-present -- no FK to `players` since most historical players never got an ESPN-backed
 -- row here (that table is keyed by ESPN athlete id; this one is keyed by nflverse's gsis_id).
@@ -29,7 +29,7 @@ create index roster_history_team_season_idx on roster_history(team_id, season);
 create index roster_history_name_trgm_idx on roster_history using gin (name gin_trgm_ops);
 
 -- Same explicit-grant + RLS-with-policy-in-the-same-migration pattern as player_stats
--- (20260717081108_add_player_stats.sql, AGENTS.md invariant 10).
+-- (20260717081108_add_player_stats.sql).
 grant select, insert, update, delete on roster_history to anon, authenticated, service_role;
 
 alter table roster_history enable row level security;

@@ -2,7 +2,7 @@
 
 // Desktop-only left rail (hidden below `xl` — see lib/hooks/use-media-query.ts for the one
 // breakpoint). Persistent navigation for wide screens (Wide-screen responsive multi-panel
-// ticket; layout from the Claude Design "Depth Wide Desktop" mock): search over teams and
+// layout for wide screens): search over teams and
 // players, the full team list grouped by conference/division (same sectioning as
 // NavSwitcher's idle browse) with the current team checked, plus the global destinations
 // (compare teams, uniform archive, sign-in/account) that live in the mobile NavDrawer. On

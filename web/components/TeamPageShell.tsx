@@ -1,13 +1,12 @@
 'use client';
 
 // Desktop multi-panel frame for the three team pages, plus /uniforms and /compare
-// (Wide-screen responsive multi-panel ticket; layout from the Claude Design "Depth Wide
-// Desktop" mock; the no-current-team pages join via the Desktop shell for uniform
-// archive and compare pages ticket). At the `xl` breakpoint the page becomes a
+// Wide-screen responsive multi-panel layout; the no-current-team pages join via the
+// desktop shell for uniform archive and compare pages. At the `xl` breakpoint the page becomes a
 // viewport-height grid — team rail · main content, plus a context panel column when
 // `aside` is passed — instead of a stretched mobile column; below it, children render
 // exactly as before (rail and panel are CSS-hidden, so the prerendered HTML is correct
-// at every width with no JS layout switch — the SSR concern the ticket called out). The
+// at every width with no JS layout switch. The
 // panel's content is page-specific and passed in by each view: the docked player card
 // (roster), the season snapshot (schedule), the PF/PA trend (stats). `team`/`activePage`/
 // `aside` are all optional — /uniforms and /compare have no current team, no team-page

@@ -1,4 +1,4 @@
--- DEP-220: point every uniform row at its prerendered WebP artifact. Artifacts are
+-- Point every uniform row at its prerendered WebP artifact. Artifacts are
 -- generated from the same colors the picker renders (scripts/gen-uniform-thumbs.mts) and
 -- committed under public/uniforms/, served at https://depth-ashen.vercel.app/uniforms/.
 -- Covers every row kind: espn home rows, curated kits (whose future reseeds already carry

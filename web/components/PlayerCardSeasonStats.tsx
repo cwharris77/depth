@@ -70,7 +70,7 @@ export default function PlayerCardSeasonStats({
     );
   }
 
-  // SZN + TM are both fixed columns ahead of the position-specific stat columns (DEP-202
+  // SZN + TM are both fixed columns ahead of the position-specific stat columns
   // adds TM — which team that season/season_type is attributed to, nflverse's
   // `recent_team`, one team per row per the locked scope, no mid-season-trade split).
   const gridTemplateColumns = `minmax(40px, 0.7fr) minmax(32px, 0.6fr) repeat(${statColumns.length}, 1fr)`;

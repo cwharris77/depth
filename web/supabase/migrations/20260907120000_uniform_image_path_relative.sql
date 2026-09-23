@@ -1,4 +1,4 @@
--- DEP-406: uniforms.image_path moves from an absolute production origin to an
+-- uniforms.image_path moves from an absolute production origin to an
 -- origin-relative path. Web art resolves against the current request origin
 -- (lib/uniforms/art.tsx), so a relative path makes local dev and Vercel preview serve
 -- their own public/uniforms/ rasters instead of round-tripping to production — the

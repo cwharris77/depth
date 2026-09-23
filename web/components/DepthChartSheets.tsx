@@ -37,7 +37,7 @@ type Props = {
 
 // The field's three overflow-menu sheets — uniform picker, season picker, formations
 // picker — each already presentational; this just owns their BottomSheet wrappers so
-// DepthChartField composes one section instead of three inline blocks (DEP-179).
+// DepthChartField composes one section instead of three inline blocks.
 export default function DepthChartSheets({ accent, kit, season, formations }: Props) {
   return (
     <>
