@@ -69,6 +69,12 @@ describe('public source comment policy', () => {
     ]);
   });
 
+  it('does not read shell globs as block comments', () => {
+    const comments = extractComments('rm -rf "$OUT"/*.png\n# design spec\n', 'run.sh');
+
+    expect(comments).toEqual([expect.objectContaining({ line: 2 })]);
+  });
+
   it('rejects personal absolute paths anywhere in source', () => {
     const source = "REF = Path('/Users/someone/Downloads/mark.svg')";
 

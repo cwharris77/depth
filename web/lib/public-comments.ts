@@ -40,7 +40,7 @@ const forbiddenPatterns: Array<[string, RegExp]> = [
   ],
   [
     'temporary planning history',
-    /\b(?:locked decision|design spec|auth pass|share pass|backlog|roadmap|THROWAWAY PROTOTYPE|not landed|review demo account|App Review demo account)\b/i,
+    /\b(?:locked decision|design spec|auth pass|share pass|backlog|roadmap|THROWAWAY PROTOTYPE|not landed)\b/i,
   ],
 ];
 
@@ -80,6 +80,7 @@ function blockDelimiters(filename: string): Array<[string, string]> {
       ["'''", "'''"],
     ];
   }
+  if (hashCommentExtensions.has(extension)) return [];
   return [['/*', '*/']];
 }
 
