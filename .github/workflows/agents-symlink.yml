@@ -10,9 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # AGENTS.md must stay a symlink to CLAUDE.md so every agent reads the same file. A tool that
-      # rewrites AGENTS.md instead of writing through the link turns it into a regular file and
-      # silently forks the two copies.
       - name: AGENTS.md is a symlink to CLAUDE.md
         run: |
           mode=$(git ls-files -s AGENTS.md | cut -d' ' -f1)
