@@ -6,11 +6,6 @@
 // One construction throughout: two bands at the sleeve separated by a body-colored gap, and a deep
 // V-collar that closes well below the generic chevron. No helmet stripe, no pant stripe.
 
-// Provenance: contour trace of the club's standalone wordmark SVG — a reproduction
-// of a third-party mark, not original geometry. The mark is NON-FREE upstream
-// (Wikimedia `File:New York Jets logo.svg`, fair use; trademarked). Licence audit: the vault’s
-// Decisions.md, 2026-09-03.
-//
 // The wordmark: one layer and four subpaths — the four letterforms with the jet sweeping out of the
 // J, all white. The letters are PLAIN UNIONS, never evenodd holes: the counters are shell color, so
 // stacking unions reproduces them for free.

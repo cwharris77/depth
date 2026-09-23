@@ -7,10 +7,8 @@ import UIKit
 // The cache stores remote logo responses in `URLCache` rather than image blobs in SwiftData.
 // It is keyed by logo URL, so repeat renders and offline use never re-download the artwork.
 //
-// NFL team logos are trademarks served by ESPN's unofficial API.
-// Caching fetched copies on-device (repeat renders, offline) is low-risk and deliberate;
-// BUNDLING/redistributing the artwork inside the app binary is the gray area that needs a
-// rights review and is never done here — nothing is copied into the bundle at build time.
+// Logos come from ESPN's unofficial API and are only cached on-device; nothing is copied into
+// the app bundle at build time.
 @MainActor
 enum TeamLogoCache {
     /// Dedicated cache so team logos never share or evict the app's general response cache

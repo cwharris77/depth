@@ -26,8 +26,8 @@ The trade is resolution: that helmet is 93px across and its bolt 76px, so the
 crop is upsampled 8x before tracing and EPS is set against the interpolated
 edge rather than a drawn one. That is the same bargain the Rams' horn made in
 reverse (there the GUD helmet was too coarse and a larger illustration existed;
-here no larger drawing of THIS bolt exists). The reference is not committed —
-it lives in the sibling nfl-uniform-refs/ checkout.
+here no larger drawing of THIS bolt exists). The input lives in the sibling
+nfl-uniform-refs/ checkout.
 
 Topology, measured rather than assumed (docs step 3). The decal is two visible
 shapes, a blue keyline under a gold body, and the antialiased seam between them

@@ -1,4 +1,4 @@
-// Pure archive filtering + grouping (roadmap Phase 7 archive page). Kept out of the
+// Pure archive filtering + grouping. Kept out of the
 // client component so every rule is unit-tested and the component stays state-only.
 // Era and current-only are independent axes: a reintroduced throwback (yearStart 1976,
 // isCurrent true) sits in the '1970s' bucket AND passes current-only.
@@ -43,7 +43,7 @@ export interface DivisionGroup {
 const CONFERENCES: Conference[] = ['AFC', 'NFC'];
 const DIVISIONS: Division[] = ['East', 'North', 'South', 'West'];
 
-// Per-team kit order: home first, away second, then everything else (Cooper's call). The rest
+// Per-team kit order: home first, away second, then everything else. The rest
 // share rank 2 and break ties by name, so the order is stable and identical across teams.
 const KIND_RANK: Record<UniformKind, number> = {
   home: 0,

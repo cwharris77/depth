@@ -25,13 +25,9 @@
 // migration that proved parts render byte-identically (see parts-parity.test.ts for the one-time
 // gate).
 
-// The horn, contour-traced and emitted by scripts/uniform-draw/rams_horn.py — a reproduction of a
-// third-party mark, not original geometry. Re-run that script rather than hand-editing this string;
-// it carries the measured placement box, the topology and why the linework does NOT come from the
-// mark reference the fetch resolves. Short version: that file is the LA lockup and the helmet decal
-// is the horn alone, which is not in it; the linework comes from the Commons uniform illustration
-// (~400px helmet) and the placement from the GUD helmet composite (90px), mirrored because the
-// illustration draws the helmet facing left.
+// The horn, contour-traced and emitted by scripts/uniform-draw/rams_horn.py. Re-run that script
+// rather than hand-editing this string; it carries the measured placement box and the topology.
+// The linework is mirrored because its source drawing faces the helmet left.
 //
 // Measured topology: TWO 8-connected components and NO enclosed hole, because the spiral's tip laps
 // back over its own body and the shell shows through the gap. Two subpaths, one fill, no fill rule.

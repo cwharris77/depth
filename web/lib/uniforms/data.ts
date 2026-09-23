@@ -1,9 +1,8 @@
 import type { JerseyColors, UniformKind } from '../types';
 
-// Hand-curated uniform archive (roadmap Phase 7). This file is the sole jersey-color
-// authority: hexes come from teamcolorcodes.com, while kit patterns and era boundaries come
-// from GUD (gridiron-uniforms.com). The seed generator turns these rows into an append-only
-// SQL migration. APPEND-ONLY — never delete a kit; retire it with yearEnd + isCurrent.
+// Hand-curated uniform archive. This file is the sole jersey-color authority. The seed generator
+// turns these rows into an append-only SQL migration. APPEND-ONLY — never delete a kit; retire it
+// with yearEnd + isCurrent.
 //
 // colors.primary/secondary/accent are the exact curated palette consumed by each team's
 // geometry definition. They are the only colors in this file, and they describe the real
@@ -14,8 +13,7 @@ import type { JerseyColors, UniformKind } from '../types';
 // player-card numeral) resolves from these three via lib/utils/team-surfaces.ts. The legacy
 // `ui_accent`/`on_accent` columns still exist in Postgres for iOS builds already on devices;
 // their frozen values live in lib/uniforms/legacy-accents.ts and are read only by the seed
-// generator. Design: ../../obsidian/Projects/depth/specs/
-// 2026-09-01-team-color-surface-rules-design.md.
+// generator.
 //
 // The row id is `${teamId}-${slug}-${yearStart}`.
 //

@@ -21,11 +21,8 @@
 // for the one-time gate). The collar path/width were module-private consts; they are now exported
 // for the parts file.
 
-// Provenance: contour trace of the club's mark, emitted by scripts/uniform-draw/panthers_decal.py
-// — a reproduction of a third-party mark, not original geometry. The mark is NON-FREE upstream
-// (en.wikipedia `File:Carolina Panthers logo.svg`, fair use; trademarked). Licence audit: the
-// vault's Decisions.md, 2026-09-03. Re-run that script rather than hand-editing these strings; it
-// carries the measured placement box, the topology and the reasoning behind the layer stack.
+// Emitted by scripts/uniform-draw/panthers_decal.py. Re-run that script rather than hand-editing
+// these strings; it carries the measured placement box, the topology and the layer stack.
 //
 // Four layers, no fill rule anywhere. Measured topology: the mark is ONE connected component with
 // NO enclosed white area, so every gap that reads as a whisker or a muzzle slash is BLUE showing

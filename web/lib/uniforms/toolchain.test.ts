@@ -16,7 +16,7 @@ import {
   probeOutlineTools,
 } from '../../scripts/uniform-draw/toolchain-preflight.mts';
 
-// DEP-560 review item 5: pin or hash-verify the font files and the outlining/rasterization
+// Pin or hash-verify the font files and the outlining/rasterization
 // toolchain. These tests lock the pure comparison the converter and generator gate on, then
 // (only where the real toolchain exists) verify the committed lock against this machine.
 

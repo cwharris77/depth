@@ -2,10 +2,8 @@
 
     python3 scripts/uniform-draw/bills_buffalo.py --check
 
-The linework source is ``nfl-uniform-refs/bills/bills-mark.svg`` (the club mark,
-non-free/trademarked; provenance and fair-use treatment are recorded in the
-vault's 2026-09-03 licence audit). The GUD 2025 composite is used only for the
-raw helmet placement box, not as the mark source. The SVG contains two visible
+The linework input is ``nfl-uniform-refs/bills/bills-mark.svg``, outside this
+repository; a separate helmet composite supplies the placement box. The SVG contains two visible
 8-connected components: one navy buffalo and one red diagonal stripe; the
 white gap is shell-colored negative space, not a third path or a hole. The
 source is rendered at its true 189:126 aspect before tracing so qlmanage's

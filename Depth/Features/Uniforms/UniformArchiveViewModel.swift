@@ -9,7 +9,7 @@ import Observation
 // screen state (query, view mode, filters) and the load lifecycle.
 //
 // LoadState keeps loading/loaded/failed distinct so the view can offer the right recovery
-// action — never a flash-then-jump (AGENTS.md #16).
+// action — never a flash-then-jump.
 @Observable
 @MainActor
 final class UniformArchiveViewModel {

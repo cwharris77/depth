@@ -15,7 +15,7 @@ export const JAGUARS_PARTS: TeamPartsDefinition = {
     gold: '#D7A22A',
     black: JAGUARS_BLACK,
     white: '#FFFFFF',
-    // Every decal hex comes directly from Cooper's supplied SVG, including minor shading.
+    // Every decal hex is kept from the source artwork, including minor shading.
     ...Object.fromEntries(JAGUARS_DECAL_PATHS.map(({ fill }) => [fill, fill])),
   },
   helmets: { black: HELMET_BLACK, throwback: HELMET_TEAL },

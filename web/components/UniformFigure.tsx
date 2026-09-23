@@ -21,17 +21,14 @@ import type { TeamUniformDefinition, UniformSurface } from '@/lib/uniforms/teams
 // it just has no raster artifact, so the narrowing belongs on art.tsx's signature, not here.
 export type UniformArtVariant = Extract<UniformVariant, 'jersey' | 'full'>;
 
-// The generated vector uniform. Colors/striping/layout are facts (not copyrightable), so every
-// kit is drawn from its JerseyColors — zero external image assets. Team modules may additionally
-// supply a helmet decal path; those are team marks reproduced for identification, and each starts
-// life as a machine trace flagged TRACE-PENDING-STYLIZE until it is hand-stylized. One renderer
+// The generated vector uniform. Every kit is drawn from its JerseyColors — zero external image
+// assets. Team modules may additionally supply a helmet decal path. One renderer
 // backs the picker (variant="jersey") and the archive (variant="full"); a variant is a viewBox
 // crop over one shared full-body mannequin. A committed image (imagePath) overrides the figure.
 //
-// Geometry is ported from the "uniform vectorization with color regions" handoff (Claude
-// Design), itself modeled on the CC BY 3.0 Wikimedia uniform template by JohnnySeoul (see
-// ATTRIBUTIONS.md). Team modules own optional construction layers; this component only resolves
-// their typed model and assembles surfaces in the mannequin's shared paint order.
+// Mannequin proportions follow the uniform template credited in ATTRIBUTIONS.md. Team modules own
+// optional construction layers; this component only resolves their typed model and assembles
+// surfaces in the mannequin's shared paint order.
 //
 // Color contract: primary = helmet shell / jersey body / pants; secondary = helmet + sleeve +
 // pant stripes and the number outline; accent = shoulder yoke + helmet stripe; number fill =

@@ -3,8 +3,7 @@
 // was deleted in the migration that proved parts render byte-identically (see
 // parts-parity.test.ts for the one-time gate). Paths stay in their authored helmet and
 // outer-viewBox spaces so the shared renderer can place them without team-specific transforms.
-// The stripe geometry is provisional pending a hand-authored replacement; do not treat these
-// paths as exact or licensed reproductions of the reference art.
+// The stripe geometry is provisional pending a hand-authored replacement.
 
 // The five-part stripe field uses the helmet's raw x:139-802, y:65-674 coordinate space. It is a
 // sibling of GEO.helmet inside the shared translate/scale group, so no extra transform belongs here.

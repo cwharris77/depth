@@ -8,11 +8,6 @@
 // numeral face.
 export const LIONS_WHITE = '#FFFFFF';
 
-// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
-// of a third-party mark, not original geometry. The mark is NON-FREE upstream
-// (Wikimedia `File:Detroit Lions logo.svg`, fair use; trademarked). Licence audit: the vault’s
-// Decisions.md, 2026-09-03.
-//
 // The leaping lion, traced from the home figure's shell (bbox x875-981, y321-418 in the reference)
 // mapped onto the raw helmet space at ~6.25x. Two plain-union fills in paint order, never evenodd
 // holes — the keyline first, the body over it.

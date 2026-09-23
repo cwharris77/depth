@@ -1,7 +1,6 @@
-// Cardinals jersey construction from Cooper's approved 2026-09-07 four-jersey proof.
+// Cardinals jersey construction.
 // Wordmarks are outlined here, rather than relying on installed fonts at raster time.
 // Chest letters use Copperplate Bold outlines; neck/sleeve labels use Arial Narrow Bold.
-// These are reference-derived reproductions, not official team-supplied vector assets.
 // All paths share the mannequin coordinates; no Nike or NFL marks are included.
 import type { PartLayer } from '../core/parts';
 

@@ -3,7 +3,7 @@ import UniformFigure, { type UniformArtVariant } from '@/components/UniformFigur
 import type { JerseyColors } from '@/lib/types';
 import type { TeamUniformDefinition } from '@/lib/uniforms/teams/core/types';
 
-// DEP-220 art pipeline: deterministic, prerendered uniform rasters for the native iOS
+// Art pipeline: deterministic, prerendered uniform rasters for the native iOS
 // app (and, when image_path is populated, the web). SwiftUI has no SVG decoder and the
 // web's figures are React-rendered, not static files, so the one renderer both platforms
 // already share (UniformFigure) is server-rendered once per kit and rasterized to WebP by
@@ -12,7 +12,7 @@ import type { TeamUniformDefinition } from '@/lib/uniforms/teams/core/types';
 // public/uniforms/<id>.webp (jersey crop, picker) and public/uniforms/<id>-full.webp
 // (full mannequin, archive) — the same committed-raster precedent as scripts/gen-icons.mts.
 
-// Uniform art resolves origin-relative on web (DEP-406): a relative path makes next/image
+// Uniform art resolves origin-relative on web: a relative path makes next/image
 // serve from the current request origin, so local dev and Vercel preview render the
 // committed rasters in public/uniforms/ instead of round-tripping to production — the
 // pre-deploy verification blind spot that forced the helmet-art migration to substitute
@@ -39,8 +39,7 @@ export function uniformArtURL(id: string, revision?: string): string {
 
 // The full-mannequin raster (helmet → cleats) backing the archive, distinct from the
 // jersey crop above. UniformArchive passes its kit's `-full` URL to the figure so the
-// archive shows the whole uniform, matching the pre-DEP-220 inline SVG it replaced —
-// DEP-220 only produced the jersey crop, and pointing the archive at that square crop
+// archive shows the whole uniform; pointing the archive at the square jersey crop
 // stretches it into the broken mannequin (see UniformFigure's imagePath short-circuit).
 export function uniformArtFullURL(id: string, revision?: string): string {
   return withArtifactRevision(`/uniforms/${id}-full.webp`, revision);

@@ -3,11 +3,8 @@
     python3 scripts/uniform-draw/dolphins_decal.py            # print the paths
     python3 scripts/uniform-draw/dolphins_decal.py --check    # verify dolphins.ts matches
 
-This is a CONTOUR TRACE based on the approved standalone Dolphins mark, not on the internal
-uniform composite. The upstream mark is Wikimedia's ``File:Miami Dolphins logo.svg``: a
-trademarked, non-free mark used as a fair-use visual reference. No source SVG or raster is
-committed. The internal 2025 GUD composite is used only for placement measurements and pants
-option enumeration.
+This is a CONTOUR TRACE of a standalone vector input kept outside this repository. A
+helmet composite is used only for placement measurements.
 
 TOPOLOGY, measured before tracing. Rendering the SVG at its true 250:198 aspect and cropping to
 the painted art gives a 458x333 art box. The usable helmet mark has two orange components (the

@@ -14,7 +14,7 @@ import {
   type ManifestRowInput,
 } from '@/lib/uniforms/manifest';
 
-// Review item 7: the committed manifest is the publication record for the committed rasters.
+// The committed manifest is the publication record for the committed rasters.
 // These tests pin the two failures the manifest exists to catch — a raster whose bytes moved
 // without regenerating the manifest, and a source/build input that changed without a regen —
 // and the delivery contract (origin-relative path + revision query).

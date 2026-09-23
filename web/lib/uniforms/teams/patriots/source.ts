@@ -37,11 +37,8 @@ export const PATRIOTS_BANDS_RIGHT = [
   'M458,404 L439,404 L417,493 L436,493 Z',
 ];
 
-// Provenance: contour trace of the approved standalone club mark, not the GUD composite. The mark is
-// NON-FREE upstream (Wikimedia `File:New England Patriots logo.svg`, fair use; trademarked). Licence
-// audit: the vault's Decisions.md, 2026-09-03. The generator in scripts/uniform-draw/patriots_mark.py
-// rasterizes that source at its true aspect, measures topology, and emits these paths mechanically.
-// The GUD composite supplies placement only; no source image or SVG is committed.
+// Emitted by scripts/uniform-draw/patriots_mark.py, which rasterizes the mark at its true aspect,
+// measures topology, and emits these paths mechanically.
 //
 // Measured topology: one navy face component, two red streamer components, one silver face component,
 // one white keyline component, and one separate white star component; no enclosed holes. White is

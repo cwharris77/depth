@@ -21,6 +21,7 @@ and MARKS-GATE.json.
 from __future__ import annotations
 
 import json
+import os
 import statistics
 from pathlib import Path
 
@@ -28,7 +29,9 @@ from PIL import Image
 
 from drawkit import crop_to_art, regions, render_flat
 
-REFS = Path("/Users/cwharris/Documents/GitHubProjects/nfl-uniform-refs")
+REFS = Path(
+    os.environ.get("NFL_UNIFORM_REFS", Path(__file__).resolve().parents[4] / "nfl-uniform-refs")
+)
 SIZES = (600, 1200)
 SHRINK = 0.75
 BG = 245

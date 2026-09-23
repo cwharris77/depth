@@ -3,18 +3,14 @@
     python3 scripts/uniform-draw/jets_wordmark.py            # print the path
     python3 scripts/uniform-draw/jets_wordmark.py --check    # verify jets.ts matches
 
-This is a CONTOUR TRACE rather than the hand-drawn geometry in
-``Reference/uniform-hand-drawing.md`` (in the vault). The wordmark has several small italic letter
-cuts and a sweeping J/jet shape; tracing the visible helmet decal is less
-ambiguous than rebuilding those cuts as guessed anchors.
+This is a CONTOUR TRACE rather than hand-drawn geometry. The wordmark has several small italic
+letter cuts and a sweeping J/jet shape; tracing the visible helmet decal is less ambiguous than
+rebuilding those cuts as guessed anchors.
 
 SOURCE AND PLACEMENT. The attached standalone SVG contains the JETS wordmark
 as four green paths. The paths are rasterized locally only to feed drawkit's
-generic component/contour machinery; no source SVG or raster is committed. The
-internal 2025 uniform composite is used only to measure the helmet placement
-box, never as the wordmark source. The upstream mark is non-free and
-trademarked; the fair-use licence audit is recorded in the vault's Decisions.md,
-2026-09-03.
+generic component/contour machinery; the input stays outside this repository. A
+helmet composite is used only to measure the placement box.
 
 TOPOLOGY, MEASURED BEFORE TRACING. The SVG wordmark contains four usable
 8-connected green components, with no enclosed holes. The four components are

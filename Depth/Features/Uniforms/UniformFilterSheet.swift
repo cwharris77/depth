@@ -1,6 +1,6 @@
 import SwiftUI
 
-// The archive's one filtering surface (DEP-271; reshaped by the 2026-08-27 archive v2).
+// The archive's one filtering surface.
 // v1 was a grouped List of single-select checkmark rows for kind and era. v2 changes what
 // it holds rather than how it is reached:
 //   • Sort moved in from the top bar, as the checked list at the top — it is a choice

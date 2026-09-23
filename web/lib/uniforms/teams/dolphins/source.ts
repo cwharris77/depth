@@ -14,11 +14,6 @@
 // or white numeral face.
 export const DOLPHINS_WHITE = '#FFFFFF';
 
-// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
-// of a third-party mark, not original geometry. The mark is NON-FREE upstream
-// (Wikimedia `File:Miami Dolphins logo.svg`, fair use; trademarked). Licence audit: the vault’s
-// Decisions.md, 2026-09-03.
-//
 // TWO marks: the current kits wear a teal dolphin inside an orange sunburst; the throwback wears a
 // teal dolphin breaking through a solid orange ring. The "M" on the throwback dolphin's helmet is
 // dropped (about 2px in the reference).

@@ -5,11 +5,11 @@
 
 // HOUSTON WEARS TWO DIFFERENT HELMET MARKS. The navy kits wear the club's standard bull HEAD —
 // compact, horned, with a face, a red right half and a white star. It is hand-drawn (cubic
-// Beziers in a 0-100 design box mapped onto raw helmet space at x284-554, y104-350), NOT traced:
+// Beziers in a 0-100 design box mapped onto raw helmet space at x284-554, y104-350) because
 // the bull's body is exactly the shell navy and its white keyline is drawn dashed at that scale,
 // so no predicate selects it. The keyline is a STROKE rather than a grown fill, safe only because
 // these curves are hand-drawn and smooth. The Battle Red kit wears a large stylized horn sweeping
-// the whole crown, a machine contour trace of GUD's illustration.
+// the whole crown.
 export const TEXANS_BULL_NAVY_PATH =
   'M397.4,320.5 C413.6,305.7 429.8,286.0 437.9,261.4 C446.0,241.8 448.7,227.0 446.0,212.2 C440.6,197.5 421.7,185.2 402.8,177.8 C383.9,170.4 365.0,163.0 354.2,150.7 C348.8,140.9 351.5,131.1 362.3,123.7 C373.1,116.3 386.6,111.4 400.1,108.9 L321.8,106.5 C308.3,121.2 297.5,138.4 294.8,153.2 C294.8,168.0 300.2,180.3 311.0,190.1 C319.1,195.0 327.2,199.9 335.3,202.4 L316.4,222.1 C327.2,231.9 338.0,244.2 346.1,256.5 C354.2,268.8 359.6,283.6 359.6,293.4 L348.8,300.8 C362.3,308.2 378.5,315.6 397.4,320.5 Z';
 export const TEXANS_BULL_RED_PATH =
@@ -18,11 +18,6 @@ export const TEXANS_BULL_STAR_PATH =
   'M385.3,203.0 L397.3,221.1 L420.1,217.2 L404.9,233.2 L416.1,251.7 L394.7,243.5 L378.8,258.9 L380.8,237.8 L359.8,228.8 L382.4,224.0 Z';
 export const TEXANS_BULL_KEYLINE_WIDTH = 13;
 
-// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
-// of a third-party mark, not original geometry. The mark is NON-FREE upstream
-// (Wikimedia `File:Houston Texans logo.svg`, fair use; trademarked). Licence audit: the vault’s
-// Decisions.md, 2026-09-03.
-//
 // Fixed art: the mark is the same three colors on every shell, so nothing here takes a token.
 export const TEXANS_DECAL_NAVY = '#031825'; // sampled (3,24,37)
 export const TEXANS_DECAL_RED = '#C80023'; // sampled (200,0,35)

@@ -17,11 +17,6 @@ export {
   BUCCANEERS_FLAG_DECAL_PATHS,
 } from './decal';
 
-// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
-// of a third-party mark, not original geometry. The mark is NON-FREE upstream
-// (Wikimedia `File:Tampa Bay Buccaneers logo.svg`, fair use; trademarked). Licence audit: the
-// vault’s Decisions.md, 2026-09-03.
-//
 // The flag: four plain-union fills in paint order — keyline, red field, white skull, orange
 // football. EVERY COLOR HERE IS A LITERAL: the mark is the same four colors on both pewter shells,
 // so nothing moves with the palette. The CREAMSICLE does not get it (its white shell carries the

@@ -3,14 +3,11 @@
     python3 scripts/uniform-draw/panthers_decal.py            # print the four paths
     python3 scripts/uniform-draw/panthers_decal.py --check    # verify panthers.ts matches
 
-This is a CONTOUR TRACE, not the hand-drawn geometry the vault's `Reference/uniform-hand-drawing.md`
-produces. The panther head is carried by fine positive detail — jaw, fangs,
-whisker slashes — that a hand-drawn anchor list cannot hold at helmet scale, and
-the mark's body contrasts with both shells, so the trace is stable where the doc's
-negative-space warning would not apply. The mark is the club's non-free
-trademarked artwork (en.wikipedia `File:Carolina Panthers logo.svg`, fair use;
-licence audit: the vault's Decisions.md, 2026-09-03) and the reference file is
-never committed here — it lives in the sibling nfl-uniform-refs/ checkout.
+This is a CONTOUR TRACE, not hand-drawn geometry. The panther head is carried by fine positive
+detail — jaw, fangs, whisker slashes — that a hand-drawn anchor list cannot hold at helmet scale,
+and the mark's body contrasts with both shells, so the trace is stable where the doc's
+negative-space warning would not apply. The input lives in the sibling nfl-uniform-refs/ checkout,
+outside this repository.
 
 Topology, measured rather than assumed (docs step 4). The mark is ONE connected
 component and has NO enclosed white area: every gap that reads as a whisker or a

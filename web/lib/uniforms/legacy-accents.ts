@@ -18,13 +18,11 @@ export type LegacyAccentPair = Pick<TeamColors, 'uiAccent' | 'onAccent'>;
 //     them. 63 of the 105 are invented hues for that reason — that is now correct, because
 //     the column no longer claims to be the team's color, only what old clients should paint.
 //   - on_accent is likewise frozen rather than derived from readableTextOn(ui_accent):
-//     deriving it would rewrite 91 rows from #0a0e1a to #15161a (the app ground moved in
-//     DEP-274) for no benefit, and would break the byte-identical-migration check that
-//     proves this refactor is a no-op for shipped builds.
+//     deriving it would rewrite 91 rows from #0a0e1a to #15161a (the app ground moved) for
+//     no benefit, and would break the byte-identical-migration check that proves this
+//     refactor is a no-op for shipped builds.
 //
-// Retirement is blocked on DEP-425 (forced-update gate) plus pre-gate installs draining —
-// see the spec's "Retirement path". Design: ../../obsidian/Projects/depth/specs/
-// 2026-09-01-team-color-surface-rules-design.md.
+// Retirement is blocked on an armed forced-update gate plus pre-gate installs draining.
 //
 // A new kit needs an entry here: use `teamRing()` from lib/utils/team-surfaces.ts for
 // uiAccent (legible by construction) and `readableTextOn()` for onAccent.

@@ -1,11 +1,4 @@
-// Seattle's four archived kits, redrawn from the Gridiron Uniform Database references in
-// nfl-uniform-refs/seahawks (2025 season composite + the 1976 throwback era sheet). Construction
-// geometry — stripes, bands, piping — is redrawn from those references rather than traced; the
-// helmet decal is the documented exception and is a machine trace awaiting hand-stylizing (see
-// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
-// of a third-party mark, not original geometry. The mark is NON-FREE upstream
-// (Wikimedia `File:Seattle Seahawks logo.svg`, fair use; trademarked). Licence audit: the vault’s
-// Decisions.md, 2026-09-03.
+// Seattle's construction geometry for its four archived kits.
 //
 // The side-view shell carries no construction stripe — everything else on it is the decal. The
 // composite's top-view inset is the only evidence of a center stripe: a slate wedge, narrow at the
@@ -17,11 +10,6 @@ export const SEAHAWKS_HELMET_CENTER_COLOR = '#2B507C';
 // The crown band this kit paints that color now lives in ./shared — San Francisco needs the same
 // geometry, and it is a fact about the mannequin shell rather than about Seattle.
 
-// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
-// of a third-party mark, not original geometry. The mark is NON-FREE upstream
-// (Wikimedia `File:Seattle Seahawks logo.svg`, fair use; trademarked). Licence audit: the vault’s
-// Decisions.md, 2026-09-03.
-//
 // Re-authored 2026-09-03 from a reference that clears the resolution gate, replacing a trace off
 // the 46px GUD composite whose keyline survived as 7 disconnected fragments totalling 31px. The
 // mark is traced at 1200px wide (thinnest white channel 20px = 1.67% of mark width; keyline

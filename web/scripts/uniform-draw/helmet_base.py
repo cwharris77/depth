@@ -1,6 +1,6 @@
 """Derive the generated helmet art files every kit paints from.
 
-Input is Cooper's own hand-made helmet illustration, which was authored in Seahawks
+Input is a hand-made helmet illustration, authored in Seahawks
 livery (College Navy shell + facemask, wolf-grey mark). This script strips what is
 club-specific and leaves what is not: the shell shading, the facemask hardware, the
 vents, the rivets, the chin strap and the ear-hole padding all survive verbatim.
@@ -22,9 +22,8 @@ Four transforms, in order:
      read as a curved surface, so they are preserved rather than flattened; a team
      recolour is then a hue swap over the same offsets.
 
-The reference file is not committed (it carries the club mark). It lives beside the other
-uncommitted references, at ../nfl-uniform-refs/helmet/helmet-base-reference.svg — see that
-folder's README, whose provenance differs from the rest of nfl-uniform-refs. Re-run as:
+The input lives at ../nfl-uniform-refs/helmet/helmet-base-reference.svg, outside this
+repository. Re-run as:
 
     python3 scripts/uniform-draw/helmet_base.py \
       ../nfl-uniform-refs/helmet/helmet-base-reference.svg lib/uniforms/helmet-base.svg
@@ -70,7 +69,7 @@ WHITE_L = 0.90
 # horizontal openings between the lower bars, where the drawing recorded what shows
 # through (the far side of the mask in shadow) instead of the white sheet behind it.
 # They are paint by every colour test, so they survive WHITE_L and render as a light-grey
-# fill where empty space belongs (Cooper, 2026-09-08). Cut them instead of painting them.
+# fill where empty space belongs. Cut them instead of painting them.
 #
 # Identified by index rather than derived, because no property separates them from the
 # bar shading: it is their POSITION that makes them gaps — each is a slab lying between
@@ -118,8 +117,8 @@ FACEMASK_BOX = (880, 540)          # x0, y0 — a path must start at or past bot
 DIMPLE_BOX = (1270, 540, 1400, 700)  # shell texture inside FACEMASK_BOX; stays shell
 # The two cage bolt heads are the only genuinely metal parts of the facemask — real chrome,
 # identical on every kit. Everything else grey inside the cage is the bars' own lighting and
-# belongs to the facemask surface: leaving it hardware renders a red mask with grey bars
-# (Cooper, 2026-09-05). A bolt is its disc plus the slot cut into it, all centred on the same
+# belongs to the facemask surface: leaving it hardware renders a red mask with grey bars.
+# A bolt is its disc plus the slot cut into it, all centred on the same
 # point; the size cap keeps the big grey cage compounds, which happen to centre nearby, out.
 RIVETS = ((1020, 770), (1066, 1182))
 RIVET_R = 20
@@ -232,8 +231,7 @@ def in_cage(bb):
     Deliberately does NOT apply DIMPLE_BOX. That carve-out answers a different question
     (which team surface owns a path), and letting it gate opening detection suppressed a
     real hole: source path 31, the 68x103 opening at the top of the cage, lands inside the
-    dimple box and so was dropped as paint instead of cut, leaving it filled (Cooper,
-    2026-09-08).
+    dimple box and so was dropped as paint instead of cut, leaving it filled.
     """
     return bb[0] >= FACEMASK_BOX[0] and bb[1] >= FACEMASK_BOX[1]
 
@@ -380,7 +378,7 @@ art_paths.insert(sum(1 for i in src_indices if i <= max(LOGO)), {
 })
 
 HEADER = """<!-- Team-neutral helmet base: the shell, facemask, vents, rivets and chin strap
-     every kit paints on. Derived from Cooper's own helmet illustration by
+     every kit paints on. Derived from a helmet illustration by
      scripts/uniform-draw/helmet_base.py, which strips the club mark and re-hues the
      shell family onto the %s placeholder while preserving its shading offsets.
      Fill colours are NOT hand-editable — change the script and re-derive, or the next
@@ -407,7 +405,7 @@ TS_HEADER = """/**
  * GENERATED FILE — DO NOT EDIT.
  *
  * Team-neutral helmet art: the shell, facemask, vents, rivets, and chin strap every
- * kit paints on. Derived from Cooper's own helmet illustration by
+ * kit paints on. Derived from a helmet illustration by
  * scripts/uniform-draw/helmet_base.py, which strips the club mark and stores the shell
  * and facemask shading as lightness offsets from the %s placeholder. Change the script
  * and re-derive this file, or the next run will silently revert manual edits.

@@ -3,19 +3,16 @@
     python3 scripts/uniform-draw/rams_horn.py            # print the path
     python3 scripts/uniform-draw/rams_horn.py --check    # verify rams.ts matches
 
-Like panthers_decal.py this is a CONTOUR TRACE rather than the hand-drawn geometry
-the vault's `Reference/uniform-hand-drawing.md` produces. The horn is a single smooth spiral with no
-fine interior detail, so the doc's negative-space warning does not apply and a
+Like panthers_decal.py this is a CONTOUR TRACE rather than hand-drawn geometry. The horn is a single
+smooth spiral with no fine interior detail, so the doc's negative-space warning does not apply and a
 trace is both stable and closer to the reference than an anchor list would be.
 
 WHY NOT THE FETCHED MARK. gate-check.py's NOTES row for `rams` is the whole story:
 the reference fetch resolves `File:Los Angeles Rams Logo.png`, which is the LA
 lockup, and the helmet decal is the horn ALONE — the horn is not in that file at
-all. The linework here comes instead from Commons `File:Los Angeles Rams Uniforms
-2025.png` (CC BY-SA 4.0 as an illustration; the horn itself is the club's
-trademark, licence audit in the vault's Decisions.md, 2026-09-03), whose helmet is
-about 400px across against the GUD composite's 90. Neither reference is committed
-here — both live in the sibling nfl-uniform-refs/ checkout.
+all. The linework here comes instead from a uniform illustration whose helmet is
+about 400px across against the placement composite's 90. Both inputs live in the
+sibling nfl-uniform-refs/ checkout, outside this repository.
 
 That illustration draws the helmet facing LEFT and the mannequin faces RIGHT, so
 the trace is mirrored in design space (u -> 100 - u) before it is mapped.

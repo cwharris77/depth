@@ -1,8 +1,6 @@
-"""Emit the Falcons helmet decal from the standalone club-mark reference (DEP-478).
+"""Emit the Falcons helmet decal from a standalone vector input kept outside the repo.
 
-The non-free trademarked Wikipedia ``File:Atlanta Falcons logo.svg`` supplies
-linework. The reference remains outside the repository. The 2025 helmet sheet
-supplies placement: the mark spans approximately x77..129, y27..77 against a
+A helmet sheet supplies placement: the mark spans approximately x77..129, y27..77 against a
 shell at x56..146, y21..111. Those shell-relative bounds map to the raw mannequin
 shell x139..701.5, y65..637.4. Silver, white, black and red are retained separately;
 the previous small composite trace lost the silver border and several feathers.

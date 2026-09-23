@@ -1,8 +1,8 @@
 import SwiftUI
 
 // The kind + status badge pair a kit carries wherever it is shown at full size — the
-// team drill-in's rows and the detail sheet (2026-08-27 archive v2). One view rather
-// than the same capsule pair written twice (AGENTS.md #17), and the status colors are
+// team drill-in's rows and the detail sheet. One view rather
+// than the same capsule pair written twice, and the status colors are
 // decided here so "IN ROTATION" can't end up accent-tinted in one place and muted in
 // the other.
 struct UniformKitBadges: View {

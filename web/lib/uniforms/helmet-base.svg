@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg version="1.1" viewBox="0 0 1720 1440" width="430" height="360" xmlns="http://www.w3.org/2000/svg">
 <!-- Team-neutral helmet base: the shell, facemask, vents, rivets and chin strap
-     every kit paints on. Derived from Cooper's own helmet illustration by
+     every kit paints on. Derived from a helmet illustration by
      scripts/uniform-draw/helmet_base.py, which strips the club mark and re-hues the
      shell family onto the #575757 placeholder while preserving its shading offsets.
      Fill colours are NOT hand-editable — change the script and re-derive, or the next

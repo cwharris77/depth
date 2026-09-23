@@ -311,10 +311,9 @@ describe('UniformFigure', () => {
     expect(markup.indexOf(helmetArt)).toBeLessThan(markup.indexOf(teamLayer));
   });
 
-  // Acceptance criteria 2 and 3 of the helmet art migration spec
-  // (../obsidian/Projects/depth/specs/2026-09-05-helmet-art-migration-design.md). The art is
-  // worth using only because it shades; a renderer that flattens it, or that paints the cage
-  // from the shell color, produces the same flat silhouette the hand-authored GEO helmet drew.
+  // The helmet art is worth using only because it shades; a renderer that flattens it, or that
+  // paints the cage from the shell color, produces the same flat silhouette the hand-authored GEO
+  // helmet drew.
   describe('helmet art shading', () => {
     it('paints the shell in at least 20 distinct shades of the helmet color', () => {
       const fills = helmetArtFills(renderFigure({ definition }));

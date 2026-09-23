@@ -1,26 +1,27 @@
-"""Regenerate Tampa Bay decals from the supplied source SVGs (DEP-481).
+"""Regenerate Tampa Bay decals from the supplied source SVGs in $DECAL_SVGS.
 
 The source paths are carried into the renderer directly, in source paint order. Path zero in each
 file is a full-canvas white export backdrop, not foreground decal art; every other path and its
-exact supplied color is retained. The coordinates are scaled to the helmet envelope measured from
-the reference composite, which supplies placement only.
+exact supplied color is retained. The coordinates are scaled to the measured helmet envelope.
 """
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-MODULE = ROOT / 'lib/uniforms/teams/buccaneers-decal.ts'
+MODULE = ROOT / 'lib/uniforms/teams/buccaneers/decal.ts'
+SVG_DIR = Path(os.environ.get('DECAL_SVGS', '.'))
 SOURCES = (
-    ('BUCCANEERS_FLAG_DECAL_PATHS', Path('/Users/cwharris/Downloads/decal_svgs/bucaneers_flag.svg'), 2048, 2048),
-    ('BUCCANEERS_CREAMSICLE_DECAL_PATHS', Path('/Users/cwharris/Downloads/decal_svgs/cucaneers_creamsicle.svg'), 2000, 1126),
+    ('BUCCANEERS_FLAG_DECAL_PATHS', SVG_DIR / 'bucaneers_flag.svg', 2048, 2048),
+    ('BUCCANEERS_CREAMSICLE_DECAL_PATHS', SVG_DIR / 'cucaneers_creamsicle.svg', 2000, 1126),
 )
 
-# The reference composite sets the side-panel decal envelope: x=234..542, y=126..346 in raw
+# The side-panel decal envelope: x=234..542, y=126..346 in raw
 # helmet space.
 TARGET_X0, TARGET_Y0, TARGET_WIDTH, TARGET_HEIGHT = 234.0, 126.0, 308.0, 220.0
 TOKEN = re.compile(r'[A-Za-z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?')

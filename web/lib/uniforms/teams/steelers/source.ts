@@ -4,8 +4,8 @@
 // migration that proved parts render byte-identically (see parts-parity.test.ts for the one-time
 // gate).
 
-// Pittsburgh's modern shell uses the complete 1969–2001 mark, re-authored directly from
-// Cooper's supplied vector reference. Each source path was scaled and translated into raw helmet
+// Pittsburgh's modern shell uses the complete 1969–2001 mark, drawn from a vector
+// source. Each source path was scaled and translated into raw helmet
 // space (center 431,226; scale 0.15); UniformLayer has no transform field. The GUD composite
 // places this 169-unit outer disc on the shell's upper-left, unrotated, including its grey ring,
 // the white separator, and the small black wordmark.

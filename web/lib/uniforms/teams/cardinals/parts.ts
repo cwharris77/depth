@@ -243,7 +243,7 @@ export const CARDINALS_CONSTRUCTION = {
     eggshellDecalOrange: CARDINALS_EGGSHELL_DECAL_ORANGE,
     eggshellDecalWhite: CARDINALS_EGGSHELL_DECAL_WHITE,
     numberKeyline: CARDINALS_NUMBER_KEYLINE,
-    // Fine fabric flecks and stitching sampled from Cooper's approved jersey proof.
+    // Fine fabric flecks and stitching.
     speckle: '#B8A58A',
     stitch: '#99958D',
   },

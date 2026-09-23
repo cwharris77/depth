@@ -20,12 +20,9 @@ import { GENERIC_COLLAR_PATH } from '../core/shared';
 // band or the numerals from.
 export const VIKINGS_WHITE = '#FFFFFF';
 
-// Provenance: helmet-specific horn artwork supplied for DEP-477 — a reproduction of a third-party
-// mark, not original geometry. The two source paint paths are fit into the existing measured
-// helmet placement (x=269.4...580.3, y=223.2...345.4), with the transform baked into the path data
-// because UniformLayer has no transform field. The source is 2048px wide; its two painted
-// components remain stable at 0.75x, and the narrowest critical horn stroke clears the 2px gate.
-// Licence audit: the vault's Decisions.md, 2026-09-03.
+// Helmet horn artwork fit into the measured helmet placement (x=269.4...580.3, y=223.2...345.4),
+// with the transform baked into the path data because UniformLayer has no transform field. Its two
+// painted components remain stable at 0.75x, and the narrowest horn stroke clears the 2px gate.
 //
 // Horn then crescent, using the source's default nonzero fill. Its three white background paths are
 // omitted; the horn's nested contour remains filled rather than becoming a shell-colored cutout.

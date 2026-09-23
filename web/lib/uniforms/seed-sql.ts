@@ -63,7 +63,7 @@ function rowValues(u: (typeof UNIFORMS)[number]): string {
     // legacy-accents.ts for why they are never derived or re-curated.
     ui_accent: legacy.uiAccent,
     on_accent: legacy.onAccent,
-    // Deterministic artifact path (DEP-220/DEP-406): every curated kit's thumb lives at
+    // Deterministic artifact path: every curated kit's thumb lives at
     // /uniforms/<teamId>-<slug>-<yearStart>.webp, origin-relative so web art resolves
     // against the current request origin (local dev/preview serve public/uniforms/).
     // data.ts's explicit imagePath override (if ever set) wins over the derived default.
