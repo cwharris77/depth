@@ -1,7 +1,7 @@
 import SwiftUI
 
 // One sheet shell for every sheet in the app, consolidating the chrome each screen used
-// to hand-roll (DEP-420 — the iOS half of web's DEP-398). Every sheet was re-declaring
+// to hand-roll. Every sheet was re-declaring
 // its own `NavigationStack` + inline title + toolbar close + presentation
 // background/detents/drag indicator, and two sheets (AuthSheet, AccountDeletionSheet)
 // still used a text "Cancel" instead of the shared `CloseButton`. This view owns all of
@@ -12,7 +12,7 @@ import SwiftUI
 //   • The close control is always `CloseButton`. `closePlacement: .overlay` hosts it as a
 //     persistent top-trailing overlay instead of a toolbar item — required by
 //     TeamListPickerSheet, whose inline `.searchable` hides every nav-bar toolbar item
-//     while the field is focused (DEP-273; see that file). `closeOverlayPadding` exists
+//     while the field is focused. `closeOverlayPadding` exists
 //     because the two overlay sheets tune their X differently: the uniform kit pins it at
 //     the standard `Spacing.md` inset; TeamListPickerSheet drops it onto the inline
 //     title's own band (top 13 / `screenMargin`).

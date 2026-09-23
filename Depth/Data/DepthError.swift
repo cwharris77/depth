@@ -1,7 +1,7 @@
 import Foundation
 
-// Typed error surface for every repository operation (design spec's "Data and state
-// contract"). One case per distinct recovery UI needs — never a bare String/nil.
+// Typed error surface for every repository operation. One case per distinct recovery UI
+// need — never a bare String/nil.
 enum DepthError: Error, Equatable {
     case notFound
     case offline
@@ -30,8 +30,7 @@ extension URLError {
     }
 }
 
-// One mapper producing user-facing recovery copy per case (design spec's "Data and
-// state contract": "One mapper produces specific user recovery states"). Never surfaces
+// One mapper produces user-facing recovery copy per case. Never surfaces
 // the raw associated-value diagnostic string to users — that's for os.Logger only.
 extension DepthError {
     var recoveryDescription: String {
@@ -53,7 +52,7 @@ extension DepthError {
         }
     }
 
-    /// Non-sensitive bucket for `AppEvent.error` (design spec Milestone 2B item 26) —
+    /// Non-sensitive bucket for `AppEvent.error` —
     /// the case name only, never the associated diagnostic string.
     var telemetryCategory: String {
         switch self {

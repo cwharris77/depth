@@ -21,7 +21,8 @@ func byDepthOrder(_ a: Player, _ b: Player) -> Bool {
 ///
 /// The fallback is what keeps historical seasons working: roster_history has no
 /// depth_chart_entries, so a 2001 roster derives its seats from Player.position and
-/// Player.depthRank and behaves exactly as it did before seats existed (DEP-585).
+/// Player.depthRank and preserves the historical one-seat-per-player behavior when seats
+/// are absent.
 /// Mirrors seatsOf.
 func seatsOf(_ roster: Roster) -> [DepthSeat] {
     if let depthChart = roster.depthChart { return depthChart }

@@ -48,7 +48,7 @@ final class AccountDeletionViewModel {
 
     func requestFreshCode() async {
         guard !isSubmitting else { return }
-        // DEP-598: never return silently from the warning step — it has no countdown,
+        // Never return silently from the warning step — it has no countdown,
         // so a swallowed tap reads as a dead "Continue" button. The code step already
         // renders the countdown in place of its resend button.
         if let wait = resendWait(at: now()) {

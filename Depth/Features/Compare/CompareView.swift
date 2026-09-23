@@ -1,36 +1,29 @@
 import SwiftUI
 
-// Native two-team compare (DEP-258) — a port of web's components/CompareView.tsx,
-// replacing the navigation-parity placeholder. Two team-slot pickers feed two sections
+// Native two-team compare. Two team-slot pickers feed two sections
 // behind a By-team/By-position segmented control: the By-team tab's unit-metrics lenses,
 // and the per-position depth table (rank-aligned side-by-side columns). All content
 // derives from the CompareViewModel's resolved TeamStatsPage/TeamSnapshot reads through
 // DepthRepository — no new data seam. The repository is a `CachingDepthRepository`
 // (concrete, like every tab) so the team-picker sheet can reuse TeamListView.
 //
-// DEP-266 (Compare page unification): every bounded surface composes the shared
-// `depthCard()` treatment (no hand-rolled background/border/radius literals), spacing
-// sits on the 8pt `DesignTokens.Spacing` scale. Web cards are `rounded-2xl` (16pt), so
-// Compare passes `radius: .md` to `depthCard` to keep exact parity rather than the
-// app-wide 24pt.
+// Every bounded surface composes the shared `depthCard()` treatment, with spacing on the
+// 8pt `DesignTokens.Spacing` scale. Compare passes `radius: .md` to `depthCard` so its
+// metric and picker cards use the same bounded-surface geometry.
 //
-// Aug 2026 feedback pass (two rounds): the Forecast lens, Roster lens, and Deepest Room
-// teaser were removed outright (not reworded) — see CompareViewModel.swift's Lens doc
-// comment and Domain/Compare.swift's header for why. The room→role position picker lost
-// its "1 OF 2 / 2 OF 2" step labels and each room's redundant detail caption, the depth
-// table lost its "Dot = row rank" legend and per-row dot (the numbered gutter chip is
-// the only rank indicator now), and each team slot grew an explicit clear affordance.
+// The matchup section uses season-stable offense, defense, and special-teams lenses. The
+// position section uses a room-to-role picker and a rank-aligned depth table; each team slot
+// also has an explicit clear affordance.
 struct CompareView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var viewModel: CompareViewModel
-    /// DEP-405: the matchup this tab was routed to by a schedule-card tap, or nil for a
-    /// plain tab-bar visit. Non-nil is the analog of DEP-280's `enteredFromSchedule`: it
-    /// both re-seeds the view model's preselection and gates the "Back to schedule" pill
-    /// (the tab switch removed the pushed instance's system back chevron, so the pill is
-    /// the schedule-origin escape again). Consumed from `compareRouteStore`; cleared when
-    /// the pill is tapped, which resets the tab to its empty root state (DEP-280's pop).
+    /// The matchup this tab was routed to by a schedule-card tap, or nil for a plain tab-bar
+    /// visit. Non-nil re-seeds the view model's preselection and gates the "Back to schedule"
+    /// pill because the tab switch has no pushed-view back chevron. Consumed from
+    /// `compareRouteStore`; cleared when the pill is tapped, which resets the tab to its
+    /// empty root state.
     @State private var scheduleMatchup: CompareRouteStore.CompareRouteRequest?
     private let repository: CachingDepthRepository
     private let compareRouteStore: CompareRouteStore
@@ -43,10 +36,8 @@ struct CompareView: View {
     }
 
     var body: some View {
-        // Cooper review (DEP-252/DEP-277): RootTabView's Compare tab instantiates this
-        // view directly with no ambient NavigationStack (unlike DepthChartsTab/
-        // UniformsTab, which each wrap themselves) — so `.navigationTitle` and the
-        // shared top-nav toolbar below were silent no-ops until this was added.
+        // RootTabView instantiates Compare directly without an ambient NavigationStack, so
+        // the view owns the navigation title and shared top-nav toolbar configuration.
         NavigationStack {
             content
                 .navigationTitle("Compare")
@@ -90,10 +81,8 @@ struct CompareView: View {
                     }
                 }
                 .sheet(isPresented: $showAccount) {
-                    // Matches TeamDetailView's account sheet exactly (DEP-252) — same
-                    // SettingsView, same three dependencies, just sourced from
-                    // DepthEnvironment directly since CompareView (unlike
-                    // TeamDetailView) doesn't already thread sessionStore/events in.
+                    // CompareView does not already thread sessionStore/events through its
+                    // initializer, so source the account sheet's dependencies here.
                     SettingsView(
                         sessionStore: DepthEnvironment.authSessionStore,
                         authService: DepthEnvironment.authService,
@@ -103,8 +92,8 @@ struct CompareView: View {
                     )
                 }
         }
-        // DEP-405: a schedule-card tap writes the matchup to the store *and* switches the
-        // active tab in the same callback, so the request is always pending by the time
+        // A schedule-card tap writes the matchup to the store and switches the active tab in
+        // the same callback, so the request is pending by the time
         // this tab appears. `.onAppear` catches a first-ever visit (the store changed
         // before this view existed, so `.onChange` never saw it); `.onChange` catches an
         // already-visited instance the store update reaches while it's installed. Both
@@ -116,7 +105,7 @@ struct CompareView: View {
         // Rebuild the view model whenever the schedule-origin matchup changes — the
         // `.id(teamId)` key-reset idiom applied to Compare's preselection, so a new
         // schedule tap re-seeds both slots and the pill's tap returns the tab to its
-        // empty root state (DEP-280's pop) rather than carrying a stale matchup forward.
+        // empty root state rather than carrying a stale matchup forward.
         .onChange(of: scheduleMatchup) { _, matchup in
             viewModel = CompareViewModel(
                 repository: repository,
@@ -208,10 +197,9 @@ struct CompareView: View {
         .accessibilityIdentifier("compare-content")
     }
 
-    /// DEP-405: the DEP-280 "Back to schedule" control, restored now that the schedule-
-    /// origin compare lives on the Compare *tab* rather than as a push — the tab switch
-    /// removed the system back chevron the pushed instance had, so this pill is the
-    /// schedule-origin escape again. Mirrors web's `scheduleTeam` link
+    /// The "Back to schedule" control is shown when the schedule-origin compare lives on
+    /// the Compare tab rather than as a push. The tab switch has no system back chevron, so
+    /// this pill is the schedule-origin escape. It mirrors the schedule link
     /// (`/team/<id>/schedule`) and the original pill's `surfaceChip` vocabulary; instead
     /// of popping, it clears the schedule-origin session and switches back to the Depth
     /// Charts tab, whose TeamDetailView still has the Schedule page selected.
@@ -239,12 +227,8 @@ struct CompareView: View {
     /// is read off the picked teams' own `teamStats` payloads — there is no team-independent
     /// season source here, and a chip that opens an empty sheet is worse than no chip.
     ///
-    /// Aug 26 (Cooper): the provenance stamp that sat opposite this chip is gone — "I don't
-    /// need to see that the season already happened or how many games it had or when it
-    /// ended." The season chip itself already answers which season you are looking at, which
-    /// was the gap worth closing; the FINAL/LIVE/UPCOMING badge and its date line were
-    /// answering a question nobody asked. The thin-sample caution strip stays: that one is a
-    /// warning about the numbers below it, not a provenance claim.
+    /// The season chip identifies the selected season. The thin-sample caution strip remains
+    /// separate because it explains how to interpret the numbers below it.
     @ViewBuilder
     private var seasonRow: some View {
         if !viewModel.seasonOptions.isEmpty {
@@ -265,19 +249,16 @@ struct CompareView: View {
     }
 
     private var teamSlotRow: some View {
-        // Aug 26 (Cooper): the "Clear selection" control is gone — each slot's own X is a
-        // clear enough way to change a pick now that both slots carry one ("it'll be a couple
-        // more clicks, but I'm not worried about it"). That also buys back the vertical space
-        // this row used to spend on a label.
+        // Each filled slot owns its clear action, so the row needs no separate clear control
+        // or additional label.
         let layout =
             dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(spacing: DesignTokens.Spacing.sm))
             : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.sm))
         return layout {
             teamSlotButton(viewModel.teamA, slot: .a)
-            // Web parity: the VS separator is a `surfaceChip` capsule (web CompareView
-            // wraps "VS" in a `rounded-full` span with `surfaceChip` bg + `textFaint`
-            // caption text). Restored in DEP-266 after the first port drew it as bare text.
+            // The VS separator uses the web CompareView's surface-chip capsule: rounded
+            // background with faint caption text.
             Text("VS")
                 .font(.caption.weight(.black))
                 .foregroundStyle(DesignTokens.Colors.textFaint)
@@ -294,10 +275,8 @@ struct CompareView: View {
         Button {
             viewModel.beginPicking(slot)
         } label: {
-            // Aug 26 (Cooper): the slot's contents are centered rather than left-aligned.
-            // The abbrev, name, and record are three lines of very different widths, and
-            // left-aligning them against a slot whose clear button sits in the opposite
-            // corner made the stack read as pushed off to one side.
+            // Center the slot's contents rather than left-aligning them. The abbrev, name,
+            // and record have different widths, while the clear button occupies a corner.
             VStack(spacing: DesignTokens.Spacing.xs) {
                 if let team {
                     Text(team.abbrev.uppercased())
@@ -323,8 +302,8 @@ struct CompareView: View {
             .background(
                 team.map { Color(hex: TeamSurfaces.mark($0.colors.jersey)).opacity(0.10) }
 
-                    // DEP-266: the unpicked slot is a dashed `borderInput` border on
-                    // transparent — web parity — so it reads as a "fill this in" hole
+                    // The unpicked slot is a dashed `borderInput` border on transparent, so
+                    // it reads as a "fill this in" hole
                     // rather than a solid-but-wrong slot. The `.overlay` below draws it.
                     ?? Color.clear,
                 in: RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
@@ -369,12 +348,9 @@ struct CompareView: View {
         }
     }
 
-    /// The picked team's W-L at the resolved season, under its name (vault canvas 1b) —
-    /// "the filled side already shows its record, so the page starts paying off before the
-    /// second pick" (canvas 2b). While the side is still resolving this is a placeholder bar
-    /// of the same height (canvas 2e), never a "0-0" that would flash and then jump
-    /// (AGENTS.md mistake #16). A resolved season the team has no row for shows nothing
-    /// rather than borrowing another year's record.
+    /// The picked team's W-L at the resolved season, under its name. While the side is still
+    /// resolving, a same-height placeholder prevents a transient "0-0"; a resolved season
+    /// with no row shows nothing rather than borrowing another year's record.
     @ViewBuilder
     private func slotRecord(_ slot: CompareViewModel.Slot) -> some View {
         if viewModel.evidenceLoadState == .loading {
@@ -399,7 +375,7 @@ struct CompareView: View {
     /// short name below (web CompareView's `min-[480px]` swap). Native has no CSS
     /// breakpoint, but at phone widths the two columns are always narrow, so the city is
     /// dropped on compact layouts to match web's <480px rendering and avoid the
-    /// illegible strike-through that `.minimumScaleFactor` produced (DEP-266).
+    /// illegible strike-through that `.minimumScaleFactor` can produce.
     private func slotLabel(_ team: Team?) -> String {
         guard let team else { return "Pick a team" }
         return "\(team.city) \(team.name)"
@@ -408,8 +384,7 @@ struct CompareView: View {
     private var tabSwitcher: some View {
         DepthSegmentedControl(
             options: [
-                // DEP-266: web's tab copy is "By team"/"By position" — the first port
-                // used all-caps "MATCHUP"/"BY POSITION"; restored to the web labels.
+                // Use the same concise tab labels as the web surface.
                 DepthSegmentedOption(
                     value: CompareViewModel.Tab.matchup, label: "By team",
                     identifier: "compare-tab-matchup"),
@@ -419,9 +394,8 @@ struct CompareView: View {
             ],
             selection: viewModel.tab,
             onChange: { viewModel.selectTab($0) },
-            // Web's CompareView passes `<SegmentedControl fullWidth …>` — the Matchup/
-            // By-position switcher is a standalone full-width bar (DEP-236 added
-            // `fullWidth` after this port began; adopted for parity).
+            // The Matchup/By-position switcher is a standalone full-width bar, matching
+            // the web surface's `fullWidth` control.
             fullWidth: true
         )
         .accessibilityElement(children: .contain)
@@ -440,7 +414,7 @@ struct CompareView: View {
 
 // MARK: - Matchup tab
 
-/// DEP-317's five-lens matchup briefing plus the existing DEP-311 drilldown path.
+/// The matchup section's metric lenses and the position drilldown path.
 private struct TeamMatchupSection: View {
     let viewModel: CompareViewModel
 
@@ -465,7 +439,7 @@ private struct TeamMatchupSection: View {
 // MARK: - Position tab
 
 /// Web's `PositionDepth` (components/CompareView.tsx): the two-step room→role position
-/// picker (DEP-311, replacing the horizontal chip row) plus the rank-aligned depth table
+/// picker (replacing the horizontal chip row) plus the rank-aligned depth table
 /// (or the prompt/same-team/empty states).
 private struct PositionDepthSection: View {
     let viewModel: CompareViewModel
@@ -492,8 +466,8 @@ private struct PositionDepthSection: View {
                     repository: repository
                 )
             } else {
-                // Unreachable given bothPicked, but degrade rather than crash (AGENTS.md
-                // invariant 6): a team slot that somehow went nil after bothPicked.
+                // Unreachable given bothPicked, but degrade rather than crash if a team slot
+                // somehow becomes nil after bothPicked.
                 ComparePrompt(
                     pickedCount: viewModel.pickedCount,
                     copy:
@@ -504,12 +478,11 @@ private struct PositionDepthSection: View {
     }
 }
 
-/// The DEP-311 two-step position picker that replaces the old horizontal chip scroller: a
+/// The two-step position picker that replaces the old horizontal chip scroller: a
 /// balanced unit→room grid followed by an exact-role panel. All 29 `COMPARE_POSITIONS`
 /// values stay reachable with no horizontal scrolling; every interactive tile keeps a 44pt
 /// minimum tap target, selected state is never color-only, and VoiceOver labels come from
-/// `Position.fullName`. Aug 2026: dropped the "1 OF 2 · ROOM" / "2 OF 2 · POSITION" step
-/// labels (Cooper: the two steps read fine without narrating themselves).
+/// `Position.fullName`.
 private struct RoomPositionPicker: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -517,17 +490,14 @@ private struct RoomPositionPicker: View {
     let viewModel: CompareViewModel
 
     /// The combined height of the room grid + exact-role panel, reserved regardless of which
-    /// unit/room is active, so the depth table below never jumps (Cooper, Aug 26: "I don't
-    /// like how the compare table in the by position gets moved around... it should be fixed
-    /// to one spot"). Sized to the tallest real combination: a 2-row room grid (Offense and
+    /// unit/room is active, so the depth table below never jumps. Sized to the tallest real
+    /// combination: a 2-row room grid (Offense and
     /// Defense both have 4 rooms) plus a single row of role pills — the widest room is five
     /// roles, which now fits one row since the pills hug their labels. Special Teams' 1-row
     /// grid and Quarterback's no-panel selection leave blank space below at this same height.
     ///
-    /// Aug 26 (Cooper): down from 250. The old value reserved two rows of full-width role
-    /// tiles plus the container box around them; with both gone, the surplus was pure dead
-    /// space between the picker and the table, and the ask was for the By-position view to
-    /// fit without scrolling.
+    /// A fixed minimum leaves stable space for the picker while allowing the table below to
+    /// remain stationary as the selected room changes.
     private static let reservedPickerHeight: CGFloat = 176
 
     var body: some View {
@@ -537,10 +507,9 @@ private struct RoomPositionPicker: View {
             unitLensRow
 
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-                // The balanced room grid is always present (DEP-298 refined.html keeps the
-                // `.rooms` grid with the active `.room` highlighted while the selection panel
-                // sits below it — not a grid-or-panel either/or). Picking a multi-role room
-                // expands its exact-role panel beneath; picking it again collapses it.
+                // The balanced room grid is always present with the selection panel below it.
+                // Picking a multi-role room expands its exact-role panel; picking it again
+                // collapses it.
                 roomGrid
 
                 if let room = viewModel.expandedRoom {
@@ -551,7 +520,7 @@ private struct RoomPositionPicker: View {
         }
         // NB: no `.accessibilityIdentifier` on this container — DepthUnitTabBar's buttons
         // carry their own `unit-tab-*` ids, and a container-level identifier on the VStack
-        // overrode those (probed under DEP-311), leaving every lens unreachable by id.
+        // overrode those, leaving every lens unreachable by id.
         .animation(
             reduceMotion ? nil : DesignTokens.Motion.selection, value: viewModel.expandedRoomID)
     }
@@ -571,10 +540,9 @@ private struct RoomPositionPicker: View {
     // MARK: Room grid
 
     /// The balanced aligned room grid for the selected unit. Two columns on the phone width
-    /// the design locked (DEP-298 refined.html `.rooms` is `1fr 1fr`), which keeps every room
-    /// tile ≥ ~44pt tall without horizontal scrolling. Aug 2026: dropped the per-room detail
-    /// caption (Cooper: it duplicated what the exact-role panel already spells out one tap
-    /// later) — name plus a trailing position count is enough.
+    /// Two columns keep every room tile at least about 44pt tall without horizontal
+    /// scrolling. Each tile shows the room name and a trailing position count; the exact
+    /// role panel supplies the detailed position names after selection.
     private var roomGrid: some View {
         LazyVGrid(
             columns: dynamicTypeSize.isAccessibilitySize
@@ -638,32 +606,18 @@ private struct RoomPositionPicker: View {
     // MARK: Exact-role panel
 
     /// The exact-role selection panel, shown only while its room is expanded — never for a
-    /// single-position room (Cooper: "since there's only one position in the QB group, don't
-    /// add the secondary positions container for that one" — `CompareViewModel.selectRoom`
-    /// never expands one). A room with 3 or fewer roles (Backfield's RB/FB, etc.) centers its
-    /// tiles in a fixed-width row instead of sitting left-stuck in a 3-column grid with an
-    /// empty trailing cell; a room with more roles keeps the grid. Aug 2026: padding and tile
-    /// size both pulled back in — the previous round's "more space" pass over-corrected into
-    /// tiles that read as oversized (Cooper: "way smaller... They're pretty huge right now").
+    /// single-position room. A room with 3 or fewer roles (Backfield's RB/FB, etc.) centers
+    /// its tiles in a fixed-width row instead of sitting left-stuck in a 3-column grid with
+    /// an empty trailing cell; a room with more roles keeps the grid.
     ///
-    /// No `.accessibilityIdentifier` on this container (there was one, "compare-exact-role-
-    /// panel", with no test or code ever reading it): applying an identifier to a `Group`
-    /// whose content structurally switches between two different view trees (`HStack` vs.
-    /// `LazyVGrid`, above) let that identifier bleed onto every child `roleTile` button the
-    /// instant a room→room transition crossed that branch — e.g. expanding a >3-role room
-    /// then immediately a ≤3-role one — so every role tile inside reported
-    /// "compare-exact-role-panel" instead of its own "compare-position-<code>" (caught by
-    /// `testMatchupRoomsReachEveryUnitWithoutHorizontalScrolling`, reproduced locally via
-    /// `xcodebuild test`: the accessibility snapshot showed all three Safeties role buttons
-    /// carrying the panel's identifier). Each `roleTile` already carries its own identifier
+    /// No `.accessibilityIdentifier` belongs on this container. Its content switches between
+    /// `HStack` and `LazyVGrid`, and a container identifier can bleed onto child `roleTile`
+    /// buttons when that branch changes. Each `roleTile` already carries its own identifier
     /// and `.accessibilityElement(children: .combine)`; the container needs none.
     private func exactRolePanel(_ room: CompareRoom) -> some View {
-        // Aug 26 (Cooper): the canvas's By-position artboard (1d) draws these as a plain row
-        // of small hugging chips with no container behind them — "I like those better than
-        // ours... also remove the outer box around the pills." The widest room is five roles
-        // (Line, Defensive Line, Linebackers), which fits one row at this size, so the
-        // grid/HStack branch that used to switch on role count is gone too: it exists only
-        // when tiles are wide enough to wrap.
+        // Keep role tiles as a plain row of compact chips without an outer container. The
+        // widest room fits on one row at this size; the flow layout remains for accessibility
+        // sizes where tiles may need to wrap.
         let layout =
             dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(DepthFlowLayout(spacing: DesignTokens.Spacing.xs + 2))
@@ -694,8 +648,8 @@ private struct RoomPositionPicker: View {
                         .accessibilityHidden(true)
                 }
             }
-            // The painted chip hugs its label (canvas 1d: 8x12px padding), while the button
-            // around it still reserves the 44pt HIG tap target. Splitting the two is what
+            // The painted chip hugs its label, while the button around it still reserves the
+            // 44pt HIG tap target. Splitting the two is what
             // lets the pill read small without shrinking what you actually have to hit.
             .padding(.horizontal, DesignTokens.Spacing.sm + 4)
             .padding(.vertical, DesignTokens.Spacing.sm)
@@ -777,7 +731,7 @@ private struct EmptyPositionState: View {
     let position: Position
 
     var body: some View {
-        // DEP-266: web's EmptyPositionState is a `surfaceCard2` box with a solid
+        // The web EmptyPositionState is a `surfaceCard2` box with a solid
         // `borderDefault` border (web CompareView lines 460-472) — distinct from the
         // dashed `ComparePrompt`/`SameTeamBlock`, which web draws with a dashed
         // `borderSubtle` border. Separated by the shared container's `dashed` flag.
@@ -790,8 +744,8 @@ private struct EmptyPositionState: View {
     }
 }
 
-/// The one empty/placeholder treatment shared by Compare's three states (DEP-266, which
-/// previously had three divergent hand-rolled boxes: ComparePrompt and SameTeamBlock used
+/// The one empty/placeholder treatment shared by Compare's three states. ComparePrompt and
+/// SameTeamBlock use
 /// a dashed `borderSubtle` radius-16 with no fill, EmptyPositionState a solid
 /// `borderDefault` radius-16 text-only). Web renders all three as a `surfaceCard2`
 /// `rounded-2xl` box with a dashed `borderSubtle` border; `dashed: false` opts out to the
@@ -827,11 +781,9 @@ private struct CompareEmptyState<Content: View>: View {
 }
 
 /// Web's `CompareRows` (components/CompareView.tsx) — the two-column (one per team) depth
-/// table: a header cell per team, one row per depth rank. Uneven depth renders a dim "—" on
-/// the shorter side by leaving that player nil. Aug 2026: dropped the leading rank-number
-/// gutter column entirely (Cooper: "I don't like the gray column to the left of the first
-/// team... it should just be the two team columns" — split evenly, each centered within its
-/// half). Depth order is now conveyed purely by row order, top to bottom.
+/// table: a header cell per team and one row per depth rank. Uneven depth renders a dim "—"
+/// on the shorter side by leaving that player nil. The two team columns share the available
+/// width, and depth order is conveyed by row order from top to bottom.
 private struct CompareRows: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let a: (team: Team, players: [Player])
@@ -844,15 +796,14 @@ private struct CompareRows: View {
         // Compact vertical rhythm: VStack of the header band then the rank rows, without
         // the outer `depthCard` hit on the row hairlines. Web wraps the whole thing in an
         // `overflow-hidden rounded-2xl` box with a `borderDefault` border, `surfaceCard`
-        // rows alternating `surfaceCard2`, and a `surfaceCard2` header band (DEP-266).
+        // rows alternating `surfaceCard2`, and a `surfaceCard2` header band.
         VStack(spacing: 0) {
             HStack(spacing: 0) {
                 TeamHeaderCell(team: a.team)
                 TeamHeaderCell(team: b.team)
             }
-            // DEP-266: the header band was painted the same `surfaceCard` as the table,
-            // reading as one blob; web paints it `surfaceCard2` so it reads as a distinct
-            // band above the rows.
+            // Use `surfaceCard2` for the header so it reads as a distinct band above the
+            // table rows.
             .background(DesignTokens.Colors.surfaceCard2)
 
             ForEach(0..<rowCount, id: \.self) { rank in
@@ -911,11 +862,8 @@ private struct TeamHeaderCell: View {
 }
 
 /// Web's `PlayerCell` — one cell in a depth column: `#number LastName`. Web shows the
-/// full name past 480pt; native keeps the last-name form everywhere (the two compare
-/// columns are always narrow). Aug 2026: dropped the per-row rank dot (it duplicated the
-/// now-removed gutter's rank number) and centered the text within the column — with the
-/// gutter gone, each cell is exactly half the table's width, and a left-aligned label in
-/// a half-width column read off-center.
+/// full name past 480pt; native keeps the last-name form everywhere because the two compare
+/// columns are always narrow. Each cell is centered within its half of the table.
 private struct PlayerCell: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let player: Player?
@@ -925,9 +873,8 @@ private struct PlayerCell: View {
     var body: some View {
         Group {
             if let player {
-                // DEP-385: Compare's only door to a player's identity — the same PlayerProfileView
-                // the depth chart pushes, without depth context (Compare has no depth chart on
-                // screen).
+                // Compare links to the same PlayerProfileView as the depth chart, without
+                // depth context because no depth chart is visible on this screen.
                 NavigationLink {
                     PlayerProfileView(player: player, team: team, repository: repository)
                 } label: {

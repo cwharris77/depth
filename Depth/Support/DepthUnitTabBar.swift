@@ -45,7 +45,7 @@ struct DepthTabBar<Selection: Hashable>: View {
                 .foregroundStyle(
                     isActive ? DesignTokens.Colors.textPrimary : DesignTokens.Colors.textFaint
                 )
-                // DEP-230: hug the label's own width (web's TabBar.tsx is `flex gap-4`,
+                // Hug the label's own width (web's TabBar.tsx is `flex gap-4`,
                 // no stretch) instead of evenly filling the row — that's what was
                 // spreading OFFENSE/DEFENSE/SPECIAL across the full screen width.
                 .frame(minHeight: 44)

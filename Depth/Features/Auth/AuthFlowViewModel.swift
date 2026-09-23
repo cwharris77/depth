@@ -17,7 +17,7 @@ final class AuthFlowViewModel {
 
     /// The address the most recent code actually reached. The resend cooldown is
     /// email-wide and server-owned, so a cooldown alone does not mean a code is
-    /// waiting for whatever is currently typed — DEP-598.
+    /// waiting for whatever is currently typed.
     private(set) var lastSentEmail: String?
 
     @ObservationIgnored private let service: any DepthAuthServicing
@@ -47,7 +47,7 @@ final class AuthFlowViewModel {
 
     /// Whole seconds left on the resend cooldown at `date`, or nil once a send is
     /// allowed. Views render this so the cooldown is visible before it blocks a tap
-    /// (DEP-598); rounded up and floored at 1 so it never reads "0s".
+    /// rounded up and floored at 1 so it never reads "0s".
     func resendWait(at date: Date) -> Int? {
         guard let resendAvailableAt, date < resendAvailableAt else { return nil }
         return max(1, Int(resendAvailableAt.timeIntervalSince(date).rounded(.up)))
@@ -59,10 +59,9 @@ final class AuthFlowViewModel {
             return
         }
         guard !isSubmitting else { return }
-        // DEP-598: this used to return with no state change at all, so on the email step
-        // — which renders no countdown — "Email me a code" read as a dead button for the
-        // whole cooldown, including for an address the user had just switched to. The
-        // cooldown is email-wide and server-owned, so it still blocks; it just says so.
+        // The email step renders no countdown by default, so a cooldown would otherwise
+        // make "Email me a code" read as a dead button. The cooldown is email-wide and
+        // server-owned, so it still blocks; this state change makes that visible.
         if let wait = resendWait(at: now()) {
             // The code step already renders the countdown in place of its resend button,
             // so only the email step needs the refusal spelled out.
@@ -83,8 +82,8 @@ final class AuthFlowViewModel {
             if case .rateLimited(let retryAfterSeconds) = authError {
                 resendAvailableAt = now().addingTimeInterval(TimeInterval(retryAfterSeconds))
                 if let lastSentEmail, lastSentEmail != normalizedEmail {
-                    // DEP-598: nothing has reached this address, so the code step would
-                    // claim a send that never happened. Stay put and show the wait.
+                    // Nothing has reached this address, so the code step would claim a send
+                    // that never happened. Stay put and show the wait.
                     error = authError
                 } else {
                     // Another app instance may have sent a valid code already. Let this

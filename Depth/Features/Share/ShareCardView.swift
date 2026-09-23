@@ -7,7 +7,7 @@ import SwiftUI
 // through `next/og`; this is a native SwiftUI view instead). The native card renders at
 // exactly half the web raster (600×315 vs 1200×630), so each fixed value lives in
 // `ShareCardMetrics` with its web counterpart noted alongside it — one auditable source
-// of truth instead of inline literals (DEP-269).
+// of truth instead of inline literals.
 struct ShareCardView: View {
     let team: Team
     let starters: [FeaturedStarter]
@@ -98,7 +98,7 @@ struct ShareCardPreviewView: View {
 
 enum SharePreviewMetrics {
     /// A safe inset keeps the complete landscape raster inside any square
-    /// thumbnail treatment used by the activity sheet (DEP-296).
+    /// thumbnail treatment used by the activity sheet.
     static let safeInset: CGFloat = 24
     static let canvasSide: CGFloat = ShareCardMetrics.cardWidth + (safeInset * 2)
 }
@@ -108,7 +108,7 @@ enum SharePreviewMetrics {
 /// (`web/app/team/[id]/og-image/route.tsx`) equivalent scaled 1:2 — the web value is noted
 /// on every line. Where the long-shipped native value is not a strict half (eyebrow
 /// spacing, uniform padding), the shipped native value is kept and flagged below so the
-/// two can be audited at a glance (DEP-269).
+/// two can be audited at a glance.
 enum ShareCardMetrics {
     static let cardWidth: CGFloat = 600  // web 1200
     static let cardHeight: CGFloat = 315  // web 630

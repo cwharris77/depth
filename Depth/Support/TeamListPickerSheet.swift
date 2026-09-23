@@ -1,6 +1,6 @@
 import SwiftUI
 
-// The shared team-list picker sheet (DEP-262): the NavigationStack + inline title +
+// The shared team-list picker sheet: the NavigationStack + inline title +
 // top-trailing xmark that used to be duplicated between TeamSwitcherSheet (Depth Charts
 // tab) and CompareView's "Pick a team" sheet. One presentation over the 32-team
 // TeamListView, so the two hosts can't drift (a stock sheet is the kind of chrome that
@@ -26,7 +26,7 @@ struct TeamListPickerSheet: View {
         DepthSheet(
             title: title,
             closePlacement: .overlay,
-            // DEP-273: the sheet must stay dismissible even while TeamListView's search
+            // The sheet must stay dismissible even while TeamListView's search
             // field is active. SwiftUI's inline `.searchable` takes over the entire nav
             // bar when focused — hiding *any* nav-bar toolbar item — so the X renders as
             // a persistent top-trailing overlay instead (see CloseButton's `placement`

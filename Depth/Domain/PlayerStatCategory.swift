@@ -1,18 +1,16 @@
 import Foundation
 
-// The stat-ledger vocabulary for PlayerProfileView's merged design (Claude Design "Player
-// Profile", option 2, 2026-09-11): tabs are generated from the categories a player actually
+// The stat-ledger vocabulary for PlayerProfileView: tabs are generated from the categories a player actually
 // has data in, and each category declares ONE primary counting metric that drives both its
 // bar and its headline column -- yards are never assumed. Everything else a category knows
 // lives in the tap-to-open detail strip, so the ledger stays scannable and nothing is dropped.
 //
-// Scoped to what `player_stats` really stores. The design mock also shows passer rating,
-// 4QC/GWD, pressures and missed tackles; those columns still do not exist (pressures and
-// missed tackles live in nflverse's separate pfr_advstats dataset, not ingested yet), and
-// this file never presents an invented value (same rule as PlayerProfileDisplay). Derived
+// Scoped to what `player_stats` really stores. Passer rating, 4QC/GWD, pressures and missed
+// tackles are not available from the ingested sources, so this file never presents an
+// invented value. Derived
 // rates (CMP%, YPA, per-game) are computed from stored columns only. Snap share now does
 // exist -- it is the one real line for O-line/long-snapper/punter, merged in from the
-// snap-counts dataset (DEP-538).
+// snap-counts dataset.
 
 /// One labelled value. `short` is the on-screen compact label; `spoken` is what VoiceOver
 /// reads, so no number is announced without the stat it belongs to.
@@ -414,8 +412,7 @@ extension PlayerProfileDisplay {
 
     /// The single-line vitals strip ("AGE 27 · EXP 5 YRS · 6'4\" · 218 LB · ALABAMA").
     /// Absent values are left out rather than rendered as "AGE —". College rides last: the
-    /// 2026-09-11 merge spec moved it off the deleted player card into this strip rather
-    /// than adding a labeled block to the profile.
+    /// rather than adding a labeled block to the profile.
     static func vitals(
         age: Int?, experience: Int?, height: String?, weight: Int?, college: String? = nil
     ) -> [PlayerVital] {
@@ -439,7 +436,6 @@ extension PlayerProfileDisplay {
             // Garden City CC; Oklahoma State" — 44 characters). The strip is one line, and its
             // parts carry equal layout priority, so a value that long shrinks AGE/EXP/height/
             // weight too; show only the first school and leave the full list to VoiceOver
-            // (2026-09-11 merge-spec review ruling).
             // omittingEmptySubsequences: false on purpose. The default drops a leading
             // empty component, so a degenerate ";Oklahoma State" would silently promote the
             // SECOND school as if it were the first; keeping the empty component makes that

@@ -1,8 +1,7 @@
 import Foundation
 import Observation
 
-// Feature-local state for the native two-team compare (DEP-258) — the port of web's
-// web/components/CompareView.tsx. Owns the two picked team ids, the active tab
+// Feature-local state for the native two-team compare. Owns the two picked team ids, the active tab
 // (By team / By position), the selected lens/position, and each side's bounded stats
 // and roster reads. Per-position groups are derived with pure helpers in
 // Domain/Compare.swift, so the view stays thin.
@@ -21,10 +20,8 @@ final class CompareViewModel {
         case position
     }
 
-    /// The three horizontally-paged unit-metrics lenses. Forecast and Roster were removed
-    /// (Aug 2026 feedback pass) — Forecast needed an upcoming two-sided market line, blank
-    /// for most teams most of the season; Roster paired snap share with no injury data to
-    /// make it actionable. What's left is season-stable: never gated on the current week.
+    /// The three horizontally-paged unit-metrics lenses. These metrics are season-stable and
+    /// do not depend on the current week.
     enum Lens: String, CaseIterable, Hashable, Identifiable {
         case offense
         case defense
@@ -88,19 +85,18 @@ final class CompareViewModel {
     private(set) var position: Position = .qb
 
     /// The season the user explicitly picked, or nil to follow `defaultSeason`. Kept nil
-    /// until a deliberate pick so the redesign's season picker (vault canvas option 1b)
+    /// until a deliberate pick so the season picker
     /// only *surfaces* the season this page was already reading — it does not change which
     /// one that is. See `defaultSeason`.
     private(set) var selectedSeason: Int?
 
-    // MARK: - DEP-311: room-picker state
+    // MARK: - Room picker state
 
     /// The unit lens currently selected in the position picker (Offense / Defense / Special
     /// Teams).
     private(set) var selectedUnit: Unit = .offense
     /// The id of the room whose exact-role panel is currently expanded, or nil when every
-    /// room is collapsed (Aug 2026: rooms are now collapsible — tapping the expanded room
-    /// again collapses it, per Cooper: "right now it stays expanded forever"). A
+    /// room is collapsed. Tapping the expanded room again collapses it. A
     /// single-position room (Quarterback) never has a panel to expand, so this never holds
     /// its id — see `selectRoom`.
     private(set) var expandedRoomID: String?
@@ -118,7 +114,7 @@ final class CompareViewModel {
     private(set) var pickingSlot: Slot?
 
     private let repository: DepthRepository
-    /// DEP-280: the two team ids to auto-populate both slots with once teams load —
+    /// The two team ids to auto-populate both slots with once teams load —
     /// set when Compare is pushed from a schedule-card tap (web's `?a=&b=` query
     /// params auto-populating both slots on navigation). nil for the tab-root
     /// instance, which opens with both slots empty as before.
@@ -174,7 +170,7 @@ final class CompareViewModel {
         return seasonStats(for: teamB.id)
     }
 
-    // MARK: - Season selection and provenance (canvas options 1b / 2d / 3a-3b)
+    // MARK: - Season selection
 
     /// The season both sides are read at: the user's explicit pick, else `defaultSeason`.
     var resolvedSeason: Int? { selectedSeason ?? defaultSeason }
@@ -211,7 +207,7 @@ final class CompareViewModel {
     }
 
     /// True once the resolved season is over — every game played, outcome known. Drives
-    /// the FINAL stamp, which turn 3 of the canvas established is only honest here: a
+    /// the FINAL stamp, which is only honest here: a
     /// season still being played stamps LIVE plus its games-played count instead.
     private var resolvedSeasonIsCompleted: Bool {
         guard let resolvedSeason, let current = currentSeasonYear else { return false }
@@ -225,7 +221,7 @@ final class CompareViewModel {
 
     /// The provenance claim beside the season picker. `.none` whenever there is nothing to
     /// date-stamp — no team picked, or the resolved season has no metrics row on either
-    /// side (canvas 2a).
+    /// side.
     var seasonStamp: CompareSeasonStamp {
         compareSeasonStamp(
             metrics: metricsA ?? metricsB,
@@ -235,13 +231,13 @@ final class CompareViewModel {
     }
 
     /// True while the live season's sample is too thin to rank the two teams — the caution
-    /// strip shows and every leader tint is dropped (canvas 3a).
+    /// strip shows and every leader tint is dropped.
     var isThinSample: Bool { CompareSampleGuard.isThin(seasonStamp) }
 
     var metricsA: TeamMatchupMetrics? { effectiveStatsA?.matchupMetrics }
     var metricsB: TeamMatchupMetrics? { effectiveStatsB?.matchupMetrics }
 
-    /// True when the resolved season has no metrics for either side — the canvas 2d state,
+    /// True when the resolved season has no metrics for either side — the empty state,
     /// which names the season rather than dead-ending on a bare "no metrics available".
     var metricsUnavailable: Bool { metricsA == nil && metricsB == nil }
 
@@ -313,7 +309,7 @@ final class CompareViewModel {
         do {
             allTeams = try await repository.teams()
             loadState = .loaded
-            // DEP-280: apply the schedule-card preselection once teams are known —
+            // Apply the schedule-card preselection once teams are known —
             // mirrors web's compare page resolving both a/b query params unconditionally
             // on load. Re-running on `.refreshable` just re-picks the same two teams
             // (pickTeam is idempotent per side), so no extra guard is needed.
@@ -373,9 +369,8 @@ final class CompareViewModel {
         pickingSlot = nil
     }
 
-    /// Clears one slot's team, per Cooper's Aug 25 feedback ("we should have a button
-    /// labeled 'Clear selection'" — re-tapping a filled slot to swap teams wasn't obvious).
-    /// Cached stats/roster reads for that team id are left in place — harmless, and avoids
+    /// Clears one slot's team. Cached stats/roster reads for that team id are left in place —
+    /// harmless, and avoids
     /// re-fetching if the same team is picked again into either slot.
     func clearTeam(_ slot: Slot) {
         if slot == .a {
@@ -405,14 +400,11 @@ final class CompareViewModel {
         self.position = position
     }
 
-    // MARK: - DEP-311: room picker
+    // MARK: - Room picker
 
-    /// Moves the unit lens. Aug 2026 (Cooper: "the table doesn't update, it stays on the last
-    /// selected team unit... it should default to the first [room] on the new page") —
-    /// superseded DEP-311 task 3's "preserve the previous position across units" decision,
-    /// which left the depth table showing a stale position from the old unit with no room
-    /// highlighted to explain it. Every unit switch now jumps to its first room's first
-    /// position, same as tapping that room directly.
+    /// Moves the unit lens. Every unit switch jumps to its first room's first position, same
+    /// as tapping that room directly, so the depth table never retains a stale position from
+    /// the previous unit.
     func selectUnit(_ unit: Unit) {
         guard unit != selectedUnit else { return }
         selectedUnit = unit
@@ -422,13 +414,12 @@ final class CompareViewModel {
     }
 
     /// Taps a room tile. A single-position room (Quarterback) has no panel to show — it just
-    /// selects its one position directly (Cooper: "since there's only one position in the QB
-    /// group, don't add the secondary positions container for that one"). A multi-position
+    /// selects its one position directly. A multi-position
     /// room toggles: tapping it while collapsed expands it and resets to its FIRST position
-    /// (DEP-311 task 3's original behavior, still correct for a fresh open); tapping it again
+    /// when collapsed; tapping it again
     /// while already expanded collapses the panel without touching `position` — the depth
-    /// table keeps showing the role that was last selected (Cooper: rooms should collapse on
-    /// a second tap, "right now it stays expanded forever").
+    /// while already expanded collapses the panel without touching `position` — the depth
+    /// table keeps showing the role that was last selected.
     func selectRoom(_ room: CompareRoom) {
         guard room.unit == selectedUnit else { return }
         guard room.positions.count > 1 else {

@@ -1,10 +1,9 @@
 import SwiftUI
 import UIKit
 
-// DEP-251 first-run tutorial, screen two of two: the active coachmark step rendered as
-// a dimmed spotlight cut out around the real control plus a callout bubble explaining
-// it — "in-context coachmarks over the real UI", per the locked direction (no
-// standalone tutorial mode, nothing blocks exploration underneath). Mounted once at
+// First-run tutorial, screen two of two: the active coachmark step rendered as
+// a dimmed spotlight around the real control plus a callout bubble explaining it. The
+// underlying interface remains available. Mounted once at
 // ContentView's root via `.coachmarkOverlay`, which resolves every `.coachmarkAnchor`
 // tag anywhere in the tree into a screen rect and hands it here alongside the root's own
 // GeometryProxy.
@@ -27,10 +26,10 @@ struct CoachmarkOverlayView: View {
     let controller: OnboardingController
     let anchors: [CoachmarkID: CGRect]
     let proxy: GeometryProxy
-    /// The bubble's own measured size (DEP-251 placement audit) — `bubble(for:around:)`
+    /// The bubble's own measured size — `bubble(for:around:)`
     /// positions itself by its center via `.position()`, so placing it a fixed distance
-    /// *below* a target requires knowing its own height; a hardcoded clearance instead
-    /// of this (the original "+100") undershoots for any bubble taller than ~200pt and
+    /// *below* a target requires knowing its own height; a fixed clearance can undershoot
+    /// for taller bubbles and
     /// the bubble ends up overlapping the very target it's introducing (measured
     /// directly on the `.teamPill` step). Defaults to a plausible size so the first frame
     /// (before the `GeometryReader` below reports the real one) is already close.
@@ -145,7 +144,7 @@ struct CoachmarkOverlayView: View {
 
         return Group {
             if dynamicTypeSize.isAccessibilitySize {
-                // DEP-415: keep Next/Skip reachable when the explanation is taller
+                // Keep Next/Skip reachable when the explanation is taller
                 // than the available viewport; the spotlight still names its target.
                 ScrollView { content }
                     .frame(

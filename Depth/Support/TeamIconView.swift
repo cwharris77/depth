@@ -1,9 +1,9 @@
 import SwiftUI
 
 // A team logo image (web's "team icons"). The app never bundles logo artwork and the
-// SwiftData snapshot cache stays text/URL-only (design spec: "no image blobs") — fetched
+// SwiftData snapshot cache stays text/URL-only — fetched
 // logos land in TeamLogoCache (a URLCache), so repeat renders and offline use read from
-// disk instead of re-downloading (DEP-247). Renders the dark-optimized ESPN asset (the
+// disk instead of re-downloading. Renders the dark-optimized ESPN asset (the
 // app is always dark; same reasoning as TeamBadge and the season-stats card's
 // logo_dark_url), falling back to the light logo. Renders nothing when neither URL is
 // present; the caller places it in its own container and provides its own fallback if it
@@ -25,7 +25,7 @@ struct TeamIconView<Placeholder: View>: View {
     }
 
     var body: some View {
-        // DEP-247: `placeholder` shows while the first fetch completes so an already-
+        // `placeholder` shows while the first fetch completes so an already-
         // seen logo renders instantly and a fresh one doesn't flash to an empty slot.
         // The default is a transparent clear (schedule/stats lay the icon over their own
         // surface); TeamBadge passes its initials, which it underlays on its own circle.

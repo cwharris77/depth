@@ -1,10 +1,9 @@
 import Foundation
 import Observation
 
-// First-run tutorial / onboarding walkthrough for the native app (DEP-251, Cooper's
-// locked direction 2026-08-17): a one-screen welcome followed by 3-5 in-context
-// coachmarks over the real UI — context-over-ceremony, no standalone tutorial mode, no
-// blocking tour. This controller owns the sequence's state machine (welcome shown ->
+// First-run tutorial / onboarding walkthrough for the native app: a one-screen welcome
+// followed by in-context coachmarks over the real UI. This controller owns the sequence's
+// state machine (welcome shown ->
 // which coachmark step is active, or none) and which root tab needs to be on screen for
 // the current/pending step, so RootTabView can switch there itself rather than every
 // coachmark target needing to exist on every tab.
@@ -106,9 +105,8 @@ final class OnboardingController {
     }
 }
 
-/// One step in the guided coachmark sequence (DEP-251 tasks: team pill, a player dot,
-/// the overflow menu, the bottom tabs — in that order, the "core tap -> card aha"
-/// deliberately placed second so it lands right after the team pill establishes context).
+/// One step in the guided coachmark sequence: team pill, a player dot, the overflow menu,
+/// or the bottom tabs.
 struct CoachmarkStep: Identifiable {
     let id: CoachmarkID
     let title: String
@@ -134,7 +132,7 @@ struct CoachmarkStep: Identifiable {
         CoachmarkStep(
             id: .bottomTabs,
             title: "Explore the app",
-            // DEP-252: Account moved out of the tab bar into a nav-bar icon, so this
+            // Account moved out of the tab bar into a nav-bar icon, so this
             // step no longer mentions it — the tab bar is Depth Charts/Compare/Uniforms
             // only now.
             message: "Switch between Depth Charts, Compare, and Uniforms down here."

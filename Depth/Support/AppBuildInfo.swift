@@ -1,7 +1,7 @@
 import Foundation
 
-// Static About-section content (Settings) — design spec Gate 0 item 9's in-app
-// non-affiliation disclaimer, Milestone 2B item 24's "settings" item, and the DEP-160
+// Static About-section content (Settings) — the in-app non-affiliation disclaimer and
+// legal links
 // legal links (required by Apple — reachable from within the app, not just the App Store
 // listing). The production site hosts both public pages; every in-app destination derives
 // from this one canonical origin rather than repeating or guessing hosts at call sites.

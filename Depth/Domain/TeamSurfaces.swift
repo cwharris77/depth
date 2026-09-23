@@ -11,7 +11,6 @@ import Foundation
 // `uniforms.ui_accent`/`on_accent` are legacy compatibility columns for iOS builds already
 // on devices (see web/lib/uniforms/legacy-accents.ts) and must never be read here -- taking
 // JerseyColors rather than TeamColors makes that a compile error rather than a convention.
-// Design: ../../obsidian/Projects/depth/specs/2026-09-01-team-color-surface-rules-design.md
 
 /// The three colors that describe a real jersey. Mirrors web/lib/types.ts's JerseyColors.
 struct JerseyColors: Equatable {

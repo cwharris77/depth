@@ -1,7 +1,7 @@
 import Foundation
 
 // Mirrors web/lib/roster-source.ts's TeamStatsPage / web/lib/types.ts's TeamStats. The base
-// record fields remain the round-4 Stats page contract; DEP-312 adds only the bounded
+// record fields remain the Stats page contract; the bounded
 // nflverse evidence needed by Compare. `seasons` is newest-first, matching web's
 // fetchTeamStatsPage ordering (`.order('season', { ascending: false })`).
 // `upcomingSeason` is set for ALL teams during the NFL off-season (web:
@@ -61,13 +61,12 @@ struct TeamStatsPage: Equatable, Codable, Sendable {
 }
 
 /// A newly hired coach reported by the live team record before the season they were
-/// hired for has kicked off. Off-season only (DEP-597) -- see `TeamStatsMapper.map`.
+/// hired for has kicked off. Off-season only -- see `TeamStatsMapper.map`.
 struct TeamIncomingCoach: Equatable, Codable, Sendable {
     let name: String
 }
 
-// One team_stats row per ingested season (current + up to two prior, web's vault spec
-// `specs/2026-07-14-multi-season-team-stats-design.md`). Every field is
+// One team_stats row per ingested season (current + up to two prior). Every field is
 // non-optional here because a present row was always written from a complete parse
 // (web's writeTeamStats skips the upsert on a partial entry); the mapper's `?? 0`
 // fallbacks guard only the nullable-by-schema DTO type.
@@ -87,7 +86,7 @@ struct TeamSeasonStats: Equatable, Codable, Sendable {
     let pointsFor: Int
     let pointsAgainst: Int
     let pointDifferential: Int
-    /// DEP-312's bounded nflverse evidence contract. Optional at the object level so
+    /// The bounded nflverse evidence contract. Optional at the object level so
     /// seasons without a matching source row—and caches written before this additive
     /// field existed—remain valid rather than fabricating zero-valued metrics.
     let matchupMetrics: TeamMatchupMetrics?
@@ -162,7 +161,7 @@ struct TeamLineStats: Equatable, Codable, Sendable {
     let avgPassRushers: Double?
 }
 
-// Auditable inputs for Compare's Offense, Defense, and Special Teams lenses (DEP-312).
+// Auditable inputs for Compare's Offense, Defense, and Special Teams lenses.
 // Raw source values stay beside derived rates so the presentation layer can explain a
 // number without reimplementing data math. Every nullable source field stays optional.
 struct TeamMatchupMetrics: Equatable, Codable, Sendable {

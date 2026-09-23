@@ -4,25 +4,25 @@ import SwiftUI
 // shared `resolveUnit` domain logic (T3) unchanged — this view's only job is turning
 // `RenderSlot` percentages into an on-screen layout and a tap target per slot.
 //
-// Dot geometry comes from `DepthChartFieldLayout` (DEP-207): every slot targets one
+// Dot geometry comes from `DepthChartFieldLayout`: every slot targets one
 // uniform dot size, and any cluster of adjacent same-row slots too tight for that size
 // is re-spread around its own centroid. The *visual* dot shrinks only for a still-too-
 // tight cluster after re-spread; the *tap target* stays at the 44-point minimum via
 // `.frame(minWidth:minHeight:)` + `.contentShape` — the same 30px-visual/44px-hit-slop
-// contract the web uses. DEP-415: accessibility sizes render the same resolved slots
+// contract the web uses. Accessibility sizes render the same resolved slots
 // as full-width rows, since positioned dots cannot reflow. No Dynamic Type cap is
 // needed; names, positions, and player actions remain readable and reachable.
 //
 // On top of #378's geometry, the field now renders a real green surface — gradient +
 // yard-line/hash-mark/end-zone markings (FieldMarkings) — in place of the old flat
 // team-tinted rect, and dots fill `primary` with a `secondary` ring (web's PlayerDot
-// semantics) instead of a flat `uiAccent` fill (2026-08-15 visual-pass). DEP-250: each
+// semantics) instead of a flat `uiAccent` fill. Each
 // filled dot also carries the player's last name under the position tag. A slot the
 // layout put in `nameCallouts` (a row too tight for a name under the dot even at the
 // uniform size) instead gets its name via a leader line into the field's free space,
 // replacing the old per-unit width-breakpoint gate (DepthChartFieldLayout.showsNames,
 // still defined/tested but no longer consulted here). The chosen presentation style
-// (DEP-323, Settings › Settings) decides whether those leader lines draw, whether a name
+// (Settings › Settings) decides whether those leader lines draw, whether a name
 // with no room is simply hidden, or whether names are skipped entirely.
 struct DepthChartFieldView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -38,14 +38,14 @@ struct DepthChartFieldView: View {
     /// caller). Nil falls back to the generic synthetic layout — used when the unit has no
     /// formation data, is special teams, or is a historical season.
     var formation: TeamFormation? = nil
-    /// DEP-323: which of the three name-presentation styles to draw (chosen in Settings).
+    /// Which of the three name-presentation styles to draw (chosen in Settings).
     var nameMode: FieldNameMode = .callouts
-    /// DEP-309: active full-team edit mode gently wiggles only the existing solid player
+    /// Active full-team edit mode gently wiggles only the existing solid player
     /// dots. Labels, hit targets, field geometry, and empty special-team slots stay put.
     var isEditing = false
     let onSelectPlayer: (Player) -> Void
 
-    // DEP-259: nameFontSize's 7-9pt clamp was a plain `.system(size:)` literal that never
+    // nameFontSize's 7-9pt clamp was a plain `.system(size:)` literal that never
     // grew with Dynamic Type — the field's only text ignoring accessibility settings.
     // Scaling the clamp's own bounds (not the computed size directly, since it's also
     // field-height-driven) keeps the field-height-based shrink behavior while letting the
@@ -57,7 +57,7 @@ struct DepthChartFieldView: View {
         colors ?? snapshot.team.colors
     }
 
-    /// DEP-251: the one slot the "tap any player" coachmark points at. See the
+    /// The one slot the "tap any player" coachmark points at. See the
     /// `.coachmarkTarget` call site in `body` for why it's "whichever renders first"
     /// rather than a fixed position.
     private var firstFilledSlotKey: String? {
@@ -76,7 +76,7 @@ struct DepthChartFieldView: View {
         let roster = Roster(
             players: snapshot.players, specialTeams: snapshot.specialTeams,
             depthChart: snapshot.depthChart)
-        // DEP-221: pass the caller's selected real formation (formationSlots builds its
+        // Pass the caller's selected real formation (formationSlots builds its
         // layout from the TeamFormation) so the field renders the team's actual FTN-charted
         // alignment instead of the generic synthetic layout. nil (no data, special, or
         // historical) falls back to the generic layout, matching web.
@@ -87,7 +87,7 @@ struct DepthChartFieldView: View {
     @ViewBuilder
     var body: some View {
         if dynamicTypeSize.isAccessibilitySize {
-            // DEP-415: positioned dots cannot grow into readable paragraphs. Keep
+            // Positioned dots cannot grow into readable paragraphs. Keep
             // the resolved formation order and the same player actions in native rows.
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
                 ForEach(slots, id: \.key) { slot in
@@ -124,7 +124,7 @@ struct DepthChartFieldView: View {
 
     private var field: some View {
         GeometryReader { proxy in
-            // DEP-244: the offense always fills the field's full width (and its dots run
+            // The offense always fills the field's full width (and its dots run
             // larger) whatever formation is active; defense/special keep their spread.
             let layout = DepthChartFieldLayout.compute(
                 slots: slots,
@@ -151,7 +151,7 @@ struct DepthChartFieldView: View {
                     .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.md))
 
                 ZStack {
-                    // THROWAWAY PROTOTYPE: leader lines + name tags for slots the layout
+                    // Leader lines + name tags for slots the layout
                     // routed through `nameCallouts` (a row too tight for a name under the
                     // dot even at the uniform size). Drawn first so dots layer on top.
                     ForEach(Array(layout.nameCallouts.keys), id: \.self) { key in
@@ -159,7 +159,7 @@ struct DepthChartFieldView: View {
                             let name = slots.first(where: { $0.key == key })?.player?.name,
                             !name.isEmpty
                         {
-                            // THROWAWAY PROTOTYPE, per Cooper 2026-08-23: a leader line to a
+                            // A leader line to a
                             // dot deep in the formation used to be drawn straight through
                             // every dot between the two. It's now broken around them — the
                             // line is only stroked where it isn't passing over another dot,
@@ -198,7 +198,7 @@ struct DepthChartFieldView: View {
                             showsName: layout.showsInlineName(slot.key),
                             fieldHeight: proxy.size.height
                         )
-                        // DEP-251: first-run tutorial's "tap any player" coachmark points at
+                        // The first-run tutorial's "tap any player" coachmark points at
                         // whichever filled slot renders first — the field has no single
                         // fixed "the QB dot", so the first resolved player stands in for
                         // "any dot" rather than hard-coding a position that may be missing
@@ -226,7 +226,7 @@ struct DepthChartFieldView: View {
                     value: formation
                 )
             }
-            // THROWAWAY PROTOTYPE, per Cooper 2026-08-22: a name near the field's edge
+            // A name near the field's edge
             // (a pinned WR, an outer callout tag) can still run past the card's rounded
             // corner despite the wider margin above — clip so it's cropped at the field
             // boundary instead of visibly bleeding onto the surrounding screen.
@@ -332,7 +332,7 @@ struct DepthChartFieldView: View {
                     showsName: showsName,
                     fieldHeight: fieldHeight
                 )
-                // The visual dot shrinks with the geometry (DEP-207); the hit area
+                // The visual dot shrinks with the geometry; the hit area
                 // stays at the 44-point minimum, mirroring the web's 30px dot +
                 // 44px hit-slop (web/components/PlayerDot.tsx).
                 .frame(minWidth: 44, minHeight: 44)
@@ -379,7 +379,7 @@ struct DepthChartFieldView: View {
         showsName: Bool,
         fieldHeight: CGFloat
     ) -> some View {
-        // THROWAWAY PROTOTYPE, per Cooper 2026-08-23: the dot is its own fixed-size view
+        // The dot is its own fixed-size view
         // and the label block hangs BELOW it in an overlay, rather than all three sharing
         // one centered VStack. In the stack version the whole stack was centered on the
         // slot's position, so the circle's real y depended on whether a name happened to
@@ -422,7 +422,7 @@ struct DepthChartFieldView: View {
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(DesignTokens.Colors.textMuted)
 
-                    // DEP-250: web's PlayerDot name row — the player's last name under the
+                    // Web's PlayerDot name row — the player's last name under the
                     // position tag, rendered here only when the layout found room for it;
                     // otherwise the name is drawn as a leader-line callout instead.
                     if showsName, let playerName, !playerName.isEmpty {
@@ -444,7 +444,7 @@ struct DepthChartFieldView: View {
     /// height (`clamp(7px, 1.3dvh, 9px)` — dvh proxies to the field's own height here)
     /// so labels shrink ahead of colliding when the field's available height shrinks
     /// (short/landscape or split-screen viewports), while staying ≥7pt readable. The
-    /// 7/9 bounds are Dynamic-Type-scaled (DEP-259) so the field-height clamp still
+    /// 7/9 bounds are Dynamic-Type-scaled so the field-height clamp still
     /// applies, but the whole range grows at larger accessibility text sizes.
     private func nameFontSize(fieldHeight: CGFloat) -> CGFloat {
         min(maxNameFontSize, max(minNameFontSize, fieldHeight * 1.3 / 100))
@@ -496,7 +496,7 @@ private struct PlayerDotWiggleModifier: ViewModifier {
             .onChange(of: reduceMotion) { _, _ in updateAnimation() }
     }
 
-    /// DEP-541: a `repeatForever` animation is only ended by changing the animated value
+    /// A `repeatForever` animation is only ended by changing the animated value
     /// again under a *non-repeating* animation. Both earlier forms — a bare
     /// `flag = false`, and `.animation(_:value:)` — left the repeating transaction
     /// attached, so the dots kept wiggling after edit mode ended. Stopping here animates

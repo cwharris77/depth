@@ -1,11 +1,11 @@
 import SwiftUI
 
 // Team depth chart — offense/defense/special-teams sections over one cached/refreshed
-// `TeamSnapshot` (design spec Milestone 1 item 16). Restores the last-viewed section via
+// `TeamSnapshot`. Restores the last-viewed section via
 // `UserPreferences.lastUnit` and persists it on change, same pattern as the last-team
 // restoration in DepthChartsTab. The header's ROSTER/SCHEDULE/STATS page switcher
-// (round-4, DEP-217) turns the pushed Schedule destination into a third tab and hosts
-// the new Stats page (DEP-216); Schedule's pushed-destination chrome is suppressed
+// the page switcher turns the pushed Schedule destination into a third tab and hosts
+// the Stats page; Schedule's pushed-destination chrome is suppressed
 // through `isEmbedded`.
 struct TeamDetailView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -17,7 +17,7 @@ struct TeamDetailView: View {
     /// The player whose profile is pushed (2026-09-11 merge spec) — a field tap outside edit
     /// mode, or a cross-team search pick. Setting it back to nil pops to the field.
     @State private var selectedPlayer: Player?
-    /// DEP-231: the app-level edit-mode toggle (web's `globalEditMode`). When on, a field tap
+    /// The app-level edit-mode toggle (web's `globalEditMode`). When on, a field tap
     /// opens that position's PositionReorderSheet instead of the profile. Lives in the
     /// overflow menu; disabled (not hidden) while viewing a historical season.
     @State private var editMode = DepthChartEditMode()
@@ -33,7 +33,7 @@ struct TeamDetailView: View {
     /// requested-player/uniform until a pull-to-refresh. An incomplete run therefore retries
     /// in full on the next appearance; a completed one never re-runs.
     @State private var didInitialLoad = false
-    /// DEP-323: the name-presentation style chosen in Settings. Shared with SettingsView
+    /// The name-presentation style chosen in Settings. Shared with SettingsView
     /// through the same defaults key.
     @AppStorage(FieldNameMode.storageKey) private var fieldNameMode: FieldNameMode = .callouts
     @State private var showHistory = false
@@ -44,11 +44,10 @@ struct TeamDetailView: View {
     @State private var showTrueScale = false
     /// The one-line tip under the field retires itself — "Got it", or opening true scale.
     @AppStorage("trueScaleTipDismissed") private var trueScaleTipDismissed = false
-    /// DEP-252: Account moved out of the tab bar (a personal affordance, not a content
-    /// section) into the nav-bar trailing slot DEP-236 freed.
+    /// Account is shown in the nav-bar trailing slot rather than as a content section.
     @State private var showAccount = false
     @State private var selectedUniformID: String?
-    /// The kit currently being live-previewed while the picker is open (DEP-256 follow-
+    /// The kit currently being live-previewed while the picker is open (follow-
     /// up): swiping the carousel recolors the field via this, not `selectedUniformID`,
     /// so browsing kits never touches the persisted pick. Committed into
     /// `selectedUniformID` (and `UserPreferences`) only when the sheet's `onDismiss`
@@ -60,8 +59,7 @@ struct TeamDetailView: View {
     /// nil for a given unit means "use the unit's top formation as the default".
     @State private var selectedFormations: [Unit: TeamFormation] = [:]
     @State private var confirmedOrders: [Position: [String]] = [:]
-    /// DEP-565 design-review follow-up (1C, `edit-status-redesign-spec.md`): the reset
-    /// action moved from a one-tap status chip into the ••• menu, so it now needs its
+    /// The reset action lives in the ••• menu, so it needs its
     /// own confirmation — a menu tap has no visible "undo everything" cost the way the
     /// chip did.
     @State private var showResetConfirmation = false
@@ -77,7 +75,7 @@ struct TeamDetailView: View {
     /// A player to open once this team's snapshot resolves — set by DepthChartsTab when
     /// a player is picked from the switcher's cross-team search. Cleared after present.
     @Binding var requestedPlayerID: String?
-    /// DEP-329: the uniform the user was viewing when they tapped "Open depth
+    /// The uniform the user was viewing when they tapped "Open depth
     /// chart" from the uniform kit sheet — applied once on appear so the
     /// depth chart shows the originating kit, not whatever was last persisted.
     @Binding var requestedUniformId: String?
@@ -85,14 +83,14 @@ struct TeamDetailView: View {
     /// place this view is constructed now that it is a tab's stack root rather than a
     /// pushed destination, so an unset case would be dead code.
     private let onOpenTeamSwitcher: () -> Void
-    /// DEP-405: bubbles a schedule-card tap up through DepthChartsTab to RootTabView,
+    /// Bubbles a schedule-card tap up through DepthChartsTab to RootTabView,
     /// which owns the tab selection — it routes the matchup to CompareRouteStore and
-    /// switches to the Compare tab (DEP-280's push into this tab's stack is gone; the
+    /// switches to the Compare tab (the pushed destination is gone; the
     /// tab switch is its replacement). Carries this team's id and the tapped game's
     /// opponent id, matching web's `?a=<teamId>&b=<opponentId>` compare-link params.
     private let onOpenCompare: (String, String) -> Void
     @State private var historyViewModel: HistoryViewModel
-    /// DEP-278 follow-up: refined with the resolved kit color (`resolvedUiAccentHex`)
+    /// Refined with the resolved kit color (`resolvedUiAccentHex`)
     /// whenever it changes, so Stats/Schedule (which read this same store) follow a
     /// picked kit the way the roster field and tab tint already do.
     private let currentTeamStore: CurrentTeamStore
@@ -179,7 +177,7 @@ struct TeamDetailView: View {
 
     var body: some View {
         content
-            // DEP-236: the team identity lives in the switcher pill (full "City Name"),
+            // The team identity lives in the switcher pill (full "City Name"),
             // so the centered inline title would be a redundant second copy of the same
             // text. The bar keeps the inline layout for its toolbar items.
             .navigationTitle("")
@@ -196,7 +194,7 @@ struct TeamDetailView: View {
                 // cancellation as a failed state. Returning without latching lets the next
                 // appearance re-run the whole sequence instead of stranding that error.
                 guard !Task.isCancelled else { return }
-                // DEP-219: a cold launch already signed in never fires the
+                // A cold launch already signed in never fires the
                 // sessionStore.user onChange below (it only sees transitions) — run
                 // the sign-in merge here too, matching web's effect (which re-runs on
                 // mount whenever `user` is already truthy, not just on a later change).
@@ -208,7 +206,7 @@ struct TeamDetailView: View {
                 // A cross-team search pick arrives with the snapshot not yet loaded
                 // (the view is recreated via `.id(teamId)`); present once it resolves.
                 presentRequestedPlayer(requestedPlayerID)
-                // DEP-329: apply the uniform the user was viewing in the kit sheet,
+                // Apply the uniform the user was viewing in the kit sheet,
                 // so the depth chart shows the originating kit, not whatever was
                 // last persisted for this team.
                 presentRequestedUniform(requestedUniformId)
@@ -224,7 +222,7 @@ struct TeamDetailView: View {
             .onChange(of: requestedUniformId) { _, id in
                 presentRequestedUniform(id)
             }
-            // DEP-278 follow-up: publish the resolved accent (kit pick, or the team's
+            // Publish the resolved accent (kit pick, or the team's
             // own once the snapshot loads) so Stats/Schedule — which read this same
             // store — follow a kit switch the same render pass the field does.
             // `initial: true` covers the very first resolution, not just later changes.
@@ -266,7 +264,7 @@ struct TeamDetailView: View {
             }
             .onChange(of: sessionStore.user) { _, user in
                 if user == nil {
-                    // DEP-219: signing out doesn't erase local edits — web's
+                    // Signing out doesn't erase local edits — web's
                     // localStorage cache is unaffected by auth state, so the local
                     // read replaces the old "clear everything" behavior.
                     confirmedOrders = preferences.teamOverride(for: viewModel.teamId)
@@ -274,7 +272,7 @@ struct TeamDetailView: View {
                     Task { await mergeOverridesOnSignIn() }
                 }
             }
-            // DEP-236/DEP-252/DEP-277 (Cooper review): the shared app-wide top nav —
+            // The shared app-wide top nav —
             // see `depthTopNavToolbar` for why this isn't hand-rolled per screen anymore.
             // The team pill is this screen's contribution to the "conditional" half.
             .toolbar {
@@ -301,7 +299,7 @@ struct TeamDetailView: View {
                     isHistorical: historyViewModel.isHistorical
                 )
             }
-            // DEP-226/231 reorder, relocated by the merge spec: edit mode routes a field tap
+            // Reorder is handled in edit mode: a field tap
             // here. Edit mode is disabled for historical seasons, so this is live-roster only.
             .sheet(item: $reorderPlayer) { player in
                 let position = player.position
@@ -321,10 +319,10 @@ struct TeamDetailView: View {
                 .modifier(UITestingDynamicTypeOverride())
             }
             .sheet(isPresented: $showAccount) {
-                // DEP-252: SettingsView's content is unchanged from its old tab-bar
+                // SettingsView's content is unchanged from its old tab-bar
                 // home (AccountTab) — it just stops being always-reachable and becomes
                 // a sheet again, opened from the nav-bar icon instead. `onboarding` reads
-                // the same shared instance ContentView owns (DEP-251's "Take the Tour"
+                // the same shared instance ContentView owns (the "Take the Tour"
                 // row needs it to replay the coachmark sequence) — TeamDetailView has no
                 // reason to receive its own copy threaded down through RootTabView when
                 // every other screen-level singleton here (`authService`, `events`) is
@@ -400,24 +398,24 @@ struct TeamDetailView: View {
             }
     }
 
-    /// True scale is a secondary action on offense and defense (DEP-572), the two units
+    /// True scale is a secondary action on offense and defense, the two units
     /// with a real alignment table. Special teams has no formation data at all, positioned
-    /// dots don't exist at accessibility text sizes (DEP-415), and edit mode's taps belong
+    /// dots don't exist at accessibility text sizes, and edit mode's taps belong
     /// to reordering.
     private var showsTrueScaleEntry: Bool {
         unit != .special && !editMode.isActive && !dynamicTypeSize.isAccessibilitySize
     }
 
-    // DEP-228: a plain VStack sizes each child to its "ideal" height rather than
+    // A plain VStack sizes each child to its "ideal" height rather than
     // expanding it to fill available space, so the Stats page's own ScrollView (nested
     // two levels down) was getting clipped instead of scrolling. maxHeight: .infinity
     // here propagates the real available height down to it.
     //
-    // DEP-236: the ROSTER/SCHEDULE/STATS switcher is content-level sub-navigation, so it
+    // The ROSTER/SCHEDULE/STATS switcher is content-level sub-navigation, so it
     // now lives here — pinned above the page content, switching between all three pages
     // (web's TeamPageHeader PAGE_TABS stays sticky while content scrolls under it). It no
     // longer shares the nav bar with the team pill, which frees the trailing slot for the
-    // account affordance (DEP-252) and room for the pill's full team name (DEP-222).
+    // account affordance and room for the pill's full team name.
     private var content: some View {
         VStack(spacing: 0) {
             if dynamicTypeSize.isAccessibilitySize {
@@ -481,8 +479,8 @@ struct TeamDetailView: View {
         var label: String { rawValue.uppercased() }
     }
 
-    /// DEP-236/222: the switcher trigger is a team-fill pill — `colors.primary`
-    /// background with a `colors.secondary` ring (web's TeamBadge vocabulary, DEP-237)
+    /// The switcher trigger is a team-fill pill — `colors.primary` background with a
+    /// `colors.secondary` ring (web's TeamBadge vocabulary)
     /// and the full "City Name", since the page switcher left the nav bar and there's
     /// room again. Text is readableTextOn(primary) (web: `readableTextOn(team.colors.primary)`).
     private var teamSwitcherPill: some View {
@@ -515,12 +513,12 @@ struct TeamDetailView: View {
         .accessibilityIdentifier("team-switcher-button")
         .accessibilityLabel("\(navigationTitleText), change team")
         .accessibilityHint("Opens the team switcher")
-        // DEP-251: first-run tutorial's first coachmark target.
+        // First-run tutorial's first coachmark target.
         .coachmarkAnchor(.teamPill)
     }
 
     /// Web parity (web/components/TeamPageHeader.tsx PAGE_TABS): the ROSTER/SCHEDULE/STATS
-    /// switcher. DEP-236 moved it out of the nav bar into the page body (`content`) as a
+    /// switcher. It lives in the page body (`content`) as a
     /// full-width bar — content-level sub-navigation rendered as a distinct layer between
     /// the nav bar and the page, so it can't be mistaken for a second picker beside the
     /// unit tabs (web's `SegmentedControl size="sm"` sits in the header row; native has no
@@ -566,19 +564,19 @@ struct TeamDetailView: View {
     }
 
     /// Web parity (web/components/FieldHeaderMenu.tsx): actions beyond the page switcher's
-    /// tabs live behind a single ••• overflow menu. DEP-230 correction: this used to
+    /// tabs live behind a single ••• overflow menu. This used to
     /// live in the nav-bar toolbar, a different row than the unit tabs it belongs
     /// beside — web puts both in the same `justify-between` row directly above the
-    /// field. Schedule is not a menu item — round-4 (DEP-217) made it a page-switcher tab.
+    /// field. Schedule is not a menu item because it is a page-switcher tab.
     private var overflowMenu: some View {
         Menu {
-            // DEP-231: app-level edit-mode toggle, folded into the overflow menu instead of
+            // The app-level edit-mode toggle is folded into the overflow menu instead of
             // its own row (web's FieldHeaderMenu.tsx single checked "Edit depth chart"
             // item). While on, a field tap opens that position's PositionReorderSheet instead
             // of the player profile; off returns taps to the profile. Disabled (not omitted)
             // while viewing a past season, matching web's disabled + disabledReason.
             // Previously this was a per-position submenu opening OverrideEditorSheet —
-            // DEP-226 moved reorder into the player card, and the 2026-09-11 merge spec moved
+            // Reorder is handled in the player card, and the current layout keeps
             // it again into PositionReorderSheet when the card was deleted.
             Button {
                 editMode.toggle()
@@ -659,14 +657,14 @@ struct TeamDetailView: View {
             }
             .accessibilityIdentifier("history-destination")
 
-            // Live snapshot only (design spec locked decision #10) — historical
+            // Live snapshot only — historical
             // rosters have no equivalent share-card visual contract yet.
             if !historyViewModel.isHistorical, let snapshot = displayedSnapshot {
                 DepthChartShareButton(snapshot: snapshot)
             }
         } label: {
             // Icon-only — a "•••" overflow glyph is self-explanatory; a trailing
-            // "More" label is redundant text (Cooper's round-5 feedback).
+            // The "More" label is redundant text.
             Image(systemName: "ellipsis")
                 // `.frame(minWidth:minHeight:)` alone pads the *layout* box, not the
                 // hit-testable one — a bare icon with no fill only registers taps on
@@ -695,7 +693,7 @@ struct TeamDetailView: View {
                 ? "More" : "More, custom order active"
         )
         .accessibilityIdentifier("depth-chart-overflow")
-        // DEP-251: first-run tutorial's overflow-menu coachmark target.
+        // First-run tutorial's overflow-menu coachmark target.
         .coachmarkAnchor(.overflowMenu)
     }
 
@@ -818,7 +816,7 @@ struct TeamDetailView: View {
     private func rosterStack(snapshot: TeamSnapshot, historical: Bool) -> some View {
         VStack(spacing: 16) {
             if historical {
-                // Web parity (DEP-245): rather than the roster's own bare "Back to
+                // Web parity: rather than the roster's own bare "Back to
                 // today" text button, use the same `SeasonPickerTrigger` Stats and
                 // Schedule render — a glass capsule showing the picked season with a
                 // "Back to current season" escape beside it, reachable without
@@ -838,7 +836,7 @@ struct TeamDetailView: View {
                 }
                 .padding(.horizontal)
             }
-            // DEP-326: cache-first reads (CachingDepthRepository.teamSnapshot) already
+            // Cache-first reads (CachingDepthRepository.teamSnapshot) already
             // kick off a background refresh on every visit, so a stale cache while
             // online resolves itself silently within moments — telling the user
             // "showing saved data, pull to refresh" in that case just describes an
@@ -849,11 +847,11 @@ struct TeamDetailView: View {
             }
             if !historical, case .failed = viewModel.loadState {
                 // Only reachable if a refresh failed after we already had data —
-                // last-good snapshot stays on screen (design spec's failure-mode
+                // last-good snapshot stays on screen (failure-mode
                 // table), this just surfaces that a background refresh didn't land.
                 RefreshFailedBanner()
             }
-            // DEP-230: unit tabs (left) + overflow menu (right) in one row,
+            // Unit tabs (left) + overflow menu (right) in one row,
             // matching web's FieldHeaderMenu.tsx `justify-between` — previously
             // the overflow menu lived in the nav-bar toolbar, a different row
             // entirely, and the tabs stretched full-width with no trailing
@@ -888,7 +886,7 @@ struct TeamDetailView: View {
             }
             // The field is the screen's primary content, so it fills the
             // available height instead of capping at a fixed ~1.4:1 aspect and
-            // leaving a large blank area beneath it (DEP-207). Width still comes
+            // leaving a large blank area beneath it. Width still comes
             // from the horizontal padding; only the vertical axis is sized here.
             //
             // `containerRelativeFrame(.vertical)` measured the ScrollView's full
@@ -950,7 +948,7 @@ struct TeamDetailView: View {
         // `frame(maxHeight: .infinity)` resolves to the *remaining* space after
         // the chrome above it. A ScrollView can't do this — it proposes an
         // infinite height on its scroll axis, which collapses a flexible child to
-        // zero instead of filling (DEP-207 height fix, iPhone 17).
+        // zero instead of filling on tall phones.
         .frame(maxHeight: .infinity)
     }
 
@@ -976,7 +974,7 @@ struct TeamDetailView: View {
     }
 
     /// The position's pool, seated from the depth chart rather than filtered by each
-    /// player's canonical position (DEP-585) — an athlete can hold seats at two positions,
+    /// player's canonical position — an athlete can hold seats at two positions,
     /// and filtering dropped him from every pool but his canonical one.
     private func players(for position: Position) -> [Player] {
         guard let snapshot = displayedSnapshot else { return [] }
@@ -1004,7 +1002,7 @@ struct TeamDetailView: View {
         return viewModel.snapshot.map { applyingDepthOverrides(to: $0, orders: confirmedOrders) }
     }
 
-    // DEP-219: local cache first, always — matches web's localStorage-first model
+    // Local cache first, always — matches web's localStorage-first model
     // (web/lib/hooks/overrides/use-team-override.ts). No account needed to read or write;
     // the sign-in merge (mergeOverridesOnSignIn) is the only path that talks to the
     // server, exactly like web's mergeOnSignIn is the only place `user` gates anything.
@@ -1012,7 +1010,7 @@ struct TeamDetailView: View {
         confirmedOrders = preferences.teamOverride(for: viewModel.teamId)
     }
 
-    /// DEP-219 sign-in merge — literal port of web's `mergeOnSignIn`
+    /// Sign-in merge — literal port of web's `mergeOnSignIn`
     /// (web/lib/utils/depth-chart/overrides-sync.ts): pull the server's overrides (server
     /// wins per team, the durable cross-device truth), push up any team edited only on
     /// this device, then reload the current team's order. Best-effort: a failed
@@ -1042,7 +1040,7 @@ struct TeamDetailView: View {
         requestedPlayerID = nil
     }
 
-    /// DEP-329: select the uniform the user was viewing in the kit sheet,
+    /// Select the uniform the user was viewing in the kit sheet,
     /// so the depth chart shows the originating kit instead of whatever was
     /// last persisted for this team. Cleared after applying so it doesn't
     /// re-apply on subsequent renders (e.g. pull-to-refresh).
@@ -1061,17 +1059,17 @@ struct TeamDetailView: View {
         showFormations = false
     }
 
-    // DEP-219: no auth gate — reordering is local-first, matching web (which never
+    // No auth gate — reordering is local-first, matching web (which never
     // requires sign-in to enter edit mode; only cross-device sync needs an account).
 
-    // DEP-226: PositionReorderSheet writes through the same local-first writer as the
-    // overflow-menu editor (DEP-219) — local cache always, server mirror fire-and-forget
+    // PositionReorderSheet writes through the same local-first writer as the overflow-menu
+    // editor — local cache always, server mirror fire-and-forget
     // when signed in. confirmedOrders updates immediately so the field behind the sheet
-    // re-renders the new order while the sheet stays open. DEP-231: the standalone
+    // re-renders the new order while the sheet stays open. The standalone
     // OverrideEditorViewModel is gone, so the overrideSaved event it used to fire on
     // save is recorded here instead — one per committed drop.
     private func reorderPosition(_ position: Position, _ orderedIds: [String]) {
-        // DEP-542: dragging a player away and back to its original slot is not a custom
+        // Dragging a player away and back to its original slot is not a custom
         // order. Drop the redundant override rather than leaving the chart labelled CUSTOM.
         guard orderedIds != defaultPlayers(for: position).map(\.id) else {
             resetPosition(position)
@@ -1092,7 +1090,7 @@ struct TeamDetailView: View {
         events.record(.overrideSaved)
     }
 
-    // DEP-226: reset restores the position's default order and drops the override —
+    // Reset restores the position's default order and drops the override —
     // locally always, mirrored to the server (row delete) when signed in, matching web's
     // handleResetPosition (which pushes the position-less override through its PUT).
     private func resetPosition(_ position: Position) {
@@ -1143,7 +1141,7 @@ private struct RefreshFailedBanner: View {
 }
 
 // Mirrors web/components/FTNAttribution.tsx — the CC-BY-SA 4.0 license-mandated attribution
-// for surfacing FTN formation data (the vault's `Reference/nflverse.md`). Shared by the field footer and the
+// for surfacing FTN formation data. Shared by the field footer and the
 // Formations sheet (web reuses one component across surfaces) so the string lives in one
 // place.
 private struct FTNAttributionText: View {
@@ -1191,7 +1189,7 @@ private struct FormationsSheetView: View {
         return order.map { (header: $0, rows: byKey[$0] ?? []) }
     }
 
-    // DEP-261: a real List, matching UniformPickerSheet/HistorySeasonSheet — the two
+    // A real List, matching UniformPickerSheet/HistorySeasonSheet — the two
     // other picker sheets opened from the same ••• menu — instead of a ScrollView +
     // hand-rolled card-highlight row. Section headers give header/row alignment for
     // free (both siblings rely on the same default List section inset).
@@ -1252,7 +1250,7 @@ private struct FormationsSheetView: View {
                         .foregroundStyle(accent)
                 }
             }
-            // DEP-281: without this, the trailing Spacer between the formation name
+            // Without this, the trailing Spacer between the formation name
             // and the pct/checkmark trailing content doesn't register taps.
             .contentShape(Rectangle())
         }
@@ -1263,7 +1261,7 @@ private struct FormationsSheetView: View {
     }
 }
 
-// DEP-309: the team-detail screen owns one temporary edit session. Keeping the state in
+// The team-detail screen owns one temporary edit session. Keeping the state in
 // a small value type makes the entry/exit contract testable without widening it into an
 // app-level store; saved player orders continue to live in UserPreferences.
 /// 1C (`edit-status-redesign-spec.md` §3): the edit-mode bar that takes over the tab bar
@@ -1349,7 +1347,7 @@ struct PlayerDotWiggleMotion: Equatable {
     let duration: Double
 }
 
-// DEP-309: a deterministic stagger keeps the dots from moving as one rigid formation.
+// A deterministic stagger keeps the dots from moving as one rigid formation.
 // Reduce Motion removes the effect entirely while leaving edit state and controls intact.
 enum PlayerDotWigglePolicy {
     static func motion(
@@ -1368,7 +1366,7 @@ enum PlayerDotWigglePolicy {
 
 /// The field's corner entry into true scale: a 36pt chrome icon button on a faint scrim so
 /// it stays legible on grass without becoming the first thing you notice. The 44pt hit
-/// area is shaped on the label (CLAUDE.md §4.8).
+/// area is shaped on the label after its frame.
 private struct TrueScaleEntryButton: View {
     let action: () -> Void
 

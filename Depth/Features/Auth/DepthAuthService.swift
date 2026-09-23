@@ -9,12 +9,10 @@ struct DepthUser: Equatable, Sendable {
     let email: String
 }
 
-/// Apple's App Review demo account (DEP-562). A reviewer can't read a code delivered to
-/// the app's own mailbox, so this one address is signed in with the typed code used as its
-/// Supabase password rather than a verified emailed OTP. Only the email ships in the
-/// binary; the code is typed at runtime and set on the Supabase user, so it never enters
-/// the build and can be rotated without a new one. The user is created/reset by
-/// `web/scripts/seed-review-demo-user.mts`.
+/// A configured account has no mailbox, so its typed code is used with Supabase password
+/// sign-in rather than a verified emailed OTP. Only the email ships in the binary; the code
+/// is entered at runtime and set on the Supabase user, so it never enters the build and can
+/// be rotated without a new one.
 enum ReviewDemoAccount {
     static let email = "sticksdemo@cooper-harris.site"
 
@@ -53,9 +51,8 @@ enum DepthAuthError: Error, Equatable, Sendable {
         }
     }
 
-    /// Reuses `DepthError`'s telemetry vocabulary (design spec Milestone 2B item 26)
-    /// rather than adding auth-specific DB categories — coarse buckets, not an
-    /// exhaustive enumeration of every UI error case.
+    /// Reuses `DepthError`'s telemetry vocabulary rather than adding auth-specific database
+    /// categories — coarse buckets, not an exhaustive enumeration of every UI error case.
     var telemetryCategory: String {
         switch self {
         case .invalidEmail, .invalidCode, .expiredCode, .rateLimited, .freshOtpRequired:
@@ -109,8 +106,8 @@ actor SupabaseDepthAuthService: DepthAuthServicing {
     }
 
     func sendEmailOtp(to email: String, shouldCreateUser: Bool) async throws {
-        // The review demo account has no mailbox and a fixed code, so nothing is sent —
-        // advancing straight to the code step is the whole point. See ReviewDemoAccount.
+        // The configured account has no mailbox and uses a fixed code, so nothing is sent;
+        // it advances straight to the code step.
         if ReviewDemoAccount.matches(email) { return }
         do {
             try await client.auth.signInWithOTP(email: email, shouldCreateUser: shouldCreateUser)
@@ -123,8 +120,8 @@ actor SupabaseDepthAuthService: DepthAuthServicing {
         do {
             let user: User
             if ReviewDemoAccount.matches(email) {
-                // The typed review code is the demo account's Supabase password, so there
-                // is no emailed OTP to verify. See ReviewDemoAccount.
+                // The configured account's typed code is its Supabase password, so there is
+                // no emailed OTP to verify.
                 user = try await client.auth.signIn(email: email, password: code).user
             } else {
                 user = try await client.auth.verifyOTP(email: email, token: code, type: .email).user

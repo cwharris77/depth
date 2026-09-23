@@ -1,8 +1,7 @@
 import Foundation
 import Supabase
 
-// Privacy-minimal native-app usage counters (design spec Milestone 2B item 26; full
-// App Privacy documentation lives at `Reference/ios-privacy-telemetry.md` in the vault). `app_events`
+// Privacy-minimal native-app usage counters. `app_events`
 // (web/supabase/migrations/20260815084146_add_app_events.sql) stores only a fixed event
 // name, non-sensitive error category, and marketing version — never a user id, device id, or session id
 // — so this type can never carry anything that identifies or tracks an individual.
@@ -39,7 +38,7 @@ protocol AppEventsRecording: Sendable {
     func record(_ event: AppEvent)
 }
 
-// DEP-322: the wire payload admits only a numeric marketing version, never the
+// The wire payload admits only a numeric marketing version, never the
 // Settings diagnostic string (which includes the build). Missing metadata is omitted
 // so telemetry still works in bundles without a version, just like older clients.
 struct AppEventPayload: Encodable, Sendable {

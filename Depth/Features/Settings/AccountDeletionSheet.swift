@@ -2,10 +2,10 @@ import SwiftUI
 
 // Destructive account flow with an explicit warning followed by fresh email verification.
 // Dismissal remains available after any failure because the session is intentionally kept.
-// Card-based surface (DEP-269): ScrollView + depthCard() like SettingsView, replacing the
+// Card-based surface: ScrollView + depthCard() like SettingsView, replacing the
 // stock Form's grouped-background treatment so both screens in the account flow share one
 // card system. Full-height presentation is kept as-is — the typed-confirmation field makes
-// full height safe, and detent parity with AuthSheet is deferred to DEP-257.
+// full height safe, and it shares the same presentation behavior as AuthSheet.
 struct AccountDeletionSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: AccountDeletionViewModel
@@ -82,7 +82,7 @@ struct AccountDeletionSheet: View {
                     RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
                         .fill(DesignTokens.Colors.surfaceRaised)
                 )
-                // DEP-395: padding is drawn outside the text box; forward its taps
+                // Padding is drawn outside the text box; forward its taps
                 // through the same focus route as DepthSearchField.
                 .contentShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
                 .onTapGesture { codeFocused = true }

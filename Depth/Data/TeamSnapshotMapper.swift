@@ -3,7 +3,7 @@ import OSLog
 
 // DTO → domain mapping for the team-snapshot query. Every conversion is explicit and
 // never silently coerces bad data — the existing web `dbRosterSource` conflating "not
-// found" with "unavailable" is exactly the failure mode the design spec calls out to not
+// found" with "unavailable" is exactly the failure mode this mapper avoids
 // reproduce here.
 //
 // "Explicit" is not the same as "fatal", and this file used to conflate those too. A row
@@ -11,9 +11,9 @@ import OSLog
 // payload that yields nothing at all is an error. The strict version made every new value
 // in `depth_chart_entries` or `players` a client-compatibility event on the app's launch
 // screen — one unrecognized position, rank or status took the whole team down. That is the
-// same mechanism that forced DEP-486's generic OT/G rollback, and it is why storing ESPN's
-// real status designations (`specs/2026-09-17-historical-data-and-source-boundaries-design.md`,
-// step 8) would otherwise break every installed build the moment the ingest changed.
+// same compatibility constraint, and it is why storing ESPN's
+// real status designations would otherwise break every installed build the moment the ingest
+// changed.
 //
 // What is deliberately *not* tolerated: `mapUniform`'s unknown kind still throws. A kit is
 // shown with a label, so skipping one could surface a wrongly-labeled uniform, and the
@@ -61,7 +61,7 @@ enum TeamSnapshotMapper {
             logo: dto.logoUrl, logoDark: dto.logoDarkUrl
         )
 
-        // Identity and seat are separate (DEP-585). `players` keeps exactly one row per
+        // Identity and seat are separate. `players` keeps exactly one row per
         // athlete, built from the `players` join; `depthChart` records every slot the
         // chart publishes. One athlete can hold two — ESPN cross-lists a swing tackle at
         // LT2 and RT1 — so seating off `players.position` used to leave the second slot
@@ -285,7 +285,7 @@ enum TeamSnapshotMapper {
     /// web's `getTeamFormations` (the ingest writes per-season rows and the field renders
     /// the most recent one). An unknown unit string (only offense/defense exist in the
     /// data) is skipped rather than throwing, so one bad row never takes down the whole
-    /// snapshot (web/CLAUDE.md invariant 6). Empty input yields an empty array, which the
+    /// snapshot. Empty input yields an empty array, which the
     /// field treats as "no real formation data → generic layout".
     static func mapFormations(_ dtos: [TeamFormationDTO]) -> [TeamFormation] {
         guard let latest = dtos.map(\.season).max() else { return [] }

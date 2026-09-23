@@ -5,8 +5,8 @@ import SwiftUI
 // the caller's color (the team's jersey body via TeamSurfaces.fill), active text sits on
 // the caller's activeTextColor (TeamSurfaces.textOnFill), and the
 // active segment carries a `withAlpha(activeTextColor, 40)` border (web lines 74-78).
-// Two widths, matching web's `fullWidth` (DEP-236): default hugs content — the compact
-// `size="sm"` that once sat inline next to the team pill (DEP-229) — and `fullWidth:
+// Two widths, matching web's `fullWidth`: default hugs content — the compact
+// `size="sm"` that sits inline next to the team pill — and `fullWidth:
 // true` stretches the track and splits options evenly for a standalone page bar.
 // Used for the ROSTER/SCHEDULE/STATS page switcher. Generic over `Selection` so
 // any Hashable enum can drive it; each option carries its own accessibility identifier
@@ -30,7 +30,7 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
     var activeTextColor: Color = DesignTokens.Colors.onAccent
     /// Web parity (web/components/ui/SegmentedControl.tsx `fullWidth`): true stretches the
     /// track full-width and splits the options evenly (web: `w-full` + `flex-1
-    /// text-center`), for a standalone bar (DEP-236 page switcher); false hugs content
+    /// text-center`), for a standalone bar; false hugs content
     /// (the old inline-with-the-pill usage).
     var fullWidth: Bool = false
 
@@ -40,7 +40,7 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
         // touch target, while the selected surface is inset to 36pt so it reads as a
         // highlight inside the control instead of a second oversized button. The selected
         // surface moves as one piece between options, preserving spatial continuity.
-        // DEP-415: full labels need their own row at accessibility sizes.
+        // Full labels need their own row at accessibility sizes.
         let layout =
             dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(spacing: 4))
@@ -65,7 +65,7 @@ struct DepthSegmentedControl<Selection: Hashable>: View {
                         .padding(.horizontal, 10)
                         .frame(maxWidth: fullWidth ? .infinity : nil, minHeight: 44)
                         .background { selectionSurface(isActive: isActive) }
-                        // DEP-395: plain buttons need the hit shape on the expanded
+                        // Plain buttons need the hit shape on the expanded
                         // label; a shape on Button leaves inactive-segment padding dead.
                         .contentShape(Rectangle())
                 }

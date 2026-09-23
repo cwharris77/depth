@@ -66,7 +66,7 @@ struct TeamSchedule: Equatable, Sendable, Codable {
 
 /// What the PLAYOFFS phase can truthfully say about a season. `notStarted` covers an
 /// upcoming or in-progress season: no seed is final yet, so claiming a team missed the
-/// postseason would be a false negative (the same trap DEP-120 fixed on Stats).
+/// postseason would be a false negative.
 enum PlayoffsState: Equatable, Sendable {
     case notStarted
     case missed
@@ -164,7 +164,7 @@ struct ScheduleGame: Equatable, Identifiable, Sendable, Codable {
     let teamScore: Int?
     let opponentScore: Int?
     let result: ScheduleResult?
-    /// Optional keeps schedules cached before DEP-315 decodable. A present value is
+    /// Optional so schedules cached before this field was introduced remain decodable. A present value is
     /// explicitly nflverse's market view, never Depth's forecast model.
     let market: ScheduleGameMarket?
 

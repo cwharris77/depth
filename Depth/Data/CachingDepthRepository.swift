@@ -1,18 +1,18 @@
 import Foundation
 
-// Wraps a `DepthRepository` with T5's cache-first behavior (design spec locked decision
-// #8) without touching `SupabaseDepthRepository`/`DepthRepository` themselves — this is
+// Wraps a `DepthRepository` with cache-first behavior without touching
+// `SupabaseDepthRepository`/`DepthRepository` themselves — this is
 // purely a decorator over the existing seam. Concrete type (not the bare protocol) is
 // what `DepthEnvironment` hands to Features/, so views get cache-first reads through the
 // same repository call they'd make anyway, plus the extra cache-age accessors Features
 // needs for stale labels — all without ever touching SwiftData or Supabase directly.
 //
-// DEP-248 read-path audit (which surfaces cache, which delegate, and why):
+// Cache policy by operation:
 //   teams()          cache-first + background refresh (team list is stable, 32 rows)
 //   teamSnapshot()   cache-first + background refresh (depth chart is the launch surface)
 //   teamStats()      TTL-bounded, same as teamSchedule() (originally serve-any-age like
-//                    the snapshot — fixed after a live QA pass caught a stale W-L record
-//                    being served indefinitely; stats carries the same "scores finalize
+//                    the snapshot — a stale W-L record must not be served indefinitely;
+//                    stats carries the same "scores finalize
 //                    on a different cadence than rosters" problem schedule already
 //                    accounted for, so it earns the same statsTTL treatment)
 //   teamSchedule()   TTL-bounded: cache-first within scheduleTTL, network-first beyond —
@@ -34,10 +34,10 @@ actor CachingDepthRepository: DepthRepository {
     private let underlying: DepthRepository
     private let store: CachedSnapshotStore
 
-    /// 24-hour stale label threshold (design spec's "Data and state contract").
+    /// 24-hour stale label threshold.
     static let staleAfter: TimeInterval = 24 * 3600
 
-    /// DEP-248 schedule TTL. Schedules finalize on a different cadence than rosters
+    /// Schedules finalize on a different cadence than rosters
     /// (weekly game results, not the snapshot's lineup updates), so the schedule cache
     /// is deliberately TTL-bounded rather than the snapshot's serve-any-age pattern:
     /// within this window a revisit is a cache hit (instant), beyond it the read goes
@@ -109,7 +109,7 @@ actor CachingDepthRepository: DepthRepository {
         try await underlying.teamSeason(teamId: teamId, season: season)
     }
 
-    /// DEP-248: schedules now earn a TTL-bounded cache (their own SwiftData rows, not
+    /// Schedules use a TTL-bounded cache (their own SwiftData rows, not
     /// the snapshot payload). Within `scheduleTTL` a revisit is a cache hit with a
     /// background refresh (same cache-first shape as `teamSnapshot`/`teamStats`); beyond
     /// the TTL the read goes network-first so a stale week of results is never served,
@@ -165,7 +165,7 @@ actor CachingDepthRepository: DepthRepository {
 
     // MARK: - Team stats (round-4 Stats page)
 
-    /// TTL-bounded, same shape as `teamSchedule` (§ note above this class's DEP-248
+    /// TTL-bounded, same shape as `teamSchedule` (see the cache policy above):
     /// audit): within `statsTTL` a revisit is a cache hit with a background refresh;
     /// beyond it the read goes network-first so a stale W-L record/PF/PA is never served
     /// indefinitely, falling back to the last good row if the refresh fails
@@ -285,7 +285,7 @@ actor CachingDepthRepository: DepthRepository {
 
     /// Fire-and-forget, deduplicated background refresh — cache-first reads return
     /// immediately with the value on disk; this keeps it from going stale without
-    /// blocking or blanking the caller's render (design spec's "refresh in the
+    /// blocking or blanking the caller's render (refresh in the
     /// background... retain the last good snapshot on failure": a failed refresh here
     /// just leaves the existing cached row in place, since `saveTeamSnapshot` only runs
     /// after a successful fetch).
@@ -298,7 +298,7 @@ actor CachingDepthRepository: DepthRepository {
 
     /// Unlike team data, this tries the network first — a stale cached minimum-build
     /// value is exactly wrong for a gate whose entire point is catching builds the
-    /// *current* config just marked unsupported (design spec's "Database evolution and
+    /// *current* config just marked unsupported (the
     /// update gate": "cache the last known minimum... if the fetch fails, use the cached
     /// value").
     func appConfig() async throws -> AppConfig {
@@ -314,7 +314,7 @@ actor CachingDepthRepository: DepthRepository {
         }
     }
 
-    /// Cache-only read, no network. DEP-425's launch fast path: the gate has to resolve
+    /// Cache-only read, no network. The launch fast path: the gate has to resolve
     /// *before* any other fetch starts, and awaiting a round trip on every cold launch
     /// would put a network stall in front of first render. This returns the last known
     /// config synchronously-ish so the gate can make a provisional decision immediately,
@@ -324,7 +324,7 @@ actor CachingDepthRepository: DepthRepository {
     /// *decides earlier*, never overrides a successful live read. Because the minimum
     /// build is monotonic, the one direction this can be wrong in is cached-allows /
     /// server-blocks, which the live check then corrects a moment later — strictly
-    /// better than the pre-DEP-425 behavior, where the app mounted every tab and started
+    /// better than mounting every tab and starting
     /// fetching before the gate had resolved at all.
     func cachedAppConfig() async -> AppConfig? {
         try? await store.appConfig()

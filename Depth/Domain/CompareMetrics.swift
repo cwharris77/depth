@@ -1,11 +1,11 @@
 import Foundation
 
-// The pure model behind Compare's redesigned By-team page (vault canvas "Refining the
+// The pure model behind Compare's redesigned By-team page. Three concerns live here rather
 // compare page", options 1b + 2a-2e + 3a/3b). Three concerns live here rather than in the
 // view so each is unit-testable without SwiftUI:
 //
 //  1. `CompareSeasonStamp` — the provenance claim rendered beside the season picker.
-//     Turn 3 of the canvas corrected turn 1's badge: FINAL is only honest for a season
+//     FINAL is only honest for a season
 //     that is actually over, because `CompareViewModel.effectiveStats(for:)` promotes the
 //     live season the moment ONE game's metrics land. A live season therefore stamps
 //     LIVE + a games-played count, and while that count is at or below
@@ -42,7 +42,7 @@ enum CompareSampleGuard {
 
 // MARK: - Season stamp
 
-/// Which kind of season the page is reading. Aug 26 (Cooper): this is no longer *shown* —
+/// Which kind of season the page is reading. This is no longer *shown* —
 /// the FINAL/LIVE/UPCOMING badge and its "17 GAMES · JAN 6" line were removed ("I don't need
 /// to see that the season already happened or how many games it had or when it ended"). It
 /// survives because `CompareSampleGuard` still needs to know a live season from a finished
@@ -67,14 +67,14 @@ func compareSeasonStamp(
     isCompleted: Bool,
     hasResolvedSeason: Bool = true
 ) -> CompareSeasonStamp {
-    // Canvas 2a: with no season resolved there is nothing to date-stamp.
+    // With no season resolved there is nothing to date-stamp.
     guard hasResolvedSeason else { return .none }
 
     guard let metrics else {
         // A season still to be played has no metrics row at all — nflverse writes the
         // team_stats stub (a real 0-0) well before there is anything to aggregate. That
         // absence is itself the fact worth stamping, so it reads UPCOMING rather than
-        // going blank (canvas 2d). A *completed* season missing metrics is a data gap, not
+        // going blank. A *completed* season missing metrics is a data gap, not
         // a schedule fact, and claims nothing.
         return isCompleted ? .none : .upcoming
     }
@@ -95,7 +95,7 @@ enum CompareSide: Equatable, Sendable {
 
 /// Which direction is better for a metric — or that the metric has no better direction.
 /// A `.neutral` row (offensive plays, punt attempts) shows both numbers for context and
-/// never tints a leader, matching the canvas, where those rows stay plain white on both
+/// never tints a leader, where those rows stay plain white on both
 /// sides even when the two values differ.
 enum CompareMetricDirection: Equatable, Sendable {
     case higher

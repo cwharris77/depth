@@ -34,8 +34,8 @@ enum DepthEnvironment {
         )
     }()
 
-    /// This cache is disposable — Supabase is always the source of truth (design spec's
-    /// "safe schema discard") — so a `ModelContainer` that fails to open (an
+    /// This cache is disposable — Supabase is always the source of truth — so a
+    /// `ModelContainer` that fails to open (an
     /// incompatible on-disk store from an old build, e.g. after this app's own
     /// SwiftData model changes shape) must not crash-loop the app forever. One retry
     /// against a freshly wiped store directory recovers from that; only a second
@@ -67,8 +67,7 @@ enum DepthEnvironment {
     static let repository: CachingDepthRepository = {
         #if UITEST_FIXTURES
             // UI tests launch with UI_TESTING_FIXTURE_BACKEND to replay a checked-in fixture
-            // bundle instead of touching Supabase (spec: 2026-09-10-ios-test-data-and-
-            // snapshot-testing-design, locked decision 1). UITEST_FIXTURES is set on Debug and
+            // bundle instead of touching Supabase. UITEST_FIXTURES is set on Debug and
             // Staging (CI builds Staging) and absent from Release, so a shipped binary cannot
             // be redirected by a launch argument.
             if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FIXTURE_BACKEND") {
@@ -106,7 +105,7 @@ enum DepthEnvironment {
         SupabaseDepthOverrideService(client: supabaseClient)
     static let appEvents: any AppEventsRecording = SupabaseAppEventsRecorder(client: supabaseClient)
     @MainActor static let authSessionStore = AuthSessionStore(service: authService)
-    /// DEP-319: shared favorite/start-on-favorite state. Backed by the user_settings row
+    /// Shared favorite/start-on-favorite state. Backed by the user_settings row
     /// (RLS-scoped to auth.uid()); reads/writes are gated on the live session so a stale
     /// favorite never applies after a sign-out.
     @MainActor static let userSettingsStore: UserSettingsStore = {
@@ -115,16 +114,16 @@ enum DepthEnvironment {
         return UserSettingsStore(remote: remote, sessionStore: authSessionStore)
     }()
     /// The current team's accent, published by DepthChartsTab and read by the root tab
-    /// bar for its `.tint` — app chrome adopts team color via TeamSurfaces.ring (DEP-424).
+    /// bar for its `.tint` — app chrome adopts the team color via TeamSurfaces.ring.
     @MainActor static let currentTeamStore = CurrentTeamStore()
     /// A cross-tab "open this team's depth chart" request — written by the uniform
     /// archive's kit sheet, consumed by DepthChartsTab (see TeamRouteStore).
     @MainActor static let teamRouteStore = TeamRouteStore()
-    /// DEP-405: a cross-tab "compare these two teams" request — written by the schedule
+    /// A cross-tab "compare these two teams" request — written by the schedule
     /// page's game-card tap (via RootTabView's tab switch), consumed by the Compare tab
     /// (see CompareRouteStore).
     @MainActor static let compareRouteStore = CompareRouteStore()
-    /// DEP-251 first-run tutorial state — owns the welcome/coachmark sequence, shared
+    /// First-run tutorial state — owns the welcome/coachmark sequence, shared
     /// between ContentView (mounts the overlay + fires the first-launch trigger) and
     /// SettingsView ("Take the tour" row).
     @MainActor static let onboarding = OnboardingController(preferences: preferences)

@@ -1,7 +1,7 @@
 import CoreGraphics
 import Foundation
 
-// Pure geometry for the depth-chart field (DEP-207). Given a unit's resolved slots
+// Pure geometry for the depth-chart field. Given a unit's resolved slots
 // (percentage x/y coordinates) and the field's on-screen size, picks the largest dot
 // diameter at which no two dots sit closer than `dotSize + gap`, and re-spreads any row
 // that still can't fit at the minimum size around its centroid. Deliberately free of
@@ -11,7 +11,7 @@ import Foundation
 // The 44-point tap target is the view's job (.frame(minWidth: 44, minHeight: 44) +
 // .contentShape), matching the web's 30px visual dot with a 44px hit-slop; this type
 // only decides what's actually drawn.
-/// The three name-presentation styles selectable in Settings › Settings (DEP-323) and
+/// The three name-presentation styles selectable in Settings › Settings and
 /// drawn by DepthChartFieldView. The geometry is identical in all three — only what
 /// happens to the names differs, so a switch is purely a presentation choice.
 enum FieldNameMode: String, CaseIterable, Identifiable, Sendable {
@@ -25,7 +25,7 @@ enum FieldNameMode: String, CaseIterable, Identifiable, Sendable {
     var id: String { rawValue }
 
     /// The one defaults key Settings writes and the field reads. The value predates
-    /// DEP-323 (it started as the beta experiment's key); it is kept as-is so a user's
+    /// This key predates the permanent setting; it is kept as-is so a user's
     /// existing choice survives promotion to a permanent setting.
     static let storageKey = "betaFieldNameMode"
 
@@ -38,7 +38,7 @@ enum FieldNameMode: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
-/// Maps the shared charted coordinate space onto the card in real yards (DEP-432).
+/// Maps the shared charted coordinate space onto the card in real yards.
 ///
 /// The charted space runs 0–100 across both axes with the line of scrimmage at y=50, and
 /// the field used to map all 100 units of it onto the card — so a unit occupied only its
@@ -61,7 +61,7 @@ struct FieldYardScale: Equatable {
     let originY: CGFloat
 
     /// Charted units per real yard, fitted by least squares against 137 measured snaps of
-    /// NFL tracking data (DEP-432). The charted values are not perfectly self-consistent —
+    /// NFL tracking data. The charted values are not perfectly self-consistent —
     /// they were authored by eye — so this is the best single linear fit, accurate to
     /// within half a yard everywhere except the secondary, whose charted depths are
     /// separately known to be wrong and are tracked for correction.
@@ -72,9 +72,9 @@ struct FieldYardScale: Equatable {
 
     /// The untransformed full-field mapping: the whole charted space on the card, about 26
     /// real yards of it. The safe fallback when there is nothing to frame against, and what
-    /// every unit drew before DEP-432.
+    /// every unit drew before the yard-window mapping was introduced.
     ///
-    /// The offense still uses it, per Cooper. Cropping to the unit's own extent is what
+    /// The offense still uses it. Cropping to the unit's own extent is what
     /// makes the defense readable — its four depth levels need the room — but the offense
     /// has only two (the line, and the backfield four to seven yards behind it), and
     /// zooming into those made it read as stretched no matter how the window was tuned.
@@ -105,7 +105,7 @@ struct DepthChartFieldLayout: Equatable {
     let dotSize: CGFloat
     /// Center of each slot, in points, keyed by `RenderSlot.key`.
     let positions: [String: CGPoint]
-    /// THROWAWAY PROTOTYPE (not landed): slots whose real spacing is still too tight for a
+    /// Slots whose real spacing is still too tight for a readable label use callouts.
     /// name even after the uniform-size stretch below — draw the name via a leader line to
     /// this point instead of under the dot. Empty when every slot has room. If this
     /// direction is adopted for real, `DepthChartFieldLayoutTests` needs a rewrite: it
@@ -182,7 +182,7 @@ struct DepthChartFieldLayout: Equatable {
         return rows
     }
 
-    /// `fillWidth` (offense, DEP-244): the offense always fills the field's full width —
+    /// `fillWidth` (offense): the offense always fills the field's full width —
     /// the outermost wide receivers are pinned to the left/right edges while the line
     /// keeps its real (tight) formation spacing, and the dots are sized as large as that
     /// spacing allows.
@@ -310,7 +310,7 @@ struct DepthChartFieldLayout: Equatable {
     /// Only ever a dot radius — enough that an on-line player isn't drawn straddling the
     /// line, and nothing more.
     ///
-    /// An intermediate version of DEP-432 extended the defensive side to clear the whole
+    /// An intermediate version extended the defensive side to clear the whole
     /// label block, because a label hangs below its dot (back toward the line, on the
     /// defense's side) and the line of scrimmage was being drawn through the defensive
     /// linemen's names. That was compensating in the render for a charted depth that was
@@ -322,7 +322,7 @@ struct DepthChartFieldLayout: Equatable {
         return y >= 50 ? dotSize / 2 + 3 : -(dotSize / 2 + 3)
     }
 
-    /// THROWAWAY PROTOTYPE, per Cooper 2026-08-23: decides which names can't be drawn under
+    /// Decides which names cannot be drawn under
     /// their own dot, working in real rectangles against the FINAL positions.
     ///
     /// Earlier versions compared dot CENTERS and missed the cases that actually show up: a
@@ -332,7 +332,7 @@ struct DepthChartFieldLayout: Equatable {
     /// really occupies and rejected if it leaves the field or hits another dot or label.
     ///
     /// The backfield is placed FIRST so it wins the argument for an inline name wherever
-    /// one fits (per Cooper: a quarterback's and back's names should read under the dot
+    /// one fits: a quarterback's and back's names should read under the dot
     /// like a receiver's, not on a leader line). It is a priority, not an exemption —
     /// forcing them inline regardless put a quarterback's name across the tailback's dot.
     private static func calloutsForCrowdedNames(
@@ -398,7 +398,7 @@ struct DepthChartFieldLayout: Equatable {
         }
         guard !crowded.isEmpty else { return [:] }
 
-        // THROWAWAY PROTOTYPE, per Cooper 2026-08-23: each callout looks for the nearest
+        // Each callout looks for the nearest
         // free spot to ITS OWN dot rather than every tag marching to one shared half of the
         // field. Sending them all the same way dragged a deep player's name (a fullback's,
         // say) all the way across the formation and over the line of scrimmage when there
@@ -434,7 +434,7 @@ struct DepthChartFieldLayout: Equatable {
                 height: labelBlockHeight
             )
 
-            // Shipped bug (Cooper, Ravens defense): the search only ever checked where the
+            // The search checks both where the
             // TAG landed, never the leader LINE that has to reach it — so a tag could sit
             // in genuinely free grass while its line ran straight across two other dots
             // and through their position tags. Every candidate is now also asked whether
@@ -489,7 +489,7 @@ struct DepthChartFieldLayout: Equatable {
         return callouts
     }
 
-    /// THROWAWAY PROTOTYPE (not landed — see `nameCallouts`'s doc comment): every slot
+    /// Fallback placement for slots that cannot use `nameCallouts`:
     /// targets one uniform, comfortable dot size (`maxDotSize`) instead of shrinking to
     /// whatever the tightest row can fit — the shoulder-to-shoulder O-line should read
     /// the same size as everyone else, not smaller. A maximal *cluster* of adjacent
@@ -506,7 +506,7 @@ struct DepthChartFieldLayout: Equatable {
         zoomToUnit: Bool = true
     ) -> DepthChartFieldLayout {
         let dotSize = maxDotSize
-        // DEP-432: y goes through the unit's yard window rather than the full charted
+        // y goes through the unit's yard window rather than the full charted
         // space, so a point on screen is a fixed number of real yards. x is untouched —
         // five linemen occupy 6.2 measured yards, which is 43pt at the field's true
         // horizontal scale, so width has to stay stretched for the dots to be separable.
@@ -542,7 +542,7 @@ struct DepthChartFieldLayout: Equatable {
                 }
 
                 let cluster = Array(sortedRow[i...j])
-                // THROWAWAY PROTOTYPE, per Cooper 2026-08-23: a receiver's DISTANCE from
+                // A receiver's distance from
                 // the line is what tells you the formation (is this WR in the slot or
                 // split wide?), so a WR must never be interleaved into the line's evenly
                 // spaced grid — that erases the one measurement worth reading. Only the
@@ -566,7 +566,7 @@ struct DepthChartFieldLayout: Equatable {
                     }
                 }
 
-                // THROWAWAY PROTOTYPE, per Cooper 2026-08-23: the gap between the receivers
+                // The gap between the receivers
                 // and the end of the line is the formation's signature, and pushing a
                 // receiver only the minimum distance clear of the line erased it — every
                 // dot ended up in one evenly spaced wall. Instead each side's receivers get
@@ -687,8 +687,8 @@ struct DepthChartFieldLayout: Equatable {
     /// supposedly on; the whole group is snapped to the row nearest the line of scrimmage,
     /// which is what "on the line" has to look like.
     ///
-    /// **This function used to do much more, and that was the bug** (DEP-432). It pushed
-    /// every off-line slot clear of the on-line row's *label block* — a floor of roughly
+    /// This function only snaps on-line players and resolves residual overlaps. It does not
+    /// push every off-line slot clear of the on-line row's *label block* — a floor of roughly
     /// 67pt, expressed in points and unrelated to yards, which forced ~2.9 yards of
     /// separation onto any two levels closer than that. Measured against tracking data, an
     /// under-centre quarterback charted 1.4 yards back was being drawn at 24.8, because the
@@ -773,7 +773,7 @@ struct DepthChartFieldLayout: Equatable {
         )
     }
 
-    /// THROWAWAY PROTOTYPE, per Cooper 2026-08-23: every other pass here is same-ROW only,
+    /// Every other pass here is same-ROW only,
     /// and `rowTolerancePct` is 3 — so two slots 4% apart in y (the split end at 51 and the
     /// slot receiver at 55) are never compared to each other and can be drawn on top of one
     /// another. This resolves what's left in real 2D distance rather than by row, and must
@@ -823,7 +823,7 @@ struct DepthChartFieldLayout: Equatable {
     /// under every dot (position tag, regardless of crowding — see
     /// `calloutsForCrowdedNames`'s doc comment), which can reach past a neighboring dot
     /// even when the dots themselves are clear. Same mechanism in shipped reports: a
-    /// linebacker's tag over the DL dot behind it (DEP-427) and a shotgun QB's tag over the
+    /// linebacker's tag over the DL dot behind it and a shotgun QB's tag over the
     /// RB dot charted just behind it.
     ///
     /// Earlier versions of this shipped a regression apiece, so the remaining logic here is
@@ -831,7 +831,7 @@ struct DepthChartFieldLayout: Equatable {
     /// - Always pushing sideways knocked a running back charted dead-center behind the QB
     ///   off to one side, breaking the "stacked behind the QB" read Cooper checks directly
     ///   off the chart.
-    /// - Always adding vertical clearance instead resolved that, but a slot squeezed
+    /// - Adding vertical clearance instead resolved that, but a slot squeezed
     ///   between two independent tag sources above and below it (an edge linebacker with a
     ///   DL dot below and a safety's tag above) has no y that clears both — pushing it
     ///   shallower to clear one reactivates the other, and it never settles no matter how
@@ -851,7 +851,7 @@ struct DepthChartFieldLayout: Equatable {
     /// So: an on-line slot's y never moves — it's snapped to its row by
     /// `settingOffLineDepth` and must stay there. When the dot owner is off the line, push
     /// it deeper (y), clamped to stop short of the on-line row it must not cross. When the
-    /// dot owner IS on the line (DEP-427's DL) and the pair aren't charted at the same x,
+    /// dot owner IS on the line and the pair aren't charted at the same x,
     /// push the dot sideways instead, same as `resolvingOverlaps`. A dot owner that's both
     /// on-line and charted at the same x as its tag's owner (the nose-tackle-under-a-
     /// linebacker shape) has no safe move by either axis and is left as a known, accepted
@@ -913,7 +913,7 @@ struct DepthChartFieldLayout: Equatable {
             onLine: slot.onLine)
     }
 
-    /// The DEP-244 fill-width layout. Every slot keeps its original coordinate EXCEPT the
+    /// The fill-width layout. Every slot keeps its original coordinate EXCEPT the
     /// leftmost and rightmost wide receiver, which are pinned to the field's edges — the
     /// line stays clustered at its real spacing (and the dots stay as large as that
     /// spacing allows) while the WRs take the full width. The standard layout (and its

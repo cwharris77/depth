@@ -7,7 +7,7 @@ import Observation
 // selected tab, this store carries which team (and optionally which uniform to select).
 //
 // Deliberately one nullable field and not a general router: the app has two cross-tab
-// destinations (this and CompareRouteStore, DEP-405), each with its own store.
+// destinations (this and CompareRouteStore), each with its own store.
 // `consume()` rather than a plain read so the request can't fire a second time when
 // DepthChartsTab re-renders for an unrelated reason.
 @MainActor

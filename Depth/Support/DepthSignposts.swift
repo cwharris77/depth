@@ -1,14 +1,14 @@
 import Foundation
 import OSLog
 
-// Central `os_signpost` instrumentation point (design spec Performance Review #5: "Add
+// Central `os_signpost` instrumentation point. One `OSSignposter` scoped to a single
 // XCTest metrics and os_signpost around launch, query, decode, cache transaction, and
-// first useful render"). One `OSSignposter` scoped to a single subsystem/category keeps
+// first useful render keeps
 // every interval visible together on Instruments' os_signpost track, and lets
 // `XCTOSSignpostMetric` target these names directly from the performance test suites
 // (`DepthUITests/PerformanceUITests.swift`, `DepthTests/PerformanceMetricsTests.swift`)
 // without each call site rolling its own `OSLog`. Every interval name below corresponds
-// 1:1 to a budget in the design spec's Performance Review #6.
+// 1:1 to a budget for the corresponding operation.
 enum DepthSignposts {
     static let subsystem = Bundle.main.bundleIdentifier ?? "com.cwharris.depth"
     static let category = "performance"
@@ -17,7 +17,7 @@ enum DepthSignposts {
 
     /// App init → first useful render, closed by `TeamDetailViewModel.load()` on its
     /// first successful load: the depth chart is the launch destination (2026-08-15
-    /// navigation-parity spec), so it is now both the first screen with real content and
+    /// navigation flow), so it is now both the first screen with real content and
     /// the gate the rest of the app renders behind. This interval therefore includes
     /// startup-team resolution, which is a pure `UserPreferences` read and adds no I/O.
     ///
@@ -32,7 +32,7 @@ enum DepthSignposts {
     static let appLaunch: StaticString = "AppLaunchToFirstUsefulRender"
 
     /// Network query + JSON decode for one team's full snapshot
-    /// (`SupabaseDepthRepository.teamSnapshot(teamId:)`) — Performance Review budget:
+    /// (`SupabaseDepthRepository.teamSnapshot(teamId:)`) —
     /// p95 <1.5s on good Wi-Fi, <3s on constrained networking.
     static let teamSnapshotQuery: StaticString = "TeamSnapshotQueryAndDecode"
 
@@ -46,7 +46,7 @@ enum DepthSignposts {
     /// two features don't smear each other's measurements on the signpost track.
     static let teamStatsCacheTransaction: StaticString = "TeamStatsCacheTransaction"
 
-    /// SwiftData cache transaction for a team schedule read or write (DEP-248) — same
+    /// SwiftData cache transaction for a team schedule read or write — same
     /// budget as the snapshot/stats cache transactions.
     static let teamScheduleCacheTransaction: StaticString = "TeamScheduleCacheTransaction"
 

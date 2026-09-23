@@ -1,7 +1,7 @@
 import Foundation
 
 // Mirrors web/lib/uniforms/art.tsx's uniformArtURL and uniformArtFullURL. Web art resolves
-// origin-relative (DEP-406) so local dev/preview serve the committed rasters; iOS can't
+// origin-relative so local dev/preview serve the committed rasters; iOS can't
 // use a relative URL — URLSession needs an absolute one — so this pins the same scheme
 // to the canonical production origin (the branded domain, not the generated alias).
 // The archive shows the `-full` mannequin raster (helmet → cleats); the picker shows
@@ -44,14 +44,14 @@ struct UniformListing: Codable, Equatable, Identifiable {
 }
 
 // Pure archive rules — the native twins of web/lib/uniforms/filter.ts plus the labelling and
-// search logic the v2 archive design (Uniform Archive v2, 2026-08-27) added on top:
+// search logic the archive adds on top:
 // decade bucketing for the "By era" mode, a free-text query that matches teams and kits
 // together, three sort orders, and the year/season strings the kit rows and detail sheet
 // render. All of it lives here so it is unit-testable without a UI and can't drift
 // between the archive tab, the team drill-in, and the detail sheet.
 enum UniformArchive {
-    // Per-team kit order: home first, away second, then everything else — Cooper's call
-    // on the web (KIND_RANK). The rest share rank 2 and break ties by name, so the
+    // Per-team kit order: home first, away second, then everything else. The rest share
+    // rank 2 and break ties by name, so the
     // order is stable and identical across teams.
     static let kindRank: [UniformKind: Int] = [
         .home: 0,
@@ -150,8 +150,8 @@ enum UniformArchive {
         }
     }
 
-    /// v2 (2026-08-27 archive redesign): kind became multi-select and sort moved in from
-    /// the top bar; the single-decade `era` filter is gone because "By era" is now a whole
+    /// Kind is multi-select and sort is part of the filter state; the single-decade `era`
+    /// filter is gone because "By era" is now a whole
     /// view mode rather than a filter value. `query` is deliberately *not* here — search
     /// is always-visible top-bar state, not something the Filters sheet resets or counts.
     struct Filters: Equatable {

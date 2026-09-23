@@ -4,7 +4,7 @@ import SwiftUI
 // in the nav bar. `.searchable` is the usual native answer and is what TeamListPickerSheet
 // uses, but it can't be used where a screen keeps its own header controls visible while
 // searching: SwiftUI hides nav-bar toolbar items outright once an inline search field is
-// focused (see TeamListPickerSheet's DEP-273 note), which would take the account button
+// focused, which would take the account button
 // and brand mark with it. The uniform archive's v2 header (2026-08-27) keeps search, the
 // By team / By era switch and Filters on screen together, so it owns its field.
 //

@@ -10,7 +10,8 @@ import SwiftUI
 // `.toolbar` and let `ToolbarItem` supply the system chrome (on iOS 26 that's a glass
 // capsule). TeamListPickerSheet must pass `.overlay`: SwiftUI's inline `.searchable`
 // hides nav-bar toolbar items outright once the field is focused (see that file's
-// DEP-273 note), so its X can't live in the toolbar at all — `.overlay` reproduces the
+// inline search field hides nav-bar toolbar items outright once the field is focused, so
+// its X can't live in the toolbar at all — `.overlay` reproduces the
 // capsule the toolbar would have drawn, so the two placements still look identical.
 struct CloseButton: View {
     enum Placement {
