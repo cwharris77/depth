@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 """Regenerate the Colts helmet horseshoe in ``lib/uniforms/teams/colts-decal.ts``.
 
-The linework is a contour trace of Wikimedia Commons'
-``File:Indianapolis Colts logo.svg`` (public domain / PD-ineligible; source supplied by
-the Indianapolis Colts at https://static.www.nfl.com/league/api/clubs/logos/IND.svg).
-The external vector lives at ``nfl-uniform-refs/colts/colts-mark.svg`` and is never
-committed. It is the exact helmet horseshoe, not the wordmark or 2020 Indiana-C secondary.
+The linework is a contour trace of the external vector at
+``nfl-uniform-refs/colts/colts-mark.svg``, outside this repository. It is the exact helmet horseshoe, not the wordmark or 2020 Indiana-C secondary.
 
 Topology, measured from the source before tracing: one connected navy band with seven enclosed
 white rivet holes. The centre is open to the top and therefore shell-coloured rather than a

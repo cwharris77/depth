@@ -7,8 +7,7 @@
 // `primary`) is fine for an app and unsafe for publishing historical football uniforms.
 //
 // This module is pure so the converter and the catalog guard can share it and so the rules
-// are unit-testable without running the outliner or sharp. See the design spec's "Strict
-// production validation" section.
+// are unit-testable without running the outliner or sharp.
 import type { UniformSurface } from './types';
 
 export interface ValidationIssue {

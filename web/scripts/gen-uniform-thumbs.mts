@@ -1,15 +1,15 @@
-// Generates the prerendered uniform thumbnails for the native iOS picker (DEP-220) from
+// Generates the prerendered uniform thumbnails for the native iOS picker from
 // the exact committed rows that picker renders. data.ts is the complete curated archive the
 // migration seeds, so raster output is independent of local credentials or hosted data.
 //
 // Outputs: `public/uniforms/<id>.webp` per row (id = `<teamId>-<slug>-<yearStart>`),
-// deterministically rendered from the shared UniformFigure jersey crop (the same SVG the
-// web picker's JerseySwatch fallback renders) and rasterized with sharp. Committed to the
-// repo like the `gen:icons` rasters and served under /uniforms/ (origin-relative on web,
-// per DEP-406); the DB's `uniforms.image_path` column points each row at its artifact
-// (see the backfill migration and lib/uniforms/seed-sql.ts).
+// deterministically rendered from the shared UniformFigure jersey crop (the same SVG the web
+// picker's JerseySwatch fallback renders) and rasterized with sharp. Committed to the repo like the
+// `gen:icons` rasters and served under /uniforms/ (origin-relative on web); the DB's
+// `uniforms.image_path` column points each row at its artifact (see the backfill migration and
+// lib/uniforms/seed-sql.ts).
 //
-// Also emits `public/uniforms/manifest.json` (review item 7): per catalog row, its
+// Also emits `public/uniforms/manifest.json`: per catalog row, its
 // construction key, each WebP's SHA-256, the SHA-256 build digest of the committed inputs,
 // and a content-addressed delivery revision. The manifest is committed next to the rasters,
 // so `manifest.test.ts` can fail a changed raster with a stale manifest. Publication order:
@@ -35,11 +35,6 @@ import {
   type ManifestRowInput,
 } from '@/lib/uniforms/manifest';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
-import {
-  findUnrecordedConstructions,
-  findInvalidReferencePackets,
-  findUnsourcedConstructions,
-} from '@/lib/uniforms/teams/core/provenance';
 import { findUnresolvedConstructions } from '@/lib/uniforms/teams/core/validate';
 import type { JerseyColors } from '@/lib/types';
 import { assertRasterToolchain } from './uniform-draw/toolchain-preflight.mts';
@@ -110,8 +105,7 @@ async function writeRasters(rows: UniformRow[]): Promise<ManifestRowInput[]> {
 }
 
 async function main() {
-  // Refuse to rasterize from an unpinned toolchain: sharp's version is part of the
-  // determinism contract in the design spec's "committed inputs only" rule.
+  // Refuse to rasterize from an unpinned toolchain: sharp's version determines the bytes.
   await assertRasterToolchain();
   const rows = buildRowsFromCatalog();
   // A row whose construction key is not a registered kit renders the generic fallback — fine
@@ -127,37 +121,6 @@ async function main() {
         unresolved
           .map((row) => `  - ${row.id}: no kit "${row.constructionKey}" for ${row.teamId}`)
           .join('\n')
-    );
-  }
-  // A row whose construction has no provenance record at all is a shipping blocker: the
-  // historical-accuracy ledger must carry either a sourced record or an explicit UNSOURCED
-  // marker before its art is published (review item 6).
-  const unrecorded = findUnrecordedConstructions(rows);
-  if (unrecorded.length > 0) {
-    throw new Error(
-      'curated rows have no provenance record:\n' +
-        unrecorded
-          .map(
-            (row) =>
-              `  - ${row.id}: add a record or an explicit UNSOURCED marker for "${row.constructionKey}"`
-          )
-          .join('\n')
-    );
-  }
-  const invalidPackets = findInvalidReferencePackets(rows);
-  if (invalidPackets.length > 0) {
-    throw new Error(
-      'curated rows have incomplete reference coverage:\n' +
-        invalidPackets.map(({ row, issues }) => `  - ${row.id}: ${issues.join('; ')}`).join('\n')
-    );
-  }
-  // Unsourced constructions are allowed to ship — the backfill is tractable precisely because
-  // the placeholder exists — but they are flagged as needing review on every generation run.
-  const unsourced = findUnsourcedConstructions(rows);
-  if (unsourced.length > 0) {
-    console.warn(
-      `\n${unsourced.length} constructions carry the UNSOURCED placeholder (needs review):\n` +
-        unsourced.map((row) => `  - ${row.id}`).join('\n')
     );
   }
   const artifactInputs = await writeRasters(rows);

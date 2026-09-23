@@ -2,7 +2,7 @@
 //
 // The converter (convert-uniform-json.mts --partial) emits a self-describing generated module:
 // `GENERATED_PARTIAL` carries the target jersey, its patterns, and its palette. This command is
-// the validation/placement half the review calls item 3. It does not rewrite team TypeScript and
+// the validation/placement half. It does not rewrite team TypeScript and
 // is not a general merge engine: the generated jersey/pattern module is imported by the existing
 // team parts module, and this command validates that importing it replaces exactly one named
 // jersey without repainting any kit that does not reference that jersey, its palette, or its

@@ -95,7 +95,7 @@ export const TITANS_PALETTE = {
   red: '#C8102E',
   white: '#FFFFFF',
   silver: TITANS_SILVER,
-  // Every decal hex is preserved from Cooper's supplied Tennessee-Titans-Logo.svg.
+  // Every decal hex is kept from the source artwork.
   ...Object.fromEntries(TITANS_DECAL_PATHS.map(({ fill }) => [fill, fill])),
 };
 export const TITANS_HELMETS = { 'navy-t': HELMET_NAVY_T, white: HELMET_WHITE };

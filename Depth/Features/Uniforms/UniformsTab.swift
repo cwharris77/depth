@@ -5,7 +5,7 @@ import SwiftUI
 // header carrying search and a By team / By era switch, a two-column team-card grid or a
 // decade timeline underneath it, a per-team drill-in, and a detail sheet per kit.
 //
-// The header is page content, not chrome (Cooper review, DEP-271) — the shared
+// The header is page content, not chrome — the shared
 // `depthTopNavToolbar` stays global, and search / view mode / Filters sit on the page
 // where they belong to this screen. Sort and kind moved into the Filters sheet in v2 so
 // the header holds exactly three controls at phone width.
@@ -36,7 +36,7 @@ struct UniformsTab: View {
                 .navigationTitle("Uniforms")
                 .navigationBarTitleDisplayMode(.inline)
                 .background(DesignTokens.Colors.bg)
-                // DEP-252/DEP-277 (Cooper review): shared app-wide top nav — see
+                // Shared app-wide top nav — see
                 // `depthTopNavToolbar`. No team pill on this screen.
                 .toolbar {
                     depthTopNavToolbar(teamPill: { EmptyView() }) {
@@ -168,7 +168,7 @@ struct UniformsTab: View {
         }
     }
 
-    /// The single entry point into filtering (DEP-271). A pill matching the app's chip
+    /// The single entry point into filtering. A pill matching the app's chip
     /// vocabulary rather than a bare toolbar glyph, since this is page content, not
     /// chrome. The count badge is the only always-visible signal of an active filter, so
     /// it must never silently disappear while one is set.
@@ -436,8 +436,7 @@ struct UniformsTab: View {
 
     private var attribution: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-            // DEP-267: matches web's full first paragraph (UniformArchive.tsx:216-229) —
-            // native was missing the CC BY 3.0 template credit, a licensing surface.
+            // Matches the web archive's attribution paragraph.
             Text(
                 "Uniform figures are original artwork; team marks are reproduced for identification only. Proportions modeled on the NFL uniform template by JohnnySeoul, used under CC BY 3.0 (modified)."
             )
@@ -452,12 +451,12 @@ struct UniformsTab: View {
 }
 
 /// A uniform-art thumbnail (either the full mannequin or the plain jersey crop), kept
-/// with a surfaced slot so rows don't shift while loading (AGENTS.md #16). The two
+/// with a surfaced slot so rows don't shift while loading. The two
 /// rasters have different aspect ratios (mannequin ~2.7:1 tall, jersey crop ~0.81:1 —
 /// see web/lib/uniforms/art.tsx's `jersey`/`full` viewBoxes), so `heightMultiplier` picks
 /// the right frame for whichever URL variant the caller passed; object-fit scaled-to-fit
-/// keeps the whole figure visible either way. Internal (not private): DEP-256 reuses
-/// this same component in UniformPickerSheet's carousel for drop-in parity with the
+/// keeps the whole figure visible either way. Internal (not private): UniformPickerSheet reuses
+/// this same component in its carousel for drop-in parity with the
 /// archive, rather than re-implementing jersey rendering there.
 enum UniformArtworkRetryPolicy {
     static func shouldRetry(after failures: Int) -> Bool {

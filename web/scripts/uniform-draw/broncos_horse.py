@@ -3,11 +3,9 @@
     python3 scripts/uniform-draw/broncos_horse.py            # print the paths
     python3 scripts/uniform-draw/broncos_horse.py --check    # verify broncos.ts matches
 
-This is a contour trace from the approved ``Denver Broncos logo.svg`` reference, not a
-hand-drawn reconstruction. The source is the fair-use, trademarked Wikipedia mark recorded
-in the vault's 2026-09-03 licence audit; it is used as a visual/vector reference only and
-stays in the sibling ``nfl-uniform-refs`` checkout. The internal GUD 2025 composite is used
-only to retain the helmet placement: the visible decal occupies the existing raw helmet box
+This is a contour trace from a vector input kept in the sibling ``nfl-uniform-refs``
+checkout, outside this repository. A helmet composite supplies the placement: the visible
+decal occupies the existing raw helmet box
 x=203..579, y=148..340. The source's navy body is the shell-colored negative space, so only
 the orange mane and white head are emitted as two color layers.
 

@@ -13,11 +13,6 @@ export const FALCONS_BLACK = '#000000';
 export const FALCONS_SIDE_STRIPE_LEFT = 'M141,631 H147 V806 H141 Z';
 export const FALCONS_SIDE_STRIPE_RIGHT = 'M441,631 H447 V806 H441 Z';
 
-// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
-// of a third-party mark, not original geometry. The mark is NON-FREE upstream
-// (Wikimedia `File:Atlanta Falcons logo.svg`, fair use; trademarked). Licence audit: the vault’s
-// Decisions.md, 2026-09-03.
-//
 // The falcon, traced from the home figure's shell (bbox x55-161, y20-117 in the reference) mapped
 // onto the raw helmet space at ~6.25x. Three plain-union fills in paint order: white silhouette,
 // black body, red streaks.

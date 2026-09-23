@@ -7,9 +7,7 @@ anchors here and re-running, not hand-editing coordinate strings.
     python3 scripts/uniform-draw/texans_bull.py            # print the three paths
     python3 scripts/uniform-draw/texans_bull.py --check    # verify texans.ts matches
 
-Original geometry. The proportions were read off a percentage grid over a
-rendering of the club's mark; no path data was lifted from any source file. See
-the vault's `Reference/uniform-hand-drawing.md` for the procedure and its licensing posture.
+The proportions were read off a percentage grid; the anchors below are the geometry.
 """
 
 import re

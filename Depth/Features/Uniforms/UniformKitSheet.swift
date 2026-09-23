@@ -5,7 +5,7 @@ import SwiftUI
 // had to abbreviate: the unshortened year range, how long the kit actually lasted, and
 // which team it belongs to.
 //
-// Two deliberate omissions from the pre-v2 sheet design, both Cooper's calls:
+// Two deliberate omissions:
 //   • The dismiss control is the shared `CloseButton` in the corner, not a second
 //     full-width button beside the primary action — every other sheet in the app hosts
 //     its X the same way, and sitting it next to "Open depth chart" was the bug.

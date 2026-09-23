@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     'Browse every NFL uniform kit — home, away, throwbacks, and alternates — for all 32 teams.',
 };
 
-// Archive gallery (roadmap Phase 7). Resolves the full kit list server-side and hands it to the
+// Archive gallery. Resolves the full kit list server-side and hands it to the
 // client filter component — kit metadata only, no rosters. `teams` is the same lightweight
 // all-32 list /compare passes to CompareTable, for the desktop TeamRail's switcher/search
 // (Desktop shell for uniform archive and compare pages ticket). Statically prerendered.

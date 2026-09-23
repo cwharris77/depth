@@ -1,9 +1,7 @@
 // Committed artifact manifest and delivery revision for the uniform raster pipeline.
 //
-// Review item 7 of the 2026-09-14 Astra architecture review, and the design spec's
-// "Artifact manifest and delivery revision" section (Projects/depth/specs/
-// 2026-09-13-uniform-art-pipeline-design.md). Committed WebPs are only part of the
-// publication path: this module records, per catalog row, the construction it renders as,
+// Committed WebPs are only part of the publication path: this module records, per catalog
+// row, the construction it renders as,
 // the SHA-256 of each committed WebP, and a content-addressed revision; and, for the set, the
 // build digest of the committed inputs that produced them.
 //
@@ -54,7 +52,7 @@ export const ARTIFACT_MANIFEST_PUBLIC_PATH = '/uniforms/manifest.json';
 // silently misread.
 export const MANIFEST_VERSION = 1;
 
-// The origin-relative directory every committed raster lives under (DEP-406: relative, so
+// The origin-relative directory every committed raster lives under (relative, so
 // local dev and Vercel previews serve the same bytes as production).
 export const UNIFORM_ARTIFACT_DIR = '/uniforms/';
 

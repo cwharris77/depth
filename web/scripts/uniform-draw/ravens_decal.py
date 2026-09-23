@@ -3,8 +3,7 @@
     python3 scripts/uniform-draw/ravens_decal.py
     python3 scripts/uniform-draw/ravens_decal.py --check
 
-The supplied vector is the approved, trademarked club-mark source and remains outside the
-repository at ``~/Downloads/2026_Baltimore.svg``. This generator reads its SVG paths directly:
+The supplied vector remains outside the repository. This generator reads its SVG paths directly:
 there is no rasterization, contour tracing, or simplification. It applies only the measured
 uniform scale and translation into the raw helmet coordinate space, then emits the original path
 layers in their original paint order.
@@ -23,6 +22,7 @@ beside it. Do not select the white SVG backdrop, helmet shell, or facemask as de
 
 from __future__ import annotations
 
+import os
 import re
 import sys
 from collections import OrderedDict
@@ -32,7 +32,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from drawkit import main  # noqa: E402
 
-REF = Path.home() / 'Downloads' / '2026_Baltimore.svg'
+REF = Path(os.environ.get('DECAL_SVGS', '.')) / '2026_Baltimore.svg'
 MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'ravens-decal.ts'
 SOURCE_X0, SOURCE_Y0 = 326.0, 677.0
 TARGET_X0, TARGET_Y0 = 330.0, 130.0

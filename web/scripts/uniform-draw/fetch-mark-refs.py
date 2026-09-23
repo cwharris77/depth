@@ -1,37 +1,35 @@
 #!/usr/bin/env python3
 """Fetch Wikimedia mark references for every team with a helmet decal.
 
-Each team's helmet mark is re-authored (Stage B / Phase 3) from a gate-passing
-reference; this script resolves and downloads that reference so the vision pass
-only has to place it. Part of the uniform-accuracy workflow: a human runs
-gate-check.py after this to record which references clear the resolution gate.
+Resolves and downloads each team's mark into the sibling reference folder; gate-check.py
+then reports which files clear the resolution gate.
 
 Files are saved as nfl-uniform-refs/<team>/<team>-mark.<ext> — the sibling
-reference folder, never the repo. The file's licence metadata is recorded
-alongside it, because Stage B's provenance note is per-team.
+reference folder, outside the repo. The file's metadata is recorded alongside it.
 
 Resolution order per team: the canonical `File:<City> <Name> logo.svg` on
 Commons, then en.wikipedia, then an allimages prefix search on whichever host
-actually holds the mark. The three teams whose audit filename never resolved
-(Titans, Cowboys, Rams) fall through to search and are recorded as such.
+actually holds the mark. Teams whose canonical filename never resolves fall through to
+search and are recorded as such.
 """
 
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
 
-USER_AGENT = "depth-uniform-gate/1.0 (internal tool; contact cwharris)"
-REFS = Path("/Users/cwharris/Documents/GitHubProjects/nfl-uniform-refs")
+USER_AGENT = "depth-uniform-gate/1.0"
+REFS = Path(
+    os.environ.get("NFL_UNIFORM_REFS", Path(__file__).resolve().parents[4] / "nfl-uniform-refs")
+)
 
-# teamId -> primary candidate filename (the audit's `<City> <Name> logo.svg`
-# pattern). Host preference is decided per team by the licence audit in the
-# vault Decisions (2026-09-03): 11 public-domain teams on Commons, the rest on
-# en.wikipedia, and the three unresolved ones searched.
+# teamId -> primary candidate filename (the `<City> <Name> logo.svg` pattern) and the host
+# tried first.
 TEAMS = {
     "bears": "Chicago Bears logo.svg",
     "bills": "Buffalo Bills logo.svg",

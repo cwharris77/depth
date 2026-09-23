@@ -3,7 +3,6 @@
 
 export const CHIEFS_WHITE = '#FFFFFF';
 
-// DEP-467: re-authored from the supplied 2048px SVG instead of the former single-color trace.
 // The mark is fitted into the helmet-composite placement envelope (x=276-534, y=173-337) with
 // its source aspect ratio preserved. At this scale the narrowest critical black keyline is over
 // 5px, and all four closed color components remain stable under a 0.75x downscale. UniformLayer

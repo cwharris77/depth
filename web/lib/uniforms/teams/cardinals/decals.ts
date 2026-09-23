@@ -1,11 +1,6 @@
 // Arizona helmet decal geometry. Coordinates are baked into the shared helmet viewBox because
-// UniformLayer has no transform field. Artwork comes from the supplied large-scale SVG references;
-// the shared placement box is measured from the supplied GUD 2025 Cardinals helmet composite.
-// Each layer remains clipped to the helmet surface, which makes its rear feathers wrap around the shell.
-//
-// The regular mark is the club's non-free trademarked artwork (English Wikipedia/Wikimedia
-// File:Arizona Cardinals logo.svg, fair use; not Wikimedia Commons). The eggshell paths come only
-// from the supplied 2025 eggshell reference and are used only by that uniform.
+// UniformLayer has no transform field. Each layer remains clipped to the helmet surface, which
+// makes its rear feathers wrap around the shell. The eggshell paths are used only by that uniform.
 
 export const CARDINALS_DECAL_KEYLINE_PATH =
   'M145.00,160.00 m 0 0 1.29 0.26 10.07 3.61 12.65 4.13 13.42 3.87 16.52 4.13 13.17 2.84 14.46 2.58 12.39 1.81 11.10 1.29 12.39 1.03 9.81 0.52 h 24.27 l 20.14 -1.03 10.33 -0.26 h 9.81 l 9.29 0.26 12.39 0.77 10.33 1.03 10.58 1.55 9.29 1.81 7.74 1.81 9.04 2.58 8.26 2.84 6.97 2.84 7.49 3.61 5.42 2.84 5.42 3.36 4.90 3.36 4.39 3.36 3.36 2.84 5.16 4.65 3.36 3.36 1.81 2.07 2.32 2.58 2.84 3.61 3.61 4.90 2.84 4.39 2.32 3.87 3.10 5.68 3.61 7.49 2.84 6.97 2.84 7.74 5.68 3.36 3.10 2.07 4.13 3.10 3.61 2.84 4.13 3.87 2.84 2.84 2.32 2.84 3.10 3.87 2.58 3.87 3.10 5.42 2.07 4.13 2.07 4.65 2.58 7.23 2.84 11.36 0.52 2.58 -0.26 1.29 -7.49 1.29 -7.23 1.55 -7.49 2.07 -6.71 2.32 -6.97 2.84 -7.49 3.61 -5.16 2.84 -4.90 3.10 -3.61 2.58 -3.36 2.58 -3.61 3.10 -4.65 4.65 -2.32 2.84 -2.58 3.10 -3.36 4.65 -2.58 3.87 -3.87 6.45 -3.36 6.20 -3.61 7.49 -3.61 8.78 -0.52 2.58 -1.03 0.77 -3.87 -2.58 -5.42 -3.36 -8.26 -4.90 -7.23 -4.13 -6.71 -3.61 -5.94 -3.10 -4.90 -2.58 -5.94 -2.84 -9.04 -4.13 -9.29 -3.87 -10.58 -3.87 -8.78 -2.84 -9.81 -2.58 -9.29 -1.81 -9.04 -1.29 -9.29 -0.77 -9.04 -0.26 -9.04 0.26 -8.78 0.77 -8.26 1.29 -1.81 0.26 -1.29 -4.65 -2.32 -7.49 -2.84 -7.23 -2.58 -5.68 -3.10 -5.68 -3.36 -5.42 -3.61 -4.90 -3.10 -3.61 -2.84 -3.36 -5.68 -7.23 -3.87 -5.16 -4.13 -5.94 -3.87 -6.45 -3.10 -5.94 -2.32 -6.20 -3.10 -2.84 -2.07 -1.81 -3.10 -2.84 -8 -8 -1.81 -2.07 -2.58 -2.58 -1.81 -2.07 -3.61 -3.87 -1.81 -2.07 -3.10 -3.61 -2.84 -3.36 -2.84 -3.61 -2.58 -3.61 -1.03 -1.81 2.84 0.77 9.04 2.84 0.26 -0.26 -3.36 -3.10 -3.61 -3.61 -1.81 -2.07 -2.32 -2.32 -1.81 -2.07 -1.55 -1.81 -2.84 -3.61 -3.61 -4.65 -3.61 -4.90 -5.16 -7.74 -3.10 -5.16 -2.32 -4.13 0.77 -0.26 14.20 5.42 1.81 0.52 -2.84 -3.10 -2.32 -2.84 -2.32 -2.58 -2.32 -2.84 -3.10 -3.61 -2.32 -2.84 -2.84 -3.36 -2.84 -3.61 -2.84 -3.36 -3.36 -4.65 -4.39 -6.71 -3.36 -5.42 -2.07 -3.61 z';

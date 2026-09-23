@@ -2,7 +2,7 @@
  * GENERATED FILE — DO NOT EDIT.
  *
  * Team-neutral helmet art: the shell, facemask, vents, rivets, and chin strap every
- * kit paints on. Derived from Cooper's own helmet illustration by
+ * kit paints on. Derived from a helmet illustration by
  * scripts/uniform-draw/helmet_base.py, which strips the club mark and stores the shell
  * and facemask shading as lightness offsets from the #575757 placeholder. Change the script
  * and re-derive this file, or the next run will silently revert manual edits.

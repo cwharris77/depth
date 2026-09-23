@@ -10,16 +10,12 @@
 // keeps the dedupe complete while the filter keeps listicles, Madden coverage, headwear
 // drops and leaks out of the notification.
 //
-// Notification writes a dated one-liner per unveiling into the Obsidian vault's
-// System/Inbox.md, where inbox-triage/capture-ticket turns each into a depth ticket
-// grouped under a run-month epic. This replaces the GitHub issue per item that DEP-43
-// originally specified (reversed 2026-09-03 — see the vault's Projects/depth/Decisions.md:
-// the issues were unfiltered noise and lived outside the board Cooper actually triages).
+// Notification appends a dated one-liner per unveiling to an external notes inbox.
 //
 // Usage: npm run check:uniform-releases
 // Requires SUPABASE_URL + SUPABASE_SECRET_KEY in the environment (secret key
 // bypasses RLS-equivalent restrictions for writes; never expose it client-side).
-// OBSIDIAN_VAULT_PATH points at the vault working copy; when it is unset the script still
+// OBSIDIAN_VAULT_PATH points at the notes working copy; when it is unset the script still
 // runs and records dedupe state, printing what it would have filed instead of writing.
 
 import dotenv from 'dotenv';

@@ -5,7 +5,7 @@ import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
 import { buildRowsFromCatalog } from '../../scripts/gen-uniform-thumbs.mts';
 import type { TeamColors } from '@/lib/types';
 
-// DEP-220: the artifact pipeline's pure half. These tests lock the two contracts the
+// The artifact pipeline's pure half. These tests lock the two contracts the
 // generator script and the seed generator both depend on: the deterministic URL a kit's
 // WebP lives at, and the deterministic jersey-crop SVG string that becomes the raster.
 

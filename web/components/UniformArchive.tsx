@@ -19,7 +19,7 @@ import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import { useLastAccent } from '@/lib/hooks/use-last-accent';
 import type { TeamUniformDefinition } from '@/lib/uniforms/teams/core/types';
 
-// The uniform archive (roadmap Phase 7). Receives every kit from the server route and
+// The uniform archive. Receives every kit from the server route and
 // filters/groups client-side with the pure helpers in lib/uniforms/filter. State-only — no
 // data fetching. Editorial layout: division headers, a per-team color accent bar, then the
 // team's kits as generated vector uniforms (UniformFigure). Below `xl`, nav is the logo ->
@@ -177,10 +177,9 @@ export default function UniformArchive({
                                 colors={k.colors}
                                 variant="full"
                                 size={54}
-                                // Every row is backfilled to a -full artifact (DEP-220
-                                // only produced the jersey crop, which stretches at this
-                                // variant); a future kit with no artifact yet keeps the
-                                // inline full-mannequin SVG fallback via the falsy path.
+                                // Every row has a -full artifact (the jersey crop stretches at this
+                                // variant); a future kit with no artifact yet keeps the inline
+                                // full-mannequin SVG fallback via the falsy path.
                                 imagePath={k.imagePath ? uniformArtFullURL(k.id) : undefined}
                                 title={`${t.teamName} ${k.name}`}
                                 sharedDefs

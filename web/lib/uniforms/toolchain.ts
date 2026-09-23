@@ -1,10 +1,10 @@
 // Pinned-input verification for the uniform art pipeline.
 //
-// The design spec's determinism rule ("committed inputs only") requires that the same
+// Generation consumes committed inputs only: the same
 // accepted authoring data, catalog snapshot, renderer, font inputs, and raster toolchain
 // produce byte-identical artifacts. Authoring data, catalog, and renderer are code in this
-// repo; the fonts and the outlining/rasterizing toolchain are not. Font binaries cannot be
-// committed (licensing), so `toolchain.lock.json` records the SHA-256 of each source font
+// repo; the fonts and the outlining/rasterizing toolchain are not. Font binaries are not
+// committed, so `toolchain.lock.json` records the SHA-256 of each source font
 // and the exact versions of the tools that outline (Python, fontTools, Node) and rasterize
 // (sharp, Node) the committed WebPs. `verifyToolchain` is the pure comparison; the actual
 // probing lives in `scripts/uniform-draw/toolchain-preflight.mts`, which the converter and

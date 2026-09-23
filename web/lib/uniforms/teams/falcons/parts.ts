@@ -1,4 +1,4 @@
-// Atlanta's shared helmet, jerseys and pants for the native uniform archive (DEP-478).
+// Atlanta's shared helmet, jerseys and pants for the native uniform archive.
 // The four-color falcon is fixed helmet art. Home and away retain canonical black pants
 // while exposing the reference's white option; the historical red alternate remains black.
 // Colors belong to named parts, independent of the jersey-relative palette slots.

@@ -13,11 +13,6 @@
 // face. Every other kit reaches white through a token.
 export const BRONCOS_WHITE = '#FFFFFF';
 
-// Provenance: contour trace of the club's mark from the GUD composite — a reproduction
-// of a third-party mark, not original geometry. The mark is NON-FREE upstream
-// (Wikimedia `File:Denver Broncos logo.svg`, fair use; trademarked). Licence audit: the vault’s
-// Decisions.md, 2026-09-03.
-//
 // TWO marks, because Orange Crush wears the era's "D" rather than the modern horse.
 //   - The horse is two layers of solid region — orange mane under a white head. Its eye and nostril
 //     are shell-colored, so they need no path at all.

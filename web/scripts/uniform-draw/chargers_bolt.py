@@ -3,9 +3,7 @@
     python3 scripts/uniform-draw/chargers_bolt.py            # print the two paths
     python3 scripts/uniform-draw/chargers_bolt.py --check    # verify chargers.ts matches
 
-A CONTOUR TRACE rather than the hand-drawn geometry the vault's `Reference/uniform-hand-drawing.md`
-produces — see that doc's "second route" section for the procedure and for what
-drawkit supplies. The bolt is a broad solid shape with no fine interior detail,
+A CONTOUR TRACE rather than hand-drawn geometry; drawkit supplies the machinery. The bolt is a broad solid shape with no fine interior detail,
 so the doc's negative-space warning does not apply and a trace is both stable
 and closer to the reference than an anchor list would be.
 
@@ -26,8 +24,8 @@ The trade is resolution: that helmet is 93px across and its bolt 76px, so the
 crop is upsampled 8x before tracing and EPS is set against the interpolated
 edge rather than a drawn one. That is the same bargain the Rams' horn made in
 reverse (there the GUD helmet was too coarse and a larger illustration existed;
-here no larger drawing of THIS bolt exists). The reference is not committed —
-it lives in the sibling nfl-uniform-refs/ checkout.
+here no larger drawing of THIS bolt exists). The input lives in the sibling
+nfl-uniform-refs/ checkout.
 
 Topology, measured rather than assumed (docs step 3). The decal is two visible
 shapes, a blue keyline under a gold body, and the antialiased seam between them
