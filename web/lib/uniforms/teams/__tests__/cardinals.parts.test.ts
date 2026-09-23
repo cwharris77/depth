@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CARDINALS_PARTS } from '../cardinals/parts';
+import { CARDINALS_PARTS } from '../cardinals';
 
 describe('Cardinals helmet parts', () => {
   it('uses the eggshell decal only on the rivalries helmet', () => {

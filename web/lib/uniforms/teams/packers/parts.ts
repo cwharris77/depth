@@ -29,7 +29,6 @@ import {
 import { PACKERS_G_MARK_LAYERS } from './decal';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
-import { LEGACY_ROUNDED_COLLAR_PATH } from '../core/shared';
 
 export const COLLAR_PATH = 'M206,388 L294,455 L386,388';
 

@@ -9,16 +9,6 @@
 // is bare (a GIANTS wordmark that is out of scope, not a borrowed monogram) — so it is the second
 // helmet part, same blue, different layers.
 
-import {
-  GIANTS_AWAY_SLEEVE_X_LEFT,
-  GIANTS_AWAY_SLEEVE_X_RIGHT,
-  GIANTS_AWAY_STRIPE_BANDS,
-  GIANTS_COLLAR_CORE_WIDTH,
-  GIANTS_COLLAR_OUTER_WIDTH,
-  GIANTS_THROWBACK_SLEEVE_X_LEFT,
-  GIANTS_THROWBACK_SLEEVE_X_RIGHT,
-  GIANTS_THROWBACK_STRIPE_BANDS,
-} from './source';
 import { GIANTS_DECAL_MODERN_PATHS } from './decal';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';

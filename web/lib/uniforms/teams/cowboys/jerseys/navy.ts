@@ -1,3 +1,9 @@
+import {
+  COWBOYS_COLLAR_CORE_WIDTH,
+  COWBOYS_COLLAR_OUTER_WIDTH,
+  COWBOYS_NECK_BAND_CORE,
+  COWBOYS_NECK_BAND_OUTER,
+} from '../source';
 // Jersey construction moved intact from parts.ts.
 import type { UniformPart } from '../../core/parts';
 import { COLLAR_PATH } from '../parts';

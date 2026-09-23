@@ -1,3 +1,4 @@
+import { cardinalsJerseyDetails } from '../parts';
 import * as parts from '../parts';
 import type { UniformPart } from '../../core/parts';
 

@@ -1,3 +1,8 @@
+import {
+  GIANTS_AWAY_SLEEVE_X_LEFT,
+  GIANTS_AWAY_SLEEVE_X_RIGHT,
+  GIANTS_AWAY_STRIPE_BANDS,
+} from '../source';
 // Jersey construction moved intact from parts.ts.
 import type { UniformPart } from '../../core/parts';
 import { sleeveStripes } from '../parts';

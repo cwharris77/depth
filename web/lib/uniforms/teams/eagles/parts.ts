@@ -10,7 +10,6 @@
 // five jersey constructions (green, white, black, original kelly, modern kelly), and four pants.
 
 import {
-  EAGLES_BLACK,
   EAGLES_COLLAR_PATH,
   EAGLES_COLLAR_WIDTH,
   EAGLES_CUFF_LEFT,
@@ -20,7 +19,6 @@ import {
   EAGLES_DECAL_WHITE_PATH,
 } from './source';
 import { type PartLayer, type UniformPart } from '../core/parts';
-import { LEGACY_ROUNDED_COLLAR_PATH } from '../core/shared';
 
 // The wing — source paint order is white substrate, black feather channels, then silver body.
 // Every shell shares this exact placement and fixed palette.

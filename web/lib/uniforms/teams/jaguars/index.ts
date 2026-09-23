@@ -1,3 +1,4 @@
+import { JAGUARS_BLACK, JAGUARS_DECAL_PATHS } from './source';
 import { compileParts, type TeamPartsDefinition } from '../core/parts';
 import { HELMET_BLACK, HELMET_TEAL, PANTS_BLACK, PANTS_TEAL, PANTS_WHITE } from './parts';
 import { JERSEY_TEAL } from './jerseys/teal';

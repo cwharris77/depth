@@ -1,3 +1,12 @@
+import {
+  DOLPHINS_COLLAR_PATH,
+  DOLPHINS_COLLAR_WIDTH,
+  DOLPHINS_SLASH_LEFT,
+  DOLPHINS_SLASH_RIGHT,
+  DOLPHINS_SLASH_WIDTH,
+  DOLPHINS_WEDGE_LEFT,
+  DOLPHINS_WEDGE_RIGHT,
+} from '../source';
 // Jersey construction moved intact from parts.ts.
 import type { UniformPart } from '../../core/parts';
 

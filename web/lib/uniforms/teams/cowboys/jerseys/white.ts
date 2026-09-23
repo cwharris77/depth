@@ -1,3 +1,4 @@
+import { COWBOYS_SLEEVE_CAP_LEFT, COWBOYS_SLEEVE_CAP_RIGHT } from '../source';
 // Jersey construction moved intact from parts.ts.
 import type { UniformPart } from '../../core/parts';
 

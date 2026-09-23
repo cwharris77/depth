@@ -1,5 +1,6 @@
+import { COWBOYS_HELMET_SILVER } from './source';
 import { compileParts, type TeamPartsDefinition } from '../core/parts';
-import { HELMET_SILVER_STAR, PANTS_WHITE, star } from './parts';
+import { HELMET_SILVER_STAR, PANTS_WHITE } from './parts';
 import { JERSEY_NAVY } from './jerseys/navy';
 import { JERSEY_WHITE } from './jerseys/white';
 

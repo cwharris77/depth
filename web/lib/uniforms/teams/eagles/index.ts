@@ -1,3 +1,4 @@
+import { EAGLES_BLACK } from './source';
 import { compileParts, type TeamPartsDefinition } from '../core/parts';
 import {
   HELMET_BLACK,

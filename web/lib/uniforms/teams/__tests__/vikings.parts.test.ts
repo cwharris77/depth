@@ -1,7 +1,7 @@
 // Guards the Vikings helmet decal's two-color paint order and shell-specific color mapping. The
 // same path geometry is shared across all three helmets, so a mapping regression affects every kit.
 import { describe, expect, it } from 'vitest';
-import { VIKINGS_PARTS } from '../vikings/parts';
+import { VIKINGS_PARTS } from '../vikings';
 
 describe('Vikings helmet parts', () => {
   it('paints the horn before the gold crescent on every shell', () => {

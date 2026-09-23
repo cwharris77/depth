@@ -14,11 +14,7 @@
 
 import {
   STEELERS_BLACK,
-  STEELERS_BUMBLEBEE_CHEVRON_PATH,
-  STEELERS_BUMBLEBEE_CHEVRON_WIDTH,
   STEELERS_BUMBLEBEE_KHAKI,
-  STEELERS_BUMBLEBEE_PINSTRIPE_XS,
-  STEELERS_BUMBLEBEE_TORSO_PATH,
   STEELERS_DECAL_BLUE,
   STEELERS_DECAL_BLUE_PATH,
   STEELERS_DECAL_DISC,
@@ -48,7 +44,6 @@ import {
   STEELERS_SLEEVE_WHITE_RIGHT,
 } from './source';
 import { type PartLayer, type UniformPart } from '../core/parts';
-import { LEGACY_ROUNDED_COLLAR_PATH } from '../core/shared';
 
 export const fill = (
   id: string,

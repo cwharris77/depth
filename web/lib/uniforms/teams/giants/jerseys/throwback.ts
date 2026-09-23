@@ -1,3 +1,10 @@
+import {
+  GIANTS_COLLAR_CORE_WIDTH,
+  GIANTS_COLLAR_OUTER_WIDTH,
+  GIANTS_THROWBACK_SLEEVE_X_LEFT,
+  GIANTS_THROWBACK_SLEEVE_X_RIGHT,
+  GIANTS_THROWBACK_STRIPE_BANDS,
+} from '../source';
 // Jersey construction moved intact from parts.ts.
 import type { UniformPart } from '../../core/parts';
 import { COLLAR_PATH, sleeveStripes } from '../parts';

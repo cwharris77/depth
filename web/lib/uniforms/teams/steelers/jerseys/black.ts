@@ -1,5 +1,5 @@
 import type { UniformPart } from '../../core/parts';
-import { fill, sleeveStripes } from '../parts';
+import { sleeveStripes } from '../parts';
 
 export const JERSEY_BLACK: UniformPart = {
   base: 'black',

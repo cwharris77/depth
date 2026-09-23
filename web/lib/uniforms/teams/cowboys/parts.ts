@@ -11,15 +11,6 @@
 // away and the pants through a white literal (the home palette has no white token); here those
 // are one palette entry each.
 
-import {
-  COWBOYS_COLLAR_CORE_WIDTH,
-  COWBOYS_COLLAR_OUTER_WIDTH,
-  COWBOYS_HELMET_SILVER,
-  COWBOYS_NECK_BAND_CORE,
-  COWBOYS_NECK_BAND_OUTER,
-  COWBOYS_SLEEVE_CAP_LEFT,
-  COWBOYS_SLEEVE_CAP_RIGHT,
-} from './source';
 import { COWBOYS_DECAL_PATHS as GENERATED_COWBOYS_DECAL_PATHS } from './decal';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import { LEGACY_ROUNDED_COLLAR_PATH } from '../core/shared';

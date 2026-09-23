@@ -3,7 +3,7 @@
 // pant options enumerated from the GUD 2025 composite, which only the canonical entry compiles so
 // a wrong list is otherwise invisible in every raster.
 import { describe, expect, it } from 'vitest';
-import { PANTHERS_PARTS } from '../panthers/parts';
+import { PANTHERS_PARTS } from '../panthers';
 
 describe('Panthers helmet parts', () => {
   const layerIds = (helmet: keyof typeof PANTHERS_PARTS.helmets) =>

@@ -1,3 +1,4 @@
+import { FALCONS_DECAL_RED } from './source';
 import { compileParts, type TeamPartsDefinition } from '../core/parts';
 import { HELMET_BLACK_FALCON, PANTS_BLACK, PANTS_WHITE } from './parts';
 import { JERSEY_BLACK } from './jerseys/black';

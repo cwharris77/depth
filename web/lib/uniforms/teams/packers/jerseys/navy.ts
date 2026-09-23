@@ -1,6 +1,17 @@
+import { LEGACY_ROUNDED_COLLAR_PATH } from '../../core/shared';
+import {
+  PACKERS_COLLAR_WIDTHS,
+  PACKERS_SLEEVE_GOLD_LOWER_LEFT,
+  PACKERS_SLEEVE_GOLD_LOWER_RIGHT,
+  PACKERS_SLEEVE_GOLD_UPPER_LEFT,
+  PACKERS_SLEEVE_GOLD_UPPER_RIGHT,
+  PACKERS_SLEEVE_WHITE_LEFT,
+  PACKERS_SLEEVE_WHITE_RIGHT,
+} from '../source';
+import type { PartLayer } from '../../core/parts';
 // Jersey construction moved intact from parts.ts.
 import type { UniformPart } from '../../core/parts';
-import { COLLAR_PATH, collar } from '../parts';
+import { COLLAR_PATH } from '../parts';
 
 // The 1923 navy body: bronze sleeve bands and a bronze collar (the kit's stripped construction
 // keeps only those), bronze numerals.

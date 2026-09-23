@@ -4,7 +4,7 @@
 // wrong list is invisible in every raster. The legs stay plain: the real pant's bolt is on the side
 // seam, which a front-on figure cannot show.
 import { describe, expect, it } from 'vitest';
-import { CHARGERS_PARTS } from '../chargers/parts';
+import { CHARGERS_PARTS } from '../chargers';
 
 describe('Chargers helmet parts', () => {
   // One `it` per shell so a failure names the offending helmet, per the data-integrity convention.

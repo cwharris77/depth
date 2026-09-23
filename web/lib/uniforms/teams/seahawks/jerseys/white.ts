@@ -1,6 +1,6 @@
 import type { UniformPart } from '../../core/parts';
 import { fromGeneric } from '../../core/parts';
-import { fill, shoulder } from '../parts';
+import { shoulder } from '../parts';
 
 export const SEAHAWKS_JERSEY_WHITE: UniformPart = {
   base: 'white',
