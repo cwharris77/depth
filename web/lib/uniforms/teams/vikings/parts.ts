@@ -20,7 +20,6 @@ import {
   VIKINGS_BAND_UPPER_LEFT,
   VIKINGS_BAND_UPPER_RIGHT,
   VIKINGS_COLLAR_PATH,
-  VIKINGS_CLASSIC_COLLAR_PATH,
   VIKINGS_DECAL_CRESCENT_PATH,
   VIKINGS_DECAL_HORN_FILL_PATH,
   VIKINGS_DECAL_HORN_PATH,
@@ -29,16 +28,11 @@ import {
   VIKINGS_PANTS_OUTER_LEFT,
   VIKINGS_PANTS_OUTER_RIGHT,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 // One two-band set across all four kits; only which color sits above the other changes.
-function sleeveBands(upper: string, lower: string): PartLayer[] {
+export function sleeveBands(upper: string, lower: string): PartLayer[] {
   const shapes: [string, UniformSurface, string, string][] = [
     ['vikings-band-upper-left', 'sleeve-left', VIKINGS_BAND_UPPER_LEFT, upper],
     ['vikings-band-upper-right', 'sleeve-right', VIKINGS_BAND_UPPER_RIGHT, upper],
@@ -72,7 +66,7 @@ function pantsStripes(outer: string, inner: string): PartLayer[] {
   }));
 }
 
-function collar(outer: string, inner: string, path = VIKINGS_COLLAR_PATH): PartLayer[] {
+export function collar(outer: string, inner: string, path = VIKINGS_COLLAR_PATH): PartLayer[] {
   return (
     [
       ['vikings-collar-outer', outer, 18],
@@ -135,28 +129,9 @@ const HELMET_WHITE: UniformPart = {
 
 // Purple jersey (J1) — home and the 1965 classic. White over gold on the sleeve, a white-over-gold
 // collar, white numerals with a gold keyline.
-const JERSEY_PURPLE: UniformPart = {
-  base: 'purple',
-  layers: [...sleeveBands('white', 'gold'), ...collar('white', 'gold')],
-  number: { fill: 'white', outline: 'gold', outlineWidth: 14 },
-};
-
-const JERSEY_PURPLE_CLASSIC: UniformPart = {
-  base: 'purple',
-  layers: [
-    ...sleeveBands('white', 'gold'),
-    ...collar('white', 'gold', VIKINGS_CLASSIC_COLLAR_PATH),
-  ],
-  number: { fill: 'white', outline: 'gold', outlineWidth: 14 },
-};
 
 // White jersey (J2) — away and Winter Warrior. The bands invert to purple over gold so the upper
 // one reads against the body.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [...sleeveBands('purple', 'gold'), ...collar('purple', 'gold')],
-  number: { fill: 'purple', outline: 'gold', outlineWidth: 14 },
-};
 
 // Home pants (P1): purple, white outside gold.
 const PANTS_PURPLE_WHITE: UniformPart = {
@@ -177,24 +152,25 @@ const PANTS_WHITE: UniformPart = {
   layers: pantsStripes('purple', 'gold'),
 };
 
-export const VIKINGS_PARTS: TeamPartsDefinition = {
-  teamId: 'vikings',
-  // Jersey hexes from the curated rows (lib/uniforms/data.ts).
-  palette: {
-    purple: '#4F2683',
-    gold: '#FFC62F',
-    white: '#FFFFFF',
-    black: '#000000',
-  },
-  helmets: { purple: HELMET_PURPLE, classic: HELMET_PURPLE_CLASSIC, white: HELMET_WHITE },
-  jerseys: { purple: JERSEY_PURPLE, 'purple-classic': JERSEY_PURPLE_CLASSIC, white: JERSEY_WHITE },
-  pants: { purpleWhite: PANTS_PURPLE_WHITE, purpleGold: PANTS_PURPLE_GOLD, white: PANTS_WHITE },
-  kits: {
-    home: { helmet: 'purple', jersey: 'purple', pants: 'purpleWhite' },
-    away: { helmet: 'purple', jersey: 'white', pants: 'purpleGold' },
-    'winter-warrior': { helmet: 'white', jersey: 'white', pants: 'white' },
-    'purple-classic': { helmet: 'classic', jersey: 'purple-classic', pants: 'white' },
-  },
+export const VIKINGS_PALETTE = {
+  purple: '#4F2683',
+  gold: '#FFC62F',
+  white: '#FFFFFF',
+  black: '#000000',
 };
-
-export const VIKINGS_UNIFORMS_FROM_PARTS = compileParts(VIKINGS_PARTS);
+export const VIKINGS_HELMETS = {
+  purple: HELMET_PURPLE,
+  classic: HELMET_PURPLE_CLASSIC,
+  white: HELMET_WHITE,
+};
+export const VIKINGS_PANTS = {
+  purpleWhite: PANTS_PURPLE_WHITE,
+  purpleGold: PANTS_PURPLE_GOLD,
+  white: PANTS_WHITE,
+};
+export const VIKINGS_KITS = {
+  home: { helmet: 'purple', jersey: 'purple', pants: 'purpleWhite' },
+  away: { helmet: 'purple', jersey: 'white', pants: 'purpleGold' },
+  'winter-warrior': { helmet: 'white', jersey: 'white', pants: 'white' },
+  'purple-classic': { helmet: 'classic', jersey: 'purple-classic', pants: 'white' },
+};

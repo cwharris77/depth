@@ -37,12 +37,7 @@ import {
   CARDINALS_EGGSHELL_DECAL_RED,
   CARDINALS_EGGSHELL_DECAL_WHITE,
 } from './decals';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 
 // The full-color decal follows the supplied primary helmet-mark SVG. Every region carries its own
 // holes, so every layer must render with fill-rule evenodd.
@@ -166,51 +161,13 @@ const HELMET_CREAM: UniformPart = {
 };
 
 // Home jersey: cardinal body, white shoulder numerals and ARIZONA chest/neck lettering.
-const JERSEY_RED: UniformPart = {
-  base: 'red',
-  layers: [
-    {
-      id: 'cardinals-shoulder-number-left',
-      surface: 'sleeve-left',
-      d: CARDINALS_SHOULDER_NUMBER_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: 'white',
-    },
-    {
-      id: 'cardinals-shoulder-number-right',
-      surface: 'sleeve-right',
-      d: CARDINALS_SHOULDER_NUMBER_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: 'white',
-    },
-    ...cardinalsJerseyDetails('home'),
-  ],
-  number: { fill: 'white', outline: 'stitch', outlineWidth: 1.5 },
-};
 
 // Away jersey: white body, cardinal sleeve bands, red numerals keylined black.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [...sleeveBands('cardinal'), ...cardinalsJerseyDetails('away')],
-  number: { fill: 'cardinal', outline: 'numberKeyline', outlineWidth: 3 },
-};
 
 // black-alt jersey (J4): black body, cardinal sleeve bands, red numerals keylined white.
-const JERSEY_BLACK: UniformPart = {
-  base: 'black',
-  layers: [...sleeveBands('cardinal'), ...cardinalsJerseyDetails('black')],
-  number: { fill: 'cardinal', outline: 'white', outlineWidth: 3 },
-};
 
 // Rivalries jersey (J3): speckled cream fabric, feather sleeve patches, and red numerals
 // with the thin orange border approved in the jersey proof.
-const JERSEY_RIVALRIES: UniformPart = {
-  base: 'cream',
-  layers: cardinalsJerseyDetails('rivalries'),
-  number: { fill: 'rivalRed', outline: 'rivalOrange', outlineWidth: 5 },
-};
 
 // Red pants (home), unbroken.
 const PANTS_RED: UniformPart = { base: 'red', layers: [] };
@@ -265,7 +222,7 @@ const PANTS_BLACK: UniformPart = {
 // Cream pants (rivalries).
 const PANTS_CREAM: UniformPart = { base: 'cream', layers: [] };
 
-export const CARDINALS_PARTS: TeamPartsDefinition = {
+export const CARDINALS_CONSTRUCTION = {
   teamId: 'cardinals',
   // Construction hexes from the module / curated rows. Cardinal/black/white are the physical body
   // colors; cream and rival-red/orange are Rivalries' curated palette; the decal red/gold and the
@@ -291,12 +248,6 @@ export const CARDINALS_PARTS: TeamPartsDefinition = {
     stitch: '#99958D',
   },
   helmets: { white: HELMET_WHITE, black: HELMET_BLACK, cream: HELMET_CREAM },
-  jerseys: {
-    red: JERSEY_RED,
-    white: JERSEY_WHITE,
-    black: JERSEY_BLACK,
-    rivalries: JERSEY_RIVALRIES,
-  },
   pants: { red: PANTS_RED, white: PANTS_WHITE, cream: PANTS_CREAM, black: PANTS_BLACK },
   kits: {
     home: { helmet: 'white', jersey: 'red', pants: 'red' },
@@ -306,4 +257,9 @@ export const CARDINALS_PARTS: TeamPartsDefinition = {
   },
 };
 
-export const CARDINALS_UNIFORMS_FROM_PARTS = compileParts(CARDINALS_PARTS);
+export {
+  CARDINALS_SHOULDER_NUMBER_LEFT,
+  CARDINALS_SHOULDER_NUMBER_RIGHT,
+  cardinalsJerseyDetails,
+  sleeveBands,
+};

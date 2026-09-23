@@ -20,12 +20,7 @@ import {
   CHIEFS_SLEEVE_X_RIGHT,
   CHIEFS_STRIPE_BOUNDS,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 // Three bands at the end of each sleeve: outer bands top and bottom in `outer`, one `middle`
@@ -102,25 +97,15 @@ const HELMET_RED_ARROWHEAD: UniformPart = {
 };
 
 // Home jersey: red body, white outer sleeve bands with a gold middle, white numerals ringed gold.
-const JERSEY_RED: UniformPart = {
-  base: 'red',
-  layers: sleeveStripes('white', 'gold'),
-  number: { fill: 'white', outline: 'gold', outlineWidth: 22 },
-};
 
 // Away jersey: white body, red outer sleeve bands with a gold middle, red numerals ringed gold.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: sleeveStripes('red', 'gold'),
-  number: { fill: 'red', outline: 'gold', outlineWidth: 22 },
-};
 
 // Plain white pants, shared by both kits. Home reaches this through a white literal in the flat
 // form (its palette is red over gold), away through its primary; here it is one palette entry.
 const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
 const PANTS_RED: UniformPart = { base: 'red', layers: [] };
 
-export const CHIEFS_PARTS: TeamPartsDefinition = {
+export const CHIEFS_CONSTRUCTION = {
   teamId: 'chiefs',
   // Jersey hexes from the curated rows (teamcolorcodes) — the same three the rows carry across
   // the two kits, with gold occupying both secondary and accent on the home row.
@@ -134,10 +119,6 @@ export const CHIEFS_PARTS: TeamPartsDefinition = {
     grey: '#868686',
   },
   helmets: { 'red-arrowhead': HELMET_RED_ARROWHEAD },
-  jerseys: {
-    red: JERSEY_RED,
-    white: JERSEY_WHITE,
-  },
   pants: { white: PANTS_WHITE, red: PANTS_RED },
   kits: {
     home: { helmet: 'red-arrowhead', jersey: 'red', pants: 'white' },
@@ -147,4 +128,4 @@ export const CHIEFS_PARTS: TeamPartsDefinition = {
   },
 };
 
-export const CHIEFS_UNIFORMS_FROM_PARTS = compileParts(CHIEFS_PARTS);
+export { sleeveStripes };

@@ -3,7 +3,7 @@
 // the pant options enumerated from the GUD 2025 composite, of which only the canonical entry compiles
 // so a wrong list is invisible in every raster.
 import { describe, expect, it } from 'vitest';
-import { RAMS_PARTS } from '../rams/parts';
+import { RAMS_PARTS } from '../rams';
 
 describe('Rams helmet parts', () => {
   // One `it` per shell so a failure names the offending helmet, per the data-integrity convention.

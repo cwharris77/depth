@@ -32,12 +32,7 @@ import {
   BRONCOS_WEDGE_UPPER_LEFT,
   BRONCOS_WEDGE_UPPER_RIGHT,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 const fill = (id: string, surface: UniformSurface, d: string, color: string): PartLayer => ({
@@ -127,34 +122,12 @@ const HELMET_ROYAL_D: UniformPart = {
 // Home + orange-alt jersey: orange body, white-over-navy shoulder wedge, navy collar, orange
 // decal colors on the shell. The numeral face here is white (home keylines it navy — see below),
 // so the two kits share the jersey and differ only in pants.
-const JERSEY_ORANGE: UniformPart = {
-  base: 'orange',
-  layers: [...shoulderWedge('white', 'navy'), ...collar('navy')],
-  number: { fill: 'white', outline: 'navy', outlineWidth: 14 },
-};
 
 // Away jersey: white body, orange-over-navy shoulder wedge (order inverts with the body), navy
 // collar, navy numerals keylined orange.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [...shoulderWedge('orange', 'navy'), ...collar('orange')],
-  number: { fill: 'navy', outline: 'orange', outlineWidth: 14 },
-};
 
 // Orange Crush jersey: orange body, three sleeve bands (royal, white, royal), no wedge or collar,
 // white numerals keylined royal.
-const JERSEY_CRUSH: UniformPart = {
-  base: 'crushOrange',
-  layers: [
-    fill('broncos-crush-band-top-left', 'sleeve-left', BRONCOS_CRUSH_BAND_TOP_LEFT, 'royal'),
-    fill('broncos-crush-band-top-right', 'sleeve-right', BRONCOS_CRUSH_BAND_TOP_RIGHT, 'royal'),
-    fill('broncos-crush-band-mid-left', 'sleeve-left', BRONCOS_CRUSH_BAND_MID_LEFT, 'white'),
-    fill('broncos-crush-band-mid-right', 'sleeve-right', BRONCOS_CRUSH_BAND_MID_RIGHT, 'white'),
-    fill('broncos-crush-band-low-left', 'sleeve-left', BRONCOS_CRUSH_BAND_LOW_LEFT, 'royal'),
-    fill('broncos-crush-band-low-right', 'sleeve-right', BRONCOS_CRUSH_BAND_LOW_RIGHT, 'royal'),
-  ],
-  number: { fill: 'white', outline: 'royal', outlineWidth: 14 },
-};
 
 // Navy pants (home).
 // Home pants, orange (the flat home inherits primary = orange).
@@ -163,7 +136,7 @@ const PANTS_ORANGE: UniformPart = { base: 'orange', layers: [] };
 // White pants (away, orange-alt, orange-crush).
 const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
 
-export const BRONCOS_PARTS: TeamPartsDefinition = {
+export const BRONCOS_CONSTRUCTION = {
   teamId: 'broncos',
   // Jersey hexes from the curated rows (teamcolorcodes). Navy/orange/white are the physical modern
   // body colors carried in different slots per row; royal and crush-orange are Orange Crush's era
@@ -176,11 +149,6 @@ export const BRONCOS_PARTS: TeamPartsDefinition = {
     crushOrange: '#FA4616',
   },
   helmets: { 'navy-horse': HELMET_NAVY_HORSE, 'royal-d': HELMET_ROYAL_D },
-  jerseys: {
-    orange: JERSEY_ORANGE,
-    white: JERSEY_WHITE,
-    crush: JERSEY_CRUSH,
-  },
   pants: { orange: PANTS_ORANGE, white: PANTS_WHITE },
   kits: {
     home: { helmet: 'navy-horse', jersey: 'orange', pants: 'orange' },
@@ -190,4 +158,14 @@ export const BRONCOS_PARTS: TeamPartsDefinition = {
   },
 };
 
-export const BRONCOS_UNIFORMS_FROM_PARTS = compileParts(BRONCOS_PARTS);
+export {
+  BRONCOS_CRUSH_BAND_LOW_LEFT,
+  BRONCOS_CRUSH_BAND_LOW_RIGHT,
+  BRONCOS_CRUSH_BAND_MID_LEFT,
+  BRONCOS_CRUSH_BAND_MID_RIGHT,
+  BRONCOS_CRUSH_BAND_TOP_LEFT,
+  BRONCOS_CRUSH_BAND_TOP_RIGHT,
+  collar,
+  fill,
+  shoulderWedge,
+};

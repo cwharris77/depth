@@ -39,17 +39,11 @@ import {
   PANTHERS_COLLAR_PATH,
   PANTHERS_COLLAR_WIDTH,
 } from './source';
-import {
-  compileParts,
-  fromGeneric,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { fromGeneric, type PartLayer, type UniformPart } from '../core/parts';
 
 // Wider triangle first, shorter one over it — the gap left below the middle band's point is where
 // the two outer bands merge in the reference.
-function shoulderFan(outer: string, middle: string): PartLayer[] {
+export function shoulderFan(outer: string, middle: string): PartLayer[] {
   const shapes: [string, 'sleeve-left' | 'sleeve-right', string, string][] = [
     ['panthers-fan-left', 'sleeve-left', PANTHERS_FAN_LEFT, outer],
     ['panthers-fan-right', 'sleeve-right', PANTHERS_FAN_RIGHT, outer],
@@ -66,7 +60,7 @@ function shoulderFan(outer: string, middle: string): PartLayer[] {
   }));
 }
 
-function collar(fill: string): PartLayer[] {
+export function collar(fill: string): PartLayer[] {
   return [
     {
       id: 'panthers-collar',
@@ -82,7 +76,7 @@ function collar(fill: string): PartLayer[] {
 
 // Paint order is the whole trick: silhouette, body, the body's interior gaps back in blue, fangs.
 // Reversing any pair loses the linework the last pass was missing entirely.
-function decal(): PartLayer[] {
+export function decal(): PartLayer[] {
   const shapes: [string, string, string][] = [
     ['panthers-decal-keyline', PANTHERS_DECAL_KEYLINE_PATH, 'blue'],
     ['panthers-decal-body', PANTHERS_DECAL_BODY_PATH, 'black'],
@@ -100,7 +94,7 @@ function decal(): PartLayer[] {
 }
 
 // The leg stripe: the mannequin's own 16-unit band as the keyline, the measured 82% centre over it.
-function legStripe(keyline: string, center: string): PartLayer[] {
+export function legStripe(keyline: string, center: string): PartLayer[] {
   return [
     fromGeneric('generic-pants-stripe-left', keyline),
     fromGeneric('generic-pants-stripe-right', keyline),
@@ -125,64 +119,14 @@ function legStripe(keyline: string, center: string): PartLayer[] {
 
 // Home shell (H1): black, the only kit in the reference whose shell is not silver. The cage is
 // black on every figure of the GUD 2025 composite (nfl-uniform-refs/panthers), on both shells.
-const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'black', layers: decal() };
+export const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'black', layers: decal() };
 
 // Away and black-alternate shell (H2): silver, same mark, same black cage.
-const HELMET_SILVER: UniformPart = { base: 'silver', facemask: 'black', layers: decal() };
-
-// Home jersey (J1): blue body, white-outside-black fan, black collar, white numerals.
-const JERSEY_BLUE: UniformPart = {
-  base: 'blue',
-  layers: [...shoulderFan('white', 'black'), ...collar('black')],
-  number: { fill: 'white', outline: 'black', outlineWidth: 14 },
-};
-
-// Away jersey (J2): white body, the fan inverted to black-outside-blue, black collar, black
-// numerals.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [...shoulderFan('black', 'blue'), ...collar('black')],
-  number: { fill: 'black', outline: 'blue', outlineWidth: 14 },
-};
-
-// Black-alternate jersey (J3): black body, silver-outside-blue fan, blue collar, white numerals.
-const JERSEY_BLACK: UniformPart = {
-  base: 'black',
-  layers: [...shoulderFan('silver', 'blue'), ...collar('blue')],
-  number: { fill: 'white', outline: 'blue', outlineWidth: 14 },
-};
+export const HELMET_SILVER: UniformPart = { base: 'silver', facemask: 'black', layers: decal() };
 
 // The four legs. Every stripe is a blue centre between white keylines, except on blue pants where
 // it inverts to black-on-blue and on silver where the keyline reads black against the light leg.
-const PANTS_BLACK: UniformPart = { base: 'black', layers: legStripe('white', 'blue') };
-const PANTS_BLUE: UniformPart = { base: 'blue', layers: legStripe('white', 'black') };
-const PANTS_WHITE: UniformPart = { base: 'white', layers: legStripe('black', 'blue') };
-const PANTS_SILVER: UniformPart = { base: 'silver', layers: legStripe('black', 'blue') };
-
-export const PANTHERS_PARTS: TeamPartsDefinition = {
-  teamId: 'panthers',
-  // Jersey hexes from the curated rows (lib/uniforms/data.ts). Silver is the hex the archive
-  // already stores as this club's black-alternate accent.
-  palette: {
-    blue: '#0085CA',
-    black: '#101820',
-    silver: '#A5ACAF',
-    white: '#FFFFFF',
-    // The mark's own highlight grey, read straight off the reference SVG rather than borrowed from
-    // the kit's silver: fixed art does not recolour with the kit.
-    markSilver: '#BFC0BF',
-  },
-  helmets: { black: HELMET_BLACK, silver: HELMET_SILVER },
-  jerseys: { blue: JERSEY_BLUE, white: JERSEY_WHITE, black: JERSEY_BLACK },
-  pants: { black: PANTS_BLACK, blue: PANTS_BLUE, white: PANTS_WHITE, silver: PANTS_SILVER },
-  // Pant options enumerated from the 2025 composite, excluding its preseason-only block: the blue
-  // jersey is worn with black and blue legs; the white jersey with black, white, blue and silver;
-  // the black jersey with black and silver.
-  kits: {
-    home: { helmet: 'black', jersey: 'blue', pants: ['black', 'blue'] },
-    away: { helmet: 'silver', jersey: 'white', pants: ['black', 'white', 'blue', 'silver'] },
-    'black-alt': { helmet: 'silver', jersey: 'black', pants: ['black', 'silver'] },
-  },
-};
-
-export const PANTHERS_UNIFORMS_FROM_PARTS = compileParts(PANTHERS_PARTS);
+export const PANTS_BLACK: UniformPart = { base: 'black', layers: legStripe('white', 'blue') };
+export const PANTS_BLUE: UniformPart = { base: 'blue', layers: legStripe('white', 'black') };
+export const PANTS_WHITE: UniformPart = { base: 'white', layers: legStripe('black', 'blue') };
+export const PANTS_SILVER: UniformPart = { base: 'silver', layers: legStripe('black', 'blue') };

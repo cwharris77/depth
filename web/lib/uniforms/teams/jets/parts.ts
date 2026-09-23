@@ -19,16 +19,11 @@ import {
   JETS_SLEEVE_X_LEFT,
   JETS_SLEEVE_X_RIGHT,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 // The two white sleeve bands, separated by a body-colored gap.
-function sleeveBands(color: string): PartLayer[] {
+export function sleeveBands(color: string): PartLayer[] {
   const out: PartLayer[] = [];
   const sides: [UniformSurface, number[]][] = [
     ['sleeve-left', JETS_SLEEVE_X_LEFT],
@@ -54,7 +49,7 @@ function sleeveBands(color: string): PartLayer[] {
 }
 
 // The deep V-collar.
-function collar(color: string): PartLayer[] {
+export function collar(color: string): PartLayer[] {
   return [
     {
       id: 'jets-collar',
@@ -69,7 +64,7 @@ function collar(color: string): PartLayer[] {
 }
 
 // The white wordmark — pinned, everywhere.
-function wordmark(color: string): PartLayer[] {
+export function wordmark(color: string): PartLayer[] {
   return [
     {
       id: 'jets-decal',
@@ -83,75 +78,28 @@ function wordmark(color: string): PartLayer[] {
 }
 
 // Home/away's green shell (H1) — #125740, the current green.
-const HELMET_GREEN: UniformPart = { base: 'green', facemask: 'white', layers: wordmark('white') };
+export const HELMET_GREEN: UniformPart = {
+  base: 'green',
+  facemask: 'white',
+  layers: wordmark('white'),
+};
 
 // Rivalries' green shell (H2) — #115740, a distinct step.
-const HELMET_RIV_GREEN: UniformPart = {
+export const HELMET_RIV_GREEN: UniformPart = {
   base: 'rivalGreen',
   facemask: 'white',
   layers: wordmark('white'),
 };
 
 // Black-alt shell (H3).
-const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'white', layers: wordmark('green') };
-
-// Home jersey (J1): green body, white bands + collar, white numerals.
-const JERSEY_GREEN: UniformPart = {
-  base: 'green',
-  layers: [...sleeveBands('white'), ...collar('white')],
-  number: { fill: 'white', outline: 'white', outlineWidth: 10 },
-};
-
-// Away jersey (J2): white body, green bands + collar, green numerals.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [...sleeveBands('green'), ...collar('green')],
-  number: { fill: 'green', outline: 'green', outlineWidth: 10 },
-};
-
-// Rivalries jersey (J3): rivalries-green body, black bands + collar, white numerals.
-const JERSEY_RIV: UniformPart = {
-  base: 'rivalGreen',
-  layers: [...sleeveBands('black'), ...collar('black')],
-  number: { fill: 'white', outline: 'white', outlineWidth: 10 },
-};
-
-// Black-alt jersey (J4): black body, green bands + collar, white numerals.
-const JERSEY_BLACK: UniformPart = {
+export const HELMET_BLACK: UniformPart = {
   base: 'black',
-  layers: [...sleeveBands('green'), ...collar('green')],
-  number: { fill: 'white', outline: 'white', outlineWidth: 10 },
+  facemask: 'white',
+  layers: wordmark('green'),
 };
 
 // Pants — no pant stripe on any kit; each takes its body color.
-const PANTS_GREEN: UniformPart = { base: 'green', layers: [] };
-const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
-const PANTS_RIV: UniformPart = { base: 'rivalGreen', layers: [] };
-const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };
-
-export const JETS_PARTS: TeamPartsDefinition = {
-  teamId: 'jets',
-  // Jersey hexes from the curated rows (teamcolorcodes). The two greens differ by a step.
-  palette: {
-    green: '#125740',
-    rivalGreen: '#115740',
-    black: '#000000',
-    white: '#FFFFFF',
-  },
-  helmets: { green: HELMET_GREEN, riv: HELMET_RIV_GREEN, black: HELMET_BLACK },
-  jerseys: {
-    green: JERSEY_GREEN,
-    white: JERSEY_WHITE,
-    riv: JERSEY_RIV,
-    black: JERSEY_BLACK,
-  },
-  pants: { green: PANTS_GREEN, white: PANTS_WHITE, riv: PANTS_RIV, black: PANTS_BLACK },
-  kits: {
-    home: { helmet: 'green', jersey: 'green', pants: 'green' },
-    away: { helmet: 'green', jersey: 'white', pants: 'white' },
-    'rivalries-2025': { helmet: 'riv', jersey: 'riv', pants: 'riv' },
-    'black-alt': { helmet: 'black', jersey: 'black', pants: 'black' },
-  },
-};
-
-export const JETS_UNIFORMS_FROM_PARTS = compileParts(JETS_PARTS);
+export const PANTS_GREEN: UniformPart = { base: 'green', layers: [] };
+export const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
+export const PANTS_RIV: UniformPart = { base: 'rivalGreen', layers: [] };
+export const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };

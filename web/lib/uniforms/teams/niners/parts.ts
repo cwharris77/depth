@@ -25,12 +25,7 @@ import {
   NINERS_STRIPE_HEIGHT,
   NINERS_STRIPE_TOPS,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 const fill = (id: string, surface: UniformSurface, d: string, color: string): PartLayer => ({
@@ -117,32 +112,17 @@ const HELMET_GOLD: UniformPart = { base: 'gold', facemask: 'black', layers: helm
 const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'gold', layers: helmetMarks('red') };
 
 // Home jersey: red body, white sleeve bands, white numerals.
-const JERSEY_RED: UniformPart = {
-  base: 'red',
-  layers: sleeveStripes('white'),
-  number: { fill: 'white', outline: 'white', outlineWidth: 10 },
-};
 
 // Away jersey: white body, red sleeve bands, red numerals.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: sleeveStripes('red'),
-  number: { fill: 'red', outline: 'red', outlineWidth: 10 },
-};
 
 // Rivalries jersey: black body, red sleeve bands, red numerals ringed gold (the one kit where the
 // keyline really shows — thin at 14).
-const JERSEY_BLACK: UniformPart = {
-  base: 'black',
-  layers: sleeveStripes('red'),
-  number: { fill: 'red', outline: 'gold', outlineWidth: 14 },
-};
 
 // Plain gold pants (home + away) and plain black pants (Rivalries). No pant stripe on any kit.
 const PANTS_GOLD: UniformPart = { base: 'gold', layers: [] };
 const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };
 
-export const NINERS_PARTS: TeamPartsDefinition = {
+export const NINERS_CONSTRUCTION = {
   teamId: '49ers',
   // Jersey hexes from the curated rows (teamcolorcodes). Gold is the helmet/pants shell — the
   // same physical color whether home reaches it through 'secondary' or away through 'accent'.
@@ -157,11 +137,6 @@ export const NINERS_PARTS: TeamPartsDefinition = {
     decalBlack: NINERS_DECAL_BLACK,
   },
   helmets: { gold: HELMET_GOLD, black: HELMET_BLACK },
-  jerseys: {
-    red: JERSEY_RED,
-    white: JERSEY_WHITE,
-    black: JERSEY_BLACK,
-  },
   pants: { gold: PANTS_GOLD, black: PANTS_BLACK },
   kits: {
     home: { helmet: 'gold', jersey: 'red', pants: 'gold' },
@@ -170,4 +145,4 @@ export const NINERS_PARTS: TeamPartsDefinition = {
   },
 };
 
-export const NINERS_UNIFORMS_FROM_PARTS = compileParts(NINERS_PARTS);
+export { fill, sleeveStripes };

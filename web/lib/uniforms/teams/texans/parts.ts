@@ -20,15 +20,10 @@ import {
   TEXANS_DECAL_NAVY,
   TEXANS_DECAL_RED,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 
 // The navy shell's collar trim (home only): two arcs, not a chevron (the arms never meet).
-function collar(): PartLayer[] {
+export function collar(): PartLayer[] {
   return [
     {
       id: 'texans-collar-left',
@@ -132,25 +127,10 @@ const HELMET_RED_HORN: UniformPart = {
 };
 
 // Home jersey: navy body, red collar trim, white numerals keylined red.
-const JERSEY_NAVY: UniformPart = {
-  base: 'navy',
-  layers: collar(),
-  number: { fill: 'white', outline: 'red', outlineWidth: 14 },
-};
 
 // Away jersey: white body, no collar trim, navy numerals keylined red.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [],
-  number: { fill: 'navy', outline: 'red', outlineWidth: 14 },
-};
 
 // Battle Red jersey: red body, no collar trim, navy numerals keylined white.
-const JERSEY_RED: UniformPart = {
-  base: 'red',
-  layers: [],
-  number: { fill: 'navy', outline: 'white', outlineWidth: 14 },
-};
 
 // Home pants, white.
 const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
@@ -161,30 +141,17 @@ const PANTS_NAVY: UniformPart = { base: 'navy', layers: [] };
 // Battle Red pants, red.
 const PANTS_RED: UniformPart = { base: 'red', layers: [] };
 
-export const TEXANS_PARTS: TeamPartsDefinition = {
-  teamId: 'texans',
-  // Jersey hexes from the curated rows (teamcolorcodes). Navy and red are the physical body/shell
-  // colors carried in different primary/secondary/accent slots per row; the decal's navy/red are
-  // the sampled fixed-art colors (see texans.ts).
-  palette: {
-    navy: '#03202F',
-    red: '#A71930',
-    white: '#FFFFFF',
-    decalNavy: TEXANS_DECAL_NAVY,
-    decalRed: TEXANS_DECAL_RED,
-  },
-  helmets: { 'navy-bull': HELMET_NAVY_BULL, 'red-horn': HELMET_RED_HORN },
-  jerseys: {
-    navy: JERSEY_NAVY,
-    white: JERSEY_WHITE,
-    red: JERSEY_RED,
-  },
-  pants: { white: PANTS_WHITE, navy: PANTS_NAVY, red: PANTS_RED },
-  kits: {
-    home: { helmet: 'navy-bull', jersey: 'navy', pants: 'white' },
-    away: { helmet: 'navy-bull', jersey: 'white', pants: 'navy' },
-    'battle-red': { helmet: 'red-horn', jersey: 'red', pants: 'red' },
-  },
+export const TEXANS_PALETTE = {
+  navy: '#03202F',
+  red: '#A71930',
+  white: '#FFFFFF',
+  decalNavy: TEXANS_DECAL_NAVY,
+  decalRed: TEXANS_DECAL_RED,
 };
-
-export const TEXANS_UNIFORMS_FROM_PARTS = compileParts(TEXANS_PARTS);
+export const TEXANS_HELMETS = { 'navy-bull': HELMET_NAVY_BULL, 'red-horn': HELMET_RED_HORN };
+export const TEXANS_PANTS = { white: PANTS_WHITE, navy: PANTS_NAVY, red: PANTS_RED };
+export const TEXANS_KITS = {
+  home: { helmet: 'navy-bull', jersey: 'navy', pants: 'white' },
+  away: { helmet: 'navy-bull', jersey: 'white', pants: 'navy' },
+  'battle-red': { helmet: 'red-horn', jersey: 'red', pants: 'red' },
+};

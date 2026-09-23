@@ -1,41 +1,40 @@
-import { BEARS_UNIFORMS_FROM_PARTS } from './bears/parts';
-import { BENGALS_UNIFORMS_FROM_PARTS } from './bengals/parts';
+import { BEARS_UNIFORMS_FROM_PARTS } from './bears';
+import { BENGALS_UNIFORMS_FROM_PARTS } from './bengals';
 
-import { BILLS_UNIFORMS_FROM_PARTS } from './bills/parts';
-import { BRONCOS_UNIFORMS_FROM_PARTS } from './broncos/parts';
-import { BROWNS_UNIFORMS_FROM_PARTS } from './browns/parts';
-import { BUCCANEERS_UNIFORMS_FROM_PARTS } from './buccaneers/parts';
-import { CARDINALS_UNIFORMS_FROM_PARTS } from './cardinals/parts';
-import { CHARGERS_UNIFORMS_FROM_PARTS } from './chargers/parts';
-import { CHIEFS_UNIFORMS_FROM_PARTS } from './chiefs/parts';
-import { COLTS_UNIFORMS_FROM_PARTS } from './colts/parts';
-import { COMMANDERS_UNIFORMS_FROM_PARTS } from './commanders/parts';
-import { COWBOYS_UNIFORMS_FROM_PARTS } from './cowboys/parts';
-import { DOLPHINS_UNIFORMS_FROM_PARTS } from './dolphins/parts';
-import { EAGLES_UNIFORMS_FROM_PARTS } from './eagles/parts';
-import { FALCONS_UNIFORMS_FROM_PARTS } from './falcons/parts';
-import { GIANTS_UNIFORMS_FROM_PARTS } from './giants/parts';
-import { JAGUARS_UNIFORMS_FROM_PARTS } from './jaguars/parts';
-import { JETS_UNIFORMS_FROM_PARTS } from './jets/parts';
-import { LIONS_UNIFORMS_FROM_PARTS } from './lions/parts';
-import { NINERS_UNIFORMS_FROM_PARTS } from './niners/parts';
-import { PACKERS_UNIFORMS_FROM_PARTS } from './packers/parts';
-import { PANTHERS_UNIFORMS_FROM_PARTS } from './panthers/parts';
-import { PATRIOTS_UNIFORMS_FROM_PARTS } from './patriots/parts';
-import { RAIDERS_UNIFORMS_FROM_PARTS } from './raiders/parts';
-import { RAMS_UNIFORMS_FROM_PARTS } from './rams/parts';
-import { RAVENS_UNIFORMS_FROM_PARTS } from './ravens/parts';
-import { SAINTS_UNIFORMS_FROM_PARTS } from './saints/parts';
-import { SEAHAWKS_UNIFORMS_FROM_PARTS } from './seahawks/parts';
-import { STEELERS_UNIFORMS_FROM_PARTS } from './steelers/parts';
-import { TEXANS_UNIFORMS_FROM_PARTS } from './texans/parts';
-import { TITANS_UNIFORMS_FROM_PARTS } from './titans/parts';
-import { VIKINGS_UNIFORMS_FROM_PARTS } from './vikings/parts';
+import { BILLS_UNIFORMS_FROM_PARTS } from './bills';
+import { BRONCOS_UNIFORMS_FROM_PARTS } from './broncos';
+import { BROWNS_UNIFORMS_FROM_PARTS } from './browns';
+import { BUCCANEERS_UNIFORMS_FROM_PARTS } from './buccaneers';
+import { CARDINALS_UNIFORMS_FROM_PARTS } from './cardinals';
+import { CHARGERS_UNIFORMS_FROM_PARTS } from './chargers';
+import { CHIEFS_UNIFORMS_FROM_PARTS } from './chiefs';
+import { COLTS_UNIFORMS_FROM_PARTS } from './colts';
+import { COMMANDERS_UNIFORMS_FROM_PARTS } from './commanders';
+import { COWBOYS_UNIFORMS_FROM_PARTS } from './cowboys';
+import { DOLPHINS_UNIFORMS_FROM_PARTS } from './dolphins';
+import { EAGLES_UNIFORMS_FROM_PARTS } from './eagles';
+import { FALCONS_UNIFORMS_FROM_PARTS } from './falcons';
+import { GIANTS_UNIFORMS_FROM_PARTS } from './giants';
+import { JAGUARS_UNIFORMS_FROM_PARTS } from './jaguars';
+import { JETS_UNIFORMS_FROM_PARTS } from './jets';
+import { LIONS_UNIFORMS_FROM_PARTS } from './lions';
+import { NINERS_UNIFORMS_FROM_PARTS } from './niners';
+import { PACKERS_UNIFORMS_FROM_PARTS } from './packers';
+import { PANTHERS_UNIFORMS_FROM_PARTS } from './panthers';
+import { PATRIOTS_UNIFORMS_FROM_PARTS } from './patriots';
+import { RAIDERS_UNIFORMS_FROM_PARTS } from './raiders';
+import { RAMS_UNIFORMS_FROM_PARTS } from './rams';
+import { RAVENS_UNIFORMS_FROM_PARTS } from './ravens';
+import { SAINTS_UNIFORMS_FROM_PARTS } from './saints';
+import { SEAHAWKS_UNIFORMS_FROM_PARTS } from './seahawks';
+import { STEELERS_UNIFORMS_FROM_PARTS } from './steelers';
+import { TEXANS_UNIFORMS_FROM_PARTS } from './texans';
+import { TITANS_UNIFORMS_FROM_PARTS } from './titans';
+import { VIKINGS_UNIFORMS_FROM_PARTS } from './vikings';
 import type { TeamUniformDefinition } from './core/types';
 
-// Server-boundary registry for team construction definitions. Teams migrate to the composable
-// parts model (./parts.ts) one at a time — a `*_FROM_PARTS` entry is compiled from a
-// TeamPartsDefinition, a bare one is still authored flat. Both produce the same shape.
+// Server-boundary registry for team construction definitions. Each team index owns its assembled
+// definition and keeps the composition details behind that team boundary.
 
 const DEFINITIONS: Readonly<Partial<Record<string, TeamUniformDefinition>>> = {
   bears: BEARS_UNIFORMS_FROM_PARTS,

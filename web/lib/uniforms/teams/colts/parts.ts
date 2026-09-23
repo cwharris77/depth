@@ -17,12 +17,7 @@ import {
   COLTS_SHOULDER_BAR_OUTER_LEFT,
   COLTS_SHOULDER_BAR_OUTER_RIGHT,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 const fill = (id: string, surface: UniformSurface, d: string, color: string): PartLayer => ({
@@ -76,23 +71,13 @@ const HELMET_WHITE_HORSESHOE: UniformPart = {
 };
 
 // Home jersey: navy body, white shoulder bars, white numerals.
-const JERSEY_NAVY: UniformPart = {
-  base: 'navy',
-  layers: shoulderBars('white'),
-  number: { fill: 'white', outline: 'white', outlineWidth: 10 },
-};
 
 // Away jersey: white body, navy shoulder bars, navy numerals.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: shoulderBars('navy'),
-  number: { fill: 'navy', outline: 'navy', outlineWidth: 10 },
-};
 
 // Plain white pants, shared by both kits.
 const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
 
-export const COLTS_PARTS: TeamPartsDefinition = {
+export const COLTS_CONSTRUCTION = {
   teamId: 'colts',
   // Jersey hexes from the curated rows (teamcolorcodes): royal navy + speedway grey, the three
   // colors the two rows already carry across their primary/secondary/accent slots.
@@ -102,10 +87,6 @@ export const COLTS_PARTS: TeamPartsDefinition = {
     speedwayGrey: '#A2AAAD',
   },
   helmets: { 'white-horseshoe': HELMET_WHITE_HORSESHOE },
-  jerseys: {
-    navy: JERSEY_NAVY,
-    white: JERSEY_WHITE,
-  },
   pants: { white: PANTS_WHITE },
   kits: {
     home: { helmet: 'white-horseshoe', jersey: 'navy', pants: 'white' },
@@ -113,4 +94,4 @@ export const COLTS_PARTS: TeamPartsDefinition = {
   },
 };
 
-export const COLTS_UNIFORMS_FROM_PARTS = compileParts(COLTS_PARTS);
+export { fill, shoulderBars };
