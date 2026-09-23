@@ -10,13 +10,12 @@ APP_BUNDLE_IDENTIFIER = com.cwharris.depth
 APP_DISPLAY_NAME = The Sticks
 APP_ICON_NAME = AppIcon
 
-// DEP-425 forced-update gate: the numeric App Store id the blocking update screen deep
+// Forced-update gate: the numeric App Store id the blocking update screen deep
 // links to (App Store Connect → App Information → General Information → "Apple ID").
 // `0` means "not configured" — BlockingUpdateView hides its Update button rather than
 // shipping a link that opens nothing.
 //
 // Setting this does NOT arm the gate; it only makes the Update button reachable when the
-// gate is armed. Arming is a separate, deliberate migration (the vault's `Reference/forced-update-gate.md`),
-// and is unsafe until the App Store listing is public — the deep link 404s for users
-// while the app is still in review.
+// gate is armed. Arming is unsafe until the App Store listing is public because the deep
+// link 404s for users while the app is still in review.
 APP_STORE_ID = 6802480325

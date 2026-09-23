@@ -25,7 +25,7 @@ name: iOS CI
 # runners can't run Docker (no nested virtualization), so those suites self-gate on a
 # reachability probe and skip cleanly here — see LocalSupabase.isReachable in
 # DepthTests/SupabaseRLSIntegrationTests.swift. Full coverage still runs locally
-# before every merge per the native iOS plan's verification command.
+# before merging.
 
 on:
   pull_request:
@@ -140,7 +140,7 @@ jobs:
   # rule list in .swiftlint.yml). Every rule there is a warning, so this never fails a PR --
   # it surfaces risky patterns as annotations. Formatting is deliberately NOT checked in CI:
   # `latest-stable` Xcode's swift-format can drift from a local one, and style is auto-fixed
-  # by the pre-commit hook instead (DEP-604).
+  # by the pre-commit hook instead.
   swiftlint:
     runs-on: macos-latest
     timeout-minutes: 10
@@ -159,7 +159,7 @@ jobs:
     steps:
       # Pinned to commit SHAs, not mutable tags — an upstream tag move would otherwise
       # silently change what runs with this job's inherited token and checked-out
-      # source (Greptile P2 on this PR's first review).
+      # source.
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - name: Select latest stable Xcode
@@ -289,8 +289,7 @@ jobs:
     needs: [resolve-devices, build-for-testing]
     # Nightly cron + manual dispatch only; PRs and pushes run the fast smoke set in the
     # `test` job above. This job used to choose full-vs-smoke inline via
-    # `github.event_name`; #532 split it into `test` + `test-full-suite` but dropped the
-    # schedule condition instead of moving it here, so the full suite was running on
+    # `github.event_name`; the full suite condition must stay here so it does not run on
     # every PR/push — the exact waste the header comment says it avoids.
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
@@ -303,7 +302,7 @@ jobs:
           # journey can't stall reorder/a11y/etc.
           - slice: journeys
             tests: -only-testing:DepthUITests/DepthUITests
-          # DEP-226 reorder persistence + edit-mode + formation: each test does a
+          # Reorder persistence, edit-mode, and formation tests each do a
           # production-backed drag gesture, the jankiest (and slowest) interaction here.
           - slice: reorder
             tests: -only-testing:DepthUITests/PositionReorderUITests
@@ -365,7 +364,7 @@ jobs:
 
       # Builds an unsigned Release configuration for the simulator SDK and scans
       # Info.plist + the compiled binary for any service-role-shaped Supabase secret —
-      # enforces the hard rule in AGENTS.md that no service-role key ever ships in the
-      # app bundle. See scripts/inspect-archive-secrets.sh for the full rationale.
+      # enforces that no service-role key ever ships in the app bundle. See
+      # scripts/inspect-archive-secrets.sh for the full rationale.
       - name: Inspect built archive for leaked secrets
         run: scripts/inspect-archive-secrets.sh

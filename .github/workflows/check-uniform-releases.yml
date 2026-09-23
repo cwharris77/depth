@@ -3,16 +3,11 @@ name: Check for new uniform releases
 # Recurring monitor for new NFL uniform unveilings (SportsLogos.net News only). Wraps
 # `npm run check:uniform-releases` on a monthly schedule, plus a manual trigger.
 #
-# Runs on a SELF-HOSTED runner, not ubuntu-latest: SportsLogos.net's Cloudflare WAF 403s
-# all GitHub-hosted runner egress (verified on both ubuntu and macos images, with and
-# without a browser UA), which silently failed every run of this workflow from the day it
-# shipped. Home egress returns 200, so the job runs on Cooper's Mac.
+# Runs on a SELF-HOSTED runner because SportsLogos.net's Cloudflare WAF blocks
+# GitHub-hosted runner egress while the self-hosted network can reach the site.
 #
-# On a hit the script files a line per unveiling into the Obsidian vault's System/Inbox.md
-# for inbox-triage to turn into depth tickets. It does NOT open GitHub issues any more --
-# DEP-43's original issue-per-item notification was reversed 2026-09-03 (see the vault's
-# Projects/depth/Decisions.md): unfiltered, it opened 30 issues of which ~7 were real, and
-# they lived outside the board Cooper actually triages.
+# On a hit the script appends one line per unveiling to the configured inbox file. It does
+# not open GitHub issues; the inbox is the handoff point for later triage.
 
 on:
   schedule:
@@ -46,17 +41,14 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
-      # The vault working copy on the self-hosted runner's host. Overridable with a repo
-      # variable; otherwise the standard checkout location on Cooper's Mac, the only
-      # machine this job runs on. Committing the inbox change is left to his normal vault
-      # sync -- this job only edits the note.
+      # The inbox working copy on the self-hosted runner's host. Overridable with a repo
+      # variable; this job only edits the inbox file and does not commit the change.
       - name: Resolve the vault path
         run: echo "OBSIDIAN_VAULT_PATH=${OVERRIDE:-$HOME/Documents/GitHubProjects/obsidian}" >> "$GITHUB_ENV"
         env:
           OVERRIDE: ${{ vars.OBSIDIAN_VAULT_PATH }}
       # Fail loudly rather than letting the script fall back to printing: a monthly job
-      # that silently stops filing is a job nobody notices is broken (this workflow already
-      # spent 7 runs failing unnoticed).
+      # that silently stops filing is difficult to detect.
       - name: Verify the vault inbox is reachable
         run: test -f "$OBSIDIAN_VAULT_PATH/System/Inbox.md"
       - run: npm run check:uniform-releases

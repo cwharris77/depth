@@ -2,11 +2,11 @@
 # scripts/format-swift.sh
 #
 # Deterministically rewrites Swift files to the repo's style (`.swift-format`: 4-space indent,
-# 100 columns). Every line of the iOS app is agent-written, so style is fixed by tool, never
-# gated: the pre-commit hook (.githooks/pre-commit) runs this on staged files, and agents can
+# 100 columns). Style is fixed by tool, never gated: the pre-commit hook
+# (.githooks/pre-commit) runs this on staged files, and developers can
 # run it by hand. There is deliberately no CI format check -- CI uses `latest-stable` Xcode, so
 # its swift-format can drift from a local one and would fail PRs over toolchain differences
-# (DEP-604).
+# because the formatter version can differ between local and CI toolchains.
 #
 # Usage:
 #   scripts/format-swift.sh                 # format Depth/, DepthTests/, DepthUITests/

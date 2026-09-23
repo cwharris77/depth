@@ -4,9 +4,9 @@
 # Swift (iOS app, repo root): rewrites staged .swift files with swift-format
 # (scripts/format-swift.sh) and re-stages them, then runs the SwiftLint bug rules
 # (.swiftlint.yml) over staged app sources. The lint is advisory -- it prints warnings and
-# never blocks the commit; style is fixed by tool, not gated (DEP-604).
+# never blocks the commit; style is fixed by tool, not gated.
 #
-# Web (under web/, frozen): Prettier on staged files, then ESLint + typecheck. The web app has
+# Web (under web/): Prettier on staged files, then ESLint + typecheck. The web app has
 # its own package.json + Prettier config, so those run from web/. Every `git` call stays at the
 # repo root on purpose: inside a hook GIT_DIR is set, so after `cd web` git would treat web/ as
 # the work tree root and `git add` would stage root-relative paths as deletions.

@@ -1,7 +1,7 @@
 name: Ingest ESPN data
 
 # Recurring ESPN ingestion (rosters, depth charts, coaches, multi-season team stats,
-# and preseason games). Wraps `npm run ingest:espn` (see `Reference/espn.md` in the vault) on a daily
+# and preseason games). Wraps `npm run ingest:espn` on a daily
 # schedule, plus a
 # manual trigger. STRICT=1 so a partial run turns the workflow red instead of
 # silently going green with half-stale data.
@@ -13,14 +13,14 @@ name: Ingest ESPN data
 
 on:
   schedule:
-    # Twice daily (DEP-595). Cron is fixed UTC, so both slots drift an hour with DST --
+    # Twice daily. Cron is fixed UTC, so both slots drift an hour with DST --
     # acceptable for a daily refresh, not worth a DST-aware cron for this.
     #
     # 8am PT morning run. The afternoon slot alone left every Thursday/Sunday/Monday
     # night game stale until the next afternoon (~20 hours): TNF/SNF finish around
     # 03:30 UTC and MNF around 04:30 UTC, both after the previous afternoon run.
     # nflverse publishes a final score into its games asset ~5 minutes after the final
-    # whistle (measured over three night games, DEP-595), so 15:00 UTC clears them with
+    # whistle, so 15:00 UTC clears them with
     # hours to spare even allowing for the routine GitHub Actions scheduling delay
     # (these crons have been firing ~2.5h late on the free plan).
     - cron: '0 15 * * *'
@@ -74,7 +74,7 @@ jobs:
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
           # Last step on a successful run POSTs to app/api/ingest/revalidate so the
           # deployed app doesn't wait out the `ingest` cacheLife profile's 6h window
-          # (2026-08-20-ingest-cache-revalidation-design.md). Missing either var is a
+          # Missing either var is a
           # silent no-op (notify-revalidate.ts), never a failed run.
           APP_URL: ${{ secrets.APP_URL }}
           INGEST_REVALIDATE_SECRET: ${{ secrets.INGEST_REVALIDATE_SECRET }}

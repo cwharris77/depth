@@ -52,9 +52,9 @@ jobs:
               design: 'design',
             };
 
-            // Area is about where the change lands, for reviewers filtering the queue.
+            // Area is based on where the change lands, so labels are useful for filtering.
             // Ordered most- to least-specific; a PR can carry several. The native app is
-            // at the repo root; the frozen Next.js app + shared backend live under web/.
+            // at the repo root; the Next.js app and shared backend live under web/.
             const AREA_RULES = [
               ['area:ios', (f) => f.startsWith('Depth/') ||
                                   f.startsWith('DepthTests/') ||
@@ -63,16 +63,16 @@ jobs:
                                   f.startsWith('xcconfig/') ||
                                   f.startsWith('scripts/')],
               // The curated uniforms archive is its own area, not "backend": it is the
-              // single busiest stream of PRs here and reviewers filter for it by name.
+              // separate area because uniform changes have distinct ownership and tooling.
               // Its seed/thumb/draw scripts count too, so a kit PR that regenerates the
               // seed is still findable as a uniforms change.
               ['area:uniforms', (f) => f.startsWith('web/lib/uniforms/') ||
                                        f.startsWith('web/public/uniforms/') ||
                                        (f.startsWith('web/scripts/') && f.includes('uniform'))],
               // Schema lives on its own axis from the ingest pipeline: a migration is
-              // reviewed for RLS and generated-types drift, an ingest change is not.
+              // separate area because schema changes affect RLS and generated types.
               // lib/database.types.ts rides along because it is only ever regenerated
-              // from a migration in the same PR (web/CLAUDE.md invariant 8).
+              // from a migration in the same PR.
               ['area:supabase', (f) => f.startsWith('web/supabase/') ||
                                        f === 'web/lib/database.types.ts'],
               ['area:backend', (f) => f.startsWith('web/scripts/') ||

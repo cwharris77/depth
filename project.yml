@@ -14,17 +14,14 @@ configFiles:
   Staging: xcconfig/Staging.xcconfig
   Release: xcconfig/Release.xcconfig
 
-# Xcode 26.6's "Update to recommended settings" proposal (DEP-246), applied
-# here instead of via Xcode's "Perform Changes" button so it survives the
-# next `xcodegen generate` rather than getting silently wiped by it.
+# These settings are declared here instead of applied through Xcode so they survive
+# the next `xcodegen generate`.
 attributes:
   LastUpgradeCheck: '2660'
 
 settings:
   base:
-    # Cooper's Apple Developer Team ID at the project level so DepthTests/
-    # DepthUITests inherit it too, not just the Depth app target (which
-    # already sets it below). Public identifier, safe to commit.
+    # Set the development team at the project level so test targets inherit it too.
     DEVELOPMENT_TEAM: 63JZBB528Q
     # DepthTests/DepthUITests have no Run Script build phases, so this project-level
     # YES has nothing to break for them; the Depth app target overrides it to NO (see
@@ -33,8 +30,8 @@ settings:
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     STRING_CATALOG_GENERATE_SYMBOLS: YES
   configs:
-    # Hermetic UI-test fixtures (spec: 2026-09-10-ios-test-data-and-snapshot-testing-
-    # design). CI builds the app under Staging, not Debug, so the fixture seam must
+    # Hermetic UI-test fixtures. CI builds the app under Staging, not Debug, so the
+    # fixture seam must
     # compile there too — a plain `#if DEBUG` would silently vanish in CI. A dedicated
     # condition on Debug + Staging (and absent from Release) is the accurate gate:
     # fixtures ship in neither the App Store binary nor a production-config build.
@@ -44,14 +41,12 @@ settings:
       SWIFT_ACTIVE_COMPILATION_CONDITIONS: UITEST_FIXTURES
 
 packages:
-  # Exact pin, not `from:` — a reviewed version per the design spec, not an
-  # up-to-next-major range that could silently pick up an unreviewed release.
+  # Exact pin, not `from:` — an up-to-next-major range could silently select a
+  # newer release.
   Supabase:
     url: https://github.com/supabase/supabase-swift
     exactVersion: 2.55.1
-  # Dev/test-only. SwiftUI visual-regression snapshots (spec 2026-09-10-ios-test-data-and-
-  # snapshot-testing-design, Phase 4) replace the retired PR-screenshot pipeline. Linked to
-  # DepthTests only — never the app bundle.
+  # Dev/test-only. Linked to DepthTests only — never the app bundle.
   SnapshotTesting:
     url: https://github.com/pointfreeco/swift-snapshot-testing
     exactVersion: 1.19.4
@@ -68,9 +63,7 @@ targets:
       - path: Depth/Support
       # Checked-in UI-test fixture bundle, replayed only under
       # UI_TESTING_FIXTURE_BACKEND (#if DEBUG). Bundled unconditionally — the files are a
-      # few KB and inert in Release, where FixtureDepthRepository doesn't compile. Recorded
-      # from the local seeded stack by DepthTests/FixtureRecordingTests; see the spec
-      # 2026-09-10-ios-test-data-and-snapshot-testing-design.
+      # few KB and inert in Release, where FixtureDepthRepository doesn't compile.
       - path: Depth/Fixtures
       - path: Depth/Assets.xcassets
       - path: Depth/LaunchScreen.storyboard
@@ -89,7 +82,7 @@ targets:
         # Baseline for Debug/Staging runs; the archive-only postbuildScripts phase below
         # overwrites this with the git commit count for every App Store/TestFlight build.
         CFBundleVersion: '1'
-        # Native launch screen (DEP-160): a launch storyboard — the #0A0E1A background
+        # Native launch screen: a launch storyboard — the #0A0E1A background
         # (LaunchBackground color set) with the depth mark centered on it. Storyboard
         # rather than UILaunchScreen.UIImageName: the plist image key does not render on
         # current iOS (verified on the iOS 26 simulator), while the storyboard's image
@@ -97,7 +90,7 @@ targets:
         UILaunchStoryboardName: LaunchScreen
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
-        # DEP-425: numeric App Store id for the forced-update gate's deep link.
+        # Numeric App Store id for the forced-update gate's deep link.
         # `0` (the Base.xcconfig default) means unset and hides the Update button.
         APP_STORE_ID: $(APP_STORE_ID)
         SUPABASE_URL: $(SUPABASE_URL)
@@ -115,9 +108,8 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
         PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_IDENTIFIER)
         ASSETCATALOG_COMPILER_APPICON_NAME: $(APP_ICON_NAME)
-        # Cooper's Apple Developer Team ID — needed to sign on-device/test builds. It's a
-        # public identifier (not a credential), so it's safe to commit; XcodeGen keeps the
-        # regenerated project in sync with this, so the CI project-sync check stays green.
+        # Development team identifier needed to sign on-device and test builds. XcodeGen
+        # keeps the regenerated project in sync with this value.
         DEVELOPMENT_TEAM: 63JZBB528Q
         # Overrides the project-level YES for this target only. On Archive builds,
         # BUILT_PRODUCTS_DIR/Depth.app is a symlink into the install location, and
@@ -197,12 +189,11 @@ schemes:
         - DepthTests
         - name: DepthUITests
           # AppStoreScreenshotsUITests is a slow, human-triggered release-prep tool
-          # (task-9d-screenshots-brief.md), not a correctness gate — excluded here so
+          # not a correctness gate — excluded here so
           # the default `xcodebuild test` run (this scheme's plain `test` action,
           # which is what ios-ci.yml's `test` job runs) skips it. `-only-testing` at
-          # invocation time cannot override a scheme-level skip, so running it directly
-          # needs project.yml regenerated without this entry — see
-          # the vault's `Reference/ios-appstore-screenshots.md` for the documented local workflow.
+          # invocation time cannot override a scheme-level skip, so the dedicated capture
+          # scheme below runs it without this entry.
           skippedTests:
             - AppStoreScreenshotsUITests
     archive:
@@ -229,9 +220,9 @@ schemes:
       config: Debug
 
   # Dedicated scheme for recording the hermetic UI-test fixture bundle from the local
-  # seeded stack (spec: 2026-09-10-ios-test-data-and-snapshot-testing-design). The normal
+  # seeded stack. The normal
   # Depth scheme skips recording, and a shell env var can't reach the test host
-  # (DEP-280) — a scheme TestAction EnvironmentVariable is the reliable transport.
+  # a scheme TestAction EnvironmentVariable is the reliable transport.
   # Run: `xcodebuild -scheme Depth-FixtureRecorder -only-testing:DepthTests/FixtureRecordingTests test`
   # with `supabase start` up, then commit Depth/Fixtures/UITestFixtures.json.
   Depth-FixtureRecorder:
@@ -249,8 +240,8 @@ schemes:
     archive:
       config: Release
 
-  # Dedicated scheme for the deterministic App Store screenshot capture (T9D,
-  # the vault's `Reference/ios-appstore-screenshots.md`). The default Depth scheme skips
+  # Dedicated scheme for the deterministic App Store screenshot capture. The default Depth
+  # scheme skips
   # AppStoreScreenshotsUITests via `skippedTests` so `xcodebuild test` (and ios-ci.yml)
   # never run it — and `-only-testing` at invocation time cannot override a scheme-level
   # skip, so running it used to require regenerating project.yml without the skip. This
