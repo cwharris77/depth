@@ -1,7 +1,7 @@
 name: Ingest nflverse data
 
 # Recurring nflverse ingestion (player season stats). Wraps `npm run ingest:nflverse`
-# (see `Reference/nflverse.md` in the vault) on a daily schedule, plus a manual
+# on a daily schedule, plus a manual
 # trigger. STRICT=1 so a
 # partial run (a season failed to write) turns the workflow red instead of silently
 # going green with half-stale data.
@@ -18,9 +18,8 @@ on:
     # ingestion_runs. Cron is fixed UTC, so these drift together with ESPN's under DST
     # — the 1-hour stagger holds regardless.
     #
-    # 9am PT morning run, added with ESPN's (DEP-595) so night-game results land before
-    # morning instead of waiting for the next afternoon. See ingest-espn.yml's schedule
-    # comment for the measured nflverse publish lag that makes this slot safe.
+    # 9am PT morning run so night-game results land before morning instead of waiting for
+    # the next afternoon. The one-hour stagger follows the source publish lag.
     - cron: '0 16 * * *'
     # 1pm PT afternoon run — the original daily slot.
     - cron: '0 21 * * *'
@@ -48,11 +47,11 @@ jobs:
     # A full `--seasons 1999-2026` backfill now also lands every Layer-1 source table
     # (~250 source downloads + several hundred thousand upsert rows, twice: prod then the
     # staging mirror). The pre-source-layer run finished in under a minute; 30 minutes is
-    # not enough headroom for the backfill (DEP-557).
+    # not enough headroom for the backfill.
     timeout-minutes: 90
     env:
       # A full backfill parses a whole season of wide source files; the default V8 heap
-      # ceiling (~4 GB) leaves little headroom even with the accumulation fix (DEP-557).
+      # ceiling (~4 GB) leaves little headroom for the backfill.
       NODE_OPTIONS: '--max-old-space-size=6144'
     steps:
       - uses: actions/checkout@v5
@@ -78,7 +77,7 @@ jobs:
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
           # Last step on a successful run POSTs to app/api/ingest/revalidate so the
           # deployed app doesn't wait out the `ingest` cacheLife profile's 6h window
-          # (2026-08-20-ingest-cache-revalidation-design.md). Missing either var is a
+          # Missing either var is a
           # silent no-op (notify-revalidate.ts), never a failed run. ingest:rosters
           # below doesn't call this — the daily job always runs ingest:nflverse first
           # in the same job, so one revalidate call (tagged ingest:nflverse) already

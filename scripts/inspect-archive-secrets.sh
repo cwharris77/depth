@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
 # scripts/inspect-archive-secrets.sh
 #
-# Enforces the hard rule in AGENTS.md / the native iOS plan: no service-role (or other
+# Enforces the rule that no service-role (or other
 # full-access) Supabase secret may ever ship inside the app bundle -- only the public
 # SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY values (baked in from xcconfig/*.xcconfig
 # via project.yml) may reach Info.plist. Builds an unsigned Release configuration for
 # the simulator SDK (a real signed Release *archive* needs distribution certs as CI
-# secrets -- out of scope, see task-9c brief; the xcconfig values land in Info.plist
+# secrets -- a real signed Release archive needs distribution certificates; the xcconfig values land in Info.plist
 # identically whether the build is signed or not) and greps both Info.plist and the
 # compiled binary's string table for any service-role-shaped secret. Runs standalone
-# (house convention for scripts -- see the vault's `Reference/espn.md`, web/scripts/check-ios-compatibility.mts) so
-# it works locally and from CI without duplicating this logic into ios-ci.yml.
+# so it works locally and from CI without duplicating this logic into ios-ci.yml.
 #
 # Usage:
 #   scripts/inspect-archive-secrets.sh              # build + scan (needs xcodebuild, xcodegen-generated project)
@@ -215,9 +214,9 @@ run_build_and_scan() {
   # Scan every file in the built bundle, not just Info.plist and the main binary.
   # Today those two are the only two files Depth.app actually contains, but the app has
   # no embedded frameworks/extensions/other bundled resources yet -- scanning the whole
-  # tree means this check doesn't silently lose coverage the day one is added (Greptile
-  # P2 on this PR's first review: a scan hardcoded to two named files creates exactly
-  # that gap). `strings` extracts printable text the same way regardless of file type
+  # tree means this check doesn't silently lose coverage the day one is added. A scan
+  # hardcoded to two named files would create exactly that gap. `strings` extracts
+  # printable text the same way regardless of file type
   # (binary plist, Mach-O executable, plain resource file, ...).
   local violations=0 target text_dump match
   while IFS= read -r -d '' target; do

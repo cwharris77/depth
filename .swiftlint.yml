@@ -1,6 +1,6 @@
 # Bug-pattern rules only -- style is handled by swift-format (.swift-format), not SwiftLint.
-# Warnings, never errors: these flag risk for an agent to look at, they don't gate a PR
-# (DEP-604). Add a rule only if it catches a defect, not a style preference.
+# Warnings, never errors: these flag risky patterns without gating a PR. Add a rule only
+# if it catches a defect, not a style preference.
 included:
   - Depth
 only_rules:

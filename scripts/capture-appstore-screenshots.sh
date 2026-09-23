@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 # capture-appstore-screenshots.sh — deterministic App Store screenshot capture for depth.
 #
-# The one command that turns a clean checkout into the five raw App Store Connect PNGs
-# (design spec's Screenshots and metadata section, item 35-38; ticket DEP-162 blocker,
-# the vault's `Reference/ios-appstore-screenshots.md`). Everything the capture needs to be reproducible
-# lives here, so a human (or the ticket's "run the script on a clean checkout" acceptance
-# gate) never has to hand-edit project.yml:
+# The one command that turns a clean checkout into the seven raw App Store Connect PNGs.
+# Everything the capture needs to be reproducible lives here, so a human can run it from a
+# clean checkout without hand-editing project.yml:
 #
 #   1. Picks the newest simulator device type in the 1284×2778 (6.5-inch display) class —
 #      iPhone 13 Pro Max, falling back to iPhone 12 Pro Max — and boots a DISPOSABLE
@@ -53,8 +51,8 @@
 #
 # Staging config: runs against the dedicated staging Supabase project
 # (`xcconfig/Staging.xcconfig` → djwrecczgudktgsooxti), same as every other DepthUITests
-# run — DEP-40 Lane B closed 2026-09-14 when that project was seeded from the checked-in
-# `supabase/seed*.sql`. "Stable staging seed" means pinned real teams (Seahawks for the
+# run against the seeded project from the checked-in `supabase/seed*.sql`. "Stable staging
+# seed" means pinned real teams (Seahawks for the
 # offense hero, Broncos for defense + the QB profile, Chargers for stats, Patriots for the
 # 2025 postseason ladder, and Chiefs/Eagles for compare) rather than fabricated fixture
 # data, so reruns stay byte-comparable; the screenshots never show a signed-in session or
@@ -78,16 +76,15 @@ done
 [ -z "$OUT_ROOT" ] && OUT_ROOT="$REPO_ROOT/Screenshots"
 
 # The exact App Store Connect 6.5-inch-display portrait spec (iPhone 13 Pro Max, 1284×2778
-# @3x). Retargeted 2026-08-28 from 1320×2868 (iPhone 17 Pro Max, 6.9-inch class): App Store
-# Connect rejected the 1320×2868 captures outright ("Screenshots dimensions should be:
+# @3x). The 6.5-inch class is required by the current upload flow: App Store Connect
+# rejects the 1320×2868 captures outright ("Screenshots dimensions should be:
 # 1242 × 2688px … 1284 × 2778px…"), and Apple's current screenshot guide's 6.5-inch class —
 # the class this app record's upload flow is accepting — lists exactly 1242×2688 and
 # 1284×2778. 1284×2778 is the larger of the two. Apple scales these up for 6.9-inch displays
 # ("If screenshots with the accepted sizes aren't provided, scaled screenshots for 6\.9"
-# displays are used"), so a 6.5-inch-class set is sufficient. Re-check Apple's current
-# screenshot-spec page before a real submission — Apple periodically retires the oldest
-# accepted size class and simulator naming shifts with each generation
-# (the vault's `Reference/ios-appstore-screenshots.md` records this same caveat).
+# displays are used"), so a 6.5-inch-class set is sufficient. Apple periodically retires the
+# oldest accepted size class and simulator naming shifts with each generation, so verify the
+# current upload requirements before a real submission.
 EXPECT_W=1284
 EXPECT_H=2778
 
@@ -145,7 +142,7 @@ xcrun simctl boot "$DEVICE_ID"
 xcrun simctl bootstatus "$DEVICE_ID" -b >/dev/null 2>&1 || true
 
 # ---- normalize the status bar so every capture shares the same time/signal ----
-# The canonical "always the same" status-bar baseline (the vault's `Reference/ios-appstore-screenshots.md`).
+# Use a fixed status-bar baseline so every capture has the same system chrome.
 xcrun simctl status_bar "$DEVICE_ID" override \
   --time "9:41" --batteryState charged --batteryLevel 100 \
   --cellularBars 4 --wifiBars 3 >/dev/null 2>&1
