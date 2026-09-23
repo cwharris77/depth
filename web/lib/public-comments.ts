@@ -11,6 +11,15 @@ export type ForbiddenCommentReference = {
   endLine: number;
   pattern: string;
   match: string;
+  private?: boolean;
+};
+
+// A rule supplied at runtime from a denylist kept outside the repository, so the terms it
+// rejects are never published by the checker itself.
+export type PrivateRule = {
+  label: string;
+  expression: RegExp;
+  exemptFiles: ReadonlySet<string>;
 };
 
 export type ChangedLineRanges = Map<string, Array<[number, number]>>;
@@ -29,27 +38,14 @@ const forbiddenPatterns: Array<[string, RegExp]> = [
     'agent policy reference',
     /\b(?:AGENTS|CLAUDE)\.md\b|web\/CLAUDE\.md|\b(?:agent-ready|capture-ticket|scope-ticket)\b/i,
   ],
-  ['private decision provenance', /\b(?:Cooper|Greptile|Claude Design|NN\/G)\b/i],
-  [
-    'model or agent name',
-    /\b(?:Astra|Luna|Codex|ChatGPT|GPT-\d[\w.]*|Gemini|Sonnet|Opus|Haiku|Copilot)\b|\bClaude\b(?! Code)/,
-  ],
-  [
-    'legal or sourcing stance',
-    /\b(?:third-party mark|fair[- ]use|nominative|non-free|licen[cs](?:e|es|ed|ing)|copyright\w*|trademark\w*|public domain|legal (?:posture|stance|audit)|(?:not|never) traced|trace-then-stylize)\b/i,
-  ],
   [
     'temporary planning history',
     /\b(?:locked decision|design spec|auth pass|share pass|backlog|roadmap|THROWAWAY PROTOTYPE|not landed)\b/i,
   ],
 ];
 
-// Markdown is checked line by line. Agent instruction files name each other by design, and the
-// attributions file is the one document allowed to carry third-party notices.
-const markdownExemptions: Record<string, ReadonlySet<string>> = {
-  '*': new Set(['agent policy reference']),
-  'ATTRIBUTIONS.md': new Set(['agent policy reference', 'legal or sourcing stance']),
-};
+// Markdown is checked line by line. Agent instruction files name each other by design.
+const markdownExemptions = new Set(['agent policy reference']);
 
 // Private and machine-specific paths are rejected anywhere in a source file, not just in
 // comments, so a string literal cannot carry one either.
@@ -157,20 +153,46 @@ export function extractComments(source: string, filename: string): SourceComment
   return comments;
 }
 
+/**
+ * Parses a denylist: a JSON array of `{ label, pattern, flags?, exemptFiles? }`, where
+ * `exemptFiles` lists basenames the rule does not apply to.
+ */
+export function parsePrivateRules(json: string): PrivateRule[] {
+  const entries: unknown = JSON.parse(json);
+  if (!Array.isArray(entries)) throw new Error('Denylist must be a JSON array');
+  return entries.map((entry, index) => {
+    const { label, pattern, flags, exemptFiles } = entry as Record<string, unknown>;
+    if (typeof label !== 'string' || typeof pattern !== 'string') {
+      throw new Error(`Denylist entry ${index} needs string "label" and "pattern"`);
+    }
+    return {
+      label,
+      expression: new RegExp(pattern, typeof flags === 'string' ? flags : ''),
+      exemptFiles: new Set(Array.isArray(exemptFiles) ? exemptFiles.map(String) : []),
+    };
+  });
+}
+
 export function findForbiddenCommentReferences(
   comments: SourceComment[],
-  filename = ''
+  filename = '',
+  privateRules: readonly PrivateRule[] = []
 ): ForbiddenCommentReference[] {
-  const exempt = isMarkdown(filename)
-    ? new Set([...markdownExemptions['*'], ...(markdownExemptions[path.basename(filename)] ?? [])])
-    : new Set<string>();
+  const basename = path.basename(filename);
+  const rules = [
+    ...forbiddenPatterns
+      .filter(([pattern]) => !(isMarkdown(filename) && markdownExemptions.has(pattern)))
+      .map(([pattern, expression]) => ({ pattern, expression, private: false })),
+    ...privateRules
+      .filter((rule) => !rule.exemptFiles.has(basename))
+      .map((rule) => ({ pattern: rule.label, expression: rule.expression, private: true })),
+  ];
   return comments.flatMap((comment) =>
-    forbiddenPatterns.flatMap(([pattern, expression]) => {
-      if (exempt.has(pattern)) return [];
-      const match = comment.text.match(expression);
-      return match
-        ? [{ line: comment.line, endLine: comment.endLine, pattern, match: match[0] }]
-        : [];
+    rules.flatMap((rule) => {
+      const match = comment.text.match(rule.expression);
+      if (!match) return [];
+      const finding = { line: comment.line, endLine: comment.endLine, pattern: rule.pattern };
+      return [{ ...finding, match: match[0], ...(rule.private ? { private: true } : {}) }];
     })
   );
 }

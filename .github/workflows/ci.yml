@@ -42,6 +42,8 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm ci
       - name: Check public source comments
+        env:
+          PUBLIC_COMMENT_DENYLIST: ${{ secrets.PUBLIC_COMMENT_DENYLIST }}
         run: npm run check:public-comments -- --all
       - run: npm run format:check
       - run: npx tsc --noEmit

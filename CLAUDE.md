@@ -83,7 +83,9 @@ Depth/
   constraints, API or library choices, workarounds, stable contracts, and cross-file
   technical couplings. Never include ticket IDs, private documentation paths, people's
   names, model or agent names, legal or sourcing stance, product-decision history, or
-  review provenance. `npm run check:public-comments` (from `web/`) enforces this in CI.
+  review provenance. `npm run check:public-comments` (from `web/`) enforces this in CI and
+  the pre-commit hook; sensitive terms come from a denylist kept out of the repo
+  (`PUBLIC_COMMENT_DENYLIST` in CI, `~/.config/depth/public-comment-denylist.json` locally).
 - **XcodeGen: `project.yml` is the source of truth, `Depth.xcodeproj` is generated
   but still committed.** After any `project.yml` change (new file, new target setting,
   new dependency), run `xcodegen generate` from the repo root and commit the regenerated
