@@ -19,7 +19,7 @@ Scope comes from the list in `CLAUDE.md` §3; a new scope only if the area is ge
 
 `gh pr create --body` bypasses the template, so build the body from a copy of `.github/pull_request_template.md` and fill What / Why / Tests / Verified live / Screenshots.
 
-**The `## Screenshots` section is required, not optional.** The screenshot CI gate was removed 2026-09-10, but simple UI changes still get a capture (PR #833):
+**The `## Screenshots` section is required, not optional.** There is no screenshot CI gate, but simple UI changes still get a capture:
 
 - **Simple UI change** (single screen, no complex flow or logic): after the PR exists, run `/ios-pr-screenshots` — it captures the changed screen and fills the block between the `screenshots-start` / `screenshots-end` sentinels.
 - **Multi-screen or logic-heavy change** you are validating in the simulator yourself: skip the capture and replace the block with one sentence justifying the skip (`gh pr edit <N> --body-file`). Never leave the placeholder text in place.
@@ -28,7 +28,6 @@ Stacked PRs use `gh stack` (see the global workflow) — do not retarget by hand
 
 ## After merge (skill step 8)
 
-- If the PR shipped or killed a roadmap item, update the README's status table (and the specs index if a spec's status changed) — as its own small `docs(readme):` PR if it didn't fit in this one.
 - If uncommitted work has to survive `git checkout main && git pull`, never pair an unconditional `git stash` with an unconditional `git stash pop`: the stash is a shared, session-spanning stack, and a no-op push (nothing was dirty) followed by a blind pop can resurrect an unrelated older stash. Check `git status --porcelain` first and skip the pair on a clean tree; otherwise capture the stash's identity (`git stash list` before and after, or `git stash create`) and pop only that ref. A pop that conflicts in a file you never touched means you popped the wrong stash — stop and inspect, don't resolve through it.
 
 ## Red flags specific to this repo

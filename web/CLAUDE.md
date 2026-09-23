@@ -6,18 +6,14 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # depth — agent operating manual
 
-Read this before writing any code. It is the distilled version of ~60 merged PRs of
-house style; deviating from it is the main way agents waste Cooper's time here.
+Read this before writing any code under `web/`.
 
-> **iOS-first (2026-08-29).** This repo is iOS-first. The product is the native SwiftUI
-> app at the repo root; the Next.js web app is **frozen and kept only to host the
-> privacy policy and support policy**. **New tickets default to iOS-only** unless the
-> ticket says otherwise; web UI work is out of scope, and web PRs land only for
-> legal-page hosting or shared backend (Supabase, ingest, fixtures). This file documents
-> the frozen web app and the shared backend (it lives under `web/`); for anything
-> iOS-specific, [`../CLAUDE.md`](../CLAUDE.md) is the primary operating manual. Vault
-> record of the change: `Decisions.md` 2026-08-29 (supersedes the 2026-08-20 parity
-> defaults).
+> **iOS-first.** The product is the native SwiftUI app at the repo root; the Next.js web
+> app is **frozen and kept only to host the privacy policy and support policy**. New work
+> defaults to iOS; web PRs land only for policy-page hosting or the shared backend
+> (Supabase, ingest, fixtures). This file documents the frozen web app and the shared
+> backend; for anything iOS-specific, [`../CLAUDE.md`](../CLAUDE.md) is the operating
+> manual.
 
 ## 1. What this app is
 
@@ -28,8 +24,8 @@ Postgres · XcodeGen. Read [`../CLAUDE.md`](../CLAUDE.md) for its operating manu
 
 The Next.js 16 App Router web app (`app/`, `components/`, `lib/`) is **frozen** — kept
 only to host the privacy policy and support policy and to share the Supabase backend
-(ingest, schema, cross-language domain fixtures). Web-only feature work is out of scope
-(2026-08-29). Its stack lingers as documented history: React 19 · TypeScript strict ·
+(ingest, schema, cross-language domain fixtures). Web-only feature work is out of scope.
+Its stack lingers as documented history: React 19 · TypeScript strict ·
 Tailwind 4 · Framer Motion · Vitest.
 
 Shared data flow (one direction, no shortcuts; both clients read the same backend):
@@ -43,18 +39,6 @@ ESPN unofficial APIs
   → DepthChartFieldView        (SwiftUI, receives ONE resolved roster per screen)
       (app/team/[id]/page.tsx → DepthChartField remain the frozen web reader)
 ```
-
-All documentation lives in the Obsidian vault, not this repo: design specs,
-implementation plans, handoff briefs, deep-dive source guides (ESPN/NFLverse data flow,
-the uniform model, iOS privacy/telemetry), model cards, research, and the product
-roadmap all live under `../../obsidian/Projects/depth/`. This repo holds only its
-public-project docs at the root — `../README.md`, `../CLAUDE.md`/`../AGENTS.md`,
-`../PRODUCT.md`, `../DESIGN.md`, `../ATTRIBUTIONS.md` — nothing else. The repo `docs/`, `.superpowers/`,
-`skill-observations/`, `skill-updates/`, and `.impeccable/` dirs were purged from history
-(2026-09-08) and are gitignored local state: **never re-add them, and never reference
-them from a committed file.** The vault (specs index + Roadmap.md + README status table)
-is the single source of truth; if you can't read the vault, stop and say so rather than
-guessing at docs intent.
 
 ## 2. Architecture invariants
 
@@ -83,8 +67,7 @@ web UI is frozen.
    surface and never compose contrast logic themselves. `uiAccent/onAccent` still exist as
    Postgres columns for iOS builds already on devices; their frozen values live in
    `lib/uniforms/legacy-accents.ts`, only the seed generator reads them, and no resolver
-   may (`JerseyColors` makes it a compile error). Design:
-   `../../obsidian/Projects/depth/specs/2026-09-01-team-color-surface-rules-design.md`.
+   may (`JerseyColors` makes it a compile error).
 5. **A team page ships one team's data.** Client components receive a resolved
    `TeamRoster` prop; importing all-32 data into a client bundle is a regression.
 6. **Untrusted input degrades, never throws.** Share params decode to `null` on any
@@ -98,12 +81,11 @@ web UI is frozen.
    the same PR.
 9. **Uniforms are fully curated and append-only.** The archive never deletes a kit;
    retire one with `year_end` + `is_current=false`. ESPN never writes this table.
-10. **RLS is on for every table** (Phase C). The base tables carry a permissive
+10. **RLS is on for every table.** The base tables carry a permissive
     `"public read"` policy so `dbRosterSource` reads them with the anon key; per-user
     tables are owner-only. Writes rely on the service-role ingest bypassing RLS. Never
     enable RLS on a *new* table without a read policy for whoever reads it (anon for
-    public data, `auth.uid()` for private), or that reader breaks (see the vault's
-    ESPN data-flow guide under `../../obsidian/Projects/depth/Research/`).
+    public data, `auth.uid()` for private), or that reader breaks.
 11. **Published data stays decodable by every supported app build.** Before an ingest,
     schema, or API change writes a value an installed client cannot decode, ship the
     compatible binary, confirm its App Store release, and use the existing forced-update
@@ -128,9 +110,10 @@ web UI is frozen.
 - **Public-source comments explain implementation, not internal process.** Add a concise
   role comment only when it helps; inline comments may explain concrete behavior,
   constraints, API or library choices, workarounds, stable contracts, and cross-file
-  technical couplings. Do not include ticket IDs, vault/spec paths, agent instructions,
-  private product or design rationale, research/review provenance, or temporary planning
-  history. Put internal context in the Obsidian vault, not source comments.
+  technical couplings. Never include ticket IDs, private documentation paths, people's
+  names, model or agent names, legal or sourcing stance, product-decision history,
+  research/review provenance, or temporary planning history. Internal context belongs in
+  private project notes, not in this repo. `npm run check:public-comments` enforces this.
 - **Pure logic lives in `lib/` with colocated tests** (`lib/__tests__/` or next to the
   file in `lib/espn/`). Components stay thin; anything worth testing gets extracted
   into a pure function first. `lib/` itself is area-scoped: React hooks live under
@@ -180,7 +163,7 @@ web UI is frozen.
 ### Process
 
 - **One concern per PR.** Big multi-layer features split into stacked PRs by layer
-  (PR1 data, PR2 UI — see #56/#57) using GitHub's native `gh stack` workflow, not
+  (PR1 data, PR2 UI) using GitHub's native `gh stack` workflow, not
   manual base-then-retarget. A stack is a **linear chain** where each PR targets the
   branch below it, bottom → `main`; GitHub auto-re-targets each upper PR to `main`
   when the one below lands, so **never write "retarget to main once #N merges"** — that's
@@ -206,10 +189,8 @@ web UI is frozen.
   live: …" line describing what was actually seen in the browser. **Start every PR
   from the template** (`../.github/pull_request_template.md`) and keep its sections —
   agents: `gh pr create` without `--body`, or pass `--body-file` on the template, so
-  those sections stay in. The PR-screenshot driver and its CI gate were removed
-  (2026-09-10); iOS visual regression is snapshot tests (Phase 4, separate), and the
-  App Store capture flow (`../scripts/capture-appstore-screenshots.sh`) is the only
-  screenshot tooling left.
+  those sections stay in. The App Store capture flow
+  (`../scripts/capture-appstore-screenshots.sh`) is separate tooling.
 - **Vercel preview browser QA starts with the bypass URL.** Protected preview
   deployments use Vercel's Protection Bypass for Automation. Keep the token only in
   `.env.local` as `X_VERCEL_PROTECTION_BYPASS`; never commit it. Before opening a
@@ -217,21 +198,6 @@ web UI is frozen.
   `npm run preview:bypass-url -- <preview-url>` and navigate to the printed URL first.
   It appends `x-vercel-protection-bypass` and `x-vercel-set-bypass-cookie=1` so Vercel
   sets the bypass cookie; later same-domain navigation can use the normal preview URL.
-- **Documentation lives in the obsidian vault, not this repo.** `../../obsidian/Projects/depth/`
-  is the one home for plans, specs, design docs, deep-dive source guides (ESPN/NFLverse data
-  flow, the uniform model, iOS privacy/telemetry), model cards, and shared research. This repo
-  keeps exactly the public-project docs at the root — `../README.md`, `../CLAUDE.md`/`../AGENTS.md`, `../PRODUCT.md`,
-  `../DESIGN.md`, `../ATTRIBUTIONS.md` — and nothing else. The old `docs/`, `.superpowers/`,
-  `skill-observations/`, `skill-updates/`, and `.impeccable/` dirs were purged from history
-  (2026-09-08) and are now gitignored local state: **never commit them, and never reference
-  them from a committed file.**
-- **Docs move with behavior, and they move into the vault.** A PR that changes the data flow
-  updates the matching source guide in the vault; a PR that ships/kills a roadmap item updates
-  README's status table and the vault specs index.
-- **Not every change earns a doc.** Write one only if a future reader — you or an agent — still
-  needs it after the PR ships. If a PR description suffices, no doc. When you do write one, it
-  goes in the vault, is evergreen (no per-feature date stamp), and gets linked from the vault
-  index — never copied here.
 
 ## 4. Mistakes you will make here unless you follow these rules
 
@@ -278,9 +244,10 @@ cached-read crashes, reaching around `DepthRepository`) are in [`../CLAUDE.md`](
     to satisfy the advisor, and its reader silently gets zero rows. *Rule: ship the read
     policy in the same migration as `enable row level security` — anon for public data,
     `auth.uid()` for per-user (invariant 10).*
-11. **Internal process leaking into public comments.** Ticket IDs, vault paths, agent
-    instructions, private decisions, research/review provenance, and temporary planning
-    history do not belong in source. *Rule: keep comments only when they explain
+11. **Internal process leaking into public source.** Ticket IDs, private documentation
+    paths, people's or model names, legal or sourcing stance, private decisions,
+    research/review provenance, and temporary planning history do not belong in source or
+    in the repo's Markdown. *Rule: keep comments only when they explain
     implementation behavior or a stable public fact (§3).*
 12. **Kitchen-sink PRs.** You fix the task plus three things you noticed. *Rule: one
     concern per PR; out-of-scope findings go in the PR body or a spec, not the diff.*
@@ -348,7 +315,7 @@ cached-read crashes, reaching around `DepthRepository`) are in [`../CLAUDE.md`](
 
 Adjectives don't count; these boxes do.
 
-**iOS-first (2026-08-29):** most PRs are iOS-only — their full checklist lives in
+**iOS-first:** most PRs are iOS-only — their full checklist lives in
 [`../CLAUDE.md`](../CLAUDE.md) §5 (targeted `xcodebuild -only-testing:`, `xcodegen generate`,
 fixture regen, `DesignTokens.swift` sync). The web-toolchain checks below apply only
 when the diff touches the frozen web app or shared backend.
@@ -362,12 +329,12 @@ when the diff touches the frozen web app or shared backend.
       (mistake #17) — extracted into a local component or a single derived value instead
 - [ ] Diff contains only the stated concern; no unrelated reformatting
 - [ ] New/changed comments explain implementation behavior or a stable public fact and
-      contain no internal ticket, vault, agent, product-decision, or review provenance
+      contain no ticket IDs, private documentation paths, people's or model names, legal
+      or sourcing stance, product-decision history, or review provenance
+      (`npm run check:public-comments -- --changed-since main`)
 - [ ] Conventional-commit title with a scope from the list in §3
-- [ ] PR body starts from `../.github/pull_request_template.md` (What/Why/Tests + footer);
-      there is no `## Screenshots` section — the PR-screenshot driver and gate were
-      removed (2026-09-10). iOS visual regression is snapshot tests (Phase 4, separate);
-      `../scripts/capture-appstore-screenshots.sh` is the only screenshot tooling left
+- [ ] PR body starts from `../.github/pull_request_template.md` (What/Why/Tests/Screenshots
+      + footer)
 - [ ] No new dependency (or explicit sign-off recorded in the PR body)
 
 **Schema change (additionally)**
@@ -393,18 +360,6 @@ operating manual (architecture, conventions, parity mechanisms). Quality-bar sum
 - [ ] `../Depth/Support/DesignTokens.swift` updated in the same PR if a shared web
       token changed
 
-**Design spec**
-- [ ] File is `../../obsidian/Projects/depth/specs/YYYY-MM-DD-<slug>-design.md` — the
-      vault, never this repo's `docs/`
-- [ ] Has: Status line, roadmap linkage, locked decisions with rationale,
-      Tests section (a concrete list), Out of scope section
-- [ ] Self-contained: an agent can implement from it without asking product questions
-- [ ] Vault index (`*-roadmap-specs-index.md`) row added/updated
-
-**Implementation plan**
-- [ ] File is in the vault (`../../obsidian/Projects/depth/`), never this repo's `docs/`
-- [ ] Header links the vault spec it implements (relative path)
-
 **Curated data (kits, seeds)**
 - [ ] Every hex cites its source in a comment (teamcolorcodes / GUD / TruColor / press release)
 - [ ] Resolver tests pass for every new row: each surface returns one of the kit's own
@@ -420,8 +375,7 @@ operating manual (architecture, conventions, parity mechanisms). Quality-bar sum
 
 ## 6. When uncertain — escalation rules
 
-**Proceed without asking** when the work is covered by an approved spec in the vault
-(`../../obsidian/Projects/depth/specs/`), or is a bugfix/small feature that follows the
+**Proceed without asking** when the work is covered by an approved spec, or is a bugfix/small feature that follows the
 invariants above. Locked decisions in a spec are settled — implement them; do not
 relitigate.
 
@@ -433,8 +387,8 @@ relitigate.
 - flipping a launch gate in a deployed environment (a `lib/utils/flags.ts` flag, e.g.
   `show-uniform-picker` — changing its env var in Vercel or its `decide()` default),
 - changing CI, the ingest cadence, or repo secrets,
-- removing user-visible behavior (even "obviously dead" — #54 removed arrows shipped
-  in #53 *by decision*, not by cleanup),
+- removing user-visible behavior (even "obviously dead" — it may have shipped by
+  decision),
 - reverting or disabling a previously-adopted architectural setting (a `next.config.ts`
   feature flag like `cacheComponents`, a caching strategy, a build-time toggle) to
   route around a conflict with your current task — even when the conflict is real and
@@ -452,16 +406,15 @@ build next. Adapt mechanically (renamed file, changed signature) and note the dr
 If the drift is *conceptual* (the spec's approach no longer fits), stop and ask.
 
 **Stop and report — do not work around** when: tests fail for reasons unrelated to
-your change; ESPN data looks wrong (never hand-patch the DB); the vault is
-unreachable and the task depends on roadmap context the specs don't carry; or an
-instruction here conflicts with a direct request from Cooper (his request wins —
-say which rule you're overriding).
+your change; ESPN data looks wrong (never hand-patch the DB); or an instruction here
+conflicts with a direct request from the user (the request wins — say which rule you're
+overriding).
 
 **A verification test you cannot pass is a signal, not a waiver.** When your own
 test/check fails, route around the failure only after you've investigated the root
 cause and named it — the test may be asserting an assumption the code (or the
-migration's premise) never actually enforced (DEP-322: a "restrictive" Postgres
-grant was a silent no-op against Supabase's default `ALL` on every public table).
+migration's premise) never actually enforced (a "restrictive" Postgres grant can be a
+silent no-op against Supabase's default `ALL` on every public table).
 A red check recorded in the PR body as "blocked" is a red flag you're shipping a
 contract that isn't true; fix the code or the test, don't document the exception.
 
@@ -487,4 +440,4 @@ Key routing rules:
 - Ship/deploy/PR → invoke /ship or /land-and-deploy
 - Save progress → invoke /context-save
 - Resume context → invoke /context-restore
-- Author a backlog-ready spec/issue → invoke /spec
+- Author a spec/issue → invoke /spec

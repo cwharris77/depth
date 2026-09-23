@@ -1,44 +1,27 @@
 # depth iOS — agent operating manual
 
-Read this before writing any Swift code. **This is the primary operating manual for
-depth's active surface** — iOS-first since 2026-08-29 (vault `Decisions.md`): the web
-app is frozen and kept only to host the privacy policy and support policy, and **new
-tickets default to iOS-only** unless they say otherwise. The git workflow, commit
-conventions, vault-vs-repo doc split, and quality bar in
-[`web/CLAUDE.md`](web/CLAUDE.md) apply here unchanged (this file's §5 is the iOS-specific
-part of them); this file covers what's different about working in the root iOS tree.
+Read this before writing any Swift code. The product is the native SwiftUI app at the repo
+root. The Next.js app under `web/` is frozen: it hosts the privacy and support policies and
+shares the Supabase backend (`web/supabase/`, ingest scripts, `web/fixtures/`). New work
+defaults to iOS unless a ticket says otherwise. The git workflow, commit conventions, and
+quality bar in [`web/CLAUDE.md`](web/CLAUDE.md) apply here unchanged; this file covers what is
+different about the iOS tree.
 
-The pre-freeze parity process ([`2026-08-20-multi-surface-parity-process-design.md`](../obsidian/Projects/depth/specs/2026-08-20-multi-surface-parity-process-design.md))
-used to default new features to **all three surfaces**; that default is **reversed
-2026-08-29** — features default to iOS. The web app still exists but is frozen: read it
-only as *reference* for a behavior that already exists there. Never port web's literal
-component/class; match its *behavior*, not its markup — and only when the behavior is
-worth carrying forward.
-
-**Default search scope is the iOS tree at the repo root** (`Depth/`, `DepthTests/`,
-`DepthUITests/`). Unless the ticket explicitly says to check web's existing behavior for
-parity (or touches shared backend — under `web/`: `supabase/`, `fixtures/`), grep/find
-only inside those dirs — don't speculatively search or read `web/app/`, `web/components/`,
-`web/lib/`, or `web/public/`. Those are the frozen web app; wandering into them on a plain
-iOS ticket wastes tool calls chasing dead ends (confirmed: a same-day audit had an agent
-read two unrelated web files, `web/components/ui/Coachmark.tsx` and
-`web/lib/utils/nav-drawer-coachmark.ts`, before finding the real iOS coachmark system in
-`Depth/Features/Onboarding/`, purely because its first search wasn't scoped).
+**Default search scope is the iOS tree** (`Depth/`, `DepthTests/`, `DepthUITests/`). Unless
+the task touches the shared backend or explicitly asks how the web app behaved, don't search
+`web/app/`, `web/components/`, `web/lib/`, or `web/public/` — they are the frozen web app and
+rarely hold the answer to an iOS question. Read web only as a reference for an existing
+behavior, and match its behavior rather than its markup: iOS has its own design system.
 
 ## 1. What this app is
 
-Native SwiftUI companion to the web app (parent spec:
-`../obsidian/Projects/depth/specs/2026-08-14-native-ios-app-design.md`) — same
-product, same Supabase backend, its own design system. Cooper, 2026-08-18: "iOS is its
-own design" — stopped mirroring web's literal UI that day; don't justify a native UI
-decision with "web does it this way." Stack: SwiftUI, Swift 6 strict concurrency,
-`@Observable` (not
-Combine/`ObservableObject`), SwiftData (offline cache only — Supabase is always the
-source of truth), Supabase Swift SDK, XcodeGen.
+Native SwiftUI NFL depth chart viewer backed by the same Supabase project as the web app.
+Stack: SwiftUI, Swift 6 strict concurrency, `@Observable` (not Combine/`ObservableObject`),
+SwiftData (offline cache only — Supabase is always the source of truth), Supabase Swift SDK,
+XcodeGen.
 
-The iOS app lives at the **repo root** in the **same git repo** as the web app (which is
-under `web/`) — not a submodule, not a separate clone. One repo, one PR flow, one CI.
-There is no repo-sync problem to solve; see the parity spec linked above for why.
+The iOS app lives at the repo root in the same git repo as the web app (under `web/`) — not a
+submodule, not a separate clone. One repo, one PR flow, one CI.
 
 ## 2. Architecture
 
@@ -79,48 +62,44 @@ Depth/
    (`web/lib/utils/depth-chart/formations.ts`, `web/lib/utils/roster/roster.ts`) — TS is the
    oracle. `DepthTests/FixtureLoading.swift` loads the *same* JSON and Swift's output
    must match exactly. **Re-run `generate.mts` and commit the regenerated JSON whenever
-   `formations.ts`/`roster.ts` changes** — this is the one place iOS/web parity is
-   mechanically enforced rather than manually verified.
+   `formations.ts`/`roster.ts` changes.**
 
 ## 3. Conventions
 
-- **`Support/` is checked before writing a new primitive**, same rule as web's
-  `components/ui/`. `ls Depth/Support/` first: `Card` (`.depthCard()` view
-  modifier — the one bounded-surface treatment), `DepthSegmentedControl`,
-  `SeasonPicker` (`SeasonPickerTrigger`/`SeasonPickerSheet` — the sheet-based season
-  switcher pattern, same shape web's `TeamStatsSeasonSheet` independently converged
-  on), `TeamListPickerSheet`, `DepthTopNavToolbar`, `DepthUnitTabBar`,
-  `DepthBrandMark`, `TeamIconView`. Extend an existing primitive with a parameter
-  before forking a new view, same as web's Card/Badge/SegmentedControl rule.
-- **`DesignTokens.swift` is a literal, hand-maintained port of `web/components/ui/tokens.ts`**
-  (2026-08-15 visual-pass spec, locked decision #2) — colors that exist on both
-  surfaces must match exactly, and there is **no shared build-time generation** between
-  the two token files (unlike the domain fixtures above, which do have one). If you
-  change a color on web that iOS also uses, update `DesignTokens.swift` by hand in the
-  same PR. Only add a token when a screen actually needs it — no speculative tokens
-  (YAGNI, per the enum's own header comment). `Spacing` is an 8-point scale
+- **`Support/` is checked before writing a new primitive.** `ls Depth/Support/` first:
+  `Card` (`.depthCard()` view modifier — the one bounded-surface treatment),
+  `DepthSegmentedControl`, `SeasonPicker` (`SeasonPickerTrigger`/`SeasonPickerSheet`),
+  `TeamListPickerSheet`, `DepthTopNavToolbar`, `DepthUnitTabBar`, `DepthBrandMark`,
+  `TeamIconView`. Extend an existing primitive with a parameter before forking a new view.
+- **`DesignTokens.swift` is a hand-maintained port of `web/components/ui/tokens.ts`.**
+  Colors that exist on both surfaces must match exactly, and nothing generates one from the
+  other. If you change a shared color on web, update `DesignTokens.swift` in the same PR.
+  Only add a token when a screen actually needs it. `Spacing` is an 8-point scale
   (`xs`/`sm`/`md`/`lg`/`xl`); `Radius` is `sm`/`md`/`lg`/`full` — a new
-  `cornerRadius:`/`RoundedRectangle` literal that doesn't fit an existing step is a
-  design-system decision (name a new step, don't invent an unnamed literal), same
-  weight as web's "never invent a hex" rule.
+  `cornerRadius:`/`RoundedRectangle` literal that doesn't fit an existing step means naming
+  a new step, never an unnamed literal.
 - **Public-source comments explain implementation, not internal process.** New types and
   files may have a concise role comment; inline comments may explain concrete behavior,
   constraints, API or library choices, workarounds, stable contracts, and cross-file
-  technical couplings. Do not include ticket IDs, vault/spec paths, agent instructions,
-  private product or design rationale, research/review provenance, or temporary planning
-  history. Put internal context in the Obsidian vault, not source comments.
+  technical couplings. Never include ticket IDs, private documentation paths, people's
+  names, model or agent names, legal or sourcing stance, product-decision history, or
+  review provenance. `npm run check:public-comments` (from `web/`) enforces this in CI.
 - **XcodeGen: `project.yml` is the source of truth, `Depth.xcodeproj` is generated
   but still committed.** After any `project.yml` change (new file, new target setting,
   new dependency), run `xcodegen generate` from the repo root and commit the regenerated
-  `Depth.xcodeproj` in the same PR — **CI verifies the two are in sync and fails the
-  build if `xcodegen generate` would produce a diff** (`.github/workflows/ios-ci.yml`).
-  Never hand-edit `project.pbxproj`.
+  `Depth.xcodeproj` in the same PR — **CI fails if `xcodegen generate` would produce a
+  diff** (`.github/workflows/ios-ci.yml`). Never hand-edit `project.pbxproj`.
 - **Swift 6 strict concurrency is on.** `@MainActor` on anything touching UI state;
-  services/repositories are `Sendable`. A data race the compiler doesn't catch is a
-  bug you introduced by fighting the type system, not one it missed — don't add
-  `@unchecked Sendable` or `nonisolated(unsafe)` to silence a warning without
-  understanding why it fired.
-- **Swift style is fixed by tool, never gated (DEP-604).** `.swift-format` (4-space indent, 100 columns) is the only authority: `.githooks/pre-commit` rewrites and re-stages staged `.swift` files, and `scripts/format-swift.sh [files]` does the same by hand — run it, don't hand-format. There is deliberately **no CI format check** (`latest-stable` Xcode's swift-format can drift from a local one). `.swiftlint.yml` is a small set of *bug-pattern* rules (force unwrap/try/cast, unhandled throwing `Task`, weak delegates, unused closure parameters) that only warn — a new force unwrap needs a reason or a rewrite, not a `swiftlint:disable`. Enable the hook once per clone (shared by all worktrees): `git config core.hooksPath .githooks`, and `brew install swiftlint` for the lint half.
+  services/repositories are `Sendable`. Don't add `@unchecked Sendable` or
+  `nonisolated(unsafe)` to silence a warning without understanding why it fired.
+- **Swift style is fixed by tool, never gated.** `.swift-format` (4-space indent, 100
+  columns) is the only authority: `.githooks/pre-commit` rewrites and re-stages staged
+  `.swift` files, and `scripts/format-swift.sh [files]` does the same by hand — run it,
+  don't hand-format. There is deliberately **no CI format check**. `.swiftlint.yml` is a
+  small set of bug-pattern rules (force unwrap/try/cast, unhandled throwing `Task`, weak
+  delegates, unused closure parameters) that only warn — a new force unwrap needs a reason
+  or a rewrite, not a `swiftlint:disable`. Enable the hook once per clone (shared by all
+  worktrees): `git config core.hooksPath .githooks`, and `brew install swiftlint`.
 - **Two test frameworks, split by target.** `DepthTests` (data/domain, unit-level) uses
   **Swift Testing** (`import Testing`, `@Test func …`, `#expect(...)`) — not XCTest.
   `DepthUITests`/`AccessibilityUITests`/`ShareUITests` use **XCTest**
@@ -130,63 +109,52 @@ Depth/
   launch with `UI_TESTING_FIXTURE_BACKEND` and replay the checked-in fixture bundle
   (`Depth/Fixtures/UITestFixtures.json`) — no backend at all. The suites that must hit
   a live backend (`AuthUITests`, `PerformanceUITests`, the bare `testAppLaunches`) run
-  under Staging (`Depth Stage` scheme, `xcconfig/Staging.xcconfig`), which points at
-  the dedicated staging project (`djwrecczgudktgsooxti`), not production. Debug points at
-  the local `supabase start` stack. See the spec
-  `2026-09-10-ios-test-data-and-snapshot-testing-design`.
+  under Staging (`Depth Stage` scheme, `xcconfig/Staging.xcconfig`). Debug points at
+  the local `supabase start` stack.
 
 ## 4. Mistakes you will make here unless you follow these rules
 
 1. **Editing `project.yml` without regenerating.** CI fails with "`Depth.xcodeproj`
    is out of sync with `project.yml`." *Rule: `xcodegen generate` at the repo root,
-   commit both files together, every time.*
-   The same CI failure also comes from the other direction: `xcodebuild` builds and test
-   runs can re-serialize `Depth.xcodeproj/xcshareddata/xcschemes/Depth.xcscheme` (dropping
-   `onlyGenerateCoverageForSpecifiedTargets`/`parallelizable` and empty
-   `<CommandLineArguments>`), and a later `git add -A` commits that rewrite even when
-   XcodeGen and `project.yml` are identical to CI's (PR #834). *Rule: re-run `xcodegen
-   generate` right before committing, and never `git add -A` over `Depth.xcodeproj` —
-   if `git status` shows a scheme change your diff didn't intend, `git checkout` it.*
+   commit both files together, every time.* The same failure comes from the other
+   direction: `xcodebuild` runs can re-serialize
+   `Depth.xcodeproj/xcshareddata/xcschemes/Depth.xcscheme`, and a later `git add -A`
+   commits that rewrite. *Rule: re-run `xcodegen generate` right before committing, and
+   never `git add -A` over `Depth.xcodeproj` — if `git status` shows a scheme change your
+   diff didn't intend, `git checkout` it.*
 2. **Changing `formations.ts`/`roster.ts` without regenerating fixtures.** Swift tests
    keep passing against stale JSON while web's actual output has silently diverged.
    *Rule: `npx tsx fixtures/generate.mts` (from `web/`) and commit
-   `web/fixtures/domain/*.json` in the same PR as any `web/lib/utils/depth-chart/formations.ts`
-   or `web/lib/utils/roster/roster.ts` change.*
-3. **Changing a web token without touching `DesignTokens.swift`.** There's no build
-   step that would catch this — the two files silently drift. *Rule: grep
-   `DesignTokens.swift` for the token name whenever you touch `web/components/ui/tokens.ts`.*
-4. **Running the full test suite on every change.** This is a pre-release app; the
-   full run is minutes long. **A Swift Testing free function needs its parentheses in the
-   filter** (`DepthTests/teamSurfacesParity()`); without them the filter matches nothing and
+   `web/fixtures/domain/*.json` in the same PR.*
+3. **Changing a web token without touching `DesignTokens.swift`.** Nothing catches this.
+   *Rule: grep `DesignTokens.swift` for the token name whenever you touch
+   `web/components/ui/tokens.ts`.*
+4. **Running the full test suite on every change.** The full run is minutes long.
+   **A Swift Testing free function needs its parentheses in the filter**
+   (`DepthTests/teamSurfacesParity()`); without them the filter matches nothing and
    xcodebuild prints `Executed 0 tests` **followed by `** TEST SUCCEEDED **`**, which reads
-   as a pass. *Rule: targeted `-only-testing:` runs scoped to the
-   suites your diff touches — see §5 below, same rule as `web/CLAUDE.md`'s quality
-   bar.*
+   as a pass. *Rule: targeted `-only-testing:` runs scoped to the suites your diff
+   touches — see §5.*
 5. **A View reaching around `DepthRepository`** to construct its own `SupabaseClient`
    "just to fetch one thing." *Rule: every data read goes through the injected
-   repository, same as web's `RosterSource` seam — no exceptions for "it's just one
-   field."*
-6. **Porting a web component's literal structure instead of its behavior.** iOS has
-   its own design system on purpose (Cooper, 2026-08-18: "iOS is its own design") —
-   matching web's exact div/class shape defeats that. *Rule: read web's component for what it
-   *does*, then build the SwiftUI-native way to do that, checking `Support/` first for
-   an existing primitive.*
+   repository — no exceptions for "it's just one field."*
+6. **Porting a web component's literal structure instead of its behavior.** *Rule: read
+   web's component for what it does, then build the SwiftUI-native way to do that,
+   checking `Support/` first for an existing primitive.*
 7. **A cache-read failure crashing the app.** SwiftData is disposable; a
    `ModelContainer` open failure or a decode failure must degrade to a live fetch, not
    `fatalError`. *Rule: only a genuinely unrecoverable environment failure (disk full,
    sandbox issue) after a retry is fatal — see `DepthEnvironment.modelContainer`'s
    wipe-and-retry pattern.*
-
 8. **Visible padding that does not accept taps.** A plain Button can expose a large
    accessibility/layout frame while only its label glyphs accept touches. Put
    `.contentShape(...)` on the **label**, after its padding/frame, matching the intended
    surface. A shape outside Button is not equivalent. For padded text fields, bind
    `@FocusState` to the field and route taps on the drawn container to that focus state
    (see `DepthSearchField`). Keep this an ordering convention in existing primitives,
-   not a blanket modifier: buttons and text fields need different behavior, and a
-   missing shape alone does not prove a filled/system control is broken. Verify with
-   coordinate taps in padding at opposite edges, assert the action/focus, and retain
-   screenshots. `XCUIElement.tap()` and screenshots alone miss this (DEP-395).
+   not a blanket modifier. Verify with coordinate taps in padding at opposite edges,
+   assert the action/focus, and retain screenshots. `XCUIElement.tap()` and screenshots
+   alone miss this.
 
 ## 5. Quality bar (iOS PRs)
 
@@ -205,36 +173,8 @@ Everything in `web/CLAUDE.md` §5's "Any code PR" checklist applies. Additionall
         -only-testing:'DepthTests/someTest()'  # Swift Testing free function -- KEEP THE ()
       ```
       scoped to the suites the diff touches — `DepthTests` for data/domain,
-      `DepthUITests`/`AccessibilityUITests`/`ShareUITests` for the flows changed
-      (`web/CLAUDE.md` §5's iOS bullet points here for the full rule).
-- [ ] **Visual/screen-touching change: fill the PR's `## Screenshots` section.** The
-      screenshot CI gate was removed (2026-09-10) but the section was restored (#833): a
-      simple single-screen UI change gets `/ios-pr-screenshots`; a multi-screen or
-      logic-heavy change you verify in the simulator instead gets one sentence justifying
-      the skip. iOS visual regression is snapshot tests (Phase 4, separate), and the App
-      Store capture flow (`scripts/capture-appstore-screenshots.sh`) is separate tooling.
-      Full shipping steps: [`SHIPPING.md`](SHIPPING.md) (read by the global `ship-pr` skill).
-- [ ] For a behavior that already shipped on the frozen web app: reference the live site
-      for what it *was* ("what did web do?") — see §6. New features define the iOS-native
-      way; "web does it this way" is never a justification by itself.
-
-## 6. Parity after the web freeze (2026-08-29)
-
-The web app is frozen, so "parity" is no longer a forward requirement — there is no live
-web surface to port to. What remains, in order of strength:
-
-1. **Cross-language fixtures** (§2.6 above) — mechanical, CI-enforced, and *still the
-   strongest guarantee*, because the shared pure domain logic (formations, roster
-   ordering) must stay provably identical to the TS implementation both languages read.
-   Keep extending this pattern to new pure domain logic regardless of surface.
-2. **`DesignTokens.swift`'s literal port** — hand-maintained, not enforced by CI. With
-   web frozen, `tokens.ts` only changes if someone touches the frozen web app; keep the
-   two in sync on the rare occasion that happens.
-3. **The frozen web app as behavior reference** — for features that already shipped on
-   web (most screens here started as ports), the live site is the reference for what a
-   behavior *was*. New features define the iOS-native way; don't invent "the web does
-   it this way" as justification for a new decision (Cooper, 2026-08-18: "iOS is its
-   own design").
-
-`parity:` frontmatter on tickets (`System/Templates/Ticket.md`, vault) still exists as
-the tracking field; since 2026-08-29 its practical default is `ios-only`.
+      `DepthUITests`/`AccessibilityUITests`/`ShareUITests` for the flows changed.
+- [ ] **Visual/screen-touching change: fill the PR's `## Screenshots` section.** A simple
+      single-screen UI change gets `/ios-pr-screenshots`; a multi-screen or logic-heavy
+      change you verify in the simulator instead gets one sentence justifying the skip.
+      Full shipping steps: [`SHIPPING.md`](SHIPPING.md).
