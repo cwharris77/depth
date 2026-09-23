@@ -10,12 +10,7 @@
 // with the away numerals black to match.
 
 import { RAIDERS_DECAL_PATHS } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 
 // The complete supplied mark in its original paint order: shield and keyline, wordmark, crossed
 // sabres, helmeted face, and interior shading. Its source greys collapse to the team silver so the
@@ -41,43 +36,22 @@ const HELMET_SILVER_SHIELD: UniformPart = {
 };
 
 // Home jersey: black body, silver numerals.
-const JERSEY_BLACK: UniformPart = {
-  base: 'black',
-  layers: [],
-  number: { fill: 'silver', outline: 'silver', outlineWidth: 10 },
-};
 
 // Away jersey: white body, black numerals.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [],
-  number: { fill: 'black', outline: 'black', outlineWidth: 10 },
-};
 
 // Plain silver pants, shared by both kits.
 const PANTS_SILVER: UniformPart = { base: 'silver', layers: [] };
 
-export const RAIDERS_PARTS: TeamPartsDefinition = {
-  teamId: 'raiders',
-  // Jersey hexes from the curated rows (teamcolorcodes) — the same three the two rows carry
-  // across their primary/secondary/accent slots, where silver is a different token per kit.
-  palette: {
-    black: '#000000',
-    white: '#FFFFFF',
-    // The shell and pants silver — the same physical color whether home reaches it through
-    // 'secondary' or away through 'accent'. Silver is the Raiders' silver #A5ACAF.
-    silver: '#A5ACAF',
-  },
-  helmets: { 'silver-shield': HELMET_SILVER_SHIELD },
-  jerseys: {
-    black: JERSEY_BLACK,
-    white: JERSEY_WHITE,
-  },
-  pants: { silver: PANTS_SILVER },
-  kits: {
-    home: { helmet: 'silver-shield', jersey: 'black', pants: 'silver' },
-    away: { helmet: 'silver-shield', jersey: 'white', pants: 'silver' },
-  },
+export const RAIDERS_PALETTE = {
+  black: '#000000',
+  white: '#FFFFFF',
+  // The shell and pants silver — the same physical color whether home reaches it through
+  // 'secondary' or away through 'accent'. Silver is the Raiders' silver #A5ACAF.
+  silver: '#A5ACAF',
 };
-
-export const RAIDERS_UNIFORMS_FROM_PARTS = compileParts(RAIDERS_PARTS);
+export const RAIDERS_HELMETS = { 'silver-shield': HELMET_SILVER_SHIELD };
+export const RAIDERS_PANTS = { silver: PANTS_SILVER };
+export const RAIDERS_KITS = {
+  home: { helmet: 'silver-shield', jersey: 'black', pants: 'silver' },
+  away: { helmet: 'silver-shield', jersey: 'white', pants: 'silver' },
+};

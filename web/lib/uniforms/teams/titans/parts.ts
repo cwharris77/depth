@@ -21,17 +21,12 @@ import {
   TITANS_YOKE_LEFT,
   TITANS_YOKE_RIGHT,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 // The silver shoulder yoke with the navy bar over it — the same construction in every kit, with
 // only the bar color differing (which the jersey supplies).
-function shoulders(bar: string): PartLayer[] {
+export function shoulders(bar: string): PartLayer[] {
   const shapes: [string, UniformSurface, string, string][] = [
     ['titans-yoke-left', 'sleeve-left', TITANS_YOKE_LEFT, 'silver'],
     ['titans-yoke-right', 'sleeve-right', TITANS_YOKE_RIGHT, 'silver'],
@@ -77,33 +72,13 @@ const HELMET_NAVY_T: UniformPart = {
 const HELMET_WHITE: UniformPart = { base: 'lightBlue', facemask: 'white', layers: [] };
 
 // Home jersey: navy body, navy bar on the silver yoke, navy numerals keylined white.
-const JERSEY_NAVY: UniformPart = {
-  base: 'navy',
-  layers: shoulders('navy'),
-  number: { fill: 'navy', outline: 'white', outlineWidth: 14 },
-};
 
 // Away jersey: white body, navy bar, navy numerals keylined white.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: shoulders('navy'),
-  number: { fill: 'navy', outline: 'white', outlineWidth: 14 },
-};
 
 // Navy-alt jersey: navy body, light-blue bar (keeps the bar legible against the navy), white
 // numerals keylined light-blue.
-const JERSEY_NAVY_ALT: UniformPart = {
-  base: 'navy',
-  layers: shoulders('lightBlue'),
-  number: { fill: 'white', outline: 'lightBlue', outlineWidth: 14 },
-};
 
 // Oilers jersey: light-blue body, red bar, white numerals keylined red.
-const JERSEY_LIGHT_BLUE: UniformPart = {
-  base: 'lightBlue',
-  layers: shoulders('red'),
-  number: { fill: 'white', outline: 'red', outlineWidth: 14 },
-};
 
 // Home + navy-alt pants, navy.
 const PANTS_NAVY: UniformPart = { base: 'navy', layers: [] };
@@ -114,38 +89,20 @@ const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
 // Oilers pants, light-blue.
 const PANTS_LIGHT_BLUE: UniformPart = { base: 'lightBlue', layers: [] };
 
-export const TITANS_PARTS: TeamPartsDefinition = {
-  teamId: 'titans',
-  // Jersey hexes from the curated rows (teamcolorcodes). Navy, light-blue and red are the physical
-  // body/accent colors the rows carry in different slots; silver is the shoulder-yoke literal (no
-  // Titans palette carries it); the decal's light-blue/red/navy are the mark's fixed colors.
-  palette: {
-    navy: '#0C2340',
-    lightBlue: '#4B92DB',
-    red: '#C8102E',
-    white: '#FFFFFF',
-    silver: TITANS_SILVER,
-    // Every decal hex is preserved from Cooper's supplied Tennessee-Titans-Logo.svg.
-    ...Object.fromEntries(TITANS_DECAL_PATHS.map(({ fill }) => [fill, fill])),
-  },
-  helmets: { 'navy-t': HELMET_NAVY_T, white: HELMET_WHITE },
-  jerseys: {
-    navy: JERSEY_NAVY,
-    white: JERSEY_WHITE,
-    'navy-alt': JERSEY_NAVY_ALT,
-    'light-blue': JERSEY_LIGHT_BLUE,
-  },
-  pants: { navy: PANTS_NAVY, white: PANTS_WHITE, lightBlue: PANTS_LIGHT_BLUE },
-  // Pants colors: GUD 2025 shows white only; GUD 2024 supplies the archived navy/light-blue
-  // combinations and white Oilers pants. Preserve legacy canonical pairings first (including
-  // the Oilers light-blue pairing); this pass adds options without repainting those rasters.
-  // https://www.gridiron-uniforms.com/GUD/controller/controller.php?action=teams-season&team_id=TEN&year=2024
-  kits: {
-    home: { helmet: 'navy-t', jersey: 'navy', pants: ['navy', 'lightBlue'] },
-    away: { helmet: 'navy-t', jersey: 'white', pants: ['white', 'lightBlue'] },
-    'navy-alt': { helmet: 'navy-t', jersey: 'navy-alt', pants: ['navy', 'lightBlue'] },
-    'oilers-throwback': { helmet: 'white', jersey: 'light-blue', pants: ['lightBlue', 'white'] },
-  },
+export const TITANS_PALETTE = {
+  navy: '#0C2340',
+  lightBlue: '#4B92DB',
+  red: '#C8102E',
+  white: '#FFFFFF',
+  silver: TITANS_SILVER,
+  // Every decal hex is preserved from Cooper's supplied Tennessee-Titans-Logo.svg.
+  ...Object.fromEntries(TITANS_DECAL_PATHS.map(({ fill }) => [fill, fill])),
 };
-
-export const TITANS_UNIFORMS_FROM_PARTS = compileParts(TITANS_PARTS);
+export const TITANS_HELMETS = { 'navy-t': HELMET_NAVY_T, white: HELMET_WHITE };
+export const TITANS_PANTS = { navy: PANTS_NAVY, white: PANTS_WHITE, lightBlue: PANTS_LIGHT_BLUE };
+export const TITANS_KITS = {
+  home: { helmet: 'navy-t', jersey: 'navy', pants: ['navy', 'lightBlue'] },
+  away: { helmet: 'navy-t', jersey: 'white', pants: ['white', 'lightBlue'] },
+  'navy-alt': { helmet: 'navy-t', jersey: 'navy-alt', pants: ['navy', 'lightBlue'] },
+  'oilers-throwback': { helmet: 'white', jersey: 'light-blue', pants: ['lightBlue', 'white'] },
+};

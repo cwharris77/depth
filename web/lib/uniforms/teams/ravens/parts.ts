@@ -44,12 +44,7 @@ import {
   RAVENS_DECAL_SVG_15_PATH,
   RAVENS_DECAL_SVG_16_PATH,
 } from './decal';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 // The supplied SVG's original paint order. Source gold eye-ring path 12 is deliberately red;
@@ -85,7 +80,7 @@ function decal(): PartLayer[] {
 }
 
 // Gold keyline first, face over it — the same paint order every trimmed mark here uses.
-function shoulderBars(face: string): PartLayer[] {
+export function shoulderBars(face: string): PartLayer[] {
   const bars: [string, UniformSurface, string, string][] = [
     ['ravens-shoulder-outer-left', 'sleeve-left', RAVENS_SHOULDER_OUTER_LEFT, 'gold'],
     ['ravens-shoulder-outer-right', 'sleeve-right', RAVENS_SHOULDER_OUTER_RIGHT, 'gold'],
@@ -95,7 +90,7 @@ function shoulderBars(face: string): PartLayer[] {
   return bars.map(([id, surface, d, fill]) => ({ id, surface, d, clip: true, kind: 'fill', fill }));
 }
 
-function sleeveBands(fill: string): PartLayer[] {
+export function sleeveBands(fill: string): PartLayer[] {
   return (
     [
       ['ravens-sleeve-band-left', 'sleeve-left', RAVENS_SLEEVE_BAND_LEFT],
@@ -118,49 +113,26 @@ function sleeveBands(fill: string): PartLayer[] {
 const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'black', layers: decal() };
 
 // Home jersey (J1): purple body, white bar face, black sleeve band, white numerals.
-const JERSEY_PURPLE: UniformPart = {
-  base: 'purple',
-  layers: [...shoulderBars('white'), ...sleeveBands('black')],
-  number: { fill: 'white', outline: 'gold', outlineWidth: 16 },
-};
 
 // Away jersey (J2): white body, purple bar face, black sleeve band, purple numerals.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [...shoulderBars('purple'), ...sleeveBands('black')],
-  number: { fill: 'purple', outline: 'gold', outlineWidth: 16 },
-};
 
 // Black-alternate jersey (J3): black body, white bar face, purple sleeve band, white numerals.
-const JERSEY_BLACK: UniformPart = {
-  base: 'black',
-  layers: [...shoulderBars('white'), ...sleeveBands('purple')],
-  number: { fill: 'white', outline: 'gold', outlineWidth: 16 },
-};
 
 // The only pants (P1): purple and unbroken on every kit.
 const PANTS_PURPLE: UniformPart = { base: 'purple', layers: [] };
 
-export const RAVENS_PARTS: TeamPartsDefinition = {
-  teamId: 'ravens',
-  // Jersey hexes from the curated rows (lib/uniforms/data.ts). `gold` trims bars and numerals;
-  // `decalGold` and the explicit red eye come from the supplied club vector.
-  palette: {
-    purple: '#241773',
-    black: '#000000',
-    white: '#FFFFFF',
-    gold: '#9E7C0C',
-    decalGold: '#9A7611',
-    red: '#C60C30',
-  },
-  helmets: { black: HELMET_BLACK },
-  jerseys: { purple: JERSEY_PURPLE, white: JERSEY_WHITE, black: JERSEY_BLACK },
-  pants: { purple: PANTS_PURPLE },
-  kits: {
-    home: { helmet: 'black', jersey: 'purple', pants: 'purple' },
-    away: { helmet: 'black', jersey: 'white', pants: 'purple' },
-    'black-alt': { helmet: 'black', jersey: 'black', pants: 'purple' },
-  },
+export const RAVENS_PALETTE = {
+  purple: '#241773',
+  black: '#000000',
+  white: '#FFFFFF',
+  gold: '#9E7C0C',
+  decalGold: '#9A7611',
+  red: '#C60C30',
 };
-
-export const RAVENS_UNIFORMS_FROM_PARTS = compileParts(RAVENS_PARTS);
+export const RAVENS_HELMETS = { black: HELMET_BLACK };
+export const RAVENS_PANTS = { purple: PANTS_PURPLE };
+export const RAVENS_KITS = {
+  home: { helmet: 'black', jersey: 'purple', pants: 'purple' },
+  away: { helmet: 'black', jersey: 'white', pants: 'purple' },
+  'black-alt': { helmet: 'black', jersey: 'black', pants: 'purple' },
+};

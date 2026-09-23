@@ -26,16 +26,11 @@ import {
   PATRIOTS_DECAL_STAR_PATH,
   PATRIOTS_DECAL_STREAMERS_PATH,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 // Three bands per shoulder; the middle one takes the inner color, the outer two the outer color.
-function shoulderBands(outer: string, inner: string): PartLayer[] {
+export function shoulderBands(outer: string, inner: string): PartLayer[] {
   const out: PartLayer[] = [];
   const sides: [UniformSurface, string[]][] = [
     ['sleeve-left', PATRIOTS_BANDS_LEFT],
@@ -99,33 +94,13 @@ const HELMET_PAT: UniformPart = { base: 'patRed', facemask: 'white', layers: [] 
 const HELMET_RIVALRIES: UniformPart = { base: 'rivalNavy', facemask: 'red', layers: decal() };
 
 // Home jersey (J1): navy body, banded red/white/red, white numerals.
-const JERSEY_NAVY: UniformPart = {
-  base: 'navy',
-  layers: shoulderBands('red', 'white'),
-  number: { fill: 'white', outline: 'red', outlineWidth: 14 },
-};
 
 // Away jersey (J2): white body, banded red/navy/red — the inner band picks up the body's contrast
 // rather than staying white.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: shoulderBands('red', 'navy'),
-  number: { fill: 'navy', outline: 'red', outlineWidth: 14 },
-};
 
 // Pat Patriot jersey (J3): red body, banded white/navy/white against it.
-const JERSEY_PAT: UniformPart = {
-  base: 'patRed',
-  layers: shoulderBands('white', 'rivalNavy'),
-  number: { fill: 'white', outline: 'rivalNavy', outlineWidth: 14 },
-};
 
 // Rivalries jersey (J4): the home pattern against its own navy.
-const JERSEY_RIVALRIES: UniformPart = {
-  base: 'rivalNavy',
-  layers: shoulderBands('red', 'white'),
-  number: { fill: 'white', outline: 'red', outlineWidth: 14 },
-};
 
 // Pants — unbroken on every kit; each simply takes its body color.
 const PANTS_NAVY: UniformPart = { base: 'navy', layers: [] };
@@ -134,48 +109,34 @@ const PANTS_PAT: UniformPart = { base: 'patRed', layers: [] };
 const PANTS_RIVALRIES: UniformPart = { base: 'rivalNavy', layers: [] };
 const PANTS_SILVER: UniformPart = { base: 'silver', layers: [] };
 
-export const PATRIOTS_PARTS: TeamPartsDefinition = {
-  teamId: 'patriots',
-  // Jersey hexes from the curated rows (lib/uniforms/data.ts). Two navies and two reds are real
-  // and distinct: home/away use #002244 and #C60C30, Rivalries and Pat Patriot #002F6C and
-  // #C8102E. Naming them is the point — the flat form left them indistinguishable behind tokens.
-  palette: {
-    navy: '#002244',
-    rivalNavy: '#002F6C',
-    red: '#C60C30',
-    patRed: '#C8102E',
-    silver: '#B0B7BC',
-    white: '#FFFFFF',
-  },
-  helmets: {
-    navy: HELMET_NAVY,
-    silver: HELMET_SILVER,
-    pat: HELMET_PAT,
-    rivalries: HELMET_RIVALRIES,
-  },
-  jerseys: {
-    navy: JERSEY_NAVY,
-    white: JERSEY_WHITE,
-    pat: JERSEY_PAT,
-    rivalries: JERSEY_RIVALRIES,
-  },
-  pants: {
-    navy: PANTS_NAVY,
-    white: PANTS_WHITE,
-    pat: PANTS_PAT,
-    rivalries: PANTS_RIVALRIES,
-    silver: PANTS_SILVER,
-  },
-  kits: {
-    home: { helmet: 'navy', jersey: 'navy', pants: ['navy', 'silver'] },
-    away: { helmet: 'silver', jersey: 'white', pants: ['white', 'navy'] },
-    'pat-patriot': { helmet: 'pat', jersey: 'pat', pants: ['pat', 'white'] },
-    'rivalries-2025': {
-      helmet: 'rivalries',
-      jersey: 'rivalries',
-      pants: ['rivalries', 'silver'],
-    },
+export const PATRIOTS_PALETTE = {
+  navy: '#002244',
+  rivalNavy: '#002F6C',
+  red: '#C60C30',
+  patRed: '#C8102E',
+  silver: '#B0B7BC',
+  white: '#FFFFFF',
+};
+export const PATRIOTS_HELMETS = {
+  navy: HELMET_NAVY,
+  silver: HELMET_SILVER,
+  pat: HELMET_PAT,
+  rivalries: HELMET_RIVALRIES,
+};
+export const PATRIOTS_PANTS = {
+  navy: PANTS_NAVY,
+  white: PANTS_WHITE,
+  pat: PANTS_PAT,
+  rivalries: PANTS_RIVALRIES,
+  silver: PANTS_SILVER,
+};
+export const PATRIOTS_KITS = {
+  home: { helmet: 'navy', jersey: 'navy', pants: ['navy', 'silver'] },
+  away: { helmet: 'silver', jersey: 'white', pants: ['white', 'navy'] },
+  'pat-patriot': { helmet: 'pat', jersey: 'pat', pants: ['pat', 'white'] },
+  'rivalries-2025': {
+    helmet: 'rivalries',
+    jersey: 'rivalries',
+    pants: ['rivalries', 'silver'],
   },
 };
-
-export const PATRIOTS_UNIFORMS_FROM_PARTS = compileParts(PATRIOTS_PARTS);

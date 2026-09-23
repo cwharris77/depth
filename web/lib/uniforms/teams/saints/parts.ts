@@ -14,16 +14,11 @@ import {
   SAINTS_DECAL_GOLD_PATH,
   SAINTS_DECAL_WHITE_PATH,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import { GENERIC_COLLAR_PATH } from '../core/shared';
 
 // The gold V-collar — the same bold band on every kit.
-function collar(stroke: string): PartLayer[] {
+export function collar(stroke: string): PartLayer[] {
   return [
     {
       id: 'saints-collar',
@@ -75,18 +70,8 @@ const HELMET_GOLD_FLEUR: UniformPart = {
 };
 
 // Black jersey (home + color-rush): gold collar, gold numerals keylined white.
-const JERSEY_BLACK: UniformPart = {
-  base: 'black',
-  layers: collar('gold'),
-  number: { fill: 'gold', outline: 'white', outlineWidth: 12 },
-};
 
 // White jersey (away): gold collar, black numerals keylined gold.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: collar('gold'),
-  number: { fill: 'black', outline: 'gold', outlineWidth: 12 },
-};
 
 // Home pants, gold.
 const PANTS_GOLD: UniformPart = { base: 'gold', layers: [] };
@@ -94,29 +79,18 @@ const PANTS_GOLD: UniformPart = { base: 'gold', layers: [] };
 // Black pants (away + color-rush).
 const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };
 
-export const SAINTS_PARTS: TeamPartsDefinition = {
-  teamId: 'saints',
-  // Jersey hexes from the curated rows (teamcolorcodes). Gold is the shell/body color carried in
-  // different primary/secondary/accent slots per row; black is home/away/crush's shared body.
-  palette: {
-    gold: '#D3BC8D',
-    black: '#101820',
-    white: '#FFFFFF',
-    'decal-black': '#010001',
-    'decal-gold': '#D1BB8F',
-    'decal-white': '#F9F9F9',
-  },
-  helmets: { 'gold-fleur': HELMET_GOLD_FLEUR },
-  jerseys: {
-    black: JERSEY_BLACK,
-    white: JERSEY_WHITE,
-  },
-  pants: { gold: PANTS_GOLD, black: PANTS_BLACK },
-  kits: {
-    home: { helmet: 'gold-fleur', jersey: 'black', pants: 'gold' },
-    away: { helmet: 'gold-fleur', jersey: 'white', pants: 'black' },
-    'color-rush': { helmet: 'gold-fleur', jersey: 'black', pants: 'black' },
-  },
+export const SAINTS_PALETTE = {
+  gold: '#D3BC8D',
+  black: '#101820',
+  white: '#FFFFFF',
+  'decal-black': '#010001',
+  'decal-gold': '#D1BB8F',
+  'decal-white': '#F9F9F9',
 };
-
-export const SAINTS_UNIFORMS_FROM_PARTS = compileParts(SAINTS_PARTS);
+export const SAINTS_HELMETS = { 'gold-fleur': HELMET_GOLD_FLEUR };
+export const SAINTS_PANTS = { gold: PANTS_GOLD, black: PANTS_BLACK };
+export const SAINTS_KITS = {
+  home: { helmet: 'gold-fleur', jersey: 'black', pants: 'gold' },
+  away: { helmet: 'gold-fleur', jersey: 'white', pants: 'black' },
+  'color-rush': { helmet: 'gold-fleur', jersey: 'black', pants: 'black' },
+};

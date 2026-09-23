@@ -47,15 +47,10 @@ import {
   STEELERS_SLEEVE_WHITE_LEFT,
   STEELERS_SLEEVE_WHITE_RIGHT,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import { LEGACY_ROUNDED_COLLAR_PATH } from '../core/shared';
 
-const fill = (
+export const fill = (
   id: string,
   surface:
     'helmet' | 'jersey' | 'collar' | 'sleeve-left' | 'sleeve-right' | 'leg-left' | 'leg-right',
@@ -85,7 +80,7 @@ const DECAL: PartLayer[] = [
 // The sleeve stripe set — black backing with gold/white/gold bands. Fixed construction, shared by
 // home and away, and identical on both (the backing's separators only become visible on the white
 // body). The gold bands reuse the palette gold, not a token.
-function sleeveStripes(): PartLayer[] {
+export function sleeveStripes(): PartLayer[] {
   return [
     fill('steelers-sleeve-backing-left', 'sleeve-left', STEELERS_SLEEVE_BACKING_LEFT, 'black'),
     fill('steelers-sleeve-backing-right', 'sleeve-right', STEELERS_SLEEVE_BACKING_RIGHT, 'black'),
@@ -131,54 +126,11 @@ const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'black', layers: DE
 const HELMET_GOLD: UniformPart = { base: 'gold', layers: [] };
 
 // Home jersey: black body, the sleeve stripe set (fixed), white numerals ringed gold.
-const JERSEY_BLACK: UniformPart = {
-  base: 'black',
-  layers: sleeveStripes(),
-  number: { fill: 'white', outline: 'gold', outlineWidth: 26 },
-};
 
 // Away jersey: white body, the same sleeve stripe set, black numerals ringed gold.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: sleeveStripes(),
-  number: { fill: 'black', outline: 'gold', outlineWidth: 26 },
-};
 
 // The 1934 bumblebee jersey: gold body under the black chevron-and-pinstripe panel, gold collar.
 // The pinstripes paint on the jersey surface so the gold collar still sits inside the chevron.
-const JERSEY_BUMBLEBEE: UniformPart = {
-  base: 'gold',
-  layers: [
-    fill('steelers-bumblebee-torso', 'jersey', STEELERS_BUMBLEBEE_TORSO_PATH, 'black'),
-    {
-      id: 'steelers-bumblebee-chevron',
-      surface: 'jersey',
-      d: STEELERS_BUMBLEBEE_CHEVRON_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'black',
-      strokeWidth: STEELERS_BUMBLEBEE_CHEVRON_WIDTH,
-    },
-    ...STEELERS_BUMBLEBEE_PINSTRIPE_XS.map((x, i) =>
-      fill(
-        `steelers-bumblebee-pinstripe-${i}`,
-        'jersey',
-        `M${x},505 H${x + 6} V806 H${x} Z`,
-        'gold'
-      )
-    ),
-    {
-      id: 'steelers-bumblebee-collar',
-      surface: 'collar',
-      d: LEGACY_ROUNDED_COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'gold',
-      strokeWidth: 13,
-    },
-  ],
-  number: { fill: 'white', outline: 'black', outlineWidth: 26 },
-};
 
 // Gold pants with the stripe set (home + away).
 const PANTS_GOLD: UniformPart = { base: 'gold', layers: pantsStripes() };
@@ -186,37 +138,25 @@ const PANTS_GOLD: UniformPart = { base: 'gold', layers: pantsStripes() };
 // The bumblebee's khaki pants, unstriped.
 const PANTS_KHAKI: UniformPart = { base: 'khaki', layers: [] };
 
-export const STEELERS_PARTS: TeamPartsDefinition = {
-  teamId: 'steelers',
-  // Construction hexes from the module (teamcolorcodes + sampled where no token exists). Gold and
-  // black are physical fixed colors that the rows carry in different primary/secondary slots.
-  palette: {
-    gold: STEELERS_GOLD,
-    black: STEELERS_BLACK,
-    white: '#FFFFFF',
-    // The 1934 throwback's khaki pants have no token on any palette (sampled from the composite).
-    khaki: STEELERS_BUMBLEBEE_KHAKI,
-    // Exact source-mark colors, separate from the physical jersey/sleeve gold above.
-    decalDisc: STEELERS_DECAL_DISC,
-    decalRing: STEELERS_DECAL_RING,
-    decalGold: STEELERS_DECAL_GOLD,
-    decalRed: STEELERS_DECAL_RED,
-    decalBlue: STEELERS_DECAL_BLUE,
-    decalSeparator: STEELERS_DECAL_SEPARATOR,
-    decalWordmark: STEELERS_DECAL_WORDMARK,
-  },
-  helmets: { black: HELMET_BLACK, gold: HELMET_GOLD },
-  jerseys: {
-    black: JERSEY_BLACK,
-    white: JERSEY_WHITE,
-    bumblebee: JERSEY_BUMBLEBEE,
-  },
-  pants: { gold: PANTS_GOLD, khaki: PANTS_KHAKI },
-  kits: {
-    home: { helmet: 'black', jersey: 'black', pants: 'gold' },
-    away: { helmet: 'black', jersey: 'white', pants: 'gold' },
-    bumblebee: { helmet: 'gold', jersey: 'bumblebee', pants: 'khaki' },
-  },
+export const STEELERS_PALETTE = {
+  gold: STEELERS_GOLD,
+  black: STEELERS_BLACK,
+  white: '#FFFFFF',
+  // The 1934 throwback's khaki pants have no token on any palette (sampled from the composite).
+  khaki: STEELERS_BUMBLEBEE_KHAKI,
+  // Exact source-mark colors, separate from the physical jersey/sleeve gold above.
+  decalDisc: STEELERS_DECAL_DISC,
+  decalRing: STEELERS_DECAL_RING,
+  decalGold: STEELERS_DECAL_GOLD,
+  decalRed: STEELERS_DECAL_RED,
+  decalBlue: STEELERS_DECAL_BLUE,
+  decalSeparator: STEELERS_DECAL_SEPARATOR,
+  decalWordmark: STEELERS_DECAL_WORDMARK,
 };
-
-export const STEELERS_UNIFORMS_FROM_PARTS = compileParts(STEELERS_PARTS);
+export const STEELERS_HELMETS = { black: HELMET_BLACK, gold: HELMET_GOLD };
+export const STEELERS_PANTS = { gold: PANTS_GOLD, khaki: PANTS_KHAKI };
+export const STEELERS_KITS = {
+  home: { helmet: 'black', jersey: 'black', pants: 'gold' },
+  away: { helmet: 'black', jersey: 'white', pants: 'gold' },
+  bumblebee: { helmet: 'gold', jersey: 'bumblebee', pants: 'khaki' },
+};

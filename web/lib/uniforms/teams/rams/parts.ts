@@ -25,17 +25,11 @@ import {
   RAMS_STRIPE_BAND_LEFT,
   RAMS_STRIPE_BAND_RIGHT,
 } from './source';
-import {
-  compileParts,
-  fromGeneric,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { fromGeneric, type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 // Band and tail take separate colors because Rivalries is the one kit where they differ.
-function sleeveMark(band: string, tail: string): PartLayer[] {
+export function sleeveMark(band: string, tail: string): PartLayer[] {
   const shapes: [string, UniformSurface, string, string][] = [
     ['rams-sleeve-band-left', 'sleeve-left', RAMS_SLEEVE_BAND_LEFT, band],
     ['rams-sleeve-band-right', 'sleeve-right', RAMS_SLEEVE_BAND_RIGHT, band],
@@ -75,34 +69,14 @@ const HELMET_ROYAL: UniformPart = { base: 'royal', facemask: 'royal', layers: ho
 const HELMET_RIVALRIES: UniformPart = { base: 'navy', facemask: 'navy', layers: horn('yellow') };
 
 // Home jersey (J1): royal body, gold band and tail, gold numerals with a white keyline.
-const JERSEY_ROYAL: UniformPart = {
-  base: 'royal',
-  layers: sleeveMark('gold', 'gold'),
-  number: { fill: 'gold', outline: 'white', outlineWidth: 14 },
-};
 
 // Away jersey (J2): white body, the same gold sleeve mark, royal numerals keylined gold.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: sleeveMark('gold', 'gold'),
-  number: { fill: 'royal', outline: 'gold', outlineWidth: 14 },
-};
 
 // Bone jersey (J3): bone body, otherwise identical to away — which is why only the body color and
 // the pants separate the two kits.
-const JERSEY_BONE: UniformPart = {
-  base: 'bone',
-  layers: sleeveMark('gold', 'gold'),
-  number: { fill: 'royal', outline: 'gold', outlineWidth: 14 },
-};
 
 // Rivalries jersey (J4): near-black body, and the one kit whose sleeve tail breaks from its band —
 // royal against yellow rather than matching.
-const JERSEY_RIVALRIES: UniformPart = {
-  base: 'navy',
-  layers: sleeveMark('yellow', 'royal'),
-  number: { fill: 'white', outline: 'royal', outlineWidth: 14 },
-};
 
 // Every leg carries a keylined stripe: the mannequin's own 16-unit generic band painted as the
 // OUTER keyline, with the inboard 11 units painted over it. See rams.ts for the swatch measurement
@@ -141,37 +115,24 @@ const PANTS_ROYAL: UniformPart = { base: 'royal', layers: legStripe('white', 'wh
 const PANTS_BONE: UniformPart = { base: 'bone', layers: legStripe('gold', 'white') };
 const PANTS_NAVY: UniformPart = { base: 'navy', layers: legStripe('yellow', 'royal') };
 
-export const RAMS_PARTS: TeamPartsDefinition = {
-  teamId: 'rams',
-  // Jersey hexes from the curated rows (lib/uniforms/data.ts). `royal` is also the club's
-  // published royal, which is what the reference renders for the Rivalries sleeve tail.
-  palette: {
-    royal: '#003594',
-    gold: '#FFA300',
-    navy: '#0D1B3E',
-    yellow: '#FFD100',
-    bone: '#F0EBE0',
-    white: '#FFFFFF',
-  },
-  helmets: { royal: HELMET_ROYAL, rivalries: HELMET_RIVALRIES },
-  jerseys: {
-    royal: JERSEY_ROYAL,
-    white: JERSEY_WHITE,
-    bone: JERSEY_BONE,
-    rivalries: JERSEY_RIVALRIES,
-  },
-  pants: { gold: PANTS_GOLD, royal: PANTS_ROYAL, bone: PANTS_BONE, navy: PANTS_NAVY },
-  // Pants options per kit, canonical first — only the first compiles today, so the shipped raster is
-  // unchanged and the rest are declarative until the archive UI lands. Enumerated from the 2025
-  // composite: the royal jersey is worn with gold and with bone legs, the white jersey with royal and
-  // with gold. The sheet's blue-boxed royal-on-royal pair is labelled "Worn in Preseason only" and is
-  // therefore not an option here, the same call the Carolina pass made.
-  kits: {
-    home: { helmet: 'royal', jersey: 'royal', pants: ['gold', 'bone'] },
-    away: { helmet: 'royal', jersey: 'white', pants: ['royal', 'gold'] },
-    bone: { helmet: 'royal', jersey: 'bone', pants: ['bone'] },
-    'rivalries-2025': { helmet: 'rivalries', jersey: 'rivalries', pants: ['navy'] },
-  },
+export const RAMS_PALETTE = {
+  royal: '#003594',
+  gold: '#FFA300',
+  navy: '#0D1B3E',
+  yellow: '#FFD100',
+  bone: '#F0EBE0',
+  white: '#FFFFFF',
 };
-
-export const RAMS_UNIFORMS_FROM_PARTS = compileParts(RAMS_PARTS);
+export const RAMS_HELMETS = { royal: HELMET_ROYAL, rivalries: HELMET_RIVALRIES };
+export const RAMS_PANTS = {
+  gold: PANTS_GOLD,
+  royal: PANTS_ROYAL,
+  bone: PANTS_BONE,
+  navy: PANTS_NAVY,
+};
+export const RAMS_KITS = {
+  home: { helmet: 'royal', jersey: 'royal', pants: ['gold', 'bone'] },
+  away: { helmet: 'royal', jersey: 'white', pants: ['royal', 'gold'] },
+  bone: { helmet: 'royal', jersey: 'bone', pants: ['bone'] },
+  'rivalries-2025': { helmet: 'rivalries', jersey: 'rivalries', pants: ['navy'] },
+};
