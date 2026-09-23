@@ -49,6 +49,7 @@ describe('public source comment policy', () => {
     ['// Sources collected by Luna; Astra authored the art.', 'model or agent name'],
     ["// Home first, away second (Cooper's call).", 'private decision provenance'],
     ['// See obsidian:Projects/depth/specs/x.md.', 'private documentation path'],
+    ['// Cached per 2026-08-20-ingest-cache-revalidation-design.md.', 'private documentation path'],
   ])('rejects %s', (source, pattern) => {
     const comments = extractComments(source, 'Example.ts');
 

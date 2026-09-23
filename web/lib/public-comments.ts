@@ -23,7 +23,7 @@ const forbiddenPatterns: Array<[string, RegExp]> = [
   ['ticket id', /\b(?:DEP|OB|SYM|AO|LLM|SCP)-\d+\b/i],
   [
     'private documentation path',
-    /(?:\.\.?\/)*obsidian\/Projects|Projects\/(?:depth|agent-ops|obsidian)\/|\bobsidian\b|\bDecisions\.md\b|\bthe vault\b/i,
+    /(?:\.\.?\/)*obsidian\/Projects|Projects\/(?:depth|agent-ops|obsidian)\/|\bobsidian\b|\bDecisions\.md\b|\bthe vault\b|\b\d{4}-\d{2}-\d{2}-[a-z0-9-]+|\b[a-z0-9-]+-design\.md\b/i,
   ],
   [
     'agent policy reference',
