@@ -1346,17 +1346,17 @@
   {
     "id": "seahawks-rivalries-2025-2025",
     "colors": {
-      "primary": "#C6D3DC",
+      "primary": "#AFB3B5",
       "secondary": "#002244",
       "accent": "#29594C"
     },
     "expected": {
-      "fill": "#C6D3DC",
+      "fill": "#AFB3B5",
       "ring": "#002244",
-      "mark": "#C6D3DC",
+      "mark": "#AFB3B5",
       "textOnFill": "#002244",
       "numeralFill": "#002244",
-      "numeralStroke": "#C6D3DC"
+      "numeralStroke": "#AFB3B5"
     }
   },
   {

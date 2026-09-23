@@ -1355,15 +1355,10 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#AA0000',
     },
   },
-  // Seahawks 2025 Rivalries. Corrected from a wolf-grey/action-green guess after checking the kit
-  // against the GUD 2025 composite: the body is an ice blue-grey, not wolf grey, and the kit's
-  // green is a muted pine — action green appears nowhere on it. primary/accent sampled from that
-  // composite (#C6D3DC body, #29594C number and shoulder print); secondary is heritage College
-  // Navy #002244 (teamcolorcodes), which GUD renders as #24293C exactly as it renders the same
-  // navy on the home kit. Caveat: GUD's renderings run a step lighter than official hexes (its
-  // navy is that #24293C), so the two sampled values are approximations pending a published hex.
-  // uiAccent is the ice body because both the pine (2.41) and the kit's teal shell (1.57) fail AA
-  // against the dark UI background — see the contrast tests in lib/__tests__/uniforms.test.ts.
+  // Seahawks 2025 Rivalries. primary is the wolf-grey body the jersey and pants share; accent is
+  // the muted pine of the print, not action green. uiAccent is the grey body because both the
+  // pine (2.41) and the kit's teal shell (1.57) fail AA against the dark UI background — see the
+  // contrast tests in lib/__tests__/uniforms.test.ts.
   {
     teamId: 'seahawks',
     slug: 'rivalries-2025',
@@ -1374,7 +1369,7 @@ export const UNIFORMS: UniformSeed[] = [
     yearEnd: null,
     isCurrent: true,
     colors: {
-      primary: '#C6D3DC',
+      primary: '#AFB3B5',
       secondary: '#002244',
       accent: '#29594C',
     },

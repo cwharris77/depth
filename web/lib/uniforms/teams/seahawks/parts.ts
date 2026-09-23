@@ -17,6 +17,7 @@
 //      literally below, because the spike's contract is byte-identical output, not a fix.
 
 import {
+  SEAHAWKS_SHOULDER_WORDMARK,
   SEAHAWKS_1976_HELMET_GREEN_BAND,
   SEAHAWKS_1976_HELMET_ROYAL_BAND,
   SEAHAWKS_1976_PANTS_GREEN_LEFT,
@@ -33,7 +34,7 @@ import {
   SEAHAWKS_SHOULDER_CAP_LEFT,
   SEAHAWKS_SHOULDER_CAP_RIGHT,
 } from './source';
-import { HELMET_CROWN_STRIPE_PATH } from '../core/shared';
+import { HELMET_CROWN_STRIPE_PATH, modernInsetVCollar } from '../core/shared';
 import { fromGeneric, type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -73,6 +74,24 @@ export function shoulder(band: string, cap: string): PartLayer[] {
   ];
 }
 
+// The modern collar and shoulder wordmark, shared by home and away. The neck opening shows the
+// jersey's inside color; the inset trim along its sides carries the kit's accent.
+export function modernNeckAndWordmark(
+  body: string,
+  neck: string,
+  trim: string,
+  wordmark: string
+): PartLayer[] {
+  return [
+    ...modernInsetVCollar({
+      idPrefix: 'seahawks',
+      colors: { body: neck, edge: body, inset: trim, placket: body },
+      insetId: 'generic-collar',
+    }),
+    fill('seahawks-shoulder-wordmark', 'jersey', SEAHAWKS_SHOULDER_WORDMARK, wordmark),
+  ];
+}
+
 const HELMET_NAVY_HAWK: UniformPart = {
   base: 'navy',
   // Black cage, sampled from the GUD reference crop (the facemask region reads #000000 there,
@@ -104,11 +123,13 @@ export const SEAHAWKS_PALETTE = {
   // Hex from teamcolorcodes.
   wolfGrey: '#A5ACAF',
   white: '#FFFFFF',
+  // Shaded insides of the neck opening, one step darker than each body so the opening reads.
+  navyNeck: '#001A33',
+  whiteNeck: '#ECEEEF',
   crownWedge: '#2B507C',
   // A fourth color with no kit token, and it can never have one: it fails AA on the dark UI
   // (1.57), so it could never be uiAccent. Sampled from the GUD 2025 composite.
   rivalriesTeal: '#023A4D',
-  rivalriesSilver: '#C6D3DC',
   rivalriesPine: '#29594C',
   royal76: '#003087',
   green76: '#046A38',
@@ -152,7 +173,7 @@ export const SEAHAWKS_PANTS = {
     ],
   },
   'rivalries-silver': {
-    base: 'rivalriesSilver',
+    base: 'rivalriesJerseyGrey',
     layers: [
       fromGeneric('generic-pants-stripe-left', 'navy'),
       fromGeneric('generic-pants-stripe-right', 'navy'),

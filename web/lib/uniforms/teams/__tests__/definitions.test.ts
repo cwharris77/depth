@@ -108,6 +108,10 @@ describe('team uniform definitions', () => {
       'seahawks-shoulder-band-right',
       'seahawks-shoulder-cap-left',
       'seahawks-shoulder-cap-right',
+      'seahawks-neck-opening',
+      'seahawks-collar-edge',
+      'seahawks-collar-placket',
+      'seahawks-shoulder-wordmark',
     ]);
     // The generic marks home keeps: an action-green collar and the green pant stripe pair.
     expect(layerIds?.filter((id) => id.startsWith('generic-'))).toEqual([
@@ -115,9 +119,8 @@ describe('team uniform definitions', () => {
       'generic-pants-stripe-left',
       'generic-pants-stripe-right',
     ]);
-    // The helmet decal is the one traced mark; chest wordmarks, league shields and sponsor marks
-    // stay out of every kit.
-    expect(layerIds?.some((id) => /wordmark|shield|sponsor/.test(id))).toBe(false);
+    // League shields and sponsor marks stay out of every kit.
+    expect(layerIds?.some((id) => /shield|sponsor/.test(id))).toBe(false);
 
     const model = resolveUniformModel(definition, 'home', SEAHAWKS_COLORS);
     expect(model).toMatchObject({

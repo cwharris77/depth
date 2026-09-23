@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "f3c12b45905ca7d903b47e3d2d7d8631a36c85c351b07652a0f4c2d2a0c97fc1",
-  "revision": "535026618880e70d",
+  "sourceDigest": "554c8cd824acffa400d93570b017f9818b970431e59b84672bf77be7d89a720c",
+  "revision": "631fb3798db15116",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1341,37 +1341,37 @@
     {
       "catalogId": "seahawks-away-2012",
       "constructionKey": "away",
-      "revision": "233965d65f6702f9",
+      "revision": "b2ea4e3ee5485acc",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-away-2012.webp",
-          "sha256": "e1702e200013fef55a9f4f65bb52e8e6d95f924b054fab8218da00a7786dcd48"
+          "sha256": "bce11321f9a7b9ea7175fe577b2ab2dc122cb72df9e061aa75309b65b2b9fe1c"
         },
         "full": {
           "path": "/uniforms/seahawks-away-2012-full.webp",
-          "sha256": "2932a03b05f52542eb890a66de3c4aaa6906f56180f3e77a19c69c3c8a6470ae"
+          "sha256": "e239c98814a0564dc0716ede77a23bce70aa6f1e97fc3e8393c91a72514df6a9"
         }
       }
     },
     {
       "catalogId": "seahawks-home-2012",
       "constructionKey": "home",
-      "revision": "eae13d074463bbe8",
+      "revision": "4c892fa2f61cd292",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-home-2012.webp",
-          "sha256": "79eb6ff12d587687dbdbddbcd6167d90066fd376536f2365e5c5b380453523b5"
+          "sha256": "76fad55d1b366afc2e578b48e19faf565f9e50a21e1a856ab3e64f7af0b57b4c"
         },
         "full": {
           "path": "/uniforms/seahawks-home-2012-full.webp",
-          "sha256": "6ef58dea4aa79784e986814d6ff00e524c3b89e34b0cf13b649ad9085eb2f91d"
+          "sha256": "eafe68d4c801fd5065e36529cb0e6231c21396886b8683100684ea18736fbdf2"
         }
       }
     },
     {
       "catalogId": "seahawks-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "77f862ba7bb30af8",
+      "revision": "3b2a6e7176db5547",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-rivalries-2025-2025.webp",
@@ -1379,7 +1379,7 @@
         },
         "full": {
           "path": "/uniforms/seahawks-rivalries-2025-2025-full.webp",
-          "sha256": "1b1a8f48e05c3f5bb211b6e543764607ee44bb65f446ce5e674fc4f67e1e31e0"
+          "sha256": "ee1d72434b56833d0fcc0853dd23288463b81be6084ccf231962890a08a795a5"
         }
       }
     },
