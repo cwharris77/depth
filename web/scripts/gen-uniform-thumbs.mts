@@ -37,6 +37,7 @@ import {
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
 import {
   findUnrecordedConstructions,
+  findInvalidReferencePackets,
   findUnsourcedConstructions,
 } from '@/lib/uniforms/teams/provenance';
 import { findUnresolvedConstructions } from '@/lib/uniforms/teams/validate';
@@ -141,6 +142,13 @@ async function main() {
               `  - ${row.id}: add a record or an explicit UNSOURCED marker for "${row.constructionKey}"`
           )
           .join('\n')
+    );
+  }
+  const invalidPackets = findInvalidReferencePackets(rows);
+  if (invalidPackets.length > 0) {
+    throw new Error(
+      'curated rows have incomplete reference coverage:\n' +
+        invalidPackets.map(({ row, issues }) => `  - ${row.id}: ${issues.join('; ')}`).join('\n')
     );
   }
   // Unsourced constructions are allowed to ship — the backfill is tractable precisely because
