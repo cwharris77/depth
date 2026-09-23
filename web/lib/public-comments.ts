@@ -23,15 +23,20 @@ const forbiddenPatterns: Array<[string, RegExp]> = [
   ['ticket id', /\b(?:DEP|OB|SYM|AO|LLM|SCP)-\d+\b/i],
   [
     'private documentation path',
-    /(?:\.\.?\/)*obsidian\/Projects|Projects\/(?:depth|agent-ops|obsidian)\/(?:specs|Tickets|Reference)|\bthe vault\b/i,
+    /(?:\.\.?\/)*obsidian\/Projects|Projects\/(?:depth|agent-ops|obsidian)\/|\bobsidian\b|\bDecisions\.md\b|\bthe vault\b/i,
   ],
   [
     'agent policy reference',
     /\b(?:AGENTS|CLAUDE)\.md\b|web\/CLAUDE\.md|\b(?:agent-ready|capture-ticket|scope-ticket)\b/i,
   ],
+  ['private decision provenance', /\b(?:Cooper|Greptile|Claude Design|NN\/G)\b/i],
   [
-    'private decision provenance',
-    /\b(?:per Cooper|Cooper's|Greptile|Claude Design|NN\/G|Astra review|Luna review)\b/i,
+    'model or agent name',
+    /\b(?:Astra|Luna|Codex|ChatGPT|GPT-\d[\w.]*|Gemini|Sonnet|Opus|Haiku|Copilot)\b|\bClaude\b(?! Code)/,
+  ],
+  [
+    'legal or sourcing stance',
+    /\b(?:fair[- ]use|nominative|non-free|licen[cs](?:e|es|ed|ing)|copyright\w*|trademark\w*|public domain|legal (?:posture|stance|audit)|(?:not|never) traced|trace-then-stylize)\b/i,
   ],
   [
     'temporary planning history',
@@ -39,12 +44,27 @@ const forbiddenPatterns: Array<[string, RegExp]> = [
   ],
 ];
 
+// Markdown is checked line by line. Agent instruction files name each other by design, and the
+// attributions file is the one document allowed to carry third-party notices.
+const markdownExemptions: Record<string, ReadonlySet<string>> = {
+  '*': new Set(['agent policy reference']),
+  'ATTRIBUTIONS.md': new Set(['agent policy reference', 'legal or sourcing stance']),
+};
+
+// Private paths are rejected anywhere in a source file, not just in comments, so a string
+// literal cannot carry a vault reference either.
+const privatePathInSource = /\bobsidian[:/]|Projects\/depth\//i;
+
 function lineNumberAt(source: string, index: number): number {
   let line = 1;
   for (let cursor = 0; cursor < index; cursor += 1) {
     if (source[cursor] === '\n') line += 1;
   }
   return line;
+}
+
+export function isMarkdown(filename: string): boolean {
+  return path.extname(filename).toLowerCase() === '.md';
 }
 
 function lineCommentTokens(filename: string): string[] {
@@ -60,6 +80,9 @@ function isQuote(character: string): boolean {
 }
 
 export function extractComments(source: string, filename: string): SourceComment[] {
+  if (isMarkdown(filename)) {
+    return source.split('\n').map((text, index) => ({ line: index + 1, endLine: index + 1, text }));
+  }
   const comments: SourceComment[] = [];
   const tokens = lineCommentTokens(filename);
   let quote: string | null = null;
@@ -114,16 +137,37 @@ export function extractComments(source: string, filename: string): SourceComment
 }
 
 export function findForbiddenCommentReferences(
-  comments: SourceComment[]
+  comments: SourceComment[],
+  filename = ''
 ): ForbiddenCommentReference[] {
+  const exempt = isMarkdown(filename)
+    ? new Set([...markdownExemptions['*'], ...(markdownExemptions[path.basename(filename)] ?? [])])
+    : new Set<string>();
   return comments.flatMap((comment) =>
     forbiddenPatterns.flatMap(([pattern, expression]) => {
+      if (exempt.has(pattern)) return [];
       const match = comment.text.match(expression);
       return match
         ? [{ line: comment.line, endLine: comment.endLine, pattern, match: match[0] }]
         : [];
     })
   );
+}
+
+export function findPrivatePathsInSource(source: string): ForbiddenCommentReference[] {
+  return source.split('\n').flatMap((text, index) => {
+    const match = text.match(privatePathInSource);
+    return match
+      ? [
+          {
+            line: index + 1,
+            endLine: index + 1,
+            pattern: 'private documentation path',
+            match: match[0],
+          },
+        ]
+      : [];
+  });
 }
 
 export function parseChangedLineRanges(diff: string): ChangedLineRanges {
