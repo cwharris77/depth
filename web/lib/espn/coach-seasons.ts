@@ -1,5 +1,5 @@
 // Derives the current season's `team_coach_seasons` row from ESPN's live head coach
-// plus the team's own prior-season row (DEP-597).
+// plus the team's own prior-season row.
 //
 // Why this can't read ESPN's number: `teams.coach_experience` is ESPN's **career**
 // head-coaching seasons (prod has Mike McCarthy at 18 in his first year with the
@@ -10,7 +10,7 @@
 // instead, which makes the table self-sustaining: each season's row is computed from
 // the one before it.
 //
-// Mid-season coaching changes take the live value (DEP-597, decided 2026-09-18): the
+// Mid-season coaching changes take the live value: the
 // current season's row always reflects whoever ESPN lists today, so a week-6 firing
 // moves the row to the interim immediately. The curated 2023-25 rows instead credit
 // whoever coached the *majority* of that season's games, a judgment an ingest run can't

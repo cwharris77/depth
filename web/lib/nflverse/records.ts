@@ -1,9 +1,8 @@
 // Turns nflverse game rows into `team_stats` record upserts. Pure: no fetch, no DB,
 // same shape as its siblings in this folder (toScheduleAndGameRows, toTeamStatsRows).
 //
-// This is the DEP-146 re-own: W-L leaves ESPN's standings endpoint for nflverse's
-// game-row-level data (Decisions.md 2026-08-14, "one source owner per area" — nflverse
-// owns stats/history). The bug that forced it (DEP-200): ESPN's standings endpoint
+// W-L comes from nflverse's game-row-level data rather than ESPN's standings endpoint
+// (nflverse owns stats/history). The bug that forced it: ESPN's standings endpoint
 // aggregates whatever season type is currently live, so through August it reports
 // *preseason* games as the season record — observed 2026-08-21, every team carrying a
 // preseason W-L weeks before Week 1. A game row carries an explicit `game_type`, so
@@ -109,7 +108,7 @@ function chronologically(a: TeamGameView, b: TeamGameView): number {
  * (lib/utils/schedule/schedule.ts). An unplayed game never counts as a loss, but it does
  * still produce the (team, season) row: a scheduled-but-unstarted season is a real 0-0,
  * which is both what ESPN's regular-season standings return before Week 1 and what has to
- * be written to overwrite a stale preseason row left behind by the pre-DEP-146 ingest.
+ * be written to overwrite a stale preseason row left behind by the earlier ESPN ingest.
  * A preseason row contributes nothing and creates nothing.
  *
  * `alignments` is only needed for the division/conference splits. A team (or opponent)

@@ -2,8 +2,7 @@
 // bio abbreviation (the fallback path in lib/espn/positions.ts's BIO_POSITION) carries
 // no side/role info for a lineman, linebacker, or corner, so those fall back to the
 // generic code; nflverse's roster CSVs also still emit some of these directly. SS/FS/
-// NT/FB do have a distinguishable bio abbreviation, so those always resolve granular
-// (docs: 2026-08-04-full-espn-position-taxonomy-design.md).
+// NT/FB do have a distinguishable bio abbreviation, so those always resolve granular.
 export type Position =
   | 'QB'
   | 'RB'
@@ -98,7 +97,7 @@ export interface FormationSlot {
   // exact match on this first — a roster's real free safety fills the FS-labeled slot
   // even though nflverse's count-only data can only say "some safety goes here" — and
   // falls back to next-best-ranked group member only when no player carries the tag
-  // (DEP-148: indexing the group pool by raw depth rank ignored the label entirely,
+  // (indexing the group pool by raw depth rank ignored the label entirely,
   // so a real FS could land in the SS dot, or left/right corners could swap).
   preferredPosition?: Position;
   x: number;
@@ -106,7 +105,7 @@ export interface FormationSlot {
   label: string;
   // True if this slot lines up on the line of scrimmage. Offense must have exactly 7
   // on the line (5 OL + 2 eligible). A quick-fix base look for now; real per-team
-  // formations come later (see Future Ideas in the vault).
+  // formations come from nflverse participation data.
   onLine: boolean;
 }
 
@@ -144,7 +143,7 @@ export interface TeamColors {
   // through lib/utils/team-surfaces.ts. The columns stay populated so iOS builds already on
   // devices keep decoding (they name ui_accent/on_accent in their selects), their values are
   // frozen in lib/uniforms/legacy-accents.ts, and `JerseyColors` exists so a resolver cannot
-  // reach them by accident. onAccent still holds the pre-DEP-274 ground #0a0e1a, which is
+  // reach them by accident. onAccent still holds the earlier ground #0a0e1a, which is
   // exactly why a derived value never belonged in a jersey table.
   uiAccent: string;
   onAccent: string;
@@ -168,15 +167,12 @@ export interface Team {
   logoDark?: string;
 }
 
-// Season record + standings detail (Phase E stats page,
-// ../obsidian/Projects/depth/specs/2026-07-12-team-stats-page-design.md). Sourced from the same
-// ESPN standings fetch already used for conference/division (lib/espn/standings.ts
-// parseTeamStats) -- one call, more of the payload read. A team missing from the
-// standings response (bye-week gap, mid-season expansion) has no TeamStats rather than
-// a partially-filled one (invariant 6). `coach` is independently optional and
-// hand-curated (../obsidian/Projects/depth/specs/2026-07-14-season-scoped-head-coach-design.md,
-// `team_coach_seasons` table) -- unlike every other field here it did not come from
-// ESPN, since ESPN's roster endpoint doesn't vary `coach` by season.
+// Season record + standings detail for the stats page. Sourced from the same ESPN standings fetch
+// already used for conference/division (lib/espn/standings.ts parseTeamStats) -- one call, more of
+// the payload read. A team missing from the standings response (bye-week gap, mid-season expansion)
+// has no TeamStats rather than a partially-filled one (invariant 6). `coach` is independently
+// optional and hand-curated (the `team_coach_seasons` table) -- unlike every other field here it
+// did not come from ESPN, since ESPN's roster endpoint doesn't vary `coach` by season.
 export interface TeamStats {
   season: number;
   coach?: { name: string; experience: number };
@@ -201,7 +197,7 @@ export interface TeamStats {
   // lag behind ESPN team_stats, so a season can lack passing/rushing values.
   passingYards?: number;
   rushingYards?: number;
-  // Bounded nflverse evidence for DEP-312's Compare lenses. Raw counts remain
+  // Bounded nflverse evidence for the Compare lenses. Raw counts remain
   // available beside derived rates so every displayed value is auditable; the whole
   // object is absent when the season has no nflverse row.
   matchupMetrics?: TeamMatchupMetrics;
@@ -316,7 +312,7 @@ export interface RecentParticipation {
 // per team — only `home` is guaranteed; a team has whatever kits it actually wears.
 export type UniformKind = 'home' | 'away' | 'throwback' | 'color-rush' | 'alternate';
 
-// A named kit in a team's uniform archive (roadmap Phase 7). yearEnd null and isCurrent
+// A named kit in a team's uniform archive. yearEnd null and isCurrent
 // true identify the current kit; the database enforces that those states agree.
 export interface Uniform {
   id: string;
@@ -341,7 +337,7 @@ export interface TeamRoster {
   // The team's kits: synthesized Home first (from team.colors), then hand-curated
   // alternates/throwbacks. Default rendered kit is uniforms[0].
   uniforms: Uniform[];
-  // Where each athlete lines up, kept separate from who they are (DEP-585). Optional for
+  // Where each athlete lines up, kept separate from who they are. Optional for
   // the same reason as TeamRosterSeed's -- see seatsOf.
   depthChart?: DepthSeat[];
 }
@@ -353,7 +349,7 @@ export type TeamSeed = Omit<Team, 'conference' | 'division'>;
 // One seat on the depth chart: a position slot, its rank, and who fills it. Mirrors a
 // `depth_chart_entries` row.
 //
-// Identity and seat are separate concerns (DEP-585). `Player` carries exactly one row per
+// Identity and seat are separate concerns. `Player` carries exactly one row per
 // athlete; a seat says where that athlete lines up. An athlete can hold more than one --
 // ESPN cross-lists a swing tackle at LT2 and RT1 -- which `Player.position` alone cannot
 // express, and which is why formations used to come up a man short.
@@ -373,9 +369,8 @@ export interface TeamRosterSeed {
   depthChart?: DepthSeat[];
 }
 
-// One of every real formation a team ran that season, per unit (Phase E, nflverse
-// participation ingestion, ../obsidian/Projects/depth/specs/2026-07-07-phase-e-real-formations-
-// design.md; defense added, top-N cap lifted, DEP-141). For `unit: 'offense'`,
+// One of every real formation a team ran that season, per unit (nflverse participation
+// ingestion). For `unit: 'offense'`,
 // `alignment` is FTN's charted offense_formation ('SHOTGUN' | 'UNDER CENTER' | 'PISTOL')
 // and `personnel` the standard shorthand ({RB count}{TE count}, e.g. '11'), feeding
 // lib/utils/depth-chart/formations.ts's buildRealFormation. For `unit: 'defense'`, `alignment` is the
@@ -394,15 +389,14 @@ export interface TeamFormation {
   pct: number;
 }
 
-// One player's season stat line (nflverse ingestion, ../obsidian/Projects/depth/specs/2026-07-07-
-// nflverse-ingestion-and-player-stats-design.md). All stat columns nullable: the
+// One player's season stat line (nflverse ingestion). All stat columns nullable: the
 // display set is a subset of nflverse's full frame, and most columns don't apply to
 // every position (a WR row's passing_* fields are null). def_sacks is a fraction
 // (half-sacks are real), everything else is a whole count.
 export interface PlayerSeasonStats {
   season: number;
   seasonType: 'REG' | 'POST';
-  // The team that season/season_type is attributed to (nflverse's `recent_team`, DEP-202).
+  // The team that season/season_type is attributed to (nflverse's `recent_team`).
   // One team per row -- a mid-season trade isn't split; null when the source code didn't
   // resolve to a team, or on old rows written before this column existed. teamLogo is
   // ESPN-sourced (teams.logo_url) and can be null even when teamAbbrev resolved -- the
@@ -429,10 +423,9 @@ export interface PlayerSeasonStats {
   fgAtt: number | null;
 }
 
-// One game as stored/read from the `games` table (nflverse schedule ingestion,
-// ../obsidian/Projects/depth/specs/2026-07-17-team-schedule-design.md). A game is shared between
-// two teams — one row, both ids. Scores are null until the game is played (which is how
-// the read layer detects an upcoming game). Camel-cased mirror of the DB row.
+// One game as stored/read from the `games` table (nflverse schedule ingestion). A game is shared
+// between two teams — one row, both ids. Scores are null until the game is played (which is how the
+// read layer detects an upcoming game). Camel-cased mirror of the DB row.
 export interface Game {
   gameId: string;
   season: number;
@@ -484,10 +477,9 @@ export interface ScheduleOpponent {
   colors: TeamColors;
 }
 
-// One week on a team's schedule, from that team's perspective (design spec 5a's weekly
-// card grid). A bye week is `isBye: true` with a null opponent — the absence of a game
-// that week, derived, since nflverse has no bye row. `result` is null for an upcoming
-// (unplayed) game or a bye.
+// One week on a team's schedule, from that team's perspective (the weekly card grid). A bye week is
+// `isBye: true` with a null opponent — the absence of a game that week, derived, since nflverse has
+// no bye row. `result` is null for an upcoming (unplayed) game or a bye.
 export interface TeamScheduleGame {
   week: number;
   gameType: string;
@@ -506,7 +498,7 @@ export interface TeamSchedule {
   games: TeamScheduleGame[];
 }
 
-// Team production leaders for one season, shown on the stats page (design spec 5a).
+// Team production leaders for one season, shown on the stats page.
 // A single leader per category (passing/rushing/receiving); `line` is the preformatted
 // summary the UI renders verbatim (see lib/utils/roster/roster-leaders.ts). Any category can be null
 // — a team with no positive yardage in it (e.g. a defense-heavy sample) shows nothing,

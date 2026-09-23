@@ -1,4 +1,4 @@
-// Server Supabase client for auth (Phase C, auth pass 1). Reads/writes the session
+// Server Supabase client for auth. Reads/writes the session
 // cookies via next/headers so route handlers and server components can identify the
 // signed-in user and let RLS scope rows to them. Per the @supabase/ssr server-client
 // docs: https://supabase.com/docs/guides/auth/server-side/creating-a-client.

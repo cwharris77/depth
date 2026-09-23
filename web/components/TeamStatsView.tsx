@@ -1,8 +1,6 @@
 'use client';
 
-// Season-record view for the team stats page (../obsidian/Projects/depth/specs/2026-07-14-
-// multi-season-team-stats-design.md, season count extended by 2026-08-19-espn-full-
-// history-team-stats-design.md). A client component so the season switcher can hold
+// Season-record view for the team stats page. A client component so the season switcher can hold
 // local state; it receives one team's already-resolved data as a prop (invariant 5) —
 // `seasons` is still just this one team's rows (never a fan-out of all-32 data), but can
 // now be 20+ long after a full ESPN backfill, which is why the switcher is a bottom sheet
@@ -36,12 +34,12 @@ interface Props {
   // outcomes known) when its year is less than this. Used to suppress the playoff-status
   // line for seasons that haven't finished yet.
   currentSeason: number;
-  // Passing/rushing/receiving leaders per season (design spec 5a), one entry per
+  // Passing/rushing/receiving leaders per season, one entry per
   // `seasons` row at the same index. Null at an index when no player stats are
   // ingested for that season; the block is then omitted entirely. Re-derived per the
   // selected season tab, not pinned to the roster's newest season.
   leadersBySeason?: (RosterLeaders | null)[];
-  // The team's next unplayed game (design spec 5a's NEXT GAME card). Null in the
+  // The team's next unplayed game (the NEXT GAME card). Null in the
   // offseason / once the season is complete, in which case the card is omitted.
   nextGame?: TeamScheduleGame | null;
 }
@@ -50,8 +48,7 @@ function wl(wins: number, losses: number): string {
   return `${wins}-${losses}`;
 }
 
-// Coach treatment (design mock 1a — see the vault's `specs/` folder, Claude Design "Coach Treatment
-// Options"): a real type hierarchy — bigger name, accent-colored meta caption — instead of
+// Coach treatment: a real type hierarchy — bigger name, accent-colored meta caption — instead of
 // one flat 11px line.
 function CoachBadge({ name, meta, uiAccent }: { name: string; meta: string; uiAccent: string }) {
   return (
@@ -174,7 +171,7 @@ const METRIC_SECTIONS: { title: string; metrics: MetricSpec[] }[] = [
       // Labelled INTS THROWN, not INTERCEPTIONS: DEFENSE carries its own INTERCEPTIONS
       // row a few lines down meaning the opposite thing. Compare's catalog labels both
       // "INTERCEPTIONS" and gets away with it only because its unit lenses are never on
-      // screen together (Cooper, 2026-08-27).
+      // screen together.
       {
         label: 'INTS THROWN',
         value: (m) => m.passingInterceptions,
@@ -444,7 +441,7 @@ export default function TeamStatsView({
   const clampedIndex = Math.min(Math.max(index, minIndex), seasons.length - 1);
   const active = clampedIndex >= 0 ? seasons[clampedIndex] : null;
 
-  // Season sheet entries (2026-08-19-espn-full-history-team-stats-design.md): the chip
+  // Season sheet entries: the chip
   // row's newest-first ordering, now as sheet rows instead of horizontally-scrolling
   // buttons — a full ESPN backfill can put 20+ real seasons on this team, past what a
   // chip row scales to. Upcoming chip first (chronologically newest), then real seasons
@@ -496,8 +493,7 @@ export default function TeamStatsView({
     : upcomingSeasonHasRealRow && active?.season === upcomingSeason;
   const showNextGame = !!nextGame?.opponent && (isViewingCurrentSeason || isViewingUpcomingSeason);
 
-  // Coach badge — season-scoped, keyed off the active season row (the vault's
-  // `specs/2026-07-14-season-scoped-head-coach-design.md`). Derived once instead of four
+  // Coach badge — season-scoped, keyed off the active season row. Derived once instead of four
   // near-duplicate <CoachBadge> call sites that each recomputed the same name/meta pair
   // for a different index/incomingCoach combination.
   const coachBadge = active?.coach
@@ -564,7 +560,7 @@ export default function TeamStatsView({
 
         {/* Season picker trigger — a dropdown/sheet instead of the old horizontal chip
           row, which stopped scaling once a full ESPN backfill can put 20+ real seasons
-          on one team (2026-08-19-espn-full-history-team-stats-design.md). Same visual
+          on one team. Same visual
           language as the SCHEDULE tab's season picker trigger (History icon, label,
           chevron). */}
         <div
@@ -754,7 +750,7 @@ export default function TeamStatsView({
           />
         )}
 
-        {/* NEXT GAME card (design spec 5a). Only when viewing the current/upcoming season
+        {/* NEXT GAME card. Only when viewing the current/upcoming season
           tab (never a past season) and there's an unplayed game with a resolved
           opponent. */}
         {showNextGame && nextGame && nextGame.opponent && (

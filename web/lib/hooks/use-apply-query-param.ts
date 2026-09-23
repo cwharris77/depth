@@ -5,14 +5,14 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 // Shared "read a query param, apply it" pattern — used by ApplyKitFromQuery (?kit=) and
 // ApplySharedOrder (?order=), which were near-identical copies of this effect, plus
-// SyncSelectionFromQuery's `?season=` read (DEP-184). Two modes, chosen by `strip`:
+// SyncSelectionFromQuery's `?season=` read. Two modes, chosen by `strip`:
 //   - strip: true (default) — one-shot params. Apply once, then router.replace to a clean
 //     URL regardless of whether the value was valid, so a reload/reshare doesn't reapply
 //     it. `apply` is never called with null in this mode.
 //   - strip: false — persistent params (e.g. `?season=`, which stays shareable through
 //     reload/re-share). The param is left alone, and `apply(null)` fires when it's absent
 //     so a removal (Back/Forward, a manual edit) resets whatever state it drove.
-// `?player=`/`?unit=` still don't go through here — DEP-130 made that pair persistent
+// `?player=`/`?unit=` still don't go through here — that pair is persistent
 // *and* loop-guarded against this page's own writes, which this hook has no concept of.
 // Genuine effect, not a derived-render value: it performs an imperative navigation
 // (router.replace) on an external system (the router), which has no render-time
@@ -32,7 +32,7 @@ export function useApplyQueryParam(
   // common case; none of this hook's callers currently memoize it) would otherwise be
   // silently dropped from the effect's actual behavior even though the effect ran, since
   // the *old* closure is what fired. This makes the "apply is stable" assumption structural
-  // instead of documented-lucky (DEP-184 finding #2).
+  // instead of documented-lucky.
   const applyRef = useRef(apply);
   applyRef.current = apply;
 

@@ -4,10 +4,9 @@ import { useEffect } from 'react';
 import { useUser } from '@/lib/hooks/use-user';
 import { putSettings } from '@/lib/utils/auth/settings-client';
 
-// Records the team currently being viewed as the signed-in user's last-viewed team
-// (Phase C, auth pass 1), so the home route can reopen it. Persistence is account-gated:
-// signed out, this is a no-op — we store nothing about anonymous visitors, by design.
-// Renders nothing.
+// Records the team currently being viewed as the signed-in user's last-viewed team, so the home
+// route can reopen it. Persistence is account-gated: signed out, this is a no-op — we store nothing
+// about anonymous visitors, by design. Renders nothing.
 export default function RememberTeam({ id }: { id: string }) {
   const { user } = useUser();
   // Legitimate effect: this is a network write reacting to an external event (auth resolving

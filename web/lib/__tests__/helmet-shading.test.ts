@@ -48,11 +48,11 @@ describe('helmet art integrity', () => {
   });
 
   // Acceptance criterion 8 of the spec asks that helmet-art.ts be byte-identical to a fresh
-  // generator run. That check cannot be automated: scripts/uniform-draw/helmet_base.py takes
-  // Cooper's reference SVG as argv[1] and the reference is deliberately not committed (it
-  // carries the Seahawks mark). These assertions are the achievable half of the same intent —
-  // they pin the constants a hand-edit would most plausibly disturb, so the file cannot drift
-  // from its generator silently even though re-running it here is impossible.
+  // generator run. That check cannot be automated: scripts/uniform-draw/helmet_base.py takes the
+  // reference SVG as argv[1], which lives outside this repository. These assertions are the
+  // achievable half of the same intent — they pin the constants a hand-edit would most plausibly
+  // disturb, so the file cannot drift from its generator silently even though re-running it here is
+  // impossible.
   it('keeps the generated-file header that forbids hand-editing', () => {
     const source = readFileSync(join(process.cwd(), 'lib/uniforms/helmet-art.ts'), 'utf8');
 

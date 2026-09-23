@@ -1,7 +1,7 @@
 // Local-runtime contract test for the privileged adapter. It creates only random users
 // and user-owned rows, derives test JWTs from real local Auth sessions, and proves stale
-// authentication rejection, the password-grant path the App Review demo account uses
-// (DEP-562), and the Auth/database cascades after a fresh deletion.
+// authentication rejection, the password-grant path the App Review demo account uses,
+// and the Auth/database cascades after a fresh deletion.
 import assert from 'node:assert/strict';
 import { createHmac, randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';

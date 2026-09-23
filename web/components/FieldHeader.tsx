@@ -22,7 +22,7 @@ type Props = {
     // Phase D1: null = viewing today's live roster; a year = viewing that past season
     // read-only.
     season: { value: number | null; onOpen: () => void; onBackToToday: () => void };
-    // Real-formations entry (DEP-142/2a): the ••• menu row that opens FormationsSheet,
+    // Real-formations entry: the ••• menu row that opens FormationsSheet,
     // showing the current pick inline instead of a separate on-field control.
     formations: { meta: string; onOpen: () => void };
     share: { copied: boolean; onShare: () => void };
@@ -38,7 +38,7 @@ type Props = {
 // Header chrome above the field: team header + nav search, unit tabs, the "•••" overflow
 // menu (uniform/share/edit-mode), the custom-order reset chip, and the shared-board preview
 // banner. Pure presentational — all state lives in DepthChartField's hooks, threaded down
-// as cohesive prop bundles rather than flat props (DEP-179 slice 3).
+// as cohesive prop bundles rather than flat props.
 export default function FieldHeader({
   team,
   teams,
@@ -69,7 +69,7 @@ export default function FieldHeader({
       {/* On its own row, 20px below the header line: unit tabs as underline
         tabs (left) and the collapsed uniform/share "•••" menu (right) —
         visually distinct from the page switcher above so the two levels
-        don't read as duplicate controls (design spec 5a). */}
+        don't read as duplicate controls. */}
       <FieldHeaderMenu activeColors={activeColors} unit={unit} menu={menu} />
       {/* Tells the user this team's depth is their custom order, with one-tap revert.
         Hidden while previewing a shared board or viewing a past season — neither order
@@ -83,8 +83,7 @@ export default function FieldHeader({
           className="mt-3"
         />
       )}
-      {/* Read-only past-season indicator with a one-tap way back to today (Phase D1,
-        ../obsidian/Projects/depth/specs/2026-07-07-phase-d-history-and-boards-design.md). */}
+      {/* Read-only past-season indicator with a one-tap way back to today. */}
       {historicalMode && (
         <ActionChip
           icon={<History size={11} />}

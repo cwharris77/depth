@@ -13,14 +13,13 @@ export interface TeamStatsSeasonEntry {
   upcoming?: boolean;
 }
 
-// Season picker for the stats page (2026-08-19-espn-full-history-team-stats-design.md),
-// replacing the horizontal chip row once a team can have 20+ real seasons (full ESPN
-// backfill) instead of the prior 3-4. Same BottomSheet + row-list pattern as the
-// SCHEDULE tab's SeasonSheet (History icon, accent tint on the active row, trailing
-// check) for visual consistency, but driven by TeamStatsView's index-based entries
-// (which include the synthetic upcoming-season/incoming-coach chips) rather than
-// SeasonSheet's currentSeason/minSeason range generation -- different enough a shape
-// that forking beat bending SeasonSheet to fit two selection models.
+// Season picker for the stats page, replacing the horizontal chip row once a team can have 20+ real
+// seasons (full ESPN backfill) instead of the prior 3-4. Same BottomSheet + row-list pattern as the
+// SCHEDULE tab's SeasonSheet (History icon, accent tint on the active row, trailing check) for
+// visual consistency, but driven by TeamStatsView's index-based entries (which include the
+// synthetic upcoming-season/incoming-coach chips) rather than SeasonSheet's currentSeason/minSeason
+// range generation -- different enough a shape that forking beat bending SeasonSheet to fit two
+// selection models.
 export default function TeamStatsSeasonSheet({
   entries,
   activeIndex,

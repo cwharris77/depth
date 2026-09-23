@@ -6,14 +6,13 @@
 // still isn't enough -- the resolved ESPN id must also be in `knownPlayerIds`
 // (`players`, current-roster-scoped). A `--seasons` historic backfill passes
 // `requireCurrentRoster: false` to accept any crosswalk match regardless of `players`
-// membership (locked decision, vault spec
-// 2026-08-13-player-stats-historic-identity-design.md).
+// membership.
 //
 // `recent_team` (nflverse's own team code for that season/season_type, e.g. `LAR`) is
 // resolved to our team_id via the caller-supplied `resolveTeamCode` (same function
 // ingest-nflverse.mts already passes to toScheduleAndGameRows -- lib/nflverse/team-
 // codes.ts). An unresolvable or missing code degrades the row's team_id to null rather
-// than dropping the whole stats row (DEP-202; web/CLAUDE.md invariant 6) -- team is display
+// than dropping the whole stats row -- team is display
 // context here, not row identity.
 
 export interface PlayerStatsInsert {
@@ -39,7 +38,7 @@ export interface PlayerStatsInsert {
   def_interceptions: number | null;
   fg_made: number | null;
   fg_att: number | null;
-  // Same-source columns for positions the original frame dropped (DEP-538). Snap totals
+  // Same-source columns for positions the original frame dropped. Snap totals
   // are NOT here: they come from the separate snap_counts dataset and are merged onto the
   // row by scripts/ingest-nflverse.mts, so this transform never touches them.
   def_tackle_assists: number | null;
@@ -71,7 +70,7 @@ function toNullableNumber(value: string | undefined): number | null {
   return Number.isNaN(n) ? null : n;
 }
 
-// Exported as the source contract's required-column list (DEP-579): the header check
+// Exported as the source contract's required-column list: the header check
 // must require exactly the columns this transform reads, so a rename can't silently
 // become a null. Keep the two in lockstep.
 export const NUMERIC_COLUMNS = [

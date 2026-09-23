@@ -1,8 +1,7 @@
-// Generic Layer-1 transform for nflverse source tables (DEP-541, full-stat-surface
-// design). Unlike the curated transforms in this directory, it keeps EVERY source column
-// and never drops a row for a missing crosswalk match — the row lands with a null ESPN
-// `player_id`. That is the design's separation rule: a source's data is preserved intact
-// and identity is resolved once, in the canonical layer (never name-matched here).
+// Generic Layer-1 transform for nflverse source tables. Unlike the curated transforms in this
+// directory, it keeps EVERY source column and never drops a row for a missing crosswalk match — the
+// row lands with a null ESPN `player_id`. That is the design's separation rule: a source's data is
+// preserved intact and identity is resolved once, in the canonical layer (never name-matched here).
 import type { PlayerRawSpec, PlayRawSpec } from './raw-tables.generated';
 export type { PlayerRawSpec, PlayRawSpec, RawColumn, RawColumnType } from './raw-tables.generated';
 
@@ -90,7 +89,7 @@ export function toPlayerRawRows(
       season,
       // `seasonType` pins a source whose file labels season coverage rather than grain
       // (nflverse_player_season's REG / REG+POST / POST) to its table's declared grain,
-      // so a REG-filtered reader can't silently drop playoff players (DEP-558).
+      // so a REG-filtered reader can't silently drop playoff players.
       season_type: spec.seasonType ?? (row.season_type?.trim() || 'REG'),
     };
     if (spec.grain === 'week') {

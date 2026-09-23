@@ -829,8 +829,7 @@ struct DepthChartFieldLayout: Equatable {
     /// Earlier versions of this shipped a regression apiece, so the remaining logic here is
     /// deliberately narrow rather than a general solver:
     /// - Always pushing sideways knocked a running back charted dead-center behind the QB
-    ///   off to one side, breaking the "stacked behind the QB" read Cooper checks directly
-    ///   off the chart.
+    ///   off to one side, breaking the "stacked behind the QB" read.
     /// - Adding vertical clearance instead resolved that, but a slot squeezed
     ///   between two independent tag sources above and below it (an edge linebacker with a
     ///   DL dot below and a safety's tag above) has no y that clears both — pushing it

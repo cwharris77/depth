@@ -6,7 +6,7 @@ import Tooltip from './Tooltip';
 import { colors, typeScale, zIndex } from './tokens';
 
 type MenuItem = {
-  // Stable React reconciliation key (DEP-187): lets the menu reorder/remove items
+  // Stable React reconciliation key: lets the menu reorder/remove items
   // without index-keyed row identity breaking focus or the a11y tree. Falls back to
   // the label text when the caller supplies no id -- callers with dynamic labels can
   // pass an id to keep the row stable across label changes.
@@ -16,7 +16,7 @@ type MenuItem = {
   onClick: () => void;
   checked?: boolean;
   accent?: string;
-  // Renders a role="separator" row above this item (DEP-187). Dividers are item
+  // Renders a role="separator" row above this item. Dividers are item
   // metadata so they survive reorder/removal, replacing the old positional
   // borderTop-on-every-row styling that misbehaved when the first item was removed.
   divider?: boolean;
@@ -31,14 +31,14 @@ type MenuItem = {
   meta?: ReactNode;
 };
 
-// Anchored "•••" overflow menu: a trigger button toggling a right-aligned popover of
-// items, dismissed on outside-click, Escape, or item select. Menu-button semantics
-// (DEP-187): the popup carries role="menu", ArrowDown/ArrowUp move focus between items
-// (skipping disabled rows, wrapping), Home/End jump to first/last, and Escape or an item
-// selection restore focus to the trigger. Presentational — callers pass the trigger
-// glyph and item handlers. Used by the field's uniform/share overflow. An item with
-// `checked` set renders as a menuitemcheckbox (trailing filled dot when on) for on/off
-// actions like "Edit depth chart" that live in the menu instead of their own row.
+// Anchored "•••" overflow menu: a trigger button toggling a right-aligned popover of items,
+// dismissed on outside-click, Escape, or item select. Menu-button semantics follow the ARIA
+// pattern: the popup carries role="menu", ArrowDown/ArrowUp move focus between items (skipping
+// disabled rows, wrapping), Home/End jump to first/last, and Escape or an item selection restore
+// focus to the trigger. Presentational — callers pass the trigger glyph and item handlers. Used by
+// the field's uniform/share overflow. An item with `checked` set renders as a menuitemcheckbox
+// (trailing filled dot when on) for on/off actions like "Edit depth chart" that live in the menu
+// instead of their own row.
 export default function Menu({
   ariaLabel,
   trigger,
@@ -132,7 +132,7 @@ export default function Menu({
     if (item.disabled) return;
     setOpen(false);
     // Menu-button semantics: the trigger regains focus after a selection, whether it
-    // was made by mouse or keyboard (DEP-187).
+    // was made by mouse or keyboard.
     triggerRef.current?.focus();
     item.onClick();
   };
@@ -176,7 +176,7 @@ export default function Menu({
           }}>
           {items.map((item, i) => {
             // Stable reconciliation key: the caller's id when given, else the label
-            // text, and never the array index (DEP-187). `menu-item-${i}` is the
+            // text, and never the array index. `menu-item-${i}` is the
             // last-resort key for a non-string label that has no id -- callers that
             // reorder dynamically should pass an id instead.
             const key = item.id ?? (typeof item.label === 'string' ? item.label : `menu-item-${i}`);

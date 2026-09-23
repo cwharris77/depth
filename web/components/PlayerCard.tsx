@@ -23,7 +23,7 @@ import PlayerCardSeasonStats from '@/components/PlayerCardSeasonStats';
 import StatGrid from '@/components/ui/StatGrid';
 import { colors as uiTokens, typeScale, zIndex } from '@/components/ui/tokens';
 
-// DEP-201: the shared springSheet token (stiffness 360, damping 38 — components/ui/tokens.ts)
+// The shared springSheet token (stiffness 360, damping 38 — components/ui/tokens.ts)
 // is also used by BottomSheet, UniformSheet, FullScreenSheet, and IOSInstallHint. Lowering it
 // there would soften all of those too, which wasn't the ask and wasn't verified for them, so
 // PlayerCard's rise gets its own, gentler spring instead of mutating the shared token. Lower
@@ -36,7 +36,7 @@ interface PlayerCardProps {
   roster: TeamRoster;
   onClose: () => void;
   onSelectPlayer?: (player: Player) => void;
-  // Custom depth reordering (roadmap C). When onReorder is provided, the position-depth
+  // Custom depth reordering. When onReorder is provided, the position-depth
   // list gets a Reorder toggle that drag-sorts the players and reports the new id order.
   onReorder?: (position: Position, orderedIds: string[]) => void;
   onResetPosition?: (position: Position) => void;

@@ -1,7 +1,7 @@
 // Fetches ESPN rosters/depthcharts, coaches, and multi-season team stats for all 32
-// teams plus each season's preseason games (DEP-204), transforms them through the pure
+// teams plus each season's preseason games, transforms them through the pure
 // lib/espn/transform (+ standings, preseason) pipeline, and upserts into Postgres
-// (Supabase). Run by hand (or on a schedule -- see the vault's `Reference/espn.md`).
+// (Supabase). Run by hand or on a schedule.
 // Never part of `next build`.
 //
 // Usage: npm run ingest:espn
@@ -29,7 +29,7 @@ import {
 } from '@/lib/espn/transform';
 
 // The transform now emits depth-chart slots directly from ESPN's position keys, so one
-// athlete can hold a slot at more than one position (DEP-585). Carry them through
+// athlete can hold a slot at more than one position. Carry them through
 // alongside the roster rather than re-deriving them from players.position.
 type BuiltRoster = TeamRoster & { depthChartSlots: DepthChartSlot[] };
 import { buildSeedSql, type SeedEntry } from '@/lib/espn/seed-sql';
@@ -84,10 +84,9 @@ async function getJson<T>(url: string, attempts = 3): Promise<T> {
   throw lastError;
 }
 
-// A full --seasons backfill can be 20+ standings calls (2002-latest); firing them all
-// via one Promise.all hits ESPN's unofficial API with that many near-simultaneous
-// requests, risking throttling mid-backfill (2026-08-19-espn-full-history-team-stats-
-// design.md). Chunk into small concurrent batches instead -- still fast, far gentler.
+// A full --seasons backfill can be 20+ standings calls (2002-latest); firing them all via one
+// Promise.all hits ESPN's unofficial API with that many near-simultaneous requests, risking
+// throttling mid-backfill. Chunk into small concurrent batches instead -- still fast, far gentler.
 const STANDINGS_FETCH_CHUNK_SIZE = 4;
 async function fetchStandingsInChunks(seasons: number[]): Promise<EspnStandings[]> {
   const results: EspnStandings[] = [];
@@ -102,7 +101,7 @@ async function fetchStandingsInChunks(seasons: number[]): Promise<EspnStandings[
 }
 
 // ESPN's site roster and its depth chart are different slices that disagree: an athlete
-// can hold a starting slot on the chart and be absent from the roster (DEP-585). The
+// can hold a starting slot on the chart and be absent from the roster. The
 // transform can only name athletes the roster gave it, so those slots used to vanish --
 // the Chiefs lost Josh Simmons at LT1, and three other teams lost a rank-1 starter.
 //
@@ -164,8 +163,7 @@ async function main() {
   const standingsJson = await getJson<EspnStandings>(STANDINGS);
   const divisions = parseStandings(standingsJson);
 
-  // The fetch set (the vault's `specs/2026-07-14-multi-season-team-stats-design.md`,
-  // extended by 2026-08-19-espn-full-history-team-stats-design.md): the daily job
+  // The fetch set: the daily job
   // fetches current + last season by calendar; a `--seasons` backfill fetches exactly
   // the requested range. All in small chunks (never one giant Promise.all) and merged
   // into one ESPN-team-id -> TeamStats[] map.
@@ -203,7 +201,7 @@ async function main() {
   //
   // `diagnostics` are data-quality notes: ESPN listing an athlete on a depth chart it
   // does not place on that team, or one the transform still could not seat. They are
-  // recorded so a run can never look clean while dropping a player (DEP-585), but they
+  // recorded so a run can never look clean while dropping a player, but they
   // must not fail the run -- they describe ESPN disagreeing with itself, they persist
   // night after night, and nothing in this repo can resolve them. Conflating the two
   // turned a fully successful 32-team write into a red `partial` whose own message
@@ -325,7 +323,7 @@ async function main() {
 
   // After the team upserts so the (team_id) FK resolves for a team written this run.
   // A failure here is an error like a failed team write -- the row is what keeps the
-  // stats page from showing a first-year coach as INCOMING all season (DEP-597).
+  // stats page from showing a first-year coach as INCOMING all season.
   try {
     diagnostics.push(...(await writeCoachSeasons(supabase, currentSeason, coachByTeamId)));
   } catch (e) {
@@ -493,18 +491,17 @@ async function writeTeam(
   if (stError) throw new Error(`special_teams_slots upsert: ${stError.message}`);
 }
 
-// team_stats is one row per (team, season) -- multi-season stats page,
-// the vault's `specs/2026-07-14-multi-season-team-stats-design.md`. An empty array
+// team_stats is one row per (team, season) for the multi-season stats page. An empty array
 // means this team had no complete entry for any of the three fetched seasons this run
 // (bye-week gap, mid-season expansion) -- skip entirely; whatever rows already exist from
 // a prior run are left untouched. A single season missing from `stats` (but others
 // present) simply isn't in the array -- same skip, per-row instead of per-team.
 //
-// DEP-146 re-own (Decisions.md 2026-08-14): this writes ONLY `playoff_seed` now. Every
+// This writes ONLY `playoff_seed`. Every
 // W-L column moved to nflverse, computed REG-only from game rows
 // (lib/nflverse/records.ts), because ESPN's standings endpoint aggregates whatever season
 // type is currently live -- through August it reported *preseason* games as the season
-// record (DEP-200). Playoff seed has no nflverse equivalent, so it stays here.
+// record. Playoff seed has no nflverse equivalent, so it stays here.
 //
 // The narrow column list is load-bearing, not tidiness: PostgREST's on-conflict update
 // only touches columns present in the payload, so writing the record columns here would
@@ -530,7 +527,7 @@ async function writeTeamStats(
 }
 
 // The current season's `team_coach_seasons` row for every team ESPN gave us a coach for
-// (DEP-597). Before this, the table was populated once by a migration whose own header
+//. Before this, the table was populated once by a migration whose own header
 // admitted "This table does not self-update" -- so a first-year HC had no row for the
 // season being played, the stats page fell through to the INCOMING label, and it stayed
 // there all season (the 2026 Bills under Joe Brady).

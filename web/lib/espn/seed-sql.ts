@@ -14,7 +14,7 @@ import { insertStatement, type Val } from '@/lib/utils/seed-sql';
 import { tables } from '@/lib/supabase/tables';
 
 export interface SeedEntry {
-  // Carries `depthChartSlots` when built by the ESPN ingest (DEP-585): slots come
+  // Carries `depthChartSlots` when built by the ESPN ingest: slots come
   // straight from ESPN's position keys, so one athlete can hold slots at two positions.
   // Optional so a caller assembling a bare TeamRoster still works -- it then falls back
   // to re-deriving one slot per player, which cannot represent a cross-listed lineman.
@@ -98,8 +98,8 @@ export function buildSeedSql(entries: SeedEntry[]): string {
       });
     }
 
-    // playoff_seed only, mirroring writeTeamStats' narrowed live upsert after the DEP-146
-    // re-own -- the record columns are nflverse's now (buildTeamRecordsSeedSql).
+    // playoff_seed only, mirroring writeTeamStats' narrowed live upsert -- the record columns are
+    // nflverse's now (buildTeamRecordsSeedSql).
     for (const s of stats) {
       teamStats.push({
         team_id: team.id,

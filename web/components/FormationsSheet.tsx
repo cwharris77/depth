@@ -46,8 +46,8 @@ function groupedRows(unit: Unit, formations: TeamFormation[]): Row[] {
 
 // The Formations sheet (single-select list, opened from the ••• menu). Every real
 // formation the team ran that season for whichever unit is currently active on the field
-// (offense/defense tabs share this same component; special teams has no real data, see
-// DEP-141, so it shows an explanatory empty state instead of an empty list). The generic
+// (offense/defense tabs share this same component; special teams has no real data,
+// so it shows an explanatory empty state instead of an empty list). The generic
 // "Base" fallback (lib/utils/depth-chart/formations.ts) is used when a unit has no real-formation rows, but
 // it's never listed here as something to pick -- selection always defaults to the team's
 // top formation instead (see DepthChartField's topFormationFor).
@@ -104,8 +104,8 @@ export default function FormationsSheet({
               )
             )}
           </div>
-          {/* FTN charting is CC-BY-SA 4.0 -- attribution is the condition of listing
-              these rows at all (the vault's `Reference/nflverse.md`). Shared component, not a local
+          {/* FTN charting requires this attribution wherever these rows are listed.
+              Shared component, not a local
               string, so every surface that shows formation data says the same thing. */}
           <FTNAttribution className="pb-4 pt-1" />
         </>

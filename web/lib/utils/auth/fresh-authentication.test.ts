@@ -18,7 +18,7 @@ describe('hasFreshAuthentication', () => {
     ).toBe(true);
   });
 
-  // DEP-562: the App Review demo account signs in with a password grant, not an emailed OTP,
+  // The App Review demo account signs in with a password grant, not an emailed OTP,
   // so a recent password authentication must satisfy the same fresh-auth gate.
   it('accepts a password authentication within the ten-minute window', () => {
     expect(

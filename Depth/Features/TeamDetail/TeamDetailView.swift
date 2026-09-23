@@ -435,11 +435,11 @@ struct TeamDetailView: View {
         // 1C §3: while editing, the edit bar replaces the tab bar for the session. It is
         // drawn by RootTabView *over* the tab bar rather than by hiding the tab bar here:
         // `.toolbar(.hidden, for: .tabBar)` makes UIKit re-lay-out the whole tab page on its
-        // own animation, which SwiftUI cannot join. Measured at 60fps (1C review round 2),
+        // own animation, which SwiftUI cannot join. Measured at 60fps,
         // the page dropped ~50pt in one frame and then animated back up — a bounce no
         // transaction or inset arithmetic here could remove, because SwiftUI's own layout
         // never changed. Covering the tab bar leaves the page's layout untouched, so the
-        // field and the licence-mandated FTN attribution never move.
+        // field and the FTN attribution never move.
         //
         // The bottom inset is the tab bar's footprint (it is never hidden now), which is
         // exactly the region the edit bar has to cover.
@@ -533,8 +533,7 @@ struct TeamDetailView: View {
             onChange: { page = $0 },
             activeColor: teamFillColor,
             // Plain black/white against the fill rather than textOnFill's prefer-the-kit's-
-            // own-contrast-color rule (Cooper 2026-09-01: "the text can just be black or
-            // white, like the currently built app"), and always derived from that same fill.
+            // own-contrast-color rule, and always derived from that same fill.
             activeTextColor:
                 activeJerseyColors
                 .map { Color(hex: readableTextOn(TeamSurfaces.fill($0))) }
@@ -1140,8 +1139,8 @@ private struct RefreshFailedBanner: View {
     }
 }
 
-// Mirrors web/components/FTNAttribution.tsx — the CC-BY-SA 4.0 license-mandated attribution
-// for surfacing FTN formation data. Shared by the field footer and the
+// Mirrors web/components/FTNAttribution.tsx — the attribution shown wherever FTN formation
+// data is surfaced. Shared by the field footer and the
 // Formations sheet (web reuses one component across surfaces) so the string lives in one
 // place.
 private struct FTNAttributionText: View {

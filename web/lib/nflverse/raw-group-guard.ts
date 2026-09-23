@@ -1,4 +1,4 @@
-// The fetch-and-guard step of the ingest's Layer-1 raw loop (DEP-579), pulled out of
+// The fetch-and-guard step of the ingest's Layer-1 raw loop, pulled out of
 // scripts/ingest-nflverse.mts so the wiring itself is testable: fetch every file in a
 // (table, season) group, check the union of their headers against the source contract,
 // and turn a missing asset into a skip or a failure. The caller transforms and writes

@@ -3,16 +3,15 @@
 // used (AccountView.tsx, NavDrawer.tsx, PlayerCard.tsx, etc.) rather than newly chosen, so
 // primitives stay visually consistent with the rest of the app. Distinct from the brand
 // primary/secondary/accent and curated uiAccent/onAccent team colors in lib/utils/colors.ts — see
-// web/CLAUDE.md invariant 4; these are UI chrome only, never team-specific. Mirrors
+// these are UI chrome only, never team-specific. Mirrors
 // tokens/colors.css in the Depth Design System (claude.ai/design project df062d5f), which was
 // reverse-extracted from this same codebase — code here remains the ground truth.
 export const colors = {
-  // DEP-272: bg/accent and every navy-derived surface below used to resolve to the
+  // The bg/accent and every navy-derived surface below used to resolve to the
   // Seahawks' literal brand hexes (#0a0e1a was Seahawks onAccent, #69BE28 is Seahawks
   // uiAccent, and the old navy surfaces were Seahawks primary #002244) despite this
   // palette being documented as app-wide/never-team-specific. Replaced with a neutral
-  // charcoal + muted steel-blue pair (Cooper's pick, DEP-272) that isn't any of the 32
-  // teams' uiAccent — see the ticket for the contrast/collision evidence.
+  // charcoal + muted steel-blue pair that isn't any of the 32 teams' uiAccent.
   bg: '#15161a',
   bgFilterbar: '#181a20',
   bgDrawer: '#191b22',

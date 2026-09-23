@@ -122,8 +122,7 @@ export default function DepthChartField({
   });
 
   // A past season is read-only, same as previewing a shared board: no reorder
-  // affordances (locked decision, phase-d spec — editing history is a board, D2, not an
-  // overlay on a fact).
+  // affordances (editing history is a board, not an overlay on a fact).
   const readOnly = previewing || historicalMode;
 
   // One prop set for both card placements, so sheet and docked stay behaviorally

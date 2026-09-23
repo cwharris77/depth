@@ -1,4 +1,4 @@
-// Persists the user's selected uniform kit per team to localStorage (roadmap Phase 7).
+// Persists the user's selected uniform kit per team to localStorage.
 // Kit choice is ephemeral across page navigations because DepthChartField unmounts on
 // route change (ROSTER/STATS/SCHEDULE are separate routes, not client tabs). This module
 // mirrors the shape and pattern of lib/utils/depth-chart/depth-overrides.ts's STORAGE_KEY/Store pattern:

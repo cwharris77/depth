@@ -1,4 +1,4 @@
-// Custom depth-chart reordering (roadmap Phase C, v0). A user can reorder the players
+// Custom depth-chart reordering. A user can reorder the players
 // within a position; we persist that as an overlay — the chosen order of player ids per
 // position, per team — not a full roster copy. localStorage only for now (single device,
 // no accounts); a real backend comes with auth later. See [[Decisions]] (base+overlay).

@@ -2,7 +2,7 @@
 // verified JWT's authentication-method claim rather than issue time because token refresh
 // can mint a new JWT without proving recent control of the account. Both an emailed OTP and
 // a password grant count: each is a fresh proof of control the user just made, and the App
-// Review demo account (DEP-562) authenticates by password grant rather than a mailbox it
+// Review demo account authenticates by password grant rather than a mailbox it
 // cannot read. The recency window still applies to whichever method is present.
 const FRESH_AUTH_METHODS = new Set(['otp', 'password']);
 

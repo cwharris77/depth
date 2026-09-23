@@ -4,8 +4,7 @@ import type { RosterPosition } from './positions';
 // Historical rosters (nflverse's roster_<season>.csv) carry no real depth order, so
 // depth_rank is computed at ingest from that season's usage stats
 // (stats_player_reg_<season>.csv), joined by gsis_id. Usage score by position group is
-// the locked decision from ../obsidian/Projects/depth/specs/2026-07-07-phase-d-history-and-boards-
-// design.md: the best available proxy for who actually played, without needing a real
+// the best available proxy for who actually played, without needing a real
 // depth-chart feed for seasons nflverse never published one for. Pure -- no fetch, no DB.
 
 export interface UsageStatsRow {
@@ -76,7 +75,7 @@ export interface RankedEntry<T> {
 }
 
 // Ranks a group of same-team entries by usage (desc), ties broken by jersey number
-// (asc, locked decision). depthRank caps at 3; playerOrder keeps the full order.
+// (asc). depthRank caps at 3; playerOrder keeps the full order.
 // Offensive-line side comes from nflverse's historical depth-chart source before this
 // function runs. Generic OT/G fallback rows remain unseated rather than being assigned
 // an invented side. Entries must already be scoped to one team before calling this.

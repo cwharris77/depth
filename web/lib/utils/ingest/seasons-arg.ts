@@ -3,7 +3,7 @@
 // step, scripts/ingest-espn.mts's team_stats backfill) into an explicit season list.
 // Despite the file's nflverse-scoped name it's a plain CLI parser with no nflverse
 // dependency -- pure, no I/O, no env reads -- shared across pipelines rather than
-// duplicated (2026-08-19-espn-full-history-team-stats-design.md).
+// duplicated.
 
 // `--seasons 1999-2025` (a range) or `--seasons 2013` (one season). No flag -> null,
 // meaning "the daily job's default: whatever season is currently live".

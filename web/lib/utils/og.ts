@@ -19,7 +19,7 @@ export interface FeaturedStarter {
 // Apply a shared roster link's `?order=` param (lib/utils/depth-chart/share.ts) to a fetched roster before
 // computing OG card content, so the link preview reflects the sender's edited order
 // instead of always the default. A missing or malformed param degrades to the roster's
-// default order (web/CLAUDE.md invariant 6 — untrusted input never throws), matching how
+// default order (untrusted input never throws), matching how
 // components/ApplySharedOrder.tsx applies the same param client-side.
 export function rosterForOgImage(roster: TeamRoster, orderParam: string | null): TeamRoster {
   if (!orderParam) return roster;

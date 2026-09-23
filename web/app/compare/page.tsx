@@ -56,7 +56,7 @@ export async function generateMetadata({ searchParams }: Params): Promise<Metada
 // unconditionally once a/b are picked — never branched on `pos` — because the tab
 // switch is now client-side and both datasets must already be on hand. Only
 // per-position player arrays (never a whole roster) and a small teaser preview cross
-// to the client (web/CLAUDE.md invariant 5).
+// to the client.
 export default async function ComparePage({ searchParams }: Params) {
   const teams = await dbRosterSource.listTeams();
   const raw = await searchParams;

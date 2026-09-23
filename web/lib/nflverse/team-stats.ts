@@ -170,7 +170,7 @@ export function parseDistanceList(raw: string | undefined): number[] {
 // The nflverse source publishes the full 50+ bucket name (`fg_made_50_59`); the
 // `team_season_stats` column kept the legacy truncated name (`fg_made_50_`). The
 // transform must read the *source* name or the column silently lands null, so map it
-// here and let the source contract (DEP-579) require the same source name.
+// here and let the source contract require the same source name.
 const SOURCE_COLUMN_NAMES: Readonly<Record<string, string>> = {
   fg_made_50_: 'fg_made_50_59',
   fg_missed_50_: 'fg_missed_50_59',
@@ -181,7 +181,7 @@ export function teamStatsSourceColumn(column: string): string {
   return SOURCE_COLUMN_NAMES[column] ?? column;
 }
 
-// Exported as the source contract's required-column list (DEP-579): the header check
+// Exported as the source contract's required-column list: the header check
 // must require exactly the columns this transform reads, so a rename can't silently
 // become a null. Keep the two in lockstep.
 export const NUMERIC_COLUMNS = [

@@ -1,8 +1,6 @@
 'use client';
 
-// Two-team compare (roadmap 5d + reunification pass — vault
-// Projects/depth/specs/2026-07-07-compare-view-design.md and
-// 2026-07-28-compare-page-reunification-design.md). Replaces the old
+// Two-team compare. Replaces the old
 // TeamCompareTable.tsx + CompareTable.tsx pair, which each duplicated their own team
 // pickers and had become mutually exclusive on the same route (PR #221 made the
 // position-depth view unreachable from any entry point). One shared team-slot picker

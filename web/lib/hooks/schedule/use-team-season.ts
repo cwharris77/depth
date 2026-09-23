@@ -3,13 +3,11 @@
 import { useEffect, useState } from 'react';
 import type { TeamRoster } from '@/lib/types';
 
-// Client-side fetch for a past season's read-only roster (Phase D1,
-// ../obsidian/Projects/depth/specs/2026-07-07-phase-d-history-and-boards-design.md). `season`
+// Client-side fetch for a past season's read-only roster. `season`
 // null means "not viewing history" -- the hook stays idle. Aborted on team/season
 // change so a slow response for a since-abandoned selection can't clobber a newer one
 // (same posture as PlayerCard's stats fetch). `notFound` distinguishes "no data for
-// this season" from "still loading" so the caller never flashes stale content
-// (web/CLAUDE.md invariant 16).
+// this season" from "still loading" so the caller never flashes stale content.
 export function useTeamSeason(teamId: string, season: number | null, retry?: number) {
   const [roster, setRoster] = useState<TeamRoster | null>(null);
   const [loading, setLoading] = useState(false);

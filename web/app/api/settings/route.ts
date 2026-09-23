@@ -1,4 +1,4 @@
-// Per-user settings API (Phase C, auth pass 1). Reads/writes the signed-in user's
+// Per-user settings API. Reads/writes the signed-in user's
 // user_settings row (favorite + last-viewed team). RLS scopes every row to auth.uid(),
 // so these handlers never filter by user id themselves — the server client's session
 // does it. Signed out -> 401 (no anon persistence, by design: account-gated).

@@ -62,7 +62,7 @@ function positionGroup(position: Position): PositionGroup | undefined {
 
 function getPlayersByPositionGroup(roster: TeamRosterSeed, group: PositionGroup): Player[] {
   // Seats, not player rows: an athlete holding two seats belongs in the pool once per
-  // seat, tagged with that seat's position (DEP-585).
+  // seat, tagged with that seat's position.
   return playersInSeats(roster, (p) => positionGroup(p) === group);
 }
 
@@ -71,7 +71,7 @@ function getPlayersByPositionGroup(roster: TeamRosterSeed, group: PositionGroup)
 // roster's actual strong safety, not just whichever safety sorts first); every remaining
 // slot (no preference, or no player carries it) is filled in original slot order from
 // whatever's left of the depth-ordered pool — the same fallback semantics group-based
-// resolution always had (DEP-148).
+// resolution always had.
 function assignPositionGroup(pool: Player[], slots: FormationSlot[]): (Player | undefined)[] {
   const remaining = [...pool];
   const result: (Player | undefined)[] = new Array(slots.length).fill(undefined);
@@ -150,7 +150,7 @@ export const OFFENSE_FORMATION: FormationSlot[] = [
   // group: 'RB' + preferredPosition: 'RB' — prefers an exact RB tag (the common case: a
   // real halfback fills this dot) but falls back to the roster's best-ranked FB when the
   // team has no player tagged RB at all, so a true fullback isn't invisible on the
-  // fallback formation either (DEP-148). resolveUnit's FB relabel then reads this dot
+  // fallback formation either. resolveUnit's FB relabel then reads this dot
   // "FB" instead of "RB" whenever that fallback fires.
   {
     id: 'off-rb-0',
@@ -167,8 +167,7 @@ export const OFFENSE_FORMATION: FormationSlot[] = [
 
 // True 3-4 base: a 3-man front (LDE/NT/RDE) + 4 linebackers (WLB/LILB/RILB/SLB) = 7 in
 // the box, plus 2 corners and 2 safeties — matching what every sampled team's real ESPN
-// depth chart names "Base 3-4 D" (../obsidian/Projects/depth/specs/2026-08-04-full-espn-position-
-// taxonomy-design.md's Verified source facts). Formerly a 4-3-shaped DEFENSE_FORMATION
+// depth chart names "Base 3-4 D". Formerly a 4-3-shaped DEFENSE_FORMATION
 // (2 DE + 2 DT + 3 LB) that no team's real data actually described. onLine marks the DL
 // front.
 //
@@ -332,14 +331,13 @@ export function resolveUnit(
       : getPlayersByPosition(roster, slot.position)[slot.index];
     // An RB-group slot that actually resolved to a fullback reads as "FB", not "RB" —
     // the taxonomy pull this label distinction exists for otherwise never surfaces on
-    // the field (DEP-148).
+    // the field.
     const label = slot.group === 'RB' && player?.position === 'FB' ? 'FB' : slot.label;
     return { key: slot.id, x: slot.x, y: slot.y, label, onLine: slot.onLine, player };
   });
 }
 
-// --- Real per-team formations (Phase E, ../obsidian/Projects/depth/specs/2026-07-07-phase-e-
-// real-formations-design.md) -----------------------------------------------------
+// --- Real per-team formations -----------------------------------------------------
 //
 // A "real formation" is the pair (qbAlignment, personnelCode) nflverse participation
 // data reliably gives: qbAlignment is FTN's charted offense_formation, personnelCode is
@@ -505,7 +503,7 @@ export function buildRealFormation(alignment: string, code: string): FormationSl
 // data yields gets a reasonable layout, not just the handful of named fronts.
 
 const DEFENSE_PERSONNEL_CODE_RE = /^(\d+)-(\d+)-(\d+)$/;
-// DEP-432: 45, not the 49 this was authored at. Measured against 137 clean snaps of NFL
+// 45, not the 49 this was authored at. Measured against 137 clean snaps of NFL
 // tracking data, a defensive lineman aligns 1.3-1.4 yd off the ball with a very tight
 // spread (+/-0.5); 49 implied 0.26 yd, so the line was charted almost on top of the ball.
 // 45 lands it at 1.3 yd. This was the one charted depth the tracking data showed as
@@ -532,10 +530,9 @@ function spreadX(count: number, minX: number, maxX: number): number[] {
 // nose tackle vs a 4-3 end, or which linebacker is strong/weak/inside — so these slots
 // carry a generic `position` ('DE'/'DT'/'LB') plus `group` ('DL'/'LB'), and resolveUnit
 // fills them by broad group + index (getPlayersByPositionGroup) as a fallback. Where the
-// front shape is one the taxonomy spec verified as real (single-gap NT, an edge-rush
-// pair, or the true 3-4's LDE/NT/RDE — ../obsidian/Projects/depth/specs/2026-08-04-full-espn-
-// position-taxonomy-design.md), `preferredPosition` seats the exact-tagged player first,
-// same as DB_SLOTS/RB (DEP-148, PR #299) — Jarren Reid tagged NT shouldn't render on the
+// front shape is one verified as real (single-gap NT, an edge-rush pair, or the true
+// 3-4's LDE/NT/RDE), `preferredPosition` seats the exact-tagged player first,
+// same as DB_SLOTS/RB — Jarren Reid tagged NT shouldn't render on the
 // left edge just because he sorted first in the DL pool. Larger interior counts (4+ DL)
 // stay generic: which specific tackle plays which interior gap isn't a settled
 // convention the way DB nickel/dime seniority is, so guessing would just trade one wrong
@@ -602,7 +599,7 @@ function buildLbSlots(lb: number): FormationSlot[] {
 // match since nflverse's count can't say which specific corner or safety fills which
 // spot — but where the label names an exact granular tag (LCB/RCB/SS/FS/NB), that tag is
 // also the slot's `preferredPosition`, so resolveGroupedSlots seats the matching real
-// player there first instead of just the next-best-ranked group member (DEP-148).
+// player there first instead of just the next-best-ranked group member.
 const DB_SLOTS: {
   position: 'CB' | 'S';
   label: string;

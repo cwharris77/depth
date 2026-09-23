@@ -8,7 +8,7 @@ import SwiftUI
 //
 // Everything here is drawn at one scale on both axes (`TrueScaleFieldLayout.pointsPerYard`)
 // over a measured NFL field that runs edge to edge. The only chrome is a floating Liquid
-// Glass header (personnel, recentre, close) — no opaque bars (Cooper, 2026-09-16). The
+// Glass header (personnel, recentre, close) — no opaque bars. The
 // formation is wider than the phone, so the playfield pans on both axes inside a window
 // with a chip gutter each side: a receiver out of view becomes a tappable edge chip that
 // eases the field over to him and selects him. Selecting a dot opens a callout on a leader
@@ -153,7 +153,7 @@ struct TrueScaleFieldView: View {
 
     /// The formation is a real control, so it earns glass: "Shotgun 11 ▾" opens a menu of the
     /// unit's formations with their usage. With nothing to switch to it drops to a plain
-    /// label — a glass capsule that does nothing on tap reads as broken (Cooper, 2026-09-16).
+    /// label — a glass capsule that does nothing on tap reads as broken.
     @ViewBuilder
     private func formationControl(layout: TrueScaleFieldLayout) -> some View {
         if let formation, formations.count > 1 {

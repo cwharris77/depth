@@ -6,20 +6,18 @@ const nextConfig: NextConfig = {
   // cacheLife, replacing route-segment `revalidate`/`dynamic` exports. Adopted to fix
   // /team/[id] being forced fully dynamic by generateMetadata's searchParams read (the
   // `order` param for shared-link OG previews) — under Cache Components that read no
-  // longer taints the whole route, only the scope that touches it (the vault's
-  // `specs/` folder; see vault ticket "Depth field slow to load — general performance pass").
+  // longer taints the whole route, only the scope that touches it.
   cacheComponents: true,
   cacheLife: {
     // The daily ESPN/nflverse ingests (scripts/ingest-espn.mts, scripts/ingest-nflverse.mts,
-    // Noon/1pm PT) write straight to Postgres, decoupled from deploys (web/CLAUDE.md invariant
-    // 7) — matches the prior `revalidate = 21600` (6h) used across the team/stats/schedule
-    // pages. `expire` is new: how long a cache entry survives with zero traffic before the
-    // next request has to rebuild synchronously. 30 days comfortably covers an offseason
-    // lull between visits to a rarely-viewed team, well past the 6h staleness bound that
-    // actually matters day to day — a successful ingest run also POSTs to
-    // app/api/ingest/revalidate (2026-08-20-ingest-cache-revalidation-design.md) so fresh
-    // data doesn't have to wait out this window at all in the common case; `revalidate`/
-    // `expire` stay as the passive fallback if that call is skipped or fails.
+    // Noon/1pm PT) write straight to Postgres, decoupled from deploys — matches the prior
+    // `revalidate = 21600` (6h) used across the team/stats/schedule pages. `expire` is new: how
+    // long a cache entry survives with zero traffic before the next request has to rebuild
+    // synchronously. 30 days comfortably covers an offseason lull between visits to a rarely-viewed
+    // team, well past the 6h staleness bound that actually matters day to day — a successful ingest
+    // run also POSTs to app/api/ingest/revalidate so fresh data doesn't have to wait out this
+    // window at all in the common case; `revalidate`/ `expire` stay as the passive fallback if that
+    // call is skipped or fails.
     ingest: {
       stale: 300, // 5 minutes (client-side), matches the `default` profile
       revalidate: 21600, // 6 hours
@@ -29,10 +27,10 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        // DEP-406 transition safety net: uniform art now resolves origin-relative
+        // Transition safety net: uniform art now resolves origin-relative
         // (lib/uniforms/art.tsx), so this entry only covers the window while old
         // absolute image_path rows / stale caches still reference the generated
-        // alias. Remove once the DEP-406 migration is verified live. (next/image's
+        // alias. Remove once origin-relative art is verified live. (next/image's
         // optimizer 400s on any external hostname not allow-listed here, even the
         // app's own production domain — the iOS app fetches the raw URL directly
         // and was never affected.)
@@ -42,7 +40,7 @@ const nextConfig: NextConfig = {
       },
       {
         // Team logos (teams.logo_url / logo_dark_url, ESPN-sourced) -- distinct path
-        // from headshots below, same hostname (DEP-202 season-stats TM column).
+        // from headshots below, same hostname (season-stats TM column).
         protocol: 'https',
         hostname: 'a.espncdn.com',
         pathname: '/i/teamlogos/**',
@@ -59,10 +57,8 @@ const nextConfig: NextConfig = {
         pathname: '/i/headshots/**',
       },
       {
-        // Historical rosters' headshot_url (Phase D1, roster_history.headshot_url,
-        // nflverse's roster_<season>.csv) — every row observed 1999-2024 uses this
-        // path shape (../obsidian/Projects/depth/specs/2026-07-07-phase-d-history-and-boards-
-        // design.md).
+        // Historical rosters' headshot_url (roster_history.headshot_url, nflverse's
+        // roster_<season>.csv) — every row observed 1999-2024 uses this path shape.
         protocol: 'https',
         hostname: 'static.www.nfl.com',
         pathname: '/image/private/**',

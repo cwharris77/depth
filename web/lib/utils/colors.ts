@@ -5,7 +5,7 @@ import type { Conference, PlayerStatus, TeamColors } from '@/lib/types';
 export const DARK_BG = uiTokens.bg;
 
 // The NFL's own shield brand colors (brandcolorcode.com/nfl-national-football-league),
-// reused for the AFC/NFC conference picker. Unlike the app-wide `accent` token (DEP-272),
+// reused for the AFC/NFC conference picker. Unlike the app-wide `accent` token,
 // which had to stay neutral, this control's whole job is to distinguish the two
 // conferences, so the real broadcast/bracket-graphic red/blue is the right fit rather
 // than a neutral pick.

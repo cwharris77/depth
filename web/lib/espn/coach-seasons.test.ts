@@ -11,7 +11,7 @@ describe('coachSeasonExperience', () => {
   });
 
   it('starts a new hire at their 1st season with the team', () => {
-    // The real 2026 Bills case (DEP-597): Joe Brady replacing McDermott reads "1ST
+    // The real 2026 Bills case: Joe Brady replacing McDermott reads "1ST
     // SEASON", never McDermott's count and never ESPN's career number.
     expect(coachSeasonExperience('Joe Brady', row({}))).toBe(1);
   });

@@ -1,4 +1,4 @@
--- DEP-322: run with psql -v ON_ERROR_STOP=1 against local Supabase after migrations.
+-- Run with psql -v ON_ERROR_STOP=1 against local Supabase after migrations.
 -- Everything rolls back; role changes exercise real column grants and RLS.
 begin;
 create temporary table event_baseline as select count(*) as total from public.app_events;

@@ -2,10 +2,8 @@ import { NextResponse } from 'next/server';
 import { getTeamSeason } from '@/lib/roster-source.db';
 import { SEASONS_MIN } from '@/lib/nflverse/roster-history';
 
-// Backs SeasonSheet's read-only past-season view (Phase D1, ../obsidian/Projects/depth/specs/
-// 2026-07-07-phase-d-history-and-boards-design.md). 404s for an unknown team, a
-// malformed/out-of-range season, or a season with no ingested roster (never a guess,
-// web/CLAUDE.md invariant 6).
+// Backs SeasonSheet's read-only past-season view. 404s for an unknown team, a
+// malformed/out-of-range season, or a season with no ingested roster (never a guess).
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string; season: string }> }

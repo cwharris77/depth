@@ -55,7 +55,7 @@ struct PositionReorderSheet: View {
             // its own competing reorder and scroll behavior.
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-                    // The row's height is reserved unconditionally (Cooper, 1C review): the
+                    // The row's height is reserved unconditionally: the
                     // CUSTOM tag and Reset appear the moment a drag commits, and gating the
                     // whole row on `isCustom` pushed the list you were just dragging in
                     // down by its height mid-interaction. `Color.clear` at the Reset

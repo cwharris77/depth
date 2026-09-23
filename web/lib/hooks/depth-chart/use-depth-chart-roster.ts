@@ -43,7 +43,7 @@ export function useDepthChartRoster({
     [displayRoster, activeColors]
   );
   // Historical roster, re-skinned the same way. Kit selection stays live (colors are
-  // orthogonal to which season is showing, locked decision) but reorder overrides never
+  // orthogonal to which season is showing) but reorder overrides never
   // apply to it -- a past season is a fact, not something the user's live overlay edits.
   const themedHistoricalRoster = useMemo(
     () =>
@@ -54,7 +54,7 @@ export function useDepthChartRoster({
   );
   // While viewing history, the field renders ONLY the historical roster -- never falling
   // back to the live one mid-fetch, or a stale live frame would flash before the real
-  // season's data lands (web/CLAUDE.md invariant 16).
+  // season's data lands.
   const fieldRoster = historicalMode ? themedHistoricalRoster : themedRoster;
 
   const slots = fieldRoster ? resolveUnit(fieldRoster, activeUnit, realFormation) : [];

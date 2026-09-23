@@ -8,10 +8,10 @@ import { useUser } from '@/lib/hooks/use-user';
 import { colors as uiTokens, zIndex } from '@/components/ui/tokens';
 import CloseButton from '@/components/ui/CloseButton';
 
-// Left navigation drawer (nav IA — 2026-07-08-nav-drawer-design.md). Global, growing
+// Left navigation drawer. Global, growing
 // navigation lives here, opened from the header logo, so the team header isn't crowded and new
 // views (Phase E) have a home. The primary interaction (team switcher) stays in the header —
-// hidden nav is for secondary/global items only (NN/G research). Scrim tap + Esc + close button
+// hidden nav is for secondary/global items only. Scrim tap + Esc + close button
 // dismiss; focus is trapped while open and restored to the trigger on close; body scroll locks.
 
 function NavItem({
@@ -233,7 +233,7 @@ export default function NavDrawer({
           />
         </nav>
         {/* Account lives at the bottom — a link to the sign-in / settings page, not an
-            inline form. Signing in is opt-in (Phase C, auth pass 1). Bottom safe-area inset
+            inline form. Signing in is opt-in. Bottom safe-area inset
             keeps the sign-in button clear of the home indicator in standalone PWA mode, same
             max(env(...), fallback) pattern as the bottom safe-area fix (#87). */}
         <div

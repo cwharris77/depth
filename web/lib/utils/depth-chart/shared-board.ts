@@ -1,4 +1,4 @@
-// Shared-board resolution (Phase C, share pass). A /team/[id]?board=<slug> link is resolved
+// Shared-board resolution. A /team/[id]?board=<slug> link is resolved
 // by /api/shares/[slug] into this shape, then the banner decides what to do with it. The
 // decision is extracted here as a pure function so the four cases are testable without a DOM
 // or a network: it's the whole logic surface of components/SharedBoardBanner.

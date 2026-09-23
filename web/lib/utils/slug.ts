@@ -1,4 +1,4 @@
-// Public share-link handles (Phase C, share pass). A slug is the opaque, unguessable id in a
+// Public share-link handles. A slug is the opaque, unguessable id in a
 // /team/[id]?board=<slug> link -- 10 chars of [A-Za-z0-9] from a CSPRNG (62^10 ≈ 8.4e17 of
 // space, so collisions are not a practical concern and links are not enumerable). Pure and
 // dependency-free; the tiny modulo bias across 62 symbols is irrelevant for a random handle.

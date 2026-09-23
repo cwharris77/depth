@@ -9,7 +9,7 @@ type FilterPillProps = {
   onClick: () => void;
   children: ReactNode;
   // Overrides the active fill/text color. Pass a team's curated uiAccent/onAccent on a
-  // team-specific surface (web/CLAUDE.md invariant 4); omit for UI-chrome-only surfaces
+  // team-specific surface; omit for UI-chrome-only surfaces
   // (uniform archive, compare), which stay on the default green.
   accentColor?: string;
   onAccentColor?: string;

@@ -1,8 +1,8 @@
 // Pure scan logic for the iOS backend-compatibility guard
 // (scripts/check-ios-compatibility.mts). Extracted from the script so the
 // denylist — the load-bearing safety logic — is unit-tested against real and
-// adversarial migration shapes (web/CLAUDE.md invariant 11: published data must stay
-// decodable by every supported app build).
+// adversarial migration shapes (published data must stay decodable by every
+// supported app build).
 //
 // The guard is deliberately a conservative denylist, not a SQL parser. An unusual
 // but safe migration that trips it costs five minutes of annotation; a destructive

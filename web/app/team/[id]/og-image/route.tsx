@@ -6,8 +6,7 @@
 // shared roster link's `?order=` override (lib/utils/depth-chart/share.ts) could never reach the old
 // prerendered card. generateMetadata (../page.tsx) points openGraph/twitter images here,
 // forwarding `order` when the page itself was loaded with one. This trades the old
-// per-team static prerendering for a request-time render — accepted tradeoff, see
-// Projects/depth/Tickets/Shared edited roster previews the default.md.
+// per-team static prerendering for a request-time render — accepted tradeoff.
 import { ImageResponse } from 'next/og';
 import type { NextRequest } from 'next/server';
 import { dbRosterSource } from '@/lib/roster-source.db';

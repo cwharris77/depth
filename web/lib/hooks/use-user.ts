@@ -1,4 +1,4 @@
-// Auth-state hook (Phase C, auth pass 1). Exposes the signed-in user (or null) to client
+// Auth-state hook. Exposes the signed-in user (or null) to client
 // components and keeps it live via onAuthStateChange, so the sign-in UI and RememberTeam
 // react to sign in/out without a reload. `loading` distinguishes "not signed in" from
 // "haven't checked yet" so the UI doesn't flash the signed-out state on first paint.

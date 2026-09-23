@@ -42,8 +42,7 @@ export async function generateMetadata({
   // Request/query string before invoking that special file, so it could never see a
   // shared roster link's `?order=` override (lib/utils/depth-chart/share.ts). Forwarding `order` here, and
   // pointing openGraph/twitter at the route explicitly, is what makes the link preview
-  // honor an edited order instead of always the default (see
-  // Projects/depth/Tickets/Shared edited roster previews the default.md).
+  // honor an edited order instead of always the default.
   const { order } = await searchParams;
   const orderParam = typeof order === 'string' ? order : undefined;
   const ogImageUrl = orderParam

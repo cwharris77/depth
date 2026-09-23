@@ -3,18 +3,16 @@ import { mapRosterPosition, type RosterPosition } from './positions';
 import { rankByUsage, usageScore, type UsageEntry, type UsageStatsRow } from './depth-heuristic';
 
 // 1999 is where stats_player_reg_ starts -- the depth heuristic needs a stats file to
-// rank against, so earlier seasons are out of scope (locked decision, phase-d spec).
+// rank against, so earlier seasons are out of scope.
 // Shared by the ingest script (range validation) and the app (SeasonSheet's lower
 // bound, the history route's 404 range check).
 export const SEASONS_MIN = 1999;
 
-// Pure join of one season's roster_<season>.csv + stats_player_reg_<season>.csv into
-// roster_history upsert rows (../obsidian/Projects/depth/specs/2026-07-07-phase-d-history-and-
-// boards-design.md). No fetch, no DB -- scripts/ingest-nflverse-rosters.mts is the I/O
-// glue. A roster row missing gsis_id/full_name, whose team code doesn't resolve, or
-// whose position doesn't map is skipped and counted, never guessed (AGENTS.md
-// invariant 6). A player traded mid-season can appear more than once for the same team
-// in the raw CSV (e.g. a practice-squad elevation); the last occurrence wins, matching
+// Pure join of one season's roster_<season>.csv + stats_player_reg_<season>.csv into roster_history
+// upsert rows. No fetch, no DB -- scripts/ingest-nflverse-rosters.mts is the I/O glue. A roster row
+// missing gsis_id/full_name, whose team code doesn't resolve, or whose position doesn't map is
+// skipped and counted, never guessed. A player traded mid-season can appear more than once for the
+// same team in the raw CSV (e.g. a practice-squad elevation); the last occurrence wins, matching
 // roster_history's (season, team_id, gsis_id) primary key.
 //
 // `espn_id` comes from the roster CSV when present, else from the caller-supplied
@@ -115,7 +113,7 @@ export function toRosterHistoryRows(
       continue;
     }
     // A depth-chart position is authoritative only when it belongs to this exact
-    // team/player key. Generic OL tags cannot seat a field slot and pre-DEP-440 native
+    // team/player key. Generic OL tags cannot seat a field slot and older native
     // clients cannot decode them, so omit the row rather than publishing an invented
     // side or breaking an entire historical season.
     const sourcePosition = depthChartPositions.get(`${teamId}|${gsisId}`);

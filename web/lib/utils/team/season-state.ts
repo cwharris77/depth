@@ -6,7 +6,7 @@
 //   - iOS read side (the Swift twin, TeamStatsMapper.nflSeasonState)
 //   - every ingest script (scripts/ingest-espn.mts, and future sources)
 //
-// Why the calendar and not a source's label (2026-08-28, DEP-394): ESPN's
+// Why the calendar and not a source's label: ESPN's
 // `standings.season` label is what *lied* during the 2025→2026 rollover — it
 // vanished for a week (ingest wrote nothing, still reported success) and
 // mislabeled the 2025 standings placeholder, which got written as a playoff seed

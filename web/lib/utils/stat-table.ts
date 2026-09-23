@@ -1,5 +1,5 @@
 // Position -> season-stats *table* columns for the PlayerCard's SEASON STATS block
-// (design spec 5a: a columnar table, not a single inline line). Pure: given a position it
+// (a columnar table, not a single inline line). Pure: given a position it
 // returns the ordered columns to render (header + a value accessor + optional danger
 // flag); given one season's stats a column produces its formatted cell. `hasSeasonStats`
 // is the "show nothing, not zeros" gate (Decisions 2026-07-02) — a season with no games

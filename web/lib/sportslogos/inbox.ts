@@ -1,17 +1,11 @@
-// Formats and inserts uniform-unveiling notifications into the Obsidian vault's
-// System/Inbox.md, for scripts/check-uniform-releases.mts. Replaces the GitHub-issue
-// notification DEP-43 originally specified (reversed 2026-09-03 — see the vault's
-// Projects/depth/Decisions.md).
+// Formats and inserts uniform-unveiling notifications into an external notes inbox
+// (System/Inbox.md), for scripts/check-uniform-releases.mts.
 //
-// One inbox line per unveiling, not one per run: the vault's inbox-triage/capture-ticket
-// flow turns each line into its own ticket, and every ticket from the same run-month
-// carries the same suggested `theme:` epic name — so a month with six unveilings becomes
-// six cards under one Epic swimlane, while a month with one becomes a lone ticket with no
-// epic. The monitor never writes a ticket file itself: capture-ticket is the only
-// sanctioned creator (its canonical path needs the Obsidian app running, which a headless
-// cron job cannot assume).
+// One inbox line per unveiling, not one per run, and every line from the same run-month
+// carries the same suggested `theme:` name so related unveilings group together. The
+// monitor only appends inbox lines; it never creates any other file.
 //
-// Insertion is pure and heading-anchored so it can be unit-tested without a vault, and so
+// Insertion is pure and heading-anchored so it can be unit-tested without the notes, and so
 // a missing/renamed heading degrades to "no write" rather than corrupting the note.
 
 export type UnveilingNotice = {

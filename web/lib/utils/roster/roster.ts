@@ -22,7 +22,7 @@ export function byDepthOrder(a: Player, b: Player): number {
 //
 // The fallback is what keeps historical seasons working: roster_history has no
 // depth_chart_entries, so a 2001 roster derives its seats from Player.position and
-// Player.depthRank and behaves exactly as it did before seats existed (DEP-585).
+// Player.depthRank and behaves exactly as it did before seats existed.
 export function seatsOf(roster: TeamRosterSeed): DepthSeat[] {
   if (roster.depthChart) return roster.depthChart;
   return roster.players.map((p) => ({

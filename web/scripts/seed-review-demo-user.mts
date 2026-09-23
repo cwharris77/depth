@@ -1,4 +1,4 @@
-// Creates or resets the Apple App Review demo account (DEP-562). The app recognizes
+// Creates or resets the Apple App Review demo account. The app recognizes
 // REVIEW_DEMO_EMAIL in Depth/Features/Auth/DepthAuthService.swift and signs in with the
 // typed code used as this user's password instead of an emailed OTP — so the account must
 // exist with REVIEW_DEMO_CODE as its password. Idempotent: safe to re-run, and the way to
