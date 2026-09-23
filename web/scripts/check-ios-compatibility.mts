@@ -44,6 +44,7 @@ import {
   changedMigrationsFromNameStatus,
   compatibilityAnnotation,
   findDestructivePatterns,
+  stripSqlComments,
 } from '@/lib/supabase/migration-compat';
 
 // Layout note: this script lives in web/scripts/, so REPO_ROOT (its parent) is the web
@@ -97,7 +98,21 @@ function changedMigrationFiles(base: string, head: string): string[] {
     '-M',
     `${base}...${head || 'HEAD'}`,
   ]).trim();
-  return changedMigrationsFromNameStatus(status, MIGRATIONS_PREFIX);
+  return changedMigrationsFromNameStatus(status, MIGRATIONS_PREFIX).filter((file) => {
+    const diff = git([
+      'diff',
+      '--unified=0',
+      `${base}...${head || 'HEAD'}`,
+      '--',
+      `${MIGRATIONS_PREFIX}${file}`,
+    ]);
+    const changedLines = diff
+      .split('\n')
+      .filter((line) => /^[+-](?![+-])/.test(line))
+      .map((line) => line.slice(1))
+      .join('\n');
+    return stripSqlComments(changedLines).trim().length > 0;
+  });
 }
 
 function defaultBase(): string {
