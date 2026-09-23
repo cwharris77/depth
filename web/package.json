@@ -19,6 +19,7 @@
     "gen:rosters-seed": "SEED_OUT=supabase/seed-roster-history.sql tsx scripts/ingest-nflverse-rosters.mts",
     "check:uniform-releases": "tsx scripts/check-uniform-releases.mts",
     "check:ios-compat": "tsx scripts/check-ios-compatibility.mts",
+    "check:public-comments": "tsx scripts/check-public-comments.mts",
     "preview:bypass-url": "tsx scripts/vercel-preview-url.mts",
     "gen:uniform-seed": "tsx scripts/gen-uniform-seed.mts",
     "gen:uniform-thumbs": "tsx scripts/gen-uniform-thumbs.mts",

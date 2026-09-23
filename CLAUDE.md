@@ -103,11 +103,12 @@ Depth/
   `cornerRadius:`/`RoundedRectangle` literal that doesn't fit an existing step is a
   design-system decision (name a new step, don't invent an unnamed literal), same
   weight as web's "never invent a hex" rule.
-- **Comment density matches web's.** Every new type/file gets a header comment stating
-  its role and the constraint it satisfies; inline comments state *why*, cross-file
-  couplings ("mirrors web's X"), and ticket/spec provenance (`DEP-NNN`) — never line
-  narration. Existing files here (`DepthRepository.swift`, `DesignTokens.swift`,
-  `TeamStatsViewModel.swift`) are the reference density; match it, don't strip it.
+- **Public-source comments explain implementation, not internal process.** New types and
+  files may have a concise role comment; inline comments may explain concrete behavior,
+  constraints, API or library choices, workarounds, stable contracts, and cross-file
+  technical couplings. Do not include ticket IDs, vault/spec paths, agent instructions,
+  private product or design rationale, research/review provenance, or temporary planning
+  history. Put internal context in the Obsidian vault, not source comments.
 - **XcodeGen: `project.yml` is the source of truth, `Depth.xcodeproj` is generated
   but still committed.** After any `project.yml` change (new file, new target setting,
   new dependency), run `xcodegen generate` from the repo root and commit the regenerated
