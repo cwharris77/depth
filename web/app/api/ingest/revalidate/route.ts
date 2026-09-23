@@ -4,8 +4,8 @@ import { getIngestRevalidateSecret } from '@/lib/utils/env';
 
 // Server-to-server endpoint the two ingest workflows (ingest-espn.yml, ingest-nflverse.yml)
 // POST to as their last step on a successful run, so a fresh ingest doesn't wait out the
-// `ingest` cacheLife profile's 6h `revalidate` window before the deployed app reflects it
-// (2026-08-20-ingest-cache-revalidation-design.md). Every `'use cache'` read in
+// `ingest` cacheLife profile's 6h `revalidate` window before the deployed app reflects it.
+// Every `'use cache'` read in
 // lib/roster-source.db.ts that's sourced from ingest carries `cacheTag('ingest:espn')`
 // and/or `cacheTag('ingest:nflverse')` — this route just calls `revalidateTag` for
 // whichever tags the caller names, it has no opinion on which tags exist.

@@ -1,10 +1,9 @@
-// Best-effort POST to app/api/ingest/revalidate after a successful ingest run
-// (2026-08-20-ingest-cache-revalidation-design.md), so the deployed app doesn't wait out
-// the `ingest` cacheLife profile's 6h `revalidate` window before reflecting fresh data.
-// CI-only by design (decision, 2026-08-20): a local `npm run ingest:* -- --seasons ...`
-// run against prod has no APP_URL/INGEST_REVALIDATE_SECRET in `.env.local`, so this
-// silently no-ops there — same 6h-window behavior as before this feature, on purpose.
-// Never throws (invariant 7 — an ingest run's success must not hinge on this succeeding).
+// Best-effort POST to app/api/ingest/revalidate after a successful ingest run, so the deployed app
+// doesn't wait out the `ingest` cacheLife profile's 6h `revalidate` window before reflecting fresh
+// data. CI-only by design (decision, 2026-08-20): a local `npm run ingest:* -- --seasons ...` run
+// against prod has no APP_URL/INGEST_REVALIDATE_SECRET in `.env.local`, so this silently no-ops
+// there — same 6h-window behavior as before this feature, on purpose. Never throws (invariant 7 —
+// an ingest run's success must not hinge on this succeeding).
 export async function notifyRevalidate(
   tags: string[],
   opts?: { fetchImpl?: typeof fetch; timeoutMs?: number }

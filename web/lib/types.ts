@@ -2,8 +2,7 @@
 // bio abbreviation (the fallback path in lib/espn/positions.ts's BIO_POSITION) carries
 // no side/role info for a lineman, linebacker, or corner, so those fall back to the
 // generic code; nflverse's roster CSVs also still emit some of these directly. SS/FS/
-// NT/FB do have a distinguishable bio abbreviation, so those always resolve granular
-// (docs: 2026-08-04-full-espn-position-taxonomy-design.md).
+// NT/FB do have a distinguishable bio abbreviation, so those always resolve granular.
 export type Position =
   | 'QB'
   | 'RB'

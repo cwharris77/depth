@@ -8,7 +8,7 @@ import { useUser } from '@/lib/hooks/use-user';
 import { colors as uiTokens, zIndex } from '@/components/ui/tokens';
 import CloseButton from '@/components/ui/CloseButton';
 
-// Left navigation drawer (nav IA — 2026-07-08-nav-drawer-design.md). Global, growing
+// Left navigation drawer. Global, growing
 // navigation lives here, opened from the header logo, so the team header isn't crowded and new
 // views (Phase E) have a home. The primary interaction (team switcher) stays in the header —
 // hidden nav is for secondary/global items only. Scrim tap + Esc + close button

@@ -84,10 +84,9 @@ async function getJson<T>(url: string, attempts = 3): Promise<T> {
   throw lastError;
 }
 
-// A full --seasons backfill can be 20+ standings calls (2002-latest); firing them all
-// via one Promise.all hits ESPN's unofficial API with that many near-simultaneous
-// requests, risking throttling mid-backfill (2026-08-19-espn-full-history-team-stats-
-// design.md). Chunk into small concurrent batches instead -- still fast, far gentler.
+// A full --seasons backfill can be 20+ standings calls (2002-latest); firing them all via one
+// Promise.all hits ESPN's unofficial API with that many near-simultaneous requests, risking
+// throttling mid-backfill. Chunk into small concurrent batches instead -- still fast, far gentler.
 const STANDINGS_FETCH_CHUNK_SIZE = 4;
 async function fetchStandingsInChunks(seasons: number[]): Promise<EspnStandings[]> {
   const results: EspnStandings[] = [];

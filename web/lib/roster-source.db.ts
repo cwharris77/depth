@@ -811,7 +811,7 @@ const TEAM_STATS_PAGE_TEAM_SELECT = `${TEAM_SELECT}, coach_name, coach_experienc
 
 // League-wide rank queries (team_stats/team_season_stats, all 32 teams × every season,
 // unscoped by team_id) can cross PostgREST's default 1000-row cap once historic seasons
-// are backfilled (2026-08-19-espn-full-history-team-stats-design.md) -- a plain unbounded
+// are backfilled -- a plain unbounded
 // select would then silently truncate to a subset of teams/seasons and produce wrong
 // ranks with no error. Page through with .range() instead so the full set always loads
 // regardless of the project's max-rows setting.

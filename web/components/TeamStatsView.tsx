@@ -441,7 +441,7 @@ export default function TeamStatsView({
   const clampedIndex = Math.min(Math.max(index, minIndex), seasons.length - 1);
   const active = clampedIndex >= 0 ? seasons[clampedIndex] : null;
 
-  // Season sheet entries (2026-08-19-espn-full-history-team-stats-design.md): the chip
+  // Season sheet entries: the chip
   // row's newest-first ordering, now as sheet rows instead of horizontally-scrolling
   // buttons — a full ESPN backfill can put 20+ real seasons on this team, past what a
   // chip row scales to. Upcoming chip first (chronologically newest), then real seasons
@@ -560,7 +560,7 @@ export default function TeamStatsView({
 
         {/* Season picker trigger — a dropdown/sheet instead of the old horizontal chip
           row, which stopped scaling once a full ESPN backfill can put 20+ real seasons
-          on one team (2026-08-19-espn-full-history-team-stats-design.md). Same visual
+          on one team. Same visual
           language as the SCHEDULE tab's season picker trigger (History icon, label,
           chevron). */}
         <div

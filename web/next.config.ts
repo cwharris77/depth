@@ -15,9 +15,9 @@ const nextConfig: NextConfig = {
     // long a cache entry survives with zero traffic before the next request has to rebuild
     // synchronously. 30 days comfortably covers an offseason lull between visits to a rarely-viewed
     // team, well past the 6h staleness bound that actually matters day to day — a successful ingest
-    // run also POSTs to app/api/ingest/revalidate (2026-08-20-ingest-cache-revalidation-design.md)
-    // so fresh data doesn't have to wait out this window at all in the common case; `revalidate`/
-    // `expire` stay as the passive fallback if that call is skipped or fails.
+    // run also POSTs to app/api/ingest/revalidate so fresh data doesn't have to wait out this
+    // window at all in the common case; `revalidate`/ `expire` stay as the passive fallback if that
+    // call is skipped or fails.
     ingest: {
       stale: 300, // 5 minutes (client-side), matches the `default` profile
       revalidate: 21600, // 6 hours
