@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import UniformArchive from '@/components/UniformArchive';
 import type { UniformListing } from '@/lib/roster-source';
-import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
+import type { TeamUniformDefinition } from '@/lib/uniforms/teams/core/types';
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/uniforms',

@@ -1,5 +1,5 @@
 import type { TeamColors } from '@/lib/types';
-import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
+import type { TeamUniformDefinition } from '@/lib/uniforms/teams/core/types';
 import UniformFigure from './UniformFigure';
 
 // Back-compat wrapper: the picker (components/UniformSheet.tsx) renders this. It is now

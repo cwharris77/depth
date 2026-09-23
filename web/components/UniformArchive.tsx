@@ -17,7 +17,7 @@ import TeamPageShell from './TeamPageShell';
 import FilterPill from './ui/FilterPill';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import { useLastAccent } from '@/lib/hooks/use-last-accent';
-import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
+import type { TeamUniformDefinition } from '@/lib/uniforms/teams/core/types';
 
 // The uniform archive (roadmap Phase 7). Receives every kit from the server route and
 // filters/groups client-side with the pure helpers in lib/uniforms/filter. State-only — no

@@ -39,8 +39,8 @@ import {
   findUnrecordedConstructions,
   findInvalidReferencePackets,
   findUnsourcedConstructions,
-} from '@/lib/uniforms/teams/provenance';
-import { findUnresolvedConstructions } from '@/lib/uniforms/teams/validate';
+} from '@/lib/uniforms/teams/core/provenance';
+import { findUnresolvedConstructions } from '@/lib/uniforms/teams/core/validate';
 import type { JerseyColors } from '@/lib/types';
 import { assertRasterToolchain } from './uniform-draw/toolchain-preflight.mts';
 

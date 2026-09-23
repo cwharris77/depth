@@ -4,7 +4,7 @@ import { typeScale, colors as uiTokens } from '@/components/ui/tokens';
 import type { TeamMeta } from '@/lib/roster-source';
 import { unitForPosition } from '@/lib/utils/search/search';
 import type { Player, PlayerSeasonStats, TeamFormation, TeamRoster } from '@/lib/types';
-import type { TeamUniformDefinition } from '@/lib/uniforms/teams/types';
+import type { TeamUniformDefinition } from '@/lib/uniforms/teams/core/types';
 import { useDepthChartCommands } from '@/lib/hooks/depth-chart/use-depth-chart-commands';
 import { useDepthChartRoster } from '@/lib/hooks/depth-chart/use-depth-chart-roster';
 import { useDepthChartSeason } from '@/lib/hooks/depth-chart/use-depth-chart-season';

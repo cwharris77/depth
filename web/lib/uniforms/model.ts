@@ -7,8 +7,8 @@ import type {
   UniformStyle,
   UniformStyleOverride,
   PatternDef,
-} from '@/lib/uniforms/teams/types';
-import { GENERIC_COLLAR_PATH } from './teams/shared';
+} from '@/lib/uniforms/teams/core/types';
+import { GENERIC_COLLAR_PATH } from './teams/core/shared';
 
 // Resolves generic, team, and kit uniform construction data into paint-ready SVG values. The
 // fallback is deliberately complete so incomplete or unknown team data can never break a render.
