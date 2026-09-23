@@ -13,8 +13,8 @@ protocol DepthOverrideWriting: Sendable {
 
 protocol DepthOverrideServicing: DepthOverrideWriting {
     func load(teamId: String) async throws -> [Position: [String]]
-    /// Every team the signed-in user has a server-side override for (DEP-219's
-    /// sign-in merge — mirrors web's unfiltered `GET /api/overrides`).
+    /// Every team the signed-in user has a server-side override for after sign-in — mirrors
+    /// web's unfiltered `GET /api/overrides`.
     func loadAll() async throws -> [String: [Position: [String]]]
 }
 
@@ -70,9 +70,9 @@ actor SupabaseDepthOverrideService: DepthOverrideServicing {
         }
 
         do {
-            // No team_id filter — RLS already scopes rows to auth.uid() (AGENTS.md
-            // invariant 10), so this is every team the signed-in user has an override
-            // for, same as web's unfiltered GET /api/overrides.
+            // No team_id filter is needed: RLS scopes rows to auth.uid(), so this returns
+            // every team the signed-in user has an override for, like web's unfiltered
+            // GET /api/overrides.
             let rows: [Row] = try await client.from("depth_overrides")
                 .select("team_id, position, player_ids")
                 .execute().value
@@ -151,7 +151,7 @@ actor SupabaseDepthOverrideService: DepthOverrideServicing {
     }
 }
 
-// DEP-219: literal port of web's `pushTeamOverride` (web/lib/utils/depth-chart/overrides-sync.ts)
+// Literal port of web's `pushTeamOverride` (web/lib/utils/depth-chart/overrides-sync.ts)
 // — every write hits the local cache first (always succeeds, no network dependency), then
 // mirrors to the server when signed in as fire-and-forget: a dropped request isn't
 // surfaced to the editor UI as a failure, matching web's catch-and-ignore. `remote: nil`
@@ -185,7 +185,7 @@ func applyingDepthOverrides(
     var playersById = Dictionary(uniqueKeysWithValues: snapshot.players.map { ($0.id, $0) })
 
     // The position's pool comes from its seats, not from filtering players by their single
-    // canonical position (DEP-585). The Chiefs list Kahlil Benson at LT2 and RT1: filtering
+    // canonical position. A player can occupy multiple seats, so filtering
     // found only the one athlete canonically tagged RT, so reordering RT moved the wrong
     // list and the profile's ladder read "No backups available" behind him.
     let sourceRoster = Roster(
@@ -236,7 +236,7 @@ func applyingDepthOverrides(
         formations: snapshot.formations,
         // Carried through explicitly: rebuilding a TeamSnapshot without this silently drops
         // every seat, so any saved custom order reverted the whole field to seating players
-        // by their canonical position — the exact bug this ticket fixed.
+        // by their canonical position and lose the saved custom order.
         depthChart: snapshot.depthChart == nil ? nil : seats
     )
 }
@@ -246,7 +246,7 @@ func applyingDepthOverrides(
 // flip everything else to starter at rank 1 / backup at rank 2+, and cap depthRank at 3.
 // Mirrors the whole-player rebuild web does — `Player` is value-typed, so changing rank
 // means reconstructing with every field carried through (a partial rebuild silently drops
-// college/bio/vitals/status, which is what DEP-226's reorder UI surfaced).
+// college/bio/vitals/status).
 func rerankedPlayers(_ players: [Player]) -> [Player] {
     players.enumerated().map { index, player in
         Player(

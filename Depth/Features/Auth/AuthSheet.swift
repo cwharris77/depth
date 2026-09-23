@@ -2,10 +2,10 @@ import SwiftUI
 
 // Native email OTP sheet for every private-feature entry point. It never replaces the
 // public navigation stack; dismissal returns the user to the content they were browsing.
-// Card-based surface (DEP-257 design pass), matching AccountDeletionSheet's ScrollView +
+// Card-based surface matching AccountDeletionSheet's ScrollView +
 // depthCard() treatment rather than a stock Form — the two sheets in the account flow now
 // share one visual system. A boxed OtpCodeField (matching web's OtpInput) replaces the bare
-// numeric TextField, and a success step (matching web's DEP-75 "You're signed in"
+// numeric TextField, and a success step (matching web's "You're signed in"
 // confirmation) replaces the old silent dismiss-on-verify.
 struct AuthSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -75,14 +75,14 @@ struct AuthSheet: View {
                         .strokeBorder(DesignTokens.Colors.borderInput, lineWidth: 1)
                 )
                 .accessibilityIdentifier("auth-email")
-                // DEP-395: route taps in the drawn padding to the actual text field,
-                // matching DepthSearchField without changing the field's layout.
+                // Route taps in the drawn padding to the actual text field, matching
+                // DepthSearchField without changing the field's layout.
                 .contentShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
                 .onTapGesture { emailFocused = true }
 
-            // DEP-308: shown before submission and built from AppBuildInfo's canonical
-            // public origin. Markdown preserves two independently tappable, VoiceOver-
-            // discoverable links while keeping the approved sentence intact.
+            // Shown before submission and built from AppBuildInfo's canonical public origin.
+            // Markdown preserves two independently tappable, VoiceOver-discoverable links
+            // while keeping the legal disclosure as one attributed sentence.
             if let terms = AppBuildInfo.termsOfServiceURL,
                 let privacy = AppBuildInfo.privacyPolicyURL,
                 let disclosure = try? AttributedString(
@@ -97,9 +97,9 @@ struct AuthSheet: View {
                     .accessibilityIdentifier("auth-legal-disclosure")
             }
 
-            // DEP-598: the resend cooldown is email-wide, so it also blocks the first
-            // send after "Use a different email". Show it here the way the code step
-            // does instead of leaving a live-looking button that sendCode() will refuse.
+            // The resend cooldown is email-wide, so it also blocks the first send after
+            // "Use a different email". Show it here the way the code step does instead of
+            // leaving a live-looking button that sendCode() will refuse.
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 let wait = viewModel.resendWait(at: context.date)
                 Button {

@@ -2,7 +2,7 @@ import SwiftUI
 import UIKit
 
 // A glyph run drawn with a fill *and* a contrasting outline, for the player-card jersey
-// numeral (2026-09-01 team-color-surface spec, direction 3).
+// numeral.
 //
 // This exists because SwiftUI cannot do it. There is no text-stroke modifier, and
 // `Text(AttributedString)` silently drops `strokeColor`/`strokeWidth` — those live in the
@@ -20,7 +20,7 @@ import UIKit
 //   drawn straight THROUGH the glyph, chopping it into nine tiles. No stroke width fixes
 //   it; a thinner one just draws thinner lines through the middle. This was the original
 //   "the outline goes through the hashtag" bug, and it survived two attempts to fix it by
-//   changing weight (Cooper, 2026-09-02).
+//   changing weight.
 //
 // Drawing the outline behind the fill fixes it for any glyph, however its path is built:
 // the interior crossings are painted over by the fill, so only the outer silhouette is

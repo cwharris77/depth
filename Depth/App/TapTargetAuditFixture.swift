@@ -1,7 +1,7 @@
 #if targetEnvironment(simulator)
     import SwiftUI
 
-    // DEP-395: opt-in simulator fixture for the real deletion sheet's code-entry state.
+    // Opt-in simulator fixture for the real deletion sheet's code-entry state.
     // No account, OTP email, or hosted write is needed to test the field's hit area.
     // Excluded from device builds; reached only with UI_TESTING_DELETE_TAP_TARGET.
     struct TapTargetAuditFixture: View {

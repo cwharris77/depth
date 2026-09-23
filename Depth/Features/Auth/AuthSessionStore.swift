@@ -26,8 +26,8 @@ final class AuthSessionStore {
     ///
     /// Anything that must know whether there *is* a signed-in user has to await this
     /// first: `user` is nil for the whole restore window, so reading it early reports a
-    /// signed-in launch as signed out (which is what would silently drop DEP-319's
-    /// favorite tier on every launch). That is also why the caller's `isSignedIn` check
+    /// signed-in launch as signed out, which could silently drop the favorite tier on every
+    /// launch. That is also why the caller's `isSignedIn` check
     /// cannot simply be hoisted above the wait to skip it when signed out — "signed out"
     /// is not knowable until this returns.
     ///

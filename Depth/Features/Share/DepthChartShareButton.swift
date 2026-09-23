@@ -1,6 +1,6 @@
 import SwiftUI
 
-// Local image/text sharing (design spec locked decision #10 and Milestone 2B item 25):
+// Local image/text sharing:
 // renders `ShareCardView` off-screen with `ImageRenderer` and hands the result to the
 // native share sheet via `ShareLink`. No public link, URL, or backend write — everything
 // here is synchronous and derived only from the already-loaded live snapshot. A renderer
@@ -23,7 +23,7 @@ struct DepthChartShareButton: View {
         guard let itemUIImage = itemRenderer.uiImage else { return nil }
         let item = Image(uiImage: itemUIImage)
 
-        // DEP-296: the activity sheet crops its preview thumbnail independently of the
+        // The activity sheet crops its preview thumbnail independently of the
         // transferred image. Give that thumbnail a square, padded composition while the
         // actual shared item stays the original 600×315 card.
         let previewRenderer = ImageRenderer(
@@ -40,7 +40,7 @@ struct DepthChartShareButton: View {
     var body: some View {
         if let images = renderedImages {
             // `preview:` only drives the share sheet's own preview UI — it is not
-            // transferred to the chosen destination (Greptile review on depth#367).
+            // transferred to the chosen destination.
             // `subject`/`message` are the actual accompanying text some destinations
             // (Mail, Messages) attach alongside the image.
             ShareLink(

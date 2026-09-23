@@ -170,7 +170,8 @@ enum TeamStatsMetricCatalog {
                 // Labelled INTS THROWN, not INTERCEPTIONS: DEFENSE carries its own
                 // INTERCEPTIONS row two groups down meaning the opposite thing. Compare's
                 // catalog labels both "INTERCEPTIONS" and gets away with it only because its
-                // unit lenses are never on screen together (Cooper, 2026-08-27).
+                // The unit lenses are never on screen together, so the shared label is
+                // unambiguous in each context.
                 TeamStatsMetricSpec(
                     id: "ints-thrown", label: "INTS THROWN",
                     value: { $0.passingInterceptions.map(Double.init) },

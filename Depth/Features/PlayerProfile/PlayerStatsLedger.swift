@@ -1,6 +1,6 @@
 import SwiftUI
 
-// PlayerProfileView's season ledger (Claude Design "Player Profile", option 2): category
+// PlayerProfileView's season ledger: category
 // tabs generated from the player's own data, one hairline row per season with a bar scaled
 // to the career best, a tap-to-open detail strip, and a CAREER totals line. The vocabulary
 // (which metric, which figures) is PlayerStatCategory's -- this view only lays it out.
@@ -100,7 +100,7 @@ struct PlayerStatsLedger: View {
                     )
                 }
                 .padding(.vertical, 10)
-                // DEP-395: the whole padded row accepts the tap, not just its glyphs.
+                // The whole padded row accepts the tap, not just its glyphs.
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

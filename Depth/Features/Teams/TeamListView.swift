@@ -7,7 +7,7 @@ enum TeamSearchRowPresentation {
 }
 
 // The searchable 32-team list. This used to be the app's root screen; as of the
-// 2026-08-15 navigation-parity spec (locked decision #5) it is the *content of the team
+// it is the *content of the team
 // switcher sheet* instead — "the list stops being a place you are and becomes a control
 // you use". It therefore owns no NavigationStack, no navigation destination, and no
 // last-team restoration: the enclosing TeamSwitcherSheet supplies the stack and chrome,
@@ -23,7 +23,7 @@ struct TeamListView: View {
     /// this seeds once on first load and never again (a later refresh must not undo the
     /// user's picker choice).
     @State private var didSeedConference = false
-    /// DEP-273 follow-up: the sheet's overlay close X (TeamListPickerSheet) is
+    /// The sheet's overlay close X (TeamListPickerSheet) is
     /// positioned assuming the nav bar's title band is present above the conference
     /// picker. `.searchable` collapses that title band the moment the search field is
     /// focused — before any text is typed, so `isSearching` alone doesn't catch it —
@@ -86,7 +86,7 @@ struct TeamListView: View {
             // The skeleton mirrors the loaded state's structure — conference
             // picker placeholder on top, then grouped division sections — so
             // the team rows appear in the same position when data lands,
-            // avoiding a jarring layout shift (AGENTS.md mistake #16).
+            // avoiding a jarring layout shift.
             VStack(spacing: 0) {
                 // Placeholder matching the conference picker's height and padding.
                 RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
@@ -166,8 +166,7 @@ struct TeamListView: View {
             ],
             selection: conference,
             onChange: { conference = $0 },
-            // Superseded DEP-262's "app accent, not team-scoped" locked decision: the
-            // conference picker's job is literally to distinguish AFC from NFC, so it
+            // The conference picker's job is literally to distinguish AFC from NFC, so it
             // tints with the real NFL conference colors instead — matching web's
             // `CONFERENCE_COLORS`.
             activeColor: conference == "AFC"
@@ -283,13 +282,13 @@ struct TeamListView: View {
                         .accessibilityHidden(true)
                 }
             }
-            // DEP-281: without this, the Spacer's transparent stretch between the team
+            // Without this, the Spacer's transparent stretch between the team
             // name and the trailing checkmark doesn't register taps — only the badge
             // and text (the drawn content) did, leaving most of the visual row dead.
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        // DEP-262: row height is content-derived (36pt badge + vertical padding), which
+        // Row height is content-derived (36pt badge + vertical padding), which
         // shrinks under 44pt at small Dynamic Type — enforce the minimum here, matching
         // the 44pt guarantee the team-switcher pill in TeamDetailView keeps.
         .frame(minHeight: 44)
@@ -301,7 +300,7 @@ struct TeamListView: View {
     // and the team they play for. Tapping switches to that team and opens the player.
     @ViewBuilder
     private func playerRow(_ hit: PlayerHit) -> some View {
-        // DEP-262: with no `onSelectPlayer` handler (CompareView renders TeamListView
+        // With no `onSelectPlayer` handler (CompareView renders TeamListView
         // without one), the old code wrapped every row in a Button that did nothing —
         // a tappable-but-dead hit. Render the row non-interactive instead.
         let label = HStack(spacing: DesignTokens.Spacing.sm) {
@@ -323,7 +322,7 @@ struct TeamListView: View {
                 Button {
                     onSelectPlayer(hit)
                 } label: {
-                    // DEP-281: same fix as teamRow above — the trailing Spacer needs an
+                    // Same fix as teamRow above — the trailing Spacer needs an
                     // explicit hit shape or taps past the avatar/text don't register.
                     label.contentShape(Rectangle())
                 }
@@ -344,7 +343,7 @@ struct TeamListView: View {
     @ViewBuilder
     private func playerHitAvatar(_ hit: PlayerHit) -> some View {
         // The search-result avatar is a team-colored *fill* with the jersey number on it,
-        // so it takes the jersey body and resolves its own readable label (DEP-424) rather
+        // so it takes the jersey body and resolves its own readable label rather
         // than the retired uiAccent/onAccent pair.
         let accent = Color(hex: TeamSurfaces.fill(hit.team.colors.jersey))
         let onAccent = Color(hex: TeamSurfaces.textOnFill(hit.team.colors.jersey))
@@ -363,7 +362,7 @@ struct TeamListView: View {
                 numberBadge(hit.number, color: onAccent)
             }
         }
-        // DEP-262: matches the team badge's @ScaledMetric (same base size), so the two
+        // Matches the team badge's @ScaledMetric (same base size), so the two
         // row types scale together at large Dynamic Type instead of the player-hit badge
         // staying fixed at 36pt while every team badge grows.
         .frame(width: playerBadgeSize, height: playerBadgeSize)
@@ -387,7 +386,7 @@ private struct TeamRow: View {
     var body: some View {
         HStack(spacing: DesignTokens.Spacing.sm) {
             TeamBadge(team: team)
-            // DEP-238: city + name only — the division is already the section header above
+            // City + name only — the division is already the section header above
             // (a division has at most 4 teams, so it's always in view), so repeating it
             // under every row was redundant. Matches web's NavSwitcher team rows.
             Text("\(team.city) \(team.name)")
@@ -411,9 +410,9 @@ private let skeletonDivisions = [
 ]
 
 // Sized against the same scaled badge metric as `TeamRow`, so the list doesn't resize
-// under the user when real rows land (AGENTS.md's flash-then-jump rule). Single line,
-// matching the post-DEP-238 TeamRow (division subtitle removed).
-// DEP-262: the real teamRow enforces a 44pt minimum height via .frame(minHeight: 44);
+// under the user when real rows land. Single line, matching the TeamRow (division subtitle
+// removed).
+// The real teamRow enforces a 44pt minimum height via .frame(minHeight: 44);
 // the skeleton must match so placeholder and real rows are the same height and the
 // loaded content doesn't jump when data arrives.
 private struct TeamRowSkeleton: View {
@@ -434,15 +433,15 @@ private struct TeamRowSkeleton: View {
 }
 
 /// Colored initials badge with the team logo layered on when available. Fill defaults to
-/// `colors.primary` with a `colors.secondary` ring (web NavSwitcher parity, DEP-237); teams
+/// `colors.primary` with a `colors.secondary` ring (web NavSwitcher parity); teams
 /// whose logo blends into their own primary carry a pinned override via `TeamBadgeOverride`.
-/// DEP-262: the logo itself is composed through `TeamIconView` (the shared "which URL +
+/// The logo itself is composed through `TeamIconView` (the shared "which URL +
 /// how to render a team logo" rule), not re-implemented here — this badge supplies only
 /// the ring + initials fallback that TeamIconView does not own.
 struct TeamBadge: View {
     /// Shared with `TeamRowSkeleton` so the placeholder and the real row scale together.
     static let baseSize: CGFloat = 36
-    /// DEP-262: the logo's inset inside the circle, carried over from the old
+    /// The logo's inset inside the circle, carried over from the old
     /// `.padding(6)` on the logo content so it keeps its gap from the ring.
     private static let logoInset: CGFloat = 6
 
@@ -458,10 +457,10 @@ struct TeamBadge: View {
         ZStack {
             Circle().fill(backgroundColor)
             if (team.logoDark ?? team.logo).flatMap(URL.init(string:)) != nil {
-                // DEP-262: the logo renders through TeamIconView (the shared "which URL +
+                // The logo renders through TeamIconView (the shared "which URL +
                 // how to render a team logo" rule); the smaller frame keeps the old 6pt
                 // inset from the ring. Its placeholder shows the initials below while the
-                // first fetch completes instead of flashing an empty circle (DEP-247).
+                // first fetch completes instead of flashing an empty circle.
                 TeamIconView(team: team, size: size - 2 * Self.logoInset) {
                     initials(onBackground)
                 }
@@ -485,7 +484,7 @@ struct TeamBadge: View {
 
 extension Color {
     /// Minimal `#RRGGBB` parser — the only hex shape `teams.color_*`/`uiAccent`/`onAccent`
-    /// ever store (AGENTS.md's color-token invariants).
+    /// ever store.
     init(hex: String) {
         var s = hex.trimmingCharacters(in: .whitespacesAndNewlines)
         if s.hasPrefix("#") { s.removeFirst() }

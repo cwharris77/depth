@@ -10,7 +10,7 @@ import Foundation
 // and rank it as if it were another — a disagreement neither the compiler nor a view
 // test would catch, because both halves would be internally consistent.
 //
-// Every helper refuses to turn a missing source value into zero (web/CLAUDE.md invariant 6).
+// Every helper refuses to turn a missing source value into zero.
 // A partial nflverse season yields nil, which callers render as an absent row and an
 // absent rank — never as a team that gained nothing and allowed nothing.
 

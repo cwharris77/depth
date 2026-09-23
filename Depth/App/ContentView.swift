@@ -4,13 +4,13 @@ import SwiftUI
 // gated by the T5 update screen when the installed build is below the server's minimum.
 // Composition only: real state lives in RootTabView's tabs and UpdateGateViewModel.
 struct ContentView: View {
-    /// DEP-425: drives the foreground re-check below, so a server-side minimum-build flip
+    /// Drives the foreground re-check below, so a server-side minimum-build flip
     /// reaches already-running installs and not just cold launches.
     @Environment(\.scenePhase) private var scenePhase
     @State private var updateGate = UpdateGateViewModel(repository: DepthEnvironment.repository)
     @State private var authSessionStore = DepthEnvironment.authSessionStore
     @State private var currentTeamStore = DepthEnvironment.currentTeamStore
-    /// DEP-251 first-run tutorial: owns the welcome/coachmark sequence. Mounted here
+    /// Owns the first-run welcome/coachmark sequence. Mounted here
     /// (not lower in the tree) because the coachmark overlay has to sit above every
     /// tab's content, and the welcome screen has to cover the whole app, not just one
     /// tab's stack.
@@ -26,7 +26,7 @@ struct ContentView: View {
     var body: some View {
         Group {
             if updateGate.isChecking {
-                // DEP-425: the gate must resolve before any other data fetch starts, so
+                // The gate must resolve before any other data fetch starts, so
                 // nothing that reads Supabase may mount here. This branch is reached only
                 // on a first-ever launch with no cached app_config — every later launch
                 // takes the cached fast path and skips it. It intentionally mirrors the
@@ -58,19 +58,19 @@ struct ContentView: View {
         .onChange(of: onboarding.phase, initial: true) { _, phase in
             isWelcomeShowing = phase == .welcome
         }
-        // The app is always dark, same as the website (2026-08-15 visual-pass spec,
-        // locked decision #1: "Always dark, not adaptive"). Flipping the scheme here at
+        // The app is always dark, matching the website. Keeping the scheme at the app level
+        // the app level keeps the interface dark. Flipping the scheme here at
         // the root is the load-bearing piece the per-screen token styling shipped on top
         // of: without it, semantic .primary/.secondary text inside the dark-styled
         // screens resolves against the light scheme and renders dark-on-dark (the
-        // unreadable player-detail sheet from Cooper's visual pass). The preference
+        // unreadable player-detail sheet). The preference
         // propagates into sheet presentations and turns every system surface (nav bars,
         // tab bar, List backgrounds) dark, so the app reads as one dark theme matching
         // the website instead of a light app with dark islands.
         .preferredColorScheme(.dark)
         .task {
             DepthEnvironment.appEvents.record(.appLaunch)
-            // DEP-425: the gate runs FIRST — ahead of the auth refresh and ahead of any
+            // The gate runs FIRST — ahead of the auth refresh and ahead of any
             // tab mounting (the `isChecking` branch above holds the tree). A build too
             // old for the current schema must never issue a read against it; the gate
             // reads only `app_config`, whose shape is frozen precisely so this check
@@ -96,14 +96,14 @@ struct ContentView: View {
             if ProcessInfo.processInfo.arguments.contains("UI_TESTING_APPSTORE_SCREENSHOTS") {
                 try? await authSessionStore.signOut()
             }
-            // DEP-251: fires only once the update gate has allowed the app, so a blocked
+            // Fires only once the update gate has allowed the app, so a blocked
             // build never shows the welcome screen underneath/behind BlockingUpdateView
             // — the `guard` at the top of this task is what enforces that now. No-op on
             // every launch after the first (or once the tutorial's been skipped or
             // finished) — see OnboardingController.startIfNeeded.
             onboarding.startIfNeeded()
         }
-        // DEP-425: re-gate on foreground. A server-side minimum-build flip has to reach
+        // Re-gate on foreground. A server-side minimum-build flip has to reach
         // apps that are already running, not just cold launches — without this, a
         // long-lived install that never fully terminates stays un-gated indefinitely and
         // keeps reading a schema it may be too old for. `check()` is cheap (one singleton

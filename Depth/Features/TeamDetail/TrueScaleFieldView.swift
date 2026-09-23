@@ -1,6 +1,6 @@
 import SwiftUI
 
-// True-scale mode (design "Field Scale Options", turn 2; defense added by DEP-572): a
+// True-scale mode: a
 // full-screen cover opened from the field's corner expand button. There is no backdrop to
 // tap, so leaving is always the explicit X, and the chart underneath is exactly as it was
 // left. Offense and defense share this one view — `unit` only reaches
@@ -34,7 +34,7 @@ struct TrueScaleFieldView: View {
     @State private var selectedKey: String?
     /// Bumped by a deliberate jump (chip tap, recentre) to fire one light impact. Continuous
     /// dragging stays silent — haptics mark discrete events, the same restraint the unit tab
-    /// bar and reorder list use (app-wide vocabulary: DEP-569).
+    /// bar and reorder list use.
     @State private var jumpFeedbackCount = 0
 
     /// Height of the floating header row; the field below it stays visible through the glass.

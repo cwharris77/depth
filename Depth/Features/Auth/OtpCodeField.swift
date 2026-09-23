@@ -31,8 +31,8 @@ struct OtpCodeField: View {
                 .keyboardType(.numberPad)
                 .textContentType(.oneTimeCode)
                 .focused($isFocused)
-                // DEP-415: at accessibility sizes use the native field, which scrolls
-                // its text and keeps the same paste/autofill/verification behavior.
+                // At accessibility sizes use the native field, which scrolls its text and
+                // keeps the same paste, autofill, and verification behavior.
                 .opacity(dynamicTypeSize.isAccessibilitySize ? 1 : 0.01)
                 .font(.title2.monospacedDigit())
                 .disabled(disabled)

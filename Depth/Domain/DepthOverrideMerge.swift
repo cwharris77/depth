@@ -1,11 +1,11 @@
 import Foundation
 
-// Literal port of web/lib/utils/depth-chart/overrides-sync.ts's `planMerge` (DEP-219). Pure
+// Literal port of web/lib/utils/depth-chart/overrides-sync.ts's `planMerge`. Pure
 // reconciliation of the local override cache against the server's on sign-in: a team
 // edited only locally (server has never seen it) is pushed up; any team the server
 // already holds wins and is pulled down over the local copy — it's the durable
 // cross-device truth. Local-empty or server-empty teams produce no work. Deterministic,
-// no prompts — same policy web already locked, not a new decision.
+// no prompts.
 struct DepthOverrideMergePlan: Equatable {
     /// teamIds whose local override should be uploaded (server has none yet).
     let pushes: [String]

@@ -7,7 +7,7 @@ import OSLog
 // previous strict behavior — throw on the first unknown position or out-of-range rank —
 // made every new `roster_history` value a client-compatibility event: one row published
 // with a vocabulary an installed build didn't know took the whole season's decode down
-// with it (the mechanism behind DEP-486's generic OT/G rollback). Tolerating the row
+// with it when a newly published position value is not understood. Tolerating the row
 // instead is what lets historical data move forward without a gated release per change.
 //
 // `depthRank` has no upper bound here on purpose. The 1...3 cap it used to enforce is a
@@ -21,9 +21,8 @@ import OSLog
 // nothing would render as a blank field rather than an error the user can act on.
 enum HistoricalRosterMapper {
     /// Why a historical row could not become a player. Carries the identifying key so a
-    /// drop is actionable rather than a bare count (the ingest-side conservation rule in
-    /// `specs/2026-09-17-historical-data-and-source-boundaries-design.md`, applied to the
-    /// one place the client does the same kind of work).
+    /// drop is actionable rather than a bare count, matching the ingest-side conservation
+    /// rule used wherever the client performs the same kind of work.
     struct DroppedRow: Equatable {
         let gsisId: String
         let reason: Reason
@@ -96,9 +95,8 @@ enum HistoricalRosterMapper {
     /// Kicker, punter and long snapper only. nflverse's roster rows say who was on the
     /// team, never who returned kicks, so a past season has no returner to seat — and a
     /// permanently empty KR/PR dot reads as a broken player circle rather than as a data
-    /// gap (Cooper, 2026-09-02, reversing the earlier "unfilled by policy" call). Omitting
-    /// the slots keeps history consistent with how the field already treats an unresolved
-    /// offense/defense slot: it draws nothing.
+    /// gap. Omitting the slots keeps history consistent with how the field already treats
+    /// an unresolved offense/defense slot: it draws nothing.
     private static func specialTeams(_ players: [Player]) -> [SpecialSlot] {
         let layout: [(Position, String, Double, Double)] = [
             (.ls, "LS", 50, 68), (.k, "K", 38, 80), (.p, "P", 62, 80),

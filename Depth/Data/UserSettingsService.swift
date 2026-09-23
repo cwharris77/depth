@@ -1,7 +1,7 @@
 import Foundation
 import Supabase
 
-// The account-gated team preferences the web persists in `user_settings` (DEP-319): an
+// The account-gated team preferences the web persists in `user_settings`: an
 // optional favorite team and an opt-in "open the favorite at startup" toggle. iOS reads
 // and writes the same three columns (`favorite_team_id`, `last_team_id`,
 // `start_on_favorite`) so favorites/startup preferences sync across devices.

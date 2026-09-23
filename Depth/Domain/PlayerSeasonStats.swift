@@ -31,7 +31,7 @@ struct PlayerSeasonStats: Codable, Hashable, Identifiable {
     let fgMade: Int?
     let fgAtt: Int?
     // Same-source nflverse columns added for the position groups that previously had no
-    // meaningful line (DEP-538): defensive counters beyond solo/sack/INT, return yards,
+    // meaningful line: defensive counters beyond solo/sack/INT, return yards,
     // special-teams scores, penalties, PAT/long-FG, and season snap totals for the
     // participation-only positions (O-line, long snapper, punter). All optional so a row
     // from before this shipped still decodes.
@@ -118,7 +118,7 @@ enum PlayerStatColumn: Hashable, CaseIterable {
     case targets, receivingYards, receivingTds, receivingYardsPerReception
     case games, tackles, sacks, interceptions, fieldGoalsMade, fieldGoalsAttempted,
         fieldGoalPercentage
-    // DEP-538 additions: the counters that give stat-less position groups a real line.
+    // These counters give stat-less position groups a real line.
     case assists, tacklesForLoss, qbHits, passDefended, forcedFumbles, fumbleRecoveries,
         defensiveTds
     case puntReturns, puntReturnYards, kickoffReturns, kickoffReturnYards, returnYards,
@@ -261,7 +261,7 @@ enum PlayerStatColumn: Hashable, CaseIterable {
     }()
 }
 
-// Spoken column names and combined row labels for VoiceOver (design spec Milestone 3
+// Spoken column names and combined row labels for VoiceOver
 // item 30). The stat table's on-screen headers are deliberately compact ("YDS", "YPA")
 // so numeric columns fit; VoiceOver reads those as opaque letter strings, and a row
 // combined from bare cells announces a run of unlabeled numbers. These pure builders

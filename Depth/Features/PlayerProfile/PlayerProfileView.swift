@@ -1,22 +1,21 @@
 import SwiftUI
 
-// The one "everything about one player" screen (2026-09-10 design spec; merged with the
-// player card by the 2026-09-11 merge spec): identity, vitals, the position's depth chart,
+// The one "everything about one player" screen: identity, vitals, the position's depth
+// chart,
 // season-by-season stats, bio, and accolades. Pushed from the depth-chart field and from
 // Compare's PlayerCell — there is no quick-glance card any more, and reordering lives in
 // the edit-mode PositionReorderSheet. A NavigationStack push, not a sheet, so it composes
 // into whatever stack pushed it rather than owning its own dismiss chrome.
 //
-// Layout is Claude Design "Player Profile" option 2 (2026-09-11): a kit-colored jersey
+// Layout: a kit-colored jersey
 // band (surname over the numeral, sleeve stripe beneath), a name row, one hairline vitals
 // strip, then collapsible SEASON STATS (PlayerStatsLedger) and ACCOLADES sections. The
 // mock's ghosted city wordmark stands in for a club mark — sports-mark imagery isn't
 // cleared for the native app.
 //
-// Draft history is deferred until DEP-393's `draft_picks` table ships; accolades has no
-// confirmed data source yet (DEP-533) and renders as an explicit empty state, kept last
-// so an empty section reads as a coda rather than a gap before more content (Cooper,
-// 2026-09-10).
+// Draft history is unavailable until its data source ships; accolades also has no
+// confirmed data source and renders as an explicit empty state, kept last
+// so an empty section reads as a coda rather than a gap before more content.
 
 /// The position's depth chart as the field rendered it, handed in by TeamDetailView. Nil
 /// from Compare, which has no depth chart on screen, so the DEPTH CHART section hides.
@@ -247,7 +246,7 @@ private struct PlayerProfileScreen: View {
     // on this fill," which only holds at the near-black/near-white extremes. Mid-luminance,
     // saturated fills fall through it: Tampa Bay's red (#D50A0A) and Atlanta's (#A71930) both
     // picked white ink correctly but rendered it at a contrast ratio against their own fill of
-    // ~1.04-1.10 -- indistinguishable from the fill itself (DEP-395 follow-up). Solving directly
+    // ~1.04-1.10 -- indistinguishable from the fill itself. Solving directly
     // for the alpha that hits a fixed target contrast ratio against the *actual* fill fixes this
     // for every kit at once instead of re-bucketing by hand.
     private var wordmarkGhost: Color {
@@ -570,7 +569,7 @@ private struct PlayerProfileScreen: View {
         DepthRowContent(player: p, isCurrent: isCurrent, accent: markColor)
             .padding(.vertical, DesignTokens.Spacing.sm)
             .frame(minHeight: 44)
-            // DEP-395: the whole row accepts the tap, not just its glyphs.
+            // The whole row accepts the tap, not just its glyphs.
             .contentShape(Rectangle())
     }
 
@@ -610,10 +609,9 @@ private struct PlayerProfileScreen: View {
         }
     }
 
-    // DEP-533 (accolades data source) is unresolved — this stays a visible, explicit
-    // empty state rather than a hidden section, per the design spec's locked decision:
-    // the screen keeps its promise that accolades exist here, just not yet. The copy says
-    // "coming soon" rather than "not tracked yet" so the section reads as planned, not broken.
+    // The accolades data source is unavailable, so this stays a visible, explicit empty
+    // state rather than a hidden section. The copy says "coming soon" rather than "not
+    // tracked yet" so the section communicates that the content is not available yet.
     private var accoladesSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             sectionHeader(
@@ -684,7 +682,7 @@ private struct PlayerProfileScreen: View {
                     .foregroundStyle(markColor)
             }
             .frame(minHeight: 44)
-            // DEP-395: the full header row accepts the tap, not just the label glyphs.
+            // The full header row accepts the tap, not just the label glyphs.
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -699,7 +697,7 @@ private struct PlayerProfileScreen: View {
 }
 
 // Mirrors lib/utils/colors.ts statusColor: starter is team-driven, the rest are fixed
-// semantic colors shared by every team. DEP-424: the caller now passes a TeamSurfaces-
+// semantic colors shared by every team. The caller passes a TeamSurfaces-
 // resolved color, so `starter` no longer resolves to the retired `uiAccent` — which made
 // it 2.12:1 on the Jets.
 func playerStatusColor(_ status: PlayerStatus, accent: Color) -> Color {

@@ -2,14 +2,14 @@ import CoreGraphics
 import Foundation
 
 // Pure geometry for true-scale mode (design "Field Scale Options", turn 2; defense added
-// by DEP-572). The depth chart stays the fill-width chart — reading the whole unit at a
+// The depth chart stays the fill-width chart — reading the whole unit at a
 // glance is its job — and true scale is a separate place you go: one yard is
 // `pointsPerYard` on BOTH axes, drawn over a measured NFL field, panned inside a window
 // narrower than the formation. Free of SwiftUI so the alignment table, pan clamping, and
 // edge-chip rules are unit-testable without a view; `TrueScaleFieldView` only draws what
 // this returns.
 //
-// One layout serves both units (DEP-572: same view, not a fork). `unit` selects the
+// One layout serves both units. `unit` selects the
 // alignment table, how much field is drawn on each side of the line, and the opening
 // framing — the offense's depth grows down-screen into its backfield, the defense's grows
 // up-screen into its secondary, so the same geometry just mirrors about the line.
@@ -74,7 +74,7 @@ struct TrueScaleFieldLayout {
     /// it spreads five linemen across 32% and pins receivers to the card edges, so no single
     /// scale fits both (6.2%/yd makes the OL right and receivers 3× too tight; 1.9%/yd the
     /// reverse). At 1:1 the charted value supplies only SIDE and ORDER; magnitude comes from
-    /// alignment convention. G/T keep LT→RT at the 5.2 yd DEP-432's x calibration used.
+    /// alignment convention. G/T keep LT→RT at the same x calibration used by the chart.
     /// Measured tracking x would replace this table wholesale.
     enum RealX {
         static let guardYards: CGFloat = 1.30
@@ -93,11 +93,11 @@ struct TrueScaleFieldLayout {
                 return [17.0, 12.5, 9.0] + (0..<max(0, count - 3)).map { 6.5 - CGFloat($0) * 1.5 }
             }
         }
-        /// Fallback for a label this table doesn't know: DEP-432's charted-%-per-yard.
+        /// Fallback for a label this table doesn't know: the charted percent-per-yard.
         static let chartedPercentPerYard: CGFloat = 6.2
     }
 
-    /// The defense's half of the same convention (DEP-572). The charted defense is as
+    /// The defense's half of the same convention. The charted defense is as
     /// schematic as the offense — `buildRealDefenseFormation` spreads the front evenly
     /// between fixed percentages — so again the chart supplies SIDE and ORDER and these
     /// numbers supply magnitude, named by the technique each one is. Read against the

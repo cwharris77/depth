@@ -54,9 +54,9 @@ struct TeamStatsRowDTO: Decodable {
     }
 }
 
-// Exact PostgREST projection for DEP-312's bounded team_season_stats read. This is a
+// Exact PostgREST projection for the bounded team_season_stats read. This is a
 // deliberately small subset of the wide nflverse row: only raw values consumed by the
-// approved Compare lenses plus season/freshness provenance.
+// supported Compare lenses plus season/freshness provenance.
 // Conforms to `RawTeamMetricColumns` so the per-team read and the league-wide rank read
 // share one derivation (see Domain/TeamMetricsDerivation.swift).
 struct TeamMatchupMetricsDTO: Decodable, RawTeamMetricColumns {

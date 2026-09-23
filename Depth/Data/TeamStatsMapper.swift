@@ -6,7 +6,7 @@ import Foundation
 // `?? 0` only guards the nullable-by-schema DTO type), and `currentSeason`/`upcomingSeason`
 // come from the same date heuristic as web/lib/utils/team/nfl-season.ts. Unlike the team
 // snapshot mapper this never throws — web's stats page degrades to a 0-0 record for a
-// stub/empty row rather than failing (web/CLAUDE.md invariant 6).
+// stub/empty row rather than failing.
 enum TeamStatsMapper {
     static func map(
         team: Team,
@@ -36,7 +36,7 @@ enum TeamStatsMapper {
                 }
                 .sorted { $0.season > $1.season },
             upcomingSeason: state.isOffseason ? state.upcomingSeason : nil,
-            // Off-season only, mirroring web's `fetchTeamStatsPage` (DEP-597). ESPN's
+            // Off-season only, mirroring web's `fetchTeamStatsPage`. ESPN's
             // `coach_experience` counts *completed* seasons, so it reads 0 all the way
             // through a first-year coach's first season -- gating on the calendar is what
             // stops the Bills' Joe Brady reading "INCOMING" in week 12. In-season his

@@ -1,11 +1,11 @@
 import Foundation
 import Supabase
 
-// One projected nested query loads a team snapshot (design spec locked decision #7) —
+// One projected nested query loads a team snapshot —
 // team + depth-chart entries + special-teams slots + uniforms in a single round trip,
 // replacing the web app's four-parallel-reads-plus-a-player-read pattern
 // (web/lib/roster-source.db.ts fetchTeamRoster). Column list is explicit; `select(*)` is
-// prohibited (Performance Review #1) so payload size stays bounded to what v1 renders.
+// avoided so payload size stays bounded to what the app renders.
 actor SupabaseDepthRepository: DepthRepository {
     private let client: SupabaseClient
 
@@ -26,8 +26,8 @@ actor SupabaseDepthRepository: DepthRepository {
         """
 
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot {
-        // Signpost interval around the network query + JSON decode (Performance Review
-        // #5/#6's "query, decode" budget: p95 <1.5s good Wi-Fi, <3s constrained).
+        // Signpost interval around the network query and JSON decode so query/decode latency
+        // can be measured against the app's network budget.
         let signpostID = DepthSignposts.signposter.makeSignpostID()
         let state = DepthSignposts.signposter.beginInterval(
             DepthSignposts.teamSnapshotQuery, id: signpostID)
@@ -271,7 +271,7 @@ actor SupabaseDepthRepository: DepthRepository {
         }
     }
 
-    /// Stats/Compare data contract: team identity, season records, and DEP-312's bounded
+    /// Stats/Compare data contract: team identity, season records, and the bounded
     /// nflverse matchup projection are fetched concurrently through the repository seam.
     /// An unknown team id surfaces as `.notFound` (the `.single()` PGRST116 path); an
     /// empty `team_stats` result is a valid page (web's "no stats available yet" / 0-0

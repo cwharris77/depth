@@ -1,6 +1,6 @@
 import SwiftUI
 
-// Coachmark target registry for the first-run tutorial (DEP-251). A view that a
+// Coachmark target registry for the first-run tutorial. A view that a
 // coachmark step should point at tags itself with `.coachmarkAnchor(_:)`; the target's
 // on-screen frame bubbles up through SwiftUI's preference system to a single overlay
 // mounted at ContentView's root (`.coachmarkOverlay`), which hands the resolved rects
@@ -8,16 +8,10 @@ import SwiftUI
 // `content`. This degrades safely (the overlay just has no rect for that step) if the
 // target view isn't currently mounted (a different tab, a closed sheet).
 //
-// DEP-251 follow-up (placement audit): this used to read each target's frame via
-// `anchorPreference(value: .bounds)` + `proxy[anchor]`, the textbook SwiftUI pattern for
-// this — but measured directly, every real target (`.teamPill`'s toolbar item,
-// `.overflowMenu` and `.playerDot` inside TeamDetailView's `ScrollView`) resolved to a
-// rect nowhere near the actual control; only the coordinates were free of any scroll
-// offset or intervening layout, as if resolved before the surrounding content laid out.
-// Reporting each target's `GeometryReader`-read `.global` frame through a plain `CGRect`
-// preference instead — same "tag once, resolve at the root" shape, an equally standard
-// SwiftUI idiom for this exact case — measured correctly in every case tried, including
-// through the `ScrollView` and the `NavigationStack`-hosted toolbar item.
+// Target frames use a plain `CGRect` preference instead of
+// `anchorPreference(value: .bounds)` + `proxy[anchor]`. Reading each target's global frame
+// with `GeometryReader` keeps coordinates correct through scrolling content and
+// `NavigationStack`-hosted toolbar items.
 //
 // `.bottomTabs` deliberately has no case here — SwiftUI's TabView doesn't expose a
 // per-tab frame through the public API, so that step's rect is computed directly from

@@ -1,10 +1,10 @@
 import SwiftUI
 
-// The three root tabs, in TabView order. DEP-251: named (rather than left as bare
+// The three root tabs, in TabView order. Named rather than left as bare
 // `Tab { }` closures with no selection binding) so OnboardingController can drive the
 // TabView's `selection` — Settings' "Take the tour" row needs to jump back to Depth
 // Charts before the coachmark sequence starts, since every current coachmark target
-// lives there. No `.account` case (DEP-252 moved it out of the tab bar entirely — see
+// lives there. No `.account` case because it is not a tab — see
 // below) since nothing needs to select or target it as a tab anymore.
 enum RootTab: Hashable {
     case depthCharts
@@ -12,19 +12,18 @@ enum RootTab: Hashable {
     case uniforms
 }
 
-// The app's root navigation surface (2026-08-15 navigation-parity spec, locked decisions
-// #1 and #2). The web's global nav is a left hamburger drawer; native uses a bottom tab
+// The app's root navigation surface. The web's global nav is a left hamburger drawer;
+// native uses a bottom tab
 // bar instead — same function, fewer taps, and hidden navigation is discouraged on iOS.
 // Three tabs: Depth Charts, Compare, Uniforms. The uniform archive was deliberately
-// absent in the navigation-parity spec (blocked on Gate 0 data rights, no native
-// implementation); it is added here now that the native archive tab exists — the data
-// rights question was Cooper's call to unblock, and the repository's listUniforms read
+// absent while the native archive and its data read were unavailable; it is included here
+// now that the native archive tab and repository read exist.
 // ships the all-32-kits archive with no per-team snapshot dependency.
 //
-// DEP-252: Account moved out of the tab bar entirely — it's a personal affordance, not
+// Account is outside the tab bar — it's a personal affordance, not
 // a content section, so it no longer belongs beside content tabs. It now opens as a
 // sheet from a trailing nav-bar icon on the team page (`TeamDetailView`), the slot
-// DEP-236 freed by moving the ROSTER/SCHEDULE/STATS switcher out of the nav bar.
+// the content-level switcher.
 //
 // Each tab owns its own NavigationStack (inside its tab view) so per-tab navigation
 // state survives tab switches — standard SwiftUI practice.
@@ -32,15 +31,14 @@ struct RootTabView: View {
     let sessionStore: AuthSessionStore
     /// Published by DepthChartsTab; the team accent the chrome tints with.
     let currentTeamStore: CurrentTeamStore
-    /// DEP-251: two-way bound to the TabView's `selection` below so Settings' "Take the
+    /// Two-way bound to the TabView's `selection` below so Settings' "Take the
     /// tour" row can jump to Depth Charts before starting the coachmark sequence.
     @Bindable var onboarding: OnboardingController
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         TabView(selection: $onboarding.activeTab) {
-            // DEP-252: `football.fill` (ball alone) replaces the person-throwing glyph —
-            // Cooper's design-pass call, no other reasoning behind the swap.
+            // `football.fill` keeps the tab icon recognizable at small sizes.
             Tab("Depth Charts", systemImage: "football.fill", value: RootTab.depthCharts) {
                 DepthChartsTab(
                     repository: DepthEnvironment.repository,
@@ -51,7 +49,7 @@ struct RootTabView: View {
                     currentTeamStore: currentTeamStore,
                     userSettingsStore: DepthEnvironment.userSettingsStore,
                     teamRouteStore: DepthEnvironment.teamRouteStore,
-                    // DEP-405: a schedule-card tap switches to the Compare tab instead of
+                    // A schedule-card tap switches to the Compare tab instead of
                     // pushing Compare inside this tab — the "Go to Depth Chart" pattern
                     // (UniformsTab's callback below) applied to the schedule→compare jump.
                     // RootTabView owns both the tab selection and the route store the
@@ -65,7 +63,7 @@ struct RootTabView: View {
             }
 
             Tab("Compare", systemImage: "rectangle.split.2x1", value: RootTab.compare) {
-                // DEP-405: the Compare tab's root is route-aware — a schedule-card tap's
+                // The Compare tab's root is route-aware — a schedule-card tap's
                 // matchup lands here (pre-loaded, with the "Back to schedule" pill) once
                 // the tab is switched to. See CompareRouteStore.
                 CompareView(
@@ -84,10 +82,9 @@ struct RootTabView: View {
                 }
             }
         }
-        // Selected-tab tint from the current kit's ring color (visual-pass follow-up:
-        // "team colors aren't coming through the chrome"). DepthChartsTab publishes the
+        // Selected-tab tint from the current kit's ring color. DepthChartsTab publishes the
         // active kit's colors into CurrentTeamStore, so the nav title, toolbar icons, and
-        // tab bar adopt team color. Cooper picked the ring here (2026-09-01) so chrome
+        // tab bar adopt team color. The ring is used so chrome
         // matches the field dots, knowing legibility is explicitly not gated: a ring only
         // has to separate from its fill *or* the ground, and a tint has no fill, so 51 of
         // 105 kits read dim against the bar. That is the 2026-07-03 precedent — a dark
@@ -100,7 +97,7 @@ struct RootTabView: View {
             currentTeamStore.colors.map { Color(hex: TeamSurfaces.mark($0)) }
                 ?? DesignTokens.Colors.accent
         )
-        // DEP-565 (1C): the depth-chart edit bar replaces the tab bar for an edit session by
+        // The depth-chart edit bar replaces the tab bar for an edit session by
         // covering it, not hiding it — see CurrentTeamStore.editBar. Drawn here because an
         // overlay on the TabView sits above its tab bar; nothing inside a tab can. The solid
         // backing fills the tab bar's whole footprint so no part of the floating bar shows

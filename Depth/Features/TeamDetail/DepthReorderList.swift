@@ -1,14 +1,13 @@
 import SwiftUI
 
-// Drag-to-reorder primitives for one position, extracted unchanged from the deleted player
-// card (2026-09-11 merge spec) so PositionReorderSheet can host them. Behavior contract:
-// DEP-226 long-press pickup + frozen-center slot mapping, DEP-414 VoiceOver move actions.
+// Drag-to-reorder primitives for one position. PositionReorderSheet hosts them with a
+// long-press pickup, frozen-center slot mapping, and VoiceOver move actions.
 
-// Web parity (lucide GripVertical, DEP-241): the six-dot vertical drag grip. SF Symbols
+// Web parity (lucide GripVertical): the six-dot vertical drag grip. SF Symbols
 // has no six-dot grip — line.3.horizontal is the hamburger and circle.grid.2x2 is four
 // dots — so this draws the 2x3 dot grid GripVertical depicts, the "drag me" affordance
 // web uses for both the Reorder toggle and the reorder rows. Sized like web (toggle 12,
-// rows 16) so it reads as a small grip, not an oversized icon (DEP-241 follow-up).
+// rows 16) so it reads as a small grip, not an oversized icon.
 struct SixDotGrip: View {
     let color: Color
     var size: CGFloat = 12
@@ -29,7 +28,7 @@ struct SixDotGrip: View {
     }
 }
 
-// DEP-226: drag-to-reorder row list for the position-depth section. SwiftUI's `.onMove`
+// Drag-to-reorder row list for the position-depth section. SwiftUI's `.onMove`
 // only exists on ForEach inside a List, and a List can't nest inside the card's ScrollView
 // without introducing a nested scroll container. The earlier attempts (`.onDrag`/`.onDrop`,
 // then `.draggable`/`.dropDestination`) all failed with a real finger: inside a ScrollView
@@ -93,7 +92,7 @@ struct DepthReorderList: View {
         return HStack(spacing: DesignTokens.Spacing.sm) {
             // Web parity (PlayerCardDepthList's edit rows): a grip glyph leads each row
             // while reordering — the six-dot drag grip (size 16, matching web's row
-            // GripVertical), not a hamburger (DEP-241). Rows are no longer tap-to-switch.
+            // GripVertical), not a hamburger. Rows are no longer tap-to-switch.
             SixDotGrip(color: DesignTokens.Colors.textMuted, size: 16)
                 .accessibilityHidden(true)
             DepthRowContent(
@@ -159,7 +158,7 @@ struct DepthReorderList: View {
         .accessibilityIdentifier("player-profile-depth-reorder-row-\(p.id)")
     }
 
-    // DEP-414: resolve the current index when invoked, so repeated rotor actions never
+    // Resolve the current index when invoked, so repeated rotor actions never
     // use a stale rank. Share drag's move and commit paths, including local persistence.
     private func moveAccessibly(playerID: String, offset: Int) {
         guard draggedPlayerID == nil,
@@ -216,7 +215,7 @@ struct DepthReorderList: View {
     }
 }
 
-// DEP-414: spoken rank follows the actual list index, not depthRank (which caps at 3).
+// Spoken rank follows the actual list index, not depthRank (which caps at 3).
 // The same bounds determine available rotor actions and reject stale boundary moves.
 struct DepthReorderAccessibility {
     let player: Player

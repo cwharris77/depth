@@ -2,7 +2,7 @@ import Foundation
 import Observation
 
 // Favorite-team + start-on-favorite state for the Settings sheet and startup resolution
-// (DEP-319), mirroring web's AccountView favorite controls (web/components/AccountView.tsx):
+// mirroring web's AccountView favorite controls (web/components/AccountView.tsx):
 //
 //   - load() fetches the signed-in user's settings row (missing row → defaults). It is a
 //     no-op while signed out — the row is account-gated by RLS, so there is nothing to

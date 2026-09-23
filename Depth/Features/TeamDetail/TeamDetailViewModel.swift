@@ -1,8 +1,8 @@
 import Foundation
 import Observation
 
-// Feature-local observable state for one team's depth chart (design spec's "feature-local
-// observable state" preference). Renders cache-first: `CachingDepthRepository.teamSnapshot`
+// Feature-local observable state for one team's depth chart. Renders cache-first:
+// `CachingDepthRepository.teamSnapshot`
 // already returns instantly from disk when a cached row exists and refreshes in the
 // background, so this view model just displays whatever it gets and re-renders if a
 // later call (foreground refresh, pull-to-refresh) returns something newer.
@@ -55,12 +55,10 @@ final class TeamDetailViewModel {
             DepthSignposts.endAppLaunchIfNeeded()
             // Fires once per team-detail visit, on the first successful resolve —
             // not on every 15-minute background/pull-to-refresh reload, which would
-            // inflate the "reached a depth chart" funnel step (design spec Milestone
-            // 2B item 26).
+            // inflate the "reached a depth chart" funnel step.
             if firstLoad { events.record(.depthChartReached) }
         } catch let error as DepthError {
-            // A failure never clears a snapshot already on screen — retain last good
-            // data (design spec's "retain the last good snapshot on failure").
+            // A failure never clears a snapshot already on screen — retain last good data.
             if snapshot == nil {
                 loadState = .failed(error)
                 events.record(.error(category: error.telemetryCategory))

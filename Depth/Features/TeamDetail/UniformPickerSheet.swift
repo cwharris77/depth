@@ -2,7 +2,7 @@ import SwiftUI
 
 // Native counterpart to the web UniformSheet (web/components/UniformSheet.tsx): a
 // horizontal swipeable carousel — one full-width card per uniform — replacing the old
-// vertical row list (DEP-256). Paging is native SwiftUI (`TabView` + `.page` style)
+// vertical row list. Paging is native SwiftUI (`TabView` + `.page` style)
 // rather than a hand-rolled drag gesture: the platform already has a swipeable-carousel
 // primitive, so reimplementing framer-motion's drag/snap math here would just be
 // distribution-inflation over a built-in (see gstack ethos, "search before building").
@@ -14,7 +14,7 @@ import SwiftUI
 // on every drag settle instead, which is the bug this deliberately avoids: browsing
 // through kits shouldn't overwrite the saved pick until you actually close the picker.
 //
-// DEP-256 acceptance target: the card art reuses UniformsTab's `UniformThumb`, pointed
+// The card art reuses UniformsTab's `UniformThumb`, pointed
 // at the plain jersey crop (`UniformArt.jerseyURL`, not the archive's full-mannequin
 // `-full` raster) — the picker shows just the jersey, matching web's UniformSheet swatch,
 // while sharing the same thumbnail component as the archive instead of a second

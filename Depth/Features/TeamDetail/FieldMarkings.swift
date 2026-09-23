@@ -1,6 +1,6 @@
 import SwiftUI
 
-// The field's own markings, drawn through the layout's yard scale (DEP-432).
+// The field's own markings, drawn through the layout's yard scale.
 //
 // This used to draw a yard line every 10% of the card and the line of scrimmage at a flat
 // 50%, both in card-relative percentages. Once the card was cropped to a unit's yard window

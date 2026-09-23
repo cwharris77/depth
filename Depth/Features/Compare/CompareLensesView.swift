@@ -1,23 +1,20 @@
 import SwiftUI
 
-// Compare's By-team metric stack, rebuilt to the vault canvas "Refining the compare page"
-// (options 1b + 2d/2e + 3a/3b). The lens tabs now swap a vertical stack of grouped metric
+// Compare's By-team metric stack. The lens tabs swap a vertical stack of grouped metric
 // tables in place: each group is one bordered card whose header row carries the group name
 // and the two team abbrevs as columns, and whose rows are a label plus two right-aligned,
 // tabular-figure numbers. The leader in each row is tinted in that team's ring color and
 // the trailing side dims, so the winner reads without a per-row badge.
 //
-// What this replaced, and why (all four are canvas decisions, not cleanup):
-//  - The horizontally-paged lens carousel became an in-place swap. The canvas draws a
-//    single vertical scroll of grouped tables; a horizontal pager inside the page's own
-//    vertical ScrollView also fought the outer gesture once the tables grew past one screen.
+// The lens tabs use an in-place vertical stack because:
+//  - A horizontal pager inside the page's own
+//    vertical ScrollView fought the outer gesture once the tables grew past one screen.
 //  - The per-lens eyebrow ("OFFENSE LENS"), the takeaway headline ("Seattle leads in epa /
 //    play"), and the explanation sentence are gone. Three metrics could be summarized in a
 //    sentence; fifteen across three groups cannot, and the tinted leader now says per row
 //    what the headline said once for the first row only.
-//  - The per-lens source line moved to the page-level provenance stamp beside the season
-//    picker (CompareView's `seasonRow`), where it applies to every number on the page
-//    instead of restating itself under each lens.
+//  - The source line is shown beside the season picker, where it applies to every number
+//    on the page instead of being repeated under each lens.
 //  - Three metrics per lens became four to five per group, because a season comparison that
 //    fits on one screen was never the constraint — every added row reads a field that was
 //    already being ingested. The catalog lives in Domain/CompareMetrics.swift.
@@ -30,8 +27,8 @@ struct CompareLensesView: View {
 
             switch viewModel.evidenceLoadState {
             case .loading:
-                // Canvas 2e: the skeleton mirrors the grouped table it resolves into, so
-                // the page doesn't relayout on arrival (AGENTS.md mistake #16).
+                // The skeleton mirrors the grouped table it resolves into, so the page does
+                // not relayout when data arrives.
                 CompareMetricsSkeleton(viewModel: viewModel)
             case .idle, .loaded:
                 if viewModel.metricsUnavailable {
@@ -43,12 +40,10 @@ struct CompareLensesView: View {
         }
     }
 
-    /// Aug 26 (Cooper): the field page's underline tab bar, not a second filled pill —
-    /// "it helped break up the monotony of all the pickers on the page." With By team/By
-    /// position already a full-width segmented pill directly above it, a second identical
-    /// pill made the two controls read as one undifferentiated stack. `DepthUnitTabBar` is
-    /// the same treatment the depth-chart field and Compare's own By-position picker use,
-    /// so the app's unit vocabulary is consistent wherever a unit is chosen.
+    /// Use the field page's underline tab bar instead of a second filled pill. By team/By
+    /// position is already a full-width segmented control directly above it, so a second
+    /// filled control would make the two controls read as one stack. `DepthUnitTabBar`
+    /// keeps the unit-selection treatment consistent across the app.
     private var lensSelector: some View {
         DepthUnitTabBar(
             selection: viewModel.lens.unit,
@@ -96,8 +91,7 @@ struct CompareLensesView: View {
             for: viewModel.lens.unit,
             a: viewModel.metricsA,
             b: viewModel.metricsB,
-            // Canvas 3a: at a one-game sample the numbers still show, but nothing is
-            // called a leader.
+            // At a one-game sample the numbers still show, but nothing is called a leader.
             allowLeader: !viewModel.isThinSample
         )
     }
@@ -124,7 +118,7 @@ private struct CompareMetricTable: View {
     let teamB: Team?
     let identifier: String
 
-    /// Matches the canvas's 74px value columns. Fixed (not flexible) so the label column
+    /// Uses fixed 74px value columns. Fixed (not flexible) so the label column
     /// absorbs width differences and the numbers stay in one vertical line.
     private let valueColumnWidth: CGFloat = 74
 
@@ -132,10 +126,9 @@ private struct CompareMetricTable: View {
         VStack(spacing: 0) {
             header
             VStack(spacing: 0) {
-                // Aug 26 (Cooper): "an extra separator underneath the table header." The
-                // header already draws its own bottom hairline, so the first row must not
-                // draw its top one as well — the two sat 4pt apart and read as a double
-                // rule. Every row after the first still needs its divider.
+                // The header already draws its own bottom hairline, so the first row must
+                // not draw its top one as well. Every row after the first still needs its
+                // divider.
                 ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                     metricRow(row, showsTopDivider: index > 0)
                 }
@@ -256,9 +249,9 @@ private struct CompareMetricTable: View {
 
 // MARK: - Thin-sample caution
 
-/// Canvas 3a: a live season with barely any football played still shows its numbers, but
-/// says why they look extreme and stops calling a leader. Never shown for a completed
-/// season — see `CompareSampleGuard.isThin`.
+/// A live season with barely any football played still shows its numbers, but explains why
+/// they may look extreme and stops calling a leader. Never shown for a completed season —
+/// see `CompareSampleGuard.isThin`.
 private struct CompareSampleCaution: View {
     let stamp: CompareSeasonStamp
 
@@ -297,9 +290,8 @@ private struct CompareSampleCaution: View {
 
 // MARK: - No metrics for this season
 
-/// Canvas 2d: the picked season has no metrics on either side. The old build showed a bare
-/// centered "No offense metrics available" with nothing to act on; this names the season and
-/// offers the newest one that does have data, which the view model already computes.
+/// The picked season has no metrics on either side. This names the season and offers the
+/// newest one that does have data, which the view model already computes.
 private struct CompareNoMetricsState: View {
     let viewModel: CompareViewModel
 
@@ -366,9 +358,8 @@ private struct CompareNoMetricsState: View {
 
 // MARK: - Loading skeleton
 
-/// Canvas 2e. Two placeholder cards laid out on the same grid as `CompareMetricTable`,
-/// keeping the real team abbrevs in the header band (they're already known — only the
-/// numbers are still in flight), so nothing but the values pops in on arrival.
+/// Two placeholder cards laid out on the same grid as `CompareMetricTable`, keeping the
+/// real team abbrevs in the header band because only the numbers are still in flight.
 private struct CompareMetricsSkeleton: View {
     let viewModel: CompareViewModel
 

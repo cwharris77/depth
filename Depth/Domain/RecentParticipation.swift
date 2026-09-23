@@ -1,6 +1,6 @@
 import Foundation
 
-// Native mirror of web's RecentParticipation contract for DEP-313. Strings and
+// Native mirror of web's RecentParticipation contract. Strings and
 // optional percentages stay lossless across the shared TypeScript-oracle fixture:
 // an unavailable percentage remains nil while a measured zero remains 0.
 struct RecentParticipation: Equatable, Codable, Sendable {

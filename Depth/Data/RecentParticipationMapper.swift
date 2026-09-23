@@ -1,6 +1,6 @@
 import Foundation
 
-// Swift port of buildRecentParticipation for DEP-313. It selects one complete ingest
+// Swift port of buildRecentParticipation. It selects one complete ingest
 // window before mapping players so stale rows or mixed source metadata can never leak
 // into a native comparison, and its output is checked against the shared TS fixture.
 enum RecentParticipationMapper {

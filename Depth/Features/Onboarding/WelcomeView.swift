@@ -1,7 +1,7 @@
 import SwiftUI
 
-// DEP-251 first-run tutorial, screen one of two: a single full-screen welcome shown
-// before any coachmark — "what the app is + a clear Skip", per the locked direction.
+// First-run tutorial, screen one of two: a single full-screen welcome shown
+// before any coachmark, with an explicit Skip action.
 // Presented as a `.fullScreenCover` from ContentView so it reads as the app's own
 // opening screen rather than a sheet stacked over content the user hasn't seen yet.
 // Both actions end here: "Take the Tour" hands off to OnboardingController's coachmark

@@ -1,8 +1,7 @@
 import Foundation
 import SwiftData
 
-// Background-actor SwiftData reader/writer for the T5 cache (design spec: "cache work
-// [stays] from the main actor" — Code Quality Review #4). `@ModelActor` gives this its
+// Background-actor SwiftData reader/writer for the cache. `@ModelActor` gives this its
 // own `ModelContext` bound to the shared `ModelContainer`, so callers on any actor can
 // safely await these methods without touching a `ModelContext` themselves — the one
 // place in the app that reads/writes SwiftData directly.
@@ -176,7 +175,7 @@ actor CachedSnapshotStore {
         try modelContext.save()
     }
 
-    // MARK: - Team schedule (DEP-248)
+    // MARK: - Team schedule
 
     /// Same validity rules as `teamStats` (version check + payload decode). `season` is
     /// folded into the row key so the current/default read (nil) and any historical

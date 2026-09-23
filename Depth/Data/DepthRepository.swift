@@ -1,12 +1,11 @@
 import Foundation
 
 // The one seam Features/ is allowed to depend on for data access — views never query
-// Supabase or receive a raw client directly (design spec's Architecture section).
+// Supabase or receive a raw client directly.
 protocol DepthRepository: Sendable {
     /// The 32-team list used by the searchable team selector (T6) — flat columns only,
-    /// no nested depth-chart/uniform embeds (Performance Review #1's `select(*)`
-    /// prohibition applies here too: this is a separate, lighter projection from
-    /// `teamSnapshot`, not a side effect of it).
+    /// no nested depth-chart/uniform embeds. This is a separate, lighter projection from
+    /// `teamSnapshot`, not a side effect of it.
     func teams() async throws -> [Team]
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot
     /// Read-only historical roster, intentionally separate from the current snapshot
@@ -19,18 +18,17 @@ protocol DepthRepository: Sendable {
     /// Independent lazy profile read. It is intentionally excluded from team snapshots
     /// and cache persistence because opening a player is the only consumer.
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats]
-    /// The team's season-record page plus DEP-312's bounded nflverse Compare evidence:
+    /// The team's season-record page plus the bounded nflverse Compare evidence:
     /// read-only `teams`, `team_stats`, and `team_season_stats` projections with no
     /// schema change. Cached like the snapshot (cache-first with background refresh),
     /// not delegated like the schedule — the Stats data flow reuses the snapshot cache
     /// layer rather than inventing a second one.
     func teamStats(teamId: String) async throws -> TeamStatsPage
-    /// DEP-313's bounded player participation evidence. This is a live, read-only
+    /// Bounded player participation evidence. This is a live, read-only
     /// current/previous-season query kept separate from TeamStatsPage and TeamSnapshot;
     /// a default nil keeps unrelated focused test doubles source-compatible.
     func recentParticipation(teamId: String) async throws -> RecentParticipation?
-    /// Cross-team player search for the switcher (2026-08-15 navigation-parity round 2:
-    /// "search should work for players as well as teams"), mirroring web's
+    /// Cross-team player search for the switcher, mirroring web's
     /// `searchAllPlayers`. Searches every ingested team's players, not just the selected
     /// roster. A default no-op keeps test doubles honest until a real implementation
     /// lands; only SupabaseDepthRepository overrides it.
@@ -45,8 +43,8 @@ protocol DepthRepository: Sendable {
     /// code — kit metadata only, no player/depth-chart embeds, so the payload stays
     /// bounded. Cache-first like the team list (stable, ~105 rows).
     func listUniforms() async throws -> [UniformListing]
-    /// The public `app_config` singleton backing the update gate (design spec's
-    /// "Database evolution and update gate"). Callers cache the last known value and
+    /// The public `app_config` singleton backing the update gate. Callers cache the last
+    /// known value and
     /// fall back to it when this throws.
     func appConfig() async throws -> AppConfig
 }

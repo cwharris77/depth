@@ -2,9 +2,8 @@ import SwiftUI
 
 // Account settings surface shared by anonymous and authenticated users. Sign-in is a
 // sheet rather than a navigation replacement, preserving public browsing continuity.
-// The About section satisfies design spec Gate 0 item 9 (in-app non-affiliation
-// disclaimer) and DEP-160's Apple requirement that the privacy policy be reachable from
-// within the app — the row links to the live production /privacy page
+// The About section includes the non-affiliation disclaimer and links to the privacy
+// policy from within the app — the row links to the live production /privacy page
 // (AppBuildInfo.privacyPolicyURL) via the system browser. Terms of Service links the
 // same way (AppBuildInfo.termsOfServiceURL) — sign-in already presents it at the point
 // of consent (AuthSheet), but signed-out browsing has no other path to it, so it's
@@ -13,14 +12,14 @@ import SwiftUI
 // channel, since there's no in-app form or analytics dashboard to otherwise surface
 // user-reported issues.
 //
-// DEP-319: the Settings card also carries the favorite-team picker and the
+// The Settings card also carries the favorite-team picker and the
 // "open this team when I start the app" toggle, mirroring web's AccountView (the picker
 // is where the web puts favorites — the settings surface, not a per-team control). Both
 // are account-gated by RLS (rows surface only while signed in; signing out hides them
 // entirely, like web's signed-out sign-in prompt), setting a favorite opts into
 // auto-opening, and the toggle row appears only once a favorite is set.
 //
-// Layout (design import, Settings.dc.html): Account / Preferences / About cards, each
+// Layout: Account / Preferences / About cards, each
 // under its own section label, with Sign Out and Delete Account demoted out of the
 // cards entirely — Sign Out as a full-width secondary button, Delete Account as a
 // centered text link below it — so the two routine-vs-destructive account actions read
@@ -34,16 +33,16 @@ struct SettingsView: View {
     let authService: any DepthAuthServicing
     var events: any AppEventsRecording = NoOpAppEventsRecorder()
     var clearPrivateData: @Sendable () async -> Void = {}
-    /// DEP-251: drives the "Take the tour" row below — replays the first-run welcome +
+    /// Drives the "Take the tour" row below — replays the first-run welcome +
     /// coachmark sequence on demand, independent of whether it's already been seen.
     let onboarding: OnboardingController
 
-    /// DEP-323: the user's chosen name-presentation style, shared with TeamDetailView
+    /// The user's chosen name-presentation style, shared with TeamDetailView
     /// through the same defaults key so the field picks it up immediately. Persisted via
     /// AppStorage (UserDefaults), so the choice survives relaunch.
     @AppStorage(FieldNameMode.storageKey) private var fieldNameMode: FieldNameMode = .callouts
 
-    // DEP-319: favorite-team + start-on-favorite state for this sheet, backed by the
+    // Favorite-team + start-on-favorite state for this sheet, backed by the
     // shared user_settings row. Injected (not read from DepthEnvironment) so the sheet
     // is testable and the three call sites (TeamDetailView, CompareView, UniformsTab)
     // share one store instance.
@@ -54,8 +53,8 @@ struct SettingsView: View {
     @State private var showAuth = false
     @State private var showDeletion = false
     @State private var signOutError: DepthAuthError?
-    // DEP-252 (Cooper review): Account moved from a full tab to a sheet, so it needs an
-    // explicit close affordance now — a tab never had this problem (switching tabs was
+    // Account is presented in a sheet rather than a full tab, so it needs an explicit
+    // close affordance — a tab never had this problem (switching tabs was
     // the exit), a modal sheet does.
     @Environment(\.dismiss) private var dismiss
 
@@ -94,9 +93,8 @@ struct SettingsView: View {
                         settingsTier
                         aboutTier
                         // Sign In sits where Sign Out sits in the signed-in branch above —
-                        // same bottom-of-page position in both states, matching the design
-                        // import's actual order (Settings.dc.html: Account/Preferences/
-                        // Data & Sync/About cards, THEN Sign Out/Delete Account last).
+                        // same bottom-of-page position in both states, after the settings
+                        // cards and before the destructive action.
                         signInPrompt
                     }
                 }
@@ -106,7 +104,7 @@ struct SettingsView: View {
         }
         .tint(DesignTokens.Colors.accent)
         .task {
-            // DEP-319: refresh the favorite/toggle from the server row on every sheet
+            // Refresh the favorite/toggle from the server row on every sheet
             // presentation (idempotent; remote is nil while signed out, so this is a
             // no-op there) and resolve the 32-team list for the picker once.
             await settingsStore.load()
@@ -114,7 +112,7 @@ struct SettingsView: View {
             self.teams = teams
         }
         .sheet(isPresented: $showAuth) {
-            // DepthSheet owns each sheet's background now (DEP-420) — no more explicit
+            // DepthSheet owns each sheet's background — no explicit
             // `.presentationBackground(bg)` at nesting call sites.
             AuthSheet(service: authService, sessionStore: sessionStore, events: events)
         }
@@ -132,9 +130,8 @@ struct SettingsView: View {
         }
     }
 
-    // Account card — icon-badge row, matching the design import's row language
-    // (Settings.dc.html's `.row-icon`) exactly: a tinted rounded-square badge leading
-    // every row, not just this one. Every row in this file follows the same shape.
+    // Account card — every row starts with a tinted rounded-square icon badge so the
+    // account, preference, and About rows share the same visual structure.
     private func accountTier(email: String) -> some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             sectionLabel("Account", tint: DesignTokens.Colors.accent)
@@ -189,13 +186,13 @@ struct SettingsView: View {
             // `padded: false` + per-row horizontal padding (not padding on the outer
             // card) — the default `padded: true` insets everything including the row
             // dividers below, which then stop short of the card's edges instead of
-            // spanning full-bleed like the design import's `.row+.row{border-top:...}`.
+            // spanning the full card width.
             VStack(alignment: .leading, spacing: 0) {
                 if sessionStore.user != nil {
-                    // DEP-319: favorite-team picker, mirroring web's AccountView select.
+                    // Favorite-team picker, mirroring web's AccountView select.
                     // Rendered only while signed in — settingsTier itself is shown to both
-                    // signed-in and signed-out visitors (DEP-323 promoted Player Names to
-                    // always-visible), but the favorite row is still RLS-gated, so it needs
+                    // signed-in and signed-out visitors, but Player Names is
+                    // always-visible, but the favorite row is still RLS-gated, so it needs
                     // its own explicit guard here rather than inheriting one from the tier.
                     favoriteTeamPicker
                     if let favoriteTeamId = settingsStore.favoriteTeamId, !favoriteTeamId.isEmpty {
@@ -225,8 +222,7 @@ struct SettingsView: View {
     // segmented track at phone width, and shortening them to fit ("Lines"/"Fit"/"Off")
     // would leave users guessing what they picked. A custom-label `Menu` (not
     // `Picker(.menu)`, which wraps its own system-rendered value text onto multiple
-    // lines with no truncation control outside a List) keeps the row's value on one
-    // line, matching the design import's `.row-value{white-space:nowrap}`.
+    // lines with no truncation control outside a List) keeps the row's value on one line.
     private var playerNamesRow: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
             Menu {
@@ -268,7 +264,7 @@ struct SettingsView: View {
         .padding(.horizontal, DesignTokens.Spacing.md)
     }
 
-    // DEP-319: mirrors web's favorite-team select (web/components/AccountView.tsx) — the
+    // Mirrors web's favorite-team select (web/components/AccountView.tsx) — the
     // menu lists "No favorite" plus every team, alphabetized like the sign-in page's
     // options list. Renders a redacted placeholder while the row is still loading so it
     // never flashes the wrong value before the server read lands.
@@ -322,7 +318,7 @@ struct SettingsView: View {
         return "\(team.city) \(team.name)"
     }
 
-    // DEP-319: the "open this team when I start the app" toggle. Shown only once a
+    // The "open this team when I start the app" toggle. Shown only once a
     // favorite is set (web parity) and only consulted by startup resolution when one is.
     private var startOnFavoriteToggle: some View {
         Toggle(isOn: startOnFavoriteBinding) {
@@ -345,8 +341,8 @@ struct SettingsView: View {
         )
     }
 
-    // DEP-269: 44pt hit target on every account action. Full-width secondary button
-    // rather than a card row (design import, Settings.dc.html) — Sign Out is routine
+    // A 44pt hit target on every account action. Full-width secondary button
+    // rather than a card row — Sign Out is routine
     // enough to stand on its own, not bundled into the preferences card.
     private var signOutButton: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
@@ -366,7 +362,7 @@ struct SettingsView: View {
         }
     }
 
-    // Plain centered text link, not a card + button (design import, Settings.dc.html) —
+    // Plain centered text link, not a card + button —
     // reads at a lower, more deliberate weight than Sign Out so a permanently
     // destructive action never competes visually with a routine one.
     private var dangerLink: some View {
@@ -382,7 +378,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             sectionLabel("About", tint: DesignTokens.Colors.textMuted)
             // `padded: false` + per-row horizontal padding — see settingsTier's comment
-            // above for why (full-bleed row dividers, matching the design import).
+            // above for why (full-width row dividers).
             VStack(alignment: .leading, spacing: 0) {
                 if let url = AppBuildInfo.privacyPolicyURL {
                     Link(destination: url) {
@@ -405,8 +401,7 @@ struct SettingsView: View {
                     .accessibilityIdentifier("settings-about-feedback")
                     Divider().overlay(DesignTokens.Colors.borderSubtle)
                 }
-                // DEP-251: replays the first-run welcome + coachmark sequence — the
-                // ticket's "replayable from Settings" requirement. Independent of the
+                // Replays the first-run welcome + coachmark sequence independently of the
                 // persisted "seen" flag; this always starts the flow from the top.
                 // Dismissing this sheet first (rather than leaving TeamDetailView's
                 // `showAccount` stale) matters: the coachmark targets live on the roster
@@ -438,7 +433,7 @@ struct SettingsView: View {
         }
     }
 
-    // DEP-415: all About actions share the same full-width wrapping treatment.
+    // All About actions share the same full-width wrapping treatment.
     private func aboutRow(_ title: String, icon: String) -> some View {
         let layout =
             dynamicTypeSize.isAccessibilitySize
@@ -461,10 +456,10 @@ struct SettingsView: View {
         .contentShape(Rectangle())
     }
 
-    // Icon-badge row leading element, matching Settings.dc.html's `.row-icon`
+    // Icon-badge row leading element.
     // (28pt tinted rounded square + centered glyph). `background` defaults to the
     // tint at 16% for the accent-tinted rows; the About tier's neutral rows pass
-    // `DesignTokens.Colors.surfaceChip` explicitly (the mockup's About icons use a
+    // `DesignTokens.Colors.surfaceChip` explicitly (About icons use a
     // plain white-at-7% fill rather than a colored tint).
     private func iconBadge(_ systemName: String, tint: Color, background: Color? = nil) -> some View
     {
@@ -515,7 +510,7 @@ struct SettingsView: View {
 
 // MARK: - Loading skeleton
 
-/// DEP-319: skeleton for the favorite-team picker row while the server row
+/// Skeleton for the favorite-team picker row while the server row
 /// is loading. Mirrors the loaded row's layout (icon badge, label, value,
 /// chevron) so the transition to the real content is smooth with no layout
 /// shift. Uses the shared `surfacePlaceholder` fill and `redacted` pattern

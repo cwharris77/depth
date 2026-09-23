@@ -1,7 +1,6 @@
 import Foundation
 
-// Last-selected team/section restoration state (design spec Milestone 1 item 16:
-// "Restore the last team and section on relaunch"). This is small key-value state, not
+// Last-selected team/section restoration state. This is small key-value state, not
 // a versioned server snapshot, so it lives in UserDefaults rather than SwiftData —
 // keeps CachedSnapshotStore scoped to what it's actually versioning.
 struct UserPreferences: Sendable {
@@ -32,7 +31,7 @@ struct UserPreferences: Sendable {
         nonmutating set { defaults.set(newValue?.rawValue, forKey: Key.lastUnit) }
     }
 
-    /// Per-team uniform selection (2026-08-15 visual-pass round 1): the uniform the
+    /// Per-team uniform selection: the uniform the
     /// field recolors with. Keyed by team id so switching teams keeps each team's own
     /// jersey, mirroring web's per-team localStorage kit selection.
     func uniformSelection(for teamId: String) -> String? {
@@ -50,7 +49,7 @@ struct UserPreferences: Sendable {
         defaults.set(selections, forKey: Key.uniformSelections)
     }
 
-    // DEP-219: local-first custom depth-chart order, literal port of web's
+    // Local-first custom depth-chart order, literal port of web's
     // web/lib/utils/depth-chart/depth-overrides.ts (localStorage there, UserDefaults here).
     // The always-on cache — works with no account, mirrored to the server only when
     // signed in (DepthOverrideStore.LocalFirstWriter). Stored as plain
@@ -107,7 +106,7 @@ struct UserPreferences: Sendable {
         defaults.set(store, forKey: Key.depthOverrides)
     }
 
-    // DEP-251: first-run tutorial "seen" flag, a one-time flag. OnboardingController checks
+    // First-run tutorial "seen" flag, a one-time flag. OnboardingController checks
     // this once at launch (startIfNeeded) and sets it the moment the welcome/coachmark flow
     // is skipped or finished — never on every intermediate step — so a user who backgrounds
     // the app mid-tour doesn't see it silently reset. Settings' "Take the tour" row bypasses

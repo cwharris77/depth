@@ -1,8 +1,7 @@
 import Foundation
 import Observation
 
-// Feature-local observable state for the team selector (design spec's "Prefer
-// feature-local observable state over a giant global state object"). Owns the
+// Feature-local observable state for the team selector. Owns the
 // list-loading lifecycle only; search filtering is a pure computed property so there's
 // nothing to keep in sync by hand.
 @Observable

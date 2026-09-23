@@ -1,13 +1,13 @@
 import Foundation
 import Observation
 
-// A pending "compare these two teams" request, handed between tabs (DEP-405). The
+// A pending "compare these two teams" request, handed between tabs. The
 // schedule page's game-card tap (inside DepthChartsTab's tree) asks for a matchup the
 // Compare tab isn't currently showing, and the two tabs have no view-tree relationship
 // to pass it through — RootTabView switches the selected tab, this store carries which
 // matchup to pre-load. A present request also means "this compare session came from a
 // schedule card", the signal that gates the Compare tab's "Back to schedule" pill (the
-// DEP-405 analog of DEP-280's `enteredFromSchedule`).
+// `enteredFromSchedule` analogue for tab-based navigation.
 //
 // Mirrors TeamRouteStore's shape: one pending value, consumed once so a re-render can't
 // re-apply a stale request. The app now has exactly two cross-tab destinations — team
@@ -18,7 +18,7 @@ import Observation
 final class CompareRouteStore {
     /// A matchup requested by a schedule-card tap, not yet applied by the Compare tab.
     /// `Equatable` so the Compare tab can observe store changes; the pair is the
-    /// `.navigationDestination(item:)` payload DEP-280 used to push — same two ids, new
+    /// `.navigationDestination(item:)` payload used to push — same two ids, new
     /// transport.
     struct CompareRouteRequest: Equatable, Hashable {
         let teamAId: String

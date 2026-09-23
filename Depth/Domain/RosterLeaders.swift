@@ -1,7 +1,7 @@
 import Foundation
 
 // Swift port of web/lib/utils/roster/roster-leaders.ts for the Stats page's ROSTER LEADERS
-// card (handoff: ../obsidian/Projects/depth/specs/2026-08-27-ios-roster-leaders-handoff.md).
+// card.
 // Pure: no fetch, no DB — the read layer (DepthRepository.rosterLeaders,
 // SupabaseDepthRepository's players + player_stats queries) hands this every roster
 // player's stats row for one season and this decides the leaders. A category with no

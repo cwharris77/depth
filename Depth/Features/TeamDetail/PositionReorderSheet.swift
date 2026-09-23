@@ -4,7 +4,7 @@ import SwiftUI
 // gone, "Edit Depth Chart" routes a field tap here instead of to the player profile: the
 // position's drag list (DepthReorderList — long-press pickup, haptics, VoiceOver Move
 // Up/Down), the CUSTOM tag, and Reset. Writes go through the caller's callbacks, which
-// TeamDetailView wires to the same local-first override writer the card used (DEP-219/226).
+// TeamDetailView wires to the same local-first override writer used by the depth chart.
 //
 // `players` is a presentation-time value: the sheet content closure doesn't re-run after a
 // commit, so the rendered order and CUSTOM state are local @State seeded from it.
@@ -120,7 +120,8 @@ struct PositionReorderSheet: View {
             .foregroundStyle(DesignTokens.Colors.textMuted)
             .padding(.horizontal, DesignTokens.Spacing.sm)
             .padding(.vertical, DesignTokens.Spacing.xs)
-            // DEP-259: 44pt hit target without inflating the pill's visual size; DEP-395:
+            // A 44pt hit target without inflating the pill's visual size; the shape sits
+            // on the label after its frame:
             // the shape sits on the label, after its frame.
             .frame(minWidth: 44, minHeight: 44)
             .contentShape(Rectangle())
@@ -131,7 +132,7 @@ struct PositionReorderSheet: View {
     private func commit(_ ordered: [Player]) {
         let reranked = rerankedPlayers(ordered)
         let orderedIDs = reranked.map(\.id)
-        // DEP-542: returning a starter to their original slot restores the default depth
+        // Returning a starter to their original slot restores the default depth
         // chart. This sheet owns the visible CUSTOM flag, so it must make the same decision
         // as its persistence callback instead of marking every completed drag as custom.
         if orderedIDs == defaultOrder.map(\.id) {

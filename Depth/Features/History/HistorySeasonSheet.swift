@@ -17,7 +17,7 @@ struct HistorySeasonSheet: View {
                         Text(label(for: season))
                         Spacer()
                         if season == selectedSeason {
-                            // DEP-268: accent-tinted, matching UniformPickerSheet's
+                            // Accent-tinted, matching UniformPickerSheet's
                             // selected-row checkmark — the default tint reads as
                             // system blue, a different "selected" color than the
                             // sheet's sibling.
@@ -26,7 +26,7 @@ struct HistorySeasonSheet: View {
                                 .accessibilityLabel("Selected")
                         }
                     }
-                    // DEP-281: without this, the trailing Spacer's transparent space
+                    // Without this, the trailing Spacer's transparent space
                     // between the label and the selected checkmark doesn't register
                     // taps — only the drawn Text/Image content did.
                     .contentShape(Rectangle())

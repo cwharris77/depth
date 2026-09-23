@@ -10,7 +10,7 @@ struct TeamStatsView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var viewModel: TeamStatsViewModel
     @State private var showSeasonPicker = false
-    /// DEP-278 follow-up: Stats fetches no uniform data of its own (lightweight read,
+    /// Stats fetches no uniform data of its own (lightweight read,
     /// invariant 5), so it reads the kit-resolved accent TeamDetailView publishes here
     /// instead — same store the tab tint and Schedule read.
     private let currentTeamStore: CurrentTeamStore
@@ -22,7 +22,7 @@ struct TeamStatsView: View {
 
     var body: some View {
         content
-            // DEP-236: the roster and schedule pages paint no explicit background, so they
+            // The roster and schedule pages paint no explicit background, so they
             // render on the system dark bg (pure black under the app's forced dark scheme);
             // the stats page must match, or it reads as a slightly-navy island between the
             // other two pages. No explicit background here = the same surface they use.
@@ -45,11 +45,11 @@ struct TeamStatsView: View {
 
     /// The accent that drives chips, DIFF (positive), and the next-game card border.
     /// `currentTeamStore` carries the kit-resolved color once TeamDetailView publishes
-    /// it (DEP-278 follow-up, web parity: `useKitColors`); falls back to this page's
+    /// it (web parity: `useKitColors`); falls back to this page's
     /// own team read while that hasn't happened yet (e.g. Stats opened before the
     /// roster page's snapshot has loaded for this team).
     /// The page's team accent, from the actively-picked kit when one is resolved, else this
-    /// team's own. DEP-424: the ring color — a real kit color, the same one the field dots
+    /// team's own. The ring color is a real kit color, the same one the field dots
     /// and the tab tint use, with legibility deliberately not gated.
     private var teamAccent: Color {
         if let colors = currentTeamStore.colors {
@@ -101,7 +101,7 @@ struct TeamStatsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     seasonPickerTrigger
-                        // DEP-236: the roster and schedule pages start their content 16pt
+                        // The roster and schedule pages start their content 16pt
                         // below the scroll top (`.padding(.vertical)` / `.padding()`);
                         // this page's first element is the trigger row, so it needs the
                         // same 16pt inset or it sits flush against the page switcher above.
@@ -204,7 +204,7 @@ struct TeamStatsView: View {
         .padding(.top, DesignTokens.Spacing.md)
     }
 
-    /// Shared "hero section" container (DEP-265): horizontal inset + bottom hairline +
+    /// Shared "hero section" container: horizontal inset + bottom hairline +
     /// fixed bottom spacing, used by both `heroRecord` and `degradedUpcomingHero` — they
     /// used to repeat this chrome and had drifted (bottom padding 18 vs 22, borderInput
     /// vs a wider inset). One container, one value, applied to both.
@@ -390,7 +390,7 @@ struct TeamStatsView: View {
     }
 
     /// A two-column row. A nil side leaves its half blank — the DIFF row has done this
-    /// since DEP-265, and an odd-length metric group now does the same.
+    /// since the DIFF row was introduced, and an odd-length metric group now does the same.
     private func statRow(left: StatCellSpec?, right: StatCellSpec?) -> some View {
         let layout =
             dynamicTypeSize.isAccessibilitySize
@@ -630,7 +630,7 @@ struct TeamStatsView: View {
         diff > 0 ? "+\(diff)" : String(diff)
     }
 
-    /// DEP-264: matches ScheduleGameCard's win/loss/tie colors — a positive DIFF is the
+    /// Matches ScheduleGameCard's win/loss/tie colors — a positive DIFF is the
     /// same `statusWin` green as a schedule-card win, not the team accent.
     private func diffColor(_ diff: Int) -> Color {
         diff > 0
@@ -639,7 +639,7 @@ struct TeamStatsView: View {
     }
 }
 
-/// DEP-265: the one eyebrow style shared by the team-name block and the footer ticker —
+/// The one eyebrow style shared by the team-name block and the footer ticker —
 /// caption2.bold, tracking 0.8, textMuted.
 private struct StatsEyebrow: View {
     let text: String

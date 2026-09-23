@@ -75,7 +75,7 @@ final class TeamStatsViewModel {
         return selectedSeason == page.seasons.first?.season
     }
 
-    /// DEP-245: true while a completed past season's chip is selected — the only state
+    /// True while a completed past season's chip is selected — the only state
     /// that needs a "Back to current" escape (the current/upcoming tab needs none).
     /// Web parity quirk included: during the off-season the newest real season row is a
     /// past selection even when it is the initial tab, because "current" is the upcoming
@@ -91,7 +91,7 @@ final class TeamStatsViewModel {
         page?.upcomingSeason ?? page?.seasons.first?.season
     }
 
-    /// DEP-245: one-tap return to the current season, mirroring the roster's existing
+    /// One-tap return to the current season, mirroring the roster's existing
     /// "Back to today" path (`selectImmediately(.current(...))`). Pure local state —
     /// no refetch, same as any other season selection here.
     func backToCurrentSeason() {

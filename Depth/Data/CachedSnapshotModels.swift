@@ -1,10 +1,9 @@
 import Foundation
 import SwiftData
 
-// SwiftData persistence models for T5's versioned public snapshot cache (design spec
-// locked decision #8). These never cross into Features/ — CachingDepthRepository is the
-// only reader/writer, and it always hands back plain Domain structs (Code Quality Review
-// #2's "keep DTO, domain, and SwiftData models separate").
+// SwiftData persistence models for the versioned public snapshot cache. These never cross
+// into Features/ — CachingDepthRepository is the only reader/writer, and it always hands
+// back plain Domain structs.
 //
 // `schemaVersion` on every row is compared against `depthCacheSchemaVersion` on read; a
 // mismatch means the on-disk shape (or the JSON payload it decodes to) may no longer
@@ -57,7 +56,7 @@ final class CachedTeamListEntry {
     }
 }
 
-// One row per cached team (design spec: "cache at most all 32 teams"). The nested
+// One row per cached team. The nested
 // players/specialTeams/uniforms shape isn't worth modeling relationally for v1 — it's
 // stored as one JSON-encoded `TeamSnapshot` payload per row, matching "no image blobs"
 // (the payload holds URLs/text only).
@@ -121,7 +120,7 @@ final class CachedTeamStats {
     }
 }
 
-// DEP-248 Schedule cache row. Keyed by a `cacheKey` that folds the season into the key
+// Schedule cache row. Keyed by a `cacheKey` that folds the season into the key
 // (`"\(teamId)|\(season)"`, with a sentinel for the "default/latest season" read — the
 // Schedule feature's first fetch uses season == nil, so that nil-default path needs its
 // own row or revisits would miss). Mirrors `CachedTeamStats`' payload-as-Data + safe

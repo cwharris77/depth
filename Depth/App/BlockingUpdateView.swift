@@ -2,13 +2,12 @@ import SwiftUI
 import UIKit
 
 // Shown when the installed build is below `app_config.minimum_supported_build`.
-// Deliberately offers no dismiss, no "continue anyway", and no navigation: DEP-425's
+// Deliberately offers no dismiss, no "continue anyway", and no navigation: an old client
 // whole purpose is that an old client cannot reach a backend that has moved past it, so
 // this is the one screen in the app that blocks rather than degrades (the explicit,
-// bounded exception to web/CLAUDE.md invariant 6).
+// must not reach a backend that has moved past it.
 //
-// Modeled on the Clash of Clans update prompt (Cooper's reference, 2026-09-01): a
-// centered dialog over a dimmed brand backdrop, with a single Update action.
+// A centered dialog over a dimmed brand backdrop, with a single Update action.
 //
 // Built as a dialog rather than a system `.alert` for two reasons, both load-bearing:
 //   * iOS 26 leading-aligns an alert's title and message and exposes no API to center
@@ -72,7 +71,7 @@ struct BlockingUpdateView: View {
     }
 }
 
-// DEP-425: held on screen while the update gate resolves, before anything that reads
+// Held on screen while the update gate resolves, before anything that reads
 // Supabase mounts. Only a first-ever launch (no cached app_config) ever sees it; it
 // mirrors the launch storyboard so that hold reads as the launch screen persisting
 // rather than as a distinct screen flashing by.
@@ -91,8 +90,8 @@ enum AppStoreUpdate {
     /// The App Store product page, built from `APP_STORE_ID` in the active `.xcconfig`.
     ///
     /// Returns nil while that id is unset (the placeholder `0`), which is the state
-    /// today: the real App Store Connect record is a separate tracked Gate 0 effort, and
-    /// an invented id would ship a button that opens nothing. Wiring it through build
+    /// today: the App Store Connect record is not configured, and an invented id would
+    /// ship a button that opens nothing. Wiring it through build
     /// config rather than a source constant means turning the gate fully live is a
     /// one-line xcconfig change, not a code change — the same "flip one value" property
     /// the server-side minimum build has.

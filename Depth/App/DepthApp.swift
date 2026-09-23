@@ -3,7 +3,7 @@ import SwiftUI
 
 // App entry point. Owns nothing but scene wiring — no Supabase/repository access here
 // or in any view; that boundary is DepthEnvironment (Support/) and the DepthRepository
-// protocol (Data/), per the design spec's "views never query Supabase directly" rule.
+// protocol (Data/); views never query Supabase directly.
 @main
 struct DepthApp: App {
     init() {
@@ -13,7 +13,7 @@ struct DepthApp: App {
 
         // UI tests launch with this argument so every test starts from the same
         // anonymous, no-restored-team state instead of inheriting whatever a previous
-        // run/manual session left in UserDefaults. Depth overrides (DEP-219) are part of
+        // run/manual session left in UserDefaults. Depth overrides are part of
         // that clean slate — without clearing them a leftover Bills QB override from an
         // earlier run makes reorder tests non-deterministic.
         if ProcessInfo.processInfo.arguments.contains("UI_TESTING_RESET_STATE") {
@@ -22,7 +22,7 @@ struct DepthApp: App {
             for teamId in DepthEnvironment.preferences.allOverrides().keys {
                 DepthEnvironment.preferences.clearTeamOverride(teamId: teamId)
             }
-            // DEP-251: mark the first-run tutorial already seen so the welcome screen
+            // Mark the first-run tutorial already seen so the welcome screen
             // doesn't intercept every other UI test's launch — only
             // UI_TESTING_SHOW_ONBOARDING (below) opts back into seeing it.
             DepthEnvironment.preferences.markOnboardingSeen()
@@ -55,13 +55,13 @@ struct DepthApp: App {
                 // Resolve-free direct write: StartupTeam.resolve would validate against the
                 // live ids, but the list hasn't loaded this early in init. Tests pass a
                 // real id, and DepthChartsTab's `.task` already corrects a stale
-                // preference once the list arrives (web/CLAUDE.md invariant 6), so writing the
+                // preference once the list arrives, so writing the
                 // raw id here is safe.
                 DepthEnvironment.preferences.lastTeamId = teamName
             }
         }
 
-        // DEP-251 onboarding UI tests: the one launch argument that puts the app back
+        // This onboarding UI-test launch argument puts the app back
         // into its genuine "never seen the tutorial" state, isolated from the blanket
         // "seen" default UI_TESTING_RESET_STATE sets above.
         if ProcessInfo.processInfo.arguments.contains("UI_TESTING_SHOW_ONBOARDING") {

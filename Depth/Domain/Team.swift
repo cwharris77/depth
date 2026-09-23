@@ -6,8 +6,7 @@ import Foundation
 // jersey data, and every surface now resolves from these three through TeamSurfaces. The
 // columns still exist in Postgres for builds already on devices (web/lib/uniforms/legacy-accents.ts
 // holds their frozen values), but this build neither selects nor decodes them, so a later
-// DROP COLUMN cannot break it. See ../../obsidian/Projects/depth/specs/
-// 2026-09-01-team-color-surface-rules-design.md, "Retirement path".
+// DROP COLUMN cannot break it.
 struct TeamColors: Codable, Equatable {
     let primary: String
     let secondary: String
@@ -82,7 +81,7 @@ struct TeamSnapshot: Equatable, Codable {
     let specialTeams: [SpecialSlot]
     let uniforms: [Uniform]
     let formations: [TeamFormation]
-    /// Where each athlete lines up, kept separate from who they are (DEP-585). Nil for a
+    /// Where each athlete lines up, kept separate from who they are. Nil for a
     /// historical season, which has no depth_chart_entries to read -- see seatsOf.
     let depthChart: [DepthSeat]?
 

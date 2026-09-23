@@ -10,8 +10,8 @@ struct DepthChartsTab: View {
     /// Resolved before first render from the user settings (favorite, if opted in) and
     /// `UserPreferences.lastTeamId` — optimistically, without waiting on the team list,
     /// so the snapshot fetch starts immediately. The `.task` below re-resolves once the
-    /// live ids are known and corrects a stale preference (web/CLAUDE.md invariant 6: stale
-    /// input degrades, never throws).
+    /// live ids are known and corrects a stale preference. Stale input degrades without
+    /// throwing.
     @State private var teamId: String
     @State private var showSwitcher = false
     /// A player picked from the switcher's cross-team search. Setting it alongside
@@ -26,16 +26,16 @@ struct DepthChartsTab: View {
     private let events: any AppEventsRecording
     /// Receives the current team's accent so the app chrome tints with it.
     private let currentTeamStore: CurrentTeamStore
-    /// DEP-319: favorite/start-on-favorite state read at launch for the favorite tier.
+    /// Favorite/start-on-favorite state read at launch for the favorite tier.
     private let userSettingsStore: UserSettingsStore
     /// Cross-tab "open this team" requests (today: the uniform archive's kit sheet).
     private let teamRouteStore: TeamRouteStore
-    /// DEP-405: bubbles a schedule-card tap (up through TeamDetailView) to RootTabView,
+    /// Bubbles a schedule-card tap (up through TeamDetailView) to RootTabView,
     /// which owns the tab selection — it writes the matchup to CompareRouteStore and
     /// switches to the Compare tab. Required, not optional: the schedule→compare jump
     /// is the only behavior this tab's onOpenCompare plumbing exists for.
     private let onOpenCompare: (String, String) -> Void
-    /// DEP-329: the uniform the user was viewing when they tapped "Open depth
+    /// The uniform the user was viewing when they tapped "Open depth
     /// chart" from the uniform kit sheet — applied once on appear so the
     /// depth chart shows the originating kit, not whatever was last persisted.
     @State private var requestedUniformId: String?
@@ -116,7 +116,7 @@ struct DepthChartsTab: View {
             // would otherwise strand the user on a permanently failing chart. Correcting
             // it here — after the cached/refreshed list arrives — is the only place the
             // live ids are known, and it is a no-op in the overwhelmingly common case.
-            // DEP-319: the favorite tier applies once the settings row has resolved
+            // The favorite tier applies once the settings row has resolved
             // (load() is a no-op while signed out, so favorites only win when one exists).
             //
             // The two reads run *concurrently*, not in sequence: `load()` parks on

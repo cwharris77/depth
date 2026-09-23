@@ -2,8 +2,7 @@
     import Foundation
 
     // Replays a checked-in JSON snapshot of the repository's Domain output so UI tests can run
-    // hermetically — no Supabase, no local stack, no network (spec:
-    // 2026-09-10-ios-test-data-and-snapshot-testing-design, locked decision 1). Enabled only
+    // hermetically — no Supabase, no local stack, no network. Enabled only
     // when the app launches with `UI_TESTING_FIXTURE_BACKEND` (see DepthEnvironment.repository),
     // and compiled under the `UITEST_FIXTURES` condition (Debug + Staging) — CI builds Staging,
     // so `#if DEBUG` would vanish exactly where the hermetic suite runs.

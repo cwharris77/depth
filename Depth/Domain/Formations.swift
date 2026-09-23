@@ -25,7 +25,7 @@ private func positionGroup(_ position: Position) -> PositionGroup? {
 }
 
 // Seats, not player rows: an athlete holding two seats belongs in the pool once per
-// seat, tagged with that seat's position (DEP-585).
+// seat, tagged with that seat's position.
 private func players(in roster: Roster, group: PositionGroup) -> [Player] {
     playersInSeats(in: roster) { positionGroup($0) == group }
 }
@@ -357,9 +357,8 @@ func buildRealFormation(alignment: String, code: String) -> [FormationSlot] {
 
 // --- Real per-team defensive formations -------------------------------------------
 
-// DEP-432: 45, not the 49 this was authored at. Measured against 137 clean snaps of NFL
-// tracking data, a defensive lineman aligns 1.3-1.4 yd off the ball with a very tight
-// spread (+/-0.5); 49 implied 0.26 yd, so the line was charted almost on top of the ball.
+// Use 45 rather than 49. A defensive lineman aligns 1.3-1.4 yd off the ball with a very
+// tight spread based on tracking data, so 49 would place the line almost on top of the ball.
 // 45 lands it at 1.3 yd. This was the one charted depth the tracking data showed as
 // unambiguously wrong -- the backfield checked out, and the secondary is bimodal enough
 // (58% press at corner in the sample game; 47% of snaps league-wide have 7+ in the box)
@@ -411,7 +410,7 @@ private func buildDlSlots(_ dl: Int) -> [FormationSlot] {
 }
 
 // The verified real 3-4 base (WLB/LILB/RILB/SLB, left to right) is the only LB-count
-// shape the taxonomy spec confirms as a real front; other counts stay generic.
+// shape supported by the defensive personnel taxonomy; other counts stay generic.
 private let lbTags: [Position] = [.wlb, .lilb, .rilb, .slb]
 
 private func buildLbSlots(_ lb: Int) -> [FormationSlot] {
@@ -503,8 +502,8 @@ func topFormation(for unit: Unit, formations: [TeamFormation]) -> TeamFormation?
 
 /// Turns one specific `TeamFormation` into its render-ready real-formation slots — what
 /// lets the field show a team's actual FTN-charted alignment instead of the generic
-/// synthetic layout, for a user-chosen formation as well as the default (DEP-221). nil
-/// for special teams (no special-teams formation data, matching web), so `resolveUnit`
+/// synthetic layout, for a user-chosen formation as well as the default. nil for special
+/// teams (no special-teams formation data, matching web), so `resolveUnit`
 /// falls back to the generic layout.
 func formationSlots(for unit: Unit, formation: TeamFormation) -> [FormationSlot]? {
     switch unit {
