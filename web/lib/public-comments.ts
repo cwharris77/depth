@@ -17,26 +17,45 @@ export type ChangedLineRanges = Map<string, Array<[number, number]>>;
 
 const hashCommentExtensions = new Set(['.py', '.sh', '.bash', '.zsh', '.toml', '.yml', '.yaml']);
 const sqlExtensions = new Set(['.sql']);
-const excludedExtensions = new Set(['.css', '.html', '.plist', '.svg', '.xml']);
+const markupExtensions = new Set(['.html', '.plist', '.svg', '.xml']);
 
 const forbiddenPatterns: Array<[string, RegExp]> = [
   ['ticket id', /\b(?:DEP|OB|SYM|AO|LLM|SCP)-\d+\b/i],
   [
     'private documentation path',
-    /(?:\.\.?\/)*obsidian\/Projects|Projects\/(?:depth|agent-ops|obsidian)\/(?:specs|Tickets|Reference)|\bthe vault\b/i,
+    /(?:\.\.?\/)*obsidian\/Projects|Projects\/(?:depth|agent-ops|obsidian)\/|\bobsidian\b|\bDecisions\.md\b|\bthe vault\b|\b\d{4}-\d{2}-\d{2}-[a-z0-9-]+|\b[a-z0-9-]+-design\.md\b/i,
   ],
   [
     'agent policy reference',
     /\b(?:AGENTS|CLAUDE)\.md\b|web\/CLAUDE\.md|\b(?:agent-ready|capture-ticket|scope-ticket)\b/i,
   ],
+  ['private decision provenance', /\b(?:Cooper|Greptile|Claude Design|NN\/G)\b/i],
   [
-    'private decision provenance',
-    /\b(?:per Cooper|Cooper's|Greptile|Claude Design|NN\/G|Astra review|Luna review)\b/i,
+    'model or agent name',
+    /\b(?:Astra|Luna|Codex|ChatGPT|GPT-\d[\w.]*|Gemini|Sonnet|Opus|Haiku|Copilot)\b|\bClaude\b(?! Code)/,
+  ],
+  [
+    'legal or sourcing stance',
+    /\b(?:third-party mark|fair[- ]use|nominative|non-free|licen[cs](?:e|es|ed|ing)|copyright\w*|trademark\w*|public domain|legal (?:posture|stance|audit)|(?:not|never) traced|trace-then-stylize)\b/i,
   ],
   [
     'temporary planning history',
-    /\b(?:locked decision|design spec|auth pass|share pass|backlog|roadmap|THROWAWAY PROTOTYPE|not landed|review demo account|App Review demo account)\b/i,
+    /\b(?:locked decision|design spec|auth pass|share pass|backlog|roadmap|THROWAWAY PROTOTYPE|not landed)\b/i,
   ],
+];
+
+// Markdown is checked line by line. Agent instruction files name each other by design, and the
+// attributions file is the one document allowed to carry third-party notices.
+const markdownExemptions: Record<string, ReadonlySet<string>> = {
+  '*': new Set(['agent policy reference']),
+  'ATTRIBUTIONS.md': new Set(['agent policy reference', 'legal or sourcing stance']),
+};
+
+// Private and machine-specific paths are rejected anywhere in a source file, not just in
+// comments, so a string literal cannot carry one either.
+const pathsInSource: Array<[string, RegExp]> = [
+  ['private documentation path', /\bobsidian[:/]|Projects\/depth\//i],
+  ['personal path', /\/Users\/[^/\s'"`]+\//],
 ];
 
 function lineNumberAt(source: string, index: number): number {
@@ -47,9 +66,27 @@ function lineNumberAt(source: string, index: number): number {
   return line;
 }
 
+export function isMarkdown(filename: string): boolean {
+  return path.extname(filename).toLowerCase() === '.md';
+}
+
+function blockDelimiters(filename: string): Array<[string, string]> {
+  const extension = path.extname(filename).toLowerCase();
+  if (markupExtensions.has(extension)) return [['<!--', '-->']];
+  // Python triple-quoted strings are docstrings or emitted text, and both are public prose.
+  if (extension === '.py') {
+    return [
+      ['"""', '"""'],
+      ["'''", "'''"],
+    ];
+  }
+  if (hashCommentExtensions.has(extension)) return [];
+  return [['/*', '*/']];
+}
+
 function lineCommentTokens(filename: string): string[] {
   const extension = path.extname(filename).toLowerCase();
-  if (excludedExtensions.has(extension)) return [];
+  if (markupExtensions.has(extension) || extension === '.css') return [];
   if (hashCommentExtensions.has(extension)) return ['#'];
   if (sqlExtensions.has(extension)) return ['--', '//'];
   return ['//'];
@@ -60,8 +97,13 @@ function isQuote(character: string): boolean {
 }
 
 export function extractComments(source: string, filename: string): SourceComment[] {
+  if (isMarkdown(filename)) {
+    return source.split('\n').map((text, index) => ({ line: index + 1, endLine: index + 1, text }));
+  }
   const comments: SourceComment[] = [];
   const tokens = lineCommentTokens(filename);
+  const blocks = blockDelimiters(filename);
+  const tracksQuotes = !markupExtensions.has(path.extname(filename).toLowerCase());
   let quote: string | null = null;
   let index = 0;
 
@@ -77,21 +119,23 @@ export function extractComments(source: string, filename: string): SourceComment
       continue;
     }
 
-    if (isQuote(character)) {
-      quote = character;
-      index += 1;
-      continue;
-    }
-
-    if (source.startsWith('/*', index)) {
-      const end = source.indexOf('*/', index + 2);
-      const endIndex = end === -1 ? source.length : end + 2;
+    const block = blocks.find(([open]) => source.startsWith(open, index));
+    if (block) {
+      const [open, close] = block;
+      const end = source.indexOf(close, index + open.length);
+      const endIndex = end === -1 ? source.length : end + close.length;
       comments.push({
         line: lineNumberAt(source, index),
         endLine: lineNumberAt(source, endIndex),
-        text: source.slice(index + 2, end === -1 ? source.length : end),
+        text: source.slice(index + open.length, end === -1 ? source.length : end),
       });
       index = endIndex;
+      continue;
+    }
+
+    if (tracksQuotes && isQuote(character)) {
+      quote = character;
+      index += 1;
       continue;
     }
 
@@ -114,14 +158,28 @@ export function extractComments(source: string, filename: string): SourceComment
 }
 
 export function findForbiddenCommentReferences(
-  comments: SourceComment[]
+  comments: SourceComment[],
+  filename = ''
 ): ForbiddenCommentReference[] {
+  const exempt = isMarkdown(filename)
+    ? new Set([...markdownExemptions['*'], ...(markdownExemptions[path.basename(filename)] ?? [])])
+    : new Set<string>();
   return comments.flatMap((comment) =>
     forbiddenPatterns.flatMap(([pattern, expression]) => {
+      if (exempt.has(pattern)) return [];
       const match = comment.text.match(expression);
       return match
         ? [{ line: comment.line, endLine: comment.endLine, pattern, match: match[0] }]
         : [];
+    })
+  );
+}
+
+export function findPrivatePathsInSource(source: string): ForbiddenCommentReference[] {
+  return source.split('\n').flatMap((text, index) =>
+    pathsInSource.flatMap(([pattern, expression]) => {
+      const match = text.match(expression);
+      return match ? [{ line: index + 1, endLine: index + 1, pattern, match: match[0] }] : [];
     })
   );
 }
