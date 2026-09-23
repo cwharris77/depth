@@ -47,7 +47,10 @@ import {
 } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
-import { SEAHAWKS_RIVALRIES_JERSEY, SEAHAWKS_RIVALRIES_JERSEY_PALETTE } from './rivalries-2025';
+import {
+  SEAHAWKS_RIVALRIES_JERSEY,
+  SEAHAWKS_RIVALRIES_JERSEY_PALETTE,
+} from './jerseys/rivalries-2025';
 
 const COLLAR_PATH = 'M206,388 L294,455 L386,388';
 

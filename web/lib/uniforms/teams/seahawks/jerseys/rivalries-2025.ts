@@ -1,15 +1,15 @@
-// Approved Seahawks 2025 Rivalries jersey (DEP-518), reconstructed by Astra from
-// Luna's official-detail and retail-placement reference packet. Baked vector paths keep
-// rendering independent of fonts, authoring tools, and image-generation services.
+// Approved Seahawks 2025 Rivalries jersey (DEP-518), reconstructed from official-detail
+// and retail-placement references. Baked vector paths keep rendering independent of fonts
+// and authoring tools.
 // Sources: https://www.seahawks.com/photos/2025-seahawks-nike-rivalries-uniform-detail-photos
 // https://www.seahawks.com/news/2025-seahawks-nike-rivalries-uniform-announcement
 // Hexes approximate the photographed Wolf Grey, College Navy, and reflective olive print;
 // the neck grey represents the shaded opening. These are approved flat-art approximations,
 // not official color specifications. The wordmark is outlined Arial Bold Italic, 21px;
 // the archive's canonical 3 intentionally omits the repeating 12 microtexture.
-import { JERSEY_NUMBER_THREE } from '../../jersey-art';
-import type { UniformPart } from '../core/parts';
-import { modernInsetVCollar } from '../core/shared';
+import { JERSEY_NUMBER_THREE } from '../../../jersey-art';
+import type { UniformPart } from '../../core/parts';
+import { modernInsetVCollar } from '../../core/shared';
 
 export const SEAHAWKS_RIVALRIES_JERSEY_PALETTE = {
   rivalriesJerseyNeck: '#92989B',
