@@ -20,12 +20,7 @@ import {
   BEARS_STRIPE_GROUP_HEIGHT,
   BEARS_STRIPE_GROUP_TOPS,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 const BEARS_MODERN_COLLAR_PATH = 'M216,388 Q216,412 238,431 L294,478 L350,431 Q372,412 372,388';
@@ -145,16 +140,11 @@ const PANTS_NAVY: UniformPart = {
   ).map((s): PartLayer => ({ ...s, clip: true, kind: 'fill' })),
 };
 
-export const BEARS_PARTS: TeamPartsDefinition = {
+export const BEARS_CONSTRUCTION = {
   teamId: 'bears',
   // Jersey hexes, teamcolorcodes.com — the same three the curated rows carry.
   palette: { navy: '#0B162A', orange: '#C83803', white: '#FFFFFF' },
   helmets: { 'navy-c': HELMET_NAVY_C },
-  jerseys: {
-    navy: jersey('navy', 'white', 'orange', 'white', BEARS_CLASSIC_COLLAR_PATH),
-    white: jersey('white', 'navy', 'orange', 'navy', BEARS_CLASSIC_COLLAR_PATH),
-    orange: jersey('orange', 'white', 'navy', 'white', BEARS_MODERN_COLLAR_PATH),
-  },
   pants: { navy: PANTS_NAVY },
   kits: {
     home: { helmet: 'navy-c', jersey: 'navy', pants: 'navy' },
@@ -163,4 +153,4 @@ export const BEARS_PARTS: TeamPartsDefinition = {
   },
 };
 
-export const BEARS_UNIFORMS_FROM_PARTS = compileParts(BEARS_PARTS);
+export { BEARS_CLASSIC_COLLAR_PATH, BEARS_MODERN_COLLAR_PATH, jersey };

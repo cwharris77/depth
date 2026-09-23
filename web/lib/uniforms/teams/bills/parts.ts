@@ -19,7 +19,7 @@ import {
   BILLS_SLEEVE_WHITE_LEFT,
   BILLS_SLEEVE_WHITE_RIGHT,
 } from './source';
-import { compileParts, type TeamPartsDefinition, type UniformPart } from '../core/parts';
+import type { UniformPart } from '../core/parts';
 
 const COLLAR_PATH = 'M206,388 L294,455 L386,388';
 const SLEEVE_BAND_PATH_LEFT = 'M34,558 L156,558 L152,578 L34,578 Z';
@@ -207,26 +207,11 @@ const HELMET_ICE: UniformPart = {
 
 // Home jersey: blue body. The sleeve band set (incl. the generic red sleeve band) lives in the
 // shared HELMET_WHITE part; same-paint-order as the flat's inherited-then-applied merge.
-const JERSEY_BLUE: UniformPart = {
-  base: 'navy',
-  layers: [],
-  number: { fill: 'readable-on-body', outline: 'red', outlineWidth: 26 },
-};
 
 // Away jersey: white body. The red pant stripe lives on PANTS_WHITE so white pants remain a
 // reusable option for either standard jersey.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [],
-  number: { fill: 'navy', outline: 'red', outlineWidth: 26 },
-};
 
 // Rivalries jersey: white body, no banding, silver-bordered navy numerals on the ice treatment.
-const JERSEY_RIVALRIES: UniformPart = {
-  base: 'white',
-  layers: [],
-  number: { fill: 'rivalriesNumber', outline: 'navy', outlineWidth: 26 },
-};
 
 // Home pants, blue, with the red generic pant stripe (the flat home inherits it).
 const PANTS_BLUE: UniformPart = {
@@ -278,7 +263,7 @@ const PANTS_WHITE: UniformPart = {
 // Rivalries pants, white, unbanded.
 const PANTS_RIVALRIES: UniformPart = { base: 'white', layers: [] };
 
-export const BILLS_PARTS: TeamPartsDefinition = {
+export const BILLS_CONSTRUCTION = {
   teamId: 'bills',
   // Construction hexes from the module (teamcolorcodes for navy/red; the ice-silver shades and the
   // rivalries number silver are fixed reference-bound approximations, see bills.ts).
@@ -291,11 +276,6 @@ export const BILLS_PARTS: TeamPartsDefinition = {
     rivalriesNumber: '#A9ADB1',
   },
   helmets: { white: HELMET_WHITE, ice: HELMET_ICE },
-  jerseys: {
-    blue: JERSEY_BLUE,
-    white: JERSEY_WHITE,
-    rivalries: JERSEY_RIVALRIES,
-  },
   pants: { blue: PANTS_BLUE, white: PANTS_WHITE, rivalries: PANTS_RIVALRIES },
   kits: {
     // The 2025 GUD composite shows both blue and white trousers with each modern top;
@@ -305,5 +285,3 @@ export const BILLS_PARTS: TeamPartsDefinition = {
     'rivalries-2025': { helmet: 'ice', jersey: 'rivalries', pants: 'rivalries' },
   },
 };
-
-export const BILLS_UNIFORMS_FROM_PARTS = compileParts(BILLS_PARTS);

@@ -22,13 +22,7 @@ import {
   BENGALS_SLEEVE_STRIPE_PATH_LEFT,
   BENGALS_SLEEVE_STRIPE_PATH_RIGHT,
 } from './source';
-import {
-  compileParts,
-  fromGeneric,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { fromGeneric, type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 const fill = (id: string, surface: UniformSurface, d: string, color: string): PartLayer => ({
@@ -66,27 +60,12 @@ const HELMET_ORANGE: UniformPart = {
 };
 
 // Home jersey: black body, orange tiger sleeve caps.
-const JERSEY_BLACK: UniformPart = {
-  base: 'black',
-  layers: sleeveStripes('orange'),
-  number: { fill: 'readable-on-body', outline: 'orange', outlineWidth: 26 },
-};
 
 // Away and color-rush jersey: white body, black tiger sleeve caps. Both rows resolve the
 // sleeve stripes to the same #000000 even though away reaches it through a literal and
 // color-rush through its 'secondary' — one part, one answer.
-const JERSEY_WHITE_TIGER: UniformPart = {
-  base: 'white',
-  layers: sleeveStripes('black'),
-  number: { fill: 'readable-on-body', outline: 'black', outlineWidth: 26 },
-};
 
 // Orange alternate jersey: orange body, black tiger sleeve caps.
-const JERSEY_ORANGE_TIGER: UniformPart = {
-  base: 'orange',
-  layers: sleeveStripes('black'),
-  number: { fill: 'readable-on-body', outline: 'black', outlineWidth: 26 },
-};
 
 // GUD's 2024 Bengals composite shows four interchangeable pants: black with orange outer-knee
 // claws, white with black claws, white with orange claws, and orange with black claws. The
@@ -107,7 +86,7 @@ const PANTS_WHITE_BLACK = pantsWithClaws('white', 'black');
 const PANTS_WHITE_ORANGE = pantsWithClaws('white', 'orange');
 const PANTS_ORANGE_BLACK = pantsWithClaws('orange', 'black');
 
-export const BENGALS_PARTS: TeamPartsDefinition = {
+export const BENGALS_CONSTRUCTION = {
   teamId: 'bengals',
   // Jersey hexes from the curated rows (teamcolorcodes); these are the three colors the rows
   // already carry across their four kits.
@@ -117,11 +96,6 @@ export const BENGALS_PARTS: TeamPartsDefinition = {
     white: '#FFFFFF',
   },
   helmets: { orange: HELMET_ORANGE },
-  jerseys: {
-    black: JERSEY_BLACK,
-    'white-tiger': JERSEY_WHITE_TIGER,
-    'orange-tiger': JERSEY_ORANGE_TIGER,
-  },
   pants: {
     'black-orange': PANTS_BLACK_ORANGE,
     'white-black': PANTS_WHITE_BLACK,
@@ -152,4 +126,4 @@ export const BENGALS_PARTS: TeamPartsDefinition = {
   },
 };
 
-export const BENGALS_UNIFORMS_FROM_PARTS = compileParts(BENGALS_PARTS);
+export { fill, sleeveStripes };

@@ -22,12 +22,7 @@ import {
   BUCCANEERS_SLEEVE_X_LEFT,
   BUCCANEERS_SLEEVE_X_RIGHT,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 const BUCCANEERS_WHITE = '#FFFFFF';
@@ -136,31 +131,16 @@ const HELMET_WHITE: UniformPart = { base: 'white', facemask: 'white', layers: cr
 
 // Home jersey: red body, pewter cuff and collar, white numerals ringed orange (two-ring trim
 // approximated to the single orange outline, see buccaneers.ts).
-const JERSEY_RED: UniformPart = {
-  base: 'red',
-  layers: [...cuff('pewter'), ...collar('pewter')],
-  number: { fill: 'white', outline: 'orange', outlineWidth: 14 },
-};
 
 // Away jersey: white body, pewter cuff and collar, red numerals ringed pewter.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [...cuff('pewter'), ...collar('pewter')],
-  number: { fill: 'red', outline: 'pewter', outlineWidth: 14 },
-};
 
 // Creamsicle jersey: orange body, three-band red/white/red cuff, no collar trim, white numerals
 // ringed red.
-const JERSEY_CREAMSICLE: UniformPart = {
-  base: 'creamOrange',
-  layers: creamCuff('crimson', 'white'),
-  number: { fill: 'white', outline: 'crimson', outlineWidth: 14 },
-};
 
 // One pair of white pants shared by all three kits.
 const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
 
-export const BUCCANEERS_PARTS: TeamPartsDefinition = {
+export const BUCCANEERS_CONSTRUCTION = {
   teamId: 'buccaneers',
   // Construction hexes from the module (teamcolorcodes). Red/pewter/orange/white are the physical
   // colors carried in different primary/secondary/accent slots per row; the flag's keyline/red/
@@ -178,11 +158,6 @@ export const BUCCANEERS_PARTS: TeamPartsDefinition = {
     ...BUCCANEERS_CREAMSICLE_DECAL_PATHS_COLORS,
   },
   helmets: { 'pewter-flag': HELMET_PEWTER_FLAG, white: HELMET_WHITE },
-  jerseys: {
-    red: JERSEY_RED,
-    white: JERSEY_WHITE,
-    creamsicle: JERSEY_CREAMSICLE,
-  },
   pants: { white: PANTS_WHITE },
   kits: {
     home: { helmet: 'pewter-flag', jersey: 'red', pants: 'white' },
@@ -191,4 +166,4 @@ export const BUCCANEERS_PARTS: TeamPartsDefinition = {
   },
 };
 
-export const BUCCANEERS_UNIFORMS_FROM_PARTS = compileParts(BUCCANEERS_PARTS);
+export { collar, creamCuff, cuff };

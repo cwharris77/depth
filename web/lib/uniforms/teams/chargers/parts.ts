@@ -24,12 +24,7 @@ import {
   CHARGERS_DECAL_BOLT_PATH,
   CHARGERS_DECAL_KEYLINE_PATH,
 } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 // Keyline first, body over it — the paint order every trimmed mark here uses.
@@ -84,18 +79,8 @@ const HELMET_WHITE: UniformPart = {
 
 // Powder-blue jersey (home + powder-blue): powder-blue body, white-keylined gold sleeve bolts,
 // white numerals keylined gold.
-const JERSEY_POWDER: UniformPart = {
-  base: 'powderBlue',
-  layers: bolts('white', 'gold'),
-  number: { fill: 'white', outline: 'gold', outlineWidth: 12 },
-};
 
 // Away jersey: white body, blue-keylined gold sleeve bolts, blue numerals keylined gold.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: bolts('powderBlue', 'gold'),
-  number: { fill: 'powderBlue', outline: 'gold', outlineWidth: 12 },
-};
 
 // The three legs the current kits are worn with, plus the navy the alternate needs. Plain colour —
 // see the side-seam note in the header for why no bolt is drawn on them.
@@ -107,7 +92,7 @@ const PANTS_POWDER: UniformPart = { base: 'powderBlue', layers: [] };
 // measurement is done; the kit that wears it is a separate curation ticket.
 const PANTS_NAVY: UniformPart = { base: 'navy', layers: [] };
 
-export const CHARGERS_PARTS: TeamPartsDefinition = {
+export const CHARGERS_CONSTRUCTION = {
   teamId: 'chargers',
   // Jersey hexes from the curated rows (teamcolorcodes). Powder blue and gold are the physical body
   // colors; white is the shell/numerals literal (no white token on the home row).
@@ -119,10 +104,6 @@ export const CHARGERS_PARTS: TeamPartsDefinition = {
     navy: '#002244',
   },
   helmets: { white: HELMET_WHITE },
-  jerseys: {
-    powder: JERSEY_POWDER,
-    white: JERSEY_WHITE,
-  },
   pants: {
     gold: PANTS_GOLD,
     white: PANTS_WHITE,
@@ -139,4 +120,4 @@ export const CHARGERS_PARTS: TeamPartsDefinition = {
   },
 };
 
-export const CHARGERS_UNIFORMS_FROM_PARTS = compileParts(CHARGERS_PARTS);
+export { bolts };

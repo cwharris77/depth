@@ -9,12 +9,7 @@
 // the 1946 throwback keeps its existing white pants outside that current-uniform option set.
 
 import { BROWNS_SLEEVE_X_LEFT, BROWNS_SLEEVE_X_RIGHT, BROWNS_STRIPE_BOUNDS } from './source';
-import {
-  compileParts,
-  type PartLayer,
-  type TeamPartsDefinition,
-  type UniformPart,
-} from '../core/parts';
+import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
 // The five-band stripe stack over the end of each sleeve. One construction, three colorways; the
@@ -105,18 +100,8 @@ const HELMET_BROWN: UniformPart = {
 };
 
 // Home jersey: brown body, white-over-orange stripe stack, plain white numerals (no keyline).
-const JERSEY_BROWN: UniformPart = {
-  base: 'brown',
-  layers: sleeveStripes('white', 'orange'),
-  number: { fill: 'white', outline: 'white', outlineWidth: 10 },
-};
 
 // Away + 1946 jersey: white body, brown-over-orange stripe stack, plain brown numerals.
-const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: sleeveStripes('brown', 'orange'),
-  number: { fill: 'brown', outline: 'brown', outlineWidth: 10 },
-};
 
 // White (P1) and orange (P2) pants: the 2025 GUD composite gives both the same
 // orange-brown-orange full-leg band.
@@ -130,7 +115,7 @@ const PANTS_BROWN: UniformPart = { base: 'brown', layers: [] };
 // unstriped white pant construction rather than importing an option from a different uniform era.
 const PANTS_1946_WHITE: UniformPart = { base: 'white', layers: [] };
 
-export const BROWNS_PARTS: TeamPartsDefinition = {
+export const BROWNS_CONSTRUCTION = {
   teamId: 'browns',
   // Jersey hexes from the curated rows (teamcolorcodes). Brown and orange are the two physical
   // colors carried in different primary/secondary/accent slots per row; white is the pants/numerals
@@ -141,10 +126,6 @@ export const BROWNS_PARTS: TeamPartsDefinition = {
     white: '#FFFFFF',
   },
   helmets: { orange: HELMET_ORANGE, brown: HELMET_BROWN },
-  jerseys: {
-    brown: JERSEY_BROWN,
-    white: JERSEY_WHITE,
-  },
   pants: {
     white: PANTS_WHITE,
     orange: PANTS_ORANGE,
@@ -158,4 +139,4 @@ export const BROWNS_PARTS: TeamPartsDefinition = {
   },
 };
 
-export const BROWNS_UNIFORMS_FROM_PARTS = compileParts(BROWNS_PARTS);
+export { sleeveStripes };
