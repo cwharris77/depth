@@ -1,6 +1,6 @@
 // Weekly nflverse rows → one consolidated season row per (player, season, season_type,
-// team). Pure: no fetch, no DB, no filesystem (the design's "one canonical point out" for
-// the R2 stat files, DEP-544). The publisher (publisher.ts) and the build script are the
+// team). Pure: no fetch, no DB, no filesystem (the one canonical point out for
+// the R2 stat files). The publisher (publisher.ts) and the build script are the
 // only I/O in the pipeline.
 //
 // Rules this module owns (2026-09-16 post-season-storage design, amending the 09-11

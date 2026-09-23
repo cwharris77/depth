@@ -1,10 +1,9 @@
 'use client';
 
-// Desktop context panel for the stats page (TeamPageShell's aside; Claude Design "Depth
-// Wide Desktop" mock): points for/against per season as paired bars, scaled against the
-// highest single value across every season shown. Renders straight from the `seasons`
-// prop the page already ships (web/CLAUDE.md invariant 5); nothing here fetches. Empty
-// seasons render nothing — the main column already handles the no-stats state.
+// Desktop context panel for the stats page (TeamPageShell's aside): points for/against per season
+// as paired bars, scaled against the highest single value across every season shown. Renders
+// straight from the `seasons` prop the page already ships; nothing here fetches. Empty seasons
+// render nothing — the main column already handles the no-stats state.
 import Tooltip from '@/components/ui/Tooltip';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import SectionLabel from '@/components/ui/SectionLabel';

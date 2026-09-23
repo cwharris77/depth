@@ -2,7 +2,7 @@
 // season record, home/road splits, win streak, recent form, and the next unplayed game —
 // all computed from the one team's already-resolved schedule prop. The schedule page
 // already ships every played result, so the panel adds no second data dependency (no
-// team_stats fetch, web/CLAUDE.md invariant 5). Kept out of the component so the record/streak
+// team_stats fetch). Kept out of the component so the record/streak
 // wording is unit-tested rather than buried in JSX.
 import type { TeamScheduleGame } from '@/lib/types';
 

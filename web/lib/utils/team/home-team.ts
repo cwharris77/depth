@@ -1,4 +1,4 @@
-// Startup-team resolution (Phase C, auth pass 1). Pure: given a signed-in user's saved
+// Startup-team resolution. Pure: given a signed-in user's saved
 // settings, decide which team the home route opens to. Precedence is favorite ->
 // last-viewed -> default. Every candidate is validated against the live team ids so a
 // stale setting (team removed/renamed between deploys) falls through instead of 404ing —

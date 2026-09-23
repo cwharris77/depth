@@ -124,7 +124,7 @@ describe('toPlayerRawRows', () => {
     expect(rows[0]).toMatchObject({ player_id: '3139477', week: 5, qbr_total: 72.1 });
   });
 
-  // DEP-558: the regpost file's season_type is a coverage flag (REG = no postseason berth,
+  // The regpost file's season_type is a coverage flag (REG = no postseason berth,
   // REG+POST = berth, POST = postseason-only), not a grain. Landing it verbatim left the
   // season table mixed, so a canonical read filtering REG dropped every playoff player.
   it('pins a coverage-flag season_type to the table grain', () => {

@@ -1,6 +1,6 @@
-// Runs the repository-owned DEP-316 evaluation from immutable cached nflverse bytes. Argument
-// validation completes before source loading, and artifact promotion stays delegated to the
-// decision-gated writer so this command cannot publish a declined model.
+// Runs the repository-owned matchup-forecast evaluation from immutable cached nflverse bytes.
+// Argument validation completes before source loading, and artifact promotion stays delegated to
+// the decision-gated writer so this command cannot publish a declined model.
 
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';

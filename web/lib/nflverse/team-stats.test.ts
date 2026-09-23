@@ -58,7 +58,7 @@ describe('toTeamStatsRows', () => {
 
   it('reads the source 50-yard bucket for the legacy truncated table column', () => {
     // nflverse publishes `fg_made_50_59`; `team_season_stats` kept the truncated
-    // `fg_made_50_`. Reading the table name left the column null forever (DEP-579).
+    // `fg_made_50_`. Reading the table name left the column null forever.
     const { rows } = toTeamStatsRows(
       [
         {

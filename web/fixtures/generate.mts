@@ -104,7 +104,7 @@ function slimRoster(r: TeamRoster) {
     })),
     specialTeams: r.specialTeams,
     // null rather than omitted so Swift's decoder sees the same optionality the TS type
-    // has: absent means "derive one seat per player" (DEP-585).
+    // has: absent means "derive one seat per player".
     depthChart: r.depthChart ?? null,
   };
 }
@@ -393,7 +393,7 @@ write(
   alignmentInputs.map((a) => ({ alignment: a, expectedLabel: alignmentLabel(a) }))
 );
 
-// --- matchup-metrics.json — buildMatchupMetrics (DEP-312) ---------------------------
+// --- matchup-metrics.json — buildMatchupMetrics ---------------------------
 
 const matchupMetricsCases: { description: string; input: TeamMatchupMetricsRow }[] = [
   {
@@ -464,7 +464,7 @@ write(
   }))
 );
 
-// --- recent-participation.json — buildRecentParticipation (DEP-313) ----------------
+// --- recent-participation.json — buildRecentParticipation ----------------
 
 const currentParticipationRow: PlayerRecentSnapsRow = {
   team_id: 'chiefs',

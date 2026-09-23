@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { classifyNewsItem, type RejectReason } from '@/lib/sportslogos/classify';
 
-// The corpus is the real SportsLogos.net NFL feed as of the monitor's first successful
-// run (2026-09-03) — all 30 items it surfaced, with the verdict each should get. Looping
-// one `it` per title means a regression names the offending headline (AGENTS.md §3's
-// data-integrity test convention) rather than failing as one opaque assertion.
+// The corpus is the real SportsLogos.net NFL feed as of the monitor's first successful run
+// (2026-09-03) — all 30 items it surfaced, with the verdict each should get. Looping one `it` per
+// title means a regression names the offending headline rather than failing as one opaque
+// assertion.
 const CORPUS: ReadonlyArray<readonly [string, true | RejectReason]> = [
   // --- Real unveilings: a team (or the league) putting out a new kit. ---
   ['NFL, Nike Unveil New “Rivalries” Uniforms For AFC South, NFC North', true],

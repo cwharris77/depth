@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 
-// Shared building blocks for the static long-form pages (/privacy, /terms, /support).
-// Those three pages are the only long-form prose in the app and had identical structure —
-// a bold heading over a muted body — repeated once per section in each file, along with the
-// same untokenized body color. That is the copy-pasted-structure regression AGENTS.md §4
-// #17 names, and it scales badly: the privacy policy alone runs to ~18 sections.
+// Shared building blocks for the static long-form pages (/privacy, /terms, /support). Those three
+// pages are the only long-form prose in the app and had identical structure — a bold heading over a
+// muted body — repeated once per section in each file, along with the same untokenized body color.
+// That is copy-pasted structure, and it scales badly: the privacy policy alone runs to ~18
+// sections.
 //
 // The body color below is deliberately the value these pages already shipped (#c5cbd8),
 // not a token: it sits between `textSecondary` and `textMuted` and has no token of its own.

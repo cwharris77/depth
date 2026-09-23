@@ -34,7 +34,7 @@ describe('handleAccountDeletion', () => {
     expect(deletedUserIds).toEqual(['11111111-1111-4111-8111-111111111111']);
   });
 
-  // DEP-562: the review demo account authenticates by password grant, so its recent
+  // The review demo account authenticates by password grant, so its recent
   // password AMR must authorize deletion exactly like a fresh OTP.
   it('deletes after recent password authentication', async () => {
     const deletedUserIds: string[] = [];

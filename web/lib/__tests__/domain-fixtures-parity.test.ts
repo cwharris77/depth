@@ -154,7 +154,7 @@ describe('domain fixtures parity (drift guard)', () => {
           players: Parameters<typeof player>[0][];
           specialTeams: TeamRoster['specialTeams'];
           // Null means the fixture roster has no depth chart, so seats derive from the
-          // players themselves — the historical-season path (DEP-585).
+          // players themselves — the historical-season path.
           depthChart: DepthSeat[] | null;
         };
         realFormation: FormationSlot[] | null;

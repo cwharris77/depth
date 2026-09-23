@@ -133,7 +133,7 @@ private struct PlayerProfileScreen: View {
         }
         .background(DesignTokens.Colors.bg)
         // No bar title: the band's surname and the name row already identify the player, and
-        // a title over the band competes with the numeral (Cooper, 2026-09-11).
+        // a title over the band competes with the numeral.
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
         .accessibilityIdentifier("player-profile-full-content")
@@ -193,8 +193,7 @@ private struct PlayerProfileScreen: View {
             .padding(.top, DesignTokens.Spacing.md)
             .padding(.bottom, 26)
             // Dropped so the numeral's top edge crosses the wordmark's middle: the upper half
-            // reads above the digits and the lower half sits hidden behind them (Cooper,
-            // 2026-09-11).
+            // reads above the digits and the lower half sits hidden behind them.
             .background(alignment: .top) {
                 cityWordmark.padding(.top, DesignTokens.Spacing.lg + DesignTokens.Spacing.xs)
             }

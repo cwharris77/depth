@@ -1,5 +1,4 @@
-// Parses nflverse participation's `offense_personnel` column (FTN-era, 2023+ — see
-// ../obsidian/Projects/depth/specs/2026-07-07-phase-e-real-formations-design.md) into RB/TE/WR
+// Parses nflverse participation's `offense_personnel` column (FTN-era, 2023+) into RB/TE/WR
 // counts, and reduces those counts to the standard NFL personnel-grouping shorthand
 // ("11", "12", "21", ...). Pure; no fetch, no DB.
 //

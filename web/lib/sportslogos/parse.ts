@@ -36,7 +36,7 @@ function extractTag(itemXml: string, tag: string): string | null {
 
 // Untrusted input (a third-party feed) degrades, never throws: a feed with no <item>
 // blocks, or an item missing a title/link, is skipped rather than crashing the check
-// script (web/CLAUDE.md invariant 6).
+// script.
 export function parseSportsLogosFeed(xml: string): SportsLogosNewsItem[] {
   const itemBlocks = xml.match(/<item>[\s\S]*?<\/item>/g) ?? [];
   const items: SportsLogosNewsItem[] = [];

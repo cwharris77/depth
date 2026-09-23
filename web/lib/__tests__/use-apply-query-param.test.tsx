@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useApplyQueryParam } from '@/lib/hooks/use-apply-query-param';
 
 // Mutable module-scoped stand-ins for next/navigation's hooks, reassigned per test to
-// simulate a URL/route change without a real Next.js router (DEP-184).
+// simulate a URL/route change without a real Next.js router.
 let mockParams = new URLSearchParams();
 let mockPathname = '/team/sea';
 const replace = vi.fn();
@@ -92,7 +92,7 @@ describe('useApplyQueryParam', () => {
 
   it('calls the latest apply callback even when it is a new function identity every render', () => {
     // None of this hook's current callers memoize `apply` -- this guards the ref-based fix
-    // (DEP-184 finding #2) so a fresh closure per render still fires with the current URL
+    // so a fresh closure per render still fires with the current URL
     // once the effect's real dependencies (the param value) actually change.
     let renderCount = 0;
     const seen: (string | null)[] = [];

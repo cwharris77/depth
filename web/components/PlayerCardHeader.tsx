@@ -34,7 +34,7 @@ export default function PlayerCardHeader({
   const [copied, setCopied] = useState(false);
   // Set when the clipboard write itself fails (e.g. permission denied, insecure
   // context) — distinct from the user simply dismissing the native share sheet,
-  // which is expected and not an error worth surfacing (DEP-131).
+  // which is expected and not an error worth surfacing.
   const [shareFailed, setShareFailed] = useState(false);
   const [prevPlayerId, setPrevPlayerId] = useState(player.id);
   if (player.id !== prevPlayerId) {
@@ -59,7 +59,7 @@ export default function PlayerCardHeader({
       setTimeout(() => setCopied(false), 1500);
     } catch {
       // clipboard blocked (insecure context / permission) — surface it rather than
-      // leaving the click looking like a no-op (DEP-131)
+      // leaving the click looking like a no-op
       setShareFailed(true);
       setTimeout(() => setShareFailed(false), 1500);
     }

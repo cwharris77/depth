@@ -4,12 +4,11 @@ import { useEffect, useState } from 'react';
 import type { TeamSchedule } from '@/lib/types';
 
 // Client-side fetch for a past season's read-only schedule (the schedule page's season
-// picker, ../obsidian/Projects/depth/specs/2026-08-10-past-season-schedule-view-design.md). `season`
+// picker). `season`
 // null means "not viewing history" -- the hook stays idle. Aborted on team/season change
 // so a slow response for a since-abandoned selection can't clobber a newer one (same
 // posture as useTeamSeason and PlayerCard's stats fetch). `notFound` distinguishes "no
-// data for this season" from "still loading" so the caller never flashes stale content
-// (web/CLAUDE.md invariant 16).
+// data for this season" from "still loading" so the caller never flashes stale content.
 export function useTeamScheduleSeason(teamId: string, season: number | null) {
   const [schedule, setSchedule] = useState<TeamSchedule | null>(null);
   const [loading, setLoading] = useState(false);

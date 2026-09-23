@@ -1,7 +1,7 @@
 'use client';
 
 // Shared team-page top bar: hamburger menu trigger, team switcher pill (abbrev +
-// chevron), and the ROSTER/SCHEDULE/STATS page switcher (design spec 5a). Used by
+// chevron), and the ROSTER/SCHEDULE/STATS page switcher. Used by
 // both the field (components/DepthChartField.tsx) and the stats page
 // (components/TeamStatsView.tsx) so moving between roster/schedule/stats reads as a
 // tab change, not navigating away and back. Owns its own nav-drawer/switcher sheet
@@ -90,7 +90,7 @@ export default function TeamPageHeader({
             switching, so the pill (and with it the NavSwitcher sheet) hides. */}
         {/* flex-wrap + justify-end: below xl, the pill and page switcher share this
             row while there's space; once their combined content no longer fits (small
-            phones — see DEP-199), the switcher drops to its own right-aligned line
+            phones), the switcher drops to its own right-aligned line
             instead of overflowing past the viewport edge and colliding with the logo. */}
         <div className="flex flex-1 flex-wrap items-center justify-end gap-1.5 min-w-0">
           <button

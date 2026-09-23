@@ -64,8 +64,8 @@ describe('toTeamRecords', () => {
     });
   });
 
-  // DEP-200 regression. This is the whole reason the record moved off ESPN's standings
-  // aggregate (DEP-146): ESPN reported preseason games as the season record through
+  // Regression. This is the whole reason the record moved off ESPN's standings
+  // aggregate: ESPN reported preseason games as the season record through
   // August. A game row's explicit game_type makes the exclusion checkable.
   it('counts only REG games — never preseason or postseason', () => {
     const rows = toTeamRecords(
@@ -80,7 +80,7 @@ describe('toTeamRecords', () => {
   });
 
   // The scheduled-but-unstarted season. Emitting a real 0-0 row (rather than nothing) is
-  // what overwrites the stale preseason row the pre-DEP-146 ESPN ingest left behind, and
+  // what overwrites the stale preseason row the earlier ESPN ingest left behind, and
   // it matches what ESPN's regular-season standings themselves return before Week 1.
   it('emits a 0-0 row for a scheduled season with no games played yet', () => {
     const rows = toTeamRecords([game({ home_score: null, away_score: null })], ALIGNMENTS);

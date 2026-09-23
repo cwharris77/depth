@@ -174,7 +174,7 @@ describe('formations are well-formed', () => {
   it('a slot with preferredPosition names a tag that actually belongs to its own group', () => {
     // Cheap insurance against a future data-entry mismatch: a slot claiming
     // preferredPosition: 'FS' inside group: 'CB' would silently never match (findIndex
-    // never finds it) and regress to the pre-DEP-148 fallback-only behavior with no
+    // never finds it) and regress to the fallback-only behavior with no
     // compile or test failure to catch it -- this pins the known group membership for
     // every preferredPosition value in use today.
     const GROUP_OF: Record<string, string> = {

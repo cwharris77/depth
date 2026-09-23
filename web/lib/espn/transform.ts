@@ -26,8 +26,7 @@ export interface Coach {
 // coach — ESPN doesn't expose the rest of the staff cheaply). Missing/empty array
 // (expansion team, offseason gap) -> null, never a crash (invariant 6). Consumed
 // directly by scripts/ingest-espn.mts for the teams.coach_* columns and by the team
-// stats page (../obsidian/Projects/depth/specs/2026-07-12-team-stats-page-design.md) — no
-// longer threaded through Team/TeamRoster.
+// stats page — no longer threaded through Team/TeamRoster.
 export function toCoach(roster: EspnRoster): Coach | null {
   const coach = roster.coach?.[0];
   if (!coach) return null;
@@ -49,7 +48,7 @@ export function parseTeamId(ref: string | undefined): string | null {
   return m ? m[1] : null;
 }
 
-// Athletes ESPN publishes on the depth chart but leaves out of the site roster (DEP-585).
+// Athletes ESPN publishes on the depth chart but leaves out of the site roster.
 //
 // The two are different slices of ESPN's data and they disagree. The Chiefs' chart lists
 // Josh Simmons at LT1 -- so does chiefs.com -- but neither the site roster nor the core
@@ -151,7 +150,7 @@ function collegeName(c: EspnAthlete['college']): string {
   return typeof c === 'string' ? c : (c.name ?? '—');
 }
 
-// Injury comes from ESPN's `injuries` collection, never from `status.type` (DEP-585).
+// Injury comes from ESPN's `injuries` collection, never from `status.type`.
 // `status.type` is roster bookkeeping, not health: league-wide it reads `active` (1726),
 // `practice-squad` (499), `day-to-day` (249) and `news` (8). Treating every non-`active`
 // value as injured badged all 499 practice-squad players INJURED though only 5 of them
@@ -194,7 +193,7 @@ function toPlayer(a: EspnAthlete, position: Position, depthRank: 1 | 2 | 3): Pla
 
 // One `depth_chart_entries` row: a position slot, its 1..3 rank, and who fills it.
 // Emitted per ESPN slot, so one athlete may hold slots at more than one position
-// (DEP-585) -- unlike `players`, which keeps exactly one identity row per athlete.
+// -- unlike `players`, which keeps exactly one identity row per athlete.
 export interface DepthChartSlot {
   position: Position;
   depthRank: 1 | 2 | 3;
@@ -257,7 +256,7 @@ export function toTeamRoster(args: {
   const players: Player[] = [];
   const seen = new Set<string>();
   // Every (position, rank, athlete) ESPN publishes, recorded independently of `seen`
-  // (DEP-585). `seen` exists to keep one identity row per athlete in `players`, but it
+  //. `seen` exists to keep one identity row per athlete in `players`, but it
   // used to gate slot emission too, so an athlete ESPN cross-lists -- a swing tackle at
   // `lt` and `rt`, an interior lineman at `lg` and `rg` -- was claimed by whichever key
   // iterated first and silently vanished from the other. That left the Chiefs with no
@@ -266,7 +265,7 @@ export function toTeamRoster(args: {
   const rawSlots: { position: Position; rank: number; playerId: string; number: number }[] = [];
   // Depth-chart athletes we still could not seat because nothing in `bios` names them.
   // Reported by the ingest instead of vanishing: a run that drops a player must not
-  // record `status: success` (DEP-585).
+  // record `status: success`.
   const unseated = new Set<string>();
   const special: Record<string, string | null> = {
     k: null,

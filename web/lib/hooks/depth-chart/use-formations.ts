@@ -19,10 +19,10 @@ function topFormationFor(unit: Unit, formations: TeamFormation[]): TeamFormation
   return unitFormations.reduce((top, f) => (f.rank < top.rank ? f : top));
 }
 
-// Real-formation selection for DepthChartField (Phase E offense, DEP-141 defense):
+// Real-formation selection for DepthChartField (offense and defense):
 // which formation chip is active for the current unit, the unit-filtered lists
 // FormationsSheet lists from, and the resolved on-field layout. The chip choice is
-// ephemeral -- not persisted, not in the URL (locked decision) -- and resets to the
+// ephemeral -- not persisted, not in the URL -- and resets to the
 // team's top formation on team change (render-time, mirroring useKit's team-change
 // reset) or whenever the caller switches units (resetToTopForUnit).
 export function useFormations(
@@ -67,7 +67,7 @@ export function useFormations(
   }, [historicalMode, unit, activeFormation]);
 
   // The ••• menu's "Formations" row shows the current pick inline instead of a separate
-  // on-field control (DEP-142/option 2a).
+  // on-field control.
   const formationsMeta = !activeFormation
     ? 'Base'
     : unit === 'offense'

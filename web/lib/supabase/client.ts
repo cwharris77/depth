@@ -1,4 +1,4 @@
-// Browser Supabase client for auth (Phase C, auth pass 1; OTP-code sign-in, auth pass 3).
+// Browser Supabase client for auth (OTP-code sign-in).
 // The app's data reads still go through dbRosterSource with the server-side publishable key; this
 // client exists only so the browser can run the code sign-in flow and observe auth state.
 // Singleton — one client per tab keeps a single auth/session listener and cookie writer.

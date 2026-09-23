@@ -1,5 +1,5 @@
 // The static server behind `npm run stat-files:serve`. It serves the filesystem target's
-// output (default `web/.stat-files/`) so the iOS reader (DEP-542) and the builders can read
+// output (default `web/.stat-files/`) so the iOS reader and the builders can read
 // published objects locally, without Cloudflare credentials. Node's `http` only — no new
 // dependency — and it replays each object's `<key>.headers.json` sidecar verbatim, so a
 // `curl` sees the same `Content-Type: application/json`, `Content-Encoding: gzip` and

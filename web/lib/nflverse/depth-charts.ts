@@ -4,7 +4,7 @@ import type { Position } from '../types';
 // Converts nflverse's two historical depth-chart schemas into the app's position
 // vocabulary. Unlike roster_<season>.csv, depth charts carry a real field slot; the
 // final regular-season snapshot is therefore the source of truth for historical side
-// labels (DEP-145). This stays pure so ingest and the one-time backfill use precisely
+// labels. This stays pure so ingest and the one-time backfill use precisely
 // the same selection rule.
 export function mapHistoricalDepthChartPositions(
   season: number,

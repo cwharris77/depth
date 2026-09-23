@@ -1,4 +1,4 @@
-// Chunk sizing for the nflverse ingest's upserts (DEP-557 follow-up). A PostgREST upsert's
+// Chunk sizing for the nflverse ingest's upserts. A PostgREST upsert's
 // cost scales with rows x columns, so the widest sources (`nflverse_player_week`,
 // ~150 columns) must use far fewer rows per statement than the narrow curated tables.
 // Bounding cells per statement keeps each write under Postgres's statement_timeout and

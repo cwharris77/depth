@@ -1,12 +1,12 @@
-// The per-source header contract for every nflverse CSV the ingest fetches (DEP-579).
+// The per-source header contract for every nflverse CSV the ingest fetches.
 // nflverse has changed its shape twice already — the `player_stats` release tag became
 // `stats_player`, and `stats_team_reg` publishes `fg_made_50_59` where the table reads
 // `fg_made_50_` — and both failures are silent: a renamed/removed column reads as `''`
 // → `null` through the transforms, and every fetch treats a 404 as "this source doesn't
 // publish that season". This module makes a *shape* change loud: the ingest checks the
 // header before transforming, so a renamed column records a failure naming the column
-// and writes none of that source-season's rows (the all-or-nothing posture DEP-544 and
-// DEP-577 rely on for the R2 stat files).
+// and writes none of that source-season's rows (the all-or-nothing posture the R2 stat
+// files rely on).
 //
 // `columns` is the required set; `optionalColumns` are legitimately absent (each needs a
 // stated reason); `columnAliases` maps a deliberate upstream rename

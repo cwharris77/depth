@@ -1,12 +1,12 @@
 'use client';
 
-// Regular-season schedule for one team (design spec 5a's SCHEDULE tab). A weekly card
+// Regular-season schedule for one team (the SCHEDULE tab). A weekly card
 // grid — one card per week: opponent code chip in the opponent's colors, date, HOME/AWAY
 // badge for upcoming games or the final score + W/L/T for played ones, with BYE weeks
 // called out. Client component receiving one team's already-resolved schedule as a prop
 // (invariant 5); it never imports all-32 data — opponent colors are baked into the prop.
 //
-// Season browsing (../obsidian/Projects/depth/specs/2026-08-10-past-season-schedule-view-design.md):
+// Season browsing:
 // the prerendered `schedule` prop is the default (current/latest) season; a past season
 // selected from the SeasonSheet bottom sheet is fetched client-side from the schedule
 // season API route and shown in the same grid — a completed season is all-played results,
@@ -139,7 +139,7 @@ function GameCard({
     </>
   );
 
-  // Historical seasons have no compare-page destination yet (DEP-198) — the card is a
+  // Historical seasons have no compare-page destination yet — the card is a
   // placeholder guard, not a real disabled control: muted opacity and no hover/cursor
   // affordance so it reads as intentionally inert rather than broken. Remove this guard
   // (restore the unconditional Link) once historical compare exists.

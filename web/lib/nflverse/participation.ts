@@ -1,7 +1,7 @@
 // Aggregates nflverse participation rows (`pbp_participation_<season>.csv`, FTN-era
-// 2023+ — ../obsidian/Projects/depth/specs/2026-07-07-phase-e-real-formations-design.md) into
+// 2023+) into
 // every (qbAlignment, personnelCode) combo a team ran that season, each with a usage
-// share (DEP-141: no top-N cap -- the coverage/games-played gate below is the only
+// share (no top-N cap -- the coverage/games-played gate below is the only
 // filter). FormationAccumulator carries the fold's running state so the ingest script can feed
 // it one streamed row at a time (the participation file is ~50MB — never materialize
 // the whole row set in memory); tallyFormations is the same fold over an in-memory

@@ -92,17 +92,15 @@ function splitRecord(display: string | undefined): { wins: number; losses: numbe
 // good seed the prior run wrote.
 //
 // `expectedSeason`, when provided, is the season the caller explicitly requested via
-// `?season=YYYY`. ESPN echoing a different `standings.season` means the payload isn't
-// what we asked for (the rollover window can relabel a placeholder block) -- skip, never
-// write it under the wrong season. The calendar (lib/utils/team/season-state.ts) decides
-// what we request; this guard just refuses a mislabeled response. `season` is read
-// per-division from `standings.season` (not the document's top-level season, which flips
-// to the *next* season once the current one ends -- verified live 2026-07-14) so this
-// same parser handles both the unparameterized "current" fetch and an explicit
-// `?season=YYYY` fetch for prior years (../obsidian/Projects/depth/specs/2026-07-14-multi-season-
-// team-stats-design.md). A division missing `standings.season` skips all its entries --
-// season is part of the composite key, so a half-known season is as unusable as a
-// half-known stat.
+// `?season=YYYY`. ESPN echoing a different `standings.season` means the payload isn't what we asked
+// for (the rollover window can relabel a placeholder block) -- skip, never write it under the wrong
+// season. The calendar (lib/utils/team/season-state.ts) decides what we request; this guard just
+// refuses a mislabeled response. `season` is read per-division from `standings.season` (not the
+// document's top-level season, which flips to the *next* season once the current one ends --
+// verified live 2026-07-14) so this same parser handles both the unparameterized "current" fetch
+// and an explicit `?season=YYYY` fetch for prior years. A division missing `standings.season` skips
+// all its entries -- season is part of the composite key, so a half-known season is as unusable as
+// a half-known stat.
 export function parseTeamStats(
   json: EspnStandings,
   expectedSeason?: number

@@ -27,10 +27,10 @@ export interface EspnAthlete {
   // Present on the site roster and on core `athletes/{id}` records. A non-empty array is
   // the only trustworthy injury signal ESPN gives us -- `status.type` also carries
   // roster bookkeeping like `practice-squad` and `free-agent`, which are not injuries
-  // (DEP-585).
+  //.
   injuries?: { status?: string }[];
   // Core-API-only fields, used when hydrating a depth-chart athlete the site roster
-  // omits: ESPN's own assertion of which team the athlete belongs to (DEP-585).
+  // omits: ESPN's own assertion of which team the athlete belongs to.
   active?: boolean;
   team?: { $ref?: string };
 }

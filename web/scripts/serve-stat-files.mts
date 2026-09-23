@@ -1,5 +1,5 @@
 // Serves the local stat-file tree the publisher writes (`web/.stat-files/` by default) over
-// plain HTTP, so the iOS read (DEP-542) and the builders can exercise the real object layout
+// plain HTTP, so the iOS read and the builders can exercise the real object layout
 // and headers without Cloudflare credentials. The request handling lives in
 // `lib/stat-files/serve.ts`; this file is the thin listen/serve glue.
 //

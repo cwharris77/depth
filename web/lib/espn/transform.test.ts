@@ -249,8 +249,7 @@ describe('toTeamRoster: still-collapsed raw keys (e.g. lb + mlb -> LB)', () => {
   // WLB/LILB/RILB/SLB/LCB/RCB/NB), but a few generic fallback keys (lb, mlb) still
   // collapse onto the same Position — real depth chart data for a team scheme this
   // repo hasn't sampled could still produce that shape, so toTeamRoster/toDepthChartRows
-  // must keep handling it (../obsidian/Projects/depth/specs/2026-08-04-full-espn-position-
-  // taxonomy-design.md's Files list: exhaustive Record<Position,...>/switch call sites,
+  // must keep handling it (exhaustive Record<Position,...>/switch call sites,
   // not this collision guard specifically — but the guard itself still needs a live key
   // pair to exercise it since the real fixture no longer has one).
   const ref = (id: string) => ({

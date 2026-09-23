@@ -1,6 +1,6 @@
 // Picks a team's single passing/rushing/receiving leader for its latest season and
-// formats each into the one-line summary the stats page renders (design spec 5a's
-// ROSTER LEADERS block). Pure: no fetch, no DB — the read layer (lib/roster-source.db.ts
+// formats each into the one-line summary the stats page renders (the ROSTER
+// LEADERS block). Pure: no fetch, no DB — the read layer (lib/roster-source.db.ts
 // getRosterLeaders) hands it every player's season rows and this decides the leaders.
 // A category with no positive yardage degrades to null rather than a zeroed row (the
 // repo's "show nothing, not zeros" posture, cf. lib/stat-lines.ts).

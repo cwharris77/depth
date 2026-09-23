@@ -1,10 +1,9 @@
 import type { Player, Position } from '@/lib/types';
 
-// Pure query-param validation for the two-team compare view (../obsidian/Projects/depth/specs/
-// 2026-07-07-compare-view-design.md). Kept separate from app/compare/page.tsx so it's
-// unit-testable without a server component. `?a=&b=&pos=` are untrusted query params,
-// not route segments — an unknown team id or bad position degrades to "unpicked"/the
-// default position rather than a throw or a 404 (web/CLAUDE.md invariant 6).
+// Pure query-param validation for the two-team compare view. Kept separate from
+// app/compare/page.tsx so it's unit-testable without a server component. `?a=&b=&pos=` are
+// untrusted query params, not route segments — an unknown team id or bad position degrades to
+// "unpicked"/the default position rather than a throw or a 404.
 
 // Position chip row, in display order (Decisions table "Position selector"). Excludes
 // KR/PR/LS: those are editorial special-teams slots, not depth groups, so they don't
@@ -89,8 +88,7 @@ export function getDeepestPosition(
 
 // Builds the small preview object CompareView renders as the Matchup tab's
 // discoverability row — never a whole roster, just the deepest position's rank-1
-// players and both sides' counts (web/CLAUDE.md invariant 5: server resolves, client
-// receives only what it needs).
+// players and both sides' counts (server resolves, client receives only what it needs).
 export function buildCompareTeaser(
   playersA: Player[][],
   playersB: Player[][],

@@ -28,7 +28,7 @@ type Props = {
 
 // The row directly below the team header: unit tabs (left) and the collapsed "•••"
 // overflow menu (right) -- uniform/seasons/formations/share/edit-mode. Extracted out
-// of FieldHeader so that component stays a thin coordinator (DEP-179 slice 3).
+// of FieldHeader so that component stays a thin coordinator.
 export default function FieldHeaderMenu({ activeColors, unit, menu }: Props) {
   const historicalMode = menu.season.value !== null;
   return (
@@ -59,10 +59,9 @@ export default function FieldHeaderMenu({ activeColors, unit, menu }: Props) {
             onClick: menu.onChooseUniform,
           },
           {
-            // divider metadata renders the row separator the old index-positioned
-            // borderTop drew between every pair of rows (DEP-187 restyles them as
-            // item data); each flag travels with its item so reorder/removal keeps
-            // the right lines.
+            // divider metadata renders the row separator the old index-positioned borderTop drew
+            // between every pair of rows (they are item data); each flag travels with its item so
+            // reorder/removal keeps the right lines.
             divider: true,
             icon: <History size={14} color={activeColors.uiAccent} />,
             label: 'Seasons',
@@ -94,13 +93,12 @@ export default function FieldHeaderMenu({ activeColors, unit, menu }: Props) {
             onClick: menu.share.onShare,
             divider: true,
           },
-          // App-level edit toggle, folded into the overflow menu instead of its own
-          // row: on puts every position group's card into reorder mode at once (no
-          // per-card Reorder taps needed); off exits all of them together. Disabled
-          // (not omitted) while previewing a shared board or viewing a past season,
-          // same as reorder itself is disabled in both (locked decision, phase-d
-          // spec) -- a Tooltip on the disabled row explains why instead of the item
-          // just silently disappearing.
+          // App-level edit toggle, folded into the overflow menu instead of its own row: on puts
+          // every position group's card into reorder mode at once (no per-card Reorder taps
+          // needed); off exits all of them together. Disabled (not omitted) while previewing a
+          // shared board or viewing a past season, same as reorder itself is disabled in both -- a
+          // Tooltip on the disabled row explains why instead of the item just silently
+          // disappearing.
           {
             icon: (
               <Pencil

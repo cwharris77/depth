@@ -49,7 +49,7 @@ import type {
   UniformKind,
 } from '@/lib/types';
 
-// Postgres-backed RosterSource (roadmap: ESPN ingestion -> DB -> app). Reads
+// Postgres-backed RosterSource (ESPN ingestion -> DB -> app). Reads
 // teams/players/depth_chart_entries/special_teams_slots and assembles the same
 // TeamRoster shape the app already renders.
 
@@ -271,7 +271,7 @@ const TEAM_COACH_SEASONS_SELECT = 'season, coach_name, coach_experience';
 // 6 — writeTeamStats skips the upsert on a partial entry), so every column should be
 // non-null in practice; the `?? 0`/`?? ''` fallbacks only guard the nullable-by-schema
 // type, not a real expected case. `coachBySeason` is a separate hand-curated table
-// (../obsidian/Projects/depth/specs/2026-07-14-season-scoped-head-coach-design.md) — a season with
+// — a season with
 // no curated row (not yet backfilled) simply has no coach, same "degrade, don't fake"
 // rule as every other optional field here.
 // `nflverseStatsBySeason` carries team_season_stats (nflverse) values merged alongside
@@ -711,8 +711,8 @@ const ROSTER_HISTORY_SELECT =
 
 // Historical player ids are `gsis:<gsis_id>@<season>` (not an ESPN id -- most historical
 // players were never ingested by the live ESPN pipeline). This is the same typed-ref
-// format the D2 boards spec's player refs share, so a board can point at either id space
-// unambiguously (../obsidian/Projects/depth/specs/2026-07-07-phase-d-history-and-boards-design.md).
+// format shared-board player refs use, so a board can point at either id space
+// unambiguously.
 function toHistoricalPlayer(row: RosterHistoryRow, team: Team): Player {
   const rank = row.depth_rank as 1 | 2 | 3;
   return {
@@ -721,7 +721,7 @@ function toHistoricalPlayer(row: RosterHistoryRow, team: Team): Player {
     number: row.number ?? 0,
     position: row.position as Position,
     depthRank: rank,
-    // Locked decision: historical status is noise beyond starter/backup -- no
+    // Historical status is noise beyond starter/backup -- no
     // injured/rookie flags (the source data doesn't carry them).
     status: rank === 1 ? 'starter' : 'backup',
     order: row.player_order,
@@ -944,7 +944,7 @@ async function fetchTeamStatsPage(teamId: string): Promise<TeamStatsPage | undef
     leagueRanksBySeason: buildLeagueRanks(teamId, rankRows, nflverseRankRows, lineRankRows),
     // `coach_experience === 0` is ESPN's live signal for "hired, but hasn't coached a
     // season yet" — see TeamStatsPage.incomingCoach doc comment. Off-season only
-    // (DEP-597): ESPN's counter only advances once a season completes, so without the
+    // because ESPN's counter only advances once a season completes, so without the
     // gate a first-year coach reads INCOMING through the whole season he is actually
     // coaching. In-season, `team_coach_seasons` carries his 1st-season row instead.
     incomingCoach:
@@ -1137,11 +1137,11 @@ type PlayerStatsRow = Pick<
   | 'fg_made'
   | 'fg_att'
 > & {
-  // Embedded via the team_id FK (DEP-202) -- null when team_id is null (unresolved
-  // source code, or a pre-DEP-202 row) or, in principle, dangling (FK-enforced, so
-  // shouldn't happen; degrades to null rather than throwing either way, invariant 6).
+  // Embedded via the team_id FK -- null when team_id is null (unresolved
+  // source code, or an older row) or, in principle, dangling (FK-enforced, so
+  // shouldn't happen; degrades to null rather than throwing either way).
   // logo_dark_url (not logo_url) -- the season-stats card always sits on the app's fixed
-  // dark background (#15161a since DEP-274), so the dark-optimized ESPN variant is the
+  // dark background (#15161a), so the dark-optimized ESPN variant is the
   // right asset -- the same reasoning the surface resolvers apply to text. Independently nullable
   // from team_id resolving.
   teams: Pick<Tables['teams']['Row'], 'abbrev' | 'logo_dark_url'> | null;
@@ -1180,7 +1180,7 @@ function toPlayerSeasonStats(row: PlayerStatsRow): PlayerSeasonStats {
 // ESPN id -- player_stats.player_id is always ESPN's id space. Resolve via roster_history's
 // espn_id column (populated for players nflverse's crosswalk could also match to ESPN) before
 // querying player_stats. No match (older/ESPN-unmapped player) means no ESPN-sourced stats
-// exist to show -- return [] rather than guessing (web/CLAUDE.md invariant 6).
+// exist to show -- return [] rather than guessing.
 const HISTORICAL_PLAYER_ID_PATTERN = /^gsis:(.+)@\d+$/;
 
 async function resolveEspnId(
@@ -1201,7 +1201,7 @@ async function resolveEspnId(
   return data?.espn_id ?? null;
 }
 
-// Lazy per-player read (locked decision: the field view never needs stats, so this
+// Lazy per-player read (the field view never needs stats, so this
 // isn't part of fetchTeamRoster's batch) -- backs app/api/players/[id]/stats/route.ts,
 // fetched client-side only when a PlayerCard opens. REG only in v1 (season_type filter
 // mirrors the ingest, which only ever writes REG rows today).
@@ -1240,16 +1240,14 @@ function toTeamFormation(row: TeamFormationRow): TeamFormation {
   };
 }
 
-// Every real formation a team ran per unit for its latest ingested season (Phase E,
-// ../obsidian/Projects/depth/specs/2026-07-07-phase-e-real-formations-design.md; defense added,
-// cap lifted DEP-141) — feeds the Formations sheet for both the offense and defense
-// tabs. No `.limit()`: the accumulator is already coverage-gated (lib/nflverse/
-// participation.ts), so a team's real per-season combo count never approaches
-// PostgREST's own 1000-row default. Ordered `season desc, unit, rank asc` rather than a
-// separate max-season query; the latest season present in the result is taken from the
-// first row and used to filter out any older season that slipped in. Empty for a
-// team/unit the ingest judged as insufficient-coverage (or hasn't reached yet) — the
-// field view falls back to the generic formation, never a partial list (invariant 6).
+// Every real formation a team ran per unit for its latest ingested season — feeds the Formations
+// sheet for both the offense and defense tabs. No `.limit()`: the accumulator is already
+// coverage-gated (lib/nflverse/ participation.ts), so a team's real per-season combo count never
+// approaches PostgREST's own 1000-row default. Ordered `season desc, unit, rank asc` rather than a
+// separate max-season query; the latest season present in the result is taken from the first row
+// and used to filter out any older season that slipped in. Empty for a team/unit the ingest judged
+// as insufficient-coverage (or hasn't reached yet) — the field view falls back to the generic
+// formation, never a partial list (invariant 6).
 export async function getTeamFormations(teamId: string): Promise<TeamFormation[]> {
   'use cache';
   cacheLife('ingest');
@@ -1451,8 +1449,7 @@ function toScheduleGame(
 // A team's regular-season schedule for one season (default: its latest), resolved from
 // this team's perspective with opponents enriched for the UI. Standalone read (not on
 // RosterSource, like getPlayerStats) — the field view never needs it. Degrades to null on
-// an unknown team, a season with no games, or any query error
-// (../obsidian/Projects/depth/specs/2026-07-17-team-schedule-design.md).
+// an unknown team, a season with no games, or any query error.
 export async function getTeamSchedule(
   teamId: string,
   season?: number
@@ -1499,8 +1496,8 @@ export async function getPostseasonGames(
 type RosterLeaderStatsRow = PlayerStatsRow & Pick<Tables['player_stats']['Row'], 'player_id'>;
 const ROSTER_LEADER_STATS_SELECT = `player_id, ${PLAYER_STATS_SELECT}`;
 
-// Team passing/rushing/receiving leaders for one season on the stats page (design spec
-// 5a), re-derived per season tab (Stats & Analytics P1 — leaders must track the season
+// Team passing/rushing/receiving leaders for one season on the stats page, re-derived
+// per season tab (leaders must track the season
 // switcher, not just the roster's newest season). Two typed queries — the team's players
 // (for id -> name) and their REG rows for that season — merged in memory, so no user
 // input touches PostgREST filter syntax (invariant 8). The field view never needs this,

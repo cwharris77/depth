@@ -1,4 +1,4 @@
-// Session refresh (Phase C, auth pass 1). Next 16 renamed middleware -> proxy
+// Session refresh. Next 16 renamed middleware -> proxy
 // (node_modules/next/dist/docs/01-app/01-getting-started/16-proxy.md). Runs before each
 // matched request, refreshes the Supabase auth session, and writes the rotated cookies
 // onto the response so server components see a live session.
@@ -13,7 +13,7 @@
 // RememberTeam) goes through the browser Supabase client, independent of this refresh
 // entirely. Running this on every request was a real, measured perf cost (a live network
 // round-trip to Supabase ahead of Next's cache/CDN layer, on routes that never needed
-// it) — see "Depth field slow to load — general performance pass" in the vault.
+// it).
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import type { Database } from '@/lib/database.types';

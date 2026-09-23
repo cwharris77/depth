@@ -349,7 +349,7 @@ struct DepthChartFieldView: View {
             // the roster explicitly assigned that spot, so "assigned but the player is
             // gone" is a real state worth marking rather than a resolution gap. History
             // no longer reaches here — HistoricalRosterMapper omits a slot it can't seat
-            // instead of shipping a permanently empty one (Cooper, 2026-09-02).
+            // instead of shipping a permanently empty one.
             slotDot(
                 label: slot.label,
                 number: nil,

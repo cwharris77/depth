@@ -1,9 +1,8 @@
 // Turns nflverse's nfldata/games.csv rows into `games` + `schedules` upsert rows. Pure:
 // no fetch, no DB. Each CSV row is one shared game (home + away on a single row); it
 // becomes one game row and contributes a schedule row for each team's (team, season) —
-// the ingest upserts schedules first so the games' composite FKs resolve
-// (../obsidian/Projects/depth/specs/2026-07-17-team-schedule-design.md). A row whose home or away
-// code doesn't crosswalk (resolveCode -> null), or whose season isn't a number, is
+// the ingest upserts schedules first so the games' composite FKs resolve. A row whose home
+// or away code doesn't crosswalk (resolveCode -> null), or whose season isn't a number, is
 // skipped and counted -- never guessed, same posture as the player-stats transform.
 //
 // games.csv is nfldata's single schedule/results file covering every season since 1999
@@ -11,7 +10,7 @@
 // so scoping happens after parsing. By default only the two most recent seasons found
 // in the file are kept, mirroring the "current + previous season" rule the player-stats
 // ingest already applies; an explicit `minSeason` (the historic-backfill script's
-// --seasons flag, the vault's `Reference/nflverse.md`) overrides that and keeps everything from that season
+// --seasons flag) overrides that and keeps everything from that season
 // on. Older rows are dropped, not "skipped" (skipped means malformed).
 
 export interface ScheduleInsert {

@@ -6,7 +6,7 @@ import type { JerseyColors } from '@/lib/types';
 
 // The resolvers replace a per-kit stored hex, so the property that matters most is not
 // "is it legible" but "is it the team's". These loop the whole archive, one `it` per kit,
-// so a failure names the offending row (AGENTS.md §3, the uniforms.test.ts pattern).
+// so a failure names the offending row (the uniforms.test.ts pattern).
 
 const WHITE = '#ffffff';
 const AA_LARGE = 3;

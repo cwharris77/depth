@@ -11,7 +11,7 @@
 // cases that genuinely read like a reveal but aren't (a Madden "reveal", a New Era
 // "launch", a "Sources:" leak that the real post will re-trigger days later).
 //
-// Untrusted input degrades, never throws (web/CLAUDE.md invariant 6) — anything unparseable
+// Untrusted input degrades, never throws — anything unparseable
 // is simply rejected rather than crashing the check run.
 
 export type RejectReason =

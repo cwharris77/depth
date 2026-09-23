@@ -1,5 +1,5 @@
 // Turns the raw `games` for a team into its regular-season schedule from that team's
-// perspective, and finds its next unplayed game (design spec 5a). Pure: no fetch, no DB —
+// perspective, and finds its next unplayed game. Pure: no fetch, no DB —
 // the read layer (lib/roster-source.db.ts) hands it Game rows and enriches the resolved
 // opponent ids into full team metadata for the UI. resolveSchedule is regular-season only;
 // postseason games (game_type WC/DIV/CON/SB) are resolved separately by resolvePostseason
@@ -92,7 +92,7 @@ export function nextGame(schedule: ResolvedScheduleGame[]): ResolvedScheduleGame
 // swept in as a postseason game (it would have rendered under POSTSEASON with a raw "PRE"
 // round label, since postseasonRoundLabel degrades an unknown code to itself). Latent
 // today — nflverse's games.csv carries no preseason rows at all (verified: only REG/WC/
-// DIV/CON/SB, 1999-2026) — but DEP-204 is scoped to ingest preseason from ESPN as `PRE`,
+// DIV/CON/SB, 1999-2026) — but preseason is ingested from ESPN as `PRE`,
 // and this is the filter it would have walked straight into.
 const POSTSEASON_GAME_TYPES = new Set(['WC', 'DIV', 'CON', 'SB']);
 
@@ -141,8 +141,8 @@ export function postseasonRoundLabel(gameType: string): string {
   return POSTSEASON_ROUND_LABELS[gameType] ?? gameType;
 }
 
-// Maps a `?season=` value to the schedule season to view, or null for the default view
-// (../obsidian/Projects/depth/specs/2026-08-10-past-season-schedule-view-design.md). `null` means
+// Maps a `?season=` value to the schedule season to view, or null for the default view.
+// `null` means
 // "today" — the page's prerendered latest-season schedule. The current season IS that
 // default view, so an explicit param equal to `currentSeason` normalizes to null rather
 // than double-fetching it through the API (same semantic as SeasonSheet's current row).

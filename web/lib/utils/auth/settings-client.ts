@@ -1,4 +1,4 @@
-// Client helpers for the per-user settings API (Phase C, auth pass 1). Thin fetch
+// Client helpers for the per-user settings API. Thin fetch
 // wrappers over app/api/settings so components don't hand-roll requests. Reads degrade
 // to null (signed out / network error); writes are fire-and-forget — the server row is
 // the only store, and the next write retries, so a dropped PUT is not worth surfacing.

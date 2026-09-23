@@ -11,12 +11,11 @@ struct ScheduleView: View {
     @State private var showSeasonPicker = false
     @State private var phase: SchedulePhase = .regular
     private let isEmbedded: Bool
-    /// DEP-278 follow-up: Schedule fetches no team/uniform data of its own (lightweight
-    /// read, invariant 5), so it reads the kit-resolved accent TeamDetailView publishes
-    /// here instead — same store the tab tint and Stats read, so a kit pick on the
-    /// roster page is reflected here without a page reload.
+    /// Schedule fetches no team/uniform data of its own (lightweight read), so it reads the
+    /// kit-resolved accent TeamDetailView publishes here instead — same store the tab tint and
+    /// Stats read, so a kit pick on the roster page is reflected here without a page reload.
     private let currentTeamStore: CurrentTeamStore
-    /// DEP-280: web parity — tapping a played/upcoming game card opens the compare view
+    /// Web parity — tapping a played/upcoming game card opens the compare view
     /// for this team and that game's opponent (web/components/TeamScheduleView.tsx's card
     /// `Link` into `/compare`). nil is a no-op tap (used by nothing today, but keeps the
     /// callback optional rather than forcing every call site to supply one).
@@ -37,7 +36,7 @@ struct ScheduleView: View {
 
     /// Falls back to the app's own accent before any team has resolved a color this
     /// session, mirroring RootTabView's identical fallback for the same store.
-    /// The season-chip row's accent. DEP-424: the ring color — a real kit color, the same
+    /// The season-chip row's accent: the ring color — a real kit color, the same
     /// one the field dots and the tab tint use, with legibility deliberately not gated.
     private var teamAccent: Color {
         currentTeamStore.colors.map { Color(hex: TeamSurfaces.mark($0)) }
@@ -242,9 +241,9 @@ private enum SchedulePhase: String, CaseIterable {
 private struct ScheduleGameCard: View {
     let game: ScheduleGame
     let isPastSeason: Bool
-    /// DEP-280: nil (no compare destination available) for bye weeks and — matching
+    /// `nil` (no compare destination available) for bye weeks and — matching
     /// web's TeamScheduleView.tsx guard comment ("Historical seasons have no
-    /// compare-page destination yet, DEP-198") — a past season's games, even though
+    /// compare-page destination yet") — a past season's games, even though
     /// this callback itself is compare-capable; `isTappable` folds both conditions in.
     let onSelectOpponent: ((Team) -> Void)?
 

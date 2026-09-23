@@ -1,5 +1,5 @@
 // Turns ESPN's league-wide preseason scoreboard (site API `scoreboard?seasontype=1`) into
-// `games` + `schedules` upsert rows tagged `game_type = 'PRE'` (DEP-204). Pure: no fetch,
+// `games` + `schedules` upsert rows tagged `game_type = 'PRE'`. Pure: no fetch,
 // no DB -- scripts/ingest-espn.mts fetches one scoreboard per preseason calendar week and
 // hands the responses here.
 //
@@ -9,7 +9,7 @@
 // shape nflverse's `${season}_${week}_${away}_${home}` can't produce, and nflverse's
 // upsert never deletes rows it didn't write.
 //
-// Backwards compatibility (web/CLAUDE.md invariant 11, ios-release-compatibility.md): `PRE` is
+// Backwards compatibility (ios-release-compatibility.md): `PRE` is
 // a new `game_type` value with no schema change. Every reader filters it out before it
 // matters -- iOS ScheduleMapper keeps REG (plus PRE and the postseason allowlist on newer
 // builds), the web resolveSchedule keeps REG and resolvePostseason an explicit allowlist,

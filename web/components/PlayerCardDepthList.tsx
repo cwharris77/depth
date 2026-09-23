@@ -95,7 +95,7 @@ export default function PlayerCardDepthList({
   // the per-card toggle was independently used before the global one turned on).
   const effectiveEditing = editing || globalEditMode;
 
-  // DEP-226 reorder fix: framer's Reorder.Group fires `onReorder` on every item crossing
+  // Reorder fix: framer's Reorder.Group fires `onReorder` on every item crossing
   // mid-drag, and persisting each one straight to the override store corrupted the order
   // (could drag down but never back up; a broken order lingered after exiting edit mode).
   // Keep the drag order ephemeral here — the group reorders against `draftIds` with nothing

@@ -2,7 +2,7 @@ import type { Unit } from '@/lib/types';
 
 // Pure query-param helpers for the `/team/[id]` selection state (selected player + active
 // unit tab), mirroring how lib/utils/compare.ts's parseCompareParams treats `?a=&b=&pos=` as
-// untrusted input that degrades rather than throws (web/CLAUDE.md invariant 6). Kept separate
+// untrusted input that degrades rather than throws. Kept separate
 // from components/DepthChartField.tsx so the URL <-> state mapping is unit-testable
 // without mounting the client tree.
 
@@ -17,8 +17,7 @@ export function isUnit(value: string | null | undefined): value is Unit {
 // (no selection) stays clean rather than always carrying `?unit=offense`. `season` is
 // carried through every rebuild (unlike `player`/`unit`, it isn't reset by selecting a
 // player or switching units) since Phase D1's `?season=` link is meant to stay shareable
-// through ordinary field interaction, not just survive a page load
-// (../obsidian/Projects/depth/specs/2026-07-07-phase-d-history-and-boards-design.md).
+// through ordinary field interaction, not just survive a page load.
 export function buildTeamSelectionUrl(
   pathname: string,
   selection: { unit: Unit; playerId: string | null; season?: number | null }

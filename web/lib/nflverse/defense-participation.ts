@@ -1,6 +1,6 @@
 // Mirrors `participation.ts`'s FormationAccumulator for the defensive side: aggregates
 // nflverse participation rows into every defensive front ({DL}-{LB}-{DB} shorthand) a
-// team ran that season, with a usage share (DEP-141: no top-N cap). See
+// team ran that season, with a usage share (no top-N cap). See
 // defense-personnel.ts for the parsing/labeling rules.
 //
 // Key difference from the offense accumulator: `possession_team` names the team WITH

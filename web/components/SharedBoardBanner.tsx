@@ -12,7 +12,7 @@ import {
 } from '@/lib/utils/depth-chart/shared-board';
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 
-// The shared-board preview banner (Phase C, share pass). Reads /team/[id]?board=<slug>,
+// The shared-board preview banner. Reads /team/[id]?board=<slug>,
 // resolves it via /api/shares/[slug], and — unlike the old ?order= links, which silently
 // overwrote the visitor's own saved order — shows the owner's order as a *preview* the visitor
 // explicitly Applies or Dismisses. Preview is lifted to DepthChartField (onPreview) so the

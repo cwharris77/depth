@@ -6,7 +6,7 @@ import { buildTeamSelectionUrl } from '@/lib/utils/depth-chart/team-selection';
 import type { Player, Unit } from '@/lib/types';
 
 // Player/unit selection for DepthChartField, kept in sync with the URL
-// (`?player=&unit=`, mirroring Compare's `?a=&b=&pos=` pattern, DEP-130). Opening a
+// (`?player=&unit=`, mirroring Compare's `?a=&b=&pos=` pattern). Opening a
 // player from a closed state pushes a new history entry so Back can close it;
 // everything else -- swapping to another player while one's already open, or changing
 // unit tabs -- replaces in place, so browsing around doesn't pile up a Back stop per

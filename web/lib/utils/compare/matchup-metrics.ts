@@ -1,4 +1,4 @@
-// Builds the bounded nflverse evidence contract consumed by Compare (DEP-312). The
+// Builds the bounded nflverse evidence contract consumed by Compare. The
 // helper keeps raw numerators and denominators beside derived rates, and refuses to
 // turn missing source values into zero, so partial seasons degrade honestly.
 //

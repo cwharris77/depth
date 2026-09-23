@@ -1,9 +1,8 @@
 'use client';
 
-// Desktop context panel for the schedule page (TeamPageShell's aside; Claude Design
-// "Depth Wide Desktop" mock): season snapshot, next game, home/road splits, and recent
-// form. Everything is derived client-side from the schedule prop the page already ships
-// (lib/utils/schedule/schedule-summary.ts) — no second data fetch (web/CLAUDE.md invariant 5). Renders
+// Desktop context panel for the schedule page (TeamPageShell's aside): season snapshot, next game,
+// home/road splits, and recent form. Everything is derived client-side from the schedule prop the
+// page already ships (lib/utils/schedule/schedule-summary.ts) — no second data fetch. Renders
 // nothing when there's no schedule; the main column already shows the empty state.
 import { colors as uiTokens, typeScale } from '@/components/ui/tokens';
 import SectionLabel from '@/components/ui/SectionLabel';

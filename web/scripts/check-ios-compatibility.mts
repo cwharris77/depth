@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * iOS backend-compatibility guard — enforces web/CLAUDE.md invariant 11 ("published data
- * stays decodable by every supported app build") at PR time instead of relying on
+ * iOS backend-compatibility guard — enforces "published data stays decodable by every
+ * supported app build" at PR time instead of relying on
  * memory. An installed App Store build outruns CI by weeks; a migration that drops or
  * renames a column the last build still SELECTs breaks real users the moment the
  * Supabase git integration applies it (the 2026-08-24 TestFlight failure was exactly
@@ -21,11 +21,9 @@
  *   2. A diff to ios-release-compatibility.md — the release contract must be
  *      reviewable, not remembered.
  *
- * Passing here is not a license to ship. The sequencing in the vault's
- * Reference/forced-update-gate.md
- * still governs: build LIVE in the App Store -> arm the gate -> only then break the
- * schema. This script only proves the PR is *aware and documented*, not that the
- * document's build is actually out.
+ * Passing here is not approval to ship. The release sequencing still governs: build LIVE
+ * in the App Store -> arm the gate -> only then break the schema. This script only proves
+ * the PR is *aware and documented*, not that the document's build is actually out.
  *
  * Usage:
  *   npm run check:ios-compat                        # auto-detect the diff base
@@ -210,7 +208,7 @@ function main() {
 
   // A deleted migration can't carry an annotation (handled above) — every surviving
   // destructive file is annotated; the manifest is what still needs to move with the
-  // behavior (CLAUDE.md: "docs move with behavior").
+  // behavior.
   console.log('check:ios-compat — destructive change(s) found, annotations complete.');
   if (!manifestChangedInPr(base, head)) {
     console.error(`  ✗ ${MANIFEST_PATH} was not updated in this PR.`);
@@ -226,10 +224,7 @@ function main() {
   console.log('  ✓ check:ios-compat passed — change is annotated and documented.');
   console.log('');
   console.log('Remember: passing this guard is not approval to ship — the build must be');
-  console.log('LIVE in the App Store and the forced-update gate armed first, per');
-  console.log(
-    'the vault sequencing doc (../obsidian/Projects/depth/Reference/forced-update-gate.md).'
-  );
+  console.log('LIVE in the App Store and the forced-update gate armed first.');
   console.log('✓ check:ios-compat PASSED.');
   process.exit(0);
 }

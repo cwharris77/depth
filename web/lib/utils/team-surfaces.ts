@@ -10,8 +10,7 @@ import { contrastRatio, readableTextOn, DARK_BG } from '@/lib/utils/colors';
 // doesn't own, and 63 of 105 kits ended up with one (a single invented orange #FF6A33 stood
 // in for the Bengals, Browns, Broncos and Bears at once). Storing the answer also meant it
 // couldn't track the app: `on_accent` still holds #0a0e1a, the background from before
-// DEP-274 moved it to #15161a. Design: ../obsidian/Projects/depth/specs/
-// 2026-09-01-team-color-surface-rules-design.md.
+// it moved to #15161a.
 //
 // Call sites ask for a surface and never compose contrast logic themselves -- a rule kept
 // in a function can't be forgotten by the next view that needs a team color (mistake #19).

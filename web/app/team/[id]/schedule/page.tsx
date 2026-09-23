@@ -55,8 +55,7 @@ export default async function TeamSchedulePage({ params }: Params) {
   // scheduled season, which is what schedule.season is), falling back to the league's
   // current season when there's no schedule yet. Distinct from the roster page's
   // currentSeason definition on purpose: the picker must agree with what this page
-  // renders by default, not with which roster is live
-  // (../obsidian/Projects/depth/specs/2026-08-10-past-season-schedule-view-design.md).
+  // renders by default, not with which roster is live.
   const currentSeason = schedule?.season ?? (isOffseason ? upcomingSeason : upcomingSeason - 1);
 
   return (

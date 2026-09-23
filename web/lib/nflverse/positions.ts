@@ -4,9 +4,9 @@ import type { Position } from '../types';
 // lib/espn/positions.ts's approach for the ESPN vocabulary). nflverse collapses
 // offensive tackles and guards into one code per pair (`T`/`OT`, `G`/`OG`) with no
 // left/right side in the data -- those remain generic `OT`/`G`; only the separately
-// sourced historical depth chart may establish a side (DEP-145). Every other code maps
+// sourced historical depth chart may establish a side. Every other code maps
 // straight through; an unrecognized code is
-// `null` -- the caller skips the row and counts it, never guesses (web/CLAUDE.md invariant 6).
+// `null` -- the caller skips the row and counts it, never guesses.
 export type RosterPosition = Position;
 
 const DIRECT: Record<string, Position> = {

@@ -1,7 +1,7 @@
 // Aggregates nflverse game-level snap counts (snap_counts_<season>.csv) into season
 // totals per player, for the positions whose only meaningful stat is participation --
 // offensive line, long snapper, punter. `player_recent_snaps` keeps the bounded
-// recent-team-game window (DEP-313); this is the season aggregate merged onto the
+// recent-team-game window; this is the season aggregate merged onto the
 // matching `player_stats` row by scripts/ingest-nflverse.mts, never shipped as raw rows.
 //
 // Identity is PFR -> ESPN through the caller's crosswalk, never name matching (same rule

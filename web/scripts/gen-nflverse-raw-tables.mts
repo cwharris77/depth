@@ -1,5 +1,4 @@
-// Generates the Layer-1 source-table schema for the nflverse stat surface
-// (vault spec 2026-09-11-nflverse-full-stat-surface-design, ticket DEP-541).
+// Generates the Layer-1 source-table schema for the nflverse stat surface.
 //
 //   npm run gen:nflverse-raw-tables
 //
@@ -145,7 +144,7 @@ const SOURCES: SourceConfig[] = [
     idKind: 'gsis',
     // The regpost file's own season_type is a coverage flag (REG / REG+POST / POST), not a
     // grain -- one row per player-season. Pin it to the table's declared REG+POST grain so
-    // a reader filtering REG can't silently drop every playoff participant (DEP-558).
+    // a reader filtering REG can't silently drop every playoff participant.
     seasonType: 'REG+POST',
     urls: [`${BASE}/stats_player/stats_player_regpost_2024.csv`],
   },

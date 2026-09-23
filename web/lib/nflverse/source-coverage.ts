@@ -1,10 +1,9 @@
 // Known published season ranges per nflverse source, and the decision a 404 should
-// produce (DEP-579): a *skip* when the source genuinely doesn't publish that season, an
+// produce: a *skip* when the source genuinely doesn't publish that season, an
 // *error* when it should have. Without this, every 404 in the ingest was treated as
 // "source doesn't publish that season" — so a renamed release asset (`player_stats` ->
-// `stats_player`) logged a skip and the run still reported success. See the vault's
-// `Reference/nflverse.md` for the tag rename and `source-contract.ts` for the column
-// half of the same guard.
+// `stats_player`) logged a skip and the run still reported success. See `source-contract.ts` for
+// the column half of the same guard.
 
 import type { SourceId } from './source-contract';
 
