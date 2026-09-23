@@ -1,0 +1,19 @@
+name: Agent instructions symlink
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  agents-symlink:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: AGENTS.md is a symlink to CLAUDE.md
+        run: |
+          mode=$(git ls-files -s AGENTS.md | cut -d' ' -f1)
+          if [ "$mode" != 120000 ] || [ "$(readlink AGENTS.md)" != CLAUDE.md ]; then
+            echo "::error file=AGENTS.md::AGENTS.md must be a symlink to CLAUDE.md (git mode 120000, found '${mode:-missing}'). Edit CLAUDE.md, then restore the link with: ln -sf CLAUDE.md AGENTS.md"
+            exit 1
+          fi
