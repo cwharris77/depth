@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import Depth
 
-// Port of web/lib/__tests__/format.test.ts's formatLastName cases. DEP-250 renders the
+// Port of web/lib/__tests__/format.test.ts's formatLastName cases. renders the
 // player's last name under each field dot, so the web formatter's behavior — including
 // the generational-suffix stripping — must match exactly.
 struct NameFormatTests {

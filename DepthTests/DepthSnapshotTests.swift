@@ -4,9 +4,8 @@
     import Testing
     @testable import Depth
 
-    // SwiftUI visual-regression snapshots for the surfaces the app is mostly made of (spec:
-    // 2026-09-10-ios-test-data-and-snapshot-testing-design, Phase 4). These replace the retired
-    // PR-screenshot pipeline: they render a view synchronously from the checked-in fixture
+    // SwiftUI visual-regression snapshots for the primary data-driven surfaces. They render a
+    // view synchronously from the checked-in fixture
     // bundle, so a visual change is a fast, deterministic unit-test failure rather than a
     // booted-simulator screenshot uploaded to Cloudinary.
     //

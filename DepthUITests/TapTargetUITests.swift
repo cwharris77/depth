@@ -1,6 +1,6 @@
 import XCTest
 
-// DEP-395: coordinate taps exercise whitespace that element.tap() can silently avoid.
+// coordinate taps exercise whitespace that element.tap() can silently avoid.
 // Keep these journeys anonymous; none submits an email or mutates hosted account data.
 @MainActor
 final class TapTargetUITests: XCTestCase {

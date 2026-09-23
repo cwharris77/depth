@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import Depth
 
-// DEP-219: the local write must always succeed and never depend on the remote leg —
+// the local write must always succeed and never depend on the remote leg —
 // mirrors web's pushTeamOverride, which writes localStorage unconditionally and treats
 // the server mirror as fire-and-forget.
 private actor FakeOverrideWriter: DepthOverrideWriting {

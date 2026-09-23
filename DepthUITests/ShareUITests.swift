@@ -1,8 +1,7 @@
 import XCTest
 
-// Task 8E live journey: open a team, share the depth chart, and confirm the native
-// share sheet presents (on the hermetic fixture backend). Cancelling must leave
-// the team-detail screen unchanged (QA plan's "cancellation" case).
+// Open a team, share the depth chart, and confirm the native share sheet presents on the
+// hermetic fixture backend. Cancelling must leave the team-detail screen unchanged.
 final class ShareUITests: XCTestCase {
     @MainActor
     func testShareDepthChartPresentsTheNativeShareSheet() throws {
@@ -12,7 +11,7 @@ final class ShareUITests: XCTestCase {
 
         XCTAssertTrue(app.waitForDepthChart(), "the app should launch straight into a depth chart")
 
-        // Share lives behind the ••• overflow menu (2026-08-15 visual-pass: the bare
+        // Share lives behind the ••• overflow menu (2026-08-15 visual behavior: the bare
         // icon row was removed).
         let overflow = app.buttons["depth-chart-overflow"]
         XCTAssertTrue(

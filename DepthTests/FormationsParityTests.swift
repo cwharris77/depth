@@ -41,7 +41,7 @@ private struct FixtureRoster: Decodable {
     let players: [FixturePlayer]
     let specialTeams: [FixtureSpecialSlot]
     /// Null in a fixture means the roster has no depth chart, so seats derive from the
-    /// players themselves — the historical-season path (DEP-585).
+    /// players themselves on the historical-season path.
     let depthChart: [FixtureSeat]?
 
     var domain: Roster {
@@ -183,7 +183,7 @@ private struct AlignmentLabelCase: Decodable {
     }
 }
 
-// --- topFormation / formationSlots (DEP-221) ---------------------------------------
+// --- topFormation / formationSlots ---------------------------------------
 // Not parity fixtures — these helpers are native-only (web computes the top formation in
 // the useFormations hook, not shared pure functions). These unit tests pin the default-pick
 // and from-selected-formation contracts the field relies on.

@@ -3,7 +3,7 @@ import Foundation
 import Testing
 @testable import Depth
 
-// Geometry regression tests for DEP-207/DEP-318. They assert the field's durable
+// Geometry regression tests for /. They assert the field's durable
 // legibility guarantees — uniform readable dots, collision clearance, receiver separation,
 // and honest on/off-line depth — without pinning the tuning constants to duplicate literals.
 struct DepthChartFieldLayoutTests {
@@ -17,7 +17,7 @@ struct DepthChartFieldLayoutTests {
     }
 
     /// Asserts no two dots anywhere on the field are closer than `dotSize + gap` —
-    /// stronger than the same-row guarantee and exactly DEP-207's "dots never touch".
+    /// stronger than the same-row guarantee and exactly "dots never touch".
     private func assertNoTouching(
         _ slots: [RenderSlot], layout: DepthChartFieldLayout,
         sourceLocation: SourceLocation = #_sourceLocation
@@ -51,9 +51,8 @@ struct DepthChartFieldLayoutTests {
     /// chained through a column of slots stacked at the same x (a 3-3-5's nickel back,
     /// middle linebacker, and nose tackle all sit at x=50) compounded across iterations far
     /// enough to render a linebacker past the defensive line, on the offense's side of the
-    /// line of scrimmage. Caught live in the simulator on the Jets' real personnel, not by
-    /// the geometry test suite, since every existing test only asserted "no overlap," never
-    /// "still the correct side of the line" — this closes that gap.
+    /// line of scrimmage. The geometry suite must assert both non-overlap and the correct side
+    /// of the line.
     private func assertNoLineCrossing(
         _ slots: [RenderSlot], layout: DepthChartFieldLayout,
         context: String = "",
@@ -97,10 +96,9 @@ struct DepthChartFieldLayoutTests {
     /// Every real per-team offensive alignment (`buildRealFormation`'s alignment ×
     /// personnel space) across a spread of plausible field sizes never lets a tag reach a
     /// neighboring dot. Regression coverage for the shotgun QB/RB case and, more
-    /// importantly, for the fix itself: an earlier version of `resolvingLabelOverlaps`
-    /// passed the narrower `shotgunQbTagClearsRbDot` test below while still visibly
-    /// knocking an under-center running back off to one side of the QB it's charted
-    /// directly behind — this sweep is what actually caught that regression.
+    /// importantly, for the overlap algorithm: a narrow QB/RB case can pass while an
+    /// under-center running back is displaced from the QB directly behind it, so this sweep
+    /// covers every real alignment.
     @Test("no real offensive alignment ever lets a tag reach a neighboring dot")
     func noOffensiveAlignmentEverLabelOverlaps() {
         let sizes = [
@@ -232,7 +230,7 @@ struct DepthChartFieldLayoutTests {
     }
 
     /// Asserts no slot's unconditional position-tag block (drawn below every dot
-    /// regardless of crowding) intersects another slot's dot — the DEP-427 "LB tag over
+    /// regardless of crowding) intersects another slot's dot — the "LB tag over
     /// DL dot" shape and its offense analog, a shotgun QB's tag over the RB behind it.
     private func assertNoLabelOverlap(
         _ slots: [RenderSlot], layout: DepthChartFieldLayout,
@@ -278,15 +276,14 @@ struct DepthChartFieldLayoutTests {
 
     @Test("a 4-3 front's edge linebacker tag never overlaps the DL dot behind it (DEP-427)")
     func baseFourThreeLbTagClearsDlDot() {
-        // The Jets' base 4-3 from DEP-427: dl=4 spreads x 24...76, lb=3 spreads x
+        // The Jets' base 4-3 from dl=4 spreads x 24...76, lb=3 spreads x
         // 26...74 — the outer LB slots land almost directly above the edge DL slots.
         let formation = buildRealDefenseFormation("4-3-4")
         let slots = formation.map {
             RenderSlot(
                 key: $0.id, x: $0.x, y: $0.y, label: $0.label, player: nil, onLine: $0.onLine)
         }
-        // The real device height from DEP-427's report, shorter than the generic
-        // iphoneField fixture — this is where the overlap actually reproduced.
+        // The shorter height forces the same crowded layout as a narrow phone.
         let size = CGSize(width: 370, height: 470)
         let layout = DepthChartFieldLayout.compute(slots: slots, fieldSize: size)
         assertNoTouching(slots, layout: layout)
@@ -357,8 +354,8 @@ struct DepthChartFieldLayoutTests {
             slots: slots, fieldSize: iphoneField, fillWidth: true, zoomToUnit: false)
 
         // The split end (off-wr-0, left) and flanker (off-wr-1, right) reach the field
-        // edges — the first DEP-244 pass got this wrong because the tight on-line row
-        // (TE 5% from RT) was re-spread around its centroid and pulled the split end back in.
+        // edges — the tight on-line row (TE 5% from RT) must not be re-spread around its
+        // centroid and pull the split end back in.
         let leftWR = filled.positions["off-wr-0"]?.x ?? .zero
         let rightWR = filled.positions["off-wr-1"]?.x ?? .zero
         #expect(leftWR < 40, "split end should be near the left edge, got \(leftWR)")
@@ -403,7 +400,7 @@ struct DepthChartFieldLayoutTests {
     }
 }
 
-// Shipped bug (Cooper, 2026-08-26, Ravens defense): a callout's leader line ran straight
+// A callout's leader line must not run straight
 // across two other dots and through their position tags. The placement search only ever
 // checked where the name TAG landed — nothing looked at the line that had to reach it, so
 // a tag in genuinely free grass could still be wired up through the middle of the
@@ -411,8 +408,7 @@ struct DepthChartFieldLayoutTests {
 struct LeaderLineRoutingTests {
     /// An iPhone SE — the narrowest supported device — with the chart squeezed short.
     ///
-    /// This fixture was 367x477 (an iPhone 17 Pro) until DEP-432 drew the field in real
-    /// yards. At that size the extra room means every name in this nickel front now fits
+    /// At a taller device height the extra room means every name in this nickel front fits
     /// inline and the layout emits *zero* callouts, so the leader-line assertions below
     /// would pass vacuously and stop covering the routing logic entirely. Callouts are
     /// driven by horizontal crowding, which the yard scale doesn't affect, so a narrower
@@ -420,8 +416,8 @@ struct LeaderLineRoutingTests {
     /// callouts at any height, while 367pt needs a short card to force even one.
     private let phoneField = CGSize(width: 340, height: 300)
 
-    /// The exact alignment from the report — a nickel front (five DBs, a three-man line)
-    /// with the real name lengths. Name width is what decides whether a name goes inline
+    /// A nickel front with five defensive backs, a three-man line, and realistic name lengths.
+    /// Name width is what decides whether a name goes inline
     /// or to a callout, so a fixture with one repeated name doesn't reproduce this: the
     /// crowding depends on "Hendrickson" being wide while "Smith" is narrow.
     private func nickelDefenseSlots() -> [(String, Double, Double, String, Bool)] {
@@ -554,7 +550,7 @@ struct LeaderLineRoutingTests {
     }
 }
 
-// DEP-432: the field is drawn in real yards, validated against 137 measured snaps of NFL
+// the field is drawn in real yards, validated against 137 measured snaps of NFL
 // tracking data. These assert the render no longer distorts charted depth — the defect that
 // made an under-centre quarterback read as if he stood 25 yards deep.
 struct FieldYardScaleTests {
@@ -603,7 +599,7 @@ struct FieldYardScaleTests {
                 guard let drawn = renderedYards(slot.key, s, layout) else { continue }
                 let charted = FieldYardScale.yards(between: slot.y, and: 51)
                 // 2.5 yd, and the looseness is the offense's full-field scale rather than
-                // sloppiness. The offense is not cropped to its own extent (Cooper's call —
+                // sloppiness. The offense is not cropped to its own extent (the chosen behavior —
                 // see FieldYardScale.fullField), so it renders at ~25 pt/yd against the
                 // defense's ~46. Every adjustment expressed in points — the on-line nudge,
                 // the collision passes — therefore buys twice as many yards here, and the

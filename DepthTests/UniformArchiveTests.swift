@@ -3,9 +3,8 @@ import Testing
 
 // Pure-rule tests for the uniform archive. The grouping/ordering rules mirror
 // web/lib/uniforms/filter.ts (eraBucket/matchesFilters/compareKits/groupByDivision) so the
-// two clients behave identically; the labelling, search, sort and decade rules are the
-// 2026-08-27 archive v2 design's own. Malformed/empty cases included throughout, per the
-// house "untrusted input degrades, never throws" invariant.
+// two clients behave identically; the labeling, search, sort, and decade rules are tested here.
+// Malformed and empty inputs degrade without throwing.
 
 private let billsColors = TeamColors(
     primary: "#00338D", secondary: "#C60C30", accent: "#D50A0A"

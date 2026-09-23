@@ -51,7 +51,7 @@ import Testing
     }
 }
 
-// DEP-562: the App Review demo account signs in with a fixed code and needs no mailbox.
+// the test account signs in with a fixed code and needs no mailbox.
 // Proves both service branches against a real local GoTrue: the send step is a no-op (no
 // Mailpit message for that address appears) and verification is a password grant, not an
 // OTP check. `enable_confirmations` is false locally, so signUp alone yields a session and

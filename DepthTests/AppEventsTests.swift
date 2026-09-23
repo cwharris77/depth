@@ -4,12 +4,11 @@ import Testing
 
 @testable import Depth
 
-// Task 8F coverage: privacy-minimal telemetry (design spec Milestone 2B item 26; full
-// App Privacy documentation at `Reference/ios-privacy-telemetry.md` in the vault). Every case here proves
+// Privacy-minimal telemetry coverage. Every case here proves
 // either that the right event fires exactly once, or that a repeated/background action
 // does NOT re-fire it — both matter for a usage-counter product metric.
 
-// DEP-322: exact wire keys also guard against accidental telemetry expansion.
+// exact wire keys also guard against accidental telemetry expansion.
 @Test(arguments: ["1", "1.0", "1.4.2", "12.34.567"])
 func appEventEncodesFullMarketingVersion(version: String) throws {
     let data = try JSONEncoder().encode(AppEventPayload(event: .appLaunch, appVersion: version))

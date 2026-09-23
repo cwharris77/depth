@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import Depth
 
-// DEP-251: coverage for OnboardingController's welcome/coachmark state machine and its
+// coverage for OnboardingController's welcome/coachmark state machine and its
 // persistence gate (UserPreferences.hasSeenOnboarding/markOnboardingSeen) — the
 // first-run tutorial's only pure logic; WelcomeView/CoachmarkOverlayView are rendering
 // only. Same isolated-UserDefaults pattern as LocalFirstOverrideWriterTests, so runs
@@ -105,7 +105,7 @@ struct OnboardingControllerTests {
         let preferences = freshPreferences()
         preferences.markOnboardingSeen()
         let controller = OnboardingController(preferences: preferences)
-        // DEP-252: Account is a sheet now, not a tab — "Take the Tour" can be reached
+        // Account is a sheet now, not a tab — "Take the Tour" can be reached
         // from any tab's Settings sheet, so simulate being on a non-Depth-Charts tab.
         controller.activeTab = .uniforms
 

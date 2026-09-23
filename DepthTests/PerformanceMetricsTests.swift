@@ -2,10 +2,10 @@ import SwiftData
 import XCTest
 @testable import Depth
 
-// XCTest performance coverage for design spec Performance Review #5/#6: the network
+// XCTest performance coverage for network
 // query+decode and SwiftData cache-transaction budgets. `XCTClockMetric` records each
-// duration into the Xcode test report/Instruments (the "XCTest metrics" the spec asks
-// for); `measure(metrics:options:)` alone never fails a test without a recorded
+// duration into the Xcode test report/Instruments. `measure(metrics:options:)` alone never fails
+// a test without a recorded
 // Xcode baseline (a machine-specific artifact this repo doesn't commit), so the
 // `XCTAssertLessThan` after each `measure` call is the actual CI-blocking gate.
 final class PerformanceMetricsTests: XCTestCase {
@@ -22,11 +22,11 @@ final class PerformanceMetricsTests: XCTestCase {
     /// the dedicated staging project under CI's Staging config, or the local `supabase
     /// start` stack under Debug (the active `.xcconfig` bakes the URL/key into the hosted
     /// app's Info.plist that `DepthEnvironment` reads).
-    /// Budget is intentionally looser than the design spec's 3s "constrained
+    /// Budget is intentionally looser than the 3s "constrained
     /// networking" ceiling — shared macOS CI runners add non-deterministic
     /// scheduling/network noise on top of the real request; 6s still catches an
     /// order-of-magnitude regression without making CI red on a slow runner (see
-    /// task-9b-performance-report.md for the full rationale).
+    /// shared-runner variability).
     func testTeamSnapshotQueryAndDecodeFallsWithinBudget() throws {
         let repository = SupabaseDepthRepository(client: DepthEnvironment.supabaseClient)
         let clock = ContinuousClock()
@@ -59,7 +59,7 @@ final class PerformanceMetricsTests: XCTestCase {
     }
 
     /// SwiftData is local and deterministic (no network variance), so this asserts much
-    /// closer to the design spec's actual <1s "warm cached content" budget than the
+    /// closer to the actual <1s "warm cached content" budget than the
     /// network test above can — the cache transaction is only a fraction of that
     /// end-to-end number, so both thresholds here are well under it.
     func testTeamSnapshotCacheTransactionFallsWithinBudget() throws {
@@ -94,8 +94,8 @@ final class PerformanceMetricsTests: XCTestCase {
             semaphore.wait()
         }
 
-        // Greptile P2 (PR #371): the original version swallowed both calls' errors with
-        // `try?` and discarded the read result, so a failed save/read/nil-cache-miss
+        // A failed save/read/nil-cache-miss must not be hidden by `try?` or a discarded read
+        // result, which would
         // would still record a short duration and pass — asserting the round trip
         // actually succeeded, not just that it was fast, closes that gap.
         XCTAssertNil(thrown, "cache write/read round trip should succeed")

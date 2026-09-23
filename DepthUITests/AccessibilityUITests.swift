@@ -1,6 +1,6 @@
 import XCTest
 
-// Accessibility acceptance for design spec Milestone 3 item 30 (VoiceOver labels,
+// Accessibility acceptance for VoiceOver labels,
 // Accessibility XXXL layouts, increased contrast). These drive the same critical path
 // as DepthUITests but under the accessibility environment overrides, because that is
 // where layout regressions actually show up: a fixed-width frame or a fixed-size font
@@ -103,7 +103,7 @@ final class AccessibilityUITests: XCTestCase {
         XCTAssertTrue(element.isHittable, "control must be reachable: \(element.identifier)")
     }
 
-    // DEP-415 carried onto the merged profile: at accessibility sizes the vitals strip
+    // carried onto the merged profile: at accessibility sizes the vitals strip
     // stacks one vital per line (PlayerProfileView's `vitals`) instead of squeezing one
     // row, and the edit-mode reorder sheet's rows stay reachable.
     func testProfileAndReorderSheetReflowAtAccessibilitySizes() throws {
@@ -145,8 +145,8 @@ final class AccessibilityUITests: XCTestCase {
         }
     }
 
-    // DEP-415: retain screenshots at intermediate steps as well as AX5. Existence
-    // alone cannot detect truncated labels; these captures are reviewed alongside
+    // retain screenshots at intermediate steps as well as AX5. Existence
+    // alone cannot detect truncated labels; these captures accompany
     // the control-reachability assertions, before and after layout changes.
     func testDynamicTypeScreenInventory() throws {
         continueAfterFailure = false
@@ -223,7 +223,7 @@ final class AccessibilityUITests: XCTestCase {
     /// Height of a team row inside the team switcher sheet, used as the proof that a
     /// Dynamic Type override actually landed. Without this the accessibility assertions
     /// below could all pass at default size and prove nothing. The app now launches
-    /// directly into a depth chart (2026-08-15 navigation-parity spec) rather than a root
+    /// directly into a depth chart rather than a root
     /// team list, so this opens the switcher and searches — it only needs the row to
     /// exist, not to actually select a team.
     private func firstTeamRowHeight(_ app: XCUIApplication) -> CGFloat {
@@ -354,7 +354,7 @@ final class AccessibilityUITests: XCTestCase {
     // spoken name (PlayerStatLedger.rowLabel).
     //
     // This suite runs on the hermetic fixture backend, and the depth chart resolves *whichever*
-    // player the DB currently pins to a slot (DEP-329). That resolution can be a season-less
+    // player the DB currently pins to a slot . That resolution can be a season-less
     // backup or a just-signed player before ESPN's ingest has a row for them, so the old
     // "the starting QB always has rows" assert hard-failed on real data mid-season. This
     // instead walks the roster for the first player that actually has a season-stat row, and

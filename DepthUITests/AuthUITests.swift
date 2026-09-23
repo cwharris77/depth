@@ -7,14 +7,14 @@ final class AuthUITests: XCTestCase {
         app.launchArguments = ["UI_TESTING_RESET_STATE"]
         app.launch()
 
-        // DEP-252: Account moved out of the tab bar into a nav-bar trailing icon that
+        // Account moved out of the tab bar into a nav-bar trailing icon that
         // opens the settings content as a sheet. This journey deliberately waits on the
         // account affordance itself rather than a live roster response; Settings remains
         // reachable when the public-data request is slow or offline. 15s budgets
-        // throughout (house standard, see AccessibilityUITests): the first launch on a
+        // throughout: the first launch on a
         // cold CI simulator warms up slowly and each sheet presentation below adds
-        // animation + idle-wait seconds on top of per-query snapshot cost — 2026-08-23/24
-        // runs lost here at both sheet boundaries with every query crawling 2-10s.
+        // animation and idle-wait time add to each query's snapshot cost, so these waits allow
+        // the sheet boundaries to settle on a cold simulator.
         let accountButton = app.buttons["account-button"]
         XCTAssertTrue(
             accountButton.waitForExistence(timeout: 15),
@@ -82,7 +82,7 @@ final class AuthUITests: XCTestCase {
             "Account should open the settings sheet"
         )
 
-        // DEP-319: the favorite picker + start-on-favorite toggle are account-gated by
+        // the favorite picker + start-on-favorite toggle are account-gated by
         // RLS (the user_settings row is scoped to auth.uid()), so a signed-out visitor
         // must never see them — matching web, where the signed-out surface is the
         // sign-in prompt only. A `.menu` Picker surfaces as either a button or a picker

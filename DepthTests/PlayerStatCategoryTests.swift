@@ -1,7 +1,7 @@
 import Testing
 @testable import Depth
 
-// PlayerStatCategory drives the profile ledger's tabs, bars and strips (design option 2).
+// PlayerStatCategory drives the profile ledger's tabs, bars, and strips.
 
 private func season(
     _ year: Int, team: String? = "SEA", games: Int? = 17,
@@ -237,7 +237,7 @@ private func season(
 /// ESPN records a transfer's schools as one ";"-separated string, and the vitals strip is a
 /// single line whose parts share layout priority — so a 44-character college would shrink
 /// AGE/EXP/height/weight with it. The strip shows the first school; VoiceOver still reads
-/// every one (2026-09-11 merge-spec review ruling).
+/// every one.
 @Test func profileDisplayVitalsShowFirstCollegeAndSpeakAllOfThem() {
     let schools = "West Alabama; Garden City CC; Oklahoma State"
     let parts = PlayerProfileDisplay.vitals(

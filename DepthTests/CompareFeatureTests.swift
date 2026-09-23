@@ -2,12 +2,12 @@ import Foundation
 import Testing
 @testable import Depth
 
-// DEP-258: the native two-team compare view model contract — team picking, per-position
+// the native two-team compare view model contract — team picking, per-position
 // grouping, and the tab/position/lens state machine. The pure helpers (COMPARE_POSITIONS
 // order, the room→unit map, evidence freshness) get direct coverage; the view-model
 // integration covers team selection across slots.
 //
-// Aug 2026 feedback pass removed the deepest-room teaser, market Forecast lens, and
+// The compare surface no longer includes the deepest-room teaser, market Forecast lens, and
 // Roster participation lens from the app; their tests (getDeepestPosition/
 // buildCompareTeaser, buildMarketForecast, summarizeStarterParticipation) went with them.
 
@@ -130,11 +130,11 @@ private actor CompareRepositoryFake: DepthRepository {
     #expect(COMPARE_POSITIONS.map(\.rawValue).joined(separator: ",") == expected)
 }
 
-// MARK: - DEP-311: exhaustive position → unit/room mapping
+// MARK: - exhaustive position → unit/room mapping
 
 @Test func matchupRoomMapIsExhaustiveAndUnambiguous() {
     // Every COMPARE_POSITIONS value maps to exactly one room, and no position is duplicated
-    // across rooms. Fails on a missing or repeated position (DEP-311 done-when).
+    // across rooms. Fails on a missing or repeated position (done-when).
     let mapped = CompareMatchRooms.rooms.flatMap(\.positions)
     #expect(
         Set(mapped) == Set(COMPARE_POSITIONS),
@@ -155,8 +155,7 @@ private actor CompareRepositoryFake: DepthRepository {
 }
 
 @Test func compareRoomGroupsMatchTheLockedContract() {
-    // DEP-311 task 1 locked the exact group membership; pin each room by its raw codes so
-    // a mis-grouped position is caught loudly.
+    // Pin each room by its raw codes so a mis-grouped position is caught loudly.
     func codes(_ room: CompareRoom) -> String {
         room.positions.map(\.rawValue).joined(separator: ",")
     }
@@ -257,9 +256,9 @@ private actor CompareRepositoryFake: DepthRepository {
     #expect(await viewModel.positionGroupB.count == 3)
 }
 
-/// Aug 26 — Cooper on the Staging build (real prod data): "it doesn't have any data. It
-/// says 'No offense metrics'" even though he'd confirmed matchup metrics genuinely exist
-/// in prod. Root cause: nflverse writes a `team_stats` row for the new season the moment
+/// A current-season `team_stats` row can exist before any game is played, so it may be an
+/// all-zero stub even when matchup metrics exist for the previous completed season. Root
+/// cause: nflverse writes a `team_stats` row for the new season the moment
 /// its schedule exists — an all-zero stub, well before any game is played (see
 /// `web/lib/nflverse/records.ts`) — and that stub sorts ahead of last season's real row but
 /// never carries `matchupMetrics` (a separate table with nothing to aggregate yet).
@@ -372,14 +371,12 @@ private actor CompareRepositoryFake: DepthRepository {
     #expect(await viewModel.position == .wr)
 }
 
-// MARK: - DEP-311: room picker state machine
+// MARK: - room picker state machine
 
-/// Aug 26 feedback superseded DEP-311 task 3's "preserve position across units" decision:
-/// Cooper found it left the depth table showing a stale position with nothing highlighted
-/// to explain it. `roomSelectionChoosesFirstPositionAndPreservesSelection` /
-/// `switchingLensPreservesValidSelection` (the old task-3 tests) are replaced by the tests
-/// below, which cover the new default-to-first-room behavior, the single-position-room
-/// no-panel case, and the collapse-on-second-tap toggle.
+/// The room picker resets invalid positions when changing units, so the depth table never shows a
+/// stale position with nothing highlighted. `roomSelectionChoosesFirstPositionAndPreservesSelection` /
+/// The tests below cover default-to-first-room behavior, the single-position-room no-panel
+/// case, and the collapse-on-second-tap toggle.
 
 @Test func pickingARoomExpandsItAndSelectsItsFirstPosition() async {
     let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
@@ -446,7 +443,7 @@ private actor CompareRepositoryFake: DepthRepository {
     await viewModel.pickTeam("49ers", into: .b)
 
     // Expand a multi-position room first, then tap the single-position Quarterback room —
-    // it should select QB directly and collapse whatever else was open, per Cooper: "since
+    // it should select QB directly and collapse whatever else was open: "since
     // there's only one position in the QB group, don't add the secondary positions container."
     let receivers = CompareMatchRooms.rooms.first { $0.id == "receivers" }!
     await viewModel.selectRoom(receivers)
@@ -481,7 +478,7 @@ private actor CompareRepositoryFake: DepthRepository {
     await viewModel.selectPosition(.te)
     #expect(await viewModel.expandedRoom == receivers)
 
-    // Tapping Receivers a second time collapses it — Cooper: "right now it stays expanded
+    // Tapping Receivers a second time collapses it — the room should not stay expanded
     // forever." The depth table keeps showing TE, the last role picked.
     await viewModel.selectRoom(receivers)
     #expect(await viewModel.expandedRoom == nil)
@@ -517,8 +514,7 @@ private actor CompareRepositoryFake: DepthRepository {
     await viewModel.selectPosition(.te)
     #expect(await viewModel.position == .te)
 
-    // Cooper (Aug 26): "when you switch offense, defense or special teams tabs... the table
-    // doesn't update, it stays on the last selected team unit. It should default to the
+    // When switching offense, defense, or special teams tabs, the table should default to the
     // first [room] on the new page." Defense's first room is Defensive Line — its first
     // position (DE) should be selected and expanded immediately, not TE left over from Offense.
     await viewModel.selectUnit(.defense)
@@ -532,11 +528,9 @@ private actor CompareRepositoryFake: DepthRepository {
     #expect(await viewModel.expandedRoom?.id == "specialists")
 }
 
-// MARK: - Compare redesign: provenance, metric catalog, record table
+// MARK: - Compare metrics and record table
 //
-// Covers the pure logic behind the vault canvas "Refining the compare page" (options 1b +
-// 2a-2e + 3a/3b) that lives in Domain/CompareMetrics.swift, plus the season-selection and
-// fallback state it added to CompareViewModel.
+// Covers the compare page's metric catalog, record table, season selection, and fallback state.
 
 /// A metrics row with every field populated, so a catalog test can assert one row without
 /// every other row silently filtering itself out. Individual tests override what they care
@@ -613,14 +607,14 @@ private func multiSeasonPage(
     )
 }
 
-// MARK: Season stamp (canvas 3a/3b)
+// MARK: Season stamp
 
 @Test func aCompletedSeasonReadsAsFinal() {
     #expect(compareSeasonStamp(metrics: fullMetrics(games: 17), isCompleted: true) == .final)
 }
 
-/// The correction turn 3 of the canvas makes: `effectiveStats(for:)` promotes the live
-/// season as soon as ONE game's metrics land, so FINAL would be a lie there.
+/// `effectiveStats(for:)` promotes the live season as soon as one game's metrics land, so
+/// `.final` would be incorrect while the season is in progress.
 @Test func aSeasonStillBeingPlayedReadsAsLiveNotFinal() {
     // The distinction the sample guard depends on: `effectiveStats(for:)` promotes the live
     // season the moment one game's metrics land, so "completed" cannot be assumed.
@@ -640,15 +634,15 @@ private func multiSeasonPage(
     // A completed season with no metrics is a data gap and claims nothing...
     #expect(compareSeasonStamp(metrics: nil, isCompleted: true) == .none)
     // ...but a season still to be played has no metrics *by definition*, which is exactly
-    // what UPCOMING says (canvas 2d — the real preseason shape, where nflverse has written
-    // the 0-0 team_stats stub but no metrics row yet).
+    // what UPCOMING says: the data source can write a 0-0 `team_stats` stub before a metrics
+    // row exists.
     #expect(compareSeasonStamp(metrics: nil, isCompleted: false) == .upcoming)
-    // No season resolved at all (canvas 2a): nothing to date-stamp.
+    // No season resolved at all: nothing to date-stamp.
     #expect(compareSeasonStamp(metrics: nil, isCompleted: false, hasResolvedSeason: false) == .none)
     #expect(compareSeasonStamp(metrics: fullMetrics(games: nil), isCompleted: true) == .none)
 }
 
-// MARK: Thin-sample guard (canvas 3a)
+// MARK: Thin-sample guard
 
 @Test func onlyALiveSeasonAtOrBelowTheGameThresholdIsThin() {
     #expect(CompareSampleGuard.isThin(.live(games: CompareSampleGuard.cautionMaxGames)))
@@ -829,7 +823,7 @@ private func multiSeasonPage(
     #expect(CompareRecordCatalog.winPercentage(wins: 0, losses: 0, ties: 0) == nil)
 }
 
-// MARK: View model — season selection (canvas 1b) and the 2d fallback
+// MARK: View model — season selection and fallback
 
 @MainActor
 private func twoSeasonViewModel() async -> CompareViewModel {
@@ -878,8 +872,8 @@ private func twoSeasonViewModel() async -> CompareViewModel {
     #expect(!viewModel.metricsUnavailable)
 }
 
-/// Canvas 2d: a season with no metrics names itself and offers the newest one that has data
-/// for BOTH teams, rather than dead-ending on "no metrics available".
+/// A season with no metrics names itself and offers the newest one that has data for both teams,
+/// rather than dead-ending on "no metrics available".
 @Test @MainActor func aSeasonWithNoMetricsOffersTheNewestSeasonBothTeamsHaveData() async {
     let viewModel = await twoSeasonViewModel()
     viewModel.selectSeason(2026)

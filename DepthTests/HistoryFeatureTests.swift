@@ -102,7 +102,7 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
 @Test func historicalMapperDropsAnUnreadableRowWithoutLosingTheSeason() throws {
     // The point of the tolerant decode: a row this build cannot represent costs that one
     // player, never the season. The strict version is what made every new roster_history
-    // value a client-compatibility event (DEP-486's generic OT/G rollback).
+    // value a client-compatibility event (generic OT/G rollback).
     let result = try HistoricalRosterMapper.mapWithDiagnostics(
         team: historyTeam(),
         rows: [
@@ -165,7 +165,8 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
     #expect(slots["LS"] == "gsis:ls1@2013")
     // No returner slots at all: nflverse never says who returned kicks, and an
     // unseatable dot renders as a "?" that reads like a broken player circle
-    // (Cooper, 2026-09-02 — reverses the earlier "unfilled by policy" call).
+    // An unfilled returner slot would render as a question mark, so absent positions stay
+    // out of the historical roster.
     #expect(!slots.keys.contains("KR"))
     #expect(!slots.keys.contains("PR"))
 }
@@ -180,8 +181,8 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
 }
 
 @Test func historicalDefenseFillsEveryFieldSlotFromGenericPositionTags() throws {
-    // Historical-defense repro at the seam that actually shipped the bug: nflverse's roster
-    // vocabulary has no side/role tags (every end is "DE", backer "LB", safety "S"), and
+    // Historical-defense handling must support nflverse's roster vocabulary, which has no
+    // side/role tags (every end is "DE", backer "LB", safety "S"), and
     // a past season has no formation rows, so the field falls back to baseDefense. With
     // position-exact slots that combination resolved all 11 dots to nil and the defense
     // rendered completely empty.

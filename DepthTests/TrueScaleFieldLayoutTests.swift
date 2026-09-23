@@ -3,7 +3,7 @@ import Foundation
 import Testing
 @testable import Depth
 
-// Regression tests for true-scale mode (field-scale design, turn 2; defense: DEP-572): the
+// Regression tests for true-scale mode: the
 // alignment convention keeps charted side and order, the pan never shows past the surface,
 // and every hidden player is reachable through an edge chip. The defense cases mirror the
 // offense ones — same assertions, mirrored about the line of scrimmage.
@@ -23,7 +23,7 @@ struct TrueScaleFieldLayoutTests {
             onLine: onLine)
     }
 
-    /// Seattle's most-used offense from the design: shotgun 11 personnel.
+    /// Seattle's most-used offense: shotgun 11 personnel.
     private var shotgunEleven: [RenderSlot] {
         [
             slot("lt", "LT", 34, 51, onLine: true, 67),
@@ -132,7 +132,7 @@ struct TrueScaleFieldLayoutTests {
         #expect(layout.personnelSummary == "3WR 1TE")
     }
 
-    // MARK: Defense (DEP-572)
+    // MARK: Defense
 
     /// Seattle's most-used defense: nickel 4-2-5, as `buildRealDefenseFormation("4-2-5")`
     /// charts it — four down linemen spread 24–76, two backers at 26/74, and the base

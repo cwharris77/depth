@@ -2,8 +2,7 @@ import Foundation
 import Testing
 @testable import Depth
 
-// Explicit mapper tests — every DTO → domain conversion, including every failure path
-// (design spec's "Explicit mapping tests cover every conversion").
+// Explicit mapper tests — every DTO → domain conversion, including every failure path.
 
 private func player(
     id: String, teamId: String = "t", name: String = "Player", number: Int? = 1,
@@ -134,7 +133,7 @@ private func team(
 
 @Test func anUnknownPositionDropsThatRowAndKeepsTheRestOfTheTeam() throws {
     // The launch screen must survive a value this build doesn't know. Strictness here is
-    // what made every new position/rank/status a gated client release (DEP-486).
+    // what made every new position/rank/status a gated client release .
     let dto = team(depthChartEntries: [
         DepthChartEntryDTO(
             teamId: "bills", position: "QB", depthRank: 1, playerId: "p1",
@@ -297,7 +296,7 @@ private func team(
     #expect(snapshot.formations[0].unit == .special)
 }
 
-// Identity vs seat (DEP-585). ESPN cross-lists a swing tackle at LT2 and RT1, so one
+// Identity vs seat . ESPN cross-lists a swing tackle at LT2 and RT1, so one
 // athlete can hold two depth-chart entries. `players` must stay one row per athlete
 // while `depthChart` keeps both seats — seating off `players.position` is what left the
 // second slot empty and the formation a man short.

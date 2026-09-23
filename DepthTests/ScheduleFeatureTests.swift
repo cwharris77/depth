@@ -337,7 +337,7 @@ private func scheduleGame(
     #expect(await viewModel.schedule?.season == 2023)
 }
 
-// DEP-254: the view already tracks whether a past season is selected and exposes
+// the view already tracks whether a past season is selected and exposes
 // selectSeason(_:) — the "Back to current" button's contract is that isPastSeason flips
 // true once a past season is chosen and that selecting defaultSeason is the one-tap
 // return, the same path the picker itself uses.
@@ -371,7 +371,7 @@ private func scheduleGame(
     #expect(await viewModel.schedule?.season == 2025)
 }
 
-// Canvas 1d / DEP-120's trap on Schedule: no postseason run only means "missed" once the
+// No postseason run means "missed" only once the
 // season is decided. An upcoming or in-progress season says the playoffs haven't started,
 // even when team_stats' standings position currently reads as a playoff seed.
 private func playoffsSchedule(season: Int, result: ScheduleResult?, postseason: PostseasonRun?)

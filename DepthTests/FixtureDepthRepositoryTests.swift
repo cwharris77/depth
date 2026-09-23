@@ -4,8 +4,7 @@
     @testable import Depth
 
     /// Verifies the fixture bundle the hermetic UI suite depends on: it decodes, it serves the
-    /// teams the journeys open, and a missing entry fails loudly rather than rendering empty
-    /// (spec: 2026-09-10-ios-test-data-and-snapshot-testing-design, locked decision 1).
+    /// teams the journeys open, and a missing entry fails loudly rather than rendering empty.
     ///
     /// `FixtureDepthRepository.load()` reads `Bundle.main` — under a hosted unit test that is
     /// the Depth app, so this also proves the JSON is actually bundled, not just present on disk.

@@ -4,9 +4,8 @@ import Testing
 
 @testable import Depth
 
-// Task 8D coverage: About-section version/build formatting and `TeamDetailViewModel`'s
-// capture of the underlying cache timestamp (used for staleness tracking). See
-// the vault's `specs/2026-08-14-native-ios-app-design.md`.
+// Coverage for About-section version/build formatting and `TeamDetailViewModel`'s
+// capture of the underlying cache timestamp (used for staleness tracking).
 
 @Test func versionAndBuildFormatsBothPresentValues() {
     #expect(formattedVersionAndBuild(version: "1.2.3", build: "42") == "1.2.3 (42)")
@@ -17,11 +16,10 @@ import Testing
     #expect(formattedVersionAndBuild(version: "", build: "7") == "\u{2014} (7)")
 }
 
-// DEP-160: the About card's privacy-policy link must point at the live production
-// /privacy page on the retained static site (verified 200), not a placeholder host.
-// Host updated 2026-08-28 from the generated `depth-ashen.vercel.app` alias to the
-// branded custom domain. The literal is hardcoded on purpose rather than read back
-// from AppBuildInfo — asserting against the same constant the code uses would make
+// the About card's privacy-policy link must point at the live production
+// /privacy page on the retained static site, not a placeholder host. The literal is hardcoded
+// rather than read back from AppBuildInfo — asserting against the same constant the code uses
+// would make
 // this test tautological, and its whole job is to catch an unintended host change.
 @Test func privacyPolicyURLPointsAtProductionStaticSite() {
     let url = AppBuildInfo.privacyPolicyURL
@@ -30,7 +28,7 @@ import Testing
     #expect(url?.path == "/privacy")
 }
 
-// DEP-308: both pre-submit auth disclosures must use the same canonical public site,
+// both pre-submit auth disclosures must use the same canonical public site,
 // with separate stable destinations rather than a guessed host in AuthSheet.
 struct AuthLegalURLTests {
     @Test func linksShareTheProductionStaticSite() {
