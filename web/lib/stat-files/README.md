@@ -1,6 +1,6 @@
 # stat-files
 
-The writer for the stat-history objects served from Cloudflare R2. It knows nothing about football — only the v1 object layout, gzip JSON encoding, cache headers, and change detection. The builders (DEP-544 career files, DEP-576 game logs) produce values and hand them to `createPublisher`; the iOS reader (DEP-542) consumes the resulting objects. The design spec lives in the vault (`2026-09-16-stat-history-on-r2-design`); this file is the developer reference for the code here.
+The writer for the stat-history objects served from Cloudflare R2. It knows nothing about football — only the v1 object layout, gzip JSON encoding, cache headers, and change detection. The builders (career files, game logs) produce values and hand them to `createPublisher`; the iOS reader consumes the resulting objects.
 
 ## Layout
 
