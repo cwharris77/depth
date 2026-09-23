@@ -37,6 +37,14 @@ if [ -n "$(staged_swift 'Depth/*.swift' 'DepthTests/*.swift' 'DepthUITests/*.swi
   fi
 fi
 
+# Public-source comment policy on the staged index, including the local private denylist
+# (see web/scripts/check-public-comments.mts). Runs from the repo root for the same GIT_DIR reason.
+if [ -x web/node_modules/.bin/tsx ]; then
+  web/node_modules/.bin/tsx web/scripts/check-public-comments.mts --staged || exit 1
+else
+  echo "pre-commit: web dependencies not installed -- skipping public comment check" >&2
+fi
+
 staged=$(git diff --cached --name-only --diff-filter=ACM -- web)
 [ -z "$staged" ] && exit 0
 

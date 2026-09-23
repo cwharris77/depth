@@ -4,7 +4,16 @@ import {
   findForbiddenCommentReferences,
   findPrivatePathsInSource,
   parseChangedLineRanges,
+  parsePrivateRules,
 } from '@/lib/public-comments';
+
+// Stand-ins for the real denylist, which is supplied at runtime and never committed.
+const privateRules = parsePrivateRules(
+  JSON.stringify([
+    { label: 'placeholder name', pattern: '\\bZephyrine\\b', flags: 'i' },
+    { label: 'placeholder stance', pattern: '\\bquuxable\\b', exemptFiles: ['NOTICES.md'] },
+  ])
+);
 
 describe('public source comment policy', () => {
   it('finds internal references in line comments', () => {
@@ -43,11 +52,6 @@ describe('public source comment policy', () => {
   });
 
   it.each([
-    ['// Mark is non-free upstream (fair use; trademarked).', 'legal or sourcing stance'],
-    ['// Colors are facts, not copyrightable.', 'legal or sourcing stance'],
-    ['// Redrawn from the reference, not traced.', 'legal or sourcing stance'],
-    ['// Sources collected by Luna; Astra authored the art.', 'model or agent name'],
-    ["// Home first, away second (Cooper's call).", 'private decision provenance'],
     ['// See obsidian:Projects/depth/specs/x.md.', 'private documentation path'],
     ['// Cached per 2026-08-20-ingest-cache-revalidation-design.md.', 'private documentation path'],
   ])('rejects %s', (source, pattern) => {
@@ -59,15 +63,29 @@ describe('public source comment policy', () => {
   });
 
   it('reads Python docstrings and markup comments as comments', () => {
-    const python = extractComments('"""Mark is non-free upstream."""\nx = 1', 'mark.py');
-    const svg = extractComments("<svg><!-- Derived from Cooper's drawing --></svg>", 'base.svg');
+    const python = extractComments('"""Mark is quuxable upstream."""\nx = 1', 'mark.py');
+    const svg = extractComments("<svg><!-- Derived from Zephyrine's drawing --></svg>", 'base.svg');
 
-    expect(findForbiddenCommentReferences(python)).toEqual([
-      expect.objectContaining({ pattern: 'legal or sourcing stance' }),
+    expect(findForbiddenCommentReferences(python, 'mark.py', privateRules)).toEqual([
+      expect.objectContaining({ pattern: 'placeholder stance', private: true }),
     ]);
-    expect(findForbiddenCommentReferences(svg)).toEqual([
-      expect.objectContaining({ pattern: 'private decision provenance' }),
+    expect(findForbiddenCommentReferences(svg, 'base.svg', privateRules)).toEqual([
+      expect.objectContaining({ pattern: 'placeholder name', private: true }),
     ]);
+  });
+
+  it('applies runtime rules only when supplied', () => {
+    const comments = extractComments('// Picked by zephyrine.', 'Example.ts');
+
+    expect(findForbiddenCommentReferences(comments, 'Example.ts')).toEqual([]);
+    expect(findForbiddenCommentReferences(comments, 'Example.ts', privateRules)).toEqual([
+      expect.objectContaining({ pattern: 'placeholder name', match: 'zephyrine', private: true }),
+    ]);
+  });
+
+  it('rejects a malformed denylist', () => {
+    expect(() => parsePrivateRules('{}')).toThrow('JSON array');
+    expect(() => parsePrivateRules('[{ "label": "x" }]')).toThrow('entry 0');
   });
 
   it('does not read shell globs as block comments', () => {
@@ -101,21 +119,23 @@ describe('public source comment policy', () => {
     ]);
   });
 
-  it('allows license and trademark notices only in the attributions file', () => {
-    const notice = 'Team marks are trademarks of their respective clubs.';
+  it('skips a runtime rule in the files it exempts', () => {
+    const notice = 'These marks are quuxable.';
 
     expect(
-      findForbiddenCommentReferences(extractComments(notice, 'ATTRIBUTIONS.md'), 'ATTRIBUTIONS.md')
+      findForbiddenCommentReferences(
+        extractComments(notice, 'NOTICES.md'),
+        'NOTICES.md',
+        privateRules
+      )
     ).toEqual([]);
     expect(
-      findForbiddenCommentReferences(extractComments(notice, 'README.md'), 'README.md')
-    ).toEqual([expect.objectContaining({ pattern: 'legal or sourcing stance' })]);
-  });
-
-  it('allows the Claude Code attribution footer', () => {
-    const comments = extractComments('Generated with Claude Code', 'template.md');
-
-    expect(findForbiddenCommentReferences(comments, 'template.md')).toEqual([]);
+      findForbiddenCommentReferences(
+        extractComments(notice, 'README.md'),
+        'README.md',
+        privateRules
+      )
+    ).toEqual([expect.objectContaining({ pattern: 'placeholder stance' })]);
   });
 
   it('parses added-line ranges from a zero-context diff', () => {

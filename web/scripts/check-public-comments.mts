@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import {
   extractComments,
@@ -7,18 +8,44 @@ import {
   findPrivatePathsInSource,
   isMarkdown,
   parseChangedLineRanges,
+  parsePrivateRules,
+  type PrivateRule,
 } from '../lib/public-comments';
 
 const root = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
 const args = process.argv.slice(2);
 const allFiles = args.includes('--all');
+const staged = args.includes('--staged');
 const changedSinceIndex = args.indexOf('--changed-since');
 const changedSince = changedSinceIndex === -1 ? null : args[changedSinceIndex + 1];
 
-if (!allFiles && !changedSince) {
-  console.error('Usage: check-public-comments.mts --all | --changed-since <git-ref>');
+if (!allFiles && !staged && !changedSince) {
+  console.error('Usage: check-public-comments.mts --all | --staged | --changed-since <git-ref>');
   process.exit(2);
 }
+
+// CI logs are public, so a private-rule finding there names neither the rule nor the match.
+const redactPrivate = Boolean(process.env.CI);
+const defaultDenylistFile = path.join(
+  os.homedir(),
+  '.config',
+  'depth',
+  'public-comment-denylist.json'
+);
+
+// Sensitive terms are supplied at runtime and never committed: PUBLIC_COMMENT_DENYLIST holds the
+// JSON itself (CI secret), PUBLIC_COMMENT_DENYLIST_FILE or the default file holds it locally.
+function loadPrivateRules(): PrivateRule[] {
+  const inline = process.env.PUBLIC_COMMENT_DENYLIST;
+  if (inline) return parsePrivateRules(inline);
+  const file = process.env.PUBLIC_COMMENT_DENYLIST_FILE ?? defaultDenylistFile;
+  if (fs.existsSync(file)) return parsePrivateRules(fs.readFileSync(file, 'utf8'));
+  const notice = 'No private denylist found; checking the public rules only.';
+  console.warn(process.env.GITHUB_ACTIONS ? `::warning::${notice}` : notice);
+  return [];
+}
+
+const privateRules = loadPrivateRules();
 
 const trackedFiles = execFileSync('git', ['ls-files', '-z'], {
   cwd: root,
@@ -86,12 +113,20 @@ function isSourceFile(filename: string): boolean {
   );
 }
 
-function changedRanges(ref: string) {
-  const diff = execFileSync('git', ['diff', '--unified=0', '--no-color', ref, '--'], {
+function changedRanges(diffArgs: string[]) {
+  const diff = execFileSync('git', ['diff', '--unified=0', '--no-color', ...diffArgs, '--'], {
     cwd: root,
     encoding: 'utf8',
   });
   return parseChangedLineRanges(diff);
+}
+
+// A staged check reads the index, so a partially staged file is judged by what will be committed.
+function readSource(filename: string): string {
+  if (staged) {
+    return execFileSync('git', ['show', `:${filename}`], { cwd: root, encoding: 'utf8' });
+  }
+  return fs.readFileSync(path.join(root, filename), 'utf8');
 }
 
 function overlapsChangedLines(
@@ -102,7 +137,11 @@ function overlapsChangedLines(
   return ranges?.some(([start, end]) => line <= end && endLine >= start) ?? false;
 }
 
-const ranges = changedSince ? changedRanges(changedSince) : null;
+const ranges = staged
+  ? changedRanges(['--cached'])
+  : changedSince
+    ? changedRanges([changedSince])
+    : null;
 const findings: string[] = [];
 
 for (const filename of trackedFiles.filter(isSourceFile)) {
@@ -110,12 +149,12 @@ for (const filename of trackedFiles.filter(isSourceFile)) {
   if (!ranges && fullScanExcludedRoots.some((prefix) => filename.startsWith(prefix))) continue;
 
   const absolutePath = path.join(root, filename);
-  // A symlinked document is checked once, through its target.
-  if (fs.lstatSync(absolutePath).isSymbolicLink()) continue;
-  const source = fs.readFileSync(absolutePath, 'utf8');
+  // A symlinked document is checked once, through its target; a staged deletion has no file.
+  if (!fs.existsSync(absolutePath) || fs.lstatSync(absolutePath).isSymbolicLink()) continue;
+  const source = readSource(filename);
   const comments = extractComments(source, filename);
   const references = [
-    ...findForbiddenCommentReferences(comments, filename),
+    ...findForbiddenCommentReferences(comments, filename, privateRules),
     ...(isMarkdown(filename) ? [] : findPrivatePathsInSource(source)),
   ];
   const forbidden = references.filter((finding) =>
@@ -123,7 +162,9 @@ for (const filename of trackedFiles.filter(isSourceFile)) {
   );
 
   for (const finding of forbidden) {
-    findings.push(`${filename}:${finding.line} ${finding.pattern} (${finding.match})`);
+    const detail =
+      finding.private && redactPrivate ? 'private term' : `${finding.pattern} (${finding.match})`;
+    findings.push(`${filename}:${finding.line} ${detail}`);
   }
 }
 
