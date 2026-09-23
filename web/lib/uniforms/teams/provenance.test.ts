@@ -4,6 +4,7 @@ import {
   CONSTRUCTION_PROVENANCE,
   UNSOURCED_PROVENANCE,
   findUnrecordedConstructions,
+  findInvalidReferencePackets,
   findUnsourcedConstructions,
   getConstructionProvenance,
 } from './provenance';
@@ -63,6 +64,10 @@ describe('sourced records', () => {
     expect(record?.inferred.length).toBeGreaterThan(0);
     expect(record?.approximations.length).toBeGreaterThan(0);
     expect(record?.unresolved.length).toBeGreaterThan(0);
+    expect(record?.referencePacket?.requiredFeatures).toContain('collar');
+    expect(record?.referencePacket?.sources.map((source) => source.role)).toContain(
+      'official-detail'
+    );
   });
 
   it('distinguishes the Eagles original and modern constructions', () => {
@@ -91,5 +96,12 @@ describe('shipping gate', () => {
       { id: 'seahawks-rivalries-2025', teamId: 'seahawks', constructionKey: 'rivalries-2025' },
     ]);
     expect(unsourced.map((row) => row.id)).toEqual(['ravens-home-1996']);
+  });
+
+  it('rejects a signature packet with uncovered required features', () => {
+    const invalid = findInvalidReferencePackets([
+      { id: 'seahawks-rivalries-2025', teamId: 'seahawks', constructionKey: 'rivalries-2025' },
+    ]);
+    expect(invalid).toEqual([]);
   });
 });

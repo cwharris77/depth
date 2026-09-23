@@ -1,3 +1,5 @@
+import type { PartLayer } from './parts';
+
 // Construction geometry that is genuinely shared between team modules — not a grab-bag. Anything
 // here must be a fact about the mannequin rather than about a team, so that a second team adopting
 // it is reuse and not coincidence. Team-specific paths stay in that team's module.
@@ -17,3 +19,59 @@ export const GENERIC_COLLAR_PATH = 'M206,388 L294,455 L386,388';
 // teams still own their trim widths and colors; this only centralizes the mannequin fit.
 export const LEGACY_ROUNDED_COLLAR_PATH =
   'M229,388 Q229,405 246,414 L294,414 L342,414 Q359,405 359,388';
+
+export interface ModernInsetVCollarColors {
+  body: string;
+  edge: string;
+  inset: string;
+  placket: string;
+}
+
+export interface ModernInsetVCollarOptions {
+  idPrefix: string;
+  colors: ModernInsetVCollarColors;
+  insetId?: string;
+}
+
+export function modernInsetVCollar({
+  idPrefix,
+  colors,
+  insetId = `${idPrefix}-collar-inset`,
+}: ModernInsetVCollarOptions): PartLayer[] {
+  return [
+    {
+      id: `${idPrefix}-neck-opening`,
+      surface: 'collar',
+      kind: 'fill',
+      clip: true,
+      fill: colors.body,
+      d: 'M220,383 H368 C364,415 333,442 294,464 C255,442 224,415 220,383 Z',
+    },
+    {
+      id: `${idPrefix}-collar-edge`,
+      surface: 'collar',
+      kind: 'stroke',
+      clip: true,
+      stroke: colors.edge,
+      strokeWidth: 20,
+      d: 'M220,383 C224,415 255,442 294,464 C333,442 364,415 368,383',
+    },
+    {
+      id: insetId,
+      surface: 'collar',
+      kind: 'stroke',
+      clip: true,
+      stroke: colors.inset,
+      strokeWidth: 8,
+      d: 'M220,383 C224,415 255,442 291,462 M297,462 C333,442 364,415 368,383',
+    },
+    {
+      id: `${idPrefix}-collar-placket`,
+      surface: 'collar',
+      kind: 'fill',
+      clip: true,
+      fill: colors.placket,
+      d: 'M281,452 L294,459 L307,452 L302,479 L286,479 Z',
+    },
+  ];
+}

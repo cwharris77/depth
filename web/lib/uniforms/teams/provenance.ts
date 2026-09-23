@@ -34,9 +34,36 @@ export type FidelityStatus =
   // Checked, and an intentional, documented approximation was accepted in its place.
   | 'approximate';
 
+export const REFERENCE_FEATURES = [
+  'body-pattern',
+  'collar',
+  'cuffs',
+  'number',
+  'sleeves',
+  'wordmark',
+] as const;
+
+export type ReferenceFeature = (typeof REFERENCE_FEATURES)[number];
+
+export type ReferenceRole =
+  'official-detail' | 'official-release' | 'game-photo' | 'retail-back' | 'retail-front';
+
+export interface ReferenceSource {
+  url: string;
+  role: ReferenceRole;
+  covers: readonly ReferenceFeature[];
+}
+
+export interface ReferencePacket {
+  requiredFeatures: readonly ReferenceFeature[];
+  sources: readonly ReferenceSource[];
+}
+
 export interface ConstructionProvenance {
   // URLs or human-readable identifiers for the external references. Empty only on UNSOURCED.
   sources: readonly string[];
+  // Present for distinctive constructions whose authored art needs feature-level evidence.
+  referencePacket?: ReferencePacket;
   // Facts measured or read directly from a source.
   observed: readonly string[];
   // Details reasoned from the sources or borrowed from existing parts rather than seen.
@@ -77,6 +104,26 @@ const SEAHAWKS_RIVALRIES_2025: ConstructionProvenance = {
     'https://static.clubs.nfl.com/image/upload/t_new_photo_album/seahawks/rwdy8rqamnkhcywmir9f.jpg',
     'https://fanatics.frgimages.com/seattle-seahawks/mens-nike-jaxon-smith-njigba-gray-seattle-seahawks-rivalries-collection-stitched-limited-jersey_ss5_p-202666467%2Bpv-1%2Bu-erexofgxenl71aa9tlks%2Bv-md1ngazh9geawio6wwre.jpg?_hv=2&w=1018',
   ],
+  referencePacket: {
+    requiredFeatures: ['body-pattern', 'collar', 'cuffs', 'number', 'sleeves', 'wordmark'],
+    sources: [
+      {
+        url: 'https://www.seahawks.com/photos/2025-seahawks-nike-rivalries-uniform-detail-photos',
+        role: 'official-detail',
+        covers: ['body-pattern', 'collar', 'cuffs', 'sleeves'],
+      },
+      {
+        url: 'https://www.seahawks.com/news/2025-seahawks-nike-rivalries-uniform-announcement',
+        role: 'official-release',
+        covers: ['body-pattern', 'wordmark'],
+      },
+      {
+        url: 'https://fanatics.frgimages.com/seattle-seahawks/mens-nike-jaxon-smith-njigba-gray-seattle-seahawks-rivalries-collection-stitched-limited-jersey_ss5_p-202666467%2Bpv-1%2Bu-erexofgxenl71aa9tlks%2Bv-md1ngazh9geawio6wwre.jpg?_hv=2&w=1018',
+        role: 'retail-front',
+        covers: ['collar', 'number', 'wordmark'],
+      },
+    ],
+  },
   observed: [
     'Soundwave dash motif uses long diagonal yoke marks and shorter sleeve lozenges; the central chest is plain.',
     'Wolf Grey body, navy outlined green/olive numbers, and navy SEAHAWKS wordmark.',
@@ -360,5 +407,30 @@ export function findUnsourcedConstructions(rows: ReadonlyArray<ProvenanceRow>): 
   return rows.filter((row) => {
     const record = getConstructionProvenance(row.teamId, row.constructionKey);
     return record !== undefined && record.sources.length === 0;
+  });
+}
+
+export function referencePacketIssues(packet: ReferencePacket): string[] {
+  const issues: string[] = [];
+  const covered = new Set(packet.sources.flatMap((source) => source.covers));
+  if (packet.sources.length === 0) issues.push('has no sources');
+  for (const source of packet.sources) {
+    if (!source.url.startsWith('https://')) issues.push(`uses a non-HTTPS source: ${source.url}`);
+    if (source.covers.length === 0) issues.push(`does not assign coverage to ${source.url}`);
+  }
+  for (const feature of packet.requiredFeatures) {
+    if (!covered.has(feature)) issues.push(`has no source covering ${feature}`);
+  }
+  return issues;
+}
+
+export function findInvalidReferencePackets(
+  rows: ReadonlyArray<ProvenanceRow>
+): Array<{ row: ProvenanceRow; issues: string[] }> {
+  return rows.flatMap((row) => {
+    const packet = getConstructionProvenance(row.teamId, row.constructionKey)?.referencePacket;
+    if (!packet) return [];
+    const issues = referencePacketIssues(packet);
+    return issues.length === 0 ? [] : [{ row, issues }];
   });
 }
