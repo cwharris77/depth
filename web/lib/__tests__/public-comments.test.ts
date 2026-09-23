@@ -57,6 +57,26 @@ describe('public source comment policy', () => {
     );
   });
 
+  it('reads Python docstrings and markup comments as comments', () => {
+    const python = extractComments('"""Mark is non-free upstream."""\nx = 1', 'mark.py');
+    const svg = extractComments("<svg><!-- Derived from Cooper's drawing --></svg>", 'base.svg');
+
+    expect(findForbiddenCommentReferences(python)).toEqual([
+      expect.objectContaining({ pattern: 'legal or sourcing stance' }),
+    ]);
+    expect(findForbiddenCommentReferences(svg)).toEqual([
+      expect.objectContaining({ pattern: 'private decision provenance' }),
+    ]);
+  });
+
+  it('rejects personal absolute paths anywhere in source', () => {
+    const source = "REF = Path('/Users/someone/Downloads/mark.svg')";
+
+    expect(findPrivatePathsInSource(source)).toEqual([
+      expect.objectContaining({ pattern: 'personal path' }),
+    ]);
+  });
+
   it('rejects private paths in string literals', () => {
     const source = "const sources = [\n  'obsidian:Projects/depth/specs/x.md',\n];";
 

@@ -17,7 +17,7 @@ export type ChangedLineRanges = Map<string, Array<[number, number]>>;
 
 const hashCommentExtensions = new Set(['.py', '.sh', '.bash', '.zsh', '.toml', '.yml', '.yaml']);
 const sqlExtensions = new Set(['.sql']);
-const excludedExtensions = new Set(['.css', '.html', '.plist', '.svg', '.xml']);
+const markupExtensions = new Set(['.html', '.plist', '.svg', '.xml']);
 
 const forbiddenPatterns: Array<[string, RegExp]> = [
   ['ticket id', /\b(?:DEP|OB|SYM|AO|LLM|SCP)-\d+\b/i],
@@ -36,7 +36,7 @@ const forbiddenPatterns: Array<[string, RegExp]> = [
   ],
   [
     'legal or sourcing stance',
-    /\b(?:fair[- ]use|nominative|non-free|licen[cs](?:e|es|ed|ing)|copyright\w*|trademark\w*|public domain|legal (?:posture|stance|audit)|(?:not|never) traced|trace-then-stylize)\b/i,
+    /\b(?:third-party mark|fair[- ]use|nominative|non-free|licen[cs](?:e|es|ed|ing)|copyright\w*|trademark\w*|public domain|legal (?:posture|stance|audit)|(?:not|never) traced|trace-then-stylize)\b/i,
   ],
   [
     'temporary planning history',
@@ -51,9 +51,12 @@ const markdownExemptions: Record<string, ReadonlySet<string>> = {
   'ATTRIBUTIONS.md': new Set(['agent policy reference', 'legal or sourcing stance']),
 };
 
-// Private paths are rejected anywhere in a source file, not just in comments, so a string
-// literal cannot carry a vault reference either.
-const privatePathInSource = /\bobsidian[:/]|Projects\/depth\//i;
+// Private and machine-specific paths are rejected anywhere in a source file, not just in
+// comments, so a string literal cannot carry one either.
+const pathsInSource: Array<[string, RegExp]> = [
+  ['private documentation path', /\bobsidian[:/]|Projects\/depth\//i],
+  ['personal path', /\/Users\/[^/\s'"`]+\//],
+];
 
 function lineNumberAt(source: string, index: number): number {
   let line = 1;
@@ -67,9 +70,22 @@ export function isMarkdown(filename: string): boolean {
   return path.extname(filename).toLowerCase() === '.md';
 }
 
+function blockDelimiters(filename: string): Array<[string, string]> {
+  const extension = path.extname(filename).toLowerCase();
+  if (markupExtensions.has(extension)) return [['<!--', '-->']];
+  // Python triple-quoted strings are docstrings or emitted text, and both are public prose.
+  if (extension === '.py') {
+    return [
+      ['"""', '"""'],
+      ["'''", "'''"],
+    ];
+  }
+  return [['/*', '*/']];
+}
+
 function lineCommentTokens(filename: string): string[] {
   const extension = path.extname(filename).toLowerCase();
-  if (excludedExtensions.has(extension)) return [];
+  if (markupExtensions.has(extension) || extension === '.css') return [];
   if (hashCommentExtensions.has(extension)) return ['#'];
   if (sqlExtensions.has(extension)) return ['--', '//'];
   return ['//'];
@@ -85,6 +101,8 @@ export function extractComments(source: string, filename: string): SourceComment
   }
   const comments: SourceComment[] = [];
   const tokens = lineCommentTokens(filename);
+  const blocks = blockDelimiters(filename);
+  const tracksQuotes = !markupExtensions.has(path.extname(filename).toLowerCase());
   let quote: string | null = null;
   let index = 0;
 
@@ -100,21 +118,23 @@ export function extractComments(source: string, filename: string): SourceComment
       continue;
     }
 
-    if (isQuote(character)) {
-      quote = character;
-      index += 1;
-      continue;
-    }
-
-    if (source.startsWith('/*', index)) {
-      const end = source.indexOf('*/', index + 2);
-      const endIndex = end === -1 ? source.length : end + 2;
+    const block = blocks.find(([open]) => source.startsWith(open, index));
+    if (block) {
+      const [open, close] = block;
+      const end = source.indexOf(close, index + open.length);
+      const endIndex = end === -1 ? source.length : end + close.length;
       comments.push({
         line: lineNumberAt(source, index),
         endLine: lineNumberAt(source, endIndex),
-        text: source.slice(index + 2, end === -1 ? source.length : end),
+        text: source.slice(index + open.length, end === -1 ? source.length : end),
       });
       index = endIndex;
+      continue;
+    }
+
+    if (tracksQuotes && isQuote(character)) {
+      quote = character;
+      index += 1;
       continue;
     }
 
@@ -155,19 +175,12 @@ export function findForbiddenCommentReferences(
 }
 
 export function findPrivatePathsInSource(source: string): ForbiddenCommentReference[] {
-  return source.split('\n').flatMap((text, index) => {
-    const match = text.match(privatePathInSource);
-    return match
-      ? [
-          {
-            line: index + 1,
-            endLine: index + 1,
-            pattern: 'private documentation path',
-            match: match[0],
-          },
-        ]
-      : [];
-  });
+  return source.split('\n').flatMap((text, index) =>
+    pathsInSource.flatMap(([pattern, expression]) => {
+      const match = text.match(expression);
+      return match ? [{ line: index + 1, endLine: index + 1, pattern, match: match[0] }] : [];
+    })
+  );
 }
 
 export function parseChangedLineRanges(diff: string): ChangedLineRanges {

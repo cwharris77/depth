@@ -39,18 +39,23 @@ const sourceRoots = [
 ];
 const sourceExtensions = new Set([
   '.bash',
+  '.css',
+  '.html',
   '.js',
   '.jsx',
   '.mjs',
   '.mts',
+  '.plist',
   '.py',
   '.sh',
   '.sql',
+  '.svg',
   '.swift',
   '.toml',
   '.ts',
   '.tsx',
   '.xcconfig',
+  '.xml',
   '.yaml',
   '.yml',
 ]);
