@@ -1,4 +1,4 @@
--- Season-scoped head coach (the vault's `specs/2026-07-14-season-scoped-head-coach-design.md`).
+-- Season-scoped head coach.
 -- teams.coach_name/coach_experience (20260712150000_add_team_coach.sql) is
 -- ESPN-sourced and reflects only the *current* coach -- verified live (2026-07-14
 -- multi-season-team-stats-design.md) that ESPN's roster endpoint does not vary `coach`

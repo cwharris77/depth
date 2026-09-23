@@ -16,8 +16,8 @@ type Props = {
   sharedOrder: { onApply: (override: TeamDepthOverride) => void };
 };
 
-// DEP-179 slice 4: bundles DepthChartField's URL-reading children -- selection/season/kit
-// (SyncSelectionFromQuery, DEP-184) plus the one-shot ?order= apply (ApplySharedOrder) --
+// Bundles DepthChartField's URL-reading children -- selection/season/kit
+// (SyncSelectionFromQuery) plus the one-shot ?order= apply (ApplySharedOrder) --
 // into one section, the same "hook/section owns a cohesive prop bundle" shape as
 // DepthChartSheets and FieldHeader's menu/override/sharedBoard props. Neither child
 // renders visible UI; grouping them still keeps DepthChartField's JSX to one tag per

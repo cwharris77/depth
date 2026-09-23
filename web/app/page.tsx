@@ -10,10 +10,10 @@ import { tables } from '@/lib/supabase/tables';
 
 // The home route. Signed-in visitors resolve to their startup team (favorite ->
 // last-viewed -> default) server-side and are redirected to /team/<id>, so the app opens
-// where they left off across devices (Phase C, auth pass 1). Signed-out visitors — the
+// where they left off across devices. Signed-out visitors — the
 // common case, and the only ones we store nothing about — get the DEFAULT team's chart
 // rendered directly here, statically-shaped like every /team/[id] page, with no
-// download-hydrate-redirect hop (backlog: "Home-load feels slow", 2026-07-08).
+// download-hydrate-redirect hop.
 export default async function Home() {
   const [user, { isOffseason, upcomingSeason }] = await Promise.all([
     requireUser(),

@@ -1,4 +1,4 @@
--- Team stats page (Phase E, the vault's `specs/2026-07-12-team-stats-page-design.md`).
+-- Team stats page.
 -- Season record + standings detail, one row per team. Sourced from the same ESPN
 -- standings fetch already used for conference/division (lib/espn/standings.ts
 -- parseTeamStats) -- no new fetch, just more of the payload read. All nullable: a team
@@ -29,7 +29,7 @@ create table team_stats (
 
 -- Match the explicit-grant pattern (20260701171029_grant_default_table_privileges.sql)
 -- and the RLS-with-policy-in-the-same-migration pattern (20260710140000_base_table_rls
--- -- AGENTS.md invariant 10): dbRosterSource reads this table with the anon key, so it
+-- dbRosterSource reads this table with the anon key, so it
 -- ships both the grant and a read policy from the start, never a window where reads break.
 grant select, insert, update, delete on team_stats to anon, authenticated, service_role;
 

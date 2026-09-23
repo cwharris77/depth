@@ -1,4 +1,4 @@
-// Resolve-a-share API (Phase C, share pass). GET /api/shares/[slug] -> the referenced team,
+// Resolve-a-share API. GET /api/shares/[slug] -> the referenced team,
 // the owner's display name, and the owner's *current* override for that team (resolved live,
 // so the link tracks the owner's edits). Public: anon reads the slug (shared_boards public
 // read) and the owner's override rows are visible only because a shared_boards row references

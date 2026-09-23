@@ -25,7 +25,7 @@ type Props = {
 // The field itself: markings, special-teams group labels, the roster's dots, and the
 // historical-fetch overlay states (loading/not-found/error). Extracted out of
 // DepthChartField so that component composes sections rather than owning the field's
-// JSX directly (DEP-179).
+// JSX directly.
 export default function DepthChartFieldSurface({
   slots,
   activeUnit,
@@ -183,8 +183,8 @@ export default function DepthChartFieldSurface({
         )}
       </div>
 
-      {/* FTN Data is CC-BY-SA 4.0 -- attribution is the condition of surfacing it
-          (the vault's `Reference/nflverse.md`). Shown whenever the active unit has real-formation data
+      {/* FTN Data is CC-BY-SA 4.0 -- attribution is the condition of surfacing it. Shown whenever the
+          active unit has real-formation data
           on screen -- not only once a formation is picked, since the default pick
           is the team's top formation and the field renders FTN-sourced layouts
           from first paint. Historical seasons have no formation data, so none

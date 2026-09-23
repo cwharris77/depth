@@ -9,7 +9,7 @@ import { buildTeam, pl } from './_build';
 //
 // The per-player entries below are stale point-in-time placeholders, NOT a live fallback.
 // The app renders live rosters from the DB (dbRosterSource); there is no hand-authored
-// roster fallback (see the vault's `Reference/espn.md`). They persist only because the seed shape carries a
+// roster fallback. They persist only because the seed shape carries a
 // players array and tests use them as fixtures — don't trust or maintain them as real
 // roster data.
 //
@@ -17,7 +17,6 @@ import { buildTeam, pl } from './_build';
 // pre-2026-08-04 fixtures only ever carried 3 LBs (matching the old 4-3-shaped default
 // formation), and BASE_DEFENSE's new 3-4 front needs a 4th (WLB/LILB/RILB/SLB) — added
 // mechanically so every shipped roster still resolves fully against the new formation
-// (../obsidian/Projects/depth/specs/2026-08-04-full-espn-position-taxonomy-design.md, DEP-134).
 
 export const LEAGUE: TeamRosterSeed[] = [
   // ───────────── AFC East ─────────────

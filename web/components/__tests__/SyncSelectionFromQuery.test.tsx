@@ -5,7 +5,7 @@ import type { Player, Unit } from '@/lib/types';
 
 // Mutable module-scoped stand-ins for next/navigation, reassigned per test to simulate a
 // URL change (mount, Back/Forward, or a manual edit) without a real Next.js router
-// (DEP-184: all four selection params -- player/unit/season/kit -- read here).
+// All four selection params -- player/unit/season/kit -- are read here.
 let mockParams = new URLSearchParams();
 let mockPathname = '/team/sea';
 const replace = vi.fn();

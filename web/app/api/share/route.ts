@@ -1,4 +1,4 @@
-// Create-a-share API (Phase C, share pass). POST { teamId } -> the signed-in user's stable
+// Create-a-share API. POST { teamId } -> the signed-in user's stable
 // share slug for that team, minting one on first share and reusing it afterward so a link
 // already in someone's hands keeps working (and keeps resolving to the owner's *live* order).
 // The share is a reference, not a snapshot -- no override data is copied here. 401 signed out.

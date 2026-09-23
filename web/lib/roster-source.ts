@@ -87,13 +87,12 @@ export interface UniformListing {
 
 // Everything the team stats page needs, composed in one read: team identity (for the
 // header/theming) and one TeamStats row per ingested season (current + up to two prior
-// — ../obsidian/Projects/depth/specs/2026-07-14-multi-season-team-stats-design.md), newest first.
-// Each season's coach lives on that `TeamStats` entry (../obsidian/Projects/depth/specs/2026-07-14-
-// season-scoped-head-coach-design.md) rather than here, since the coach who led a team
+// — newest first. Each season's coach lives on that `TeamStats` entry rather than here, since
+// the coach who led a team
 // in 2023 is not the coach who leads it in 2025. `seasons` is always an array, empty
 // rather than undefined when no season has a complete entry, so callers don't need an
 // extra undefined check before rendering the "no stats" fallback. `incomingCoach` is a
-// distinct, separately-sourced signal, and an OFF-SEASON-ONLY one (DEP-597): ESPN's live
+// distinct, separately-sourced signal, and an OFF-SEASON-ONLY one: ESPN's live
 // `teams.coach_name` reporting `coach_experience: 0` for a team that just hired a new HC
 // before that person has coached a game, in the window before the season they were hired
 // for has kicked off. It exists because that person has no season to belong to yet, so
@@ -118,7 +117,7 @@ export interface TeamStatsPage {
   // The current NFL season year. A season is "completed" (all games played, playoff
   // outcomes known) when its year is less than this. Used by TeamStatsView to suppress
   // the playoff-status line ("SEED N" / "MISSED PLAYOFFS") for seasons that haven't
-  // finished yet — see ../obsidian/Projects/depth/specs/2026-07-14-multi-season-team-stats-design.md.
+  // finished yet.
   currentSeason: number;
 }
 

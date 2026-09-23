@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: 'Optionally sign in to sync your favorite team and settings across devices.',
 };
 
-// Dedicated sign-in / account page (Phase C, auth pass 1), reached from the nav drawer's
+// Dedicated sign-in / account page, reached from the nav drawer's
 // account item. Server component: resolves the team list here (for the favorite picker) and
 // hands it to the client AccountView. `next` is the ?next= return path — where the user came
 // from — used by the Back arrow below. Sign-in itself no longer navigates (it shows an in-page

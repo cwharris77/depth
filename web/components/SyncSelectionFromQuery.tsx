@@ -8,7 +8,7 @@ import { unitForPosition } from '@/lib/utils/search/search';
 import { useApplyQueryParam } from '@/lib/hooks/use-apply-query-param';
 
 // Consolidates the depth chart page's four selection-related URL params — `?player=`,
-// `?unit=`, `?season=`, `?kit=` — into one reader (DEP-184, replaces SyncSelectionWithQuery
+// `?unit=`, `?season=`, `?kit=` — into one reader. Each param keeps its own prior semantics:
 // + ApplySeasonFromQuery + ApplyKitFromQuery). Each param keeps its own prior semantics:
 //   - player/unit: persistent, loop-guarded against DepthChartField's own state→URL writes.
 //   - season: persistent, resets to null on removal (Back/Forward out of a shared link).

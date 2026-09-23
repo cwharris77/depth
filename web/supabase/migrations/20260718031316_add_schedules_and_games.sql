@@ -1,4 +1,4 @@
--- Team schedules + games (the vault's `specs/2026-07-17-team-schedule-design.md`).
+-- Team schedules + games.
 -- Sourced from nflverse's nfldata/games.csv via scripts/ingest-nflverse.mts, the second
 -- data source next to ESPN. Two tables:
 --
@@ -51,7 +51,7 @@ create index games_away_team_season_idx on games(away_team_id, season);
 create index games_season_idx on games(season);
 
 -- Same explicit-grant + RLS-with-policy-in-the-same-migration pattern as player_stats
--- (20260717081108_add_player_stats.sql, AGENTS.md invariant 10): dbRosterSource reads
+-- (20260717081108_add_player_stats.sql): dbRosterSource reads
 -- both tables with the anon key, so each ships a grant and a public read policy from the
 -- start -- never a window where reads return zero rows. Writes go through the service-role
 -- ingest, which bypasses RLS.

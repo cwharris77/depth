@@ -1,5 +1,4 @@
--- nflverse ingestion scaffolding + player season stats (Phase D/E foundation,
--- the vault's `specs/2026-07-07-nflverse-ingestion-and-player-stats-design.md`).
+-- nflverse ingestion scaffolding + player season stats.
 -- One row per (player, season, season_type); v1 only ever writes season_type='REG'
 -- (scripts/ingest-nflverse.mts fetches stats_player_reg_<season>.csv), but the column
 -- is generalized now so a later POST/weekly enrichment doesn't need a schema change.
@@ -35,7 +34,7 @@ create table player_stats (
 create index player_stats_player_id_idx on player_stats(player_id);
 
 -- Same explicit-grant + RLS-with-policy-in-the-same-migration pattern as team_stats
--- (20260712160000_add_team_stats.sql, AGENTS.md invariant 10): getPlayerStats reads
+-- (20260712160000_add_team_stats.sql): getPlayerStats reads
 -- this table with the anon key from the start, never a window where reads break.
 grant select, insert, update, delete on player_stats to anon, authenticated, service_role;
 

@@ -1,6 +1,6 @@
 // Fetches nflverse's player id crosswalk + the latest two seasons of player season
 // stats, transforms them through the pure lib/nflverse pipeline, and upserts into
-// Postgres (Supabase). Run by hand (or on a schedule -- see the vault's `Reference/nflverse.md`). Never
+// Postgres (Supabase). Run by hand or on a schedule. Never
 // part of `next build`.
 //
 // Usage:
@@ -9,9 +9,8 @@
 //                                                # current + previous season
 //   npm run ingest:nflverse -- --seasons 1999-2025
 //     backfills games/schedules/team_season_stats/player_stats for every season in the
-//     range (the vault's `Reference/nflverse.md`). player_stats widens its gate for this flag -- a row
+//     range. player_stats widens its gate for this flag -- a row
 //     writes on a crosswalk match alone, not requiring current-roster membership (see
-//     the vault's `specs/2026-08-13-player-stats-historic-identity-design.md` for
 //     why).
 // Requires SUPABASE_URL + SUPABASE_SECRET_KEY in the environment (secret key
 // bypasses RLS-equivalent restrictions for writes; never expose it client-side).
@@ -85,7 +84,7 @@ const PLAYERS_FILE = 'players.csv';
 // nflverse renamed this release tag from `player_stats` to `stats_player` after the 2024
 // season (asset filenames are unchanged). The old tag stopped getting new season assets, so
 // `latestAvailableSeason` silently capped out at 2024 with no error -- no STRICT failure, just
-// a season that never got ingested. See the vault's `Reference/nflverse.md`.
+// a season that never got ingested.
 const STATS_TAG = 'stats_player';
 const STATS_PREFIX = 'stats_player_reg_';
 // The schedule/results file lives in nfldata (one CSV, every season 1999+), not the
@@ -97,7 +96,7 @@ const GAMES_URL = 'https://github.com/nflverse/nfldata/raw/master/data/games.csv
 // Chunk sizing (rows x columns per statement) lives in lib/nflverse/upsert-chunks.ts.
 const UPSERT_DELAY_MS = Math.max(0, Number(process.env.NFLVERSE_UPSERT_DELAY_MS ?? 40));
 const UPSERT_MAX_ATTEMPTS = 4;
-// Real per-team formations (the vault's `specs/2026-07-07-phase-e-real-formations-design.md`).
+// Real per-team formations.
 // v1 only handles the FTN-charted vocabulary (2023+), so only the latest
 // available season is ever pulled -- the older NGS-sourced seasons use a different,
 // finer formation vocabulary this repo doesn't parse.
@@ -122,7 +121,7 @@ const SNAP_COUNTS_MIN_SEASON = 2012;
 const NGS_TAG = 'nextgen_stats';
 // FTN charting is published from 2022 onward; an older backfill skips it (404 -> skip).
 const FTN_MIN_SEASON = 2022;
-// Header-contract checks (DEP-579) report a source's new upstream columns once per
+// Header-contract checks report a source's new upstream columns once per
 // process, however many seasons/files it is fetched across.
 const loggedNewColumnSources = new Set<string>();
 // SEED_OUT mode has no live `players` table to query -- it reads known player ids from
@@ -167,7 +166,7 @@ interface RawUpsertBuilder {
 // Every write in this script goes through the helpers below: width-bounded chunks, an
 // idempotent retry that splits a statement-timeout chunk in half (down to one row) and
 // backs off on transient errors, and a small pause between chunks so a full backfill
-// doesn't hammer the instance's disk I/O (DEP-557 follow-up).
+// doesn't hammer the instance's disk I/O.
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -309,7 +308,7 @@ async function ingestGames(
   }
 }
 
-// Season W-L records into `team_stats` -- the DEP-146 re-own (Decisions.md 2026-08-14:
+// Season W-L records into `team_stats` --
 // nflverse owns stats/history, so the record leaves ESPN's standings aggregate). Consumes
 // the games this run just computed, so it must follow ingestGames.
 //
@@ -415,9 +414,9 @@ function gamesPlayedByTeamFromGames(games: GameInsert[], season: number): Map<st
 
 // Fetches the latest available pbp_participation season and stream-parses it straight
 // into both a FormationAccumulator and a DefenseFormationAccumulator in the same pass
-// (locked decision: never materialize the ~46k-row season file in memory, and never
+// Never materialize the ~46k-row season file in memory, and never
 // fetch/parse the ~50MB file twice for two units), then upserts every (alignment,
-// personnel) combo the team ran per unit (DEP-141: no top-N cap). A team below the
+// personnel) combo the team ran per unit. A team below the
 // coverage bar simply gets no rows for that unit -- the field view falls back to the
 // generic formation for it, never a sparse-sample layout. `getGamesPlayedByTeam` is
 // injected so the live path can query the DB and SEED_OUT mode can reuse this run's
@@ -712,12 +711,12 @@ async function main() {
   const failures: { season: number | string; message: string }[] = [];
   // The calendar's most recent completed season (never a source's own label). A 404 for a
   // later season is the in-progress one before its first release, so it is a skip rather
-  // than a shape-change failure (DEP-579, source-coverage.ts).
+  // than a shape-change failure (source-coverage.ts).
   const latestCompletedSeason = nflSeasonState().completedSeason;
 
   // --seasons scopes games/schedules, team_season_stats, and player_stats alike (see
   // the usage comment above and the player_stats season-selection comment below). Not
-  // meaningful in SEED_OUT mode (locked decision: seed data stays current + previous).
+  // meaningful in SEED_OUT mode: seed data stays current + previous.
   const gamesSeasons = seedOut ? null : parseSeasonsArg(process.argv.slice(2));
   const gamesMinSeason = gamesSeasons === null ? undefined : Math.min(...gamesSeasons);
   if (gamesSeasons !== null && gamesMinSeason !== undefined && gamesMinSeason < SEASONS_MIN) {
@@ -755,11 +754,11 @@ async function main() {
 
   // Season selection: try current calendar year, walk back until an asset exists
   // (2025 wasn't published at spec-verification time -- never hard-code a year), then
-  // also pull the season before that. Locked decision: "current + previous season",
+  // also pull the season before that: current + previous season,
   // not a fixed lookback -- unless --seasons is set, in which case player_stats
   // follows the same range as games/schedules/team_season_stats (gamesSeasons, set
   // above) and widens its knownPlayerIds gate accordingly (requireCurrentRoster below;
-  // see the vault's `specs/2026-08-13-player-stats-historic-identity-design.md`).
+  // rather than a fixed lookback.
   const latestSeason = await latestAvailableSeason(STATS_TAG, STATS_PREFIX);
   const seasons = gamesSeasons ?? (latestSeason === null ? [] : [latestSeason, latestSeason - 1]);
   const requireCurrentRoster = gamesSeasons === null;
@@ -775,7 +774,7 @@ async function main() {
     try {
       const statsCsv = await getText(assetUrl(STATS_TAG, `${STATS_PREFIX}${season}.csv`));
       // Checked before transforming: a renamed canonical column fails the season and
-      // writes nothing, instead of landing as a null in every row (DEP-579).
+      // writes nothing, instead of landing as a null in every row.
       assertHeader(
         sourceContract('stats_player_reg'),
         parseCsvHeader(statsCsv),
@@ -806,15 +805,15 @@ async function main() {
     }
   }
 
-  // Layer-1 source tables (DEP-541, full-stat-surface design): each nflverse player-level
+  // Layer-1 source tables: each nflverse player-level
   // stat source landed verbatim in its own typed table. Sources are separate in -- a source
   // never writes another's table or the canonical layer -- and a crosswalk miss lands with
   // a null player_id rather than being dropped. The app never reads these; the canonical
-  // layer (DEP-544) consolidates them. Schema generated by `npm run gen:nflverse-raw-tables`.
+  // layer consolidates them. Schema generated by `npm run gen:nflverse-raw-tables`.
   // Per-source running coverage. The upsert streams each task's rows to the DB in chunks,
   // so raw rows must NOT be retained: a full 1999-2026 backfill holds several hundred
   // thousand ~146-column objects across every season, which blew the runner's ~4 GB heap
-  // before the run could finish (DEP-557). Only counts + the seasons actually landed are
+  // before the run could finish. Only counts + the seasons actually landed are
   // kept, for the run record.
   const rawSourceStats = new Map<string, { count: number; seasons: Set<number> }>();
   const recordRawSource = (table: string, rowSeasons: Iterable<number>, count: number): void => {
@@ -826,7 +825,7 @@ async function main() {
   const crosswalks: RawCrosswalks = { gsis: crosswalk, pfr: pfrCrosswalk };
 
   // Weekly-grain raw sources are bounded to a recent window even under a full --seasons
-  // backfill: nothing serves weekly history (canonical v1 is season-grain, DEP-544), and
+  // backfill: nothing serves weekly history (the canonical layer is season-grain), and
   // nflverse_player_week alone is ~314 MB at full depth -- most of a 500 MB free-tier cap.
   // The season-grain source keeps full history. Override with
   // NFLVERSE_WEEKLY_RETENTION_SEASONS. (Player-grain only; ftn_play is 2022+ and tiny.)
@@ -936,7 +935,7 @@ async function main() {
 
   for (const group of rawTaskGroups) {
     // Fetch + header-check first: a shape change or renamed asset never reaches the
-    // transform (DEP-579, raw-group-guard.ts).
+    // transform (raw-group-guard.ts).
     const guarded = await fetchRawGroup(group, {
       fetchCsv: getTextMaybeGzip,
       latestCompletedSeason,
@@ -988,7 +987,7 @@ async function main() {
   }
 
   // Season snap totals for the positions that record no box-score stats -- offensive
-  // line, long snapper, punter (DEP-538). Same nflverse snap_counts source
+  // line, long snapper, punter. Same nflverse snap_counts source
   // player_recent_snaps already consumes, but aggregated per season and merged onto the
   // player_stats row so the profile ledger can show participation. Column-scoped upsert:
   // it can only touch the six snap columns, never the box score. Restricted to
@@ -1032,7 +1031,7 @@ async function main() {
       const message = (e as Error).message;
       // A missing snap asset is a skip only outside the source's published range (2012+)
       // or for the in-progress season; inside the range it is a renamed release asset --
-      // an error naming the URL (DEP-579). The box score still writes either way.
+      // an error naming the URL. The box score still writes either way.
       if (/^404\b/.test(message)) {
         if (classifyMissingAsset('snap_counts', season, latestCompletedSeason) === 'skip') {
           console.log(`snap-counts season ${season}: no source asset, skipped`);
@@ -1050,7 +1049,7 @@ async function main() {
   if (gamesResult.failure) failures.push({ season: 'games', message: gamesResult.failure });
   skipped += gamesResult.skipped;
 
-  // Season records, derived from the games just ingested (DEP-146 re-own).
+  // Season records, derived from the games just ingested.
   const recordsResult = await ingestTeamRecords(supabase, gamesResult.games);
   if (recordsResult.failure) failures.push({ season: 'records', message: recordsResult.failure });
 
@@ -1160,7 +1159,7 @@ async function main() {
       player_season_snaps_rows: seasonSnapTotals.length,
       raw_source_rows: Object.fromEntries([...rawSourceStats].map(([t, s]) => [t, s.count])),
       // The seasons actually landed per source. A backfill that silently covers only the
-      // daily window (DEP-557: the last full run predated the source layer) is then visible
+      // daily window is then visible
       // on the run record instead of only in the table counts.
       raw_source_seasons: Object.fromEntries(
         [...rawSourceStats].map(([t, s]) => [t, [...s.seasons].sort((a, b) => a - b)])

@@ -1,4 +1,4 @@
--- DEP-315 keeps nflverse's bounded pregame market snapshot on the existing shared
+-- Keep nflverse's bounded pregame market snapshot on the existing shared
 -- game row. nflverse's spread_line is home-oriented (positive means the designated
 -- home team is favored); lib/utils/compare/market-lines.ts owns display orientation
 -- and vig removal so raw source values remain auditable here.

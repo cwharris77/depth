@@ -1,5 +1,4 @@
--- Cross-device sync for custom depth-chart order (Phase C, override-sync pass --
--- the vault's `specs/2026-07-07-phase-c-auth-and-saved-boards-design.md`, "Overlay sync").
+-- Cross-device sync for custom depth-chart order.
 -- One row per (user, team, position): the user's ordered player ids at that position,
 -- mirroring lib/depth-overrides.ts TeamDepthOverride (Partial<Record<Position, string[]>>).
 -- Until now the overlay lived only in localStorage (single device); this makes a signed-in
@@ -26,7 +25,7 @@ grant select, insert, update, delete on depth_overrides to authenticated, servic
 
 -- RLS scoped to this new table only. The public base tables (teams/players/...) stay
 -- RLS-off: their read policies ride with the deferred full-RLS/share pass, because
--- dbRosterSource reads them with the anon key (AGENTS.md invariant 10). Owner-only CRUD.
+-- dbRosterSource reads them with the anon key. Owner-only CRUD.
 alter table depth_overrides enable row level security;
 
 create policy "own overrides" on depth_overrides

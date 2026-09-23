@@ -14,7 +14,7 @@ import { writeKitColors } from '@/lib/hooks/use-kit-colors';
 // mismatch.
 const noSubscription = () => () => {};
 
-// Selected uniform (roadmap Phase 7). Defaults to uniforms[0] — the synthesized Home
+// Selected uniform. Defaults to uniforms[0] — the synthesized Home
 // kit, i.e. the team's real colors — so the page opens exactly as before. Picking a
 // kit swaps the colors the whole view renders with (dots, card, header), so the field
 // "wears" the uniform. Reset to Home whenever the team (and therefore roster.uniforms)

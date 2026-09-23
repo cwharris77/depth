@@ -1,5 +1,5 @@
 -- Weekly-grain nflverse source tables are bounded to a recent window: nothing serves
--- weekly history (the canonical layer, DEP-544, is season-grain), and nflverse_player_week
+-- weekly history (the canonical layer is season-grain), and nflverse_player_week
 -- alone was ~314 MB at full depth -- most of a 500 MB free-tier database cap. The
 -- season-grain source (nflverse_player_season) keeps full history.
 --

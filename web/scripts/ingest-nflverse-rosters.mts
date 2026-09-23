@@ -1,6 +1,6 @@
 // Fetches nflverse's season-scoped roster + player-stats + depth-chart CSVs, joins them through the
 // pure lib/nflverse pipeline (depth-chart positions + usage-based depth ranking,
-// the vault's `specs/2026-07-07-phase-d-history-and-boards-design.md`), and upserts
+// and upserts
 // `roster_history`. Run by hand for the one-time 1999-present backfill, or by the
 // daily job (current season only, no --seasons flag). Never part of `next build`.
 //
@@ -45,7 +45,7 @@ const ROSTERS_PREFIX = 'roster_';
 const STATS_TAG = 'stats_player';
 const STATS_PREFIX = 'stats_player_reg_';
 // nflverse publishes side-specific historical depth charts from 2001 onward. Their
-// legacy files use depth_position; the 2025+ source uses pos_abb (DEP-145).
+// legacy files use depth_position; the 2025+ source uses pos_abb.
 const DEPTH_CHARTS_TAG = 'depth_charts';
 const DEPTH_CHARTS_PREFIX = 'depth_charts_';
 const DEPTH_CHARTS_MIN_SEASON = 2001;
@@ -85,7 +85,7 @@ async function main() {
   const startedAt = new Date().toISOString();
   const failures: { season: number | string; message: string }[] = [];
 
-  // --seasons isn't meaningful in SEED_OUT mode (locked decision: seed data stays
+  // --seasons isn't meaningful in SEED_OUT mode: seed data stays
   // current-season-only, same as the daily job's default).
   let seasons = seedOut ? null : parseSeasonsArg(process.argv.slice(2));
   if (seasons === null) {
@@ -169,7 +169,7 @@ async function main() {
             .upsert(chunk, { onConflict: 'season,team_id,gsis_id' });
           if (error) throw new Error(`roster_history upsert: ${error.message}`);
         }
-        // DEP-440 briefly published generic OT/G fallback rows. Older native builds
+        // Older native builds
         // reject those unknown values while decoding the whole historical season, so
         // every successful ingest repairs them as part of its normal idempotent write.
         const { error: deleteError } = await supabase

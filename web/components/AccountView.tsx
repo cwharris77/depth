@@ -15,7 +15,7 @@ import Input from '@/components/ui/Input';
 import SectionLabel from '@/components/ui/SectionLabel';
 import { colors, typeScale } from '@/components/ui/tokens';
 
-// The sign-in / account page body (Phase C, auth pass 1; OTP-code sign-in, auth pass 3).
+// The sign-in / account page body. OTP-code sign-in is handled here.
 // Reached from the nav drawer's account item at /signin. Signed out: email + 6-digit code
 // sign-in ("opt in — no account, no data") — verified synchronously in this page via
 // verifyOtp(), no link/redirect/cross-app handoff involved (see supabase/config.toml's
@@ -35,7 +35,7 @@ export default function AccountView({ teams }: { teams: TeamOption[] }) {
   // "Resend code" re-runs sendCode() from that screen, which sets sendState to 'sending'
   // (and maybe 'error') again — gating this screen on sendState === 'sent' alone would drop
   // the user back to the email-entry screen for the duration of every resend (flash-then-jump,
-  // web/CLAUDE.md invariant 16). Set true on the first successful send, false only when the user
+  // on the first successful send, false only when the user
   // explicitly backs out via "Use a different email".
   const [otpScreenActive, setOtpScreenActive] = useState(false);
   const [code, setCode] = useState('');

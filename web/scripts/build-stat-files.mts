@@ -1,6 +1,6 @@
 // Builds the per-player career stat files (`v1/players/{espn_id}/seasons.json`) straight
-// from nflverse weekly release assets — the R2 stat-history design's slice 3 (DEP-544).
-// Not part of `next build`; run by hand or by the publish workflow (DEP-577).
+// from nflverse weekly release assets. Not part of `next build`; run by hand or by the
+// publish workflow.
 //
 // Usage (from web/):
 //   npm run stat-files:build -- --seasons 1999-2026 --out .stat-files
@@ -9,7 +9,7 @@
 // consolidation is pure (`lib/stat-files/player-seasons.ts`). Identity resolves through the
 // `players.csv` crosswalk (gsis/pfr → ESPN), never name matching.
 //
-// Every fetch goes through DEP-579's header contract and `fetchRawGroup`: a missing
+// Every fetch goes through the header contract and `fetchRawGroup`: a missing
 // required column, or an in-range 404, fails the build; only an out-of-range 404 (a source
 // that doesn't publish that season) is a skip. Per season the consolidated rows are written
 // as a checkpoint (`v1/_build/season-rows/{season}.json`), then every player's career file
