@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "c8c1be06cb7f7b8efff4755235bab5abb53cf8c65dd2d782f11c41aeb7ce1191",
-  "revision": "f7cdae562ebc5cb0",
+  "sourceDigest": "27b6e21b9e1ebb8b03b28e3fc9be4681efcabf8c46ac0a6314c0c5547c214f4d",
+  "revision": "294de9073e8fbeca",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -456,7 +456,7 @@
     {
       "catalogId": "chargers-super-chargers-2025",
       "constructionKey": "super-chargers",
-      "revision": "0cb3454378121b28",
+      "revision": "e691e046a355be4e",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chargers-super-chargers-2025.webp",
@@ -464,7 +464,7 @@
         },
         "full": {
           "path": "/uniforms/chargers-super-chargers-2025-full.webp",
-          "sha256": "418db4fa3d89e9ecfc8c8e30acf6d8db2999037d8d3856ef73b4f000a2007c86"
+          "sha256": "7d4d1ff056780b0e0d281b804cc6f391038ed2655d887827d6c801476844cc87"
         }
       }
     },

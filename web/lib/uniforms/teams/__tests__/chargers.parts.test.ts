@@ -10,7 +10,7 @@ describe('Chargers helmet parts', () => {
   // One `it` per shell so a failure names the offending helmet, per the data-integrity convention.
   for (const [name, part] of Object.entries(CHARGERS_PARTS.helmets)) {
     it(`paints the ${name} shell's bolt as a keyline under a body, with no fill rule`, () => {
-      expect(part.layers.map((layer) => layer.id)).toEqual([
+      expect(part.layers.slice(0, 2).map((layer) => layer.id)).toEqual([
         'chargers-decal-keyline',
         'chargers-decal-bolt',
       ]);
@@ -26,6 +26,15 @@ describe('Chargers helmet parts', () => {
       expect(part.facemask).toBe(name === 'navy' ? 'navy' : 'gold');
     });
   }
+
+  it('puts the player numeral on the navy shell only', () => {
+    expect(CHARGERS_PARTS.helmets.navy.layers.at(-1)).toMatchObject({
+      id: 'chargers-navy-helmet-number',
+      surface: 'helmet',
+      fill: 'white',
+    });
+    expect(CHARGERS_PARTS.helmets.white.layers).toHaveLength(2);
+  });
 });
 
 describe('Chargers pants parts', () => {

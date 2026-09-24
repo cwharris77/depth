@@ -18,6 +18,7 @@ import {
   CHARGERS_BOLT_KEYLINE_RIGHT,
   CHARGERS_DECAL_BOLT_PATH,
   CHARGERS_DECAL_KEYLINE_PATH,
+  CHARGERS_HELMET_NUMBER_THREE,
 } from './source';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
@@ -73,7 +74,17 @@ const HELMET_WHITE: UniformPart = {
 const HELMET_NAVY: UniformPart = {
   base: 'navy',
   facemask: 'navy',
-  layers: decal('gold', 'white'),
+  layers: [
+    ...decal('gold', 'white'),
+    {
+      id: 'chargers-navy-helmet-number',
+      surface: 'helmet',
+      d: CHARGERS_HELMET_NUMBER_THREE,
+      clip: true,
+      kind: 'fill',
+      fill: 'white',
+    },
+  ],
 };
 
 // Powder-blue jersey (home + powder-blue): powder-blue body, white-keylined gold sleeve bolts,
