@@ -1,10 +1,18 @@
-import * as parts from '../parts';
+import { expandJersey } from '../../core/jersey-spec';
 import type { UniformPart } from '../../core/parts';
 
-export const JERSEY_NAVY: UniformPart = parts.jersey(
-  'navy',
-  'white',
-  'orange',
-  'white',
-  parts.BEARS_CLASSIC_COLLAR_PATH
-);
+export const JERSEY_NAVY: UniformPart = expandJersey('bears-navy', {
+  body: 'navy',
+  collar: { style: 'inset-v', color: 'navy', outline: true },
+  shoulderNumber: { fill: 'white', outline: 'orange' },
+  sleeveStripes: {
+    bands: [
+      { color: 'orange', size: 's' },
+      { color: 'orange', size: 's' },
+      { color: 'orange', size: 's' },
+    ],
+    gap: 'wide',
+    edge: 'white',
+  },
+  number: { fill: 'white', outline: 'orange', outlineWeight: 'thin' },
+});

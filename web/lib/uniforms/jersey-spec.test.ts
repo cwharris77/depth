@@ -95,6 +95,91 @@ describe('expandJersey', () => {
     expect(ltx0 - ltx1b).toBe(18);
   });
 
+  it('lays a shoulder numeral along each shoulder only when asked', () => {
+    const layers = (shoulderNumber?: { fill: string; outline?: string }) =>
+      expandJersey('t', {
+        body: 'navy',
+        collar: { style: 'none' },
+        shoulderNumber,
+        number: { fill: 'white', outline: 'navy', outlineWeight: 'none' },
+      }).layers;
+    expect(layers()).toEqual([]);
+    expect(layers({ fill: 'white' }).map((l) => [l.id, l.surface, l.kind])).toEqual([
+      ['t-shoulder-number-left', 'sleeve-left', 'fill'],
+      ['t-shoulder-number-right', 'sleeve-right', 'fill'],
+    ]);
+    const outlined = layers({ fill: 'white', outline: 'orange' });
+    expect(outlined.map((l) => [l.id, l.kind])).toEqual([
+      ['t-shoulder-number-outline-left', 'stroke'],
+      ['t-shoulder-number-outline-right', 'stroke'],
+      ['t-shoulder-number-left', 'fill'],
+      ['t-shoulder-number-right', 'fill'],
+    ]);
+    const centre = (d: string) => {
+      const n = numbers(d);
+      const xs = n.filter((_, i) => i % 2 === 0);
+      const ys = n.filter((_, i) => i % 2 === 1);
+      return [
+        (Math.min(...xs) + Math.max(...xs)) / 2,
+        (Math.min(...ys) + Math.max(...ys)) / 2,
+        Math.max(...xs) - Math.min(...xs),
+      ];
+    };
+    const [lx, ly, lw] = centre(outlined[2].d);
+    const [rx, ry, rw] = centre(outlined[3].d);
+    // Lying along the shoulder, and the right sleeve mirrors the left (open sides both to the back).
+    expect(lw).toBeGreaterThan(25);
+    expect(lx + rx).toBeCloseTo(588, 0);
+    expect(ly).toBeCloseTo(ry, 0);
+    expect(lw).toBeCloseTo(rw, 0);
+  });
+
+  it('pipes sleeve stripes with an edge colour only when asked', () => {
+    const layers = (edge?: string) =>
+      expandJersey('t', {
+        body: 'navy',
+        collar: { style: 'none' },
+        sleeveStripes: {
+          bands: [
+            { color: 'orange', size: 's' },
+            { color: 'orange', size: 's' },
+          ],
+          gap: 'wide',
+          edge,
+        },
+        number: { fill: 'white', outline: 'navy', outlineWeight: 'none' },
+      }).layers;
+    const plain = layers();
+    expect(plain.map((l) => l.id)).toEqual([
+      't-stripe-0-left',
+      't-stripe-0-right',
+      't-stripe-1-left',
+      't-stripe-1-right',
+    ]);
+    const piped = layers('white');
+    expect(piped.map((l) => [l.id, l.kind === 'fill' && l.fill])).toEqual([
+      ['t-stripe-0-edge-left', 'white'],
+      ['t-stripe-0-edge-right', 'white'],
+      ['t-stripe-0-left', 'orange'],
+      ['t-stripe-0-right', 'orange'],
+      ['t-stripe-1-edge-left', 'white'],
+      ['t-stripe-1-edge-right', 'white'],
+      ['t-stripe-1-left', 'orange'],
+      ['t-stripe-1-right', 'orange'],
+    ]);
+    // M outer,top L inner,top L inner,bottom L outer,bottom Z
+    const span = (id: string) => {
+      const n = numbers(piped.find((l) => l.id === id)?.d ?? '');
+      return [n[1], n[5]];
+    };
+    const [edgeTop, edgeBottom] = span('t-stripe-0-edge-left');
+    const [coreTop, coreBottom] = span('t-stripe-0-left');
+    expect(coreTop - edgeTop).toBe(3);
+    expect(edgeBottom - coreBottom).toBe(3);
+    // The wide gap is measured between the pipings.
+    expect(span('t-stripe-1-edge-left')[0] - edgeBottom).toBe(12);
+  });
+
   it('fills the inset-V neck opening with the inside color when given', () => {
     const layers = (inside?: string) =>
       expandJersey('t', {

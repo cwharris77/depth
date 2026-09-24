@@ -19676,8 +19676,8 @@
       },
       "conference" : "NFC",
       "division" : "North",
-      "id" : "bears-away-1984",
-      "imagePath" : "/uniforms/bears-away-1984.webp",
+      "id" : "bears-away-2012",
+      "imagePath" : "/uniforms/bears-away-2012.webp",
       "isCurrent" : true,
       "kind" : "away",
       "name" : "Away",
@@ -19685,7 +19685,7 @@
       "teamId" : "bears",
       "teamName" : "Chicago Bears",
       "teamShortName" : "Bears",
-      "yearStart" : 1984
+      "yearStart" : 2012
     },
     {
       "colors" : {
@@ -19695,16 +19695,16 @@
       },
       "conference" : "NFC",
       "division" : "North",
-      "id" : "bears-home-1984",
-      "imagePath" : "/uniforms/bears-home-1984.webp",
+      "id" : "bears-home-2012",
+      "imagePath" : "/uniforms/bears-home-2012.webp",
       "isCurrent" : true,
       "kind" : "home",
-      "name" : "Chicago Bears Home 1984–present",
+      "name" : "Chicago Bears Home 2012–present",
       "teamAbbrev" : "CHI",
       "teamId" : "bears",
       "teamName" : "Chicago Bears",
       "teamShortName" : "Bears",
-      "yearStart" : 1984
+      "yearStart" : 2012
     },
     {
       "colors" : {

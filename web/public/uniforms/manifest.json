@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "f540a477835173877d5e32d2fbc75b71450971dcd58ba11cc5ddb1b5314b4888",
-  "revision": "8451b600a92e2935",
+  "sourceDigest": "3f299a6ac59dd57182e8f7a72358c451ac4fc65df0893fe9c4a4a5977a1fca77",
+  "revision": "a1ed9f8cfd28363f",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -49,47 +49,47 @@
       }
     },
     {
-      "catalogId": "bears-away-1984",
+      "catalogId": "bears-away-2012",
       "constructionKey": "away",
-      "revision": "81241a67d8d0fd79",
+      "revision": "39f473ecbb6bf64d",
       "artifacts": {
         "jersey": {
-          "path": "/uniforms/bears-away-1984.webp",
-          "sha256": "30956d8114b890b86261fd67a2d78f98c133ea7d7308e6eed1a496c93b17e1fc"
+          "path": "/uniforms/bears-away-2012.webp",
+          "sha256": "91de36677c4b68ab7c0e754d94c576e86a2f2e236a7b7bce11b981ab2a5ef0ae"
         },
         "full": {
-          "path": "/uniforms/bears-away-1984-full.webp",
-          "sha256": "4c86eed5a42aa322db1283979bde1d82dd079df5d868a3183c6aa1d84f96e655"
+          "path": "/uniforms/bears-away-2012-full.webp",
+          "sha256": "4056c999ef230c5f6a768d67aff98ffe9a09b3c3af098adeae88a27061dbee3f"
         }
       }
     },
     {
-      "catalogId": "bears-home-1984",
+      "catalogId": "bears-home-2012",
       "constructionKey": "home",
-      "revision": "b765f780b4533c63",
+      "revision": "c8ff52b4de68ed8b",
       "artifacts": {
         "jersey": {
-          "path": "/uniforms/bears-home-1984.webp",
-          "sha256": "501f2c027b4a3fb92ddd8e7e1d18abef01909ee4b6ae3ec63d1733a9775655dd"
+          "path": "/uniforms/bears-home-2012.webp",
+          "sha256": "5322cbba72e89ff24fd534261d9930dcb60aeab99661dc7b59e47b2d7e1b124a"
         },
         "full": {
-          "path": "/uniforms/bears-home-1984-full.webp",
-          "sha256": "f1bc1599eb5e97bfcd06cdd27668afe3214085425f982b9b30ad27b29262bb60"
+          "path": "/uniforms/bears-home-2012-full.webp",
+          "sha256": "70f17748402ae6ef2d035510988760f380b3ada5c3b1884cec6a2bd98310f170"
         }
       }
     },
     {
       "catalogId": "bears-orange-alternate-2005",
       "constructionKey": "orange-alternate",
-      "revision": "968d845d7c9a43b5",
+      "revision": "09c93352f0b3eea6",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bears-orange-alternate-2005.webp",
-          "sha256": "c16347d0592f93865a675f9d782adc7611b24726b073947b00d95b4634dc89db"
+          "sha256": "8b65dc0b46b299c35b76a4378b2fed5eb002ee85e497f3d49618ec4aedb468b8"
         },
         "full": {
           "path": "/uniforms/bears-orange-alternate-2005-full.webp",
-          "sha256": "9123fc139d87896920338c470b848a00e1867ce11df8e15dabd7a5423f7a9eef"
+          "sha256": "9b29b9dbb4e1c51b8b17083cd8a9c6e982acc946475c52d1aaf28197e4906f79"
         }
       }
     },
