@@ -157,7 +157,7 @@ describe('team surfaces — player-card numeral', () => {
     // A data change that shifts kits between branches should surface here rather than be
     // absorbed silently.
     expect({ strokeSecondary, swapped, whiteFallback }).toEqual({
-      strokeSecondary: 54,
+      strokeSecondary: 55,
       swapped: 40,
       whiteFallback: 13,
     });
