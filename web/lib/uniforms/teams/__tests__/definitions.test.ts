@@ -262,6 +262,33 @@ describe('team uniform definitions', () => {
     expect(model.layers.some((layer) => layer.id.startsWith('generic-'))).toBe(false);
   });
 
+  it('dresses the Color Rush in lime with the navy band and a hem-length navy pant stripe', () => {
+    const definition = getTeamUniformDefinition('seahawks');
+    const model = resolveUniformModel(definition, 'color-rush', {
+      ...SEAHAWKS_COLORS,
+      primary: '#B6FF3E',
+      secondary: '#002244',
+      accent: '#FFFFFF',
+    });
+
+    expect(model).toMatchObject({
+      helmetColor: '#002244',
+      jerseyColor: '#B6FF3E',
+      pantsColor: '#B6FF3E',
+    });
+    expect(model.layers.find((layer) => layer.id === 'seahawks-shoulder-band-left')).toMatchObject({
+      fill: '#002244',
+    });
+    expect(model.layers.find((layer) => layer.id === 'seahawks-shoulder-wordmark')).toMatchObject({
+      fill: '#FFFFFF',
+    });
+    expect(
+      model.layers.find((layer) => layer.id === 'seahawks-action-green-pants-stripe-left')
+    ).toMatchObject({ surface: 'leg-left', fill: '#002244' });
+    // The generic stripe runs into the socks, which stay lime on this kit.
+    expect(model.layers.some((layer) => layer.id.startsWith('generic-pants-stripe'))).toBe(false);
+  });
+
   it('keeps original and modern Eagles Kelly Green collars distinct', () => {
     const definition = getTeamUniformDefinition('eagles');
     const original = resolveUniformModel(definition, 'kelly-green-original', EAGLES_KELLY_COLORS);

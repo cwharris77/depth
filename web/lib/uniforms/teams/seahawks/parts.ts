@@ -24,8 +24,8 @@ import {
   SEAHAWKS_THROWBACK_HAWK_EYE_PATH,
   SEAHAWKS_THROWBACK_HAWK_ROYAL_PATH,
   SEAHAWKS_THROWBACK_HAWK_WHITE_PATH,
-  SEAHAWKS_THROWBACK_PANTS_GREEN_LEFT,
-  SEAHAWKS_THROWBACK_PANTS_GREEN_RIGHT,
+  SEAHAWKS_PANTS_EDGE_BAND_LEFT,
+  SEAHAWKS_PANTS_EDGE_BAND_RIGHT,
   SEAHAWKS_THROWBACK_PANTS_KEYLINE_LEFT,
   SEAHAWKS_THROWBACK_PANTS_KEYLINE_RIGHT,
   SEAHAWKS_THROWBACK_PANTS_ROYAL_LEFT,
@@ -168,6 +168,10 @@ export const SEAHAWKS_PALETTE = {
   throwbackGreen: '#0E8329',
   throwbackSilver: '#A7B0BA',
   throwbackPantsSilver: '#DBDDDF',
+  // The Color Rush fabric is a much brighter lime than the brand's Action Green (#69BE28) and has
+  // no published code; this is the GUD 2024 composite's flat fill.
+  actionGreen: '#B6FF3E',
+  actionGreenNeck: '#95D62E',
   // Sampled from the GUD reference helmet crop.
   facemaskBlack: '#000000',
 };
@@ -183,6 +187,24 @@ export const SEAHAWKS_PANTS = {
     layers: [
       fromGeneric('generic-pants-stripe-left', 'green'),
       fromGeneric('generic-pants-stripe-right', 'green'),
+    ],
+  },
+  // A single navy stripe on the leg edge that stops at the hem, so the socks stay green.
+  'action-green': {
+    base: 'actionGreen',
+    layers: [
+      fill(
+        'seahawks-action-green-pants-stripe-left',
+        'leg-left',
+        SEAHAWKS_PANTS_EDGE_BAND_LEFT,
+        'navy'
+      ),
+      fill(
+        'seahawks-action-green-pants-stripe-right',
+        'leg-right',
+        SEAHAWKS_PANTS_EDGE_BAND_RIGHT,
+        'navy'
+      ),
     ],
   },
   // The away reference's white pants carry no stripe at all.
@@ -205,13 +227,13 @@ export const SEAHAWKS_PANTS = {
       fill(
         'seahawks-throwback-pants-green-left',
         'leg-left',
-        SEAHAWKS_THROWBACK_PANTS_GREEN_LEFT,
+        SEAHAWKS_PANTS_EDGE_BAND_LEFT,
         'throwbackGreen'
       ),
       fill(
         'seahawks-throwback-pants-green-right',
         'leg-right',
-        SEAHAWKS_THROWBACK_PANTS_GREEN_RIGHT,
+        SEAHAWKS_PANTS_EDGE_BAND_RIGHT,
         'throwbackGreen'
       ),
       fill(
@@ -263,6 +285,7 @@ export const SEAHAWKS_PANTS = {
 export const SEAHAWKS_KITS = {
   home: { helmet: 'navy-hawk', jersey: 'navy', pants: 'navy' },
   away: { helmet: 'navy-hawk', jersey: 'white', pants: 'white-plain' },
+  'color-rush': { helmet: 'navy-hawk', jersey: 'action-green', pants: 'action-green' },
   '1976-throwback': { helmet: 'throwback-silver', jersey: 'throwback', pants: 'throwback' },
   'rivalries-2025': {
     helmet: 'teal-hawk',

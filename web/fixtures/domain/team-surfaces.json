@@ -1360,6 +1360,22 @@
     }
   },
   {
+    "id": "seahawks-color-rush-2016",
+    "colors": {
+      "primary": "#B6FF3E",
+      "secondary": "#002244",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#B6FF3E",
+      "ring": "#002244",
+      "mark": "#FFFFFF",
+      "textOnFill": "#002244",
+      "numeralFill": "#002244",
+      "numeralStroke": "#B6FF3E"
+    }
+  },
+  {
     "id": "dolphins-1972-throwback-1966",
     "colors": {
       "primary": "#008E97",

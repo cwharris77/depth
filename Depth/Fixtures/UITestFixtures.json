@@ -18418,6 +18418,20 @@
           "name" : "Throwback",
           "teamId" : "seahawks",
           "yearStart" : 1976
+        },
+        {
+          "colors" : {
+            "accent" : "#FFFFFF",
+            "primary" : "#B6FF3E",
+            "secondary" : "#002244"
+          },
+          "id" : "seahawks-color-rush-2016",
+          "imagePath" : "/uniforms/seahawks-color-rush-2016.webp",
+          "isCurrent" : true,
+          "kind" : "color-rush",
+          "name" : "Color Rush",
+          "teamId" : "seahawks",
+          "yearStart" : 2016
         }
       ]
     }
@@ -21291,6 +21305,25 @@
       "teamName" : "Seattle Seahawks",
       "teamShortName" : "Seahawks",
       "yearStart" : 1976
+    },
+    {
+      "colors" : {
+        "accent" : "#FFFFFF",
+        "primary" : "#B6FF3E",
+        "secondary" : "#002244"
+      },
+      "conference" : "NFC",
+      "division" : "West",
+      "id" : "seahawks-color-rush-2016",
+      "imagePath" : "/uniforms/seahawks-color-rush-2016.webp",
+      "isCurrent" : true,
+      "kind" : "color-rush",
+      "name" : "Color Rush",
+      "teamAbbrev" : "SEA",
+      "teamId" : "seahawks",
+      "teamName" : "Seattle Seahawks",
+      "teamShortName" : "Seahawks",
+      "yearStart" : 2016
     },
     {
       "colors" : {

@@ -133,4 +133,5 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   'panthers-black-alt-2012': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'cardinals-black-alt-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
   'rams-bone-2020': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
+  'seahawks-color-rush-2016': { uiAccent: '#B6FF3E', onAccent: '#15161a' },
 };
