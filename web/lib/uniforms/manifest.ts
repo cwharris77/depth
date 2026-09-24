@@ -24,6 +24,10 @@
 // `revision` is the published-set identity: it changes whenever `sourceDigest` or any row
 // artifact changes. The manifest itself is served origin-relative at `/uniforms/manifest.json`.
 //
+// Rows may also list extra verified combinations, each a full-figure artifact at
+// `<rowId>--<key>-full.webp`. They are omitted when a row has none, and they do not feed the
+// row revision, since each carries its own hash.
+//
 // Publication ordering rule — corrected assets must be published BEFORE any catalog row
 // references them. The sequence is: (1) generate the corrected WebPs and regenerate this
 // manifest in the same commit; (2) deploy so the new bytes and the new manifest are live at
@@ -67,6 +71,14 @@ export interface ArtifactRecord {
   sha256: string;
 }
 
+// An extra verified combination of a row's design. It shares the row's jersey crop, so only
+// its full figure is an artifact.
+export interface CombinationArtifact {
+  key: string;
+  label: string;
+  full: ArtifactRecord;
+}
+
 export interface ArtifactManifestRow {
   catalogId: string;
   constructionKey: string;
@@ -76,6 +88,7 @@ export interface ArtifactManifestRow {
     jersey: ArtifactRecord;
     full: ArtifactRecord;
   };
+  combinations?: CombinationArtifact[];
 }
 
 export interface ArtifactManifest {
@@ -93,6 +106,7 @@ export interface ManifestRowInput {
   constructionKey: string;
   jersey: ArtifactRecord;
   full: ArtifactRecord;
+  combinations?: CombinationArtifact[];
 }
 
 // Committed inputs whose bytes can change a rendered artifact, all app-root-relative. The
@@ -183,6 +197,15 @@ export function buildArtifactManifest(
         jersey: { ...row.jersey },
         full: { ...row.full },
       },
+      ...(row.combinations?.length
+        ? {
+            combinations: row.combinations.map((c) => ({
+              key: c.key,
+              label: c.label,
+              full: { ...c.full },
+            })),
+          }
+        : {}),
     }));
   const revision = sha256Hex(
     [sourceDigest, ...manifestRows.map((row) => `${row.catalogId}:${row.revision}`)].join('\n')
@@ -239,6 +262,34 @@ export function diffArtifactManifest(
       }
       if (expectedArtifact.sha256 !== actualArtifact.sha256) {
         diffs.push(`${id}: ${variant} sha256 changed (manifest is stale)`);
+      }
+    }
+    const expectedCombosByKey = new Map(
+      (expectedRow.combinations ?? []).map((combination) => [combination.key, combination])
+    );
+    const actualCombosByKey = new Map(
+      (actualRow.combinations ?? []).map((combination) => [combination.key, combination])
+    );
+    for (const key of expectedCombosByKey.keys()) {
+      if (!actualCombosByKey.has(key)) {
+        diffs.push(`${id}: combination ${key} has no committed raster`);
+      }
+    }
+    for (const key of actualCombosByKey.keys()) {
+      if (!expectedCombosByKey.has(key)) {
+        diffs.push(`${id}: combination ${key} has no manifest entry`);
+      }
+    }
+    for (const [key, expectedCombination] of expectedCombosByKey) {
+      const actualCombination = actualCombosByKey.get(key);
+      if (!actualCombination) continue;
+      if (expectedCombination.full.path !== actualCombination.full.path) {
+        diffs.push(
+          `${id}: combination ${key} path ${expectedCombination.full.path} != ${actualCombination.full.path}`
+        );
+      }
+      if (expectedCombination.full.sha256 !== actualCombination.full.sha256) {
+        diffs.push(`${id}: combination ${key} sha256 changed (manifest is stale)`);
       }
     }
   }
