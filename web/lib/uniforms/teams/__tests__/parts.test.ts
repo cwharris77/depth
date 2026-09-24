@@ -90,6 +90,36 @@ describe('compileParts', () => {
     expect(compiled.patterns?.knit.shapes[0].fill).toBe('#001122');
     expect(compiled.kits.home.layers?.[0]).toMatchObject({ fill: 'pattern:knit' });
   });
+
+  it('compiles a socks part into the sock colour and appends its layers last', () => {
+    const def: TeamPartsDefinition = {
+      ...base,
+      socks: {
+        white: {
+          base: 'white',
+          layers: [
+            { id: 's', surface: 'sock-left', d: 'M0,0', clip: true, kind: 'fill', fill: 'navy' },
+          ],
+        },
+      },
+      kits: { home: { helmet: 'plain', jersey: 'plain', pants: 'plain', socks: 'white' } },
+    };
+    const kit = compileParts(def).kits.home;
+    expect(kit.socksColor).toBe('#FFFFFF');
+    expect(kit.layers?.at(-1)).toMatchObject({ id: 's', fill: '#001122' });
+  });
+
+  it('leaves the sock colour unset when a kit names no socks', () => {
+    expect(compileParts(base).kits.home).not.toHaveProperty('socksColor');
+  });
+
+  it('throws on an unknown socks part', () => {
+    const def: TeamPartsDefinition = {
+      ...base,
+      kits: { home: { helmet: 'plain', jersey: 'plain', pants: 'plain', socks: 'missing' } },
+    };
+    expect(() => compileParts(def)).toThrow('unknown socks part "missing"');
+  });
 });
 
 describe('fromGeneric', () => {

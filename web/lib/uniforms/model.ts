@@ -107,6 +107,7 @@ export interface ResolvedUniformStyle {
   facemaskColor: string;
   jerseyColor: string;
   pantsColor: string;
+  socksColor: string;
   layers: ResolvedUniformLayer[];
   number: Omit<NumberStyle, 'fill' | 'outline'> & { fill: string; outline: string };
 }
@@ -152,6 +153,7 @@ function mergeStyle(style: UniformStyle, override?: UniformStyleOverride): Unifo
     facemaskColor: override.facemaskColor ?? style.facemaskColor,
     jerseyColor: override.jerseyColor ?? style.jerseyColor,
     pantsColor: override.pantsColor ?? style.pantsColor,
+    socksColor: override.socksColor ?? style.socksColor,
     layers: mergeLayers(style.layers, override.layers, override.removeLayerIds),
     number:
       override.number === null
@@ -184,6 +186,7 @@ export function resolveUniformModel(
     facemaskColor: resolveColor(style.facemaskColor, colors, jerseyColor),
     jerseyColor,
     pantsColor: resolveColor(style.pantsColor, colors, jerseyColor),
+    socksColor: resolveColor(style.socksColor ?? style.pantsColor, colors, jerseyColor),
     layers: style.layers.map((layer) => resolveLayer(layer, colors, jerseyColor)),
     number: {
       ...style.number,

@@ -27,7 +27,9 @@ export type UniformSurface =
   | 'number'
   | 'pants'
   | 'leg-left'
-  | 'leg-right';
+  | 'leg-right'
+  | 'sock-left'
+  | 'sock-right';
 
 interface LayerBase {
   id: string;
@@ -63,6 +65,8 @@ export interface UniformStyle {
   facemaskColor: ColorRef;
   jerseyColor: ColorRef;
   pantsColor: ColorRef;
+  // The shins below the pant hem. Unset, the socks take the pants colour.
+  socksColor?: ColorRef;
   layers: UniformLayer[];
   number: NumberStyle;
 }
@@ -72,6 +76,7 @@ export interface UniformStyleOverride {
   facemaskColor?: ColorRef;
   jerseyColor?: ColorRef;
   pantsColor?: ColorRef;
+  socksColor?: ColorRef;
   layers?: UniformLayer[];
   removeLayerIds?: string[];
   number?: Partial<NumberStyle> | null;

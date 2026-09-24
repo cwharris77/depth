@@ -4,7 +4,7 @@ How a team's uniform art is built and changed. Read this before touching `teams/
 
 ## How the art is put together
 
-- Every team is a module in `teams/<team>/`: `source.ts` (raw path data such as decals and wordmarks), `parts.ts` (palette, helmets, pants), `jerseys/<name>.ts` (one file per jersey), `index.ts` (assembles the `TeamPartsDefinition` and calls `compileParts`).
+- Every team is a module in `teams/<team>/`: `source.ts` (raw path data such as decals and wordmarks), `parts.ts` (palette, helmets, pants, socks), `jerseys/<name>.ts` (one file per jersey), `index.ts` (assembles the `TeamPartsDefinition` and calls `compileParts`).
 - A part is a base colour plus ordered layers (`PartLayer`). Later layers paint over earlier ones. Coordinates are the shared mannequin space: jersey crop `viewBox="20 372 560 452"`, neck at y≈384, sleeve hems at y≈589.
 - Colours in layers are palette keys, never hexes. `hex()` throws on an unknown key. The one team-independent paint is `outline` (the mannequin's grey, `FIGURE_OUTLINE`), for keylines that separate a band from a body of the same colour.
 - Geometry that is a fact about the mannequin, not about a team, lives in `teams/core/shared.ts` (collars, the helmet crown stripe). Team modules own everything team-specific.
@@ -45,6 +45,26 @@ Anything the spec cannot describe is appended as ordinary layers after `spec.lay
 **Shoulder number orientation** (a frequent mistake): seen from above, the two numerals' tops point at each other, toward the collar (`→ ←`), and on both shoulders the open side of the numeral (the tips of a `3`) faces the back of the jersey. The right shoulder is therefore the left one mirrored, not rotated. On the front view this puts the open side toward the top of the shoulder on both sleeves.
 
 Sizes are `s` / `m` / `l` (11 / 16 / 28 mannequin units); gaps are `none` / `narrow` / `wide` / `broad` (0 / 6 / 12 / 18). Pick the nearest step. A stripe with a contrasting border is one band with `edge` piping, not three bands. If a reference sits well between steps and the difference is visible at 390px, add a step (see below) rather than faking it with extra bands. Each primitive is drawn on both sleeves with unique layer ids.
+
+### Pants and socks
+
+Pants and socks are specs too (`teams/core/pants-spec.ts`), expanded with `expandPants()` and `expandSocks()` into ordinary parts. A kit names its socks with `socks:` in its `KitRef` and the team registers them under `socks`; a kit without socks paints them in the pants colour.
+
+```ts
+pants: { navy: expandPants('<team>-navy-pants', { body: 'navy', stripes: { position: 'leg-edge', bands: [{ color: 'orange', size: 'm' }], gap: 'none', edge: 'white' } }) },
+socks: { navy: expandSocks('<team>-navy-socks', { color: 'navy', stripes: { bands: [{ color: 'orange', size: 's' }], gap: 'none' } }) },
+```
+
+| Field | Meaning |
+|---|---|
+| `PantsSpec.body` | Pants colour. |
+| `PantsSpec.stripes` | Stripes from the waist to the hem, listed from the outer edge inward, with the jersey's `gap` and `edge` rules. `position: 'leg-edge'` follows the leg's outer silhouette (how a side-seam stripe reads from the front); `'center'` is a straight stack on the leg's seam line. Stripes stop at the hem. |
+| `SocksSpec.color` | Sock colour, painted on both shins below the hem. |
+| `SocksSpec.stripes` | Hoops around the calf, listed from the top down. |
+
+When a team moves to these specs, any shin art it had drawn as pants layers on `leg-left`/`leg-right` (such as full-shin sock rectangles) moves into its socks part instead — leg layers paint over the sock colour, so leaving them in place would hide it.
+
+Pants and socks use the same step names as the jersey with narrower widths: sizes `s` / `m` / `l` are 8 / 16 / 24 units, gaps `none` / `narrow` / `wide` / `broad` are 0 / 4 / 8 / 12, and `edge` piping is 2. A reference sheet often draws the leg stripe in a swatch beside the figure; the swatch beside the socks is the sock, not the pant.
 
 ## Marks
 

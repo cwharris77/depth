@@ -75,6 +75,8 @@ export interface KitRef {
   // Canonical first so compilation preserves the existing raster; remaining entries are the
   // available pant options until the archive UI presents them.
   pants: string | string[];
+  // Omitted, the socks take the pants colour.
+  socks?: string;
 }
 
 export interface TeamPartsDefinition {
@@ -84,6 +86,7 @@ export interface TeamPartsDefinition {
   helmets: Record<string, UniformPart>;
   jerseys: Record<string, UniformPart>;
   pants: Record<string, UniformPart>;
+  socks?: Record<string, UniformPart>;
   kits: Record<string, KitRef>;
 }
 
@@ -141,9 +144,9 @@ function lookup(group: Record<string, UniformPart>, id: string, kind: string, te
 }
 
 // Assembles each kit's three part references into the flat per-kit override the renderer reads.
-// Paint order is helmet -> jersey -> pants, matching the mannequin's own surface order; parts
-// only paint their own surfaces, so the order between them is not load-bearing, but keeping it
-// fixed makes a compiled definition diffable against the hand-written one it replaces.
+// Paint order is helmet -> jersey -> pants -> socks, matching the mannequin's own surface order;
+// parts only paint their own surfaces, so the order between them is not load-bearing, but keeping
+// it fixed makes a compiled definition diffable against the hand-written one it replaces.
 export function compileParts(def: TeamPartsDefinition): TeamUniformDefinition {
   const { teamId, palette } = def;
   const kits: Record<string, UniformStyleOverride> = {};
@@ -153,6 +156,8 @@ export function compileParts(def: TeamPartsDefinition): TeamUniformDefinition {
     const jersey = lookup(def.jerseys, ref.jersey, 'jersey', teamId);
     const pantsId = Array.isArray(ref.pants) ? ref.pants[0] : ref.pants;
     const pants = lookup(def.pants, pantsId, 'pants', teamId);
+    const socks =
+      ref.socks === undefined ? undefined : lookup(def.socks ?? {}, ref.socks, 'socks', teamId);
     const number = jersey.number;
 
     kits[slug] = {
@@ -162,11 +167,13 @@ export function compileParts(def: TeamPartsDefinition): TeamUniformDefinition {
       }),
       jerseyColor: hex(palette, jersey.base, teamId) as ColorRef,
       pantsColor: hex(palette, pants.base, teamId) as ColorRef,
+      ...(socks && { socksColor: hex(palette, socks.base, teamId) as ColorRef }),
       removeLayerIds: GENERIC_LAYER_IDS,
       layers: [
         ...compileLayers(helmet, palette, teamId),
         ...compileLayers(jersey, palette, teamId),
         ...compileLayers(pants, palette, teamId),
+        ...(socks ? compileLayers(socks, palette, teamId) : []),
       ],
       number: number && {
         ...number,

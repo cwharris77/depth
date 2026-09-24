@@ -319,3 +319,28 @@ describe('primitives', () => {
     expect(formatValidationIssues([{ path: 'a.b', message: 'bad' }])).toContain('a.b: bad');
   });
 });
+
+describe('socks parts', () => {
+  const sock = (surface: string) => ({
+    id: 'hoop',
+    surface,
+    clip: true,
+    kind: 'fill',
+    fill: 'navy',
+    d: 'M100,1300 H240 V1316 H100 Z',
+  });
+
+  it('accepts sock surfaces on a socks part', () => {
+    const issues = validateAuthoredDefinition(
+      definition({ socks: { navy: { base: 'navy', layers: [sock('sock-left')] } } })
+    );
+    expect(issues).toEqual([]);
+  });
+
+  it('rejects a pants surface on a socks part', () => {
+    const issues = validateAuthoredDefinition(
+      definition({ socks: { navy: { base: 'navy', layers: [sock('leg-left')] } } })
+    );
+    expect(issues.map((issue) => issue.path).join(' ')).toContain('socks.navy.layers');
+  });
+});

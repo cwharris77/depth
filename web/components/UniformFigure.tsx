@@ -33,8 +33,9 @@ export type UniformArtVariant = Extract<UniformVariant, 'jersey' | 'full'>;
 //
 // Color contract: primary = helmet shell / jersey body / pants; secondary = helmet + sleeve +
 // pant stripes and the number outline; accent = shoulder yoke + helmet stripe; number fill =
-// readableTextOn(primary) so it stays legible on any body color. Helmet shell and facemask paths
-// re-light their model surface color; only physical hardware keeps the source art's neutral fills.
+// readableTextOn(primary) so it stays legible on any body color. Socks follow the pants unless a
+// kit sets its own. Helmet shell and facemask paths re-light their model surface color; only
+// physical hardware keeps the source art's neutral fills.
 
 // Shared mannequin paths (template coordinate space; viewBox origin 20,45).
 const GEO = {
@@ -137,6 +138,8 @@ function clipPathForSurface(surface: UniformSurface, uid: string) {
   if (surface === 'pants') return `url(#${uid}-pants)`;
   if (surface === 'leg-left') return `url(#${uid}-legL)`;
   if (surface === 'leg-right') return `url(#${uid}-legR)`;
+  if (surface === 'sock-left') return `url(#${uid}-sockL)`;
+  if (surface === 'sock-right') return `url(#${uid}-sockR)`;
   return `url(#${uid}-jersey)`;
 }
 
@@ -255,6 +258,9 @@ export default function UniformFigure({
   const pantsLayers = model.layers.filter((layer) =>
     ['pants', 'leg-left', 'leg-right'].includes(layer.surface)
   );
+  const sockLayers = model.layers.filter((layer) =>
+    ['sock-left', 'sock-right'].includes(layer.surface)
+  );
   const jerseyLayers = model.layers.filter((layer) =>
     ['jersey', 'sleeve-left', 'sleeve-right'].includes(layer.surface)
   );
@@ -366,6 +372,16 @@ export default function UniformFigure({
               <Geo part="pants" shared={sharedDefs} />
               <Geo part="shinR" shared={sharedDefs} />
             </clipPath>
+            {sockLayers.length > 0 && (
+              <>
+                <clipPath id={`${uid}-sockL`}>
+                  <Geo part="shinL" shared={sharedDefs} />
+                </clipPath>
+                <clipPath id={`${uid}-sockR`}>
+                  <Geo part="shinR" shared={sharedDefs} />
+                </clipPath>
+              </>
+            )}
           </>
         )}
       </defs>
@@ -373,9 +389,12 @@ export default function UniformFigure({
         {hasPants && (
           <>
             <Geo part="pants" shared={sharedDefs} fill={model.pantsColor} />
-            <Geo part="shinL" shared={sharedDefs} fill={model.pantsColor} />
-            <Geo part="shinR" shared={sharedDefs} fill={model.pantsColor} />
+            <Geo part="shinL" shared={sharedDefs} fill={model.socksColor} />
+            <Geo part="shinR" shared={sharedDefs} fill={model.socksColor} />
             {pantsLayers.map((layer) => (
+              <UniformLayerPath key={layer.id} layer={layer} uid={uid} />
+            ))}
+            {sockLayers.map((layer) => (
               <UniformLayerPath key={layer.id} layer={layer} uid={uid} />
             ))}
             <Geo part="shoeL" shared={sharedDefs} fill="#ffffff" />

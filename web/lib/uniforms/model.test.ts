@@ -190,4 +190,19 @@ describe('uniform model resolver', () => {
       stroke: colors.primary,
     });
   });
+
+  it('paints the socks in the pants colour unless a kit sets its own', () => {
+    const def: TeamUniformDefinition = {
+      teamId: 'test',
+      kits: {
+        plain: { pantsColor: '#111111' },
+        socked: { pantsColor: '#111111', socksColor: '#222222' },
+      },
+    };
+    expect(resolveUniformModel(def, 'plain', colors).socksColor).toBe('#111111');
+    expect(resolveUniformModel(def, 'socked', colors).socksColor).toBe('#222222');
+    expect(resolveUniformModel(undefined, 'home', colors).socksColor).toBe(
+      resolveUniformModel(undefined, 'home', colors).pantsColor
+    );
+  });
 });
