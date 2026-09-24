@@ -20,10 +20,6 @@ import {
   SEAHAWKS_COLLAR_FEATHERS_LEFT,
   SEAHAWKS_COLLAR_FEATHERS_RIGHT,
   SEAHAWKS_NECK_TWELVE,
-  SEAHAWKS_THROWBACK_HAWK_BLOCK_PATH,
-  SEAHAWKS_THROWBACK_HAWK_EYE_PATH,
-  SEAHAWKS_THROWBACK_HAWK_ROYAL_PATH,
-  SEAHAWKS_THROWBACK_HAWK_WHITE_PATH,
   SEAHAWKS_PANTS_EDGE_BAND_LEFT,
   SEAHAWKS_PANTS_EDGE_BAND_RIGHT,
   SEAHAWKS_THROWBACK_PANTS_KEYLINE_LEFT,
@@ -47,6 +43,8 @@ import {
 import { HELMET_CROWN_STRIPE_PATH } from '../core/shared';
 import { fromGeneric, type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
+import { placeMark } from '../core/marks';
+import { SEAHAWKS_THROWBACK_HAWK } from './marks/throwback-hawk';
 
 import { SEAHAWKS_RIVALRIES_JERSEY_PALETTE } from './jerseys/rivalries-2025';
 
@@ -120,27 +118,12 @@ const HELMET_TEAL_HAWK: UniformPart = { base: 'rivalriesTeal', layers: hawk('riv
 const HELMET_THROWBACK_SILVER: UniformPart = {
   base: 'throwbackSilver',
   facemask: 'throwbackRoyal',
-  layers: [
-    fill(
-      'seahawks-throwback-hawk-royal',
-      'helmet',
-      SEAHAWKS_THROWBACK_HAWK_ROYAL_PATH,
-      'throwbackRoyal'
-    ),
-    fill('seahawks-throwback-hawk-white', 'helmet', SEAHAWKS_THROWBACK_HAWK_WHITE_PATH, 'white'),
-    fill(
-      'seahawks-throwback-hawk-block',
-      'helmet',
-      SEAHAWKS_THROWBACK_HAWK_BLOCK_PATH,
-      'throwbackGreen'
-    ),
-    fill(
-      'seahawks-throwback-hawk-eye',
-      'helmet',
-      SEAHAWKS_THROWBACK_HAWK_EYE_PATH,
-      'throwbackGreen'
-    ),
-  ],
+  layers: placeMark('seahawks-throwback-hawk', SEAHAWKS_THROWBACK_HAWK, 'helmet-side', {
+    royal: 'throwbackRoyal',
+    white: 'white',
+    block: 'throwbackGreen',
+    eye: 'throwbackGreen',
+  }),
 };
 
 export const SEAHAWKS_PALETTE = {
