@@ -18,6 +18,11 @@
 
 import {
   SEAHAWKS_SHOULDER_WORDMARK,
+  SEAHAWKS_NECK_OPENING,
+  SEAHAWKS_COLLAR_BAND,
+  SEAHAWKS_COLLAR_FEATHERS_LEFT,
+  SEAHAWKS_COLLAR_FEATHERS_RIGHT,
+  SEAHAWKS_NECK_TWELVE,
   SEAHAWKS_1976_HELMET_GREEN_BAND,
   SEAHAWKS_1976_HELMET_ROYAL_BAND,
   SEAHAWKS_1976_PANTS_GREEN_LEFT,
@@ -29,12 +34,12 @@ import {
   SEAHAWKS_HELMET_HAWK_PATH,
   SEAHAWKS_SHOULDER_BAND_LEFT,
   SEAHAWKS_SHOULDER_BAND_RIGHT,
-  SEAHAWKS_SHOULDER_BAR_LEFT,
-  SEAHAWKS_SHOULDER_BAR_RIGHT,
+  SEAHAWKS_SHOULDER_NUMBER_LEFT,
+  SEAHAWKS_SHOULDER_NUMBER_RIGHT,
   SEAHAWKS_SHOULDER_CAP_LEFT,
   SEAHAWKS_SHOULDER_CAP_RIGHT,
 } from './source';
-import { HELMET_CROWN_STRIPE_PATH, modernInsetVCollar } from '../core/shared';
+import { HELMET_CROWN_STRIPE_PATH } from '../core/shared';
 import { fromGeneric, type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -62,11 +67,11 @@ function hawk(eye: string): PartLayer[] {
   ];
 }
 
-// Bar, band and cap, mirrored. One construction; home and away differ only in the band color.
+// Shoulder numerals, band and cap share their placement across home and away.
 export function shoulder(band: string, cap: string): PartLayer[] {
   return [
-    fill('seahawks-shoulder-bar-left', 'sleeve-left', SEAHAWKS_SHOULDER_BAR_LEFT, band),
-    fill('seahawks-shoulder-bar-right', 'sleeve-right', SEAHAWKS_SHOULDER_BAR_RIGHT, band),
+    fill('seahawks-shoulder-number-left', 'sleeve-left', SEAHAWKS_SHOULDER_NUMBER_LEFT, band),
+    fill('seahawks-shoulder-number-right', 'sleeve-right', SEAHAWKS_SHOULDER_NUMBER_RIGHT, band),
     fill('seahawks-shoulder-band-left', 'sleeve-left', SEAHAWKS_SHOULDER_BAND_LEFT, band),
     fill('seahawks-shoulder-band-right', 'sleeve-right', SEAHAWKS_SHOULDER_BAND_RIGHT, band),
     fill('seahawks-shoulder-cap-left', 'sleeve-left', SEAHAWKS_SHOULDER_CAP_LEFT, cap),
@@ -74,20 +79,22 @@ export function shoulder(band: string, cap: string): PartLayer[] {
   ];
 }
 
-// The modern collar and shoulder wordmark, shared by home and away. The neck opening shows the
-// jersey's inside color; the inset trim along its sides carries the kit's accent.
+// The body-color collar frames a shaded opening and back-neck tab; its chevrons stop
+// before the V point. Home and away share geometry with different feather and wordmark colors.
 export function modernNeckAndWordmark(
   body: string,
   neck: string,
-  trim: string,
+  feathers: string,
   wordmark: string
 ): PartLayer[] {
   return [
-    ...modernInsetVCollar({
-      idPrefix: 'seahawks',
-      colors: { body: neck, edge: body, inset: trim, placket: body },
-      insetId: 'generic-collar',
-    }),
+    fill('seahawks-neck-opening', 'collar', SEAHAWKS_NECK_OPENING, neck),
+    fill('seahawks-collar-band', 'collar', SEAHAWKS_COLLAR_BAND, body),
+    fill('seahawks-collar-feathers-left', 'collar', SEAHAWKS_COLLAR_FEATHERS_LEFT, feathers),
+    fill('seahawks-collar-feathers-right', 'collar', SEAHAWKS_COLLAR_FEATHERS_RIGHT, feathers),
+    fill('seahawks-neck-tab-border', 'collar', 'M279,389 H309 V417 H279 Z', 'green'),
+    fill('seahawks-neck-tab', 'collar', 'M281,391 H307 V415 H281 Z', 'navy'),
+    fill('seahawks-neck-twelve', 'collar', SEAHAWKS_NECK_TWELVE, 'wolfGrey'),
     fill('seahawks-shoulder-wordmark', 'jersey', SEAHAWKS_SHOULDER_WORDMARK, wordmark),
   ];
 }

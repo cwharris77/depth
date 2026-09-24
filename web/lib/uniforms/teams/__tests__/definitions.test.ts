@@ -92,30 +92,30 @@ describe('team uniform definitions', () => {
     const home = definition?.kits.home;
     const layerIds = home?.layers?.map((layer) => layer.id);
 
-    // Seattle's own marks, in paint order. Filtered rather than compared whole because the kit is
-    // now compiled from composable parts (./parts.ts), and parts are total: the generic collar and
-    // pant stripes this kit used to inherit implicitly are listed explicitly (asserted below).
-    // What the kit paints is unchanged — parts-parity.test.ts holds the rasters byte-identical.
+    // Team layers retain their paint order separately from the generic pant stripes.
     expect(layerIds?.filter((id) => id.startsWith('seahawks-'))).toEqual([
       'seahawks-helmet-center-stripe',
       // Grey wing paints under the keyline; it was missing from the pre-2026-09-03 decal.
       'seahawks-helmet-hawk-grey',
       'seahawks-helmet-hawk',
       'seahawks-helmet-hawk-eye',
-      'seahawks-shoulder-bar-left',
-      'seahawks-shoulder-bar-right',
+      'seahawks-shoulder-number-left',
+      'seahawks-shoulder-number-right',
       'seahawks-shoulder-band-left',
       'seahawks-shoulder-band-right',
       'seahawks-shoulder-cap-left',
       'seahawks-shoulder-cap-right',
       'seahawks-neck-opening',
-      'seahawks-collar-edge',
-      'seahawks-collar-placket',
+      'seahawks-collar-band',
+      'seahawks-collar-feathers-left',
+      'seahawks-collar-feathers-right',
+      'seahawks-neck-tab-border',
+      'seahawks-neck-tab',
+      'seahawks-neck-twelve',
       'seahawks-shoulder-wordmark',
     ]);
-    // The generic marks home keeps: an action-green collar and the green pant stripe pair.
+    // Home keeps only the generic green pant stripe pair.
     expect(layerIds?.filter((id) => id.startsWith('generic-'))).toEqual([
-      'generic-collar',
       'generic-pants-stripe-left',
       'generic-pants-stripe-right',
     ]);
@@ -131,7 +131,7 @@ describe('team uniform definitions', () => {
     // Wolf grey must survive as a literal: resolving it from `accent` would silently paint the
     // band and the number the same action green as the sleeve cap on every home render.
     for (const layerId of [
-      'seahawks-shoulder-bar-left',
+      'seahawks-shoulder-number-left',
       'seahawks-shoulder-band-left',
       'seahawks-shoulder-band-right',
     ]) {
@@ -189,16 +189,49 @@ describe('team uniform definitions', () => {
     expect(model.layers.find((layer) => layer.id === 'seahawks-shoulder-cap-left')).toMatchObject({
       fill: '#69BE28',
     });
-    // The away collar is navy in the reference, not green — it inherits the generic chevron,
-    // which already resolves to this kit's secondary.
-    const collar = model.layers.find((layer) => layer.id === 'generic-collar');
-    expect(collar?.kind === 'stroke' ? collar.stroke : undefined).toBe('#002244');
+    expect(model.layers.find((layer) => layer.id === 'seahawks-collar-band')).toMatchObject({
+      fill: '#FFFFFF',
+    });
+    expect(model.layers.some((layer) => layer.id === 'generic-collar')).toBe(false);
     // The reference's white away pants carry no stripe at all, so the generic pair is dropped
     // rather than recolored.
     for (const droppedLayerId of ['generic-pants-stripe-left', 'generic-pants-stripe-right']) {
       expect(model.layers.some((layer) => layer.id === droppedLayerId)).toBe(false);
     }
   });
+
+  it.each([
+    ['home', '#69BE28', '#002244'],
+    ['away', '#002244', '#FFFFFF'],
+  ])(
+    'gives Seahawks %s twelve feathers per collar side and a contrasting wordmark',
+    (kit, feathers, wordmark) => {
+      const model = resolveUniformModel(getTeamUniformDefinition('seahawks'), kit, SEAHAWKS_COLORS);
+      for (const side of ['left', 'right']) {
+        const layer = model.layers.find((layer) => layer.id === `seahawks-collar-feathers-${side}`);
+        expect(layer).toMatchObject({ kind: 'fill', fill: feathers, surface: 'collar' });
+        expect(layer?.d.match(/M/g)).toHaveLength(12);
+      }
+      expect(model.layers.find((layer) => layer.id === 'seahawks-shoulder-wordmark')).toMatchObject(
+        {
+          kind: 'fill',
+          fill: wordmark,
+        }
+      );
+      expect(model.layers.filter((layer) => layer.id.includes('shoulder-wordmark'))).toHaveLength(
+        1
+      );
+      expect(model.layers.find((layer) => layer.id === 'seahawks-neck-tab-border')).toMatchObject({
+        fill: '#69BE28',
+      });
+      expect(model.layers.find((layer) => layer.id === 'seahawks-neck-tab')).toMatchObject({
+        fill: '#002244',
+      });
+      expect(model.layers.find((layer) => layer.id === 'seahawks-neck-twelve')).toMatchObject({
+        fill: '#A5ACAF',
+      });
+    }
+  );
 
   it('gives the 1976 throwback a silver shell and era bands instead of the modern decal', () => {
     const definition = getTeamUniformDefinition('seahawks');
