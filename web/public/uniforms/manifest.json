@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "7ba01dfb37c19c748ddfbd9e3e25b350d7a94f4536f37a9d068001ffcbbca758",
-  "revision": "e2c007bcf217c5c9",
+  "sourceDigest": "e3e9c4becf0d951888e3a2da800f2e08b6d1b80f9ed007731d2085247b737d5d",
+  "revision": "9dc6a3c4b25c4843",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1341,30 +1341,30 @@
     {
       "catalogId": "seahawks-away-2012",
       "constructionKey": "away",
-      "revision": "b810e92211894362",
+      "revision": "1ea6f7bcf6da9f74",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-away-2012.webp",
-          "sha256": "fd099ea38543799833ad89bf9fb8394daf906ec750617c19583219908a743fee"
+          "sha256": "e6a5132c5e083b67f3704828d8a9662d14ff36f6ca204c8802e6b2cbb5dd5bd4"
         },
         "full": {
           "path": "/uniforms/seahawks-away-2012-full.webp",
-          "sha256": "80b1f23da072b7b33e74763e72453f7da2df7d6b5e4048eea44877245d6e764a"
+          "sha256": "421c72c5b91d95ec6689e0ea29ef158895c631eaa5676b7cf6f6dee7db83b867"
         }
       }
     },
     {
       "catalogId": "seahawks-home-2012",
       "constructionKey": "home",
-      "revision": "c219d700bfdaca03",
+      "revision": "c2bd16b72d418dd4",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-home-2012.webp",
-          "sha256": "923f14b76b205e6539d19311debebf8c25a11f9a1f479e34493b8c68fae83e76"
+          "sha256": "41dc589a5252b32567c5b9aab4abf34c1cccd5aa35cddaa6dfdb77396ab020d9"
         },
         "full": {
           "path": "/uniforms/seahawks-home-2012-full.webp",
-          "sha256": "0dcc33fbecbb4c65c3959ab978920d05bffa80295c9f4c0493df6ae3dc2113b8"
+          "sha256": "c775c03af64985c6d57af04255167f58019ebf739cee9387a3bd07ba8113ccd8"
         }
       }
     },
