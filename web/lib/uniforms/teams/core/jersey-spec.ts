@@ -60,7 +60,7 @@ const STRIPE_EDGE_PX = 3;
 // The left shoulder line the shoulder numeral sits on, outer end to collar end.
 const SHOULDER_LINE_OUTER = [87, 433] as const;
 const SHOULDER_LINE_INNER = [159, 420] as const;
-const SHOULDER_NUMBER_HEIGHT = 32;
+const SHOULDER_NUMBER_HEIGHT = 70;
 const SHOULDER_NUMBER_OUTLINE = 1.5;
 const SHOULDER_STRIPE_REF_Y = 400; // where the first stripe's collar-side edge is placed
 const SHOULDER_STRIPE_START_X = 156; // that edge's x on the left sleeve at SHOULDER_STRIPE_REF_Y
