@@ -283,7 +283,7 @@ export const UNIFORMS: UniformSeed[] = [
     constructionKey: 'home',
     kind: 'home',
     name: 'Home',
-    yearStart: 1984,
+    yearStart: 2012,
     yearEnd: null,
     isCurrent: true,
     colors: {
@@ -984,7 +984,7 @@ export const UNIFORMS: UniformSeed[] = [
     constructionKey: 'away',
     kind: 'away',
     name: 'Away',
-    yearStart: 1984,
+    yearStart: 2012,
     yearEnd: null,
     isCurrent: true,
     colors: {

@@ -36,11 +36,13 @@ Anything the spec cannot describe is appended as ordinary layers after `spec.lay
 | `collar.lining` / `backBar` / `outline` | `inset-v` only: a band on the inner half of the collar; the bar across the back of the neck (always drawn, in the collar colour unless `backBar` sets another); grey keylines on both collar edges and under the back bar. |
 | `shoulderPanel.bands` | Colour blocks from the top of the sleeve down. The first is the cap, filling to the shoulder seam with a curved inner edge; every edge slopes down toward the body. |
 | `shoulderStripes` | Canted stripes running down the sleeve from the shoulder line, listed from the collar outward, each leaning its lower end toward the body. Same `gap` steps as `sleeveStripes`. |
-| `shoulderNumber` | The numeral lying along the top of each shoulder, its top toward the collar, in `fill` with an optional thin `outline`. On a reference sheet it often reads as a short bar. |
+| `shoulderNumber` | The numeral lying along the top of each shoulder, in `fill` with an optional thin `outline`. On a reference sheet it often reads as a short bar. See the orientation rule below. |
 | `sleeveStripes` | Horizontal stripes lower on the sleeve, with `gap` `none` / `narrow` / `wide` / `broad`. `edge` pipes every stripe with a thin band of that colour above and below it; the gap is then measured between pipings. |
 | `cuff` | A solid band at the sleeve hem. |
 | `sleeveNumber` | The numeral, small and upright on the lower outer face of each sleeve (TV numbers), in `fill`. |
 | `number` | Numeral fill, outline colour and `outlineWeight` (`none` / `thin` / `regular` / `heavy`). `outline` is required even with `none`. |
+
+**Shoulder number orientation** (a frequent mistake): seen from above, the two numerals' tops point at each other, toward the collar (`→ ←`), and on both shoulders the open side of the numeral (the tips of a `3`) faces the back of the jersey. The right shoulder is therefore the left one mirrored, not rotated. On the front view this puts the open side toward the top of the shoulder on both sleeves.
 
 Sizes are `s` / `m` / `l` (11 / 16 / 28 mannequin units); gaps are `none` / `narrow` / `wide` / `broad` (0 / 6 / 12 / 18). Pick the nearest step. A stripe with a contrasting border is one band with `edge` piping, not three bands. If a reference sits well between steps and the difference is visible at 390px, add a step (see below) rather than faking it with extra bands. Each primitive is drawn on both sleeves with unique layer ids.
 

@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "3db32c9c3fb4173c48d428ab239feca7ff042715d37ad2c2b533c9deaf024c03",
-  "revision": "8ee4164c2c925d69",
+  "sourceDigest": "3f299a6ac59dd57182e8f7a72358c451ac4fc65df0893fe9c4a4a5977a1fca77",
+  "revision": "a1ed9f8cfd28363f",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -49,32 +49,32 @@
       }
     },
     {
-      "catalogId": "bears-away-1984",
+      "catalogId": "bears-away-2012",
       "constructionKey": "away",
-      "revision": "8366c8801e71a978",
+      "revision": "39f473ecbb6bf64d",
       "artifacts": {
         "jersey": {
-          "path": "/uniforms/bears-away-1984.webp",
-          "sha256": "fac83b531b6585b01972f3d0175ef9d65d17033d554890bfe6513b1a017b6849"
+          "path": "/uniforms/bears-away-2012.webp",
+          "sha256": "91de36677c4b68ab7c0e754d94c576e86a2f2e236a7b7bce11b981ab2a5ef0ae"
         },
         "full": {
-          "path": "/uniforms/bears-away-1984-full.webp",
-          "sha256": "d04f9c16f071419d02b072d5719e0f769c8a95a37badb04232e57d82715f69d9"
+          "path": "/uniforms/bears-away-2012-full.webp",
+          "sha256": "4056c999ef230c5f6a768d67aff98ffe9a09b3c3af098adeae88a27061dbee3f"
         }
       }
     },
     {
-      "catalogId": "bears-home-1984",
+      "catalogId": "bears-home-2012",
       "constructionKey": "home",
-      "revision": "c066b2ade94e0158",
+      "revision": "c8ff52b4de68ed8b",
       "artifacts": {
         "jersey": {
-          "path": "/uniforms/bears-home-1984.webp",
-          "sha256": "56476fed67a811157596f0e66f991de2dfda2a3291473fdb093d31a7df4047b1"
+          "path": "/uniforms/bears-home-2012.webp",
+          "sha256": "5322cbba72e89ff24fd534261d9930dcb60aeab99661dc7b59e47b2d7e1b124a"
         },
         "full": {
-          "path": "/uniforms/bears-home-1984-full.webp",
-          "sha256": "e8ed02d660e7d1f661bada4d5e1940998a661c1e2fca5bb160fb21d2bb50208f"
+          "path": "/uniforms/bears-home-2012-full.webp",
+          "sha256": "70f17748402ae6ef2d035510988760f380b3ada5c3b1884cec6a2bd98310f170"
         }
       }
     },

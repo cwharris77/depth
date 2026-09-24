@@ -127,7 +127,7 @@ describe('expandJersey', () => {
     };
     const [lx, ly, lw] = centre(outlined[2].d);
     const [rx, ry, rw] = centre(outlined[3].d);
-    // Lying along the shoulder: wider than tall, and the two sleeves are rotations of each other.
+    // Lying along the shoulder, and the right sleeve mirrors the left (open sides both to the back).
     expect(lw).toBeGreaterThan(25);
     expect(lx + rx).toBeCloseTo(588, 0);
     expect(ly).toBeCloseTo(ry, 0);
