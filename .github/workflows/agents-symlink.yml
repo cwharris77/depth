@@ -10,10 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: AGENTS.md is a symlink to CLAUDE.md
+      - name: Every CLAUDE.md has an AGENTS.md symlink beside it
         run: |
-          mode=$(git ls-files -s AGENTS.md | cut -d' ' -f1)
-          if [ "$mode" != 120000 ] || [ "$(readlink AGENTS.md)" != CLAUDE.md ]; then
-            echo "::error file=AGENTS.md::AGENTS.md must be a symlink to CLAUDE.md (git mode 120000, found '${mode:-missing}'). Edit CLAUDE.md, then restore the link with: ln -sf CLAUDE.md AGENTS.md"
-            exit 1
-          fi
+          failed=0
+          for claude in $(git ls-files '*CLAUDE.md'); do
+            dir=$(dirname "$claude")
+            agents="$dir/AGENTS.md"
+            [ "$dir" = . ] && agents=AGENTS.md
+            mode=$(git ls-files -s "$agents" | cut -d' ' -f1)
+            if [ "$mode" != 120000 ] || [ "$(readlink "$agents")" != CLAUDE.md ]; then
+              echo "::error file=$agents::$agents must be a symlink to CLAUDE.md (git mode 120000, found '${mode:-missing}'). Edit CLAUDE.md, then restore the link with: ln -sf CLAUDE.md AGENTS.md"
+              failed=1
+            fi
+          done
+          exit $failed
