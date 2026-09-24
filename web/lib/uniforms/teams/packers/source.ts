@@ -4,8 +4,8 @@
 // proved parts render byte-identically (see parts-parity.test.ts for the one-time gate).
 
 // Fixed construction colors. Green Bay's kits recolor their body but not their marks: the gold
-// shell and the green/white stripe set stay put whether the jersey is green, white or navy. GUD
-// renders the brand pair as #FCCD01/#004001 against the official #FFB612/#203731, so these follow
+// shell and the green/white stripe set stay put whether the jersey is green, white or navy. The
+// composite renders the brand pair as #FCCD01/#004001 against the official #FFB612/#203731, so these follow
 // the official values and only the throwback's bronze is sampled from the composite.
 export const PACKERS_GOLD = '#FFB612';
 export const PACKERS_GREEN = '#203731';

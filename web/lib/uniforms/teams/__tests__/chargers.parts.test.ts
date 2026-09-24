@@ -1,6 +1,6 @@
 // Guards the two facts about Los Angeles that nothing else can catch: the shell mark is a union with
 // no fill rule (an evenodd rule would hollow out the gold body inside its own keyline), and the pant
-// options enumerated from the GUD 2025 composite, of which only the canonical entry compiles — so a
+// options enumerated from the 2025 composite, of which only the canonical entry compiles — so a
 // wrong list is invisible in every raster. The legs stay plain: the real pant's bolt is on the side
 // seam, which a front-on figure cannot show.
 import { describe, expect, it } from 'vitest';

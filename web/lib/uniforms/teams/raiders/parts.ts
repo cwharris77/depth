@@ -26,7 +26,7 @@ const DECAL: PartLayer[] = RAIDERS_DECAL_PATHS.map(({ d, fill }, index) => ({
 
 // The silver shell with the shield decal — one object, shared by both kits.
 //
-// Black cage. The Raiders' silver shell carries a black facemask (named sources; the GUD composite
+// Black cage. The Raiders' silver shell carries a black facemask (named sources; the composite
 // reads the cage bars at #000000 against the shell's #d6dbe3 and the white background). The shared
 // neutral #4b5158 it replaces is a mid-grey that reads soft against the silver shell.
 const HELMET_SILVER_SHIELD: UniformPart = {

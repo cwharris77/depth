@@ -37,7 +37,7 @@ export const BUCCANEERS_DECAL_BALL_PATH =
 export const BUCCANEERS_CUFF_LEFT = 'M30,545 H146 V578 H30 Z';
 export const BUCCANEERS_CUFF_RIGHT = 'M558,545 H442 V578 H558 Z';
 
-// The creamsicle's three-band cuff — authored contiguous (GUD's boundaries are hairline).
+// The creamsicle's three-band cuff — authored contiguous (the composite's boundaries are hairline).
 export const BUCCANEERS_CREAM_BOUNDS = [528, 539, 559, 578];
 export const BUCCANEERS_SLEEVE_X_LEFT = [30, 146];
 export const BUCCANEERS_SLEEVE_X_RIGHT = [442, 558];

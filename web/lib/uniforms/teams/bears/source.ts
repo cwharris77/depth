@@ -1,4 +1,4 @@
-// Chicago's three archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
+// Chicago's three archived kits, redrawn from the 2025 composite in
 // nfl-uniform-refs/bears. Sleeve and pant paths use the outer 588-wide mannequin space; right
 // paths mirror the left across the jersey centerline x=294 (mirroredX = 588 - x).
 //

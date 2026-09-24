@@ -14,13 +14,13 @@ white dolphin gaps are shell-coloured negative space, not additional painted lay
 excluded. The colour predicates are applied to the cropped artwork and components below 30
 pixels are rejected only as antialias debris; all five navy components exceed that threshold.
 
-SELECTION TRAPS. The SVG's white region is not a helmet decal layer: on the white-shell GUD
+SELECTION TRAPS. The SVG's white region is not a helmet decal layer: on the white-shell
 reference it is the shell showing through, and on the navy shell the current composite still
 shows the shell between the orange rays. The source also contains separated navy details that
 must not be collapsed into the teal body. Each colour is therefore traced independently, with
 all components sharing one art crop so their relative topology is retained.
 
-PLACEMENT. In the 2025 GUD composite, the current helmet shell is approximately x=59..164,
+PLACEMENT. In the 2025 composite, the current helmet shell is approximately x=59..164,
 y=75..162 and the visible coloured mark is approximately x=72..153, y=91..132: about 12.4%
 left, 77.1% wide, 18.4% top, and 47.1% tall. Those fractions are transferred to raw helmet
 space, then the flat mark's true 458:333 aspect is preserved in the emitted box rather than

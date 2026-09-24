@@ -43,7 +43,7 @@ export function sleeveStripes(band: string, line: string): PartLayer[] {
 // traced ring (see lions.ts).
 //
 // Silver cage. The modern silver shell wears a silver facemask (named sources: "silver
-// polyvinyl-coated steel face mask"); GUD cannot separate a silver cage from the same-toned shell,
+// polyvinyl-coated steel face mask"); the composite cannot separate a silver cage from the same-toned shell,
 // so the named source and the team's silver #B0B7BC are the source of truth here. The shared
 // neutral #4b5158 it replaces is a dark grey that reads as a hole in the silver shell.
 export const HELMET_SILVER_LION: UniformPart = {

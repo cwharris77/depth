@@ -13,7 +13,7 @@ TARGET = Path(__file__).resolve().parents[2] / 'lib/uniforms/teams/cowboys/decal
 TOKEN = re.compile(r'[A-Za-z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?')
 
 # The star's full navy envelope in the supplied 2048px viewBox is x=238..1808/y=282..1757.
-# It maps to the existing Cowboys helmet placement x=296..542/y=127..371, measured from the GUD
+# It maps to the existing Cowboys helmet placement x=296..542/y=127..371, measured from the
 # composite. Keeping that envelope isolates this source-art refresh from the placement decision.
 SX, SY = 238.0, 282.0
 TX, TY = 296.0, 127.0

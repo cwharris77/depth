@@ -6,7 +6,7 @@ import { JERSEY_GRAY } from './jerseys/gray';
 
 export const LIONS_PARTS: TeamPartsDefinition = {
   teamId: 'lions',
-  // Jersey hexes from the curated rows (teamcolorcodes). Silver is the shell/body color that the
+  // Jersey hexes from the curated rows. Silver is the shell/body color that the
   // rows carry across different primary/secondary/accent slots; blue is home/away's shared body.
   palette: {
     blue: '#0076B6',

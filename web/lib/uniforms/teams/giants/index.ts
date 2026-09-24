@@ -6,7 +6,7 @@ import { JERSEY_THROWBACK } from './jerseys/throwback';
 
 export const GIANTS_PARTS: TeamPartsDefinition = {
   teamId: 'giants',
-  // Jersey hexes from the curated rows (teamcolorcodes). Royal and red are physical fixed colors
+  // Jersey hexes from the curated rows. Royal and red are physical fixed colors
   // that the three rows carry across different primary/secondary/accent slots (royal is home and
   // throwback primary, away secondary; red is home and away accent, throwback secondary).
   palette: {
@@ -16,7 +16,7 @@ export const GIANTS_PARTS: TeamPartsDefinition = {
     white: '#FFFFFF',
     red: '#A71930',
     // The modern shell's cage grey — no token in the blue/red/white Giants palette. Sampled from
-    // the GUD composite (see the helmet note); matches the documented grey facemask.
+    // the composite (see the helmet note); matches the documented grey facemask.
     cageGrey: '#9A9A9A',
   },
   helmets: { 'blue-monogram': HELMET_BLUE_MONOGRAM, 'blue-bare': HELMET_BLUE_BARE },

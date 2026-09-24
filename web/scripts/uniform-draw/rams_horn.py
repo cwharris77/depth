@@ -22,9 +22,9 @@ yellow components with NO enclosed holes: the spiral's tip laps back over its ow
 body and the shell shows blue through the gap, which splits the ring into a lower
 crescent and an upper tail. Two subpaths, one fill, no fill rule anywhere. The
 shipped path before this had the same two-component count but was traced off the
-46px GUD helmet, so its outline stair-stepped and it read as a torn blob.
+46px helmet reference, so its outline stair-stepped and it read as a torn blob.
 
-Placement (docs step 7) is measured from the GUD 2025 helmet composite, not from
+Placement (docs step 7) is measured from the 2025 helmet composite, not from
 this illustration, because the illustration draws a wider, flatter shell than the
 mannequin does. Both boxes below are morphological measurements, not eyeballed: an
 opening with a 7px element drops the facemask's thin strokes so the sheet's SHELL

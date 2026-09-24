@@ -5,7 +5,7 @@ import { JERSEY_WHITE } from './jerseys/white';
 
 export const COMMANDERS_PARTS: TeamPartsDefinition = {
   teamId: 'commanders',
-  // Jersey hexes from the curated rows (teamcolorcodes). Burgundy and gold are the physical body/
+  // Jersey hexes from the curated rows. Burgundy and gold are the physical body/
   // trim colors; white is the band-line/number-literal that only the home row lacks as a token.
   palette: {
     burgundy: '#5A1414',

@@ -14,7 +14,7 @@
 // part: purple on every kit, arrived at as `primary` at home and `secondary` on the other two.
 //
 // Two golds, deliberately. The shoulder keyline and the numeral outline take the kit row's accent
-// (#9E7C0C), while the mark's own gold is #9A7611 — a slightly deeper value traced off the GUD
+// (#9E7C0C), while the mark's own gold is #9A7611 — a slightly deeper value traced off the
 // composite. They were distinct in the flat definition and stay distinct here; collapsing them
 // would repaint the mark.
 
@@ -107,7 +107,7 @@ export function sleeveBands(fill: string): PartLayer[] {
 }
 
 // The only shell (H1): black, with the mark, on every kit. The cage is black too — every helmet
-// figure on the GUD 2025 composite (nfl-uniform-refs/ravens) wears a black facemask, on all three
+// figure on the 2025 composite (nfl-uniform-refs/ravens) wears a black facemask, on all three
 // rows. The lone gold cage on that sheet belongs to the purple 1996 throwback shell, which is not
 // a kit this archive carries.
 const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'black', layers: decal() };

@@ -361,7 +361,7 @@ operating manual (architecture, conventions, parity mechanisms). Quality-bar sum
       token changed
 
 **Curated data (kits, seeds)**
-- [ ] Every hex cites its source in a comment (teamcolorcodes / GUD / TruColor / press release)
+- [ ] Every hex is a named palette entry, never an inline literal in a layer
 - [ ] Resolver tests pass for every new row: each surface returns one of the kit's own
       three colors, white, or the app ground — never an invented hex
       (`lib/__tests__/team-surfaces.test.ts` loops the archive, one `it` per kit)

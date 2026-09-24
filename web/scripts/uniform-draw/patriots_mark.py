@@ -15,7 +15,7 @@ TOPOLOGY, measured before tracing from a black-backed raster of the SVG: one 8-c
 face component, two red streamer components, one silver face component, one white keyline
 component, and one separate white star component. There are no enclosed holes. The selection trap
 is that the white keyline and star share an ink colour, while the silver face is easy to mistake
-for shell or facemask grey when selecting from the GUD composite; the generator selects each by
+for shell or facemask grey when selecting from the composite; the generator selects each by
 component in the approved SVG instead. All five colour layers are traced against one shared art
 bbox so their relative positions survive emission.
 

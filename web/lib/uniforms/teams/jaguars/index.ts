@@ -27,7 +27,7 @@ export const JAGUARS_PARTS: TeamPartsDefinition = {
   },
   pants: { white: PANTS_WHITE, black: PANTS_BLACK, teal: PANTS_TEAL },
   kits: {
-    // GUD 2025 JAX: home white/teal; away white/teal/black. Canonical pairings stay first.
+    // 2025 composite JAX: home white/teal; away white/teal/black. Canonical pairings stay first.
     home: { helmet: 'black', jersey: 'teal', pants: ['white', 'teal'] },
     away: { helmet: 'black', jersey: 'white', pants: ['white', 'teal', 'black'] },
     'teal-throwback': { helmet: 'throwback', jersey: 'tr', pants: 'white' },

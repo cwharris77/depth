@@ -6,8 +6,8 @@ import { JERSEY_WHITE } from './jerseys/white';
 
 export const COWBOYS_PARTS: TeamPartsDefinition = {
   teamId: 'cowboys',
-  // Jersey hexes from the curated rows (teamcolorcodes), plus the published helmet shell and the
-  // GUD-sampled cage. The away row reaches navy through its secondary and silver through accent;
+  // Jersey hexes from the curated rows, plus the published helmet shell and the
+  // sampled cage. The away row reaches navy through its secondary and silver through accent;
   // home reaches silver through secondary — each is one palette entry here.
   palette: {
     navy: '#003594',
@@ -20,7 +20,7 @@ export const COWBOYS_PARTS: TeamPartsDefinition = {
     // The published helmet "Blue Metallic" — the shell is several steps lighter than the jersey
     // silver (see cowboys.ts).
     helmetSilver: COWBOYS_HELMET_SILVER,
-    // Sampled from the GUD composite (nfl-uniform-refs/cowboys): the cage bars read #808080
+    // Sampled from the composite (nfl-uniform-refs/cowboys): the cage bars read #808080
     // against the shell's #B7C3CD. Steel/silver per named sources.
     steelGrey: '#808080',
   },

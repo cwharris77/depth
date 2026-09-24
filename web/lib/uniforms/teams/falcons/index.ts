@@ -7,12 +7,12 @@ import { JERSEY_RED } from './jerseys/red';
 
 export const FALCONS_PARTS: TeamPartsDefinition = {
   teamId: 'falcons',
-  // Jersey hexes from the curated rows (teamcolorcodes); the away and red-alt rows share this
+  // Jersey hexes from the curated rows; the away and red-alt rows share this
   // same palette through different primary/secondary/accent slots, which is the point. `silver`
   // also supplies the decal outer border. The 2020 "back to black" redesign's matte shell carries a
   // silver/chrome cage (atlantafalcons.com unveiling, 2020; still current in the 2026 redesign),
-  // and the GUD composite renders it as the mid-grey #909090 at 8-bit. Silver is Falcons silver
-  // PMS 877 C / #A5ACAF (teamcolorcodes).
+  // and the composite renders it as the mid-grey #909090 at 8-bit. Silver is Falcons silver
+  // PMS 877 C / #A5ACAF.
   palette: {
     black: '#000000',
     white: '#FFFFFF',

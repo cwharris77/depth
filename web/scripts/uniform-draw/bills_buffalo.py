@@ -9,7 +9,7 @@ white gap is shell-colored negative space, not a third path or a hole. The
 source is rendered at its true 189:126 aspect before tracing so qlmanage's
 square-thumbnail crop cannot change the topology. Both masks use the same
 canvas and ``space='image'`` so their shared placement and relative extents
-are preserved. The box is the established GUD-measured helmet mark extent in
+are preserved. The box is the established measured helmet mark extent in
 raw mannequin space; no side-seam or leg detail is relevant to the front view.
 """
 

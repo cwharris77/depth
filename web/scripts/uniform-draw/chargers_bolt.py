@@ -12,18 +12,18 @@ WHY NOT THE FETCHED MARK, which is the thing to know before touching this file.
 the first version of this script used it — placed in a box measured off the
 shell, which is the normal procedure. It reads wrong on the helmet, and the
 reason is that the flat logo and the decal are not the same drawing. The logo
-is 2.48 aspect with short blunt tails; the bolt GUD draws on the shell is 1.71
+is 2.48 aspect with short blunt tails; the bolt the composite draws on the shell is 1.71
 aspect with long thin ones, because a decal applied around a curved shell
 arches far more in side profile than the flat mark does. Squeezing the logo
 into the decal's box gets the extents right and the drawing wrong: every stroke
 thickens with the stretch, so the mark lands fat and blunt where the reference
 is slender and swept. The linework here is therefore traced from the shell in
-the GUD 2025 composite itself — the same reference the placement comes from.
+the 2025 composite itself — the same reference the placement comes from.
 
 The trade is resolution: that helmet is 93px across and its bolt 76px, so the
 crop is upsampled 8x before tracing and EPS is set against the interpolated
 edge rather than a drawn one. That is the same bargain the Rams' horn made in
-reverse (there the GUD helmet was too coarse and a larger illustration existed;
+reverse (there the reference helmet was too coarse and a larger illustration existed;
 here no larger drawing of THIS bolt exists). The input lives in the sibling
 nfl-uniform-refs/ checkout.
 

@@ -47,7 +47,7 @@ function crushDecal(): PartLayer[] {
 
 // The modern navy shell with the horse decal — one object, shared by home, away and orange-alt.
 //
-// The current-season GUD helmet composite shows a navy facemask on every modern kit; the
+// The current-season helmet composite shows a navy facemask on every modern kit; the
 // Orange Crush reference below is the exception and retains its light cage.
 const HELMET_NAVY_HORSE: UniformPart = {
   base: 'navy',
@@ -75,7 +75,7 @@ const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
 
 export const BRONCOS_CONSTRUCTION = {
   teamId: 'broncos',
-  // Jersey hexes from the curated rows (teamcolorcodes). Navy/orange/white are the physical modern
+  // Jersey hexes from the curated rows. Navy/orange/white are the physical modern
   // body colors carried in different slots per row; royal and crush-orange are Orange Crush's era
   // colors (its primary/secondary).
   palette: {

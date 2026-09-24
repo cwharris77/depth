@@ -74,9 +74,9 @@ function decal(): PartLayer[] {
   }));
 }
 
-// Home shell (H1). The cage is red on every silver-shell figure of the GUD 2025 composite
-// (nfl-uniform-refs/patriots) — vividly so, and it is the club's signature facemask. The sheet is
-// a GIF and its cage quantizes to #e30003, which is palette noise rather than a documented color,
+// Home shell (H1). The cage is red on every silver-shell figure of the 2025 composite
+// (nfl-uniform-refs/patriots) — vividly so, and it is the club's signature facemask. The source
+// is a GIF and its cage quantizes to #e30003, which is palette noise rather than a documented color,
 // so this uses the archive's own stored club red (#C60C30, the home row's secondary) instead of
 // eyedropping the source.
 const HELMET_NAVY: UniformPart = { base: 'navy', facemask: 'red', layers: decal() };

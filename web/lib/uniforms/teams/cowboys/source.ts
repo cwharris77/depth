@@ -8,7 +8,7 @@
 // and the numerals would all come out silver. And neither palette carries the helmet color: the
 // jersey silver (#869397) is several steps darker than the shell.
 export const COWBOYS_WHITE = '#FFFFFF';
-// "Blue Metallic", the club's published helmet color (teamcolorcodes). GUD renders its shell a
+// "Blue Metallic", the club's published helmet color. The composite renders its shell a
 // step lighter (#B7C3CD) under its own shading; the published value is used here.
 export const COWBOYS_HELMET_SILVER = '#B0B7BC';
 

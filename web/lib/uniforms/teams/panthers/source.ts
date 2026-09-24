@@ -1,4 +1,4 @@
-// Carolina's three archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
+// Carolina's three archived kits, redrawn from the 2025 composite in
 // nfl-uniform-refs/panthers (black alternate is that sheet's row-2 figure 1, home its row-2
 // figure 5, away its row-3 figure 1 — each row's later figures are pant combinations, and the
 // blue-boxed group in row 1 is labelled "worn in preseason games only", so none of those were
@@ -13,7 +13,7 @@
 // the composite's helmet swatch shows the mark's own tail crossing the crown, not a centre stripe.
 //
 // Out of scope on every kit: the chest wordmark, the league shield, the "KEEP POUNDING" collar
-// script, the panther patch on each sleeve, and the shoulder numerals GUD draws above the fan.
+// script, the panther patch on each sleeve, and the shoulder numerals drawn above the fan.
 //
 // Construction geometry only — the mark, fan, collar and pant-stripe paths. The composable parts
 // definition that consumes them lives in ./panthers.parts.ts; the former flat PANTHERS_UNIFORMS
@@ -56,7 +56,7 @@ export const PANTHERS_WEDGE_RIGHT = 'M514,421 L486,426 L467,493 Z';
 export const PANTHERS_COLLAR_PATH = 'M189,392 L295,513 L399,392';
 export const PANTHERS_COLLAR_WIDTH = 24;
 
-// The pant leg stripe. GUD draws a team's stripe pattern in a leg-shaped swatch beside each
+// The pant leg stripe. The composite draws a team's stripe pattern in a leg-shaped swatch beside each
 // figure rather than on the small front-view figure itself, which is why an earlier pass read
 // these pants as unbroken; every one of Carolina's four pant colors carries the same three-band
 // stripe. Measured across those swatches at the sheet's scale: a hairline keyline, a wide centre,

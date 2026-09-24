@@ -13,7 +13,7 @@ import { JERSEY_NAVY } from './jerseys/navy';
 
 export const PACKERS_PARTS: TeamPartsDefinition = {
   teamId: 'packers',
-  // Construction hexes from the module (teamcolorcodes + the sampled 1923 leather). Green, gold
+  // Construction hexes from the module (official hexes plus the sampled 1923 leather). Green, gold
   // and white are physical fixed colors the rows carry in different primary/secondary/accent
   // slots; the 1923 navy body and bronze trim have their own row tokens.
   palette: {
@@ -27,7 +27,7 @@ export const PACKERS_PARTS: TeamPartsDefinition = {
     '#FEB415': '#FEB415',
     // The 1923 leather shell and pants, sampled from the composite (no token; see packers.ts).
     leather: '#7B4A2A',
-    // The modern gold/white shell's cage — mid-grey, sampled from the GUD composite (packers
+    // The modern gold/white shell's cage — mid-grey, sampled from the composite (packers
     // current-season 2025, reads #8f8f90 at the gold shell's face opening). Named sources
     // describe the modern Packers mask as grey/light grey; the shared neutral #4b5158 it replaces
     // is a darker grey than the real cage. The 1923 leather shell predates the facemask and stays

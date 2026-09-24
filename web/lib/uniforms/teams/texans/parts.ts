@@ -99,7 +99,7 @@ function bullDecal(): PartLayer[] {
 // keyline is a stroke (safe here only because the curves are hand-drawn, see texans.ts).
 //
 // White cage. The Texans' navy shell wears a white facemask (named sources; the navy shell + white
-// cage reads cleanly in the GUD composite). The shared neutral #4b5158 it replaces is a grey that
+// cage reads cleanly in the composite). The shared neutral #4b5158 it replaces is a grey that
 // floats against the navy.
 const HELMET_NAVY_BULL: UniformPart = {
   base: 'navy',

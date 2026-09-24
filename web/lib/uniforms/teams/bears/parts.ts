@@ -89,7 +89,7 @@ function jersey(
 }
 
 // The one shell, on all three kits. The cage is navy, not a neutral: every helmet figure on the
-// GUD 2025 composite (nfl-uniform-refs/bears) wears a facemask painted the shell color, which
+// 2025 composite (nfl-uniform-refs/bears) wears a facemask painted the shell color, which
 // samples #03182f there. That is the sheet's rendering of the club navy rather than a separate
 // color, so the cage takes the archive's own stored navy (#0B162A) instead of an eyedrop — the
 // same call the Rams' shell-colored cage got.
@@ -142,7 +142,7 @@ const PANTS_NAVY: UniformPart = {
 
 export const BEARS_CONSTRUCTION = {
   teamId: 'bears',
-  // Jersey hexes, teamcolorcodes.com — the same three the curated rows carry.
+  // Jersey hexes — the same three the curated rows carry.
   palette: { navy: '#0B162A', orange: '#C83803', white: '#FFFFFF' },
   helmets: { 'navy-c': HELMET_NAVY_C },
   pants: { navy: PANTS_NAVY },

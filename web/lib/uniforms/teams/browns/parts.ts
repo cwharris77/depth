@@ -38,7 +38,7 @@ function sleeveStripes(band: string, gap: string): PartLayer[] {
   return out;
 }
 
-// The 2025 GUD composite's white and orange pants both carry the same orange-brown-orange stripe.
+// The 2025 composite's white and orange pants both carry the same orange-brown-orange stripe.
 // The shared mannequin band supplies the 16-unit orange outer field; a six-unit brown centre leaves
 // equal orange rails on each side. These are full front-leg bands, unlike side-seam-only details.
 function pantsStripes(): PartLayer[] {
@@ -103,7 +103,7 @@ const HELMET_BROWN: UniformPart = {
 
 // Away + 1946 jersey: white body, brown-over-orange stripe stack, plain brown numerals.
 
-// White (P1) and orange (P2) pants: the 2025 GUD composite gives both the same
+// White (P1) and orange (P2) pants: the 2025 composite gives both the same
 // orange-brown-orange full-leg band.
 const PANTS_WHITE: UniformPart = { base: 'white', layers: pantsStripes() };
 const PANTS_ORANGE: UniformPart = { base: 'orange', layers: pantsStripes() };
@@ -111,13 +111,13 @@ const PANTS_ORANGE: UniformPart = { base: 'orange', layers: pantsStripes() };
 // Brown pants (P3): the 2025 color-rush figure is unstriped.
 const PANTS_BROWN: UniformPart = { base: 'brown', layers: [] };
 
-// The 1946 throwback is not represented in the current GUD composite, so retain its existing
+// The 1946 throwback is not represented in the current composite, so retain its existing
 // unstriped white pant construction rather than importing an option from a different uniform era.
 const PANTS_1946_WHITE: UniformPart = { base: 'white', layers: [] };
 
 export const BROWNS_CONSTRUCTION = {
   teamId: 'browns',
-  // Jersey hexes from the curated rows (teamcolorcodes). Brown and orange are the two physical
+  // Jersey hexes from the curated rows. Brown and orange are the two physical
   // colors carried in different primary/secondary/accent slots per row; white is the pants/numerals
   // literal (no white token on the home row).
   palette: {

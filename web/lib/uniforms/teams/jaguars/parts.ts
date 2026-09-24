@@ -154,5 +154,5 @@ export const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
 // Black pants (P2, black-alt).
 export const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };
 
-// GUD 2025 JAX composite: teal pants with both current teal and white jerseys.
+// 2025 JAX composite: teal pants with both current teal and white jerseys.
 export const PANTS_TEAL: UniformPart = { base: 'teal', layers: [] };

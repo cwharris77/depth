@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from drawkit import Box, path, star  # noqa: E402
 
-# Placement derived from where GUD draws the mark on the shell: reference
+# Placement derived from where the composite draws the mark on the shell: reference
 # x482-532, y37-81 inside shell bbox (461,30,570,139).
 BOX = Box(284.0, 104.0, 270.0, 246.0)
 

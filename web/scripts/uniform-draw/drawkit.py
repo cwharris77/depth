@@ -448,7 +448,7 @@ class Box:
 
     Take width and vertical centre from wherever the mark already sits (an
     existing trace's bbox is the best evidence), but compute height from the
-    mark's TRUE aspect ratio — GUD draws a 3/4 shell, so its rendering is
+    mark's TRUE aspect ratio — the reference composite draws a 3/4 shell, so its rendering is
     foreshortened, while the mannequin draws a flat side profile.
     """
 

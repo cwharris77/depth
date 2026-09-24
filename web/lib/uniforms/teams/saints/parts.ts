@@ -34,7 +34,7 @@ export function collar(stroke: string): PartLayer[] {
 
 // The gold shell carries the source fleur's four exact paint layers, shared by every kit.
 //
-// Gold cage. The Saints' gold shell carries a gold facemask (named sources; the GUD composite
+// Gold cage. The Saints' gold shell carries a gold facemask (named sources; the composite
 // cannot separate a gold cage from the same-toned shell, so the named source and the team's gold
 // #D3BC8D are the source of truth). The shared neutral #4b5158 it replaces is a grey smudge
 // against the gold.

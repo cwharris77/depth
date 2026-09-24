@@ -69,7 +69,7 @@ function decal(keyline: string, body: string): PartLayer[] {
 
 // The white shell with the bolt — one object, shared by all three kits.
 //
-// Gold cage, sampled from the Chargers' 2025 GUD composite (nfl-uniform-refs/chargers); the
+// Gold cage, sampled from the Chargers' 2025 composite (nfl-uniform-refs/chargers); the
 // reference helmet consistently shows the facemask in the team's lightning-bolt gold.
 const HELMET_WHITE: UniformPart = {
   base: 'white',
@@ -94,13 +94,13 @@ const PANTS_NAVY: UniformPart = { base: 'navy', layers: [] };
 
 export const CHARGERS_CONSTRUCTION = {
   teamId: 'chargers',
-  // Jersey hexes from the curated rows (teamcolorcodes). Powder blue and gold are the physical body
+  // Jersey hexes from the curated rows. Powder blue and gold are the physical body
   // colors; white is the shell/numerals literal (no white token on the home row).
   palette: {
     powderBlue: '#0080C6',
     gold: '#FFC20E',
     white: '#FFFFFF',
-    // Navy pants sampled from the GUD 2025 composite (nfl-uniform-refs/chargers).
+    // Navy pants sampled from the 2025 composite (nfl-uniform-refs/chargers).
     navy: '#002244',
   },
   helmets: { white: HELMET_WHITE },

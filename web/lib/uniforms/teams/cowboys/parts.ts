@@ -19,7 +19,7 @@ export const COLLAR_PATH = LEGACY_ROUNDED_COLLAR_PATH;
 
 // The complete navy/white star is generated from the supplied SVG in its original paint order.
 // The generator excludes only that file's canvas/frame export artifacts; its coordinates preserve
-// the existing GUD-measured helmet envelope.
+// the existing measured helmet envelope.
 export function star(): PartLayer[] {
   return GENERATED_COWBOYS_DECAL_PATHS.map((layer, index) => ({
     id: `cowboys-decal-${index}`,
@@ -32,10 +32,10 @@ export function star(): PartLayer[] {
 }
 
 // The silver shell with the navy star — one object, shared by both kits. The "Blue Metallic" shell
-// comes from the module constant (published helmet color, teamcolorcodes); the GUD composite reads
+// comes from the module constant (the published helmet color); the composite reads
 // it a step lighter (#B7C3CD) under its own shading.
 //
-// Steel cage. The Cowboys' shell carries a steel/silver facemask (named sources; the GUD composite
+// Steel cage. The Cowboys' shell carries a steel/silver facemask (named sources; the composite
 // reads the bars at #808080, darker than the shell itself). The shared neutral #4b5158 it replaces
 // is a near-black grey and reads differently against the silver shell.
 export const HELMET_SILVER_STAR: UniformPart = {

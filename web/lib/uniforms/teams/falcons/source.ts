@@ -5,7 +5,7 @@
 
 // Black is a literal on the away and red-alt kits. Atlanta's away palette resolves secondary AND
 // accent to the same red (#A71930), so no token supplies the black shell and pants those kits
-// wear. Hex from teamcolorcodes.
+// wear.
 export const FALCONS_BLACK = '#000000';
 
 // The side-seam piping, measured at x=52 and x=148 on a reference figure centered at 99.5, running

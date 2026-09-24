@@ -14,7 +14,7 @@ import { JERSEY_1972 } from './jerseys/1972';
 
 export const DOLPHINS_PARTS: TeamPartsDefinition = {
   teamId: 'dolphins',
-  // Jersey hexes from the curated rows (teamcolorcodes). Teal/orange/white/navy are the physical
+  // Jersey hexes from the curated rows. Teal/orange/white/navy are the physical
   // body colors carried in different primary/secondary/accent slots per row.
   palette: {
     teal: '#008E97',
