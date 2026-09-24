@@ -58,6 +58,43 @@ describe('expandJersey', () => {
     }
   });
 
+  it('draws canted shoulder stripes only when asked, leaning toward the body', () => {
+    const layers = (withStripes: boolean) =>
+      expandJersey('t', {
+        body: 'navy',
+        collar: { style: 'none' },
+        ...(withStripes && {
+          shoulderStripes: {
+            bands: [
+              { color: 'white', size: 'l' },
+              { color: 'orange', size: 'm' },
+            ],
+            gap: 'broad' as const,
+          },
+        }),
+        number: { fill: 'white', outline: 'navy', outlineWeight: 'none' },
+      }).layers;
+    expect(layers(false)).toEqual([]);
+    const stripes = layers(true);
+    expect(stripes.map((l) => [l.id, l.surface, l.kind === 'fill' && l.fill])).toEqual([
+      ['t-shoulder-stripe-0-left', 'sleeve-left', 'white'],
+      ['t-shoulder-stripe-0-right', 'sleeve-right', 'white'],
+      ['t-shoulder-stripe-1-left', 'sleeve-left', 'orange'],
+      ['t-shoulder-stripe-1-right', 'sleeve-right', 'orange'],
+    ]);
+    // M outerTopX,topY L innerTopX,topY L innerBottomX,bottomY L outerBottomX,bottomY Z
+    const corners = (id: string) => numbers(stripes.find((l) => l.id === id)?.d ?? '');
+    const [ltx0, , ltx1, , lbx1] = corners('t-shoulder-stripe-0-left');
+    const [rtx0, , rtx1, , rbx1] = corners('t-shoulder-stripe-0-right');
+    expect(ltx1 - ltx0).toBe(28);
+    expect(lbx1).toBeGreaterThan(ltx1);
+    expect(rbx1).toBeLessThan(rtx1);
+    expect(rtx0 + ltx0).toBe(588);
+    // The second stripe sits one broad gap outboard of the first.
+    const [, , ltx1b] = corners('t-shoulder-stripe-1-left');
+    expect(ltx0 - ltx1b).toBe(18);
+  });
+
   it('fills the inset-V neck opening with the inside color when given', () => {
     const layers = (inside?: string) =>
       expandJersey('t', {

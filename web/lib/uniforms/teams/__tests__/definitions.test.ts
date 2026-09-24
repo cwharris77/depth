@@ -46,7 +46,8 @@ function validateOverride(name: string, override: UniformStyleOverride) {
       if (override.number.fill) expectValidColor(override.number.fill);
       if (override.number.outline) expectValidColor(override.number.outline);
       if (override.number.outlineWidth !== undefined) {
-        expect(override.number.outlineWidth).toBeGreaterThan(0);
+        // 0 is an unoutlined numeral (the jersey spec's `outlineWeight: 'none'`).
+        expect(override.number.outlineWidth).toBeGreaterThanOrEqual(0);
       }
     }
 
