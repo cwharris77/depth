@@ -1,4 +1,4 @@
-"""Regenerates the throwback hawk in lib/uniforms/teams/seahawks/source.ts from $DECAL_SVGS.
+"""Regenerates the throwback hawk mark in lib/uniforms/teams/seahawks/marks/throwback-hawk.ts.
 
     DECAL_SVGS=<dir> python3 scripts/uniform-draw/seahawks_throwback_hawk.py          # print
     DECAL_SVGS=<dir> python3 scripts/uniform-draw/seahawks_throwback_hawk.py --check  # verify
@@ -6,16 +6,11 @@
 The reference is a 1200px vector of the original hawk, saved as seahawks_throwback_hawk.svg in
 $DECAL_SVGS. Its first path is the white canvas; the rest are, in paint order, the royal body, the
 green rear block, the white head, the white eye ring, the green eye, the white cheek line and the
-green brow line. Each path's translation is applied and its points mapped straight into mannequin
-space without rasterizing or simplifying.
+green brow line. Each path's translation is applied and its points written in the reference's own
+space, regrouped by colour. That keeps paint order intact because the green block touches only the
+royal body, and the green eye and brow sit on the white head and eye ring.
 
-The layers regroup those paths by color. That keeps paint order intact because the green block
-touches only the royal body, and the green eye and brow sit on the white head and eye ring.
-
-The helmet placement keeps the previous decal's x-range and vertical centre on the shell, and takes
-its height from the reference's aspect. The sleeve logo is the same drawing without its royal body,
-which disappears into the royal sleeve. It faces outward on each sleeve, so the viewer's-left copy
-is mirrored, and its beak overhangs the outer sleeve edge where the clip trims it.
+Placement is not decided here: lib/uniforms/teams/core/marks.ts fits the mark to a named anchor.
 """
 
 import os
@@ -26,10 +21,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from drawkit import Box, main  # noqa: E402
+from drawkit import main  # noqa: E402
 
 REF = Path(os.environ.get('DECAL_SVGS', '.')) / 'seahawks_throwback_hawk.svg'
-MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'seahawks' / 'source.ts'
+MODULE = (
+    Path(__file__).resolve().parents[2]
+    / 'lib' / 'uniforms' / 'teams' / 'seahawks' / 'marks' / 'throwback-hawk.ts'
+)
 SVG_NS = '{http://www.w3.org/2000/svg}'
 TOKEN = re.compile(r'[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?')
 TRANSLATE = re.compile(r'^translate\(\s*([-+]?[\d.]+)\s*(?:,\s*([-+]?[\d.]+))?\s*\)$')
@@ -45,12 +43,6 @@ EXPECTED = (
     (WHITE, 'WHITE'),
     (GREEN, 'EYE'),
 )
-
-# Helmet x-range and vertical centre, in the shell's raw space.
-HELMET_X0, HELMET_W, HELMET_CY = 154.0, 310.0, 293.0
-# Sleeve logo width and vertical centre in mannequin space, read off the reference figure's sleeve.
-SLEEVE_W = 74.0
-SLEEVE_Y = 505.0
 
 
 def polygons(d, tx, ty):
@@ -103,39 +95,27 @@ def layers():
     return out
 
 
-def emit(box, bounds, shapes, mirror=False):
-    x0, y0, x1, y1 = bounds
-    subpaths = []
-    for pts in shapes:
-        mapped = []
-        for x, y in pts:
-            u = (x - x0) * 100.0 / (x1 - x0)
-            mapped.append((100.0 - u if mirror else u, (y - y0) * 100.0 / (y1 - y0)))
-        mapped = box.map(mapped)
-        subpaths.append(
-            'M%.1f,%.1f ' % mapped[0] + ' '.join('L%.1f,%.1f' % p for p in mapped[1:]) + ' Z'
-        )
-    return ' '.join(subpaths)
+def num(v):
+    """Shortest exact text for a coordinate: 631.0 -> '631', 50.5 -> '50.5'."""
+    s = repr(float(v))
+    return s[:-2] if s.endswith('.0') else s
+
+
+def raw(shapes):
+    return ' '.join(
+        'M%s,%s ' % (num(pts[0][0]), num(pts[0][1]))
+        + ' '.join('L%s,%s' % (num(x), num(y)) for x, y in pts[1:])
+        + ' Z'
+        for pts in shapes
+    )
 
 
 def build():
     shapes = layers()
-    xs = [x for pts in shapes['ROYAL'] for x, _ in pts]
-    ys = [y for pts in shapes['ROYAL'] for _, y in pts]
-    bounds = (min(xs), min(ys), max(xs), max(ys))
-    aspect = (bounds[2] - bounds[0]) / (bounds[3] - bounds[1])
-    helmet = Box.from_center(HELMET_X0, HELMET_W, HELMET_CY, aspect)
-    out = {
-        'SEAHAWKS_THROWBACK_HAWK_%s_PATH' % layer: emit(helmet, bounds, shapes[layer])
+    return {
+        'SEAHAWKS_THROWBACK_HAWK_MARK_%s' % layer: raw(shapes[layer])
         for layer in ('ROYAL', 'WHITE', 'BLOCK', 'EYE')
     }
-    for side, x0, mirror in (('LEFT', 24.0, True), ('RIGHT', 588.0 - 24.0 - SLEEVE_W, False)):
-        box = Box.from_center(x0, SLEEVE_W, SLEEVE_Y, aspect)
-        for layer in ('WHITE', 'BLOCK', 'EYE'):
-            out['SEAHAWKS_THROWBACK_SLEEVE_%s_%s' % (layer, side)] = emit(
-                box, bounds, shapes[layer], mirror=mirror
-            )
-    return out
 
 
 if __name__ == '__main__':
