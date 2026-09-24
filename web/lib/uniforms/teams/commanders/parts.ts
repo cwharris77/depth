@@ -17,6 +17,8 @@ import {
   COMMANDERS_SLEEVE_X_LEFT,
   COMMANDERS_SLEEVE_X_RIGHT,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -64,11 +66,12 @@ export function decal(which: string): PartLayer[] {
 //
 // White cage. The burgundy Commanders shell wears a white facemask (named sources; the white cage
 // reads cleanly against the burgundy shell).
-export const HELMET_BURGUNDY: UniformPart = {
-  base: 'burgundy',
+export const HELMET_BURGUNDY: UniformPart = expandHelmet('commanders-burgundy-helmet', {
+  shell: 'burgundy',
   facemask: 'white',
-  layers: decal('gold'),
-};
+  decal: placed(decal('gold')),
+  number: 'none',
+});
 
 // Burgundy pants (home + 70s-burgundy).
 export const PANTS_BURGUNDY: UniformPart = { base: 'burgundy', layers: [] };

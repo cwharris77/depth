@@ -12,6 +12,8 @@
 // are one palette entry each.
 
 import { COWBOYS_DECAL_PATHS as GENERATED_COWBOYS_DECAL_PATHS } from './decal';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import { LEGACY_ROUNDED_COLLAR_PATH } from '../core/shared';
 
@@ -38,11 +40,12 @@ export function star(): PartLayer[] {
 // Steel cage. The Cowboys' shell carries a steel/silver facemask (named sources; the composite
 // reads the bars at #808080, darker than the shell itself). The shared neutral #4b5158 it replaces
 // is a near-black grey and reads differently against the silver shell.
-export const HELMET_SILVER_STAR: UniformPart = {
-  base: 'helmetSilver',
+export const HELMET_SILVER_STAR: UniformPart = expandHelmet('cowboys-silver-star-helmet', {
+  shell: 'helmetSilver',
   facemask: 'steelGrey',
-  layers: star(),
-};
+  decal: placed(star()),
+  number: 'none',
+});
 
 // Plain white pants, shared by both kits. Home reaches this through a white literal in the flat
 // form; away through its primary.

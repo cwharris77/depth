@@ -2,14 +2,16 @@
 // white pants; only the jersey differs.
 
 import { COLTS_DECAL_HORSESHOE_NAVY_PATH, COLTS_DECAL_HORSESHOE_WHITE_PATH } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type UniformPart } from '../core/parts';
 
 // White shell with the navy horseshoe decal and a light speedway-grey cage. The horseshoe is a
 // single band with its seven isolated rivets restored on top in white.
-const HELMET_WHITE_HORSESHOE: UniformPart = {
-  base: 'white',
+const HELMET_WHITE_HORSESHOE: UniformPart = expandHelmet('colts-white-horseshoe-helmet', {
+  shell: 'white',
   facemask: 'speedwayGrey',
-  layers: [
+  decal: placed([
     {
       id: 'colts-helmet-horseshoe-band',
       surface: 'helmet',
@@ -26,8 +28,9 @@ const HELMET_WHITE_HORSESHOE: UniformPart = {
       kind: 'fill',
       fill: 'white',
     },
-  ],
-};
+  ]),
+  number: 'none',
+});
 
 // Plain white pants, shared by both kits.
 const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };

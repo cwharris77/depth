@@ -10,6 +10,8 @@
 // helmet part, same blue, different layers.
 
 import { GIANTS_DECAL_MODERN_PATHS } from './decal';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -47,10 +49,10 @@ export function sleeveStripes(
 // Grey cage. The modern metallic-blue shell carries a grey facemask (named sources; the
 // composite reads the bars at ~#9a9a9a against the blue shell). The shared neutral #4b5158 it
 // replaces is a noticeably darker grey.
-export const HELMET_BLUE_MONOGRAM: UniformPart = {
-  base: 'royal',
+export const HELMET_BLUE_MONOGRAM: UniformPart = expandHelmet('giants-blue-monogram-helmet', {
+  shell: 'royal',
   facemask: 'cageGrey',
-  layers: [
+  decal: placed([
     {
       id: 'giants-decal-monogram',
       surface: 'helmet',
@@ -59,8 +61,9 @@ export const HELMET_BLUE_MONOGRAM: UniformPart = {
       kind: 'fill',
       fill: 'white',
     },
-  ],
-};
+  ]),
+  number: 'none',
+});
 
 // The throwback's bare blue shell — the wordmark is out of scope, so it keeps the shell color and
 // nothing else (this is the second helmet part: same shell, no monogram).
@@ -69,7 +72,12 @@ export const HELMET_BLUE_MONOGRAM: UniformPart = {
 // facemask (giantswire: "navy with a white facemask"; pocketprohelmets notes the 1975 switch from
 // grey to white). The composite cannot cleanly separate a white cage from the surrounding blues, so the
 // named sources are the source of truth here.
-export const HELMET_BLUE_BARE: UniformPart = { base: 'royal', facemask: 'white', layers: [] };
+export const HELMET_BLUE_BARE: UniformPart = expandHelmet('giants-blue-bare-helmet', {
+  shell: 'royal',
+  facemask: 'white',
+  decal: 'none',
+  number: 'none',
+});
 
 // Plain white pants, shared by every kit.
 export const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };

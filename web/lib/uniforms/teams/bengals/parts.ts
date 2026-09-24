@@ -22,6 +22,8 @@ import {
   BENGALS_SLEEVE_STRIPE_PATH_LEFT,
   BENGALS_SLEEVE_STRIPE_PATH_RIGHT,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { fromGeneric, type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -53,11 +55,12 @@ function sleeveStripes(stripe: string): PartLayer[] {
 // background, against the shell's #f23d22. Matches Cincinnati's real black cage — the shared
 // neutral #4b5158 it replaces was a mid-grey mass at luminance ~84 over a shell at ~35, the
 // brightest single element on the helmet.
-const HELMET_ORANGE: UniformPart = {
-  base: 'orange',
+const HELMET_ORANGE: UniformPart = expandHelmet('bengals-orange-helmet', {
+  shell: 'orange',
   facemask: 'black',
-  layers: [fill('generic-helmet-stripe', 'helmet', BENGALS_HELMET_STRIPE_PATH, 'black')],
-};
+  decal: placed([fill('generic-helmet-stripe', 'helmet', BENGALS_HELMET_STRIPE_PATH, 'black')]),
+  number: 'none',
+});
 
 // Home jersey: black body, orange tiger sleeve caps.
 

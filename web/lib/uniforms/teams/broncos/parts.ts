@@ -15,6 +15,8 @@ import {
   BRONCOS_DECAL_HORSE_PATH,
   BRONCOS_DECAL_MANE_PATH,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -49,22 +51,24 @@ function crushDecal(): PartLayer[] {
 //
 // The current-season helmet composite shows a navy facemask on every modern kit; the
 // Orange Crush reference below is the exception and retains its light cage.
-const HELMET_NAVY_HORSE: UniformPart = {
-  base: 'navy',
+const HELMET_NAVY_HORSE: UniformPart = expandHelmet('broncos-navy-horse-helmet', {
+  shell: 'navy',
   facemask: 'navy',
-  layers: horseDecal(),
-};
+  decal: placed(horseDecal()),
+  number: 'none',
+});
 
 // Orange Crush's royal shell with the "D" decal.
 //
 // White cage. Orange Crush's royal shell also wears a white/light cage (the D-era look; the era's
 // shell was royal with a light cage, and the modern navy shell's white mask is the same Riddell
 // SF2BD-SW-SP we set across the league's white-cage teams). The white reads cleanly against royal.
-const HELMET_ROYAL_D: UniformPart = {
-  base: 'royal',
+const HELMET_ROYAL_D: UniformPart = expandHelmet('broncos-royal-d-helmet', {
+  shell: 'royal',
   facemask: 'white',
-  layers: crushDecal(),
-};
+  decal: placed(crushDecal()),
+  number: 'none',
+});
 
 // Navy pants (home).
 // Home pants, orange (the flat home inherits primary = orange).

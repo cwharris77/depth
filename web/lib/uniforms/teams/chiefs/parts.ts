@@ -20,6 +20,8 @@ import {
   CHIEFS_SLEEVE_X_RIGHT,
   CHIEFS_STRIPE_BOUNDS,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -55,10 +57,10 @@ function sleeveStripes(outer: string, middle: string): PartLayer[] {
 // reads #868686 against the red shell / white background, on both archived helmets. Matches the
 // documented light-grey cage (Riddell light-gray facemask); the shared neutral #4b5158 it
 // replaces is a darker grey than the real cage.
-const HELMET_RED_ARROWHEAD: UniformPart = {
-  base: 'red',
+const HELMET_RED_ARROWHEAD: UniformPart = expandHelmet('chiefs-red-arrowhead-helmet', {
+  shell: 'red',
   facemask: 'grey',
-  layers: [
+  decal: placed([
     {
       id: 'chiefs-decal-outline',
       surface: 'helmet' as const,
@@ -93,8 +95,9 @@ const HELMET_RED_ARROWHEAD: UniformPart = {
         fill: 'red',
       })
     ),
-  ],
-};
+  ]),
+  number: 'none',
+});
 
 // Home jersey: red body, white outer sleeve bands with a gold middle, white numerals ringed gold.
 
