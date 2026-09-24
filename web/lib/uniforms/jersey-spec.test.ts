@@ -107,26 +107,63 @@ describe('expandJersey', () => {
     expect(opening(layers('orangeNeck'))).toMatchObject({ fill: 'orangeNeck' });
   });
 
-  it('adds lining, back bar and outline layers to the shared collar only when asked', () => {
-    const ids = (extra: { lining?: string; backBar?: string; outline?: boolean } = {}) =>
+  it('always draws the back bar and adds lining and outline layers only when asked', () => {
+    const layers = (extra: { lining?: string; backBar?: string; outline?: boolean } = {}) =>
       expandJersey('t', {
         body: 'orange',
         collar: { style: 'inset-v', color: 'orange', ...extra },
         number: { fill: 'white', outline: 'navy', outlineWeight: 'thin' },
-      }).layers.map((l) => l.id);
+      }).layers;
+    const ids = (extra?: Parameters<typeof layers>[0]) => layers(extra).map((l) => l.id);
     expect(ids()).toEqual([
       't-neck-opening',
       't-collar-edge',
       't-collar-inset',
       't-collar-placket',
-    ]);
-    expect(ids({ lining: 'navy', backBar: 'navy', outline: true }).slice(4)).toEqual([
       't-collar-back',
+    ]);
+    const back = (extra?: Parameters<typeof layers>[0]) =>
+      layers(extra).find((l) => l.id === 't-collar-back');
+    expect(back()).toMatchObject({ fill: 'orange' });
+    expect(back({ backBar: 'navy' })).toMatchObject({ fill: 'navy' });
+    expect(ids({ lining: 'navy', outline: true }).slice(5)).toEqual([
       't-collar-lining-left',
       't-collar-lining-right',
       't-collar-outline-outer',
       't-collar-outline-inner',
+      't-collar-outline-back',
     ]);
+  });
+
+  it('draws an upright sleeve number on each sleeve only when asked', () => {
+    const layers = (sleeveNumber?: { fill: string }) =>
+      expandJersey('t', {
+        body: 'navy',
+        collar: { style: 'none' },
+        sleeveNumber,
+        number: { fill: 'white', outline: 'navy', outlineWeight: 'none' },
+      }).layers;
+    expect(layers()).toEqual([]);
+    const [left, right] = layers({ fill: 'white' });
+    expect(left).toMatchObject({
+      id: 't-sleeve-number-left',
+      surface: 'sleeve-left',
+      fill: 'white',
+    });
+    expect(right).toMatchObject({ id: 't-sleeve-number-right', surface: 'sleeve-right' });
+    const box = (d: string) => {
+      const n = numbers(d);
+      const xs = n.filter((_, i) => i % 2 === 0);
+      const ys = n.filter((_, i) => i % 2 === 1);
+      return { x0: Math.min(...xs), x1: Math.max(...xs), h: Math.max(...ys) - Math.min(...ys) };
+    };
+    const l = box(left.d);
+    const r = box(right.d);
+    expect(l.x0).toBeGreaterThanOrEqual(30);
+    expect(l.x1).toBeLessThanOrEqual(96);
+    expect(r.x0).toBeGreaterThanOrEqual(492);
+    expect(r.x1).toBeLessThanOrEqual(558);
+    expect(l.h).toBeCloseTo(40, 0);
   });
 
   it('resolves the collar outline to the shared figure grey', () => {

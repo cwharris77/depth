@@ -2,6 +2,7 @@
 // coordinates. expandJersey() owns all geometry, fitted once to the shared mannequin, and emits
 // ordinary UniformPart layers.
 import type { PartLayer, UniformPart } from './parts';
+import { JERSEY_NUMBER_THREE } from '../../jersey-art';
 import { GENERIC_COLLAR_PATH, LEGACY_ROUNDED_COLLAR_PATH, modernInsetVCollar } from './shared';
 
 export type JerseySize = 's' | 'm' | 'l';
@@ -32,6 +33,8 @@ export interface JerseySpec {
   sleeveStripes?: { bands: JerseyBand[]; gap: JerseyGap };
   // A solid band at the sleeve opening.
   cuff?: { color: string; size: JerseySize };
+  // The numeral repeated small and upright on the lower outer face of each sleeve.
+  sleeveNumber?: { fill: string };
   number: { fill: string; outline: string; outlineWeight: 'none' | 'thin' | 'regular' | 'heavy' };
 }
 
@@ -54,6 +57,8 @@ const SHOULDER_STRIPE_TOP = 360; // above the shoulder line; the silhouette clip
 const SHOULDER_STRIPE_BOTTOM = 495;
 const MIRROR_X = SLEEVE_LEFT.outer + SLEEVE_RIGHT.outer;
 const CUFF_BOTTOM = 591;
+const SLEEVE_NUMBER_HEIGHT = 40;
+const SLEEVE_NUMBER_CENTER_Y = 542;
 
 function slantedBand(side: Sleeve, yOuter: number, yInner: number, h: number) {
   return `M${side.outer},${yOuter} L${side.inner},${yInner} L${side.inner},${yInner + h} L${side.outer},${yOuter + h} Z`;
@@ -74,6 +79,26 @@ function shoulderStripe(side: Sleeve, xOuter: number, xInner: number) {
   };
   const [t, b] = [SHOULDER_STRIPE_TOP, SHOULDER_STRIPE_BOTTOM];
   return `M${at(xOuter, t)} L${at(xInner, t)} L${at(xInner, b)} L${at(xOuter, b)} Z`;
+}
+
+// JERSEY_NUMBER_THREE scaled to SLEEVE_NUMBER_HEIGHT and centred on the sleeve. The glyph is
+// absolute M/L/Z only, so every number pair is an x,y point.
+function sleeveNumber(side: Sleeve) {
+  const nums = (JERSEY_NUMBER_THREE.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
+  const xs = nums.filter((_, i) => i % 2 === 0);
+  const ys = nums.filter((_, i) => i % 2 === 1);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const k = SLEEVE_NUMBER_HEIGHT / (y1 - y0);
+  const cx = (side.outer + side.inner) / 2;
+  let i = 0;
+  return JERSEY_NUMBER_THREE.replace(/-?\d+(?:\.\d+)?/g, (n) => {
+    const v = Number(n);
+    const out =
+      i++ % 2 === 0
+        ? cx + (v - (x0 + x1) / 2) * k
+        : SLEEVE_NUMBER_CENTER_Y + (v - (y0 + y1) / 2) * k;
+    return String(Math.round(out * 100) / 100);
+  });
 }
 
 function bothSleeves(id: string, color: string, shape: (side: Sleeve) => string): PartLayer[] {
@@ -185,6 +210,10 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
         slantedBand(side, CUFF_BOTTOM - h, CUFF_BOTTOM - h, h)
       )
     );
+  }
+
+  if (spec.sleeveNumber) {
+    layers.push(...bothSleeves(`${prefix}-sleeve-number`, spec.sleeveNumber.fill, sleeveNumber));
   }
 
   layers.push(...collarLayers(prefix, spec));

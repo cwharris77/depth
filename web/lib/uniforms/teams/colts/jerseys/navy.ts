@@ -11,5 +11,6 @@ export const JERSEY_NAVY: UniformPart = expandJersey('colts-navy', {
     ],
     gap: 'broad',
   },
+  sleeveNumber: { fill: 'white' },
   number: { fill: 'white', outline: 'navy', outlineWeight: 'none' },
 });

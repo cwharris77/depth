@@ -35,7 +35,7 @@ export interface ModernInsetVCollarColors {
   placket: string;
   // A band on the inner half of the collar, stopping short of the point.
   lining?: string;
-  // A bar across the back of the neck, inside the collar.
+  // The bar across the back of the neck, inside the collar. Always drawn; defaults to `edge`.
   backBar?: string;
 }
 
@@ -115,7 +115,7 @@ const round = (n: number) => Math.round(n * 10) / 10;
 const polyline = (pts: Point[]) =>
   pts.map(([x, y], i) => `${i ? 'L' : 'M'}${round(x)},${round(y)}`).join(' ');
 
-function backBarPath(): string {
+function backBarSpan(): { left: number; right: number; bottom: number } {
   const bottom = 383 + COLLAR_BACK_BAR_DEPTH;
   const [edge] = collarOffset(COLLAR_BAND_HALF);
   const xAt = (pts: Point[]) => {
@@ -128,7 +128,17 @@ function backBarPath(): string {
   const mid = Math.floor(edge.length / 2);
   const left = xAt(edge.slice(0, mid + 1));
   const right = xAt(edge.slice(mid).reverse());
-  return `M${round(left)},360 H${round(right)} V${bottom} H${round(left)} Z`;
+  return { left: round(left), right: round(right), bottom };
+}
+
+function backBarPath(): string {
+  const { left, right, bottom } = backBarSpan();
+  return `M${left},360 H${right} V${bottom} H${left} Z`;
+}
+
+function backBarKeyline(): string {
+  const { left, right, bottom } = backBarSpan();
+  return `M${left},${bottom} H${right}`;
 }
 
 export function modernInsetVCollar({
@@ -182,32 +192,32 @@ export function modernInsetVCollar({
       fill: colors.placket,
       d: 'M281,452 L294,459 L307,452 L302,479 L286,479 Z',
     },
-    ...(colors.backBar
-      ? [
-          {
-            id: `${idPrefix}-collar-back`,
-            surface: 'collar',
-            kind: 'fill',
-            clip: true,
-            fill: colors.backBar,
-            d: backBarPath(),
-          } satisfies PartLayer,
-        ]
-      : []),
+    {
+      id: `${idPrefix}-collar-back`,
+      surface: 'collar',
+      kind: 'fill',
+      clip: true,
+      fill: colors.backBar ?? colors.edge,
+      d: backBarPath(),
+    },
     ...(lining
       ? collarOffset(COLLAR_BAND_HALF / 2, COLLAR_LINING_REACH).map((side, i) =>
           stroke(`collar-lining-${i ? 'right' : 'left'}`, lining, COLLAR_BAND_HALF, polyline(side))
         )
       : []),
     ...(outline
-      ? [-COLLAR_BAND_HALF, COLLAR_BAND_HALF].map((inset, i) =>
-          stroke(
-            `collar-outline-${i ? 'inner' : 'outer'}`,
-            OUTLINE_PAINT,
-            COLLAR_OUTLINE_WIDTH,
-            polyline(collarOffset(inset)[0])
+      ? [-COLLAR_BAND_HALF, COLLAR_BAND_HALF]
+          .map((inset, i) =>
+            stroke(
+              `collar-outline-${i ? 'inner' : 'outer'}`,
+              OUTLINE_PAINT,
+              COLLAR_OUTLINE_WIDTH,
+              polyline(collarOffset(inset)[0])
+            )
           )
-        )
+          .concat(
+            stroke('collar-outline-back', OUTLINE_PAINT, COLLAR_OUTLINE_WIDTH, backBarKeyline())
+          )
       : []),
   ];
 }
