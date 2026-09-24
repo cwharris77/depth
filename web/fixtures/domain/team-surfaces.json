@@ -514,17 +514,17 @@
   {
     "id": "seahawks-1976-throwback-1976",
     "colors": {
-      "primary": "#003087",
-      "secondary": "#046A38",
-      "accent": "#8A8D8F"
+      "primary": "#0248B3",
+      "secondary": "#0E8329",
+      "accent": "#A7B0BA"
     },
     "expected": {
-      "fill": "#003087",
-      "ring": "#046A38",
-      "mark": "#8A8D8F",
+      "fill": "#0248B3",
+      "ring": "#0E8329",
+      "mark": "#0E8329",
       "textOnFill": "#ffffff",
-      "numeralFill": "#003087",
-      "numeralStroke": "#FFFFFF"
+      "numeralFill": "#0248B3",
+      "numeralStroke": "#0E8329"
     }
   },
   {

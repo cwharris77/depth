@@ -233,19 +233,33 @@ describe('team uniform definitions', () => {
     }
   );
 
-  it('gives the 1976 throwback a silver shell and era bands instead of the modern decal', () => {
+  it('gives the throwback a silver shell, the original hawk, and royal socks', () => {
     const definition = getTeamUniformDefinition('seahawks');
     const model = resolveUniformModel(definition, '1976-throwback', {
       ...SEAHAWKS_COLORS,
-      primary: '#003087',
-      secondary: '#046A38',
-      accent: '#8A8D8F',
+      primary: '#0248B3',
+      secondary: '#0E8329',
+      accent: '#A7B0BA',
     });
 
-    expect(model).toMatchObject({ helmetColor: '#8A8D8F', pantsColor: '#8A8D8F' });
-    // That era used an entirely different mark, so the traced modern hawk must not leak onto it.
+    expect(model).toMatchObject({
+      helmetColor: '#A7B0BA',
+      jerseyColor: '#0248B3',
+      pantsColor: '#DBDDDF',
+      facemaskColor: '#0248B3',
+    });
+    // That era used an entirely different mark, so the modern hawk must not leak onto it.
     expect(model.layers.some((layer) => layer.id.startsWith('seahawks-helmet-hawk'))).toBe(false);
-    expect(model.layers.some((layer) => layer.id === 'seahawks-1976-helmet-royal')).toBe(true);
+    expect(
+      model.layers.find((layer) => layer.id === 'seahawks-throwback-hawk-royal')
+    ).toMatchObject({ surface: 'helmet', fill: '#0248B3' });
+    expect(model.layers.find((layer) => layer.id === 'seahawks-throwback-sock-left')).toMatchObject(
+      {
+        surface: 'leg-left',
+        fill: '#0248B3',
+      }
+    );
+    expect(model.layers.some((layer) => layer.id.startsWith('generic-'))).toBe(false);
   });
 
   it('keeps original and modern Eagles Kelly Green collars distinct', () => {
