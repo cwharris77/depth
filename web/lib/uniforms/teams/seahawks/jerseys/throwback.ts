@@ -58,7 +58,7 @@ export const SEAHAWKS_JERSEY_THROWBACK: UniformPart = {
     ...modernInsetVCollar({
       idPrefix: 'seahawks-throwback',
       colors: {
-        body: 'throwbackNeck',
+        interior: 'throwbackNeck',
         edge: 'white',
         inset: 'throwbackGreen',
         placket: 'throwbackRoyal',

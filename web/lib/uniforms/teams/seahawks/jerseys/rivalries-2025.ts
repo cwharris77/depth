@@ -61,7 +61,7 @@ export const SEAHAWKS_RIVALRIES_JERSEY: UniformPart = {
     ...modernInsetVCollar({
       idPrefix: 'seahawks-rivalries',
       colors: {
-        body: 'rivalriesJerseyNeck',
+        interior: 'rivalriesJerseyNeck',
         edge: 'rivalriesJerseyGrey',
         inset: 'rivalriesJerseyNavy',
         placket: 'rivalriesJerseyGrey',

@@ -10,6 +10,7 @@ const spec = expandJersey('broncos-orange', {
     color: 'orange',
     inside: 'orangeNeck',
     lining: 'navy',
+    outline: true,
     backBar: 'navy',
   },
   shoulderPanel: {

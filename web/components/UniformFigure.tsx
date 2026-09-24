@@ -10,6 +10,7 @@ import {
   type HelmetArtPath,
 } from '@/lib/uniforms/helmet-art';
 import { shadeFor } from '@/lib/uniforms/helmet-shading';
+import { FIGURE_OUTLINE } from '@/lib/uniforms/teams/core/shared';
 import { JERSEY_NUMBER_THREE } from '@/lib/uniforms/jersey-art';
 import { resolveColor, resolveUniformModel, type ResolvedUniformStyle } from '@/lib/uniforms/model';
 import type { TeamUniformDefinition, UniformSurface } from '@/lib/uniforms/teams/core/types';
@@ -34,8 +35,6 @@ export type UniformArtVariant = Extract<UniformVariant, 'jersey' | 'full'>;
 // pant stripes and the number outline; accent = shoulder yoke + helmet stripe; number fill =
 // readableTextOn(primary) so it stays legible on any body color. Helmet shell and facemask paths
 // re-light their model surface color; only physical hardware keeps the source art's neutral fills.
-
-const OUTLINE = '#8a9096';
 
 // Shared mannequin paths (template coordinate space; viewBox origin 20,45).
 const GEO = {
@@ -370,7 +369,7 @@ export default function UniformFigure({
           </>
         )}
       </defs>
-      <g stroke={OUTLINE} strokeWidth={4} strokeLinejoin="round" strokeLinecap="round">
+      <g stroke={FIGURE_OUTLINE} strokeWidth={4} strokeLinejoin="round" strokeLinecap="round">
         {hasPants && (
           <>
             <Geo part="pants" shared={sharedDefs} fill={model.pantsColor} />

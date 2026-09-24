@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "2a1d4821b5029f1f7a32706501ccc8151bb76388b6b6b22046a45aef81c682b9",
-  "revision": "e7a0f8eb9a0ed8ea",
+  "sourceDigest": "0b860907fe6594863cd5888b4e3b1a3d4f6af34fd43d38a7321b214dd4e82f58",
+  "revision": "2520124793dc457d",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -201,45 +201,45 @@
     {
       "catalogId": "broncos-away-2024",
       "constructionKey": "away",
-      "revision": "4d4523cd8285464f",
+      "revision": "52d237e4583d0dce",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-away-2024.webp",
-          "sha256": "e04acacbda6d01bf838c9dfc49e76f7238cbe67b9a3bf207f4115d63e94f80cf"
+          "sha256": "e6cd87a6708ce5b65b2c63b9379a87a75c00e5670c4632c20eda12954bbf739a"
         },
         "full": {
           "path": "/uniforms/broncos-away-2024-full.webp",
-          "sha256": "6158b6f89c661a65d6bf8707ee94034d4a48ecdae11d45fb6824d44b1fc52076"
+          "sha256": "92f99548afb097aa47e9894ff7db593de0e482c6427098f95f1552514b39c074"
         }
       }
     },
     {
       "catalogId": "broncos-home-2024",
       "constructionKey": "home",
-      "revision": "e488365eab69131f",
+      "revision": "6ee483bf2da63383",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-home-2024.webp",
-          "sha256": "a4e6fff0c4b4a8f730860997c87de5460645c84cc0ddfee9c9655f965c464b38"
+          "sha256": "0e89f336f055c8a5d3d0cb1944d835146acf2cefc8f2a2be74523f51a995e097"
         },
         "full": {
           "path": "/uniforms/broncos-home-2024-full.webp",
-          "sha256": "855ebc9f6e8faa4ae533e88fc4cc69f40a80ab74738b0a672af59c71de987afc"
+          "sha256": "1282e87267220c11a976705876002805c65173e1ab4263e96794baee8e255f3e"
         }
       }
     },
     {
       "catalogId": "broncos-orange-alt-2024",
       "constructionKey": "orange-alt",
-      "revision": "1dcd95ee599a1461",
+      "revision": "4dbf311c1052505c",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-orange-alt-2024.webp",
-          "sha256": "a4e6fff0c4b4a8f730860997c87de5460645c84cc0ddfee9c9655f965c464b38"
+          "sha256": "0e89f336f055c8a5d3d0cb1944d835146acf2cefc8f2a2be74523f51a995e097"
         },
         "full": {
           "path": "/uniforms/broncos-orange-alt-2024-full.webp",
-          "sha256": "441e6c9259973671dc6e05a15f0b50092f70492a1c4de4fa4a51a97615bc5f71"
+          "sha256": "720d67e7eca0ed2f9263885379771e5db964341e00a38e3da3b0dfcc6f2f7a6d"
         }
       }
     },

@@ -8,6 +8,7 @@
 //
 // This module is pure so the converter and the catalog guard can share it and so the rules
 // are unit-testable without running the outliner or sharp.
+import { OUTLINE_PAINT } from './shared';
 import type { UniformSurface } from './types';
 
 export interface ValidationIssue {
@@ -98,15 +99,15 @@ export function isValidPathData(value: unknown): boolean {
   return sawMove;
 }
 
-// `fill`/`stroke` may be a palette key, a pattern reference, or the one runtime-resolved
-// pseudo-color. Anything else would fall through to a default at render time.
+// `fill`/`stroke` may be a palette key, a pattern reference, the runtime-resolved pseudo-color,
+// or the shared outline grey. Anything else would fall through to a default at render time.
 function isResolvablePaint(
   ref: unknown,
   paletteKeys: ReadonlySet<string>,
   patternKeys: ReadonlySet<string>
 ): boolean {
   if (typeof ref !== 'string' || ref.length === 0) return false;
-  if (ref === 'readable-on-body') return true;
+  if (ref === 'readable-on-body' || ref === OUTLINE_PAINT) return true;
   if (ref.startsWith('pattern:')) return patternKeys.has(ref.slice('pattern:'.length));
   return paletteKeys.has(ref);
 }

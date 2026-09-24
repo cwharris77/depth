@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { expandJersey } from '@/lib/uniforms/teams/core/jersey-spec';
+import { compileParts } from '@/lib/uniforms/teams/core/parts';
+import { FIGURE_OUTLINE } from '@/lib/uniforms/teams/core/shared';
 
 const numbers = (d: string) => (d.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
 
@@ -68,17 +70,44 @@ describe('expandJersey', () => {
     expect(opening(layers('orangeNeck'))).toMatchObject({ fill: 'orangeNeck' });
   });
 
-  it('adds the inset-V lining and back bar above the shared collar only when given', () => {
-    const ids = (lining?: string, backBar?: string) =>
+  it('adds lining, back bar and outline layers to the shared collar only when asked', () => {
+    const ids = (extra: { lining?: string; backBar?: string; outline?: boolean } = {}) =>
       expandJersey('t', {
         body: 'orange',
-        collar: { style: 'inset-v', color: 'orange', lining, backBar },
+        collar: { style: 'inset-v', color: 'orange', ...extra },
         number: { fill: 'white', outline: 'navy', outlineWeight: 'thin' },
       }).layers.map((l) => l.id);
-    expect(ids()).not.toContain('t-collar-lining');
-    expect(ids()).not.toContain('t-collar-back');
-    const withTrim = ids('navy', 'navy');
-    expect(withTrim.slice(-2)).toEqual(['t-collar-lining', 't-collar-back']);
+    expect(ids()).toEqual([
+      't-neck-opening',
+      't-collar-edge',
+      't-collar-inset',
+      't-collar-placket',
+    ]);
+    expect(ids({ lining: 'navy', backBar: 'navy', outline: true }).slice(4)).toEqual([
+      't-collar-back',
+      't-collar-lining-left',
+      't-collar-lining-right',
+      't-collar-outline-outer',
+      't-collar-outline-inner',
+    ]);
+  });
+
+  it('resolves the collar outline to the shared figure grey', () => {
+    const def = compileParts({
+      teamId: 't',
+      palette: { orange: '#FB4F14', white: '#FFFFFF', navy: '#002244' },
+      helmets: { h: { base: 'navy', layers: [] } },
+      jerseys: {
+        j: expandJersey('t', {
+          body: 'orange',
+          collar: { style: 'inset-v', color: 'orange', outline: true },
+          number: { fill: 'white', outline: 'navy', outlineWeight: 'thin' },
+        }),
+      },
+      pants: { p: { base: 'white', layers: [] } },
+      kits: { home: { helmet: 'h', jersey: 'j', pants: 'p' } },
+    });
+    expect(JSON.stringify(def)).toContain(FIGURE_OUTLINE);
   });
 
   it('draws no collar layers for style none', () => {
