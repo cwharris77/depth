@@ -274,14 +274,3 @@ export const SEAHAWKS_PANTS = {
     ],
   },
 };
-export const SEAHAWKS_KITS = {
-  home: { helmet: 'navy-hawk', jersey: 'navy', pants: 'navy' },
-  away: { helmet: 'navy-hawk', jersey: 'white', pants: 'white-plain' },
-  'color-rush': { helmet: 'navy-hawk', jersey: 'action-green', pants: 'action-green' },
-  '1976-throwback': { helmet: 'throwback-silver', jersey: 'throwback', pants: 'throwback' },
-  'rivalries-2025': {
-    helmet: 'teal-hawk',
-    jersey: 'rivalries-silver',
-    pants: 'rivalries-silver',
-  },
-};
