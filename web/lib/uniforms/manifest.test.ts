@@ -6,6 +6,7 @@ import {
   ARTIFACT_MANIFEST_RELATIVE_PATH,
   ARTIFACT_MANIFEST_PUBLIC_PATH,
   WEB_ROOT,
+  artifactPath,
   buildArtifactManifest,
   computeSourceDigest,
   diffArtifactManifest,
@@ -13,6 +14,9 @@ import {
   type ArtifactManifest,
   type ManifestRowInput,
 } from '@/lib/uniforms/manifest';
+import { buildRowsFromCatalog, combinationRenders } from '@/scripts/gen-uniform-thumbs.mts';
+import { getTeamCatalog } from '@/lib/uniforms/teams/catalogs';
+import type { TeamCatalog } from '@/lib/uniforms/teams/core/catalog';
 
 // The committed manifest is the publication record for the committed rasters.
 // These tests pin the two failures the manifest exists to catch — a raster whose bytes moved
@@ -38,6 +42,15 @@ function rowInputsFromDisk(): ManifestRowInput[] {
         sha256: sha256Hex(read(row.artifacts.jersey.path)),
       },
       full: { path: row.artifacts.full.path, sha256: sha256Hex(read(row.artifacts.full.path)) },
+      ...(row.combinations?.length
+        ? {
+            combinations: row.combinations.map((c) => ({
+              key: c.key,
+              label: c.label,
+              full: { path: c.full.path, sha256: sha256Hex(read(c.full.path)) },
+            })),
+          }
+        : {}),
     };
   });
 }
@@ -60,7 +73,11 @@ describe('committed artifact manifest', () => {
       .filter((name) => name.endsWith('.webp'))
       .sort();
     const declared = committed.rows
-      .flatMap((row) => [basename(row.artifacts.jersey.path), basename(row.artifacts.full.path)])
+      .flatMap((row) => [
+        basename(row.artifacts.jersey.path),
+        basename(row.artifacts.full.path),
+        ...(row.combinations?.map((c) => basename(c.full.path)) ?? []),
+      ])
       .sort();
     expect(onDisk).toEqual(declared);
   });
@@ -70,7 +87,11 @@ describe('committed artifact manifest', () => {
     for (const row of committed.rows) {
       expect(row.constructionKey.trim()).not.toBe('');
       expect(row.revision).toMatch(/^[0-9a-f]{16}$/);
-      for (const artifact of [row.artifacts.jersey, row.artifacts.full]) {
+      for (const artifact of [
+        row.artifacts.jersey,
+        row.artifacts.full,
+        ...(row.combinations?.map((c) => c.full) ?? []),
+      ]) {
         expect(artifact.path).toMatch(/^\/uniforms\/[a-z0-9-]+\.webp$/);
         expect(artifact.path).not.toMatch(/^https?:\/\//);
         expect(artifact.sha256).toMatch(/^[0-9a-f]{64}$/);
@@ -112,6 +133,133 @@ describe('artifact skew detection', () => {
     expect(
       diffArtifactManifest(stale, actual).some((line) => line.startsWith('sourceDigest:'))
     ).toBe(true);
+  });
+});
+
+describe('combinations', () => {
+  const art = (name: string) => ({ path: `/uniforms/${name}`, sha256: sha256Hex(name) });
+  const base: ManifestRowInput = {
+    catalogId: 'seahawks-home-2012',
+    constructionKey: 'home',
+    jersey: art('seahawks-home-2012.webp'),
+    full: art('seahawks-home-2012-full.webp'),
+  };
+  const withCombo: ManifestRowInput = {
+    ...base,
+    combinations: [
+      {
+        key: 'white-pants',
+        label: 'White pants',
+        full: art('seahawks-home-2012--white-pants-full.webp'),
+      },
+    ],
+  };
+
+  it('omits the field when a row has no extra combinations', () => {
+    const [row] = buildArtifactManifest('digest', [base]).rows;
+    expect(row).not.toHaveProperty('combinations');
+    expect(
+      buildArtifactManifest('digest', [{ ...base, combinations: [] }]).rows[0]
+    ).not.toHaveProperty('combinations');
+  });
+
+  it('lists extra combinations without moving the row revision', () => {
+    const [plain] = buildArtifactManifest('digest', [base]).rows;
+    const [combo] = buildArtifactManifest('digest', [withCombo]).rows;
+    expect(combo.combinations).toEqual(withCombo.combinations);
+    expect(combo.revision).toBe(plain.revision);
+  });
+
+  it('flags a stale, missing or unexpected combination artifact', () => {
+    const actual = buildArtifactManifest('digest', [withCombo]);
+    const stale = buildArtifactManifest('digest', [
+      {
+        ...withCombo,
+        combinations: [
+          {
+            ...withCombo.combinations![0],
+            full: { ...withCombo.combinations![0].full, sha256: sha256Hex('x') },
+          },
+        ],
+      },
+    ]);
+    expect(diffArtifactManifest(stale, actual)).toContain(
+      'seahawks-home-2012: combination white-pants sha256 changed (manifest is stale)'
+    );
+    expect(diffArtifactManifest(buildArtifactManifest('digest', [base]), actual)).toContain(
+      'seahawks-home-2012: combination white-pants has no manifest entry'
+    );
+    expect(diffArtifactManifest(actual, buildArtifactManifest('digest', [base]))).toContain(
+      'seahawks-home-2012: combination white-pants has no committed raster'
+    );
+  });
+
+  it('flags a combination whose label changed', () => {
+    const actual = buildArtifactManifest('digest', [withCombo]);
+    const relabeled = buildArtifactManifest('digest', [
+      {
+        ...withCombo,
+        combinations: [{ ...withCombo.combinations![0], label: 'White pants alt' }],
+      },
+    ]);
+    expect(diffArtifactManifest(relabeled, actual)).toContain(
+      'seahawks-home-2012: combination white-pants label White pants alt != White pants'
+    );
+  });
+});
+
+describe('combinationRenders', () => {
+  it('yields a render for each extra combination in a design', () => {
+    const fixtureCatalog: TeamCatalog = {
+      teamId: 'seahawks',
+      designs: [
+        {
+          slug: 'home',
+          name: 'Home',
+          kind: 'home',
+          jersey: 'navy',
+          colors: { primary: '#002244', secondary: '#69BE28', accent: '#A5ACAF' },
+          legacyAccent: { uiAccent: '#69BE28', onAccent: '#0a0e1a' },
+          periods: [{ from: 2012 }],
+          combinations: [
+            { key: 'standard', label: 'Standard', helmet: 'navy-hawk', pants: 'navy' },
+            { key: 'white-pants', label: 'White pants', helmet: 'navy-hawk', pants: 'white' },
+          ],
+        },
+      ],
+    };
+    const rows = [{ id: 'seahawks-home-2012', teamId: 'seahawks', slug: 'home' }];
+    expect(
+      combinationRenders(rows, (teamId) => (teamId === 'seahawks' ? fixtureCatalog : undefined))
+    ).toEqual([
+      {
+        rowId: 'seahawks-home-2012',
+        key: 'white-pants',
+        label: 'White pants',
+        constructionKey: 'home--white-pants',
+        fileName: 'seahawks-home-2012--white-pants-full.webp',
+      },
+    ]);
+  });
+
+  it('matches the combinations committed in the manifest for every row', () => {
+    const rendered = combinationRenders(buildRowsFromCatalog(), getTeamCatalog).map((render) => ({
+      rowId: render.rowId,
+      key: render.key,
+      label: render.label,
+      path: artifactPath(render.fileName),
+    }));
+    for (const row of committed.rows) {
+      const committedCombinations = (row.combinations ?? []).map((c) => ({
+        key: c.key,
+        label: c.label,
+        path: c.full.path,
+      }));
+      const renderedForRow = rendered
+        .filter((render) => render.rowId === row.catalogId)
+        .map(({ key, label, path }) => ({ key, label, path }));
+      expect(renderedForRow).toEqual(committedCombinations);
+    }
   });
 });
 

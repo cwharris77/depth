@@ -1,4 +1,6 @@
 import type { JerseyColors, UniformKind } from '../types';
+import { catalogRow } from './teams/core/catalog';
+import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
 // Hand-curated uniform archive. This file is the sole jersey-color authority. The seed generator
 // turns these rows into an append-only SQL migration. APPEND-ONLY — never delete a kit; retire it
@@ -20,6 +22,9 @@ import type { JerseyColors, UniformKind } from '../types';
 // year_start/year_end describe the kit's primary era; is_current marks whether it's in a
 // team's active rotation today. The database invariant requires isCurrent exactly when
 // yearEnd is null.
+//
+// A migrated team's rows come from its catalog (teams/<team>/catalog.ts) via catalogRow, kept at
+// their original positions so the generated seed is unchanged.
 
 export interface UniformSeed {
   teamId: string;
@@ -502,41 +507,9 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#B3995D',
     },
   },
-  {
-    teamId: 'seahawks',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2012,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#002244',
-      secondary: '#69BE28',
-      accent: '#A5ACAF',
-    },
-  },
+  catalogRow(SEAHAWKS_CATALOG, 'home'),
 
-  // Seahawks royal/green/silver throwback — the 1976–2001 look, reintroduced as an active
-  // throwback in 2023, so is_current: true despite the historical era. No published codes exist
-  // for the modern remake; hexes are the reference sheet's flat fills. uiAccent brightens the
-  // green so it reads on the dark UI.
-  {
-    teamId: 'seahawks',
-    slug: '1976-throwback',
-    constructionKey: '1976-throwback',
-    kind: 'throwback',
-    name: 'Throwback',
-    yearStart: 1976,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#0248B3',
-      secondary: '#0E8329',
-      accent: '#A7B0BA',
-    },
-  },
+  catalogRow(SEAHAWKS_CATALOG, '1976-throwback'),
 
   // Buccaneers 1976–1996 "Creamsicle" — reintroduced as an active alternate in 2023, so
   // is_current: true despite the historical era. Orange already reads on dark, so
@@ -615,21 +588,7 @@ export const UNIFORMS: UniformSeed[] = [
   // rest follow the curation cadence. primary #FFFFFF = white base -- which is why the mark
   // resolver asks for secondary/accent before primary: a body-first rule would paint every
   // away kit's chrome white. See lib/utils/team-surfaces.ts.
-  {
-    teamId: 'seahawks',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2012,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#002244',
-      accent: '#69BE28',
-    },
-  },
+  catalogRow(SEAHAWKS_CATALOG, 'away'),
   {
     teamId: 'bills',
     slug: 'away',
@@ -1385,43 +1344,8 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#AA0000',
     },
   },
-  // Seahawks 2025 Rivalries. primary is the wolf-grey body the jersey and pants share; accent is
-  // the muted pine of the print, not action green. uiAccent is the grey body because both the
-  // pine (2.41) and the kit's teal shell (1.57) fail AA against the dark UI background — see the
-  // contrast tests in lib/__tests__/uniforms.test.ts.
-  {
-    teamId: 'seahawks',
-    slug: 'rivalries-2025',
-    constructionKey: 'rivalries-2025',
-    kind: 'alternate',
-    name: 'Rivalries',
-    yearStart: 2025,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#AFB3B5',
-      secondary: '#002244',
-      accent: '#29594C',
-    },
-  },
-  // Seahawks Action Green Color Rush, first worn in 2016 and still in rotation (last worn 2024).
-  // The fabric is a brighter lime than the brand's Action Green and has no published code, so
-  // primary is the reference sheet's flat fill; navy is the band, numerals and pant stripe.
-  {
-    teamId: 'seahawks',
-    slug: 'color-rush',
-    constructionKey: 'color-rush',
-    kind: 'color-rush',
-    name: 'Color Rush',
-    yearStart: 2016,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#B6FF3E',
-      secondary: '#002244',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(SEAHAWKS_CATALOG, 'rivalries-2025'),
+  catalogRow(SEAHAWKS_CATALOG, 'color-rush'),
   // Wave 4: currently-worn alternates & throwbacks (heritage-derived; Browns '46 and
   // Packers Winter Warning verified from reveals). uiAccent reuses each team's live pair.
   // Dolphins 1972 perfect-season aqua throwback. Heritage aqua/orange; throwback aqua reads slightly lighter in person (no published hex).

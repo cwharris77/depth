@@ -50,6 +50,7 @@ describe('uniform thumbnail catalog rows', () => {
       UNIFORMS.map((uniform) => ({
         id: `${uniform.teamId}-${uniform.slug}-${uniform.yearStart}`,
         teamId: uniform.teamId,
+        slug: uniform.slug,
         constructionKey: uniform.constructionKey,
         colors: uniform.colors,
       })).sort((left, right) => left.id.localeCompare(right.id))

@@ -1,32 +1,12 @@
 import type { TeamColors } from '../types';
+import { catalogAccents } from './teams/core/catalog';
+import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
 export type LegacyAccentPair = Pick<TeamColors, 'uiAccent' | 'onAccent'>;
 
-// Legacy compatibility values for `uniforms.ui_accent` / `uniforms.on_accent`. These are
-// NOT team colors and must never be rendered by this codebase — `lib/utils/team-surfaces.ts`
-// resolves every surface from the kit's real jersey colors instead.
-//
-// They exist because iOS builds already on devices name `ui_accent, on_accent` in their
-// PostgREST select strings and decode them into non-optional Strings. Dropping either column
-// 400s the team page, team list and uniform archive for every installed copy; nulling either
-// fails decode. So the columns stay populated, and `seed-sql.ts` reads this map to fill them.
-//
-// FROZEN. Do not re-derive, re-curate, or "fix" these values:
-//   - Shipped builds paint ui_accent as a FOREGROUND on the dark app ground, so each value
-//     has to stay legible there rather than truthful to the kit. PR #590 set 14 of them to
-//     the real (dark) team color and made those teams unreadable on device; #591 restored
-//     them. 63 of the 105 are invented hues for that reason — that is now correct, because
-//     the column no longer claims to be the team's color, only what old clients should paint.
-//   - on_accent is likewise frozen rather than derived from readableTextOn(ui_accent):
-//     deriving it would rewrite 91 rows from #0a0e1a to #15161a (the app ground moved) for
-//     no benefit, and would break the byte-identical-migration check that proves this
-//     refactor is a no-op for shipped builds.
-//
-// Retirement is blocked on an armed forced-update gate plus pre-gate installs draining.
-//
-// A new kit needs an entry here: use `teamRing()` from lib/utils/team-surfaces.ts for
-// uiAccent (legible by construction) and `readableTextOn()` for onAccent.
-export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
+// Hand-curated entries for teams that have not converted to a catalog yet. A converted team's
+// entries move out of here into its `teams/<team>/catalog.ts` instead.
+export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'ravens-home-1996': { uiAccent: '#9E7C0C', onAccent: '#0a0e1a' },
   'bengals-home-2021': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'browns-home-2020': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
@@ -58,13 +38,10 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   'cardinals-home-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
   'rams-home-2020': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
   '49ers-home-2022': { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
-  'seahawks-home-2012': { uiAccent: '#69BE28', onAccent: '#0a0e1a' },
-  'seahawks-1976-throwback-1976': { uiAccent: '#3DB06A', onAccent: '#0a0e1a' },
   'buccaneers-creamsicle-1976': { uiAccent: '#FF8200', onAccent: '#0a0e1a' },
   'eagles-kelly-green-1987': { uiAccent: '#2BB673', onAccent: '#0a0e1a' },
   'eagles-kelly-green-modern-2023': { uiAccent: '#2BB673', onAccent: '#0a0e1a' },
   'broncos-orange-crush-1968': { uiAccent: '#FA4616', onAccent: '#0a0e1a' },
-  'seahawks-away-2012': { uiAccent: '#69BE28', onAccent: '#0a0e1a' },
   'bills-away-2011': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'dolphins-away-2018': { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
   'patriots-away-2020': { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
@@ -113,7 +90,6 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   'cardinals-rivalries-2025-2025': { uiAccent: '#EE6B3D', onAccent: '#0a0e1a' },
   'rams-rivalries-2025-2025': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
   '49ers-rivalries-2025-2025': { uiAccent: '#B3995D', onAccent: '#0a0e1a' },
-  'seahawks-rivalries-2025-2025': { uiAccent: '#AFB3B5', onAccent: '#0a0e1a' },
   'dolphins-1972-throwback-1966': { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
   'patriots-pat-patriot-1961': { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
   'jets-black-alt-2024': { uiAccent: '#4CC38A', onAccent: '#0a0e1a' },
@@ -135,5 +111,33 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   'panthers-black-alt-2012': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'cardinals-black-alt-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
   'rams-bone-2020': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
-  'seahawks-color-rush-2016': { uiAccent: '#B6FF3E', onAccent: '#15161a' },
+};
+
+// Legacy compatibility values for `uniforms.ui_accent` / `uniforms.on_accent`. These are
+// NOT team colors and must never be rendered by this codebase — `lib/utils/team-surfaces.ts`
+// resolves every surface from the kit's real jersey colors instead.
+//
+// They exist because iOS builds already on devices name `ui_accent, on_accent` in their
+// PostgREST select strings and decode them into non-optional Strings. Dropping either column
+// 400s the team page, team list and uniform archive for every installed copy; nulling either
+// fails decode. So the columns stay populated, and `seed-sql.ts` reads this map to fill them.
+//
+// FROZEN. Do not re-derive, re-curate, or "fix" these values:
+//   - Shipped builds paint ui_accent as a FOREGROUND on the dark app ground, so each value
+//     has to stay legible there rather than truthful to the kit. PR #590 set 14 of them to
+//     the real (dark) team color and made those teams unreadable on device; #591 restored
+//     them. 63 of the 105 are invented hues for that reason — that is now correct, because
+//     the column no longer claims to be the team's color, only what old clients should paint.
+//   - on_accent is likewise frozen rather than derived from readableTextOn(ui_accent):
+//     deriving it would rewrite 91 rows from #0a0e1a to #15161a (the app ground moved) for
+//     no benefit, and would break the byte-identical-migration check that proves this
+//     refactor is a no-op for shipped builds.
+//
+// Retirement is blocked on an armed forced-update gate plus pre-gate installs draining.
+//
+// A new kit needs an entry here: use `teamRing()` from lib/utils/team-surfaces.ts for
+// uiAccent (legible by construction) and `readableTextOn()` for onAccent.
+export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
+  ...HAND_ACCENTS,
+  ...catalogAccents(SEAHAWKS_CATALOG),
 };

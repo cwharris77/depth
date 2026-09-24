@@ -32,9 +32,18 @@ import {
   serializeArtifactManifest,
   sha256Hex,
   type ArtifactRecord,
+  type CombinationArtifact,
   type ManifestRowInput,
 } from '@/lib/uniforms/manifest';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
+import { getAllTeamCatalogs, getTeamCatalog } from '@/lib/uniforms/teams/catalogs';
+import {
+  combinationArtifactName,
+  combinationKitKey,
+  extraCombinations,
+  validateCatalog,
+  type TeamCatalog,
+} from '@/lib/uniforms/teams/core/catalog';
 import { findUnresolvedConstructions } from '@/lib/uniforms/teams/core/validate';
 import type { JerseyColors } from '@/lib/types';
 import { assertRasterToolchain } from './uniform-draw/toolchain-preflight.mts';
@@ -53,6 +62,7 @@ const VARIANTS = {
 type UniformRow = {
   id: string;
   teamId: string;
+  slug: string;
   constructionKey: string;
   colors: JerseyColors;
 };
@@ -62,9 +72,36 @@ export function buildRowsFromCatalog(): UniformRow[] {
   return UNIFORMS.map((uniform) => ({
     id: `${uniform.teamId}-${uniform.slug}-${uniform.yearStart}`,
     teamId: uniform.teamId,
+    slug: uniform.slug,
     constructionKey: uniform.constructionKey,
     colors: uniform.colors,
   })).sort((a, b) => a.id.localeCompare(b.id));
+}
+
+export interface CombinationRender {
+  rowId: string;
+  key: string;
+  label: string;
+  constructionKey: string;
+  fileName: string;
+}
+
+// Extra verified combinations of each catalogued row, rendered as full figures only.
+export function combinationRenders(
+  rows: ReadonlyArray<Pick<UniformRow, 'id' | 'teamId' | 'slug'>>,
+  catalogFor: (teamId: string) => TeamCatalog | undefined
+): CombinationRender[] {
+  return rows.flatMap((row) => {
+    const design = catalogFor(row.teamId)?.designs.find((entry) => entry.slug === row.slug);
+    if (!design) return [];
+    return extraCombinations(design).map((combination) => ({
+      rowId: row.id,
+      key: combination.key,
+      label: combination.label,
+      constructionKey: combinationKitKey(design, combination),
+      fileName: combinationArtifactName(row.id, combination.key),
+    }));
+  });
 }
 
 // Renders and commits each raster, returning the hashed inputs the manifest needs. The WebP
@@ -72,6 +109,7 @@ export function buildRowsFromCatalog(): UniformRow[] {
 // depend on the filesystem rather than on what sharp produced.
 async function writeRasters(rows: UniformRow[]): Promise<ManifestRowInput[]> {
   mkdirSync(OUT_DIR, { recursive: true });
+  const combinations = combinationRenders(rows, getTeamCatalog);
   const inputs: ManifestRowInput[] = [];
   for (const row of rows) {
     const artifacts = {} as Record<keyof typeof VARIANTS, ArtifactRecord>;
@@ -94,11 +132,31 @@ async function writeRasters(rows: UniformRow[]): Promise<ManifestRowInput[]> {
       };
       console.log(`wrote ${outPath}`);
     }
+    const rowCombinations: CombinationArtifact[] = [];
+    for (const combination of combinations.filter((c) => c.rowId === row.id)) {
+      const svg = renderUniformThumbSVG(
+        row.colors,
+        row.id,
+        getTeamUniformDefinition(row.teamId),
+        'full',
+        combination.constructionKey
+      );
+      const outPath = join(OUT_DIR, combination.fileName);
+      const raster = await sharp(Buffer.from(svg)).webp({ quality: 90 }).toBuffer();
+      writeFileSync(outPath, raster);
+      rowCombinations.push({
+        key: combination.key,
+        label: combination.label,
+        full: { path: artifactPath(combination.fileName), sha256: sha256Hex(raster) },
+      });
+      console.log(`wrote ${outPath}`);
+    }
     inputs.push({
       catalogId: row.id,
       constructionKey: row.constructionKey,
       jersey: artifacts.jersey,
       full: artifacts.full,
+      ...(rowCombinations.length ? { combinations: rowCombinations } : {}),
     });
   }
   return inputs;
@@ -107,14 +165,29 @@ async function writeRasters(rows: UniformRow[]): Promise<ManifestRowInput[]> {
 async function main() {
   // Refuse to rasterize from an unpinned toolchain: sharp's version determines the bytes.
   await assertRasterToolchain();
+  const catalogIssues = getAllTeamCatalogs().flatMap(({ catalog, parts }) =>
+    validateCatalog(catalog, parts)
+  );
+  if (catalogIssues.length > 0) {
+    throw new Error(
+      `invalid team catalog:\n${catalogIssues.map((issue) => `  - ${issue}`).join('\n')}`
+    );
+  }
   const rows = buildRowsFromCatalog();
   // A row whose construction key is not a registered kit renders the generic fallback — fine
   // in the running app, never acceptable for a published raster. Fail the whole run instead of
-  // committing art that silently degrades to the mannequin default.
-  const unresolved = findUnresolvedConstructions(
-    rows,
-    (teamId) => getTeamUniformDefinition(teamId)?.kits
-  );
+  // committing art that silently degrades to the mannequin default. Extra combinations resolve
+  // through their own kit keys, so they need the same guard.
+  const kitsForTeam = (teamId: string) => getTeamUniformDefinition(teamId)?.kits;
+  const combinations = combinationRenders(rows, getTeamCatalog).map((combination) => ({
+    id: `${combination.rowId}--${combination.key}`,
+    teamId: rows.find((row) => row.id === combination.rowId)?.teamId ?? '',
+    constructionKey: combination.constructionKey,
+  }));
+  const unresolved = [
+    ...findUnresolvedConstructions(rows, kitsForTeam),
+    ...findUnresolvedConstructions(combinations, kitsForTeam),
+  ];
   if (unresolved.length > 0) {
     throw new Error(
       'curated rows resolve to no registered construction:\n' +

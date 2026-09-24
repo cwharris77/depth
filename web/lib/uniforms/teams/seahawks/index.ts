@@ -1,5 +1,7 @@
 import { compileParts, type TeamPartsDefinition } from '../core/parts';
-import { SEAHAWKS_PALETTE, SEAHAWKS_HELMETS, SEAHAWKS_PANTS, SEAHAWKS_KITS } from './parts';
+import { catalogKits } from '../core/catalog';
+import { SEAHAWKS_PALETTE, SEAHAWKS_HELMETS, SEAHAWKS_PANTS } from './parts';
+import { SEAHAWKS_CATALOG } from './catalog';
 import { SEAHAWKS_JERSEY_NAVY } from './jerseys/navy';
 import { SEAHAWKS_JERSEY_WHITE } from './jerseys/white';
 import { SEAHAWKS_JERSEY_ACTION_GREEN } from './jerseys/action-green';
@@ -18,6 +20,6 @@ export const SEAHAWKS_PARTS: TeamPartsDefinition = {
     'rivalries-silver': SEAHAWKS_RIVALRIES_JERSEY,
   },
   pants: SEAHAWKS_PANTS,
-  kits: SEAHAWKS_KITS,
+  kits: catalogKits(SEAHAWKS_CATALOG),
 };
 export const SEAHAWKS_UNIFORMS_FROM_PARTS = compileParts(SEAHAWKS_PARTS);

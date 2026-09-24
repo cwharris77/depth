@@ -94,6 +94,24 @@ Marks are extracted from a supplied SVG by a script in `scripts/uniform-draw/` a
 
 Anchors today: `helmet-side`, `sleeve-left`, `sleeve-right`.
 
+## Team catalog
+
+A converting team's rows come from `teams/<team>/catalog.ts` instead of hand-written `data.ts` entries: `catalogRow` (in `data.ts`) reads a design's canonical row from it, at that design's original position, so a converted team's archive order never changes. The same catalog is also the source for that team's frozen legacy accent pairs and for the kits the renderer registers.
+
+A design's `periods` are its wear span: `from`/`to` per period, chronological, and only the last may be open (`to` omitted means still current). A closed period needs a `source` — a provenance id, or `needs-source` until one is recorded.
+
+A design's `combinations` are verified pairings only, canonical first. The canonical combination is the design's own kit — `constructionKey` (or the slug, if unset) — and renders the row's own two rasters. Every combination after it is an extra: it registers as kit `<constructionKey>--<key>` and, once rendered, its own full-figure raster at `<rowId>--<key>-full.webp`, listed in the manifest's `combinations` for that row (jersey crops are never duplicated — an extra combination shares the row's).
+
+A team registers itself in `teams/catalogs.ts`. Row ids (`<teamId>-<slug>-<yearStart>`) never change once seeded, catalog or not.
+
+To add a design to a converted team:
+
+1. add the design to `teams/<team>/catalog.ts`;
+2. add its `catalogRow` line to the end of `data.ts`'s array (append-only);
+3. regenerate the seed migration and the rasters.
+
+A converting team whose kits list several pants options must turn each verified one into a combination and drop the rest, because the registered kits must equal the catalog's.
+
 ## Growing the catalog
 
 When a jersey shows a construction detail the spec cannot express, add it to the catalog instead of drawing it once in a team module:
