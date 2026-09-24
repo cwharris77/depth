@@ -45,11 +45,10 @@ import {
   stripSqlComments,
 } from '@/lib/supabase/migration-compat';
 
-// Layout note: this script lives in web/scripts/, so REPO_ROOT (its parent) is the web
-// app root — where supabase/ lives — while the release contract and the migrations git
-// diff are repo-root-relative. `git diff --name-only` always emits paths relative to the
-// git toplevel, so migration paths carry the `web/` prefix below.
+// Layout note: this script lives in web/scripts/, while git diff paths are relative to
+// the repository root. Migration files carry the `web/` prefix in git output.
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const GIT_ROOT = resolve(REPO_ROOT, '..');
 const MIGRATIONS_DIR = join(REPO_ROOT, 'supabase', 'migrations');
 const MIGRATIONS_PREFIX = 'web/supabase/migrations/'; // repo-root-relative
 const MANIFEST_PATH = 'ios-release-compatibility.md'; // repo root — /docs/ is gitignored
@@ -69,7 +68,7 @@ function parseArgs() {
 // --- git diff ---------------------------------------------------------------
 
 function git(args: string[]): string {
-  return execFileSync('git', args, { cwd: REPO_ROOT, encoding: 'utf-8' });
+  return execFileSync('git', args, { cwd: GIT_ROOT, encoding: 'utf-8' });
 }
 
 /**
@@ -80,15 +79,19 @@ function git(args: string[]): string {
  * keeps detection from being skipped on a large move (this repo moved ~1000 files at
  * once); the parsing itself lives in the tested pure helper.
  */
-function changedMigrationFiles(base: string, head: string): string[] {
-  const baseSha = git(['rev-parse', '--verify', '--quiet', base]);
+export function changedMigrationFiles(
+  base: string,
+  head: string,
+  runGit: (args: string[]) => string = git
+): string[] {
+  const baseSha = runGit(['rev-parse', '--verify', '--quiet', base]);
   if (!baseSha) {
     console.error(
       `Base ref "${base}" does not resolve — pass --base (e.g. origin/main or the PR base SHA).`
     );
     process.exit(1);
   }
-  const status = git([
+  const status = runGit([
     '-c',
     'diff.renameLimit=20000',
     'diff',
@@ -97,7 +100,7 @@ function changedMigrationFiles(base: string, head: string): string[] {
     `${base}...${head || 'HEAD'}`,
   ]).trim();
   return changedMigrationsFromNameStatus(status, MIGRATIONS_PREFIX).filter((file) => {
-    const diff = git([
+    const diff = runGit([
       'diff',
       '--unified=0',
       `${base}...${head || 'HEAD'}`,
@@ -229,4 +232,4 @@ function main() {
   process.exit(0);
 }
 
-main();
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
