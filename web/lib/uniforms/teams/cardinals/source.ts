@@ -7,7 +7,7 @@
 // contrasting collar.
 
 // The away number's black keyline is a construction color with no token — that kit's accent is
-// Arizona's gold (#FFB612), which appears nowhere on it. Black sampled from the GUD composite.
+// Arizona's gold (#FFB612), which appears nowhere on it. Black sampled from the composite.
 export const CARDINALS_NUMBER_KEYLINE = '#101820';
 
 // Shoulder 3s face opposite directions and wrap over the shoulder tops; the jersey clip

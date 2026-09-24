@@ -26,7 +26,7 @@ export const CHARGERS_BOLT_BODY_LEFT =
   'M99.8,417.2 L107.1,440.9 L113.8,486.0 L113.3,494.9 L92.7,438.2 L89.1,438.5 L82.1,452.2 L79.7,452.9 L70.9,428.3 L84.2,421.3 L99.5,417.5 Z';
 export const CHARGERS_BOLT_BODY_RIGHT =
   'M488.2,417.2 L480.9,440.9 L474.2,486.0 L474.7,494.9 L495.3,438.2 L498.9,438.5 L505.9,452.2 L508.3,452.9 L517.1,428.3 L503.8,421.3 L488.5,417.5 Z';
-// The shell mark, traced from the shell in the 2025 GUD composite itself rather than from the
+// The shell mark, traced from the shell in the 2025 composite itself rather than from the
 // club's logo file. The logo IS this bolt, but flat: 2.48 aspect with short blunt tails against the
 // decal's 1.71 and long swept ones, because a decal applied around a curved shell arches far more in
 // side profile. Fitting the logo into the decal's box gets the extents right and the drawing wrong —

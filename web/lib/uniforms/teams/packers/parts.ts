@@ -157,7 +157,7 @@ export function decal(): PartLayer[] {
 
 // The gold shell with the stripe set and the G decal — shared by home and away.
 //
-// Grey cage. The modern gold shell wears a grey/light-grey facemask (named sources); the GUD
+// Grey cage. The modern gold shell wears a grey/light-grey facemask (named sources); the
 // composite reads it at #8f8f90 against the gold, clearly distinct from the shell. The shared
 // neutral #4b5158 it replaces is a darker grey than the real cage.
 export const HELMET_GOLD: UniformPart = {

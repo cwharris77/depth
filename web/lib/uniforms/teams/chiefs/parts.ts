@@ -51,7 +51,7 @@ function sleeveStripes(outer: string, middle: string): PartLayer[] {
 
 // The red shell with the complete four-color arrowhead construction, shared by both kits.
 //
-// Grey cage, sampled from the GUD helmet composite (nfl-uniform-refs/chiefs): the facemask bar
+// Grey cage, sampled from the helmet composite (nfl-uniform-refs/chiefs): the facemask bar
 // reads #868686 against the red shell / white background, on both archived helmets. Matches the
 // documented light-grey cage (Riddell light-gray facemask); the shared neutral #4b5158 it
 // replaces is a darker grey than the real cage.
@@ -107,14 +107,14 @@ const PANTS_RED: UniformPart = { base: 'red', layers: [] };
 
 export const CHIEFS_CONSTRUCTION = {
   teamId: 'chiefs',
-  // Jersey hexes from the curated rows (teamcolorcodes) — the same three the rows carry across
+  // Jersey hexes from the curated rows — the same three the rows carry across
   // the two kits, with gold occupying both secondary and accent on the home row.
   palette: {
     red: '#E31837',
     gold: '#FFB81C',
     white: '#FFFFFF',
     black: '#010101',
-    // The facemask cage grey — no token in the red/gold Chiefs palette. Sampled from the GUD
+    // The facemask cage grey — no token in the red/gold Chiefs palette. Sampled from the
     // helmet composite (see the helmet part note); matches the documented light-grey cage.
     grey: '#868686',
   },

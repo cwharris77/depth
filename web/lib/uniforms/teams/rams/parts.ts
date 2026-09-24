@@ -60,7 +60,7 @@ function horn(fill: string): PartLayer[] {
 }
 
 // The royal shell (H1) — home, away and bone all wear it with the gold horn. The cage is royal
-// too: every blue-shell figure on the GUD 2025 composite (nfl-uniform-refs/rams) wears a facemask
+// too: every blue-shell figure on the 2025 composite (nfl-uniform-refs/rams) wears a facemask
 // painted the shell color rather than a neutral cage.
 const HELMET_ROYAL: UniformPart = { base: 'royal', facemask: 'royal', layers: horn('gold') };
 

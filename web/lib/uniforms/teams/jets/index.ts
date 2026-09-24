@@ -15,7 +15,7 @@ import { JERSEY_BLACK } from './jerseys/black';
 
 export const JETS_PARTS: TeamPartsDefinition = {
   teamId: 'jets',
-  // Jersey hexes from the curated rows (teamcolorcodes). The two greens differ by a step.
+  // Jersey hexes from the curated rows. The two greens differ by a step.
   palette: {
     green: '#125740',
     rivalGreen: '#115740',

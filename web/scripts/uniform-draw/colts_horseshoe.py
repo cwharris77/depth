@@ -10,13 +10,13 @@ counter. The navy outline is traced after filling the rivets; their mask is emit
 and painted white, preserving every source-visible hole. The 0.75x render keeps one navy
 component and all seven holes; its thinnest critical navy band is over 2 source pixels.
 
-Placement comes only from the GUD 2025 Colts helmet composite, not from the flat mark:
+Placement comes only from the 2025 Colts helmet composite, not from the flat mark:
 the side-shell is x58..150, y332..414 and the horseshoe is x92..125, y341..376. That puts
-its centre at 50.5% shell width and 32.3% shell height. GUD foreshortens the three-quarter
+its centre at 50.5% shell width and 32.3% shell height. The composite foreshortens the three-quarter
 shell, so its width (34.0% of the shell) and centre transfer to the mannequin while its
 height derives from the vector's 0.946 true aspect: raw helmet box x330.0..525.0,
 y146.0..352.1. The mark faces the mannequin's right-facing side directly; no rotation or
-mirroring is applied. The old 46px-GUD trace was both broader and higher.
+mirroring is applied. The old 46px trace was both broader and higher.
 
 ``qlmanage`` renders SVG thumbnails square and can hide white source holes against a
 transparent background. ``drawkit.render_flat`` composites the source over white, then

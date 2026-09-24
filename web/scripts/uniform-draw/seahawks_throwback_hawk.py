@@ -48,7 +48,7 @@ EXPECTED = (
 
 # Helmet x-range and vertical centre, in the shell's raw space.
 HELMET_X0, HELMET_W, HELMET_CY = 154.0, 310.0, 293.0
-# Sleeve logo width and vertical centre in mannequin space, read off the GUD figure's sleeve.
+# Sleeve logo width and vertical centre in mannequin space, read off the reference figure's sleeve.
 SLEEVE_W = 74.0
 SLEEVE_Y = 505.0
 

@@ -20,7 +20,7 @@ evenodd hole that punched through the 49ers "F" has nothing to do here.
   3. detail     blue   exactly those holes, painted back on top
   4. highlight  grey   the fangs and brow
 
-Placement (docs step 7) is measured from the GUD 2025 helmet composite, not from
+Placement (docs step 7) is measured from the 2025 helmet composite, not from
 the flat logo. Both boxes are connected-component measurements, not eyeballed:
 the sheet's helmet silhouette is x254-360, y83-180, of which x254-347 is the
 shell and the rest is the facemask, and the mark is the 974px component at
@@ -32,9 +32,9 @@ between the crown edge and the blue arc.
 
 The mannequin's own shell silhouette is x139-701.5, y65-637.4 in raw helmet space
 (HELMET_ART_CLIP through HELMET_ART_TRANSFORM). It is a 0.98 aspect box against
-GUD's 0.96, so those four fractions transfer directly and land the box below.
+the composite's 0.96, so those four fractions transfer directly and land the box below.
 Height therefore comes from the composite and NOT from the flat logo's true 1.84
-aspect: this mannequin draws the same three-quarter shell GUD does, so the mark
+aspect: this mannequin draws the same three-quarter shell the composite does, so the mark
 wraps and reads nearer 1.65 on both.
 """
 

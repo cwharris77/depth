@@ -35,8 +35,7 @@ export interface UniformSeed {
 }
 
 export const UNIFORMS: UniformSeed[] = [
-  // Current home kits. Era starts/patterns: each team's GUD archive. Jersey hexes:
-  // teamcolorcodes.com's NFL HEX table; #FFFFFF/#000000 are the listed neutral kit colors.
+  // Current home kits. #FFFFFF/#000000 are the listed neutral kit colors.
   // uiAccent/onAccent are the established dark-UI pair and are contrast-tested below.
   {
     teamId: 'ravens',
@@ -541,7 +540,7 @@ export const UNIFORMS: UniformSeed[] = [
 
   // Buccaneers 1976–1996 "Creamsicle" — reintroduced as an active alternate in 2023, so
   // is_current: true despite the historical era. Orange already reads on dark, so
-  // uiAccent is the brand orange itself. Hexes: teamcolorcodes original/creamsicle.
+  // uiAccent is the brand orange itself.
   {
     teamId: 'buccaneers',
     slug: 'creamsicle',
@@ -560,7 +559,7 @@ export const UNIFORMS: UniformSeed[] = [
 
   // Eagles Kelly Green (1987–1995 era) — reintroduced as an active throwback in 2023, so
   // is_current: true. uiAccent brightens the era's deep kelly (#046A38) to clear the dark
-  // UI. Hexes: teamcolorcodes historical Eagles green + jersey silver.
+  // UI.
   {
     teamId: 'eagles',
     slug: 'kelly-green',
@@ -594,7 +593,7 @@ export const UNIFORMS: UniformSeed[] = [
 
   // Broncos 1968–1996 royal-blue "Orange Crush" — a retired throwback (the modern kit is
   // navy/orange). The royal #001489 is too dark for the UI, so uiAccent is the era's
-  // orange, which reads well. Hexes: teamcolorcodes historical Broncos.
+  // orange, which reads well.
   {
     teamId: 'broncos',
     slug: 'orange-crush',
@@ -1099,9 +1098,9 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#34302B',
     },
   },
-  // Throwbacks & alternates (Wave 2a) — published heritage hexes (teamcolorcodes),
-  // eras verified where set. uiAccent reuses each team's live dark-UI pair.
-  // Chargers AFL powder blue, worn as a current alternate. Hexes: teamcolorcodes (powder blue #0080C6, sunshine gold #FFC20E). uiAccent reuses the team's dark-UI blue.
+  // Throwbacks & alternates (Wave 2a) — published heritage hexes, eras verified where
+  // set. uiAccent reuses each team's live dark-UI pair.
+  // Chargers AFL powder blue, worn as a current alternate. Hexes: powder blue #0080C6, sunshine gold #FFC20E. uiAccent reuses the team's dark-UI blue.
   {
     teamId: 'chargers',
     slug: 'powder-blue',
@@ -1117,7 +1116,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFFFFF',
     },
   },
-  // Houston Oilers Columbia blue (1960-1996, per Wikipedia). Hexes: teamcolorcodes Titans page (Columbia blue #4B92DB = the Oilers heritage blue, red #C8102E). isCurrent: Titans' designated throwback alternate (not worn every season).
+  // Houston Oilers Columbia blue (1960-1996, per Wikipedia). Hexes: Columbia blue #4B92DB = the Oilers heritage blue, red #C8102E. isCurrent: Titans' designated throwback alternate (not worn every season).
   {
     teamId: 'titans',
     slug: 'oilers-throwback',
@@ -1133,7 +1132,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFFFFF',
     },
   },
-  // Bears orange alternate (modern alt, no throwback era). Hexes: teamcolorcodes (orange #C83803, navy #0B162A). uiAccent reuses the team's brightened orange.
+  // Bears orange alternate (modern alt, no throwback era). Hexes: orange #C83803, navy #0B162A. uiAccent reuses the team's brightened orange.
   {
     teamId: 'bears',
     slug: 'orange-alternate',
@@ -1149,7 +1148,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFFFFF',
     },
   },
-  // Saints all-black Color Rush (2016+). Hexes: teamcolorcodes (black #101820, old gold #D3BC8D). uiAccent reuses the team's bright gold.
+  // Saints all-black Color Rush (2016+). Hexes: black #101820, old gold #D3BC8D. uiAccent reuses the team's bright gold.
   {
     teamId: 'saints',
     slug: 'color-rush',
@@ -1170,7 +1169,7 @@ export const UNIFORMS: UniformSeed[] = [
   // 1995-2008 before black took over 2009-2020, then dormant until this recreation
   // debuted 2024 (jaguars.com). yearStart is the era it recreates, matching the app's
   // other current throwbacks (Packers 1923 Throwback, Eagles Kelly Green), not the 2024
-  // revival year. Hexes: teamcolorcodes (teal #006778, gold #D7A22A, black #101820).
+  // revival year. Hexes: teal #006778, gold #D7A22A, black #101820.
   // uiAccent reuses the team's bright teal.
   {
     teamId: 'jaguars',
@@ -1187,7 +1186,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#101820',
     },
   },
-  // Washington 1970s burgundy & gold (George Allen gold-helmet era). Hexes: teamcolorcodes Commanders (burgundy #5A1414, gold #FFB612). uiAccent reuses the team's gold.
+  // Washington 1970s burgundy & gold (George Allen gold-helmet era). Hexes: burgundy #5A1414, gold #FFB612. uiAccent reuses the team's gold.
   {
     teamId: 'commanders',
     slug: '70s-burgundy',
@@ -1204,7 +1203,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   // Throwbacks (Wave 2b): Vikings 1960s purple classic + Packers 1923 throwback (eyedropped).
-  // Vikings 1960s purple classic (gold-trim numbers, per Wikipedia; retired era). Hexes: teamcolorcodes (purple #4F2683, gold #FFC62F). uiAccent reuses the team's gold.
+  // Vikings 1960s purple classic (gold-trim numbers, per Wikipedia; retired era). Hexes: purple #4F2683, gold #FFC62F. uiAccent reuses the team's gold.
   {
     teamId: 'vikings',
     slug: 'purple-classic',
@@ -1304,9 +1303,9 @@ export const UNIFORMS: UniformSeed[] = [
   },
   // Cardinals 2025 Rivalries. Corrected from a white/cardinal/black guess (the original comment
   // noted the reveal was shot under red stage lighting, which is what it was read from) after
-  // checking it against the GUD 2025 composite: it is a sandstone kit — speckled cream body and
-  // shell, a brighter red than heritage cardinal, and an orange offset on the numerals. Black
-  // appears nowhere on it. All three sampled from that composite; same caveat as every GUD
+  // checking it against a 2025 composite reveal image: it is a sandstone kit — speckled cream body
+  // and shell, a brighter red than heritage cardinal, and an orange offset on the numerals. Black
+  // appears nowhere on it. All three sampled from that composite; same caveat as any eyedropped
   // sample, its renderings run a step brighter than official hexes. uiAccent is the orange, which
   // clears AA on the dark UI at 6.24 where the kit's red is 2.80.
   {

@@ -1,4 +1,4 @@
-// New England's four archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
+// New England's four archived kits, redrawn from the 2025 composite in
 // nfl-uniform-refs/patriots (home is that sheet's row-2 figure 3, away its row-1 figure 1, Pat
 // Patriot its row-1 figure 7 — boxed "worn in same games"). Right paths mirror the left across the
 // centerline x=294.

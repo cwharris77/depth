@@ -34,7 +34,7 @@ const PANTS_STRIPE_PATH_RIGHT = 'M454,807 H470 V1462 H454 Z';
 // only for the parity harness, the bands do not overlap.
 //
 
-// cage can't be cleanly read from the GUD composite, so the named source is the source of truth).
+// cage can't be cleanly read from the composite, so the named source is the source of truth).
 const HELMET_WHITE: UniformPart = {
   base: 'white',
   facemask: 'white',
@@ -265,8 +265,8 @@ const PANTS_RIVALRIES: UniformPart = { base: 'white', layers: [] };
 
 export const BILLS_CONSTRUCTION = {
   teamId: 'bills',
-  // Construction hexes from the module (teamcolorcodes for navy/red; the ice-silver shades and the
-  // rivalries number silver are fixed reference-bound approximations, see bills.ts).
+  // Construction hexes from the module (navy/red are official brand hexes; the ice-silver shades
+  // and the rivalries number silver are fixed reference-bound approximations, see bills.ts).
   palette: {
     navy: '#00338D',
     red: '#C60C30',
@@ -278,7 +278,7 @@ export const BILLS_CONSTRUCTION = {
   helmets: { white: HELMET_WHITE, ice: HELMET_ICE },
   pants: { blue: PANTS_BLUE, white: PANTS_WHITE, rivalries: PANTS_RIVALRIES },
   kits: {
-    // The 2025 GUD composite shows both blue and white trousers with each modern top;
+    // The 2025 composite shows both blue and white trousers with each modern top;
     // canonical-first preserves the existing blue-over-blue and white-over-white rasters.
     home: { helmet: 'white', jersey: 'blue', pants: ['blue', 'white'] },
     away: { helmet: 'white', jersey: 'white', pants: ['white', 'blue'] },

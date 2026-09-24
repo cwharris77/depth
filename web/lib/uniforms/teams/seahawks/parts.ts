@@ -104,7 +104,7 @@ export function modernNeckAndWordmark(
 
 const HELMET_NAVY_HAWK: UniformPart = {
   base: 'navy',
-  // Black cage, sampled from the GUD reference crop (the facemask region reads #000000 there,
+  // Black cage, sampled from the reference crop (the facemask region reads #000000 there,
   // against the shell's #0D2135). The shared neutral #4b5158 it replaces was a mid-grey mass at
   // relative luminance 80 over a shell at 29 -- the single brightest thing on the helmet.
   facemask: 'facemaskBlack',
@@ -149,7 +149,6 @@ export const SEAHAWKS_PALETTE = {
   green: '#69BE28',
   // Wolf Grey is a construction fact of the modern kit, not a runtime body color: an
   // ESPN-sourced palette sets accent = secondary, so 'accent' would resolve to action green.
-  // Hex from teamcolorcodes.
   wolfGrey: '#A5ACAF',
   white: '#FFFFFF',
   // Shaded insides of the neck opening, one step darker than each body so the opening reads.
@@ -157,11 +156,11 @@ export const SEAHAWKS_PALETTE = {
   whiteNeck: '#ECEEEF',
   crownWedge: '#2B507C',
   // A fourth color with no kit token, and it can never have one: it fails AA on the dark UI
-  // (1.57), so it could never be uiAccent. Sampled from the GUD 2025 composite.
+  // (1.57), so it could never be uiAccent. Sampled from the 2025 composite.
   rivalriesTeal: '#023A4D',
   rivalriesPine: '#29594C',
   // The throwback's royal, green and two silvers have no published codes; each is the flat fill
-  // of the GUD 2025 composite's throwback figure.
+  // of the 2025 composite's throwback figure.
   throwbackRoyal: '#0248B3',
   // The inside of the neck opening: the royal in shadow.
   throwbackNeck: '#01358A',
@@ -169,10 +168,10 @@ export const SEAHAWKS_PALETTE = {
   throwbackSilver: '#A7B0BA',
   throwbackPantsSilver: '#DBDDDF',
   // The Color Rush fabric is a much brighter lime than the brand's Action Green (#69BE28) and has
-  // no published code; this is the GUD 2024 composite's flat fill.
+  // no published code; this is the 2024 composite's flat fill.
   actionGreen: '#B6FF3E',
   actionGreenNeck: '#95D62E',
-  // Sampled from the GUD reference helmet crop.
+  // Sampled from the reference helmet crop.
   facemaskBlack: '#000000',
 };
 export const SEAHAWKS_HELMETS = {

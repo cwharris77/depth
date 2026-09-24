@@ -44,7 +44,7 @@ export function sleeveStripes(
 
 // The blue shell with the white monogram — one object, shared by home and away.
 //
-// Grey cage. The modern metallic-blue shell carries a grey facemask (named sources; the GUD
+// Grey cage. The modern metallic-blue shell carries a grey facemask (named sources; the
 // composite reads the bars at ~#9a9a9a against the blue shell). The shared neutral #4b5158 it
 // replaces is a noticeably darker grey.
 export const HELMET_BLUE_MONOGRAM: UniformPart = {
@@ -67,7 +67,7 @@ export const HELMET_BLUE_MONOGRAM: UniformPart = {
 //
 // White cage. The 1980-1999 era (restored as the Legacy look) wore a navy shell with a WHITE
 // facemask (giantswire: "navy with a white facemask"; pocketprohelmets notes the 1975 switch from
-// grey to white). GUD cannot cleanly separate a white cage from the surrounding blues, so the
+// grey to white). The composite cannot cleanly separate a white cage from the surrounding blues, so the
 // named sources are the source of truth here.
 export const HELMET_BLUE_BARE: UniformPart = { base: 'royal', facemask: 'white', layers: [] };
 

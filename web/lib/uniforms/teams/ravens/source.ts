@@ -1,4 +1,4 @@
-// Baltimore's three archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
+// Baltimore's three archived kits, redrawn from the 2025 composite in
 // nfl-uniform-refs/ravens (home is that sheet's row-1 figure 1, black alternate its row-2 figure 3,
 // away its row-3 figure 1 — the other figures in each row are pant combinations, not separate
 // kits). Sleeve paths use the outer 588-wide mannequin space; right paths mirror the left across

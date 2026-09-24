@@ -142,7 +142,7 @@ const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
 
 export const BUCCANEERS_CONSTRUCTION = {
   teamId: 'buccaneers',
-  // Construction hexes from the module (teamcolorcodes). Red/pewter/orange/white are the physical
+  // Construction hexes from the module. Red/pewter/orange/white are the physical
   // colors carried in different primary/secondary/accent slots per row; the flag's keyline/red/
   // orange are the sampled fixed-art colors.
   palette: {

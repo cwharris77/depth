@@ -3,7 +3,7 @@
 // lives in ./bills.parts.ts; the former flat BILLS_UNIFORMS was deleted in the migration that
 // proved parts render byte-identically (see parts-parity.test.ts for the one-time gate).
 
-// teamcolorcodes supplies Buffalo's navy and red brand hexes. They remain fixed across kits because
+// Official Buffalo navy and red brand hexes. They remain fixed across kits because
 // helmet and band construction does not recolor when a kit's runtime primary changes white/blue.
 export const BILLS_NAVY = '#00338D';
 export const BILLS_RED = '#C60C30';
@@ -15,7 +15,7 @@ export const BILLS_HELMET_DECAL_BUFFALO_PATH =
 export const BILLS_HELMET_DECAL_STRIPE_PATH =
   'M505.9,205.8 L510.1,205.8 L510.1,206.9 L505.3,212.4 L502.9,217.2 L502.0,222.8 L502.9,226.8 L505.3,230.5 L504.1,232.0 L500.2,232.0 L495.9,233.5 L473.8,236.8 L471.7,237.9 L459.3,239.4 L455.3,240.9 L451.4,240.9 L447.2,242.4 L443.2,242.4 L439.0,243.8 L435.0,243.8 L430.8,245.3 L426.9,245.3 L422.6,246.8 L402.3,249.8 L398.4,251.2 L394.2,251.2 L390.2,252.7 L386.0,252.7 L382.1,254.2 L378.1,254.2 L373.9,255.7 L369.9,255.7 L365.7,257.2 L361.8,257.2 L357.5,258.6 L337.2,261.6 L333.3,263.1 L329.1,263.1 L325.1,264.5 L320.9,264.5 L317.0,266.0 L313.0,266.0 L308.8,267.5 L304.8,267.5 L300.6,269.0 L280.3,271.9 L276.4,273.4 L272.1,273.4 L268.2,274.9 L264.0,274.9 L260.0,276.4 L255.8,276.4 L251.8,277.8 L247.6,277.8 L243.7,279.3 L239.4,279.3 L235.5,280.8 L231.6,280.8 L211.0,285.2 L205.2,285.6 L205.2,283.8 L227.0,236.8 L228.2,235.3 L237.9,233.9 L245.2,233.9 L252.1,232.4 L259.1,232.4 L266.1,230.9 L273.3,230.9 L280.3,229.4 L287.3,229.4 L294.2,228.0 L301.5,228.0 L308.5,226.5 L315.7,226.5 L322.7,225.0 L329.7,225.0 L336.6,223.5 L343.6,223.5 L350.9,222.0 L357.8,222.0 L364.8,220.6 L386.3,219.1 L393.3,217.6 L400.2,217.6 L407.2,216.1 L414.5,216.1 L421.4,214.7 L428.4,214.7 L435.4,213.2 L442.3,213.2 L449.6,211.7 L456.5,211.7 L463.8,210.2 L470.8,210.2 L477.7,208.7 L485.0,208.7 L492.0,207.3 L505.6,206.2 Z';
 
-// The GUD construction reference shows red/white/navy as explicit bands. These paths use the
+// The construction reference shows red/white/navy as explicit bands. These paths use the
 // outer viewBox, and each right path explicitly mirrors its left across x=294.
 export const BILLS_SLEEVE_RED_LEFT =
   'M44,432 L140,432 L140,439 L44,439 Z M44,472 L140,472 L140,479 L44,479 Z';

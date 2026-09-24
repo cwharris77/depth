@@ -1,4 +1,4 @@
-// Minnesota's four archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
+// Minnesota's four archived kits, redrawn from the 2025 composite in
 // nfl-uniform-refs/vikings, with the 1965 kit read from that folder's era sheet. Sleeve and pant
 // paths use the outer 588-wide mannequin space; right paths mirror the left across the jersey
 // centerline x=294 (mirroredX = 588 - x).

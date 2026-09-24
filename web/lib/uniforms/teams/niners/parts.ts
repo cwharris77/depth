@@ -102,7 +102,7 @@ function helmetMarks(field: string): PartLayer[] {
 }
 
 // The gold shell with the red crown stripe and oval — one object, shared by home and away. The
-// classic matte-gold shell wears a black cage (collegehelmetstore / named sources; the GUD
+// classic matte-gold shell wears a black cage (collegehelmetstore / named sources; the
 // composite reads the bars at #000000). The shared neutral #4b5158 it replaces is a mid-grey that
 // looks wrong against the gold.
 const HELMET_GOLD: UniformPart = { base: 'gold', facemask: 'black', layers: helmetMarks('red') };
@@ -124,7 +124,7 @@ const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };
 
 export const NINERS_CONSTRUCTION = {
   teamId: '49ers',
-  // Jersey hexes from the curated rows (teamcolorcodes). Gold is the helmet/pants shell — the
+  // Jersey hexes from the curated rows. Gold is the helmet/pants shell — the
   // same physical color whether home reaches it through 'secondary' or away through 'accent'.
   // Rivalries' black is its own primary.
   palette: {
@@ -132,7 +132,7 @@ export const NINERS_CONSTRUCTION = {
     gold: '#B3995D',
     white: '#FFFFFF',
     black: '#101820',
-    // The decal keyline stays black on both shells (see niners.ts — sampled from the GUD
+    // The decal keyline stays black on both shells (see niners.ts — sampled from the
     // composite, #141414 rather than pure black).
     decalBlack: NINERS_DECAL_BLACK,
   },

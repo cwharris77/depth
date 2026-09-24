@@ -103,7 +103,7 @@ function decal(horn: string, crescent: string): PartLayer[] {
 }
 
 // The modern purple shell (H1), worn by home and away: white horn over a gold crescent, black
-// cage. Every purple helmet figure on the GUD 2025 composite (nfl-uniform-refs/vikings) wears a
+// cage. Every purple helmet figure on the 2025 composite (nfl-uniform-refs/vikings) wears a
 // black facemask.
 const HELMET_PURPLE: UniformPart = {
   base: 'purple',

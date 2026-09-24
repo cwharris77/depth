@@ -6,7 +6,7 @@
 
 // Pittsburgh's modern shell uses the complete 1969–2001 mark, drawn from a vector
 // source. Each source path was scaled and translated into raw helmet
-// space (center 431,226; scale 0.15); UniformLayer has no transform field. The GUD composite
+// space (center 431,226; scale 0.15); UniformLayer has no transform field. The composite
 // places this 169-unit outer disc on the shell's upper-left, unrotated, including its grey ring,
 // the white separator, and the small black wordmark.
 export const STEELERS_DECAL_DISC_PATH =
@@ -26,7 +26,7 @@ export const STEELERS_DECAL_WORDMARK_PATH =
 
 // Construction colors are fixed across kits — the sleeve stripe set does not recolor when the body
 // changes black/white, and its black separators only become visible on the white away body.
-// Official hexes from teamcolorcodes; GUD renders the gold as #FDD638, a step brighter.
+// Official published hexes; the composite renders the gold as #FDD638, a step brighter.
 export const STEELERS_GOLD = '#FFB612';
 export const STEELERS_BLACK = '#101820';
 // The 1934 throwback's khaki pants have no token on that kit's palette. Sampled from the composite.

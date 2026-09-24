@@ -111,7 +111,7 @@ export const HELMET_WHITE: UniformPart = {
 };
 
 // The navy rivalries shell (H2) with the orange stripe + sunburst and dark navy cage, as shown
-// by the GUD dark alternate figure.
+// by the dark alternate figure.
 export const HELMET_NAVY: UniformPart = {
   base: 'navy',
   facemask: 'navy',

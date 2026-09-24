@@ -2,7 +2,7 @@
 //
 // The side-view shell carries no construction stripe — everything else on it is the decal. The
 // composite's top-view inset is the only evidence of a center stripe: a slate wedge, narrow at the
-// front and widening toward the back, tone-on-tone against the shell. GUD renders that inset as
+// front and widening toward the back, tone-on-tone against the shell. The composite renders that inset as
 // #2B394A on a #00132A shell; the live ESPN shell is a brighter #002A5C, so the sampled hex would
 // read as a dark smudge rather than a lighter stripe. This value re-bases the inset's tonal step
 // (+43/+38/+32) onto that brighter navy so the same relationship survives.
@@ -11,13 +11,13 @@ export const SEAHAWKS_HELMET_CENTER_COLOR = '#2B507C';
 // geometry, and it is a fact about the mannequin shell rather than about Seattle.
 
 // Re-authored 2026-09-03 from a reference that clears the resolution gate, replacing a trace off
-// the 46px GUD composite whose keyline survived as 7 disconnected fragments totalling 31px. The
+// a 46px composite whose keyline survived as 7 disconnected fragments totalling 31px. The
 // mark is traced at 1200px wide (thinnest white channel 20px = 1.67% of mark width; keyline
 // resolves to one component and holds under a 0.75x downscale), then scaled, positioned and
 // baked into raw helmet coordinates -- UniformLayer has no transform field, so placement cannot
 // live anywhere but the path data.
 //
-// PLACEMENT is measured from the GUD *helmet* composite, not from the logo, and is a separate
+// PLACEMENT is measured from the *helmet* composite, not from the logo, and is a separate
 // concern from linework -- getting the linework right and the placement wrong is what made the
 // first two passes well-drawn and obviously wrong. Three facts drive it, and the first is the one
 // that is easy to miss:

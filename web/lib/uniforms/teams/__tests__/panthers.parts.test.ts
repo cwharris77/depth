@@ -1,6 +1,6 @@
 // Guards the two facts about Carolina that nothing else can catch: the helmet mark's paint order
 // (reverse any pair and the linework the re-author added disappears back into the body) and the
-// pant options enumerated from the GUD 2025 composite, which only the canonical entry compiles so
+// pant options enumerated from the 2025 composite, which only the canonical entry compiles so
 // a wrong list is otherwise invisible in every raster.
 import { describe, expect, it } from 'vitest';
 import { PANTHERS_PARTS } from '../panthers';

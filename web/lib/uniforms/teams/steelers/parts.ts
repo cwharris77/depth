@@ -110,13 +110,13 @@ function pantsStripes(): PartLayer[] {
 
 // The black shell with the hypocycloid decal — one object, shared by home and away.
 //
-// Black cage. The Steelers' glossy black shell wears a black facemask (named sources; the GUD
+// Black cage. The Steelers' glossy black shell wears a black facemask (named sources; the
 // composite cannot render a black cage on a black shell, so the named sources are the source of
 // truth). The shared neutral #4b5158 it replaces is a grey that floats against the black shell.
 const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'black', layers: DECAL };
 
 // The bumblebee's gold shell, bare. Left on the default cage: the 1934 throwback's helmet
-// predates the facemask, so there is no documented cage color to source, and the GUD composite
+// predates the facemask, so there is no documented cage color to source, and the composite
 // shows only the bare gold shell at this size.
 const HELMET_GOLD: UniformPart = { base: 'gold', layers: [] };
 

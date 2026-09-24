@@ -1,6 +1,6 @@
 // Guards the two facts about Los Angeles that nothing else can catch: the horn is one layer with no
 // fill rule (its two subpaths are a union, and an evenodd rule would punch the crescent hollow), and
-// the pant options enumerated from the GUD 2025 composite, of which only the canonical entry compiles
+// the pant options enumerated from the 2025 composite, of which only the canonical entry compiles
 // so a wrong list is invisible in every raster.
 import { describe, expect, it } from 'vitest';
 import { RAMS_PARTS } from '../rams';

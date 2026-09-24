@@ -8,7 +8,7 @@ there is no rasterization, contour tracing, or simplification. It applies only t
 uniform scale and translation into the raw helmet coordinate space, then emits the original path
 layers in their original paint order.
 
-Reference: the current GUD Ravens composite is used only to measure the black-shell placement.
+Reference: the current Ravens composite is used only to measure the black-shell placement.
 The source art bbox is x=326..1773, y=677..1354; it maps uniformly to x=330..641,
 y=130..275.5 (scale 311 / 1447, 0 degrees rotation). This keeps the decal within the visible
 front-facing shell. The source has 16 non-background paths: purple body regions, black cuts,

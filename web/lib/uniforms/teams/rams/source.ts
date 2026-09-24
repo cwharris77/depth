@@ -1,4 +1,4 @@
-// Los Angeles' four archived kits, redrawn from the Gridiron Uniform Database 2025 composite in
+// Los Angeles' four archived kits, redrawn from the 2025 composite in
 // nfl-uniform-refs/rams (home is that sheet's row-1 figure 3, Rivalries its row-1 figure 7, away
 // its row-2 figure 1, bone its row-2 figure 5). Sleeve paths use the outer 588-wide mannequin
 // space; the helmet decal stays in raw helmet coordinates (x:139-802, y:65-674). Right paths mirror
@@ -45,7 +45,7 @@ export const RAMS_SLEEVE_BAND_RIGHT = 'M514,420 L489,420 L464,560 L514,560 Z';
 export const RAMS_SLEEVE_TAIL_LEFT = 'M55,436 L74,424 L74,490 Z';
 export const RAMS_SLEEVE_TAIL_RIGHT = 'M533,436 L514,424 L514,490 Z';
 
-// The pant leg stripe. GUD draws a team's stripe pattern in a leg-shaped swatch beside each figure
+// The pant leg stripe. The composite draws a team's stripe pattern in a leg-shaped swatch beside each figure
 // rather than on the small front-view figure itself, which is why an earlier pass read these pants as
 // unbroken; all four of Los Angeles' pant colors carry the same two-band stripe. Measured across those
 // swatches at the sheet's scale: a keyline on the OUTER side and a wide band inboard of it, together

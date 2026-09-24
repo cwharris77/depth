@@ -20,7 +20,7 @@
 // as blue linework alone, exactly as the reference draws it on that helmet — that is why the home
 // helmet stays a separate part despite carrying identical decal colors.
 //
-// Pants are four parts, not one. GUD draws the leg stripe in a swatch beside each figure rather
+// Pants are four parts, not one. The composite draws the leg stripe in a swatch beside each figure rather
 // than on the figure, so an earlier pass read every pant as unbroken black; the composite actually
 // gives Carolina black, blue, white and silver legs, each with the same keylined stripe. Each kit
 // carries the list it is worn with, canonical (black, the pairing the archive already ships) first.
@@ -118,7 +118,7 @@ export function legStripe(keyline: string, center: string): PartLayer[] {
 }
 
 // Home shell (H1): black, the only kit in the reference whose shell is not silver. The cage is
-// black on every figure of the GUD 2025 composite (nfl-uniform-refs/panthers), on both shells.
+// black on every figure of the 2025 composite (nfl-uniform-refs/panthers), on both shells.
 export const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'black', layers: decal() };
 
 // Away and black-alternate shell (H2): silver, same mark, same black cage.

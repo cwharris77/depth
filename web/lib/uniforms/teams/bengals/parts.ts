@@ -48,7 +48,7 @@ function sleeveStripes(stripe: string): PartLayer[] {
   ];
 }
 
-// Black cage, sampled from the GUD helmet composite (nfl-uniform-refs/bengals/bengals-home-black.png):
+// Black cage, sampled from the helmet composite (nfl-uniform-refs/bengals/bengals-home-black.png):
 // the facemask bars read near-black (#1d1d1d-#252525) crossing the face opening over the white
 // background, against the shell's #f23d22. Matches Cincinnati's real black cage — the shared
 // neutral #4b5158 it replaces was a mid-grey mass at luminance ~84 over a shell at ~35, the
@@ -67,7 +67,7 @@ const HELMET_ORANGE: UniformPart = {
 
 // Orange alternate jersey: orange body, black tiger sleeve caps.
 
-// GUD's 2024 Bengals composite shows four interchangeable pants: black with orange outer-knee
+// The 2024 Bengals composite shows four interchangeable pants: black with orange outer-knee
 // claws, white with black claws, white with orange claws, and orange with black claws. The
 // claws sit on the lateral knee, so these are the only portions visible on this front-facing
 // mannequin; do not add the side-seam stripe panel from the composite.
@@ -88,7 +88,7 @@ const PANTS_ORANGE_BLACK = pantsWithClaws('orange', 'black');
 
 export const BENGALS_CONSTRUCTION = {
   teamId: 'bengals',
-  // Jersey hexes from the curated rows (teamcolorcodes); these are the three colors the rows
+  // Jersey hexes from the curated rows; these are the three colors the rows
   // already carry across their four kits.
   palette: {
     orange: '#FB4F14',
