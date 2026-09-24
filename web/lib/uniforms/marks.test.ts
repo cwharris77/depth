@@ -6,6 +6,8 @@ import {
   placeMarkOnSleeves,
   type Mark,
 } from '@/lib/uniforms/teams/core/marks';
+import { SEAHAWKS_THROWBACK_HAWK } from '@/lib/uniforms/teams/seahawks/marks/throwback-hawk';
+import * as legacy from '@/lib/uniforms/teams/seahawks/source';
 
 const SQUARE: Mark = { box: [0, 0, 10, 10], paths: [{ slot: 'a', d: 'M0,0 L10,0 L10,10 Z' }] };
 
@@ -72,6 +74,40 @@ describe('placeMarkOnSleeves', () => {
       'p-a-right',
       'p-b-left',
       'p-b-right',
+    ]);
+  });
+});
+
+describe('throwback hawk parity with the baked paths', () => {
+  it('places the helmet hawk exactly where the script did', () => {
+    const layers = placeMark('seahawks-throwback-hawk', SEAHAWKS_THROWBACK_HAWK, 'helmet-side', {
+      royal: 'throwbackRoyal',
+      white: 'white',
+      block: 'throwbackGreen',
+      eye: 'throwbackGreen',
+    });
+    expect(layers.map((l) => l.d)).toEqual([
+      legacy.SEAHAWKS_THROWBACK_HAWK_ROYAL_PATH,
+      legacy.SEAHAWKS_THROWBACK_HAWK_WHITE_PATH,
+      legacy.SEAHAWKS_THROWBACK_HAWK_BLOCK_PATH,
+      legacy.SEAHAWKS_THROWBACK_HAWK_EYE_PATH,
+    ]);
+  });
+
+  it('places the sleeve hawks exactly where the script did', () => {
+    const layers = placeMarkOnSleeves('seahawks-throwback-sleeve', SEAHAWKS_THROWBACK_HAWK, {
+      royal: null,
+      white: 'white',
+      block: 'throwbackGreen',
+      eye: 'throwbackGreen',
+    });
+    expect(layers.map((l) => l.d)).toEqual([
+      legacy.SEAHAWKS_THROWBACK_SLEEVE_WHITE_LEFT,
+      legacy.SEAHAWKS_THROWBACK_SLEEVE_WHITE_RIGHT,
+      legacy.SEAHAWKS_THROWBACK_SLEEVE_BLOCK_LEFT,
+      legacy.SEAHAWKS_THROWBACK_SLEEVE_BLOCK_RIGHT,
+      legacy.SEAHAWKS_THROWBACK_SLEEVE_EYE_LEFT,
+      legacy.SEAHAWKS_THROWBACK_SLEEVE_EYE_RIGHT,
     ]);
   });
 });
