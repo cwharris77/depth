@@ -14,18 +14,16 @@
 // `primary`, so neither needs it.
 export const CHARGERS_WHITE = '#FFFFFF';
 
-// Every mark here is traced the same way and for the same reason: the keyline is traced as the union
-// of keyline AND body with holes filled, and the body is painted over it, so the outline stays
-// continuous instead of breaking into slivers wherever the body touches it. The antialiased seam
-// between two inks matches neither colour, which is what the hole fill absorbs.
+// Each sleeve bolt is a broad angled band with a second point below it. The keyline extends below
+// the shorter body, leaving the lower taper in the keyline colour.
 export const CHARGERS_BOLT_KEYLINE_LEFT =
-  'M103.2,415.8 L106.8,419.2 L110.7,441.6 L112.8,444.7 L117.7,496.1 L112.3,470.3 L108.9,438.5 L102.9,416.0 Z M99.8,417.2 L107.1,440.9 L113.8,486.0 L113.3,494.9 L92.7,438.2 L89.1,438.5 L82.1,452.2 L79.7,452.9 L70.9,428.3 L84.2,421.3 L99.5,417.5 Z M69.1,429.8 L77.9,455.8 L83.6,454.4 L84.4,450.3 L90.4,440.4 L91.7,440.9 L110.4,496.3 L114.6,501.9 L118.0,501.2 L119.0,503.1 L119.6,532.5 L112.0,501.2 L93.3,449.8 L88.6,449.6 L78.7,465.7 L68.8,438.2 L68.8,430.0 Z';
+  'M54,431 L78,417 L102,413 L108,415 L117,445 L124,484 L138,574 L116,526 L89,461 L86,460 L72,488 Z';
 export const CHARGERS_BOLT_KEYLINE_RIGHT =
-  'M484.8,415.8 L481.2,419.2 L477.3,441.6 L475.2,444.7 L470.3,496.1 L475.7,470.3 L479.1,438.5 L485.1,416.0 Z M488.2,417.2 L480.9,440.9 L474.2,486.0 L474.7,494.9 L495.3,438.2 L498.9,438.5 L505.9,452.2 L508.3,452.9 L517.1,428.3 L503.8,421.3 L488.5,417.5 Z M518.9,429.8 L510.1,455.8 L504.4,454.4 L503.6,450.3 L497.6,440.4 L496.3,440.9 L477.6,496.3 L473.4,501.9 L470.0,501.2 L469.0,503.1 L468.4,532.5 L476.0,501.2 L494.7,449.8 L499.4,449.6 L509.3,465.7 L519.2,438.2 L519.2,430.0 Z';
+  'M534,431 L510,417 L486,413 L480,415 L471,445 L464,484 L450,574 L472,526 L499,461 L502,460 L516,488 Z';
 export const CHARGERS_BOLT_BODY_LEFT =
-  'M99.8,417.2 L107.1,440.9 L113.8,486.0 L113.3,494.9 L92.7,438.2 L89.1,438.5 L82.1,452.2 L79.7,452.9 L70.9,428.3 L84.2,421.3 L99.5,417.5 Z';
+  'M101.7,418.8 L111.9,447.7 L121.3,502.7 L120.6,513.6 L91.8,444.4 L86.7,444.8 L76.9,461.5 L73.6,462.3 L61.3,432.3 L79.9,423.8 L101.3,419.1 Z';
 export const CHARGERS_BOLT_BODY_RIGHT =
-  'M488.2,417.2 L480.9,440.9 L474.2,486.0 L474.7,494.9 L495.3,438.2 L498.9,438.5 L505.9,452.2 L508.3,452.9 L517.1,428.3 L503.8,421.3 L488.5,417.5 Z';
+  'M486.3,418.8 L476.1,447.7 L466.7,502.7 L467.4,513.6 L496.2,444.4 L501.3,444.8 L511.1,461.5 L514.4,462.3 L526.7,432.3 L508.1,423.8 L486.7,419.1 Z';
 // The shell mark, traced from the shell in the 2025 composite itself rather than from the
 // club's logo file. The logo IS this bolt, but flat: 2.48 aspect with short blunt tails against the
 // decal's 1.71 and long swept ones, because a decal applied around a curved shell arches far more in
