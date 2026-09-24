@@ -2,19 +2,14 @@
 // file only restates WHICH parts each kit combines, and names every color from the team palette
 // instead of the kit row's shifting primary/secondary/accent.
 //
-// All three kits are ONE construction, and the uniform is bolts: one on each shoulder cap and a much
-// larger one on the shell, each a solid body inside a contrasting keyline. No sleeve stripe and no
-// collar trim. The three kits combine one helmet (the white shell), two jerseys (powder-blue shared
-// by home + powder-blue, white for away), and three pants — every jersey in the 2025 reference is
-// worn with gold, white and powder-blue legs.
+// The primary kits and gold alternate share a white helmet; the navy alternate has its own shell.
+// All use bolts on the shoulder and helmet without sleeve stripes.
 //
 // The pants are plain here on purpose. Los Angeles wears a bolt down each leg, but on the SIDE seam,
 // which a front-on mannequin cannot show; drawing it onto the leg's face would put a mark where the
 // real pant has none. Everything invisible from the front stays out of the figure.
 //
-// NOTE: home and powder-blue render IDENTICALLY by design — both rows store primary #0080C6 over
-// gold, differing only in accent — and the 2025 reference draws exactly one powder-blue jersey. The
-// spec flags this as a known pixel-identical pair to surface, not to silently collapse.
+// Home and powder-blue share the same rendered construction.
 
 import {
   CHARGERS_BOLT_BODY_LEFT,
@@ -23,6 +18,7 @@ import {
   CHARGERS_BOLT_KEYLINE_RIGHT,
   CHARGERS_DECAL_BOLT_PATH,
   CHARGERS_DECAL_KEYLINE_PATH,
+  CHARGERS_HELMET_NUMBER_THREE,
 } from './source';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
@@ -67,14 +63,37 @@ function decal(keyline: string, body: string): PartLayer[] {
   ];
 }
 
-// The white shell with the bolt — one object, shared by all three kits.
-//
-// Gold cage, sampled from the Chargers' 2025 composite (nfl-uniform-refs/chargers); the
-// reference helmet consistently shows the facemask in the team's lightning-bolt gold.
+// The white shell with the bolt and powder-blue player numeral.
 const HELMET_WHITE: UniformPart = {
   base: 'white',
   facemask: 'gold',
-  layers: decal('powderBlue', 'gold'),
+  layers: [
+    ...decal('powderBlue', 'gold'),
+    {
+      id: 'chargers-white-helmet-number',
+      surface: 'helmet',
+      d: CHARGERS_HELMET_NUMBER_THREE,
+      clip: true,
+      kind: 'fill',
+      fill: 'powderBlue',
+    },
+  ],
+};
+
+const HELMET_NAVY: UniformPart = {
+  base: 'navy',
+  facemask: 'navy',
+  layers: [
+    ...decal('gold', 'white'),
+    {
+      id: 'chargers-navy-helmet-number',
+      surface: 'helmet',
+      d: CHARGERS_HELMET_NUMBER_THREE,
+      clip: true,
+      kind: 'fill',
+      fill: 'white',
+    },
+  ],
 };
 
 // Powder-blue jersey (home + powder-blue): powder-blue body, white-keylined gold sleeve bolts,
@@ -82,14 +101,11 @@ const HELMET_WHITE: UniformPart = {
 
 // Away jersey: white body, blue-keylined gold sleeve bolts, blue numerals keylined gold.
 
-// The three legs the current kits are worn with, plus the navy the alternate needs. Plain colour —
+// The primary kits' legs plus navy for the alternate. Plain colour —
 // see the side-seam note in the header for why no bolt is drawn on them.
 const PANTS_GOLD: UniformPart = { base: 'gold', layers: [] };
 const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
 const PANTS_POWDER: UniformPart = { base: 'powderBlue', layers: [] };
-// Navy is worn only with the navy alternate jersey and its navy shell, neither of which is in the
-// archive yet, so no kit below references this part. It stays because the pant exists and the
-// measurement is done; the kit that wears it is a separate curation ticket.
 const PANTS_NAVY: UniformPart = { base: 'navy', layers: [] };
 
 export const CHARGERS_CONSTRUCTION = {
@@ -100,23 +116,22 @@ export const CHARGERS_CONSTRUCTION = {
     powderBlue: '#0080C6',
     gold: '#FFC20E',
     white: '#FFFFFF',
-    // Navy pants sampled from the 2025 composite (nfl-uniform-refs/chargers).
     navy: '#002244',
   },
-  helmets: { white: HELMET_WHITE },
+  helmets: { white: HELMET_WHITE, navy: HELMET_NAVY },
   pants: {
     gold: PANTS_GOLD,
     white: PANTS_WHITE,
     powder: PANTS_POWDER,
     navy: PANTS_NAVY,
   },
-  // Canonical first, so the compiled definition and the committed raster are unchanged. The rest are
-  // the options each jersey is actually drawn with on the 2025 composite — gold, white and powder
-  // for both jerseys, and navy for neither: navy legs appear only under the navy alternate top.
+  // Canonical pants first; navy belongs to the navy alternate only.
   kits: {
     home: { helmet: 'white', jersey: 'powder', pants: ['gold', 'white', 'powder'] },
     away: { helmet: 'white', jersey: 'white', pants: ['gold', 'white', 'powder'] },
     'powder-blue': { helmet: 'white', jersey: 'powder', pants: ['gold', 'white', 'powder'] },
+    'charger-power': { helmet: 'white', jersey: 'gold', pants: ['gold', 'white'] },
+    'super-chargers': { helmet: 'navy', jersey: 'navy', pants: 'navy' },
   },
 };
 

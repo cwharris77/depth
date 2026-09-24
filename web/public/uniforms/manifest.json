@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "5471e0e43253f68d91388b3938e5bc87ce400a158cdccc47425a20400b512267",
-  "revision": "ef954e90a1638b79",
+  "sourceDigest": "646f1af54a9f960dc55bdb0db115b2d024afb194fa50c5c653e90e2a9b010843",
+  "revision": "5c765b4ea4214d61",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -411,7 +411,7 @@
     {
       "catalogId": "chargers-away-2020",
       "constructionKey": "away",
-      "revision": "6fc2cb40c8812c4b",
+      "revision": "ed1f6a73e05a26b1",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chargers-away-2020.webp",
@@ -419,14 +419,29 @@
         },
         "full": {
           "path": "/uniforms/chargers-away-2020-full.webp",
-          "sha256": "e6674eab167d4475ea2856b6cf5ba730af52d0268226716865a586f5cd12fc96"
+          "sha256": "4c5c64f5c78f6ed7453198bad6189fc78225b12c416dcb9e071b2228a84bc679"
+        }
+      }
+    },
+    {
+      "catalogId": "chargers-charger-power-2025",
+      "constructionKey": "charger-power",
+      "revision": "3632fb3fc7d6e52a",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/chargers-charger-power-2025.webp",
+          "sha256": "6c4c9dcfa1afc7209f8281087862d719585cc4ea60be8e1df0726e2a05357905"
+        },
+        "full": {
+          "path": "/uniforms/chargers-charger-power-2025-full.webp",
+          "sha256": "dc7f73c0b393465f6544ac76d54cd2c4be6c784e52831fb4698dd02251464e50"
         }
       }
     },
     {
       "catalogId": "chargers-home-2020",
       "constructionKey": "home",
-      "revision": "1da5e78d220762c4",
+      "revision": "a71ff03f5b72b9f9",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chargers-home-2020.webp",
@@ -434,14 +449,14 @@
         },
         "full": {
           "path": "/uniforms/chargers-home-2020-full.webp",
-          "sha256": "8e1f1d7a50287117d32b29e2ee69862c5372a473661ac09c41ce0efe64d3882f"
+          "sha256": "0874f4f8b82ade8eefc399a2f769385d57c0755c0f70dd646169cb376ea09899"
         }
       }
     },
     {
       "catalogId": "chargers-powder-blue-1960",
       "constructionKey": "powder-blue",
-      "revision": "debe89b091384b8c",
+      "revision": "cc18d52322a211aa",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chargers-powder-blue-1960.webp",
@@ -449,7 +464,22 @@
         },
         "full": {
           "path": "/uniforms/chargers-powder-blue-1960-full.webp",
-          "sha256": "8e1f1d7a50287117d32b29e2ee69862c5372a473661ac09c41ce0efe64d3882f"
+          "sha256": "0874f4f8b82ade8eefc399a2f769385d57c0755c0f70dd646169cb376ea09899"
+        }
+      }
+    },
+    {
+      "catalogId": "chargers-super-chargers-2025",
+      "constructionKey": "super-chargers",
+      "revision": "7a0d47b3ba7688bd",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/chargers-super-chargers-2025.webp",
+          "sha256": "42fd14a55f21aa45cae134e3e42594c091d76bc9329c35f50c9a8727c7846ed4"
+        },
+        "full": {
+          "path": "/uniforms/chargers-super-chargers-2025-full.webp",
+          "sha256": "aeb7d33dcf7aa8f4658d199ce4898c0e9c00915acf94861a5add24e5f464478e"
         }
       }
     },
