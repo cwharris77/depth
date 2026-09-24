@@ -32,10 +32,10 @@ export type UniformArtVariant = Extract<UniformVariant, 'jersey' | 'full'>;
 // surfaces in the mannequin's shared paint order.
 //
 // Color contract: primary = helmet shell / jersey body / pants; secondary = helmet + sleeve +
-// pant stripes and the number outline; accent = shoulder yoke + helmet stripe; socks follow
-// the pants unless a kit sets its own; number fill =
-// readableTextOn(primary) so it stays legible on any body color. Helmet shell and facemask paths
-// re-light their model surface color; only physical hardware keeps the source art's neutral fills.
+// pant stripes and the number outline; accent = shoulder yoke + helmet stripe; number fill =
+// readableTextOn(primary) so it stays legible on any body color. Socks follow the pants unless a
+// kit sets its own. Helmet shell and facemask paths re-light their model surface color; only
+// physical hardware keeps the source art's neutral fills.
 
 // Shared mannequin paths (template coordinate space; viewBox origin 20,45).
 const GEO = {
