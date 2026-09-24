@@ -53,11 +53,15 @@ describe('expandPants', () => {
       ['t-stripe-1-edge-left', 'M128,807 H140 V1196 H128 Z'],
       ['t-stripe-1-left', 'M130,807 H138 V1196 H130 Z'],
     ]);
-    const right = part.layers.filter((l) => l.surface === 'leg-right').map((l) => l.d);
-    expect(right[0]).toBe('M464,807 H476 V1196 H464 Z');
+    expect(part.layers.filter((l) => l.surface === 'leg-right').map((l) => [l.id, l.d])).toEqual([
+      ['t-stripe-0-edge-right', 'M464,807 H476 V1196 H464 Z'],
+      ['t-stripe-0-right', 'M466,807 H474 V1196 H466 Z'],
+      ['t-stripe-1-edge-right', 'M448,807 H460 V1196 H448 Z'],
+      ['t-stripe-1-right', 'M450,807 H458 V1196 H450 Z'],
+    ]);
   });
 
-  it('never draws a pant stripe below the hem', () => {
+  it('never draws a leg-edge stripe below the hem', () => {
     const part = expandPants('t', {
       body: 'navy',
       stripes: {

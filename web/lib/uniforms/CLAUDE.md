@@ -62,6 +62,8 @@ socks: { navy: expandSocks('<team>-navy-socks', { color: 'navy', stripes: { band
 | `SocksSpec.color` | Sock colour, painted on both shins below the hem. |
 | `SocksSpec.stripes` | Hoops around the calf, listed from the top down. |
 
+When a team moves to these specs, any shin art it had drawn as pants layers on `leg-left`/`leg-right` (such as full-shin sock rectangles) moves into its socks part instead — leg layers paint over the sock colour, so leaving them in place would hide it.
+
 Pants and socks use the same step names as the jersey with narrower widths: sizes `s` / `m` / `l` are 8 / 16 / 24 units, gaps `none` / `narrow` / `wide` / `broad` are 0 / 4 / 8 / 12, and `edge` piping is 2. A reference sheet often draws the leg stripe in a swatch beside the figure; the swatch beside the socks is the sock, not the pant.
 
 ## Marks
