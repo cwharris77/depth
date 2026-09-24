@@ -2,7 +2,7 @@ import { readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { UNIFORMS } from '../../data';
-import { LEGACY_ACCENTS } from '../../legacy-accents';
+import { HAND_ACCENTS, LEGACY_ACCENTS } from '../../legacy-accents';
 import { getAllTeamCatalogs, getTeamCatalog } from '../catalogs';
 import { catalogAccents, catalogKits, catalogRows, validateCatalog } from '../core/catalog';
 
@@ -35,17 +35,14 @@ const rowId = (row: { teamId: string; slug: string; yearStart: number }) =>
 const byId = <T extends { teamId: string; slug: string; yearStart: number }>(rows: T[]) =>
   [...rows].sort((a, b) => rowId(a).localeCompare(rowId(b)));
 
-// Once a team converts, its rows come from the catalog only; a hand-written entry left behind
-// in legacy-accents.ts is dead weight nothing reads. `49ers` has no catalog and shares a
-// numeric-looking id with no other team, so a plain prefix check is safe here.
+// A converted team's accent pairs live only in its catalog. A hand-written pair left behind
+// under the same id would be silently overridden by the catalog spread, so check the
+// hand-written map itself rather than the merged one.
 describe('no leftover hand-written accents for a converted team', () => {
-  it('has no hand-written key prefixed by a registered team id', () => {
-    const registeredIds = getAllTeamCatalogs().map(({ catalog }) => `${catalog.teamId}-`);
-    const catalogOwnedIds = new Set(
-      getAllTeamCatalogs().flatMap(({ catalog }) => Object.keys(catalogAccents(catalog)))
-    );
-    const leftovers = Object.keys(LEGACY_ACCENTS).filter(
-      (id) => !catalogOwnedIds.has(id) && registeredIds.some((prefix) => id.startsWith(prefix))
+  it('has no hand-written key belonging to a registered team', () => {
+    const prefixes = getAllTeamCatalogs().map(({ catalog }) => `${catalog.teamId}-`);
+    const leftovers = Object.keys(HAND_ACCENTS).filter((id) =>
+      prefixes.some((prefix) => id.startsWith(prefix))
     );
     expect(leftovers).toEqual([]);
   });

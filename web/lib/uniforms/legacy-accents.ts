@@ -6,7 +6,7 @@ export type LegacyAccentPair = Pick<TeamColors, 'uiAccent' | 'onAccent'>;
 
 // Hand-curated entries for teams that have not converted to a catalog yet. A converted team's
 // entries move out of here into its `teams/<team>/catalog.ts` instead.
-const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
+export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'ravens-home-1996': { uiAccent: '#9E7C0C', onAccent: '#0a0e1a' },
   'bengals-home-2021': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'browns-home-2020': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
