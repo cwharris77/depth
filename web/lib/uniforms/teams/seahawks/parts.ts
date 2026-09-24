@@ -50,8 +50,6 @@ import type { UniformSurface } from '../core/types';
 
 import { SEAHAWKS_RIVALRIES_JERSEY_PALETTE } from './jerseys/rivalries-2025';
 
-export const COLLAR_PATH = 'M206,388 L294,455 L386,388';
-
 export const fill = (id: string, surface: UniformSurface, d: string, color: string): PartLayer => ({
   id,
   surface,
@@ -165,6 +163,8 @@ export const SEAHAWKS_PALETTE = {
   // The throwback's royal, green and two silvers have no published codes; each is the flat fill
   // of the GUD 2025 composite's throwback figure.
   throwbackRoyal: '#0248B3',
+  // The inside of the neck opening: the royal in shadow.
+  throwbackNeck: '#01358A',
   throwbackGreen: '#0E8329',
   throwbackSilver: '#A7B0BA',
   throwbackPantsSilver: '#DBDDDF',

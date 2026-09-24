@@ -9,11 +9,11 @@ import {
   SEAHAWKS_THROWBACK_SLEEVE_WHITE_LEFT,
   SEAHAWKS_THROWBACK_SLEEVE_WHITE_RIGHT,
 } from '../source';
-import { COLLAR_PATH, fill } from '../parts';
+import { modernInsetVCollar } from '../../core/shared';
+import { fill } from '../parts';
 
 // Royal body with white numerals, white shoulder numbers, the original hawk on each sleeve and a
-// white-green-white V collar. The collar is two centred strokes: the wide white one shows as the
-// outer and inner keylines around the narrower green one.
+// white-green-white V collar. The shared inset V collar gives the white edge with a green inset.
 export const SEAHAWKS_JERSEY_THROWBACK: UniformPart = {
   base: 'throwbackRoyal',
   layers: [
@@ -55,24 +55,15 @@ export const SEAHAWKS_JERSEY_THROWBACK: UniformPart = {
       SEAHAWKS_THROWBACK_SLEEVE_EYE_RIGHT,
       'throwbackGreen'
     ),
-    {
-      id: 'seahawks-throwback-collar-white',
-      surface: 'collar',
-      d: COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'white',
-      strokeWidth: 20,
-    },
-    {
-      id: 'seahawks-throwback-collar-green',
-      surface: 'collar',
-      d: COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'throwbackGreen',
-      strokeWidth: 12,
-    },
+    ...modernInsetVCollar({
+      idPrefix: 'seahawks-throwback',
+      colors: {
+        body: 'throwbackNeck',
+        edge: 'white',
+        inset: 'throwbackGreen',
+        placket: 'throwbackRoyal',
+      },
+    }),
   ],
   number: { fill: 'white', outline: 'throwbackRoyal', outlineWidth: 26 },
 };

@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "2628eca6af66cc983d4a39c4501d7a36256b3ad0a41f6cb9128ef34caa51c902",
-  "revision": "9ef9822573fb81e5",
+  "sourceDigest": "78cfead1f92d5d3e48efe4852ee5185d96f97b4dba5b08cea3e8aa58c4e45398",
+  "revision": "6958dfc011122de9",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1326,15 +1326,15 @@
     {
       "catalogId": "seahawks-1976-throwback-1976",
       "constructionKey": "1976-throwback",
-      "revision": "6cd7f6d72cfdce59",
+      "revision": "50fc6dc00dbbda4a",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-1976-throwback-1976.webp",
-          "sha256": "5fb038abb2a812855028db6a6d7f571bc300c1d6e9dc1f7f86f37396ed1a4ca8"
+          "sha256": "863b906e12b9a001f2b5c30717168acb5de62ead98c99d243b5297b0e59bd49c"
         },
         "full": {
           "path": "/uniforms/seahawks-1976-throwback-1976-full.webp",
-          "sha256": "d6846a9a23f613b7f9e61a5a3a8ef5bb44361e1990f0066bc86d1440c8d52511"
+          "sha256": "97af87914d20a0aee6e7126f1d5e04ebf6c7421b2a516543ea4c685ebc057072"
         }
       }
     },
