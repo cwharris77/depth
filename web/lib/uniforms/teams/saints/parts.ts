@@ -14,6 +14,8 @@ import {
   SAINTS_DECAL_GOLD_PATH,
   SAINTS_DECAL_WHITE_PATH,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import { GENERIC_COLLAR_PATH } from '../core/shared';
 
@@ -38,10 +40,10 @@ export function collar(stroke: string): PartLayer[] {
 // cannot separate a gold cage from the same-toned shell, so the named source and the team's gold
 // #D3BC8D are the source of truth). The shared neutral #4b5158 it replaces is a grey smudge
 // against the gold.
-const HELMET_GOLD_FLEUR: UniformPart = {
-  base: 'gold',
+const HELMET_GOLD_FLEUR: UniformPart = expandHelmet('saints-gold-fleur-helmet', {
+  shell: 'gold',
   facemask: 'gold',
-  layers: [
+  decal: placed([
     {
       id: 'saints-decal-black',
       surface: 'helmet',
@@ -66,8 +68,9 @@ const HELMET_GOLD_FLEUR: UniformPart = {
       kind: 'fill',
       fill: 'decal-white',
     },
-  ],
-};
+  ]),
+  number: 'none',
+});
 
 // Black jersey (home + color-rush): gold collar, gold numerals keylined white.
 

@@ -25,6 +25,8 @@ import {
   RAMS_STRIPE_BAND_LEFT,
   RAMS_STRIPE_BAND_RIGHT,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { fromGeneric, type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -62,11 +64,21 @@ function horn(fill: string): PartLayer[] {
 // The royal shell (H1) — home, away and bone all wear it with the gold horn. The cage is royal
 // too: every blue-shell figure on the 2025 composite (nfl-uniform-refs/rams) wears a facemask
 // painted the shell color rather than a neutral cage.
-const HELMET_ROYAL: UniformPart = { base: 'royal', facemask: 'royal', layers: horn('gold') };
+const HELMET_ROYAL: UniformPart = expandHelmet('rams-royal-helmet', {
+  shell: 'royal',
+  facemask: 'royal',
+  decal: placed(horn('gold')),
+  number: 'none',
+});
 
 // The Rivalries shell (H2): near-black navy with the yellow horn, and a cage painted to match the
 // shell exactly as the blue helmets are.
-const HELMET_RIVALRIES: UniformPart = { base: 'navy', facemask: 'navy', layers: horn('yellow') };
+const HELMET_RIVALRIES: UniformPart = expandHelmet('rams-rivalries-helmet', {
+  shell: 'navy',
+  facemask: 'navy',
+  decal: placed(horn('yellow')),
+  number: 'none',
+});
 
 // Home jersey (J1): royal body, gold band and tail, gold numerals with a white keyline.
 

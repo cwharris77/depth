@@ -4,7 +4,7 @@ How a team's uniform art is built and changed. Read this before touching `teams/
 
 ## How the art is put together
 
-- Every team is a module in `teams/<team>/`: `source.ts` (raw path data such as decals and wordmarks), `parts.ts` (palette, helmets, pants, socks), `jerseys/<name>.ts` (one file per jersey), `index.ts` (assembles the `TeamPartsDefinition` and calls `compileParts`).
+- Every team is a module in `teams/<team>/`: `source.ts` (raw path data such as decals and wordmarks), `parts.ts` (palette, helmets built with `expandHelmet()`, pants, socks), `jerseys/<name>.ts` (one file per jersey), `index.ts` (assembles the `TeamPartsDefinition` and calls `compileParts`).
 - A part is a base colour plus ordered layers (`PartLayer`). Later layers paint over earlier ones. Coordinates are the shared mannequin space: jersey crop `viewBox="20 372 560 452"`, neck at y≈384, sleeve hems at y≈589.
 - Colours in layers are palette keys, never hexes. `hex()` throws on an unknown key. The one team-independent paint is `outline` (the mannequin's grey, `FIGURE_OUTLINE`), for keylines that separate a band from a body of the same colour.
 - Geometry that is a fact about the mannequin, not about a team, lives in `teams/core/shared.ts` (collars, the helmet crown stripe). Team modules own everything team-specific.
@@ -66,9 +66,29 @@ When a team moves to these specs, any shin art it had drawn as pants layers on `
 
 Pants and socks use the same step names as the jersey with narrower widths: sizes `s` / `m` / `l` are 8 / 16 / 24 units, gaps `none` / `narrow` / `wide` / `broad` are 0 / 4 / 8 / 12, and `edge` piping is 2. A reference sheet often draws the leg stripe in a swatch beside the figure; the swatch beside the socks is the sock, not the pant.
 
+## Helmets
+
+Every helmet is built with `expandHelmet()` (`teams/core/helmet-spec.ts`) from a `HelmetSpec`, and `teams/__tests__/helmets.test.ts` fails if one isn't.
+
+```ts
+const HELMET_WHITE = expandHelmet('<team>-white-helmet', {
+  shell: 'white',
+  facemask: 'gold',                    // or 'neutral' for the shared grey cage
+  decal: placed(decalLayers),          // or 'none'
+  number: { fill: 'powderBlue' },      // or 'none'
+});
+```
+
+| Field | Meaning |
+|---|---|
+| `shell` | Shell colour. |
+| `facemask` | Cage colour, or `'neutral'` for the shared grey cage. |
+| `decal` | The shell's finished art, crown stripes included, as a placed mark: `placed(layers)` emits the layers exactly as written. Existing helmet art is never redrawn or re-fitted. |
+| `number` | The athletic 3 on the side panel, in `fill`, or `'none'`. It fits the one shared shell, so adding a missing number is this one field. |
+
 ## Marks
 
-Marks are polygon art only for now: a mark is fixed vector art such as a helmet decal or sleeve logo, drawn as absolute M/L/Z polygons — curve commands are not supported yet. `teams/<team>/marks/<name>.ts` exports a `Mark` whose paths are absolute M/L/Z polygons in the art's own space, one per colour slot in paint order, plus a `box`: the box must contain every slot, so use `boundsOf` of the slot whose bounds contain all the others. `placeMark(idPrefix, mark, anchor, slots)` in `teams/core/marks.ts` fits the box to a named anchor and emits ordinary layers; `placeMarkOnSleeves` does both sleeves, the left mirrored so both face outward. `slots` maps each slot to a palette key, or to `null` to drop it (a body colour that would vanish into the garment). An unmapped slot throws.
+Marks are polygon art only for now: a mark is fixed vector art such as a helmet decal or sleeve logo, drawn as absolute M/L/Z polygons — curve commands are not supported yet. `teams/<team>/marks/<name>.ts` exports a `Mark` whose paths are absolute M/L/Z polygons in the art's own space, one per colour slot in paint order, plus a `box`: the box must contain every slot, so use `boundsOf` of the slot whose bounds contain all the others. `placeMark(idPrefix, mark, anchor, slots)` in `teams/core/marks.ts` fits the box to a named anchor and emits ordinary layers; `placeMarkOnSleeves` does both sleeves, the left mirrored so both face outward. `slots` maps each slot to a palette key, or to `null` to drop it (a body colour that would vanish into the garment). An unmapped slot throws. `placed(layers)` is the pass-through form for art that is already in mannequin space, used when a helmet's decal is a fixed layer set rather than a mark placed by anchor.
 
 Marks are extracted from a supplied SVG by a script in `scripts/uniform-draw/` and never hand-edited. Scripts emit the mark only; placement belongs to the anchor. A mark that needs a position no anchor gives is a new anchor in `ANCHORS`, not per-team coordinates.
 

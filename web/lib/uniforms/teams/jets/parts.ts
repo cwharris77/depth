@@ -19,6 +19,8 @@ import {
   JETS_SLEEVE_X_LEFT,
   JETS_SLEEVE_X_RIGHT,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -78,25 +80,28 @@ export function wordmark(color: string): PartLayer[] {
 }
 
 // Home/away's green shell (H1) — #125740, the current green.
-export const HELMET_GREEN: UniformPart = {
-  base: 'green',
+export const HELMET_GREEN: UniformPart = expandHelmet('jets-green-helmet', {
+  shell: 'green',
   facemask: 'white',
-  layers: wordmark('white'),
-};
+  decal: placed(wordmark('white')),
+  number: 'none',
+});
 
 // Rivalries' green shell (H2) — #115740, a distinct step.
-export const HELMET_RIV_GREEN: UniformPart = {
-  base: 'rivalGreen',
+export const HELMET_RIV_GREEN: UniformPart = expandHelmet('jets-riv-helmet', {
+  shell: 'rivalGreen',
   facemask: 'white',
-  layers: wordmark('white'),
-};
+  decal: placed(wordmark('white')),
+  number: 'none',
+});
 
 // Black-alt shell (H3).
-export const HELMET_BLACK: UniformPart = {
-  base: 'black',
+export const HELMET_BLACK: UniformPart = expandHelmet('jets-black-helmet', {
+  shell: 'black',
   facemask: 'white',
-  layers: wordmark('green'),
-};
+  decal: placed(wordmark('green')),
+  number: 'none',
+});
 
 // Pants — no pant stripe on any kit; each takes its body color.
 export const PANTS_GREEN: UniformPart = { base: 'green', layers: [] };

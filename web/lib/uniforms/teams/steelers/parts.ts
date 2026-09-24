@@ -43,6 +43,8 @@ import {
   STEELERS_SLEEVE_WHITE_LEFT,
   STEELERS_SLEEVE_WHITE_RIGHT,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 
 export const fill = (
@@ -113,12 +115,22 @@ function pantsStripes(): PartLayer[] {
 // Black cage. The Steelers' glossy black shell wears a black facemask (named sources; the
 // composite cannot render a black cage on a black shell, so the named sources are the source of
 // truth). The shared neutral #4b5158 it replaces is a grey that floats against the black shell.
-const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'black', layers: DECAL };
+const HELMET_BLACK: UniformPart = expandHelmet('steelers-black-helmet', {
+  shell: 'black',
+  facemask: 'black',
+  decal: placed(DECAL),
+  number: 'none',
+});
 
 // The bumblebee's gold shell, bare. Left on the default cage: the 1934 throwback's helmet
 // predates the facemask, so there is no documented cage color to source, and the composite
 // shows only the bare gold shell at this size.
-const HELMET_GOLD: UniformPart = { base: 'gold', layers: [] };
+const HELMET_GOLD: UniformPart = expandHelmet('steelers-gold-helmet', {
+  shell: 'gold',
+  facemask: 'neutral',
+  decal: 'none',
+  number: 'none',
+});
 
 // Home jersey: black body, the sleeve stripe set (fixed), white numerals ringed gold.
 

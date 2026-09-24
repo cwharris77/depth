@@ -10,6 +10,8 @@
 // with the away numerals black to match.
 
 import { RAIDERS_DECAL_PATHS } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 
 // The complete supplied mark in its original paint order: shield and keyline, wordmark, crossed
@@ -29,11 +31,12 @@ const DECAL: PartLayer[] = RAIDERS_DECAL_PATHS.map(({ d, fill }, index) => ({
 // Black cage. The Raiders' silver shell carries a black facemask (named sources; the composite
 // reads the cage bars at #000000 against the shell's #d6dbe3 and the white background). The shared
 // neutral #4b5158 it replaces is a mid-grey that reads soft against the silver shell.
-const HELMET_SILVER_SHIELD: UniformPart = {
-  base: 'silver',
+const HELMET_SILVER_SHIELD: UniformPart = expandHelmet('raiders-silver-shield-helmet', {
+  shell: 'silver',
   facemask: 'black',
-  layers: DECAL,
-};
+  decal: placed(DECAL),
+  number: 'none',
+});
 
 // Home jersey: black body, silver numerals.
 

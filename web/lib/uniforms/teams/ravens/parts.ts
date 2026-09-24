@@ -44,6 +44,8 @@ import {
   RAVENS_DECAL_SVG_15_PATH,
   RAVENS_DECAL_SVG_16_PATH,
 } from './decal';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -110,7 +112,12 @@ export function sleeveBands(fill: string): PartLayer[] {
 // figure on the 2025 composite (nfl-uniform-refs/ravens) wears a black facemask, on all three
 // rows. The lone gold cage on that sheet belongs to the purple 1996 throwback shell, which is not
 // a kit this archive carries.
-const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'black', layers: decal() };
+const HELMET_BLACK: UniformPart = expandHelmet('ravens-black-helmet', {
+  shell: 'black',
+  facemask: 'black',
+  decal: placed(decal()),
+  number: 'none',
+});
 
 // Home jersey (J1): purple body, white bar face, black sleeve band, white numerals.
 
