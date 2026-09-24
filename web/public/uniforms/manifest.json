@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "e5f07e79f933990fbb2df871876bfb150dc458e9ecd84e035bd6267a4f88d4a0",
-  "revision": "85d99d91355a757b",
+  "sourceDigest": "0b860907fe6594863cd5888b4e3b1a3d4f6af34fd43d38a7321b214dd4e82f58",
+  "revision": "2520124793dc457d",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -201,60 +201,60 @@
     {
       "catalogId": "broncos-away-2024",
       "constructionKey": "away",
-      "revision": "42417d50f3c57c30",
+      "revision": "52d237e4583d0dce",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-away-2024.webp",
-          "sha256": "32d313c80fec44f4c0b349dcf69e1adf4dd9bb327f5d7b4822a25f68e4fb625d"
+          "sha256": "e6cd87a6708ce5b65b2c63b9379a87a75c00e5670c4632c20eda12954bbf739a"
         },
         "full": {
           "path": "/uniforms/broncos-away-2024-full.webp",
-          "sha256": "d4564a4c3a1a3b12feb144d4fd9efbb10e1a24513616edf7e92a55f2729ffffb"
+          "sha256": "92f99548afb097aa47e9894ff7db593de0e482c6427098f95f1552514b39c074"
         }
       }
     },
     {
       "catalogId": "broncos-home-2024",
       "constructionKey": "home",
-      "revision": "491e34d3ce4c0171",
+      "revision": "6ee483bf2da63383",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-home-2024.webp",
-          "sha256": "eea4503204aa48047dfef4e8511ebb8d86c691822de996312a15e78c7b5579f1"
+          "sha256": "0e89f336f055c8a5d3d0cb1944d835146acf2cefc8f2a2be74523f51a995e097"
         },
         "full": {
           "path": "/uniforms/broncos-home-2024-full.webp",
-          "sha256": "ccf384cf9a60164235d099f072163199f2282444e2cd581b87ebc57de60d19e3"
+          "sha256": "1282e87267220c11a976705876002805c65173e1ab4263e96794baee8e255f3e"
         }
       }
     },
     {
       "catalogId": "broncos-orange-alt-2024",
       "constructionKey": "orange-alt",
-      "revision": "a84572314cdfc411",
+      "revision": "4dbf311c1052505c",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-orange-alt-2024.webp",
-          "sha256": "eea4503204aa48047dfef4e8511ebb8d86c691822de996312a15e78c7b5579f1"
+          "sha256": "0e89f336f055c8a5d3d0cb1944d835146acf2cefc8f2a2be74523f51a995e097"
         },
         "full": {
           "path": "/uniforms/broncos-orange-alt-2024-full.webp",
-          "sha256": "193a65d2a501b618bd0bacb7e9fdbe94429fe7139a247a56d3499f1e18000579"
+          "sha256": "720d67e7eca0ed2f9263885379771e5db964341e00a38e3da3b0dfcc6f2f7a6d"
         }
       }
     },
     {
       "catalogId": "broncos-orange-crush-1968",
       "constructionKey": "orange-crush",
-      "revision": "c80d8240de7c0ef8",
+      "revision": "74722c71d6b3ce80",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-orange-crush-1968.webp",
-          "sha256": "bf357dfa610cb0e840bb3c13bffe917ff12469fd0d7a057c80b816e410172a2c"
+          "sha256": "4feee04056bc18c6250a154edc28a4e797eae231d2b2fa749b72bea99d2ceed9"
         },
         "full": {
           "path": "/uniforms/broncos-orange-crush-1968-full.webp",
-          "sha256": "b95285d59ea4c5f6b1d3d5e20a8e073737179008d7ca5f5f7de88006246b03d2"
+          "sha256": "6a90a95ad6245e6dce61be17658cf90570ab0b981beb40da4a9639395a8be31c"
         }
       }
     },
