@@ -7,7 +7,7 @@ How a team's uniform art is built and changed. Read this before touching `teams/
 - Every team is a module in `teams/<team>/`: `source.ts` (raw path data such as decals and wordmarks), `parts.ts` (palette, helmets built with `expandHelmet()`, pants, socks), `jerseys/<name>.ts` (one file per jersey), `index.ts` (assembles the `TeamPartsDefinition` and calls `compileParts`).
 - A part is a base colour plus ordered layers (`PartLayer`). Later layers paint over earlier ones. Coordinates are the shared mannequin space: jersey crop `viewBox="20 372 560 452"`, neck at y≈384, sleeve hems at y≈589.
 - Colours in layers are palette keys, never hexes. `hex()` throws on an unknown key. The one team-independent paint is `outline` (the mannequin's grey, `FIGURE_OUTLINE`), for keylines that separate a band from a body of the same colour.
-- Geometry that is a fact about the mannequin, not about a team, lives in `teams/core/shared.ts` (collars, the helmet crown stripe). Team modules own everything team-specific.
+- Geometry that is a fact about the mannequin, not about a team, lives in `teams/core/shared.ts` (collars, the helmet crown stripe, the helmet numeral). Team modules own everything team-specific.
 - The silhouette, the collar geometry and the numeral glyph (a `3`) are shared by every team. Don't chase a reference's collar width or depth or its numeral shape in a team module; that is a catalog change affecting everyone.
 
 ## Jerseys are specs first
@@ -83,7 +83,7 @@ const HELMET_WHITE = expandHelmet('<team>-white-helmet', {
 |---|---|
 | `shell` | Shell colour. |
 | `facemask` | Cage colour, or `'neutral'` for the shared grey cage. |
-| `decal` | The shell's finished art, crown stripes included, as a placed mark: `placed(layers)` emits the layers exactly as written. Existing helmet art is never redrawn or re-fitted. |
+| `decal` | The shell's finished art, crown stripes included (a few older helmet parts also carry collar or sleeve layers, which pass through the same way), as a placed mark: `placed(layers)` emits the layers exactly as written. Existing helmet art is never redrawn or re-fitted. |
 | `number` | The athletic 3 on the side panel, in `fill`, or `'none'`. It fits the one shared shell, so adding a missing number is this one field. |
 
 ## Marks

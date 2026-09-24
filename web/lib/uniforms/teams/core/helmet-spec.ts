@@ -8,7 +8,7 @@ export interface HelmetSpec {
   shell: string;
   // A palette key, or 'neutral' for the shared grey cage.
   facemask: string | 'neutral';
-  // The shell's art, crown stripes included.
+  // The shell's art, crown stripes included. Layers pass through as-is, whatever their surface.
   decal: PlacedMark | 'none';
   number: { fill: string } | 'none';
 }
