@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "f540a477835173877d5e32d2fbc75b71450971dcd58ba11cc5ddb1b5314b4888",
-  "revision": "8451b600a92e2935",
+  "sourceDigest": "ec9d59817decdcd62d2c3c55bcae97f4a99fad7976e48ff1fa54f73b8f1f7c2a",
+  "revision": "891f13c4bc4290f3",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -51,45 +51,45 @@
     {
       "catalogId": "bears-away-1984",
       "constructionKey": "away",
-      "revision": "81241a67d8d0fd79",
+      "revision": "5d2e234af9bc0aab",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bears-away-1984.webp",
-          "sha256": "30956d8114b890b86261fd67a2d78f98c133ea7d7308e6eed1a496c93b17e1fc"
+          "sha256": "7e5c9242514831d904611244a844ea1723369cd9201fc61f69647e6722a13092"
         },
         "full": {
           "path": "/uniforms/bears-away-1984-full.webp",
-          "sha256": "4c86eed5a42aa322db1283979bde1d82dd079df5d868a3183c6aa1d84f96e655"
+          "sha256": "a48df03fb28927deab0a5cce2616187d670af8e546e10d9816f0ff99aa3a8ccd"
         }
       }
     },
     {
       "catalogId": "bears-home-1984",
       "constructionKey": "home",
-      "revision": "b765f780b4533c63",
+      "revision": "abea618f1e527cb7",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bears-home-1984.webp",
-          "sha256": "501f2c027b4a3fb92ddd8e7e1d18abef01909ee4b6ae3ec63d1733a9775655dd"
+          "sha256": "ab57d8e0e3ce42a803f9ad83189b51f8e6fdde65cd4703a5e5d905e2874d55c2"
         },
         "full": {
           "path": "/uniforms/bears-home-1984-full.webp",
-          "sha256": "f1bc1599eb5e97bfcd06cdd27668afe3214085425f982b9b30ad27b29262bb60"
+          "sha256": "64017135a2c91d209f7dfeaf9806a1977ed77577bb0501ee8e49ae66f8c3dc8f"
         }
       }
     },
     {
       "catalogId": "bears-orange-alternate-2005",
       "constructionKey": "orange-alternate",
-      "revision": "968d845d7c9a43b5",
+      "revision": "09c93352f0b3eea6",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bears-orange-alternate-2005.webp",
-          "sha256": "c16347d0592f93865a675f9d782adc7611b24726b073947b00d95b4634dc89db"
+          "sha256": "8b65dc0b46b299c35b76a4378b2fed5eb002ee85e497f3d49618ec4aedb468b8"
         },
         "full": {
           "path": "/uniforms/bears-orange-alternate-2005-full.webp",
-          "sha256": "9123fc139d87896920338c470b848a00e1867ce11df8e15dabd7a5423f7a9eef"
+          "sha256": "9b29b9dbb4e1c51b8b17083cd8a9c6e982acc946475c52d1aaf28197e4906f79"
         }
       }
     },

@@ -29,8 +29,11 @@ export interface JerseySpec {
   // Canted stripes running down from the shoulder line, listed from the collar outward. Each
   // stripe leans its lower end toward the body.
   shoulderStripes?: { bands: JerseyBand[]; gap: JerseyGap };
-  // Horizontal stripes around the upper arm, below any shoulder panel.
-  sleeveStripes?: { bands: JerseyBand[]; gap: JerseyGap };
+  // A short bar lying along the top of each shoulder, parallel to the shoulder line.
+  shoulderBar?: { color: string };
+  // Horizontal stripes around the upper arm, below any shoulder panel. `edge` pipes every band
+  // with a thin band of that colour above and below it; the gap is measured between pipings.
+  sleeveStripes?: { bands: JerseyBand[]; gap: JerseyGap; edge?: string };
   // A solid band at the sleeve opening.
   cuff?: { color: string; size: JerseySize };
   // The numeral repeated small and upright on the lower outer face of each sleeve.
@@ -50,6 +53,12 @@ const SHOULDER_TOP = 428; // where the shoulder panel starts at the outer sleeve
 const SHOULDER_SLANT = 22; // how much lower each band edge sits at the inner end
 const CAP_REACH = 60; // the cap extends this far above its band; the silhouette clip trims it
 const STRIPES_TOP = 476;
+const STRIPE_EDGE_PX = 3;
+// The shoulder bar's top edge at its outer and collar ends on the left sleeve, following the
+// silhouette's shoulder line about 14 units below it.
+const SHOULDER_BAR_OUTER = [87, 428] as const;
+const SHOULDER_BAR_INNER = [159, 415] as const;
+const SHOULDER_BAR_HEIGHT = 11;
 const SHOULDER_STRIPE_REF_Y = 400; // where the first stripe's collar-side edge is placed
 const SHOULDER_STRIPE_START_X = 156; // that edge's x on the left sleeve at SHOULDER_STRIPE_REF_Y
 const SHOULDER_STRIPE_LEAN = 0.25; // inward x shift per unit of drop
@@ -79,6 +88,12 @@ function shoulderStripe(side: Sleeve, xOuter: number, xInner: number) {
   };
   const [t, b] = [SHOULDER_STRIPE_TOP, SHOULDER_STRIPE_BOTTOM];
   return `M${at(xOuter, t)} L${at(xInner, t)} L${at(xInner, b)} L${at(xOuter, b)} Z`;
+}
+
+function shoulderBar(side: Sleeve) {
+  const x = (v: number) => (side === SLEEVE_LEFT ? v : MIRROR_X - v);
+  const [[xo, yo], [xi, yi], h] = [SHOULDER_BAR_OUTER, SHOULDER_BAR_INNER, SHOULDER_BAR_HEIGHT];
+  return `M${x(xo)},${yo} L${x(xi)},${yi} L${x(xi)},${yi + h} L${x(xo)},${yo + h} Z`;
 }
 
 // JERSEY_NUMBER_THREE scaled to SLEEVE_NUMBER_HEIGHT and centred on the sleeve. The glyph is
@@ -188,18 +203,31 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
     });
   }
 
+  if (spec.shoulderBar) {
+    layers.push(...bothSleeves(`${prefix}-shoulder-bar`, spec.shoulderBar.color, shoulderBar));
+  }
+
   if (spec.sleeveStripes) {
+    const { edge } = spec.sleeveStripes;
     const gap = GAP_PX[spec.sleeveStripes.gap];
+    const e = edge ? STRIPE_EDGE_PX : 0;
     let sy = STRIPES_TOP;
     spec.sleeveStripes.bands.forEach((band, i) => {
       const h = SIZE_PX[band.size];
-      const top = sy;
+      const top = sy + e;
+      if (edge) {
+        layers.push(
+          ...bothSleeves(`${prefix}-stripe-${i}-edge`, edge, (side) =>
+            slantedBand(side, sy, sy, h + 2 * e)
+          )
+        );
+      }
       layers.push(
         ...bothSleeves(`${prefix}-stripe-${i}`, band.color, (side) =>
           slantedBand(side, top, top, h)
         )
       );
-      sy += h + gap;
+      sy += h + 2 * e + gap;
     });
   }
 
