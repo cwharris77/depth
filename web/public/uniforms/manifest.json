@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "0b860907fe6594863cd5888b4e3b1a3d4f6af34fd43d38a7321b214dd4e82f58",
-  "revision": "2520124793dc457d",
+  "sourceDigest": "d4cb58c58700eea11438b0cbd9370389d5968be131e0ac1244afc4acfe1392f9",
+  "revision": "f750f68cad9f6974",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -201,45 +201,45 @@
     {
       "catalogId": "broncos-away-2024",
       "constructionKey": "away",
-      "revision": "52d237e4583d0dce",
+      "revision": "e90ac08763b37a11",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-away-2024.webp",
-          "sha256": "e6cd87a6708ce5b65b2c63b9379a87a75c00e5670c4632c20eda12954bbf739a"
+          "sha256": "073d81f976a19a1ba06ab64970e83f9cf5e5a9448f0674f8e0300212a9068637"
         },
         "full": {
           "path": "/uniforms/broncos-away-2024-full.webp",
-          "sha256": "92f99548afb097aa47e9894ff7db593de0e482c6427098f95f1552514b39c074"
+          "sha256": "06760e0b55e1e9fdfb5f3fb76162393f01bfa58aee5cb420be40ed7dc2a814c9"
         }
       }
     },
     {
       "catalogId": "broncos-home-2024",
       "constructionKey": "home",
-      "revision": "6ee483bf2da63383",
+      "revision": "4a9779b72dbecccd",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-home-2024.webp",
-          "sha256": "0e89f336f055c8a5d3d0cb1944d835146acf2cefc8f2a2be74523f51a995e097"
+          "sha256": "e497642a32749d33a6d45366b3049b1c81fc094bbf92733fc9b991432ee54283"
         },
         "full": {
           "path": "/uniforms/broncos-home-2024-full.webp",
-          "sha256": "1282e87267220c11a976705876002805c65173e1ab4263e96794baee8e255f3e"
+          "sha256": "76209eb7b8b0aaa1d0dcff97f8246cdcfaf0ce40981c702bdc0bd5583e481093"
         }
       }
     },
     {
       "catalogId": "broncos-orange-alt-2024",
       "constructionKey": "orange-alt",
-      "revision": "4dbf311c1052505c",
+      "revision": "29a98db4b90f5e60",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-orange-alt-2024.webp",
-          "sha256": "0e89f336f055c8a5d3d0cb1944d835146acf2cefc8f2a2be74523f51a995e097"
+          "sha256": "e497642a32749d33a6d45366b3049b1c81fc094bbf92733fc9b991432ee54283"
         },
         "full": {
           "path": "/uniforms/broncos-orange-alt-2024-full.webp",
-          "sha256": "720d67e7eca0ed2f9263885379771e5db964341e00a38e3da3b0dfcc6f2f7a6d"
+          "sha256": "c4a90dc42256ff832241d657dd7a0eb5124909716e331277b984c22afaae7c4e"
         }
       }
     },
@@ -486,30 +486,30 @@
     {
       "catalogId": "colts-away-2004",
       "constructionKey": "away",
-      "revision": "160e75f42c16aa9c",
+      "revision": "0d80bb3cf11146d9",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/colts-away-2004.webp",
-          "sha256": "49ab8bb861d36c0728368d65773500f308698d08dce522a9a41bd872c69b3c0a"
+          "sha256": "3d92d6cd903c3dd9e03d7e1b8f476e83b7f35f4b18ef3970a9a76bfc1dff9ebc"
         },
         "full": {
           "path": "/uniforms/colts-away-2004-full.webp",
-          "sha256": "416d9c6fbd55bcbfff07e359e91b35e39fefc5318dba2bbcd081d648301346dd"
+          "sha256": "648a917273e6e2291d27b7dff41ba7ec849819ead3675b9ec39ae6bc8f547e16"
         }
       }
     },
     {
       "catalogId": "colts-home-2004",
       "constructionKey": "home",
-      "revision": "cdab1620a7c1bcd9",
+      "revision": "7e381c798861de59",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/colts-home-2004.webp",
-          "sha256": "c02d4376d9d23f9b81c612675be0711a4e94abca6470a0c2df0554e42c3a416e"
+          "sha256": "cc7eea44bfedd7f51c5bf9fb5128772fef750470212a42d8859590c31102d009"
         },
         "full": {
           "path": "/uniforms/colts-home-2004-full.webp",
-          "sha256": "a33a9df24d2c34d4ddc8d4b21df57a3e4a856d5858decf973538ba1519a6763a"
+          "sha256": "8ae6dcdc1a995f06c03ce69b5494b9cb9690fe19c3d2cf289f08179451ff753d"
         }
       }
     },
@@ -1326,15 +1326,15 @@
     {
       "catalogId": "seahawks-1976-throwback-1976",
       "constructionKey": "1976-throwback",
-      "revision": "50fc6dc00dbbda4a",
+      "revision": "f0ac57c169d511d5",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-1976-throwback-1976.webp",
-          "sha256": "863b906e12b9a001f2b5c30717168acb5de62ead98c99d243b5297b0e59bd49c"
+          "sha256": "2e1227ce31377ff7968244b0cc8691dfee3f574427ffb64b71a2c95f504b2dd1"
         },
         "full": {
           "path": "/uniforms/seahawks-1976-throwback-1976-full.webp",
-          "sha256": "97af87914d20a0aee6e7126f1d5e04ebf6c7421b2a516543ea4c685ebc057072"
+          "sha256": "1fb30207b557a6287bf481eae55048c478ef8d7f4e2270f25c914cfa63c4120d"
         }
       }
     },
@@ -1386,15 +1386,15 @@
     {
       "catalogId": "seahawks-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "3b2a6e7176db5547",
+      "revision": "fd662e63d2ee2aac",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-rivalries-2025-2025.webp",
-          "sha256": "74112655babe6202278cc308880a972c4bff97fdd4763d32b8adaa75b6980c76"
+          "sha256": "5abfcb2694d4356f38e1b828124ec69e20f0f5fc58b0f6dafcd041ed3d17f34a"
         },
         "full": {
           "path": "/uniforms/seahawks-rivalries-2025-2025-full.webp",
-          "sha256": "ee1d72434b56833d0fcc0853dd23288463b81be6084ccf231962890a08a795a5"
+          "sha256": "ff943e8d799b474ab31efb71085dbf6175e3efcbbe5568a4d6d7c100e9e2465f"
         }
       }
     },

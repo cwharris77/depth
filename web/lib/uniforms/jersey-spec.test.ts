@@ -58,6 +58,43 @@ describe('expandJersey', () => {
     }
   });
 
+  it('draws canted shoulder stripes only when asked, leaning toward the body', () => {
+    const layers = (withStripes: boolean) =>
+      expandJersey('t', {
+        body: 'navy',
+        collar: { style: 'none' },
+        ...(withStripes && {
+          shoulderStripes: {
+            bands: [
+              { color: 'white', size: 'l' },
+              { color: 'orange', size: 'm' },
+            ],
+            gap: 'broad' as const,
+          },
+        }),
+        number: { fill: 'white', outline: 'navy', outlineWeight: 'none' },
+      }).layers;
+    expect(layers(false)).toEqual([]);
+    const stripes = layers(true);
+    expect(stripes.map((l) => [l.id, l.surface, l.kind === 'fill' && l.fill])).toEqual([
+      ['t-shoulder-stripe-0-left', 'sleeve-left', 'white'],
+      ['t-shoulder-stripe-0-right', 'sleeve-right', 'white'],
+      ['t-shoulder-stripe-1-left', 'sleeve-left', 'orange'],
+      ['t-shoulder-stripe-1-right', 'sleeve-right', 'orange'],
+    ]);
+    // M outerTopX,topY L innerTopX,topY L innerBottomX,bottomY L outerBottomX,bottomY Z
+    const corners = (id: string) => numbers(stripes.find((l) => l.id === id)?.d ?? '');
+    const [ltx0, , ltx1, , lbx1] = corners('t-shoulder-stripe-0-left');
+    const [rtx0, , rtx1, , rbx1] = corners('t-shoulder-stripe-0-right');
+    expect(ltx1 - ltx0).toBe(28);
+    expect(lbx1).toBeGreaterThan(ltx1);
+    expect(rbx1).toBeLessThan(rtx1);
+    expect(rtx0 + ltx0).toBe(588);
+    // The second stripe sits one broad gap outboard of the first.
+    const [, , ltx1b] = corners('t-shoulder-stripe-1-left');
+    expect(ltx0 - ltx1b).toBe(18);
+  });
+
   it('fills the inset-V neck opening with the inside color when given', () => {
     const layers = (inside?: string) =>
       expandJersey('t', {
@@ -70,26 +107,63 @@ describe('expandJersey', () => {
     expect(opening(layers('orangeNeck'))).toMatchObject({ fill: 'orangeNeck' });
   });
 
-  it('adds lining, back bar and outline layers to the shared collar only when asked', () => {
-    const ids = (extra: { lining?: string; backBar?: string; outline?: boolean } = {}) =>
+  it('always draws the back bar and adds lining and outline layers only when asked', () => {
+    const layers = (extra: { lining?: string; backBar?: string; outline?: boolean } = {}) =>
       expandJersey('t', {
         body: 'orange',
         collar: { style: 'inset-v', color: 'orange', ...extra },
         number: { fill: 'white', outline: 'navy', outlineWeight: 'thin' },
-      }).layers.map((l) => l.id);
+      }).layers;
+    const ids = (extra?: Parameters<typeof layers>[0]) => layers(extra).map((l) => l.id);
     expect(ids()).toEqual([
       't-neck-opening',
       't-collar-edge',
       't-collar-inset',
       't-collar-placket',
-    ]);
-    expect(ids({ lining: 'navy', backBar: 'navy', outline: true }).slice(4)).toEqual([
       't-collar-back',
+    ]);
+    const back = (extra?: Parameters<typeof layers>[0]) =>
+      layers(extra).find((l) => l.id === 't-collar-back');
+    expect(back()).toMatchObject({ fill: 'orange' });
+    expect(back({ backBar: 'navy' })).toMatchObject({ fill: 'navy' });
+    expect(ids({ lining: 'navy', outline: true }).slice(5)).toEqual([
       't-collar-lining-left',
       't-collar-lining-right',
       't-collar-outline-outer',
       't-collar-outline-inner',
+      't-collar-outline-back',
     ]);
+  });
+
+  it('draws an upright sleeve number on each sleeve only when asked', () => {
+    const layers = (sleeveNumber?: { fill: string }) =>
+      expandJersey('t', {
+        body: 'navy',
+        collar: { style: 'none' },
+        sleeveNumber,
+        number: { fill: 'white', outline: 'navy', outlineWeight: 'none' },
+      }).layers;
+    expect(layers()).toEqual([]);
+    const [left, right] = layers({ fill: 'white' });
+    expect(left).toMatchObject({
+      id: 't-sleeve-number-left',
+      surface: 'sleeve-left',
+      fill: 'white',
+    });
+    expect(right).toMatchObject({ id: 't-sleeve-number-right', surface: 'sleeve-right' });
+    const box = (d: string) => {
+      const n = numbers(d);
+      const xs = n.filter((_, i) => i % 2 === 0);
+      const ys = n.filter((_, i) => i % 2 === 1);
+      return { x0: Math.min(...xs), x1: Math.max(...xs), h: Math.max(...ys) - Math.min(...ys) };
+    };
+    const l = box(left.d);
+    const r = box(right.d);
+    expect(l.x0).toBeGreaterThanOrEqual(30);
+    expect(l.x1).toBeLessThanOrEqual(96);
+    expect(r.x0).toBeGreaterThanOrEqual(492);
+    expect(r.x1).toBeLessThanOrEqual(558);
+    expect(l.h).toBeCloseTo(40, 0);
   });
 
   it('resolves the collar outline to the shared figure grey', () => {

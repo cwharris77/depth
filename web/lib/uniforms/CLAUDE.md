@@ -33,13 +33,15 @@ Anything the spec cannot describe is appended as ordinary layers after `spec.lay
 | `collar.style` | `inset-v` (modern V with a band down to a point), `shallow-v`, `rounded` (period crew neck), `none`. |
 | `collar.color` / `trim` | Collar band and, for `inset-v`, its centre inset. |
 | `collar.inside` | Fill inside the V (defaults to the body). Use a darker shade of the body (a `<colour>Neck` palette key) when the reference shows one, or when a body-coloured collar disappears without it. |
-| `collar.lining` / `backBar` / `outline` | `inset-v` only: a band on the inner half of the collar, a bar across the back of the neck, grey keylines on both collar edges. |
+| `collar.lining` / `backBar` / `outline` | `inset-v` only: a band on the inner half of the collar; the bar across the back of the neck (always drawn, in the collar colour unless `backBar` sets another); grey keylines on both collar edges and under the back bar. |
 | `shoulderPanel.bands` | Colour blocks from the top of the sleeve down. The first is the cap, filling to the shoulder seam with a curved inner edge; every edge slopes down toward the body. |
-| `sleeveStripes` | Horizontal stripes lower on the sleeve, with `gap` `none` / `narrow` / `wide`. |
+| `shoulderStripes` | Canted stripes running down the sleeve from the shoulder line, listed from the collar outward, each leaning its lower end toward the body. Same `gap` steps as `sleeveStripes`. |
+| `sleeveStripes` | Horizontal stripes lower on the sleeve, with `gap` `none` / `narrow` / `wide` / `broad`. |
 | `cuff` | A solid band at the sleeve hem. |
+| `sleeveNumber` | The numeral, small and upright on the lower outer face of each sleeve (TV numbers), in `fill`. |
 | `number` | Numeral fill, outline colour and `outlineWeight` (`none` / `thin` / `regular` / `heavy`). `outline` is required even with `none`. |
 
-Sizes are `s` / `m` / `l` (11 / 16 / 28 mannequin units); gaps are `none` / `narrow` / `wide` (0 / 6 / 12). Pick the nearest step. If a reference sits well between steps and the difference is visible at 390px, add a step (see below) rather than faking it with extra bands. Each primitive is drawn on both sleeves with unique layer ids.
+Sizes are `s` / `m` / `l` (11 / 16 / 28 mannequin units); gaps are `none` / `narrow` / `wide` / `broad` (0 / 6 / 12 / 18). Pick the nearest step. If a reference sits well between steps and the difference is visible at 390px, add a step (see below) rather than faking it with extra bands. Each primitive is drawn on both sleeves with unique layer ids.
 
 ## Growing the catalog
 
@@ -56,7 +58,7 @@ A new palette-independent colour is a new reserved paint in `teams/core/shared.t
 ## Authoring a team
 
 1. Read the team's current module and its committed renders. Rasters are `web/public/uniforms/<team>-<kitSlug>-<yearStart>[-full].webp`; kits map to jerseys in `<team>/parts.ts` (`kits: { home: { jersey: 'navy', … } }`), so `colts-home-2004` wears `jerseys/navy.ts`. A `-full` raster is 560×1535 px of viewBox `20 45 560 1535`; the jersey crop (`20 372 560 452`) is pixel rows 327–779.
-2. Read the jersey facts from the reference: body, collar cut and colours (outside, inside, lining, back of neck), sleeve cap bands top to bottom, stripes, cuff, numeral fill and outline. Ignore manufacturer and league marks, collar-tab lettering, numeral textures, sleeve TV numbers, one-season patches (memorials, anniversaries, playoffs), and seams or keylines the reference sheet draws on every jersey.
+2. Read the jersey facts from the reference: body, collar cut and colours (outside, inside, lining, back of neck), sleeve cap bands top to bottom, stripes, cuff, numeral fill and outline. Ignore manufacturer and league marks, collar-tab lettering, numeral textures, one-season patches (memorials, anniversaries, playoffs), and seams or keylines the reference sheet draws on every jersey.
 3. Write one spec per jersey in `jerseys/<name>.ts`. Reuse parts the reference does not show (helmets, decals, pants); never replace them with empty parts.
 4. Wordmarks are outlined from a font, never drawn by hand: `python scripts/uniform-draw/outline-wordmark.py --text … --font … --size … --center-x 294 --baseline-y … --tracking …` (needs `fontTools`). Put the path in `source.ts` and append it as a layer.
 5. Move spec-covered paths out of `source.ts` and delete anything left unused, including comments that describe removed code or point at files that no longer exist.
