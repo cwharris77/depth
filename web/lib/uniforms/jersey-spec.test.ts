@@ -68,6 +68,19 @@ describe('expandJersey', () => {
     expect(opening(layers('orangeNeck'))).toMatchObject({ fill: 'orangeNeck' });
   });
 
+  it('adds the inset-V lining and back bar above the shared collar only when given', () => {
+    const ids = (lining?: string, backBar?: string) =>
+      expandJersey('t', {
+        body: 'orange',
+        collar: { style: 'inset-v', color: 'orange', lining, backBar },
+        number: { fill: 'white', outline: 'navy', outlineWeight: 'thin' },
+      }).layers.map((l) => l.id);
+    expect(ids()).not.toContain('t-collar-lining');
+    expect(ids()).not.toContain('t-collar-back');
+    const withTrim = ids('navy', 'navy');
+    expect(withTrim.slice(-2)).toEqual(['t-collar-lining', 't-collar-back']);
+  });
+
   it('draws no collar layers for style none', () => {
     const part = expandJersey('t', {
       body: 'orange',

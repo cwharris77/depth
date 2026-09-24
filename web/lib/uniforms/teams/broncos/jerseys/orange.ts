@@ -5,7 +5,13 @@ import type { UniformPart } from '../../core/parts';
 
 const spec = expandJersey('broncos-orange', {
   body: 'orange',
-  collar: { style: 'inset-v', color: 'navy', inside: 'orangeNeck' },
+  collar: {
+    style: 'inset-v',
+    color: 'orange',
+    inside: 'orangeNeck',
+    lining: 'navy',
+    backBar: 'navy',
+  },
   shoulderPanel: {
     bands: [
       { color: 'white', size: 'l' },

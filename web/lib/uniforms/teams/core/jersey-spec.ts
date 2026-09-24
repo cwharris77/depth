@@ -16,6 +16,9 @@ export interface JerseySpec {
     // Fill for the neck opening inside the V. Defaults to the body color; a darker shade of the
     // body reads as the jersey's inside without needing an outline.
     inside?: string;
+    // inset-v only: a band along the inner edge of the V, and a bar across the back of the neck.
+    lining?: string;
+    backBar?: string;
   };
   // Color blocks stacked down from the top of each sleeve. The first band is the cap: it fills up
   // to the shoulder seam with a curved inner edge. Every band edge slopes down toward the body.
@@ -39,6 +42,10 @@ const SHOULDER_TOP = 428; // where the shoulder panel starts at the outer sleeve
 const SHOULDER_SLANT = 22; // how much lower each band edge sits at the inner end
 const CAP_REACH = 60; // the cap extends this far above its band; the silhouette clip trims it
 const STRIPES_TOP = 476;
+// The inset-V neck opening scaled toward its top centre (294,383), so a stroke along it sits just
+// inside the collar edge. The back bar spans the top of the opening.
+const INSET_V_LINING_PATH = 'M230,383 C234,411 261,434 294,453 C327,434 354,411 358,383';
+const INSET_V_BACK_BAR_PATH = 'M220,383 H368 L366,398 H222 Z';
 const CUFF_BOTTOM = 591;
 
 function slantedBand(side: Sleeve, yOuter: number, yInner: number, h: number) {
@@ -68,7 +75,7 @@ function bothSleeves(id: string, color: string, shape: (side: Sleeve) => string)
 }
 
 function collarLayers(prefix: string, spec: JerseySpec): PartLayer[] {
-  const { style, color, trim, inside } = spec.collar;
+  const { style, color, trim, inside, lining, backBar } = spec.collar;
   if (style === 'none' || !color) return [];
   const stroke = (id: string, d: string, width: number, c: string): PartLayer => ({
     id: `${prefix}-${id}`,
@@ -91,15 +98,30 @@ function collarLayers(prefix: string, spec: JerseySpec): PartLayer[] {
         ...(trim ? [stroke('collar-trim', LEGACY_ROUNDED_COLLAR_PATH, 4, trim)] : []),
       ];
     case 'inset-v':
-      return modernInsetVCollar({
-        idPrefix: prefix,
-        colors: {
-          body: inside ?? spec.body,
-          edge: color,
-          inset: trim ?? color,
-          placket: spec.body,
-        },
-      });
+      return [
+        ...modernInsetVCollar({
+          idPrefix: prefix,
+          colors: {
+            body: inside ?? spec.body,
+            edge: color,
+            inset: trim ?? color,
+            placket: spec.body,
+          },
+        }),
+        ...(lining ? [stroke('collar-lining', INSET_V_LINING_PATH, 10, lining)] : []),
+        ...(backBar
+          ? [
+              {
+                id: `${prefix}-collar-back`,
+                surface: 'collar',
+                clip: true,
+                kind: 'fill',
+                fill: backBar,
+                d: INSET_V_BACK_BAR_PATH,
+              } satisfies PartLayer,
+            ]
+          : []),
+      ];
   }
 }
 
