@@ -1,8 +1,24 @@
-import { collar, shoulderWedge } from '../parts';
+import { BRONCOS_CHEST_WORDMARK } from '../source';
+import { fill } from '../parts';
+import { expandJersey } from '../../core/jersey-spec';
 import type { UniformPart } from '../../core/parts';
 
+const spec = expandJersey('broncos-white', {
+  body: 'white',
+  collar: { style: 'inset-v', color: 'orange', inside: 'whiteNeck' },
+  shoulderPanel: {
+    bands: [
+      { color: 'orange', size: 'l' },
+      { color: 'navy', size: 'm' },
+    ],
+  },
+  number: { fill: 'navy', outline: 'orange', outlineWeight: 'thin' },
+});
+
 export const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [...shoulderWedge('orange', 'navy'), ...collar('orange')],
-  number: { fill: 'navy', outline: 'orange', outlineWidth: 14 },
+  ...spec,
+  layers: [
+    ...spec.layers,
+    fill('broncos-white-wordmark', 'jersey', BRONCOS_CHEST_WORDMARK, 'orange'),
+  ],
 };

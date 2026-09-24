@@ -1,0 +1,79 @@
+import { describe, expect, it } from 'vitest';
+import { expandJersey } from '@/lib/uniforms/teams/core/jersey-spec';
+
+const numbers = (d: string) => (d.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
+
+describe('expandJersey', () => {
+  it('maps the body and numeral weights onto the part', () => {
+    const part = expandJersey('t', {
+      body: 'orange',
+      collar: { style: 'none' },
+      number: { fill: 'white', outline: 'navy', outlineWeight: 'thin' },
+    });
+    expect(part.base).toBe('orange');
+    expect(part.number).toEqual({ fill: 'white', outline: 'navy', outlineWidth: 8 });
+    expect(part.layers).toEqual([]);
+  });
+
+  it('draws every sleeve primitive on both sleeves with unique ids', () => {
+    const part = expandJersey('t', {
+      body: 'white',
+      collar: { style: 'shallow-v', color: 'navy', trim: 'orange' },
+      shoulderPanel: {
+        bands: [
+          { color: 'orange', size: 'l' },
+          { color: 'navy', size: 'm' },
+        ],
+      },
+      sleeveStripes: { bands: [{ color: 'navy', size: 's' }], gap: 'narrow' },
+      cuff: { color: 'navy', size: 'm' },
+      number: { fill: 'navy', outline: 'orange', outlineWeight: 'regular' },
+    });
+    const sleeves = part.layers.filter((l) => l.surface.startsWith('sleeve-'));
+    expect(sleeves.filter((l) => l.surface === 'sleeve-left')).toHaveLength(4);
+    expect(sleeves.filter((l) => l.surface === 'sleeve-right')).toHaveLength(4);
+    const ids = part.layers.map((l) => l.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('slopes shoulder bands down toward the body on both sleeves', () => {
+    const part = expandJersey('t', {
+      body: 'orange',
+      collar: { style: 'none' },
+      shoulderPanel: {
+        bands: [
+          { color: 'white', size: 'l' },
+          { color: 'navy', size: 'm' },
+        ],
+      },
+      number: { fill: 'white', outline: 'navy', outlineWeight: 'thin' },
+    });
+    for (const suffix of ['left', 'right']) {
+      const band = part.layers.find((l) => l.id === `t-shoulder-1-${suffix}`);
+      // M outerX,outerY L innerX,innerY ...
+      const [, outerY, , innerY] = numbers(band?.d ?? '');
+      expect(innerY).toBeGreaterThan(outerY);
+    }
+  });
+
+  it('fills the inset-V neck opening with the inside color when given', () => {
+    const layers = (inside?: string) =>
+      expandJersey('t', {
+        body: 'orange',
+        collar: { style: 'inset-v', color: 'navy', inside },
+        number: { fill: 'white', outline: 'navy', outlineWeight: 'thin' },
+      }).layers;
+    const opening = (ls: ReturnType<typeof layers>) => ls.find((l) => l.id === 't-neck-opening');
+    expect(opening(layers())).toMatchObject({ fill: 'orange' });
+    expect(opening(layers('orangeNeck'))).toMatchObject({ fill: 'orangeNeck' });
+  });
+
+  it('draws no collar layers for style none', () => {
+    const part = expandJersey('t', {
+      body: 'orange',
+      collar: { style: 'none', color: 'navy' },
+      number: { fill: 'white', outline: 'navy', outlineWeight: 'none' },
+    });
+    expect(part.layers.filter((l) => l.surface === 'collar')).toEqual([]);
+  });
+});

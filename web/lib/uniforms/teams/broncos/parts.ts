@@ -1,36 +1,19 @@
-// Denver authored as composable parts. Geometry is imported unchanged from broncos.ts — this file
-// only restates WHICH parts each kit combines, and names every color from the team palette instead
-// of the kit row's shifting primary/secondary/accent.
+// Denver authored as composable parts: helmets, pants and palette. Jerseys are jersey specs in
+// ./jerseys, expanded to layers by core/jersey-spec.
 //
 // The four kits resolve to two helmets: the modern NAVY shell wearing the horse (home, away,
-// orange-alt share it) and the ORANGE CRUSH royal shell wearing the era's "D" (a different uniform
-// entirely: three sleeve bands, no shoulder wedge, no collar). The three modern kits actually
-// combine only two jerseys — home and orange-alt are the same orange body with the same
-// white-over-navy shoulder wedge and navy collar, differing only in the pants (navy vs white) —
-// and two pants: orange (home) and white (away, orange-alt, orange-crush).
+// orange-alt share it) and the ORANGE CRUSH royal shell wearing the era's "D". Home and orange-alt
+// share the orange jersey and differ only in the pants (orange vs white).
 //
-// The palette-note in broncos.ts holds here: the stored home palette is stale (home renders an
-// orange body, not the reference's navy jersey). This migration preserves the existing render.
+// The stored home palette is stale (home renders an orange body, not a navy jersey); the
+// definition is authored against what the renderer resolves.
 
 import {
-  BRONCOS_COLLAR_LEFT,
-  BRONCOS_COLLAR_RIGHT,
-  BRONCOS_COLLAR_WIDTH,
-  BRONCOS_CRUSH_BAND_LOW_LEFT,
-  BRONCOS_CRUSH_BAND_LOW_RIGHT,
-  BRONCOS_CRUSH_BAND_MID_LEFT,
-  BRONCOS_CRUSH_BAND_MID_RIGHT,
-  BRONCOS_CRUSH_BAND_TOP_LEFT,
-  BRONCOS_CRUSH_BAND_TOP_RIGHT,
   BRONCOS_CRUSH_DECAL_D_PATH,
   BRONCOS_DECAL_EYE_PATH,
   BRONCOS_CRUSH_DECAL_KEYLINE_PATH,
   BRONCOS_DECAL_HORSE_PATH,
   BRONCOS_DECAL_MANE_PATH,
-  BRONCOS_WEDGE_LOWER_LEFT,
-  BRONCOS_WEDGE_LOWER_RIGHT,
-  BRONCOS_WEDGE_UPPER_LEFT,
-  BRONCOS_WEDGE_UPPER_RIGHT,
 } from './source';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
@@ -43,42 +26,6 @@ const fill = (id: string, surface: UniformSurface, d: string, color: string): Pa
   kind: 'fill',
   fill: color,
 });
-
-// The shoulder wedge: white band over navy. Order inverts on the navy away body (orange over
-// navy), which is why both colors are parameters. Home and orange-alt share the white-over-navy
-// construction.
-function shoulderWedge(upper: string, lower: string): PartLayer[] {
-  return [
-    fill('broncos-wedge-upper-left', 'sleeve-left', BRONCOS_WEDGE_UPPER_LEFT, upper),
-    fill('broncos-wedge-upper-right', 'sleeve-right', BRONCOS_WEDGE_UPPER_RIGHT, upper),
-    fill('broncos-wedge-lower-left', 'sleeve-left', BRONCOS_WEDGE_LOWER_LEFT, lower),
-    fill('broncos-wedge-lower-right', 'sleeve-right', BRONCOS_WEDGE_LOWER_RIGHT, lower),
-  ];
-}
-
-// The short collar arc down each side of the neck (two arcs, not a chevron — they never meet).
-function collar(stroke: string): PartLayer[] {
-  return [
-    {
-      id: 'broncos-collar-left',
-      surface: 'collar',
-      d: BRONCOS_COLLAR_LEFT,
-      clip: true,
-      kind: 'stroke',
-      stroke,
-      strokeWidth: BRONCOS_COLLAR_WIDTH,
-    },
-    {
-      id: 'broncos-collar-right',
-      surface: 'collar',
-      d: BRONCOS_COLLAR_RIGHT,
-      clip: true,
-      kind: 'stroke',
-      stroke,
-      strokeWidth: BRONCOS_COLLAR_WIDTH,
-    },
-  ];
-}
 
 // The horse decal: orange mane under a white head. The eye and nostril are shell-colored so they
 // read through. Fixed-art colors on the navy shell.
@@ -119,16 +66,6 @@ const HELMET_ROYAL_D: UniformPart = {
   layers: crushDecal(),
 };
 
-// Home + orange-alt jersey: orange body, white-over-navy shoulder wedge, navy collar, orange
-// decal colors on the shell. The numeral face here is white (home keylines it navy — see below),
-// so the two kits share the jersey and differ only in pants.
-
-// Away jersey: white body, orange-over-navy shoulder wedge (order inverts with the body), navy
-// collar, navy numerals keylined orange.
-
-// Orange Crush jersey: orange body, three sleeve bands (royal, white, royal), no wedge or collar,
-// white numerals keylined royal.
-
 // Navy pants (home).
 // Home pants, orange (the flat home inherits primary = orange).
 const PANTS_ORANGE: UniformPart = { base: 'orange', layers: [] };
@@ -147,6 +84,10 @@ export const BRONCOS_CONSTRUCTION = {
     white: '#FFFFFF',
     royal: '#001489',
     crushOrange: '#FA4616',
+    // Darker shades of the modern bodies for the neck opening inside the V, so it reads without
+    // an outline.
+    orangeNeck: '#D9420F',
+    whiteNeck: '#ECEEEF',
   },
   helmets: { 'navy-horse': HELMET_NAVY_HORSE, 'royal-d': HELMET_ROYAL_D },
   pants: { orange: PANTS_ORANGE, white: PANTS_WHITE },
@@ -158,14 +99,4 @@ export const BRONCOS_CONSTRUCTION = {
   },
 };
 
-export {
-  BRONCOS_CRUSH_BAND_LOW_LEFT,
-  BRONCOS_CRUSH_BAND_LOW_RIGHT,
-  BRONCOS_CRUSH_BAND_MID_LEFT,
-  BRONCOS_CRUSH_BAND_MID_RIGHT,
-  BRONCOS_CRUSH_BAND_TOP_LEFT,
-  BRONCOS_CRUSH_BAND_TOP_RIGHT,
-  collar,
-  fill,
-  shoulderWedge,
-};
+export { fill };
