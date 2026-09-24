@@ -10,10 +10,10 @@ import type { TeamColors } from '@/lib/types';
 // WebP lives at, and the deterministic jersey-crop SVG string that becomes the raster.
 
 const seahawksRivalries: TeamColors = {
-  primary: '#C6D3DC',
+  primary: '#AFB3B5',
   secondary: '#002244',
   accent: '#29594C',
-  uiAccent: '#C6D3DC',
+  uiAccent: '#AFB3B5',
   onAccent: '#0a0e1a',
 };
 
@@ -158,7 +158,7 @@ describe('renderUniformThumbSVG', () => {
   it('renders a generic kit when the team has no definition', () => {
     const svg = renderUniformThumbSVG(seahawksRivalries, 'seahawks-rivalries-2025');
     expect(svg).toContain('viewBox="20 372 560 452"');
-    expect(svg).toContain('fill="#C6D3DC"');
+    expect(svg).toContain('fill="#AFB3B5"');
   });
 });
 

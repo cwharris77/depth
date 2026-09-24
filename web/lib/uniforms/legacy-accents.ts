@@ -111,7 +111,7 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   'cardinals-rivalries-2025-2025': { uiAccent: '#EE6B3D', onAccent: '#0a0e1a' },
   'rams-rivalries-2025-2025': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
   '49ers-rivalries-2025-2025': { uiAccent: '#B3995D', onAccent: '#0a0e1a' },
-  'seahawks-rivalries-2025-2025': { uiAccent: '#C6D3DC', onAccent: '#0a0e1a' },
+  'seahawks-rivalries-2025-2025': { uiAccent: '#AFB3B5', onAccent: '#0a0e1a' },
   'dolphins-1972-throwback-1966': { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
   'patriots-pat-patriot-1961': { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
   'jets-black-alt-2024': { uiAccent: '#4CC38A', onAccent: '#0a0e1a' },

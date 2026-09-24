@@ -17,6 +17,12 @@
 //      literally below, because the spike's contract is byte-identical output, not a fix.
 
 import {
+  SEAHAWKS_SHOULDER_WORDMARK,
+  SEAHAWKS_NECK_OPENING,
+  SEAHAWKS_COLLAR_BAND,
+  SEAHAWKS_COLLAR_FEATHERS_LEFT,
+  SEAHAWKS_COLLAR_FEATHERS_RIGHT,
+  SEAHAWKS_NECK_TWELVE,
   SEAHAWKS_1976_HELMET_GREEN_BAND,
   SEAHAWKS_1976_HELMET_ROYAL_BAND,
   SEAHAWKS_1976_PANTS_GREEN_LEFT,
@@ -28,8 +34,8 @@ import {
   SEAHAWKS_HELMET_HAWK_PATH,
   SEAHAWKS_SHOULDER_BAND_LEFT,
   SEAHAWKS_SHOULDER_BAND_RIGHT,
-  SEAHAWKS_SHOULDER_BAR_LEFT,
-  SEAHAWKS_SHOULDER_BAR_RIGHT,
+  SEAHAWKS_SHOULDER_NUMBER_LEFT,
+  SEAHAWKS_SHOULDER_NUMBER_RIGHT,
   SEAHAWKS_SHOULDER_CAP_LEFT,
   SEAHAWKS_SHOULDER_CAP_RIGHT,
 } from './source';
@@ -61,15 +67,35 @@ function hawk(eye: string): PartLayer[] {
   ];
 }
 
-// Bar, band and cap, mirrored. One construction; home and away differ only in the band color.
+// Shoulder numerals, band and cap share their placement across home and away.
 export function shoulder(band: string, cap: string): PartLayer[] {
   return [
-    fill('seahawks-shoulder-bar-left', 'sleeve-left', SEAHAWKS_SHOULDER_BAR_LEFT, band),
-    fill('seahawks-shoulder-bar-right', 'sleeve-right', SEAHAWKS_SHOULDER_BAR_RIGHT, band),
+    fill('seahawks-shoulder-number-left', 'sleeve-left', SEAHAWKS_SHOULDER_NUMBER_LEFT, band),
+    fill('seahawks-shoulder-number-right', 'sleeve-right', SEAHAWKS_SHOULDER_NUMBER_RIGHT, band),
     fill('seahawks-shoulder-band-left', 'sleeve-left', SEAHAWKS_SHOULDER_BAND_LEFT, band),
     fill('seahawks-shoulder-band-right', 'sleeve-right', SEAHAWKS_SHOULDER_BAND_RIGHT, band),
     fill('seahawks-shoulder-cap-left', 'sleeve-left', SEAHAWKS_SHOULDER_CAP_LEFT, cap),
     fill('seahawks-shoulder-cap-right', 'sleeve-right', SEAHAWKS_SHOULDER_CAP_RIGHT, cap),
+  ];
+}
+
+// The body-color collar frames a shaded opening and back-neck tab; its chevrons stop
+// before the V point. Home and away share geometry with different feather and wordmark colors.
+export function modernNeckAndWordmark(
+  body: string,
+  neck: string,
+  feathers: string,
+  wordmark: string
+): PartLayer[] {
+  return [
+    fill('seahawks-neck-opening', 'collar', SEAHAWKS_NECK_OPENING, neck),
+    fill('seahawks-collar-band', 'collar', SEAHAWKS_COLLAR_BAND, body),
+    fill('seahawks-collar-feathers-left', 'collar', SEAHAWKS_COLLAR_FEATHERS_LEFT, feathers),
+    fill('seahawks-collar-feathers-right', 'collar', SEAHAWKS_COLLAR_FEATHERS_RIGHT, feathers),
+    fill('seahawks-neck-tab-border', 'collar', 'M279,389 H309 V417 H279 Z', 'green'),
+    fill('seahawks-neck-tab', 'collar', 'M281,391 H307 V415 H281 Z', 'navy'),
+    fill('seahawks-neck-twelve', 'collar', SEAHAWKS_NECK_TWELVE, 'wolfGrey'),
+    fill('seahawks-shoulder-wordmark', 'jersey', SEAHAWKS_SHOULDER_WORDMARK, wordmark),
   ];
 }
 
@@ -104,11 +130,13 @@ export const SEAHAWKS_PALETTE = {
   // Hex from teamcolorcodes.
   wolfGrey: '#A5ACAF',
   white: '#FFFFFF',
+  // Shaded insides of the neck opening, one step darker than each body so the opening reads.
+  navyNeck: '#001A33',
+  whiteNeck: '#ECEEEF',
   crownWedge: '#2B507C',
   // A fourth color with no kit token, and it can never have one: it fails AA on the dark UI
   // (1.57), so it could never be uiAccent. Sampled from the GUD 2025 composite.
   rivalriesTeal: '#023A4D',
-  rivalriesSilver: '#C6D3DC',
   rivalriesPine: '#29594C',
   royal76: '#003087',
   green76: '#046A38',
@@ -152,7 +180,7 @@ export const SEAHAWKS_PANTS = {
     ],
   },
   'rivalries-silver': {
-    base: 'rivalriesSilver',
+    base: 'rivalriesJerseyGrey',
     layers: [
       fromGeneric('generic-pants-stripe-left', 'navy'),
       fromGeneric('generic-pants-stripe-right', 'navy'),
