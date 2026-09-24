@@ -18407,17 +18407,16 @@
         },
         {
           "colors" : {
-            "accent" : "#8A8D8F",
-            "primary" : "#003087",
-            "secondary" : "#046A38"
+            "accent" : "#A7B0BA",
+            "primary" : "#0248B3",
+            "secondary" : "#0E8329"
           },
           "id" : "seahawks-1976-throwback-1976",
           "imagePath" : "/uniforms/seahawks-1976-throwback-1976.webp",
-          "isCurrent" : false,
+          "isCurrent" : true,
           "kind" : "throwback",
-          "name" : "1976 Throwback",
+          "name" : "Throwback",
           "teamId" : "seahawks",
-          "yearEnd" : 2001,
           "yearStart" : 1976
         }
       ]
@@ -21276,22 +21275,21 @@
     },
     {
       "colors" : {
-        "accent" : "#8A8D8F",
-        "primary" : "#003087",
-        "secondary" : "#046A38"
+        "accent" : "#A7B0BA",
+        "primary" : "#0248B3",
+        "secondary" : "#0E8329"
       },
       "conference" : "NFC",
       "division" : "West",
       "id" : "seahawks-1976-throwback-1976",
       "imagePath" : "/uniforms/seahawks-1976-throwback-1976.webp",
-      "isCurrent" : false,
+      "isCurrent" : true,
       "kind" : "throwback",
-      "name" : "1976 Throwback",
+      "name" : "Throwback",
       "teamAbbrev" : "SEA",
       "teamId" : "seahawks",
       "teamName" : "Seattle Seahawks",
       "teamShortName" : "Seahawks",
-      "yearEnd" : 2001,
       "yearStart" : 1976
     },
     {

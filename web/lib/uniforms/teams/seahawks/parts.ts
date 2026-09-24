@@ -2,7 +2,7 @@
 // seahawks.ts; this file restates which parts each kit combines and names every color from the
 // team palette.
 //
-// Seattle is the harder migration and the one that proves the model. Three things the flat
+// Seattle is the harder migration and the one that proves the model. Two things the flat
 // definition could not say:
 //
 //   1. Home and away paint the SAME helmet — navy shell, slate crown wedge, white hawk, green
@@ -12,9 +12,6 @@
 //   2. Each kit stripped a DIFFERENT subset of generic mannequin layers, so what a kit
 //      inherited was implicit. Parts are total: every generic layer is stripped, and a part
 //      that wants a generic mark keeps it explicitly via fromGeneric() with a palette color.
-//   3. The 1976 kit's collar relies on a same-id replacement landing at the INHERITED layer's
-//      index rather than where it appears in the source array. That ordering is reproduced
-//      literally below, because the spike's contract is byte-identical output, not a fix.
 
 import {
   SEAHAWKS_SHOULDER_WORDMARK,
@@ -23,12 +20,20 @@ import {
   SEAHAWKS_COLLAR_FEATHERS_LEFT,
   SEAHAWKS_COLLAR_FEATHERS_RIGHT,
   SEAHAWKS_NECK_TWELVE,
-  SEAHAWKS_1976_HELMET_GREEN_BAND,
-  SEAHAWKS_1976_HELMET_ROYAL_BAND,
-  SEAHAWKS_1976_PANTS_GREEN_LEFT,
-  SEAHAWKS_1976_PANTS_GREEN_RIGHT,
-  SEAHAWKS_1976_PANTS_WHITE_LEFT,
-  SEAHAWKS_1976_PANTS_WHITE_RIGHT,
+  SEAHAWKS_THROWBACK_HAWK_BLOCK_PATH,
+  SEAHAWKS_THROWBACK_HAWK_EYE_PATH,
+  SEAHAWKS_THROWBACK_HAWK_ROYAL_PATH,
+  SEAHAWKS_THROWBACK_HAWK_WHITE_PATH,
+  SEAHAWKS_THROWBACK_PANTS_GREEN_LEFT,
+  SEAHAWKS_THROWBACK_PANTS_GREEN_RIGHT,
+  SEAHAWKS_THROWBACK_PANTS_KEYLINE_LEFT,
+  SEAHAWKS_THROWBACK_PANTS_KEYLINE_RIGHT,
+  SEAHAWKS_THROWBACK_PANTS_ROYAL_LEFT,
+  SEAHAWKS_THROWBACK_PANTS_ROYAL_RIGHT,
+  SEAHAWKS_THROWBACK_PANTS_WHITE_LEFT,
+  SEAHAWKS_THROWBACK_PANTS_WHITE_RIGHT,
+  SEAHAWKS_THROWBACK_SOCK_LEFT,
+  SEAHAWKS_THROWBACK_SOCK_RIGHT,
   SEAHAWKS_HELMET_HAWK_EYE_PATH,
   SEAHAWKS_HELMET_HAWK_GREY_PATH,
   SEAHAWKS_HELMET_HAWK_PATH,
@@ -113,11 +118,30 @@ const HELMET_NAVY_HAWK: UniformPart = {
 
 const HELMET_TEAL_HAWK: UniformPart = { base: 'rivalriesTeal', layers: hawk('rivalriesPine') };
 
-const HELMET_1976_SILVER: UniformPart = {
-  base: 'silver76',
+// Silver shell with no stripe, a royal cage and the original hawk.
+const HELMET_THROWBACK_SILVER: UniformPart = {
+  base: 'throwbackSilver',
+  facemask: 'throwbackRoyal',
   layers: [
-    fill('seahawks-1976-helmet-royal', 'helmet', SEAHAWKS_1976_HELMET_ROYAL_BAND, 'royal76'),
-    fill('seahawks-1976-helmet-green', 'helmet', SEAHAWKS_1976_HELMET_GREEN_BAND, 'green76'),
+    fill(
+      'seahawks-throwback-hawk-royal',
+      'helmet',
+      SEAHAWKS_THROWBACK_HAWK_ROYAL_PATH,
+      'throwbackRoyal'
+    ),
+    fill('seahawks-throwback-hawk-white', 'helmet', SEAHAWKS_THROWBACK_HAWK_WHITE_PATH, 'white'),
+    fill(
+      'seahawks-throwback-hawk-block',
+      'helmet',
+      SEAHAWKS_THROWBACK_HAWK_BLOCK_PATH,
+      'throwbackGreen'
+    ),
+    fill(
+      'seahawks-throwback-hawk-eye',
+      'helmet',
+      SEAHAWKS_THROWBACK_HAWK_EYE_PATH,
+      'throwbackGreen'
+    ),
   ],
 };
 
@@ -138,16 +162,19 @@ export const SEAHAWKS_PALETTE = {
   // (1.57), so it could never be uiAccent. Sampled from the GUD 2025 composite.
   rivalriesTeal: '#023A4D',
   rivalriesPine: '#29594C',
-  royal76: '#003087',
-  green76: '#046A38',
-  silver76: '#8A8D8F',
+  // The throwback's royal, green and two silvers have no published codes; each is the flat fill
+  // of the GUD 2025 composite's throwback figure.
+  throwbackRoyal: '#0248B3',
+  throwbackGreen: '#0E8329',
+  throwbackSilver: '#A7B0BA',
+  throwbackPantsSilver: '#DBDDDF',
   // Sampled from the GUD reference helmet crop.
   facemaskBlack: '#000000',
 };
 export const SEAHAWKS_HELMETS = {
   'navy-hawk': HELMET_NAVY_HAWK,
   'teal-hawk': HELMET_TEAL_HAWK,
-  'silver-1976': HELMET_1976_SILVER,
+  'throwback-silver': HELMET_THROWBACK_SILVER,
 };
 export const SEAHAWKS_PANTS = {
   // Home keeps the generic stripe pair in green.
@@ -160,22 +187,68 @@ export const SEAHAWKS_PANTS = {
   },
   // The away reference's white pants carry no stripe at all.
   'white-plain': { base: 'white', layers: [] },
-  'silver-1976': {
-    base: 'silver76',
+  throwback: {
+    base: 'throwbackPantsSilver',
     layers: [
-      fill('seahawks-1976-pants-white-left', 'leg-left', SEAHAWKS_1976_PANTS_WHITE_LEFT, 'white'),
       fill(
-        'seahawks-1976-pants-white-right',
-        'leg-right',
-        SEAHAWKS_1976_PANTS_WHITE_RIGHT,
+        'seahawks-throwback-pants-white-left',
+        'leg-left',
+        SEAHAWKS_THROWBACK_PANTS_WHITE_LEFT,
         'white'
       ),
-      fill('seahawks-1976-pants-green-left', 'leg-left', SEAHAWKS_1976_PANTS_GREEN_LEFT, 'green76'),
       fill(
-        'seahawks-1976-pants-green-right',
+        'seahawks-throwback-pants-white-right',
         'leg-right',
-        SEAHAWKS_1976_PANTS_GREEN_RIGHT,
-        'green76'
+        SEAHAWKS_THROWBACK_PANTS_WHITE_RIGHT,
+        'white'
+      ),
+      fill(
+        'seahawks-throwback-pants-green-left',
+        'leg-left',
+        SEAHAWKS_THROWBACK_PANTS_GREEN_LEFT,
+        'throwbackGreen'
+      ),
+      fill(
+        'seahawks-throwback-pants-green-right',
+        'leg-right',
+        SEAHAWKS_THROWBACK_PANTS_GREEN_RIGHT,
+        'throwbackGreen'
+      ),
+      fill(
+        'seahawks-throwback-pants-keyline-left',
+        'leg-left',
+        SEAHAWKS_THROWBACK_PANTS_KEYLINE_LEFT,
+        'white'
+      ),
+      fill(
+        'seahawks-throwback-pants-keyline-right',
+        'leg-right',
+        SEAHAWKS_THROWBACK_PANTS_KEYLINE_RIGHT,
+        'white'
+      ),
+      fill(
+        'seahawks-throwback-pants-royal-left',
+        'leg-left',
+        SEAHAWKS_THROWBACK_PANTS_ROYAL_LEFT,
+        'throwbackRoyal'
+      ),
+      fill(
+        'seahawks-throwback-pants-royal-right',
+        'leg-right',
+        SEAHAWKS_THROWBACK_PANTS_ROYAL_RIGHT,
+        'throwbackRoyal'
+      ),
+      fill(
+        'seahawks-throwback-sock-left',
+        'leg-left',
+        SEAHAWKS_THROWBACK_SOCK_LEFT,
+        'throwbackRoyal'
+      ),
+      fill(
+        'seahawks-throwback-sock-right',
+        'leg-right',
+        SEAHAWKS_THROWBACK_SOCK_RIGHT,
+        'throwbackRoyal'
       ),
     ],
   },
@@ -190,7 +263,7 @@ export const SEAHAWKS_PANTS = {
 export const SEAHAWKS_KITS = {
   home: { helmet: 'navy-hawk', jersey: 'navy', pants: 'navy' },
   away: { helmet: 'navy-hawk', jersey: 'white', pants: 'white-plain' },
-  '1976-throwback': { helmet: 'silver-1976', jersey: 'royal-1976', pants: 'silver-1976' },
+  '1976-throwback': { helmet: 'throwback-silver', jersey: 'throwback', pants: 'throwback' },
   'rivalries-2025': {
     helmet: 'teal-hawk',
     jersey: 'rivalries-silver',

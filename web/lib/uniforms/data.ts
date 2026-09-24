@@ -519,22 +519,23 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
 
-  // Seahawks 1976–2001 royal/green/silver original — a retired throwback (not in the
-  // current rotation). Hexes: teamcolorcodes historical Seahawks. uiAccent brightens the
-  // era's green so it reads on the dark UI (the royal #003087 is far too dark).
+  // Seahawks royal/green/silver throwback — the 1976–2001 look, reintroduced as an active
+  // throwback in 2023, so is_current: true despite the historical era. No published codes exist
+  // for the modern remake; hexes are the reference sheet's flat fills. uiAccent brightens the
+  // green so it reads on the dark UI.
   {
     teamId: 'seahawks',
     slug: '1976-throwback',
     constructionKey: '1976-throwback',
     kind: 'throwback',
-    name: '1976 Throwback',
+    name: 'Throwback',
     yearStart: 1976,
-    yearEnd: 2001,
-    isCurrent: false,
+    yearEnd: null,
+    isCurrent: true,
     colors: {
-      primary: '#003087',
-      secondary: '#046A38',
-      accent: '#8A8D8F',
+      primary: '#0248B3',
+      secondary: '#0E8329',
+      accent: '#A7B0BA',
     },
   },
 
