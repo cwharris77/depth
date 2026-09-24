@@ -48,7 +48,7 @@ Sizes are `s` / `m` / `l` (11 / 16 / 28 mannequin units); gaps are `none` / `nar
 
 ## Marks
 
-Fixed vector art (helmet decals, sleeve logos, wordmarks) is a mark: `teams/<team>/marks/<name>.ts` exports a `Mark` whose paths are absolute M/L/Z polygons in the art's own space, one per colour slot in paint order, plus a `box` (usually `boundsOf` the largest slot). `placeMark(idPrefix, mark, anchor, slots)` in `teams/core/marks.ts` fits the box to a named anchor and emits ordinary layers; `placeMarkOnSleeves` does both sleeves, the left mirrored so both face outward. `slots` maps each slot to a palette key, or to `null` to drop it (a body colour that would vanish into the garment). An unmapped slot throws.
+Marks are polygon art only for now: a mark is fixed vector art such as a helmet decal or sleeve logo, drawn as absolute M/L/Z polygons — curve commands are not supported yet. `teams/<team>/marks/<name>.ts` exports a `Mark` whose paths are absolute M/L/Z polygons in the art's own space, one per colour slot in paint order, plus a `box`: the box must contain every slot, so use `boundsOf` of the slot whose bounds contain all the others. `placeMark(idPrefix, mark, anchor, slots)` in `teams/core/marks.ts` fits the box to a named anchor and emits ordinary layers; `placeMarkOnSleeves` does both sleeves, the left mirrored so both face outward. `slots` maps each slot to a palette key, or to `null` to drop it (a body colour that would vanish into the garment). An unmapped slot throws.
 
 Marks are extracted from a supplied SVG by a script in `scripts/uniform-draw/` and never hand-edited. Scripts emit the mark only; placement belongs to the anchor. A mark that needs a position no anchor gives is a new anchor in `ANCHORS`, not per-team coordinates.
 
