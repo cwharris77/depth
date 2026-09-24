@@ -19,6 +19,17 @@ export interface Mark<S extends string = string> {
   paths: readonly MarkPath<S>[];
 }
 
+// Art already in mannequin space with its paint bound: emitted as-is, never normalised or
+// re-fitted. Existing helmet art uses this, so its layers keep every property they were drawn with.
+export interface PlacedMark {
+  placed: true;
+  layers: readonly PartLayer[];
+}
+
+export function placed(layers: readonly PartLayer[]): PlacedMark {
+  return { placed: true, layers };
+}
+
 export type AnchorName = 'helmet-side' | 'sleeve-left' | 'sleeve-right';
 
 interface Anchor {

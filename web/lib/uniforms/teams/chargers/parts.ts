@@ -18,8 +18,9 @@ import {
   CHARGERS_BOLT_KEYLINE_RIGHT,
   CHARGERS_DECAL_BOLT_PATH,
   CHARGERS_DECAL_KEYLINE_PATH,
-  CHARGERS_HELMET_NUMBER_THREE,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -64,37 +65,19 @@ function decal(keyline: string, body: string): PartLayer[] {
 }
 
 // The white shell with the bolt and powder-blue player numeral.
-const HELMET_WHITE: UniformPart = {
-  base: 'white',
+const HELMET_WHITE = expandHelmet('chargers-white-helmet', {
+  shell: 'white',
   facemask: 'gold',
-  layers: [
-    ...decal('powderBlue', 'gold'),
-    {
-      id: 'chargers-white-helmet-number',
-      surface: 'helmet',
-      d: CHARGERS_HELMET_NUMBER_THREE,
-      clip: true,
-      kind: 'fill',
-      fill: 'powderBlue',
-    },
-  ],
-};
+  decal: placed(decal('powderBlue', 'gold')),
+  number: { fill: 'powderBlue' },
+});
 
-const HELMET_NAVY: UniformPart = {
-  base: 'navy',
+const HELMET_NAVY = expandHelmet('chargers-navy-helmet', {
+  shell: 'navy',
   facemask: 'navy',
-  layers: [
-    ...decal('gold', 'white'),
-    {
-      id: 'chargers-navy-helmet-number',
-      surface: 'helmet',
-      d: CHARGERS_HELMET_NUMBER_THREE,
-      clip: true,
-      kind: 'fill',
-      fill: 'white',
-    },
-  ],
-};
+  decal: placed(decal('gold', 'white')),
+  number: { fill: 'white' },
+});
 
 // Powder-blue jersey (home + powder-blue): powder-blue body, white-keylined gold sleeve bolts,
 // white numerals keylined gold.

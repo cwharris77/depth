@@ -5,8 +5,15 @@
 // seam, which a front-on figure cannot show.
 import { describe, expect, it } from 'vitest';
 import { CHARGERS_PARTS } from '../chargers';
+import { isExpandedHelmet } from '../core/helmet-spec';
 
 describe('Chargers helmet parts', () => {
+  it('builds both shells through the helmet spec', () => {
+    for (const part of Object.values(CHARGERS_PARTS.helmets)) {
+      expect(isExpandedHelmet(part)).toBe(true);
+    }
+  });
+
   // One `it` per shell so a failure names the offending helmet, per the data-integrity convention.
   for (const [name, part] of Object.entries(CHARGERS_PARTS.helmets)) {
     it(`paints the ${name} shell's bolt as a keyline under a body, with no fill rule`, () => {

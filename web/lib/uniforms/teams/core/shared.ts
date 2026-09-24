@@ -11,6 +11,11 @@ import type { PartLayer } from './parts';
 export const HELMET_CROWN_STRIPE_PATH =
   'M236,127 L252,115 L302,91 L334,79 L374,69 L402,65 L455,65 L509,73 L547,85 L593,109 L631,137 L625,146 L589,119 L545,96 L508,85 L455,78 L402,79 L375,84 L336,95 L305,108 L257,133 L242,146 Z';
 
+// The athletic 3 on the side panel of the shared helmet shell, in raw helmet coordinates. It fits
+// the one shell every team draws, so a team supplies only its colour.
+export const HELMET_NUMBER_PATH =
+  'M375.3,250 L409.7,250 L420,258.5 L420,281.5 L410.3,289 L420,297 L420,321.1 L409.1,330 L375.3,330 L365,321.5 L365,309.3 L379.9,309.3 L379.9,318.3 L404.6,318.3 L404.6,297 L387.4,297 L387.4,284.8 L404.6,284.8 L404.6,262.3 L379.9,262.3 L379.9,270.7 L365,270.7 L365,258.5 Z';
+
 // The canonical shallow V used by the modern mannequin. Teams own the band widths, colors, and
 // layer IDs; only this exact mannequin path is shared.
 export const GENERIC_COLLAR_PATH = 'M206,388 L294,455 L386,388';
