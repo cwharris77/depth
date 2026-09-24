@@ -74,6 +74,7 @@ values
   ('saints-away-2002', 'saints', 'away', 'Away', 2002, NULL, true, '#FFFFFF', '#D3BC8D', '#101820', '#E2CC9A', '#0a0e1a', '/uniforms/saints-away-2002.webp'),
   ('buccaneers-away-2020', 'buccaneers', 'away', 'Away', 2020, NULL, true, '#FFFFFF', '#D50A0A', '#34302B', '#FF4D4D', '#0a0e1a', '/uniforms/buccaneers-away-2020.webp'),
   ('chargers-powder-blue-1960', 'chargers', 'alternate', 'Powder Blue', 1960, NULL, true, '#0080C6', '#FFC20E', '#FFFFFF', '#36A7E0', '#0a0e1a', '/uniforms/chargers-powder-blue-1960.webp'),
+  ('chargers-charger-power-2025', 'chargers', 'alternate', 'Charger Power', 2025, NULL, true, '#FFC20E', '#0080C6', '#FFFFFF', '#FFC20E', '#0a0e1a', '/uniforms/chargers-charger-power-2025.webp'),
   ('chargers-super-chargers-2025', 'chargers', 'alternate', 'Super Chargers', 2025, NULL, true, '#002244', '#FFC20E', '#FFFFFF', '#FFC20E', '#0a0e1a', '/uniforms/chargers-super-chargers-2025.webp'),
   ('titans-oilers-throwback-1960', 'titans', 'throwback', 'Oilers Throwback', 1960, NULL, true, '#4B92DB', '#C8102E', '#FFFFFF', '#5BA8E8', '#0a0e1a', '/uniforms/titans-oilers-throwback-1960.webp'),
   ('bears-orange-alternate-2005', 'bears', 'alternate', 'Orange Alternate', 2005, NULL, true, '#C83803', '#0B162A', '#FFFFFF', '#FF6A33', '#0a0e1a', '/uniforms/bears-orange-alternate-2005.webp'),

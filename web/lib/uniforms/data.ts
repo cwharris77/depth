@@ -1118,6 +1118,21 @@ export const UNIFORMS: UniformSeed[] = [
   },
   {
     teamId: 'chargers',
+    slug: 'charger-power',
+    constructionKey: 'charger-power',
+    kind: 'alternate',
+    name: 'Charger Power',
+    yearStart: 2025,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#FFC20E',
+      secondary: '#0080C6',
+      accent: '#FFFFFF',
+    },
+  },
+  {
+    teamId: 'chargers',
     slug: 'super-chargers',
     constructionKey: 'super-chargers',
     kind: 'alternate',

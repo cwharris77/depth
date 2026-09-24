@@ -2,7 +2,7 @@
 // file only restates WHICH parts each kit combines, and names every color from the team palette
 // instead of the kit row's shifting primary/secondary/accent.
 //
-// The primary kits share a white helmet; the navy alternate has its own shell and jersey.
+// The primary kits and gold alternate share a white helmet; the navy alternate has its own shell.
 // All use bolts on the shoulder and helmet without sleeve stripes.
 //
 // The pants are plain here on purpose. Los Angeles wears a bolt down each leg, but on the SIDE seam,
@@ -63,12 +63,21 @@ function decal(keyline: string, body: string): PartLayer[] {
   ];
 }
 
-// The white shell with the bolt — one object, shared by all three kits.
-//
+// The white shell with the bolt and powder-blue player numeral.
 const HELMET_WHITE: UniformPart = {
   base: 'white',
   facemask: 'gold',
-  layers: decal('powderBlue', 'gold'),
+  layers: [
+    ...decal('powderBlue', 'gold'),
+    {
+      id: 'chargers-white-helmet-number',
+      surface: 'helmet',
+      d: CHARGERS_HELMET_NUMBER_THREE,
+      clip: true,
+      kind: 'fill',
+      fill: 'powderBlue',
+    },
+  ],
 };
 
 const HELMET_NAVY: UniformPart = {
@@ -116,11 +125,12 @@ export const CHARGERS_CONSTRUCTION = {
     powder: PANTS_POWDER,
     navy: PANTS_NAVY,
   },
-  // Canonical pants first for the primary kits; navy belongs to the alternate only.
+  // Canonical pants first; navy belongs to the navy alternate only.
   kits: {
     home: { helmet: 'white', jersey: 'powder', pants: ['gold', 'white', 'powder'] },
     away: { helmet: 'white', jersey: 'white', pants: ['gold', 'white', 'powder'] },
     'powder-blue': { helmet: 'white', jersey: 'powder', pants: ['gold', 'white', 'powder'] },
+    'charger-power': { helmet: 'white', jersey: 'gold', pants: ['gold', 'white'] },
     'super-chargers': { helmet: 'navy', jersey: 'navy', pants: 'navy' },
   },
 };

@@ -27,13 +27,31 @@ describe('Chargers helmet parts', () => {
     });
   }
 
-  it('puts the player numeral on the navy shell only', () => {
+  it('paints the player numeral below the bolt on both shells', () => {
     expect(CHARGERS_PARTS.helmets.navy.layers.at(-1)).toMatchObject({
       id: 'chargers-navy-helmet-number',
       surface: 'helmet',
       fill: 'white',
     });
-    expect(CHARGERS_PARTS.helmets.white.layers).toHaveLength(2);
+    expect(CHARGERS_PARTS.helmets.white.layers.at(-1)).toMatchObject({
+      id: 'chargers-white-helmet-number',
+      surface: 'helmet',
+      fill: 'powderBlue',
+    });
+    expect(CHARGERS_PARTS.helmets.white.layers.at(-1)?.d).toBe(
+      CHARGERS_PARTS.helmets.navy.layers.at(-1)?.d
+    );
+  });
+});
+
+describe('Charger Power jersey', () => {
+  it('uses a white bolt within a powder-blue keyline on the gold body', () => {
+    const jersey = CHARGERS_PARTS.jerseys.gold;
+    expect(jersey.base).toBe('gold');
+    expect(
+      jersey.layers.slice(0, 4).map((layer) => (layer.kind === 'fill' ? layer.fill : null))
+    ).toEqual(['powderBlue', 'powderBlue', 'white', 'white']);
+    expect(CHARGERS_PARTS.kits['charger-power'].helmet).toBe('white');
   });
 });
 
@@ -42,6 +60,7 @@ describe('Chargers pants parts', () => {
     expect(CHARGERS_PARTS.kits.home.pants).toEqual(['gold', 'white', 'powder']);
     expect(CHARGERS_PARTS.kits.away.pants).toEqual(['gold', 'white', 'powder']);
     expect(CHARGERS_PARTS.kits['powder-blue'].pants).toEqual(['gold', 'white', 'powder']);
+    expect(CHARGERS_PARTS.kits['charger-power'].pants).toEqual(['gold', 'white']);
   });
 
   it('reserves navy pants for the navy alternate', () => {
@@ -57,7 +76,7 @@ describe('Chargers pants parts', () => {
     });
   });
 
-  it('keeps the flat definition pairing canonical so the committed rasters are unchanged', () => {
+  it('keeps each flat definition paired with its canonical pants', () => {
     const canonical = Object.fromEntries(
       Object.entries(CHARGERS_PARTS.kits).map(([kit, ref]) => [
         kit,
@@ -68,6 +87,7 @@ describe('Chargers pants parts', () => {
       home: 'gold',
       away: 'gold',
       'powder-blue': 'gold',
+      'charger-power': 'gold',
       'super-chargers': 'navy',
     });
   });
