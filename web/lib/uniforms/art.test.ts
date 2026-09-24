@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { renderUniformThumbSVG, uniformArtURL, uniformArtFullURL } from '@/lib/uniforms/art';
 import { UNIFORMS } from '@/lib/uniforms/data';
 import { getTeamUniformDefinition } from '@/lib/uniforms/teams';
+import { compileParts } from '@/lib/uniforms/teams/core/parts';
 import { buildRowsFromCatalog } from '../../scripts/gen-uniform-thumbs.mts';
 import type { TeamColors } from '@/lib/types';
 
@@ -196,5 +197,53 @@ describe('renderUniformThumbSVG full variant', () => {
     expect(svg).not.toContain('var(--font-anton)');
     expect(svg).not.toContain('<text');
     expect(svg).toContain('data-number="3"');
+  });
+
+  it('paints the shins in the sock colour and clips sock layers to the shins', () => {
+    // The left shin path also appears unfilled inside the leg clip path; read the painted one.
+    const paintedShin = (svg: string) =>
+      [...svg.matchAll(/<path[^>]*>/g)]
+        .map((m) => m[0])
+        .find((tag) => tag.includes('M118,1197 228,1197') && tag.includes('fill='));
+    const plain = {
+      teamId: 'test',
+      palette: { navy: '#001122', white: '#FFFFFF', red: '#CC0000' },
+      helmets: { h: { base: 'navy', layers: [] } },
+      jerseys: {
+        j: {
+          base: 'white',
+          layers: [],
+          number: { fill: 'navy', outline: 'white', outlineWidth: 26 },
+        },
+      },
+      pants: { p: { base: 'navy', layers: [] } },
+      socks: {
+        s: {
+          base: 'red',
+          layers: [
+            {
+              id: 'hoop-left',
+              surface: 'sock-left' as const,
+              d: 'M100,1300 H240 V1316 H100 Z',
+              clip: true,
+              kind: 'fill' as const,
+              fill: 'white',
+            },
+          ],
+        },
+      },
+      kits: {
+        bare: { helmet: 'h', jersey: 'j', pants: 'p' },
+        socked: { helmet: 'h', jersey: 'j', pants: 'p', socks: 's' },
+      },
+    };
+    const def = compileParts(plain);
+    const bare = renderUniformThumbSVG(seahawksRivalries, 'test-bare', def, 'full');
+    expect(paintedShin(bare)).toContain('fill="#001122"');
+    expect(bare).not.toContain('sockL');
+
+    const socked = renderUniformThumbSVG(seahawksRivalries, 'test-socked', def, 'full');
+    expect(paintedShin(socked)).toContain('fill="#CC0000"');
+    expect(socked).toMatch(/clip-path="url\(#[^)]*-sockL\)"/);
   });
 });

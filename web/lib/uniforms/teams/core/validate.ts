@@ -28,6 +28,8 @@ const SURFACES: ReadonlySet<string> = new Set<UniformSurface>([
   'pants',
   'leg-left',
   'leg-right',
+  'sock-left',
+  'sock-right',
 ]);
 
 // A jersey-only partial update may paint the jersey and its semantic sub-surfaces (sleeves,
@@ -55,6 +57,7 @@ const SUPPORTED_TOP_LEVEL: ReadonlySet<string> = new Set([
   'wordmarks',
   'helmets',
   'pants',
+  'socks',
   'kits',
   'notes',
   'provenance',
@@ -450,8 +453,8 @@ export function validateAuthoredDefinition(input: unknown): ValidationIssue[] {
     }
   }
 
-  // A full team definition may carry helmet/pants parts; every layer still has to name a real
-  // surface and resolve its paint, so the same layer rules apply.
+  // A full team definition may carry helmet/pants/socks parts; every layer still has to name a
+  // real surface and resolve its paint, so the same layer rules apply.
   if (input.helmets !== undefined && isRecord(input.helmets)) {
     for (const [id, part] of Object.entries(input.helmets)) {
       if (isRecord(part)) {
@@ -476,6 +479,20 @@ export function validateAuthoredDefinition(input: unknown): ValidationIssue[] {
           paletteKeys,
           patternKeys,
           new Set(['pants', 'leg-left', 'leg-right'])
+        );
+      }
+    }
+  }
+  if (input.socks !== undefined && isRecord(input.socks)) {
+    for (const [id, part] of Object.entries(input.socks)) {
+      if (isRecord(part)) {
+        validateLayers(
+          issues,
+          `socks.${id}.layers`,
+          part.layers ?? [],
+          paletteKeys,
+          patternKeys,
+          new Set(['sock-left', 'sock-right'])
         );
       }
     }
