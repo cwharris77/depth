@@ -4,7 +4,7 @@ import type { UniformPart } from '../../core/parts';
 export const JERSEY_NAVY: UniformPart = expandJersey('bears-navy', {
   body: 'navy',
   collar: { style: 'inset-v', color: 'navy', outline: true },
-  shoulderBar: { color: 'white' },
+  shoulderNumber: { fill: 'white', outline: 'orange' },
   sleeveStripes: {
     bands: [
       { color: 'orange', size: 's' },

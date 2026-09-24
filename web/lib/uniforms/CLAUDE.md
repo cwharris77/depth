@@ -36,7 +36,7 @@ Anything the spec cannot describe is appended as ordinary layers after `spec.lay
 | `collar.lining` / `backBar` / `outline` | `inset-v` only: a band on the inner half of the collar; the bar across the back of the neck (always drawn, in the collar colour unless `backBar` sets another); grey keylines on both collar edges and under the back bar. |
 | `shoulderPanel.bands` | Colour blocks from the top of the sleeve down. The first is the cap, filling to the shoulder seam with a curved inner edge; every edge slopes down toward the body. |
 | `shoulderStripes` | Canted stripes running down the sleeve from the shoulder line, listed from the collar outward, each leaning its lower end toward the body. Same `gap` steps as `sleeveStripes`. |
-| `shoulderBar` | A short bar lying along the top of each shoulder, parallel to the shoulder line, in `color`. |
+| `shoulderNumber` | The numeral lying along the top of each shoulder, its top toward the collar, in `fill` with an optional thin `outline`. On a reference sheet it often reads as a short bar. |
 | `sleeveStripes` | Horizontal stripes lower on the sleeve, with `gap` `none` / `narrow` / `wide` / `broad`. `edge` pipes every stripe with a thin band of that colour above and below it; the gap is then measured between pipings. |
 | `cuff` | A solid band at the sleeve hem. |
 | `sleeveNumber` | The numeral, small and upright on the lower outer face of each sleeve (TV numbers), in `fill`. |

@@ -95,27 +95,43 @@ describe('expandJersey', () => {
     expect(ltx0 - ltx1b).toBe(18);
   });
 
-  it('draws a shoulder bar only when asked, mirrored and rising toward the collar', () => {
-    const layers = (shoulderBar?: { color: string }) =>
+  it('lays a shoulder numeral along each shoulder only when asked', () => {
+    const layers = (shoulderNumber?: { fill: string; outline?: string }) =>
       expandJersey('t', {
         body: 'navy',
         collar: { style: 'none' },
-        shoulderBar,
+        shoulderNumber,
         number: { fill: 'white', outline: 'navy', outlineWeight: 'none' },
       }).layers;
     expect(layers()).toEqual([]);
-    const bars = layers({ color: 'white' });
-    expect(bars.map((l) => [l.id, l.surface, l.kind === 'fill' && l.fill])).toEqual([
-      ['t-shoulder-bar-left', 'sleeve-left', 'white'],
-      ['t-shoulder-bar-right', 'sleeve-right', 'white'],
+    expect(layers({ fill: 'white' }).map((l) => [l.id, l.surface, l.kind])).toEqual([
+      ['t-shoulder-number-left', 'sleeve-left', 'fill'],
+      ['t-shoulder-number-right', 'sleeve-right', 'fill'],
     ]);
-    // M outerX,outerY L innerX,innerY ...
-    const [lox, loy, lix, liy] = numbers(bars[0].d);
-    const [rox, , rix] = numbers(bars[1].d);
-    expect(lix).toBeGreaterThan(lox);
-    expect(liy).toBeLessThan(loy);
-    expect(lox + rox).toBe(588);
-    expect(lix + rix).toBe(588);
+    const outlined = layers({ fill: 'white', outline: 'orange' });
+    expect(outlined.map((l) => [l.id, l.kind])).toEqual([
+      ['t-shoulder-number-outline-left', 'stroke'],
+      ['t-shoulder-number-outline-right', 'stroke'],
+      ['t-shoulder-number-left', 'fill'],
+      ['t-shoulder-number-right', 'fill'],
+    ]);
+    const centre = (d: string) => {
+      const n = numbers(d);
+      const xs = n.filter((_, i) => i % 2 === 0);
+      const ys = n.filter((_, i) => i % 2 === 1);
+      return [
+        (Math.min(...xs) + Math.max(...xs)) / 2,
+        (Math.min(...ys) + Math.max(...ys)) / 2,
+        Math.max(...xs) - Math.min(...xs),
+      ];
+    };
+    const [lx, ly, lw] = centre(outlined[2].d);
+    const [rx, ry, rw] = centre(outlined[3].d);
+    // Lying along the shoulder: wider than tall, and the two sleeves are rotations of each other.
+    expect(lw).toBeGreaterThan(25);
+    expect(lx + rx).toBeCloseTo(588, 0);
+    expect(ly).toBeCloseTo(ry, 0);
+    expect(lw).toBeCloseTo(rw, 0);
   });
 
   it('pipes sleeve stripes with an edge colour only when asked', () => {

@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "ec9d59817decdcd62d2c3c55bcae97f4a99fad7976e48ff1fa54f73b8f1f7c2a",
-  "revision": "891f13c4bc4290f3",
+  "sourceDigest": "7d0ae9efb7d56ce431e7c49aef0beb3eef998838da914ae29486ea7736c9b89d",
+  "revision": "b39d78e077792c00",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -51,30 +51,30 @@
     {
       "catalogId": "bears-away-1984",
       "constructionKey": "away",
-      "revision": "5d2e234af9bc0aab",
+      "revision": "1bb4a1690664780d",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bears-away-1984.webp",
-          "sha256": "7e5c9242514831d904611244a844ea1723369cd9201fc61f69647e6722a13092"
+          "sha256": "dc159bc408e8c5819d14dfcbd90dfe1a3c686b5888072f4193f370b6f9609602"
         },
         "full": {
           "path": "/uniforms/bears-away-1984-full.webp",
-          "sha256": "a48df03fb28927deab0a5cce2616187d670af8e546e10d9816f0ff99aa3a8ccd"
+          "sha256": "515eee416630d720e7ad9d1970ec6f5fa2c702ded45b872a7e203d2d1c37655e"
         }
       }
     },
     {
       "catalogId": "bears-home-1984",
       "constructionKey": "home",
-      "revision": "abea618f1e527cb7",
+      "revision": "480f4e859dde7048",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bears-home-1984.webp",
-          "sha256": "ab57d8e0e3ce42a803f9ad83189b51f8e6fdde65cd4703a5e5d905e2874d55c2"
+          "sha256": "3a7a9b53bd7c2d09630488f6102076e8d2fa820e7f598fd32f33d6a384eb75f6"
         },
         "full": {
           "path": "/uniforms/bears-home-1984-full.webp",
-          "sha256": "64017135a2c91d209f7dfeaf9806a1977ed77577bb0501ee8e49ae66f8c3dc8f"
+          "sha256": "4d35ce5aad922af617441e849d349ff610295c3cbf3be716b9fd47428d64a03d"
         }
       }
     },

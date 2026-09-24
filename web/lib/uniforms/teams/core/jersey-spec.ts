@@ -29,8 +29,9 @@ export interface JerseySpec {
   // Canted stripes running down from the shoulder line, listed from the collar outward. Each
   // stripe leans its lower end toward the body.
   shoulderStripes?: { bands: JerseyBand[]; gap: JerseyGap };
-  // A short bar lying along the top of each shoulder, parallel to the shoulder line.
-  shoulderBar?: { color: string };
+  // The numeral lying along the top of each shoulder, its top toward the collar, with an optional
+  // thin outline.
+  shoulderNumber?: { fill: string; outline?: string };
   // Horizontal stripes around the upper arm, below any shoulder panel. `edge` pipes every band
   // with a thin band of that colour above and below it; the gap is measured between pipings.
   sleeveStripes?: { bands: JerseyBand[]; gap: JerseyGap; edge?: string };
@@ -56,9 +57,11 @@ const STRIPES_TOP = 476;
 const STRIPE_EDGE_PX = 3;
 // The shoulder bar's top edge at its outer and collar ends on the left sleeve, following the
 // silhouette's shoulder line about 14 units below it.
-const SHOULDER_BAR_OUTER = [87, 428] as const;
-const SHOULDER_BAR_INNER = [159, 415] as const;
-const SHOULDER_BAR_HEIGHT = 11;
+// The left shoulder line the shoulder numeral sits on, outer end to collar end.
+const SHOULDER_LINE_OUTER = [87, 433] as const;
+const SHOULDER_LINE_INNER = [159, 420] as const;
+const SHOULDER_NUMBER_HEIGHT = 32;
+const SHOULDER_NUMBER_OUTLINE = 1.5;
 const SHOULDER_STRIPE_REF_Y = 400; // where the first stripe's collar-side edge is placed
 const SHOULDER_STRIPE_START_X = 156; // that edge's x on the left sleeve at SHOULDER_STRIPE_REF_Y
 const SHOULDER_STRIPE_LEAN = 0.25; // inward x shift per unit of drop
@@ -90,30 +93,41 @@ function shoulderStripe(side: Sleeve, xOuter: number, xInner: number) {
   return `M${at(xOuter, t)} L${at(xInner, t)} L${at(xInner, b)} L${at(xOuter, b)} Z`;
 }
 
-function shoulderBar(side: Sleeve) {
-  const x = (v: number) => (side === SLEEVE_LEFT ? v : MIRROR_X - v);
-  const [[xo, yo], [xi, yi], h] = [SHOULDER_BAR_OUTER, SHOULDER_BAR_INNER, SHOULDER_BAR_HEIGHT];
-  return `M${x(xo)},${yo} L${x(xi)},${yi} L${x(xi)},${yi + h} L${x(xo)},${yo + h} Z`;
-}
-
-// JERSEY_NUMBER_THREE scaled to SLEEVE_NUMBER_HEIGHT and centred on the sleeve. The glyph is
-// absolute M/L/Z only, so every number pair is an x,y point.
-function sleeveNumber(side: Sleeve) {
+// JERSEY_NUMBER_THREE scaled to `height`, rotated by `angle` radians and centred on (cx, cy). The
+// glyph is absolute M/L/Z only, so every number pair is an x,y point.
+function numeralAt(cx: number, cy: number, height: number, angle: number) {
   const nums = (JERSEY_NUMBER_THREE.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
   const xs = nums.filter((_, i) => i % 2 === 0);
   const ys = nums.filter((_, i) => i % 2 === 1);
   const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
-  const k = SLEEVE_NUMBER_HEIGHT / (y1 - y0);
-  const cx = (side.outer + side.inner) / 2;
-  let i = 0;
-  return JERSEY_NUMBER_THREE.replace(/-?\d+(?:\.\d+)?/g, (n) => {
-    const v = Number(n);
-    const out =
-      i++ % 2 === 0
-        ? cx + (v - (x0 + x1) / 2) * k
-        : SLEEVE_NUMBER_CENTER_Y + (v - (y0 + y1) / 2) * k;
-    return String(Math.round(out * 100) / 100);
-  });
+  const k = height / (y1 - y0);
+  const [cos, sin] = [Math.cos(angle), Math.sin(angle)];
+  const round = (v: number) => String(Math.round(v * 100) / 100);
+  const out: string[] = [];
+  const d = JERSEY_NUMBER_THREE.replace(/-?\d+(?:\.\d+)?/g, () => '#');
+  for (let i = 0; i < nums.length; i += 2) {
+    const dx = (nums[i] - (x0 + x1) / 2) * k;
+    const dy = (nums[i + 1] - (y0 + y1) / 2) * k;
+    out.push(round(cx + dx * cos - dy * sin), round(cy + dx * sin + dy * cos));
+  }
+  let j = 0;
+  return d.replace(/#/g, () => out[j++]);
+}
+
+// Small and upright, centred on the lower outer face of the sleeve.
+function sleeveNumber(side: Sleeve) {
+  return numeralAt((side.outer + side.inner) / 2, SLEEVE_NUMBER_CENTER_Y, SLEEVE_NUMBER_HEIGHT, 0);
+}
+
+// Lying along the shoulder line with the numeral's top toward the collar. The right sleeve is the
+// left one rotated the other way, not mirrored, so the numeral still reads correctly.
+function shoulderNumber(side: Sleeve) {
+  const [[xo, yo], [xi, yi]] = [SHOULDER_LINE_OUTER, SHOULDER_LINE_INNER];
+  const angle = Math.atan2(xi - xo, -(yi - yo));
+  const [cx, cy] = [(xo + xi) / 2, (yo + yi) / 2];
+  return side === SLEEVE_LEFT
+    ? numeralAt(cx, cy, SHOULDER_NUMBER_HEIGHT, angle)
+    : numeralAt(MIRROR_X - cx, cy, SHOULDER_NUMBER_HEIGHT, -angle);
 }
 
 function bothSleeves(id: string, color: string, shape: (side: Sleeve) => string): PartLayer[] {
@@ -203,8 +217,24 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
     });
   }
 
-  if (spec.shoulderBar) {
-    layers.push(...bothSleeves(`${prefix}-shoulder-bar`, spec.shoulderBar.color, shoulderBar));
+  if (spec.shoulderNumber) {
+    const { fill, outline } = spec.shoulderNumber;
+    if (outline) {
+      layers.push(
+        ...bothSleeves(`${prefix}-shoulder-number-outline`, outline, shoulderNumber).map(
+          (l): PartLayer => ({
+            id: l.id,
+            surface: l.surface,
+            clip: true,
+            kind: 'stroke',
+            stroke: outline,
+            strokeWidth: SHOULDER_NUMBER_OUTLINE * 2,
+            d: l.d,
+          })
+        )
+      );
+    }
+    layers.push(...bothSleeves(`${prefix}-shoulder-number`, fill, shoulderNumber));
   }
 
   if (spec.sleeveStripes) {
