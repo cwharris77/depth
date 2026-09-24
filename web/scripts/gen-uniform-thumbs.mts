@@ -176,11 +176,18 @@ async function main() {
   const rows = buildRowsFromCatalog();
   // A row whose construction key is not a registered kit renders the generic fallback — fine
   // in the running app, never acceptable for a published raster. Fail the whole run instead of
-  // committing art that silently degrades to the mannequin default.
-  const unresolved = findUnresolvedConstructions(
-    rows,
-    (teamId) => getTeamUniformDefinition(teamId)?.kits
-  );
+  // committing art that silently degrades to the mannequin default. Extra combinations resolve
+  // through their own kit keys, so they need the same guard.
+  const kitsForTeam = (teamId: string) => getTeamUniformDefinition(teamId)?.kits;
+  const combinations = combinationRenders(rows, getTeamCatalog).map((combination) => ({
+    id: `${combination.rowId}--${combination.key}`,
+    teamId: rows.find((row) => row.id === combination.rowId)?.teamId ?? '',
+    constructionKey: combination.constructionKey,
+  }));
+  const unresolved = [
+    ...findUnresolvedConstructions(rows, kitsForTeam),
+    ...findUnresolvedConstructions(combinations, kitsForTeam),
+  ];
   if (unresolved.length > 0) {
     throw new Error(
       'curated rows resolve to no registered construction:\n' +

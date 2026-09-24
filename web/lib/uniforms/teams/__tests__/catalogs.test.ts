@@ -1,13 +1,55 @@
+import { readdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { UNIFORMS } from '../../data';
 import { LEGACY_ACCENTS } from '../../legacy-accents';
 import { getAllTeamCatalogs, getTeamCatalog } from '../catalogs';
 import { catalogAccents, catalogKits, catalogRows, validateCatalog } from '../core/catalog';
 
+// Every team directory that owns a catalog.ts must also be registered in catalogs.ts, and
+// under the key its own catalog names — a catalog file that exists but was never wired in
+// (or was registered under the wrong teamId) silently keeps using the hand-written data.ts
+// rows instead.
+const TEAMS_DIR = join(__dirname, '..');
+const catalogDirs = readdirSync(TEAMS_DIR, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory() && entry.name !== 'core' && entry.name !== '__tests__')
+  .map((entry) => entry.name)
+  .filter((name) => existsSync(join(TEAMS_DIR, name, 'catalog.ts')));
+
+describe('every catalog.ts on disk is registered', () => {
+  for (const dir of catalogDirs) {
+    it(`${dir} has a registered catalog`, () => {
+      expect(getTeamCatalog(dir)).toBeDefined();
+    });
+  }
+
+  it('registers each catalog under a key matching its own teamId', () => {
+    for (const { catalog } of getAllTeamCatalogs()) {
+      expect(getTeamCatalog(catalog.teamId)).toBe(catalog);
+    }
+  });
+});
+
 const rowId = (row: { teamId: string; slug: string; yearStart: number }) =>
   `${row.teamId}-${row.slug}-${row.yearStart}`;
 const byId = <T extends { teamId: string; slug: string; yearStart: number }>(rows: T[]) =>
   [...rows].sort((a, b) => rowId(a).localeCompare(rowId(b)));
+
+// Once a team converts, its rows come from the catalog only; a hand-written entry left behind
+// in legacy-accents.ts is dead weight nothing reads. `49ers` has no catalog and shares a
+// numeric-looking id with no other team, so a plain prefix check is safe here.
+describe('no leftover hand-written accents for a converted team', () => {
+  it('has no hand-written key prefixed by a registered team id', () => {
+    const registeredIds = getAllTeamCatalogs().map(({ catalog }) => `${catalog.teamId}-`);
+    const catalogOwnedIds = new Set(
+      getAllTeamCatalogs().flatMap(({ catalog }) => Object.keys(catalogAccents(catalog)))
+    );
+    const leftovers = Object.keys(LEGACY_ACCENTS).filter(
+      (id) => !catalogOwnedIds.has(id) && registeredIds.some((prefix) => id.startsWith(prefix))
+    );
+    expect(leftovers).toEqual([]);
+  });
+});
 
 describe('registered team catalogs', () => {
   const registered = getAllTeamCatalogs();
@@ -41,7 +83,7 @@ describe('registered team catalogs', () => {
   }
 });
 
-// The conversion proof: the catalog reproduces the rows and kits Seattle shipped with.
+// Pins the catalog to the rows, accents and kits the Seahawks had before the catalog existed.
 describe('Seahawks catalog conversion', () => {
   const catalog = getTeamCatalog('seahawks');
   if (!catalog) throw new Error('Seahawks catalog is not registered');

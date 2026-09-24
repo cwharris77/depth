@@ -73,6 +73,9 @@ export function combinationArtifactName(rowId: string, key: string): string {
 }
 
 export function designRow(teamId: string, design: CatalogDesign): UniformSeed {
+  if (design.periods.length === 0) {
+    throw new Error(`${teamId} catalog design "${design.slug}" has no wear periods`);
+  }
   const last = design.periods[design.periods.length - 1];
   return {
     teamId,
@@ -131,13 +134,32 @@ type CatalogParts = Pick<TeamPartsDefinition, 'helmets' | 'jerseys' | 'pants' | 
 export function validateCatalog(catalog: TeamCatalog, parts: CatalogParts): string[] {
   const issues: string[] = [];
   const slugs = new Set<string>();
+  const kitKeyOwners = new Map<string, string>();
   const has = (group: Record<string, unknown> | undefined, key: string) =>
     group !== undefined && Object.hasOwn(group, key);
+  const claimKitKey = (key: string, slug: string) => {
+    const owner = kitKeyOwners.get(key);
+    if (owner !== undefined && owner !== slug) {
+      issues.push(`${key}: kit key registered by ${owner} and ${slug}`);
+    } else {
+      kitKeyOwners.set(key, slug);
+    }
+  };
 
   for (const design of catalog.designs) {
     const at = design.slug;
     if (slugs.has(at)) issues.push(`${at}: duplicate slug`);
     slugs.add(at);
+
+    if (!KEBAB.test(design.slug)) issues.push(`${at}: slug must be lowercase kebab-case`);
+    if (design.constructionKey !== undefined && !KEBAB.test(design.constructionKey)) {
+      issues.push(`${at}: constructionKey must be lowercase kebab-case`);
+    }
+
+    claimKitKey(designConstructionKey(design), at);
+    for (const combination of extraCombinations(design)) {
+      claimKitKey(combinationKitKey(design, combination), at);
+    }
 
     if (!has(parts.jerseys, design.jersey)) {
       issues.push(`${at}: unknown jersey "${design.jersey}"`);

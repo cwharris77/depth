@@ -283,6 +283,11 @@ export function diffArtifactManifest(
     for (const [key, expectedCombination] of expectedCombosByKey) {
       const actualCombination = actualCombosByKey.get(key);
       if (!actualCombination) continue;
+      if (expectedCombination.label !== actualCombination.label) {
+        diffs.push(
+          `${id}: combination ${key} label ${expectedCombination.label} != ${actualCombination.label}`
+        );
+      }
       if (expectedCombination.full.path !== actualCombination.full.path) {
         diffs.push(
           `${id}: combination ${key} path ${expectedCombination.full.path} != ${actualCombination.full.path}`

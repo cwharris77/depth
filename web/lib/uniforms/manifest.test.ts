@@ -6,6 +6,7 @@ import {
   ARTIFACT_MANIFEST_RELATIVE_PATH,
   ARTIFACT_MANIFEST_PUBLIC_PATH,
   WEB_ROOT,
+  artifactPath,
   buildArtifactManifest,
   computeSourceDigest,
   diffArtifactManifest,
@@ -192,6 +193,19 @@ describe('combinations', () => {
       'seahawks-home-2012: combination white-pants has no committed raster'
     );
   });
+
+  it('flags a combination whose label changed', () => {
+    const actual = buildArtifactManifest('digest', [withCombo]);
+    const relabeled = buildArtifactManifest('digest', [
+      {
+        ...withCombo,
+        combinations: [{ ...withCombo.combinations![0], label: 'White pants alt' }],
+      },
+    ]);
+    expect(diffArtifactManifest(relabeled, actual)).toContain(
+      'seahawks-home-2012: combination white-pants label White pants alt != White pants'
+    );
+  });
 });
 
 describe('combinationRenders', () => {
@@ -228,8 +242,24 @@ describe('combinationRenders', () => {
     ]);
   });
 
-  it('yields nothing for the committed rows today', () => {
-    expect(combinationRenders(buildRowsFromCatalog(), getTeamCatalog)).toEqual([]);
+  it('matches the combinations committed in the manifest for every row', () => {
+    const rendered = combinationRenders(buildRowsFromCatalog(), getTeamCatalog).map((render) => ({
+      rowId: render.rowId,
+      key: render.key,
+      label: render.label,
+      path: artifactPath(render.fileName),
+    }));
+    for (const row of committed.rows) {
+      const committedCombinations = (row.combinations ?? []).map((c) => ({
+        key: c.key,
+        label: c.label,
+        path: c.full.path,
+      }));
+      const renderedForRow = rendered
+        .filter((render) => render.rowId === row.catalogId)
+        .map(({ key, label, path }) => ({ key, label, path }));
+      expect(renderedForRow).toEqual(committedCombinations);
+    }
   });
 });
 

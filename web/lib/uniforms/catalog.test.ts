@@ -87,6 +87,12 @@ describe('catalog rows', () => {
       'seahawks-old-1990': ACCENT,
     });
   });
+
+  it('throws on a design with no wear periods', () => {
+    expect(() => designRow('seahawks', { ...HOME, periods: [] })).toThrow(
+      'seahawks catalog design "home" has no wear periods'
+    );
+  });
 });
 
 describe('catalog kits and combinations', () => {
@@ -186,5 +192,48 @@ describe('validateCatalog', () => {
     expect(validateCatalog({ teamId: 'seahawks', designs: [HOME, HOME] }, SEAHAWKS_PARTS)).toEqual([
       'home: duplicate slug',
     ]);
+  });
+
+  it('rejects a bad slug', () => {
+    expect(invalid({ slug: 'Home Design' })).toContainEqual(
+      'Home Design: slug must be lowercase kebab-case'
+    );
+  });
+
+  it('rejects a bad constructionKey', () => {
+    expect(invalid({ constructionKey: 'Bad_Key' })).toContainEqual(
+      'home: constructionKey must be lowercase kebab-case'
+    );
+  });
+
+  it('flags two designs whose kit keys collide', () => {
+    const other: CatalogDesign = {
+      ...HOME,
+      slug: 'home-alt',
+      constructionKey: 'home',
+      combinations: [HOME.combinations[0]],
+    };
+    expect(
+      validateCatalog({ teamId: 'seahawks', designs: [HOME, other] }, SEAHAWKS_PARTS)
+    ).toContainEqual('home: kit key registered by home and home-alt');
+  });
+
+  it("flags a slug that collides with another design's extra-combination kit key", () => {
+    const collider: CatalogDesign = {
+      ...HOME,
+      slug: 'home--white-pants',
+      combinations: [HOME.combinations[0]],
+    };
+    const issues = validateCatalog(
+      { teamId: 'seahawks', designs: [HOME, collider] },
+      SEAHAWKS_PARTS
+    );
+    expect(
+      issues.some(
+        (issue) =>
+          issue === 'home--white-pants: slug must be lowercase kebab-case' ||
+          issue.startsWith('home--white-pants: kit key registered by')
+      )
+    ).toBe(true);
   });
 });

@@ -104,7 +104,13 @@ A design's `combinations` are verified pairings only, canonical first. The canon
 
 A team registers itself in `teams/catalogs.ts`. Row ids (`<teamId>-<slug>-<yearStart>`) never change once seeded, catalog or not.
 
-To add a design to a converted team: add its `catalogRow` line to `data.ts` at the right position, add its `legacyAccent`, then regenerate the seed migration and the rasters.
+To add a design to a converted team:
+
+1. add the design to `teams/<team>/catalog.ts`;
+2. add its `catalogRow` line to the end of `data.ts`'s array (append-only);
+3. regenerate the seed migration and the rasters.
+
+A converting team whose kits list several pants options must turn each verified one into a combination and drop the rest, because the registered kits must equal the catalog's.
 
 ## Growing the catalog
 
