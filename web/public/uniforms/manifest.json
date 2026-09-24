@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "78cfead1f92d5d3e48efe4852ee5185d96f97b4dba5b08cea3e8aa58c4e45398",
-  "revision": "6958dfc011122de9",
+  "sourceDigest": "e5f07e79f933990fbb2df871876bfb150dc458e9ecd84e035bd6267a4f88d4a0",
+  "revision": "85d99d91355a757b",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1350,6 +1350,21 @@
         "full": {
           "path": "/uniforms/seahawks-away-2012-full.webp",
           "sha256": "421c72c5b91d95ec6689e0ea29ef158895c631eaa5676b7cf6f6dee7db83b867"
+        }
+      }
+    },
+    {
+      "catalogId": "seahawks-color-rush-2016",
+      "constructionKey": "color-rush",
+      "revision": "f8b536d514f8a3d9",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/seahawks-color-rush-2016.webp",
+          "sha256": "fc8a7d31a62f8590881dcb7aa2ad030104c58834629df1a98a4d0f0f591dffe1"
+        },
+        "full": {
+          "path": "/uniforms/seahawks-color-rush-2016-full.webp",
+          "sha256": "a3f211849b971faf8f7f93fbfad49463657553b531a64dcf7b96a11dab99c4c1"
         }
       }
     },

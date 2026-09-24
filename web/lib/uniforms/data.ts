@@ -1375,6 +1375,24 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#29594C',
     },
   },
+  // Seahawks Action Green Color Rush, first worn in 2016 and still in rotation (last worn 2024).
+  // The fabric is a brighter lime than the brand's Action Green and has no published code, so
+  // primary is the reference sheet's flat fill; navy is the band, numerals and pant stripe.
+  {
+    teamId: 'seahawks',
+    slug: 'color-rush',
+    constructionKey: 'color-rush',
+    kind: 'color-rush',
+    name: 'Color Rush',
+    yearStart: 2016,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#B6FF3E',
+      secondary: '#002244',
+      accent: '#FFFFFF',
+    },
+  },
   // Wave 4: currently-worn alternates & throwbacks (heritage-derived; Browns '46 and
   // Packers Winter Warning verified from reveals). uiAccent reuses each team's live pair.
   // Dolphins 1972 perfect-season aqua throwback. Heritage aqua/orange; throwback aqua reads slightly lighter in person (no published hex).
