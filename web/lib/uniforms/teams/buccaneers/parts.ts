@@ -22,6 +22,8 @@ import {
   BUCCANEERS_SLEEVE_X_LEFT,
   BUCCANEERS_SLEEVE_X_RIGHT,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -120,14 +122,20 @@ function creamsicleDecal(): PartLayer[] {
 // White cage. The pewter shell wears the SF2BD-SW-SP white mask (named sources; the modern pewter
 // shell pairs with a white/light cage). The shared neutral #4b5158 it replaces is a grey that
 // reads muddy against pewter.
-const HELMET_PEWTER_FLAG: UniformPart = {
-  base: 'pewter',
+const HELMET_PEWTER_FLAG: UniformPart = expandHelmet('buccaneers-pewter-flag-helmet', {
+  shell: 'pewter',
   facemask: 'white',
-  layers: flagDecal(),
-};
+  decal: placed(flagDecal()),
+  number: 'none',
+});
 
 // The creamsicle's white shell carries its supplied orange/red/white source decal and white cage.
-const HELMET_WHITE: UniformPart = { base: 'white', facemask: 'white', layers: creamsicleDecal() };
+const HELMET_WHITE: UniformPart = expandHelmet('buccaneers-white-helmet', {
+  shell: 'white',
+  facemask: 'white',
+  decal: placed(creamsicleDecal()),
+  number: 'none',
+});
 
 // Home jersey: red body, pewter cuff and collar, white numerals ringed orange (two-ring trim
 // approximated to the single orange outline, see buccaneers.ts).

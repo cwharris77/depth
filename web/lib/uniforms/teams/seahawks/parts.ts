@@ -43,7 +43,8 @@ import {
 import { HELMET_CROWN_STRIPE_PATH } from '../core/shared';
 import { fromGeneric, type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
-import { placeMark } from '../core/marks';
+import { expandHelmet } from '../core/helmet-spec';
+import { placeMark, placed } from '../core/marks';
 import { SEAHAWKS_THROWBACK_HAWK } from './marks/throwback-hawk';
 
 import { SEAHAWKS_RIVALRIES_JERSEY_PALETTE } from './jerseys/rivalries-2025';
@@ -100,31 +101,40 @@ export function modernNeckAndWordmark(
   ];
 }
 
-const HELMET_NAVY_HAWK: UniformPart = {
-  base: 'navy',
+const HELMET_NAVY_HAWK: UniformPart = expandHelmet('seahawks-navy-hawk-helmet', {
+  shell: 'navy',
   // Black cage, sampled from the reference crop (the facemask region reads #000000 there,
   // against the shell's #0D2135). The shared neutral #4b5158 it replaces was a mid-grey mass at
   // relative luminance 80 over a shell at 29 -- the single brightest thing on the helmet.
   facemask: 'facemaskBlack',
-  layers: [
+  decal: placed([
     fill('seahawks-helmet-center-stripe', 'helmet', HELMET_CROWN_STRIPE_PATH, 'crownWedge'),
     ...hawk('green'),
-  ],
-};
+  ]),
+  number: 'none',
+});
 
-const HELMET_TEAL_HAWK: UniformPart = { base: 'rivalriesTeal', layers: hawk('rivalriesPine') };
+const HELMET_TEAL_HAWK: UniformPart = expandHelmet('seahawks-teal-hawk-helmet', {
+  shell: 'rivalriesTeal',
+  facemask: 'neutral',
+  decal: placed(hawk('rivalriesPine')),
+  number: 'none',
+});
 
 // Silver shell with no stripe, a royal cage and the original hawk.
-const HELMET_THROWBACK_SILVER: UniformPart = {
-  base: 'throwbackSilver',
+const HELMET_THROWBACK_SILVER: UniformPart = expandHelmet('seahawks-throwback-silver-helmet', {
+  shell: 'throwbackSilver',
   facemask: 'throwbackRoyal',
-  layers: placeMark('seahawks-throwback-hawk', SEAHAWKS_THROWBACK_HAWK, 'helmet-side', {
-    royal: 'throwbackRoyal',
-    white: 'white',
-    block: 'throwbackGreen',
-    eye: 'throwbackGreen',
-  }),
-};
+  decal: placed(
+    placeMark('seahawks-throwback-hawk', SEAHAWKS_THROWBACK_HAWK, 'helmet-side', {
+      royal: 'throwbackRoyal',
+      white: 'white',
+      block: 'throwbackGreen',
+      eye: 'throwbackGreen',
+    })
+  ),
+  number: 'none',
+});
 
 export const SEAHAWKS_PALETTE = {
   ...SEAHAWKS_RIVALRIES_JERSEY_PALETTE,

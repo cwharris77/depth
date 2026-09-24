@@ -20,6 +20,8 @@ import {
   TEXANS_DECAL_NAVY,
   TEXANS_DECAL_RED,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 
 // The navy shell's collar trim (home only): two arcs, not a chevron (the arms never meet).
@@ -101,20 +103,21 @@ function bullDecal(): PartLayer[] {
 // White cage. The Texans' navy shell wears a white facemask (named sources; the navy shell + white
 // cage reads cleanly in the composite). The shared neutral #4b5158 it replaces is a grey that
 // floats against the navy.
-const HELMET_NAVY_BULL: UniformPart = {
-  base: 'navy',
+const HELMET_NAVY_BULL: UniformPart = expandHelmet('texans-navy-bull-helmet', {
+  shell: 'navy',
   facemask: 'white',
-  layers: bullDecal(),
-};
+  decal: placed(bullDecal()),
+  number: 'none',
+});
 
 // Battle Red's red shell with its own large stylized horn — a different mark from the bull.
 //
 // White cage. Battle Red wears the same white facemask as the navy shell (named sources; the red
 // shell + white cage reads cleanly).
-const HELMET_RED_HORN: UniformPart = {
-  base: 'red',
+const HELMET_RED_HORN: UniformPart = expandHelmet('texans-red-horn-helmet', {
+  shell: 'red',
   facemask: 'white',
-  layers: [
+  decal: placed([
     {
       id: 'texans-decal-battle-red-horn',
       surface: 'helmet',
@@ -123,8 +126,9 @@ const HELMET_RED_HORN: UniformPart = {
       kind: 'fill',
       fill: 'decalNavy',
     },
-  ],
-};
+  ]),
+  number: 'none',
+});
 
 // Home jersey: navy body, red collar trim, white numerals keylined red.
 

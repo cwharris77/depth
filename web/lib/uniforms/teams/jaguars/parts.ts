@@ -25,6 +25,8 @@ import {
   JAGUARS_TB_COLLAR_PATH,
   JAGUARS_TB_COLLAR_WIDTH,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 
 // Preserve the supplied SVG's paint order, including its black keyline and gold shading.
@@ -136,17 +138,23 @@ export function throwbackBands(upper: string, lower: string): PartLayer[] {
 //
 // Black cage. The black Jaguars shell wears a black facemask (named sources; the matte black shell
 // pairs a dark cage).
-export const HELMET_BLACK: UniformPart = {
-  base: 'black',
+export const HELMET_BLACK: UniformPart = expandHelmet('jaguars-black-helmet', {
+  shell: 'black',
   facemask: 'black',
-  layers: jaguarDecal(),
-};
+  decal: placed(jaguarDecal()),
+  number: 'none',
+});
 
 // The 1998 throwback shell (H2): a BLACK shell (the kit's accent #101820) with NO decal. The flat
 // sets helmetColor to accent = black, so the shell is black and stays bare. The module note about
 // "teal shell" describes the hypothetical case; the actual accent is black. The jaguar decal is
 // therefore only on H1 (home/away/black-alt).
-export const HELMET_TEAL: UniformPart = { base: 'black', facemask: 'black', layers: [] };
+export const HELMET_TEAL: UniformPart = expandHelmet('jaguars-throwback-helmet', {
+  shell: 'black',
+  facemask: 'black',
+  decal: 'none',
+  number: 'none',
+});
 
 // White pants (P1, home/away/teal-throwback).
 export const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };

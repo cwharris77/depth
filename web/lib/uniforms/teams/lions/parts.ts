@@ -10,6 +10,8 @@
 
 import { LIONS_SLEEVE_X_LEFT, LIONS_SLEEVE_X_RIGHT, LIONS_STRIPE_BOUNDS } from './source';
 import { LIONS_DECAL_PATHS as GENERATED_LIONS_DECAL_PATHS } from './decal';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -46,20 +48,21 @@ export function sleeveStripes(band: string, line: string): PartLayer[] {
 // polyvinyl-coated steel face mask"); the composite cannot separate a silver cage from the same-toned shell,
 // so the named source and the team's silver #B0B7BC are the source of truth here. The shared
 // neutral #4b5158 it replaces is a dark grey that reads as a hole in the silver shell.
-export const HELMET_SILVER_LION: UniformPart = {
-  base: 'silver',
+export const HELMET_SILVER_LION: UniformPart = expandHelmet('lions-silver-lion-helmet', {
+  shell: 'silver',
   facemask: 'silver',
-  layers: [
-    ...GENERATED_LIONS_DECAL_PATHS.map((layer, index) => ({
+  decal: placed(
+    GENERATED_LIONS_DECAL_PATHS.map((layer, index) => ({
       id: `lions-decal-${index}`,
       surface: 'helmet' as const,
       d: layer.d,
       clip: true,
       kind: 'fill' as const,
       fill: layer.fill,
-    })),
-  ],
-};
+    }))
+  ),
+  number: 'none',
+});
 
 // Blue pants (home).
 export const PANTS_BLUE: UniformPart = { base: 'blue', layers: [] };

@@ -10,23 +10,28 @@ import {
   BEARS_PANTS_OUTER_LEFT,
   BEARS_PANTS_OUTER_RIGHT,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 
 // The one shell, on all three kits. The cage is painted the shell navy rather than a neutral.
-const HELMET_NAVY_C: UniformPart = {
-  base: 'navy',
+const HELMET_NAVY_C: UniformPart = expandHelmet('bears-navy-c-helmet', {
+  shell: 'navy',
   facemask: 'navy',
-  layers: [
-    { id: 'bears-decal-keyline', d: BEARS_DECAL_KEYLINE_PATH, fill: 'white' },
-    { id: 'bears-decal-letter', d: BEARS_DECAL_LETTER_PATH, fill: 'orange' },
-  ].map((s): PartLayer => ({
-    ...s,
-    surface: 'helmet',
-    clip: true,
-    kind: 'fill',
-    fillRule: 'evenodd',
-  })),
-};
+  decal: placed(
+    [
+      { id: 'bears-decal-keyline', d: BEARS_DECAL_KEYLINE_PATH, fill: 'white' },
+      { id: 'bears-decal-letter', d: BEARS_DECAL_LETTER_PATH, fill: 'orange' },
+    ].map((s): PartLayer => ({
+      ...s,
+      surface: 'helmet',
+      clip: true,
+      kind: 'fill',
+      fillRule: 'evenodd',
+    }))
+  ),
+  number: 'none',
+});
 
 const PANTS_NAVY: UniformPart = {
   base: 'navy',

@@ -27,6 +27,8 @@ import {
   PACKERS_SLEEVE_WHITE_RIGHT,
 } from './source';
 import { PACKERS_G_MARK_LAYERS } from './decal';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -160,23 +162,30 @@ export function decal(): PartLayer[] {
 // Grey cage. The modern gold shell wears a grey/light-grey facemask (named sources); the
 // composite reads it at #8f8f90 against the gold, clearly distinct from the shell. The shared
 // neutral #4b5158 it replaces is a darker grey than the real cage.
-export const HELMET_GOLD: UniformPart = {
-  base: 'gold',
+export const HELMET_GOLD: UniformPart = expandHelmet('packers-gold-helmet', {
+  shell: 'gold',
   facemask: 'cageGrey',
-  layers: [...helmetStripe(), ...decal()],
-};
+  decal: placed([...helmetStripe(), ...decal()]),
+  number: 'none',
+});
 
 // The 1923 throwback's leather shell, bare — no stripe, no decal (the era had neither), and no
 // documented cage (it predates the facemask). Left on the default.
-export const HELMET_LEATHER: UniformPart = { base: 'leather', layers: [] };
+export const HELMET_LEATHER: UniformPart = expandHelmet('packers-leather-helmet', {
+  shell: 'leather',
+  facemask: 'neutral',
+  decal: 'none',
+  number: 'none',
+});
 
 // Winter Warning's white shell, carrying the same stripe and decal as the gold one, and the same
 // modern grey cage.
-export const HELMET_WHITE: UniformPart = {
-  base: 'white',
+export const HELMET_WHITE: UniformPart = expandHelmet('packers-white-helmet', {
+  shell: 'white',
   facemask: 'cageGrey',
-  layers: [...helmetStripe(), ...decal()],
-};
+  decal: placed([...helmetStripe(), ...decal()]),
+  number: 'none',
+});
 
 // Gold pants with the green/white/green stripe (home + away).
 export const PANTS_GOLD: UniformPart = { base: 'gold', layers: pantsStripes() };

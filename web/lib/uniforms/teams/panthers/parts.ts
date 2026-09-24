@@ -39,6 +39,8 @@ import {
   PANTHERS_COLLAR_PATH,
   PANTHERS_COLLAR_WIDTH,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { fromGeneric, type PartLayer, type UniformPart } from '../core/parts';
 
 // Wider triangle first, shorter one over it — the gap left below the middle band's point is where
@@ -119,10 +121,20 @@ export function legStripe(keyline: string, center: string): PartLayer[] {
 
 // Home shell (H1): black, the only kit in the reference whose shell is not silver. The cage is
 // black on every figure of the 2025 composite (nfl-uniform-refs/panthers), on both shells.
-export const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'black', layers: decal() };
+export const HELMET_BLACK: UniformPart = expandHelmet('panthers-black-helmet', {
+  shell: 'black',
+  facemask: 'black',
+  decal: placed(decal()),
+  number: 'none',
+});
 
 // Away and black-alternate shell (H2): silver, same mark, same black cage.
-export const HELMET_SILVER: UniformPart = { base: 'silver', facemask: 'black', layers: decal() };
+export const HELMET_SILVER: UniformPart = expandHelmet('panthers-silver-helmet', {
+  shell: 'silver',
+  facemask: 'black',
+  decal: placed(decal()),
+  number: 'none',
+});
 
 // The four legs. Every stripe is a blue centre between white keylines, except on blue pants where
 // it inverts to black-on-blue and on silver where the keyline reads black against the light leg.

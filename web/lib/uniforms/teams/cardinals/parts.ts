@@ -37,6 +37,8 @@ import {
   CARDINALS_EGGSHELL_DECAL_RED,
   CARDINALS_EGGSHELL_DECAL_WHITE,
 } from './decals';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 
 // The full-color decal follows the supplied primary helmet-mark SVG. Every region carries its own
@@ -137,28 +139,31 @@ function sleeveBands(color: string): PartLayer[] {
 //
 // White cage. The white Cardinals shell wears a white facemask (named sources; white-on-white
 // matches the shell).
-const HELMET_WHITE: UniformPart = {
-  base: 'white',
+const HELMET_WHITE: UniformPart = expandHelmet('cardinals-white-helmet', {
+  shell: 'white',
   facemask: 'white',
-  layers: fullDecal(),
-};
+  decal: placed(fullDecal()),
+  number: 'none',
+});
 
 // The black shell with the full-color decal (H3, black-alt).
 //
 // Black cage. The black-alt shell wears a black facemask (named sources; the black-on-black cage
 // reads as the shell).
-const HELMET_BLACK: UniformPart = {
-  base: 'black',
+const HELMET_BLACK: UniformPart = expandHelmet('cardinals-black-helmet', {
+  shell: 'black',
   facemask: 'black',
-  layers: fullDecal(),
-};
+  decal: placed(fullDecal()),
+  number: 'none',
+});
 
 // Rivalries' cream shell with the red-on-cream mark (H2, rivalries).
-const HELMET_CREAM: UniformPart = {
-  base: 'cream',
+const HELMET_CREAM: UniformPart = expandHelmet('cardinals-cream-helmet', {
+  shell: 'cream',
   facemask: 'white',
-  layers: rivalDecal(),
-};
+  decal: placed(rivalDecal()),
+  number: 'none',
+});
 
 // Home jersey: cardinal body, white shoulder numerals and ARIZONA chest/neck lettering.
 

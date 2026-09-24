@@ -19,6 +19,8 @@ import {
   BILLS_SLEEVE_WHITE_LEFT,
   BILLS_SLEEVE_WHITE_RIGHT,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import type { UniformPart } from '../core/parts';
 
 const COLLAR_PATH = 'M206,388 L294,455 L386,388';
@@ -35,10 +37,10 @@ const PANTS_STRIPE_PATH_RIGHT = 'M454,807 H470 V1462 H454 Z';
 //
 
 // cage can't be cleanly read from the composite, so the named source is the source of truth).
-const HELMET_WHITE: UniformPart = {
-  base: 'white',
+const HELMET_WHITE: UniformPart = expandHelmet('bills-white-helmet', {
+  shell: 'white',
   facemask: 'white',
-  layers: [
+  decal: placed([
     {
       id: 'bills-helmet-buffalo',
       surface: 'helmet',
@@ -146,17 +148,18 @@ const HELMET_WHITE: UniformPart = {
       stroke: 'navy',
       strokeWidth: BILLS_COLLAR_WIDTHS.navy,
     },
-  ],
-};
+  ]),
+  number: 'none',
+});
 
 // Rivalries' ice-silver helmet: the shell stays the shared white (the flat inherits the default
 // white shell; only the decal/stripe treatment is silver). Silver buffalo + navy outline, silver
 // stripe + navy outline, navy collar. No red, no standard band set. Same white cage as the modern
 // shell (both use the SF2BD-SW-SP white mask).
-const HELMET_ICE: UniformPart = {
-  base: 'white',
+const HELMET_ICE: UniformPart = expandHelmet('bills-ice-helmet', {
+  shell: 'white',
   facemask: 'white',
-  layers: [
+  decal: placed([
     {
       id: 'bills-helmet-buffalo',
       surface: 'helmet',
@@ -202,8 +205,9 @@ const HELMET_ICE: UniformPart = {
       stroke: 'navy',
       strokeWidth: 13,
     },
-  ],
-};
+  ]),
+  number: 'none',
+});
 
 // Home jersey: blue body. The sleeve band set (incl. the generic red sleeve band) lives in the
 // shared HELMET_WHITE part; same-paint-order as the flat's inherited-then-applied merge.

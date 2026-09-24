@@ -26,6 +26,8 @@ import {
   PATRIOTS_DECAL_STAR_PATH,
   PATRIOTS_DECAL_STREAMERS_PATH,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -79,19 +81,39 @@ function decal(): PartLayer[] {
 // is a GIF and its cage quantizes to #e30003, which is palette noise rather than a documented color,
 // so this uses the archive's own stored club red (#C60C30, the home row's secondary) instead of
 // eyedropping the source.
-const HELMET_NAVY: UniformPart = { base: 'navy', facemask: 'red', layers: decal() };
+const HELMET_NAVY: UniformPart = expandHelmet('patriots-navy-helmet', {
+  shell: 'navy',
+  facemask: 'red',
+  decal: placed(decal()),
+  number: 'none',
+});
 
 // Away shell (H2): silver, same mark, same red cage.
-const HELMET_SILVER: UniformPart = { base: 'silver', facemask: 'red', layers: decal() };
+const HELMET_SILVER: UniformPart = expandHelmet('patriots-silver-helmet', {
+  shell: 'silver',
+  facemask: 'red',
+  decal: placed(decal()),
+  number: 'none',
+});
 
 // Pat Patriot shell (H3): the throwback red shell, and NO mark — that era wore a different logo,
 // which no figure on the sheet draws. Its white-shell figure in the boxed group wears a white cage.
-const HELMET_PAT: UniformPart = { base: 'patRed', facemask: 'white', layers: [] };
+const HELMET_PAT: UniformPart = expandHelmet('patriots-pat-helmet', {
+  shell: 'patRed',
+  facemask: 'white',
+  decal: 'none',
+  number: 'none',
+});
 
 // Rivalries shell (H4). This is the modern Patriots navy-shell treatment, including the red cage;
 // the kit has no figure of its own on the sheet, so its helmet mark and placement are inherited from
 // the current-season modern figures rather than from the throwback group.
-const HELMET_RIVALRIES: UniformPart = { base: 'rivalNavy', facemask: 'red', layers: decal() };
+const HELMET_RIVALRIES: UniformPart = expandHelmet('patriots-rivalries-helmet', {
+  shell: 'rivalNavy',
+  facemask: 'red',
+  decal: placed(decal()),
+  number: 'none',
+});
 
 // Home jersey (J1): navy body, banded red/white/red, white numerals.
 

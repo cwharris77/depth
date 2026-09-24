@@ -28,6 +28,8 @@ import {
   VIKINGS_PANTS_OUTER_LEFT,
   VIKINGS_PANTS_OUTER_RIGHT,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -105,11 +107,12 @@ function decal(horn: string, crescent: string): PartLayer[] {
 // The modern purple shell (H1), worn by home and away: white horn over a gold crescent, black
 // cage. Every purple helmet figure on the 2025 composite (nfl-uniform-refs/vikings) wears a
 // black facemask.
-const HELMET_PURPLE: UniformPart = {
-  base: 'purple',
+const HELMET_PURPLE: UniformPart = expandHelmet('vikings-purple-helmet', {
+  shell: 'purple',
   facemask: 'black',
-  layers: decal('white', 'gold'),
-};
+  decal: placed(decal('white', 'gold')),
+  number: 'none',
+});
 
 // The 1965 shell (H2) is the same purple with the same mark, and would be the same part but for
 // the cage: the era sheet (vikings-purple-classic-era-1965.png) shows a single-bar GREY facemask,
@@ -117,15 +120,21 @@ const HELMET_PURPLE: UniformPart = {
 // an eyedropped hex — the era sheet's bar samples around #9ea099/#969696, which is antialiasing
 // against a white ground and not a documented color. This is the ticket's "leave a shell on the
 // default rather than inventing a hex" case, and it is the one open question in this PR.
-const HELMET_PURPLE_CLASSIC: UniformPart = { base: 'purple', layers: decal('white', 'gold') };
+const HELMET_PURPLE_CLASSIC: UniformPart = expandHelmet('vikings-classic-helmet', {
+  shell: 'purple',
+  facemask: 'neutral',
+  decal: placed(decal('white', 'gold')),
+  number: 'none',
+});
 
 // Winter Warrior's white shell (H3): purple horn over a gold crescent, and a white cage to match
 // the shell, as the composite draws it.
-const HELMET_WHITE: UniformPart = {
-  base: 'white',
+const HELMET_WHITE: UniformPart = expandHelmet('vikings-white-helmet', {
+  shell: 'white',
   facemask: 'white',
-  layers: decal('purple', 'gold'),
-};
+  decal: placed(decal('purple', 'gold')),
+  number: 'none',
+});
 
 // Purple jersey (J1) — home and the 1965 classic. White over gold on the sleeve, a white-over-gold
 // collar, white numerals with a gold keyline.

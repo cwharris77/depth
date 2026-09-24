@@ -25,6 +25,8 @@ import {
   NINERS_STRIPE_HEIGHT,
   NINERS_STRIPE_TOPS,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -105,11 +107,21 @@ function helmetMarks(field: string): PartLayer[] {
 // classic matte-gold shell wears a black cage (collegehelmetstore / named sources; the
 // composite reads the bars at #000000). The shared neutral #4b5158 it replaces is a mid-grey that
 // looks wrong against the gold.
-const HELMET_GOLD: UniformPart = { base: 'gold', facemask: 'black', layers: helmetMarks('red') };
+const HELMET_GOLD: UniformPart = expandHelmet('niners-gold-helmet', {
+  shell: 'gold',
+  facemask: 'black',
+  decal: placed(helmetMarks('red')),
+  number: 'none',
+});
 
 // Rivalries' black shell, the same crown stripe and oval in red, but with a gold cage (Riddell:
 // "low gloss black shell, flash gold facemask" — the 2025 Rivalries shell specifically).
-const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'gold', layers: helmetMarks('red') };
+const HELMET_BLACK: UniformPart = expandHelmet('niners-black-helmet', {
+  shell: 'black',
+  facemask: 'gold',
+  decal: placed(helmetMarks('red')),
+  number: 'none',
+});
 
 // Home jersey: red body, white sleeve bands, white numerals.
 

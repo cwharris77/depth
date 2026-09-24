@@ -21,6 +21,8 @@ import {
   TITANS_YOKE_LEFT,
   TITANS_YOKE_RIGHT,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -61,15 +63,21 @@ function decal(): PartLayer[] {
 // White cage. The Titans' navy shell wears a white facemask (named sources: the 2026 rebrand
 // "helmet is white with white facemask", and the pre-rebrand navy-shell era wore white/gray; the
 // white cage reads cleanly against the navy shell).
-const HELMET_NAVY_T: UniformPart = {
-  base: 'navy',
+const HELMET_NAVY_T: UniformPart = expandHelmet('titans-navy-t-helmet', {
+  shell: 'navy',
   facemask: 'white',
-  layers: decal(),
-};
+  decal: placed(decal()),
+  number: 'none',
+});
 
 // The oilers throwback's light-blue shell, bare (its oil-derrick mark has no figure on the sheet;
 // the shell inherits the kit's primary, light blue). Same white cage as the modern shell.
-const HELMET_WHITE: UniformPart = { base: 'lightBlue', facemask: 'white', layers: [] };
+const HELMET_WHITE: UniformPart = expandHelmet('titans-white-helmet', {
+  shell: 'lightBlue',
+  facemask: 'white',
+  decal: 'none',
+  number: 'none',
+});
 
 // Home jersey: navy body, navy bar on the silver yoke, navy numerals keylined white.
 

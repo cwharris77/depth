@@ -18,6 +18,8 @@ import {
   EAGLES_DECAL_SILVER_PATH,
   EAGLES_DECAL_WHITE_PATH,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 
 // The wing — source paint order is white substrate, black feather channels, then silver body.
@@ -89,13 +91,28 @@ export function collar(color: string, path = EAGLES_COLLAR_PATH): PartLayer[] {
 }
 
 // Green shell (H1) — shared by home and away.
-export const HELMET_GREEN: UniformPart = { base: 'green', facemask: 'black', layers: wing() };
+export const HELMET_GREEN: UniformPart = expandHelmet('eagles-green-helmet', {
+  shell: 'green',
+  facemask: 'black',
+  decal: placed(wing()),
+  number: 'none',
+});
 
 // Kelly-green shell (H2).
-export const HELMET_KELLY: UniformPart = { base: 'kelly', facemask: 'black', layers: wing() };
+export const HELMET_KELLY: UniformPart = expandHelmet('eagles-kelly-helmet', {
+  shell: 'kelly',
+  facemask: 'black',
+  decal: placed(wing()),
+  number: 'none',
+});
 
 // Black shell (H3, black-alt).
-export const HELMET_BLACK: UniformPart = { base: 'black', facemask: 'black', layers: wing() };
+export const HELMET_BLACK: UniformPart = expandHelmet('eagles-black-helmet', {
+  shell: 'black',
+  facemask: 'black',
+  decal: placed(wing()),
+  number: 'none',
+});
 
 // Pants — no pant stripe on any kit; each takes its body color.
 export const PANTS_GREEN: UniformPart = { base: 'green', layers: [] };

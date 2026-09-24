@@ -24,6 +24,8 @@ import {
   DOLPHINS_TB_DECAL_RING_PATH,
   DOLPHINS_TB_STRIPE_BOUNDS,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -104,26 +106,29 @@ export function throwbackStripes(band: string, line: string): PartLayer[] {
 //
 // White cage. The white Dolphins shell wears a white facemask (named sources — Miami is a classic
 // white-cage team).
-export const HELMET_WHITE: UniformPart = {
-  base: 'white',
+export const HELMET_WHITE: UniformPart = expandHelmet('dolphins-white-helmet', {
+  shell: 'white',
   facemask: 'white',
-  layers: [...crownStripe('orange'), ...decal('orange', 'teal')],
-};
+  decal: placed([...crownStripe('orange'), ...decal('orange', 'teal')]),
+  number: 'none',
+});
 
 // The navy rivalries shell (H2) with the orange stripe + sunburst and dark navy cage, as shown
 // by the dark alternate figure.
-export const HELMET_NAVY: UniformPart = {
-  base: 'navy',
+export const HELMET_NAVY: UniformPart = expandHelmet('dolphins-navy-helmet', {
+  shell: 'navy',
   facemask: 'navy',
-  layers: [...crownStripe('orange'), ...decal('orange', 'teal')],
-};
+  decal: placed([...crownStripe('orange'), ...decal('orange', 'teal')]),
+  number: 'none',
+});
 
 // The 1972 throwback shell (H3): white with a TEAL crown stripe and the broken-ring dolphin.
-export const HELMET_WHITE_1972: UniformPart = {
-  base: 'white',
+export const HELMET_WHITE_1972: UniformPart = expandHelmet('dolphins-white-1972-helmet', {
+  shell: 'white',
   facemask: 'white',
-  layers: [...crownStripe('teal'), ...decal('orange', 'teal', true)],
-};
+  decal: placed([...crownStripe('teal'), ...decal('orange', 'teal', true)]),
+  number: 'none',
+});
 
 // White pants (P1, shared by home + 1972).
 export const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };

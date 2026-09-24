@@ -11,6 +11,8 @@ import {
   FALCONS_SIDE_STRIPE_LEFT,
   FALCONS_SIDE_STRIPE_RIGHT,
 } from './source';
+import { expandHelmet } from '../core/helmet-spec';
+import { placed } from '../core/marks';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -34,16 +36,17 @@ export function sideStripes(color: string): PartLayer[] {
 // The falcon decal is fixed art on the black shell — nothing here moves with the palette, so it
 // lives entirely inside the (single) helmet part rather than being restated per kit. The black
 // shell's silver cage is the 2020 redesign's "back to black" facemask (see palette note).
-export const HELMET_BLACK_FALCON: UniformPart = {
-  base: 'black',
+export const HELMET_BLACK_FALCON: UniformPart = expandHelmet('falcons-black-falcon-helmet', {
+  shell: 'black',
   facemask: 'silver',
-  layers: [
+  decal: placed([
     fill('falcons-decal-silver', 'helmet', FALCONS_DECAL_SILVER_PATH, 'silver'),
     fill('falcons-decal-silhouette', 'helmet', FALCONS_DECAL_SILHOUETTE_PATH, 'white'),
     fill('falcons-decal-body', 'helmet', FALCONS_DECAL_BODY_PATH, 'black'),
     fill('falcons-decal-streaks', 'helmet', FALCONS_DECAL_STREAKS_PATH, 'decalRed'),
-  ],
-};
+  ]),
+  number: 'none',
+});
 
 // The 2025 reference side swatch has a tapered red center with black keylines. Follow the
 // mannequin leg edge and stop at the pant hem (y=1196), before the socks begin.

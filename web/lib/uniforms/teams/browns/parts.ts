@@ -9,6 +9,7 @@
 // the 1946 throwback keeps its existing white pants outside that current-uniform option set.
 
 import { BROWNS_SLEEVE_X_LEFT, BROWNS_SLEEVE_X_RIGHT, BROWNS_STRIPE_BOUNDS } from './source';
+import { expandHelmet } from '../core/helmet-spec';
 import { type PartLayer, type UniformPart } from '../core/parts';
 import type { UniformSurface } from '../core/types';
 
@@ -83,21 +84,23 @@ function pantsStripes(): PartLayer[] {
 //
 // White cage. The bare orange shell wears the SF2BD-SW-SP white mask (named sources). The white
 // cage reads cleanly against the orange shell.
-const HELMET_ORANGE: UniformPart = {
-  base: 'orange',
+const HELMET_ORANGE: UniformPart = expandHelmet('browns-orange-helmet', {
+  shell: 'orange',
   facemask: 'white',
-  layers: [],
-};
+  decal: 'none',
+  number: 'none',
+});
 
 // The 1946 throwback's brown shell (the era's documented leather helmet), inferred — NOT in the
 // 2025 composite, provisional (see browns.ts).
 //
 // White cage. The modern reproduction of the 1946 shell wears the same SF2BD-SW-SP white mask.
-const HELMET_BROWN: UniformPart = {
-  base: 'brown',
+const HELMET_BROWN: UniformPart = expandHelmet('browns-brown-helmet', {
+  shell: 'brown',
   facemask: 'white',
-  layers: [],
-};
+  decal: 'none',
+  number: 'none',
+});
 
 // Home jersey: brown body, white-over-orange stripe stack, plain white numerals (no keyline).
 
