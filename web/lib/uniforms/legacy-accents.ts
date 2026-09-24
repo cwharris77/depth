@@ -97,6 +97,7 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   'saints-away-2002': { uiAccent: '#E2CC9A', onAccent: '#0a0e1a' },
   'buccaneers-away-2020': { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
   'chargers-powder-blue-1960': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
+  'chargers-super-chargers-2025': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
   'titans-oilers-throwback-1960': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
   'bears-orange-alternate-2005': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'saints-color-rush-2022': { uiAccent: '#E2CC9A', onAccent: '#0a0e1a' },

@@ -1116,6 +1116,21 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFFFFF',
     },
   },
+  {
+    teamId: 'chargers',
+    slug: 'super-chargers',
+    constructionKey: 'super-chargers',
+    kind: 'alternate',
+    name: 'Super Chargers',
+    yearStart: 2025,
+    yearEnd: null,
+    isCurrent: true,
+    colors: {
+      primary: '#002244',
+      secondary: '#FFC20E',
+      accent: '#FFFFFF',
+    },
+  },
   // Houston Oilers Columbia blue (1960-1996, per Wikipedia). Hexes: Columbia blue #4B92DB = the Oilers heritage blue, red #C8102E. isCurrent: Titans' designated throwback alternate (not worn every season).
   {
     teamId: 'titans',

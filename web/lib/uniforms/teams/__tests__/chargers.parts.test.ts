@@ -22,8 +22,8 @@ describe('Chargers helmet parts', () => {
       for (const layer of part.layers) expect(layer.d?.match(/Z/g)).toHaveLength(1);
     });
 
-    it(`paints the ${name} shell's cage gold, as every figure on the composite draws it`, () => {
-      expect(part.facemask).toBe('gold');
+    it(`pairs the ${name} shell with its facemask`, () => {
+      expect(part.facemask).toBe(name === 'navy' ? 'navy' : 'gold');
     });
   }
 });
@@ -35,11 +35,17 @@ describe('Chargers pants parts', () => {
     expect(CHARGERS_PARTS.kits['powder-blue'].pants).toEqual(['gold', 'white', 'powder']);
   });
 
-  it('keeps navy off every kit, since it is worn only with the navy alternate top', () => {
+  it('reserves navy pants for the navy alternate', () => {
     expect(CHARGERS_PARTS.pants.navy).toBeDefined();
-    for (const ref of Object.values(CHARGERS_PARTS.kits)) {
+    for (const [name, ref] of Object.entries(CHARGERS_PARTS.kits)) {
+      if (name === 'super-chargers') continue;
       expect(ref.pants).not.toContain('navy');
     }
+    expect(CHARGERS_PARTS.kits['super-chargers']).toEqual({
+      helmet: 'navy',
+      jersey: 'navy',
+      pants: 'navy',
+    });
   });
 
   it('keeps the flat definition pairing canonical so the committed rasters are unchanged', () => {
@@ -49,7 +55,12 @@ describe('Chargers pants parts', () => {
         Array.isArray(ref.pants) ? ref.pants[0] : ref.pants,
       ])
     );
-    expect(canonical).toEqual({ home: 'gold', away: 'gold', 'powder-blue': 'gold' });
+    expect(canonical).toEqual({
+      home: 'gold',
+      away: 'gold',
+      'powder-blue': 'gold',
+      'super-chargers': 'navy',
+    });
   });
 
   // One `it` per leg so a failure names the offending pant, per the data-integrity convention.
