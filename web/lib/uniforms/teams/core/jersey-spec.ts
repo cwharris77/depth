@@ -1,13 +1,28 @@
 // A declarative jersey description: named construction primitives and palette tokens, no
 // coordinates. expandJersey() owns all geometry, fitted once to the shared mannequin, and emits
 // ordinary UniformPart layers.
-import type { PartLayer, UniformPart } from './parts';
+import type { Mark, PlacedMark } from './marks';
+import type { PaletteRef, PartLayer, UniformPart } from './parts';
 import { JERSEY_NUMBER_THREE } from '../../jersey-art';
 import { GENERIC_COLLAR_PATH, LEGACY_ROUNDED_COLLAR_PATH, modernInsetVCollar } from './shared';
 
 export type JerseySize = 's' | 'm' | 'l';
 export type JerseyBand = { color: string; size: JerseySize };
 export type JerseyGap = 'none' | 'narrow' | 'wide' | 'broad';
+
+// Art on the jersey: a mark already in mannequin space, or a mark placed by anchor from its own
+// box. 'under' paints before the construction (a logo that sits beneath stripes and numerals),
+// 'over' after it.
+export type JerseyMarkUse =
+  | { paint: 'under' | 'over'; mark: PlacedMark }
+  | {
+      paint: 'under' | 'over';
+      mark: Mark;
+      anchor: 'sleeves' | 'sleeve-left' | 'sleeve-right';
+      slots: Record<string, PaletteRef | null>;
+      // Layer id stem, prefixed with the jersey's prefix.
+      id: string;
+    };
 
 export interface JerseySpec {
   body: string;
@@ -40,6 +55,8 @@ export interface JerseySpec {
   // The numeral repeated small and upright on the lower outer face of each sleeve.
   sleeveNumber?: { fill: string };
   number: { fill: string; outline: string; outlineWeight: 'none' | 'thin' | 'regular' | 'heavy' };
+  // Logos and wordmarks. Omitted, the jersey carries none.
+  marks?: readonly JerseyMarkUse[];
 }
 
 const SIZE_PX: Record<JerseySize, number> = { s: 11, m: 16, l: 28 };
