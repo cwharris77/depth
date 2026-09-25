@@ -96,6 +96,19 @@ const PATH_LITERAL = new RegExp(
   String.raw`['"\x60]\s*[Mm]\s*${COORD}[^'"\x60]*?(?:[LlCcQqAaHhVvSsTt]\s*${COORD}|[Zz]\s*['"\x60])`
 );
 
+// Other ways drawn geometry enters a team file: placing art in mannequin space, borrowing a generic
+// layer's path, building a layer literal (every layer names its kind), or a literal x,y pair.
+const DRAWING = [
+  /\bplaced\(/,
+  /\bfromGeneric\(/,
+  /\bkind:\s*['"](?:fill|stroke)['"]/,
+  /\[\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*\]/,
+];
+
+function draws(line: string): boolean {
+  return PATH_LITERAL.test(line) || DRAWING.some((pattern) => pattern.test(line));
+}
+
 function walk(dir: string, out: string[]): void {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
@@ -104,7 +117,8 @@ function walk(dir: string, out: string[]): void {
   }
 }
 
-// `file:line` for every path literal in a team directory's non-test sources outside marks/.
+// `file:line` for every line in a team directory's non-test sources outside marks/ that draws:
+// a path literal, or one of the DRAWING patterns.
 export function findCoordinateLiterals(teamDir: string): string[] {
   const files: string[] = [];
   walk(teamDir, files);
@@ -116,6 +130,6 @@ export function findCoordinateLiterals(teamDir: string): string[] {
     .flatMap((rel) =>
       readFileSync(join(teamDir, ...rel.split('/')), 'utf8')
         .split('\n')
-        .flatMap((line, i) => (PATH_LITERAL.test(line) ? [`${rel}:${i + 1}`] : []))
+        .flatMap((line, i) => (draws(line) ? [`${rel}:${i + 1}`] : []))
     );
 }

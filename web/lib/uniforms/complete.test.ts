@@ -32,7 +32,7 @@ const JERSEY: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'orange', outlineWeight: 'thin' },
+  number: { fill: 'white', outline: 'orange', outlineWeight: 'thin', texture: 'mesh' },
   marks: [],
 };
 
@@ -71,6 +71,16 @@ describe('complete specs convert to the expander specs', () => {
     expect(spec.sleeveStripes).toEqual({ bands: [{ color: 'orange', size: 's' }], gap: 'wide' });
   });
 
+  it("carries a plain numeral texture and drops the 'mesh' default", () => {
+    const number = {
+      fill: 'white',
+      outline: 'orange',
+      outlineWeight: 'x-heavy',
+      texture: 'plain',
+    } as const;
+    expect(jerseySpecOf({ ...JERSEY, number }).number).toEqual(number);
+  });
+
   it('keeps jersey marks', () => {
     const marks = [{ paint: 'under' as const, mark: { placed: true as const, layers: [] } }];
     expect(jerseySpecOf({ ...JERSEY, marks }).marks).toEqual(marks);
@@ -97,7 +107,7 @@ describe('complete specs convert to the expander specs', () => {
   });
 
   it('converts pants and socks', () => {
-    expect(pantsSpecOf({ body: 'white', stripes: 'none' })).toEqual({ body: 'white' });
+    expect(pantsSpecOf({ body: 'white', stripes: 'none', marks: [] })).toEqual({ body: 'white' });
     expect(
       pantsSpecOf({
         body: 'white',
@@ -107,12 +117,18 @@ describe('complete specs convert to the expander specs', () => {
           gap: 'none',
           edge: 'none',
         },
+        marks: [],
       })
     ).toEqual({
       body: 'white',
       stripes: { position: 'leg-edge', bands: [{ color: 'navy', size: 'l' }], gap: 'none' },
     });
     expect(socksSpecOf({ color: 'navy', stripes: 'none' })).toEqual({ color: 'navy' });
+  });
+
+  it('keeps pants marks', () => {
+    const marks = [{ paint: 'over' as const, mark: { placed: true as const, layers: [] } }];
+    expect(pantsSpecOf({ body: 'white', stripes: 'none', marks }).marks).toEqual(marks);
   });
 });
 
@@ -138,7 +154,7 @@ describe('question table', () => {
         'marks',
       ].sort()
     );
-    expect(Object.keys(QUESTIONS.pants).sort()).toEqual(['body', 'stripes']);
+    expect(Object.keys(QUESTIONS.pants).sort()).toEqual(['body', 'marks', 'stripes']);
     expect(Object.keys(QUESTIONS.socks).sort()).toEqual(['color', 'stripes']);
     expect(Object.keys(QUESTIONS.helmet).sort()).toEqual(['decal', 'facemask', 'number', 'shell']);
     for (const table of Object.values(QUESTIONS)) {
@@ -157,7 +173,7 @@ describe('findMissing', () => {
       'cuff',
     ]);
     expect(findMissing('socks', { color: 'navy' })).toEqual(['stripes']);
-    expect(findMissing('pants', null)).toEqual(['body', 'stripes']);
+    expect(findMissing('pants', null)).toEqual(['body', 'stripes', 'marks']);
   });
 
   it('requires only the collar fields a shallow-v jersey actually uses', () => {
@@ -184,6 +200,11 @@ describe('findMissing', () => {
     expect(findMissing('jersey', noEdge)).toEqual(['sleeveStripes.edge']);
   });
 
+  it('requires the numeral texture', () => {
+    const { texture: _texture, ...number } = JERSEY.number;
+    expect(findMissing('jersey', { ...JERSEY, number })).toEqual(['number.texture']);
+  });
+
   it('treats null the same as missing', () => {
     expect(findMissing('jersey', { ...JERSEY, cuff: null })).toEqual(['cuff']);
   });
@@ -196,6 +217,7 @@ describe('findMissing', () => {
         gap: 'none' as const,
         edge: 'none',
       },
+      marks: [],
     };
     expect(findMissing('pants', noPosition)).toEqual(['stripes.position']);
   });

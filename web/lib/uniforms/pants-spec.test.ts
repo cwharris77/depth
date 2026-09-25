@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { expandPants, expandSocks } from '@/lib/uniforms/teams/core/pants-spec';
-import { compileParts } from '@/lib/uniforms/teams/core/parts';
+import { compileParts, type PartLayer } from '@/lib/uniforms/teams/core/parts';
+import { placed } from '@/lib/uniforms/teams/core/marks';
 import {
   SEAHAWKS_PANTS_EDGE_BAND_LEFT,
   SEAHAWKS_PANTS_EDGE_BAND_RIGHT,
@@ -20,6 +21,35 @@ describe('expandPants', () => {
       ['t-stripe-0-left', 'leg-left', SEAHAWKS_PANTS_EDGE_BAND_LEFT],
       ['t-stripe-0-right', 'leg-right', SEAHAWKS_PANTS_EDGE_BAND_RIGHT],
     ]);
+  });
+
+  it('paints under-marks before the stripes and over-marks after them, copied as written', () => {
+    const art = (id: string): PartLayer => ({
+      id,
+      surface: 'leg-left',
+      d: 'M100,1197 H240 V1460 H100 Z',
+      clip: true,
+      kind: 'fill',
+      fill: 'white',
+    });
+    const stripes = {
+      position: 'leg-edge' as const,
+      bands: [{ color: 'navy', size: 'l' as const }],
+      gap: 'none' as const,
+    };
+    const under = art('under');
+    const part = expandPants('t', {
+      body: 'green',
+      stripes,
+      marks: [
+        { paint: 'over', mark: placed([art('over')]) },
+        { paint: 'under', mark: placed([under]) },
+      ],
+    });
+    const plain = expandPants('t', { body: 'green', stripes }).layers.map((l) => l.id);
+    expect(part.layers.map((l) => l.id)).toEqual(['under', ...plain, 'over']);
+    expect(part.layers[0]).toEqual(under);
+    expect(part.layers[0]).not.toBe(under);
   });
 
   it('centres a straight stack on the seam line and stops it at the hem', () => {

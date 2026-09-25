@@ -40,7 +40,7 @@ Anything the spec cannot describe is appended as ordinary layers after `spec.lay
 | `sleeveStripes` | Horizontal stripes lower on the sleeve, with `gap` `none` / `narrow` / `wide` / `broad`. `edge` pipes every stripe with a thin band of that colour above and below it; the gap is then measured between pipings. |
 | `cuff` | A solid band at the sleeve hem. |
 | `sleeveNumber` | The numeral, small and upright on the lower outer face of each sleeve (TV numbers), in `fill`. |
-| `number` | Numeral fill, outline colour and `outlineWeight` (`none` / `thin` / `regular` / `heavy`). `outline` is required even with `none`. |
+| `number` | Numeral fill, outline colour and `outlineWeight` (`none` / `thin` / `regular` / `heavy` / `x-heavy`: 0 / 8 / 14 / 20 / 26 units). `outline` is required even with `none`. `texture` is `mesh` (the default: the shared mesh overlay) or `plain` (drawn flat). |
 
 **Shoulder number orientation** (a frequent mistake): seen from above, the two numerals' tops point at each other, toward the collar (`→ ←`), and on both shoulders the open side of the numeral (the tips of a `3`) faces the back of the jersey. The right shoulder is therefore the left one mirrored, not rotated. On the front view this puts the open side toward the top of the shoulder on both sleeves.
 
@@ -59,6 +59,7 @@ socks: { navy: expandSocks('<team>-navy-socks', { color: 'navy', stripes: { band
 |---|---|
 | `PantsSpec.body` | Pants colour. |
 | `PantsSpec.stripes` | Stripes from the waist to the hem, listed from the outer edge inward, with the jersey's `gap` and `edge` rules. `position: 'leg-edge'` follows the leg's outer silhouette (how a side-seam stripe reads from the front); `'center'` is a straight stack on the leg's seam line. Stripes stop at the hem. |
+| `PantsSpec.marks` | Leg art the stripes cannot describe (panels, logos), as placed marks painted `under` or `over` the stripes. |
 | `SocksSpec.color` | Sock colour, painted on both shins below the hem. |
 | `SocksSpec.stripes` | Hoops around the calf, listed from the top down. |
 
@@ -102,10 +103,12 @@ Strict means:
 
 - every spec field is stated, with `'none'` or a named default for absence (`teams/core/complete.ts`'s `Complete*` types make a skipped field a type error instead of a silent omission);
 - parts come only from `expandTeamSpec`;
-- no path literal is allowed outside `marks/`;
+- no drawn geometry outside `marks/` (see the check below);
 - kits render identically twice.
 
-Jersey art goes in `marks` (placed, or anchored to the sleeves; `under`/`over`). A new anchor is a reviewed change to `core/marks.ts`, never a per-team nudge.
+Jersey art goes in `marks`: placed, or anchored to the sleeves with `anchoredMark()`, which makes an unmapped or unknown slot a type error; `under`/`over`. Pants art the stripes can't draw goes in the pants spec's `marks` the same way. A new anchor is a reviewed change to `core/marks.ts`, never a per-team nudge.
+
+The no-coordinates check (`findCoordinateLiterals`) flags, outside `marks/`: path literals, `placed(` and `fromGeneric(` calls, layer literals (`kind: 'fill'`/`'stroke'`) and literal `[x, y]` pairs. Art in mannequin space is exported from a `marks/` file as a `PlacedMark` and referenced from the spec.
 
 `QUESTIONS` in `core/complete.ts` is the per-field checklist for authoring a complete spec.
 

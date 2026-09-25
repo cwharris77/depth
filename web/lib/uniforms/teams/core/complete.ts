@@ -3,8 +3,15 @@
 // means "use the default". A skipped detail is then a type error instead of a silent omission.
 // The converters map a complete spec back to the form the expanders read.
 import type { HelmetSpec } from './helmet-spec';
-import type { JerseyBand, JerseyGap, JerseyMarkUse, JerseySize, JerseySpec } from './jersey-spec';
-import type { PantsSpec, SocksSpec, StripeStack } from './pants-spec';
+import type {
+  JerseyBand,
+  JerseyGap,
+  JerseyMarkUse,
+  JerseyNumber,
+  JerseySize,
+  JerseySpec,
+} from './jersey-spec';
+import type { PantsMarkUse, PantsSpec, SocksSpec, StripeStack } from './pants-spec';
 
 type None = 'none';
 
@@ -41,7 +48,7 @@ export interface CompleteJerseySpec {
   sleeveStripes: CompleteStripeStack | None;
   cuff: { color: string; size: JerseySize } | None;
   sleeveNumber: { fill: string } | None;
-  number: JerseySpec['number'];
+  number: Required<JerseyNumber>;
   // Empty when the jersey carries no mark.
   marks: readonly JerseyMarkUse[];
 }
@@ -49,6 +56,8 @@ export interface CompleteJerseySpec {
 export interface CompletePantsSpec {
   body: string;
   stripes: (CompleteStripeStack & { position: 'center' | 'leg-edge' }) | None;
+  // Empty when the pants carry no mark.
+  marks: readonly PantsMarkUse[];
 }
 
 export interface CompleteSocksSpec {
@@ -78,7 +87,13 @@ export function jerseySpecOf(c: CompleteJerseySpec): JerseySpec {
     if (collar.backBar !== 'none') collarOut.backBar = collar.backBar;
     collarOut.outline = collar.outline;
   }
-  const spec: JerseySpec = { body: c.body, collar: collarOut, number: c.number };
+  const { texture, ...number } = c.number;
+  const spec: JerseySpec = {
+    body: c.body,
+    collar: collarOut,
+    // 'mesh' is the expander's default, so only 'plain' is carried over.
+    number: texture === 'plain' ? c.number : number,
+  };
   const shoulderPanel = given(c.shoulderPanel);
   if (shoulderPanel) spec.shoulderPanel = shoulderPanel;
   const shoulderStripes = given(c.shoulderStripes);
@@ -105,6 +120,7 @@ export function pantsSpecOf(c: CompletePantsSpec): PantsSpec {
   return {
     body: c.body,
     ...(stripes && { stripes: { ...stack(stripes), position: stripes.position } }),
+    ...(c.marks.length > 0 && { marks: c.marks }),
   };
 }
 
@@ -145,13 +161,15 @@ const JERSEY_QUESTIONS: Record<Exclude<keyof CompleteJerseySpec, 'collar'> | Col
   sleeveStripes: 'Are there stripes around the upper arm, and are they piped?',
   cuff: 'Is there a solid band at the sleeve opening?',
   sleeveNumber: 'Is there a small numeral on the lower outer sleeve?',
-  number: 'What are the chest numeral fill, outline colour and outline weight?',
+  number:
+    'What are the chest numeral fill, outline colour and outline weight, and is it mesh-textured or plain?',
   marks: 'Which logos or wordmarks appear on the sleeves, shoulders or chest?',
 };
 
 const PANTS_QUESTIONS: Record<keyof CompletePantsSpec, string> = {
   body: 'What colour are the pants?',
   stripes: 'Is there a leg stripe, where does it sit, and is it piped?',
+  marks: 'What art on the pants can the stripe fields not describe, such as panels or logos?',
 };
 
 const SOCKS_QUESTIONS: Record<keyof CompleteSocksSpec, string> = {
@@ -183,7 +201,7 @@ const SUB_KEYS: Partial<Record<SpecSurface, Record<string, readonly string[]>>> 
     sleeveStripes: ['bands', 'gap', 'edge'],
     cuff: ['color', 'size'],
     sleeveNumber: ['fill'],
-    number: ['fill', 'outline', 'outlineWeight'],
+    number: ['fill', 'outline', 'outlineWeight', 'texture'],
   },
   pants: {
     stripes: ['position', 'bands', 'gap', 'edge'],

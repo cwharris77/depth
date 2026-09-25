@@ -1,6 +1,7 @@
 // Declarative pants and socks descriptions: palette keys and named steps, no coordinates.
 // expandPants() and expandSocks() own the leg geometry, fitted once to the shared mannequin, and
 // emit ordinary UniformPart layers.
+import type { PlacedMark } from './marks';
 import type { PartLayer, UniformPart } from './parts';
 import type { JerseyBand, JerseyGap, JerseySize } from './jersey-spec';
 
@@ -18,7 +19,12 @@ export interface PantsSpec {
   // follows the leg's outer silhouette, which is how a side-seam stripe reads from the front;
   // 'center' is a straight stack centred on the leg's seam line.
   stripes?: StripeStack & { position: 'center' | 'leg-edge' };
+  // Leg art the stripes cannot describe, already in mannequin space: 'under' paints before the
+  // stripes, 'over' after them.
+  marks?: readonly PantsMarkUse[];
 }
+
+export type PantsMarkUse = { paint: 'under' | 'over'; mark: PlacedMark };
 
 export interface SocksSpec {
   color: string;
@@ -133,9 +139,26 @@ function stackLayers(
   return layers;
 }
 
+function markLayers(spec: PantsSpec, paint: PantsMarkUse['paint']): PartLayer[] {
+  return (spec.marks ?? [])
+    .filter((m) => m.paint === paint)
+    .flatMap((m) => m.mark.layers.map((l) => ({ ...l })));
+}
+
 export function expandPants(prefix: string, spec: PantsSpec): UniformPart {
+  return {
+    base: spec.body,
+    layers: [
+      ...markLayers(spec, 'under'),
+      ...stripeLayers(prefix, spec),
+      ...markLayers(spec, 'over'),
+    ],
+  };
+}
+
+function stripeLayers(prefix: string, spec: PantsSpec): PartLayer[] {
   const { stripes } = spec;
-  if (!stripes) return { base: spec.body, layers: [] };
+  if (!stripes) return [];
   const leg = (side: Side) => (side === 'left' ? 'leg-left' : 'leg-right');
   const start =
     stripes.position === 'leg-edge' ? LEG_EDGE_INSET : SEAM_X - layout(stripes).width / 2;
@@ -143,7 +166,7 @@ export function expandPants(prefix: string, spec: PantsSpec): UniformPart {
     stripes.position === 'leg-edge'
       ? (side: Side, from: number, to: number) => edgeBand(side, start + from, start + to)
       : (side: Side, from: number, to: number) => straightBand(side, start + from, start + to);
-  return { base: spec.body, layers: stackLayers(prefix, 'stripe', stripes, leg, shape) };
+  return stackLayers(prefix, 'stripe', stripes, leg, shape);
 }
 
 export function expandSocks(prefix: string, spec: SocksSpec): UniformPart {

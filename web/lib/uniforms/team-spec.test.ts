@@ -29,11 +29,11 @@ const SPEC: TeamSpec = {
       sleeveStripes: 'none',
       cuff: 'none',
       sleeveNumber: 'none',
-      number: { fill: 'white', outline: 'grey', outlineWeight: 'thin' },
+      number: { fill: 'white', outline: 'grey', outlineWeight: 'thin', texture: 'mesh' },
       marks: [],
     },
   },
-  pants: { white: { body: 'white', stripes: 'none' } },
+  pants: { white: { body: 'white', stripes: 'none', marks: [] } },
   socks: { navy: { color: 'navy', stripes: 'none' } },
 };
 
@@ -77,6 +77,34 @@ describe('findCoordinateLiterals', () => {
     );
     writeFileSync(join(dir, 'x.test.ts'), "const d = 'M1,2 Z';\n");
     expect(findCoordinateLiterals(dir)).toEqual(['jerseys/navy.ts:1', 'parts.ts:2', 'parts.ts:3']);
+  });
+
+  it('flags placed art, generic layers, layer literals and coordinate pairs outside marks/', () => {
+    dir = mkdtempSync(join(tmpdir(), 'team-'));
+    mkdirSync(join(dir, 'marks'));
+    writeFileSync(
+      join(dir, 'marks', 'decal.ts'),
+      "export const DECAL = placed([{ kind: 'fill', d: STRIPE }]);\nconst at = [87, 433];\n"
+    );
+    writeFileSync(
+      join(dir, 'parts.ts'),
+      [
+        'import { HELMET_CROWN_STRIPE_PATH } from "../core/shared";',
+        'const decal = placed(layers);',
+        "const stripe = fromGeneric('generic-pants-stripe-left', 'green');",
+        "const layer = { id: 'x', kind: 'fill', d: HELMET_CROWN_STRIPE_PATH };",
+        'const at = [87, -433.5];',
+        'const sizes = { s: 11, m: 16 };',
+        'const years = [2002];',
+        '',
+      ].join('\n')
+    );
+    expect(findCoordinateLiterals(dir)).toEqual([
+      'parts.ts:2',
+      'parts.ts:3',
+      'parts.ts:4',
+      'parts.ts:5',
+    ]);
   });
 });
 

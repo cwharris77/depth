@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { expandJersey, type JerseySpec } from '@/lib/uniforms/teams/core/jersey-spec';
+import { anchoredMark, expandJersey, type JerseySpec } from '@/lib/uniforms/teams/core/jersey-spec';
+import { JERSEY_NUMBER_THREE } from '@/lib/uniforms/jersey-art';
 import { compileParts, type PartLayer } from '@/lib/uniforms/teams/core/parts';
 import { FIGURE_OUTLINE } from '@/lib/uniforms/teams/core/shared';
 import { placed, type Mark } from '@/lib/uniforms/teams/core/marks';
@@ -16,6 +17,27 @@ describe('expandJersey', () => {
     expect(part.base).toBe('orange');
     expect(part.number).toEqual({ fill: 'white', outline: 'navy', outlineWidth: 8 });
     expect(part.layers).toEqual([]);
+  });
+
+  it('maps the x-heavy outline to 26 units', () => {
+    const part = expandJersey('t', {
+      body: 'navy',
+      collar: { style: 'none' },
+      number: { fill: 'white', outline: 'green', outlineWeight: 'x-heavy' },
+    });
+    expect(part.number?.outlineWidth).toBe(26);
+  });
+
+  it('names the glyph only for a plain numeral, which draws it without the mesh', () => {
+    const number = (texture?: 'mesh' | 'plain') =>
+      expandJersey('t', {
+        body: 'navy',
+        collar: { style: 'none' },
+        number: { fill: 'white', outline: 'green', outlineWeight: 'thin', texture },
+      }).number;
+    expect(number('plain')?.glyphPath).toBe(JERSEY_NUMBER_THREE);
+    expect(number('mesh')).not.toHaveProperty('glyphPath');
+    expect(number()).not.toHaveProperty('glyphPath');
   });
 
   it('draws every sleeve primitive on both sleeves with unique ids', () => {
@@ -315,7 +337,13 @@ describe('jersey marks', () => {
     const part = expandJersey('t', {
       ...base,
       marks: [
-        { paint: 'over', mark: TRIANGLE, anchor: 'sleeves', slots: { body: 'white' }, id: 'logo' },
+        anchoredMark({
+          paint: 'over',
+          mark: TRIANGLE,
+          anchor: 'sleeves',
+          slots: { body: 'white' },
+          id: 'logo',
+        }),
       ],
     });
     const ids = part.layers.map((l) => l.id);
@@ -327,13 +355,13 @@ describe('jersey marks', () => {
     const part = expandJersey('t', {
       ...base,
       marks: [
-        {
+        anchoredMark({
           paint: 'over',
           mark: TRIANGLE,
           anchor: 'sleeve-left',
           slots: { body: 'white' },
           id: 'logo',
-        },
+        }),
       ],
     });
     const ids = part.layers.map((l) => l.id);
@@ -346,13 +374,13 @@ describe('jersey marks', () => {
       ...base,
       collar: { style: 'shallow-v', color: 'navy' },
       marks: [
-        {
+        anchoredMark({
           paint: 'under',
           mark: TRIANGLE,
           anchor: 'sleeve-right',
           slots: { body: 'white' },
           id: 'logo',
-        },
+        }),
       ],
     });
     const plain = expandJersey('t', {
@@ -360,6 +388,25 @@ describe('jersey marks', () => {
       collar: { style: 'shallow-v', color: 'navy' },
     }).layers;
     expect(part.layers.map((l) => l.id)).toEqual(['t-logo-body-right', ...plain.map((l) => l.id)]);
+  });
+
+  it('rejects an anchored mark whose slot map misses or adds a slot', () => {
+    anchoredMark({
+      paint: 'over',
+      mark: TRIANGLE,
+      anchor: 'sleeves',
+      // @ts-expect-error -- 'body' is TRIANGLE's only slot and must be mapped
+      slots: {},
+      id: 'logo',
+    });
+    anchoredMark({
+      paint: 'over',
+      mark: TRIANGLE,
+      anchor: 'sleeves',
+      // @ts-expect-error -- 'wing' is not a slot of TRIANGLE
+      slots: { body: 'white', wing: 'navy' },
+      id: 'logo',
+    });
   });
 
   it('leaves a jersey without marks unchanged', () => {
