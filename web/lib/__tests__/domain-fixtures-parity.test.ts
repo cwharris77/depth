@@ -23,6 +23,8 @@ import {
   buildRecentParticipation,
   type PlayerRecentSnapsRow,
 } from '@/lib/utils/compare/recent-participation';
+import { UNIFORMS } from '@/lib/uniforms/data';
+import { teamFill, teamRing, kitMark, textOnFill, numeralColors } from '@/lib/utils/team-surfaces';
 import type { DepthSeat, Player, TeamRoster, FormationSlot, Position } from '@/lib/types';
 
 const fixturesDir = join(process.cwd(), 'fixtures/domain');
@@ -217,6 +219,35 @@ describe('domain fixtures parity (drift guard)', () => {
     >('recent-participation');
     for (const c of cases) {
       expect(buildRecentParticipation(c.input), c.description).toEqual(c.expected);
+    }
+  });
+
+  it('team-surfaces.json covers every curated kit and matches the team-surface helpers', () => {
+    const cases = load<
+      {
+        id: string;
+        colors: (typeof UNIFORMS)[number]['colors'];
+        expected: Record<string, string>;
+      }[]
+    >('team-surfaces');
+    // The case set is derived from UNIFORMS, so a kit added to the archive without
+    // regenerating the fixture fails here rather than only in Swift's hard-coded count.
+    expect(cases.map((c) => ({ id: c.id, colors: c.colors }))).toEqual(
+      UNIFORMS.map((u) => ({ id: `${u.teamId}-${u.slug}-${u.yearStart}`, colors: u.colors }))
+    );
+    for (const c of cases) {
+      const numeral = numeralColors(c.colors);
+      expect(
+        {
+          fill: teamFill(c.colors),
+          ring: teamRing(c.colors),
+          mark: kitMark(c.colors),
+          textOnFill: textOnFill(c.colors),
+          numeralFill: numeral.fill,
+          numeralStroke: numeral.stroke,
+        },
+        c.id
+      ).toEqual(c.expected);
     }
   });
 });

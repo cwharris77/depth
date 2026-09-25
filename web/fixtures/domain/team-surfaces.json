@@ -1120,6 +1120,38 @@
     }
   },
   {
+    "id": "chargers-charger-power-2025",
+    "colors": {
+      "primary": "#FFC20E",
+      "secondary": "#0080C6",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#FFC20E",
+      "ring": "#0080C6",
+      "mark": "#0080C6",
+      "textOnFill": "#15161a",
+      "numeralFill": "#FFC20E",
+      "numeralStroke": "#0080C6"
+    }
+  },
+  {
+    "id": "chargers-super-chargers-2025",
+    "colors": {
+      "primary": "#002244",
+      "secondary": "#FFC20E",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#002244",
+      "ring": "#FFC20E",
+      "mark": "#FFC20E",
+      "textOnFill": "#FFC20E",
+      "numeralFill": "#002244",
+      "numeralStroke": "#FFC20E"
+    }
+  },
+  {
     "id": "titans-oilers-throwback-1960",
     "colors": {
       "primary": "#4B92DB",
