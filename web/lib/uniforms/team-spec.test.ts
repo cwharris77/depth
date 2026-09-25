@@ -58,8 +58,15 @@ describe('findCoordinateLiterals', () => {
     mkdirSync(join(dir, 'jerseys'));
     writeFileSync(join(dir, 'marks', 'logo.ts'), "export const d = 'M1,2 L3,4 Z';\n");
     writeFileSync(join(dir, 'jerseys', 'navy.ts'), "export const d = 'M10.5,20 L3,4 Z';\n");
-    writeFileSync(join(dir, 'index.ts'), "export const label = 'Mint';\n");
+    writeFileSync(
+      join(dir, 'index.ts'),
+      "export const label = 'Mint';\nexport const rifle = 'M1 Garand';\nconst c = `M4 carbine`;\n"
+    );
+    writeFileSync(
+      join(dir, 'parts.ts'),
+      'const a = 1;\nexport const d = `M${x},${y} L${a},${b} Z`;\nexport const e = "m 2 3 z";\n'
+    );
     writeFileSync(join(dir, 'x.test.ts'), "const d = 'M1,2 Z';\n");
-    expect(findCoordinateLiterals(dir)).toEqual(['jerseys/navy.ts:1']);
+    expect(findCoordinateLiterals(dir)).toEqual(['jerseys/navy.ts:1', 'parts.ts:2', 'parts.ts:3']);
   });
 });

@@ -46,8 +46,13 @@ export function expandTeamSpec(teamId: string, spec: TeamSpec): SpecParts {
   };
 }
 
-// An SVG path string literal: a quote, a moveto, then a number.
-const PATH_LITERAL = /['"`]\s*[Mm]\s*-?\d/;
+// An SVG path string literal: a quote, a moveto with a number or an interpolated value, then a
+// later draw command with its own number or interpolation, or a closing Z. Requiring the second
+// command keeps prose such as 'M1 Garand' out while still catching paths built from variables.
+const COORD = String.raw`(?:-?\d|\$\{)`;
+const PATH_LITERAL = new RegExp(
+  String.raw`['"\x60]\s*[Mm]\s*${COORD}[^'"\x60]*?(?:[LlCcQqAaHhVvSsTt]\s*${COORD}|[Zz]\s*['"\x60])`
+);
 
 function walk(dir: string, out: string[]): void {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
