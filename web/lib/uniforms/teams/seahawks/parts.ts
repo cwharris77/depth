@@ -1,140 +1,21 @@
-// Seattle authored as composable parts (spike). Geometry is imported unchanged from
-// seahawks.ts; this file restates which parts each kit combines and names every color from the
-// team palette.
-//
-// Seattle is the harder migration and the one that proves the model. Two things the flat
-// definition could not say:
-//
-//   1. Home and away paint the SAME helmet — navy shell, slate crown wedge, white hawk, green
-//      eye — but reach it through inverted tokens (home's 'secondary' and away's 'accent' are
-//      both action green). The flat form has to spell both out and hope they stay in sync;
-//      here there is one helmet part and the question cannot arise.
-//   2. Each kit stripped a DIFFERENT subset of generic mannequin layers, so what a kit
-//      inherited was implicit. Parts are total: every generic layer is stripped, and a part
-//      that wants a generic mark keeps it explicitly via fromGeneric() with a palette color.
-
+// Seattle as a complete team spec: every helmet, jersey and pants part, with its own art drawn by
+// the marks in ./marks.
+import type { TeamSpec } from '../core/team-spec';
 import {
-  SEAHAWKS_SHOULDER_WORDMARK,
-  SEAHAWKS_NECK_OPENING,
-  SEAHAWKS_COLLAR_BAND,
-  SEAHAWKS_COLLAR_FEATHERS_LEFT,
-  SEAHAWKS_COLLAR_FEATHERS_RIGHT,
-  SEAHAWKS_NECK_TWELVE,
-  SEAHAWKS_PANTS_EDGE_BAND_LEFT,
-  SEAHAWKS_PANTS_EDGE_BAND_RIGHT,
-  SEAHAWKS_THROWBACK_PANTS_KEYLINE_LEFT,
-  SEAHAWKS_THROWBACK_PANTS_KEYLINE_RIGHT,
-  SEAHAWKS_THROWBACK_PANTS_ROYAL_LEFT,
-  SEAHAWKS_THROWBACK_PANTS_ROYAL_RIGHT,
-  SEAHAWKS_THROWBACK_PANTS_WHITE_LEFT,
-  SEAHAWKS_THROWBACK_PANTS_WHITE_RIGHT,
-  SEAHAWKS_THROWBACK_SOCK_LEFT,
-  SEAHAWKS_THROWBACK_SOCK_RIGHT,
-  SEAHAWKS_HELMET_HAWK_EYE_PATH,
-  SEAHAWKS_HELMET_HAWK_GREY_PATH,
-  SEAHAWKS_HELMET_HAWK_PATH,
-  SEAHAWKS_SHOULDER_BAND_LEFT,
-  SEAHAWKS_SHOULDER_BAND_RIGHT,
-  SEAHAWKS_SHOULDER_NUMBER_LEFT,
-  SEAHAWKS_SHOULDER_NUMBER_RIGHT,
-  SEAHAWKS_SHOULDER_CAP_LEFT,
-  SEAHAWKS_SHOULDER_CAP_RIGHT,
-} from './source';
-import { HELMET_CROWN_STRIPE_PATH } from '../core/shared';
-import { fromGeneric, type PartLayer, type UniformPart } from '../core/parts';
-import type { UniformSurface } from '../core/types';
-import { expandHelmet } from '../core/helmet-spec';
-import { placeMark, placed } from '../core/marks';
-import { SEAHAWKS_THROWBACK_HAWK } from './marks/throwback-hawk';
-
-import { SEAHAWKS_RIVALRIES_JERSEY_PALETTE } from './jerseys/rivalries-2025';
-
-export const fill = (id: string, surface: UniformSurface, d: string, color: string): PartLayer => ({
-  id,
-  surface,
-  d,
-  clip: true,
-  kind: 'fill',
-  fill: color,
-});
-
-// The modern decal: the wolf-grey wing, then a white keyline whose counters let the shell read
-// through, then the eye. There is no navy backing shape, which is why the mark only works on a
-// shell it contrasts with. Geometry and placement rationale live in seahawks.ts.
-function hawk(eye: string): PartLayer[] {
-  return [
-    fill('seahawks-helmet-hawk-grey', 'helmet', SEAHAWKS_HELMET_HAWK_GREY_PATH, 'wolfGrey'),
-    fill('seahawks-helmet-hawk', 'helmet', SEAHAWKS_HELMET_HAWK_PATH, 'white'),
-    fill('seahawks-helmet-hawk-eye', 'helmet', SEAHAWKS_HELMET_HAWK_EYE_PATH, eye),
-  ];
-}
-
-// Shoulder numerals, band and cap share their placement across home and away.
-export function shoulder(band: string, cap: string): PartLayer[] {
-  return [
-    fill('seahawks-shoulder-number-left', 'sleeve-left', SEAHAWKS_SHOULDER_NUMBER_LEFT, band),
-    fill('seahawks-shoulder-number-right', 'sleeve-right', SEAHAWKS_SHOULDER_NUMBER_RIGHT, band),
-    fill('seahawks-shoulder-band-left', 'sleeve-left', SEAHAWKS_SHOULDER_BAND_LEFT, band),
-    fill('seahawks-shoulder-band-right', 'sleeve-right', SEAHAWKS_SHOULDER_BAND_RIGHT, band),
-    fill('seahawks-shoulder-cap-left', 'sleeve-left', SEAHAWKS_SHOULDER_CAP_LEFT, cap),
-    fill('seahawks-shoulder-cap-right', 'sleeve-right', SEAHAWKS_SHOULDER_CAP_RIGHT, cap),
-  ];
-}
-
-// The body-color collar frames a shaded opening and back-neck tab; its chevrons stop
-// before the V point. Home and away share geometry with different feather and wordmark colors.
-export function modernNeckAndWordmark(
-  body: string,
-  neck: string,
-  feathers: string,
-  wordmark: string
-): PartLayer[] {
-  return [
-    fill('seahawks-neck-opening', 'collar', SEAHAWKS_NECK_OPENING, neck),
-    fill('seahawks-collar-band', 'collar', SEAHAWKS_COLLAR_BAND, body),
-    fill('seahawks-collar-feathers-left', 'collar', SEAHAWKS_COLLAR_FEATHERS_LEFT, feathers),
-    fill('seahawks-collar-feathers-right', 'collar', SEAHAWKS_COLLAR_FEATHERS_RIGHT, feathers),
-    fill('seahawks-neck-tab-border', 'collar', 'M279,389 H309 V417 H279 Z', 'green'),
-    fill('seahawks-neck-tab', 'collar', 'M281,391 H307 V415 H281 Z', 'navy'),
-    fill('seahawks-neck-twelve', 'collar', SEAHAWKS_NECK_TWELVE, 'wolfGrey'),
-    fill('seahawks-shoulder-wordmark', 'jersey', SEAHAWKS_SHOULDER_WORDMARK, wordmark),
-  ];
-}
-
-const HELMET_NAVY_HAWK: UniformPart = expandHelmet('seahawks-navy-hawk-helmet', {
-  shell: 'navy',
-  // Black cage, sampled from the reference crop (the facemask region reads #000000 there,
-  // against the shell's #0D2135). The shared neutral #4b5158 it replaces was a mid-grey mass at
-  // relative luminance 80 over a shell at 29 -- the single brightest thing on the helmet.
-  facemask: 'facemaskBlack',
-  decal: placed([
-    fill('seahawks-helmet-center-stripe', 'helmet', HELMET_CROWN_STRIPE_PATH, 'crownWedge'),
-    ...hawk('green'),
-  ]),
-  number: 'none',
-});
-
-const HELMET_TEAL_HAWK: UniformPart = expandHelmet('seahawks-teal-hawk-helmet', {
-  shell: 'rivalriesTeal',
-  facemask: 'neutral',
-  decal: placed(hawk('rivalriesPine')),
-  number: 'none',
-});
-
-// Silver shell with no stripe, a royal cage and the original hawk.
-const HELMET_THROWBACK_SILVER: UniformPart = expandHelmet('seahawks-throwback-silver-helmet', {
-  shell: 'throwbackSilver',
-  facemask: 'throwbackRoyal',
-  decal: placed(
-    placeMark('seahawks-throwback-hawk', SEAHAWKS_THROWBACK_HAWK, 'helmet-side', {
-      royal: 'throwbackRoyal',
-      white: 'white',
-      block: 'throwbackGreen',
-      eye: 'throwbackGreen',
-    })
-  ),
-  number: 'none',
-});
+  SEAHAWKS_NAVY_HAWK_DECAL,
+  SEAHAWKS_TEAL_HAWK_DECAL,
+  SEAHAWKS_THROWBACK_HAWK_DECAL,
+  SEAHAWKS_THROWBACK_PANTS_CENTRE_AND_SOCKS,
+  SEAHAWKS_THROWBACK_PANTS_GROUND,
+} from './marks/construction';
+import { SEAHAWKS_JERSEY_ACTION_GREEN } from './jerseys/action-green';
+import { SEAHAWKS_JERSEY_NAVY } from './jerseys/navy';
+import {
+  SEAHAWKS_JERSEY_RIVALRIES,
+  SEAHAWKS_RIVALRIES_JERSEY_PALETTE,
+} from './jerseys/rivalries-2025';
+import { SEAHAWKS_JERSEY_THROWBACK } from './jerseys/throwback';
+import { SEAHAWKS_JERSEY_WHITE } from './jerseys/white';
 
 export const SEAHAWKS_PALETTE = {
   ...SEAHAWKS_RIVALRIES_JERSEY_PALETTE,
@@ -147,6 +28,8 @@ export const SEAHAWKS_PALETTE = {
   // Shaded insides of the neck opening, one step darker than each body so the opening reads.
   navyNeck: '#001A33',
   whiteNeck: '#ECEEEF',
+  // The helmet's crown wedge: the composite's tonal step above the shell, re-based onto the brighter
+  // live navy so it still reads as a lighter stripe.
   crownWedge: '#2B507C',
   // A fourth color with no kit token, and it can never have one: it fails AA on the dark UI
   // (1.57), so it could never be uiAccent. Sampled from the 2025 composite.
@@ -167,110 +50,74 @@ export const SEAHAWKS_PALETTE = {
   // Sampled from the reference helmet crop.
   facemaskBlack: '#000000',
 };
-export const SEAHAWKS_HELMETS = {
-  'navy-hawk': HELMET_NAVY_HAWK,
-  'teal-hawk': HELMET_TEAL_HAWK,
-  'throwback-silver': HELMET_THROWBACK_SILVER,
-};
-export const SEAHAWKS_PANTS = {
-  // Home keeps the generic stripe pair in green.
-  navy: {
-    base: 'navy',
-    layers: [
-      fromGeneric('generic-pants-stripe-left', 'green'),
-      fromGeneric('generic-pants-stripe-right', 'green'),
-    ],
+
+// The 24-unit band along the leg edge that the Color Rush and throwback pants both carry.
+const edgeBand = (color: string) => ({
+  position: 'leg-edge' as const,
+  bands: [{ color, size: 'l' as const }],
+  gap: 'none' as const,
+  edge: 'none' as const,
+});
+
+// A single 16-unit stripe on the leg's seam line.
+const seamStripe = (color: string) => ({
+  position: 'center' as const,
+  bands: [{ color, size: 'm' as const }],
+  gap: 'none' as const,
+  edge: 'none' as const,
+});
+
+export const SEAHAWKS_SPEC: TeamSpec = {
+  helmets: {
+    // Black cage, sampled from the reference crop (the facemask region reads #000000 there, against
+    // the shell's #0D2135).
+    'navy-hawk': {
+      shell: 'navy',
+      facemask: 'facemaskBlack',
+      decal: SEAHAWKS_NAVY_HAWK_DECAL,
+      number: 'none',
+    },
+    'teal-hawk': {
+      shell: 'rivalriesTeal',
+      facemask: 'neutral',
+      decal: SEAHAWKS_TEAL_HAWK_DECAL,
+      number: 'none',
+    },
+    // Silver shell with no stripe, a royal cage and the original hawk.
+    'throwback-silver': {
+      shell: 'throwbackSilver',
+      facemask: 'throwbackRoyal',
+      decal: SEAHAWKS_THROWBACK_HAWK_DECAL,
+      number: 'none',
+    },
   },
-  // A single navy stripe on the leg edge that stops at the hem, so the socks stay green.
-  'action-green': {
-    base: 'actionGreen',
-    layers: [
-      fill(
-        'seahawks-action-green-pants-stripe-left',
-        'leg-left',
-        SEAHAWKS_PANTS_EDGE_BAND_LEFT,
-        'navy'
-      ),
-      fill(
-        'seahawks-action-green-pants-stripe-right',
-        'leg-right',
-        SEAHAWKS_PANTS_EDGE_BAND_RIGHT,
-        'navy'
-      ),
-    ],
+  jerseys: {
+    navy: SEAHAWKS_JERSEY_NAVY,
+    white: SEAHAWKS_JERSEY_WHITE,
+    'action-green': SEAHAWKS_JERSEY_ACTION_GREEN,
+    throwback: SEAHAWKS_JERSEY_THROWBACK,
+    'rivalries-silver': SEAHAWKS_JERSEY_RIVALRIES,
   },
-  // The away reference's white pants carry no stripe at all.
-  'white-plain': { base: 'white', layers: [] },
-  throwback: {
-    base: 'throwbackPantsSilver',
-    layers: [
-      fill(
-        'seahawks-throwback-pants-white-left',
-        'leg-left',
-        SEAHAWKS_THROWBACK_PANTS_WHITE_LEFT,
-        'white'
-      ),
-      fill(
-        'seahawks-throwback-pants-white-right',
-        'leg-right',
-        SEAHAWKS_THROWBACK_PANTS_WHITE_RIGHT,
-        'white'
-      ),
-      fill(
-        'seahawks-throwback-pants-green-left',
-        'leg-left',
-        SEAHAWKS_PANTS_EDGE_BAND_LEFT,
-        'throwbackGreen'
-      ),
-      fill(
-        'seahawks-throwback-pants-green-right',
-        'leg-right',
-        SEAHAWKS_PANTS_EDGE_BAND_RIGHT,
-        'throwbackGreen'
-      ),
-      fill(
-        'seahawks-throwback-pants-keyline-left',
-        'leg-left',
-        SEAHAWKS_THROWBACK_PANTS_KEYLINE_LEFT,
-        'white'
-      ),
-      fill(
-        'seahawks-throwback-pants-keyline-right',
-        'leg-right',
-        SEAHAWKS_THROWBACK_PANTS_KEYLINE_RIGHT,
-        'white'
-      ),
-      fill(
-        'seahawks-throwback-pants-royal-left',
-        'leg-left',
-        SEAHAWKS_THROWBACK_PANTS_ROYAL_LEFT,
-        'throwbackRoyal'
-      ),
-      fill(
-        'seahawks-throwback-pants-royal-right',
-        'leg-right',
-        SEAHAWKS_THROWBACK_PANTS_ROYAL_RIGHT,
-        'throwbackRoyal'
-      ),
-      fill(
-        'seahawks-throwback-sock-left',
-        'leg-left',
-        SEAHAWKS_THROWBACK_SOCK_LEFT,
-        'throwbackRoyal'
-      ),
-      fill(
-        'seahawks-throwback-sock-right',
-        'leg-right',
-        SEAHAWKS_THROWBACK_SOCK_RIGHT,
-        'throwbackRoyal'
-      ),
-    ],
+  pants: {
+    // A green stripe on the seam line that stops at the hem, so the socks stay navy.
+    navy: { body: 'navy', stripes: seamStripe('green'), marks: [] },
+    // A single navy stripe on the leg edge that stops at the hem, so the socks stay green.
+    'action-green': { body: 'actionGreen', stripes: edgeBand('navy'), marks: [] },
+    // The away reference's white pants carry no stripe at all.
+    'white-plain': { body: 'white', stripes: 'none', marks: [] },
+    // Green, royal, green with white keylines, stopping at the hem; the royal socks are drawn on the
+    // legs below it.
+    throwback: {
+      body: 'throwbackPantsSilver',
+      stripes: edgeBand('throwbackGreen'),
+      marks: [
+        { paint: 'under', mark: SEAHAWKS_THROWBACK_PANTS_GROUND },
+        { paint: 'over', mark: SEAHAWKS_THROWBACK_PANTS_CENTRE_AND_SOCKS },
+      ],
+    },
+    'rivalries-silver': { body: 'rivalriesJerseyGrey', stripes: seamStripe('navy'), marks: [] },
   },
-  'rivalries-silver': {
-    base: 'rivalriesJerseyGrey',
-    layers: [
-      fromGeneric('generic-pants-stripe-left', 'navy'),
-      fromGeneric('generic-pants-stripe-right', 'navy'),
-    ],
+  socks: {
+    navy: { color: 'navy', stripes: 'none' },
   },
 };

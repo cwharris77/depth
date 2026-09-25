@@ -93,7 +93,7 @@ describe('team uniform definitions', () => {
     const home = definition?.kits.home;
     const layerIds = home?.layers?.map((layer) => layer.id);
 
-    // Team layers retain their paint order separately from the generic pant stripes.
+    // Team layers retain their paint order; the pant stripe stops at the hem.
     expect(layerIds?.filter((id) => id.startsWith('seahawks-'))).toEqual([
       'seahawks-helmet-center-stripe',
       // Grey wing paints under the keyline; it was missing from the pre-2026-09-03 decal.
@@ -114,12 +114,10 @@ describe('team uniform definitions', () => {
       'seahawks-neck-tab',
       'seahawks-neck-twelve',
       'seahawks-shoulder-wordmark',
+      'seahawks-pants-navy-stripe-0-left',
+      'seahawks-pants-navy-stripe-0-right',
     ]);
-    // Home keeps only the generic green pant stripe pair.
-    expect(layerIds?.filter((id) => id.startsWith('generic-'))).toEqual([
-      'generic-pants-stripe-left',
-      'generic-pants-stripe-right',
-    ]);
+    expect(layerIds?.some((id) => id.startsWith('generic-'))).toBe(false);
     // League shields and sponsor marks stay out of every kit.
     expect(layerIds?.some((id) => /shield|sponsor/.test(id))).toBe(false);
 
@@ -284,7 +282,7 @@ describe('team uniform definitions', () => {
       fill: '#FFFFFF',
     });
     expect(
-      model.layers.find((layer) => layer.id === 'seahawks-action-green-pants-stripe-left')
+      model.layers.find((layer) => layer.id === 'seahawks-pants-action-green-stripe-0-left')
     ).toMatchObject({ surface: 'leg-left', fill: '#002244' });
     // The generic stripe runs into the socks, which stay lime on this kit.
     expect(model.layers.some((layer) => layer.id.startsWith('generic-pants-stripe'))).toBe(false);

@@ -54,7 +54,13 @@ export const SEAHAWKS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#AFB3B5', onAccent: '#0a0e1a' },
       periods: [{ from: 2025 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'teal-hawk', pants: 'rivalries-silver' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'teal-hawk',
+          pants: 'rivalries-silver',
+          socks: 'navy',
+        },
       ],
     },
     // Seahawks Action Green Color Rush, first worn in 2016 and still in rotation (last worn 2024).
