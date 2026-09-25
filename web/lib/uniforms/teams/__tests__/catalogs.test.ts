@@ -61,10 +61,11 @@ describe('no leftover hand-written accents for a converted team', () => {
 describe('registered team catalogs', () => {
   const registered = getAllTeamCatalogs();
 
-  it('includes the Seahawks and the Bears', () => {
+  it('includes the Seahawks, the Bears and the Broncos', () => {
     expect(getTeamCatalog('seahawks')?.teamId).toBe('seahawks');
     expect(getTeamCatalog('bears')?.teamId).toBe('bears');
-    expect(getTeamCatalog('broncos')).toBeUndefined();
+    expect(getTeamCatalog('broncos')?.teamId).toBe('broncos');
+    expect(getTeamCatalog('chargers')).toBeUndefined();
   });
 
   for (const { catalog, parts } of registered) {
@@ -243,6 +244,89 @@ describe('Bears catalog conversion', () => {
       'home--white-pants': { helmet: 'navy-c', jersey: 'navy', pants: 'white', socks: 'navy' },
       away: { helmet: 'navy-c', jersey: 'white', pants: 'navy', socks: 'white' },
       'orange-alternate': { helmet: 'navy-c', jersey: 'orange', pants: 'navy' },
+    });
+  });
+});
+
+// Pins the catalog to the rows and accents the Broncos had before the catalog existed.
+describe('Broncos catalog conversion', () => {
+  const catalog = getTeamCatalog('broncos');
+  if (!catalog) throw new Error('Broncos catalog is not registered');
+
+  it('reproduces the archived rows', () => {
+    expect(byId(catalogRows(catalog))).toEqual(
+      byId([
+        {
+          teamId: 'broncos',
+          slug: 'home',
+          constructionKey: 'home',
+          kind: 'home',
+          name: 'Home',
+          yearStart: 2024,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#FB4F14', secondary: '#002244', accent: '#002244' },
+        },
+        {
+          teamId: 'broncos',
+          slug: 'away',
+          constructionKey: 'away',
+          kind: 'away',
+          name: 'Away',
+          yearStart: 2024,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#FFFFFF', secondary: '#FB4F14', accent: '#002244' },
+        },
+        {
+          teamId: 'broncos',
+          slug: 'orange-alt',
+          constructionKey: 'orange-alt',
+          kind: 'alternate',
+          name: 'Orange Alternate',
+          yearStart: 2024,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#FB4F14', secondary: '#002244', accent: '#FFFFFF' },
+        },
+        {
+          teamId: 'broncos',
+          slug: 'orange-crush',
+          constructionKey: 'orange-crush',
+          kind: 'throwback',
+          name: 'Orange Crush',
+          yearStart: 1968,
+          yearEnd: 1996,
+          isCurrent: false,
+          colors: { primary: '#001489', secondary: '#FA4616', accent: '#FFFFFF' },
+        },
+      ])
+    );
+  });
+
+  it('reproduces the frozen legacy accents', () => {
+    expect(catalogAccents(catalog)).toEqual({
+      'broncos-home-2024': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
+      'broncos-away-2024': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
+      'broncos-orange-alt-2024': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
+      'broncos-orange-crush-1968': { uiAccent: '#FA4616', onAccent: '#0a0e1a' },
+    });
+  });
+
+  it('gives every kit its socks and adds the worn pants and socks pairings', () => {
+    const modern = { helmet: 'navy-horse' };
+    expect(catalogKits(catalog)).toEqual({
+      home: { ...modern, jersey: 'orange', pants: 'orange', socks: 'white' },
+      'home--navy-socks': { ...modern, jersey: 'orange', pants: 'orange', socks: 'navy' },
+      away: { ...modern, jersey: 'white', pants: 'white', socks: 'white' },
+      'away--navy-socks': { ...modern, jersey: 'white', pants: 'white', socks: 'navy' },
+      'away--navy-pants': { ...modern, jersey: 'white', pants: 'navy', socks: 'navy' },
+      'away--navy-pants-white-socks': { ...modern, jersey: 'white', pants: 'navy', socks: 'white' },
+      'away--orange-pants': { ...modern, jersey: 'white', pants: 'orange', socks: 'white' },
+      'orange-alt': { ...modern, jersey: 'orange', pants: 'white', socks: 'navy' },
+      'orange-alt--orange-socks': { ...modern, jersey: 'orange', pants: 'white', socks: 'orange' },
+      'orange-alt--white-socks': { ...modern, jersey: 'orange', pants: 'white', socks: 'white' },
+      'orange-crush': { helmet: 'royal-d', jersey: 'crush', pants: 'white', socks: 'crush' },
     });
   });
 });

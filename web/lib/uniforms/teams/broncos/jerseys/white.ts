@@ -1,17 +1,17 @@
-import { BRONCOS_CHEST_WORDMARK } from '../source';
-import { fill } from '../parts';
-import { expandJersey } from '../../core/jersey-spec';
-import type { UniformPart } from '../../core/parts';
+import type { CompleteJerseySpec } from '../../core/complete';
+import { broncosChestWordmark } from '../marks/construction';
 
-const spec = expandJersey('broncos-white', {
+// An orange-and-navy shoulder cap, and the chest wordmark in orange.
+export const BRONCOS_JERSEY_WHITE: CompleteJerseySpec = {
   body: 'white',
   collar: {
     style: 'inset-v',
     color: 'white',
+    trim: 'none',
     inside: 'whiteNeck',
     lining: 'orange',
-    outline: true,
     backBar: 'orange',
+    outline: true,
   },
   shoulderPanel: {
     bands: [
@@ -19,13 +19,11 @@ const spec = expandJersey('broncos-white', {
       { color: 'navy', size: 'm' },
     ],
   },
-  number: { fill: 'navy', outline: 'orange', outlineWeight: 'thin' },
-});
-
-export const JERSEY_WHITE: UniformPart = {
-  ...spec,
-  layers: [
-    ...spec.layers,
-    fill('broncos-white-wordmark', 'jersey', BRONCOS_CHEST_WORDMARK, 'orange'),
-  ],
+  shoulderStripes: 'none',
+  shoulderNumber: 'none',
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'navy', outline: 'orange', outlineWeight: 'thin', texture: 'mesh' },
+  marks: [{ paint: 'over', mark: broncosChestWordmark('white', 'orange') }],
 };

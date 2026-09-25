@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "50040b4c6939bcc94462d9c1b4fd816047b679ee930823ee237e2534b7ebfda2",
-  "revision": "12b830a129e86b46",
+  "sourceDigest": "aeacf75df531b3150e5de6530591d0f3af2fa537744e3f59cd1afff8aa0cabcf",
+  "revision": "b53e06e25020385b",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -221,12 +221,46 @@
           "path": "/uniforms/broncos-away-2024-full.webp",
           "sha256": "06760e0b55e1e9fdfb5f3fb76162393f01bfa58aee5cb420be40ed7dc2a814c9"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "navy-socks",
+          "label": "Navy socks",
+          "full": {
+            "path": "/uniforms/broncos-away-2024--navy-socks-full.webp",
+            "sha256": "22a4964260546c65faecc17a28100facb931f6ee52fcdddae108ba04a5709e9d"
+          }
+        },
+        {
+          "key": "navy-pants",
+          "label": "Navy pants",
+          "full": {
+            "path": "/uniforms/broncos-away-2024--navy-pants-full.webp",
+            "sha256": "82baec40e689de6b44470ef2477e28f15566b2a68953c09a6ab8b1ef69a83f90"
+          }
+        },
+        {
+          "key": "navy-pants-white-socks",
+          "label": "Navy pants, white socks",
+          "full": {
+            "path": "/uniforms/broncos-away-2024--navy-pants-white-socks-full.webp",
+            "sha256": "bba9f90621173a0a434316b05fa3476de5b24efeb20d9d29efe065bcac0fd66f"
+          }
+        },
+        {
+          "key": "orange-pants",
+          "label": "Orange pants",
+          "full": {
+            "path": "/uniforms/broncos-away-2024--orange-pants-full.webp",
+            "sha256": "1066b48e404c6ba2593cbc30e0eef1db7307c8db8caf58da641409b45dc3f06a"
+          }
+        }
+      ]
     },
     {
       "catalogId": "broncos-home-2024",
       "constructionKey": "home",
-      "revision": "4a9779b72dbecccd",
+      "revision": "d9ff109e63011a90",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-home-2024.webp",
@@ -234,14 +268,24 @@
         },
         "full": {
           "path": "/uniforms/broncos-home-2024-full.webp",
-          "sha256": "76209eb7b8b0aaa1d0dcff97f8246cdcfaf0ce40981c702bdc0bd5583e481093"
+          "sha256": "8c77e139ad448239e65c55a23f4d187667d77e7193f58cf25c897ce1d94bd91e"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "navy-socks",
+          "label": "Navy socks",
+          "full": {
+            "path": "/uniforms/broncos-home-2024--navy-socks-full.webp",
+            "sha256": "ef0d8cc8dbe0380962e836a96ba06783ec0f325ea98fd38f2e707960375a7299"
+          }
+        }
+      ]
     },
     {
       "catalogId": "broncos-orange-alt-2024",
       "constructionKey": "orange-alt",
-      "revision": "29a98db4b90f5e60",
+      "revision": "a69620c06b2660d0",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-orange-alt-2024.webp",
@@ -249,22 +293,40 @@
         },
         "full": {
           "path": "/uniforms/broncos-orange-alt-2024-full.webp",
-          "sha256": "c4a90dc42256ff832241d657dd7a0eb5124909716e331277b984c22afaae7c4e"
+          "sha256": "2dde3ec6ca6acea192200fa90d35f8e338367090b0375c7c4bc2a24c941ab077"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "orange-socks",
+          "label": "Orange socks",
+          "full": {
+            "path": "/uniforms/broncos-orange-alt-2024--orange-socks-full.webp",
+            "sha256": "2dedac18dcc77735c77e13a6372b351fb48d8e1f3cde0cd3773b7ad7c28e63ce"
+          }
+        },
+        {
+          "key": "white-socks",
+          "label": "White socks",
+          "full": {
+            "path": "/uniforms/broncos-orange-alt-2024--white-socks-full.webp",
+            "sha256": "c4a90dc42256ff832241d657dd7a0eb5124909716e331277b984c22afaae7c4e"
+          }
+        }
+      ]
     },
     {
       "catalogId": "broncos-orange-crush-1968",
       "constructionKey": "orange-crush",
-      "revision": "74722c71d6b3ce80",
+      "revision": "936a7055649bd00f",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-orange-crush-1968.webp",
-          "sha256": "4feee04056bc18c6250a154edc28a4e797eae231d2b2fa749b72bea99d2ceed9"
+          "sha256": "184fe90d905b76820934debb292d6d4373fde8a2a6e45610a78925e78f20c595"
         },
         "full": {
           "path": "/uniforms/broncos-orange-crush-1968-full.webp",
-          "sha256": "6a90a95ad6245e6dce61be17658cf90570ab0b981beb40da4a9639395a8be31c"
+          "sha256": "d4b42fee5f4fd91a75b3ddf01902d54448ddc9aab250d3ffa2c7a8b57700414a"
         }
       }
     },
