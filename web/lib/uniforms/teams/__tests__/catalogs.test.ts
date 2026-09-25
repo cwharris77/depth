@@ -1,10 +1,20 @@
 import { readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { renderUniformThumbSVG } from '../../art';
 import { UNIFORMS } from '../../data';
 import { HAND_ACCENTS, LEGACY_ACCENTS } from '../../legacy-accents';
+import { getTeamUniformDefinition } from '../index';
 import { getAllTeamCatalogs, getTeamCatalog } from '../catalogs';
-import { catalogAccents, catalogKits, catalogRows, validateCatalog } from '../core/catalog';
+import {
+  catalogAccents,
+  catalogKits,
+  catalogRows,
+  combinationKitKey,
+  extraCombinations,
+  validateCatalog,
+} from '../core/catalog';
+import { expandTeamSpec, findCoordinateLiterals, findUnresolvedColors } from '../core/team-spec';
 
 // Every team directory that owns a catalog.ts must also be registered in catalogs.ts, and
 // under the key its own catalog names — a catalog file that exists but was never wired in
@@ -170,4 +180,80 @@ describe('Seahawks catalog conversion', () => {
       },
     });
   });
+});
+
+// A strict team's parts come only from its registered TeamSpec: no team sets `strict` yet, so
+// the per-team loop below is empty and the fixtures in team-spec.test.ts prove the checks
+// themselves. The sanity check runs unconditionally so this suite never reports zero tests.
+describe('strict teams', () => {
+  const strictCatalogs = getAllTeamCatalogs().filter(
+    (entry): entry is typeof entry & { strict: NonNullable<(typeof entry)['strict']> } =>
+      entry.strict !== undefined
+  );
+
+  it('has a directory on disk for every strict team', () => {
+    for (const { catalog } of strictCatalogs) {
+      expect(existsSync(join(TEAMS_DIR, catalog.teamId))).toBe(true);
+    }
+  });
+
+  for (const { catalog, parts, strict } of strictCatalogs) {
+    describe(catalog.teamId, () => {
+      it('expands to exactly the registered parts', () => {
+        expect(expandTeamSpec(catalog.teamId, strict)).toEqual({
+          helmets: parts.helmets,
+          jerseys: parts.jerseys,
+          pants: parts.pants,
+          socks: parts.socks ?? {},
+        });
+      });
+
+      it('draws no coordinate outside marks/', () => {
+        expect(findCoordinateLiterals(join(TEAMS_DIR, catalog.teamId))).toEqual([]);
+      });
+
+      it('resolves every colour ref against its palette', () => {
+        expect(findUnresolvedColors(expandTeamSpec(catalog.teamId, strict), parts.palette)).toEqual(
+          []
+        );
+      });
+
+      it('renders every archived kit identically twice', () => {
+        const definition = getTeamUniformDefinition(catalog.teamId);
+        for (const row of UNIFORMS.filter((r) => r.teamId === catalog.teamId)) {
+          const id = rowId(row);
+          const first = renderUniformThumbSVG(
+            row.colors,
+            id,
+            definition,
+            'full',
+            row.constructionKey
+          );
+          const second = renderUniformThumbSVG(
+            row.colors,
+            id,
+            definition,
+            'full',
+            row.constructionKey
+          );
+          expect(second).toBe(first);
+        }
+      });
+
+      it('renders every extra combination kit key identically twice', () => {
+        const definition = getTeamUniformDefinition(catalog.teamId);
+        for (const design of catalog.designs) {
+          const row = UNIFORMS.find((r) => r.teamId === catalog.teamId && r.slug === design.slug);
+          if (!row) continue;
+          const id = rowId(row);
+          for (const combination of extraCombinations(design)) {
+            const key = combinationKitKey(design, combination);
+            const first = renderUniformThumbSVG(row.colors, id, definition, 'full', key);
+            const second = renderUniformThumbSVG(row.colors, id, definition, 'full', key);
+            expect(second).toBe(first);
+          }
+        }
+      });
+    });
+  }
 });

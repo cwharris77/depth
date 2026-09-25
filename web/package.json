@@ -23,6 +23,7 @@
     "preview:bypass-url": "tsx scripts/vercel-preview-url.mts",
     "gen:uniform-seed": "tsx scripts/gen-uniform-seed.mts",
     "gen:uniform-thumbs": "tsx scripts/gen-uniform-thumbs.mts",
+    "review:uniforms": "tsx scripts/uniform-review-sheet.mts",
     "gen:team-seed": "tsx scripts/gen-team-seed.mts",
     "gen:icons": "tsx scripts/gen-icons.mts",
     "seed:review-demo-user": "tsx scripts/seed-review-demo-user.mts",
