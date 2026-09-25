@@ -438,6 +438,7 @@
         "index": 0,
         "group": "DL",
         "preferredPosition": "LDE",
+        "familyPosition": null,
         "x": 24,
         "y": 45,
         "label": "LDE",
@@ -449,6 +450,7 @@
         "index": 0,
         "group": "DL",
         "preferredPosition": "NT",
+        "familyPosition": null,
         "x": 50,
         "y": 45,
         "label": "NT",
@@ -460,6 +462,7 @@
         "index": 1,
         "group": "DL",
         "preferredPosition": "RDE",
+        "familyPosition": null,
         "x": 76,
         "y": 45,
         "label": "RDE",
@@ -471,6 +474,7 @@
         "index": 0,
         "group": "LB",
         "preferredPosition": "WLB",
+        "familyPosition": null,
         "x": 26,
         "y": 33,
         "label": "WLB",
@@ -482,6 +486,7 @@
         "index": 1,
         "group": "LB",
         "preferredPosition": "LILB",
+        "familyPosition": null,
         "x": 42,
         "y": 33,
         "label": "LILB",
@@ -493,6 +498,7 @@
         "index": 2,
         "group": "LB",
         "preferredPosition": "RILB",
+        "familyPosition": null,
         "x": 58,
         "y": 33,
         "label": "RILB",
@@ -504,6 +510,7 @@
         "index": 3,
         "group": "LB",
         "preferredPosition": "SLB",
+        "familyPosition": null,
         "x": 74,
         "y": 33,
         "label": "SLB",
@@ -515,6 +522,7 @@
         "index": 0,
         "group": "CB",
         "preferredPosition": "LCB",
+        "familyPosition": null,
         "x": 10,
         "y": 26,
         "label": "LCB",
@@ -526,6 +534,7 @@
         "index": 1,
         "group": "CB",
         "preferredPosition": "RCB",
+        "familyPosition": null,
         "x": 90,
         "y": 26,
         "label": "RCB",
@@ -537,6 +546,7 @@
         "index": 0,
         "group": "S",
         "preferredPosition": "SS",
+        "familyPosition": null,
         "x": 34,
         "y": 14,
         "label": "SS",
@@ -548,6 +558,7 @@
         "index": 1,
         "group": "S",
         "preferredPosition": "FS",
+        "familyPosition": null,
         "x": 66,
         "y": 14,
         "label": "FS",
@@ -703,6 +714,7 @@
         "index": 0,
         "group": "DL",
         "preferredPosition": "LDE",
+        "familyPosition": null,
         "x": 24,
         "y": 45,
         "label": "LDE",
@@ -714,6 +726,7 @@
         "index": 0,
         "group": "DL",
         "preferredPosition": null,
+        "familyPosition": null,
         "x": 41.33333333333333,
         "y": 45,
         "label": "DT",
@@ -725,6 +738,7 @@
         "index": 1,
         "group": "DL",
         "preferredPosition": null,
+        "familyPosition": null,
         "x": 58.666666666666664,
         "y": 45,
         "label": "DT",
@@ -736,6 +750,7 @@
         "index": 1,
         "group": "DL",
         "preferredPosition": "RDE",
+        "familyPosition": null,
         "x": 76,
         "y": 45,
         "label": "RDE",
@@ -747,6 +762,7 @@
         "index": 0,
         "group": "LB",
         "preferredPosition": null,
+        "familyPosition": null,
         "x": 26,
         "y": 33,
         "label": "LB",
@@ -758,6 +774,7 @@
         "index": 1,
         "group": "LB",
         "preferredPosition": null,
+        "familyPosition": null,
         "x": 74,
         "y": 33,
         "label": "LB",
@@ -769,6 +786,7 @@
         "index": 0,
         "group": "CB",
         "preferredPosition": "LCB",
+        "familyPosition": null,
         "x": 10,
         "y": 26,
         "label": "LCB",
@@ -780,6 +798,7 @@
         "index": 1,
         "group": "CB",
         "preferredPosition": "RCB",
+        "familyPosition": null,
         "x": 90,
         "y": 26,
         "label": "RCB",
@@ -791,6 +810,7 @@
         "index": 0,
         "group": "S",
         "preferredPosition": "SS",
+        "familyPosition": null,
         "x": 34,
         "y": 14,
         "label": "SS",
@@ -802,6 +822,7 @@
         "index": 1,
         "group": "S",
         "preferredPosition": "FS",
+        "familyPosition": null,
         "x": 66,
         "y": 14,
         "label": "FS",
@@ -813,6 +834,7 @@
         "index": 2,
         "group": "CB",
         "preferredPosition": "NB",
+        "familyPosition": null,
         "x": 50,
         "y": 28,
         "label": "NB",
@@ -1319,6 +1341,1576 @@
         "label": "RT",
         "onLine": true,
         "playerId": null
+      },
+      {
+        "key": "off-qb-0",
+        "x": 50,
+        "y": 66,
+        "label": "QB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-rb-0",
+        "x": 50,
+        "y": 78,
+        "label": "RB",
+        "onLine": false,
+        "playerId": null
+      }
+    ]
+  },
+  {
+    "description": "offensive line, granular roster without a depth chart: every line slot seats its exact tag in pass 1, backups stay off the field",
+    "unit": "offense",
+    "roster": {
+      "players": [
+        {
+          "id": "rt2",
+          "position": "RT",
+          "depthRank": 2,
+          "number": 68,
+          "order": null
+        },
+        {
+          "id": "lg1",
+          "position": "LG",
+          "depthRank": 1,
+          "number": 64,
+          "order": null
+        },
+        {
+          "id": "c2",
+          "position": "C",
+          "depthRank": 2,
+          "number": 61,
+          "order": null
+        },
+        {
+          "id": "lt1",
+          "position": "LT",
+          "depthRank": 1,
+          "number": 71,
+          "order": null
+        },
+        {
+          "id": "rg2",
+          "position": "RG",
+          "depthRank": 2,
+          "number": 66,
+          "order": null
+        },
+        {
+          "id": "c1",
+          "position": "C",
+          "depthRank": 1,
+          "number": 60,
+          "order": null
+        },
+        {
+          "id": "rt1",
+          "position": "RT",
+          "depthRank": 1,
+          "number": 78,
+          "order": null
+        },
+        {
+          "id": "lt2",
+          "position": "LT",
+          "depthRank": 2,
+          "number": 72,
+          "order": null
+        },
+        {
+          "id": "rg1",
+          "position": "RG",
+          "depthRank": 1,
+          "number": 65,
+          "order": null
+        },
+        {
+          "id": "lg2",
+          "position": "LG",
+          "depthRank": 2,
+          "number": 63,
+          "order": null
+        }
+      ],
+      "specialTeams": [],
+      "depthChart": null
+    },
+    "realFormation": null,
+    "resolved": [
+      {
+        "key": "off-wr-0",
+        "x": 88,
+        "y": 51,
+        "label": "WR",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-1",
+        "x": 12,
+        "y": 55,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-2",
+        "x": 24,
+        "y": 56,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-te-0",
+        "x": 74,
+        "y": 51,
+        "label": "TE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-lt-0",
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true,
+        "playerId": "lt1"
+      },
+      {
+        "key": "off-lg-0",
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true,
+        "playerId": "lg1"
+      },
+      {
+        "key": "off-c-0",
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true,
+        "playerId": "c1"
+      },
+      {
+        "key": "off-rg-0",
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true,
+        "playerId": "rg1"
+      },
+      {
+        "key": "off-rt-0",
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true,
+        "playerId": "rt1"
+      },
+      {
+        "key": "off-qb-0",
+        "x": 50,
+        "y": 66,
+        "label": "QB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-rb-0",
+        "x": 50,
+        "y": 78,
+        "label": "RB",
+        "onLine": false,
+        "playerId": null
+      }
+    ]
+  },
+  {
+    "description": "offensive line, granular starters with generic OT/G backups: the exact tags still win every slot and the generic backups stay off the field",
+    "unit": "offense",
+    "roster": {
+      "players": [
+        {
+          "id": "ot-backup",
+          "position": "OT",
+          "depthRank": 1,
+          "number": 70,
+          "order": null
+        },
+        {
+          "id": "g-backup",
+          "position": "G",
+          "depthRank": 1,
+          "number": 62,
+          "order": null
+        },
+        {
+          "id": "lt1",
+          "position": "LT",
+          "depthRank": 1,
+          "number": 77,
+          "order": null
+        },
+        {
+          "id": "lg1",
+          "position": "LG",
+          "depthRank": 1,
+          "number": 76,
+          "order": null
+        },
+        {
+          "id": "c1",
+          "position": "C",
+          "depthRank": 1,
+          "number": 52,
+          "order": null
+        },
+        {
+          "id": "rg1",
+          "position": "RG",
+          "depthRank": 1,
+          "number": 75,
+          "order": null
+        },
+        {
+          "id": "rt1",
+          "position": "RT",
+          "depthRank": 1,
+          "number": 74,
+          "order": null
+        }
+      ],
+      "specialTeams": [],
+      "depthChart": null
+    },
+    "realFormation": [
+      {
+        "id": "off-lt-0",
+        "position": "LT",
+        "index": 0,
+        "group": "OL",
+        "preferredPosition": "LT",
+        "familyPosition": "OT",
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true
+      },
+      {
+        "id": "off-lg-0",
+        "position": "LG",
+        "index": 0,
+        "group": "OL",
+        "preferredPosition": "LG",
+        "familyPosition": "G",
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true
+      },
+      {
+        "id": "off-c-0",
+        "position": "C",
+        "index": 0,
+        "group": "OL",
+        "preferredPosition": "C",
+        "familyPosition": null,
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true
+      },
+      {
+        "id": "off-rg-0",
+        "position": "RG",
+        "index": 0,
+        "group": "OL",
+        "preferredPosition": "RG",
+        "familyPosition": "G",
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true
+      },
+      {
+        "id": "off-rt-0",
+        "position": "RT",
+        "index": 0,
+        "group": "OL",
+        "preferredPosition": "RT",
+        "familyPosition": "OT",
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-0",
+        "position": "WR",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "familyPosition": null,
+        "x": 10,
+        "y": 51,
+        "label": "WR",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-1",
+        "position": "WR",
+        "index": 1,
+        "group": null,
+        "preferredPosition": null,
+        "familyPosition": null,
+        "x": 90,
+        "y": 54,
+        "label": "WR",
+        "onLine": false
+      },
+      {
+        "id": "off-wr-2",
+        "position": "WR",
+        "index": 2,
+        "group": null,
+        "preferredPosition": null,
+        "familyPosition": null,
+        "x": 26,
+        "y": 54,
+        "label": "WR",
+        "onLine": false
+      },
+      {
+        "id": "off-te-0",
+        "position": "TE",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "familyPosition": null,
+        "x": 71,
+        "y": 51,
+        "label": "TE",
+        "onLine": true
+      },
+      {
+        "id": "off-rb-0",
+        "position": "RB",
+        "index": 0,
+        "group": "RB",
+        "preferredPosition": null,
+        "familyPosition": null,
+        "x": 58,
+        "y": 70,
+        "label": "RB",
+        "onLine": false
+      },
+      {
+        "id": "off-qb-0",
+        "position": "QB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "familyPosition": null,
+        "x": 50,
+        "y": 68,
+        "label": "QB",
+        "onLine": false
+      }
+    ],
+    "resolved": [
+      {
+        "key": "off-lt-0",
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true,
+        "playerId": "lt1"
+      },
+      {
+        "key": "off-lg-0",
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true,
+        "playerId": "lg1"
+      },
+      {
+        "key": "off-c-0",
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true,
+        "playerId": "c1"
+      },
+      {
+        "key": "off-rg-0",
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true,
+        "playerId": "rg1"
+      },
+      {
+        "key": "off-rt-0",
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true,
+        "playerId": "rt1"
+      },
+      {
+        "key": "off-wr-0",
+        "x": 10,
+        "y": 51,
+        "label": "WR",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-1",
+        "x": 90,
+        "y": 54,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-2",
+        "x": 26,
+        "y": 54,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-te-0",
+        "x": 71,
+        "y": 51,
+        "label": "TE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-rb-0",
+        "x": 58,
+        "y": 70,
+        "label": "RB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-qb-0",
+        "x": 50,
+        "y": 68,
+        "label": "QB",
+        "onLine": false,
+        "playerId": null
+      }
+    ]
+  },
+  {
+    "description": "offensive line, depth-chart seats with a guard doubling as backup center: starters seat on their exact seats",
+    "unit": "offense",
+    "roster": {
+      "players": [
+        {
+          "id": "lt1",
+          "position": "LT",
+          "depthRank": 1,
+          "number": 71,
+          "order": null
+        },
+        {
+          "id": "lg1",
+          "position": "LG",
+          "depthRank": 1,
+          "number": 67,
+          "order": null
+        },
+        {
+          "id": "c1",
+          "position": "C",
+          "depthRank": 1,
+          "number": 55,
+          "order": null
+        },
+        {
+          "id": "rg1",
+          "position": "RG",
+          "depthRank": 1,
+          "number": 63,
+          "order": null
+        },
+        {
+          "id": "rt1",
+          "position": "RT",
+          "depthRank": 1,
+          "number": 79,
+          "order": null
+        }
+      ],
+      "specialTeams": [],
+      "depthChart": [
+        {
+          "position": "LT",
+          "depthRank": 1,
+          "playerId": "lt1"
+        },
+        {
+          "position": "LG",
+          "depthRank": 1,
+          "playerId": "lg1"
+        },
+        {
+          "position": "C",
+          "depthRank": 1,
+          "playerId": "c1"
+        },
+        {
+          "position": "C",
+          "depthRank": 2,
+          "playerId": "lg1"
+        },
+        {
+          "position": "RG",
+          "depthRank": 1,
+          "playerId": "rg1"
+        },
+        {
+          "position": "RT",
+          "depthRank": 1,
+          "playerId": "rt1"
+        }
+      ]
+    },
+    "realFormation": null,
+    "resolved": [
+      {
+        "key": "off-wr-0",
+        "x": 88,
+        "y": 51,
+        "label": "WR",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-1",
+        "x": 12,
+        "y": 55,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-2",
+        "x": 24,
+        "y": 56,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-te-0",
+        "x": 74,
+        "y": 51,
+        "label": "TE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-lt-0",
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true,
+        "playerId": "lt1"
+      },
+      {
+        "key": "off-lg-0",
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true,
+        "playerId": "lg1"
+      },
+      {
+        "key": "off-c-0",
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true,
+        "playerId": "c1"
+      },
+      {
+        "key": "off-rg-0",
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true,
+        "playerId": "rg1"
+      },
+      {
+        "key": "off-rt-0",
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true,
+        "playerId": "rt1"
+      },
+      {
+        "key": "off-qb-0",
+        "x": 50,
+        "y": 66,
+        "label": "QB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-rb-0",
+        "x": 50,
+        "y": 78,
+        "label": "RB",
+        "onLine": false,
+        "playerId": null
+      }
+    ]
+  },
+  {
+    "description": "offensive line, coarse 1999-style roster (2 OT, 2 G, 1 C): tackles seat at LT/RT and guards at LG/RG, best-ranked on the left",
+    "unit": "offense",
+    "roster": {
+      "players": [
+        {
+          "id": "g2",
+          "position": "G",
+          "depthRank": 1,
+          "number": 66,
+          "order": 4
+        },
+        {
+          "id": "ot2",
+          "position": "OT",
+          "depthRank": 1,
+          "number": 78,
+          "order": 2
+        },
+        {
+          "id": "c1",
+          "position": "C",
+          "depthRank": 1,
+          "number": 60,
+          "order": 1
+        },
+        {
+          "id": "ot1",
+          "position": "OT",
+          "depthRank": 1,
+          "number": 71,
+          "order": 1
+        },
+        {
+          "id": "g1",
+          "position": "G",
+          "depthRank": 1,
+          "number": 64,
+          "order": 3
+        }
+      ],
+      "specialTeams": [],
+      "depthChart": null
+    },
+    "realFormation": null,
+    "resolved": [
+      {
+        "key": "off-wr-0",
+        "x": 88,
+        "y": 51,
+        "label": "WR",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-1",
+        "x": 12,
+        "y": 55,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-2",
+        "x": 24,
+        "y": 56,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-te-0",
+        "x": 74,
+        "y": 51,
+        "label": "TE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-lt-0",
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true,
+        "playerId": "ot1"
+      },
+      {
+        "key": "off-lg-0",
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true,
+        "playerId": "g1"
+      },
+      {
+        "key": "off-c-0",
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true,
+        "playerId": "c1"
+      },
+      {
+        "key": "off-rg-0",
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true,
+        "playerId": "g2"
+      },
+      {
+        "key": "off-rt-0",
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true,
+        "playerId": "ot2"
+      },
+      {
+        "key": "off-qb-0",
+        "x": 50,
+        "y": 66,
+        "label": "QB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-rb-0",
+        "x": 50,
+        "y": 78,
+        "label": "RB",
+        "onLine": false,
+        "playerId": null
+      }
+    ]
+  },
+  {
+    "description": "offensive line, a guard ranked ahead of the lone tackle never takes a tackle slot while that tackle is unseated",
+    "unit": "offense",
+    "roster": {
+      "players": [
+        {
+          "id": "g1",
+          "position": "G",
+          "depthRank": 1,
+          "number": 61,
+          "order": null
+        },
+        {
+          "id": "g2",
+          "position": "G",
+          "depthRank": 1,
+          "number": 62,
+          "order": null
+        },
+        {
+          "id": "g3",
+          "position": "G",
+          "depthRank": 1,
+          "number": 63,
+          "order": null
+        },
+        {
+          "id": "c1",
+          "position": "C",
+          "depthRank": 1,
+          "number": 50,
+          "order": null
+        },
+        {
+          "id": "ot1",
+          "position": "OT",
+          "depthRank": 2,
+          "number": 79,
+          "order": null
+        }
+      ],
+      "specialTeams": [],
+      "depthChart": null
+    },
+    "realFormation": null,
+    "resolved": [
+      {
+        "key": "off-wr-0",
+        "x": 88,
+        "y": 51,
+        "label": "WR",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-1",
+        "x": 12,
+        "y": 55,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-2",
+        "x": 24,
+        "y": 56,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-te-0",
+        "x": 74,
+        "y": 51,
+        "label": "TE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-lt-0",
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true,
+        "playerId": "ot1"
+      },
+      {
+        "key": "off-lg-0",
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true,
+        "playerId": "g1"
+      },
+      {
+        "key": "off-c-0",
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true,
+        "playerId": "c1"
+      },
+      {
+        "key": "off-rg-0",
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true,
+        "playerId": "g2"
+      },
+      {
+        "key": "off-rt-0",
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true,
+        "playerId": "g3"
+      },
+      {
+        "key": "off-qb-0",
+        "x": 50,
+        "y": 66,
+        "label": "QB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-rb-0",
+        "x": 50,
+        "y": 78,
+        "label": "RB",
+        "onLine": false,
+        "playerId": null
+      }
+    ]
+  },
+  {
+    "description": "offensive line, sided and generic tags mixed: the exact LT seats at LT and the generic OT takes RT",
+    "unit": "offense",
+    "roster": {
+      "players": [
+        {
+          "id": "ot1",
+          "position": "OT",
+          "depthRank": 1,
+          "number": 70,
+          "order": null
+        },
+        {
+          "id": "lt1",
+          "position": "LT",
+          "depthRank": 1,
+          "number": 77,
+          "order": null
+        },
+        {
+          "id": "g1",
+          "position": "G",
+          "depthRank": 1,
+          "number": 64,
+          "order": null
+        },
+        {
+          "id": "g2",
+          "position": "G",
+          "depthRank": 1,
+          "number": 65,
+          "order": null
+        },
+        {
+          "id": "c1",
+          "position": "C",
+          "depthRank": 1,
+          "number": 60,
+          "order": null
+        }
+      ],
+      "specialTeams": [],
+      "depthChart": null
+    },
+    "realFormation": null,
+    "resolved": [
+      {
+        "key": "off-wr-0",
+        "x": 88,
+        "y": 51,
+        "label": "WR",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-1",
+        "x": 12,
+        "y": 55,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-2",
+        "x": 24,
+        "y": 56,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-te-0",
+        "x": 74,
+        "y": 51,
+        "label": "TE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-lt-0",
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true,
+        "playerId": "lt1"
+      },
+      {
+        "key": "off-lg-0",
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true,
+        "playerId": "g1"
+      },
+      {
+        "key": "off-c-0",
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true,
+        "playerId": "c1"
+      },
+      {
+        "key": "off-rg-0",
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true,
+        "playerId": "g2"
+      },
+      {
+        "key": "off-rt-0",
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true,
+        "playerId": "ot1"
+      },
+      {
+        "key": "off-qb-0",
+        "x": 50,
+        "y": 66,
+        "label": "QB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-rb-0",
+        "x": 50,
+        "y": 78,
+        "label": "RB",
+        "onLine": false,
+        "playerId": null
+      }
+    ]
+  },
+  {
+    "description": "offensive line, short pool (1 OT, 1 C): the remaining line slots stay empty, no player is repeated",
+    "unit": "offense",
+    "roster": {
+      "players": [
+        {
+          "id": "ot1",
+          "position": "OT",
+          "depthRank": 1,
+          "number": 71,
+          "order": null
+        },
+        {
+          "id": "c1",
+          "position": "C",
+          "depthRank": 1,
+          "number": 60,
+          "order": null
+        }
+      ],
+      "specialTeams": [],
+      "depthChart": null
+    },
+    "realFormation": null,
+    "resolved": [
+      {
+        "key": "off-wr-0",
+        "x": 88,
+        "y": 51,
+        "label": "WR",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-1",
+        "x": 12,
+        "y": 55,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-2",
+        "x": 24,
+        "y": 56,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-te-0",
+        "x": 74,
+        "y": 51,
+        "label": "TE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-lt-0",
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true,
+        "playerId": "ot1"
+      },
+      {
+        "key": "off-lg-0",
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-c-0",
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true,
+        "playerId": "c1"
+      },
+      {
+        "key": "off-rg-0",
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-rt-0",
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-qb-0",
+        "x": 50,
+        "y": 66,
+        "label": "QB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-rb-0",
+        "x": 50,
+        "y": 78,
+        "label": "RB",
+        "onLine": false,
+        "playerId": null
+      }
+    ]
+  },
+  {
+    "description": "offensive line, surplus pool (3 OT, 3 G, 2 C): five distinct linemen seat and the surplus stays off the field",
+    "unit": "offense",
+    "roster": {
+      "players": [
+        {
+          "id": "ot1",
+          "position": "OT",
+          "depthRank": 1,
+          "number": 71,
+          "order": null
+        },
+        {
+          "id": "ot2",
+          "position": "OT",
+          "depthRank": 1,
+          "number": 72,
+          "order": null
+        },
+        {
+          "id": "ot3",
+          "position": "OT",
+          "depthRank": 2,
+          "number": 73,
+          "order": null
+        },
+        {
+          "id": "g1",
+          "position": "G",
+          "depthRank": 1,
+          "number": 61,
+          "order": null
+        },
+        {
+          "id": "g2",
+          "position": "G",
+          "depthRank": 1,
+          "number": 62,
+          "order": null
+        },
+        {
+          "id": "g3",
+          "position": "G",
+          "depthRank": 2,
+          "number": 63,
+          "order": null
+        },
+        {
+          "id": "c1",
+          "position": "C",
+          "depthRank": 1,
+          "number": 50,
+          "order": null
+        },
+        {
+          "id": "c2",
+          "position": "C",
+          "depthRank": 2,
+          "number": 51,
+          "order": null
+        }
+      ],
+      "specialTeams": [],
+      "depthChart": null
+    },
+    "realFormation": [
+      {
+        "id": "off-lt-0",
+        "position": "LT",
+        "index": 0,
+        "group": "OL",
+        "preferredPosition": "LT",
+        "familyPosition": "OT",
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true
+      },
+      {
+        "id": "off-lg-0",
+        "position": "LG",
+        "index": 0,
+        "group": "OL",
+        "preferredPosition": "LG",
+        "familyPosition": "G",
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true
+      },
+      {
+        "id": "off-c-0",
+        "position": "C",
+        "index": 0,
+        "group": "OL",
+        "preferredPosition": "C",
+        "familyPosition": null,
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true
+      },
+      {
+        "id": "off-rg-0",
+        "position": "RG",
+        "index": 0,
+        "group": "OL",
+        "preferredPosition": "RG",
+        "familyPosition": "G",
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true
+      },
+      {
+        "id": "off-rt-0",
+        "position": "RT",
+        "index": 0,
+        "group": "OL",
+        "preferredPosition": "RT",
+        "familyPosition": "OT",
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-0",
+        "position": "WR",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "familyPosition": null,
+        "x": 10,
+        "y": 51,
+        "label": "WR",
+        "onLine": true
+      },
+      {
+        "id": "off-wr-1",
+        "position": "WR",
+        "index": 1,
+        "group": null,
+        "preferredPosition": null,
+        "familyPosition": null,
+        "x": 90,
+        "y": 54,
+        "label": "WR",
+        "onLine": false
+      },
+      {
+        "id": "off-te-0",
+        "position": "TE",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "familyPosition": null,
+        "x": 71,
+        "y": 51,
+        "label": "TE",
+        "onLine": true
+      },
+      {
+        "id": "off-te-1",
+        "position": "TE",
+        "index": 1,
+        "group": null,
+        "preferredPosition": null,
+        "familyPosition": null,
+        "x": 76,
+        "y": 54,
+        "label": "TE",
+        "onLine": false
+      },
+      {
+        "id": "off-rb-0",
+        "position": "RB",
+        "index": 0,
+        "group": "RB",
+        "preferredPosition": null,
+        "familyPosition": null,
+        "x": 50,
+        "y": 76,
+        "label": "RB",
+        "onLine": false
+      },
+      {
+        "id": "off-qb-0",
+        "position": "QB",
+        "index": 0,
+        "group": null,
+        "preferredPosition": null,
+        "familyPosition": null,
+        "x": 50,
+        "y": 56,
+        "label": "QB",
+        "onLine": false
+      }
+    ],
+    "resolved": [
+      {
+        "key": "off-lt-0",
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true,
+        "playerId": "ot1"
+      },
+      {
+        "key": "off-lg-0",
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true,
+        "playerId": "g1"
+      },
+      {
+        "key": "off-c-0",
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true,
+        "playerId": "c1"
+      },
+      {
+        "key": "off-rg-0",
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true,
+        "playerId": "g2"
+      },
+      {
+        "key": "off-rt-0",
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true,
+        "playerId": "ot2"
+      },
+      {
+        "key": "off-wr-0",
+        "x": 10,
+        "y": 51,
+        "label": "WR",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-1",
+        "x": 90,
+        "y": 54,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-te-0",
+        "x": 71,
+        "y": 51,
+        "label": "TE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-te-1",
+        "x": 76,
+        "y": 54,
+        "label": "TE",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-rb-0",
+        "x": 50,
+        "y": 76,
+        "label": "RB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-qb-0",
+        "x": 50,
+        "y": 56,
+        "label": "QB",
+        "onLine": false,
+        "playerId": null
+      }
+    ]
+  },
+  {
+    "description": "offensive line, no center but spare guards: pass 3 seats the next guard at C after the tackles and guards are placed",
+    "unit": "offense",
+    "roster": {
+      "players": [
+        {
+          "id": "ot1",
+          "position": "OT",
+          "depthRank": 1,
+          "number": 71,
+          "order": null
+        },
+        {
+          "id": "ot2",
+          "position": "OT",
+          "depthRank": 1,
+          "number": 72,
+          "order": null
+        },
+        {
+          "id": "g1",
+          "position": "G",
+          "depthRank": 1,
+          "number": 61,
+          "order": null
+        },
+        {
+          "id": "g2",
+          "position": "G",
+          "depthRank": 1,
+          "number": 62,
+          "order": null
+        },
+        {
+          "id": "g3",
+          "position": "G",
+          "depthRank": 2,
+          "number": 63,
+          "order": null
+        }
+      ],
+      "specialTeams": [],
+      "depthChart": null
+    },
+    "realFormation": null,
+    "resolved": [
+      {
+        "key": "off-wr-0",
+        "x": 88,
+        "y": 51,
+        "label": "WR",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-1",
+        "x": 12,
+        "y": 55,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-wr-2",
+        "x": 24,
+        "y": 56,
+        "label": "WR",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "off-te-0",
+        "x": 74,
+        "y": 51,
+        "label": "TE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "off-lt-0",
+        "x": 34,
+        "y": 51,
+        "label": "LT",
+        "onLine": true,
+        "playerId": "ot1"
+      },
+      {
+        "key": "off-lg-0",
+        "x": 42,
+        "y": 51,
+        "label": "LG",
+        "onLine": true,
+        "playerId": "g1"
+      },
+      {
+        "key": "off-c-0",
+        "x": 50,
+        "y": 51,
+        "label": "C",
+        "onLine": true,
+        "playerId": "g3"
+      },
+      {
+        "key": "off-rg-0",
+        "x": 58,
+        "y": 51,
+        "label": "RG",
+        "onLine": true,
+        "playerId": "g2"
+      },
+      {
+        "key": "off-rt-0",
+        "x": 66,
+        "y": 51,
+        "label": "RT",
+        "onLine": true,
+        "playerId": "ot2"
       },
       {
         "key": "off-qb-0",

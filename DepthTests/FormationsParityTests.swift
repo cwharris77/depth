@@ -59,6 +59,7 @@ private struct FixtureFormationSlot: Decodable {
     let index: Int
     let group: PositionGroup?
     let preferredPosition: Position?
+    let familyPosition: Position?
     let x: Double
     let y: Double
     let label: String
@@ -67,7 +68,7 @@ private struct FixtureFormationSlot: Decodable {
     var domain: FormationSlot {
         FormationSlot(
             id: id, position: position, index: index, group: group,
-            preferredPosition: preferredPosition,
+            preferredPosition: preferredPosition, familyPosition: familyPosition,
             x: x, y: y, label: label, onLine: onLine
         )
     }

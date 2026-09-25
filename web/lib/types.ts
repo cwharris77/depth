@@ -44,7 +44,8 @@ export type Position =
 // archetype info — it can't say which linebacker is strongside vs weak, or which safety
 // is strong vs free — so the count-driven formation resolvers in lib/utils/depth-chart/formations.ts match
 // on this broader group instead of the exact granular Position everywhere else uses.
-export type PositionGroup = 'DL' | 'LB' | 'CB' | 'S' | 'RB';
+// 'OL' lets the five line slots seat a generic OT/G (historical rosters carry no side).
+export type PositionGroup = 'OL' | 'DL' | 'LB' | 'CB' | 'S' | 'RB';
 
 export type PlayerStatus = 'starter' | 'backup' | 'rookie' | 'injured';
 
@@ -100,6 +101,11 @@ export interface FormationSlot {
   // (indexing the group pool by raw depth rank ignored the label entirely,
   // so a real FS could land in the SS dot, or left/right corners could swap).
   preferredPosition?: Position;
+  // Only meaningful alongside `group`. A generic tag the slot claims after every exact
+  // `preferredPosition` match has been seated and before the open fallback: the LT/RT
+  // slots take an 'OT', LG/RG a 'G'. Keeps a guard out of a tackle slot while a tackle is
+  // still unseated on a roster that carries no sides.
+  familyPosition?: Position;
   x: number;
   y: number;
   label: string;

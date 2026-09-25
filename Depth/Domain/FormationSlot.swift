@@ -9,6 +9,9 @@ struct FormationSlot: Codable, Equatable {
     let index: Int
     let group: PositionGroup?
     let preferredPosition: Position?
+    /// A generic tag the slot claims after exact matches and before the open fallback
+    /// (`OT` for a tackle slot, `G` for a guard slot).
+    let familyPosition: Position?
     let x: Double
     let y: Double
     let label: String
@@ -20,6 +23,7 @@ struct FormationSlot: Codable, Equatable {
         index: Int,
         group: PositionGroup? = nil,
         preferredPosition: Position? = nil,
+        familyPosition: Position? = nil,
         x: Double,
         y: Double,
         label: String,
@@ -30,6 +34,7 @@ struct FormationSlot: Codable, Equatable {
         self.index = index
         self.group = group
         self.preferredPosition = preferredPosition
+        self.familyPosition = familyPosition
         self.x = x
         self.y = y
         self.label = label

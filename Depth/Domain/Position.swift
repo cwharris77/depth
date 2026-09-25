@@ -83,6 +83,7 @@ extension Position {
 
 // Mirrors web/lib/types.ts's PositionGroup.
 enum PositionGroup: String, Codable, Hashable {
+    case ol = "OL"
     case dl = "DL"
     case lb = "LB"
     case cb = "CB"
