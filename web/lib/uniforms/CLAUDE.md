@@ -109,6 +109,12 @@ Jersey art goes in `marks` (placed, or anchored to the sleeves; `under`/`over`).
 
 `QUESTIONS` in `core/complete.ts` is the per-field checklist for authoring a complete spec.
 
+## Review sheet
+
+`npm run review:uniforms -- --team <teamId> [--base origin/main] [--refs <dir>] [--out <file.html>]` builds a standalone HTML page comparing every one of a team's rows against its reference photos: before (the committed raster at `--base`), after (the current render), extra combinations, and — when a refs directory is given via `--refs` or `UNIFORM_REFS_DIR` — the team's own reference images. The sheet and every reference image are never committed: it writes to `os.tmpdir()` by default, and `--out` refuses a path inside the repo.
+
+A refs directory holds `<refs>/<teamId>/` with the team's reference photos plus an optional `review.json`, both private and never committed. `review.json`'s fields are all optional: `crops` maps a row id to `{ file, box: [x, y, w, h] }` to crop a reference photo down to that design; `missing` lists a construction detail not yet drawn (`design`, `surface`, `detail`, `resolution` of `added`/`dismissed`/`open`, optional `note`); `absentMarks` lists a jersey mark with no vector source (`design`, `mark`, optional `note`).
+
 ## Team catalog
 
 A converting team's rows come from `teams/<team>/catalog.ts` instead of hand-written `data.ts` entries: `catalogRow` (in `data.ts`) reads a design's canonical row from it, at that design's original position, so a converted team's archive order never changes. The same catalog is also the source for that team's frozen legacy accent pairs and for the kits the renderer registers.
