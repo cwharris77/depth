@@ -1,0 +1,74 @@
+// A strict team's construction: every part is a complete spec, so the team holds no coordinates
+// of its own outside its mark files. expandTeamSpec() produces the part groups the team
+// registers; findCoordinateLiterals() is the static check that nothing else draws.
+import { readFileSync, readdirSync } from 'node:fs';
+import { join, relative, sep } from 'node:path';
+import {
+  jerseySpecOf,
+  pantsSpecOf,
+  socksSpecOf,
+  type CompleteHelmetSpec,
+  type CompleteJerseySpec,
+  type CompletePantsSpec,
+  type CompleteSocksSpec,
+} from './complete';
+import { expandHelmet } from './helmet-spec';
+import { expandJersey } from './jersey-spec';
+import { expandPants, expandSocks } from './pants-spec';
+import type { TeamPartsDefinition, UniformPart } from './parts';
+
+export interface TeamSpec {
+  helmets: Record<string, CompleteHelmetSpec>;
+  jerseys: Record<string, CompleteJerseySpec>;
+  pants: Record<string, CompletePantsSpec>;
+  socks: Record<string, CompleteSocksSpec>;
+}
+
+type SpecParts = Pick<TeamPartsDefinition, 'helmets' | 'jerseys' | 'pants' | 'socks'>;
+
+function expandAll<S>(
+  teamId: string,
+  surface: string,
+  specs: Record<string, S>,
+  expand: (prefix: string, spec: S) => UniformPart
+): Record<string, UniformPart> {
+  return Object.fromEntries(
+    Object.entries(specs).map(([key, spec]) => [key, expand(`${teamId}-${surface}-${key}`, spec)])
+  );
+}
+
+export function expandTeamSpec(teamId: string, spec: TeamSpec): SpecParts {
+  return {
+    helmets: expandAll(teamId, 'helmet', spec.helmets, expandHelmet),
+    jerseys: expandAll(teamId, 'jersey', spec.jerseys, (p, s) => expandJersey(p, jerseySpecOf(s))),
+    pants: expandAll(teamId, 'pants', spec.pants, (p, s) => expandPants(p, pantsSpecOf(s))),
+    socks: expandAll(teamId, 'socks', spec.socks, (p, s) => expandSocks(p, socksSpecOf(s))),
+  };
+}
+
+// An SVG path string literal: a quote, a moveto, then a number.
+const PATH_LITERAL = /['"`]\s*[Mm]\s*-?\d/;
+
+function walk(dir: string, out: string[]): void {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) walk(full, out);
+    else if (entry.isFile()) out.push(full);
+  }
+}
+
+// `file:line` for every path literal in a team directory's non-test sources outside marks/.
+export function findCoordinateLiterals(teamDir: string): string[] {
+  const files: string[] = [];
+  walk(teamDir, files);
+  return files
+    .map((file) => relative(teamDir, file).split(sep).join('/'))
+    .filter((rel) => rel.endsWith('.ts') && !rel.endsWith('.test.ts'))
+    .filter((rel) => !rel.startsWith('marks/') && !rel.startsWith('__tests__/'))
+    .sort()
+    .flatMap((rel) =>
+      readFileSync(join(teamDir, ...rel.split('/')), 'utf8')
+        .split('\n')
+        .flatMap((line, i) => (PATH_LITERAL.test(line) ? [`${rel}:${i + 1}`] : []))
+    );
+}

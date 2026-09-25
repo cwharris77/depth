@@ -94,6 +94,21 @@ Marks are extracted from a supplied SVG by a script in `scripts/uniform-draw/` a
 
 Anchors today: `helmet-side`, `sleeve-left`, `sleeve-right`.
 
+## Strict teams
+
+A team becomes strict when its accuracy conversion registers a `TeamSpec` (`teams/core/team-spec.ts`) — complete specs for every helmet, jersey, pants and socks part — as `strict` in `teams/catalogs.ts`.
+
+Strict means:
+
+- every spec field is stated, with `'none'` or a named default for absence (`teams/core/complete.ts`'s `Complete*` types make a skipped field a type error instead of a silent omission);
+- parts come only from `expandTeamSpec`;
+- no path literal is allowed outside `marks/`;
+- kits render identically twice.
+
+Jersey art goes in `marks` (placed, or anchored to the sleeves; `under`/`over`). A new anchor is a reviewed change to `core/marks.ts`, never a per-team nudge.
+
+`QUESTIONS` in `core/complete.ts` is the per-field checklist for authoring a complete spec.
+
 ## Team catalog
 
 A converting team's rows come from `teams/<team>/catalog.ts` instead of hand-written `data.ts` entries: `catalogRow` (in `data.ts`) reads a design's canonical row from it, at that design's original position, so a converted team's archive order never changes. The same catalog is also the source for that team's frozen legacy accent pairs and for the kits the renderer registers.

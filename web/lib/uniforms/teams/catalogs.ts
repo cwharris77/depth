@@ -1,5 +1,6 @@
 import type { TeamCatalog } from './core/catalog';
 import type { TeamPartsDefinition } from './core/parts';
+import type { TeamSpec } from './core/team-spec';
 import { SEAHAWKS_PARTS } from './seahawks';
 import { SEAHAWKS_CATALOG } from './seahawks/catalog';
 
@@ -8,6 +9,8 @@ import { SEAHAWKS_CATALOG } from './seahawks/catalog';
 export interface RegisteredCatalog {
   catalog: TeamCatalog;
   parts: TeamPartsDefinition;
+  // Present once the team is strict: its parts come only from this spec.
+  strict?: TeamSpec;
 }
 
 const CATALOGS: Readonly<Partial<Record<string, RegisteredCatalog>>> = {
