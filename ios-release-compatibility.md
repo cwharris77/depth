@@ -13,10 +13,10 @@ one rule mechanically: published data stays decodable by every supported app bui
 
 ## Current contract
 
-- **Current App Store build (`CFBundleVersion`):** **587** — rejected, never LIVE. The next
-  archive will be build **588 or higher**, auto-derived from git commit count at archive time.
-- **Minimum supported build (`app_config.minimum_supported_build`):** **1** — the gate is **not armed** (no build has ever been LIVE; arming before the listing is public would lock out the only channel with installs).
-- **Gateable floor:** build 321 (`c6a66bc`). Any build ≥ 321 contains the forced-update gate; the resubmission build (588+) **is gateable**. Once it's LIVE, the flow is: ship the new build → confirm the listing is public → **only then** arm the gate by raising `app_config.minimum_supported_build` to that build → after it's live and blocking, destructive backend changes may ship.
+- **Current App Store build (`CFBundleVersion`):** **764** — LIVE since 2026-09-24 (the
+  first LIVE build; archived from `3760372c`). Build 587 was rejected and never LIVE.
+- **Minimum supported build (`app_config.minimum_supported_build`):** **1** — the gate is **not armed**. Build 764 is the only App Store build, so arming it now would only block older TestFlight builds; raise it when a destructive change needs it.
+- **Gateable floor:** build 321 (`c6a66bc`). Any build ≥ 321 contains the forced-update gate; build 764 **is gateable**. The flow for a breaking change is: ship the new build → confirm the listing is public → **only then** arm the gate by raising `app_config.minimum_supported_build` to that build → after it's live and blocking, destructive backend changes may ship.
 - **Backend contract facts** (as of the current schema, `web/supabase/migrations/`):
   - `teams` no longer carries `pending_home_colors` (dropped by
     `20260824102000_drop_pending_home_colors.sql` — the migration implicated in the
@@ -25,11 +25,11 @@ one rule mechanically: published data stays decodable by every supported app bui
     (curated, append-only archive). Jersey palettes come only from `uniforms`.
   - `games.game_type` carries `PRE` rows (ESPN-ingested preseason, ids
     `<season>_PRE_<espnEventId>`, week 0 = Hall of Fame game) alongside nflverse's
-    `REG`/`WC`/`DIV`/`CON`/`SB`. Additive, no schema change: the resubmission build's
+    `REG`/`WC`/`DIV`/`CON`/`SB`. Additive, no schema change: build 764's
     `ScheduleMapper` keeps only `REG` rows and is its only `games` reader, so it never
     sees them; newer builds render them under PRESEASON. Any future client reader of
     `games` must filter by an explicit `game_type` allowlist, never "not REG".
-  - `player_stats` (the legacy table — still the one the resubmission build reads via
+  - `player_stats` (the legacy table — still the one build 764 reads via
     `SupabaseDepthRepository.swift`, `.from("player_stats")`) gained 24 nullable columns in
     `20260911120000_add_player_stats_position_columns.sql`: defensive box-score counters
     (`def_tackle_assists`, `def_tackles_for_loss`, `def_qb_hits`, `def_pass_defended`,
@@ -38,11 +38,12 @@ one rule mechanically: published data stays decodable by every supported app bui
     `kickoff_returns`, `kickoff_return_yards`, `special_teams_tds`), penalties
     (`penalties`, `penalty_yards`), kicking (`pat_made`, `pat_att`, `fg_long`), and snap
     totals/shares (`offense_snaps`, `offense_pct`, `defense_snaps`, `defense_pct`,
-    `special_teams_snaps`, `special_teams_pct`). Additive only — the resubmission build's
+    `special_teams_snaps`, `special_teams_pct`). Additive only — build 764's
     explicit column SELECT simply ignores them; no IOS-COMPATIBILITY annotation needed.
-  - No restored position vocabulary (`OT`/`G`) yet — that needs a released build that
-    decodes those values plus an armed gate.
-  - The canonical `player_season_stats` table has **not** landed; the resubmission build
+  - No restored position vocabulary (`OT`/`G`) yet. Build 764 decodes both
+    (`Depth/Domain/Position.swift`), so the released-build half of that precondition is
+    met; older builds still in use are the only reason to arm the gate first.
+  - The canonical `player_season_stats` table has **not** landed; build 764
     still reads the legacy `player_stats` table exclusively.
   - `app_config` is frozen by contract — the gate reads exactly two columns
     (`minimum_supported_build`, `maintenance_message`) and may never depend on more.
@@ -57,6 +58,7 @@ one rule mechanically: published data stays decodable by every supported app bui
 | Build | Date | Change | Gate armed? |
 | --- | --- | --- | --- |
 | 587 → 588+ | 2026-09-11 to 2026-09-14 | Six migrations landed since build 587 was recorded: `player_stats` gained 24 nullable columns (position-vocabulary stat lines); four migrations added/normalized nflverse source tables (`pfr`, NGS, FTN, QBR, box score) feeding the future `player_season_stats` consolidation (not yet read by any client); `uniforms` reseeded. All additive/non-destructive per `check:ios-compat` — no `IOS-COMPATIBILITY` annotations required. | No (never armed) |
+| 764 | 2026-09-24 | First LIVE App Store build. `check:ios-compat --base 3760372c` over the nine migrations changed since the archive: all additive/non-destructive (uniform seeds and path backfills, `20260921000000_add_team_line_stats.sql`). | No |
 <!-- add a row per release that changes the client/backend contract -->
 
 ## Release sequencing checklist
@@ -71,6 +73,10 @@ For any PR that changes the backend contract:
 - [ ] Exact App Store build number (`CFBundleVersion`) recorded above
 - [ ] Minimum-supported-build gate tested against an older build
 - [ ] Only **now** may destructive schema/data changes be applied
+
+TestFlight release candidates archive the Release config and read production — the binary
+tested there is the one submitted, so it never points at staging. Test unreleased backend
+changes with the `Depth Stage` build (separate bundle ID, staging project) instead.
 
 A TestFlight upload is **not** a compatibility milestone — an old TestFlight binary
 still selects columns the production migration has already dropped. The gate only

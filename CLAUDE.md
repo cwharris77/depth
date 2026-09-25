@@ -157,6 +157,16 @@ Depth/
    not a blanket modifier. Verify with coordinate taps in padding at opposite edges,
    assert the action/focus, and retain screenshots. `XCUIElement.tap()` and screenshots
    alone miss this.
+9. **Breaking a build that is live in the App Store.** Installed App Store builds read the
+   production Supabase project directly, and users can't be moved off one instantly. A
+   Swift change that looks self-contained can still depend on a backend change that
+   breaks older builds. *Rule: backend changes are expand/contract. Add tables, columns
+   and values freely. Never drop, rename, retype or tighten anything a supported build
+   decodes until a compatible build is live **and**
+   `app_config.minimum_supported_build` blocks the older ones. New DTO fields decode
+   leniently. [`ios-release-compatibility.md`](ios-release-compatibility.md) is the
+   contract and records the live build; `check:ios-compat` enforces the migration side
+   (`web/CLAUDE.md` invariant 11).*
 
 ## 5. Quality bar (iOS PRs)
 
