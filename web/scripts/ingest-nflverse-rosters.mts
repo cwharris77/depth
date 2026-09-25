@@ -169,16 +169,6 @@ async function main() {
             .upsert(chunk, { onConflict: 'season,team_id,gsis_id' });
           if (error) throw new Error(`roster_history upsert: ${error.message}`);
         }
-        // Older native builds
-        // reject those unknown values while decoding the whole historical season, so
-        // every successful ingest repairs them as part of its normal idempotent write.
-        const { error: deleteError } = await supabase
-          .from('roster_history')
-          .delete()
-          .eq('season', season)
-          .in('position', ['OT', 'G']);
-        if (deleteError)
-          throw new Error(`roster_history generic OL cleanup: ${deleteError.message}`);
       }
       allRows.push(...rows);
       rowsWritten += rows.length;

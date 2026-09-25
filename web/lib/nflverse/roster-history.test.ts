@@ -115,15 +115,18 @@ describe('toRosterHistoryRows', () => {
     expect(rows[0].position).toBe('LT');
   });
 
-  it('skips a generic tackle when no depth-chart row exists', () => {
+  it('keeps a generic tackle and guard when no depth-chart row exists', () => {
     const { rows, skipped } = toRosterHistoryRows(
       2000,
-      [rosterRow({ gsis_id: 't1', full_name: 'Unknown Tackle', position: 'T' })],
+      [
+        rosterRow({ gsis_id: 't1', full_name: 'Unknown Tackle', position: 'T' }),
+        rosterRow({ gsis_id: 'g1', full_name: 'Unknown Guard', position: 'G' }),
+      ],
       [],
       RESOLVE
     );
-    expect(rows).toEqual([]);
-    expect(skipped).toBe(1);
+    expect(rows.map((r) => r.position).sort()).toEqual(['G', 'OT']);
+    expect(skipped).toBe(0);
   });
 
   it('degrades a missing usage row to zero score without throwing', () => {
