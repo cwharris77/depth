@@ -66,7 +66,7 @@ function designSection(design: ReviewDesign): string {
     ${figure('Reference', design.reference, 'No reference crop')}
     ${figure('Before', design.before, 'New design')}
     ${figure('After', design.after, '')}
-    <figure class="combinations">${combinationsBody}<figcaption>Combinations</figcaption></figure>
+    <div class="combinations">${combinationsBody}<span class="combinations-caption">Combinations</span></div>
   </div>
 </section>`;
 }
@@ -186,9 +186,10 @@ const STYLE = `
     background: var(--bg);
   }
   figure img { max-width: 100%; display: block; margin: 0 auto; }
-  figcaption { color: var(--muted); font-size: 0.8rem; margin-top: 6px; text-align: center; }
+  figcaption, .combinations-caption { color: var(--muted); font-size: 0.8rem; margin-top: 6px; text-align: center; }
   .placeholder { color: var(--muted); font-style: italic; text-align: center; }
   .combinations { display: flex; flex-direction: column; gap: 8px; }
+  .combinations-caption { display: block; }
   table { border-collapse: collapse; width: 100%; }
   th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; font-size: 0.9rem; }
   ul { padding-left: 20px; }
@@ -229,8 +230,16 @@ function parseBox(value: unknown, path: string): [number, number, number, number
   if (!Array.isArray(value) || value.length !== 4 || !value.every(isFiniteNonNegative)) {
     throw new Error(`${path}: box must be four non-negative numbers`);
   }
-  return [value[0], value[1], value[2], value[3]];
+  const [left, top, width, height] = value;
+  if (width <= 0 || height <= 0) {
+    throw new Error(`${path}: box width and height must be greater than 0`);
+  }
+  return [left, top, width, height];
 }
+
+// A crop file is a plain filename inside the team's refs directory, never a path that could
+// escape it.
+const UNSAFE_FILE = /[/\\]|\.\./;
 
 const RESOLUTIONS = new Set(['added', 'dismissed', 'open']);
 
@@ -253,8 +262,8 @@ export function parseReviewNotes(json: unknown): ReviewNotes {
         throw new Error(`crops.${rowId}: expected an object`);
       }
       const { file, box } = entry as Record<string, unknown>;
-      if (typeof file !== 'string' || file.length === 0) {
-        throw new Error(`crops.${rowId}: file must be a non-empty string`);
+      if (typeof file !== 'string' || file.length === 0 || UNSAFE_FILE.test(file)) {
+        throw new Error(`crops.${rowId}: file must be a plain filename, no "/", "\\" or ".."`);
       }
       crops[rowId] = { file, box: parseBox(box, `crops.${rowId}`) };
     }

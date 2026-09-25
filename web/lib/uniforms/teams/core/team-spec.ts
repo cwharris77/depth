@@ -15,7 +15,8 @@ import {
 import { expandHelmet } from './helmet-spec';
 import { expandJersey } from './jersey-spec';
 import { expandPants, expandSocks } from './pants-spec';
-import type { TeamPartsDefinition, UniformPart } from './parts';
+import type { PaletteRef, TeamPartsDefinition, UniformPart } from './parts';
+import { OUTLINE_PAINT } from './shared';
 
 export interface TeamSpec {
   helmets: Record<string, CompleteHelmetSpec>;
@@ -44,6 +45,47 @@ export function expandTeamSpec(teamId: string, spec: TeamSpec): SpecParts {
     pants: expandAll(teamId, 'pants', spec.pants, (p, s) => expandPants(p, pantsSpecOf(s))),
     socks: expandAll(teamId, 'socks', spec.socks, (p, s) => expandSocks(p, socksSpecOf(s))),
   };
+}
+
+// Whether compileParts (parts.ts's hex()) would resolve this ref: a palette key, the two
+// team-independent paints, or a pattern reference (patterns aren't validated here -- hex() passes
+// them through unchecked too).
+function resolves(ref: PaletteRef, palette: Record<string, string>): boolean {
+  if (ref === 'readable-on-body' || ref === OUTLINE_PAINT) return true;
+  if (ref.startsWith('pattern:')) return true;
+  return palette[ref] !== undefined;
+}
+
+// Every palette-key colour ref across a team's parts that compileParts would fail to resolve
+// against `palette`, as `<group>.<key>: "<ref>"`. Catches a typo'd key at authoring time instead
+// of at raster-generation time.
+export function findUnresolvedColors(
+  parts: Pick<TeamPartsDefinition, 'helmets' | 'jerseys' | 'pants' | 'socks'>,
+  palette: Record<string, string>
+): string[] {
+  const out: string[] = [];
+  const groups: ReadonlyArray<[string, Record<string, UniformPart> | undefined]> = [
+    ['helmets', parts.helmets],
+    ['jerseys', parts.jerseys],
+    ['pants', parts.pants],
+    ['socks', parts.socks],
+  ];
+  for (const [group, byKey] of groups) {
+    if (!byKey) continue;
+    for (const [key, part] of Object.entries(byKey)) {
+      const check = (ref: PaletteRef | undefined) => {
+        if (ref !== undefined && !resolves(ref, palette)) out.push(`${group}.${key}: "${ref}"`);
+      };
+      check(part.base);
+      check(part.facemask);
+      if (part.number) {
+        check(part.number.fill);
+        check(part.number.outline);
+      }
+      for (const layer of part.layers) check(layer.kind === 'fill' ? layer.fill : layer.stroke);
+    }
+  }
+  return out;
 }
 
 // An SVG path string literal: a quote, a moveto with a number or an interpolated value, then a

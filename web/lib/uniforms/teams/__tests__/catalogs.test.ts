@@ -6,8 +6,15 @@ import { UNIFORMS } from '../../data';
 import { HAND_ACCENTS, LEGACY_ACCENTS } from '../../legacy-accents';
 import { getTeamUniformDefinition } from '../index';
 import { getAllTeamCatalogs, getTeamCatalog } from '../catalogs';
-import { catalogAccents, catalogKits, catalogRows, validateCatalog } from '../core/catalog';
-import { expandTeamSpec, findCoordinateLiterals } from '../core/team-spec';
+import {
+  catalogAccents,
+  catalogKits,
+  catalogRows,
+  combinationKitKey,
+  extraCombinations,
+  validateCatalog,
+} from '../core/catalog';
+import { expandTeamSpec, findCoordinateLiterals, findUnresolvedColors } from '../core/team-spec';
 
 // Every team directory that owns a catalog.ts must also be registered in catalogs.ts, and
 // under the key its own catalog names — a catalog file that exists but was never wired in
@@ -205,6 +212,12 @@ describe('strict teams', () => {
         expect(findCoordinateLiterals(join(TEAMS_DIR, catalog.teamId))).toEqual([]);
       });
 
+      it('resolves every colour ref against its palette', () => {
+        expect(findUnresolvedColors(expandTeamSpec(catalog.teamId, strict), parts.palette)).toEqual(
+          []
+        );
+      });
+
       it('renders every archived kit identically twice', () => {
         const definition = getTeamUniformDefinition(catalog.teamId);
         for (const row of UNIFORMS.filter((r) => r.teamId === catalog.teamId)) {
@@ -224,6 +237,21 @@ describe('strict teams', () => {
             row.constructionKey
           );
           expect(second).toBe(first);
+        }
+      });
+
+      it('renders every extra combination kit key identically twice', () => {
+        const definition = getTeamUniformDefinition(catalog.teamId);
+        for (const design of catalog.designs) {
+          const row = UNIFORMS.find((r) => r.teamId === catalog.teamId && r.slug === design.slug);
+          if (!row) continue;
+          const id = rowId(row);
+          for (const combination of extraCombinations(design)) {
+            const key = combinationKitKey(design, combination);
+            const first = renderUniformThumbSVG(row.colors, id, definition, 'full', key);
+            const second = renderUniformThumbSVG(row.colors, id, definition, 'full', key);
+            expect(second).toBe(first);
+          }
         }
       });
     });

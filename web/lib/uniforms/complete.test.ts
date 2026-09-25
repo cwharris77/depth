@@ -5,20 +5,23 @@ import {
   pantsSpecOf,
   QUESTIONS,
   socksSpecOf,
+  type CompleteCollar,
   type CompleteJerseySpec,
 } from './teams/core/complete';
 
+const INSET_COLLAR = {
+  style: 'inset-v' as const,
+  color: 'navy',
+  trim: 'none' as const,
+  inside: 'body' as const,
+  lining: 'none' as const,
+  backBar: 'none' as const,
+  outline: true,
+};
+
 const JERSEY: CompleteJerseySpec = {
   body: 'navy',
-  collar: {
-    style: 'inset-v',
-    color: 'navy',
-    trim: 'none',
-    inside: 'body',
-    lining: 'none',
-    backBar: 'none',
-    outline: true,
-  },
+  collar: INSET_COLLAR,
   shoulderPanel: 'none',
   shoulderStripes: 'none',
   shoulderNumber: { fill: 'white', outline: 'orange' },
@@ -47,7 +50,7 @@ describe('complete specs convert to the expander specs', () => {
   it('keeps stated values, including a shoulder number without an outline', () => {
     const spec = jerseySpecOf({
       ...JERSEY,
-      collar: { ...JERSEY.collar, trim: 'white', inside: 'black', lining: 'gold', backBar: 'gold' },
+      collar: { ...INSET_COLLAR, trim: 'white', inside: 'black', lining: 'gold', backBar: 'gold' },
       shoulderNumber: { fill: 'white', outline: 'none' },
       cuff: { color: 'white', size: 'm' },
       sleeveNumber: { fill: 'white' },
@@ -71,6 +74,26 @@ describe('complete specs convert to the expander specs', () => {
   it('keeps jersey marks', () => {
     const marks = [{ paint: 'under' as const, mark: { placed: true as const, layers: [] } }];
     expect(jerseySpecOf({ ...JERSEY, marks }).marks).toEqual(marks);
+  });
+
+  it('converts a shallow-v collar with only its own fields', () => {
+    const shallow: CompleteCollar = { style: 'shallow-v', color: 'white', trim: 'orange' };
+    expect(jerseySpecOf({ ...JERSEY, collar: shallow }).collar).toEqual({
+      style: 'shallow-v',
+      color: 'white',
+      trim: 'orange',
+    });
+  });
+
+  it('rejects a shallow-v collar carrying an inset-v-only field', () => {
+    const shallow: CompleteCollar = {
+      style: 'shallow-v',
+      color: 'white',
+      trim: 'none',
+      // @ts-expect-error -- 'inside' belongs only to the inset-v branch of CompleteCollar
+      inside: 'body',
+    };
+    expect(shallow.style).toBe('shallow-v');
   });
 
   it('converts pants and socks', () => {
@@ -127,13 +150,60 @@ describe('question table', () => {
 describe('findMissing', () => {
   it('lists every checklist path a JSON spec leaves out', () => {
     expect(findMissing('jersey', JERSEY)).toEqual([]);
-    const { cuff: _cuff, collar, ...rest } = JERSEY;
-    const { lining: _lining, ...partialCollar } = collar;
+    const { cuff: _cuff, ...rest } = JERSEY;
+    const { lining: _lining, ...partialCollar } = INSET_COLLAR;
     expect(findMissing('jersey', { ...rest, collar: partialCollar })).toEqual([
       'collar.lining',
       'cuff',
     ]);
     expect(findMissing('socks', { color: 'navy' })).toEqual(['stripes']);
     expect(findMissing('pants', null)).toEqual(['body', 'stripes']);
+  });
+
+  it('requires only the collar fields a shallow-v jersey actually uses', () => {
+    const shallow = {
+      ...JERSEY,
+      collar: { style: 'shallow-v', color: 'white', trim: 'none' },
+    };
+    expect(findMissing('jersey', shallow)).toEqual([]);
+  });
+
+  it('reports only collar.style when the style itself is unset, not the fields it would gate', () => {
+    const { style: _style, ...withoutStyle } = JERSEY.collar;
+    const missing = findMissing('jersey', { ...JERSEY, collar: withoutStyle });
+    expect(missing).toContain('collar.style');
+    expect(missing).not.toContain('collar.color');
+    expect(missing).not.toContain('collar.lining');
+  });
+
+  it('reports a missing sub-key of a stated field, in question-table then sub-key order', () => {
+    const noEdge = {
+      ...JERSEY,
+      sleeveStripes: { bands: [{ color: 'orange', size: 's' as const }], gap: 'wide' as const },
+    };
+    expect(findMissing('jersey', noEdge)).toEqual(['sleeveStripes.edge']);
+  });
+
+  it('treats null the same as missing', () => {
+    expect(findMissing('jersey', { ...JERSEY, cuff: null })).toEqual(['cuff']);
+  });
+
+  it("requires pants stripes' position sub-key", () => {
+    const noPosition = {
+      body: 'white',
+      stripes: {
+        bands: [{ color: 'navy', size: 'm' as const }],
+        gap: 'none' as const,
+        edge: 'none',
+      },
+    };
+    expect(findMissing('pants', noPosition)).toEqual(['stripes.position']);
+  });
+
+  it("needs no sub-keys for a 'none' value", () => {
+    expect(findMissing('socks', { color: 'navy', stripes: 'none' })).toEqual([]);
+    expect(
+      findMissing('helmet', { shell: 'navy', facemask: 'grey', decal: 'none', number: 'none' })
+    ).toEqual([]);
   });
 });

@@ -89,6 +89,26 @@ describe('buildReviewSheet', () => {
     expect(html).not.toContain('No extra combinations');
   });
 
+  it('wraps combinations in a div with its own caption, not a nested figure', () => {
+    const html = buildReviewSheet(
+      input({
+        designs: [
+          design({
+            combinations: [
+              {
+                label: 'White pants',
+                image: { src: 'data:image/webp;base64,COMBO', alt: 'combo' },
+              },
+            ],
+          }),
+        ],
+      })
+    );
+    expect(html).toContain('<div class="combinations">');
+    expect(html).toContain('<span class="combinations-caption">Combinations</span>');
+    expect(html).not.toMatch(/<figure class="combinations">/);
+  });
+
   it('shows placeholders when a slot is empty', () => {
     const html = buildReviewSheet(input({ designs: [design()] }));
     expect(html).toContain('No reference crop');
@@ -115,9 +135,11 @@ describe('buildReviewSheet', () => {
     expect(dismissedIndex).toBeGreaterThan(openIndex);
   });
 
-  it('shows None for an empty missing-details list', () => {
+  it('shows None separately for each empty notes section', () => {
     const html = buildReviewSheet(input());
-    expect(html).toContain('None');
+    expect(html).toMatch(/Missing details<\/h2>\s*<p>None/);
+    expect(html).toMatch(/Needs source<\/h2>\s*<p>None/);
+    expect(html).toMatch(/Absent marks<\/h2>\s*<p>None/);
   });
 
   it('formats needs-source periods as rowId: from-to', () => {
@@ -145,6 +167,8 @@ describe('buildReviewSheet', () => {
     const html = buildReviewSheet(input({ designs: [design({ name: '<b>&', rowId: '<i>x' })] }));
     expect(html).toContain('&lt;b&gt;&amp;');
     expect(html).not.toContain('<b>&');
+    expect(html).toContain('&lt;i&gt;x');
+    expect(html).not.toContain('<i>x');
   });
 
   it('defines color tokens with light and dark themes and no external URLs', () => {
@@ -180,5 +204,26 @@ describe('parseReviewNotes', () => {
         crops: { 'seahawks-home-2012': { file: 'a.png', box: [1, 2, 3, -1] } },
       })
     ).toThrow();
+  });
+
+  it('rejects a crop box with zero width or height', () => {
+    expect(() =>
+      parseReviewNotes({
+        crops: { 'seahawks-home-2012': { file: 'a.png', box: [1, 2, 0, 4] } },
+      })
+    ).toThrow();
+    expect(() =>
+      parseReviewNotes({
+        crops: { 'seahawks-home-2012': { file: 'a.png', box: [1, 2, 4, 0] } },
+      })
+    ).toThrow();
+  });
+
+  it('rejects a crop file that escapes the refs directory', () => {
+    for (const file of ['a/b.png', 'a\\b.png', '../a.png', 'a/../b.png']) {
+      expect(() =>
+        parseReviewNotes({ crops: { 'seahawks-home-2012': { file, box: [0, 0, 1, 1] } } })
+      ).toThrow();
+    }
   });
 });

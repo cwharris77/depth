@@ -323,6 +323,45 @@ describe('jersey marks', () => {
     expect(ids).toContain('t-logo-body-right');
   });
 
+  it('places a single sleeve-left anchor on only that sleeve', () => {
+    const part = expandJersey('t', {
+      ...base,
+      marks: [
+        {
+          paint: 'over',
+          mark: TRIANGLE,
+          anchor: 'sleeve-left',
+          slots: { body: 'white' },
+          id: 'logo',
+        },
+      ],
+    });
+    const ids = part.layers.map((l) => l.id);
+    expect(ids).toEqual(['t-logo-body-left']);
+    expect(part.layers[0]).toMatchObject({ surface: 'sleeve-left' });
+  });
+
+  it('paints an anchored under-mark before the construction layers', () => {
+    const part = expandJersey('t', {
+      ...base,
+      collar: { style: 'shallow-v', color: 'navy' },
+      marks: [
+        {
+          paint: 'under',
+          mark: TRIANGLE,
+          anchor: 'sleeve-right',
+          slots: { body: 'white' },
+          id: 'logo',
+        },
+      ],
+    });
+    const plain = expandJersey('t', {
+      ...base,
+      collar: { style: 'shallow-v', color: 'navy' },
+    }).layers;
+    expect(part.layers.map((l) => l.id)).toEqual(['t-logo-body-right', ...plain.map((l) => l.id)]);
+  });
+
   it('leaves a jersey without marks unchanged', () => {
     expect(expandJersey('t', { ...base, marks: [] })).toEqual(expandJersey('t', base));
   });

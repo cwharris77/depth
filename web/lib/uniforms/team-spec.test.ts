@@ -1,11 +1,17 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { expandHelmet } from './teams/core/helmet-spec';
 import { expandJersey } from './teams/core/jersey-spec';
 import { expandPants, expandSocks } from './teams/core/pants-spec';
-import { expandTeamSpec, findCoordinateLiterals, type TeamSpec } from './teams/core/team-spec';
+import type { UniformPart } from './teams/core/parts';
+import {
+  expandTeamSpec,
+  findCoordinateLiterals,
+  findUnresolvedColors,
+  type TeamSpec,
+} from './teams/core/team-spec';
 
 const SPEC: TeamSpec = {
   helmets: { navy: { shell: 'navy', facemask: 'grey', decal: 'none', number: 'none' } },
@@ -16,10 +22,6 @@ const SPEC: TeamSpec = {
         style: 'shallow-v',
         color: 'white',
         trim: 'none',
-        inside: 'body',
-        lining: 'none',
-        backBar: 'none',
-        outline: false,
       },
       shoulderPanel: 'none',
       shoulderStripes: 'none',
@@ -42,7 +44,7 @@ describe('expandTeamSpec', () => {
     expect(parts.jerseys.navy).toEqual(
       expandJersey('fixture-jersey-navy', {
         body: 'navy',
-        collar: { style: 'shallow-v', color: 'white', outline: false },
+        collar: { style: 'shallow-v', color: 'white' },
         number: { fill: 'white', outline: 'grey', outlineWeight: 'thin' },
       })
     );
@@ -52,8 +54,15 @@ describe('expandTeamSpec', () => {
 });
 
 describe('findCoordinateLiterals', () => {
+  let dir: string | undefined;
+
+  afterEach(() => {
+    if (dir) rmSync(dir, { recursive: true, force: true });
+    dir = undefined;
+  });
+
   it('flags path literals outside marks/ and ignores marks/ and tests', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'team-'));
+    dir = mkdtempSync(join(tmpdir(), 'team-'));
     mkdirSync(join(dir, 'marks'));
     mkdirSync(join(dir, 'jerseys'));
     writeFileSync(join(dir, 'marks', 'logo.ts'), "export const d = 'M1,2 L3,4 Z';\n");
@@ -68,5 +77,67 @@ describe('findCoordinateLiterals', () => {
     );
     writeFileSync(join(dir, 'x.test.ts'), "const d = 'M1,2 Z';\n");
     expect(findCoordinateLiterals(dir)).toEqual(['jerseys/navy.ts:1', 'parts.ts:2', 'parts.ts:3']);
+  });
+});
+
+describe('findUnresolvedColors', () => {
+  const palette = { navy: '#002244', white: '#FFFFFF' };
+
+  it('passes when every ref resolves', () => {
+    const parts = {
+      helmets: { h: { base: 'navy', layers: [] } as UniformPart },
+      jerseys: {
+        j: {
+          base: 'navy',
+          layers: [
+            { id: 'l', surface: 'collar', clip: true, kind: 'fill', fill: 'white' } as const,
+          ],
+        } as UniformPart,
+      },
+      pants: { p: { base: 'white', layers: [] } as UniformPart },
+      socks: undefined,
+    };
+    expect(findUnresolvedColors(parts, palette)).toEqual([]);
+  });
+
+  it('names the group, key and typo in a bad palette ref', () => {
+    const parts = {
+      helmets: { h: { base: 'nayv', layers: [] } as UniformPart },
+      jerseys: {},
+      pants: {},
+      socks: undefined,
+    };
+    expect(findUnresolvedColors(parts, palette)).toEqual(['helmets.h: "nayv"']);
+  });
+
+  it('accepts readable-on-body, outline and pattern: refs without a palette entry', () => {
+    const parts = {
+      helmets: {},
+      jerseys: {
+        j: {
+          base: 'readable-on-body',
+          layers: [
+            {
+              id: 'a',
+              surface: 'collar',
+              clip: true,
+              kind: 'stroke',
+              stroke: 'outline',
+              strokeWidth: 1,
+            } as const,
+            {
+              id: 'b',
+              surface: 'collar',
+              clip: true,
+              kind: 'fill',
+              fill: 'pattern:stripes',
+            } as const,
+          ],
+        } as UniformPart,
+      },
+      pants: {},
+      socks: undefined,
+    };
+    expect(findUnresolvedColors(parts, palette)).toEqual([]);
   });
 });
