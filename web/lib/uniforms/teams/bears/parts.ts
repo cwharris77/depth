@@ -1,79 +1,66 @@
-// Chicago's palette, helmet, pants and kits. All three kits share one helmet (navy shell, the
-// wishbone C keylined white) and one pair of pants (navy, orange-over-white stripe); only the
-// jersey changes. Jerseys are jersey specs in ./jerseys, expanded to layers by core/jersey-spec.
+// Chicago as a complete team spec: every helmet, jersey, pants and socks part, with its own art
+// drawn by the marks in ./marks.
+import type { TeamSpec } from '../core/team-spec';
+import { BEARS_C_DECAL } from './marks/construction';
+import { BEARS_JERSEY_NAVY } from './jerseys/navy';
+import { BEARS_JERSEY_ORANGE } from './jerseys/orange';
+import { BEARS_JERSEY_WHITE } from './jerseys/white';
 
-import {
-  BEARS_DECAL_KEYLINE_PATH,
-  BEARS_DECAL_LETTER_PATH,
-  BEARS_PANTS_INNER_LEFT,
-  BEARS_PANTS_INNER_RIGHT,
-  BEARS_PANTS_OUTER_LEFT,
-  BEARS_PANTS_OUTER_RIGHT,
-} from './source';
-import { expandHelmet } from '../core/helmet-spec';
-import { placed } from '../core/marks';
-import { type PartLayer, type UniformPart } from '../core/parts';
+// Jersey hexes — the same three the curated rows carry.
+export const BEARS_PALETTE = { navy: '#0B162A', orange: '#C83803', white: '#FFFFFF' };
 
-// The one shell, on all three kits. The cage is painted the shell navy rather than a neutral.
-const HELMET_NAVY_C: UniformPart = expandHelmet('bears-navy-c-helmet', {
-  shell: 'navy',
-  facemask: 'navy',
-  decal: placed(
-    [
-      { id: 'bears-decal-keyline', d: BEARS_DECAL_KEYLINE_PATH, fill: 'white' },
-      { id: 'bears-decal-letter', d: BEARS_DECAL_LETTER_PATH, fill: 'orange' },
-    ].map((s): PartLayer => ({
-      ...s,
-      surface: 'helmet',
-      clip: true,
-      kind: 'fill',
-      fillRule: 'evenodd',
-    }))
-  ),
-  number: 'none',
+// Three equal stripes on the leg's seam line, stopping at the hem.
+const seamStripe = (outer: string, middle: string) => ({
+  position: 'center' as const,
+  bands: [
+    { color: outer, size: 's' as const },
+    { color: middle, size: 's' as const },
+    { color: outer, size: 's' as const },
+  ],
+  gap: 'none' as const,
+  edge: 'none' as const,
 });
 
-const PANTS_NAVY: UniformPart = {
-  base: 'navy',
-  layers: (
-    [
-      {
-        id: 'bears-pants-outer-left',
-        surface: 'leg-left',
-        d: BEARS_PANTS_OUTER_LEFT,
-        fill: 'orange',
+export const BEARS_SPEC: TeamSpec = {
+  helmets: {
+    // The one shell, on every kit. The cage is painted the shell navy rather than a neutral.
+    'navy-c': { shell: 'navy', facemask: 'navy', decal: BEARS_C_DECAL, number: 'none' },
+  },
+  jerseys: {
+    navy: BEARS_JERSEY_NAVY,
+    white: BEARS_JERSEY_WHITE,
+    orange: BEARS_JERSEY_ORANGE,
+  },
+  pants: {
+    navy: { body: 'navy', stripes: seamStripe('orange', 'white'), marks: [] },
+    white: { body: 'white', stripes: seamStripe('navy', 'orange'), marks: [] },
+  },
+  socks: {
+    // Worn with the navy pants.
+    white: {
+      color: 'white',
+      stripes: {
+        bands: [
+          { color: 'navy', size: 'm' },
+          { color: 'orange', size: 'm' },
+          { color: 'navy', size: 'm' },
+        ],
+        gap: 'wide',
+        edge: 'none',
       },
-      {
-        id: 'bears-pants-outer-right',
-        surface: 'leg-right',
-        d: BEARS_PANTS_OUTER_RIGHT,
-        fill: 'orange',
+    },
+    // Worn with the white pants.
+    navy: {
+      color: 'navy',
+      stripes: {
+        bands: [
+          { color: 'orange', size: 'm' },
+          { color: 'orange', size: 'm' },
+          { color: 'orange', size: 'm' },
+        ],
+        gap: 'wide',
+        edge: 'white',
       },
-      {
-        id: 'bears-pants-inner-left',
-        surface: 'leg-left',
-        d: BEARS_PANTS_INNER_LEFT,
-        fill: 'white',
-      },
-      {
-        id: 'bears-pants-inner-right',
-        surface: 'leg-right',
-        d: BEARS_PANTS_INNER_RIGHT,
-        fill: 'white',
-      },
-    ] as const
-  ).map((s): PartLayer => ({ ...s, clip: true, kind: 'fill' })),
-};
-
-export const BEARS_CONSTRUCTION = {
-  teamId: 'bears',
-  // Jersey hexes — the same three the curated rows carry.
-  palette: { navy: '#0B162A', orange: '#C83803', white: '#FFFFFF' },
-  helmets: { 'navy-c': HELMET_NAVY_C },
-  pants: { navy: PANTS_NAVY },
-  kits: {
-    home: { helmet: 'navy-c', jersey: 'navy', pants: 'navy' },
-    away: { helmet: 'navy-c', jersey: 'white', pants: 'navy' },
-    'orange-alternate': { helmet: 'navy-c', jersey: 'orange', pants: 'navy' },
+    },
   },
 };

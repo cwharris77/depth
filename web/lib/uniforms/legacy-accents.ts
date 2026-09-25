@@ -1,5 +1,6 @@
 import type { TeamColors } from '../types';
 import { catalogAccents } from './teams/core/catalog';
+import { BEARS_CATALOG } from './teams/bears/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
 export type LegacyAccentPair = Pick<TeamColors, 'uiAccent' | 'onAccent'>;
@@ -23,7 +24,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'chiefs-home-1963': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
   'raiders-home-1963': { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
   'chargers-home-2020': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
-  'bears-home-2012': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'lions-home-2024': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'packers-home-1959': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'vikings-home-2013': { uiAccent: '#FFC62F', onAccent: '#0a0e1a' },
@@ -65,7 +65,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'giants-away-2000': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'eagles-away-1996': { uiAccent: '#2FA3A3', onAccent: '#0a0e1a' },
   'commanders-away-2022': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
-  'bears-away-2012': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'lions-away-2024': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'packers-away-1959': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'vikings-away-2013': { uiAccent: '#FFC62F', onAccent: '#0a0e1a' },
@@ -77,7 +76,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'chargers-charger-power-2025': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
   'chargers-super-chargers-2025': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
   'titans-oilers-throwback-1960': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
-  'bears-orange-alternate-2005': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'saints-color-rush-2022': { uiAccent: '#E2CC9A', onAccent: '#0a0e1a' },
   'jaguars-teal-throwback-1998': { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
   'commanders-70s-burgundy-1972': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
@@ -139,5 +137,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
 // uiAccent (legible by construction) and `readableTextOn()` for onAccent.
 export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   ...HAND_ACCENTS,
+  ...catalogAccents(BEARS_CATALOG),
   ...catalogAccents(SEAHAWKS_CATALOG),
 };

@@ -61,9 +61,10 @@ describe('no leftover hand-written accents for a converted team', () => {
 describe('registered team catalogs', () => {
   const registered = getAllTeamCatalogs();
 
-  it('includes the Seahawks', () => {
+  it('includes the Seahawks and the Bears', () => {
     expect(getTeamCatalog('seahawks')?.teamId).toBe('seahawks');
-    expect(getTeamCatalog('bears')).toBeUndefined();
+    expect(getTeamCatalog('bears')?.teamId).toBe('bears');
+    expect(getTeamCatalog('broncos')).toBeUndefined();
   });
 
   for (const { catalog, parts } of registered) {
@@ -179,6 +180,69 @@ describe('Seahawks catalog conversion', () => {
         pants: 'rivalries-silver',
         socks: 'navy',
       },
+    });
+  });
+});
+
+// Pins the catalog to the rows and accents the Bears had before the catalog existed.
+describe('Bears catalog conversion', () => {
+  const catalog = getTeamCatalog('bears');
+  if (!catalog) throw new Error('Bears catalog is not registered');
+
+  it('reproduces the archived rows', () => {
+    expect(byId(catalogRows(catalog))).toEqual(
+      byId([
+        {
+          teamId: 'bears',
+          slug: 'home',
+          constructionKey: 'home',
+          kind: 'home',
+          name: 'Home',
+          yearStart: 2012,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#0B162A', secondary: '#C83803', accent: '#C83803' },
+        },
+        {
+          teamId: 'bears',
+          slug: 'away',
+          constructionKey: 'away',
+          kind: 'away',
+          name: 'Away',
+          yearStart: 2012,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#FFFFFF', secondary: '#0B162A', accent: '#C83803' },
+        },
+        {
+          teamId: 'bears',
+          slug: 'orange-alternate',
+          constructionKey: 'orange-alternate',
+          kind: 'alternate',
+          name: 'Orange Alternate',
+          yearStart: 2005,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#C83803', secondary: '#0B162A', accent: '#FFFFFF' },
+        },
+      ])
+    );
+  });
+
+  it('reproduces the frozen legacy accents', () => {
+    expect(catalogAccents(catalog)).toEqual({
+      'bears-home-2012': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
+      'bears-away-2012': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
+      'bears-orange-alternate-2005': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
+    });
+  });
+
+  it('pairs the home and away jerseys with white hooped socks, and adds white pants', () => {
+    expect(catalogKits(catalog)).toEqual({
+      home: { helmet: 'navy-c', jersey: 'navy', pants: 'navy', socks: 'white' },
+      'home--white-pants': { helmet: 'navy-c', jersey: 'navy', pants: 'white', socks: 'navy' },
+      away: { helmet: 'navy-c', jersey: 'white', pants: 'navy', socks: 'white' },
+      'orange-alternate': { helmet: 'navy-c', jersey: 'orange', pants: 'navy' },
     });
   });
 });

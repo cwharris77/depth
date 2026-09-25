@@ -1,5 +1,6 @@
 import type { JerseyColors, UniformKind } from '../types';
 import { catalogRow } from './teams/core/catalog';
+import { BEARS_CATALOG } from './teams/bears/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
 // Hand-curated uniform archive. This file is the sole jersey-color authority. The seed generator
@@ -282,21 +283,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFC20E',
     },
   },
-  {
-    teamId: 'bears',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2012,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#0B162A',
-      secondary: '#C83803',
-      accent: '#C83803',
-    },
-  },
+  catalogRow(BEARS_CATALOG, 'home'),
   {
     teamId: 'lions',
     slug: 'home',
@@ -937,21 +924,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFB612',
     },
   },
-  {
-    teamId: 'bears',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2012,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#0B162A',
-      accent: '#C83803',
-    },
-  },
+  catalogRow(BEARS_CATALOG, 'away'),
   {
     teamId: 'lions',
     slug: 'away',
@@ -1121,22 +1094,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFFFFF',
     },
   },
-  // Bears orange alternate (modern alt, no throwback era). Hexes: orange #C83803, navy #0B162A. uiAccent reuses the team's brightened orange.
-  {
-    teamId: 'bears',
-    slug: 'orange-alternate',
-    constructionKey: 'orange-alternate',
-    kind: 'alternate',
-    name: 'Orange Alternate',
-    yearStart: 2005,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#C83803',
-      secondary: '#0B162A',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(BEARS_CATALOG, 'orange-alternate'),
   // Saints all-black Color Rush (2016+). Hexes: black #101820, old gold #D3BC8D. uiAccent reuses the team's bright gold.
   {
     teamId: 'saints',

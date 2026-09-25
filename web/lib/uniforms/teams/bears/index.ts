@@ -1,16 +1,14 @@
 import { compileParts, type TeamPartsDefinition } from '../core/parts';
-import { BEARS_CONSTRUCTION } from './parts';
-import { JERSEY_NAVY } from './jerseys/navy';
-import { JERSEY_WHITE } from './jerseys/white';
-import { JERSEY_ORANGE } from './jerseys/orange';
+import { catalogKits } from '../core/catalog';
+import { expandTeamSpec } from '../core/team-spec';
+import { BEARS_PALETTE, BEARS_SPEC } from './parts';
+import { BEARS_CATALOG } from './catalog';
 
 export const BEARS_PARTS: TeamPartsDefinition = {
-  ...BEARS_CONSTRUCTION,
-  jerseys: {
-    navy: JERSEY_NAVY,
-    white: JERSEY_WHITE,
-    orange: JERSEY_ORANGE,
-  },
+  teamId: 'bears',
+  palette: BEARS_PALETTE,
+  ...expandTeamSpec('bears', BEARS_SPEC),
+  kits: catalogKits(BEARS_CATALOG),
 };
 
 export const BEARS_UNIFORMS_FROM_PARTS = compileParts(BEARS_PARTS);
