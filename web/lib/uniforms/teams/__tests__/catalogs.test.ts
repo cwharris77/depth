@@ -177,14 +177,14 @@ describe('Seahawks catalog conversion', () => {
         helmet: 'teal-hawk',
         jersey: 'rivalries-silver',
         pants: 'rivalries-silver',
+        socks: 'navy',
       },
     });
   });
 });
 
-// A strict team's parts come only from its registered TeamSpec: no team sets `strict` yet, so
-// the per-team loop below is empty and the fixtures in team-spec.test.ts prove the checks
-// themselves. The sanity check runs unconditionally so this suite never reports zero tests.
+// A strict team's parts come only from its registered TeamSpec; the fixtures in team-spec.test.ts
+// prove the checks themselves.
 describe('strict teams', () => {
   const strictCatalogs = getAllTeamCatalogs().filter(
     (entry): entry is typeof entry & { strict: NonNullable<(typeof entry)['strict']> } =>

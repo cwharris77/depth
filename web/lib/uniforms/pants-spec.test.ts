@@ -5,7 +5,7 @@ import { placed } from '@/lib/uniforms/teams/core/marks';
 import {
   SEAHAWKS_PANTS_EDGE_BAND_LEFT,
   SEAHAWKS_PANTS_EDGE_BAND_RIGHT,
-} from '@/lib/uniforms/teams/seahawks/source';
+} from '@/lib/uniforms/teams/seahawks/marks/paths';
 
 describe('expandPants', () => {
   it('is a plain body with no stripes', () => {

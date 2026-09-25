@@ -23,7 +23,7 @@ const spec = expandJersey('<team>-<jersey>', {
 });
 ```
 
-Anything the spec cannot describe is appended as ordinary layers after `spec.layers`: chest wordmarks, patches, printed pattern fields. A jersey dominated by a pattern field may skip the spec and call the shared primitives directly (`teams/seahawks/jerseys/rivalries-2025.ts`).
+Anything the spec cannot describe is appended as ordinary layers after `spec.layers`: chest wordmarks, patches, printed pattern fields. On a strict team these go in the spec's `marks` instead (`teams/seahawks/jerseys/rivalries-2025.ts` carries its printed field as an `under` mark).
 
 ### Spec vocabulary
 

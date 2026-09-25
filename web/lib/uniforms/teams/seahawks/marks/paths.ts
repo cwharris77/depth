@@ -1,14 +1,4 @@
-// Seattle's construction geometry for its four archived kits.
-//
-// The side-view shell carries no construction stripe — everything else on it is the decal. The
-// composite's top-view inset is the only evidence of a center stripe: a slate wedge, narrow at the
-// front and widening toward the back, tone-on-tone against the shell. The composite renders that inset as
-// #2B394A on a #00132A shell; the live ESPN shell is a brighter #002A5C, so the sampled hex would
-// read as a dark smudge rather than a lighter stripe. This value re-bases the inset's tonal step
-// (+43/+38/+32) onto that brighter navy so the same relationship survives.
-export const SEAHAWKS_HELMET_CENTER_COLOR = '#2B507C';
-// The crown band this kit paints that color now lives in ./shared — San Francisco needs the same
-// geometry, and it is a fact about the mannequin shell rather than about Seattle.
+// Seattle's construction geometry, in mannequin space.
 
 // Re-authored 2026-09-03 from a reference that clears the resolution gate, replacing a trace off
 // a 46px composite whose keyline survived as 7 disconnected fragments totalling 31px. The

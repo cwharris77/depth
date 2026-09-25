@@ -83,16 +83,16 @@ describe('renderUniformThumbSVG', () => {
       'seahawks-rivalries-2025',
       getTeamUniformDefinition('seahawks')
     );
-    for (const detail of [
-      'soundwave-0',
-      'soundwave-1',
-      'soundwave-2',
-      'cuffs',
-      'wordmark',
-      'neck-opening',
-      'collar-placket',
+    for (const id of [
+      'seahawks-rivalries-soundwave-0',
+      'seahawks-rivalries-soundwave-1',
+      'seahawks-rivalries-soundwave-2',
+      'seahawks-rivalries-cuffs',
+      'seahawks-rivalries-wordmark',
+      'seahawks-jersey-rivalries-silver-neck-opening',
+      'seahawks-jersey-rivalries-silver-collar-placket',
     ]) {
-      expect(svg).toContain(`data-layer-id="seahawks-rivalries-${detail}"`);
+      expect(svg).toContain(`data-layer-id="${id}"`);
     }
     expect(svg).not.toContain('data-layer-id="seahawks-rivalries-dash-field"');
     expect(svg).not.toContain('data-layer-id="generic-sleeve-stripe-left"');
