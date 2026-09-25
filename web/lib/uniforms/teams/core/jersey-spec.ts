@@ -10,19 +10,41 @@ export type JerseySize = 's' | 'm' | 'l';
 export type JerseyBand = { color: string; size: JerseySize };
 export type JerseyGap = 'none' | 'narrow' | 'wide' | 'broad';
 
-// Art on the jersey: a mark already in mannequin space, or a mark placed by anchor from its own
-// box. 'under' paints before the construction (a logo that sits beneath stripes and numerals),
-// 'over' after it.
-export type JerseyMarkUse =
-  | { paint: 'under' | 'over'; mark: PlacedMark }
-  | {
-      paint: 'under' | 'over';
-      mark: Mark;
-      anchor: 'sleeves' | 'sleeve-left' | 'sleeve-right';
-      slots: Record<string, PaletteRef | null>;
-      // Layer id stem, prefixed with the jersey's prefix.
-      id: string;
-    };
+declare const anchored: unique symbol;
+
+// A mark placed by anchor from its own box. Built only by anchoredMark(), which checks the slot
+// map against the mark's own slots at compile time.
+export interface AnchoredJerseyMark {
+  paint: 'under' | 'over';
+  mark: Mark;
+  anchor: 'sleeves' | 'sleeve-left' | 'sleeve-right';
+  slots: Readonly<Record<string, PaletteRef | null>>;
+  // Layer id stem, prefixed with the jersey's prefix.
+  id: string;
+  readonly [anchored]: true;
+}
+
+export function anchoredMark<S extends string>(use: {
+  paint: 'under' | 'over';
+  mark: Mark<S>;
+  anchor: AnchoredJerseyMark['anchor'];
+  slots: Record<S, PaletteRef | null>;
+  id: string;
+}): AnchoredJerseyMark {
+  return use as unknown as AnchoredJerseyMark;
+}
+
+// Art on the jersey: a mark already in mannequin space, or a mark placed by anchor. 'under' paints
+// before the construction (a logo that sits beneath stripes and numerals), 'over' after it.
+export type JerseyMarkUse = { paint: 'under' | 'over'; mark: PlacedMark } | AnchoredJerseyMark;
+
+export interface JerseyNumber {
+  fill: string;
+  outline: string;
+  outlineWeight: 'none' | 'thin' | 'regular' | 'heavy' | 'x-heavy';
+  // 'mesh' overlays the numeral with the shared mesh texture; 'plain' draws it flat.
+  texture?: 'mesh' | 'plain';
+}
 
 export interface JerseySpec {
   body: string;
@@ -54,14 +76,14 @@ export interface JerseySpec {
   cuff?: { color: string; size: JerseySize };
   // The numeral repeated small and upright on the lower outer face of each sleeve.
   sleeveNumber?: { fill: string };
-  number: { fill: string; outline: string; outlineWeight: 'none' | 'thin' | 'regular' | 'heavy' };
+  number: JerseyNumber;
   // Logos and wordmarks. Omitted, the jersey carries none.
   marks?: readonly JerseyMarkUse[];
 }
 
 const SIZE_PX: Record<JerseySize, number> = { s: 11, m: 16, l: 28 };
 const GAP_PX: Record<JerseyGap, number> = { none: 0, narrow: 6, wide: 12, broad: 18 };
-const OUTLINE_PX = { none: 0, thin: 8, regular: 14, heavy: 20 };
+const OUTLINE_PX = { none: 0, thin: 8, regular: 14, heavy: 20, 'x-heavy': 26 };
 
 type Sleeve = { outer: number; inner: number };
 const SLEEVE_LEFT: Sleeve = { outer: 30, inner: 96 };
@@ -311,6 +333,8 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
       fill: spec.number.fill,
       outline: spec.number.outline,
       outlineWidth: OUTLINE_PX[spec.number.outlineWeight],
+      // The renderer overlays the mesh only on the default glyph, so naming the glyph draws it flat.
+      ...(spec.number.texture === 'plain' && { glyphPath: JERSEY_NUMBER_THREE }),
     },
   };
 
