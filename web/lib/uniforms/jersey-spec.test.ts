@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { expandJersey } from '@/lib/uniforms/teams/core/jersey-spec';
-import { compileParts } from '@/lib/uniforms/teams/core/parts';
+import { expandJersey, type JerseySpec } from '@/lib/uniforms/teams/core/jersey-spec';
+import { compileParts, type PartLayer } from '@/lib/uniforms/teams/core/parts';
 import { FIGURE_OUTLINE } from '@/lib/uniforms/teams/core/shared';
+import { placed, type Mark } from '@/lib/uniforms/teams/core/marks';
 
 const numbers = (d: string) => (d.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
 
@@ -276,5 +277,53 @@ describe('expandJersey', () => {
       number: { fill: 'white', outline: 'navy', outlineWeight: 'none' },
     });
     expect(part.layers.filter((l) => l.surface === 'collar')).toEqual([]);
+  });
+});
+
+describe('jersey marks', () => {
+  const base: JerseySpec = {
+    body: 'navy',
+    collar: { style: 'none' },
+    number: { fill: 'white', outline: 'orange', outlineWeight: 'none' },
+  };
+  const art = (id: string): PartLayer => ({
+    id,
+    surface: 'sleeve-left',
+    d: 'M0,0 L1,0 L1,1 Z',
+    clip: true,
+    kind: 'fill',
+    fill: 'white',
+  });
+  const TRIANGLE: Mark<'body'> = {
+    box: [0, 0, 10, 10],
+    paths: [{ slot: 'body', d: 'M0,0 L10,0 L10,10 Z' }],
+  };
+
+  it('paints under-marks before the construction and over-marks after it', () => {
+    const plain = expandJersey('t', base).layers;
+    const part = expandJersey('t', {
+      ...base,
+      marks: [
+        { paint: 'over', mark: placed([art('over')]) },
+        { paint: 'under', mark: placed([art('under')]) },
+      ],
+    });
+    expect(part.layers.map((l) => l.id)).toEqual(['under', ...plain.map((l) => l.id), 'over']);
+  });
+
+  it('places an anchored mark on both sleeves with its slots mapped', () => {
+    const part = expandJersey('t', {
+      ...base,
+      marks: [
+        { paint: 'over', mark: TRIANGLE, anchor: 'sleeves', slots: { body: 'white' }, id: 'logo' },
+      ],
+    });
+    const ids = part.layers.map((l) => l.id);
+    expect(ids).toContain('t-logo-body-left');
+    expect(ids).toContain('t-logo-body-right');
+  });
+
+  it('leaves a jersey without marks unchanged', () => {
+    expect(expandJersey('t', { ...base, marks: [] })).toEqual(expandJersey('t', base));
   });
 });

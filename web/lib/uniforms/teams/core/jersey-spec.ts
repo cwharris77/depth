@@ -1,7 +1,7 @@
 // A declarative jersey description: named construction primitives and palette tokens, no
 // coordinates. expandJersey() owns all geometry, fitted once to the shared mannequin, and emits
 // ordinary UniformPart layers.
-import type { Mark, PlacedMark } from './marks';
+import { placeMark, placeMarkOnSleeves, type Mark, type PlacedMark } from './marks';
 import type { PaletteRef, PartLayer, UniformPart } from './parts';
 import { JERSEY_NUMBER_THREE } from '../../jersey-art';
 import { GENERIC_COLLAR_PATH, LEGACY_ROUNDED_COLLAR_PATH, modernInsetVCollar } from './shared';
@@ -204,6 +204,15 @@ function collarLayers(prefix: string, spec: JerseySpec): PartLayer[] {
   }
 }
 
+// Layers for one mark use: a placed mark's own layers copied as-is, or a mark placed by anchor.
+function markLayers(prefix: string, use: JerseyMarkUse): PartLayer[] {
+  if (!('anchor' in use)) return use.mark.layers.map((l) => ({ ...l }));
+  const id = `${prefix}-${use.id}`;
+  return use.anchor === 'sleeves'
+    ? placeMarkOnSleeves(id, use.mark, use.slots)
+    : placeMark(id, use.mark, use.anchor, use.slots);
+}
+
 export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
   const layers: PartLayer[] = [];
 
@@ -295,7 +304,7 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
 
   layers.push(...collarLayers(prefix, spec));
 
-  return {
+  const part: UniformPart = {
     base: spec.body,
     layers,
     number: {
@@ -304,4 +313,9 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
       outlineWidth: OUTLINE_PX[spec.number.outlineWeight],
     },
   };
+
+  if (!spec.marks?.length) return part;
+  const under = spec.marks.filter((m) => m.paint === 'under').flatMap((m) => markLayers(prefix, m));
+  const over = spec.marks.filter((m) => m.paint === 'over').flatMap((m) => markLayers(prefix, m));
+  return { ...part, layers: [...under, ...part.layers, ...over] };
 }
