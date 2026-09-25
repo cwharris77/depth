@@ -3,7 +3,7 @@ import {
   boundsOf,
   fmt1,
   placeMark,
-  placeMarkOnSleeves,
+  placeMarkOnPair,
   type Mark,
 } from '@/lib/uniforms/teams/core/marks';
 
@@ -23,6 +23,10 @@ describe('fmt1', () => {
 describe('boundsOf', () => {
   it('returns [x0, y0, x1, y1] over every point of every subpath', () => {
     expect(boundsOf('M5,7 L9,1 Z M-2,3 L4,12 Z')).toEqual([-2, 1, 9, 12]);
+  });
+
+  it('includes curve control points and the ends of H and V', () => {
+    expect(boundsOf('M0,0 C0,-5 20,-5 20,0 V8 H-3 Z')).toEqual([-3, -5, 20, 8]);
   });
 
   it('rejects an empty path', () => {
@@ -80,9 +84,44 @@ describe('placeMark', () => {
     expect(() => placeMark('p', SQUARE, 'helmet-side', {})).toThrow('mark slot "a" is not mapped');
   });
 
-  it('rejects path commands other than absolute M/L/Z', () => {
-    const curve: Mark = { box: [0, 0, 10, 10], paths: [{ slot: 'a', d: 'M0,0 C1,1 2,2 3,3 Z' }] };
-    expect(() => placeMark('p', curve, 'helmet-side', { a: 'navy' })).toThrow('absolute M/L/Z');
+  it('places curve control points with the same fit as the points they bend between', () => {
+    const curve: Mark = {
+      box: [0, 0, 10, 10],
+      paths: [{ slot: 'a', d: 'M0,0 C5,0 10,5 10,10 Q5,10 0,5 Z' }],
+    };
+    // helmet-side: x0=154, w=310, cy=293; aspect 1 so the scale is 31 and y0=138.
+    expect(placeMark('p', curve, 'helmet-side', { a: 'navy' })[0].d).toBe(
+      'M154.0,138.0 C309.0,138.0 464.0,293.0 464.0,448.0 Q309.0,448.0 154.0,293.0 Z'
+    );
+  });
+
+  it('reads H and V as lines to the point they reach', () => {
+    const box: Mark = { box: [0, 0, 10, 10], paths: [{ slot: 'a', d: 'M0,0 H10 V10 H0 Z' }] };
+    expect(placeMark('p', box, 'helmet-side', { a: 'navy' })[0].d).toBe(
+      'M154.0,138.0 L464.0,138.0 L464.0,448.0 L154.0,448.0 Z'
+    );
+  });
+
+  it('rejects relative and other path commands', () => {
+    for (const d of ['M0,0 l1,1 Z', 'M0,0 A1,1 0 0 1 3,3 Z', 'M0,0 S1,1 2,2 Z']) {
+      const mark: Mark = { box: [0, 0, 10, 10], paths: [{ slot: 'a', d }] };
+      expect(() => placeMark('p', mark, 'helmet-side', { a: 'navy' })).toThrow(
+        'absolute M/L/H/V/C/Q/Z'
+      );
+    }
+  });
+
+  it('places a mark drawn in the right shoulder box unchanged, and mirrors it about the centre', () => {
+    const band: Mark = {
+      box: [356, 360, 576, 532],
+      paths: [{ slot: 'a', d: 'M360,414 C398,421 448,430 488,443 L383,446 Z' }],
+    };
+    const [right] = placeMark('p', band, 'shoulder-right', { a: 'navy' });
+    const [left] = placeMark('p', band, 'shoulder-left', { a: 'navy' });
+    expect(right).toMatchObject({ id: 'p-a-right', surface: 'sleeve-right' });
+    expect(right.d).toBe('M360.0,414.0 C398.0,421.0 448.0,430.0 488.0,443.0 L383.0,446.0 Z');
+    expect(left).toMatchObject({ id: 'p-a-left', surface: 'sleeve-left' });
+    expect(left.d).toBe('M228.0,414.0 C190.0,421.0 140.0,430.0 100.0,443.0 L205.0,446.0 Z');
   });
 
   it('rejects a mark box with zero or negative width or height', () => {
@@ -111,7 +150,7 @@ describe('placeMark', () => {
   });
 });
 
-describe('placeMarkOnSleeves', () => {
+describe('placeMarkOnPair', () => {
   it('interleaves left and right per slot, in the mark paint order', () => {
     const two: Mark = {
       box: [0, 0, 10, 10],
@@ -120,11 +159,13 @@ describe('placeMarkOnSleeves', () => {
         { slot: 'b', d: 'M0,0 L5,5 L0,10 Z' },
       ],
     };
-    expect(placeMarkOnSleeves('p', two, { a: 'navy', b: 'white' }).map((l) => l.id)).toEqual([
-      'p-a-left',
-      'p-a-right',
-      'p-b-left',
-      'p-b-right',
-    ]);
+    for (const pair of ['sleeves', 'shoulders'] as const) {
+      expect(placeMarkOnPair('p', two, pair, { a: 'navy', b: 'white' }).map((l) => l.id)).toEqual([
+        'p-a-left',
+        'p-a-right',
+        'p-b-left',
+        'p-b-right',
+      ]);
+    }
   });
 });

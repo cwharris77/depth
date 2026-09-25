@@ -1,6 +1,6 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { anchoredMark } from '../../core/jersey-spec';
-import { seahawksShoulderNumbers } from '../marks/construction';
+import { SEAHAWKS_SHOULDER } from '../marks/shoulder';
 import { SEAHAWKS_THROWBACK_HAWK } from '../marks/throwback-hawk';
 
 // Royal body with white numerals, white shoulder numbers, the original hawk on each sleeve and a
@@ -24,8 +24,14 @@ export const SEAHAWKS_JERSEY_THROWBACK: CompleteJerseySpec = {
   sleeveNumber: 'none',
   number: { fill: 'white', outline: 'throwbackRoyal', outlineWeight: 'x-heavy', texture: 'mesh' },
   marks: [
-    // Seattle's smaller shoulder numeral, not the spec's.
-    { paint: 'over', mark: seahawksShoulderNumbers('white') },
+    // Seattle's smaller shoulder numeral, not the spec's; the throwback has no band or cap.
+    anchoredMark({
+      paint: 'over',
+      mark: SEAHAWKS_SHOULDER,
+      anchor: 'shoulders',
+      slots: { number: 'white', band: null, cap: null },
+      id: 'shoulder',
+    }),
     // The royal body disappears into the royal sleeve, so only the head, block and eye are drawn.
     anchoredMark({
       paint: 'over',

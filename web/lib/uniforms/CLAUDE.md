@@ -89,11 +89,13 @@ const HELMET_WHITE = expandHelmet('<team>-white-helmet', {
 
 ## Marks
 
-Marks are polygon art only for now: a mark is fixed vector art such as a helmet decal or sleeve logo, drawn as absolute M/L/Z polygons — curve commands are not supported yet. `teams/<team>/marks/<name>.ts` exports a `Mark` whose paths are absolute M/L/Z polygons in the art's own space, one per colour slot in paint order, plus a `box`: the box must contain every slot, so use `boundsOf` of the slot whose bounds contain all the others. `placeMark(idPrefix, mark, anchor, slots)` in `teams/core/marks.ts` fits the box to a named anchor and emits ordinary layers; `placeMarkOnSleeves` does both sleeves, the left mirrored so both face outward. `slots` maps each slot to a palette key, or to `null` to drop it (a body colour that would vanish into the garment). An unmapped slot throws. `placed(layers)` is the pass-through form for art that is already in mannequin space, used when a helmet's decal is a fixed layer set rather than a mark placed by anchor.
+Marks are fixed vector art such as a helmet decal, a sleeve logo or a team's own shoulder shapes. `teams/<team>/marks/<name>.ts` exports a `Mark` whose paths use absolute M/L/H/V/C/Q/Z commands (each coordinate group with its own command letter) in the art's own space, one per colour slot in paint order, plus a `box`: the box must contain every slot, so use `boundsOf` of the slot whose bounds contain all the others, or state the anchor's span when the art is drawn in mannequin space for that anchor. `placeMark(idPrefix, mark, anchor, slots)` in `teams/core/marks.ts` fits the box to a named anchor and emits ordinary layers; `placeMarkOnPair` does both sleeves or both shoulders, the left mirrored so both face outward. The fit is a scale and a shift, so curves survive it unchanged. `slots` maps each slot to a palette key, or to `null` to drop it (a body colour that would vanish into the garment). An unmapped slot throws. `placed(layers)` is the pass-through form for art that is already in mannequin space, used when a helmet's decal is a fixed layer set rather than a mark placed by anchor.
 
-Marks are extracted from a supplied SVG by a script in `scripts/uniform-draw/` and never hand-edited. Scripts emit the mark only; placement belongs to the anchor. A mark that needs a position no anchor gives is a new anchor in `ANCHORS`, not per-team coordinates.
+Logo marks are extracted from a supplied SVG by a script in `scripts/uniform-draw/` and never hand-edited; construction shapes such as a shoulder band are drawn directly as a mark. Scripts emit the mark only; placement belongs to the anchor. A mark that needs a position no anchor gives is a new anchor in `ANCHORS`, not per-team coordinates.
 
-Anchors today: `helmet-side`, `sleeve-left`, `sleeve-right`.
+Anchors today: `helmet-side`, `sleeve-left`, `sleeve-right`, `shoulder-left`, `shoulder-right` (the front of the shoulder from the collar's edge out past the sleeve's outer edge; a shoulder mark is drawn for the right shoulder, so art drawn in mannequin space within `[356, 360, 576, 532]` places there unchanged).
+
+A team's own shape at a known spot on the garment (a shoulder band, a sleeve logo, a patch) is an anchored mark: the shape is the team's, the anchor says where it goes, and moving it is a change to the anchor or the shape, not to baked coordinates. Art that has to follow a garment edge the whole way (a feathered collar, a stripe hugging the leg's silhouette, an all-over print) stays a placed mark on its surface.
 
 ## Strict teams
 
@@ -106,7 +108,7 @@ Strict means:
 - no drawn geometry outside `marks/` (see the check below);
 - kits render identically twice.
 
-Jersey art goes in `marks`: placed, or anchored to the sleeves with `anchoredMark()`, which makes an unmapped or unknown slot a type error; `under`/`over`. Pants art the stripes can't draw goes in the pants spec's `marks` the same way. A new anchor is a reviewed change to `core/marks.ts`, never a per-team nudge.
+Jersey art goes in `marks`: placed, or anchored to the sleeves or shoulders with `anchoredMark()`, which makes an unmapped or unknown slot a type error; `under`/`over`. Pants art the stripes can't draw goes in the pants spec's `marks` the same way. A new anchor is a reviewed change to `core/marks.ts`, never a per-team nudge.
 
 The no-coordinates check (`findCoordinateLiterals`) flags, outside `marks/`: path literals, `placed(` and `fromGeneric(` calls, layer literals (`kind: 'fill'`/`'stroke'`) and literal `[x, y]` pairs. Art in mannequin space is exported from a `marks/` file as a `PlacedMark` and referenced from the spec.
 

@@ -100,12 +100,12 @@ describe('team uniform definitions', () => {
       'seahawks-helmet-hawk-grey',
       'seahawks-helmet-hawk',
       'seahawks-helmet-hawk-eye',
-      'seahawks-shoulder-number-left',
-      'seahawks-shoulder-number-right',
-      'seahawks-shoulder-band-left',
-      'seahawks-shoulder-band-right',
-      'seahawks-shoulder-cap-left',
-      'seahawks-shoulder-cap-right',
+      'seahawks-jersey-navy-shoulder-number-left',
+      'seahawks-jersey-navy-shoulder-number-right',
+      'seahawks-jersey-navy-shoulder-band-left',
+      'seahawks-jersey-navy-shoulder-band-right',
+      'seahawks-jersey-navy-shoulder-cap-left',
+      'seahawks-jersey-navy-shoulder-cap-right',
       'seahawks-neck-opening',
       'seahawks-collar-band',
       'seahawks-collar-feathers-left',
@@ -113,7 +113,7 @@ describe('team uniform definitions', () => {
       'seahawks-neck-tab-border',
       'seahawks-neck-tab',
       'seahawks-neck-twelve',
-      'seahawks-shoulder-wordmark',
+      'seahawks-jersey-navy-shoulder-wordmark-right',
       'seahawks-pants-navy-stripe-0-left',
       'seahawks-pants-navy-stripe-0-right',
     ]);
@@ -130,13 +130,15 @@ describe('team uniform definitions', () => {
     // Wolf grey must survive as a literal: resolving it from `accent` would silently paint the
     // band and the number the same action green as the sleeve cap on every home render.
     for (const layerId of [
-      'seahawks-shoulder-number-left',
-      'seahawks-shoulder-band-left',
-      'seahawks-shoulder-band-right',
+      'seahawks-jersey-navy-shoulder-number-left',
+      'seahawks-jersey-navy-shoulder-band-left',
+      'seahawks-jersey-navy-shoulder-band-right',
     ]) {
       expect(model.layers.find((layer) => layer.id === layerId)).toMatchObject({ fill: '#A5ACAF' });
     }
-    expect(model.layers.find((layer) => layer.id === 'seahawks-shoulder-cap-left')).toMatchObject({
+    expect(
+      model.layers.find((layer) => layer.id === 'seahawks-jersey-navy-shoulder-cap-left')
+    ).toMatchObject({
       fill: '#69BE28',
     });
     expect(model.number).toMatchObject({ fill: '#A5ACAF', outline: '#69BE28' });
@@ -182,10 +184,14 @@ describe('team uniform definitions', () => {
     // token usage for the same painted result.
     expect(model.helmetColor).toBe('#002244');
     expect(model.number).toMatchObject({ fill: '#002244', outline: '#69BE28' });
-    expect(model.layers.find((layer) => layer.id === 'seahawks-shoulder-band-left')).toMatchObject({
+    expect(
+      model.layers.find((layer) => layer.id === 'seahawks-jersey-white-shoulder-band-left')
+    ).toMatchObject({
       fill: '#002244',
     });
-    expect(model.layers.find((layer) => layer.id === 'seahawks-shoulder-cap-left')).toMatchObject({
+    expect(
+      model.layers.find((layer) => layer.id === 'seahawks-jersey-white-shoulder-cap-left')
+    ).toMatchObject({
       fill: '#69BE28',
     });
     expect(model.layers.find((layer) => layer.id === 'seahawks-collar-band')).toMatchObject({
@@ -200,23 +206,22 @@ describe('team uniform definitions', () => {
   });
 
   it.each([
-    ['home', '#69BE28', '#002244'],
-    ['away', '#002244', '#FFFFFF'],
+    ['home', 'navy', '#69BE28', '#002244'],
+    ['away', 'white', '#002244', '#FFFFFF'],
   ])(
     'gives Seahawks %s twelve feathers per collar side and a contrasting wordmark',
-    (kit, feathers, wordmark) => {
+    (kit, jersey, feathers, wordmark) => {
       const model = resolveUniformModel(getTeamUniformDefinition('seahawks'), kit, SEAHAWKS_COLORS);
       for (const side of ['left', 'right']) {
         const layer = model.layers.find((layer) => layer.id === `seahawks-collar-feathers-${side}`);
         expect(layer).toMatchObject({ kind: 'fill', fill: feathers, surface: 'collar' });
         expect(layer?.d.match(/M/g)).toHaveLength(12);
       }
-      expect(model.layers.find((layer) => layer.id === 'seahawks-shoulder-wordmark')).toMatchObject(
-        {
-          kind: 'fill',
-          fill: wordmark,
-        }
-      );
+      expect(
+        model.layers.find(
+          (layer) => layer.id === `seahawks-jersey-${jersey}-shoulder-wordmark-right`
+        )
+      ).toMatchObject({ kind: 'fill', fill: wordmark });
       expect(model.layers.filter((layer) => layer.id.includes('shoulder-wordmark'))).toHaveLength(
         1
       );
@@ -275,10 +280,16 @@ describe('team uniform definitions', () => {
       jerseyColor: '#B6FF3E',
       pantsColor: '#B6FF3E',
     });
-    expect(model.layers.find((layer) => layer.id === 'seahawks-shoulder-band-left')).toMatchObject({
+    expect(
+      model.layers.find((layer) => layer.id === 'seahawks-jersey-action-green-shoulder-band-left')
+    ).toMatchObject({
       fill: '#002244',
     });
-    expect(model.layers.find((layer) => layer.id === 'seahawks-shoulder-wordmark')).toMatchObject({
+    expect(
+      model.layers.find(
+        (layer) => layer.id === 'seahawks-jersey-action-green-shoulder-wordmark-right'
+      )
+    ).toMatchObject({
       fill: '#FFFFFF',
     });
     expect(
