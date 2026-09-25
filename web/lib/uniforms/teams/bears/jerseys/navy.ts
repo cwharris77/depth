@@ -1,9 +1,19 @@
-import { expandJersey } from '../../core/jersey-spec';
-import type { UniformPart } from '../../core/parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
-export const JERSEY_NAVY: UniformPart = expandJersey('bears-navy', {
+// White-piped orange sleeve stripes and white numerals with a thin orange outline.
+export const BEARS_JERSEY_NAVY: CompleteJerseySpec = {
   body: 'navy',
-  collar: { style: 'inset-v', color: 'navy', outline: true },
+  collar: {
+    style: 'inset-v',
+    color: 'navy',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: true,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
   shoulderNumber: { fill: 'white', outline: 'orange' },
   sleeveStripes: {
     bands: [
@@ -14,5 +24,8 @@ export const JERSEY_NAVY: UniformPart = expandJersey('bears-navy', {
     gap: 'wide',
     edge: 'white',
   },
-  number: { fill: 'white', outline: 'orange', outlineWeight: 'thin' },
-});
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'orange', outlineWeight: 'thin', texture: 'mesh' },
+  marks: [],
+};
