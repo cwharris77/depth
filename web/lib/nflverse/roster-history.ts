@@ -113,14 +113,9 @@ export function toRosterHistoryRows(
       continue;
     }
     // A depth-chart position is authoritative only when it belongs to this exact
-    // team/player key. Generic OL tags cannot seat a field slot and older native
-    // clients cannot decode them, so omit the row rather than publishing an invented
-    // side or breaking an entire historical season.
+    // team/player key. Without one, a generic OL tag is published as `OT`/`G` rather
+    // than guessed into a side.
     const sourcePosition = depthChartPositions.get(`${teamId}|${gsisId}`);
-    if (!sourcePosition && (rosterPosition === 'OT' || rosterPosition === 'G')) {
-      skipped++;
-      continue;
-    }
     const position = sourcePosition ?? rosterPosition;
     byKey.set(`${teamId}|${gsisId}`, {
       teamId,

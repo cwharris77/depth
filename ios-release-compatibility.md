@@ -15,7 +15,7 @@ one rule mechanically: published data stays decodable by every supported app bui
 
 - **Current App Store build (`CFBundleVersion`):** **764** — LIVE since 2026-09-24 (the
   first LIVE build; archived from `3760372c`). Build 587 was rejected and never LIVE.
-- **Minimum supported build (`app_config.minimum_supported_build`):** **1** — the gate is **not armed**. Build 764 is the only App Store build, so arming it now would only block older TestFlight builds; raise it when a destructive change needs it.
+- **Minimum supported build (`app_config.minimum_supported_build`):** **764** — armed 2026-09-24, so every build older than the live App Store build gets the update screen.
 - **Gateable floor:** build 321 (`c6a66bc`). Any build ≥ 321 contains the forced-update gate; build 764 **is gateable**. The flow for a breaking change is: ship the new build → confirm the listing is public → **only then** arm the gate by raising `app_config.minimum_supported_build` to that build → after it's live and blocking, destructive backend changes may ship.
 - **Backend contract facts** (as of the current schema, `web/supabase/migrations/`):
   - `teams` no longer carries `pending_home_colors` (dropped by
@@ -40,9 +40,9 @@ one rule mechanically: published data stays decodable by every supported app bui
     totals/shares (`offense_snaps`, `offense_pct`, `defense_snaps`, `defense_pct`,
     `special_teams_snaps`, `special_teams_pct`). Additive only — build 764's
     explicit column SELECT simply ignores them; no IOS-COMPATIBILITY annotation needed.
-  - No restored position vocabulary (`OT`/`G`) yet. Build 764 decodes both
-    (`Depth/Domain/Position.swift`), so the released-build half of that precondition is
-    met; older builds still in use are the only reason to arm the gate first.
+  - `roster_history.position` may carry generic `OT`/`G` for offensive linemen with no
+    sided depth-chart row (mostly pre-2001 seasons). Build 764 decodes both
+    (`Depth/Domain/Position.swift`); older builds are blocked by the gate at 764.
   - The canonical `player_season_stats` table has **not** landed; build 764
     still reads the legacy `player_stats` table exclusively.
   - `app_config` is frozen by contract — the gate reads exactly two columns
@@ -59,6 +59,7 @@ one rule mechanically: published data stays decodable by every supported app bui
 | --- | --- | --- | --- |
 | 587 → 588+ | 2026-09-11 to 2026-09-14 | Six migrations landed since build 587 was recorded: `player_stats` gained 24 nullable columns (position-vocabulary stat lines); four migrations added/normalized nflverse source tables (`pfr`, NGS, FTN, QBR, box score) feeding the future `player_season_stats` consolidation (not yet read by any client); `uniforms` reseeded. All additive/non-destructive per `check:ios-compat` — no `IOS-COMPATIBILITY` annotations required. | No (never armed) |
 | 764 | 2026-09-24 | First LIVE App Store build. `check:ios-compat --base 3760372c` over the nine migrations changed since the archive: all additive/non-destructive (uniform seeds and path backfills, `20260921000000_add_team_line_stats.sql`). | No |
+| 764 | 2026-09-24 | Gate armed at 764. The rosters ingest stops omitting and deleting generic `OT`/`G` rows, so historical seasons publish those values again. | Yes (764) |
 <!-- add a row per release that changes the client/backend contract -->
 
 ## Release sequencing checklist
