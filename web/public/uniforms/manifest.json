@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "d7e27cc76579bb99554363a0b0ed1672a7a3e738845f70b03b0b5e317c6b5311",
-  "revision": "86c0f9aee51fc5ab",
+  "sourceDigest": "6d7ae5ca416f16c3a7ca8320ecbe1864328ca89c6f7404942b8946b87a331362",
+  "revision": "ed4f6e76ea0d9e3c",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1356,60 +1356,60 @@
     {
       "catalogId": "seahawks-1976-throwback-1976",
       "constructionKey": "1976-throwback",
-      "revision": "f0ac57c169d511d5",
+      "revision": "c422c8e8eabaf15e",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-1976-throwback-1976.webp",
-          "sha256": "2e1227ce31377ff7968244b0cc8691dfee3f574427ffb64b71a2c95f504b2dd1"
+          "sha256": "540a4959e47e710db029e5518efc0f998d7ae7916fa2724520c362a1dd843614"
         },
         "full": {
           "path": "/uniforms/seahawks-1976-throwback-1976-full.webp",
-          "sha256": "1fb30207b557a6287bf481eae55048c478ef8d7f4e2270f25c914cfa63c4120d"
+          "sha256": "6942230db9198adc24475d1da10e40d8ca63c299c4e39935684797e977a02b23"
         }
       }
     },
     {
       "catalogId": "seahawks-away-2012",
       "constructionKey": "away",
-      "revision": "1ea6f7bcf6da9f74",
+      "revision": "8899ccbb031f3a9d",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-away-2012.webp",
-          "sha256": "e6a5132c5e083b67f3704828d8a9662d14ff36f6ca204c8802e6b2cbb5dd5bd4"
+          "sha256": "580e41c496c40266840cd3d5e8c8dac4cbb7d563ddea0a086c2638314fdebba3"
         },
         "full": {
           "path": "/uniforms/seahawks-away-2012-full.webp",
-          "sha256": "421c72c5b91d95ec6689e0ea29ef158895c631eaa5676b7cf6f6dee7db83b867"
+          "sha256": "642a1bc9c5dad8624d3c6a49fd7e67a8e6478f94ed67967630bfa00c82df7ef6"
         }
       }
     },
     {
       "catalogId": "seahawks-color-rush-2016",
       "constructionKey": "color-rush",
-      "revision": "507f0c1c0533a3a0",
+      "revision": "ed309ff778762798",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-color-rush-2016.webp",
-          "sha256": "feae657a715287183a587b40bcf204d4bc1ca2716e5a878d94a00847c599f00b"
+          "sha256": "c0c05ce5e7b71e9c16509612255fa19e53f306f1dcee3944ae071c09ee567d87"
         },
         "full": {
           "path": "/uniforms/seahawks-color-rush-2016-full.webp",
-          "sha256": "4409e499d1abcfa9ac3842539e781fa6dd3f4a3f086c41715ea0d8e8a8e10688"
+          "sha256": "e5e6eb6ef60dee042b4047524429383ad20f0962520dc3a294874b01b7d9ba6c"
         }
       }
     },
     {
       "catalogId": "seahawks-home-2012",
       "constructionKey": "home",
-      "revision": "1b0c19980fe7d367",
+      "revision": "0a0aa5cb599d03fe",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-home-2012.webp",
-          "sha256": "41dc589a5252b32567c5b9aab4abf34c1cccd5aa35cddaa6dfdb77396ab020d9"
+          "sha256": "51b32b25ee6a44d735fb8e0ada03984a77bad75925a1823c2cbdd52e979bdfbd"
         },
         "full": {
           "path": "/uniforms/seahawks-home-2012-full.webp",
-          "sha256": "3a05312e9e04601cfeeac04d6c4c2bdb80f633bc0e448578c7c71cdca6c63fee"
+          "sha256": "283e7198e2325caaa189a053fd0a9b7ea025360a868960e9e44ea2cfe3910194"
         }
       }
     },

@@ -1,8 +1,10 @@
-// Marks are polygon vector art (helmet decals, sleeve logos) stored once in their own coordinate
-// space and placed on the mannequin by a named anchor. A mark's paths are absolute M/L/Z polygons
-// only -- curve commands are not supported yet. The placer normalises them to the mark box, fits
-// that box to the anchor and formats each point to one decimal, the same arithmetic the drawing
-// scripts' Box uses, so a mark moved here from a script renders identically.
+// Marks are vector art (helmet decals, sleeve logos, a team's own shoulder shapes) stored once in
+// their own coordinate space and placed on the mannequin by a named anchor. A mark's paths use
+// absolute M/L/H/V/C/Q/Z commands, each coordinate group with its own command letter. The placer
+// normalises every point, control points included, to the mark box, fits that box to the anchor and
+// formats each point to one decimal, the same arithmetic the drawing scripts' Box uses, so a
+// polygon mark moved here from a script renders identically. The fit is a scale and a shift, so a
+// curve placed this way is the same curve.
 import type { PaletteRef, PartLayer } from './parts';
 import type { UniformSurface } from './types';
 
@@ -30,7 +32,8 @@ export function placed(layers: readonly PartLayer[]): PlacedMark {
   return { placed: true, layers };
 }
 
-export type AnchorName = 'helmet-side' | 'sleeve-left' | 'sleeve-right';
+export type AnchorName =
+  'helmet-side' | 'sleeve-left' | 'sleeve-right' | 'shoulder-left' | 'shoulder-right';
 
 interface Anchor {
   surface: UniformSurface;
@@ -39,7 +42,7 @@ interface Anchor {
   x0: number;
   w: number;
   cy: number;
-  // The left sleeve shows its mark mirrored so both face outward.
+  // The left sleeve and shoulder show their mark mirrored so both face outward.
   mirror: boolean;
   idSuffix: string;
 }
@@ -62,6 +65,24 @@ export const ANCHORS: Record<AnchorName, Anchor> = {
     mirror: false,
     idSuffix: '-right',
   },
+  // The front of each shoulder, from the collar's edge out past the sleeve's outer edge (the
+  // jersey clip trims the overshoot). A shoulder mark is drawn for the right shoulder.
+  'shoulder-left': {
+    surface: 'sleeve-left',
+    x0: 12,
+    w: 220,
+    cy: 446,
+    mirror: true,
+    idSuffix: '-left',
+  },
+  'shoulder-right': {
+    surface: 'sleeve-right',
+    x0: 356,
+    w: 220,
+    cy: 446,
+    mirror: false,
+    idSuffix: '-right',
+  },
 };
 
 // One decimal, matching Python's '%.1f'. A value whose binary form is an exact tie at the second
@@ -75,14 +96,19 @@ export function fmt1(v: number): string {
 
 type Point = [number, number];
 
-type Token = { kind: 'M' | 'L' | 'Z' } | { kind: 'num'; value: number };
+// Coordinates each command takes; H and V take one number and are read as a line to the point.
+const ARITY = { M: 2, L: 2, H: 1, V: 1, C: 6, Q: 4 } as const;
+type Command = keyof typeof ARITY;
+type Segment = { cmd: 'M' | 'L' | 'C' | 'Q'; pts: Point[] };
+
+type Token = { kind: Command | 'Z' } | { kind: 'num'; value: number };
 
 // Splits a path into command and number tokens, requiring the whole string to be consumed by
 // commands, numbers, commas and whitespace with no gaps -- a malformed or trailing fragment
 // (an unterminated number, stray characters) leaves a gap the scan detects.
 function tokenize(d: string): Token[] {
   const tokens: Token[] = [];
-  const re = /[MLZ]|-?\d+(?:\.\d+)?|[,\s]+/g;
+  const re = /[MLHVCQZ]|-?\d+(?:\.\d+)?|[,\s]+/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
   while ((match = re.exec(d))) {
@@ -91,8 +117,8 @@ function tokenize(d: string): Token[] {
     }
     const text = match[0];
     lastIndex = re.lastIndex;
-    if (text === 'M' || text === 'L' || text === 'Z') {
-      tokens.push({ kind: text });
+    if (/^[MLHVCQZ]$/.test(text)) {
+      tokens.push({ kind: text as Command | 'Z' });
     } else if (/^[,\s]+$/.test(text)) {
       continue;
     } else {
@@ -107,47 +133,66 @@ function tokenize(d: string): Token[] {
   return tokens;
 }
 
-function readPoint(tokens: Token[], i: number): Point {
-  const x = tokens[i];
-  const y = tokens[i + 1];
-  if (!x || x.kind !== 'num' || !y || y.kind !== 'num') {
-    throw new Error('mark path command is missing a coordinate');
+function readNumbers(tokens: Token[], i: number, n: number): number[] {
+  const out: number[] = [];
+  for (let k = 0; k < n; k++) {
+    const t = tokens[i + k];
+    if (!t || t.kind !== 'num') throw new Error('mark path command is missing a coordinate');
+    out.push(t.value);
   }
-  return [x.value, y.value];
+  return out;
 }
 
-function subpaths(d: string): Point[][] {
+// Closed subpaths, each a list of segments starting with its M.
+function subpaths(d: string): Segment[][] {
   if (d.trim() === '') throw new Error('mark path is empty');
-  if (!/^[MLZ\d\s.,-]*$/.test(d)) throw new Error('mark paths must use absolute M/L/Z only');
+  if (!/^[MLHVCQZ\d\s.,-]*$/.test(d)) {
+    throw new Error('mark paths must use absolute M/L/H/V/C/Q/Z only');
+  }
   const tokens = tokenize(d);
-  const out: Point[][] = [];
-  let current: Point[] | null = null;
+  const out: Segment[][] = [];
+  let current: Segment[] | null = null;
+  let at: Point = [0, 0];
   let i = 0;
   while (i < tokens.length) {
     const token = tokens[i];
-    if (token.kind === 'M') {
-      if (current) throw new Error('mark path has a subpath not closed with Z before the next M');
-      current = [readPoint(tokens, i + 1)];
-      i += 3;
-    } else if (token.kind === 'L') {
-      if (!current) throw new Error('mark path has L before M');
-      current.push(readPoint(tokens, i + 1));
-      i += 3;
-    } else if (token.kind === 'Z') {
+    if (token.kind === 'num') throw new Error('mark path has a coordinate pair without a command');
+    if (token.kind === 'Z') {
       if (!current) throw new Error('mark path has Z without an open subpath');
       out.push(current);
       current = null;
       i += 1;
-    } else {
-      throw new Error('mark path has a coordinate pair without a command');
+      continue;
     }
+    const n = readNumbers(tokens, i + 1, ARITY[token.kind]);
+    i += 1 + n.length;
+    if (token.kind === 'M') {
+      if (current) throw new Error('mark path has a subpath not closed with Z before the next M');
+      at = [n[0], n[1]];
+      current = [{ cmd: 'M', pts: [at] }];
+      continue;
+    }
+    if (!current) throw new Error(`mark path has ${token.kind} before M`);
+    let segment: Segment;
+    if (token.kind === 'H') segment = { cmd: 'L', pts: [[n[0], at[1]]] };
+    else if (token.kind === 'V') segment = { cmd: 'L', pts: [[at[0], n[0]]] };
+    else {
+      const pts: Point[] = [];
+      for (let k = 0; k < n.length; k += 2) pts.push([n[k], n[k + 1]]);
+      segment = { cmd: token.kind, pts };
+    }
+    current.push(segment);
+    at = segment.pts[segment.pts.length - 1];
   }
   if (current) throw new Error('mark path has an unclosed trailing subpath');
   return out;
 }
 
+// Control points included, so a curve's box may be a little larger than the curve itself.
 export function boundsOf(d: string): [number, number, number, number] {
-  const pts = subpaths(d).flat();
+  const pts = subpaths(d)
+    .flat()
+    .flatMap((segment) => segment.pts);
   const xs = pts.map(([x]) => x);
   const ys = pts.map(([, y]) => y);
   return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
@@ -178,9 +223,9 @@ export function placeMark<S extends string>(
     const color = slots[slot];
     if (color === null) return [];
     const placed = subpaths(d)
-      .map((pts) => {
-        const [first, ...rest] = pts.map(at);
-        return `M${first} ${rest.map((p) => `L${p}`).join(' ')} Z`;
+      .map((segments) => {
+        const drawn = segments.map(({ cmd, pts }) => `${cmd}${pts.map(at).join(' ')}`);
+        return `${drawn.join(' ')} Z`;
       })
       .join(' ');
     return [
@@ -196,13 +241,16 @@ export function placeMark<S extends string>(
   });
 }
 
-// Both sleeves, interleaved left then right for each slot, the order sleeve primitives use.
-export function placeMarkOnSleeves<S extends string>(
+// Both sleeves or both shoulders, interleaved left then right for each slot, the order sleeve
+// primitives use.
+export function placeMarkOnPair<S extends string>(
   idPrefix: string,
   mark: Mark<S>,
+  pair: 'sleeves' | 'shoulders',
   slots: Record<S, PaletteRef | null>
 ): PartLayer[] {
-  const left = placeMark(idPrefix, mark, 'sleeve-left', slots);
-  const right = placeMark(idPrefix, mark, 'sleeve-right', slots);
+  const side = pair === 'sleeves' ? 'sleeve' : 'shoulder';
+  const left = placeMark(idPrefix, mark, `${side}-left`, slots);
+  const right = placeMark(idPrefix, mark, `${side}-right`, slots);
   return left.flatMap((layer, i) => [layer, right[i]]);
 }

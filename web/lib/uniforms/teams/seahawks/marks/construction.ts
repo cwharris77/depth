@@ -1,8 +1,7 @@
-// Seattle's own construction layers, bound to palette keys: the helmet decals, the modern shoulder
-// and feathered collar, the throwback shoulder numerals and the pants art the stripe spec cannot
-// draw. Each export is a placed mark, emitted exactly as written.
+// Seattle's own construction layers, bound to palette keys: the helmet decals, the modern feathered
+// collar and the pants art the stripe spec cannot draw. Each export is a placed mark, emitted
+// exactly as written.
 import {
-  SEAHAWKS_SHOULDER_WORDMARK,
   SEAHAWKS_NECK_OPENING,
   SEAHAWKS_COLLAR_BAND,
   SEAHAWKS_COLLAR_FEATHERS_LEFT,
@@ -19,12 +18,6 @@ import {
   SEAHAWKS_HELMET_HAWK_EYE_PATH,
   SEAHAWKS_HELMET_HAWK_GREY_PATH,
   SEAHAWKS_HELMET_HAWK_PATH,
-  SEAHAWKS_SHOULDER_BAND_LEFT,
-  SEAHAWKS_SHOULDER_BAND_RIGHT,
-  SEAHAWKS_SHOULDER_NUMBER_LEFT,
-  SEAHAWKS_SHOULDER_NUMBER_RIGHT,
-  SEAHAWKS_SHOULDER_CAP_LEFT,
-  SEAHAWKS_SHOULDER_CAP_RIGHT,
 } from './paths';
 import { SEAHAWKS_THROWBACK_HAWK } from './throwback-hawk';
 import { HELMET_CROWN_STRIPE_PATH } from '../../core/shared';
@@ -68,34 +61,9 @@ export const SEAHAWKS_THROWBACK_HAWK_DECAL = placed(
   })
 );
 
-const shoulderNumbers = (color: string): PartLayer[] => [
-  fill('seahawks-shoulder-number-left', 'sleeve-left', SEAHAWKS_SHOULDER_NUMBER_LEFT, color),
-  fill('seahawks-shoulder-number-right', 'sleeve-right', SEAHAWKS_SHOULDER_NUMBER_RIGHT, color),
-];
-
-// The shared athletic 3 laid along each shoulder, smaller than the spec's shoulder numeral.
-export const seahawksShoulderNumbers = (color: string): PlacedMark =>
-  placed(shoulderNumbers(color));
-
-// Shoulder numerals, band and cap share their placement across the modern jerseys.
-export function seahawksModernShoulder(band: string, cap: string): PlacedMark {
-  return placed([
-    ...shoulderNumbers(band),
-    fill('seahawks-shoulder-band-left', 'sleeve-left', SEAHAWKS_SHOULDER_BAND_LEFT, band),
-    fill('seahawks-shoulder-band-right', 'sleeve-right', SEAHAWKS_SHOULDER_BAND_RIGHT, band),
-    fill('seahawks-shoulder-cap-left', 'sleeve-left', SEAHAWKS_SHOULDER_CAP_LEFT, cap),
-    fill('seahawks-shoulder-cap-right', 'sleeve-right', SEAHAWKS_SHOULDER_CAP_RIGHT, cap),
-  ]);
-}
-
 // The body-color collar frames a shaded opening and back-neck tab; its chevrons stop before the V
-// point. The modern jerseys share geometry with different feather and wordmark colors.
-export function seahawksModernCollar(
-  body: string,
-  neck: string,
-  feathers: string,
-  wordmark: string
-): PlacedMark {
+// point. The modern jerseys share geometry with different feather colors.
+export function seahawksModernCollar(body: string, neck: string, feathers: string): PlacedMark {
   return placed([
     fill('seahawks-neck-opening', 'collar', SEAHAWKS_NECK_OPENING, neck),
     fill('seahawks-collar-band', 'collar', SEAHAWKS_COLLAR_BAND, body),
@@ -104,7 +72,6 @@ export function seahawksModernCollar(
     fill('seahawks-neck-tab-border', 'collar', 'M279,389 H309 V417 H279 Z', 'green'),
     fill('seahawks-neck-tab', 'collar', 'M281,391 H307 V415 H281 Z', 'navy'),
     fill('seahawks-neck-twelve', 'collar', SEAHAWKS_NECK_TWELVE, 'wolfGrey'),
-    fill('seahawks-shoulder-wordmark', 'jersey', SEAHAWKS_SHOULDER_WORDMARK, wordmark),
   ]);
 }
 
