@@ -285,16 +285,17 @@ final class CompareViewModel {
         return seasons.first { $0.matchupMetrics != nil } ?? seasons.first
     }
 
-    /// The currently-selected position's two sides, depth-ordered (web's `positionsA`/
-    /// `positionsB`). Empty when the relevant side isn't picked.
+    /// The currently-selected position's two sides, depth-ordered, with generic `OT`/`G`
+    /// players after the exact tag (see `comparePlayers`). Empty when the relevant side
+    /// isn't picked.
     var positionGroupA: [Player] {
         guard let roster = roster(of: teamA?.id) else { return [] }
-        return getPlayers(in: roster, at: position)
+        return comparePlayers(in: roster, at: position)
     }
 
     var positionGroupB: [Player] {
         guard let roster = roster(of: teamB?.id) else { return [] }
-        return getPlayers(in: roster, at: position)
+        return comparePlayers(in: roster, at: position)
     }
 
     private func roster(of teamId: String?) -> Roster? {

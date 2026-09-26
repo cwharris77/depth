@@ -72,6 +72,22 @@ enum CompareMatchRooms {
     }
 }
 
+// MARK: - Generic tags in sided roles
+
+/// The generic tag each sided compare role also lists. A roster can tag a lineman `OT` or
+/// `G` with no side; Compare has no generic tackle or guard role, so those players appear
+/// under both sided roles of their family, after every exact-tag player.
+let compareFamilyFold: [Position: Position] = [.lt: .ot, .rt: .ot, .lg: .g, .rg: .g]
+
+/// A compare role's players: the exact tag in depth order, then the role's generic family
+/// in depth order, each athlete once.
+func comparePlayers(in roster: Roster, at position: Position) -> [Player] {
+    let exact = getPlayers(in: roster, at: position)
+    guard let family = compareFamilyFold[position] else { return exact }
+    let listed = Set(exact.map(\.id))
+    return exact + getPlayers(in: roster, at: family).filter { !listed.contains($0.id) }
+}
+
 // MARK: - Evidence freshness
 
 /// Whether a piece of evidence (a metrics row, a market line) is recent enough to trust

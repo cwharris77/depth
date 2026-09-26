@@ -1048,3 +1048,18 @@ private func twoSeasonViewModel() async -> CompareViewModel {
     // Previously `.unavailable` — the formatter rejected the string, not the data.
     #expect(compareFreshness(updatedAt: updatedAt, now: now) == .current)
 }
+
+@Test func compareSidedLineRolesListGenericLinemenAfterExactTags() {
+    let roster = Roster(players: [
+        comparePlayer(id: "lt1", name: "Left Tackle", position: .lt, rank: 1, number: 71),
+        comparePlayer(id: "ot1", name: "Tackle One", position: .ot, rank: 1, number: 72),
+        comparePlayer(id: "ot2", name: "Tackle Two", position: .ot, rank: 2, number: 73),
+        comparePlayer(id: "g1", name: "Guard One", position: .g, rank: 1, number: 64),
+        comparePlayer(id: "c1", name: "Center", position: .c, rank: 1, number: 60),
+    ])
+    #expect(comparePlayers(in: roster, at: .lt).map(\.id) == ["lt1", "ot1", "ot2"])
+    #expect(comparePlayers(in: roster, at: .rt).map(\.id) == ["ot1", "ot2"])
+    #expect(comparePlayers(in: roster, at: .lg).map(\.id) == ["g1"])
+    #expect(comparePlayers(in: roster, at: .rg).map(\.id) == ["g1"])
+    #expect(comparePlayers(in: roster, at: .c).map(\.id) == ["c1"])
+}
