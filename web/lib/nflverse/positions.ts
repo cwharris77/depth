@@ -1,34 +1,38 @@
 import type { Position } from '../types';
 
 // Maps nflverse's roster_<season>.csv position vocabulary to ours (mirrors
-// lib/espn/positions.ts's approach for the ESPN vocabulary). nflverse collapses
-// offensive tackles and guards into one code per pair (`T`/`OT`, `G`/`OG`) with no
-// left/right side in the data -- those remain generic `OT`/`G`; only the separately
-// sourced historical depth chart may establish a side. Every other code maps
-// straight through; an unrecognized code is
-// `null` -- the caller skips the row and counts it, never guesses.
+// lib/espn/positions.ts's approach for the ESPN vocabulary). A code with an exact
+// canonical equivalent keeps it (`FB`, `NT`, `FS`, `SS`), and a coarse code stays coarse
+// rather than being widened into a specific one. nflverse collapses offensive tackles
+// and guards into one code per pair (`T`/`OT`, `G`/`OG`) with no left/right side in the
+// data -- those remain generic `OT`/`G`; only the separately sourced historical depth
+// chart may establish a side. `OLB`/`ILB`/`MLB` and `EDGE` have no unsided canonical
+// value, so they map to `LB` and `DE`; a generic `DB` maps to `S` because the taxonomy
+// has no generic defensive-back value to hold it. An unrecognized code is `null` -- the caller
+// drops the row with a reason, never guesses.
 export type RosterPosition = Position;
 
 const DIRECT: Record<string, Position> = {
   qb: 'QB',
   rb: 'RB',
-  fb: 'RB',
+  fb: 'FB',
   wr: 'WR',
   te: 'TE',
   c: 'C',
   de: 'DE',
   edge: 'DE',
   dt: 'DT',
-  nt: 'DT',
+  nt: 'NT',
   olb: 'LB',
   ilb: 'LB',
   mlb: 'LB',
   lb: 'LB',
   cb: 'CB',
-  fs: 'S',
-  ss: 'S',
+  fs: 'FS',
+  ss: 'SS',
   db: 'S',
   s: 'S',
+  saf: 'S',
   k: 'K',
   p: 'P',
   ls: 'LS',

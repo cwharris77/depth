@@ -27,13 +27,13 @@ function rosterRow(overrides: Partial<Record<string, string>> = {}) {
 
 describe('toRosterHistoryRows', () => {
   it('joins a roster row to its usage stats and ranks QB1', () => {
-    const { rows, skipped } = toRosterHistoryRows(
+    const { rows, dropped } = toRosterHistoryRows(
       2013,
       [rosterRow()],
       [{ player_id: '00-0029263', attempts: '407' }],
       RESOLVE
     );
-    expect(skipped).toBe(0);
+    expect(dropped).toEqual([]);
     expect(rows).toEqual([
       {
         season: 2013,
@@ -74,16 +74,21 @@ describe('toRosterHistoryRows', () => {
     expect(byId.get('wr4')).toMatchObject({ depth_rank: 3, player_order: 4 });
   });
 
-  it('skips a row with no gsis_id, no team match, or an unmapped position, and counts it', () => {
+  it('drops a row with no gsis_id, name, team match or mapped position, with a reason', () => {
     const rosterRows = [
       rosterRow({ gsis_id: '' }),
       rosterRow({ gsis_id: 'x', team: 'ZZZ' }),
-      rosterRow({ gsis_id: 'y', position: '', depth_chart_position: '' }),
+      rosterRow({ gsis_id: 'y', position: 'QBX', depth_chart_position: '' }),
       rosterRow({ gsis_id: 'z', full_name: '' }),
     ];
-    const { rows, skipped } = toRosterHistoryRows(2013, rosterRows, [], RESOLVE);
+    const { rows, dropped } = toRosterHistoryRows(2013, rosterRows, [], RESOLVE);
     expect(rows).toEqual([]);
-    expect(skipped).toBe(4);
+    expect(dropped).toEqual([
+      { reason: 'missing_gsis_id', key: 'row:0' },
+      { reason: 'unknown_team', key: 'x', value: 'ZZZ' },
+      { reason: 'unmapped_position', key: 'y', value: 'QBX' },
+      { reason: 'missing_name', key: 'z' },
+    ]);
   });
 
   it('collapses a mid-season trade to one row for the PK team, keeping the last occurrence', () => {
@@ -91,9 +96,10 @@ describe('toRosterHistoryRows', () => {
       rosterRow({ gsis_id: 'p1', full_name: 'Traded Player', number: '99' }),
       rosterRow({ gsis_id: 'p1', full_name: 'Traded Player', jersey_number: '12' }),
     ];
-    const { rows } = toRosterHistoryRows(2013, rosterRows, [], RESOLVE);
+    const { rows, dropped } = toRosterHistoryRows(2013, rosterRows, [], RESOLVE);
     expect(rows).toHaveLength(1);
     expect(rows[0].number).toBe(12);
+    expect(dropped).toEqual([{ reason: 'superseded_duplicate', key: 'p1' }]);
   });
 
   it('uses a depth-chart side over a generic roster position', () => {
@@ -116,7 +122,7 @@ describe('toRosterHistoryRows', () => {
   });
 
   it('keeps a generic tackle and guard when no depth-chart row exists', () => {
-    const { rows, skipped } = toRosterHistoryRows(
+    const { rows, dropped } = toRosterHistoryRows(
       2000,
       [
         rosterRow({ gsis_id: 't1', full_name: 'Unknown Tackle', position: 'T' }),
@@ -126,7 +132,7 @@ describe('toRosterHistoryRows', () => {
       RESOLVE
     );
     expect(rows.map((r) => r.position).sort()).toEqual(['G', 'OT']);
-    expect(skipped).toBe(0);
+    expect(dropped).toEqual([]);
   });
 
   it('degrades a missing usage row to zero score without throwing', () => {

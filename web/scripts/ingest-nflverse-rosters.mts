@@ -27,6 +27,7 @@ dotenv.config({ path: '.env.local' });
 import { parseCsv } from '@/lib/nflverse/csv';
 import { assetUrl, latestAvailableSeason } from '@/lib/nflverse/assets';
 import { buildCrosswalk } from '@/lib/nflverse/crosswalk';
+import { assertConserved, countByReason, countValues, type Drop } from '@/lib/utils/ingest/drops';
 import { mapHistoricalDepthChartPositions } from '@/lib/nflverse/depth-charts';
 import { resolveTeamCode } from '@/lib/nflverse/team-codes';
 import {
@@ -136,7 +137,7 @@ async function main() {
   );
 
   let rowsWritten = 0;
-  let skipped = 0;
+  const dropped: Drop[] = [];
   const allRows: RosterHistoryInsert[] = [];
 
   for (const season of seasons) {
@@ -151,15 +152,19 @@ async function main() {
       const depthChartPositions = depthChartCsv
         ? mapHistoricalDepthChartPositions(season, parseCsv(depthChartCsv), resolveTeamCode)
         : new Map();
-      const { rows, skipped: seasonSkipped } = toRosterHistoryRows(
+      const rosterRows = parseCsv(rosterCsv);
+      const { rows, dropped: seasonDropped } = toRosterHistoryRows(
         season,
-        parseCsv(rosterCsv),
+        rosterRows,
         parseCsv(statsCsv),
         resolveTeamCode,
         crosswalk,
         depthChartPositions
       );
-      skipped += seasonSkipped;
+      // Checked before any write, so a season that loses rows without a reason writes
+      // nothing and records a failure.
+      assertConserved(`${season}`, rosterRows.length, rows.length, seasonDropped);
+      dropped.push(...seasonDropped);
 
       if (supabase) {
         for (let i = 0; i < rows.length; i += UPSERT_CHUNK) {
@@ -173,7 +178,8 @@ async function main() {
       allRows.push(...rows);
       rowsWritten += rows.length;
       console.log(
-        `${season}: ${supabase ? 'wrote' : 'computed'} ${rows.length} rows, skipped ${seasonSkipped}, ` +
+        `${season}: ${supabase ? 'wrote' : 'computed'} ${rows.length} rows, ` +
+          `dropped ${JSON.stringify(countByReason(seasonDropped))}, ` +
           `depth positions ${depthChartPositions.size}`
       );
     } catch (e) {
@@ -212,9 +218,14 @@ async function main() {
     errors: {
       seasons,
       rows_written: rowsWritten,
-      skipped,
       failures,
       ...(crosswalkFailure ? { crosswalk_failure: crosswalkFailure } : {}),
+    },
+    // Diagnostics never decide status: a run can succeed while reporting drops.
+    diagnostics: {
+      dropped_by_reason: countByReason(dropped),
+      unmapped_positions: countValues(dropped, 'unmapped_position'),
+      unknown_teams: countValues(dropped, 'unknown_team'),
     },
   });
   if (runError) throw new Error(`failed to record ingestion_runs: ${runError.message}`);

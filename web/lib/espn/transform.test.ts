@@ -476,6 +476,38 @@ describe('depth-chart athletes the site roster omits (DEP-585)', () => {
     expect(result.unseatedAthleteIds).not.toContain(ON_ROSTER);
   });
 
+  it('reports a depth-chart key the position map does not know, without seating it', () => {
+    const result = toTeamRoster({
+      meta: META,
+      roster: thinRoster,
+      depthcharts: {
+        items: [
+          ...thinCharts.items,
+          { name: 'Special', positions: { pk: { athletes: [] }, h: { athletes: [] } } },
+          {
+            name: 'Nickel',
+            positions: { star: { athletes: [{ rank: 1, athlete: ref(ON_ROSTER) }] } },
+          },
+        ],
+      },
+      teamInfo: TEAM_INFO,
+    });
+    expect(result.unmappedPositionKeys).toEqual(['star']);
+    expect(
+      result.depthChartSlots.some((s) => s.playerId === ON_ROSTER && s.position !== 'LT')
+    ).toBe(false);
+  });
+
+  it('reports no unmapped keys for the shipped Seahawks chart', () => {
+    const result = toTeamRoster({
+      meta: META,
+      roster: roster as unknown as EspnRoster,
+      depthcharts: depthcharts as unknown as EspnDepthcharts,
+      teamInfo: TEAM_INFO,
+    });
+    expect(result.unmappedPositionKeys).toEqual([]);
+  });
+
   it('seats the athlete once the ingest hydrates him into the roster', () => {
     const hydrated: EspnRoster = {
       ...thinRoster,

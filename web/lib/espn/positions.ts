@@ -56,18 +56,17 @@ export function mapSpecialPosition(key: string): 'k' | 'p' | 'ls' | 'kr' | 'pr' 
 // different vocabulary than the depthchart keys above (e.g. "wr", "lt"/"rt", "pk"). Used
 // as a fallback when a special-teams player (KR/PR/etc) doesn't otherwise appear on the
 // offense/defense depth chart (e.g. a low-ranked WR who's still the primary returner).
-// Ambiguous OL positions (G, OT) default to the left side -- side is cosmetic for a
-// bench/reserve entry with no real depth-chart rank.
+// A bio carries no side, so tackles and guards stay generic `OT`/`G`.
 const BIO_POSITION: Record<string, Position> = {
   qb: 'QB',
   rb: 'RB',
   fb: 'FB',
   wr: 'WR',
   te: 'TE',
-  ot: 'LT',
-  t: 'LT',
-  g: 'LG',
-  og: 'LG',
+  ot: 'OT',
+  t: 'OT',
+  g: 'G',
+  og: 'G',
   c: 'C',
   de: 'DE',
   dt: 'DT',
