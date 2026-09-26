@@ -347,7 +347,7 @@ func playerStatColumns(for position: Position) -> [PlayerStatColumn] {
     case .lt, .lg, .c, .rg, .rt, .ot, .g, .p, .ls, .kr, .pr:
         [.games]
     case .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb, .cb, .lcb, .rcb, .nb, .s, .ss,
-        .fs:
+        .fs, .db:
         [.tackles, .sacks, .interceptions]
     case .k:
         [.fieldGoalsMade, .fieldGoalsAttempted, .fieldGoalPercentage]

@@ -90,7 +90,7 @@ private func hit(
     @Test func positionGroupResolvesSecondaryAndAcceptsSpacingAndHyphens() {
         #expect(
             PlayerSearch.positionGroupPositions("secondary") == [
-                .cb, .lcb, .rcb, .nb, .s, .ss, .fs,
+                .cb, .lcb, .rcb, .nb, .s, .ss, .fs, .db,
             ])
         #expect(PlayerSearch.positionGroupPositions("D-Line") == [.de, .lde, .rde, .dt, .nt])
         #expect(

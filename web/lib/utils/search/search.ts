@@ -30,6 +30,7 @@ const DEFENSE_POSITIONS = new Set<Position>([
   'S',
   'SS',
   'FS',
+  'DB',
 ]);
 
 // The unit a player primarily lines up on, used to jump the field to a search hit
@@ -52,9 +53,9 @@ const POSITION_GROUPS: Record<string, Position[]> = {
   dline: ['DE', 'LDE', 'RDE', 'DT', 'NT'],
   defensiveline: ['DE', 'LDE', 'RDE', 'DT', 'NT'],
   edge: ['DE', 'LDE', 'RDE'],
-  db: ['CB', 'LCB', 'RCB', 'NB', 'S', 'SS', 'FS'],
-  dbs: ['CB', 'LCB', 'RCB', 'NB', 'S', 'SS', 'FS'],
-  secondary: ['CB', 'LCB', 'RCB', 'NB', 'S', 'SS', 'FS'],
+  db: ['CB', 'LCB', 'RCB', 'NB', 'S', 'SS', 'FS', 'DB'],
+  dbs: ['CB', 'LCB', 'RCB', 'NB', 'S', 'SS', 'FS', 'DB'],
+  secondary: ['CB', 'LCB', 'RCB', 'NB', 'S', 'SS', 'FS', 'DB'],
   lbs: ['LB', 'WLB', 'LILB', 'RILB', 'SLB'],
   linebackers: ['LB', 'WLB', 'LILB', 'RILB', 'SLB'],
   off: [...OFFENSE_POSITIONS],

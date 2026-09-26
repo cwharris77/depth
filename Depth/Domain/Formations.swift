@@ -16,7 +16,7 @@ private let positionGroupMap: [Position: PositionGroup?] = [
     .de: .dl, .lde: .dl, .rde: .dl, .dt: .dl, .nt: .dl,
     .lb: .lb, .wlb: .lb, .lilb: .lb, .rilb: .lb, .slb: .lb,
     .cb: .cb, .lcb: .cb, .rcb: .cb, .nb: .cb,
-    .s: .s, .ss: .s, .fs: .s,
+    .s: .s, .ss: .s, .fs: .s, .db: nil,
     .k: nil, .p: nil, .ls: nil, .kr: nil, .pr: nil,
 ]
 
@@ -64,8 +64,14 @@ private func assignPositionGroup(pool: [Player], slots: [FormationSlot]) -> [Pla
     return result
 }
 
+/// A generic tag that belongs to more than one group. A `DB` can play corner or safety, so it
+/// sits in neither group's pool and only fills a CB- or S-group slot that is still empty
+/// after both groups have run all three passes. Mirrors GROUP_OVERFLOW.
+private let groupOverflow: [PositionGroup: Position] = [.cb: .db, .s: .db]
+
 /// Resolves every group-based slot in a formation, one group at a time, so a slot in the
-/// 'S' group and a slot in the 'CB' group don't compete for the same pool. Mirrors
+/// 'S' group and a slot in the 'CB' group don't compete for the same pool. Overflow tags
+/// then fill the remaining empty slots in slot order, each athlete at most once. Mirrors
 /// resolveGroupedSlots exactly (iteration order over the group set follows first
 /// appearance in `slots`, matching JS Set's insertion-order iteration).
 private func resolveGroupedSlots(roster: Roster, slots: [FormationSlot]) -> [Player?] {
@@ -86,6 +92,20 @@ private func resolveGroupedSlots(roster: Roster, slots: [FormationSlot]) -> [Pla
         for (j, slotIdx) in indices.enumerated() {
             result[slotIdx] = assigned[j]
         }
+    }
+
+    var seated = Set(result.compactMap { $0?.id })
+    var overflowPools: [Position: [Player]] = [:]
+    for (i, slot) in slots.enumerated() where result[i] == nil {
+        guard let group = slot.group, let tag = groupOverflow[group] else { continue }
+        if overflowPools[tag] == nil {
+            overflowPools[tag] = playersInSeats(in: roster) { $0 == tag }
+        }
+        guard let player = overflowPools[tag]?.first(where: { !seated.contains($0.id) }) else {
+            continue
+        }
+        result[i] = player
+        seated.insert(player.id)
     }
     return result
 }

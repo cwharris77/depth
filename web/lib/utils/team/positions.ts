@@ -34,6 +34,7 @@ export const POSITION_FULL_NAMES: Record<Position, string> = {
   S: 'Safety',
   SS: 'Strong Safety',
   FS: 'Free Safety',
+  DB: 'Defensive Back',
   K: 'Kicker',
   P: 'Punter',
   LS: 'Long Snapper',

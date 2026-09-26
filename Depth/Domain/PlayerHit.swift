@@ -79,7 +79,7 @@ enum PlayerSearch {
     ]
     private static let defensePositions: Set<Position> = [
         .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb,
-        .cb, .lcb, .rcb, .nb, .s, .ss, .fs,
+        .cb, .lcb, .rcb, .nb, .s, .ss, .fs, .db,
     ]
 
     private static let positionGroups: [String: [Position]] = [
@@ -90,9 +90,9 @@ enum PlayerSearch {
         "dline": [.de, .lde, .rde, .dt, .nt],
         "defensiveline": [.de, .lde, .rde, .dt, .nt],
         "edge": [.de, .lde, .rde],
-        "db": [.cb, .lcb, .rcb, .nb, .s, .ss, .fs],
-        "dbs": [.cb, .lcb, .rcb, .nb, .s, .ss, .fs],
-        "secondary": [.cb, .lcb, .rcb, .nb, .s, .ss, .fs],
+        "db": [.cb, .lcb, .rcb, .nb, .s, .ss, .fs, .db],
+        "dbs": [.cb, .lcb, .rcb, .nb, .s, .ss, .fs, .db],
+        "secondary": [.cb, .lcb, .rcb, .nb, .s, .ss, .fs, .db],
         "lbs": [.lb, .wlb, .lilb, .rilb, .slb],
         "linebackers": [.lb, .wlb, .lilb, .rilb, .slb],
         "off": Array(offensePositions),
