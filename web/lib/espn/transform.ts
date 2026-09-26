@@ -239,12 +239,20 @@ export const SPECIAL_LAYOUT = [
   { slot: 'p', id: 'st-p', x: 62, y: 80, label: 'P' },
 ] as const;
 
+// Special-teams roles ESPN charts that are not depth positions (the holder), so leaving
+// them out is expected rather than an unmapped value.
+const IGNORED_SPECIAL_KEYS = new Set(['h']);
+
 export function toTeamRoster(args: {
   meta: Team;
   roster: EspnRoster;
   depthcharts: EspnDepthcharts;
   teamInfo: EspnTeamInfo;
-}): TeamRoster & { depthChartSlots: DepthChartSlot[]; unseatedAthleteIds: string[] } {
+}): TeamRoster & {
+  depthChartSlots: DepthChartSlot[];
+  unseatedAthleteIds: string[];
+  unmappedPositionKeys: string[];
+} {
   const { meta, roster, depthcharts, teamInfo } = args;
 
   // Bio lookup by athlete id (from the flat site roster).
@@ -267,6 +275,9 @@ export function toTeamRoster(args: {
   // Reported by the ingest instead of vanishing: a run that drops a player must not
   // record `status: success`.
   const unseated = new Set<string>();
+  // Depth-chart position keys ESPN published that the position map doesn't know. Their
+  // athletes are not seated under a guessed position; the ingest reports the keys.
+  const unmappedKeys = new Set<string>();
   const special: Record<string, string | null> = {
     k: null,
     p: null,
@@ -281,7 +292,10 @@ export function toTeamRoster(args: {
     for (const [key, posData] of Object.entries(item.positions ?? {})) {
       if (kind === 'special') {
         const slot = mapSpecialPosition(key);
-        if (!slot) continue;
+        if (!slot) {
+          if (!IGNORED_SPECIAL_KEYS.has(key.toLowerCase())) unmappedKeys.add(key);
+          continue;
+        }
         const ranked = [...(posData.athletes ?? [])].sort(
           (a, b) => (a.rank ?? 99) - (b.rank ?? 99)
         );
@@ -319,7 +333,10 @@ export function toTeamRoster(args: {
       }
 
       const position = mapDepthchartPosition(key);
-      if (!position) continue;
+      if (!position) {
+        unmappedKeys.add(key);
+        continue;
+      }
 
       for (const entry of posData.athletes ?? []) {
         const rank = entry.rank ?? entry.slot ?? 1;
@@ -413,6 +430,7 @@ export function toTeamRoster(args: {
     specialTeams,
     depthChartSlots,
     unseatedAthleteIds: [...unseated],
+    unmappedPositionKeys: [...unmappedKeys].sort(),
     // Uniforms are a separate hand-curated domain (lib/uniforms), ingested on their own.
     // The ESPN ingest doesn't own them, so it emits none here.
     uniforms: [],

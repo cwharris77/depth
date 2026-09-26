@@ -28,6 +28,7 @@ export function usageScore(position: RosterPosition, stats: UsageStatsRow | unde
     case 'QB':
       return n(stats.attempts);
     case 'RB':
+    case 'FB':
       return n(stats.carries) + n(stats.targets);
     case 'WR':
     case 'TE':
@@ -42,9 +43,12 @@ export function usageScore(position: RosterPosition, stats: UsageStatsRow | unde
       return n(stats.games);
     case 'DE':
     case 'DT':
+    case 'NT':
     case 'LB':
     case 'CB':
     case 'S':
+    case 'FS':
+    case 'SS':
       return n(stats.defTacklesSolo) + 3 * (n(stats.defSacks) + n(stats.defInterceptions));
     case 'K':
       return n(stats.fgAtt);

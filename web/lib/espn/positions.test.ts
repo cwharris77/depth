@@ -49,11 +49,11 @@ describe('mapBioPosition', () => {
     expect(mapBioPosition('cb')).toBe('CB');
     expect(mapBioPosition('s')).toBe('S');
   });
-  it('defaults ambiguous OL abbreviations to the left side', () => {
-    expect(mapBioPosition('ot')).toBe('LT');
-    expect(mapBioPosition('t')).toBe('LT');
-    expect(mapBioPosition('g')).toBe('LG');
-    expect(mapBioPosition('og')).toBe('LG');
+  it('keeps OL abbreviations generic, since a bio carries no side', () => {
+    expect(mapBioPosition('ot')).toBe('OT');
+    expect(mapBioPosition('t')).toBe('OT');
+    expect(mapBioPosition('g')).toBe('G');
+    expect(mapBioPosition('og')).toBe('G');
   });
   it('returns null for an abbreviation not in the table', () => {
     expect(mapBioPosition('h')).toBeNull();

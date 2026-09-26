@@ -208,6 +208,7 @@ async function main() {
   // ("some teams did not write") was false.
   const errors: { team: string; message: string }[] = [];
   const diagnostics: { team: string; message: string }[] = [];
+  const unmappedPositionKeys = new Map<string, number>();
 
   for (const roster of Object.values(TEAMS)) {
     const seed = roster.team;
@@ -268,6 +269,15 @@ async function main() {
           team: meta.id,
           message: `unseated depth-chart athletes: ${roster2.unseatedAthleteIds.join(', ')}`,
         });
+      }
+      if (roster2.unmappedPositionKeys.length) {
+        diagnostics.push({
+          team: meta.id,
+          message: `unmapped depth-chart positions: ${roster2.unmappedPositionKeys.join(', ')}`,
+        });
+        for (const key of roster2.unmappedPositionKeys) {
+          unmappedPositionKeys.set(key, (unmappedPositionKeys.get(key) ?? 0) + 1);
+        }
       }
       if (roster2.players.length < 15) {
         errors.push({
@@ -367,6 +377,12 @@ async function main() {
     status,
     teams_written: teamsWritten,
     errors: recorded.length ? recorded : null,
+    // Teams per unmapped ESPN depth-chart key, sorted by key.
+    diagnostics: {
+      unmapped_positions: Object.fromEntries(
+        [...unmappedPositionKeys].sort(([a], [b]) => a.localeCompare(b))
+      ),
+    },
   });
   if (runError) throw new Error(`failed to record ingestion_runs: ${runError.message}`);
 

@@ -39,6 +39,7 @@ import { classifyMissingAsset } from '@/lib/nflverse/source-coverage';
 import { fetchRawGroup } from '@/lib/nflverse/raw-group-guard';
 import { buildCrosswalk, buildPfrCrosswalk } from '@/lib/nflverse/crosswalk';
 import { toPlayerStatsRows, type PlayerStatsInsert } from '@/lib/nflverse/transform';
+import { assertConserved, countByReason, type Drop } from '@/lib/utils/ingest/drops';
 import { toSeasonSnapTotals, type SeasonSnapTotalsInsert } from '@/lib/nflverse/season-snaps';
 import { upsertChunkSize } from '@/lib/nflverse/upsert-chunks';
 import {
@@ -768,6 +769,7 @@ async function main() {
 
   let rowsWritten = 0;
   let skipped = 0;
+  const playerStatsDropped: Drop[] = [];
   const allStatsRows: PlayerStatsInsert[] = [];
 
   for (const season of seasons) {
@@ -780,14 +782,18 @@ async function main() {
         parseCsvHeader(statsCsv),
         loggedNewColumnSources
       );
-      const { rows, skipped: seasonSkipped } = toPlayerStatsRows(
-        parseCsv(statsCsv),
+      const statsRows = parseCsv(statsCsv);
+      const { rows, dropped: seasonDropped } = toPlayerStatsRows(
+        statsRows,
         crosswalk,
         knownPlayerIds,
         resolveTeamCode,
         { requireCurrentRoster }
       );
-      skipped += seasonSkipped;
+      // Checked before any write, so a season that loses rows without a reason writes
+      // nothing and records a failure.
+      assertConserved(`player_stats ${season}`, statsRows.length, rows.length, seasonDropped);
+      playerStatsDropped.push(...seasonDropped);
       if (supabase && rows.length) {
         const db = supabase;
         await upsertChunked('player_stats', rows, async (chunk) => {
@@ -799,7 +805,9 @@ async function main() {
       }
       allStatsRows.push(...rows);
       rowsWritten += rows.length;
-      console.log(`${season}: wrote ${rows.length} rows, skipped ${seasonSkipped}`);
+      console.log(
+        `${season}: wrote ${rows.length} rows, dropped ${JSON.stringify(countByReason(seasonDropped))}`
+      );
     } catch (e) {
       failures.push({ season, message: (e as Error).message });
     }
@@ -1188,6 +1196,10 @@ async function main() {
       },
       skipped,
       failures,
+    },
+    // Diagnostics never decide status: a run can succeed while reporting drops.
+    diagnostics: {
+      player_stats_dropped_by_reason: countByReason(playerStatsDropped),
     },
   });
   if (runError) throw new Error(`failed to record ingestion_runs: ${runError.message}`);

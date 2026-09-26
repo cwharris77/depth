@@ -5,23 +5,24 @@ describe('mapRosterPosition', () => {
   it('maps every listed nflverse code', () => {
     expect(mapRosterPosition('QB')).toBe('QB');
     expect(mapRosterPosition('RB')).toBe('RB');
-    expect(mapRosterPosition('FB')).toBe('RB');
+    expect(mapRosterPosition('FB')).toBe('FB');
     expect(mapRosterPosition('WR')).toBe('WR');
     expect(mapRosterPosition('TE')).toBe('TE');
     expect(mapRosterPosition('C')).toBe('C');
     expect(mapRosterPosition('DE')).toBe('DE');
     expect(mapRosterPosition('EDGE')).toBe('DE');
     expect(mapRosterPosition('DT')).toBe('DT');
-    expect(mapRosterPosition('NT')).toBe('DT');
+    expect(mapRosterPosition('NT')).toBe('NT');
     expect(mapRosterPosition('OLB')).toBe('LB');
     expect(mapRosterPosition('ILB')).toBe('LB');
     expect(mapRosterPosition('MLB')).toBe('LB');
     expect(mapRosterPosition('LB')).toBe('LB');
     expect(mapRosterPosition('CB')).toBe('CB');
-    expect(mapRosterPosition('FS')).toBe('S');
-    expect(mapRosterPosition('SS')).toBe('S');
+    expect(mapRosterPosition('FS')).toBe('FS');
+    expect(mapRosterPosition('SS')).toBe('SS');
     expect(mapRosterPosition('DB')).toBe('S');
     expect(mapRosterPosition('S')).toBe('S');
+    expect(mapRosterPosition('SAF')).toBe('S');
     expect(mapRosterPosition('K')).toBe('K');
     expect(mapRosterPosition('P')).toBe('P');
     expect(mapRosterPosition('LS')).toBe('LS');

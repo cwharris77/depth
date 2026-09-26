@@ -1,7 +1,7 @@
 // Turns nflverse's stats_player_reg_<season>.csv rows into player_stats upsert rows.
 // Pure: no fetch, no DB. Joins each row's gsis_id (nflverse's key) to our players.id
 // (ESPN athlete id) via the crosswalk built in crosswalk.ts, and drops -- with a
-// count, never a guess -- rows whose gsis_id has no crosswalk match at all. With
+// reason code, never a guess -- rows whose gsis_id has no crosswalk match at all. With
 // `requireCurrentRoster` (default true, the daily job's behavior), a crosswalk match
 // still isn't enough -- the resolved ESPN id must also be in `knownPlayerIds`
 // (`players`, current-roster-scoped). A `--seasons` historic backfill passes
@@ -14,6 +14,8 @@
 // codes.ts). An unresolvable or missing code degrades the row's team_id to null rather
 // than dropping the whole stats row -- team is display
 // context here, not row identity.
+
+import type { Drop } from '../utils/ingest/drops';
 
 export interface PlayerStatsInsert {
   player_id: string;
@@ -113,27 +115,38 @@ export const NUMERIC_COLUMNS = [
   'fg_long',
 ] as const;
 
+export type PlayerStatsDropReason =
+  'missing_player_id' | 'no_crosswalk_match' | 'not_on_current_roster' | 'invalid_season';
+
 export function toPlayerStatsRows(
   statsCsvRows: Record<string, string>[],
   crosswalk: Map<string, string>,
   knownPlayerIds: Set<string>,
   resolveTeamCode: (code: string) => string | null,
   opts?: { requireCurrentRoster?: boolean }
-): { rows: PlayerStatsInsert[]; skipped: number } {
+): { rows: PlayerStatsInsert[]; dropped: Drop<PlayerStatsDropReason>[] } {
   const requireCurrentRoster = opts?.requireCurrentRoster ?? true;
   const rows: PlayerStatsInsert[] = [];
-  let skipped = 0;
+  const dropped: Drop<PlayerStatsDropReason>[] = [];
 
-  for (const row of statsCsvRows) {
+  for (const [index, row] of statsCsvRows.entries()) {
     const gsisId = row.player_id?.trim();
-    const espnId = gsisId ? crosswalk.get(gsisId) : undefined;
-    if (!espnId || (requireCurrentRoster && !knownPlayerIds.has(espnId))) {
-      skipped++;
+    if (!gsisId) {
+      dropped.push({ reason: 'missing_player_id', key: `row:${index}` });
+      continue;
+    }
+    const espnId = crosswalk.get(gsisId);
+    if (!espnId) {
+      dropped.push({ reason: 'no_crosswalk_match', key: gsisId });
+      continue;
+    }
+    if (requireCurrentRoster && !knownPlayerIds.has(espnId)) {
+      dropped.push({ reason: 'not_on_current_roster', key: gsisId });
       continue;
     }
     const season = Number(row.season);
     if (Number.isNaN(season)) {
-      skipped++;
+      dropped.push({ reason: 'invalid_season', key: gsisId, value: row.season });
       continue;
     }
 
@@ -151,5 +164,5 @@ export function toPlayerStatsRows(
     });
   }
 
-  return { rows, skipped };
+  return { rows, dropped };
 }

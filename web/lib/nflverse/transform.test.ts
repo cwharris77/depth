@@ -14,7 +14,7 @@ const resolveTeamCode = (code: string): string | null =>
 
 describe('toPlayerStatsRows', () => {
   it('transforms a happy QB row', () => {
-    const { rows, skipped } = toPlayerStatsRows(
+    const { rows, dropped } = toPlayerStatsRows(
       [
         {
           player_id: '00-0033873',
@@ -35,7 +35,7 @@ describe('toPlayerStatsRows', () => {
       KNOWN,
       resolveTeamCode
     );
-    expect(skipped).toBe(0);
+    expect(dropped).toEqual([]);
     expect(rows).toEqual([
       {
         player_id: 'espn-mahomes',
@@ -84,25 +84,25 @@ describe('toPlayerStatsRows', () => {
   });
 
   it('skips a row whose gsis_id has no crosswalk match', () => {
-    const { rows, skipped } = toPlayerStatsRows(
+    const { rows, dropped } = toPlayerStatsRows(
       [{ player_id: '00-9999999', season: '2024', season_type: 'REG', games: '10' }],
       CROSSWALK,
       KNOWN,
       resolveTeamCode
     );
     expect(rows).toEqual([]);
-    expect(skipped).toBe(1);
+    expect(dropped).toEqual([{ reason: 'no_crosswalk_match', key: '00-9999999' }]);
   });
 
   it('skips a row whose crosswalked espn_id is not a known player', () => {
-    const { rows, skipped } = toPlayerStatsRows(
+    const { rows, dropped } = toPlayerStatsRows(
       [{ player_id: '00-0033873', season: '2024', season_type: 'REG', games: '10' }],
       CROSSWALK,
       new Set(), // no known players
       resolveTeamCode
     );
     expect(rows).toEqual([]);
-    expect(skipped).toBe(1);
+    expect(dropped).toEqual([{ reason: 'not_on_current_roster', key: '00-0033873' }]);
   });
 
   it('coerces empty-string numerics to null', () => {
@@ -127,21 +127,21 @@ describe('toPlayerStatsRows', () => {
   });
 
   it('writes a crosswalk-only match when requireCurrentRoster is false', () => {
-    const { rows, skipped } = toPlayerStatsRows(
+    const { rows, dropped } = toPlayerStatsRows(
       [{ player_id: '00-0033873', season: '2013', season_type: 'REG', games: '16' }],
       CROSSWALK,
       new Set(), // no known (current-roster) players
       resolveTeamCode,
       { requireCurrentRoster: false }
     );
-    expect(skipped).toBe(0);
+    expect(dropped).toEqual([]);
     expect(rows).toHaveLength(1);
     expect(rows[0].player_id).toBe('espn-mahomes');
     expect(rows[0].season).toBe(2013);
   });
 
   it('still skips a row with no crosswalk match when requireCurrentRoster is false', () => {
-    const { rows, skipped } = toPlayerStatsRows(
+    const { rows, dropped } = toPlayerStatsRows(
       [{ player_id: '00-9999999', season: '2013', season_type: 'REG', games: '10' }],
       CROSSWALK,
       new Set(),
@@ -149,7 +149,7 @@ describe('toPlayerStatsRows', () => {
       { requireCurrentRoster: false }
     );
     expect(rows).toEqual([]);
-    expect(skipped).toBe(1);
+    expect(dropped).toEqual([{ reason: 'no_crosswalk_match', key: '00-9999999' }]);
   });
 
   it('passes POST rows through with their season_type', () => {
@@ -181,7 +181,7 @@ describe('toPlayerStatsRows', () => {
   });
 
   it('degrades an unresolvable team code to a null team_id, without dropping the row', () => {
-    const { rows, skipped } = toPlayerStatsRows(
+    const { rows, dropped } = toPlayerStatsRows(
       [
         {
           player_id: '00-0033873',
@@ -195,7 +195,7 @@ describe('toPlayerStatsRows', () => {
       KNOWN,
       resolveTeamCode
     );
-    expect(skipped).toBe(0);
+    expect(dropped).toEqual([]);
     expect(rows).toHaveLength(1);
     expect(rows[0].team_id).toBeNull();
   });

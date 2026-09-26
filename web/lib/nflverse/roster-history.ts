@@ -1,3 +1,4 @@
+import type { Drop } from '../utils/ingest/drops';
 import type { Position } from '../types';
 import { mapRosterPosition, type RosterPosition } from './positions';
 import { rankByUsage, usageScore, type UsageEntry, type UsageStatsRow } from './depth-heuristic';
@@ -11,9 +12,10 @@ export const SEASONS_MIN = 1999;
 // Pure join of one season's roster_<season>.csv + stats_player_reg_<season>.csv into roster_history
 // upsert rows. No fetch, no DB -- scripts/ingest-nflverse-rosters.mts is the I/O glue. A roster row
 // missing gsis_id/full_name, whose team code doesn't resolve, or whose position doesn't map is
-// skipped and counted, never guessed. A player traded mid-season can appear more than once for the
-// same team in the raw CSV (e.g. a practice-squad elevation); the last occurrence wins, matching
-// roster_history's (season, team_id, gsis_id) primary key.
+// dropped with a reason code, never guessed. A player traded mid-season can appear more than once
+// for the same team in the raw CSV (e.g. a practice-squad elevation); the last occurrence wins,
+// matching roster_history's (season, team_id, gsis_id) primary key, and each earlier occurrence
+// is dropped as `superseded_duplicate`. Every input row is therefore either written or dropped.
 //
 // `espn_id` comes from the roster CSV when present, else from the caller-supplied
 // gsis_id -> espn_id crosswalk (the same players.csv buildCrosswalk the player-stats
@@ -37,6 +39,13 @@ export interface RosterHistoryInsert {
   depth_rank: number;
   player_order: number;
 }
+
+export type RosterDropReason =
+  | 'missing_gsis_id'
+  | 'missing_name'
+  | 'unknown_team'
+  | 'unmapped_position'
+  | 'superseded_duplicate';
 
 function toNullableText(value: string | undefined): string | null {
   const v = value?.trim();
@@ -94,22 +103,36 @@ export function toRosterHistoryRows(
   resolveTeamCode: (code: string) => string | null,
   crosswalk: Map<string, string> = new Map(),
   depthChartPositions: Map<string, Position> = new Map()
-): { rows: RosterHistoryInsert[]; skipped: number } {
+): { rows: RosterHistoryInsert[]; dropped: Drop<RosterDropReason>[] } {
   const usageByGsisId = buildUsageByGsisId(statsCsvRows);
 
-  let skipped = 0;
+  const dropped: Drop<RosterDropReason>[] = [];
   // Keyed by team+player so a mid-season trade/elevation collapses to one row per the
   // table's primary key -- last occurrence in the CSV wins.
   const byKey = new Map<string, RosterEntry>();
 
-  for (const row of rosterCsvRows) {
+  for (const [index, row] of rosterCsvRows.entries()) {
     const gsisId = row.gsis_id?.trim();
     const name = row.full_name?.trim();
-    const teamId = resolveTeamCode(row.team?.trim() ?? '');
+    const teamCode = row.team?.trim() ?? '';
+    const teamId = resolveTeamCode(teamCode);
     const positionCode = row.depth_chart_position?.trim() || row.position?.trim() || '';
     const rosterPosition = mapRosterPosition(positionCode);
-    if (!gsisId || !name || !teamId || !rosterPosition) {
-      skipped++;
+    const key = gsisId || `row:${index}`;
+    if (!gsisId) {
+      dropped.push({ reason: 'missing_gsis_id', key });
+      continue;
+    }
+    if (!name) {
+      dropped.push({ reason: 'missing_name', key });
+      continue;
+    }
+    if (!teamId) {
+      dropped.push({ reason: 'unknown_team', key, value: teamCode });
+      continue;
+    }
+    if (!rosterPosition) {
+      dropped.push({ reason: 'unmapped_position', key, value: positionCode });
       continue;
     }
     // A depth-chart position is authoritative only when it belongs to this exact
@@ -117,6 +140,7 @@ export function toRosterHistoryRows(
     // than guessed into a side.
     const sourcePosition = depthChartPositions.get(`${teamId}|${gsisId}`);
     const position = sourcePosition ?? rosterPosition;
+    if (byKey.has(`${teamId}|${gsisId}`)) dropped.push({ reason: 'superseded_duplicate', key });
     byKey.set(`${teamId}|${gsisId}`, {
       teamId,
       gsisId,
@@ -167,5 +191,5 @@ export function toRosterHistoryRows(
     }
   }
 
-  return { rows, skipped };
+  return { rows, dropped };
 }
