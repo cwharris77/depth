@@ -49,6 +49,7 @@ export function usageScore(position: RosterPosition, stats: UsageStatsRow | unde
     case 'S':
     case 'FS':
     case 'SS':
+    case 'DB':
       return n(stats.defTacklesSolo) + 3 * (n(stats.defSacks) + n(stats.defInterceptions));
     case 'K':
       return n(stats.fgAtt);

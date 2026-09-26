@@ -7,8 +7,8 @@ import type { Position } from '../types';
 // and guards into one code per pair (`T`/`OT`, `G`/`OG`) with no left/right side in the
 // data -- those remain generic `OT`/`G`; only the separately sourced historical depth
 // chart may establish a side. `OLB`/`ILB`/`MLB` and `EDGE` have no unsided canonical
-// value, so they map to `LB` and `DE`; a generic `DB` maps to `S` because the taxonomy
-// has no generic defensive-back value to hold it. An unrecognized code is `null` -- the caller
+// value, so they map to `LB` and `DE`. A generic `DB` stays `DB` rather than being
+// widened into a corner or safety. An unrecognized code is `null` -- the caller
 // drops the row with a reason, never guesses.
 export type RosterPosition = Position;
 
@@ -30,7 +30,7 @@ const DIRECT: Record<string, Position> = {
   cb: 'CB',
   fs: 'FS',
   ss: 'SS',
-  db: 'S',
+  db: 'DB',
   s: 'S',
   saf: 'S',
   k: 'K',
