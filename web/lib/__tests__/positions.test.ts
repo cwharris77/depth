@@ -32,6 +32,7 @@ const ALL_POSITIONS: Position[] = [
   'S',
   'SS',
   'FS',
+  'DB',
   'K',
   'P',
   'LS',

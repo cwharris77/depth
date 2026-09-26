@@ -34,6 +34,7 @@ describe('unitForPosition', () => {
     expect(unitForPosition('NB')).toBe('defense');
     expect(unitForPosition('SS')).toBe('defense');
     expect(unitForPosition('FS')).toBe('defense');
+    expect(unitForPosition('DB')).toBe('defense');
   });
 });
 
@@ -52,6 +53,7 @@ describe('positionGroupPositions', () => {
       'S',
       'SS',
       'FS',
+      'DB',
     ]);
     expect(positionGroupPositions('D-Line')).toEqual(['DE', 'LDE', 'RDE', 'DT', 'NT']);
     expect(positionGroupPositions('  o line  ')).toEqual(['LT', 'LG', 'C', 'RG', 'RT', 'OT', 'G']);

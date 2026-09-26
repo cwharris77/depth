@@ -33,6 +33,7 @@ export type Position =
   | 'S'
   | 'SS'
   | 'FS'
+  | 'DB'
   | 'K'
   | 'P'
   | 'LS'

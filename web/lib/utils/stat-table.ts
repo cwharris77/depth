@@ -101,6 +101,7 @@ export function seasonStatColumns(position: Position): StatColumn[] {
     case 'S':
     case 'SS':
     case 'FS':
+    case 'DB':
       return [
         { header: 'TKL', value: (s) => String(n(s.defTacklesSolo)) },
         { header: 'SK', value: (s) => formatSacks(s.defSacks) },

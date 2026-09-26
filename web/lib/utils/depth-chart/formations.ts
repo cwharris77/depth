@@ -49,6 +49,7 @@ const POSITION_GROUP: Record<Position, PositionGroup | undefined> = {
   S: 'S',
   SS: 'S',
   FS: 'S',
+  DB: undefined,
   K: undefined,
   P: undefined,
   LS: undefined,
@@ -104,8 +105,14 @@ function assignPositionGroup(pool: Player[], slots: FormationSlot[]): (Player | 
   return result;
 }
 
+// A generic tag that belongs to more than one group. A `DB` can play corner or safety, so it
+// sits in neither group's pool and only fills a CB- or S-group slot that is still empty
+// after both groups have run all three passes. Any tagged corner or safety seats first.
+const GROUP_OVERFLOW: Partial<Record<PositionGroup, Position>> = { CB: 'DB', S: 'DB' };
+
 // Resolves every group-based slot in a formation, one group at a time, so a slot in the
-// 'S' group and a slot in the 'CB' group don't compete for the same pool.
+// 'S' group and a slot in the 'CB' group don't compete for the same pool. Overflow tags
+// then fill the remaining empty slots in slot order, each athlete at most once.
 function resolveGroupedSlots(
   roster: TeamRosterSeed,
   slots: FormationSlot[]
@@ -128,6 +135,22 @@ function resolveGroupedSlots(
       result[slotIdx] = assigned[j];
     });
   }
+
+  const seated = new Set(result.filter((p): p is Player => p !== undefined).map((p) => p.id));
+  const overflowPools = new Map<Position, Player[]>();
+  slots.forEach((slot, i) => {
+    const tag = slot.group && GROUP_OVERFLOW[slot.group];
+    if (result[i] || !tag) return;
+    if (!overflowPools.has(tag))
+      overflowPools.set(
+        tag,
+        playersInSeats(roster, (p) => p === tag)
+      );
+    const player = overflowPools.get(tag)?.find((p) => !seated.has(p.id));
+    if (!player) return;
+    result[i] = player;
+    seated.add(player.id);
+  });
   return result;
 }
 

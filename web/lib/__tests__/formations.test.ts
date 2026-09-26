@@ -753,3 +753,39 @@ describe('offensive line seats generic OT/G tags into sided slots', () => {
     ]);
   });
 });
+
+describe('generic DB tags fill empty corner and safety slots', () => {
+  const SECONDARY = ['SS', 'FS', 'LCB', 'RCB', 'NB'];
+  const secondary = (r: TeamRosterSeed, formation?: FormationSlot[]) =>
+    resolveUnit(r, 'defense', formation)
+      .filter((s) => SECONDARY.includes(s.label))
+      .map((s) => [s.label, s.player?.id]);
+
+  it('seats tagged corners and safeties first, then DBs in slot order, and leaves the surplus off', () => {
+    const r = roster([
+      player({ id: 'db1', position: 'DB', depthRank: 1, number: 21 }),
+      player({ id: 'cb1', position: 'CB', depthRank: 2, number: 24 }),
+      player({ id: 's1', position: 'S', depthRank: 2, number: 30 }),
+      player({ id: 'db2', position: 'DB', depthRank: 2, number: 22 }),
+      player({ id: 'db3', position: 'DB', depthRank: 3, number: 23 }),
+    ]);
+    expect(secondary(r)).toEqual([
+      ['SS', 's1'],
+      ['FS', 'db1'],
+      ['LCB', 'cb1'],
+      ['RCB', 'db2'],
+    ]);
+  });
+
+  it('fills a nickel slot from DBs once the corners run out', () => {
+    const r = roster([
+      player({ id: 'cb1', position: 'CB', depthRank: 1, number: 24 }),
+      player({ id: 'cb2', position: 'CB', depthRank: 2, number: 25 }),
+      player({ id: 's1', position: 'S', depthRank: 1, number: 30 }),
+      player({ id: 'db1', position: 'DB', depthRank: 1, number: 21 }),
+      player({ id: 'db2', position: 'DB', depthRank: 2, number: 22 }),
+    ]);
+    const seated = Object.fromEntries(secondary(r, buildRealDefenseFormation('4-2-5')));
+    expect(seated).toEqual({ LCB: 'cb1', RCB: 'cb2', SS: 's1', FS: 'db1', NB: 'db2' });
+  });
+});

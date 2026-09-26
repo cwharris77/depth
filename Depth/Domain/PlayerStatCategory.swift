@@ -306,7 +306,7 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
         case .wr, .te: [.receiving, .rushing, .passing, .returns]
         case .kr, .pr: [.returns, .receiving, .rushing]
         case .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb, .cb, .lcb, .rcb, .nb, .s,
-            .ss, .fs:
+            .ss, .fs, .db:
             [.tackles, .passRush, .turnovers, .returns]
         case .k: [.kicking]
         case .p: [.snaps, .kicking]

@@ -495,6 +495,58 @@ const resolveUnitCases: {
       player({ id: 'g3', position: 'G', depthRank: 2, number: 63 }),
     ],
   },
+  {
+    description:
+      'secondary, coarse (1 CB, 1 S, 3 DB): tagged corners and safeties seat first, generic DBs fill the empty CB/S slots in slot order, the surplus DB stays off',
+    unit: 'defense',
+    players: [
+      player({ id: 'cb1', position: 'CB', depthRank: 1, number: 24 }),
+      player({ id: 's1', position: 'S', depthRank: 1, number: 30 }),
+      player({ id: 'db1', position: 'DB', depthRank: 1, number: 21 }),
+      player({ id: 'db2', position: 'DB', depthRank: 2, number: 22 }),
+      player({ id: 'db3', position: 'DB', depthRank: 3, number: 23 }),
+    ],
+  },
+  {
+    description:
+      'secondary, nickel with generic DBs (2 CB, 1 S, 3 DB on 4-2-5): the fourth and fifth DB slots take DBs',
+    unit: 'defense',
+    players: [
+      player({ id: 'cb1', position: 'CB', depthRank: 1, number: 24 }),
+      player({ id: 'cb2', position: 'CB', depthRank: 2, number: 25 }),
+      player({ id: 's1', position: 'S', depthRank: 1, number: 30 }),
+      player({ id: 'db1', position: 'DB', depthRank: 1, number: 21 }),
+      player({ id: 'db2', position: 'DB', depthRank: 2, number: 22 }),
+      player({ id: 'db3', position: 'DB', depthRank: 3, number: 23 }),
+    ],
+    realFormation: buildRealDefenseFormation('4-2-5'),
+  },
+  {
+    description:
+      'secondary, fully tagged plus a generic DB backup: every slot seats a tagged player and the DB stays off',
+    unit: 'defense',
+    players: [
+      player({ id: 'lcb', position: 'LCB', depthRank: 1, number: 24 }),
+      player({ id: 'rcb', position: 'RCB', depthRank: 1, number: 25 }),
+      player({ id: 'ss', position: 'SS', depthRank: 1, number: 30 }),
+      player({ id: 'fs', position: 'FS', depthRank: 1, number: 31 }),
+      player({ id: 'db1', position: 'DB', depthRank: 1, number: 21 }),
+    ],
+  },
+  {
+    description:
+      'secondary, one DB holding two depth-chart seats fills a single empty slot, never two',
+    unit: 'defense',
+    players: [
+      player({ id: 'cb1', position: 'CB', depthRank: 1, number: 24 }),
+      player({ id: 'db1', position: 'DB', depthRank: 1, number: 21 }),
+    ],
+    depthChart: [
+      { position: 'CB', depthRank: 1, playerId: 'cb1' },
+      { position: 'DB', depthRank: 1, playerId: 'db1' },
+      { position: 'DB', depthRank: 2, playerId: 'db1' },
+    ],
+  },
 ];
 
 write(
