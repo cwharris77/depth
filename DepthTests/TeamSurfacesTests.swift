@@ -36,7 +36,7 @@ private struct TeamSurfaceCase: Decodable {
 @Test func teamSurfacesParity() throws {
     let cases = try loadFixture("team-surfaces", as: [TeamSurfaceCase].self)
     // Guards against a truncated or stale fixture silently passing with a handful of rows.
-    #expect(cases.count == 107, "expected every curated kit in the fixture")
+    #expect(cases.count == 109, "expected every curated kit in the fixture")
 
     for c in cases {
         let colors = c.colors.domain
