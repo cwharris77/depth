@@ -43,6 +43,11 @@ one rule mechanically: published data stays decodable by every supported app bui
   - `roster_history.position` may carry generic `OT`/`G` for offensive linemen with no
     sided depth-chart row (mostly pre-2001 seasons). Build 764 decodes both
     (`Depth/Domain/Position.swift`); older builds are blocked by the gate at 764.
+  - `roster_history.position` may carry generic `DB` for defensive backs the source does
+    not split into corner or safety (mostly pre-2001 seasons). Build 764 does not decode
+    `DB`; `HistoricalRosterMapper` drops and logs those rows, so those players are omitted
+    from that build's historical view, never mislabeled. Builds that decode `DB` seat them
+    in empty corner and safety slots.
   - The canonical `player_season_stats` table has **not** landed; build 764
     still reads the legacy `player_stats` table exclusively.
   - `app_config` is frozen by contract — the gate reads exactly two columns

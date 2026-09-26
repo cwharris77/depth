@@ -20,7 +20,7 @@ describe('mapRosterPosition', () => {
     expect(mapRosterPosition('CB')).toBe('CB');
     expect(mapRosterPosition('FS')).toBe('FS');
     expect(mapRosterPosition('SS')).toBe('SS');
-    expect(mapRosterPosition('DB')).toBe('S');
+    expect(mapRosterPosition('DB')).toBe('DB');
     expect(mapRosterPosition('S')).toBe('S');
     expect(mapRosterPosition('SAF')).toBe('S');
     expect(mapRosterPosition('K')).toBe('K');
