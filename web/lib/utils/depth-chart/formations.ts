@@ -10,9 +10,9 @@ import type {
 import { getPlayerById, getPlayersByPosition, playersInSeats } from '@/lib/utils/roster/roster';
 
 // Maps a granular Position to the broad group nflverse's count-only personnel data can
-// resolve against (lib/types.ts's PositionGroup doc comment). Used only by the real-
-// formation slot builders below (buildDlSlots/buildLbSlots/buildDbSlots, and
-// buildRealFormation's RB slots) — the depth chart, player cards, and compare view match
+// resolve against (lib/types.ts's PositionGroup doc comment). Used only by group-based
+// slots below (the five OL slots, buildDlSlots/buildLbSlots/buildDbSlots, the RB slots,
+// and BASE_DEFENSE) — the depth chart, player cards, and compare view match
 // the full granular Position everywhere else. A total Record (not a switch with a
 // `default`) so adding a Position to the union without a group entry here is a compile
 // error — the same enforcement POSITION_FULL_NAMES and lib/teams/_build.ts's BUILD rely
@@ -25,13 +25,13 @@ const POSITION_GROUP: Record<Position, PositionGroup | undefined> = {
   FB: 'RB',
   WR: undefined,
   TE: undefined,
-  LT: undefined,
-  LG: undefined,
-  C: undefined,
-  RG: undefined,
-  RT: undefined,
-  OT: undefined,
-  G: undefined,
+  LT: 'OL',
+  LG: 'OL',
+  C: 'OL',
+  RG: 'OL',
+  RT: 'OL',
+  OT: 'OL',
+  G: 'OL',
   DE: 'DL',
   LDE: 'DL',
   RDE: 'DL',
@@ -66,33 +66,39 @@ function getPlayersByPositionGroup(roster: TeamRosterSeed, group: PositionGroup)
   return playersInSeats(roster, (p) => positionGroup(p) === group);
 }
 
-// Assigns players to a set of same-group slots: a slot with `preferredPosition` claims
-// the best-ranked player carrying that exact tag first (so DB_SLOTS' "SS" dot gets the
-// roster's actual strong safety, not just whichever safety sorts first); every remaining
-// slot (no preference, or no player carries it) is filled in original slot order from
-// whatever's left of the depth-ordered pool — the same fallback semantics group-based
-// resolution always had.
+// Assigns players to a set of same-group slots in three passes:
+//   1. a slot with `preferredPosition` claims the best-ranked player carrying that exact
+//      tag (so DB_SLOTS' "SS" dot gets the roster's actual strong safety, not just
+//      whichever safety sorts first);
+//   2. a still-empty slot with `familyPosition` claims the best-ranked player carrying
+//      that generic tag (an 'OT' for a tackle slot, a 'G' for a guard slot);
+//   3. every remaining slot is filled in original slot order from whatever's left of the
+//      depth-ordered pool.
+// Passes 2 and 3 skip an athlete already seated by an earlier pass: the pool holds seats,
+// so a swing tackle at LT2 and RT1 appears twice and would otherwise fill a second dot.
+// Pass 1 keeps exact-tag seating as it has always been.
 function assignPositionGroup(pool: Player[], slots: FormationSlot[]): (Player | undefined)[] {
   const remaining = [...pool];
   const result: (Player | undefined)[] = new Array(slots.length).fill(undefined);
-  const fallbackIndices: number[] = [];
+  const seated = new Set<string>();
+
+  const claim = (i: number, matches: (p: Player) => boolean): void => {
+    const idx = remaining.findIndex((p) => matches(p));
+    if (idx === -1) return;
+    result[i] = remaining[idx];
+    seated.add(remaining[idx].id);
+    remaining.splice(idx, 1);
+  };
 
   slots.forEach((slot, i) => {
-    if (!slot.preferredPosition) {
-      fallbackIndices.push(i);
-      return;
-    }
-    const matchIdx = remaining.findIndex((p) => p.position === slot.preferredPosition);
-    if (matchIdx === -1) {
-      fallbackIndices.push(i);
-      return;
-    }
-    result[i] = remaining[matchIdx];
-    remaining.splice(matchIdx, 1);
+    if (slot.preferredPosition) claim(i, (p) => p.position === slot.preferredPosition);
   });
-
-  fallbackIndices.forEach((i) => {
-    result[i] = remaining.shift();
+  slots.forEach((slot, i) => {
+    if (result[i] || !slot.familyPosition) return;
+    claim(i, (p) => p.position === slot.familyPosition && !seated.has(p.id));
+  });
+  slots.forEach((_, i) => {
+    if (!result[i]) claim(i, (p) => !seated.has(p.id));
   });
 
   return result;
@@ -125,6 +131,72 @@ function resolveGroupedSlots(
   return result;
 }
 
+// The five line slots, shared by OFFENSE_FORMATION and every real formation. Group-based
+// so a roster without sides still fills the line: an exact LT/LG/C/RG/RT tag seats first,
+// then the generic family (OT at tackle, G at guard), then any remaining lineman in depth
+// order. A fully sided roster seats all five on the exact tag, exactly as before.
+const OL_SLOTS: FormationSlot[] = [
+  {
+    id: 'off-lt-0',
+    position: 'LT',
+    index: 0,
+    group: 'OL',
+    preferredPosition: 'LT',
+    familyPosition: 'OT',
+    x: 34,
+    y: 51,
+    label: 'LT',
+    onLine: true,
+  },
+  {
+    id: 'off-lg-0',
+    position: 'LG',
+    index: 0,
+    group: 'OL',
+    preferredPosition: 'LG',
+    familyPosition: 'G',
+    x: 42,
+    y: 51,
+    label: 'LG',
+    onLine: true,
+  },
+  {
+    id: 'off-c-0',
+    position: 'C',
+    index: 0,
+    group: 'OL',
+    preferredPosition: 'C',
+    x: 50,
+    y: 51,
+    label: 'C',
+    onLine: true,
+  },
+  {
+    id: 'off-rg-0',
+    position: 'RG',
+    index: 0,
+    group: 'OL',
+    preferredPosition: 'RG',
+    familyPosition: 'G',
+    x: 58,
+    y: 51,
+    label: 'RG',
+    onLine: true,
+  },
+  {
+    id: 'off-rt-0',
+    position: 'RT',
+    index: 0,
+    group: 'OL',
+    preferredPosition: 'RT',
+    familyPosition: 'OT',
+    x: 66,
+    y: 51,
+    label: 'RT',
+    onLine: true,
+  },
+];
+
 // Shared, generic formations. Every team's offense/defense renders on these — slots
 // resolve to players by position group + depth index, so adding a team is data-only.
 //
@@ -141,11 +213,7 @@ export const OFFENSE_FORMATION: FormationSlot[] = [
   { id: 'off-wr-1', position: 'WR', index: 1, x: 12, y: 55, label: 'WR', onLine: false },
   { id: 'off-wr-2', position: 'WR', index: 2, x: 24, y: 56, label: 'WR', onLine: false },
   { id: 'off-te-0', position: 'TE', index: 0, x: 74, y: 51, label: 'TE', onLine: true },
-  { id: 'off-lt-0', position: 'LT', index: 0, x: 34, y: 51, label: 'LT', onLine: true },
-  { id: 'off-lg-0', position: 'LG', index: 0, x: 42, y: 51, label: 'LG', onLine: true },
-  { id: 'off-c-0', position: 'C', index: 0, x: 50, y: 51, label: 'C', onLine: true },
-  { id: 'off-rg-0', position: 'RG', index: 0, x: 58, y: 51, label: 'RG', onLine: true },
-  { id: 'off-rt-0', position: 'RT', index: 0, x: 66, y: 51, label: 'RT', onLine: true },
+  ...OL_SLOTS,
   { id: 'off-qb-0', position: 'QB', index: 0, x: 50, y: 66, label: 'QB', onLine: false },
   // group: 'RB' + preferredPosition: 'RB' — prefers an exact RB tag (the common case: a
   // real halfback fills this dot) but falls back to the roster's best-ranked FB when the
@@ -389,16 +457,6 @@ interface SkillSlot {
   label: string;
 }
 
-// x/y for the 5 OL, unchanged from the generic base look — every real formation keeps
-// the same line.
-const OL_SLOTS: SkillSlot[] = [
-  { position: 'LT', index: 0, x: 34, y: LINE_Y, label: 'LT', onLine: true },
-  { position: 'LG', index: 0, x: 42, y: LINE_Y, label: 'LG', onLine: true },
-  { position: 'C', index: 0, x: 50, y: LINE_Y, label: 'C', onLine: true },
-  { position: 'RG', index: 0, x: 58, y: LINE_Y, label: 'RG', onLine: true },
-  { position: 'RT', index: 0, x: 66, y: LINE_Y, label: 'RT', onLine: true },
-];
-
 function slotId(s: Pick<SkillSlot, 'position' | 'index'>): string {
   return `off-${s.position.toLowerCase()}-${s.index}`;
 }
@@ -491,7 +549,10 @@ export function buildRealFormation(alignment: string, code: string): FormationSl
     label: 'QB',
   };
 
-  return [...OL_SLOTS, ...skillSlots, ...rbSlots, qbSlot].map((s) => ({ ...s, id: slotId(s) }));
+  return [
+    ...OL_SLOTS,
+    ...[...skillSlots, ...rbSlots, qbSlot].map((s) => ({ ...s, id: slotId(s) })),
+  ];
 }
 
 // --- Real per-team defensive formations (mirrors buildRealFormation above) ------------

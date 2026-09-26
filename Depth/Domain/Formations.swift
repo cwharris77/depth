@@ -12,7 +12,7 @@ import Foundation
 // the TS Record's compile-time enforcement.
 private let positionGroupMap: [Position: PositionGroup?] = [
     .qb: nil, .rb: .rb, .fb: .rb, .wr: nil, .te: nil,
-    .lt: nil, .lg: nil, .c: nil, .rg: nil, .rt: nil, .ot: nil, .g: nil,
+    .lt: .ol, .lg: .ol, .c: .ol, .rg: .ol, .rt: .ol, .ot: .ol, .g: .ol,
     .de: .dl, .lde: .dl, .rde: .dl, .dt: .dl, .nt: .dl,
     .lb: .lb, .wlb: .lb, .lilb: .lb, .rilb: .lb, .slb: .lb,
     .cb: .cb, .lcb: .cb, .rcb: .cb, .nb: .cb,
@@ -30,31 +30,35 @@ private func players(in roster: Roster, group: PositionGroup) -> [Player] {
     playersInSeats(in: roster) { positionGroup($0) == group }
 }
 
-/// Assigns players to a set of same-group slots: a slot with `preferredPosition` claims
-/// the best-ranked player carrying that exact tag first; every remaining slot (no
-/// preference, or no player carries it) is filled in original slot order from whatever's
-/// left of the depth-ordered pool. Mirrors assignPositionGroup exactly.
+/// Assigns players to a set of same-group slots in three passes: an exact
+/// `preferredPosition` match, then a generic `familyPosition` match (OT at tackle, G at
+/// guard), then whatever's left of the depth-ordered pool in slot order. Passes 2 and 3
+/// skip an athlete already seated, since the pool holds seats and one athlete can hold
+/// two. Mirrors assignPositionGroup exactly.
 private func assignPositionGroup(pool: [Player], slots: [FormationSlot]) -> [Player?] {
     var remaining = pool
     var result = [Player?](repeating: nil, count: slots.count)
-    var fallbackIndices: [Int] = []
+    var seated = Set<String>()
 
-    for (i, slot) in slots.enumerated() {
-        guard let preferred = slot.preferredPosition else {
-            fallbackIndices.append(i)
-            continue
-        }
-        guard let matchIdx = remaining.firstIndex(where: { $0.position == preferred }) else {
-            fallbackIndices.append(i)
-            continue
-        }
-        result[i] = remaining[matchIdx]
-        remaining.remove(at: matchIdx)
+    func claim(_ i: Int, _ matches: (Player) -> Bool) {
+        guard let idx = remaining.firstIndex(where: matches) else { return }
+        result[i] = remaining[idx]
+        seated.insert(remaining[idx].id)
+        remaining.remove(at: idx)
     }
 
-    for i in fallbackIndices {
-        if remaining.isEmpty { continue }
-        result[i] = remaining.removeFirst()
+    for (i, slot) in slots.enumerated() {
+        if let preferred = slot.preferredPosition {
+            claim(i) { $0.position == preferred }
+        }
+    }
+    for (i, slot) in slots.enumerated() where result[i] == nil {
+        if let family = slot.familyPosition {
+            claim(i) { $0.position == family && !seated.contains($0.id) }
+        }
+    }
+    for i in slots.indices where result[i] == nil {
+        claim(i) { !seated.contains($0.id) }
     }
 
     return result
@@ -89,27 +93,44 @@ private func resolveGroupedSlots(roster: Roster, slots: [FormationSlot]) -> [Pla
 // --- Shared, generic formations --------------------------------------------------
 // Coords are percentages: x = 0–100 across, y = 0–100 down. y=50 = line of scrimmage.
 
-let offenseFormation: [FormationSlot] = [
-    FormationSlot(id: "off-wr-0", position: .wr, index: 0, x: 88, y: 51, label: "WR", onLine: true),
+/// The five line slots, shared by offenseFormation and every real formation. Group-based
+/// so a roster without sides still fills the line: an exact LT/LG/C/RG/RT tag seats
+/// first, then the generic family (OT at tackle, G at guard), then any remaining lineman
+/// in depth order. A fully sided roster seats all five on the exact tag.
+private let olSlots: [FormationSlot] = [
+    (Position.lt, Position.ot as Position?, 34.0),
+    (.lg, .g, 42),
+    (.c, nil, 50),
+    (.rg, .g, 58),
+    (.rt, .ot, 66),
+].map { position, family, x in
     FormationSlot(
-        id: "off-wr-1", position: .wr, index: 1, x: 12, y: 55, label: "WR", onLine: false),
-    FormationSlot(
-        id: "off-wr-2", position: .wr, index: 2, x: 24, y: 56, label: "WR", onLine: false),
-    FormationSlot(id: "off-te-0", position: .te, index: 0, x: 74, y: 51, label: "TE", onLine: true),
-    FormationSlot(id: "off-lt-0", position: .lt, index: 0, x: 34, y: 51, label: "LT", onLine: true),
-    FormationSlot(id: "off-lg-0", position: .lg, index: 0, x: 42, y: 51, label: "LG", onLine: true),
-    FormationSlot(id: "off-c-0", position: .c, index: 0, x: 50, y: 51, label: "C", onLine: true),
-    FormationSlot(id: "off-rg-0", position: .rg, index: 0, x: 58, y: 51, label: "RG", onLine: true),
-    FormationSlot(id: "off-rt-0", position: .rt, index: 0, x: 66, y: 51, label: "RT", onLine: true),
-    FormationSlot(
-        id: "off-qb-0", position: .qb, index: 0, x: 50, y: 66, label: "QB", onLine: false),
-    // group: .rb + preferredPosition: .rb — prefers an exact RB tag but falls back to
-    // the roster's best-ranked FB when the team has no player tagged RB at all.
-    FormationSlot(
-        id: "off-rb-0", position: .rb, index: 0, group: .rb, preferredPosition: .rb,
-        x: 50, y: 78, label: "RB", onLine: false
-    ),
-]
+        id: "off-\(position.rawValue.lowercased())-0", position: position, index: 0,
+        group: .ol, preferredPosition: position, familyPosition: family,
+        x: x, y: 51, label: position.rawValue, onLine: true
+    )
+}
+
+let offenseFormation: [FormationSlot] =
+    [
+        FormationSlot(
+            id: "off-wr-0", position: .wr, index: 0, x: 88, y: 51, label: "WR", onLine: true),
+        FormationSlot(
+            id: "off-wr-1", position: .wr, index: 1, x: 12, y: 55, label: "WR", onLine: false),
+        FormationSlot(
+            id: "off-wr-2", position: .wr, index: 2, x: 24, y: 56, label: "WR", onLine: false),
+        FormationSlot(
+            id: "off-te-0", position: .te, index: 0, x: 74, y: 51, label: "TE", onLine: true),
+    ] + olSlots + [
+        FormationSlot(
+            id: "off-qb-0", position: .qb, index: 0, x: 50, y: 66, label: "QB", onLine: false),
+        // group: .rb + preferredPosition: .rb — prefers an exact RB tag but falls back to
+        // the roster's best-ranked FB when the team has no player tagged RB at all.
+        FormationSlot(
+            id: "off-rb-0", position: .rb, index: 0, group: .rb, preferredPosition: .rb,
+            x: 50, y: 78, label: "RB", onLine: false
+        ),
+    ]
 
 // True 3-4 base: a 3-man front (LDE/NT/RDE) + 4 linebackers (WLB/LILB/RILB/SLB).
 //
@@ -254,14 +275,6 @@ private struct SkillSlot {
     var label: String
 }
 
-private let olSlots: [SkillSlot] = [
-    SkillSlot(position: .lt, index: 0, x: 34, y: lineY, onLine: true, label: "LT"),
-    SkillSlot(position: .lg, index: 0, x: 42, y: lineY, onLine: true, label: "LG"),
-    SkillSlot(position: .c, index: 0, x: 50, y: lineY, onLine: true, label: "C"),
-    SkillSlot(position: .rg, index: 0, x: 58, y: lineY, onLine: true, label: "RG"),
-    SkillSlot(position: .rt, index: 0, x: 66, y: lineY, onLine: true, label: "RT"),
-]
-
 private func slotId(_ position: Position, _ index: Int) -> String {
     "off-\(position.rawValue.lowercased())-\(index)"
 }
@@ -346,13 +359,14 @@ func buildRealFormation(alignment: String, code: String) -> [FormationSlot] {
         onLine: false, label: "QB"
     )
 
-    return (olSlots + skillSlots + rbSlots + [qbSlot]).map { s in
-        FormationSlot(
-            id: slotId(s.position, s.index), position: s.position, index: s.index,
-            group: s.group, preferredPosition: s.preferredPosition,
-            x: s.x, y: s.y, label: s.label, onLine: s.onLine
-        )
-    }
+    return olSlots
+        + (skillSlots + rbSlots + [qbSlot]).map { s in
+            FormationSlot(
+                id: slotId(s.position, s.index), position: s.position, index: s.index,
+                group: s.group, preferredPosition: s.preferredPosition,
+                x: s.x, y: s.y, label: s.label, onLine: s.onLine
+            )
+        }
 }
 
 // --- Real per-team defensive formations -------------------------------------------

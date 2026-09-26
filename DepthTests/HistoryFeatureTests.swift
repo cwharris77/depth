@@ -207,6 +207,34 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
     #expect(Set(resolved.compactMap { $0.player?.id }).count == resolved.count)
 }
 
+@Test func historicalOffenseSeatsGenericLinemenOnTheirSidedSlots() throws {
+    // Seasons before sided depth charts carry only generic OT/G tags. The line slots seat
+    // the tackles outside and the guards inside instead of leaving a lone center.
+    let line: [(String, String)] = [
+        ("c1", "C"), ("ot1", "OT"), ("ot2", "OT"), ("g1", "G"), ("g2", "G"),
+    ]
+    let snapshot = try HistoricalRosterMapper.map(
+        team: historyTeam(),
+        rows: line.enumerated().map { i, entry in
+            historyRow(gsisId: entry.0, name: entry.0, position: entry.1, playerOrder: i)
+        }
+    )
+    let resolved = resolveUnit(
+        roster: Roster(players: snapshot.players, specialTeams: snapshot.specialTeams),
+        unit: .offense
+    )
+    let lineLabels: Set = ["LT", "LG", "C", "RG", "RT"]
+    let seated = Dictionary(
+        uniqueKeysWithValues: resolved.filter { lineLabels.contains($0.label) }
+            .map { ($0.label, $0.player?.name) })
+
+    #expect(seated["LT"] == "ot1")
+    #expect(seated["LG"] == "g1")
+    #expect(seated["C"] == "c1")
+    #expect(seated["RG"] == "g2")
+    #expect(seated["RT"] == "ot2")
+}
+
 @Test func historicalPlayerReferenceParserRejectsMalformedReferences() {
     #expect(
         parseHistoricalPlayerReference("gsis:00-0031234@2013")

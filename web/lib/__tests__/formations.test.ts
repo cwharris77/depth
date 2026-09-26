@@ -8,7 +8,7 @@ import {
   alignmentLabel,
 } from '@/lib/utils/depth-chart/formations';
 import { getPlayersByPosition, TEAMS } from '@/lib/teams';
-import type { FormationSlot, Player, TeamRoster } from '@/lib/types';
+import type { FormationSlot, Player, TeamRoster, TeamRosterSeed } from '@/lib/types';
 
 // Minimal roster factory — only the fields the resolver touches.
 function player(
@@ -178,6 +178,13 @@ describe('formations are well-formed', () => {
     // compile or test failure to catch it -- this pins the known group membership for
     // every preferredPosition value in use today.
     const GROUP_OF: Record<string, string> = {
+      LT: 'OL',
+      LG: 'OL',
+      C: 'OL',
+      RG: 'OL',
+      RT: 'OL',
+      OT: 'OL',
+      G: 'OL',
       RB: 'RB',
       FB: 'RB',
       LCB: 'CB',
@@ -199,8 +206,9 @@ describe('formations are well-formed', () => {
       ...OFFENSE_FORMATION,
     ];
     for (const slot of allRealSlots) {
-      if (!slot.group || !slot.preferredPosition) continue;
-      expect(GROUP_OF[slot.preferredPosition]).toBe(slot.group);
+      if (!slot.group) continue;
+      if (slot.preferredPosition) expect(GROUP_OF[slot.preferredPosition]).toBe(slot.group);
+      if (slot.familyPosition) expect(GROUP_OF[slot.familyPosition]).toBe(slot.group);
     }
   });
 
@@ -646,5 +654,102 @@ describe('BASE_DEFENSE resolves a generically-tagged roster (historical-defense 
     expect(resolved.find((s) => s.label === 'SS')?.player?.id).toBe('strong');
     expect(resolved.find((s) => s.label === 'FS')?.player?.id).toBe('free');
     expect(resolved.find((s) => s.label === 'LDE')?.player?.id).toBe('edge');
+  });
+});
+
+describe('offensive line seats generic OT/G tags into sided slots', () => {
+  const LINE = ['LT', 'LG', 'C', 'RG', 'RT'] as const;
+  const line = (r: TeamRosterSeed, formation?: FormationSlot[]) =>
+    resolveUnit(r, 'offense', formation)
+      .filter((s) => (LINE as readonly string[]).includes(s.label))
+      .map((s) => [s.label, s.player?.id]);
+
+  for (const [id, shipped] of Object.entries(TEAMS)) {
+    it(`${id}: a sided roster seats each line slot on its exact tag, same as a position lookup`, () => {
+      const exact = LINE.map((pos) => [pos, getPlayersByPosition(shipped, pos)[0]?.id]);
+      expect(line(shipped)).toEqual(exact);
+      expect(line(shipped, buildRealFormation('SHOTGUN', '11'))).toEqual(exact);
+    });
+  }
+
+  it('seats a coarse 2 OT / 2 G / 1 C roster with tackles outside and guards inside', () => {
+    const r = roster([
+      player({ id: 'g2', position: 'G', depthRank: 1, number: 66, order: 4 }),
+      player({ id: 'ot2', position: 'OT', depthRank: 1, number: 78, order: 2 }),
+      player({ id: 'c1', position: 'C', depthRank: 1, number: 60, order: 1 }),
+      player({ id: 'ot1', position: 'OT', depthRank: 1, number: 71, order: 1 }),
+      player({ id: 'g1', position: 'G', depthRank: 1, number: 64, order: 3 }),
+    ]);
+    expect(line(r)).toEqual([
+      ['LT', 'ot1'],
+      ['LG', 'g1'],
+      ['C', 'c1'],
+      ['RG', 'g2'],
+      ['RT', 'ot2'],
+    ]);
+  });
+
+  it('never seats a guard at tackle while a tackle is unseated, even when the guard ranks higher', () => {
+    const r = roster([
+      player({ id: 'g1', position: 'G', depthRank: 1, number: 61 }),
+      player({ id: 'g2', position: 'G', depthRank: 1, number: 62 }),
+      player({ id: 'g3', position: 'G', depthRank: 1, number: 63 }),
+      player({ id: 'c1', position: 'C', depthRank: 1, number: 50 }),
+      player({ id: 'ot1', position: 'OT', depthRank: 2, number: 79 }),
+    ]);
+    const seated = Object.fromEntries(line(r));
+    expect(seated.LT).toBe('ot1');
+    expect(seated.RT).toBe('g3');
+  });
+
+  it('leaves slots empty on a short pool and never repeats a player', () => {
+    const r = roster([
+      player({ id: 'ot1', position: 'OT', depthRank: 1, number: 71 }),
+      player({ id: 'c1', position: 'C', depthRank: 1, number: 60 }),
+    ]);
+    expect(line(r)).toEqual([
+      ['LT', 'ot1'],
+      ['LG', undefined],
+      ['C', 'c1'],
+      ['RG', undefined],
+      ['RT', undefined],
+    ]);
+  });
+
+  it('keeps surplus linemen off the field', () => {
+    const r = roster(
+      ['OT', 'OT', 'OT', 'G', 'G', 'G', 'C', 'C'].map((position, i) =>
+        player({
+          id: `ol${i}`,
+          position: position as Player['position'],
+          depthRank: 1,
+          number: 60 + i,
+        })
+      )
+    );
+    const ids = line(r).map(([, id]) => id);
+    expect(ids).toEqual(['ol0', 'ol3', 'ol6', 'ol4', 'ol1']);
+    expect(new Set(ids).size).toBe(5);
+  });
+
+  it('does not seat a swing tackle a second time in an open line slot', () => {
+    const r: TeamRoster = {
+      ...roster([
+        player({ id: 'lt1', position: 'LT', depthRank: 1, number: 77 }),
+        player({ id: 'swing', position: 'LT', depthRank: 2, number: 70 }),
+      ]),
+      depthChart: [
+        { position: 'LT', depthRank: 1, playerId: 'lt1' },
+        { position: 'LT', depthRank: 2, playerId: 'swing' },
+        { position: 'RT', depthRank: 1, playerId: 'swing' },
+      ],
+    };
+    expect(line(r)).toEqual([
+      ['LT', 'lt1'],
+      ['LG', undefined],
+      ['C', undefined],
+      ['RG', undefined],
+      ['RT', 'swing'],
+    ]);
   });
 });

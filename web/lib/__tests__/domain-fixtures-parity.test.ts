@@ -92,6 +92,7 @@ function slimSlot(s: FormationSlot) {
     index: s.index,
     group: s.group ?? null,
     preferredPosition: s.preferredPosition ?? null,
+    familyPosition: s.familyPosition ?? null,
     x: s.x,
     y: s.y,
     label: s.label,

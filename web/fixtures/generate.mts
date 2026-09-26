@@ -86,6 +86,7 @@ function slimSlot(s: FormationSlot) {
     index: s.index,
     group: s.group ?? null,
     preferredPosition: s.preferredPosition ?? null,
+    familyPosition: s.familyPosition ?? null,
     x: s.x,
     y: s.y,
     label: s.label,
@@ -367,6 +368,131 @@ const resolveUnitCases: {
     depthChart: [
       { position: 'LT', depthRank: 1, playerId: 'lt1' },
       { position: 'RT', depthRank: 1, playerId: 'ghost' },
+    ],
+  },
+  {
+    description:
+      'offensive line, granular roster without a depth chart: every line slot seats its exact tag in pass 1, backups stay off the field',
+    unit: 'offense',
+    players: [
+      player({ id: 'rt2', position: 'RT', depthRank: 2, number: 68 }),
+      player({ id: 'lg1', position: 'LG', depthRank: 1, number: 64 }),
+      player({ id: 'c2', position: 'C', depthRank: 2, number: 61 }),
+      player({ id: 'lt1', position: 'LT', depthRank: 1, number: 71 }),
+      player({ id: 'rg2', position: 'RG', depthRank: 2, number: 66 }),
+      player({ id: 'c1', position: 'C', depthRank: 1, number: 60 }),
+      player({ id: 'rt1', position: 'RT', depthRank: 1, number: 78 }),
+      player({ id: 'lt2', position: 'LT', depthRank: 2, number: 72 }),
+      player({ id: 'rg1', position: 'RG', depthRank: 1, number: 65 }),
+      player({ id: 'lg2', position: 'LG', depthRank: 2, number: 63 }),
+    ],
+  },
+  {
+    description:
+      'offensive line, granular starters with generic OT/G backups: the exact tags still win every slot and the generic backups stay off the field',
+    unit: 'offense',
+    players: [
+      player({ id: 'ot-backup', position: 'OT', depthRank: 1, number: 70 }),
+      player({ id: 'g-backup', position: 'G', depthRank: 1, number: 62 }),
+      player({ id: 'lt1', position: 'LT', depthRank: 1, number: 77 }),
+      player({ id: 'lg1', position: 'LG', depthRank: 1, number: 76 }),
+      player({ id: 'c1', position: 'C', depthRank: 1, number: 52 }),
+      player({ id: 'rg1', position: 'RG', depthRank: 1, number: 75 }),
+      player({ id: 'rt1', position: 'RT', depthRank: 1, number: 74 }),
+    ],
+    realFormation: buildRealFormation('SHOTGUN', '11'),
+  },
+  {
+    description:
+      'offensive line, depth-chart seats with a guard doubling as backup center: starters seat on their exact seats',
+    unit: 'offense',
+    players: [
+      player({ id: 'lt1', position: 'LT', depthRank: 1, number: 71 }),
+      player({ id: 'lg1', position: 'LG', depthRank: 1, number: 67 }),
+      player({ id: 'c1', position: 'C', depthRank: 1, number: 55 }),
+      player({ id: 'rg1', position: 'RG', depthRank: 1, number: 63 }),
+      player({ id: 'rt1', position: 'RT', depthRank: 1, number: 79 }),
+    ],
+    depthChart: [
+      { position: 'LT', depthRank: 1, playerId: 'lt1' },
+      { position: 'LG', depthRank: 1, playerId: 'lg1' },
+      { position: 'C', depthRank: 1, playerId: 'c1' },
+      { position: 'C', depthRank: 2, playerId: 'lg1' },
+      { position: 'RG', depthRank: 1, playerId: 'rg1' },
+      { position: 'RT', depthRank: 1, playerId: 'rt1' },
+    ],
+  },
+  {
+    description:
+      'offensive line, coarse 1999-style roster (2 OT, 2 G, 1 C): tackles seat at LT/RT and guards at LG/RG, best-ranked on the left',
+    unit: 'offense',
+    players: [
+      player({ id: 'g2', position: 'G', depthRank: 1, number: 66, order: 4 }),
+      player({ id: 'ot2', position: 'OT', depthRank: 1, number: 78, order: 2 }),
+      player({ id: 'c1', position: 'C', depthRank: 1, number: 60, order: 1 }),
+      player({ id: 'ot1', position: 'OT', depthRank: 1, number: 71, order: 1 }),
+      player({ id: 'g1', position: 'G', depthRank: 1, number: 64, order: 3 }),
+    ],
+  },
+  {
+    description:
+      'offensive line, a guard ranked ahead of the lone tackle never takes a tackle slot while that tackle is unseated',
+    unit: 'offense',
+    players: [
+      player({ id: 'g1', position: 'G', depthRank: 1, number: 61 }),
+      player({ id: 'g2', position: 'G', depthRank: 1, number: 62 }),
+      player({ id: 'g3', position: 'G', depthRank: 1, number: 63 }),
+      player({ id: 'c1', position: 'C', depthRank: 1, number: 50 }),
+      player({ id: 'ot1', position: 'OT', depthRank: 2, number: 79 }),
+    ],
+  },
+  {
+    description:
+      'offensive line, sided and generic tags mixed: the exact LT seats at LT and the generic OT takes RT',
+    unit: 'offense',
+    players: [
+      player({ id: 'ot1', position: 'OT', depthRank: 1, number: 70 }),
+      player({ id: 'lt1', position: 'LT', depthRank: 1, number: 77 }),
+      player({ id: 'g1', position: 'G', depthRank: 1, number: 64 }),
+      player({ id: 'g2', position: 'G', depthRank: 1, number: 65 }),
+      player({ id: 'c1', position: 'C', depthRank: 1, number: 60 }),
+    ],
+  },
+  {
+    description:
+      'offensive line, short pool (1 OT, 1 C): the remaining line slots stay empty, no player is repeated',
+    unit: 'offense',
+    players: [
+      player({ id: 'ot1', position: 'OT', depthRank: 1, number: 71 }),
+      player({ id: 'c1', position: 'C', depthRank: 1, number: 60 }),
+    ],
+  },
+  {
+    description:
+      'offensive line, surplus pool (3 OT, 3 G, 2 C): five distinct linemen seat and the surplus stays off the field',
+    unit: 'offense',
+    players: [
+      player({ id: 'ot1', position: 'OT', depthRank: 1, number: 71 }),
+      player({ id: 'ot2', position: 'OT', depthRank: 1, number: 72 }),
+      player({ id: 'ot3', position: 'OT', depthRank: 2, number: 73 }),
+      player({ id: 'g1', position: 'G', depthRank: 1, number: 61 }),
+      player({ id: 'g2', position: 'G', depthRank: 1, number: 62 }),
+      player({ id: 'g3', position: 'G', depthRank: 2, number: 63 }),
+      player({ id: 'c1', position: 'C', depthRank: 1, number: 50 }),
+      player({ id: 'c2', position: 'C', depthRank: 2, number: 51 }),
+    ],
+    realFormation: buildRealFormation('UNDER CENTER', '12'),
+  },
+  {
+    description:
+      'offensive line, no center but spare guards: pass 3 seats the next guard at C after the tackles and guards are placed',
+    unit: 'offense',
+    players: [
+      player({ id: 'ot1', position: 'OT', depthRank: 1, number: 71 }),
+      player({ id: 'ot2', position: 'OT', depthRank: 1, number: 72 }),
+      player({ id: 'g1', position: 'G', depthRank: 1, number: 61 }),
+      player({ id: 'g2', position: 'G', depthRank: 1, number: 62 }),
+      player({ id: 'g3', position: 'G', depthRank: 2, number: 63 }),
     ],
   },
 ];
