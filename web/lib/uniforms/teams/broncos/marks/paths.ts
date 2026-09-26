@@ -1,5 +1,4 @@
-// Denver's fixed art: the horse and Orange Crush "D" decal paths and the chest wordmark. Jersey
-// collars and sleeves come from the jersey specs in ./jerseys.
+// Denver's fixed art: the horse and Orange Crush "D" decal paths and the chest wordmark.
 
 // TWO marks, because Orange Crush wears the era's "D" rather than the modern horse.
 //   - The horse is two layers of solid region — orange mane under a white head. Its eye and nostril

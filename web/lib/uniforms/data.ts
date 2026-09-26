@@ -1,6 +1,7 @@
 import type { JerseyColors, UniformKind } from '../types';
 import { catalogRow } from './teams/core/catalog';
 import { BEARS_CATALOG } from './teams/bears/catalog';
+import { BRONCOS_CATALOG } from './teams/broncos/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
 // Hand-curated uniform archive. This file is the sole jersey-color authority. The seed generator
@@ -223,21 +224,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#4B92DB',
     },
   },
-  {
-    teamId: 'broncos',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2024,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FB4F14',
-      secondary: '#002244',
-      accent: '#002244',
-    },
-  },
+  catalogRow(BRONCOS_CATALOG, 'home'),
   {
     teamId: 'chiefs',
     slug: 'home',
@@ -551,24 +538,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
 
-  // Broncos 1968–1996 royal-blue "Orange Crush" — a retired throwback (the modern kit is
-  // navy/orange). The royal #001489 is too dark for the UI, so uiAccent is the era's
-  // orange, which reads well.
-  {
-    teamId: 'broncos',
-    slug: 'orange-crush',
-    constructionKey: 'orange-crush',
-    kind: 'throwback',
-    name: 'Orange Crush',
-    yearStart: 1968,
-    yearEnd: 1996,
-    isCurrent: false,
-    colors: {
-      primary: '#001489',
-      secondary: '#FA4616',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(BRONCOS_CATALOG, 'orange-crush'),
 
   // Away kits — the standard white-base road look. secondary/accent are each team's real
   // identity hexes (the trim/number color on the white jersey). First tranche (PR-A); the
@@ -804,21 +774,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#4B92DB',
     },
   },
-  {
-    teamId: 'broncos',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2024,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#FB4F14',
-      accent: '#002244',
-    },
-  },
+  catalogRow(BRONCOS_CATALOG, 'away'),
   {
     teamId: 'chiefs',
     slug: 'away',
@@ -1484,22 +1440,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#C8102E',
     },
   },
-  // Broncos orange alternate. Orange base, navy trim.
-  {
-    teamId: 'broncos',
-    slug: 'orange-alt',
-    constructionKey: 'orange-alt',
-    kind: 'alternate',
-    name: 'Orange Alternate',
-    yearStart: 2024,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FB4F14',
-      secondary: '#002244',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(BRONCOS_CATALOG, 'orange-alt'),
   // Giants 1980s (LT-era) throwback (worn 2022+). Royal base, red/white 'GIANTS' wordmark.
   {
     teamId: 'giants',
