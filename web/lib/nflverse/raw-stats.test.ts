@@ -8,6 +8,7 @@ import {
   type PlayRawSpec,
   type RawCrosswalks,
 } from './raw-stats';
+import { assertConserved } from '../utils/ingest/drops';
 
 const CROSSWALKS: RawCrosswalks = {
   gsis: new Map([['00-1', 'espn-1']]),
@@ -63,7 +64,7 @@ const ftnSpec: PlayRawSpec = {
 
 describe('toPlayerRawRows', () => {
   it('keeps every source column, coercing empties and malformed numerics to null', () => {
-    const { rows, skipped, unresolved } = toPlayerRawRows(
+    const { rows, dropped, unresolved } = toPlayerRawRows(
       seasonSpec,
       [
         {
@@ -76,7 +77,7 @@ describe('toPlayerRawRows', () => {
       ],
       CROSSWALKS
     );
-    expect({ skipped, unresolved }).toEqual({ skipped: 0, unresolved: 0 });
+    expect({ dropped, unresolved }).toEqual({ dropped: [], unresolved: 0 });
     expect(rows[0]).toMatchObject({ player_id: 'espn-1', games: 17, fg_made_list: '42;50' });
   });
 
@@ -90,14 +91,31 @@ describe('toPlayerRawRows', () => {
     expect(rows[0].player_id).toBeNull();
   });
 
-  it('skips rows with no source id or an unusable season', () => {
-    const { rows, skipped } = toPlayerRawRows(
-      seasonSpec,
-      [{ season: '2024' }, { player_id: '00-1', season: '' }],
-      CROSSWALKS
-    );
+  it('drops rows with no source id or an unusable season', () => {
+    const input: Record<string, string>[] = [
+      { season: '2024' },
+      { player_id: '00-1', season: '' },
+      { player_id: '00-1', season: '0' },
+    ];
+    const { rows, dropped } = toPlayerRawRows(seasonSpec, input, CROSSWALKS);
     expect(rows).toHaveLength(0);
-    expect(skipped).toBe(2);
+    expect(dropped).toEqual([
+      { reason: 'missing_source_id', key: 'row:0' },
+      { reason: 'invalid_season', key: '00-1', value: '' },
+      { reason: 'invalid_season', key: '00-1', value: '0' },
+    ]);
+  });
+
+  it('drops a week-grain row with no usable week, and never counts it as unresolved', () => {
+    const input = [
+      { pfr_player_id: 'Unknown00', season: '2024', week: '' },
+      { pfr_player_id: 'MahPa00', season: '2024', week: '3' },
+    ];
+    const { rows, dropped, unresolved } = toPlayerRawRows(weekSpec, input, CROSSWALKS, 'pass');
+    expect(rows).toHaveLength(1);
+    expect(unresolved).toBe(0);
+    expect(dropped).toEqual([{ reason: 'invalid_week', key: 'Unknown00', value: '' }]);
+    expect(() => assertConserved('raw', input.length, rows.length, dropped)).not.toThrow();
   });
 
   it('resolves pfr ids and stamps the partition for a split source', () => {
@@ -160,11 +178,11 @@ describe('toPlayerRawRows', () => {
 
 describe('toPlayRawRows', () => {
   it('coerces booleans/numerics and requires the key columns', () => {
-    const { rows, skipped } = toPlayRawRows(ftnSpec, [
+    const { rows, dropped } = toPlayRawRows(ftnSpec, [
       { ftn_game_id: 'g1', ftn_play_id: '10', is_play_action: 'TRUE', n_pass_rushers: '4' },
       { ftn_game_id: 'g1', ftn_play_id: '', is_play_action: 'FALSE' },
     ]);
-    expect(skipped).toBe(1);
+    expect(dropped).toEqual([{ reason: 'missing_key', key: 'row:1' }]);
     expect(rows[0]).toMatchObject({
       ftn_game_id: 'g1',
       ftn_play_id: 10,

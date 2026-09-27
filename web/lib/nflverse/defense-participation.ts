@@ -15,7 +15,18 @@ import {
   defensePersonnelCode,
   parseDefensePersonnel,
 } from './defense-personnel';
-import type { ParticipationRow } from './participation';
+import type { Drop } from '../utils/ingest/drops';
+import type { FormationFoldResult, ParticipationRow } from './participation';
+
+// Same conservation contract as FormationAccumulator (participation.ts): rows seen =
+// rows consumed + rows dropped, with `below_coverage` for rows counted into a team the
+// coverage gate rejects.
+export type DefenseFormationDropReason =
+  | 'underivable_defense_team'
+  | 'unknown_team'
+  | 'blank_formation'
+  | 'invalid_personnel'
+  | 'below_coverage';
 
 export interface DefenseFormationTally {
   team_id: string;
@@ -46,18 +57,29 @@ export class DefenseFormationAccumulator {
   private gamesByTeam = new Map<string, Set<string>>();
   private countsByTeam = new Map<string, Map<string, number>>(); // key = "dl-lb-db"
   private totalByTeam = new Map<string, number>();
-  skipped = 0;
+  private consumedKeysByTeam = new Map<string, string[]>();
+  private dropped: Drop<DefenseFormationDropReason>[] = [];
+  rowsSeen = 0;
 
   constructor(private resolveCode: (code: string) => string | null) {}
 
   addRow(row: ParticipationRow): void {
+    const rowKey = `${row.nflverse_game_id}#${this.rowsSeen++}`;
     const defenseCodeRaw = deriveDefenseTeamCode(
       row.nflverse_game_id,
       row.possession_team?.trim() ?? ''
     );
-    const teamId = defenseCodeRaw ? this.resolveCode(defenseCodeRaw) : null;
+    if (!defenseCodeRaw) {
+      this.dropped.push({
+        reason: 'underivable_defense_team',
+        key: rowKey,
+        value: row.possession_team?.trim() ?? '',
+      });
+      return;
+    }
+    const teamId = this.resolveCode(defenseCodeRaw);
     if (!teamId) {
-      this.skipped++;
+      this.dropped.push({ reason: 'unknown_team', key: rowKey, value: defenseCodeRaw });
       return;
     }
     if (!this.gamesByTeam.has(teamId)) this.gamesByTeam.set(teamId, new Set());
@@ -67,13 +89,18 @@ export class DefenseFormationAccumulator {
     // means a kneel-down / non-charted play, and defense_personnel is noisy on those
     // rows too (see defense-personnel.ts's header comment).
     if (!row.offense_formation?.trim()) {
-      this.skipped++;
+      this.dropped.push({ reason: 'blank_formation', key: rowKey });
       return;
     }
 
     const counts = parseDefensePersonnel(row.defense_personnel ?? '');
     if (!counts || counts.dl + counts.lb + counts.db !== 11) {
-      this.skipped++; // malformed, or noise leaked through despite the gate above
+      // Malformed, or noise leaked through despite the gate above.
+      this.dropped.push({
+        reason: 'invalid_personnel',
+        key: rowKey,
+        value: row.defense_personnel ?? '',
+      });
       return;
     }
 
@@ -82,22 +109,31 @@ export class DefenseFormationAccumulator {
     teamCounts.set(key, (teamCounts.get(key) ?? 0) + 1);
     this.countsByTeam.set(teamId, teamCounts);
     this.totalByTeam.set(teamId, (this.totalByTeam.get(teamId) ?? 0) + 1);
+    const consumedKeys = this.consumedKeysByTeam.get(teamId) ?? [];
+    consumedKeys.push(rowKey);
+    this.consumedKeysByTeam.set(teamId, consumedKeys);
   }
 
   finish(
     season: number,
     gamesPlayedByTeam: Map<string, number>
-  ): { tallies: DefenseFormationTally[]; skippedTeams: string[] } {
+  ): FormationFoldResult<DefenseFormationTally, DefenseFormationDropReason> {
     const tallies: DefenseFormationTally[] = [];
     const skippedTeams: string[] = [];
+    const dropped = [...this.dropped];
+    let consumed = 0;
 
     for (const [teamId, teamCounts] of this.countsByTeam) {
       const totalGames = gamesPlayedByTeam.get(teamId);
       const gamesWithData = this.gamesByTeam.get(teamId)?.size ?? 0;
+      const consumedKeys = this.consumedKeysByTeam.get(teamId) ?? [];
       if (totalGames && gamesWithData / totalGames < MIN_COVERAGE) {
         skippedTeams.push(teamId);
+        for (const key of consumedKeys)
+          dropped.push({ reason: 'below_coverage', key, value: teamId });
         continue;
       }
+      consumed += consumedKeys.length;
 
       const total = this.totalByTeam.get(teamId) ?? 0;
       const ranked = [...teamCounts.entries()].sort(
@@ -116,7 +152,7 @@ export class DefenseFormationAccumulator {
       });
     }
 
-    return { tallies, skippedTeams };
+    return { tallies, skippedTeams, consumed, dropped };
   }
 }
 
@@ -125,9 +161,8 @@ export function tallyDefenseFormations(
   season: number,
   resolveCode: (code: string) => string | null,
   gamesPlayedByTeam: Map<string, number>
-): { tallies: DefenseFormationTally[]; skippedTeams: string[]; skipped: number } {
+): FormationFoldResult<DefenseFormationTally, DefenseFormationDropReason> {
   const acc = new DefenseFormationAccumulator(resolveCode);
   for (const row of rows) acc.addRow(row);
-  const { tallies, skippedTeams } = acc.finish(season, gamesPlayedByTeam);
-  return { tallies, skippedTeams, skipped: acc.skipped };
+  return acc.finish(season, gamesPlayedByTeam);
 }

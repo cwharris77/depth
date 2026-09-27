@@ -2,6 +2,7 @@
 // directory, it keeps EVERY source column and never drops a row for a missing crosswalk match — the
 // row lands with a null ESPN `player_id`. That is the design's separation rule: a source's data is
 // preserved intact and identity is resolved once, in the canonical layer (never name-matched here).
+import type { Drop } from '../utils/ingest/drops';
 import type { PlayerRawSpec, PlayRawSpec } from './raw-tables.generated';
 export type { PlayerRawSpec, PlayRawSpec, RawColumn, RawColumnType } from './raw-tables.generated';
 
@@ -14,11 +15,14 @@ export interface RawSourceRow {
   [column: string]: unknown;
 }
 
+export type PlayerRawDropReason = 'missing_source_id' | 'invalid_season' | 'invalid_week';
+export type PlayRawDropReason = 'missing_key';
+
 export interface RawTransformResult {
   rows: RawSourceRow[];
-  /** Rows with no usable source id / season / week — dropped, never guessed. */
-  skipped: number;
-  /** Rows landed with a null `player_id` (no crosswalk match) — visible, not dropped. */
+  /** Rows with no usable source id / season / week — dropped with a reason, never guessed. */
+  dropped: Drop<PlayerRawDropReason>[];
+  /** Rows landed with a null `player_id` (no crosswalk match) — written, not dropped. */
   unresolved: number;
 }
 
@@ -70,18 +74,21 @@ export function toPlayerRawRows(
   partition?: string
 ): RawTransformResult {
   const rows: RawSourceRow[] = [];
-  let skipped = 0;
+  const dropped: Drop<PlayerRawDropReason>[] = [];
   let unresolved = 0;
 
-  for (const row of csvRows) {
+  for (const [index, row] of csvRows.entries()) {
     const { sourcePlayerId, playerId } = resolvePlayerId(spec, row[spec.idColumn], crosswalks);
-    const seasonRaw = row.season?.trim();
+    const seasonRaw = row.season?.trim() ?? '';
     const season = Number(seasonRaw);
-    if (!sourcePlayerId || !seasonRaw || !Number.isInteger(season) || season < 1) {
-      skipped++;
+    if (!sourcePlayerId) {
+      dropped.push({ reason: 'missing_source_id', key: `row:${index}` });
       continue;
     }
-    if (!playerId) unresolved++;
+    if (!seasonRaw || !Number.isInteger(season) || season < 1) {
+      dropped.push({ reason: 'invalid_season', key: sourcePlayerId, value: seasonRaw });
+      continue;
+    }
 
     const out: RawSourceRow = {
       source_player_id: sourcePlayerId,
@@ -93,10 +100,10 @@ export function toPlayerRawRows(
       season_type: spec.seasonType ?? (row.season_type?.trim() || 'REG'),
     };
     if (spec.grain === 'week') {
-      const weekRaw = row[spec.weekColumn ?? 'week']?.trim();
+      const weekRaw = row[spec.weekColumn ?? 'week']?.trim() ?? '';
       const week = Number(weekRaw);
       if (!weekRaw || !Number.isInteger(week)) {
-        skipped++;
+        dropped.push({ reason: 'invalid_week', key: sourcePlayerId, value: weekRaw });
         continue;
       }
       out.week = week;
@@ -106,30 +113,31 @@ export function toPlayerRawRows(
       out[spec.partition] = partition;
     }
     for (const column of spec.columns) out[column.name] = coerce(row[column.name], column.type);
+    if (!playerId) unresolved++;
     rows.push(out);
   }
 
-  return { rows, skipped, unresolved };
+  return { rows, dropped, unresolved };
 }
 
 /** Play-grain source rows (FTN charting), keyed on the spec's `keyColumns`. */
 export function toPlayRawRows(
   spec: PlayRawSpec,
   csvRows: Record<string, string>[]
-): { rows: Record<string, Scalar>[]; skipped: number } {
+): { rows: Record<string, Scalar>[]; dropped: Drop<PlayRawDropReason>[] } {
   const rows: Record<string, Scalar>[] = [];
-  let skipped = 0;
-  for (const row of csvRows) {
+  const dropped: Drop<PlayRawDropReason>[] = [];
+  for (const [index, row] of csvRows.entries()) {
     const key = spec.keyColumns.map((column) => row[column]?.trim());
     if (key.some((value) => !value)) {
-      skipped++;
+      dropped.push({ reason: 'missing_key', key: `row:${index}` });
       continue;
     }
     const out: Record<string, Scalar> = {};
     for (const column of spec.columns) out[column.name] = coerce(row[column.name], column.type);
     rows.push(out);
   }
-  return { rows, skipped };
+  return { rows, dropped };
 }
 
 /** The conflict target for a player source table's idempotent upsert. */

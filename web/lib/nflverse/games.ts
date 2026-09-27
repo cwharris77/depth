@@ -2,8 +2,9 @@
 // no fetch, no DB. Each CSV row is one shared game (home + away on a single row); it
 // becomes one game row and contributes a schedule row for each team's (team, season) —
 // the ingest upserts schedules first so the games' composite FKs resolve. A row whose home
-// or away code doesn't crosswalk (resolveCode -> null), or whose season isn't a number, is
-// skipped and counted -- never guessed, same posture as the player-stats transform.
+// or away code doesn't crosswalk (resolveCode -> null), whose season isn't a number, or that
+// has no game_id is dropped with a reason -- never guessed, same posture as the player-stats
+// transform.
 //
 // games.csv is nfldata's single schedule/results file covering every season since 1999
 // (unlike the player-stats CSVs, there's no per-season asset to scope the fetch to) --
@@ -11,7 +12,16 @@
 // in the file are kept, mirroring the "current + previous season" rule the player-stats
 // ingest already applies; an explicit `minSeason` (the historic-backfill script's
 // --seasons flag) overrides that and keeps everything from that season
-// on. Older rows are dropped, not "skipped" (skipped means malformed).
+// on. Older rows are dropped as `out_of_scope_season`, a reason distinct from the malformed
+// ones.
+//
+// Conservation: every CSV row is either one game row or one drop. Schedule rows are derived
+// from the kept games (deduplicated per team-season), so they are not counted against the
+// input.
+import type { Drop } from '../utils/ingest/drops';
+
+export type GameDropReason =
+  'invalid_season' | 'missing_game_id' | 'unknown_team' | 'out_of_scope_season';
 
 export interface ScheduleInsert {
   team_id: string;
@@ -69,25 +79,31 @@ export function toScheduleAndGameRows(
   resolveCode: (code: string) => string | null,
   minSeason?: number,
   marketUpdatedAt?: string
-): { games: GameInsert[]; schedules: ScheduleInsert[]; skipped: number } {
+): { games: GameInsert[]; schedules: ScheduleInsert[]; dropped: Drop<GameDropReason>[] } {
   const parsed: GameInsert[] = [];
-  let skipped = 0;
+  const dropped: Drop<GameDropReason>[] = [];
 
-  for (const row of csvRows) {
+  for (const [index, row] of csvRows.entries()) {
+    const gameId = row.game_id?.trim() ?? '';
+    const key = gameId || `row:${index}`;
     // Guard the empty string explicitly: Number('') is 0, not NaN, so a blank season would
     // otherwise slip through as year 0.
     const seasonRaw = row.season?.trim() ?? '';
     const season = Number(seasonRaw);
-    const homeId = resolveCode(row.home_team?.trim() ?? '');
-    const awayId = resolveCode(row.away_team?.trim() ?? '');
-    if (
-      seasonRaw === '' ||
-      !Number.isInteger(season) ||
-      !homeId ||
-      !awayId ||
-      !row.game_id?.trim()
-    ) {
-      skipped++;
+    if (seasonRaw === '' || !Number.isInteger(season)) {
+      dropped.push({ reason: 'invalid_season', key, value: seasonRaw });
+      continue;
+    }
+    if (!gameId) {
+      dropped.push({ reason: 'missing_game_id', key });
+      continue;
+    }
+    const homeCode = row.home_team?.trim() ?? '';
+    const awayCode = row.away_team?.trim() ?? '';
+    const homeId = resolveCode(homeCode);
+    const awayId = resolveCode(awayCode);
+    if (!homeId || !awayId) {
+      dropped.push({ reason: 'unknown_team', key, value: homeId ? awayCode : homeCode });
       continue;
     }
 
@@ -104,7 +120,7 @@ export function toScheduleAndGameRows(
     const hasMarket = Object.values(market).some((value) => value !== null);
 
     parsed.push({
-      game_id: row.game_id.trim(),
+      game_id: gameId,
       season,
       game_type: row.game_type?.trim() || 'REG',
       week: nullableInt(row.week),
@@ -130,7 +146,11 @@ export function toScheduleAndGameRows(
   // mode) overrides this and keeps every season from there on.
   const maxSeason = parsed.reduce((max, g) => Math.max(max, g.season), -Infinity);
   const floor = minSeason ?? maxSeason - 1;
-  const games = parsed.filter((g) => g.season >= floor);
+  const games: GameInsert[] = [];
+  for (const g of parsed) {
+    if (g.season >= floor) games.push(g);
+    else dropped.push({ reason: 'out_of_scope_season', key: g.game_id, value: String(g.season) });
+  }
 
   const scheduleKeys = new Set<string>(); // `${team_id}|${season}`, dedup across a team's games
   for (const g of games) {
@@ -147,5 +167,5 @@ export function toScheduleAndGameRows(
     })
     .sort((a, b) => a.team_id.localeCompare(b.team_id) || a.season - b.season);
 
-  return { games, schedules, skipped };
+  return { games, schedules, dropped };
 }

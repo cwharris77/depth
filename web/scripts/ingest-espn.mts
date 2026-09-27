@@ -54,6 +54,7 @@ import { notifyRevalidate } from '@/lib/utils/ingest/notify-revalidate';
 import { currentSeasonOf, nflSeasonState } from '@/lib/utils/team/season-state';
 import { TEAMS } from '@/lib/teams/index';
 import { parseSeasonsArg } from '@/lib/utils/ingest/seasons-arg';
+import { assertConserved, countByReason, countValues, type Drop } from '@/lib/utils/ingest/drops';
 import type { EspnAthlete, EspnDepthcharts, EspnRoster, EspnTeamInfo } from '@/lib/espn/types';
 import type { TeamRoster, TeamStats } from '@/lib/types';
 import type { Database } from '@/lib/database.types';
@@ -353,9 +354,12 @@ async function main() {
     );
     if (info) teamIdByEspnId.set(info.id, team.id);
   }
+  const preseasonDropped: Drop[] = [];
   for (const season of fetchSeasons.filter((s) => s >= PRESEASON_SEASONS_MIN)) {
     try {
-      await writePreseason(supabase, season, (id) => teamIdByEspnId.get(id) ?? null);
+      preseasonDropped.push(
+        ...(await writePreseason(supabase, season, (id) => teamIdByEspnId.get(id) ?? null))
+      );
     } catch (e) {
       errors.push({ team: `preseason ${season}`, message: (e as Error).message });
     }
@@ -382,6 +386,8 @@ async function main() {
       unmapped_positions: Object.fromEntries(
         [...unmappedPositionKeys].sort(([a], [b]) => a.localeCompare(b))
       ),
+      preseason_dropped_by_reason: countByReason(preseasonDropped),
+      preseason_unknown_teams: countValues(preseasonDropped, 'unknown_team'),
     },
   });
   if (runError) throw new Error(`failed to record ingestion_runs: ${runError.message}`);
@@ -614,7 +620,7 @@ async function writePreseason(
   supabase: SupabaseClient<Database>,
   season: number,
   resolveTeamId: (espnTeamId: string) => string | null
-): Promise<void> {
+): Promise<Drop[]> {
   const url = (week: string) =>
     `${SITE}/scoreboard?dates=${season}&seasontype=1&week=${week}&limit=100`;
   const first = await getJson<EspnScoreboard>(url('1'));
@@ -625,11 +631,11 @@ async function writePreseason(
     await new Promise((r) => setTimeout(r, 200)); // be polite to the unofficial API
   }
 
-  const { games, schedules, skipped, cancelled } = toPreseasonGameRows(
-    season,
-    buckets,
-    resolveTeamId
-  );
+  const { games, schedules, dropped } = toPreseasonGameRows(season, buckets, resolveTeamId);
+  // Every event across the season's buckets is one game or one drop, checked before any
+  // write. Schedules are derived from the kept games.
+  const events = buckets.reduce((n, b) => n + (b.scoreboard.events ?? []).length, 0);
+  assertConserved(`preseason ${season}`, events, games.length, dropped);
   if (games.length > 0) {
     const { error: scheduleError } = await supabase
       .from('schedules')
@@ -640,8 +646,9 @@ async function writePreseason(
   }
   console.log(
     `preseason ${season}: wrote ${games.length} games across ${buckets.length} weeks, ` +
-      `skipped ${skipped}, cancelled ${cancelled}`
+      `dropped ${JSON.stringify(countByReason(dropped))}`
   );
+  return dropped;
 }
 
 main().catch((e) => {

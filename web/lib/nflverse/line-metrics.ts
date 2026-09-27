@@ -25,8 +25,23 @@
 // coverage bar is dropped entirely (no row), the same gate the formations fold uses
 // (participation.ts). Within a kept row, a family with no sample (no short-yardage
 // carries, no charted pressure) yields nil, never a zero dressed up as a real rate.
+//
+// Conservation: plays seen = plays consumed + plays dropped. A play is consumed when it is
+// folded into a team whose row is written (a carry with yardage or a dropback). A play
+// folded into a team the coverage gate then rejects is dropped as `below_coverage`; every
+// other excluded play is dropped with its reason when it is read.
 
+import type { Drop } from '../utils/ingest/drops';
 import { resolveTeamCode } from './team-codes';
+
+export type LineMetricsDropReason =
+  | 'non_regular_season'
+  | 'missing_possession_team'
+  | 'unknown_team'
+  | 'kneel_or_spike'
+  | 'missing_yardage'
+  | 'not_line_play'
+  | 'below_coverage';
 
 // A team/season is "no data" (never built from a sparse sample) when its charted games
 // cover fewer than half its actual games that season — the same bar as the formations
@@ -114,6 +129,14 @@ export interface TeamLineStatsInsert {
   avg_pass_rushers: number | null;
 }
 
+export interface LineMetricsResult {
+  rows: TeamLineStatsInsert[];
+  skippedTeams: string[];
+  /** Plays folded into a team whose row was written. */
+  consumed: number;
+  dropped: Drop<LineMetricsDropReason>[];
+}
+
 function toNullableNumber(value: string | undefined): number | null {
   if (value === undefined || value.trim() === '') return null;
   const n = Number(value);
@@ -170,6 +193,7 @@ function openFieldYardsFor(gain: number): number {
 
 interface TeamAccumulator {
   games: Set<string>;
+  consumedKeys: string[];
   rushes: number;
   lineYards: number;
   stuffed: number;
@@ -190,6 +214,7 @@ interface TeamAccumulator {
 function emptyAccumulator(): TeamAccumulator {
   return {
     games: new Set(),
+    consumedKeys: [],
     rushes: 0,
     lineYards: 0,
     stuffed: 0,
@@ -216,7 +241,8 @@ function ratio(numerator: number, denominator: number): number | null {
 // set) into per-team lines, then emits one row per team that clears the coverage bar.
 export class LineMetricsAccumulator {
   private byTeam = new Map<string, TeamAccumulator>();
-  skipped = 0;
+  private dropped: Drop<LineMetricsDropReason>[] = [];
+  rowsSeen = 0;
 
   constructor(private resolveCode: (code: string) => string | null = resolveTeamCode) {}
 
@@ -225,22 +251,28 @@ export class LineMetricsAccumulator {
   }
 
   addPlay(row: PlayByPlayRow): void {
+    const key = `${row.game_id}#${this.rowsSeen++}`;
     // `play_by_play_<season>.csv` includes postseason rows. The canonical team stats layer
     // is regular season only, so never let a playoff snap affect these team-season values.
     if (row.season_type !== 'REG') {
-      this.skipped++;
+      this.dropped.push({ reason: 'non_regular_season', key, value: row.season_type });
       return;
     }
     const code = row.posteam.trim();
-    const teamId = code ? this.resolveCode(code) : null;
+    // Timeouts, quarter ends, and similar administrative rows carry no possession team.
+    if (!code) {
+      this.dropped.push({ reason: 'missing_possession_team', key });
+      return;
+    }
+    const teamId = this.resolveCode(code);
     if (!teamId) {
-      this.skipped++;
+      this.dropped.push({ reason: 'unknown_team', key, value: code });
       return;
     }
     // Kneel-downs and spikes are not line play: exclude them before they can count as
     // carries, charted plays, or coverage.
     if (row.qb_kneel || row.qb_spike) {
-      this.skipped++;
+      this.dropped.push({ reason: 'kneel_or_spike', key });
       return;
     }
 
@@ -249,11 +281,13 @@ export class LineMetricsAccumulator {
 
     if (row.rush_attempt) {
       if (row.yards_gained === null) {
-        this.skipped++; // a carry with no yardage can't be weighted — refuse it
+        // A carry with no yardage can't be weighted — refuse it.
+        this.dropped.push({ reason: 'missing_yardage', key });
         return;
       }
       const gain = row.yards_gained;
       acc.games.add(row.game_id);
+      acc.consumedKeys.push(key);
       acc.rushes += 1;
       acc.lineYards += lineYardsFor(gain);
       if (gain <= 0) acc.stuffed += 1;
@@ -268,6 +302,7 @@ export class LineMetricsAccumulator {
 
     if (row.qb_dropback) {
       acc.games.add(row.game_id);
+      acc.consumedKeys.push(key);
       acc.dropbacks += 1;
       if (row.sack) acc.sacks += 1;
       if (row.was_pressure !== null) {
@@ -286,20 +321,23 @@ export class LineMetricsAccumulator {
     }
 
     // Neither a rush nor a dropback (kick, penalty, no-play, ...): not line data.
-    this.skipped++;
+    this.dropped.push({ reason: 'not_line_play', key });
   }
 
   finish(
     season: number,
     gamesPlayedByTeam: Map<string, number>,
     options: { updatedAt?: string } = {}
-  ): { rows: TeamLineStatsInsert[]; skippedTeams: string[] } {
+  ): LineMetricsResult {
     const rows: TeamLineStatsInsert[] = [];
     const skippedTeams: string[] = [];
+    const dropped = [...this.dropped];
+    let consumed = 0;
 
     for (const [teamId, acc] of this.byTeam) {
-      // No valid play ever landed (every row was excluded/skipped): no data, no row —
-      // never an all-null metric line dressed up as a season.
+      // No valid play ever landed (every row was excluded/dropped): no data, no row —
+      // never an all-null metric line dressed up as a season. Such a team consumed no
+      // plays, so there is nothing to re-drop.
       if (acc.games.size === 0) {
         skippedTeams.push(teamId);
         continue;
@@ -307,8 +345,12 @@ export class LineMetricsAccumulator {
       const totalGames = gamesPlayedByTeam.get(teamId);
       if (totalGames && acc.games.size / totalGames < MIN_COVERAGE) {
         skippedTeams.push(teamId);
+        for (const key of acc.consumedKeys) {
+          dropped.push({ reason: 'below_coverage', key, value: teamId });
+        }
         continue;
       }
+      consumed += acc.consumedKeys.length;
 
       rows.push({
         team_id: teamId,
@@ -333,7 +375,7 @@ export class LineMetricsAccumulator {
       });
     }
 
-    return { rows, skippedTeams };
+    return { rows, skippedTeams, consumed, dropped };
   }
 }
 
@@ -344,9 +386,8 @@ export function toTeamLineStatsRows(
   season: number,
   resolveCode: (code: string) => string | null,
   gamesPlayedByTeam: Map<string, number>
-): { rows: TeamLineStatsInsert[]; skippedTeams: string[]; skipped: number } {
+): LineMetricsResult {
   const acc = new LineMetricsAccumulator(resolveCode);
   for (const row of rows) acc.addRow(row);
-  const { rows: out, skippedTeams } = acc.finish(season, gamesPlayedByTeam);
-  return { rows: out, skippedTeams, skipped: acc.skipped };
+  return acc.finish(season, gamesPlayedByTeam);
 }

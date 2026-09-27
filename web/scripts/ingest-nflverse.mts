@@ -39,7 +39,13 @@ import { classifyMissingAsset } from '@/lib/nflverse/source-coverage';
 import { fetchRawGroup } from '@/lib/nflverse/raw-group-guard';
 import { buildCrosswalk, buildPfrCrosswalk } from '@/lib/nflverse/crosswalk';
 import { toPlayerStatsRows, type PlayerStatsInsert } from '@/lib/nflverse/transform';
-import { assertConserved, countByReason, type Drop } from '@/lib/utils/ingest/drops';
+import {
+  addCounts,
+  assertConserved,
+  countByReason,
+  countValues,
+  type Drop,
+} from '@/lib/utils/ingest/drops';
 import { toSeasonSnapTotals, type SeasonSnapTotalsInsert } from '@/lib/nflverse/season-snaps';
 import { upsertChunkSize } from '@/lib/nflverse/upsert-chunks';
 import {
@@ -273,18 +279,22 @@ async function ingestGames(
 ): Promise<{
   schedules: ScheduleInsert[];
   games: GameInsert[];
-  skipped: number;
+  dropped: Drop[];
   failure: string | null;
 }> {
   try {
     const csv = await getText(GAMES_URL);
     assertHeader(sourceContract('games'), parseCsvHeader(csv), loggedNewColumnSources);
-    const { games, schedules, skipped } = toScheduleAndGameRows(
-      parseCsv(csv),
+    const csvRows = parseCsv(csv);
+    const { games, schedules, dropped } = toScheduleAndGameRows(
+      csvRows,
       resolveTeamCode,
       minSeason,
       marketUpdatedAt
     );
+    // Checked before any write: schedules are derived from the kept games, so the games
+    // themselves carry the check.
+    assertConserved('games', csvRows.length, games.length, dropped);
 
     if (supabase) {
       const db = supabase;
@@ -301,11 +311,12 @@ async function ingestGames(
     }
 
     console.log(
-      `games: ${supabase ? 'wrote' : 'computed'} ${games.length} games, ${schedules.length} schedules, skipped ${skipped}`
+      `games: ${supabase ? 'wrote' : 'computed'} ${games.length} games, ${schedules.length} schedules, ` +
+        `dropped ${JSON.stringify(countByReason(dropped))}`
     );
-    return { schedules, games, skipped, failure: null };
+    return { schedules, games, dropped, failure: null };
   } catch (e) {
-    return { schedules: [], games: [], skipped: 0, failure: (e as Error).message };
+    return { schedules: [], games: [], dropped: [], failure: (e as Error).message };
   }
 }
 
@@ -429,14 +440,17 @@ async function ingestFormations(
   season: number | null;
   tallies: UnitFormationTally[];
   skippedTeams: number;
+  droppedByReason: { offense: Record<string, number>; defense: Record<string, number> };
   failure: string | null;
 }> {
+  const noDrops = { offense: {}, defense: {} };
   const season = await latestAvailableSeason(PARTICIPATION_TAG, PARTICIPATION_PREFIX);
   if (season === null) {
     return {
       season: null,
       tallies: [],
       skippedTeams: 0,
+      droppedByReason: noDrops,
       failure: 'no available pbp_participation season found',
     };
   }
@@ -470,12 +484,29 @@ async function ingestFormations(
 
     const offenseResult = offenseAcc.finish(season, gamesPlayedByTeam);
     const defenseResult = defenseAcc.finish(season, gamesPlayedByTeam);
+    // Both units fold the same streamed rows; each must account for every one of them
+    // (consumed into a written team, or dropped with a reason) before anything is written.
+    assertConserved(
+      `formations offense ${season}`,
+      offenseAcc.rowsSeen,
+      offenseResult.consumed,
+      offenseResult.dropped
+    );
+    assertConserved(
+      `formations defense ${season}`,
+      defenseAcc.rowsSeen,
+      defenseResult.consumed,
+      defenseResult.dropped
+    );
+    const droppedByReason = {
+      offense: countByReason(offenseResult.dropped),
+      defense: countByReason(defenseResult.dropped),
+    };
     const tallies: UnitFormationTally[] = [
       ...offenseResult.tallies.map((t) => ({ ...t, unit: 'offense' as const })),
       ...defenseResult.tallies.map((t) => ({ ...t, unit: 'defense' as const })),
     ];
     const skippedTeams = offenseResult.skippedTeams.length + defenseResult.skippedTeams.length;
-    const skippedRows = offenseAcc.skipped + defenseAcc.skipped;
 
     if (supabase && tallies.length) {
       const db = supabase;
@@ -489,11 +520,17 @@ async function ingestFormations(
 
     console.log(
       `formations: season ${season}, ${supabase ? 'wrote' : 'computed'} ${tallies.length} rows ` +
-        `(${skippedTeams} team(s) below coverage, ${skippedRows} rows skipped)`
+        `(${skippedTeams} team(s) below coverage, dropped ${JSON.stringify(droppedByReason)})`
     );
-    return { season, tallies, skippedTeams, failure: null };
+    return { season, tallies, skippedTeams, droppedByReason, failure: null };
   } catch (e) {
-    return { season, tallies: [], skippedTeams: 0, failure: (e as Error).message };
+    return {
+      season,
+      tallies: [],
+      skippedTeams: 0,
+      droppedByReason: noDrops,
+      failure: (e as Error).message,
+    };
   }
 }
 
@@ -511,6 +548,7 @@ async function ingestLineMetrics(
   season: number | null;
   rows: TeamLineStatsInsert[];
   skippedTeams: number;
+  droppedByReason: Record<string, number>;
   failure: string | null;
 }> {
   const season = await latestAvailableSeason(PBP_TAG, PBP_PREFIX);
@@ -519,6 +557,7 @@ async function ingestLineMetrics(
       season: null,
       rows: [],
       skippedTeams: 0,
+      droppedByReason: {},
       failure: 'no available pbp season found',
     };
   }
@@ -539,7 +578,9 @@ async function ingestLineMetrics(
       (header) => assertHeader(sourceContract('pbp'), header, loggedNewColumnSources)
     );
 
-    const { rows, skippedTeams } = acc.finish(season, gamesPlayedByTeam);
+    const { rows, skippedTeams, consumed, dropped } = acc.finish(season, gamesPlayedByTeam);
+    assertConserved(`line-metrics ${season}`, acc.rowsSeen, consumed, dropped);
+    const droppedByReason = countByReason(dropped);
 
     if (supabase && rows.length) {
       const db = supabase;
@@ -553,11 +594,17 @@ async function ingestLineMetrics(
 
     console.log(
       `line-metrics: season ${season}, ${supabase ? 'wrote' : 'computed'} ${rows.length} rows ` +
-        `(${skippedTeams.length} team(s) below coverage, ${acc.skipped} rows skipped)`
+        `(${skippedTeams.length} team(s) below coverage, dropped ${JSON.stringify(droppedByReason)})`
     );
-    return { season, rows, skippedTeams: skippedTeams.length, failure: null };
+    return { season, rows, skippedTeams: skippedTeams.length, droppedByReason, failure: null };
   } catch (e) {
-    return { season, rows: [], skippedTeams: 0, failure: (e as Error).message };
+    return {
+      season,
+      rows: [],
+      skippedTeams: 0,
+      droppedByReason: {},
+      failure: (e as Error).message,
+    };
   }
 }
 
@@ -574,15 +621,15 @@ async function ingestTeamStats(
   updatedAt: string
 ): Promise<{
   rows: TeamStatsInsert[];
-  skipped: number;
+  dropped: Drop[];
   failures: { season: number; message: string }[];
 }> {
   if (process.env.SKIP_TEAM_STATS) {
     console.log('team-stats: skipped (SKIP_TEAM_STATS set)');
-    return { rows: [], skipped: 0, failures: [] };
+    return { rows: [], dropped: [], failures: [] };
   }
 
-  let skipped = 0;
+  const dropped: Drop[] = [];
   const failures: { season: number; message: string }[] = [];
   const allRows: TeamStatsInsert[] = [];
 
@@ -591,8 +638,9 @@ async function ingestTeamStats(
       const csvText = await getText(assetUrl(TEAM_STATS_TAG, `${TEAM_STATS_PREFIX}${season}.csv`));
       assertHeader(sourceContract('stats_team'), parseCsvHeader(csvText), loggedNewColumnSources);
       const parsed = parseCsv(csvText);
-      const { rows, skipped: seasonSkipped } = toTeamStatsRows(parsed, undefined, { updatedAt });
-      skipped += seasonSkipped;
+      const { rows, dropped: seasonDropped } = toTeamStatsRows(parsed, undefined, { updatedAt });
+      assertConserved(`team-stats ${season}`, parsed.length, rows.length, seasonDropped);
+      dropped.push(...seasonDropped);
 
       if (supabase && rows.length) {
         const db = supabase;
@@ -604,13 +652,15 @@ async function ingestTeamStats(
         });
       }
       allRows.push(...rows);
-      console.log(`team-stats ${season}: ${rows.length} rows, skipped ${seasonSkipped}`);
+      console.log(
+        `team-stats ${season}: ${rows.length} rows, dropped ${JSON.stringify(countByReason(seasonDropped))}`
+      );
     } catch (e) {
       failures.push({ season, message: (e as Error).message });
     }
   }
 
-  return { rows: allRows, skipped, failures };
+  return { rows: allRows, dropped, failures };
 }
 
 // Snap-count freshness is intentionally independent from the broad --seasons backfill:
@@ -768,7 +818,6 @@ async function main() {
   }
 
   let rowsWritten = 0;
-  let skipped = 0;
   const playerStatsDropped: Drop[] = [];
   const allStatsRows: PlayerStatsInsert[] = [];
 
@@ -824,6 +873,8 @@ async function main() {
   // before the run could finish. Only counts + the seasons actually landed are
   // kept, for the run record.
   const rawSourceStats = new Map<string, { count: number; seasons: Set<number> }>();
+  // Per-reason drop counts per raw table, merged per task so no Drop outlives its task.
+  const rawSourceDropped: Record<string, Record<string, number>> = {};
   const recordRawSource = (table: string, rowSeasons: Iterable<number>, count: number): void => {
     const stats = rawSourceStats.get(table) ?? { count: 0, seasons: new Set<number>() };
     stats.count += count;
@@ -958,21 +1009,27 @@ async function main() {
       for (const { task, csv } of guarded.fetched) {
         let rows: Record<string, unknown>[];
         let unresolved = 0;
+        let dropped: Drop[];
         let conflict: string;
         if (group.table === 'ftn_play') {
           const spec = playSpec(group.table);
-          const result = toPlayRawRows(spec, parseCsv(csv));
+          const csvRows = parseCsv(csv);
+          const result = toPlayRawRows(spec, csvRows);
           rows = result.rows;
-          skipped += result.skipped;
+          dropped = result.dropped;
+          assertConserved(`${group.table} ${task.season}`, csvRows.length, rows.length, dropped);
           conflict = playRawConflictTarget(spec);
         } else {
           const spec = playerSpec(group.table);
-          const result = toPlayerRawRows(spec, parseCsv(csv), crosswalks, task.partition);
+          const csvRows = parseCsv(csv);
+          const result = toPlayerRawRows(spec, csvRows, crosswalks, task.partition);
           rows = result.rows;
-          skipped += result.skipped;
+          dropped = result.dropped;
+          assertConserved(`${group.table} ${task.season}`, csvRows.length, rows.length, dropped);
           unresolved = result.unresolved;
           conflict = playerRawConflictTarget(spec);
         }
+        rawSourceDropped[group.table] = addCounts(rawSourceDropped[group.table] ?? {}, dropped);
         if (supabase && rows.length) {
           await upsertRawRows(supabase, group.table, rows, conflict);
         }
@@ -987,7 +1044,10 @@ async function main() {
             rows.length
           );
         }
-        console.log(`${group.table} ${task.season}: ${rows.length} rows, ${unresolved} unresolved`);
+        console.log(
+          `${group.table} ${task.season}: ${rows.length} rows, ${unresolved} unresolved, ` +
+            `dropped ${JSON.stringify(countByReason(dropped))}`
+        );
       }
     } catch (e) {
       failures.push({ season: group.season, message: `${group.table}: ${(e as Error).message}` });
@@ -1055,7 +1115,6 @@ async function main() {
   // Schedules + games (nflverse nfldata/games.csv), a second dataset in the same run.
   const gamesResult = await ingestGames(supabase, gamesMinSeason, startedAt);
   if (gamesResult.failure) failures.push({ season: 'games', message: gamesResult.failure });
-  skipped += gamesResult.skipped;
 
   // Season records, derived from the games just ingested.
   const recordsResult = await ingestTeamRecords(supabase, gamesResult.games);
@@ -1098,7 +1157,6 @@ async function main() {
     gamesSeasons ?? (latestSeason === null ? [] : [latestSeason, latestSeason - 1]);
   const teamStatsResult = await ingestTeamStats(supabase, teamStatsSeasons, startedAt);
   for (const f of teamStatsResult.failures) failures.push({ season: f.season, message: f.message });
-  skipped += teamStatsResult.skipped;
 
   // Recent snap summaries discover their own latest source season and always ingest
   // exactly that season plus the previous one, regardless of --seasons.
@@ -1183,7 +1241,6 @@ async function main() {
       line_metrics_teams_below_coverage: lineMetricsResult.skippedTeams,
       team_stats_seasons: teamStatsSeasons,
       team_stats_rows: teamStatsResult.rows.length,
-      team_stats_skipped: teamStatsResult.skipped,
       snap_counts: {
         seasons: recentSnapsResult.seasons,
         rows_written: recentSnapsResult.rowsWritten,
@@ -1194,12 +1251,18 @@ async function main() {
           ])
         ),
       },
-      skipped,
       failures,
     },
     // Diagnostics never decide status: a run can succeed while reporting drops.
     diagnostics: {
       player_stats_dropped_by_reason: countByReason(playerStatsDropped),
+      raw_source_dropped_by_reason: rawSourceDropped,
+      games_dropped_by_reason: countByReason(gamesResult.dropped),
+      games_unknown_teams: countValues(gamesResult.dropped, 'unknown_team'),
+      formations_dropped_by_reason: formationsResult.droppedByReason,
+      line_metrics_dropped_by_reason: lineMetricsResult.droppedByReason,
+      team_stats_dropped_by_reason: countByReason(teamStatsResult.dropped),
+      team_stats_unknown_teams: countValues(teamStatsResult.dropped, 'unknown_team'),
     },
   });
   if (runError) throw new Error(`failed to record ingestion_runs: ${runError.message}`);

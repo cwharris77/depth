@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { toScheduleAndGameRows } from './games';
 import { resolveTeamCode } from './team-codes';
+import { assertConserved, countByReason } from '../utils/ingest/drops';
 
 // One nflverse games.csv row (only the columns the transform reads need to be present).
 function row(over: Record<string, string>): Record<string, string> {
@@ -30,8 +31,8 @@ function row(over: Record<string, string>): Record<string, string> {
 
 describe('toScheduleAndGameRows', () => {
   it('turns one shared game into one game row + a schedule row for each team', () => {
-    const { games, schedules, skipped } = toScheduleAndGameRows([row({})], resolveTeamCode);
-    expect(skipped).toBe(0);
+    const { games, schedules, dropped } = toScheduleAndGameRows([row({})], resolveTeamCode);
+    expect(dropped).toEqual([]);
     expect(games).toEqual([
       {
         game_id: '2025_01_LA_SEA',
@@ -116,14 +117,14 @@ describe('toScheduleAndGameRows', () => {
   });
 
   it('degrades malformed market numbers to null without dropping the game', () => {
-    const { games, skipped } = toScheduleAndGameRows(
+    const { games, dropped } = toScheduleAndGameRows(
       [row({ home_moneyline: 'favorite', spread_line: 'three', total_line: 'NaN' })],
       resolveTeamCode,
       undefined,
       '2026-08-24T20:00:00.000Z'
     );
 
-    expect(skipped).toBe(0);
+    expect(dropped).toEqual([]);
     expect(games[0]).toMatchObject({
       home_moneyline: null,
       spread_line: null,
@@ -164,14 +165,23 @@ describe('toScheduleAndGameRows', () => {
     expect(seahawksRows).toEqual([{ team_id: 'seahawks', season: 2025 }]);
   });
 
-  it('skips and counts a game with an unresolvable team code', () => {
-    const { games, schedules, skipped } = toScheduleAndGameRows(
-      [row({ away_team: 'XXX' })],
+  it('drops a game with an unresolvable team code, naming the code', () => {
+    const { games, schedules, dropped } = toScheduleAndGameRows(
+      [row({ away_team: 'XXX' }), row({ game_id: '2025_01_SEA_YYY', home_team: 'YYY' })],
       resolveTeamCode
     );
     expect(games).toHaveLength(0);
     expect(schedules).toHaveLength(0);
-    expect(skipped).toBe(1);
+    expect(dropped).toEqual([
+      { reason: 'unknown_team', key: '2025_01_LA_SEA', value: 'XXX' },
+      { reason: 'unknown_team', key: '2025_01_SEA_YYY', value: 'YYY' },
+    ]);
+  });
+
+  it('drops a row with no game_id', () => {
+    const { games, dropped } = toScheduleAndGameRows([row({ game_id: ' ' })], resolveTeamCode);
+    expect(games).toHaveLength(0);
+    expect(dropped).toEqual([{ reason: 'missing_game_id', key: 'row:0' }]);
   });
 
   it('maps a historic relocation code (STL) to the current franchise', () => {
@@ -182,10 +192,16 @@ describe('toScheduleAndGameRows', () => {
     expect(games[0].away_team_id).toBe('rams');
   });
 
-  it('skips a row whose season is not a number', () => {
-    const { skipped, games } = toScheduleAndGameRows([row({ season: '' })], resolveTeamCode);
+  it('drops a row whose season is not a number', () => {
+    const { dropped, games } = toScheduleAndGameRows(
+      [row({ season: '' }), row({ season: '2025.5' })],
+      resolveTeamCode
+    );
     expect(games).toHaveLength(0);
-    expect(skipped).toBe(1);
+    expect(dropped).toEqual([
+      { reason: 'invalid_season', key: '2025_01_LA_SEA', value: '' },
+      { reason: 'invalid_season', key: '2025_01_LA_SEA', value: '2025.5' },
+    ]);
   });
 
   it('only keeps the two most recent seasons found in the file', () => {
@@ -201,15 +217,36 @@ describe('toScheduleAndGameRows', () => {
     expect(schedules.every((s) => s.season === 2024 || s.season === 2025)).toBe(true);
   });
 
-  it('drops out-of-range seasons without counting them as skipped', () => {
-    const { skipped } = toScheduleAndGameRows(
+  it('drops out-of-range seasons with their own reason', () => {
+    const { dropped } = toScheduleAndGameRows(
       [
         row({ game_id: '1999_01_LA_SEA', season: '1999' }),
         row({ game_id: '2025_01_LA_SEA', season: '2025' }),
       ],
       resolveTeamCode
     );
-    expect(skipped).toBe(0);
+    expect(dropped).toEqual([
+      { reason: 'out_of_scope_season', key: '1999_01_LA_SEA', value: '1999' },
+    ]);
+  });
+
+  it('accounts for every input row as a game or a drop', () => {
+    const input = [
+      row({ game_id: '1999_01_LA_SEA', season: '1999' }),
+      row({ game_id: '2024_01_LA_SEA', season: '2024' }),
+      row({ game_id: '2025_01_LA_SEA', season: '2025' }),
+      row({ game_id: '2025_02_LA_SEA', away_team: 'XXX' }),
+      row({ game_id: '', season: '2025' }),
+      row({ season: 'x' }),
+    ];
+    const { games, dropped } = toScheduleAndGameRows(input, resolveTeamCode);
+    expect(() => assertConserved('games', input.length, games.length, dropped)).not.toThrow();
+    expect(countByReason(dropped)).toEqual({
+      invalid_season: 1,
+      missing_game_id: 1,
+      out_of_scope_season: 1,
+      unknown_team: 1,
+    });
   });
 
   it('keeps every season from an explicit minSeason on, not just the two most recent', () => {

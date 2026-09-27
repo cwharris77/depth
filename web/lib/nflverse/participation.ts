@@ -6,8 +6,30 @@
 // it one streamed row at a time (the participation file is ~50MB — never materialize
 // the whole row set in memory); tallyFormations is the same fold over an in-memory
 // array, for tests and any other small-input caller.
+//
+// Conservation: the fold collapses many plays into a few tallies, so it is checked as
+// rows seen = rows consumed + rows dropped. A row is consumed when it is counted into a
+// team whose tallies are written. A row that is counted into a team the coverage gate
+// then rejects is dropped as `below_coverage`; every other excluded row is dropped when it
+// is read.
 
+import type { Drop } from '../utils/ingest/drops';
 import { parsePersonnel, personnelCode } from './personnel';
+
+export type FormationDropReason =
+  | 'missing_possession_team'
+  | 'unknown_team'
+  | 'blank_formation'
+  | 'invalid_personnel'
+  | 'below_coverage';
+
+export interface FormationFoldResult<Tally, Reason extends string> {
+  tallies: Tally[];
+  skippedTeams: string[];
+  /** Rows counted into a team whose tallies were written. */
+  consumed: number;
+  dropped: Drop<Reason>[];
+}
 
 export interface ParticipationRow {
   nflverse_game_id: string;
@@ -39,14 +61,22 @@ export class FormationAccumulator {
   private gamesByTeam = new Map<string, Set<string>>();
   private countsByTeam = new Map<string, Map<string, number>>(); // key = `${alignment}|${personnelCode}`
   private totalByTeam = new Map<string, number>();
-  skipped = 0;
+  private consumedKeysByTeam = new Map<string, string[]>();
+  private dropped: Drop<FormationDropReason>[] = [];
+  rowsSeen = 0;
 
   constructor(private resolveCode: (code: string) => string | null) {}
 
   addRow(row: ParticipationRow): void {
-    const teamId = this.resolveCode(row.possession_team?.trim() ?? '');
+    const rowKey = `${row.nflverse_game_id}#${this.rowsSeen++}`;
+    const teamCode = row.possession_team?.trim() ?? '';
+    if (!teamCode) {
+      this.dropped.push({ reason: 'missing_possession_team', key: rowKey });
+      return;
+    }
+    const teamId = this.resolveCode(teamCode);
     if (!teamId) {
-      this.skipped++;
+      this.dropped.push({ reason: 'unknown_team', key: rowKey, value: teamCode });
       return;
     }
     if (!this.gamesByTeam.has(teamId)) this.gamesByTeam.set(teamId, new Set());
@@ -54,13 +84,15 @@ export class FormationAccumulator {
 
     const alignment = row.offense_formation?.trim();
     if (!alignment) {
-      this.skipped++; // blank alignment: kneel-downs / no-charting, excluded
+      // Blank alignment: kneel-downs / no-charting, excluded.
+      this.dropped.push({ reason: 'blank_formation', key: rowKey });
       return;
     }
 
     const counts = parsePersonnel(row.offense_personnel);
     if (!counts || counts.rb + counts.te + counts.wr !== 5) {
-      this.skipped++; // malformed or non-offensive-personnel row (e.g. a mislabeled ST snap)
+      // Malformed or non-offensive-personnel row (e.g. a mislabeled ST snap).
+      this.dropped.push({ reason: 'invalid_personnel', key: rowKey, value: row.offense_personnel });
       return;
     }
 
@@ -69,22 +101,31 @@ export class FormationAccumulator {
     teamCounts.set(key, (teamCounts.get(key) ?? 0) + 1);
     this.countsByTeam.set(teamId, teamCounts);
     this.totalByTeam.set(teamId, (this.totalByTeam.get(teamId) ?? 0) + 1);
+    const consumedKeys = this.consumedKeysByTeam.get(teamId) ?? [];
+    consumedKeys.push(rowKey);
+    this.consumedKeysByTeam.set(teamId, consumedKeys);
   }
 
   finish(
     season: number,
     gamesPlayedByTeam: Map<string, number>
-  ): { tallies: FormationTally[]; skippedTeams: string[] } {
+  ): FormationFoldResult<FormationTally, FormationDropReason> {
     const tallies: FormationTally[] = [];
     const skippedTeams: string[] = [];
+    const dropped = [...this.dropped];
+    let consumed = 0;
 
     for (const [teamId, teamCounts] of this.countsByTeam) {
       const totalGames = gamesPlayedByTeam.get(teamId);
       const gamesWithData = this.gamesByTeam.get(teamId)?.size ?? 0;
+      const consumedKeys = this.consumedKeysByTeam.get(teamId) ?? [];
       if (totalGames && gamesWithData / totalGames < MIN_COVERAGE) {
         skippedTeams.push(teamId);
+        for (const key of consumedKeys)
+          dropped.push({ reason: 'below_coverage', key, value: teamId });
         continue;
       }
+      consumed += consumedKeys.length;
 
       const total = this.totalByTeam.get(teamId) ?? 0;
       const ranked = [...teamCounts.entries()].sort(
@@ -103,7 +144,7 @@ export class FormationAccumulator {
       });
     }
 
-    return { tallies, skippedTeams };
+    return { tallies, skippedTeams, consumed, dropped };
   }
 }
 
@@ -112,9 +153,8 @@ export function tallyFormations(
   season: number,
   resolveCode: (code: string) => string | null,
   gamesPlayedByTeam: Map<string, number>
-): { tallies: FormationTally[]; skippedTeams: string[]; skipped: number } {
+): FormationFoldResult<FormationTally, FormationDropReason> {
   const acc = new FormationAccumulator(resolveCode);
   for (const row of rows) acc.addRow(row);
-  const { tallies, skippedTeams } = acc.finish(season, gamesPlayedByTeam);
-  return { tallies, skippedTeams, skipped: acc.skipped };
+  return acc.finish(season, gamesPlayedByTeam);
 }

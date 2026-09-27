@@ -1,8 +1,13 @@
 // Turns nflverse's stats_team_reg_<season>.csv rows into team_season_stats upsert rows.
 // Pure: no fetch, no DB. Resolves nflverse team codes to internal IDs via the
 // injectable resolveTeamCode function, coerces scalar blanks to null, and parses
-// the seven semicolon-delimited distance-list columns into int[].
+// the seven semicolon-delimited distance-list columns into int[]. Each CSV row becomes one
+// team row or one reason-coded drop, so the caller can check that none went missing.
+import type { Drop } from '../utils/ingest/drops';
 import { resolveTeamCode } from './team-codes';
+
+export type TeamStatsDropReason =
+  'missing_team' | 'unknown_team' | 'invalid_season' | 'non_regular_season';
 
 export interface TeamStatsInsert {
   team_id: string;
@@ -320,32 +325,33 @@ export function toTeamStatsRows(
   csvRows: Record<string, string>[],
   resolveCode: (code: string) => string | null = resolveTeamCode,
   options: { updatedAt?: string } = {}
-): { rows: TeamStatsInsert[]; skipped: number } {
+): { rows: TeamStatsInsert[]; dropped: Drop<TeamStatsDropReason>[] } {
   const rows: TeamStatsInsert[] = [];
-  let skipped = 0;
+  const dropped: Drop<TeamStatsDropReason>[] = [];
 
-  for (const row of csvRows) {
+  for (const [index, row] of csvRows.entries()) {
     const teamCode = row.team?.trim();
     if (!teamCode) {
-      skipped++;
+      dropped.push({ reason: 'missing_team', key: `row:${index}` });
       continue;
     }
+    const key = `${teamCode}|${row.season ?? ''}`;
 
     const teamId = resolveCode(teamCode);
     if (!teamId) {
-      skipped++;
+      dropped.push({ reason: 'unknown_team', key, value: teamCode });
       continue;
     }
 
     const season = Number(row.season);
     if (Number.isNaN(season)) {
-      skipped++;
+      dropped.push({ reason: 'invalid_season', key, value: row.season ?? '' });
       continue;
     }
 
     const seasonType = (row.season_type ?? 'REG').trim();
     if (seasonType !== 'REG') {
-      skipped++;
+      dropped.push({ reason: 'non_regular_season', key, value: seasonType });
       continue;
     }
 
@@ -367,5 +373,5 @@ export function toTeamStatsRows(
     });
   }
 
-  return { rows, skipped };
+  return { rows, dropped };
 }
