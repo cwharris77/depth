@@ -65,6 +65,7 @@ one rule mechanically: published data stays decodable by every supported app bui
 | 587 → 588+ | 2026-09-11 to 2026-09-14 | Six migrations landed since build 587 was recorded: `player_stats` gained 24 nullable columns (position-vocabulary stat lines); four migrations added/normalized nflverse source tables (`pfr`, NGS, FTN, QBR, box score) feeding the future `player_season_stats` consolidation (not yet read by any client); `uniforms` reseeded. All additive/non-destructive per `check:ios-compat` — no `IOS-COMPATIBILITY` annotations required. | No (never armed) |
 | 764 | 2026-09-24 | First LIVE App Store build. `check:ios-compat --base 3760372c` over the nine migrations changed since the archive: all additive/non-destructive (uniform seeds and path backfills, `20260921000000_add_team_line_stats.sql`). | No |
 | 764 | 2026-09-24 | Gate armed at 764. The rosters ingest stops omitting and deleting generic `OT`/`G` rows, so historical seasons publish those values again. | Yes (764) |
+| 764 | 2026-09-27 | 1999–2025 `roster_history` re-ingested with the canonical position mapping: nflverse `FB`/`NT`/`FS`/`SS` preserved, `SAF` → `S`, generic defensive backs stored as `DB`. No schema change. Build 764 drops and logs the `DB` rows, so those players are missing from its historical view until a build that decodes `DB` is live and gated. | Yes (764) |
 <!-- add a row per release that changes the client/backend contract -->
 
 ## Release sequencing checklist
