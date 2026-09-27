@@ -97,6 +97,22 @@ private func hit(
             PlayerSearch.positionGroupPositions("  o line  ") == [.lt, .lg, .c, .rg, .rt, .ot, .g])
     }
 
+    @Test func positionGroupResolvesEdgeLinebackersSpecialTeamsAndUnits() {
+        #expect(PlayerSearch.positionGroupPositions("edge") == [.de, .lde, .rde])
+        #expect(
+            PlayerSearch.positionGroupPositions("linebackers") == [.lb, .wlb, .lilb, .rilb, .slb])
+        #expect(PlayerSearch.positionGroupPositions("special teams") == [.k, .p, .ls])
+        #expect(
+            PlayerSearch.positionGroupPositions("offense") == [
+                .qb, .rb, .fb, .wr, .te, .lt, .lg, .c, .rg, .rt, .ot, .g,
+            ])
+        #expect(
+            PlayerSearch.positionGroupPositions("def") == [
+                .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb,
+                .cb, .lcb, .rcb, .nb, .s, .ss, .fs, .db,
+            ])
+    }
+
     @Test func positionGroupReturnsNilForANonGroupQuery() {
         #expect(PlayerSearch.positionGroupPositions("geno") == nil)
         #expect(PlayerSearch.positionGroupPositions("QB") == nil)

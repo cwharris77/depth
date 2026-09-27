@@ -300,17 +300,16 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
     // browses -- surfacing it as a TACKLES tab reads as a bug. Same-side trick plays (a
     // receiver's pass attempt) stay, since they belong to that player's category family.
     private static func order(for position: Position) -> [PlayerStatCategory] {
-        switch position {
-        case .qb: [.passing, .rushing, .receiving]
-        case .rb, .fb: [.rushing, .receiving, .passing, .returns]
-        case .wr, .te: [.receiving, .rushing, .passing, .returns]
-        case .kr, .pr: [.returns, .receiving, .rushing]
-        case .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb, .cb, .lcb, .rcb, .nb, .s,
-            .ss, .fs, .db:
+        switch position.family {
+        case .quarterback: [.passing, .rushing, .receiving]
+        case .backfield: [.rushing, .receiving, .passing, .returns]
+        case .receiver: [.receiving, .rushing, .passing, .returns]
+        case .returner: [.returns, .receiving, .rushing]
+        case .edge, .interiorLine, .linebacker, .corner, .safety, .defensiveBack:
             [.tackles, .passRush, .turnovers, .returns]
-        case .k: [.kicking]
-        case .p: [.snaps, .kicking]
-        case .lt, .lg, .c, .rg, .rt, .ot, .g, .ls:
+        case .kicker: [.kicking]
+        case .punter: [.snaps, .kicking]
+        case .offensiveLine, .longSnapper:
             [.snaps, .penalties, .receiving, .rushing]
         }
     }

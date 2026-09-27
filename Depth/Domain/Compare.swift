@@ -33,6 +33,14 @@ struct CompareRoom: Hashable, Identifiable {
     let unit: Unit
     /// The exact roster positions in this room, in `COMPARE_POSITIONS` display order.
     let positions: [Position]
+
+    /// A room holding the `COMPARE_POSITIONS` members of `families`, which must share one unit.
+    init(id: String, name: String, families: Set<PositionFamily>) {
+        self.id = id
+        self.name = name
+        self.positions = COMPARE_POSITIONS.filter { families.contains($0.family) }
+        self.unit = positions[0].unit
+    }
 }
 
 /// The pure, exhaustive catalog mapping every `COMPARE_POSITIONS` value to exactly one unit
@@ -42,23 +50,16 @@ struct CompareRoom: Hashable, Identifiable {
 /// depth groups (same editorial reason `COMPARE_POSITIONS` omits them).
 enum CompareMatchRooms {
     static let rooms: [CompareRoom] = [
-        // Offense (QB / RB / FB / WR / TE / LT / LG / C / RG / RT)
-        CompareRoom(id: "quarterback", name: "Quarterback", unit: .offense, positions: [.qb]),
-        CompareRoom(id: "backfield", name: "Backfield", unit: .offense, positions: [.rb, .fb]),
-        CompareRoom(id: "receivers", name: "Receivers", unit: .offense, positions: [.wr, .te]),
-        CompareRoom(id: "line", name: "Line", unit: .offense, positions: [.lt, .lg, .c, .rg, .rt]),
-        // Defense (17 positions)
-        CompareRoom(
-            id: "front", name: "Defensive Line", unit: .defense,
-            positions: [.de, .lde, .rde, .dt, .nt]),
-        CompareRoom(
-            id: "linebackers", name: "Linebackers", unit: .defense,
-            positions: [.lb, .wlb, .lilb, .rilb, .slb]),
-        CompareRoom(
-            id: "corners", name: "Corners", unit: .defense, positions: [.cb, .lcb, .rcb, .nb]),
-        CompareRoom(id: "safeties", name: "Safeties", unit: .defense, positions: [.s, .ss, .fs]),
-        // Special Teams (2 specialists)
-        CompareRoom(id: "specialists", name: "Specialists", unit: .special, positions: [.k, .p]),
+        CompareRoom(id: "quarterback", name: "Quarterback", families: [.quarterback]),
+        CompareRoom(id: "backfield", name: "Backfield", families: [.backfield]),
+        CompareRoom(id: "receivers", name: "Receivers", families: [.receiver]),
+        // Sided tags only: COMPARE_POSITIONS omits the generic OT and G.
+        CompareRoom(id: "line", name: "Line", families: [.offensiveLine]),
+        CompareRoom(id: "front", name: "Defensive Line", families: [.edge, .interiorLine]),
+        CompareRoom(id: "linebackers", name: "Linebackers", families: [.linebacker]),
+        CompareRoom(id: "corners", name: "Corners", families: [.corner]),
+        CompareRoom(id: "safeties", name: "Safeties", families: [.safety]),
+        CompareRoom(id: "specialists", name: "Specialists", families: [.kicker, .punter]),
     ]
 
     /// The rooms belonging to a unit, in display order.
