@@ -9,6 +9,7 @@ import {
   type EspnScoreboardEvent,
   type PreseasonWeek,
 } from './preseason';
+import { assertConserved, countByReason } from '@/lib/utils/ingest/drops';
 
 // Fixtures are trimmed saves of ESPN's league scoreboard (`scoreboard?dates=YYYY&
 // seasontype=1&week=N`, fetched 2026-09-10): the calendar plus the fields the transform
@@ -67,7 +68,7 @@ describe('preseasonWeeks', () => {
 });
 
 describe('toPreseasonGameRows', () => {
-  const { games, schedules, skipped, cancelled } = toPreseasonGameRows(
+  const { games, schedules, dropped } = toPreseasonGameRows(
     2026,
     [
       { week: weekByValue('1'), scoreboard: HOF },
@@ -77,8 +78,7 @@ describe('toPreseasonGameRows', () => {
   );
 
   it('writes every fixture game as a PRE row with an id nflverse cannot produce', () => {
-    expect(skipped).toBe(0);
-    expect(cancelled).toBe(0);
+    expect(dropped).toEqual([]);
     expect(games.map((g) => g.game_id).sort()).toEqual([
       '2026_PRE_401873271',
       '2026_PRE_401873277',
@@ -135,14 +135,16 @@ describe('toPreseasonGameRows', () => {
     expect(schedules.every((s) => s.season === 2026)).toBe(true);
   });
 
-  it('drops cancelled games without counting them as malformed', () => {
+  it('drops cancelled games with their own reason', () => {
     const weeks2020 = preseasonWeeks(cancelled2020 as EspnScoreboard);
     const result = toPreseasonGameRows(
       2020,
       [{ week: weeks2020[1], scoreboard: cancelled2020 as EspnScoreboard }],
       resolveTeamId
     );
-    expect(result).toEqual({ games: [], schedules: [], skipped: 0, cancelled: 1 });
+    expect(result.games).toEqual([]);
+    expect(result.schedules).toEqual([]);
+    expect(countByReason(result.dropped)).toEqual({ cancelled: 1 });
   });
 
   it('keeps null scores for a game that has not finished (ESPN reports "0")', () => {
@@ -173,26 +175,60 @@ describe('toPreseasonGameRows', () => {
     );
     expect(result.games).toHaveLength(2);
     expect(result.schedules).toHaveLength(4);
+    expect(countByReason(result.dropped)).toEqual({ superseded_duplicate: 2 });
+    const events = (WEEK_1.events ?? []).length * 2;
+    expect(() =>
+      assertConserved('preseason', events, result.games.length, result.dropped)
+    ).not.toThrow();
   });
 
-  const malformed: [string, (event: EspnScoreboardEvent) => void][] = [
+  const malformed: [string, string, (event: EspnScoreboardEvent) => void][] = [
     // ESPN's pre-2009 buckets sit outside their own calendar windows; never guess a week.
-    ['kicks off outside its calendar week', (e) => (e.date = '2026-08-25T17:00Z')],
-    ['belongs to another season', (e) => (e.season.year = 2025)],
-    ['is not a preseason game', (e) => (e.season.type = 2)],
-    ['has an unknown team', (e) => (e.competitions[0].competitors[0].team.id = '999')],
-    ['has no away competitor', (e) => e.competitions[0].competitors.splice(1, 1)],
-    ['has an unparseable date', (e) => (e.date = 'not-a-date')],
+    [
+      'kicks off outside its calendar week',
+      'outside_week_window',
+      (e) => (e.date = '2026-08-25T17:00Z'),
+    ],
+    ['belongs to another season', 'wrong_season', (e) => (e.season.year = 2025)],
+    ['is not a preseason game', 'not_preseason', (e) => (e.season.type = 2)],
+    [
+      'has an unknown team',
+      'unknown_team',
+      (e) => (e.competitions[0].competitors[0].team.id = '999'),
+    ],
+    [
+      'has no away competitor',
+      'missing_competitor',
+      (e) => e.competitions[0].competitors.splice(1, 1),
+    ],
+    ['has an unparseable date', 'invalid_date', (e) => (e.date = 'not-a-date')],
+    [
+      'has no status',
+      'missing_status',
+      (e) => {
+        const competition = e.competitions[0] as { status?: unknown };
+        delete competition.status;
+      },
+    ],
   ];
-  for (const [label, edit] of malformed) {
-    it(`skips and counts an event that ${label}`, () => {
+  for (const [label, reason, edit] of malformed) {
+    it(`drops an event that ${label} as ${reason}`, () => {
+      const scoreboard = withEvent(WEEK_1, edit);
       const result = toPreseasonGameRows(
         2026,
-        [{ week: weekByValue('2'), scoreboard: withEvent(WEEK_1, edit) }],
+        [{ week: weekByValue('2'), scoreboard }],
         resolveTeamId
       );
-      expect(result.skipped).toBe(1);
+      expect(countByReason(result.dropped)).toEqual({ [reason]: 1 });
       expect(result.games.map((g) => g.game_id)).toEqual(['2026_PRE_401873282']);
+      expect(() =>
+        assertConserved(
+          'preseason',
+          (scoreboard.events ?? []).length,
+          result.games.length,
+          result.dropped
+        )
+      ).not.toThrow();
     });
   }
 });

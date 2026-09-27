@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { lineYardsFor, toTeamLineStatsRows, type TeamLineStatsInsert } from './line-metrics';
+import { assertConserved } from '../utils/ingest/drops';
 
 const resolve: (code: string) => string | null = (code) => {
   if (code === 'AAA') return 'team-a';
@@ -34,7 +35,7 @@ const FIXTURE: Record<string, string>[] = [
   play({ game_id: 'g3', rush_attempt: '1', yards_gained: '0' }),
   // Excluded: a kneel is not line play.
   play({ game_id: 'g3', rush_attempt: '1', qb_kneel: '1', yards_gained: '-1' }),
-  // Skipped: a carry with no yardage can't be weighted.
+  // Dropped: a carry with no yardage can't be weighted.
   play({ game_id: 'g4', rush_attempt: '1', yards_gained: '' }),
 
   // --- Team A dropbacks: 3, 1 sack, 2 charted pressures, ttt 2.5 + 3.0, rushers 4+5+4
@@ -64,8 +65,14 @@ const FIXTURE: Record<string, string>[] = [
   // --- Team B: charted in only 1 of its 4 games => below coverage, no row.
   play({ game_id: 'g1', posteam: 'BBB', rush_attempt: '1', yards_gained: '5' }),
 
-  // Unresolvable team code => skipped.
+  // Unresolvable team code => dropped.
   play({ game_id: 'g1', posteam: 'ZZZ', rush_attempt: '1', yards_gained: '5' }),
+  // Neither a rush nor a dropback (a punt) => dropped.
+  play({ game_id: 'g1' }),
+  // Postseason => dropped.
+  play({ game_id: 'p1', season_type: 'POST', rush_attempt: '1', yards_gained: '9' }),
+  // No possession team (a timeout) => dropped.
+  play({ game_id: 'g2', posteam: '' }),
 ];
 
 function findRow(rows: TeamLineStatsInsert[], teamId: string): TeamLineStatsInsert {
@@ -121,8 +128,24 @@ describe('toTeamLineStatsRows', () => {
     expect(result.skippedTeams).toEqual(['team-b']);
   });
 
-  it('counts excluded/unresolvable plays as skipped', () => {
-    expect(result.skipped).toBe(3); // kneel + no-yardage carry + unresolvable code
+  it('drops every excluded play with its reason', () => {
+    expect(result.dropped).toEqual([
+      { reason: 'kneel_or_spike', key: 'g3#5' },
+      { reason: 'missing_yardage', key: 'g4#6' },
+      { reason: 'unknown_team', key: 'g1#11', value: 'ZZZ' },
+      { reason: 'not_line_play', key: 'g1#12' },
+      { reason: 'non_regular_season', key: 'p1#13', value: 'POST' },
+      { reason: 'missing_possession_team', key: 'g2#14' },
+      { reason: 'below_coverage', key: 'g1#10', value: 'team-b' },
+    ]);
+  });
+
+  it('accounts for every play as consumed or dropped', () => {
+    // Team A's 5 carries + 3 dropbacks feed its written row.
+    expect(result.consumed).toBe(8);
+    expect(() =>
+      assertConserved('line', FIXTURE.length, result.consumed, result.dropped)
+    ).not.toThrow();
   });
 });
 

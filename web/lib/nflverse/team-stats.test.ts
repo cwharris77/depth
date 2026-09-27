@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseDistanceList, toTeamStatsRows } from './team-stats';
+import { assertConserved, countByReason } from '../utils/ingest/drops';
 
 describe('parseDistanceList', () => {
   it('parses a semicolon-delimited string into an integer array', () => {
@@ -31,7 +32,7 @@ describe('toTeamStatsRows', () => {
   const resolveCode = (code: string) => (code === 'KC' ? 'chiefs' : null);
 
   it('transforms a happy-path row', () => {
-    const { rows, skipped } = toTeamStatsRows(
+    const { rows, dropped } = toTeamStatsRows(
       [
         {
           team: 'KC',
@@ -47,7 +48,7 @@ describe('toTeamStatsRows', () => {
       ],
       resolveCode
     );
-    expect(skipped).toBe(0);
+    expect(dropped).toEqual([]);
     expect(rows).toHaveLength(1);
     expect(rows[0].team_id).toBe('chiefs');
     expect(rows[0].season).toBe(2024);
@@ -122,57 +123,57 @@ describe('toTeamStatsRows', () => {
       const codes: Record<string, string> = { OAK: 'raiders', KC: 'chiefs' };
       return codes[code] ?? null;
     };
-    const { rows, skipped } = toTeamStatsRows(
+    const { rows, dropped } = toTeamStatsRows(
       [{ team: 'OAK', season: '2019', season_type: 'REG', games: '16' }],
       historicResolve
     );
-    expect(skipped).toBe(0);
+    expect(dropped).toEqual([]);
     expect(rows[0].team_id).toBe('raiders');
   });
 
-  it('skips and counts a row with an unresolvable team code', () => {
-    const { rows, skipped } = toTeamStatsRows(
+  it('drops a row with an unresolvable team code', () => {
+    const { rows, dropped } = toTeamStatsRows(
       [{ team: 'XYZ', season: '2024', season_type: 'REG' }],
       resolveCode
     );
     expect(rows).toEqual([]);
-    expect(skipped).toBe(1);
+    expect(dropped).toEqual([{ reason: 'unknown_team', key: 'XYZ|2024', value: 'XYZ' }]);
   });
 
-  it('skips and counts a row with a missing team code', () => {
-    const { rows, skipped } = toTeamStatsRows(
+  it('drops a row with a missing team code', () => {
+    const { rows, dropped } = toTeamStatsRows(
       [{ team: '', season: '2024', season_type: 'REG' }],
       resolveCode
     );
     expect(rows).toEqual([]);
-    expect(skipped).toBe(1);
+    expect(dropped).toEqual([{ reason: 'missing_team', key: 'row:0' }]);
   });
 
-  it('skips and counts a row with a non-numeric season', () => {
-    const { rows, skipped } = toTeamStatsRows(
+  it('drops a row with a non-numeric season', () => {
+    const { rows, dropped } = toTeamStatsRows(
       [{ team: 'KC', season: 'bad', season_type: 'REG' }],
       resolveCode
     );
     expect(rows).toEqual([]);
-    expect(skipped).toBe(1);
+    expect(dropped).toEqual([{ reason: 'invalid_season', key: 'KC|bad', value: 'bad' }]);
   });
 
-  it('skips non-REG season_type rows (POST)', () => {
-    const { rows, skipped } = toTeamStatsRows(
+  it('drops non-REG season_type rows (POST)', () => {
+    const { rows, dropped } = toTeamStatsRows(
       [{ team: 'KC', season: '2024', season_type: 'POST', games: '3' }],
       resolveCode
     );
     expect(rows).toEqual([]);
-    expect(skipped).toBe(1);
+    expect(dropped).toEqual([{ reason: 'non_regular_season', key: 'KC|2024', value: 'POST' }]);
   });
 
-  it('skips non-REG season_type rows (PRE)', () => {
-    const { rows, skipped } = toTeamStatsRows(
+  it('drops non-REG season_type rows (PRE)', () => {
+    const { rows, dropped } = toTeamStatsRows(
       [{ team: 'KC', season: '2024', season_type: 'PRE', games: '2' }],
       resolveCode
     );
     expect(rows).toEqual([]);
-    expect(skipped).toBe(1);
+    expect(dropped).toEqual([{ reason: 'non_regular_season', key: 'KC|2024', value: 'PRE' }]);
   });
 
   it('parses distance-list columns into int[]', () => {
@@ -204,23 +205,29 @@ describe('toTeamStatsRows', () => {
 
   it('uses the default resolveTeamCode when none is provided', () => {
     // KC is a known code in the real map
-    const { rows, skipped } = toTeamStatsRows([
+    const { rows, dropped } = toTeamStatsRows([
       { team: 'KC', season: '2024', season_type: 'REG', games: '17' },
     ]);
-    expect(skipped).toBe(0);
+    expect(dropped).toEqual([]);
     expect(rows[0].team_id).toBe('chiefs');
   });
 
-  it('accumulates skipped counts across multiple bad rows', () => {
-    const { rows, skipped } = toTeamStatsRows(
-      [
-        { team: 'KC', season: '2024', season_type: 'REG', games: '17' },
-        { team: 'BAD', season: '2024', season_type: 'REG' },
-        { team: 'KC', season: 'bad', season_type: 'REG' },
-      ],
-      resolveCode
-    );
+  it('accounts for every input row as a team row or a drop', () => {
+    const input: Record<string, string>[] = [
+      { team: 'KC', season: '2024', season_type: 'REG', games: '17' },
+      { team: 'BAD', season: '2024', season_type: 'REG' },
+      { team: 'KC', season: 'bad', season_type: 'REG' },
+      { team: 'KC', season: '2024', season_type: 'POST' },
+      { team: '', season: '2024', season_type: 'REG' },
+    ];
+    const { rows, dropped } = toTeamStatsRows(input, resolveCode);
     expect(rows).toHaveLength(1);
-    expect(skipped).toBe(2);
+    expect(() => assertConserved('team_stats', input.length, rows.length, dropped)).not.toThrow();
+    expect(countByReason(dropped)).toEqual({
+      invalid_season: 1,
+      missing_team: 1,
+      non_regular_season: 1,
+      unknown_team: 1,
+    });
   });
 });
