@@ -74,32 +74,33 @@ enum PlayerSearch {
         return positionGroups[key]
     }
 
-    private static let offensePositions: Set<Position> = [
-        .qb, .rb, .fb, .wr, .te, .lt, .lg, .c, .rg, .rt, .ot, .g,
-    ]
-    private static let defensePositions: Set<Position> = [
-        .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb,
-        .cb, .lcb, .rcb, .nb, .s, .ss, .fs, .db,
-    ]
-
-    private static let positionGroups: [String: [Position]] = [
-        "ol": [.lt, .lg, .c, .rg, .rt, .ot, .g],
-        "oline": [.lt, .lg, .c, .rg, .rt, .ot, .g],
-        "offensiveline": [.lt, .lg, .c, .rg, .rt, .ot, .g],
-        "dl": [.de, .lde, .rde, .dt, .nt],
-        "dline": [.de, .lde, .rde, .dt, .nt],
-        "defensiveline": [.de, .lde, .rde, .dt, .nt],
-        "edge": [.de, .lde, .rde],
-        "db": [.cb, .lcb, .rcb, .nb, .s, .ss, .fs, .db],
-        "dbs": [.cb, .lcb, .rcb, .nb, .s, .ss, .fs, .db],
-        "secondary": [.cb, .lcb, .rcb, .nb, .s, .ss, .fs, .db],
-        "lbs": [.lb, .wlb, .lilb, .rilb, .slb],
-        "linebackers": [.lb, .wlb, .lilb, .rilb, .slb],
-        "off": Array(offensePositions),
-        "offense": Array(offensePositions),
-        "def": Array(defensePositions),
-        "defense": Array(defensePositions),
-        "st": [.k, .p, .ls],
-        "specialteams": [.k, .p, .ls],
-    ]
+    private static let positionGroups: [String: [Position]] = {
+        let offensiveLine = PositionFamily.positions(in: [.offensiveLine])
+        let defensiveLine = PositionFamily.positions(in: [.edge, .interiorLine])
+        let secondary = PositionFamily.positions(in: [.corner, .safety, .defensiveBack])
+        let linebackers = PositionFamily.positions(in: [.linebacker])
+        let offense = Position.allCases.filter { $0.unit == .offense }
+        let defense = Position.allCases.filter { $0.unit == .defense }
+        let specialTeams = PositionFamily.positions(in: [.kicker, .punter, .longSnapper])
+        return [
+            "ol": offensiveLine,
+            "oline": offensiveLine,
+            "offensiveline": offensiveLine,
+            "dl": defensiveLine,
+            "dline": defensiveLine,
+            "defensiveline": defensiveLine,
+            "edge": PositionFamily.positions(in: [.edge]),
+            "db": secondary,
+            "dbs": secondary,
+            "secondary": secondary,
+            "lbs": linebackers,
+            "linebackers": linebackers,
+            "off": offense,
+            "offense": offense,
+            "def": defense,
+            "defense": defense,
+            "st": specialTeams,
+            "specialteams": specialTeams,
+        ]
+    }()
 }

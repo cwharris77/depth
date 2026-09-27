@@ -7,21 +7,18 @@ import Foundation
 // port the same change here.
 
 // Maps a granular Position to the broad group nflverse's count-only personnel data can
-// resolve against. A total map (every Position has an entry, even if nil) so adding a
-// Position without updating this is caught by exhaustive-switch style review, matching
-// the TS Record's compile-time enforcement.
-private let positionGroupMap: [Position: PositionGroup?] = [
-    .qb: nil, .rb: .rb, .fb: .rb, .wr: nil, .te: nil,
-    .lt: .ol, .lg: .ol, .c: .ol, .rg: .ol, .rt: .ol, .ot: .ol, .g: .ol,
-    .de: .dl, .lde: .dl, .rde: .dl, .dt: .dl, .nt: .dl,
-    .lb: .lb, .wlb: .lb, .lilb: .lb, .rilb: .lb, .slb: .lb,
-    .cb: .cb, .lcb: .cb, .rcb: .cb, .nb: .cb,
-    .s: .s, .ss: .s, .fs: .s, .db: nil,
-    .k: nil, .p: nil, .ls: nil, .kr: nil, .pr: nil,
-]
-
+// resolve against, by way of its family. Mirrors formations.ts's POSITION_GROUP.
 private func positionGroup(_ position: Position) -> PositionGroup? {
-    positionGroupMap[position] ?? nil
+    switch position.family {
+    case .backfield: .rb
+    case .offensiveLine: .ol
+    case .edge, .interiorLine: .dl
+    case .linebacker: .lb
+    case .corner: .cb
+    case .safety: .s
+    case .quarterback, .receiver, .defensiveBack, .kicker, .punter, .longSnapper, .returner:
+        nil
+    }
 }
 
 // Seats, not player rows: an athlete holding two seats belongs in the pool once per

@@ -334,22 +334,21 @@ enum PlayerStatsAccessibility {
 }
 
 func playerStatColumns(for position: Position) -> [PlayerStatColumn] {
-    switch position {
-    case .qb:
+    switch position.family {
+    case .quarterback:
         [
             .completionsAttempts, .passingYards, .passingTds, .passingInterceptions,
             .passingYardsPerAttempt,
         ]
-    case .rb, .fb:
+    case .backfield:
         [.carries, .rushingYards, .rushingTds, .receptions, .rushingYardsPerCarry]
-    case .wr, .te:
+    case .receiver:
         [.receptions, .targets, .receivingYards, .receivingTds, .receivingYardsPerReception]
-    case .lt, .lg, .c, .rg, .rt, .ot, .g, .p, .ls, .kr, .pr:
+    case .offensiveLine, .punter, .longSnapper, .returner:
         [.games]
-    case .de, .lde, .rde, .dt, .nt, .lb, .wlb, .lilb, .rilb, .slb, .cb, .lcb, .rcb, .nb, .s, .ss,
-        .fs, .db:
+    case .edge, .interiorLine, .linebacker, .corner, .safety, .defensiveBack:
         [.tackles, .sacks, .interceptions]
-    case .k:
+    case .kicker:
         [.fieldGoalsMade, .fieldGoalsAttempted, .fieldGoalPercentage]
     }
 }
