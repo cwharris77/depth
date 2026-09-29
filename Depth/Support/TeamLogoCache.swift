@@ -11,6 +11,9 @@ import UIKit
 // the app bundle at build time.
 @MainActor
 enum TeamLogoCache {
+    private static let cacheTimestampKey = "teamLogoCachedAt"
+    private static let maximumCacheAge: TimeInterval = 6 * 60 * 60
+
     /// Dedicated cache so team logos never share or evict the app's general response cache
     /// (URLSession.shared / URLCache.shared) and never depend on host configuration.
     static let urlCache = URLCache(
@@ -18,39 +21,100 @@ enum TeamLogoCache {
         diskCapacity: 64 * 1024 * 1024
     )
 
-    /// Cache-first session: a cache hit returns without hitting the network. Only logo
-    /// fetches flow through here; the rest of the app keeps URLSession.shared.
+    /// Uses HTTP cache headers for logo requests. Only logo fetches flow through this
+    /// session; the rest of the app keeps URLSession.shared.
     private static let session: URLSession = {
         let config = URLSessionConfiguration.default
         config.urlCache = urlCache
-        config.requestCachePolicy = .returnCacheDataElseLoad
+        config.requestCachePolicy = .useProtocolCachePolicy
         return URLSession(configuration: config)
     }()
 
     /// Synchronous cache read — safe to call from a view's init, which is what makes
     /// already-seen logos render on the first frame instead of flashing initials.
     static func cachedImage(for url: URL) -> UIImage? {
-        guard let cached = urlCache.cachedResponse(for: URLRequest(url: url)),
+        let request = URLRequest(url: url)
+        guard let cached = urlCache.cachedResponse(for: request) else { return nil }
+
+        guard let cachedAt = cached.userInfo?[cacheTimestampKey] as? Date,
+            let response = cached.response as? HTTPURLResponse
+        else {
+            urlCache.removeCachedResponse(for: request)
+            return nil
+        }
+
+        let cacheControl = responseCacheControl(response)
+        let age = Date().timeIntervalSince(cachedAt)
+        guard age < cacheAgeLimit(for: response),
+            !cacheControl.contains("no-cache"),
+            !cacheControl.contains("no-store"),
             let image = UIImage(data: cached.data)
-        else { return nil }
+        else {
+            urlCache.removeCachedResponse(for: request)
+            return nil
+        }
+
         return image
     }
 
-    /// Fetches the logo (cache-first) and stores it regardless of the CDN's HTTP cache
-    /// headers so offline renders are deterministic. Returns nil on failure — the caller
-    /// falls back to its initials placeholder.
+    /// Fetches a logo using CDN freshness rules, then keeps a valid image for synchronous
+    /// rendering for at most six hours. A bad cached response is discarded and retried once.
     static func loadImage(from url: URL) async -> UIImage? {
-        do {
-            let (data, response) = try await session.data(from: url)
-            guard let image = UIImage(data: data) else { return nil }
-            urlCache.storeCachedResponse(
-                CachedURLResponse(response: response, data: data),
-                for: URLRequest(url: url)
-            )
-            return image
-        } catch {
-            return nil
+        for attempt in 0..<2 {
+            var request = URLRequest(url: url)
+            if attempt == 1 {
+                request.cachePolicy = .reloadIgnoringLocalCacheData
+            }
+
+            do {
+                let (data, response) = try await session.data(for: request)
+                guard let httpResponse = response as? HTTPURLResponse,
+                    (200..<300).contains(httpResponse.statusCode),
+                    let image = UIImage(data: data)
+                else {
+                    urlCache.removeCachedResponse(for: request)
+                    if attempt == 0 { continue }
+                    return nil
+                }
+
+                let cacheControl = responseCacheControl(httpResponse)
+                if cacheControl.contains("no-cache") || cacheControl.contains("no-store") {
+                    urlCache.removeCachedResponse(for: request)
+                } else {
+                    urlCache.storeCachedResponse(
+                        CachedURLResponse(
+                            response: response,
+                            data: data,
+                            userInfo: [cacheTimestampKey: Date()],
+                            storagePolicy: .allowed
+                        ),
+                        for: request
+                    )
+                }
+                return image
+            } catch {
+                return nil
+            }
         }
+
+        return nil
+    }
+
+    private static func responseCacheControl(_ response: HTTPURLResponse) -> String {
+        response.value(forHTTPHeaderField: "Cache-Control")?.lowercased() ?? ""
+    }
+
+    private static func cacheAgeLimit(for response: HTTPURLResponse) -> TimeInterval {
+        for directive in responseCacheControl(response).components(separatedBy: ",") {
+            let parts = directive.trimmingCharacters(in: .whitespaces).split(
+                separator: "=",
+                maxSplits: 1
+            )
+            if parts.first == "max-age", let seconds = parts.last.flatMap(Double.init) {
+                return min(seconds, maximumCacheAge)
+            }
+        }
+        return maximumCacheAge
     }
 }
 
