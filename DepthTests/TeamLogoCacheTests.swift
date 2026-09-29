@@ -26,11 +26,35 @@ struct TeamLogoCacheTests {
         let response = HTTPURLResponse(
             url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
         TeamLogoCache.urlCache.storeCachedResponse(
-            CachedURLResponse(response: response, data: Self.png1x1),
+            CachedURLResponse(
+                response: response,
+                data: Self.png1x1,
+                userInfo: ["teamLogoCachedAt": Date()],
+                storagePolicy: .allowed
+            ),
             for: request
         )
         defer { TeamLogoCache.urlCache.removeCachedResponse(for: request) }
         #expect(TeamLogoCache.cachedImage(for: url) != nil)
+    }
+
+    @Test func expiredImageIsNotRendered() {
+        let url = URL(string: "https://example.test/expired.png")!
+        let request = URLRequest(url: url)
+        let response = HTTPURLResponse(
+            url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        TeamLogoCache.urlCache.storeCachedResponse(
+            CachedURLResponse(
+                response: response,
+                data: Self.png1x1,
+                userInfo: ["teamLogoCachedAt": Date().addingTimeInterval(-7 * 60 * 60)],
+                storagePolicy: .allowed
+            ),
+            for: request
+        )
+        defer { TeamLogoCache.urlCache.removeCachedResponse(for: request) }
+
+        #expect(TeamLogoCache.cachedImage(for: url) == nil)
     }
 
     @Test func garbageNeverDecodesAsAnImage() {
@@ -43,6 +67,8 @@ struct TeamLogoCacheTests {
             for: request
         )
         defer { TeamLogoCache.urlCache.removeCachedResponse(for: request) }
+        #expect(TeamLogoCache.urlCache.cachedResponse(for: request) != nil)
         #expect(TeamLogoCache.cachedImage(for: url) == nil)
+        #expect(TeamLogoCache.urlCache.cachedResponse(for: request) == nil)
     }
 }
