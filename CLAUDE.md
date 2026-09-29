@@ -13,6 +13,10 @@ the task touches the shared backend or explicitly asks how the web app behaved, 
 rarely hold the answer to an iOS question. Read web only as a reference for an existing
 behavior, and match its behavior rather than its markup: iOS has its own design system.
 
+## Design direction
+
+Before changing a user-facing screen, information hierarchy, or UI copy, read [PRODUCT.md](PRODUCT.md) and [DESIGN.md](DESIGN.md). The field remains the casual fan's primary answer; analytical surfaces use overview → evidence → reference and must not make a raw ledger the default experience.
+
 ## 1. What this app is
 
 Native SwiftUI NFL depth chart viewer backed by the same Supabase project as the web app.

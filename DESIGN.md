@@ -222,6 +222,18 @@ At the xl breakpoint (≥1280 px), the team page transforms into a viewport-heig
 
 Per-unit label visibility uses content-dependent breakpoints, not screen width alone: offense labels appear at ≥720 px (OL dots are shoulder-to-shoulder), defense at ≥520 px (more spread), special teams always visible (few dots, no collision). Labels are viewport-height-clamped (`clamp(6px, 1.1dvh, 8px)`) so they shrink ahead of colliding when the field's available height shrinks.
 
+## Information hierarchy
+
+Depth is not a minimalist product; it is a casual-fan-first product with a deep reference layer. Every information-heavy surface declares one job and follows **overview → evidence → reference**.
+
+- **Overview:** Answer the fan's immediate question in the first viewport. On the team page, that is who is on the field. On an analytical surface, it is the one verified story that explains why a player, game, or season matters.
+- **Evidence:** Show two or three facts that substantiate the overview. Pair raw numbers with plain-language, source-backed context when it changes their meaning.
+- **Reference:** Put exhaustive tables, full season ledgers, career history, and secondary detail behind an explicit lens, destination, or collapsed section. They stay easy to reach without competing with the overview.
+
+A screen may add another destination when that produces a clearer question-and-answer relationship. Avoid forcing complete information into one scroll view. Preserve the broadcast-booth visual world: team identity and the field or jersey carry emotion; analytical chrome remains quiet; raw measurement recedes until the fan asks for it.
+
+**Narrative integrity rule.** Contextual claims must be verifiable, relevant to the comparison, and clearly scoped. “Most by a Ram since 2018” needs the underlying season/game data; do not substitute vague superlatives or an arbitrary historical comparison.
+
 ## Elevation & Depth
 
 The system is nearly shadowless. Chrome is flat by default — depth is conveyed entirely through translucent white-alpha surfaces layered on the charcoal ground. Drop shadows are reserved for physically floating elements: player dots resting on the field (`0 2px 8px rgba(0,0,0,0.5)`), the toggle thumb (`0 1px 2px rgba(0,0,0,0.35), 0 1px 1px rgba(0,0,0,0.2)`), and focus rings (`0 0 0 3px rgba(110,140,174,0.3)`). Overlays use a scrim (`rgba(0,0,0,0.6)`) rather than elevation.

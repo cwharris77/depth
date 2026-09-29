@@ -4,7 +4,7 @@
 
 ## Platform
 
-iOS-first: the product is the native SwiftUI app for the App Store. The Next.js web app is frozen and kept only to host the privacy policy and support policy.
+ios
 
 ## Users
 
@@ -52,10 +52,11 @@ Durable constraints:
 ## Product Principles
 
 1. **Daily-use bar, public polish floor.** Features used every day must still satisfy a first-time user; neither bar is lowered for the other.
-2. **The field is the product.** Every surface either strengthens reading a roster on the field or gets out of its way.
-3. **League data is curated carefully.** Machine-owned values stay machine-owned, curated history is append-only, correctness beats convenience.
-4. **Degrade gracefully.** Bad input, missing data, or a failed ingest costs a fallback or a stale week — never an error screen.
-5. **Native where it lands.** The build surface is iOS. Where a behavior already exists on the frozen web app and still matters, share the *behavior*, never markup — the shared backend is the real cross-surface seam.
+2. **The field is the product.** A casual fan should be able to name every starter from the field; every surface either strengthens that experience or gets out of its way.
+3. **Narrative before ledger.** Lead with the one verified story a fan should understand, support it with a small amount of context, and reserve exhaustive statistics for an explicit deeper destination.
+4. **League data is curated carefully.** Machine-owned values stay machine-owned, curated history is append-only, correctness beats convenience. Comparative claims require a verified source and a meaningful comparator; never invent context to make a number sound important.
+5. **Degrade gracefully.** Bad input, missing data, or a failed ingest costs a fallback or a stale week — never an error screen.
+6. **Native where it lands.** The build surface is iOS. Where a behavior already exists on the frozen web app and still matters, share the *behavior*, never markup — the shared backend is the real cross-surface seam.
 
 ## Accessibility & Inclusion
 
