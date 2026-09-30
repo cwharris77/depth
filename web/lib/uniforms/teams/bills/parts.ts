@@ -7,11 +7,9 @@
 
 import { BILLS_HELMET_DECAL_BUFFALO_PATH, BILLS_HELMET_DECAL_STRIPE_PATH } from './source';
 import { expandHelmet } from '../core/helmet-spec';
+import { expandPants, expandSocks } from '../core/pants-spec';
 import { placed } from '../core/marks';
 import type { UniformPart } from '../core/parts';
-
-const PANTS_STRIPE_PATH_LEFT = 'M118,807 H134 V1462 H118 Z';
-const PANTS_STRIPE_PATH_RIGHT = 'M454,807 H470 V1462 H454 Z';
 
 // The white shell with the navy buffalo and red diagonal stripe, shared by home and away.
 const HELMET_WHITE: UniformPart = expandHelmet('bills-white-helmet', {
@@ -85,54 +83,22 @@ const HELMET_ICE: UniformPart = expandHelmet('bills-ice-helmet', {
 });
 
 // Home pants, royal, with the red side stripe.
-const PANTS_BLUE: UniformPart = {
-  base: 'navy',
-  layers: [
-    {
-      id: 'generic-pants-stripe-left',
-      surface: 'leg-left',
-      d: PANTS_STRIPE_PATH_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: 'red',
-    },
-    {
-      id: 'generic-pants-stripe-right',
-      surface: 'leg-right',
-      d: PANTS_STRIPE_PATH_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: 'red',
-    },
-  ],
-};
+const PANTS_BLUE = expandPants('bills-blue-pants', {
+  body: 'navy',
+  stripes: { position: 'center', bands: [{ color: 'red', size: 'm' }], gap: 'none' },
+});
 
 // White pants are the canonical away option and the alternate home option; their red stripe is
 // part of the pants so this option remains correct when paired with either standard jersey.
-const PANTS_WHITE: UniformPart = {
-  base: 'white',
-  layers: [
-    {
-      id: 'generic-pants-stripe-left',
-      surface: 'leg-left',
-      d: PANTS_STRIPE_PATH_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: 'red',
-    },
-    {
-      id: 'generic-pants-stripe-right',
-      surface: 'leg-right',
-      d: PANTS_STRIPE_PATH_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: 'red',
-    },
-  ],
-};
+const PANTS_WHITE = expandPants('bills-white-pants', {
+  body: 'white',
+  stripes: { position: 'center', bands: [{ color: 'red', size: 'm' }], gap: 'none' },
+});
 
 // Rivalries pants, white, unbanded.
 const PANTS_RIVALRIES: UniformPart = { base: 'white', layers: [] };
+const SOCKS_NAVY = expandSocks('bills-navy-socks', { color: 'navy' });
+const SOCKS_WHITE = expandSocks('bills-white-socks', { color: 'white' });
 
 export const BILLS_CONSTRUCTION = {
   teamId: 'bills',
@@ -148,11 +114,12 @@ export const BILLS_CONSTRUCTION = {
   },
   helmets: { white: HELMET_WHITE, ice: HELMET_ICE },
   pants: { blue: PANTS_BLUE, white: PANTS_WHITE, rivalries: PANTS_RIVALRIES },
+  socks: { navy: SOCKS_NAVY, white: SOCKS_WHITE },
   kits: {
     // The 2025 composite shows both blue and white trousers with each modern top;
     // canonical-first preserves the existing blue-over-blue and white-over-white rasters.
-    home: { helmet: 'white', jersey: 'blue', pants: ['blue', 'white'] },
-    away: { helmet: 'white', jersey: 'white', pants: ['white', 'blue'] },
-    'rivalries-2025': { helmet: 'ice', jersey: 'rivalries', pants: 'rivalries' },
+    home: { helmet: 'white', jersey: 'blue', pants: ['blue', 'white'], socks: 'navy' },
+    away: { helmet: 'white', jersey: 'white', pants: ['white', 'blue'], socks: 'navy' },
+    'rivalries-2025': { helmet: 'ice', jersey: 'rivalries', pants: 'rivalries', socks: 'white' },
   },
 };

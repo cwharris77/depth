@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "80b9b1183485283c25eea7491dd4a4d1144baadd5515e13251893b1eaf705538",
-  "revision": "f1f5f85dc65682fa",
+  "sourceDigest": "a1aad4d652fd265a2145735c49d854533c37bff2f930057aed10f785aa7848fd",
+  "revision": "91aa008245e089d2",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -166,7 +166,7 @@
     {
       "catalogId": "bills-away-2011",
       "constructionKey": "away",
-      "revision": "1118f2761cfd6cc3",
+      "revision": "9eca9d7ef4ee7746",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bills-away-2011.webp",
@@ -174,14 +174,14 @@
         },
         "full": {
           "path": "/uniforms/bills-away-2011-full.webp",
-          "sha256": "45826be684edaaab344a3cfca8aec72f16286e695ebb32e1847a325b7b8fb7e4"
+          "sha256": "5dbd6666a323d0d02a9b29b83fd2d82b571f891a8107eee387641de50733ed7e"
         }
       }
     },
     {
       "catalogId": "bills-home-2011",
       "constructionKey": "home",
-      "revision": "fcfd53120834a913",
+      "revision": "18f8145e1409a284",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bills-home-2011.webp",
@@ -189,7 +189,7 @@
         },
         "full": {
           "path": "/uniforms/bills-home-2011-full.webp",
-          "sha256": "5a14421fb323c3013be649ad75bfb0d0cbdd48da98878e0887bc4875153c8160"
+          "sha256": "8d02fb29ab93070c2e23cd749f0b92632ebacc10d561c543acd0133b1b6a61f2"
         }
       }
     },
