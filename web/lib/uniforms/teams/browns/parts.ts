@@ -9,6 +9,7 @@
 // the 1946 throwback keeps its existing white pants outside that current-uniform option set.
 
 import { expandHelmet } from '../core/helmet-spec';
+import { expandSocks } from '../core/pants-spec';
 import { type PartLayer, type UniformPart } from '../core/parts';
 
 // The 2025 composite's white and orange pants both carry the same orange-brown-orange stripe.
@@ -19,7 +20,7 @@ function pantsStripes(): PartLayer[] {
     {
       id: 'generic-pants-stripe-left',
       surface: 'leg-left',
-      d: 'M118,807 H134 V1462 H118 Z',
+      d: 'M118,807 H134 V1196 H118 Z',
       clip: true,
       kind: 'fill',
       fill: 'orange',
@@ -27,7 +28,7 @@ function pantsStripes(): PartLayer[] {
     {
       id: 'generic-pants-stripe-right',
       surface: 'leg-right',
-      d: 'M454,807 H470 V1462 H454 Z',
+      d: 'M454,807 H470 V1196 H454 Z',
       clip: true,
       kind: 'fill',
       fill: 'orange',
@@ -35,7 +36,7 @@ function pantsStripes(): PartLayer[] {
     {
       id: 'browns-pants-stripe-center-left',
       surface: 'leg-left',
-      d: 'M123,807 H129 V1462 H123 Z',
+      d: 'M123,807 H129 V1196 H123 Z',
       clip: true,
       kind: 'fill',
       fill: 'brown',
@@ -43,7 +44,7 @@ function pantsStripes(): PartLayer[] {
     {
       id: 'browns-pants-stripe-center-right',
       surface: 'leg-right',
-      d: 'M459,807 H465 V1462 H459 Z',
+      d: 'M459,807 H465 V1196 H459 Z',
       clip: true,
       kind: 'fill',
       fill: 'brown',
@@ -86,6 +87,32 @@ const PANTS_BROWN: UniformPart = { base: 'brown', layers: [] };
 // unstriped white pant construction rather than importing an option from a different uniform era.
 const PANTS_1946_WHITE: UniformPart = { base: 'white', layers: [] };
 
+const SOCKS_BROWN = expandSocks('browns-brown-socks', {
+  color: 'brown',
+  stripes: {
+    bands: [
+      { color: 'white', size: 's' },
+      { color: 'orange', size: 's' },
+      { color: 'white', size: 's' },
+    ],
+    gap: 'none',
+  },
+});
+
+const SOCKS_WHITE = expandSocks('browns-white-socks', {
+  color: 'white',
+  stripes: {
+    bands: [
+      { color: 'brown', size: 's' },
+      { color: 'orange', size: 's' },
+      { color: 'brown', size: 's' },
+    ],
+    gap: 'none',
+  },
+});
+
+const SOCKS_1946_WHITE = expandSocks('browns-1946-white-socks', { color: 'white' });
+
 export const BROWNS_CONSTRUCTION = {
   teamId: 'browns',
   // Jersey hexes from the curated rows. Brown and orange are the two physical
@@ -103,9 +130,20 @@ export const BROWNS_CONSTRUCTION = {
     brown: PANTS_BROWN,
     '1946-white': PANTS_1946_WHITE,
   },
+  socks: { brown: SOCKS_BROWN, white: SOCKS_WHITE, '1946-white': SOCKS_1946_WHITE },
   kits: {
-    home: { helmet: 'orange', jersey: 'brown', pants: ['white', 'orange', 'brown'] },
-    away: { helmet: 'orange', jersey: 'white', pants: ['white', 'orange'] },
-    '1946-throwback': { helmet: 'brown', jersey: 'white', pants: '1946-white' },
+    home: {
+      helmet: 'orange',
+      jersey: 'brown',
+      pants: ['white', 'orange', 'brown'],
+      socks: 'brown',
+    },
+    away: { helmet: 'orange', jersey: 'white', pants: ['white', 'orange'], socks: 'white' },
+    '1946-throwback': {
+      helmet: 'brown',
+      jersey: 'white',
+      pants: '1946-white',
+      socks: '1946-white',
+    },
   },
 };

@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "9aa61e63cb9ae3d964fa7251ff2daaecd82df32ca1301a278cc4eccd1357d488",
-  "revision": "5754fa4358edb6ba",
+  "sourceDigest": "b1993f386a03e7ac36bc436642017deeb1faf731365ce3567ecba122639dfa25",
+  "revision": "37bf43247090a0b3",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -348,7 +348,7 @@
     {
       "catalogId": "browns-away-2020",
       "constructionKey": "away",
-      "revision": "1cb5b574c9d0ae5d",
+      "revision": "e843594e134f03ae",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/browns-away-2020.webp",
@@ -356,14 +356,14 @@
         },
         "full": {
           "path": "/uniforms/browns-away-2020-full.webp",
-          "sha256": "7759ce67ff8f1b715e872cca422739589a7c4da66fabb16c6bf9bb46aa98895b"
+          "sha256": "176c3e619875c341819c87b053a337d8b5084a1d4d1a3973645efcc1c6577099"
         }
       }
     },
     {
       "catalogId": "browns-home-2020",
       "constructionKey": "home",
-      "revision": "9bafaf9f8de18f24",
+      "revision": "3a515286b4ff0388",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/browns-home-2020.webp",
@@ -371,7 +371,7 @@
         },
         "full": {
           "path": "/uniforms/browns-home-2020-full.webp",
-          "sha256": "563df506c12d25a604959d24d00b45935e421c758d502f82223371224775a880"
+          "sha256": "54c47c6062faec6a918e8baf4f934a9e0bd4562e246b761f4e87e242d5041d5d"
         }
       }
     },
