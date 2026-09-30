@@ -1,43 +1,15 @@
-// Cleveland authored as composable parts. Geometry is imported unchanged from browns.ts — this
-// file only restates WHICH parts each kit combines, and names every color from the team palette
-// instead of the kit row's shifting primary/secondary/accent.
+// Cleveland authored as composable parts. This file restates WHICH parts each kit combines, and
+// names every color from the team palette instead of the kit row's shifting
+// primary/secondary/accent. The jerseys themselves are specs under ./jerseys/.
 //
 // Cleveland's construction is defined by what it does NOT have: the shell carries no logo and no
 // center stripe, the V-collar carries no trim, and the numerals carry no keyline. Everything the
-// uniform says, it says with one five-band stripe stack at the end of each sleeve and a three-band
-// pant stripe. The current composite's brown, orange and white pants are independently selectable;
+// uniform says, it says with one five-band stripe stack on each sleeve and a three-band pant
+// stripe. The current composite's brown, orange and white pants are independently selectable;
 // the 1946 throwback keeps its existing white pants outside that current-uniform option set.
 
-import { BROWNS_SLEEVE_X_LEFT, BROWNS_SLEEVE_X_RIGHT, BROWNS_STRIPE_BOUNDS } from './source';
 import { expandHelmet } from '../core/helmet-spec';
 import { type PartLayer, type UniformPart } from '../core/parts';
-import type { UniformSurface } from '../core/types';
-
-// The five-band stripe stack over the end of each sleeve. One construction, three colorways; the
-// codex calls the outer/middle/inner bands and the two between them.
-function sleeveStripes(band: string, gap: string): PartLayer[] {
-  const out: PartLayer[] = [];
-  const sides: [UniformSurface, number[]][] = [
-    ['sleeve-left', BROWNS_SLEEVE_X_LEFT],
-    ['sleeve-right', BROWNS_SLEEVE_X_RIGHT],
-  ];
-  for (let i = 0; i < BROWNS_STRIPE_BOUNDS.length - 1; i += 1) {
-    const top = BROWNS_STRIPE_BOUNDS[i];
-    const bottom = BROWNS_STRIPE_BOUNDS[i + 1];
-    for (const [surface, [x0, x1]] of sides) {
-      const side = surface === 'sleeve-left' ? 'left' : 'right';
-      out.push({
-        id: `browns-sleeve-band-${i}-${side}`,
-        surface,
-        d: `M${x0},${top} H${x1} V${bottom} H${x0} Z`,
-        clip: true,
-        kind: 'fill',
-        fill: i % 2 === 0 ? band : gap,
-      });
-    }
-  }
-  return out;
-}
 
 // The 2025 composite's white and orange pants both carry the same orange-brown-orange stripe.
 // The shared mannequin band supplies the 16-unit orange outer field; a six-unit brown centre leaves
@@ -92,7 +64,7 @@ const HELMET_ORANGE: UniformPart = expandHelmet('browns-orange-helmet', {
 });
 
 // The 1946 throwback's brown shell (the era's documented leather helmet), inferred — NOT in the
-// 2025 composite, provisional (see browns.ts).
+// 2025 composite.
 //
 // White cage. The modern reproduction of the 1946 shell wears the same SF2BD-SW-SP white mask.
 const HELMET_BROWN: UniformPart = expandHelmet('browns-brown-helmet', {
@@ -101,10 +73,6 @@ const HELMET_BROWN: UniformPart = expandHelmet('browns-brown-helmet', {
   decal: 'none',
   number: 'none',
 });
-
-// Home jersey: brown body, white-over-orange stripe stack, plain white numerals (no keyline).
-
-// Away + 1946 jersey: white body, brown-over-orange stripe stack, plain brown numerals.
 
 // White (P1) and orange (P2) pants: the 2025 composite gives both the same
 // orange-brown-orange full-leg band.
@@ -141,5 +109,3 @@ export const BROWNS_CONSTRUCTION = {
     '1946-throwback': { helmet: 'brown', jersey: 'white', pants: '1946-white' },
   },
 };
-
-export { sleeveStripes };
