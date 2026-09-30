@@ -1,10 +1,18 @@
-// Jersey construction moved intact from parts.ts.
+import { expandJersey } from '../../core/jersey-spec';
 import type { UniformPart } from '../../core/parts';
-import { collar, sleeveBands } from '../parts';
 
-// Black-alt jersey (J4): black body, green bands + collar, white numerals.
-export const JERSEY_BLACK: UniformPart = {
-  base: 'black',
-  layers: [...sleeveBands('green'), ...collar('green')],
-  number: { fill: 'white', outline: 'white', outlineWidth: 10 },
-};
+// Black alternate: black body with green trim throughout, a white shoulder numeral, and white
+// chest numerals carrying a thin green offset.
+export const JERSEY_BLACK: UniformPart = expandJersey('jets-black', {
+  body: 'black',
+  collar: { style: 'inset-v', color: 'green' },
+  shoulderNumber: { fill: 'white' },
+  sleeveStripes: {
+    bands: [
+      { color: 'green', size: 'l' },
+      { color: 'green', size: 'l' },
+    ],
+    gap: 'broad',
+  },
+  number: { fill: 'white', outline: 'green', outlineWeight: 'thin' },
+});
