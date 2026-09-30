@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "b1993f386a03e7ac36bc436642017deeb1faf731365ce3567ecba122639dfa25",
-  "revision": "37bf43247090a0b3",
+  "sourceDigest": "80b9b1183485283c25eea7491dd4a4d1144baadd5515e13251893b1eaf705538",
+  "revision": "f1f5f85dc65682fa",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -166,45 +166,45 @@
     {
       "catalogId": "bills-away-2011",
       "constructionKey": "away",
-      "revision": "9cd55224a67421bd",
+      "revision": "1118f2761cfd6cc3",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bills-away-2011.webp",
-          "sha256": "f094ecf7264f29ca26ec35d6d60cc954044e02bed5ebf0e795fa49bf470f02e1"
+          "sha256": "7aa7fc551688e9346bb3d55259ed0af6689f03e135f511fca216573f38cdf085"
         },
         "full": {
           "path": "/uniforms/bills-away-2011-full.webp",
-          "sha256": "757a61d148b3d03282b2212ef5c079b380c87725ece5b43a84e851e2edf9635e"
+          "sha256": "45826be684edaaab344a3cfca8aec72f16286e695ebb32e1847a325b7b8fb7e4"
         }
       }
     },
     {
       "catalogId": "bills-home-2011",
       "constructionKey": "home",
-      "revision": "31ba2e6e9c313463",
+      "revision": "fcfd53120834a913",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bills-home-2011.webp",
-          "sha256": "bed4d156446c86e4e59acdcda1901da51a163f81b6f9dbc324d53d3df56433f9"
+          "sha256": "b0d4b6c21e757b9dbfa8bc4bf880f699323c6d5eedb8d3ac5e6bfafefb0f6bff"
         },
         "full": {
           "path": "/uniforms/bills-home-2011-full.webp",
-          "sha256": "71be25f9ec11a08e91ea08e8da15721f76e25480a2135725e5399034bde62853"
+          "sha256": "5a14421fb323c3013be649ad75bfb0d0cbdd48da98878e0887bc4875153c8160"
         }
       }
     },
     {
       "catalogId": "bills-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "9d983ce60bf243fd",
+      "revision": "b81b60a8f67c526e",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bills-rivalries-2025-2025.webp",
-          "sha256": "2ddf8589f32066c4cd8ce6d4bbb152ff8f5cab9b6529a3d33acdd476c51ec636"
+          "sha256": "b5ea258386ae9987e0d1a9a1f6001a3b5d4dabe8f8407217c2f319cd83ab1c9b"
         },
         "full": {
           "path": "/uniforms/bills-rivalries-2025-2025-full.webp",
-          "sha256": "73b3addbedb1d8a49020806ff36f9637de2f7192037f01cbddb2a538306ca5bb"
+          "sha256": "27e11cb2134d3c1726011b9bae3c8d88227fdf239e92b59151e33ffb306fedd3"
         }
       }
     },
