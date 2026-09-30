@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "aeacf75df531b3150e5de6530591d0f3af2fa537744e3f59cd1afff8aa0cabcf",
-  "revision": "b53e06e25020385b",
+  "sourceDigest": "b1993f386a03e7ac36bc436642017deeb1faf731365ce3567ecba122639dfa25",
+  "revision": "37bf43247090a0b3",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -333,45 +333,45 @@
     {
       "catalogId": "browns-1946-throwback-1946",
       "constructionKey": "1946-throwback",
-      "revision": "18b41cba0c1cbfe0",
+      "revision": "895ae88e628142ed",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/browns-1946-throwback-1946.webp",
-          "sha256": "42766d716f1495cfee15e3c597e2cd0e75cc1d75304a5559209b8fd786589f19"
+          "sha256": "1eeb07a7e8d1fb8e2c27c612d172c94ed2803b5ae2f6ea6a23174975d9199b8f"
         },
         "full": {
           "path": "/uniforms/browns-1946-throwback-1946-full.webp",
-          "sha256": "42e39a5bf435e197c39be178f00af0e0dd1bd1218ed5c938e9748ebee5e02e77"
+          "sha256": "ce82fe17e64e287f0de5de0a00ba8d81fc61d3e421214a1cd6b6f1135c3ad08c"
         }
       }
     },
     {
       "catalogId": "browns-away-2020",
       "constructionKey": "away",
-      "revision": "ad16694789ff7fab",
+      "revision": "e843594e134f03ae",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/browns-away-2020.webp",
-          "sha256": "42766d716f1495cfee15e3c597e2cd0e75cc1d75304a5559209b8fd786589f19"
+          "sha256": "1eeb07a7e8d1fb8e2c27c612d172c94ed2803b5ae2f6ea6a23174975d9199b8f"
         },
         "full": {
           "path": "/uniforms/browns-away-2020-full.webp",
-          "sha256": "1e34798fad056ad1e31121bf6df62de5fb9d04f44a3be8b38e4e8f42b9b06749"
+          "sha256": "176c3e619875c341819c87b053a337d8b5084a1d4d1a3973645efcc1c6577099"
         }
       }
     },
     {
       "catalogId": "browns-home-2020",
       "constructionKey": "home",
-      "revision": "495d3928f760e35b",
+      "revision": "3a515286b4ff0388",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/browns-home-2020.webp",
-          "sha256": "67900cd879032145cab4c7617a391dafeb236521412b6f152b92ca81a270f215"
+          "sha256": "810fd4e6a02d86d1cca31bcddb51492e806841df94d66cb309eaaf9cae997a3b"
         },
         "full": {
           "path": "/uniforms/browns-home-2020-full.webp",
-          "sha256": "afca9f896701f21eb79bb040a27d653750a4de56b352c0364a8e88c5cd285020"
+          "sha256": "54c47c6062faec6a918e8baf4f934a9e0bd4562e246b761f4e87e242d5041d5d"
         }
       }
     },
