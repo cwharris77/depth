@@ -1,177 +1,63 @@
-// Tampa Bay authored as composable parts. Geometry is imported unchanged from buccaneers.ts — this
-// file only restates WHICH parts each kit combines, and names every color from the team palette
-// instead of the kit row's shifting primary/secondary/accent.
+// Tampa Bay as a complete team spec: every helmet, jersey, pants and socks part, with its own art
+// drawn by the marks in ./marks.
 //
-// NOT one construction. The current kits (home, away) wear a single solid band at the sleeve hem
-// and a thin collar keyline on a PEWTER shell with the flag decal; the creamsicle wears a three-band
-// cuff, red over white over red, no collar trim, on a WHITE shell that stays bare (the old Bucco
-// Bruce pirate head fails the trace test). The three kits combine two helmets (pewter+flag shared
-// by home/away, bare white creamsicle) and three jerseys (red, white, creamsicle) over one pair of
-// white pants.
-
+// Not one construction. The current kits wear a single solid pewter band at the sleeve hem and a
+// thin collar keyline on a pewter shell with the flag decal; the creamsicle wears a three-band cuff,
+// red over white over red, no collar trim, on a white shell with its own decal. Pants are plain:
+// the leg stripes sit on the side seam, which a front-on mannequin cannot show.
+import type { TeamSpec } from '../core/team-spec';
 import {
-  BUCCANEERS_COLLAR_PATH,
-  BUCCANEERS_COLLAR_WIDTH,
-  BUCCANEERS_CREAM_BOUNDS,
-  BUCCANEERS_CUFF_LEFT,
-  BUCCANEERS_CUFF_RIGHT,
-  BUCCANEERS_CREAMSICLE_DECAL_PATHS,
   BUCCANEERS_CREAMSICLE_DECAL_PATHS_COLORS,
-  BUCCANEERS_FLAG_DECAL_PATHS,
   BUCCANEERS_FLAG_DECAL_PATHS_COLORS,
-  BUCCANEERS_SLEEVE_X_LEFT,
-  BUCCANEERS_SLEEVE_X_RIGHT,
-} from './source';
-import { expandHelmet } from '../core/helmet-spec';
-import { placed } from '../core/marks';
-import { type PartLayer, type UniformPart } from '../core/parts';
-import type { UniformSurface } from '../core/types';
+} from './marks/decal';
+import { BUCCANEERS_CREAMSICLE_DECAL, BUCCANEERS_FLAG_DECAL } from './marks/construction';
+import { BUCCANEERS_JERSEY_CREAMSICLE } from './jerseys/creamsicle';
+import { BUCCANEERS_JERSEY_RED } from './jerseys/red';
+import { BUCCANEERS_JERSEY_WHITE } from './jerseys/white';
 
-const BUCCANEERS_WHITE = '#FFFFFF';
-
-// The single solid cuff band at the sleeve hem.
-function cuff(color: string): PartLayer[] {
-  return [
-    {
-      id: 'buccaneers-cuff-left',
-      surface: 'sleeve-left',
-      d: BUCCANEERS_CUFF_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: color,
-    },
-    {
-      id: 'buccaneers-cuff-right',
-      surface: 'sleeve-right',
-      d: BUCCANEERS_CUFF_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: color,
-    },
-  ];
-}
-
-// The creamsicle's three-band cuff (red, white, red) — authored contiguous.
-function creamCuff(band: string, line: string): PartLayer[] {
-  const out: PartLayer[] = [];
-  const sides: [UniformSurface, number[]][] = [
-    ['sleeve-left', BUCCANEERS_SLEEVE_X_LEFT],
-    ['sleeve-right', BUCCANEERS_SLEEVE_X_RIGHT],
-  ];
-  for (let i = 0; i < BUCCANEERS_CREAM_BOUNDS.length - 1; i += 1) {
-    const top = BUCCANEERS_CREAM_BOUNDS[i];
-    const bottom = BUCCANEERS_CREAM_BOUNDS[i + 1];
-    for (const [surface, [x0, x1]] of sides) {
-      const side = surface === 'sleeve-left' ? 'left' : 'right';
-      out.push({
-        id: `buccaneers-cream-band-${i}-${side}`,
-        surface,
-        d: `M${x0},${top} H${x1} V${bottom} H${x0} Z`,
-        clip: true,
-        kind: 'fill',
-        fill: i === 1 ? line : band,
-      });
-    }
-  }
-  return out;
-}
-
-// The thin collar keyline.
-function collar(color: string): PartLayer[] {
-  return [
-    {
-      id: 'buccaneers-collar',
-      surface: 'collar',
-      d: BUCCANEERS_COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: color,
-      strokeWidth: BUCCANEERS_COLLAR_WIDTH,
-    },
-  ];
-}
-
-// The supplied flag SVG, excluding its demonstrable full-canvas backdrop. Source paint order and
-// every foreground color are retained so its small skull, staff, and shadow details survive.
-function flagDecal(): PartLayer[] {
-  return BUCCANEERS_FLAG_DECAL_PATHS.map(({ d, fill }, index) => ({
-    id: `buccaneers-flag-svg-${String(index + 1).padStart(3, '0')}`,
-    surface: 'helmet',
-    d,
-    clip: true,
-    kind: 'fill',
-    fill,
-  }));
-}
-
-// The supplied creamsicle SVG has its own foreground mark. Its white canvas path is excluded,
-// while its white paint remains present as individual skull, face, and flag details.
-function creamsicleDecal(): PartLayer[] {
-  return BUCCANEERS_CREAMSICLE_DECAL_PATHS.map(({ d, fill }, index) => ({
-    id: `buccaneers-creamsicle-svg-${String(index + 1).padStart(2, '0')}`,
-    surface: 'helmet',
-    d,
-    clip: true,
-    kind: 'fill',
-    fill,
-  }));
-}
-
-// The pewter shell with the flag decal — shared by home and away.
-//
-// White cage. The pewter shell wears the SF2BD-SW-SP white mask (named sources; the modern pewter
-// shell pairs with a white/light cage). The shared neutral #4b5158 it replaces is a grey that
-// reads muddy against pewter.
-const HELMET_PEWTER_FLAG: UniformPart = expandHelmet('buccaneers-pewter-flag-helmet', {
-  shell: 'pewter',
-  facemask: 'white',
-  decal: placed(flagDecal()),
-  number: 'none',
-});
-
-// The creamsicle's white shell carries its supplied orange/red/white source decal and white cage.
-const HELMET_WHITE: UniformPart = expandHelmet('buccaneers-white-helmet', {
-  shell: 'white',
-  facemask: 'white',
-  decal: placed(creamsicleDecal()),
-  number: 'none',
-});
-
-// Home jersey: red body, pewter cuff and collar, white numerals ringed orange (two-ring trim
-// approximated to the single orange outline, see buccaneers.ts).
-
-// Away jersey: white body, pewter cuff and collar, red numerals ringed pewter.
-
-// Creamsicle jersey: orange body, three-band red/white/red cuff, no collar trim, white numerals
-// ringed red.
-
-// One pair of white pants shared by all three kits.
-const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
-
-export const BUCCANEERS_CONSTRUCTION = {
-  teamId: 'buccaneers',
-  // Construction hexes from the module. Red/pewter/orange/white are the physical
-  // colors carried in different primary/secondary/accent slots per row; the flag's keyline/red/
-  // orange are the sampled fixed-art colors.
-  palette: {
-    red: '#D50A0A',
-    pewter: '#34302B',
-    orange: '#FF7900',
-    // The creamsicle's crimson (its own secondary #C8102E), distinct from the modern red.
-    crimson: '#C8102E',
-    // The creamsicle's own orange (its primary #FF8200), distinct from the modern orange.
-    creamOrange: '#FF8200',
-    white: BUCCANEERS_WHITE,
-    ...BUCCANEERS_FLAG_DECAL_PATHS_COLORS,
-    ...BUCCANEERS_CREAMSICLE_DECAL_PATHS_COLORS,
-  },
-  helmets: { 'pewter-flag': HELMET_PEWTER_FLAG, white: HELMET_WHITE },
-  pants: { white: PANTS_WHITE },
-  kits: {
-    home: { helmet: 'pewter-flag', jersey: 'red', pants: 'white' },
-    away: { helmet: 'pewter-flag', jersey: 'white', pants: 'white' },
-    creamsicle: { helmet: 'white', jersey: 'creamsicle', pants: 'white' },
-  },
+export const BUCCANEERS_PALETTE = {
+  red: '#D50A0A',
+  pewter: '#34302B',
+  orange: '#FF7900',
+  // The creamsicle's crimson and orange, distinct from the modern red and orange.
+  crimson: '#C8102E',
+  creamOrange: '#FF8200',
+  white: '#FFFFFF',
+  ...BUCCANEERS_FLAG_DECAL_PATHS_COLORS,
+  ...BUCCANEERS_CREAMSICLE_DECAL_PATHS_COLORS,
 };
 
-export { collar, creamCuff, cuff };
+const plainPants = (body: string) => ({ body, stripes: 'none' as const, marks: [] });
+const plainSocks = (color: string) => ({ color, stripes: 'none' as const });
+
+export const BUCCANEERS_SPEC: TeamSpec = {
+  helmets: {
+    // The pewter shell with the flag decal and a white cage.
+    'pewter-flag': {
+      shell: 'pewter',
+      facemask: 'white',
+      decal: BUCCANEERS_FLAG_DECAL,
+      number: 'none',
+    },
+    // The white shell with the creamsicle decal and a white cage.
+    white: {
+      shell: 'white',
+      facemask: 'white',
+      decal: BUCCANEERS_CREAMSICLE_DECAL,
+      number: 'none',
+    },
+  },
+  jerseys: {
+    red: BUCCANEERS_JERSEY_RED,
+    white: BUCCANEERS_JERSEY_WHITE,
+    creamsicle: BUCCANEERS_JERSEY_CREAMSICLE,
+  },
+  pants: {
+    white: plainPants('white'),
+    pewter: plainPants('pewter'),
+  },
+  socks: {
+    pewter: plainSocks('pewter'),
+    creamsicle: plainSocks('creamOrange'),
+  },
+};

@@ -1,16 +1,14 @@
 import { compileParts, type TeamPartsDefinition } from '../core/parts';
-import { BUCCANEERS_CONSTRUCTION } from './parts';
-import { JERSEY_RED } from './jerseys/red';
-import { JERSEY_WHITE } from './jerseys/white';
-import { JERSEY_CREAMSICLE } from './jerseys/creamsicle';
+import { catalogKits } from '../core/catalog';
+import { expandTeamSpec } from '../core/team-spec';
+import { BUCCANEERS_PALETTE, BUCCANEERS_SPEC } from './parts';
+import { BUCCANEERS_CATALOG } from './catalog';
 
 export const BUCCANEERS_PARTS: TeamPartsDefinition = {
-  ...BUCCANEERS_CONSTRUCTION,
-  jerseys: {
-    red: JERSEY_RED,
-    white: JERSEY_WHITE,
-    creamsicle: JERSEY_CREAMSICLE,
-  },
+  teamId: 'buccaneers',
+  palette: BUCCANEERS_PALETTE,
+  ...expandTeamSpec('buccaneers', BUCCANEERS_SPEC),
+  kits: catalogKits(BUCCANEERS_CATALOG),
 };
 
 export const BUCCANEERS_UNIFORMS_FROM_PARTS = compileParts(BUCCANEERS_PARTS);

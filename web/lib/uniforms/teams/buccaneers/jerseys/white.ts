@@ -1,8 +1,19 @@
-import { collar, cuff } from '../parts';
-import type { UniformPart } from '../../core/parts';
+import type { CompleteJerseySpec } from '../../core/complete';
+import { buccaneersCollarKeyline, buccaneersCuff } from '../marks/construction';
 
-export const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [...cuff('pewter'), ...collar('pewter')],
-  number: { fill: 'red', outline: 'pewter', outlineWidth: 14 },
+// A pewter hem band and collar keyline, red shoulder numerals ringed pewter, and red numerals ringed pewter.
+export const BUCCANEERS_JERSEY_WHITE: CompleteJerseySpec = {
+  body: 'white',
+  collar: { style: 'none' },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: { fill: 'red', outline: 'pewter' },
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'red', outline: 'pewter', outlineWeight: 'regular', texture: 'mesh' },
+  marks: [
+    { paint: 'over', mark: buccaneersCuff('pewter') },
+    { paint: 'over', mark: buccaneersCollarKeyline('pewter') },
+  ],
 };

@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-MODULE = ROOT / 'lib/uniforms/teams/buccaneers/decal.ts'
+MODULE = ROOT / 'lib/uniforms/teams/buccaneers/marks/decal.ts'
 SVG_DIR = Path(os.environ.get('DECAL_SVGS', '.'))
 SOURCES = (
     ('BUCCANEERS_FLAG_DECAL_PATHS', SVG_DIR / 'bucaneers_flag.svg', 2048, 2048),
