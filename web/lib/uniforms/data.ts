@@ -4,6 +4,7 @@ import { BEARS_CATALOG } from './teams/bears/catalog';
 import { CHARGERS_CATALOG } from './teams/chargers/catalog';
 import { BRONCOS_CATALOG } from './teams/broncos/catalog';
 import { COLTS_CATALOG } from './teams/colts/catalog';
+import { JETS_CATALOG } from './teams/jets/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
 // Hand-curated uniform archive. This file is the sole jersey-color authority. The seed generator
@@ -151,21 +152,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#B0B7BC',
     },
   },
-  {
-    teamId: 'jets',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2024,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#125740',
-      secondary: '#FFFFFF',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(JETS_CATALOG, 'home'),
   {
     teamId: 'texans',
     slug: 'home',
@@ -565,21 +552,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#C60C30',
     },
   },
-  {
-    teamId: 'jets',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2024,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#125740',
-      accent: '#125740',
-    },
-  },
+  catalogRow(JETS_CATALOG, 'away'),
   {
     teamId: 'cardinals',
     slug: 'away',
@@ -1091,22 +1064,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFFFFF',
     },
   },
-  // Jets 2025 Rivalries 'Gotham': dark green base, black/white. Heritage green #115740.
-  {
-    teamId: 'jets',
-    slug: 'rivalries-2025',
-    constructionKey: 'rivalries-2025',
-    kind: 'alternate',
-    name: 'Rivalries',
-    yearStart: 2025,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#115740',
-      secondary: '#000000',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(JETS_CATALOG, 'rivalries-2025'),
   // Cardinals 2025 Rivalries. Corrected from a white/cardinal/black guess (the original comment
   // noted the reveal was shot under red stage lighting, which is what it was read from) after
   // checking it against a 2025 composite reveal image: it is a sandstone kit — speckled cream body
@@ -1197,22 +1155,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFFFFF',
     },
   },
-  // Jets black alternate (2024+). Black base, gotham-green trim.
-  {
-    teamId: 'jets',
-    slug: 'black-alt',
-    constructionKey: 'black-alt',
-    kind: 'alternate',
-    name: 'Black Alternate',
-    yearStart: 2024,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#000000',
-      secondary: '#125740',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(JETS_CATALOG, 'black-alt'),
   // Steelers 1934 'Bumblebee' block-stripe throwback (actively worn). Black base, gold stripes.
   {
     teamId: 'steelers',

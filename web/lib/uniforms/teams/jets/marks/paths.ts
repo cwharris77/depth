@@ -1,5 +1,4 @@
-// New York's construction geometry — the helmet wordmark decal path. The parts that consume it
-// live in ./parts.ts; the jerseys are specs under ./jerseys/.
+// New York's helmet wordmark decal, in mannequin space.
 
 // The wordmark: one layer and four subpaths — the four letterforms with the jet sweeping out of the
 // J, all white. The letters are PLAIN UNIONS, never evenodd holes: the counters are shell color, so
