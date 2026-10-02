@@ -1,0 +1,3 @@
+{
+  "ports": [{ "port": 54321, "label": "Local Supabase API (shared, not per-workspace)" }]
+}
