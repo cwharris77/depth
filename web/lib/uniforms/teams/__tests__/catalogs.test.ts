@@ -67,6 +67,7 @@ describe('registered team catalogs', () => {
     expect(getTeamCatalog('broncos')?.teamId).toBe('broncos');
     expect(getTeamCatalog('chargers')?.teamId).toBe('chargers');
     expect(getTeamCatalog('colts')?.teamId).toBe('colts');
+    expect(getTeamCatalog('49ers')?.teamId).toBe('49ers');
     expect(getTeamCatalog('jets')?.teamId).toBe('jets');
   });
 
@@ -540,6 +541,67 @@ describe('Jets catalog conversion', () => {
       jersey: 'black',
       pants: 'black',
       socks: 'black',
+    });
+  });
+});
+
+// Pins the catalog to the rows and accents the 49ers had before the catalog existed.
+describe('49ers catalog conversion', () => {
+  const catalog = getTeamCatalog('49ers');
+  if (!catalog) throw new Error('49ers catalog is not registered');
+
+  it('reproduces the archived rows', () => {
+    const row = (
+      slug: string,
+      kind: 'home' | 'away' | 'alternate',
+      name: string,
+      yearStart: number,
+      colors: { primary: string; secondary: string; accent: string }
+    ) => ({
+      teamId: '49ers',
+      slug,
+      constructionKey: slug,
+      kind,
+      name,
+      yearStart,
+      yearEnd: null,
+      isCurrent: true,
+      colors,
+    });
+    expect(byId(catalogRows(catalog))).toEqual(
+      byId([
+        row('home', 'home', 'Home', 2022, {
+          primary: '#AA0000',
+          secondary: '#B3995D',
+          accent: '#B3995D',
+        }),
+        row('away', 'away', 'Away', 2022, {
+          primary: '#FFFFFF',
+          secondary: '#AA0000',
+          accent: '#B3995D',
+        }),
+        row('rivalries-2025', 'alternate', 'Rivalries', 2025, {
+          primary: '#101820',
+          secondary: '#B3995D',
+          accent: '#AA0000',
+        }),
+      ])
+    );
+  });
+
+  it('reproduces the frozen legacy accents', () => {
+    expect(catalogAccents(catalog)).toEqual({
+      '49ers-home-2022': { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
+      '49ers-away-2022': { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
+      '49ers-rivalries-2025-2025': { uiAccent: '#B3995D', onAccent: '#0a0e1a' },
+    });
+  });
+
+  it('pairs each jersey with its helmet, pants and red socks', () => {
+    expect(catalogKits(catalog)).toEqual({
+      home: { helmet: 'gold', jersey: 'red', pants: 'gold', socks: 'red' },
+      away: { helmet: 'gold', jersey: 'white', pants: 'gold', socks: 'red' },
+      'rivalries-2025': { helmet: 'black', jersey: 'black', pants: 'black', socks: 'red' },
     });
   });
 });

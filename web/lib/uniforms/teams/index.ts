@@ -18,7 +18,7 @@ import { GIANTS_UNIFORMS_FROM_PARTS } from './giants';
 import { JAGUARS_UNIFORMS_FROM_PARTS } from './jaguars';
 import { JETS_UNIFORMS_FROM_PARTS } from './jets';
 import { LIONS_UNIFORMS_FROM_PARTS } from './lions';
-import { NINERS_UNIFORMS_FROM_PARTS } from './niners';
+import { NINERS_UNIFORMS_FROM_PARTS } from './49ers';
 import { PACKERS_UNIFORMS_FROM_PARTS } from './packers';
 import { PANTHERS_UNIFORMS_FROM_PARTS } from './panthers';
 import { PATRIOTS_UNIFORMS_FROM_PARTS } from './patriots';
