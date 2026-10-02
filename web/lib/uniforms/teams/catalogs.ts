@@ -4,6 +4,9 @@ import type { TeamSpec } from './core/team-spec';
 import { BEARS_PARTS } from './bears';
 import { BEARS_CATALOG } from './bears/catalog';
 import { BEARS_SPEC } from './bears/parts';
+import { BUCCANEERS_PARTS } from './buccaneers';
+import { BUCCANEERS_CATALOG } from './buccaneers/catalog';
+import { BUCCANEERS_SPEC } from './buccaneers/parts';
 import { CHARGERS_PARTS } from './chargers';
 import { CHARGERS_CATALOG } from './chargers/catalog';
 import { CHARGERS_SPEC } from './chargers/parts';
@@ -39,6 +42,11 @@ const CATALOGS: Readonly<Partial<Record<string, RegisteredCatalog>>> = {
   bears: { catalog: BEARS_CATALOG, parts: BEARS_PARTS, strict: BEARS_SPEC },
   bengals: { catalog: BENGALS_CATALOG, parts: BENGALS_PARTS, strict: BENGALS_SPEC },
   broncos: { catalog: BRONCOS_CATALOG, parts: BRONCOS_PARTS, strict: BRONCOS_SPEC },
+  buccaneers: {
+    catalog: BUCCANEERS_CATALOG,
+    parts: BUCCANEERS_PARTS,
+    strict: BUCCANEERS_SPEC,
+  },
   chargers: { catalog: CHARGERS_CATALOG, parts: CHARGERS_PARTS, strict: CHARGERS_SPEC },
   colts: { catalog: COLTS_CATALOG, parts: COLTS_PARTS, strict: COLTS_SPEC },
   jets: { catalog: JETS_CATALOG, parts: JETS_PARTS, strict: JETS_SPEC },

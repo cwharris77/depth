@@ -1,6 +1,7 @@
 import type { JerseyColors, UniformKind } from '../types';
 import { catalogRow } from './teams/core/catalog';
 import { BENGALS_CATALOG } from './teams/bengals/catalog';
+import { BUCCANEERS_CATALOG } from './teams/buccaneers/catalog';
 import { BEARS_CATALOG } from './teams/bears/catalog';
 import { CHARGERS_CATALOG } from './teams/chargers/catalog';
 import { BRONCOS_CATALOG } from './teams/broncos/catalog';
@@ -370,21 +371,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#101820',
     },
   },
-  {
-    teamId: 'buccaneers',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2020,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#D50A0A',
-      secondary: '#34302B',
-      accent: '#FF7900',
-    },
-  },
+  catalogRow(BUCCANEERS_CATALOG, 'home'),
   {
     teamId: 'cardinals',
     slug: 'home',
@@ -423,21 +410,7 @@ export const UNIFORMS: UniformSeed[] = [
   // Buccaneers 1976–1996 "Creamsicle" — reintroduced as an active alternate in 2023, so
   // is_current: true despite the historical era. Orange already reads on dark, so
   // uiAccent is the brand orange itself.
-  {
-    teamId: 'buccaneers',
-    slug: 'creamsicle',
-    constructionKey: 'creamsicle',
-    kind: 'throwback',
-    name: 'Creamsicle',
-    yearStart: 1976,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FF8200',
-      secondary: '#C8102E',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(BUCCANEERS_CATALOG, 'creamsicle'),
 
   // Eagles Kelly Green (1987–1995 era) — reintroduced as an active throwback in 2023, so
   // is_current: true. uiAccent brightens the era's deep kelly (#046A38) to clear the dark
@@ -836,21 +809,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#101820',
     },
   },
-  {
-    teamId: 'buccaneers',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2020,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#D50A0A',
-      accent: '#34302B',
-    },
-  },
+  catalogRow(BUCCANEERS_CATALOG, 'away'),
   // Throwbacks & alternates (Wave 2a) — published heritage hexes, eras verified where
   // set. uiAccent reuses each team's live dark-UI pair.
   catalogRow(CHARGERS_CATALOG, 'powder-blue'),

@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "530d682b1812f838147f7cf552da0b00f31ff74734a9f4000e37e7d47fc98974",
-  "revision": "825fafed8be0a8c2",
+  "sourceDigest": "1c2658d0f73e2e5f275a195e2e4f232c3c8712d2fe55772f9fa099bc38aa547d",
+  "revision": "2774fed08f95bd05",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -430,22 +430,32 @@
     {
       "catalogId": "buccaneers-away-2020",
       "constructionKey": "away",
-      "revision": "4cd493e4229b4b54",
+      "revision": "01997d405cc9693e",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/buccaneers-away-2020.webp",
-          "sha256": "9f0ccd6cedc46bffa32c8fb15e706e60106ff5b9338984e3ab2ac9455d6bf649"
+          "sha256": "a4644426224520f8e650ee26b919990322d23502b2934ee755c764b337e617f2"
         },
         "full": {
           "path": "/uniforms/buccaneers-away-2020-full.webp",
-          "sha256": "03775d40e1f65513e394b384bc210ab3aa2bcf75b2c247c7f3a17a1f72a7d704"
+          "sha256": "d95d772fcb8932d0c17c8107e41608620c6b93713e6b8ad0a1482d62c1087414"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "pewter-pants",
+          "label": "Pewter pants",
+          "full": {
+            "path": "/uniforms/buccaneers-away-2020--pewter-pants-full.webp",
+            "sha256": "a8a8870889985f7106038317ffdb508faac0331f5d7938c9a09cd682aa83bafa"
+          }
+        }
+      ]
     },
     {
       "catalogId": "buccaneers-creamsicle-1976",
       "constructionKey": "creamsicle",
-      "revision": "dbc5a2a6b6c430bb",
+      "revision": "425ba6e3fe8e8305",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/buccaneers-creamsicle-1976.webp",
@@ -453,24 +463,34 @@
         },
         "full": {
           "path": "/uniforms/buccaneers-creamsicle-1976-full.webp",
-          "sha256": "e24b5154d9597bd6710d39ba7d626b99b436a3e272af6ecabcb825cf419176ae"
+          "sha256": "5c049785b6920c0913dfe6afa31eaba1134790ca8aaa7c3e798f4ae1fc67d4ee"
         }
       }
     },
     {
       "catalogId": "buccaneers-home-2020",
       "constructionKey": "home",
-      "revision": "2d2a7dd71135886b",
+      "revision": "0fe8bad2a8b9baa7",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/buccaneers-home-2020.webp",
-          "sha256": "ff27de8d3b09518a74c0fcce2d6f05c586fcadd370a6e0cb698761c9b0f27c45"
+          "sha256": "4fa3e0209ddb305642b1ee8e1e4f598b6bbe17e37b8dedca139877e9cd9978a1"
         },
         "full": {
           "path": "/uniforms/buccaneers-home-2020-full.webp",
-          "sha256": "9b30bf5d8224b62495150f1396850c6a6aebbcfafb0492e0bad72d74b38eff12"
+          "sha256": "5691b72920b4d8a0838f37b160fce82a02c0fa4bc2624a84426a8301f9e216da"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "pewter-pants",
+          "label": "Pewter pants",
+          "full": {
+            "path": "/uniforms/buccaneers-home-2020--pewter-pants-full.webp",
+            "sha256": "fd6348cf09e1cf77b9008ea67f349efcc9e6b1640bd6cfa8694f6454381a7915"
+          }
+        }
+      ]
     },
     {
       "catalogId": "cardinals-away-2023",

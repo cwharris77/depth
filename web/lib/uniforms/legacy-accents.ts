@@ -1,6 +1,7 @@
 import type { TeamColors } from '../types';
 import { catalogAccents } from './teams/core/catalog';
 import { BENGALS_CATALOG } from './teams/bengals/catalog';
+import { BUCCANEERS_CATALOG } from './teams/buccaneers/catalog';
 import { BEARS_CATALOG } from './teams/bears/catalog';
 import { CHARGERS_CATALOG } from './teams/chargers/catalog';
 import { BRONCOS_CATALOG } from './teams/broncos/catalog';
@@ -35,10 +36,8 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'falcons-home-2020': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
   'panthers-home-2012': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'saints-home-2002': { uiAccent: '#E2CC9A', onAccent: '#0a0e1a' },
-  'buccaneers-home-2020': { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
   'cardinals-home-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
   'rams-home-2020': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
-  'buccaneers-creamsicle-1976': { uiAccent: '#FF8200', onAccent: '#0a0e1a' },
   'eagles-kelly-green-1987': { uiAccent: '#2BB673', onAccent: '#0a0e1a' },
   'eagles-kelly-green-modern-2023': { uiAccent: '#2BB673', onAccent: '#0a0e1a' },
   'bills-away-2011': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
@@ -64,7 +63,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'falcons-away-2020': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
   'panthers-away-2012': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'saints-away-2002': { uiAccent: '#E2CC9A', onAccent: '#0a0e1a' },
-  'buccaneers-away-2020': { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
   'titans-oilers-throwback-1960': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
   'saints-color-rush-2022': { uiAccent: '#E2CC9A', onAccent: '#0a0e1a' },
   'jaguars-teal-throwback-1998': { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
@@ -125,6 +123,7 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   ...catalogAccents(BENGALS_CATALOG),
   ...catalogAccents(CHARGERS_CATALOG),
   ...catalogAccents(BRONCOS_CATALOG),
+  ...catalogAccents(BUCCANEERS_CATALOG),
   ...catalogAccents(COLTS_CATALOG),
   ...catalogAccents(JETS_CATALOG),
   ...catalogAccents(NINERS_CATALOG),

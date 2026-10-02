@@ -70,6 +70,7 @@ describe('registered team catalogs', () => {
     expect(getTeamCatalog('bengals')?.teamId).toBe('bengals');
     expect(getTeamCatalog('49ers')?.teamId).toBe('49ers');
     expect(getTeamCatalog('jets')?.teamId).toBe('jets');
+    expect(getTeamCatalog('buccaneers')?.teamId).toBe('buccaneers');
   });
 
   for (const { catalog, parts } of registered) {
@@ -675,6 +676,70 @@ describe('Bengals catalog conversion', () => {
       jersey: 'color-rush',
       pants: 'white-claws',
       socks: 'white',
+    });
+  });
+});
+
+// Pins the catalog to the rows and accents the Buccaneers had before the catalog existed.
+describe('Buccaneers catalog conversion', () => {
+  const catalog = getTeamCatalog('buccaneers');
+  if (!catalog) throw new Error('Buccaneers catalog is not registered');
+
+  it('reproduces the archived rows', () => {
+    const row = (
+      slug: string,
+      kind: UniformSeed['kind'],
+      name: string,
+      yearStart: number,
+      colors: UniformSeed['colors']
+    ): UniformSeed => ({
+      teamId: 'buccaneers',
+      slug,
+      constructionKey: slug,
+      kind,
+      name,
+      yearStart,
+      yearEnd: null,
+      isCurrent: true,
+      colors,
+    });
+    expect(byId(catalogRows(catalog))).toEqual(
+      byId([
+        row('home', 'home', 'Home', 2020, {
+          primary: '#D50A0A',
+          secondary: '#34302B',
+          accent: '#FF7900',
+        }),
+        row('away', 'away', 'Away', 2020, {
+          primary: '#FFFFFF',
+          secondary: '#D50A0A',
+          accent: '#34302B',
+        }),
+        row('creamsicle', 'throwback', 'Creamsicle', 1976, {
+          primary: '#FF8200',
+          secondary: '#C8102E',
+          accent: '#FFFFFF',
+        }),
+      ])
+    );
+  });
+
+  it('reproduces the frozen legacy accents', () => {
+    expect(catalogAccents(catalog)).toEqual({
+      'buccaneers-home-2020': { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
+      'buccaneers-away-2020': { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
+      'buccaneers-creamsicle-1976': { uiAccent: '#FF8200', onAccent: '#0a0e1a' },
+    });
+  });
+
+  it('registers the worn pants pairings with their socks', () => {
+    const flag = { helmet: 'pewter-flag' };
+    expect(catalogKits(catalog)).toEqual({
+      home: { ...flag, jersey: 'red', pants: 'white', socks: 'pewter' },
+      'home--pewter-pants': { ...flag, jersey: 'red', pants: 'pewter', socks: 'pewter' },
+      away: { ...flag, jersey: 'white', pants: 'white', socks: 'pewter' },
+      'away--pewter-pants': { ...flag, jersey: 'white', pants: 'pewter', socks: 'pewter' },
+      creamsicle: { helmet: 'white', jersey: 'creamsicle', pants: 'white', socks: 'creamsicle' },
     });
   });
 });
