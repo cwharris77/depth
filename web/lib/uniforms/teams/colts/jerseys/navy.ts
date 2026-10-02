@@ -1,9 +1,18 @@
-import { expandJersey } from '../../core/jersey-spec';
-import type { UniformPart } from '../../core/parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
-export const JERSEY_NAVY: UniformPart = expandJersey('colts-navy', {
+// White shoulder stripes and white numerals with no outline.
+export const COLTS_JERSEY_NAVY: CompleteJerseySpec = {
   body: 'navy',
-  collar: { style: 'inset-v', color: 'navy', outline: true },
+  collar: {
+    style: 'inset-v',
+    color: 'navy',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: true,
+  },
+  shoulderPanel: 'none',
   shoulderStripes: {
     bands: [
       { color: 'white', size: 'l' },
@@ -11,6 +20,10 @@ export const JERSEY_NAVY: UniformPart = expandJersey('colts-navy', {
     ],
     gap: 'broad',
   },
+  shoulderNumber: 'none',
+  sleeveStripes: 'none',
+  cuff: 'none',
   sleeveNumber: { fill: 'white' },
-  number: { fill: 'white', outline: 'navy', outlineWeight: 'none' },
-});
+  number: { fill: 'white', outline: 'navy', outlineWeight: 'none', texture: 'mesh' },
+  marks: [],
+};

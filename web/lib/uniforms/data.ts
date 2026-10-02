@@ -3,6 +3,7 @@ import { catalogRow } from './teams/core/catalog';
 import { BEARS_CATALOG } from './teams/bears/catalog';
 import { CHARGERS_CATALOG } from './teams/chargers/catalog';
 import { BRONCOS_CATALOG } from './teams/broncos/catalog';
+import { COLTS_CATALOG } from './teams/colts/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
 // Hand-curated uniform archive. This file is the sole jersey-color authority. The seed generator
@@ -180,21 +181,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#A71930',
     },
   },
-  {
-    teamId: 'colts',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2004,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#002C5F',
-      secondary: '#A2AAAD',
-      accent: '#A2AAAD',
-    },
-  },
+  catalogRow(COLTS_CATALOG, 'home'),
   {
     teamId: 'jaguars',
     slug: 'home',
@@ -716,21 +703,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#A71930',
     },
   },
-  {
-    teamId: 'colts',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2004,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#002C5F',
-      accent: '#A2AAAD',
-    },
-  },
+  catalogRow(COLTS_CATALOG, 'away'),
   {
     teamId: 'jaguars',
     slug: 'away',

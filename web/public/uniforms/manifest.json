@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "b8ba931f3d68cc698f1e0b6f2537908dfe3c255f7c8b7d81a749f945a31cb9c7",
-  "revision": "c82183cc66255582",
+  "sourceDigest": "55627083c537b23744a5d06b516e74388a6aea072348a530266c6cf1ae1f1449",
+  "revision": "ded15038e6bc46b2",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -648,7 +648,7 @@
     {
       "catalogId": "colts-away-2004",
       "constructionKey": "away",
-      "revision": "0d80bb3cf11146d9",
+      "revision": "08b53b30973e0dbc",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/colts-away-2004.webp",
@@ -656,14 +656,14 @@
         },
         "full": {
           "path": "/uniforms/colts-away-2004-full.webp",
-          "sha256": "648a917273e6e2291d27b7dff41ba7ec849819ead3675b9ec39ae6bc8f547e16"
+          "sha256": "9601f04d8ba3b2ab60e8093aed216a5e19643f55cb774713c4854a4bf0ca2515"
         }
       }
     },
     {
       "catalogId": "colts-home-2004",
       "constructionKey": "home",
-      "revision": "7e381c798861de59",
+      "revision": "61bccb1333e8c009",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/colts-home-2004.webp",
@@ -671,7 +671,7 @@
         },
         "full": {
           "path": "/uniforms/colts-home-2004-full.webp",
-          "sha256": "8ae6dcdc1a995f06c03ce69b5494b9cb9690fe19c3d2cf289f08179451ff753d"
+          "sha256": "ce3024d2ce0a3b9d9e22bf4cb033c7e82a803d4cdc46a52e2981dbacecbdb4c7"
         }
       }
     },

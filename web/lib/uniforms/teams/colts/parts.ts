@@ -1,51 +1,43 @@
-// Indianapolis palette, helmet, pants and kits. Both kits share the white horseshoe helmet and
-// white pants; only the jersey differs.
+// Indianapolis as a complete team spec: every helmet, jersey, pants and socks part, with its own
+// art drawn by the marks in ./marks.
+import type { TeamSpec } from '../core/team-spec';
+import { COLTS_HORSESHOE_DECAL } from './marks/construction';
+import { COLTS_JERSEY_NAVY } from './jerseys/navy';
+import { COLTS_JERSEY_WHITE } from './jerseys/white';
 
-import { COLTS_DECAL_HORSESHOE_NAVY_PATH, COLTS_DECAL_HORSESHOE_WHITE_PATH } from './source';
-import { expandHelmet } from '../core/helmet-spec';
-import { placed } from '../core/marks';
-import { type UniformPart } from '../core/parts';
+export const COLTS_PALETTE = { navy: '#002C5F', white: '#FFFFFF', speedwayGrey: '#A2AAAD' };
 
-// White shell with the navy horseshoe decal and a light speedway-grey cage. The horseshoe is a
-// single band with its seven isolated rivets restored on top in white.
-const HELMET_WHITE_HORSESHOE: UniformPart = expandHelmet('colts-white-horseshoe-helmet', {
-  shell: 'white',
-  facemask: 'speedwayGrey',
-  decal: placed([
-    {
-      id: 'colts-helmet-horseshoe-band',
-      surface: 'helmet',
-      d: COLTS_DECAL_HORSESHOE_NAVY_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'navy',
+export const COLTS_SPEC: TeamSpec = {
+  helmets: {
+    // The white horseshoe shell, on both kits, with a light speedway-grey cage.
+    'white-horseshoe': {
+      shell: 'white',
+      facemask: 'speedwayGrey',
+      decal: COLTS_HORSESHOE_DECAL,
+      number: 'none',
     },
-    {
-      id: 'colts-helmet-horseshoe-rivets',
-      surface: 'helmet',
-      d: COLTS_DECAL_HORSESHOE_WHITE_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'white',
-    },
-  ]),
-  number: 'none',
-});
-
-// Plain white pants, shared by both kits.
-const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
-
-export const COLTS_CONSTRUCTION = {
-  teamId: 'colts',
-  palette: {
-    navy: '#002C5F',
-    white: '#FFFFFF',
-    speedwayGrey: '#A2AAAD',
   },
-  helmets: { 'white-horseshoe': HELMET_WHITE_HORSESHOE },
-  pants: { white: PANTS_WHITE },
-  kits: {
-    home: { helmet: 'white-horseshoe', jersey: 'navy', pants: 'white' },
-    away: { helmet: 'white-horseshoe', jersey: 'white', pants: 'white' },
+  jerseys: {
+    navy: COLTS_JERSEY_NAVY,
+    white: COLTS_JERSEY_WHITE,
+  },
+  pants: {
+    // Two equal navy stripes down the side seam, stopping at the hem.
+    white: {
+      body: 'white',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'navy', size: 's' },
+          { color: 'navy', size: 's' },
+        ],
+        gap: 'wide',
+        edge: 'none',
+      },
+      marks: [],
+    },
+  },
+  socks: {
+    navy: { color: 'navy', stripes: 'none' },
   },
 };
