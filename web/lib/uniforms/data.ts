@@ -7,6 +7,7 @@ import { CHARGERS_CATALOG } from './teams/chargers/catalog';
 import { BRONCOS_CATALOG } from './teams/broncos/catalog';
 import { CHIEFS_CATALOG } from './teams/chiefs/catalog';
 import { COLTS_CATALOG } from './teams/colts/catalog';
+import { COMMANDERS_CATALOG } from './teams/commanders/catalog';
 import { JETS_CATALOG } from './teams/jets/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
@@ -298,21 +299,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#A5ACAF',
     },
   },
-  {
-    teamId: 'commanders',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2022,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#5A1414',
-      secondary: '#FFB612',
-      accent: '#FFB612',
-    },
-  },
+  catalogRow(COMMANDERS_CATALOG, 'home'),
   {
     teamId: 'falcons',
     slug: 'home',
@@ -676,21 +663,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#A5ACAF',
     },
   },
-  {
-    teamId: 'commanders',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2022,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#5A1414',
-      accent: '#FFB612',
-    },
-  },
+  catalogRow(COMMANDERS_CATALOG, 'away'),
   catalogRow(BEARS_CATALOG, 'away'),
   {
     teamId: 'lions',
@@ -844,21 +817,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   // Washington 1970s burgundy & gold (George Allen gold-helmet era). Hexes: burgundy #5A1414, gold #FFB612. uiAccent reuses the team's gold.
-  {
-    teamId: 'commanders',
-    slug: '70s-burgundy',
-    constructionKey: '70s-burgundy',
-    kind: 'throwback',
-    name: '70s Burgundy',
-    yearStart: 1972,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#5A1414',
-      secondary: '#FFB612',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(COMMANDERS_CATALOG, '70s-burgundy'),
   // Throwbacks (Wave 2b): Vikings 1960s purple classic + Packers 1923 throwback (eyedropped).
   // Vikings 1960s purple classic (gold-trim numbers, per Wikipedia; retired era). Hexes: purple #4F2683, gold #FFC62F. uiAccent reuses the team's gold.
   {

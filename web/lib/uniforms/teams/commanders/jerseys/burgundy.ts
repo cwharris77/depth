@@ -1,11 +1,16 @@
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
-import { sleeveBand } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
+import { COMMANDERS_SLEEVE_BAND_GOLD } from '../marks/construction';
 
-// Burgundy jersey (home + 70s-burgundy): burgundy body, gold band around a white line, gold
-// numerals keylined white.
-export const JERSEY_BURGUNDY: UniformPart = {
-  base: 'burgundy',
-  layers: sleeveBand('gold', 'white'),
-  number: { fill: 'gold', outline: 'white', outlineWidth: 14 },
+// Burgundy body, a gold band around a white line on each sleeve, gold numerals keylined white.
+export const COMMANDERS_JERSEY_BURGUNDY: CompleteJerseySpec = {
+  body: 'burgundy',
+  collar: { style: 'none' },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: 'none',
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'gold', outline: 'white', outlineWeight: 'regular', texture: 'mesh' },
+  marks: [{ paint: 'over', mark: COMMANDERS_SLEEVE_BAND_GOLD }],
 };

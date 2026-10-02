@@ -800,6 +800,68 @@ describe('Chiefs catalog conversion', () => {
   });
 });
 
+// Pins the catalog to the rows and accents the Commanders had before the catalog existed.
+describe('Commanders catalog conversion', () => {
+  const catalog = getTeamCatalog('commanders');
+  if (!catalog) throw new Error('Commanders catalog is not registered');
+
+  it('reproduces the archived rows', () => {
+    expect(byId(catalogRows(catalog))).toEqual(
+      byId([
+        {
+          teamId: 'commanders',
+          slug: 'home',
+          constructionKey: 'home',
+          kind: 'home',
+          name: 'Home',
+          yearStart: 2022,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#5A1414', secondary: '#FFB612', accent: '#FFB612' },
+        },
+        {
+          teamId: 'commanders',
+          slug: 'away',
+          constructionKey: 'away',
+          kind: 'away',
+          name: 'Away',
+          yearStart: 2022,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#FFFFFF', secondary: '#5A1414', accent: '#FFB612' },
+        },
+        {
+          teamId: 'commanders',
+          slug: '70s-burgundy',
+          constructionKey: '70s-burgundy',
+          kind: 'throwback',
+          name: '70s Burgundy',
+          yearStart: 1972,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#5A1414', secondary: '#FFB612', accent: '#FFFFFF' },
+        },
+      ])
+    );
+  });
+
+  it('reproduces the frozen legacy accents', () => {
+    expect(catalogAccents(catalog)).toEqual({
+      'commanders-home-2022': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
+      'commanders-away-2022': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
+      'commanders-70s-burgundy-1972': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
+    });
+  });
+
+  it('pairs each jersey with its pants and leaves the socks in the pants colour', () => {
+    expect(catalogKits(catalog)).toEqual({
+      home: { helmet: 'burgundy', jersey: 'burgundy', pants: 'burgundy' },
+      away: { helmet: 'burgundy', jersey: 'white', pants: 'white' },
+      '70s-burgundy': { helmet: 'burgundy', jersey: 'burgundy', pants: 'burgundy' },
+    });
+  });
+});
+
 // A strict team's parts come only from its registered TeamSpec; the fixtures in team-spec.test.ts
 // prove the checks themselves.
 describe('strict teams', () => {
