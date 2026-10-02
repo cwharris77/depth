@@ -61,11 +61,12 @@ describe('no leftover hand-written accents for a converted team', () => {
 describe('registered team catalogs', () => {
   const registered = getAllTeamCatalogs();
 
-  it('includes the Seahawks, the Bears and the Broncos', () => {
+  it('includes the Seahawks, the Bears, the Broncos and the Chargers', () => {
     expect(getTeamCatalog('seahawks')?.teamId).toBe('seahawks');
     expect(getTeamCatalog('bears')?.teamId).toBe('bears');
     expect(getTeamCatalog('broncos')?.teamId).toBe('broncos');
-    expect(getTeamCatalog('chargers')).toBeUndefined();
+    expect(getTeamCatalog('chargers')?.teamId).toBe('chargers');
+    expect(getTeamCatalog('colts')).toBeUndefined();
   });
 
   for (const { catalog, parts } of registered) {
@@ -327,6 +328,89 @@ describe('Broncos catalog conversion', () => {
       'orange-alt--orange-socks': { ...modern, jersey: 'orange', pants: 'white', socks: 'orange' },
       'orange-alt--white-socks': { ...modern, jersey: 'orange', pants: 'white', socks: 'white' },
       'orange-crush': { helmet: 'royal-d', jersey: 'crush', pants: 'white', socks: 'crush' },
+    });
+  });
+});
+
+// Pins the catalog to the rows and accents the Chargers had before the catalog existed.
+describe('Chargers catalog conversion', () => {
+  const catalog = getTeamCatalog('chargers');
+  if (!catalog) throw new Error('Chargers catalog is not registered');
+
+  it('reproduces the archived rows', () => {
+    const row = (
+      slug: string,
+      kind: string,
+      name: string,
+      yearStart: number,
+      colors: { primary: string; secondary: string; accent: string }
+    ) => ({
+      teamId: 'chargers',
+      slug,
+      constructionKey: slug,
+      kind,
+      name,
+      yearStart,
+      yearEnd: null,
+      isCurrent: true,
+      colors,
+    });
+    expect(byId(catalogRows(catalog))).toEqual(
+      byId([
+        row('home', 'home', 'Home', 2020, {
+          primary: '#0080C6',
+          secondary: '#FFC20E',
+          accent: '#FFC20E',
+        }),
+        row('away', 'away', 'Away', 2020, {
+          primary: '#FFFFFF',
+          secondary: '#0080C6',
+          accent: '#FFC20E',
+        }),
+        row('powder-blue', 'alternate', 'Powder Blue', 1960, {
+          primary: '#0080C6',
+          secondary: '#FFC20E',
+          accent: '#FFFFFF',
+        }),
+        row('charger-power', 'alternate', 'Charger Power', 2025, {
+          primary: '#FFC20E',
+          secondary: '#0080C6',
+          accent: '#FFFFFF',
+        }),
+        row('super-chargers', 'alternate', 'Super Chargers', 2025, {
+          primary: '#002244',
+          secondary: '#FFC20E',
+          accent: '#FFFFFF',
+        }),
+      ])
+    );
+  });
+
+  it('reproduces the frozen legacy accents', () => {
+    expect(catalogAccents(catalog)).toEqual({
+      'chargers-home-2020': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
+      'chargers-away-2020': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
+      'chargers-powder-blue-1960': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
+      'chargers-charger-power-2025': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
+      'chargers-super-chargers-2025': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
+    });
+  });
+
+  it('pairs every kit with its socks and registers the worn pants and socks pairings', () => {
+    const white = { helmet: 'white' };
+    expect(catalogKits(catalog)).toEqual({
+      home: { ...white, jersey: 'powder', pants: 'gold', socks: 'powder' },
+      'home--white-pants': { ...white, jersey: 'powder', pants: 'white', socks: 'powder' },
+      'home--powder-pants': { ...white, jersey: 'powder', pants: 'powder', socks: 'white' },
+      'home--powder-out': { ...white, jersey: 'powder', pants: 'powder', socks: 'powder' },
+      away: { ...white, jersey: 'white', pants: 'gold', socks: 'powder' },
+      'away--white-pants': { ...white, jersey: 'white', pants: 'white', socks: 'powder' },
+      'away--powder-pants': { ...white, jersey: 'white', pants: 'powder', socks: 'white' },
+      'away--powder-out': { ...white, jersey: 'white', pants: 'powder', socks: 'powder' },
+      'away--white-out': { ...white, jersey: 'white', pants: 'white', socks: 'white' },
+      'powder-blue': { ...white, jersey: 'powder', pants: 'gold', socks: 'powder' },
+      'charger-power': { ...white, jersey: 'gold', pants: 'gold', socks: 'gold' },
+      'super-chargers': { helmet: 'navy', jersey: 'navy', pants: 'navy', socks: 'navy' },
     });
   });
 });

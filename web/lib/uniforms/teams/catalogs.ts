@@ -4,6 +4,9 @@ import type { TeamSpec } from './core/team-spec';
 import { BEARS_PARTS } from './bears';
 import { BEARS_CATALOG } from './bears/catalog';
 import { BEARS_SPEC } from './bears/parts';
+import { CHARGERS_PARTS } from './chargers';
+import { CHARGERS_CATALOG } from './chargers/catalog';
+import { CHARGERS_SPEC } from './chargers/parts';
 import { BRONCOS_PARTS } from './broncos';
 import { BRONCOS_CATALOG } from './broncos/catalog';
 import { BRONCOS_SPEC } from './broncos/parts';
@@ -23,6 +26,7 @@ export interface RegisteredCatalog {
 const CATALOGS: Readonly<Partial<Record<string, RegisteredCatalog>>> = {
   bears: { catalog: BEARS_CATALOG, parts: BEARS_PARTS, strict: BEARS_SPEC },
   broncos: { catalog: BRONCOS_CATALOG, parts: BRONCOS_PARTS, strict: BRONCOS_SPEC },
+  chargers: { catalog: CHARGERS_CATALOG, parts: CHARGERS_PARTS, strict: CHARGERS_SPEC },
   seahawks: { catalog: SEAHAWKS_CATALOG, parts: SEAHAWKS_PARTS, strict: SEAHAWKS_SPEC },
 };
 
