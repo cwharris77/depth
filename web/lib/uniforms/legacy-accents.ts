@@ -1,5 +1,6 @@
 import type { TeamColors } from '../types';
 import { catalogAccents } from './teams/core/catalog';
+import { BENGALS_CATALOG } from './teams/bengals/catalog';
 import { BEARS_CATALOG } from './teams/bears/catalog';
 import { CHARGERS_CATALOG } from './teams/chargers/catalog';
 import { BRONCOS_CATALOG } from './teams/broncos/catalog';
@@ -14,7 +15,6 @@ export type LegacyAccentPair = Pick<TeamColors, 'uiAccent' | 'onAccent'>;
 // entries move out of here into its `teams/<team>/catalog.ts` instead.
 export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'ravens-home-1996': { uiAccent: '#9E7C0C', onAccent: '#0a0e1a' },
-  'bengals-home-2021': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'browns-home-2020': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'steelers-home-1997': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'bills-home-2011': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
@@ -47,7 +47,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'cardinals-away-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
   'rams-away-2020': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
   'ravens-away-1996': { uiAccent: '#9E7C0C', onAccent: '#0a0e1a' },
-  'bengals-away-2021': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'browns-away-2020': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'steelers-away-1997': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'texans-away-2024': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
@@ -81,8 +80,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'patriots-pat-patriot-1961': { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
   'steelers-bumblebee-1933': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'browns-1946-throwback-1946': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
-  'bengals-orange-alt-2021': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
-  'bengals-color-rush-2016': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'ravens-black-alt-2004': { uiAccent: '#9E7C0C', onAccent: '#0a0e1a' },
   'texans-battle-red-2024': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'jaguars-black-alt-2018': { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
@@ -125,6 +122,7 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
 export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   ...HAND_ACCENTS,
   ...catalogAccents(BEARS_CATALOG),
+  ...catalogAccents(BENGALS_CATALOG),
   ...catalogAccents(CHARGERS_CATALOG),
   ...catalogAccents(BRONCOS_CATALOG),
   ...catalogAccents(COLTS_CATALOG),

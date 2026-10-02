@@ -1,12 +1,12 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { bengalsSleeveTigers } from '../marks/construction';
 
-// Orange tiger sleeve caps, and white numerals keylined orange.
-export const BENGALS_JERSEY_BLACK: CompleteJerseySpec = {
-  body: 'black',
+// Black tiger sleeve caps, and white numerals keylined black.
+export const BENGALS_JERSEY_ORANGE: CompleteJerseySpec = {
+  body: 'orange',
   collar: {
     style: 'inset-v',
-    color: 'black',
+    color: 'orange',
     trim: 'none',
     inside: 'body',
     lining: 'none',
@@ -19,6 +19,6 @@ export const BENGALS_JERSEY_BLACK: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'orange', outlineWeight: 'thin', texture: 'mesh' },
-  marks: [{ paint: 'under', mark: bengalsSleeveTigers('orange') }],
+  number: { fill: 'white', outline: 'black', outlineWeight: 'thin', texture: 'mesh' },
+  marks: [{ paint: 'under', mark: bengalsSleeveTigers('black') }],
 };

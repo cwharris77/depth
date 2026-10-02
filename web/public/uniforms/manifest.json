@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "cc64b5dcc8460259a17815a235b198b58d8fb4951f4afd3a86e6b859de6e9db7",
-  "revision": "1cf7cc3d46a32d68",
+  "sourceDigest": "530d682b1812f838147f7cf552da0b00f31ff74734a9f4000e37e7d47fc98974",
+  "revision": "825fafed8be0a8c2",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -106,60 +106,112 @@
     {
       "catalogId": "bengals-away-2021",
       "constructionKey": "away",
-      "revision": "72a8011db5a49b62",
+      "revision": "9e8b54615268a071",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bengals-away-2021.webp",
-          "sha256": "6012133f06f287b87e4e993f50e749b4eab201883c8fdf4b0986c050d23447c6"
+          "sha256": "712b297b5bd5ef1071b17e3efc0381250e813042ff1aff86714ccfbc9cd423c7"
         },
         "full": {
           "path": "/uniforms/bengals-away-2021-full.webp",
-          "sha256": "1404ba8090b13baaae4ced3f376a77150a54e7543c58a08bcf57f62427a4658c"
+          "sha256": "70f94ee766aa236a8749799cac0a209f6dd218cd3383a74dbe04c4aa4166a1cd"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "white-out",
+          "label": "White pants, white socks",
+          "full": {
+            "path": "/uniforms/bengals-away-2021--white-out-full.webp",
+            "sha256": "324221666603c2b8b1041bce533466ebd20842473daf8dfd3505260cae234193"
+          }
+        },
+        {
+          "key": "black-pants",
+          "label": "Black pants, white socks",
+          "full": {
+            "path": "/uniforms/bengals-away-2021--black-pants-full.webp",
+            "sha256": "367f972dbac636470785353d935af67eebba0c110a84eb5e5f27894554ff070d"
+          }
+        },
+        {
+          "key": "orange-pants",
+          "label": "Orange pants, white socks",
+          "full": {
+            "path": "/uniforms/bengals-away-2021--orange-pants-full.webp",
+            "sha256": "c7c1d7953296018394c5a922e6a964ab078e922c6e9027e168d852177b2163c3"
+          }
+        }
+      ]
     },
     {
       "catalogId": "bengals-color-rush-2016",
       "constructionKey": "color-rush",
-      "revision": "9031e72cb68dba23",
+      "revision": "a26d3068a22b7212",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bengals-color-rush-2016.webp",
-          "sha256": "6012133f06f287b87e4e993f50e749b4eab201883c8fdf4b0986c050d23447c6"
+          "sha256": "eb66273a8cc4194ebf883c1cdb27279aad6d0363ddf0c2e6fbbc52bf872d9f2b"
         },
         "full": {
           "path": "/uniforms/bengals-color-rush-2016-full.webp",
-          "sha256": "1404ba8090b13baaae4ced3f376a77150a54e7543c58a08bcf57f62427a4658c"
+          "sha256": "035daf9487b2644a02bd365a463744b99a7622c1f31d2795a9029aad7c463fbc"
         }
       }
     },
     {
       "catalogId": "bengals-home-2021",
       "constructionKey": "home",
-      "revision": "432d6c8658e7f49d",
+      "revision": "b64225a14c2ec20d",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bengals-home-2021.webp",
-          "sha256": "8c7da7c576dfe215c323511be23dd71ed57af2604a6d26d7d1a64f5638013733"
+          "sha256": "a6c92ee069bbe1777e61cef50863544e1050ce2308f3030ef49d7d9f73edc01b"
         },
         "full": {
           "path": "/uniforms/bengals-home-2021-full.webp",
-          "sha256": "82ae5fa8e6ab9c991674701122e6b04404acae8bee8b3e2a03d34fafda4ff954"
+          "sha256": "691822b0f2699473fc3112b511d0428784ba70462741a2b4425e03ce0d43ae60"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "black-orange-socks",
+          "label": "Black pants, orange socks",
+          "full": {
+            "path": "/uniforms/bengals-home-2021--black-orange-socks-full.webp",
+            "sha256": "6c66dd7961f04094763c658185aa8d16f75ad3b5657ae4aa7bea02deaadad11f"
+          }
+        },
+        {
+          "key": "white-pants",
+          "label": "White pants, orange socks",
+          "full": {
+            "path": "/uniforms/bengals-home-2021--white-pants-full.webp",
+            "sha256": "14046b7b512db056329026dd16fb51201e0709be363e7dfec05b7a50956adf0b"
+          }
+        },
+        {
+          "key": "orange-pants",
+          "label": "Orange pants, black socks",
+          "full": {
+            "path": "/uniforms/bengals-home-2021--orange-pants-full.webp",
+            "sha256": "596e9b32cff86e3d8bbc3f4309937d90ff36e17a5628f4a0cecae4d87df4fd58"
+          }
+        }
+      ]
     },
     {
       "catalogId": "bengals-orange-alt-2021",
       "constructionKey": "orange-alt",
-      "revision": "6bd988f8ba0a33fb",
+      "revision": "25f13563c7e41143",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bengals-orange-alt-2021.webp",
-          "sha256": "d47f979197cbfddcd5d1db5ffeffaf0b1afb11bd83380a40949d6a06a2602bbf"
+          "sha256": "6268f0abacab813adc2bc08ec9bd24a2366487174da3f8f4a5ff995ebf1c7257"
         },
         "full": {
           "path": "/uniforms/bengals-orange-alt-2021-full.webp",
-          "sha256": "d3e60a0f860e4e8ee5bd17f17932859e24ba4d00a6f856c79d8ae15672daff36"
+          "sha256": "cc7d873cb75537f06260e9d13565be41f35d200cb3896bbbab48467916c125d8"
         }
       }
     },

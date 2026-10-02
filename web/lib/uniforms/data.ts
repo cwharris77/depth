@@ -1,5 +1,6 @@
 import type { JerseyColors, UniformKind } from '../types';
 import { catalogRow } from './teams/core/catalog';
+import { BENGALS_CATALOG } from './teams/bengals/catalog';
 import { BEARS_CATALOG } from './teams/bears/catalog';
 import { CHARGERS_CATALOG } from './teams/chargers/catalog';
 import { BRONCOS_CATALOG } from './teams/broncos/catalog';
@@ -63,21 +64,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#9E7C0C',
     },
   },
-  {
-    teamId: 'bengals',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2021,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FB4F14',
-      secondary: '#000000',
-      accent: '#000000',
-    },
-  },
+  catalogRow(BENGALS_CATALOG, 'home'),
   {
     teamId: 'browns',
     slug: 'home',
@@ -589,21 +576,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#9E7C0C',
     },
   },
-  {
-    teamId: 'bengals',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2021,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#FB4F14',
-      accent: '#FB4F14',
-    },
-  },
+  catalogRow(BENGALS_CATALOG, 'away'),
   {
     teamId: 'browns',
     slug: 'away',
@@ -1147,40 +1120,8 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#311D00',
     },
   },
-  // Bengals orange alternate. Orange base, black tiger stripes.
-  {
-    teamId: 'bengals',
-    slug: 'orange-alt',
-    constructionKey: 'orange-alt',
-    kind: 'alternate',
-    name: 'Orange Alternate',
-    yearStart: 2021,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FB4F14',
-      secondary: '#000000',
-      accent: '#FFFFFF',
-    },
-  },
-  // Bengals Color Rush. All white — "a nod to the white tiger" per Cincinnati's own unveiling
-  // (Bengals.com, "Bengals Unveil Color Rush Jerseys", Sept 13 2016). First worn 9/29/2016
-  // (TNF vs Miami), last worn 11/20/2022; paused for the 2021 season.
-  {
-    teamId: 'bengals',
-    slug: 'color-rush',
-    constructionKey: 'color-rush',
-    kind: 'color-rush',
-    name: 'Color Rush',
-    yearStart: 2016,
-    yearEnd: 2022,
-    isCurrent: false,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#000000',
-      accent: '#000000',
-    },
-  },
+  catalogRow(BENGALS_CATALOG, 'orange-alt'),
+  catalogRow(BENGALS_CATALOG, 'color-rush'),
   // Ravens black alternate. Black base, purple/gold trim.
   {
     teamId: 'ravens',

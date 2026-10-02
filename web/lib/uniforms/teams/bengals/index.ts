@@ -1,16 +1,14 @@
 import { compileParts, type TeamPartsDefinition } from '../core/parts';
-import { BENGALS_CONSTRUCTION } from './parts';
-import { JERSEY_BLACK } from './jerseys/black';
-import { JERSEY_WHITE_TIGER } from './jerseys/white-tiger';
-import { JERSEY_ORANGE_TIGER } from './jerseys/orange-tiger';
+import { catalogKits } from '../core/catalog';
+import { expandTeamSpec } from '../core/team-spec';
+import { BENGALS_PALETTE, BENGALS_SPEC } from './parts';
+import { BENGALS_CATALOG } from './catalog';
 
 export const BENGALS_PARTS: TeamPartsDefinition = {
-  ...BENGALS_CONSTRUCTION,
-  jerseys: {
-    black: JERSEY_BLACK,
-    'white-tiger': JERSEY_WHITE_TIGER,
-    'orange-tiger': JERSEY_ORANGE_TIGER,
-  },
+  teamId: 'bengals',
+  palette: BENGALS_PALETTE,
+  ...expandTeamSpec('bengals', BENGALS_SPEC),
+  kits: catalogKits(BENGALS_CATALOG),
 };
 
 export const BENGALS_UNIFORMS_FROM_PARTS = compileParts(BENGALS_PARTS);

@@ -2,7 +2,7 @@ import { readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { renderUniformThumbSVG } from '../../art';
-import { UNIFORMS } from '../../data';
+import { UNIFORMS, type UniformSeed } from '../../data';
 import { HAND_ACCENTS, LEGACY_ACCENTS } from '../../legacy-accents';
 import { getTeamUniformDefinition } from '../index';
 import { getAllTeamCatalogs, getTeamCatalog } from '../catalogs';
@@ -67,6 +67,7 @@ describe('registered team catalogs', () => {
     expect(getTeamCatalog('broncos')?.teamId).toBe('broncos');
     expect(getTeamCatalog('chargers')?.teamId).toBe('chargers');
     expect(getTeamCatalog('colts')?.teamId).toBe('colts');
+    expect(getTeamCatalog('bengals')?.teamId).toBe('bengals');
     expect(getTeamCatalog('49ers')?.teamId).toBe('49ers');
     expect(getTeamCatalog('jets')?.teamId).toBe('jets');
   });
@@ -602,6 +603,78 @@ describe('49ers catalog conversion', () => {
       home: { helmet: 'gold', jersey: 'red', pants: 'gold', socks: 'red' },
       away: { helmet: 'gold', jersey: 'white', pants: 'gold', socks: 'red' },
       'rivalries-2025': { helmet: 'black', jersey: 'black', pants: 'black', socks: 'red' },
+    });
+  });
+});
+
+// Pins the catalog to the rows and accents the Bengals had before the catalog existed.
+describe('Bengals catalog conversion', () => {
+  const catalog = getTeamCatalog('bengals');
+  if (!catalog) throw new Error('Bengals catalog is not registered');
+
+  it('reproduces the archived rows', () => {
+    const row = (
+      slug: string,
+      kind: UniformSeed['kind'],
+      name: string,
+      yearStart: number,
+      yearEnd: number | null,
+      colors: UniformSeed['colors']
+    ): UniformSeed => ({
+      teamId: 'bengals',
+      slug,
+      constructionKey: slug,
+      kind,
+      name,
+      yearStart,
+      yearEnd,
+      isCurrent: yearEnd === null,
+      colors,
+    });
+    expect(byId(catalogRows(catalog))).toEqual(
+      byId([
+        row('home', 'home', 'Home', 2021, null, {
+          primary: '#FB4F14',
+          secondary: '#000000',
+          accent: '#000000',
+        }),
+        row('away', 'away', 'Away', 2021, null, {
+          primary: '#FFFFFF',
+          secondary: '#FB4F14',
+          accent: '#FB4F14',
+        }),
+        row('orange-alt', 'alternate', 'Orange Alternate', 2021, null, {
+          primary: '#FB4F14',
+          secondary: '#000000',
+          accent: '#FFFFFF',
+        }),
+        row('color-rush', 'color-rush', 'Color Rush', 2016, 2022, {
+          primary: '#FFFFFF',
+          secondary: '#000000',
+          accent: '#000000',
+        }),
+      ])
+    );
+  });
+
+  it('reproduces the frozen legacy accents', () => {
+    const pair = { uiAccent: '#FF6A33', onAccent: '#0a0e1a' };
+    expect(catalogAccents(catalog)).toEqual({
+      'bengals-home-2021': pair,
+      'bengals-away-2021': pair,
+      'bengals-orange-alt-2021': pair,
+      'bengals-color-rush-2016': pair,
+    });
+  });
+
+  it('registers every kit on the orange helmet', () => {
+    const kits = catalogKits(catalog);
+    expect(Object.values(kits).every((kit) => kit.helmet === 'orange')).toBe(true);
+    expect(kits['color-rush']).toEqual({
+      helmet: 'orange',
+      jersey: 'color-rush',
+      pants: 'white-claws',
+      socks: 'white',
     });
   });
 });
