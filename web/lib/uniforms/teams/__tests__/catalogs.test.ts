@@ -61,12 +61,13 @@ describe('no leftover hand-written accents for a converted team', () => {
 describe('registered team catalogs', () => {
   const registered = getAllTeamCatalogs();
 
-  it('includes the Seahawks, the Bears, the Broncos, the Chargers and the Colts', () => {
+  it('includes the Seahawks, the Bears, the Broncos, the Chargers, the Colts and the Jets', () => {
     expect(getTeamCatalog('seahawks')?.teamId).toBe('seahawks');
     expect(getTeamCatalog('bears')?.teamId).toBe('bears');
     expect(getTeamCatalog('broncos')?.teamId).toBe('broncos');
     expect(getTeamCatalog('chargers')?.teamId).toBe('chargers');
     expect(getTeamCatalog('colts')?.teamId).toBe('colts');
+    expect(getTeamCatalog('jets')?.teamId).toBe('jets');
   });
 
   for (const { catalog, parts } of registered) {
@@ -460,6 +461,85 @@ describe('Colts catalog conversion', () => {
     expect(catalogKits(catalog)).toEqual({
       home: { helmet: 'white-horseshoe', jersey: 'navy', pants: 'white', socks: 'navy' },
       away: { helmet: 'white-horseshoe', jersey: 'white', pants: 'white', socks: 'navy' },
+    });
+  });
+});
+
+// Pins the catalog to the rows and accents the Jets had before the catalog existed.
+describe('Jets catalog conversion', () => {
+  const catalog = getTeamCatalog('jets');
+  if (!catalog) throw new Error('Jets catalog is not registered');
+
+  const row = (
+    slug: string,
+    kind: 'home' | 'away' | 'alternate',
+    name: string,
+    yearStart: number,
+    colors: { primary: string; secondary: string; accent: string }
+  ) => ({
+    teamId: 'jets',
+    slug,
+    constructionKey: slug,
+    kind,
+    name,
+    yearStart,
+    yearEnd: null,
+    isCurrent: true,
+    colors,
+  });
+
+  it('reproduces the archived rows', () => {
+    expect(byId(catalogRows(catalog))).toEqual(
+      byId([
+        row('home', 'home', 'Home', 2024, {
+          primary: '#125740',
+          secondary: '#FFFFFF',
+          accent: '#FFFFFF',
+        }),
+        row('away', 'away', 'Away', 2024, {
+          primary: '#FFFFFF',
+          secondary: '#125740',
+          accent: '#125740',
+        }),
+        row('rivalries-2025', 'alternate', 'Rivalries', 2025, {
+          primary: '#115740',
+          secondary: '#000000',
+          accent: '#FFFFFF',
+        }),
+        row('black-alt', 'alternate', 'Black Alternate', 2024, {
+          primary: '#000000',
+          secondary: '#125740',
+          accent: '#FFFFFF',
+        }),
+      ])
+    );
+  });
+
+  it('reproduces the frozen legacy accents', () => {
+    const pair = { uiAccent: '#4CC38A', onAccent: '#0a0e1a' };
+    expect(catalogAccents(catalog)).toEqual({
+      'jets-home-2024': pair,
+      'jets-away-2024': pair,
+      'jets-rivalries-2025-2025': pair,
+      'jets-black-alt-2024': pair,
+    });
+  });
+
+  it("registers each design's own kit with its helmet, pants and socks", () => {
+    const kits = catalogKits(catalog);
+    expect(kits.home).toEqual({ helmet: 'green', jersey: 'green', pants: 'green', socks: 'green' });
+    expect(kits.away).toEqual({ helmet: 'green', jersey: 'white', pants: 'white', socks: 'white' });
+    expect(kits['rivalries-2025']).toEqual({
+      helmet: 'riv-green',
+      jersey: 'riv',
+      pants: 'riv',
+      socks: 'riv',
+    });
+    expect(kits['black-alt']).toEqual({
+      helmet: 'black',
+      jersey: 'black',
+      pants: 'black',
+      socks: 'black',
     });
   });
 });

@@ -1,110 +1,58 @@
-// New York authored as composable parts. Geometry is imported unchanged from jets.ts — this file
-// only restates WHICH parts each kit combines, and names every color from the team palette instead
-// of the kit row's shifting primary/secondary/accent.
+// New York as a complete team spec: every helmet, jersey, pants and socks part, with the helmet
+// wordmark drawn by the marks in ./marks.
 //
-// One construction throughout: two bands at the sleeve separated by a body-colored gap, and a deep
-// V-collar that closes well below the generic chevron. No helmet stripe, no pant stripe. The white
-// wordmark is on every shell the club wears, so it is pinned white.
-//
-// The kits combine three helmets (home/away's #125740 green, rivalries' #115740 green, black-alt's
-// black — the two greens differ by a step) and four jerseys/pants; the two-green separation is
-// real, per the measured table, not a re-derivation.
+// Three helmets (home/away's #125740 green, rivalries' #115740 green, black-alt's black — the two
+// greens differ by a step), four jerseys and four pants/socks pairs. No helmet stripe, no pant
+// stripe.
+import type { CompletePantsSpec, CompleteSocksSpec } from '../core/complete';
+import type { TeamSpec } from '../core/team-spec';
+import { JETS_WORDMARK_GREEN, JETS_WORDMARK_WHITE } from './marks/construction';
+import { JETS_JERSEY_BLACK } from './jerseys/black';
+import { JETS_JERSEY_GREEN } from './jerseys/green';
+import { JETS_JERSEY_RIV } from './jerseys/riv';
+import { JETS_JERSEY_WHITE } from './jerseys/white';
 
-import {
-  JETS_BAND_LOW,
-  JETS_BAND_TOP,
-  JETS_COLLAR_PATH,
-  JETS_COLLAR_WIDTH,
-  JETS_DECAL_PATH,
-  JETS_SLEEVE_X_LEFT,
-  JETS_SLEEVE_X_RIGHT,
-} from './source';
-import { expandHelmet } from '../core/helmet-spec';
-import { placed } from '../core/marks';
-import { type PartLayer, type UniformPart } from '../core/parts';
-import type { UniformSurface } from '../core/types';
+export const JETS_PALETTE = {
+  green: '#125740',
+  rivalGreen: '#115740',
+  black: '#000000',
+  white: '#FFFFFF',
+};
 
-// The two white sleeve bands, separated by a body-colored gap.
-export function sleeveBands(color: string): PartLayer[] {
-  const out: PartLayer[] = [];
-  const sides: [UniformSurface, number[]][] = [
-    ['sleeve-left', JETS_SLEEVE_X_LEFT],
-    ['sleeve-right', JETS_SLEEVE_X_RIGHT],
-  ];
-  for (const [label, [top, bottom]] of [
-    ['top', JETS_BAND_TOP],
-    ['low', JETS_BAND_LOW],
-  ] as [string, number[]][]) {
-    for (const [surface, [x0, x1]] of sides) {
-      const side = surface === 'sleeve-left' ? 'left' : 'right';
-      out.push({
-        id: `jets-band-${label}-${side}`,
-        surface,
-        d: `M${x0},${top} H${x1} V${bottom} H${x0} Z`,
-        clip: true,
-        kind: 'fill',
-        fill: color,
-      });
-    }
-  }
-  return out;
-}
+// Plain pants in one colour: no stripe, no mark.
+const pants = (body: string): CompletePantsSpec => ({ body, stripes: 'none', marks: [] });
+const socks = (color: string): CompleteSocksSpec => ({ color, stripes: 'none' });
 
-// The deep V-collar.
-export function collar(color: string): PartLayer[] {
-  return [
-    {
-      id: 'jets-collar',
-      surface: 'collar',
-      d: JETS_COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: color,
-      strokeWidth: JETS_COLLAR_WIDTH,
+export const JETS_SPEC: TeamSpec = {
+  helmets: {
+    // Home/away's green shell with a white cage.
+    green: { shell: 'green', facemask: 'white', decal: JETS_WORDMARK_WHITE, number: 'none' },
+    // Rivalries' green shell, a step off the home green.
+    'riv-green': {
+      shell: 'rivalGreen',
+      facemask: 'white',
+      decal: JETS_WORDMARK_WHITE,
+      number: 'none',
     },
-  ];
-}
-
-// The white wordmark — pinned, everywhere.
-export function wordmark(color: string): PartLayer[] {
-  return [
-    {
-      id: 'jets-decal',
-      surface: 'helmet',
-      d: JETS_DECAL_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: color,
-    },
-  ];
-}
-
-// Home/away's green shell (H1) — #125740, the current green.
-export const HELMET_GREEN: UniformPart = expandHelmet('jets-green-helmet', {
-  shell: 'green',
-  facemask: 'white',
-  decal: placed(wordmark('white')),
-  number: 'none',
-});
-
-// Rivalries' green shell (H2) — #115740, a distinct step.
-export const HELMET_RIV_GREEN: UniformPart = expandHelmet('jets-riv-helmet', {
-  shell: 'rivalGreen',
-  facemask: 'white',
-  decal: placed(wordmark('white')),
-  number: 'none',
-});
-
-// Black-alt shell (H3).
-export const HELMET_BLACK: UniformPart = expandHelmet('jets-black-helmet', {
-  shell: 'black',
-  facemask: 'white',
-  decal: placed(wordmark('green')),
-  number: 'none',
-});
-
-// Pants — no pant stripe on any kit; each takes its body color.
-export const PANTS_GREEN: UniformPart = { base: 'green', layers: [] };
-export const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
-export const PANTS_RIV: UniformPart = { base: 'rivalGreen', layers: [] };
-export const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };
+    // Black shell with a green wordmark and a green cage.
+    black: { shell: 'black', facemask: 'green', decal: JETS_WORDMARK_GREEN, number: 'none' },
+  },
+  jerseys: {
+    green: JETS_JERSEY_GREEN,
+    white: JETS_JERSEY_WHITE,
+    riv: JETS_JERSEY_RIV,
+    black: JETS_JERSEY_BLACK,
+  },
+  pants: {
+    green: pants('green'),
+    white: pants('white'),
+    riv: pants('rivalGreen'),
+    black: pants('black'),
+  },
+  socks: {
+    green: socks('green'),
+    white: socks('white'),
+    riv: socks('rivalGreen'),
+    black: socks('black'),
+  },
+};

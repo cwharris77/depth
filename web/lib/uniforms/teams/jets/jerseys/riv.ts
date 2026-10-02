@@ -1,10 +1,31 @@
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
-import { collar, sleeveBands } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
-// Rivalries jersey (J3): rivalries-green body, black bands + collar, white numerals.
-export const JERSEY_RIV: UniformPart = {
-  base: 'rivalGreen',
-  layers: [...sleeveBands('black'), ...collar('black')],
-  number: { fill: 'white', outline: 'white', outlineWidth: 10 },
+// Rivalries: the heritage green body with black collar and sleeve stripes and white numerals
+// carrying a thin white offset; no shoulder numeral.
+export const JETS_JERSEY_RIV: CompleteJerseySpec = {
+  body: 'rivalGreen',
+  collar: {
+    style: 'inset-v',
+    color: 'black',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: false,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: 'none',
+  sleeveStripes: {
+    bands: [
+      { color: 'black', size: 'l' },
+      { color: 'black', size: 'l' },
+    ],
+    gap: 'broad',
+    edge: 'none',
+  },
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'white', outlineWeight: 'thin', texture: 'mesh' },
+  marks: [],
 };

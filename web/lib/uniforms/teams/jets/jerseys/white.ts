@@ -1,10 +1,31 @@
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
-import { collar, sleeveBands } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
-// Away jersey (J2): white body, green bands + collar, green numerals.
-export const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [...sleeveBands('green'), ...collar('green')],
-  number: { fill: 'green', outline: 'green', outlineWidth: 10 },
+// Away: the home construction in reverse — white body with the collar, shoulder numeral, sleeve
+// stripes and numerals all green.
+export const JETS_JERSEY_WHITE: CompleteJerseySpec = {
+  body: 'white',
+  collar: {
+    style: 'inset-v',
+    color: 'green',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: false,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: { fill: 'green', outline: 'none' },
+  sleeveStripes: {
+    bands: [
+      { color: 'green', size: 'l' },
+      { color: 'green', size: 'l' },
+    ],
+    gap: 'broad',
+    edge: 'none',
+  },
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'green', outline: 'white', outlineWeight: 'none', texture: 'mesh' },
+  marks: [],
 };

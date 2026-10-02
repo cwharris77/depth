@@ -1,10 +1,31 @@
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
-import { collar, sleeveBands } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
-// Home jersey (J1): green body, white bands + collar, white numerals.
-export const JERSEY_GREEN: UniformPart = {
-  base: 'green',
-  layers: [...sleeveBands('white'), ...collar('white')],
-  number: { fill: 'white', outline: 'white', outlineWidth: 10 },
+// Home: green body, white inset-V collar, a white shoulder numeral and two white sleeve stripes
+// separated by a body-coloured gap. Numerals are flat white with no offset.
+export const JETS_JERSEY_GREEN: CompleteJerseySpec = {
+  body: 'green',
+  collar: {
+    style: 'inset-v',
+    color: 'white',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: false,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: { fill: 'white', outline: 'none' },
+  sleeveStripes: {
+    bands: [
+      { color: 'white', size: 'l' },
+      { color: 'white', size: 'l' },
+    ],
+    gap: 'broad',
+    edge: 'none',
+  },
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'green', outlineWeight: 'none', texture: 'mesh' },
+  marks: [],
 };
