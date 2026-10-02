@@ -1,50 +1,50 @@
 {
   "version": 1,
-  "sourceDigest": "2a77f7f1ca0388acc1311ad9e8efe43c482c4260b58a17b9d6070d73b71d51be",
-  "revision": "4004e34e8267406e",
+  "sourceDigest": "cc64b5dcc8460259a17815a235b198b58d8fb4951f4afd3a86e6b859de6e9db7",
+  "revision": "1cf7cc3d46a32d68",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
       "constructionKey": "away",
-      "revision": "d810ee8f9cb6d54e",
+      "revision": "8a6d76426c886006",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/49ers-away-2022.webp",
-          "sha256": "03cc2c43724c58ed841c6fe53deb32e80d67d1e4d22700c663ebc23763c94b9b"
+          "sha256": "99016ce29c6444b15cf1ee2107161d3c5f6952683be810d130fb9deed629b4f6"
         },
         "full": {
           "path": "/uniforms/49ers-away-2022-full.webp",
-          "sha256": "38bcfa4e6cfa694cde1925def137a52c2ecf87499b6bab67e17e8f07f88d7d7a"
+          "sha256": "d9ce9a7ee48e5a1a99db9dca36b7dac94dd730cd4918a7add75ac60fbb6a1f08"
         }
       }
     },
     {
       "catalogId": "49ers-home-2022",
       "constructionKey": "home",
-      "revision": "dfb0a08513539c8a",
+      "revision": "8b18f827d1993954",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/49ers-home-2022.webp",
-          "sha256": "bb3171abd7f841771bd3611e2d9a9548449a9a21c14fb613992be2a6e0ab0979"
+          "sha256": "bcf1682168d735b174659a480d3a388b060f298fc9604fa157f269c3b3257c8c"
         },
         "full": {
           "path": "/uniforms/49ers-home-2022-full.webp",
-          "sha256": "6442d3c57aa03a625474c98d6b652bc6eb831870c9e0e8ea2f19d1beb2421ebd"
+          "sha256": "4f0c90be8caa81efce2fa3de54446611500c9fe7a158e4b08fc22ac35c7eec3a"
         }
       }
     },
     {
       "catalogId": "49ers-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "d19a5c1375d77c97",
+      "revision": "ae04d126571b05b0",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/49ers-rivalries-2025-2025.webp",
-          "sha256": "13b10447cfd98785bd4a61d56bf8c566ae08ce4d6182e27bcbd0bbbaf2ffd226"
+          "sha256": "81995da0c96a50f3d1e9880c6207f0c2f4c997a4acd6c8d5ca03a37443630fed"
         },
         "full": {
           "path": "/uniforms/49ers-rivalries-2025-2025-full.webp",
-          "sha256": "b1bd16e44db88118dde588a5d3f64c4852a12ce617d23921d4b501be94241d44"
+          "sha256": "2d4ec7c31fa075800c5331a6893ce991931932bfed8f88e8880ba7b9b4d75e2a"
         }
       }
     },

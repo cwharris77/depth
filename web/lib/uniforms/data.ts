@@ -5,6 +5,7 @@ import { CHARGERS_CATALOG } from './teams/chargers/catalog';
 import { BRONCOS_CATALOG } from './teams/broncos/catalog';
 import { COLTS_CATALOG } from './teams/colts/catalog';
 import { JETS_CATALOG } from './teams/jets/catalog';
+import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
 // Hand-curated uniform archive. This file is the sole jersey-color authority. The seed generator
@@ -427,21 +428,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFA300',
     },
   },
-  {
-    teamId: '49ers',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2022,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#AA0000',
-      secondary: '#B3995D',
-      accent: '#B3995D',
-    },
-  },
+  catalogRow(NINERS_CATALOG, 'home'),
   catalogRow(SEAHAWKS_CATALOG, 'home'),
 
   catalogRow(SEAHAWKS_CATALOG, '1976-throwback'),
@@ -583,21 +570,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFA300',
     },
   },
-  {
-    teamId: '49ers',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2022,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#AA0000',
-      accent: '#B3995D',
-    },
-  },
+  catalogRow(NINERS_CATALOG, 'away'),
   // Away kits — second tranche (remaining 24 teams). Same rule as the first tranche:
   // white base; secondary = team primary, accent = the team's identity trim color.
   // Generated from lib/teams/league.ts.
@@ -1104,21 +1077,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   // 49ers 2025 Rivalries: black base, gold numbers, scarlet accent. Heritage gold #B3995D (uiAccent, 7.0:1) + scarlet #AA0000.
-  {
-    teamId: '49ers',
-    slug: 'rivalries-2025',
-    constructionKey: 'rivalries-2025',
-    kind: 'alternate',
-    name: 'Rivalries',
-    yearStart: 2025,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#101820',
-      secondary: '#B3995D',
-      accent: '#AA0000',
-    },
-  },
+  catalogRow(NINERS_CATALOG, 'rivalries-2025'),
   catalogRow(SEAHAWKS_CATALOG, 'rivalries-2025'),
   catalogRow(SEAHAWKS_CATALOG, 'color-rush'),
   // Wave 4: currently-worn alternates & throwbacks (heritage-derived; Browns '46 and
