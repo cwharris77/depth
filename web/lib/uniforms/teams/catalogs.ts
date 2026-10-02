@@ -22,6 +22,9 @@ import { CHIEFS_SPEC } from './chiefs/parts';
 import { COLTS_PARTS } from './colts';
 import { COLTS_CATALOG } from './colts/catalog';
 import { COLTS_SPEC } from './colts/parts';
+import { COMMANDERS_PARTS } from './commanders';
+import { COMMANDERS_CATALOG } from './commanders/catalog';
+import { COMMANDERS_SPEC } from './commanders/parts';
 import { JETS_PARTS } from './jets';
 import { JETS_CATALOG } from './jets/catalog';
 import { JETS_SPEC } from './jets/parts';
@@ -52,6 +55,11 @@ const CATALOGS: Readonly<Partial<Record<string, RegisteredCatalog>>> = {
   },
   chargers: { catalog: CHARGERS_CATALOG, parts: CHARGERS_PARTS, strict: CHARGERS_SPEC },
   chiefs: { catalog: CHIEFS_CATALOG, parts: CHIEFS_PARTS, strict: CHIEFS_SPEC },
+  commanders: {
+    catalog: COMMANDERS_CATALOG,
+    parts: COMMANDERS_PARTS,
+    strict: COMMANDERS_SPEC,
+  },
   colts: { catalog: COLTS_CATALOG, parts: COLTS_PARTS, strict: COLTS_SPEC },
   jets: { catalog: JETS_CATALOG, parts: JETS_PARTS, strict: JETS_SPEC },
   '49ers': { catalog: NINERS_CATALOG, parts: NINERS_PARTS, strict: NINERS_SPEC },
