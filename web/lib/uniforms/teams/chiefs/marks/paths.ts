@@ -1,7 +1,4 @@
-// Kansas City's construction geometry: the supplied high-resolution helmet mark and sleeve-band
-// constants. The composable parts definition that consumes them lives in ./chiefs.parts.ts.
-
-export const CHIEFS_WHITE = '#FFFFFF';
+// The arrowhead helmet decal's vector paths.
 
 // The mark is fitted into the helmet-composite placement envelope (x=276-534, y=173-337) with
 // its source aspect ratio preserved. At this scale the narrowest critical black keyline is over
@@ -24,12 +21,3 @@ export const CHIEFS_DECAL_C_PATH =
 
 export const CHIEFS_DECAL_CROSSBAR_PATH =
   'M428.51,230.16 L432.99,230.16 L438.97,230.66 L443.13,231.33 L447.45,232.32 L451.43,233.49 L454.76,234.65 L457.91,235.98 L458.91,235.81 L460.74,234.48 L463.06,232.99 L470.54,232.99 L470.7,233.15 L470.7,246.28 L470.54,254.42 L470.37,254.58 L462.56,254.58 L460.74,252.26 L459.24,250.6 L458.08,249.43 L455.92,247.77 L452.93,245.95 L449.11,244.12 L444.62,242.62 L440.97,241.79 L436.15,241.13 L427.84,241.13 L422.69,241.79 L419.37,242.46 L418.21,241.29 L417.04,239.97 L415.22,237.97 L412.23,234.65 L411.4,233.82 L411.56,233.32 L414.39,232.49 L418.21,231.49 L422.86,230.66 Z';
-
-// Three bands at the end of each sleeve, measured on the home figure (jersey top y=401, sleeve hem
-// y=466, figure center x=921, so scaleY = 191/65 and scaleX = 264/84.5): reference y437-441,
-// y443-445 and y447-451, all spanning x840-856, with only a hairline outline between them — so the
-// mannequin bands are authored contiguous. The away figure carries the identical set at the same
-// offsets from its own jersey top, in red over gold. Extended outward to x=30 for a flush clip.
-export const CHIEFS_STRIPE_BOUNDS = [486, 503, 515, 533];
-export const CHIEFS_SLEEVE_X_LEFT = [30, 91];
-export const CHIEFS_SLEEVE_X_RIGHT = [497, 558];

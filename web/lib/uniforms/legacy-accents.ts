@@ -5,6 +5,7 @@ import { BUCCANEERS_CATALOG } from './teams/buccaneers/catalog';
 import { BEARS_CATALOG } from './teams/bears/catalog';
 import { CHARGERS_CATALOG } from './teams/chargers/catalog';
 import { BRONCOS_CATALOG } from './teams/broncos/catalog';
+import { CHIEFS_CATALOG } from './teams/chiefs/catalog';
 import { COLTS_CATALOG } from './teams/colts/catalog';
 import { JETS_CATALOG } from './teams/jets/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
@@ -24,7 +25,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'texans-home-2024': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'jaguars-home-2018': { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
   'titans-home-2018': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
-  'chiefs-home-1963': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
   'raiders-home-1963': { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
   'lions-home-2024': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'packers-home-1959': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
@@ -51,7 +51,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'texans-away-2024': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'jaguars-away-2018': { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
   'titans-away-2018': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
-  'chiefs-away-1963': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
   'raiders-away-1963': { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
   'cowboys-away-1964': { uiAccent: '#869397', onAccent: '#0a0e1a' },
   'giants-away-2000': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
@@ -124,6 +123,7 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   ...catalogAccents(CHARGERS_CATALOG),
   ...catalogAccents(BRONCOS_CATALOG),
   ...catalogAccents(BUCCANEERS_CATALOG),
+  ...catalogAccents(CHIEFS_CATALOG),
   ...catalogAccents(COLTS_CATALOG),
   ...catalogAccents(JETS_CATALOG),
   ...catalogAccents(NINERS_CATALOG),

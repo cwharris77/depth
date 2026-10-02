@@ -67,6 +67,7 @@ describe('registered team catalogs', () => {
     expect(getTeamCatalog('broncos')?.teamId).toBe('broncos');
     expect(getTeamCatalog('chargers')?.teamId).toBe('chargers');
     expect(getTeamCatalog('colts')?.teamId).toBe('colts');
+    expect(getTeamCatalog('chiefs')?.teamId).toBe('chiefs');
     expect(getTeamCatalog('bengals')?.teamId).toBe('bengals');
     expect(getTeamCatalog('49ers')?.teamId).toBe('49ers');
     expect(getTeamCatalog('jets')?.teamId).toBe('jets');
@@ -740,6 +741,61 @@ describe('Buccaneers catalog conversion', () => {
       away: { ...flag, jersey: 'white', pants: 'white', socks: 'pewter' },
       'away--pewter-pants': { ...flag, jersey: 'white', pants: 'pewter', socks: 'pewter' },
       creamsicle: { helmet: 'white', jersey: 'creamsicle', pants: 'white', socks: 'creamsicle' },
+    });
+  });
+});
+
+// Pins the catalog to the rows and accents the Chiefs had before the catalog existed.
+describe('Chiefs catalog conversion', () => {
+  const catalog = getTeamCatalog('chiefs');
+  if (!catalog) throw new Error('Chiefs catalog is not registered');
+
+  it('reproduces the archived rows', () => {
+    expect(byId(catalogRows(catalog))).toEqual(
+      byId([
+        {
+          teamId: 'chiefs',
+          slug: 'home',
+          constructionKey: 'home',
+          kind: 'home',
+          name: 'Home',
+          yearStart: 1963,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#E31837', secondary: '#FFB81C', accent: '#FFB81C' },
+        },
+        {
+          teamId: 'chiefs',
+          slug: 'away',
+          constructionKey: 'away',
+          kind: 'away',
+          name: 'Away',
+          yearStart: 1963,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#FFFFFF', secondary: '#E31837', accent: '#FFB81C' },
+        },
+      ])
+    );
+  });
+
+  it('reproduces the frozen legacy accents', () => {
+    expect(catalogAccents(catalog)).toEqual({
+      'chiefs-home-1963': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
+      'chiefs-away-1963': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
+    });
+  });
+
+  it('keeps the away kit on white pants with red pants as the one extra', () => {
+    expect(catalogKits(catalog)).toEqual({
+      home: { helmet: 'red-arrowhead', jersey: 'red', pants: 'white', socks: 'red' },
+      away: { helmet: 'red-arrowhead', jersey: 'white', pants: 'white', socks: 'white' },
+      'away--red-pants': {
+        helmet: 'red-arrowhead',
+        jersey: 'white',
+        pants: 'red',
+        socks: 'white',
+      },
     });
   });
 });
