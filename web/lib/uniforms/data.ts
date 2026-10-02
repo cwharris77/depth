@@ -1,6 +1,7 @@
 import type { JerseyColors, UniformKind } from '../types';
 import { catalogRow } from './teams/core/catalog';
 import { BEARS_CATALOG } from './teams/bears/catalog';
+import { CHARGERS_CATALOG } from './teams/chargers/catalog';
 import { BRONCOS_CATALOG } from './teams/broncos/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
@@ -255,21 +256,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#A5ACAF',
     },
   },
-  {
-    teamId: 'chargers',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2020,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#0080C6',
-      secondary: '#FFC20E',
-      accent: '#FFC20E',
-    },
-  },
+  catalogRow(CHARGERS_CATALOG, 'home'),
   catalogRow(BEARS_CATALOG, 'home'),
   {
     teamId: 'lions',
@@ -805,21 +792,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#A5ACAF',
     },
   },
-  {
-    teamId: 'chargers',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2020,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#0080C6',
-      accent: '#FFC20E',
-    },
-  },
+  catalogRow(CHARGERS_CATALOG, 'away'),
   {
     teamId: 'cowboys',
     slug: 'away',
@@ -988,52 +961,9 @@ export const UNIFORMS: UniformSeed[] = [
   },
   // Throwbacks & alternates (Wave 2a) — published heritage hexes, eras verified where
   // set. uiAccent reuses each team's live dark-UI pair.
-  // Chargers AFL powder blue, worn as a current alternate. Hexes: powder blue #0080C6, sunshine gold #FFC20E. uiAccent reuses the team's dark-UI blue.
-  {
-    teamId: 'chargers',
-    slug: 'powder-blue',
-    constructionKey: 'powder-blue',
-    kind: 'alternate',
-    name: 'Powder Blue',
-    yearStart: 1960,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#0080C6',
-      secondary: '#FFC20E',
-      accent: '#FFFFFF',
-    },
-  },
-  {
-    teamId: 'chargers',
-    slug: 'charger-power',
-    constructionKey: 'charger-power',
-    kind: 'alternate',
-    name: 'Charger Power',
-    yearStart: 2025,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFC20E',
-      secondary: '#0080C6',
-      accent: '#FFFFFF',
-    },
-  },
-  {
-    teamId: 'chargers',
-    slug: 'super-chargers',
-    constructionKey: 'super-chargers',
-    kind: 'alternate',
-    name: 'Super Chargers',
-    yearStart: 2025,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#002244',
-      secondary: '#FFC20E',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(CHARGERS_CATALOG, 'powder-blue'),
+  catalogRow(CHARGERS_CATALOG, 'charger-power'),
+  catalogRow(CHARGERS_CATALOG, 'super-chargers'),
   // Houston Oilers Columbia blue (1960-1996, per Wikipedia). Hexes: Columbia blue #4B92DB = the Oilers heritage blue, red #C8102E. isCurrent: Titans' designated throwback alternate (not worn every season).
   {
     teamId: 'titans',

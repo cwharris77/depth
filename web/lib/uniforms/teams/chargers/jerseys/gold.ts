@@ -1,14 +1,24 @@
-import * as parts from '../parts';
-import { expandJersey } from '../../core/jersey-spec';
-import type { UniformPart } from '../../core/parts';
+import type { CompleteJerseySpec } from '../../core/complete';
+import { chargersSleeveBolts } from '../marks/construction';
 
-const spec = expandJersey('chargers-gold', {
+// Powder-blue-keylined white sleeve bolts, and white numerals keylined powder blue.
+export const CHARGERS_JERSEY_GOLD: CompleteJerseySpec = {
   body: 'gold',
-  collar: { style: 'inset-v', color: 'gold', outline: true },
-  number: { fill: 'white', outline: 'powderBlue', outlineWeight: 'thin' },
-});
-
-export const JERSEY_GOLD: UniformPart = {
-  ...spec,
-  layers: [...parts.bolts('powderBlue', 'white'), ...spec.layers],
+  collar: {
+    style: 'inset-v',
+    color: 'gold',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: true,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: 'none',
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'powderBlue', outlineWeight: 'thin', texture: 'mesh' },
+  marks: [{ paint: 'under', mark: chargersSleeveBolts('powderBlue', 'white') }],
 };

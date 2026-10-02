@@ -1,6 +1,7 @@
 import type { TeamColors } from '../types';
 import { catalogAccents } from './teams/core/catalog';
 import { BEARS_CATALOG } from './teams/bears/catalog';
+import { CHARGERS_CATALOG } from './teams/chargers/catalog';
 import { BRONCOS_CATALOG } from './teams/broncos/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
@@ -23,7 +24,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'titans-home-2018': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
   'chiefs-home-1963': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
   'raiders-home-1963': { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
-  'chargers-home-2020': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'lions-home-2024': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'packers-home-1959': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'vikings-home-2013': { uiAccent: '#FFC62F', onAccent: '#0a0e1a' },
@@ -58,7 +58,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'titans-away-2018': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
   'chiefs-away-1963': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
   'raiders-away-1963': { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
-  'chargers-away-2020': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'cowboys-away-1964': { uiAccent: '#869397', onAccent: '#0a0e1a' },
   'giants-away-2000': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'eagles-away-1996': { uiAccent: '#2FA3A3', onAccent: '#0a0e1a' },
@@ -70,9 +69,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'panthers-away-2012': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'saints-away-2002': { uiAccent: '#E2CC9A', onAccent: '#0a0e1a' },
   'buccaneers-away-2020': { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
-  'chargers-powder-blue-1960': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
-  'chargers-charger-power-2025': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
-  'chargers-super-chargers-2025': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
   'titans-oilers-throwback-1960': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
   'saints-color-rush-2022': { uiAccent: '#E2CC9A', onAccent: '#0a0e1a' },
   'jaguars-teal-throwback-1998': { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
@@ -135,6 +131,7 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
 export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   ...HAND_ACCENTS,
   ...catalogAccents(BEARS_CATALOG),
+  ...catalogAccents(CHARGERS_CATALOG),
   ...catalogAccents(BRONCOS_CATALOG),
   ...catalogAccents(SEAHAWKS_CATALOG),
 };
