@@ -1,33 +1,39 @@
 #!/usr/bin/env bash
-# Starts the Next.js dev server on a free port so parallel workspaces don't collide.
+# Builds the Depth scheme into a workspace-local DerivedData and launches it on a simulator
+# dedicated to this workspace, so parallel workspaces never share or clobber a device.
 set -euo pipefail
 
 WORKSPACE="${SUPERSET_WORKSPACE_PATH:-$PWD}"
-cd "$WORKSPACE/web"
-mkdir -p .next
-PORT_FILE=.next/superset-port
+NAME="${SUPERSET_WORKSPACE_NAME:-$(basename "$WORKSPACE")}"
+cd "$WORKSPACE"
 
-port_free() {
-  python3 - "$1" <<'PY'
-import socket, sys
-s = socket.socket()
-try:
-    s.bind(('127.0.0.1', int(sys.argv[1])))
-except OSError:
-    sys.exit(1)
-PY
-}
+DERIVED="$WORKSPACE/.derivedData"
+UDID_FILE="$DERIVED/superset-sim-udid"
+DEVICE_NAME="superset-$NAME"
+mkdir -p "$DERIVED"
 
-# Reuse the workspace's previous port on restart, otherwise ask the OS for a free one.
-PORT=""
-if [ -f "$PORT_FILE" ]; then
-  prev="$(cat "$PORT_FILE")"
-  if port_free "$prev"; then PORT="$prev"; fi
+UDID=""
+if [ -f "$UDID_FILE" ]; then
+  UDID="$(cat "$UDID_FILE")"
+  xcrun simctl list devices | grep -q "$UDID" || UDID=""
 fi
-if [ -z "$PORT" ]; then
-  PORT="$(python3 -c 'import socket; s = socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])')"
+if [ -z "$UDID" ]; then
+  RUNTIME="$(xcrun simctl list runtimes -j | python3 -c '
+import json, sys
+rts = [r for r in json.load(sys.stdin)["runtimes"] if r["isAvailable"] and r["identifier"].startswith("com.apple.CoreSimulator.SimRuntime.iOS")]
+print(sorted(rts, key=lambda r: [int(p) for p in r["version"].split(".")])[-1]["identifier"])')"
+  UDID="$(xcrun simctl create "$DEVICE_NAME" com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro "$RUNTIME")"
+  echo "$UDID" > "$UDID_FILE"
 fi
-echo "$PORT" > "$PORT_FILE"
 
-echo "dev server: http://localhost:$PORT"
-exec npx next dev -p "$PORT"
+xcrun simctl boot "$UDID" 2>/dev/null || true
+open -a Simulator --args -CurrentDeviceUDID "$UDID" || echo "Simulator.app not found; running headless"
+
+xcodebuild -project Depth.xcodeproj -scheme Depth -configuration Debug \
+  -destination "id=$UDID" -derivedDataPath "$DERIVED" build
+
+APP="$DERIVED/Build/Products/Debug-iphonesimulator/Depth.app"
+BUNDLE_ID="$(plutil -extract CFBundleIdentifier raw "$APP/Info.plist")"
+xcrun simctl install "$UDID" "$APP"
+xcrun simctl launch --terminate-running-process "$UDID" "$BUNDLE_ID"
+echo "launched $BUNDLE_ID on $DEVICE_NAME ($UDID)"
