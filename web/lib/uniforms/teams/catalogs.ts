@@ -7,6 +7,9 @@ import { BEARS_SPEC } from './bears/parts';
 import { CHARGERS_PARTS } from './chargers';
 import { CHARGERS_CATALOG } from './chargers/catalog';
 import { CHARGERS_SPEC } from './chargers/parts';
+import { BENGALS_PARTS } from './bengals';
+import { BENGALS_CATALOG } from './bengals/catalog';
+import { BENGALS_SPEC } from './bengals/parts';
 import { BRONCOS_PARTS } from './broncos';
 import { BRONCOS_CATALOG } from './broncos/catalog';
 import { BRONCOS_SPEC } from './broncos/parts';
@@ -34,6 +37,7 @@ export interface RegisteredCatalog {
 
 const CATALOGS: Readonly<Partial<Record<string, RegisteredCatalog>>> = {
   bears: { catalog: BEARS_CATALOG, parts: BEARS_PARTS, strict: BEARS_SPEC },
+  bengals: { catalog: BENGALS_CATALOG, parts: BENGALS_PARTS, strict: BENGALS_SPEC },
   broncos: { catalog: BRONCOS_CATALOG, parts: BRONCOS_PARTS, strict: BRONCOS_SPEC },
   chargers: { catalog: CHARGERS_CATALOG, parts: CHARGERS_PARTS, strict: CHARGERS_SPEC },
   colts: { catalog: COLTS_CATALOG, parts: COLTS_PARTS, strict: COLTS_SPEC },
