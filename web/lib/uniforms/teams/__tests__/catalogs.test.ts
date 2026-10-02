@@ -862,6 +862,55 @@ describe('Commanders catalog conversion', () => {
   });
 });
 
+// Pins the catalog to the rows and accents the Cowboys had before the catalog existed.
+describe('Cowboys catalog conversion', () => {
+  const catalog = getTeamCatalog('cowboys');
+  if (!catalog) throw new Error('Cowboys catalog is not registered');
+
+  it('reproduces the archived rows', () => {
+    expect(byId(catalogRows(catalog))).toEqual(
+      byId([
+        {
+          teamId: 'cowboys',
+          slug: 'home',
+          constructionKey: 'home',
+          kind: 'home',
+          name: 'Home',
+          yearStart: 1964,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#003594', secondary: '#869397', accent: '#869397' },
+        },
+        {
+          teamId: 'cowboys',
+          slug: 'away',
+          constructionKey: 'away',
+          kind: 'away',
+          name: 'Away',
+          yearStart: 1964,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#FFFFFF', secondary: '#003594', accent: '#869397' },
+        },
+      ])
+    );
+  });
+
+  it('reproduces the frozen legacy accents', () => {
+    expect(catalogAccents(catalog)).toEqual({
+      'cowboys-home-1964': { uiAccent: '#869397', onAccent: '#0a0e1a' },
+      'cowboys-away-1964': { uiAccent: '#869397', onAccent: '#0a0e1a' },
+    });
+  });
+
+  it('pairs each jersey with the shared helmet and pants and leaves the socks in the pants colour', () => {
+    expect(catalogKits(catalog)).toEqual({
+      home: { helmet: 'silver-star', jersey: 'navy', pants: 'white' },
+      away: { helmet: 'silver-star', jersey: 'white', pants: 'white' },
+    });
+  });
+});
+
 // A strict team's parts come only from its registered TeamSpec; the fixtures in team-spec.test.ts
 // prove the checks themselves.
 describe('strict teams', () => {

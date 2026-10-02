@@ -1,51 +1,23 @@
-import {
-  COWBOYS_COLLAR_CORE_WIDTH,
-  COWBOYS_COLLAR_OUTER_WIDTH,
-  COWBOYS_NECK_BAND_CORE,
-  COWBOYS_NECK_BAND_OUTER,
-} from '../source';
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
-import { COLLAR_PATH } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
-// Home jersey: navy body, white/silver neck band, white-over-silver V-collar, white numerals.
-export const JERSEY_NAVY: UniformPart = {
-  base: 'navy',
-  layers: [
-    {
-      id: 'cowboys-neck-band-outer',
-      surface: 'jersey',
-      d: COWBOYS_NECK_BAND_OUTER,
-      clip: true,
-      kind: 'fill',
-      fill: 'white',
-    },
-    {
-      id: 'cowboys-neck-band-core',
-      surface: 'jersey',
-      d: COWBOYS_NECK_BAND_CORE,
-      clip: true,
-      kind: 'fill',
-      fill: 'silver',
-    },
-    {
-      id: 'cowboys-collar-outer',
-      surface: 'collar',
-      d: COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'white',
-      strokeWidth: COWBOYS_COLLAR_OUTER_WIDTH,
-    },
-    {
-      id: 'cowboys-collar-core',
-      surface: 'collar',
-      d: COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'silver',
-      strokeWidth: COWBOYS_COLLAR_CORE_WIDTH,
-    },
-  ],
-  number: { fill: 'white', outline: 'white', outlineWidth: 10 },
+// Navy body, a white-over-silver neck band and rounded collar, white numerals.
+export const COWBOYS_JERSEY_NAVY: CompleteJerseySpec = {
+  body: 'navy',
+  collar: {
+    style: 'inset-v',
+    color: 'silver',
+    trim: 'none',
+    inside: 'body',
+    lining: 'white',
+    backBar: 'white',
+    outline: false,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: { fill: 'white', outline: 'none' },
+  sleeveStripes: { bands: [{ color: 'silver', size: 'm' }], gap: 'none', edge: 'none' },
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'white', outlineWeight: 'thin', texture: 'mesh' },
+  marks: [],
 };

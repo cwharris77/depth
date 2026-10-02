@@ -8,6 +8,7 @@ import { BRONCOS_CATALOG } from './teams/broncos/catalog';
 import { CHIEFS_CATALOG } from './teams/chiefs/catalog';
 import { COLTS_CATALOG } from './teams/colts/catalog';
 import { COMMANDERS_CATALOG } from './teams/commanders/catalog';
+import { COWBOYS_CATALOG } from './teams/cowboys/catalog';
 import { JETS_CATALOG } from './teams/jets/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
@@ -254,21 +255,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFC62F',
     },
   },
-  {
-    teamId: 'cowboys',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 1964,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#003594',
-      secondary: '#869397',
-      accent: '#869397',
-    },
-  },
+  catalogRow(COWBOYS_CATALOG, 'home'),
   {
     teamId: 'giants',
     slug: 'home',
@@ -618,21 +605,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   catalogRow(CHARGERS_CATALOG, 'away'),
-  {
-    teamId: 'cowboys',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 1964,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#003594',
-      accent: '#869397',
-    },
-  },
+  catalogRow(COWBOYS_CATALOG, 'away'),
   {
     teamId: 'giants',
     slug: 'away',
