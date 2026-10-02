@@ -1,134 +1,93 @@
-// Kansas City authored as composable parts. Geometry is imported unchanged from chiefs.ts — this
-// file only restates WHICH parts each kit combines, and names every color from the team palette
-// instead of the kit row's shifting primary/secondary/accent.
-//
-// What the flat definition was hiding: both Chiefs kits wear the SAME red shell with the white
-// arrowhead decal, and the SAME white pants — the away flat form reached the red shell through a
-// 'secondary' override and home the pants through a white literal, four different spellings of
-// two physical objects. Only the jersey actually differs: a red body at home vs a white body away,
-// with the middle sleeve band gold in both and the outer bands taking the jersey body's contrast
-// (white at home, red away).
+// Kansas City as a complete team spec: every helmet, jersey, pants and socks part, with its own
+// art drawn by the marks in ./marks.
+import type { TeamSpec } from '../core/team-spec';
+import { CHIEFS_ARROWHEAD_DECAL } from './marks/construction';
+import { CHIEFS_JERSEY_RED } from './jerseys/red';
+import { CHIEFS_JERSEY_WHITE } from './jerseys/white';
 
-import {
-  CHIEFS_DECAL_CROSSBAR_PATH,
-  CHIEFS_DECAL_C_PATH,
-  CHIEFS_DECAL_FIELD_PATH,
-  CHIEFS_DECAL_K_PATH,
-  CHIEFS_DECAL_LETTER_KEYLINE_PATH,
-  CHIEFS_DECAL_OUTLINE_PATH,
-  CHIEFS_SLEEVE_X_LEFT,
-  CHIEFS_SLEEVE_X_RIGHT,
-  CHIEFS_STRIPE_BOUNDS,
-} from './source';
-import { expandHelmet } from '../core/helmet-spec';
-import { placed } from '../core/marks';
-import { type PartLayer, type UniformPart } from '../core/parts';
-import type { UniformSurface } from '../core/types';
-
-// Three bands at the end of each sleeve: outer bands top and bottom in `outer`, one `middle`
-// band between them. Mirrored across the jersey centerline, matching the flat form.
-function sleeveStripes(outer: string, middle: string): PartLayer[] {
-  const out: PartLayer[] = [];
-  const sides: [UniformSurface, number[]][] = [
-    ['sleeve-left', CHIEFS_SLEEVE_X_LEFT],
-    ['sleeve-right', CHIEFS_SLEEVE_X_RIGHT],
-  ];
-  for (let i = 0; i < CHIEFS_STRIPE_BOUNDS.length - 1; i += 1) {
-    const top = CHIEFS_STRIPE_BOUNDS[i];
-    const bottom = CHIEFS_STRIPE_BOUNDS[i + 1];
-    for (const [surface, [x0, x1]] of sides) {
-      const side = surface === 'sleeve-left' ? 'left' : 'right';
-      out.push({
-        id: `chiefs-sleeve-band-${i}-${side}`,
-        surface,
-        d: `M${x0},${top} H${x1} V${bottom} H${x0} Z`,
-        clip: true,
-        kind: 'fill',
-        fill: i === 1 ? middle : outer,
-      });
-    }
-  }
-  return out;
-}
-
-// The red shell with the complete four-color arrowhead construction, shared by both kits.
-//
-// Grey cage, sampled from the helmet composite (nfl-uniform-refs/chiefs): the facemask bar
-// reads #868686 against the red shell / white background, on both archived helmets. Matches the
-// documented light-grey cage (Riddell light-gray facemask); the shared neutral #4b5158 it
-// replaces is a darker grey than the real cage.
-const HELMET_RED_ARROWHEAD: UniformPart = expandHelmet('chiefs-red-arrowhead-helmet', {
-  shell: 'red',
-  facemask: 'grey',
-  decal: placed([
-    {
-      id: 'chiefs-decal-outline',
-      surface: 'helmet' as const,
-      d: CHIEFS_DECAL_OUTLINE_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'black',
-    },
-    {
-      id: 'chiefs-decal-field',
-      surface: 'helmet' as const,
-      d: CHIEFS_DECAL_FIELD_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'white',
-    },
-    {
-      id: 'chiefs-decal-letter-keyline',
-      surface: 'helmet' as const,
-      d: CHIEFS_DECAL_LETTER_KEYLINE_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'black',
-    },
-    ...[CHIEFS_DECAL_K_PATH, CHIEFS_DECAL_C_PATH, CHIEFS_DECAL_CROSSBAR_PATH].map(
-      (d, index): PartLayer => ({
-        id: `chiefs-decal-letter-red-${index + 1}`,
-        surface: 'helmet',
-        d,
-        clip: true,
-        kind: 'fill',
-        fill: 'red',
-      })
-    ),
-  ]),
-  number: 'none',
-});
-
-// Home jersey: red body, white outer sleeve bands with a gold middle, white numerals ringed gold.
-
-// Away jersey: white body, red outer sleeve bands with a gold middle, red numerals ringed gold.
-
-// Plain white pants, shared by both kits. Home reaches this through a white literal in the flat
-// form (its palette is red over gold), away through its primary; here it is one palette entry.
-const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
-const PANTS_RED: UniformPart = { base: 'red', layers: [] };
-
-export const CHIEFS_CONSTRUCTION = {
-  teamId: 'chiefs',
-  // Jersey hexes from the curated rows — the same three the rows carry across
-  // the two kits, with gold occupying both secondary and accent on the home row.
-  palette: {
-    red: '#E31837',
-    gold: '#FFB81C',
-    white: '#FFFFFF',
-    black: '#010101',
-    // The facemask cage grey — no token in the red/gold Chiefs palette. Sampled from the
-    // helmet composite (see the helmet part note); matches the documented light-grey cage.
-    grey: '#868686',
-  },
-  helmets: { 'red-arrowhead': HELMET_RED_ARROWHEAD },
-  pants: { white: PANTS_WHITE, red: PANTS_RED },
-  kits: {
-    home: { helmet: 'red-arrowhead', jersey: 'red', pants: 'white' },
-    // The current-season composite shows both white and red trousers with the away top;
-    // canonical-first preserves the existing all-white raster.
-    away: { helmet: 'red-arrowhead', jersey: 'white', pants: ['white', 'red'] },
-  },
+export const CHIEFS_PALETTE = {
+  red: '#E31837',
+  gold: '#FFB81C',
+  white: '#FFFFFF',
+  black: '#010101',
+  // The light-grey facemask cage.
+  grey: '#868686',
 };
 
-export { sleeveStripes };
+export const CHIEFS_SPEC: TeamSpec = {
+  helmets: {
+    // The red arrowhead shell on both kits, with a light-grey cage.
+    'red-arrowhead': {
+      shell: 'red',
+      facemask: 'grey',
+      decal: CHIEFS_ARROWHEAD_DECAL,
+      number: 'none',
+    },
+  },
+  jerseys: {
+    red: CHIEFS_JERSEY_RED,
+    white: CHIEFS_JERSEY_WHITE,
+  },
+  pants: {
+    // A red-gold-red stripe down the side seam.
+    white: {
+      body: 'white',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'red', size: 's' },
+          { color: 'gold', size: 's' },
+          { color: 'red', size: 's' },
+        ],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
+    },
+    // A white-red-gold-red-white stripe on the red body.
+    red: {
+      body: 'red',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'white', size: 's' },
+          { color: 'red', size: 's' },
+          { color: 'gold', size: 's' },
+          { color: 'red', size: 's' },
+          { color: 'white', size: 's' },
+        ],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
+    },
+  },
+  socks: {
+    // A red-gold-red hoop around the white calf.
+    white: {
+      color: 'white',
+      stripes: {
+        bands: [
+          { color: 'red', size: 's' },
+          { color: 'gold', size: 'm' },
+          { color: 'red', size: 's' },
+        ],
+        gap: 'none',
+        edge: 'none',
+      },
+    },
+    // A white-gold-white hoop around the red calf.
+    red: {
+      color: 'red',
+      stripes: {
+        bands: [
+          { color: 'white', size: 's' },
+          { color: 'gold', size: 'm' },
+          { color: 'white', size: 's' },
+        ],
+        gap: 'none',
+        edge: 'none',
+      },
+    },
+  },
+};

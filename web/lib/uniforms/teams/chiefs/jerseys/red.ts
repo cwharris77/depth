@@ -1,8 +1,32 @@
-import * as parts from '../parts';
-import type { UniformPart } from '../../core/parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
-export const JERSEY_RED: UniformPart = {
-  base: 'red',
-  layers: parts.sleeveStripes('white', 'gold'),
-  number: { fill: 'white', outline: 'gold', outlineWidth: 22 },
+// White-gold-white sleeve bands, white shoulder numerals and white chest numerals, all ringed
+// gold.
+export const CHIEFS_JERSEY_RED: CompleteJerseySpec = {
+  body: 'red',
+  collar: {
+    style: 'inset-v',
+    color: 'red',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: true,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: { fill: 'white', outline: 'gold' },
+  sleeveStripes: {
+    bands: [
+      { color: 'white', size: 'm' },
+      { color: 'gold', size: 's' },
+      { color: 'white', size: 'm' },
+    ],
+    gap: 'none',
+    edge: 'none',
+  },
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'gold', outlineWeight: 'heavy', texture: 'mesh' },
+  marks: [],
 };

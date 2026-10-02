@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "1c2658d0f73e2e5f275a195e2e4f232c3c8712d2fe55772f9fa099bc38aa547d",
-  "revision": "2774fed08f95bd05",
+  "sourceDigest": "564a70ba568ddf254f581160d9d422ff2ed7215c244f68b020c2351844c85006",
+  "revision": "04c57a50ea8554b5",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -690,30 +690,40 @@
     {
       "catalogId": "chiefs-away-1963",
       "constructionKey": "away",
-      "revision": "c70c7183a2d77bea",
+      "revision": "bd226e9153f2374a",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chiefs-away-1963.webp",
-          "sha256": "81bc2908622df98016345f85a2f43f4db1b923ee3041f8df1daab4a409f902c9"
+          "sha256": "65ff9365e877d40df859d9e694734538664dbd25602c46eb838421674c74254c"
         },
         "full": {
           "path": "/uniforms/chiefs-away-1963-full.webp",
-          "sha256": "19765bc8d7031b7cc074cefa27db6ba4fc46defc703392763021b5bb228c1573"
+          "sha256": "da25a8887c42f321c57c19f7fbbc4b2ee08340baf1c3084ffa30105e23fb9ff2"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "red-pants",
+          "label": "Red pants",
+          "full": {
+            "path": "/uniforms/chiefs-away-1963--red-pants-full.webp",
+            "sha256": "e9366d2b68c109061f7c14a416790ac709e5e6229745ff4e1ec681605cec5044"
+          }
+        }
+      ]
     },
     {
       "catalogId": "chiefs-home-1963",
       "constructionKey": "home",
-      "revision": "119da9e541f7758f",
+      "revision": "f9cd5c28e6e415a6",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chiefs-home-1963.webp",
-          "sha256": "a98c9b07189805bc328275bb9dba868586308aab2bc06da3d0a22877b5f2fdd1"
+          "sha256": "2f85548c0429eff5695ae1c58ad79b6215e0dee46f1dfd5579f49adc96dfa23a"
         },
         "full": {
           "path": "/uniforms/chiefs-home-1963-full.webp",
-          "sha256": "617bb60a1b474209b30117caa460d3c9fa515206bab329d2cbc367e6f3b8db5d"
+          "sha256": "9a8d24130af6cf31dd1e35d1ea41acb22b89de46954e5f675dd09c7581e70631"
         }
       }
     },
