@@ -1,4 +1,4 @@
-// Indianapolis' raw path data: the helmet horseshoe decal.
+// Indianapolis' helmet horseshoe decal, in mannequin space.
 
 // The current helmet source is a one-piece horseshoe band with seven rivet holes. Its open centre
 // is shell-coloured rather than a counter, so the source-derived navy band is painted first and

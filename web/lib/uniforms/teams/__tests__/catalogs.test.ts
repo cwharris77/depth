@@ -61,12 +61,12 @@ describe('no leftover hand-written accents for a converted team', () => {
 describe('registered team catalogs', () => {
   const registered = getAllTeamCatalogs();
 
-  it('includes the Seahawks, the Bears, the Broncos and the Chargers', () => {
+  it('includes the Seahawks, the Bears, the Broncos, the Chargers and the Colts', () => {
     expect(getTeamCatalog('seahawks')?.teamId).toBe('seahawks');
     expect(getTeamCatalog('bears')?.teamId).toBe('bears');
     expect(getTeamCatalog('broncos')?.teamId).toBe('broncos');
     expect(getTeamCatalog('chargers')?.teamId).toBe('chargers');
-    expect(getTeamCatalog('colts')).toBeUndefined();
+    expect(getTeamCatalog('colts')?.teamId).toBe('colts');
   });
 
   for (const { catalog, parts } of registered) {
@@ -411,6 +411,55 @@ describe('Chargers catalog conversion', () => {
       'powder-blue': { ...white, jersey: 'powder', pants: 'gold', socks: 'powder' },
       'charger-power': { ...white, jersey: 'gold', pants: 'gold', socks: 'gold' },
       'super-chargers': { helmet: 'navy', jersey: 'navy', pants: 'navy', socks: 'navy' },
+    });
+  });
+});
+
+// Pins the catalog to the rows and accents the Colts had before the catalog existed.
+describe('Colts catalog conversion', () => {
+  const catalog = getTeamCatalog('colts');
+  if (!catalog) throw new Error('Colts catalog is not registered');
+
+  it('reproduces the archived rows', () => {
+    expect(byId(catalogRows(catalog))).toEqual(
+      byId([
+        {
+          teamId: 'colts',
+          slug: 'home',
+          constructionKey: 'home',
+          kind: 'home',
+          name: 'Home',
+          yearStart: 2004,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#002C5F', secondary: '#A2AAAD', accent: '#A2AAAD' },
+        },
+        {
+          teamId: 'colts',
+          slug: 'away',
+          constructionKey: 'away',
+          kind: 'away',
+          name: 'Away',
+          yearStart: 2004,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#FFFFFF', secondary: '#002C5F', accent: '#A2AAAD' },
+        },
+      ])
+    );
+  });
+
+  it('reproduces the frozen legacy accents', () => {
+    expect(catalogAccents(catalog)).toEqual({
+      'colts-home-2004': { uiAccent: '#A2AAAD', onAccent: '#0a0e1a' },
+      'colts-away-2004': { uiAccent: '#A2AAAD', onAccent: '#0a0e1a' },
+    });
+  });
+
+  it('pairs both jerseys with the white pants and navy socks', () => {
+    expect(catalogKits(catalog)).toEqual({
+      home: { helmet: 'white-horseshoe', jersey: 'navy', pants: 'white', socks: 'navy' },
+      away: { helmet: 'white-horseshoe', jersey: 'white', pants: 'white', socks: 'navy' },
     });
   });
 });
