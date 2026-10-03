@@ -1,6 +1,6 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { anchoredMark } from '../../core/jersey-spec';
-import { TEXANS_SLEEVE_HORN } from '../marks/construction';
+import { TEXANS_SHOULDER_HORN } from '../marks/construction';
 
 export const TEXANS_JERSEY_RED: CompleteJerseySpec = {
   body: 'red',
@@ -23,10 +23,10 @@ export const TEXANS_JERSEY_RED: CompleteJerseySpec = {
   marks: [
     anchoredMark({
       paint: 'over',
-      mark: TEXANS_SLEEVE_HORN,
-      anchor: 'sleeves',
-      slots: { edge: 'white', horn: 'navy' },
-      id: 'horn',
+      mark: TEXANS_SHOULDER_HORN,
+      anchor: 'shoulders',
+      slots: { navy: 'navy', red: 'red' },
+      id: 'shoulder-horn',
     }),
   ],
 };
