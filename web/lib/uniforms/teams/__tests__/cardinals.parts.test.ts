@@ -26,6 +26,6 @@ describe('Cardinals helmet parts', () => {
   it('preserves each helmet facemask color', () => {
     expect(CARDINALS_PARTS.helmets.white.facemask).toBe('white');
     expect(CARDINALS_PARTS.helmets.black.facemask).toBe('black');
-    expect(CARDINALS_PARTS.helmets.cream.facemask).toBe('white');
+    expect(CARDINALS_PARTS.helmets.cream.facemask).toBe('rivalRed');
   });
 });

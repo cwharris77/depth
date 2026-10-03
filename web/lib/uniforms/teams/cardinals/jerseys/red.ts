@@ -1,27 +1,17 @@
-import { cardinalsJerseyDetails } from '../parts';
-import * as parts from '../parts';
-import type { UniformPart } from '../../core/parts';
+import type { CompleteJerseySpec } from '../../core/complete';
+import { CARDINALS_HOME_JERSEY_ART } from '../marks/jersey-art';
 
-export const JERSEY_RED: UniformPart = {
-  base: 'red',
-  layers: [
-    {
-      id: 'cardinals-shoulder-number-left',
-      surface: 'sleeve-left',
-      d: parts.CARDINALS_SHOULDER_NUMBER_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: 'white',
-    },
-    {
-      id: 'cardinals-shoulder-number-right',
-      surface: 'sleeve-right',
-      d: parts.CARDINALS_SHOULDER_NUMBER_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: 'white',
-    },
-    ...cardinalsJerseyDetails('home'),
-  ],
-  number: { fill: 'white', outline: 'stitch', outlineWidth: 1.5 },
+// Cardinal body with plain white chest numerals. The feathered collar, the ARIZONA chest wordmark,
+// the collar-tab lettering and a white numeral along each shoulder top are drawn as art.
+export const CARDINALS_JERSEY_RED: CompleteJerseySpec = {
+  body: 'red',
+  collar: { style: 'none' },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: 'none',
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'red', outlineWeight: 'none', texture: 'mesh' },
+  marks: [{ paint: 'over', mark: CARDINALS_HOME_JERSEY_ART }],
 };

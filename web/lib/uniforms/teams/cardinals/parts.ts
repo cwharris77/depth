@@ -1,270 +1,121 @@
-// Arizona authored as composable parts. Geometry is imported unchanged from cardinals.ts — this
-// file only restates WHICH parts each kit combines, and names every color from the team palette
-// instead of the kit row's shifting primary/secondary/accent.
+// Arizona as a complete team spec: every helmet, jersey, pants and socks part, with its own art
+// drawn by the marks in ./marks.
 //
-// Arizona's construction is unusually spare: no helmet stripe, no shoulder yoke, no contrasting
-// collar. The four kits differ in the shell (white for home/away, black for black-alt, cream for
-// rivalries) and the body/sleeve treatment: home is a solid red body with a white shoulder number;
-// away and black-alt carry two horizontal sleeve bands on white/black bodies; rivalries is a cream
-// body with speckled fabric and sleeve patches. The decal is the full-color mark on the white/black shells and a
-// red-on-cream version on the rivalries shell.
-
-import { cardinalsJerseyDetails } from './jerseys';
+// Arizona's construction is unusually spare: no helmet stripe, no shoulder yoke, and a collar cut
+// in the body colour. The four kits differ in the shell (white for home and away, black for the
+// black alternate, cream for Rivalries) and the body and sleeve treatment: home is a solid
+// cardinal body with white shoulder numerals, away and the black alternate carry two horizontal
+// sleeve bands, and Rivalries is a speckled cream body with sleeve patches.
+import type { TeamSpec } from '../core/team-spec';
 import {
-  CARDINALS_NUMBER_KEYLINE,
-  CARDINALS_SHOULDER_NUMBER_LEFT,
-  CARDINALS_SHOULDER_NUMBER_RIGHT,
-  CARDINALS_SLEEVE_BAND_LOWER_LEFT,
-  CARDINALS_SLEEVE_BAND_LOWER_RIGHT,
-  CARDINALS_SLEEVE_BAND_UPPER_LEFT,
-  CARDINALS_SLEEVE_BAND_UPPER_RIGHT,
-} from './source';
-import {
-  CARDINALS_DECAL_BEAK_LOWER_PATH,
-  CARDINALS_DECAL_BEAK_UPPER_PATH,
-  CARDINALS_DECAL_BODY_PATH,
-  CARDINALS_DECAL_EYE_PATH,
   CARDINALS_DECAL_GOLD,
-  CARDINALS_DECAL_KEYLINE_PATH,
   CARDINALS_DECAL_RED,
-  CARDINALS_EGGSHELL_DECAL_BEAK_LOWER_PATH,
-  CARDINALS_EGGSHELL_DECAL_BEAK_UPPER_PATH,
-  CARDINALS_EGGSHELL_DECAL_BODY_PATH,
   CARDINALS_EGGSHELL_DECAL_CREAM,
-  CARDINALS_EGGSHELL_DECAL_EYE_PATH,
-  CARDINALS_EGGSHELL_DECAL_KEYLINE_PATH,
   CARDINALS_EGGSHELL_DECAL_ORANGE,
   CARDINALS_EGGSHELL_DECAL_RED,
   CARDINALS_EGGSHELL_DECAL_WHITE,
-} from './decals';
-import { expandHelmet } from '../core/helmet-spec';
-import { placed } from '../core/marks';
-import { type PartLayer, type UniformPart } from '../core/parts';
+} from './marks/decals';
+import { CARDINALS_EGGSHELL_HELMET_DECAL, CARDINALS_HELMET_DECAL } from './marks/helmet';
+import { CARDINALS_NUMBER_KEYLINE } from './marks/source';
+import { CARDINALS_JERSEY_BLACK } from './jerseys/black';
+import { CARDINALS_JERSEY_RED } from './jerseys/red';
+import { CARDINALS_JERSEY_RIVALRIES } from './jerseys/rivalries';
+import { CARDINALS_JERSEY_WHITE } from './jerseys/white';
 
-// The full-color decal follows the supplied primary helmet-mark SVG. Every region carries its own
-// holes, so every layer must render with fill-rule evenodd.
-function fullDecal(): PartLayer[] {
-  return (
-    [
-      ['cardinals-decal-keyline', CARDINALS_DECAL_KEYLINE_PATH, 'numberKeyline'],
-      ['cardinals-decal-body', CARDINALS_DECAL_BODY_PATH, 'decalRed'],
-      ['cardinals-decal-beak-upper', CARDINALS_DECAL_BEAK_UPPER_PATH, 'decalGold'],
-      ['cardinals-decal-beak-lower', CARDINALS_DECAL_BEAK_LOWER_PATH, 'decalGold'],
-      ['cardinals-decal-eye', CARDINALS_DECAL_EYE_PATH, 'white'],
-    ] as [string, string, string][]
-  ).map(([id, d, fill]) => ({
-    id,
-    surface: 'helmet' as const,
-    d,
-    clip: true,
-    kind: 'fill' as const,
-    fillRule: 'evenodd' as const,
-    fill,
-  }));
-}
-
-// Rivalries has its own 2025 eggshell-specific mark, never the regular mark recolored.
-function rivalDecal(): PartLayer[] {
-  return (
-    [
-      [
-        'cardinals-eggshell-decal-keyline',
-        CARDINALS_EGGSHELL_DECAL_KEYLINE_PATH,
-        'eggshellDecalRed',
-      ],
-      ['cardinals-eggshell-decal-body', CARDINALS_EGGSHELL_DECAL_BODY_PATH, 'eggshellDecalCream'],
-      [
-        'cardinals-eggshell-decal-beak-upper',
-        CARDINALS_EGGSHELL_DECAL_BEAK_UPPER_PATH,
-        'eggshellDecalOrange',
-      ],
-      [
-        'cardinals-eggshell-decal-beak-lower',
-        CARDINALS_EGGSHELL_DECAL_BEAK_LOWER_PATH,
-        'eggshellDecalOrange',
-      ],
-      ['cardinals-eggshell-decal-eye', CARDINALS_EGGSHELL_DECAL_EYE_PATH, 'eggshellDecalWhite'],
-    ] as [string, string, string][]
-  ).map(([id, d, fill]) => ({
-    id,
-    surface: 'helmet' as const,
-    d,
-    clip: true,
-    kind: 'fill' as const,
-    fillRule: 'evenodd' as const,
-    fill,
-  }));
-}
-
-// The two horizontal sleeve bands.
-function sleeveBands(color: string): PartLayer[] {
-  return [
-    {
-      id: 'cardinals-sleeve-upper-left',
-      surface: 'sleeve-left',
-      d: CARDINALS_SLEEVE_BAND_UPPER_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: color,
-    },
-    {
-      id: 'cardinals-sleeve-upper-right',
-      surface: 'sleeve-right',
-      d: CARDINALS_SLEEVE_BAND_UPPER_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: color,
-    },
-    {
-      id: 'cardinals-sleeve-lower-left',
-      surface: 'sleeve-left',
-      d: CARDINALS_SLEEVE_BAND_LOWER_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: color,
-    },
-    {
-      id: 'cardinals-sleeve-lower-right',
-      surface: 'sleeve-right',
-      d: CARDINALS_SLEEVE_BAND_LOWER_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: color,
-    },
-  ];
-}
-
-// The white shell with the full-color decal — shared by home and away. The shell is a white
-// literal in the flat (no white token on the home palette).
-//
-// White cage. The white Cardinals shell wears a white facemask (named sources; white-on-white
-// matches the shell).
-const HELMET_WHITE: UniformPart = expandHelmet('cardinals-white-helmet', {
-  shell: 'white',
-  facemask: 'white',
-  decal: placed(fullDecal()),
-  number: 'none',
-});
-
-// The black shell with the full-color decal (H3, black-alt).
-//
-// Black cage. The black-alt shell wears a black facemask (named sources; the black-on-black cage
-// reads as the shell).
-const HELMET_BLACK: UniformPart = expandHelmet('cardinals-black-helmet', {
-  shell: 'black',
-  facemask: 'black',
-  decal: placed(fullDecal()),
-  number: 'none',
-});
-
-// Rivalries' cream shell with the red-on-cream mark (H2, rivalries).
-const HELMET_CREAM: UniformPart = expandHelmet('cardinals-cream-helmet', {
-  shell: 'cream',
-  facemask: 'white',
-  decal: placed(rivalDecal()),
-  number: 'none',
-});
-
-// Home jersey: cardinal body, white shoulder numerals and ARIZONA chest/neck lettering.
-
-// Away jersey: white body, cardinal sleeve bands, red numerals keylined black.
-
-// black-alt jersey (J4): black body, cardinal sleeve bands, red numerals keylined white.
-
-// Rivalries jersey (J3): speckled cream fabric, feather sleeve patches, and red numerals
-// with the thin orange border approved in the jersey proof.
-
-// Red pants (home), unbroken.
-const PANTS_RED: UniformPart = { base: 'red', layers: [] };
-
-// Away pants (P2): white, with the red generic pant stripe (away does not strip it).
-const PANTS_WHITE: UniformPart = {
-  base: 'white',
-  layers: [
-    {
-      id: 'generic-pants-stripe-left',
-      surface: 'leg-left',
-      d: 'M118,807 H134 V1462 H118 Z',
-      clip: true,
-      kind: 'fill',
-      fill: 'cardinal',
-    },
-    {
-      id: 'generic-pants-stripe-right',
-      surface: 'leg-right',
-      d: 'M454,807 H470 V1462 H454 Z',
-      clip: true,
-      kind: 'fill',
-      fill: 'cardinal',
-    },
-  ],
+// Cardinal, black and white are the physical body colours; cream and the rival red and orange are
+// the Rivalries kit's own palette; the decal colours and the numeral keyline are fixed art colours.
+export const CARDINALS_PALETTE = {
+  red: '#A01523',
+  cardinal: '#A01523',
+  black: '#000000',
+  white: '#FFFFFF',
+  cream: '#FBF1DD',
+  rivalRed: '#B31529',
+  rivalOrange: '#EE6B3D',
+  decalRed: CARDINALS_DECAL_RED,
+  decalGold: CARDINALS_DECAL_GOLD,
+  eggshellDecalRed: CARDINALS_EGGSHELL_DECAL_RED,
+  eggshellDecalCream: CARDINALS_EGGSHELL_DECAL_CREAM,
+  eggshellDecalOrange: CARDINALS_EGGSHELL_DECAL_ORANGE,
+  eggshellDecalWhite: CARDINALS_EGGSHELL_DECAL_WHITE,
+  numberKeyline: CARDINALS_NUMBER_KEYLINE,
+  // Fine fabric flecks and stitching.
+  speckle: '#B8A58A',
+  stitch: '#99958D',
 };
 
-// black-alt pants (P4): black, with the same red generic pant stripe (black-alt does not strip
-// it either).
-const PANTS_BLACK: UniformPart = {
-  base: 'black',
-  layers: [
-    {
-      id: 'generic-pants-stripe-left',
-      surface: 'leg-left',
-      d: 'M118,807 H134 V1462 H118 Z',
-      clip: true,
-      kind: 'fill',
-      fill: 'cardinal',
-    },
-    {
-      id: 'generic-pants-stripe-right',
-      surface: 'leg-right',
-      d: 'M454,807 H470 V1462 H454 Z',
-      clip: true,
-      kind: 'fill',
-      fill: 'cardinal',
-    },
-  ],
-};
-
-// Cream pants (rivalries).
-const PANTS_CREAM: UniformPart = { base: 'cream', layers: [] };
-
-export const CARDINALS_CONSTRUCTION = {
-  teamId: 'cardinals',
-  // Construction hexes from the module / curated rows. Cardinal/black/white are the physical body
-  // colors; cream and rival-red/orange are Rivalries' curated palette; the decal red/gold and the
-  // number keyline are the sampled fixed-art colors.
-  palette: {
-    // Body colors sampled from the approved 2026-09-07 proof (red x240/y300, cream x800/y310).
-    red: '#A01523',
-    cardinal: '#A01523',
-    black: '#000000',
-    white: '#FFFFFF',
-    cream: '#FBF1DD',
-    rivalRed: '#B31529',
-    rivalOrange: '#EE6B3D',
-    decalRed: CARDINALS_DECAL_RED,
-    decalGold: CARDINALS_DECAL_GOLD,
-    eggshellDecalRed: CARDINALS_EGGSHELL_DECAL_RED,
-    eggshellDecalCream: CARDINALS_EGGSHELL_DECAL_CREAM,
-    eggshellDecalOrange: CARDINALS_EGGSHELL_DECAL_ORANGE,
-    eggshellDecalWhite: CARDINALS_EGGSHELL_DECAL_WHITE,
-    numberKeyline: CARDINALS_NUMBER_KEYLINE,
-    // Fine fabric flecks and stitching.
-    speckle: '#B8A58A',
-    stitch: '#99958D',
+// Two thin cardinal lines around a white centre line, worn on the white and black pants.
+const linedPants = (body: string) => ({
+  body,
+  stripes: {
+    position: 'leg-edge' as const,
+    bands: [
+      { color: 'cardinal', size: 's' as const },
+      { color: 'white', size: 's' as const },
+      { color: 'cardinal', size: 's' as const },
+    ],
+    gap: 'none' as const,
+    edge: 'none' as const,
   },
-  helmets: { white: HELMET_WHITE, black: HELMET_BLACK, cream: HELMET_CREAM },
-  pants: { red: PANTS_RED, white: PANTS_WHITE, cream: PANTS_CREAM, black: PANTS_BLACK },
-  kits: {
-    home: { helmet: 'white', jersey: 'red', pants: 'red' },
-    away: { helmet: 'white', jersey: 'white', pants: 'white' },
-    'black-alt': { helmet: 'black', jersey: 'black', pants: 'black' },
-    'rivalries-2025': { helmet: 'cream', jersey: 'rivalries', pants: 'cream' },
-  },
-};
+  marks: [],
+});
 
-export {
-  CARDINALS_SHOULDER_NUMBER_LEFT,
-  CARDINALS_SHOULDER_NUMBER_RIGHT,
-  cardinalsJerseyDetails,
-  sleeveBands,
+const plainSocks = (color: string) => ({ color, stripes: 'none' as const });
+
+export const CARDINALS_SPEC: TeamSpec = {
+  helmets: {
+    // White cage on the white shell, matching it.
+    white: {
+      shell: 'white',
+      facemask: 'white',
+      decal: CARDINALS_HELMET_DECAL,
+      number: 'none',
+    },
+    // Black cage on the black shell.
+    black: {
+      shell: 'black',
+      facemask: 'black',
+      decal: CARDINALS_HELMET_DECAL,
+      number: 'none',
+    },
+    // The Rivalries shell carries a red cage.
+    cream: {
+      shell: 'cream',
+      facemask: 'rivalRed',
+      decal: CARDINALS_EGGSHELL_HELMET_DECAL,
+      number: 'none',
+    },
+  },
+  jerseys: {
+    red: CARDINALS_JERSEY_RED,
+    white: CARDINALS_JERSEY_WHITE,
+    black: CARDINALS_JERSEY_BLACK,
+    rivalries: CARDINALS_JERSEY_RIVALRIES,
+  },
+  pants: {
+    // Home pants are unbroken.
+    red: { body: 'red', stripes: 'none', marks: [] },
+    white: linedPants('white'),
+    black: linedPants('black'),
+    // An orange line outside a wide red one.
+    cream: {
+      body: 'cream',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'rivalOrange', size: 's' },
+          { color: 'rivalRed', size: 'm' },
+        ],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
+    },
+  },
+  socks: {
+    red: plainSocks('red'),
+    white: plainSocks('white'),
+    black: plainSocks('black'),
+    rivalries: plainSocks('rivalRed'),
+  },
 };

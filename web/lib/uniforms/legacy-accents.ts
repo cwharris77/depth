@@ -5,6 +5,7 @@ import { BUCCANEERS_CATALOG } from './teams/buccaneers/catalog';
 import { BEARS_CATALOG } from './teams/bears/catalog';
 import { CHARGERS_CATALOG } from './teams/chargers/catalog';
 import { BILLS_CATALOG } from './teams/bills/catalog';
+import { CARDINALS_CATALOG } from './teams/cardinals/catalog';
 import { BROWNS_CATALOG } from './teams/browns/catalog';
 import { BRONCOS_CATALOG } from './teams/broncos/catalog';
 import { CHIEFS_CATALOG } from './teams/chiefs/catalog';
@@ -36,12 +37,7 @@ export type LegacyAccentPair = Pick<TeamColors, 'uiAccent' | 'onAccent'>;
 
 // Hand-curated entries for teams that have not converted to a catalog yet. A converted team's
 // entries move out of here into its `teams/<team>/catalog.ts` instead.
-export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
-  'cardinals-home-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
-  'cardinals-away-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
-  'cardinals-rivalries-2025-2025': { uiAccent: '#EE6B3D', onAccent: '#0a0e1a' },
-  'cardinals-black-alt-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
-};
+export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {};
 
 // Legacy compatibility values for `uniforms.ui_accent` / `uniforms.on_accent`. These are
 // NOT team colors and must never be rendered by this codebase — `lib/utils/team-surfaces.ts`
@@ -76,6 +72,7 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   ...catalogAccents(BRONCOS_CATALOG),
   ...catalogAccents(BROWNS_CATALOG),
   ...catalogAccents(BUCCANEERS_CATALOG),
+  ...catalogAccents(CARDINALS_CATALOG),
   ...catalogAccents(CHIEFS_CATALOG),
   ...catalogAccents(COLTS_CATALOG),
   ...catalogAccents(COMMANDERS_CATALOG),

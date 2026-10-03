@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "329df471906a5894d3ee86a26f9f7eb21c5719047d4cfd819a6778713d679ac0",
-  "revision": "523ee910c9fa554d",
+  "sourceDigest": "789b2b3e805d63cd1e2eae2ccb01214e06ed6d0be2a4ac78a11cc235e7f53f2c",
+  "revision": "97c72b551c612db5",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -543,60 +543,60 @@
     {
       "catalogId": "cardinals-away-2023",
       "constructionKey": "away",
-      "revision": "aa2e494c27bfe0b3",
+      "revision": "bf0d501a88b1aec4",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/cardinals-away-2023.webp",
-          "sha256": "12bae549a7e4cf3bc2b3b7277adeb5482a1e430f3b6a71e42557374a80d85ad1"
+          "sha256": "edc47f30438f040eb139eb76b12fa995da2cbaa935b186c0e5345e4cdb7e205e"
         },
         "full": {
           "path": "/uniforms/cardinals-away-2023-full.webp",
-          "sha256": "cde73588e0c09064094b41020beba846ff09046081b0423780b5b615e81b7d39"
+          "sha256": "72e7e0b971698a042af1dc0a0d4e98bd13a84814f075c5e5d87cf01c8088cbca"
         }
       }
     },
     {
       "catalogId": "cardinals-black-alt-2023",
       "constructionKey": "black-alt",
-      "revision": "c95793cb6f58f8f2",
+      "revision": "9341d39115b128a3",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/cardinals-black-alt-2023.webp",
-          "sha256": "c06b7ca0b395e7e75d0fe5cd5342d402507e6fbe8bed30ce41d443e6c5a272d7"
+          "sha256": "084158b65e983ad589c7b8aa07ef95827fec16e439de779b80efc0d14b5dcb7c"
         },
         "full": {
           "path": "/uniforms/cardinals-black-alt-2023-full.webp",
-          "sha256": "6ebcffb65710bd03dd2eb3022da3c5f566061790b3b1ec498db011f49b0eb5df"
+          "sha256": "d273e560df24d640557bfae33eef290a5ba28a72405768d816aa43136a9d2277"
         }
       }
     },
     {
       "catalogId": "cardinals-home-2023",
       "constructionKey": "home",
-      "revision": "3ce689cf24fb0377",
+      "revision": "6d045e1ef6034ca9",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/cardinals-home-2023.webp",
-          "sha256": "fa48bb650763a412958d0cbe97dc4fa3c1bff984f4946684b450e3b67c77c50a"
+          "sha256": "1167174a61b11c7b128a366313c93142a338f12fa33f6b0266cc489ebd06b4b2"
         },
         "full": {
           "path": "/uniforms/cardinals-home-2023-full.webp",
-          "sha256": "4e094c022046a932090901aeb3dded4f087b5dc5935a454685e02c53d366e5c4"
+          "sha256": "daed17fec5e592598944bc9b50b428c9c983d897fbb5b4c20dbe6a4e58361910"
         }
       }
     },
     {
       "catalogId": "cardinals-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "2046a6f0812c5d40",
+      "revision": "6dd7341a2f68cc01",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/cardinals-rivalries-2025-2025.webp",
-          "sha256": "24fc852705bec32c115b944bdf0f8cfc3d905a327ef6852e00ad0395c769e636"
+          "sha256": "043baa86a07cb131858d87d4d19ea556817d8937f6346aebcc61453dd111e718"
         },
         "full": {
           "path": "/uniforms/cardinals-rivalries-2025-2025-full.webp",
-          "sha256": "488388ae45e7e5bba43019d883109824187c51b907f8ca606ef5c3e9f805dc74"
+          "sha256": "2269879d902e15dc62b1d339d91b2ecceab15dd73d7b83cb41a27c3689a83f44"
         }
       }
     },
