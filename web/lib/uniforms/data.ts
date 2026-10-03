@@ -4,6 +4,7 @@ import { BENGALS_CATALOG } from './teams/bengals/catalog';
 import { BUCCANEERS_CATALOG } from './teams/buccaneers/catalog';
 import { BEARS_CATALOG } from './teams/bears/catalog';
 import { CHARGERS_CATALOG } from './teams/chargers/catalog';
+import { BILLS_CATALOG } from './teams/bills/catalog';
 import { BRONCOS_CATALOG } from './teams/broncos/catalog';
 import { CHIEFS_CATALOG } from './teams/chiefs/catalog';
 import { COLTS_CATALOG } from './teams/colts/catalog';
@@ -87,21 +88,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   catalogRow(STEELERS_CATALOG, 'home'),
-  {
-    teamId: 'bills',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2011,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#00338D',
-      secondary: '#C60C30',
-      accent: '#C60C30',
-    },
-  },
+  catalogRow(BILLS_CATALOG, 'home'),
   catalogRow(DOLPHINS_CATALOG, 'home'),
   catalogRow(PATRIOTS_CATALOG, 'home'),
   catalogRow(JETS_CATALOG, 'home'),
@@ -179,21 +166,7 @@ export const UNIFORMS: UniformSeed[] = [
   // resolver asks for secondary/accent before primary: a body-first rule would paint every
   // away kit's chrome white. See lib/utils/team-surfaces.ts.
   catalogRow(SEAHAWKS_CATALOG, 'away'),
-  {
-    teamId: 'bills',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2011,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#00338D',
-      accent: '#C60C30',
-    },
-  },
+  catalogRow(BILLS_CATALOG, 'away'),
   catalogRow(DOLPHINS_CATALOG, 'away'),
   catalogRow(PATRIOTS_CATALOG, 'away'),
   catalogRow(JETS_CATALOG, 'away'),
@@ -302,21 +275,7 @@ export const UNIFORMS: UniformSeed[] = [
   // 2025 Nike 'Rivalries' kits (AFC East + NFC West). Designs from the official Nike/NFL
   // product shots; identity hexes from published heritage. Derived approximations noted per row.
   // Bills 2025 Rivalries: white base, royal/red. Heritage hexes (royal #00338D, red #C60C30).
-  {
-    teamId: 'bills',
-    slug: 'rivalries-2025',
-    constructionKey: 'rivalries-2025',
-    kind: 'alternate',
-    name: 'Rivalries',
-    yearStart: 2025,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#00338D',
-      accent: '#C60C30',
-    },
-  },
+  catalogRow(BILLS_CATALOG, 'rivalries-2025'),
   catalogRow(DOLPHINS_CATALOG, 'rivalries-2025'),
   catalogRow(PATRIOTS_CATALOG, 'rivalries-2025'),
   catalogRow(JETS_CATALOG, 'rivalries-2025'),

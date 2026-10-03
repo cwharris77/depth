@@ -1,16 +1,14 @@
 import { compileParts, type TeamPartsDefinition } from '../core/parts';
-import { BILLS_CONSTRUCTION } from './parts';
-import { JERSEY_BLUE } from './jerseys/blue';
-import { JERSEY_WHITE } from './jerseys/white';
-import { JERSEY_RIVALRIES } from './jerseys/rivalries';
+import { catalogKits } from '../core/catalog';
+import { expandTeamSpec } from '../core/team-spec';
+import { BILLS_CATALOG } from './catalog';
+import { BILLS_PALETTE, BILLS_SPEC } from './parts';
 
 export const BILLS_PARTS: TeamPartsDefinition = {
-  ...BILLS_CONSTRUCTION,
-  jerseys: {
-    blue: JERSEY_BLUE,
-    white: JERSEY_WHITE,
-    rivalries: JERSEY_RIVALRIES,
-  },
+  teamId: 'bills',
+  palette: BILLS_PALETTE,
+  ...expandTeamSpec('bills', BILLS_SPEC),
+  kits: catalogKits(BILLS_CATALOG),
 };
 
 export const BILLS_UNIFORMS_FROM_PARTS = compileParts(BILLS_PARTS);
