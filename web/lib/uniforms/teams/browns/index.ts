@@ -1,14 +1,14 @@
 import { compileParts, type TeamPartsDefinition } from '../core/parts';
-import { BROWNS_CONSTRUCTION } from './parts';
-import { JERSEY_BROWN } from './jerseys/brown';
-import { JERSEY_WHITE } from './jerseys/white';
+import { catalogKits } from '../core/catalog';
+import { expandTeamSpec } from '../core/team-spec';
+import { BROWNS_CATALOG } from './catalog';
+import { BROWNS_PALETTE, BROWNS_SPEC } from './parts';
 
 export const BROWNS_PARTS: TeamPartsDefinition = {
-  ...BROWNS_CONSTRUCTION,
-  jerseys: {
-    brown: JERSEY_BROWN,
-    white: JERSEY_WHITE,
-  },
+  teamId: 'browns',
+  palette: BROWNS_PALETTE,
+  ...expandTeamSpec('browns', BROWNS_SPEC),
+  kits: catalogKits(BROWNS_CATALOG),
 };
 
 export const BROWNS_UNIFORMS_FROM_PARTS = compileParts(BROWNS_PARTS);
