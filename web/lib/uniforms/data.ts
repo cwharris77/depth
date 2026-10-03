@@ -22,6 +22,7 @@ import { PATRIOTS_CATALOG } from './teams/patriots/catalog';
 import { RAIDERS_CATALOG } from './teams/raiders/catalog';
 import { RAMS_CATALOG } from './teams/rams/catalog';
 import { RAVENS_CATALOG } from './teams/ravens/catalog';
+import { SAINTS_CATALOG } from './teams/saints/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
@@ -175,21 +176,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(COMMANDERS_CATALOG, 'home'),
   catalogRow(FALCONS_CATALOG, 'home'),
   catalogRow(PANTHERS_CATALOG, 'home'),
-  {
-    teamId: 'saints',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2002,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#D3BC8D',
-      secondary: '#101820',
-      accent: '#101820',
-    },
-  },
+  catalogRow(SAINTS_CATALOG, 'home'),
   catalogRow(BUCCANEERS_CATALOG, 'home'),
   {
     teamId: 'cardinals',
@@ -361,21 +348,7 @@ export const UNIFORMS: UniformSeed[] = [
   },
   catalogRow(FALCONS_CATALOG, 'away'),
   catalogRow(PANTHERS_CATALOG, 'away'),
-  {
-    teamId: 'saints',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2002,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#D3BC8D',
-      accent: '#101820',
-    },
-  },
+  catalogRow(SAINTS_CATALOG, 'away'),
   catalogRow(BUCCANEERS_CATALOG, 'away'),
   // Throwbacks & alternates (Wave 2a) — published heritage hexes, eras verified where
   // set. uiAccent reuses each team's live dark-UI pair.
@@ -399,22 +372,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   catalogRow(BEARS_CATALOG, 'orange-alternate'),
-  // Saints all-black Color Rush (2016+). Hexes: black #101820, old gold #D3BC8D. uiAccent reuses the team's bright gold.
-  {
-    teamId: 'saints',
-    slug: 'color-rush',
-    constructionKey: 'color-rush',
-    kind: 'color-rush',
-    name: 'Color Rush',
-    yearStart: 2022,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#101820',
-      secondary: '#D3BC8D',
-      accent: '#D3BC8D',
-    },
-  },
+  catalogRow(SAINTS_CATALOG, 'color-rush'),
   catalogRow(JAGUARS_CATALOG, 'teal-throwback'),
   // Washington 1970s burgundy & gold (George Allen gold-helmet era). Hexes: burgundy #5A1414, gold #FFB612. uiAccent reuses the team's gold.
   catalogRow(COMMANDERS_CATALOG, '70s-burgundy'),

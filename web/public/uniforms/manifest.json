@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "c8c796bd5940a8cfbb3ef5563260c4cd27c7a4f2f1e4d813bf424a1daa9aa182",
-  "revision": "a9b978073eaab4f7",
+  "sourceDigest": "6a351d52494ced8bb047972601dc9f23b472f2db3e6fab14b3fd14b581368e85",
+  "revision": "122d77e3eed3a16f",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1783,45 +1783,45 @@
     {
       "catalogId": "saints-away-2002",
       "constructionKey": "away",
-      "revision": "93fb100223eca28d",
+      "revision": "066869a68b8905f9",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/saints-away-2002.webp",
-          "sha256": "1ed4a2ac54827f0b085461a20efe3d8f68364bcad3a87f458f0100f2db6b3bdd"
+          "sha256": "bb9d5fc45eadae855d8967afdbdbf40f2ff398e83820eadef06e838e24861cf9"
         },
         "full": {
           "path": "/uniforms/saints-away-2002-full.webp",
-          "sha256": "7a56c6551ab9fc58c43bba41b3a4330fec577f9c0383be568a84fae6fb6e29d7"
+          "sha256": "ce934b73ec3362ac5fa280fd92a7f3f29cac02304d0b18f192f9a392c23f6723"
         }
       }
     },
     {
       "catalogId": "saints-color-rush-2022",
       "constructionKey": "color-rush",
-      "revision": "14385e58298581ad",
+      "revision": "b5d4b3c6db68c420",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/saints-color-rush-2022.webp",
-          "sha256": "c2b5ebefb18ae675cce42e1cbaedc1d40553637d73f20d4f36decea82d120f45"
+          "sha256": "ce9753c17221c4cc1612f834829772b1458e85cbb7ac8c4e6abc6636d67be8d5"
         },
         "full": {
           "path": "/uniforms/saints-color-rush-2022-full.webp",
-          "sha256": "ed0c3f581d950c8ad5919cd98fc053d1f022152e9890f45c729f4a3e62091327"
+          "sha256": "6efcf183c3419c56f961cfc81e9a6a0ece08fb08f9e96b38fe328500e339360e"
         }
       }
     },
     {
       "catalogId": "saints-home-2002",
       "constructionKey": "home",
-      "revision": "42a59a7acd13fecc",
+      "revision": "0d14afd3b869be51",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/saints-home-2002.webp",
-          "sha256": "c2b5ebefb18ae675cce42e1cbaedc1d40553637d73f20d4f36decea82d120f45"
+          "sha256": "ce9753c17221c4cc1612f834829772b1458e85cbb7ac8c4e6abc6636d67be8d5"
         },
         "full": {
           "path": "/uniforms/saints-home-2002-full.webp",
-          "sha256": "f869481e59fdbd51726f2939df752e4ccdc55c90310ca11b21855ac271af40ef"
+          "sha256": "3536ee6c0e4eada1aa63c8daae659fad7208d4c769714b964a443134c2c29c72"
         }
       }
     },

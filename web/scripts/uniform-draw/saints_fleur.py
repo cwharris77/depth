@@ -14,7 +14,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 REF = Path(os.environ.get('DECAL_SVGS', '.')) / 'saints_fluer.svg'
-MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'saints' / 'source.ts'
+MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'saints' / 'marks' / 'decal.ts'
 BOX = (321, 196, 179, 176)
 SVG_NS = '{http://www.w3.org/2000/svg}'
 TOKEN = re.compile(r'[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?')

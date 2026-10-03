@@ -1,8 +1,23 @@
-import type { UniformPart } from '../../core/parts';
-import { collar } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
-export const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: collar('gold'),
-  number: { fill: 'black', outline: 'gold', outlineWidth: 12 },
+// White body with a black V collar band, black shoulder numerals, black numerals keylined gold.
+export const SAINTS_JERSEY_WHITE: CompleteJerseySpec = {
+  body: 'white',
+  collar: {
+    style: 'inset-v',
+    color: 'black',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: false,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: { fill: 'black', outline: 'none' },
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'black', outline: 'gold', outlineWeight: 'regular', texture: 'mesh' },
+  marks: [],
 };
