@@ -25,6 +25,7 @@ import { RAVENS_CATALOG } from './teams/ravens/catalog';
 import { SAINTS_CATALOG } from './teams/saints/catalog';
 import { STEELERS_CATALOG } from './teams/steelers/catalog';
 import { TEXANS_CATALOG } from './teams/texans/catalog';
+import { VIKINGS_CATALOG } from './teams/vikings/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
@@ -129,21 +130,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(BEARS_CATALOG, 'home'),
   catalogRow(LIONS_CATALOG, 'home'),
   catalogRow(PACKERS_CATALOG, 'home'),
-  {
-    teamId: 'vikings',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2013,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#4F2683',
-      secondary: '#FFC62F',
-      accent: '#FFC62F',
-    },
-  },
+  catalogRow(VIKINGS_CATALOG, 'home'),
   catalogRow(COWBOYS_CATALOG, 'home'),
   catalogRow(GIANTS_CATALOG, 'home'),
   catalogRow(EAGLES_CATALOG, 'home'),
@@ -277,21 +264,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(BEARS_CATALOG, 'away'),
   catalogRow(LIONS_CATALOG, 'away'),
   catalogRow(PACKERS_CATALOG, 'away'),
-  {
-    teamId: 'vikings',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2013,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#4F2683',
-      accent: '#FFC62F',
-    },
-  },
+  catalogRow(VIKINGS_CATALOG, 'away'),
   catalogRow(FALCONS_CATALOG, 'away'),
   catalogRow(PANTHERS_CATALOG, 'away'),
   catalogRow(SAINTS_CATALOG, 'away'),
@@ -323,22 +296,7 @@ export const UNIFORMS: UniformSeed[] = [
   // Washington 1970s burgundy & gold (George Allen gold-helmet era). Hexes: burgundy #5A1414, gold #FFB612. uiAccent reuses the team's gold.
   catalogRow(COMMANDERS_CATALOG, '70s-burgundy'),
   // Throwbacks (Wave 2b): Vikings 1960s purple classic + Packers 1923 throwback (eyedropped).
-  // Vikings 1960s purple classic (gold-trim numbers, per Wikipedia; retired era). Hexes: purple #4F2683, gold #FFC62F. uiAccent reuses the team's gold.
-  {
-    teamId: 'vikings',
-    slug: 'purple-classic',
-    constructionKey: 'purple-classic',
-    kind: 'throwback',
-    name: 'Purple Classic',
-    yearStart: 1961,
-    yearEnd: 1969,
-    isCurrent: false,
-    colors: {
-      primary: '#4F2683',
-      secondary: '#FFC62F',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(VIKINGS_CATALOG, 'purple-classic'),
   // Packers 1923 throwback (navy body, old-gold/tan numbers, leather helmets; unveiled 2025). Colors EYEDROPPED from the reveal flat-lay: secondary/uiAccent #CC8835 sampled off the number (passes 6.55:1 on #0a0e1a); primary #1B2C4E is a brightened estimate of the underexposed navy. No published hex exists.
   catalogRow(PACKERS_CATALOG, '1923-throwback'),
   // 2025 Nike 'Rivalries' kits (AFC East + NFC West). Designs from the official Nike/NFL
@@ -439,22 +397,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(EAGLES_CATALOG, 'black-alt'),
   // Lions 'Gridiron Gray' alternate. Silver-gray base, Honolulu-blue trim.
   catalogRow(LIONS_CATALOG, 'gridiron-gray'),
-  // Vikings 'Winter Warrior' all-white alternate (2023+). White base, purple/gold trim.
-  {
-    teamId: 'vikings',
-    slug: 'winter-warrior',
-    constructionKey: 'winter-warrior',
-    kind: 'alternate',
-    name: 'Winter Warrior',
-    yearStart: 2024,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#4F2683',
-      accent: '#FFC62F',
-    },
-  },
+  catalogRow(VIKINGS_CATALOG, 'winter-warrior'),
   // Packers 'Winter Warning' all-white alternate (verified 2025 reveal). White base + helmet, green/gold trim.
   catalogRow(PACKERS_CATALOG, 'winter-warning'),
   catalogRow(FALCONS_CATALOG, 'red-alt'),
