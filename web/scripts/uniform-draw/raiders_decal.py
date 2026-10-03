@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 REF = Path.home() / 'Downloads' / '2026_LasVegas.svg'
-MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'raiders-decal.ts'
+MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'raiders' / 'marks' / 'decal.ts'
 SOURCE_X0, SOURCE_Y0 = 457.0, 193.0
 TARGET_X0, TARGET_Y0 = 350.0, 140.0
 SCALE = 170.0 / 1140.0
@@ -143,7 +143,7 @@ def build() -> str:
 
 
 if __name__ == '__main__':
-    prettier = MODULE.parents[3] / 'node_modules' / '.bin' / 'prettier'
+    prettier = MODULE.parents[5] / 'node_modules' / '.bin' / 'prettier'
     output = subprocess.run(
         [prettier, '--parser', 'typescript'],
         input=build(),
