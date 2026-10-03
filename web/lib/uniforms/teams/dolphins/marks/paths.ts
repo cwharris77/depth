@@ -1,5 +1,5 @@
 // Miami's construction geometry in mannequin space: the two helmet decals, the 1972 sleeve band
-// bounds and the Rivalries sleeve wedge, slash and collar paths.
+// bounds and the Rivalries sleeve wedge and slash paths.
 
 // Two decals: the current kits wear a teal dolphin inside an orange sunburst; the throwback wears a
 // teal dolphin breaking through a solid orange ring. The "M" on the throwback dolphin's helmet is
@@ -26,7 +26,3 @@ export const DOLPHINS_WEDGE_RIGHT = 'M558,496 L496,545 L558,545 Z';
 export const DOLPHINS_SLASH_LEFT = 'M30,507 L55,519';
 export const DOLPHINS_SLASH_RIGHT = 'M558,507 L533,519';
 export const DOLPHINS_SLASH_WIDTH = 7;
-
-// The Rivalries collar V.
-export const DOLPHINS_COLLAR_PATH = 'M208,415 L294,455 L380,415';
-export const DOLPHINS_COLLAR_WIDTH = 10;

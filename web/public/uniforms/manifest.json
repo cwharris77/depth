@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "8794d8e327959402f592a4855d0d667f83d89fa794a98e65b3f56468cf126d99",
-  "revision": "1f2d0ed5f83d7694",
+  "sourceDigest": "0593e3410829c633e3805afdbb5db657fd64709b071ad368e18e0907d233fee2",
+  "revision": "27572e5f015c7c17",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -835,30 +835,30 @@
     {
       "catalogId": "dolphins-1972-throwback-1966",
       "constructionKey": "1972-throwback",
-      "revision": "08804c2db8ca9f4c",
+      "revision": "c0a123cbae380ca7",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/dolphins-1972-throwback-1966.webp",
-          "sha256": "338a429ee75a848e31921b7a88d57f133b7f5cfdc4d07c4f18e01c891675a8f3"
+          "sha256": "8eff7fbfc565082403a308363fd2fa3a34bac6bc10f43788d3f43a9802cf2268"
         },
         "full": {
           "path": "/uniforms/dolphins-1972-throwback-1966-full.webp",
-          "sha256": "64b82d373af94db6ebc4a08e6c02186cfd0c39e9cfc2c05aa465d8b5bdf6b3e8"
+          "sha256": "7ae05ae786450b0e09eb98da37ae56d703ccf02135318e80c683b368edef6aef"
         }
       }
     },
     {
       "catalogId": "dolphins-away-2018",
       "constructionKey": "away",
-      "revision": "b71d9e8055ba1adb",
+      "revision": "87e1211a75522b95",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/dolphins-away-2018.webp",
-          "sha256": "6d164a38a00f2580f3b1f768136735a1e340ac09d962b5b91c125cae1b6a1969"
+          "sha256": "c94fbd70d9bb1eb17320d24db8ea3bd8d64ada54385e274a50199bf760458022"
         },
         "full": {
           "path": "/uniforms/dolphins-away-2018-full.webp",
-          "sha256": "a0c5238d5d43297ba99b338b15dd4651604a2418d88afb7dc5f66fe48d9285a3"
+          "sha256": "cd1047b4ff71f444f61b80941c9dc6e5eeb7ae1522236be73457114efebd062f"
         }
       },
       "combinations": [
@@ -867,7 +867,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/dolphins-away-2018--white-pants-full.webp",
-            "sha256": "3f19e06a75b30080be6e2ea825aac4c8b240ff3a7d7853dbd9cd90427691b5ab"
+            "sha256": "b56ab0e95fe1f743885645d25b95c19a015912f3594f94d3668657e9bc441fc0"
           }
         }
       ]
@@ -875,30 +875,30 @@
     {
       "catalogId": "dolphins-home-2018",
       "constructionKey": "home",
-      "revision": "2797df5e08016631",
+      "revision": "b70ca6e04ddbc3de",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/dolphins-home-2018.webp",
-          "sha256": "9d884bd292551551dd50a0a4dd33d305f67421bd3a78d8efafdba895a2c6b62d"
+          "sha256": "c834a2122457322837e72528a60d9b3c1540f07bb49c0cf4881e4fb9c6dbe05e"
         },
         "full": {
           "path": "/uniforms/dolphins-home-2018-full.webp",
-          "sha256": "d00efcb63c63d209a092e7f187f949c2a4a63b31af02b3b5f63ea25417a491df"
+          "sha256": "51c8680a06e2f613234ccbf3fe951678b0256b49540e83bc979563ee0a833584"
         }
       }
     },
     {
       "catalogId": "dolphins-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "389fcbdac076a345",
+      "revision": "6afec2d23110798a",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/dolphins-rivalries-2025-2025.webp",
-          "sha256": "17ccbeb4f31a8fc5f1e2fee7fc5f9e7c3a35bf1367a157fed6e6aba361de2ec7"
+          "sha256": "002cc6dd753d181f599b10011619188777a4e55ea962fe5befe04bab65c555bf"
         },
         "full": {
           "path": "/uniforms/dolphins-rivalries-2025-2025-full.webp",
-          "sha256": "226b38696d8ceed9268a467d6c5acfc64f08750245cc0c0981bf3b2f52a12825"
+          "sha256": "93aedf715f10ff37596ce12a68e94a663d12c93628a48a8ee12c187412bd58b1"
         }
       }
     },

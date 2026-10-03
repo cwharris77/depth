@@ -1,8 +1,6 @@
 // Miami's own construction layers, bound to palette keys. Each export is a placed mark, emitted
 // exactly as written.
 import {
-  DOLPHINS_COLLAR_PATH,
-  DOLPHINS_COLLAR_WIDTH,
   DOLPHINS_DECAL_DOLPHIN_PATH,
   DOLPHINS_DECAL_NAVY_PATH,
   DOLPHINS_DECAL_SUNBURST_PATH,
@@ -82,7 +80,7 @@ const sleeveBands = (): PartLayer[] => {
 };
 export const DOLPHINS_THROWBACK_SLEEVE_BANDS = placed(sleeveBands());
 
-// A teal wedge on each sleeve cut by an orange slash, and an orange V at the neck.
+// A teal wedge on each sleeve cut by an orange slash.
 export const DOLPHINS_RIVALRIES_TRIM = placed([
   {
     id: 'dolphins-wedge-left',
@@ -117,14 +115,5 @@ export const DOLPHINS_RIVALRIES_TRIM = placed([
     kind: 'stroke',
     stroke: 'orange',
     strokeWidth: DOLPHINS_SLASH_WIDTH,
-  },
-  {
-    id: 'dolphins-collar',
-    surface: 'collar',
-    d: DOLPHINS_COLLAR_PATH,
-    clip: true,
-    kind: 'stroke',
-    stroke: 'orange',
-    strokeWidth: DOLPHINS_COLLAR_WIDTH,
   },
 ]);

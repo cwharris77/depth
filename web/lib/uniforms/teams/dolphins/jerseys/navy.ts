@@ -1,11 +1,19 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { DOLPHINS_RIVALRIES_TRIM } from '../marks/construction';
 
-// Rivalries: navy body, a teal wedge with an orange slash on each sleeve and an orange V at the
-// neck, teal numerals.
+// Rivalries: navy body, a teal wedge with an orange slash on each sleeve and an orange-lined
+// keylined collar, teal numerals.
 export const DOLPHINS_JERSEY_NAVY: CompleteJerseySpec = {
   body: 'navy',
-  collar: { style: 'none' },
+  collar: {
+    style: 'inset-v',
+    color: 'navy',
+    trim: 'none',
+    inside: 'body',
+    lining: 'orange',
+    backBar: 'orange',
+    outline: true,
+  },
   shoulderPanel: 'none',
   shoulderStripes: 'none',
   shoulderNumber: { fill: 'teal', outline: 'none' },
