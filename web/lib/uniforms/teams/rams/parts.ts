@@ -1,131 +1,16 @@
-// Los Angeles authored as composable parts. Geometry is imported unchanged from rams.ts — this
-// file only restates WHICH parts each kit combines, and names every color from the team palette
-// instead of the kit row's shifting primary/secondary/accent.
-//
-// Every kit is the same construction: the horn on the shell, a widening band with a tail on each
-// sleeve, and a keylined stripe on each pant leg. No helmet stripe, no collar trim. What changes
-// between kits is only which colors paint it — except on Rivalries, where the tail is royal against
-// a yellow band rather than matching it.
-//
-// The measured target is 2 helmet / 4 jersey / 4 pants, and that is what this factors to. The
-// helmet saving is the interesting one: home, away and bone all wear the SAME royal shell with the
-// SAME gold horn, but the flat definition reached it three different ways — the implicit `primary`
-// at home, `secondary` on the other two for the shell, and `secondary` vs `accent` for the horn —
-// because royal and gold slide across tokens as the kit rows change. One part now.
+// Los Angeles as a complete team spec: every helmet, jersey, pants and socks part. All four kits
+// share the construction: the horn on the shell, a widening band with a tail on each sleeve, and a
+// keylined stripe on each pant leg. What changes between kits is which colours paint it, and on
+// Rivalries the tail is royal against a yellow band rather than matching it.
 //
 // Two golds and two blues are real here and stay distinct: the modern gold #FFA300 and Rivalries'
 // yellow #FFD100, the club royal #003594 and Rivalries' near-black navy #0D1B3E.
-
-import {
-  RAMS_DECAL_HORN_PATH,
-  RAMS_SLEEVE_BAND_LEFT,
-  RAMS_SLEEVE_BAND_RIGHT,
-  RAMS_SLEEVE_TAIL_LEFT,
-  RAMS_SLEEVE_TAIL_RIGHT,
-  RAMS_STRIPE_BAND_LEFT,
-  RAMS_STRIPE_BAND_RIGHT,
-} from './source';
-import { expandHelmet } from '../core/helmet-spec';
-import { placed } from '../core/marks';
-import { fromGeneric, type PartLayer, type UniformPart } from '../core/parts';
-import type { UniformSurface } from '../core/types';
-
-// Band and tail take separate colors because Rivalries is the one kit where they differ.
-export function sleeveMark(band: string, tail: string): PartLayer[] {
-  const shapes: [string, UniformSurface, string, string][] = [
-    ['rams-sleeve-band-left', 'sleeve-left', RAMS_SLEEVE_BAND_LEFT, band],
-    ['rams-sleeve-band-right', 'sleeve-right', RAMS_SLEEVE_BAND_RIGHT, band],
-    ['rams-sleeve-tail-left', 'sleeve-left', RAMS_SLEEVE_TAIL_LEFT, tail],
-    ['rams-sleeve-tail-right', 'sleeve-right', RAMS_SLEEVE_TAIL_RIGHT, tail],
-  ];
-  return shapes.map(([id, surface, d, fill]) => ({
-    id,
-    surface,
-    d,
-    clip: true,
-    kind: 'fill',
-    fill,
-  }));
-}
-
-function horn(fill: string): PartLayer[] {
-  return [
-    {
-      id: 'rams-decal-horn',
-      surface: 'helmet',
-      d: RAMS_DECAL_HORN_PATH,
-      clip: true,
-      kind: 'fill',
-      fill,
-    },
-  ];
-}
-
-// The royal shell (H1) — home, away and bone all wear it with the gold horn. The cage is royal
-// too: every blue-shell figure on the 2025 composite (nfl-uniform-refs/rams) wears a facemask
-// painted the shell color rather than a neutral cage.
-const HELMET_ROYAL: UniformPart = expandHelmet('rams-royal-helmet', {
-  shell: 'royal',
-  facemask: 'royal',
-  decal: placed(horn('gold')),
-  number: 'none',
-});
-
-// The Rivalries shell (H2): near-black navy with the yellow horn, and a cage painted to match the
-// shell exactly as the blue helmets are.
-const HELMET_RIVALRIES: UniformPart = expandHelmet('rams-rivalries-helmet', {
-  shell: 'navy',
-  facemask: 'navy',
-  decal: placed(horn('yellow')),
-  number: 'none',
-});
-
-// Home jersey (J1): royal body, gold band and tail, gold numerals with a white keyline.
-
-// Away jersey (J2): white body, the same gold sleeve mark, royal numerals keylined gold.
-
-// Bone jersey (J3): bone body, otherwise identical to away — which is why only the body color and
-// the pants separate the two kits.
-
-// Rivalries jersey (J4): near-black body, and the one kit whose sleeve tail breaks from its band —
-// royal against yellow rather than matching.
-
-// Every leg carries a keylined stripe: the mannequin's own 16-unit generic band painted as the
-// OUTER keyline, with the inboard 11 units painted over it. See rams.ts for the swatch measurement
-// this comes from — the figures themselves render the legs flat, so reading them alone is what made
-// an earlier pass record these pants as unbroken.
-function legStripe(keyline: string, band: string): PartLayer[] {
-  return [
-    fromGeneric('generic-pants-stripe-left', keyline),
-    fromGeneric('generic-pants-stripe-right', keyline),
-    {
-      id: 'rams-stripe-band-left',
-      surface: 'leg-left',
-      d: RAMS_STRIPE_BAND_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: band,
-    },
-    {
-      id: 'rams-stripe-band-right',
-      surface: 'leg-right',
-      d: RAMS_STRIPE_BAND_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: band,
-    },
-  ];
-}
-
-// Pants — four colors, so four parts. The keyline is the modern gold on bone and Rivalries' own
-// yellow on black, which the composite cannot tell apart; each takes the token the rest of its kit
-// is authored in. Royal legs are the exception to the two-band shape: their stripe is a single
-// white-to-gold vertical ramp with no separate keyline, flattened here to plain white, so both the
-// generic band and the band over it take the same color.
-const PANTS_GOLD: UniformPart = { base: 'gold', layers: legStripe('white', 'royal') };
-const PANTS_ROYAL: UniformPart = { base: 'royal', layers: legStripe('white', 'white') };
-const PANTS_BONE: UniformPart = { base: 'bone', layers: legStripe('gold', 'white') };
-const PANTS_NAVY: UniformPart = { base: 'navy', layers: legStripe('yellow', 'royal') };
+import type { TeamSpec } from '../core/team-spec';
+import { ramsHelmetHorn, ramsLegStripe } from './marks/construction';
+import { RAMS_JERSEY_BONE } from './jerseys/bone';
+import { RAMS_JERSEY_RIVALRIES } from './jerseys/rivalries';
+import { RAMS_JERSEY_ROYAL } from './jerseys/royal';
+import { RAMS_JERSEY_WHITE } from './jerseys/white';
 
 export const RAMS_PALETTE = {
   royal: '#003594',
@@ -135,16 +20,58 @@ export const RAMS_PALETTE = {
   bone: '#F0EBE0',
   white: '#FFFFFF',
 };
-export const RAMS_HELMETS = { royal: HELMET_ROYAL, rivalries: HELMET_RIVALRIES };
-export const RAMS_PANTS = {
-  gold: PANTS_GOLD,
-  royal: PANTS_ROYAL,
-  bone: PANTS_BONE,
-  navy: PANTS_NAVY,
-};
-export const RAMS_KITS = {
-  home: { helmet: 'royal', jersey: 'royal', pants: ['gold', 'bone'] },
-  away: { helmet: 'royal', jersey: 'white', pants: ['royal', 'gold'] },
-  bone: { helmet: 'royal', jersey: 'bone', pants: ['bone'] },
-  'rivalries-2025': { helmet: 'rivalries', jersey: 'rivalries', pants: ['navy'] },
+
+export const RAMS_SPEC: TeamSpec = {
+  helmets: {
+    // The royal shell with the gold horn and a royal cage, worn with the royal, white and bone
+    // jerseys.
+    'royal-horn': {
+      shell: 'royal',
+      facemask: 'royal',
+      decal: ramsHelmetHorn('gold'),
+      number: 'none',
+    },
+    // The near-black navy shell with the yellow horn and a cage painted the shell colour.
+    'navy-horn': {
+      shell: 'navy',
+      facemask: 'navy',
+      decal: ramsHelmetHorn('yellow'),
+      number: 'none',
+    },
+  },
+  jerseys: {
+    royal: RAMS_JERSEY_ROYAL,
+    white: RAMS_JERSEY_WHITE,
+    bone: RAMS_JERSEY_BONE,
+    rivalries: RAMS_JERSEY_RIVALRIES,
+  },
+  // Every leg carries the keylined stripe: an outer keyline with an inboard band, ending at the hem. Royal legs carry
+  // a single white stripe, so keyline and band take the same colour.
+  pants: {
+    gold: {
+      body: 'gold',
+      stripes: 'none',
+      marks: [{ paint: 'over', mark: ramsLegStripe('white', 'royal') }],
+    },
+    royal: {
+      body: 'royal',
+      stripes: 'none',
+      marks: [{ paint: 'over', mark: ramsLegStripe('white', 'white') }],
+    },
+    bone: {
+      body: 'bone',
+      stripes: 'none',
+      marks: [{ paint: 'over', mark: ramsLegStripe('gold', 'white') }],
+    },
+    navy: {
+      body: 'navy',
+      stripes: 'none',
+      marks: [{ paint: 'over', mark: ramsLegStripe('yellow', 'royal') }],
+    },
+  },
+  socks: {
+    royal: { color: 'royal', stripes: 'none' },
+    bone: { color: 'bone', stripes: 'none' },
+    navy: { color: 'navy', stripes: 'none' },
+  },
 };

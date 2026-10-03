@@ -1,4 +1,4 @@
-"""Regenerates the Los Angeles helmet horn in lib/uniforms/teams/rams.ts.
+"""Regenerates the Los Angeles helmet horn in lib/uniforms/teams/rams/marks/paths.ts.
 
     python3 scripts/uniform-draw/rams_horn.py            # print the path
     python3 scripts/uniform-draw/rams_horn.py --check    # verify rams.ts matches
@@ -52,7 +52,7 @@ REF = (
     Path.home()
     / 'Documents/GitHubProjects/nfl-uniform-refs/rams/rams-uniforms-illustration-2025.png'
 )
-MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'rams.ts'
+MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'rams' / 'marks' / 'paths.ts'
 
 # The illustration's home helmet, in the source file's own pixels. Cropped by hand
 # because the sheet holds four helmets and only this one is needed.

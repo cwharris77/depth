@@ -20,6 +20,7 @@ import { PACKERS_CATALOG } from './teams/packers/catalog';
 import { PANTHERS_CATALOG } from './teams/panthers/catalog';
 import { PATRIOTS_CATALOG } from './teams/patriots/catalog';
 import { RAIDERS_CATALOG } from './teams/raiders/catalog';
+import { RAMS_CATALOG } from './teams/rams/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
@@ -37,10 +38,8 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'vikings-home-2013': { uiAccent: '#FFC62F', onAccent: '#0a0e1a' },
   'saints-home-2002': { uiAccent: '#E2CC9A', onAccent: '#0a0e1a' },
   'cardinals-home-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
-  'rams-home-2020': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
   'bills-away-2011': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'cardinals-away-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
-  'rams-away-2020': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
   'ravens-away-1996': { uiAccent: '#9E7C0C', onAccent: '#0a0e1a' },
   'browns-away-2020': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'steelers-away-1997': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
@@ -53,7 +52,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'vikings-purple-classic-1961': { uiAccent: '#FFC62F', onAccent: '#0a0e1a' },
   'bills-rivalries-2025-2025': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'cardinals-rivalries-2025-2025': { uiAccent: '#EE6B3D', onAccent: '#0a0e1a' },
-  'rams-rivalries-2025-2025': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
   'steelers-bumblebee-1933': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'browns-1946-throwback-1946': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'ravens-black-alt-2004': { uiAccent: '#9E7C0C', onAccent: '#0a0e1a' },
@@ -61,7 +59,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'titans-navy-alt-2018': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
   'vikings-winter-warrior-2024': { uiAccent: '#FFC62F', onAccent: '#0a0e1a' },
   'cardinals-black-alt-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
-  'rams-bone-2020': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
 };
 
 // Legacy compatibility values for `uniforms.ui_accent` / `uniforms.on_accent`. These are
@@ -110,6 +107,7 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   ...catalogAccents(PANTHERS_CATALOG),
   ...catalogAccents(PATRIOTS_CATALOG),
   ...catalogAccents(RAIDERS_CATALOG),
+  ...catalogAccents(RAMS_CATALOG),
   ...catalogAccents(NINERS_CATALOG),
   ...catalogAccents(SEAHAWKS_CATALOG),
 };

@@ -1,8 +1,23 @@
-import type { UniformPart } from '../../core/parts';
-import { sleeveMark } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
-export const JERSEY_BONE: UniformPart = {
-  base: 'bone',
-  layers: sleeveMark('gold', 'gold'),
-  number: { fill: 'royal', outline: 'gold', outlineWidth: 14 },
+// Bone body with a body-coloured collar and plain sleeves carrying a royal TV number; flat royal numerals.
+export const RAMS_JERSEY_BONE: CompleteJerseySpec = {
+  body: 'bone',
+  collar: {
+    style: 'inset-v',
+    color: 'bone',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: true,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: 'none',
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: { fill: 'royal' },
+  number: { fill: 'royal', outline: 'gold', outlineWeight: 'none', texture: 'plain' },
+  marks: [],
 };

@@ -1,8 +1,24 @@
-import type { UniformPart } from '../../core/parts';
-import { sleeveMark } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
+import { ramsSleeveMark } from '../marks/construction';
 
-export const JERSEY_ROYAL: UniformPart = {
-  base: 'royal',
-  layers: sleeveMark('gold', 'gold'),
-  number: { fill: 'gold', outline: 'white', outlineWidth: 14 },
+// Royal body with a body-coloured collar, a gold band and tail on each sleeve and flat gold numerals.
+export const RAMS_JERSEY_ROYAL: CompleteJerseySpec = {
+  body: 'royal',
+  collar: {
+    style: 'inset-v',
+    color: 'royal',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: true,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: 'none',
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'gold', outline: 'white', outlineWeight: 'none', texture: 'plain' },
+  marks: [{ paint: 'over', mark: ramsSleeveMark('gold', 'gold') }],
 };
