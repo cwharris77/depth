@@ -1,11 +1,32 @@
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
-import { collar, sleeveStripes } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
-// White body (away + winter-warning): the same gold/white/gold sleeve set and collar, green
-// numerals. One part, two kits — the factoring the flat form spelled out twice.
-export const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [...sleeveStripes(), ...collar()],
-  number: { fill: 'green', outline: 'green', outlineWidth: 26 },
+// White body (away and Winter Warning) with a green and gold collar band and a green, gold,
+// green sleeve set. Shoulder and chest numerals are green.
+export const PACKERS_JERSEY_WHITE: CompleteJerseySpec = {
+  body: 'white',
+  collar: {
+    style: 'inset-v',
+    color: 'green',
+    trim: 'gold',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'green',
+    outline: true,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: { fill: 'green', outline: 'none' },
+  sleeveStripes: {
+    bands: [
+      { color: 'green', size: 'm' },
+      { color: 'gold', size: 'm' },
+      { color: 'green', size: 'm' },
+    ],
+    gap: 'narrow',
+    edge: 'none',
+  },
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'green', outline: 'green', outlineWeight: 'x-heavy', texture: 'mesh' },
+  marks: [],
 };

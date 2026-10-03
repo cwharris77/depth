@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "935c40d5c949ddc251d5432dd34bc4f6e458f0f716096f7d9fbbfa7a80d7a0a5",
-  "revision": "814e575d04de79bb",
+  "sourceDigest": "df0f962eb19bae2218b8d90afbc47727b6fcf46b1238388c5242cf27c3723fbf",
+  "revision": "5ba7705580ed4734",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1373,60 +1373,60 @@
     {
       "catalogId": "packers-1923-throwback-1923",
       "constructionKey": "1923-throwback",
-      "revision": "000cb76b8051aba0",
+      "revision": "8110758caba663bc",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/packers-1923-throwback-1923.webp",
-          "sha256": "0eb9593394d8e4493c803d3d7fca41bc61a09b195e603344f0e2b6c5cdf29175"
+          "sha256": "c1d651f7288ee0b516e01a3cfb64b38bf8c5bb5c87fdbbb6ee7bcb5320a5da4d"
         },
         "full": {
           "path": "/uniforms/packers-1923-throwback-1923-full.webp",
-          "sha256": "7381c86c00bafc2607e3ee45f2ca7dd87ed004ed2fa630b30b229b81c3c5290d"
+          "sha256": "cc42d9d7014438d6c71d51c573820fd94f777663b76029827fc7e800c9e84d9b"
         }
       }
     },
     {
       "catalogId": "packers-away-1959",
       "constructionKey": "away",
-      "revision": "8dbb8da5e6ea13ba",
+      "revision": "566f17adafc72236",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/packers-away-1959.webp",
-          "sha256": "1986bcc29a49bc13da4e45e1a9c1cec25c20fde456bd2a8877ebe4eb6c8b9700"
+          "sha256": "1d88c63605093b7d17294d7808a1c3de70cd110935f331d1441d9fd0381fe032"
         },
         "full": {
           "path": "/uniforms/packers-away-1959-full.webp",
-          "sha256": "46907a6410a99dd6d8e69d9aad100d472f8516ac5a9b1781d80674f163cbb26e"
+          "sha256": "84a073c45ee1eca31c6935f8f6367677861e5a8ffacbe7348c5e7473bf70825c"
         }
       }
     },
     {
       "catalogId": "packers-home-1959",
       "constructionKey": "home",
-      "revision": "80f43ee22d927da8",
+      "revision": "4adee3f0b0936756",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/packers-home-1959.webp",
-          "sha256": "7be994445671ba85eb0eee22fd38706d693b2c98ac88b5753873de92331d8616"
+          "sha256": "a284a018193d0ddf945cd6f0cc0d6fe6fd8888f98949c02763206d2623728dae"
         },
         "full": {
           "path": "/uniforms/packers-home-1959-full.webp",
-          "sha256": "b6be155034cbb41c46da5f627554bee1b486dab2bdf8bc49ac92abbdf801c969"
+          "sha256": "229c4097ce7c145f53d79450d80a646a2c15d8a6e0e23a85050d6c9896d836c1"
         }
       }
     },
     {
       "catalogId": "packers-winter-warning-2025",
       "constructionKey": "winter-warning",
-      "revision": "fd8d75ecac1ee78a",
+      "revision": "90ed5bed14db0e5c",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/packers-winter-warning-2025.webp",
-          "sha256": "1986bcc29a49bc13da4e45e1a9c1cec25c20fde456bd2a8877ebe4eb6c8b9700"
+          "sha256": "1d88c63605093b7d17294d7808a1c3de70cd110935f331d1441d9fd0381fe032"
         },
         "full": {
           "path": "/uniforms/packers-winter-warning-2025-full.webp",
-          "sha256": "fb8dfbd4903d6f6dcf86e404e5bbb472a4733f3d6a6ae3b4ce38ed1eafd534fd"
+          "sha256": "65aefbab0d8cd8edae825e523f4e9deafa07b0a9ffa4027f18cdfa2d11ac3ea9"
         }
       }
     },
