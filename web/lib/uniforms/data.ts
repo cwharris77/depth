@@ -15,6 +15,7 @@ import { FALCONS_CATALOG } from './teams/falcons/catalog';
 import { GIANTS_CATALOG } from './teams/giants/catalog';
 import { JAGUARS_CATALOG } from './teams/jaguars/catalog';
 import { JETS_CATALOG } from './teams/jets/catalog';
+import { LIONS_CATALOG } from './teams/lions/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
@@ -187,21 +188,7 @@ export const UNIFORMS: UniformSeed[] = [
   },
   catalogRow(CHARGERS_CATALOG, 'home'),
   catalogRow(BEARS_CATALOG, 'home'),
-  {
-    teamId: 'lions',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2024,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#0076B6',
-      secondary: '#B0B7BC',
-      accent: '#B0B7BC',
-    },
-  },
+  catalogRow(LIONS_CATALOG, 'home'),
   {
     teamId: 'packers',
     slug: 'home',
@@ -489,21 +476,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(EAGLES_CATALOG, 'away'),
   catalogRow(COMMANDERS_CATALOG, 'away'),
   catalogRow(BEARS_CATALOG, 'away'),
-  {
-    teamId: 'lions',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2024,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#0076B6',
-      accent: '#B0B7BC',
-    },
-  },
+  catalogRow(LIONS_CATALOG, 'away'),
   {
     teamId: 'packers',
     slug: 'away',
@@ -826,21 +799,7 @@ export const UNIFORMS: UniformSeed[] = [
   // Eagles black alternate (2020+). Black base, midnight-green/silver trim.
   catalogRow(EAGLES_CATALOG, 'black-alt'),
   // Lions 'Gridiron Gray' alternate. Silver-gray base, Honolulu-blue trim.
-  {
-    teamId: 'lions',
-    slug: 'gridiron-gray',
-    constructionKey: 'gridiron-gray',
-    kind: 'alternate',
-    name: 'Gridiron Gray',
-    yearStart: 2017,
-    yearEnd: 2023,
-    isCurrent: false,
-    colors: {
-      primary: '#B0B7BC',
-      secondary: '#0076B6',
-      accent: '#000000',
-    },
-  },
+  catalogRow(LIONS_CATALOG, 'gridiron-gray'),
   // Vikings 'Winter Warrior' all-white alternate (2023+). White base, purple/gold trim.
   {
     teamId: 'vikings',

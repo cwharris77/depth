@@ -15,6 +15,7 @@ import { FALCONS_CATALOG } from './teams/falcons/catalog';
 import { GIANTS_CATALOG } from './teams/giants/catalog';
 import { JAGUARS_CATALOG } from './teams/jaguars/catalog';
 import { JETS_CATALOG } from './teams/jets/catalog';
+import { LIONS_CATALOG } from './teams/lions/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
@@ -31,7 +32,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'texans-home-2024': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'titans-home-2018': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
   'raiders-home-1963': { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
-  'lions-home-2024': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'packers-home-1959': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'vikings-home-2013': { uiAccent: '#FFC62F', onAccent: '#0a0e1a' },
   'panthers-home-2012': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
@@ -48,7 +48,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'texans-away-2024': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'titans-away-2018': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
   'raiders-away-1963': { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
-  'lions-away-2024': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'packers-away-1959': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'vikings-away-2013': { uiAccent: '#FFC62F', onAccent: '#0a0e1a' },
   'panthers-away-2012': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
@@ -67,7 +66,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'ravens-black-alt-2004': { uiAccent: '#9E7C0C', onAccent: '#0a0e1a' },
   'texans-battle-red-2024': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'titans-navy-alt-2018': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
-  'lions-gridiron-gray-2017': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'vikings-winter-warrior-2024': { uiAccent: '#FFC62F', onAccent: '#0a0e1a' },
   'packers-winter-warning-2025': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'panthers-black-alt-2012': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
@@ -116,6 +114,7 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   ...catalogAccents(GIANTS_CATALOG),
   ...catalogAccents(JAGUARS_CATALOG),
   ...catalogAccents(JETS_CATALOG),
+  ...catalogAccents(LIONS_CATALOG),
   ...catalogAccents(NINERS_CATALOG),
   ...catalogAccents(SEAHAWKS_CATALOG),
 };

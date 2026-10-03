@@ -9,7 +9,7 @@ from pathlib import Path
 SOURCE = Path(sys.argv[1]) if len(sys.argv) > 1 else None
 if SOURCE is None:
     sys.exit(f'usage: {Path(__file__).name} <source.svg>')
-TARGET = Path(__file__).resolve().parents[2] / 'lib/uniforms/teams/lions/decal.ts'
+TARGET = Path(__file__).resolve().parents[2] / 'lib/uniforms/teams/lions/marks/decal.ts'
 TOKEN = re.compile(r'[A-Za-z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?')
 
 # The supplied art's visible mark is x=252..1797/y=432..1611 in its 2048 viewBox.
