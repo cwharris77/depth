@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { VIKINGS_PARTS } from '../vikings';
 
 describe('Vikings helmet parts', () => {
-  it('paints the horn before the gold crescent on every shell', () => {
+  it('paints the horn before the crescent on every shell', () => {
     for (const helmet of Object.values(VIKINGS_PARTS.helmets)) {
       expect(helmet.layers.map((layer) => layer.id)).toEqual([
         'vikings-decal-horn',
@@ -15,7 +15,7 @@ describe('Vikings helmet parts', () => {
     }
   });
 
-  it('uses white horns on purple shells and a purple horn on the white shell', () => {
+  it('keeps gold on purple shells and metallic gray on the Winter Warrior shell', () => {
     for (const helmet of [VIKINGS_PARTS.helmets.purple, VIKINGS_PARTS.helmets.classic]) {
       expect(
         helmet.layers.map((layer) => (layer.kind === 'fill' ? layer.fill : undefined))
@@ -25,6 +25,6 @@ describe('Vikings helmet parts', () => {
       VIKINGS_PARTS.helmets.white.layers.map((layer) =>
         layer.kind === 'fill' ? layer.fill : undefined
       )
-    ).toEqual(['purple', 'purple', 'gold']);
+    ).toEqual(['purple', 'purple', 'metallicGray']);
   });
 });

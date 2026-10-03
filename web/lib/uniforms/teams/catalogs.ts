@@ -82,6 +82,9 @@ import { STEELERS_SPEC } from './steelers/parts';
 import { TEXANS_PARTS } from './texans';
 import { TEXANS_CATALOG } from './texans/catalog';
 import { TEXANS_SPEC } from './texans/parts';
+import { VIKINGS_PARTS } from './vikings';
+import { VIKINGS_CATALOG } from './vikings/catalog';
+import { VIKINGS_SPEC } from './vikings/parts';
 
 // Teams whose rows, accents and kits come from a catalog. A team joins when it converts; the
 // rest keep their hand-written rows in data.ts.
@@ -128,6 +131,7 @@ const CATALOGS: Readonly<Partial<Record<string, RegisteredCatalog>>> = {
   seahawks: { catalog: SEAHAWKS_CATALOG, parts: SEAHAWKS_PARTS, strict: SEAHAWKS_SPEC },
   steelers: { catalog: STEELERS_CATALOG, parts: STEELERS_PARTS, strict: STEELERS_SPEC },
   texans: { catalog: TEXANS_CATALOG, parts: TEXANS_PARTS, strict: TEXANS_SPEC },
+  vikings: { catalog: VIKINGS_CATALOG, parts: VIKINGS_PARTS, strict: VIKINGS_SPEC },
 };
 
 export function getTeamCatalog(teamId: string): TeamCatalog | undefined {

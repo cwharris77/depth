@@ -1,10 +1,10 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 
-export const VIKINGS_JERSEY_PURPLE: CompleteJerseySpec = {
-  body: 'purple',
+export const VIKINGS_JERSEY_WINTER_WHITE: CompleteJerseySpec = {
+  body: 'white',
   collar: {
     style: 'inset-v',
-    color: 'purple',
+    color: 'white',
     trim: 'none',
     inside: 'body',
     lining: 'none',
@@ -16,14 +16,14 @@ export const VIKINGS_JERSEY_PURPLE: CompleteJerseySpec = {
   shoulderNumber: 'none',
   sleeveStripes: {
     bands: [
-      { color: 'white', size: 's' },
-      { color: 'gold', size: 's' },
+      { color: 'purple', size: 's' },
+      { color: 'metallicGray', size: 's' },
     ],
     gap: 'narrow',
     edge: 'none',
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'purple', outlineWeight: 'none', texture: 'mesh' },
+  number: { fill: 'purple', outline: 'white', outlineWeight: 'none', texture: 'mesh' },
   marks: [],
 };
