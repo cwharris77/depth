@@ -1,12 +1,21 @@
-import { expandJersey } from '../../core/jersey-spec';
-import type { UniformPart } from '../../core/parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
-// Home jersey: brown body, a five-band white-and-orange sleeve stack, a white shoulder numeral and
-// plain white chest numerals. The V collar is body-coloured, so it needs the grey keyline to read.
-export const JERSEY_BROWN: UniformPart = expandJersey('browns-brown', {
+// Brown body with a five-band white-and-orange sleeve stack, a white shoulder numeral and plain
+// white chest numerals. The V collar is body-coloured, so it needs the grey keyline to read.
+export const BROWNS_JERSEY_BROWN: CompleteJerseySpec = {
   body: 'brown',
-  collar: { style: 'inset-v', color: 'brown', outline: true },
-  shoulderNumber: { fill: 'white' },
+  collar: {
+    style: 'inset-v',
+    color: 'brown',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: true,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: { fill: 'white', outline: 'none' },
   sleeveStripes: {
     bands: [
       { color: 'white', size: 'm' },
@@ -16,6 +25,10 @@ export const JERSEY_BROWN: UniformPart = expandJersey('browns-brown', {
       { color: 'white', size: 'm' },
     ],
     gap: 'none',
+    edge: 'none',
   },
-  number: { fill: 'white', outline: 'brown', outlineWeight: 'none' },
-});
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'brown', outlineWeight: 'none', texture: 'mesh' },
+  marks: [],
+};

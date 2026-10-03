@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "a4745bfded554025afc9a6f98366d7b16a32666e55157e0c2c9808bf0bf6edfc",
-  "revision": "17ec6277dfda25b6",
+  "sourceDigest": "d58eb5ad54af0fa3f7509ec8401b6e3cd22bafa464dceb3d6fab4aeced4dd4b4",
+  "revision": "bad965e6275d3c65",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -430,7 +430,17 @@
           "path": "/uniforms/browns-away-2020-full.webp",
           "sha256": "176c3e619875c341819c87b053a337d8b5084a1d4d1a3973645efcc1c6577099"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "orange-pants",
+          "label": "Orange pants",
+          "full": {
+            "path": "/uniforms/browns-away-2020--orange-pants-full.webp",
+            "sha256": "b483cacddb7cddaa854262e49f3a5dd51354de421e3738156ffe945afca57933"
+          }
+        }
+      ]
     },
     {
       "catalogId": "browns-home-2020",
@@ -445,7 +455,25 @@
           "path": "/uniforms/browns-home-2020-full.webp",
           "sha256": "54c47c6062faec6a918e8baf4f934a9e0bd4562e246b761f4e87e242d5041d5d"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "orange-pants",
+          "label": "Orange pants",
+          "full": {
+            "path": "/uniforms/browns-home-2020--orange-pants-full.webp",
+            "sha256": "7f17158af29048576d6415b1d0b7e15787c130978764944ffafcfc98853a8f8e"
+          }
+        },
+        {
+          "key": "brown-pants",
+          "label": "Brown pants",
+          "full": {
+            "path": "/uniforms/browns-home-2020--brown-pants-full.webp",
+            "sha256": "210ddf85432cb4531692f66e6a0608ce9eef3ab6ff77ed78bb1c26e015687866"
+          }
+        }
+      ]
     },
     {
       "catalogId": "buccaneers-away-2020",
