@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "2a22f59f5863af9f66cdefda6991c8365832e2a66403909f8428525b68217123",
-  "revision": "fce92e9eed5a3fdb",
+  "sourceDigest": "c8c796bd5940a8cfbb3ef5563260c4cd27c7a4f2f1e4d813bf424a1daa9aa182",
+  "revision": "a9b978073eaab4f7",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1738,45 +1738,45 @@
     {
       "catalogId": "ravens-away-1996",
       "constructionKey": "away",
-      "revision": "b855e8adfe58a0ea",
+      "revision": "87707c28ca322dcc",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/ravens-away-1996.webp",
-          "sha256": "de2a2f99ff90aaf1dbba25543cc9b97e4663872df75638ce870b1162ed530047"
+          "sha256": "cf02e9ae01ed7090b4d55c73447bd23d1622f363fd4712ad52ac1099f7d095ba"
         },
         "full": {
           "path": "/uniforms/ravens-away-1996-full.webp",
-          "sha256": "58f94e155268ea4bfe4e019dd3b72744ee9a0c694d6bfce6376f6152add12cea"
+          "sha256": "9cc2c43fc95dde40d060a263a4b9800bc979a850171eaf28a3d5dcabcc1c5a5a"
         }
       }
     },
     {
       "catalogId": "ravens-black-alt-2004",
       "constructionKey": "black-alt",
-      "revision": "8a7d180926f1ab43",
+      "revision": "0a0b6463ccf45d6d",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/ravens-black-alt-2004.webp",
-          "sha256": "815950d24f5270fa8b3ade1d4e50a126df2e5835eeef8ef41e9db441ff1e8892"
+          "sha256": "76fea6c7711e2492038cb3b52fde68a7083f13a09db34cf4fbe44dbd8a563019"
         },
         "full": {
           "path": "/uniforms/ravens-black-alt-2004-full.webp",
-          "sha256": "ca12192112e35cffeae4a9dabbd61cc67ed2ebc93bc5950ffad7ca8bdbbdef5b"
+          "sha256": "6adba9a71b545306d08db24e5c778df09ab7689208c605e1db37ab62e4978016"
         }
       }
     },
     {
       "catalogId": "ravens-home-1996",
       "constructionKey": "home",
-      "revision": "4ff23b70780a2669",
+      "revision": "8a1b81517812c02a",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/ravens-home-1996.webp",
-          "sha256": "cb80e727942a4fb64a76369a1983d4c30a4cf4e6ceee2c412020f18154d299f3"
+          "sha256": "c1821cd96fb28f063204650ce412beacfb652f3fc10c40057e9964bf25aed063"
         },
         "full": {
           "path": "/uniforms/ravens-home-1996-full.webp",
-          "sha256": "42c90bbff18c3a8678e6527c43d1de926f107c1111bf4805ce1b35cc5c2a9e64"
+          "sha256": "a1b40790a55e422e7f1f26fbfb6eb7e8ea6ec33d4301d2e2ac2edadc8ef5db9b"
         }
       }
     },

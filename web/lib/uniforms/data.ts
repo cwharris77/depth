@@ -21,6 +21,7 @@ import { PANTHERS_CATALOG } from './teams/panthers/catalog';
 import { PATRIOTS_CATALOG } from './teams/patriots/catalog';
 import { RAIDERS_CATALOG } from './teams/raiders/catalog';
 import { RAMS_CATALOG } from './teams/rams/catalog';
+import { RAVENS_CATALOG } from './teams/ravens/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
@@ -64,21 +65,7 @@ export interface UniformSeed {
 export const UNIFORMS: UniformSeed[] = [
   // Current home kits. #FFFFFF/#000000 are the listed neutral kit colors.
   // uiAccent/onAccent are the established dark-UI pair and are contrast-tested below.
-  {
-    teamId: 'ravens',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 1996,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#241773',
-      secondary: '#000000',
-      accent: '#9E7C0C',
-    },
-  },
+  catalogRow(RAVENS_CATALOG, 'home'),
   catalogRow(BENGALS_CATALOG, 'home'),
   {
     teamId: 'browns',
@@ -282,21 +269,7 @@ export const UNIFORMS: UniformSeed[] = [
   // Away kits — second tranche (remaining 24 teams). Same rule as the first tranche:
   // white base; secondary = team primary, accent = the team's identity trim color.
   // Generated from lib/teams/league.ts.
-  {
-    teamId: 'ravens',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 1996,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#241773',
-      accent: '#9E7C0C',
-    },
-  },
+  catalogRow(RAVENS_CATALOG, 'away'),
   catalogRow(BENGALS_CATALOG, 'away'),
   {
     teamId: 'browns',
@@ -551,22 +524,7 @@ export const UNIFORMS: UniformSeed[] = [
   },
   catalogRow(BENGALS_CATALOG, 'orange-alt'),
   catalogRow(BENGALS_CATALOG, 'color-rush'),
-  // Ravens black alternate. Black base, purple/gold trim.
-  {
-    teamId: 'ravens',
-    slug: 'black-alt',
-    constructionKey: 'black-alt',
-    kind: 'alternate',
-    name: 'Black Alternate',
-    yearStart: 2004,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#000000',
-      secondary: '#241773',
-      accent: '#9E7C0C',
-    },
-  },
+  catalogRow(RAVENS_CATALOG, 'black-alt'),
   // Texans 'Battle Red' alternate. Deep red base, navy/white trim.
   {
     teamId: 'texans',

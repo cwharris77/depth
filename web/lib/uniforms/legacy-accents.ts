@@ -21,6 +21,7 @@ import { PANTHERS_CATALOG } from './teams/panthers/catalog';
 import { PATRIOTS_CATALOG } from './teams/patriots/catalog';
 import { RAIDERS_CATALOG } from './teams/raiders/catalog';
 import { RAMS_CATALOG } from './teams/rams/catalog';
+import { RAVENS_CATALOG } from './teams/ravens/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
@@ -29,7 +30,6 @@ export type LegacyAccentPair = Pick<TeamColors, 'uiAccent' | 'onAccent'>;
 // Hand-curated entries for teams that have not converted to a catalog yet. A converted team's
 // entries move out of here into its `teams/<team>/catalog.ts` instead.
 export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
-  'ravens-home-1996': { uiAccent: '#9E7C0C', onAccent: '#0a0e1a' },
   'browns-home-2020': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'steelers-home-1997': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'bills-home-2011': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
@@ -40,7 +40,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'cardinals-home-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
   'bills-away-2011': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'cardinals-away-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
-  'ravens-away-1996': { uiAccent: '#9E7C0C', onAccent: '#0a0e1a' },
   'browns-away-2020': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'steelers-away-1997': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'texans-away-2024': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
@@ -54,7 +53,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'cardinals-rivalries-2025-2025': { uiAccent: '#EE6B3D', onAccent: '#0a0e1a' },
   'steelers-bumblebee-1933': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'browns-1946-throwback-1946': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
-  'ravens-black-alt-2004': { uiAccent: '#9E7C0C', onAccent: '#0a0e1a' },
   'texans-battle-red-2024': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'titans-navy-alt-2018': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
   'vikings-winter-warrior-2024': { uiAccent: '#FFC62F', onAccent: '#0a0e1a' },
@@ -108,6 +106,7 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   ...catalogAccents(PATRIOTS_CATALOG),
   ...catalogAccents(RAIDERS_CATALOG),
   ...catalogAccents(RAMS_CATALOG),
+  ...catalogAccents(RAVENS_CATALOG),
   ...catalogAccents(NINERS_CATALOG),
   ...catalogAccents(SEAHAWKS_CATALOG),
 };
