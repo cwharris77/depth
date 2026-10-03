@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "72fa2a22aa7679194b9beab47fcf24efe8014d24379a9f74bf76e0e38f9c35a5",
-  "revision": "33c515cee8ad2fc5",
+  "sourceDigest": "82a01ea70768209545bc3b20c0f84f11d5a4ca8d02b2beab2a71446f7fac0e8b",
+  "revision": "0926d12cb66578bd",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1063,45 +1063,45 @@
     {
       "catalogId": "giants-1980s-throwback-1980",
       "constructionKey": "1980s-throwback",
-      "revision": "218345d6450dd3ea",
+      "revision": "46ddd87c44e3665f",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/giants-1980s-throwback-1980.webp",
-          "sha256": "7936d8155ca9b5b3f951fd8bfdeb58323af25b866bc7557187f7b5cea971778e"
+          "sha256": "d307109fee47ec26f7eda848df206d4867f70337b19ce26be81a3783220799ff"
         },
         "full": {
           "path": "/uniforms/giants-1980s-throwback-1980-full.webp",
-          "sha256": "81261f2159672679df70d11cf727e1f8e89f97896149d14bff3e571eed50c589"
+          "sha256": "42196301c0062d6cb3fe23ea49bd584d91b19d008cf100842e4d305ea7dc8e1d"
         }
       }
     },
     {
       "catalogId": "giants-away-2000",
       "constructionKey": "away",
-      "revision": "e888e6de8fa322b3",
+      "revision": "666420f34ae1dd13",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/giants-away-2000.webp",
-          "sha256": "e9699bbf5c784686866acd47e254309eae753f43d35ffd21e17e0a0bee58fed3"
+          "sha256": "138abe4e3819ab749843564c69a96d8784d10996d62bd8bcb3c1391964b8b18f"
         },
         "full": {
           "path": "/uniforms/giants-away-2000-full.webp",
-          "sha256": "3cfea9989bdf11a6018b80865544b8fc5d1afb8169b2fa22f493133925df8678"
+          "sha256": "c19bbc0f8a80a2e07345e2daa00105d1a0a933ee2466309e7bce215b375c1f6c"
         }
       }
     },
     {
       "catalogId": "giants-home-2000",
       "constructionKey": "home",
-      "revision": "3e570bad0d4d2251",
+      "revision": "034c9ce0b3071855",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/giants-home-2000.webp",
-          "sha256": "8b277cbcf8bdd2a8cef5558030d982c6abaf3053668d30e7df400347a87dfac9"
+          "sha256": "21400c11804888efb3d5b896b6150815eee748beffdb49e715074751ec094f61"
         },
         "full": {
           "path": "/uniforms/giants-home-2000-full.webp",
-          "sha256": "1a1d3a3a80b85698c9e0e616dc6714c143ef5628ed101a11ceb861c6a7111f1e"
+          "sha256": "d0bfb6c774fa0d813ec22131cba77a648116e75b1a6d945dc88f974feeb688ff"
         }
       }
     },

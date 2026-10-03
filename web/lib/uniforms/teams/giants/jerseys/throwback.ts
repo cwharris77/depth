@@ -1,43 +1,25 @@
-import {
-  GIANTS_COLLAR_CORE_WIDTH,
-  GIANTS_COLLAR_OUTER_WIDTH,
-  GIANTS_THROWBACK_SLEEVE_X_LEFT,
-  GIANTS_THROWBACK_SLEEVE_X_RIGHT,
-  GIANTS_THROWBACK_STRIPE_BANDS,
-} from '../source';
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
-import { COLLAR_PATH, sleeveStripes } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
+import { GIANTS_THROWBACK_CUFF_STRIPES } from '../marks/construction';
 
-// The 1980s throwback jersey: royal body, red/white/red cuff stripes, a red-over-white collar,
-// white numerals keylined red.
-export const JERSEY_THROWBACK: UniformPart = {
-  base: 'royal',
-  layers: [
-    ...sleeveStripes(
-      GIANTS_THROWBACK_STRIPE_BANDS,
-      GIANTS_THROWBACK_SLEEVE_X_LEFT,
-      GIANTS_THROWBACK_SLEEVE_X_RIGHT,
-      ['red', 'white', 'red']
-    ),
-    {
-      id: 'giants-collar-outer',
-      surface: 'collar',
-      d: COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'red',
-      strokeWidth: GIANTS_COLLAR_OUTER_WIDTH,
-    },
-    {
-      id: 'giants-collar-core',
-      surface: 'collar',
-      d: COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'white',
-      strokeWidth: GIANTS_COLLAR_CORE_WIDTH,
-    },
-  ],
-  number: { fill: 'white', outline: 'red', outlineWidth: 14 },
+// Royal body with a red V collar around a white inset, white sleeve numerals over red/white/red
+// cuff stripes, and white numerals edged red.
+export const GIANTS_JERSEY_THROWBACK: CompleteJerseySpec = {
+  body: 'royal',
+  collar: {
+    style: 'inset-v',
+    color: 'red',
+    trim: 'white',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: false,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: 'none',
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: { fill: 'white' },
+  number: { fill: 'white', outline: 'red', outlineWeight: 'regular', texture: 'mesh' },
+  marks: [{ paint: 'over', mark: GIANTS_THROWBACK_CUFF_STRIPES }],
 };
