@@ -18,6 +18,7 @@ import { JETS_CATALOG } from './teams/jets/catalog';
 import { LIONS_CATALOG } from './teams/lions/catalog';
 import { PACKERS_CATALOG } from './teams/packers/catalog';
 import { PANTHERS_CATALOG } from './teams/panthers/catalog';
+import { PATRIOTS_CATALOG } from './teams/patriots/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
@@ -123,21 +124,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   catalogRow(DOLPHINS_CATALOG, 'home'),
-  {
-    teamId: 'patriots',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2020,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#002244',
-      secondary: '#C60C30',
-      accent: '#B0B7BC',
-    },
-  },
+  catalogRow(PATRIOTS_CATALOG, 'home'),
   catalogRow(JETS_CATALOG, 'home'),
   {
     teamId: 'texans',
@@ -299,21 +286,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   catalogRow(DOLPHINS_CATALOG, 'away'),
-  {
-    teamId: 'patriots',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2020,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#002244',
-      accent: '#C60C30',
-    },
-  },
+  catalogRow(PATRIOTS_CATALOG, 'away'),
   catalogRow(JETS_CATALOG, 'away'),
   {
     teamId: 'cardinals',
@@ -564,22 +537,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   catalogRow(DOLPHINS_CATALOG, 'rivalries-2025'),
-  // Patriots 2025 Rivalries: Pat-Patriot-style royal fauxback. primary #002F6C is a derived royal (brighter than current navy); red/white heritage.
-  {
-    teamId: 'patriots',
-    slug: 'rivalries-2025',
-    constructionKey: 'rivalries-2025',
-    kind: 'alternate',
-    name: 'Rivalries',
-    yearStart: 2025,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#002F6C',
-      secondary: '#C60C30',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(PATRIOTS_CATALOG, 'rivalries-2025'),
   catalogRow(JETS_CATALOG, 'rivalries-2025'),
   // Cardinals 2025 Rivalries. Corrected from a white/cardinal/black guess (the original comment
   // noted the reveal was shot under red stage lighting, which is what it was read from) after
@@ -626,22 +584,7 @@ export const UNIFORMS: UniformSeed[] = [
   // Wave 4: currently-worn alternates & throwbacks (heritage-derived; Browns '46 and
   // Packers Winter Warning verified from reveals). uiAccent reuses each team's live pair.
   catalogRow(DOLPHINS_CATALOG, '1972-throwback'),
-  // Patriots 'Pat Patriot' red throwback (worn 2022+). Red #C8102E over royal #002F6C, white numbers.
-  {
-    teamId: 'patriots',
-    slug: 'pat-patriot',
-    constructionKey: 'pat-patriot',
-    kind: 'throwback',
-    name: 'Pat Patriot',
-    yearStart: 1961,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#C8102E',
-      secondary: '#002F6C',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(PATRIOTS_CATALOG, 'pat-patriot'),
   catalogRow(JETS_CATALOG, 'black-alt'),
   // Steelers 1934 'Bumblebee' block-stripe throwback (actively worn). Black base, gold stripes.
   {

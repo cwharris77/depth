@@ -1,7 +1,7 @@
-"""Regenerates the New England Patriots helmet mark in ``lib/uniforms/teams/patriots.ts``.
+"""Regenerates the New England Patriots helmet mark in ``lib/uniforms/teams/patriots/marks/paths.ts``.
 
     python3 scripts/uniform-draw/patriots_mark.py            # print the paths
-    python3 scripts/uniform-draw/patriots_mark.py --check    # verify patriots.ts matches
+    python3 scripts/uniform-draw/patriots_mark.py --check    # verify marks/paths.ts matches
 
 This is a contour trace of a standalone vector input kept outside this repository. A helmet
 composite is used only for placement measurements: on the home helmet the visible mark spans
@@ -40,7 +40,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from drawkit import Box, components, crop_to_art, main, mask, trace  # noqa: E402
 
 REF = Path.home() / 'Documents/GitHubProjects/nfl-uniform-refs/patriots/patriots-mark.svg'
-MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'patriots.ts'
+MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'patriots' / 'marks' / 'paths.ts'
 BOX = Box(162.0, 128.0, 328.0, 152.0)
 MIN_REGION = 100
 EPS = 1.2
