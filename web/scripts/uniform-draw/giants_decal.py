@@ -9,7 +9,7 @@ from pathlib import Path
 SOURCE = Path(sys.argv[1]) if len(sys.argv) > 1 else None
 if SOURCE is None:
     sys.exit(f'usage: {Path(__file__).name} <source.svg>')
-TARGET = Path(__file__).resolve().parents[2] / 'lib/uniforms/teams/giants/decal.ts'
+TARGET = Path(__file__).resolve().parents[2] / 'lib/uniforms/teams/giants/marks/decal.ts'
 TOKEN = re.compile(r'[A-Za-z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?')
 
 # Existing Giants helmet placement envelope.
