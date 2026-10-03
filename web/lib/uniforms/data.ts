@@ -20,6 +20,7 @@ import { PACKERS_CATALOG } from './teams/packers/catalog';
 import { PANTHERS_CATALOG } from './teams/panthers/catalog';
 import { PATRIOTS_CATALOG } from './teams/patriots/catalog';
 import { RAIDERS_CATALOG } from './teams/raiders/catalog';
+import { RAMS_CATALOG } from './teams/rams/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
@@ -218,21 +219,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFB612',
     },
   },
-  {
-    teamId: 'rams',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2020,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#003594',
-      secondary: '#FFA300',
-      accent: '#FFA300',
-    },
-  },
+  catalogRow(RAMS_CATALOG, 'home'),
   catalogRow(NINERS_CATALOG, 'home'),
   catalogRow(SEAHAWKS_CATALOG, 'home'),
 
@@ -290,21 +277,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFB612',
     },
   },
-  {
-    teamId: 'rams',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2020,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#003594',
-      accent: '#FFA300',
-    },
-  },
+  catalogRow(RAMS_CATALOG, 'away'),
   catalogRow(NINERS_CATALOG, 'away'),
   // Away kits — second tranche (remaining 24 teams). Same rule as the first tranche:
   // white base; secondary = team primary, accent = the team's identity trim color.
@@ -534,22 +507,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#EE6B3D',
     },
   },
-  // Rams 2025 'Midnight Mode': navy body, gold horns/numbers. primary #0D1B3E derived (reveal underexposed near-black); gold #FFD100 (Rams sol).
-  {
-    teamId: 'rams',
-    slug: 'rivalries-2025',
-    constructionKey: 'rivalries-2025',
-    kind: 'alternate',
-    name: 'Rivalries',
-    yearStart: 2025,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#0D1B3E',
-      secondary: '#FFD100',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(RAMS_CATALOG, 'rivalries-2025'),
   // 49ers 2025 Rivalries: black base, gold numbers, scarlet accent. Heritage gold #B3995D (uiAccent, 7.0:1) + scarlet #AA0000.
   catalogRow(NINERS_CATALOG, 'rivalries-2025'),
   catalogRow(SEAHAWKS_CATALOG, 'rivalries-2025'),
@@ -685,20 +643,5 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFFFFF',
     },
   },
-  // Rams 'Bone' off-white alternate. Bone/cream base, royal/gold trim.
-  {
-    teamId: 'rams',
-    slug: 'bone',
-    constructionKey: 'bone',
-    kind: 'alternate',
-    name: 'Bone',
-    yearStart: 2020,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#F0EBE0',
-      secondary: '#003594',
-      accent: '#FFA300',
-    },
-  },
+  catalogRow(RAMS_CATALOG, 'bone'),
 ];
