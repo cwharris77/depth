@@ -88,6 +88,9 @@ import { STEELERS_SPEC } from './steelers/parts';
 import { TEXANS_PARTS } from './texans';
 import { TEXANS_CATALOG } from './texans/catalog';
 import { TEXANS_SPEC } from './texans/parts';
+import { TITANS_PARTS } from './titans';
+import { TITANS_CATALOG } from './titans/catalog';
+import { TITANS_SPEC } from './titans/parts';
 import { VIKINGS_PARTS } from './vikings';
 import { VIKINGS_CATALOG } from './vikings/catalog';
 import { VIKINGS_SPEC } from './vikings/parts';
@@ -139,6 +142,7 @@ const CATALOGS: Readonly<Partial<Record<string, RegisteredCatalog>>> = {
   seahawks: { catalog: SEAHAWKS_CATALOG, parts: SEAHAWKS_PARTS, strict: SEAHAWKS_SPEC },
   steelers: { catalog: STEELERS_CATALOG, parts: STEELERS_PARTS, strict: STEELERS_SPEC },
   texans: { catalog: TEXANS_CATALOG, parts: TEXANS_PARTS, strict: TEXANS_SPEC },
+  titans: { catalog: TITANS_CATALOG, parts: TITANS_PARTS, strict: TITANS_SPEC },
   vikings: { catalog: VIKINGS_CATALOG, parts: VIKINGS_PARTS, strict: VIKINGS_SPEC },
 };
 

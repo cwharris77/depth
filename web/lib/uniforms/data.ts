@@ -27,6 +27,7 @@ import { RAVENS_CATALOG } from './teams/ravens/catalog';
 import { SAINTS_CATALOG } from './teams/saints/catalog';
 import { STEELERS_CATALOG } from './teams/steelers/catalog';
 import { TEXANS_CATALOG } from './teams/texans/catalog';
+import { TITANS_CATALOG } from './teams/titans/catalog';
 import { VIKINGS_CATALOG } from './teams/vikings/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
@@ -82,21 +83,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(TEXANS_CATALOG, 'home'),
   catalogRow(COLTS_CATALOG, 'home'),
   catalogRow(JAGUARS_CATALOG, 'home'),
-  {
-    teamId: 'titans',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2018,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#0C2340',
-      secondary: '#4B92DB',
-      accent: '#4B92DB',
-    },
-  },
+  catalogRow(TITANS_CATALOG, 'home'),
   catalogRow(BRONCOS_CATALOG, 'home'),
   catalogRow(CHIEFS_CATALOG, 'home'),
   catalogRow(RAIDERS_CATALOG, 'home'),
@@ -184,21 +171,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(TEXANS_CATALOG, 'away'),
   catalogRow(COLTS_CATALOG, 'away'),
   catalogRow(JAGUARS_CATALOG, 'away'),
-  {
-    teamId: 'titans',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2018,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#0C2340',
-      accent: '#4B92DB',
-    },
-  },
+  catalogRow(TITANS_CATALOG, 'away'),
   catalogRow(BRONCOS_CATALOG, 'away'),
   catalogRow(CHIEFS_CATALOG, 'away'),
   catalogRow(RAIDERS_CATALOG, 'away'),
@@ -221,21 +194,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(CHARGERS_CATALOG, 'charger-power'),
   catalogRow(CHARGERS_CATALOG, 'super-chargers'),
   // Houston Oilers Columbia blue (1960-1996, per Wikipedia). Hexes: Columbia blue #4B92DB = the Oilers heritage blue, red #C8102E. isCurrent: Titans' designated throwback alternate (not worn every season).
-  {
-    teamId: 'titans',
-    slug: 'oilers-throwback',
-    constructionKey: 'oilers-throwback',
-    kind: 'throwback',
-    name: 'Oilers Throwback',
-    yearStart: 1960,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#4B92DB',
-      secondary: '#C8102E',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(TITANS_CATALOG, 'oilers-throwback'),
   catalogRow(BEARS_CATALOG, 'orange-alternate'),
   catalogRow(SAINTS_CATALOG, 'color-rush'),
   catalogRow(JAGUARS_CATALOG, 'teal-throwback'),
@@ -294,21 +253,10 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(TEXANS_CATALOG, 'battle-red'),
   catalogRow(JAGUARS_CATALOG, 'black-alt'),
   // Titans navy alternate. Navy base, Titans-blue/red trim.
-  {
-    teamId: 'titans',
-    slug: 'navy-alt',
-    constructionKey: 'navy-alt',
-    kind: 'alternate',
-    name: 'Navy Alternate',
-    yearStart: 2018,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#0C2340',
-      secondary: '#4B92DB',
-      accent: '#C8102E',
-    },
-  },
+  catalogRow(TITANS_CATALOG, 'navy-alt'),
+  catalogRow(TITANS_CATALOG, 'titans-blue-home'),
+  catalogRow(TITANS_CATALOG, 'home-2026'),
+  catalogRow(TITANS_CATALOG, 'away-2026'),
   catalogRow(BRONCOS_CATALOG, 'orange-alt'),
   catalogRow(GIANTS_CATALOG, '1980s-throwback'),
   // Eagles black alternate (2020+). Black base, midnight-green/silver trim.

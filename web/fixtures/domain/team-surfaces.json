@@ -1584,6 +1584,54 @@
     }
   },
   {
+    "id": "titans-titans-blue-home-2025",
+    "colors": {
+      "primary": "#4B92DB",
+      "secondary": "#0C2340",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#4B92DB",
+      "ring": "#0C2340",
+      "mark": "#FFFFFF",
+      "textOnFill": "#0C2340",
+      "numeralFill": "#0C2340",
+      "numeralStroke": "#4B92DB"
+    }
+  },
+  {
+    "id": "titans-home-2026-2026",
+    "colors": {
+      "primary": "#4495D2",
+      "secondary": "#FFFFFF",
+      "accent": "#D50A0A"
+    },
+    "expected": {
+      "fill": "#4495D2",
+      "ring": "#FFFFFF",
+      "mark": "#FFFFFF",
+      "textOnFill": "#15161a",
+      "numeralFill": "#4495D2",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "titans-away-2026-2026",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#4495D2",
+      "accent": "#D50A0A"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#4495D2",
+      "mark": "#4495D2",
+      "textOnFill": "#15161a",
+      "numeralFill": "#FFFFFF",
+      "numeralStroke": "#4495D2"
+    }
+  },
+  {
     "id": "broncos-orange-alt-2024",
     "colors": {
       "primary": "#FB4F14",
